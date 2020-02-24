@@ -11,6 +11,9 @@ namespace Speckle.Models
   [Serializable]
   public class Base : DynamicBase
   {
+    /// <summary>
+    /// Overrdiable hash. Ideally all objects would implement an efficient method 
+    /// </summary>
     public virtual string hash
     {
       get
@@ -21,7 +24,7 @@ namespace Speckle.Models
           ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
           Converters = new List<JsonConverter> { new HashSerialiser() },
         });
-        return Utilities.md5(str);
+        return Utilities.hashString(str);
       }
     }
 

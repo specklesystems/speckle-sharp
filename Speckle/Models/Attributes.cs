@@ -22,6 +22,11 @@ namespace Speckle.Models
     {
       Detachable = _detachable;
     }
+
+    public DetachProperty()
+    {
+      Detachable = true;
+    }
   }
 
   /// <summary>

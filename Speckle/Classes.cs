@@ -15,9 +15,6 @@ namespace Speckle.Models
     public List<Revision> revisions { get; set; } = new List<Revision>();
   }
 
-  /// <summary>
-  /// A group of speckle objects. Formerly known as a stream.
-  /// </summary>
   public class Revision : Base
   {
     [DetachProperty(true)]
@@ -28,20 +25,15 @@ namespace Speckle.Models
     public string description { get; set; }
 
     public Revision() : base() { }
+
+    public override string hash => base.hash; 
   }
 
-  /// <summary>
-  /// Base class for a given model (ie, file) that a stream can be hosted in.
-  /// </summary>
-  public class Model : Base
+  public class Reference
   {
-    public string modelId { get; set; }
+    public string referencedId { get; set; }
 
-    public string name { get; set; }
-
-    public string source { get; set; }
-
-    public string location { get; set; }
+    public Reference() { }
   }
 
 }

@@ -7,7 +7,6 @@ using Newtonsoft.Json.Serialization;
 
 namespace Speckle.Models
 {
-
   /// <summary>
   /// Serialiser used to hash objects.
   /// </summary>
@@ -72,8 +71,8 @@ namespace Speckle.Models
         jo.WriteTo(writer);
 
         Lineage.Remove(Lineage.Count - 1);
-        if (DepthReferenceTracker.ContainsKey(value.GetHashCode()))
-          ((Base)value).__subRefCount = DepthReferenceTracker[value.GetHashCode()];
+        //if (DepthReferenceTracker.ContainsKey(value.GetHashCode()))
+        //  ((Base)value).__subRefCount = DepthReferenceTracker[value.GetHashCode()];
         return;
       }
 
