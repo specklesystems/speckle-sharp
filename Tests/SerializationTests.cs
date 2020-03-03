@@ -64,7 +64,7 @@ namespace Tests
 
   public class TableLegFixture : Base
   {
-    public string nails { get; set; } = "MANY NAILS WOW";
+    public string nails { get; set; } = "MANY NAILS WOW " + DateTime.Now;
     public override string hash => "table_leg_fixture_" + base.hash;
     public TableLegFixture() { }
   }
@@ -79,8 +79,15 @@ namespace Tests
       var serializer = new JsonConverter();
 
       var table = new DiningTable();
+      var fixture = new TableLegFixture();
+
+      ((dynamic)table).RANDOM = new TableLegFixture();
+
       var result = serializer.Serialize(table);
       var copy = result;
+
+      var copyThree = serializer.SerializeAndSave(table, null);
+      var copyFour = copyThree;
     }
   }
 }

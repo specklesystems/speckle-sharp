@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System.Collections;
+using Speckle.Transports;
 
 namespace Speckle.Serialisation
 {
@@ -14,6 +15,8 @@ namespace Speckle.Serialisation
 
     public JsonSerializerSettings ConversionSettings;
 
+    //public MemoryTransport DefaultTransport = new MemoryTransport();
+
     public JsonConverter()
     {
       Converter = new BaseObjectSerializer();
@@ -22,27 +25,42 @@ namespace Speckle.Serialisation
         NullValueHandling = NullValueHandling.Ignore,
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
 #if DEBUG
-        Formatting = Formatting.Indented,
+        //Formatting = Formatting.Indented,
 #else
-      Formatting = Fromatting.None,
+        Formatting = Formatting.None,
 #endif
         ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
         Converters = new List<Newtonsoft.Json.JsonConverter> { Converter }
       };
     }
 
-    public Dictionary<string, string> Serialize(Base @base)
+    public string Serialize(Base @base)
     {
-      Converter.ObjectBucket = new Dictionary<string, string>();
+      Converter.ResetAndInitialize();
+      Converter.SessionTransport = new MemoryTransport();
 
       JsonConvert.SerializeObject(@base, ConversionSettings);
 
-      //Converter.ObjectBucket.Reverse();
-
-      return Converter.ObjectBucket;
+      return "[" + String.Join(",", Converter.SessionTransport.GetAllObjects()) + "]";
     }
 
-    public IEnumerable<Base> Deserialize(IEnumerable<string> @object)
+    public string SerializeAndSave(Base @base, ITransport transport)
+    {
+      Converter.ResetAndInitialize();
+      Converter.SessionTransport = new MemoryTransport();
+      Converter.Transport = new MemoryTransport(); // HACK, to remove
+
+      JsonConvert.SerializeObject(@base, ConversionSettings);
+
+      return JsonConvert.SerializeObject(Converter.SessionTransport.GetAllObjects());
+    }
+
+    public IEnumerable<Base> Deserialize(string objects)
+    {
+      return null;
+    }
+
+    public IEnumerable<Base> DeserializeAndGet(string objects, ITransport transport)
     {
       return null;
     }

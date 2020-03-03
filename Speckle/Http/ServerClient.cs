@@ -27,7 +27,7 @@ namespace Speckle.Http
       HttpClient.Timeout = TimeSpan.FromMinutes(1);
     }
 
-    public async void SaveObjects(IEnumerable<Base> objects)
+    public async void SaveObjects(IEnumerable<string> objects)
     {
       var request = new HttpRequestMessage();
 
@@ -50,8 +50,26 @@ namespace Speckle.Http
       }
     }
 
-    public async Task<object> GetObjects(IEnumerable<string> objects)
+    public async Task<IEnumerable<string>> GetObjects(IEnumerable<string> objects)
     {
+      var request = new HttpRequestMessage();
+
+      request.Method = HttpMethod.Get;
+
+      request.RequestUri = new Uri("/objects/" + String.Join(',', objects), UriKind.Relative);
+
+      var response = await HttpClient.SendAsync(request);
+
+      var status = ((int)response.StatusCode).ToString();
+
+      switch (status)
+      {
+        case "200":
+          break;
+        default:
+          throw new Exception("wow error");
+      }
+
       return null;
     }
 
