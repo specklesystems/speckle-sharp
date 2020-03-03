@@ -57,13 +57,33 @@ namespace Speckle.Serialisation
 
     public IEnumerable<Base> Deserialize(string objects)
     {
+      Converter.ResetAndInitialize();
+      Converter.SessionTransport = new MemoryTransport();
+
+      var jarr = JArray.Parse(objects);
+
+      var test = JsonConvert.DeserializeObject<IEnumerable<Base>>(objects, ConversionSettings);
+
+      // TODO: Hydrate memory transport from pre-parsing of the string
+
       return null;
     }
 
     public IEnumerable<Base> DeserializeAndGet(string objects, ITransport transport)
     {
+      Converter.ResetAndInitialize();
+      Converter.SessionTransport = new MemoryTransport();
+      Converter.Transport = new MemoryTransport(); // HACK, to remove
+
+      //TODO
       return null;
     }
+  }
+
+  class IntermediateObjectState
+  {
+    public string hash;
+    public string @object;
   }
 
 }

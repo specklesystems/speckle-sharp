@@ -29,6 +29,37 @@ namespace Speckle.Models
     public override string hash => base.hash; 
   }
 
+  /// <summary>
+  /// Wrapper around other, thrid party, classes that are not speckle kits.
+  /// </summary>
+  public class Abstract : Base
+  {
+    public string assemblyQualifiedName { get; set; }
+
+    private object _base;
+
+    /// <summary>
+    /// The original object.
+    /// </summary>
+    public object @base
+    {
+      get => _base; set
+      {
+        _base = value;
+        assemblyQualifiedName = value.GetType().AssemblyQualifiedName;
+      }
+    }
+
+    public Abstract() { }
+
+    public Abstract(object _original)
+    {
+      @base = _original;
+      assemblyQualifiedName = @base.GetType().AssemblyQualifiedName;
+    }
+
+  }
+
   public class Reference
   {
     public string referencedId { get; set; }

@@ -17,6 +17,11 @@ namespace Speckle.Serialisation
   {
 
     /// <summary>
+    /// Property that describes the type of the object.
+    /// </summary>
+    public string TypeDiscriminator = "_type";
+
+    /// <summary>
     /// Session transport keeps track, in this serialisation pass only, of what we've serialised.
     /// </summary>
     public ITransport SessionTransport { get; set; }
@@ -26,7 +31,7 @@ namespace Speckle.Serialisation
     /// </summary>
     public ITransport Transport { get; set; }
 
-    #region Write Json Helpers
+    #region Write Json Helper Properties
 
     /// <summary>
     /// Keeps track of wether current property pointer is marked for detachment.
@@ -36,7 +41,7 @@ namespace Speckle.Serialisation
     /// <summary>
     /// Keeps track of the hash chain throught the object tree.
     /// </summary>
-    List<string> Lineage { get; set;}
+    List<string> Lineage { get; set; }
 
     /// <summary>
     /// Tracks composed tree references for each object, as they get serialized.
@@ -51,6 +56,10 @@ namespace Speckle.Serialisation
     string CurrentParentObjectHash { get; set; }
 
     #endregion
+
+    public override bool CanWrite => true;
+
+    public override bool CanRead => true;
 
     public BaseObjectSerializer()
     {
@@ -72,11 +81,96 @@ namespace Speckle.Serialisation
 
     public override bool CanConvert(Type objectType) => true;
 
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
+    #region Read Json
+
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
-      // TODO: implement
-      throw new NotImplementedException();
+      if (reader.TokenType == JsonToken.Null)
+        return null;
+
+      if(reader.TokenType == JsonToken.StartArray)
+      {
+        var list = new List<Base>();
+        var jarr = JArray.Load(reader);
+        //var tttt = SerializationUtilities.HandleValue(jarr, serializer) as List<object>;
+        //return SerializationUtilities.HandleValue(jarr, serializer);
+        foreach (var val in ((JArray)jarr))
+        {
+          var whatever = SerializationUtilities.HandleValue(val, serializer);
+          list.Add(whatever as Base);
+        }
+
+        return list;
+        //var jarr = JArray.ReadFrom(reader, serializer);
+        //return;
+      }
+
+      var jObject = JObject.Load(reader);
+
+      if (jObject == null)
+        return null;
+
+      var discriminator = Extensions.Value<string>(jObject.GetValue(TypeDiscriminator));
+      if (discriminator == "reference")
+      {
+        var id = Extensions.Value<string>(jObject.GetValue("referencedId"));
+        string str;
+
+        if (Transport != null)
+          str = Transport.GetObject(id);
+        else
+          throw new Exception($"Cannot resolve reference with id of {id}: a transport is not defined.");
+
+        if (str != null && str != "")
+        {
+          jObject = JObject.Parse(str);
+          discriminator = Extensions.Value<string>(jObject.GetValue(TypeDiscriminator));
+        }
+        else
+          throw new Exception($"Cannot resolve reference with id of {id}. The provided transport could not find it.");
+      }
+
+      var type = SerializationUtilities.GetType(discriminator);
+      var obj = existingValue ?? Activator.CreateInstance(type);
+
+      var contract = (JsonDynamicContract)serializer.ContractResolver.ResolveContract(type);
+      var used = new HashSet<string>();
+
+      // remove unsettables
+      jObject.Remove("hash");
+      jObject.Remove("_type");
+      jObject.Remove("__tree");
+
+      foreach (var jProperty in jObject.Properties())
+      {
+        if (used.Contains(jProperty.Name)) continue;
+
+        used.Add(jProperty.Name);
+
+        // first attempt to find a settable property, otherwise fall back to a dynamic set without type
+        JsonProperty property = contract.Properties.GetClosestMatchProperty(jProperty.Name);
+
+        if (property != null && property.Writable && !property.Ignored)
+        {
+          if (type == typeof(Abstract) && property.PropertyName == "base")
+          {
+            var propertyValue = SerializationUtilities.HandleAbstractOriginalValue(jProperty.Value, ((JValue)jObject.GetValue("assemblyQualifiedName")).Value as string, serializer);
+            property.ValueProvider.SetValue(obj, propertyValue);
+          }
+          else
+            property.ValueProvider.SetValue(obj, SerializationUtilities.HandleValue(jProperty.Value, serializer, property));
+        }
+        else
+        {
+          // dynamic properties
+          CallSiteCache.SetValue(jProperty.Name, obj, SerializationUtilities.HandleValue(jProperty.Value, serializer));
+        }
+      }
+
+      return obj;
     }
+
+    #endregion
 
     #region Write Json
 
@@ -105,7 +199,7 @@ namespace Speckle.Serialisation
     // The important things to remember is that serialization goes depth first:
     // The first object to get fully serialised is the first nested one, with
     // the parent object being last. 
-    public override void WriteJson(JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer)
+    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
     {
       if (value == null) return;
 
@@ -261,157 +355,153 @@ namespace Speckle.Serialisation
 
   internal static class SerializationUtilities
   {
-    internal static class SharedUtilities
+    #region Getting Types
+
+    private static Dictionary<string, Type> cachedTypes = new Dictionary<string, Type>();
+
+    internal static Type GetType(string objFullType)
     {
+      var objectTypes = objFullType.Split(':').Reverse();
 
-      #region Getting Types
+      if (cachedTypes.ContainsKey(objectTypes.First()))
+        return cachedTypes[objectTypes.First()];
 
-      private static Dictionary<string, Type> cachedTypes = new Dictionary<string, Type>();
-
-      internal static Type GetType(string objFullType)
+      foreach (var typeName in objectTypes)
       {
-        var objectTypes = objFullType.Split(':').Reverse();
-
-        if (cachedTypes.ContainsKey(objectTypes.First()))
-          return cachedTypes[objectTypes.First()];
-
-        foreach (var typeName in objectTypes)
+        var type = KitManager.Types.FirstOrDefault(tp => tp.FullName == typeName);
+        if (type != null)
         {
-          var type = KitManager.Types.FirstOrDefault(tp => tp.FullName == typeName);
-          if (type != null)
-          {
-            cachedTypes[typeName] = type;
-            return type;
-          }
+          cachedTypes[typeName] = type;
+          return type;
         }
-
-        return typeof(Base);
       }
 
-      #endregion
-
-      #region value handling
-
-      internal static object HandleValue(JToken value, Newtonsoft.Json.JsonSerializer serializer, JsonProperty jsonProperty = null, string TypeDiscriminator = "_type")
-      {
-        if (value is JValue)
-        {
-          return ((JValue)value).Value;
-        }
-
-        if (value is JArray)
-        {
-          if (jsonProperty != null && jsonProperty.PropertyType.GetConstructor(Type.EmptyTypes) != null)
-          {
-            var arr = jsonProperty != null ? Activator.CreateInstance(jsonProperty.PropertyType) : new List<object>();
-            foreach (var val in ((JArray)value))
-            {
-              ((IList)arr).Add(HandleValue(val, serializer));
-            }
-            return arr;
-          }
-          else if (jsonProperty != null)
-          {
-            var arr = Activator.CreateInstance(typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType()));
-            var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType(), ((JArray)value).Count);
-
-            foreach (var val in ((JArray)value))
-            {
-              ((IList)arr).Add(Convert.ChangeType(HandleValue(val, serializer), jsonProperty.PropertyType.GetElementType()));
-            }
-
-            ((IList)arr).CopyTo(actualArr, 0);
-            return actualArr;
-          }
-          else
-          {
-            var arr = new List<object>();
-            foreach (var val in ((JArray)value))
-            {
-              arr.Add(HandleValue(val, serializer));
-            }
-            return arr;
-          }
-        }
-
-        if (value is JObject)
-        {
-          if (((JObject)value).Property(TypeDiscriminator) != null)
-          {
-            return value.ToObject<Base>(serializer);
-          }
-
-          var dict = jsonProperty != null ? Activator.CreateInstance(jsonProperty.PropertyType) : new Dictionary<string, object>();
-          foreach (var prop in ((JObject)value))
-          {
-            object key = prop.Key;
-            if (jsonProperty != null)
-              key = Convert.ChangeType(prop.Key, jsonProperty.PropertyType.GetGenericArguments()[0]);
-            ((IDictionary)dict)[key] = HandleValue(prop.Value, serializer);
-          }
-          return dict;
-        }
-        return null;
-      }
-
-      #endregion
-
-      #region Abstract Handling
-
-      private static Dictionary<string, Type> cachedAbstractTypes = new Dictionary<string, Type>();
-
-      internal static object HandleAbstractOriginalValue(JToken jToken, string assemblyQualifiedName, Newtonsoft.Json.JsonSerializer serializer)
-      {
-        if (cachedAbstractTypes.ContainsKey(assemblyQualifiedName))
-          return jToken.ToObject(cachedAbstractTypes[assemblyQualifiedName]);
-
-        var pieces = assemblyQualifiedName.Split(',').Select(s => s.Trim()).ToArray();
-
-        var myAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(ass => ass.GetName().Name == pieces[1]);
-        if (myAssembly == null) throw new Exception("Could not load abstract object's assembly.");
-
-        var myType = myAssembly.GetType(pieces[0]);
-        if (myType == null) throw new Exception("Could not load abstract object's assembly.");
-
-        cachedAbstractTypes[assemblyQualifiedName] = myType;
-
-        return jToken.ToObject(myType);
-      }
-
-      #endregion
+      return typeof(Base);
     }
 
-    internal static class CallSiteCache
+    #endregion
+
+    #region value handling
+
+    internal static object HandleValue(JToken value, Newtonsoft.Json.JsonSerializer serializer, JsonProperty jsonProperty = null, string TypeDiscriminator = "_type")
     {
-      // Adapted from the answer to 
-      // https://stackoverflow.com/questions/12057516/c-sharp-dynamicobject-dynamic-properties
-      // by jbtule, https://stackoverflow.com/users/637783/jbtule
-      // And also
-      // https://github.com/mgravell/fast-member/blob/master/FastMember/CallSiteCache.cs
-      // by Marc Gravell, https://github.com/mgravell
-
-      private static readonly Dictionary<string, CallSite<Func<CallSite, object, object, object>>> setters
-        = new Dictionary<string, CallSite<Func<CallSite, object, object, object>>>();
-
-      public static void SetValue(string propertyName, object target, object value)
+      if (value is JValue)
       {
-        CallSite<Func<CallSite, object, object, object>> site;
+        return ((JValue)value).Value;
+      }
 
-        lock (setters)
+      if (value is JArray)
+      {
+        if (jsonProperty != null && jsonProperty.PropertyType.GetConstructor(Type.EmptyTypes) != null)
         {
-          if (!setters.TryGetValue(propertyName, out site))
+          var arr = jsonProperty != null ? Activator.CreateInstance(jsonProperty.PropertyType) : new List<object>();
+          foreach (var val in ((JArray)value))
           {
-            var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetMember(CSharpBinderFlags.None,
-                 propertyName, typeof(CallSiteCache),
-                 new List<CSharpArgumentInfo>{
-                   CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
-                   CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)});
-            setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(binder);
+            ((IList)arr).Add(HandleValue(val, serializer));
           }
+          return arr;
+        }
+        else if (jsonProperty != null)
+        {
+          var arr = Activator.CreateInstance(typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType()));
+          var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType(), ((JArray)value).Count);
+
+          foreach (var val in ((JArray)value))
+          {
+            ((IList)arr).Add(Convert.ChangeType(HandleValue(val, serializer), jsonProperty.PropertyType.GetElementType()));
+          }
+
+          ((IList)arr).CopyTo(actualArr, 0);
+          return actualArr;
+        }
+        else
+        {
+          var arr = new List<object>();
+          foreach (var val in ((JArray)value))
+          {
+            arr.Add(HandleValue(val, serializer));
+          }
+          return arr;
+        }
+      }
+
+      if (value is JObject)
+      {
+        if (((JObject)value).Property(TypeDiscriminator) != null)
+        {
+          return value.ToObject<Base>(serializer);
         }
 
-        site.Target(site, target, value);
+        var dict = jsonProperty != null ? Activator.CreateInstance(jsonProperty.PropertyType) : new Dictionary<string, object>();
+        foreach (var prop in ((JObject)value))
+        {
+          object key = prop.Key;
+          if (jsonProperty != null)
+            key = Convert.ChangeType(prop.Key, jsonProperty.PropertyType.GetGenericArguments()[0]);
+          ((IDictionary)dict)[key] = HandleValue(prop.Value, serializer);
+        }
+        return dict;
       }
+      return null;
+    }
+
+    #endregion
+
+    #region Abstract Handling
+
+    private static Dictionary<string, Type> cachedAbstractTypes = new Dictionary<string, Type>();
+
+    internal static object HandleAbstractOriginalValue(JToken jToken, string assemblyQualifiedName, Newtonsoft.Json.JsonSerializer serializer)
+    {
+      if (cachedAbstractTypes.ContainsKey(assemblyQualifiedName))
+        return jToken.ToObject(cachedAbstractTypes[assemblyQualifiedName]);
+
+      var pieces = assemblyQualifiedName.Split(',').Select(s => s.Trim()).ToArray();
+
+      var myAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(ass => ass.GetName().Name == pieces[1]);
+      if (myAssembly == null) throw new Exception("Could not load abstract object's assembly.");
+
+      var myType = myAssembly.GetType(pieces[0]);
+      if (myType == null) throw new Exception("Could not load abstract object's assembly.");
+
+      cachedAbstractTypes[assemblyQualifiedName] = myType;
+
+      return jToken.ToObject(myType);
+    }
+
+    #endregion
+  }
+
+  internal static class CallSiteCache
+  {
+    // Adapted from the answer to 
+    // https://stackoverflow.com/questions/12057516/c-sharp-dynamicobject-dynamic-properties
+    // by jbtule, https://stackoverflow.com/users/637783/jbtule
+    // And also
+    // https://github.com/mgravell/fast-member/blob/master/FastMember/CallSiteCache.cs
+    // by Marc Gravell, https://github.com/mgravell
+
+    private static readonly Dictionary<string, CallSite<Func<CallSite, object, object, object>>> setters
+      = new Dictionary<string, CallSite<Func<CallSite, object, object, object>>>();
+
+    public static void SetValue(string propertyName, object target, object value)
+    {
+      CallSite<Func<CallSite, object, object, object>> site;
+
+      lock (setters)
+      {
+        if (!setters.TryGetValue(propertyName, out site))
+        {
+          var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetMember(CSharpBinderFlags.None,
+               propertyName, typeof(CallSiteCache),
+               new List<CSharpArgumentInfo>{
+                   CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
+                   CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)});
+          setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(binder);
+        }
+      }
+
+      site.Target(site, target, value);
     }
   }
 
