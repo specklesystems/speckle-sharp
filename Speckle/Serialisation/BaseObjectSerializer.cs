@@ -13,21 +13,25 @@ using Speckle.Transports;
 
 namespace Speckle.Serialisation
 {
+  /// <summary>
+  /// Json converter that handles base speckle objects. Enables detachment &
+  /// simultaneous transport (persistance) of objects. 
+  /// </summary>
   public class BaseObjectSerializer : Newtonsoft.Json.JsonConverter
   {
 
     /// <summary>
     /// Property that describes the type of the object.
     /// </summary>
-    public string TypeDiscriminator = "_type";
+    public string TypeDiscriminator = "speckle_type";
 
     /// <summary>
     /// Session transport keeps track, in this serialisation pass only, of what we've serialised.
     /// </summary>
-    public ITransport SessionTransport { get; set; }
+    //public ITransport SessionTransport { get; set; }
 
     /// <summary>
-    /// The Transport should actually 
+    /// The Transport - if present, the detachment of objects is happening.
     /// </summary>
     public ITransport Transport { get; set; }
 
@@ -88,12 +92,11 @@ namespace Speckle.Serialisation
       if (reader.TokenType == JsonToken.Null)
         return null;
 
-      if(reader.TokenType == JsonToken.StartArray)
+      if (reader.TokenType == JsonToken.StartArray)
       {
         var list = new List<Base>();
         var jarr = JArray.Load(reader);
-        //var tttt = SerializationUtilities.HandleValue(jarr, serializer) as List<object>;
-        //return SerializationUtilities.HandleValue(jarr, serializer);
+
         foreach (var val in ((JArray)jarr))
         {
           var whatever = SerializationUtilities.HandleValue(val, serializer);
@@ -101,8 +104,6 @@ namespace Speckle.Serialisation
         }
 
         return list;
-        //var jarr = JArray.ReadFrom(reader, serializer);
-        //return;
       }
 
       var jObject = JObject.Load(reader);
@@ -111,7 +112,8 @@ namespace Speckle.Serialisation
         return null;
 
       var discriminator = Extensions.Value<string>(jObject.GetValue(TypeDiscriminator));
-      if (discriminator == "reference")
+      
+      if (discriminator == "reference" )
       {
         var id = Extensions.Value<string>(jObject.GetValue("referencedId"));
         string str;
@@ -136,9 +138,9 @@ namespace Speckle.Serialisation
       var contract = (JsonDynamicContract)serializer.ContractResolver.ResolveContract(type);
       var used = new HashSet<string>();
 
-      // remove unsettables
+      // remove unsettable properties
       jObject.Remove("hash");
-      jObject.Remove("_type");
+      jObject.Remove(TypeDiscriminator);
       jObject.Remove("__tree");
 
       foreach (var jProperty in jObject.Properties())
@@ -208,13 +210,14 @@ namespace Speckle.Serialisation
         var obj = value as Base;
         CurrentParentObjectHash = obj.hash;
 
-        if (Parsed.Contains(CurrentParentObjectHash))
-        {
-          //var reference = new Reference() { referencedId = CurrentParentObjectHash };
-          //TrackReferenceInTree(reference.referencedId);
-          //jo.Add(prop, JToken.FromObject(reference));
-          return;
-        }
+        // TODO: figure out circular references, or at least handle them somehow.
+        //if (Parsed.Contains(CurrentParentObjectHash))
+        //{
+        //  //var reference = new Reference() { referencedId = CurrentParentObjectHash };
+        //  //TrackReferenceInTree(reference.referencedId);
+        //  //jo.Add(prop, JToken.FromObject(reference));
+        //  return;
+        //}
 
         // Append to lineage tracker
         Lineage.Add(CurrentParentObjectHash);
@@ -254,7 +257,7 @@ namespace Speckle.Serialisation
             DetachLineage.Add(false);
 
           // Set and store a reference, if it is marked as detachable and the transport is not null.
-          if (propValue is Base && DetachLineage[DetachLineage.Count - 1])
+          if (Transport != null && propValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var reference = new Reference() { referencedId = ((Base)propValue).hash };
             TrackReferenceInTree(reference.referencedId);
@@ -270,7 +273,7 @@ namespace Speckle.Serialisation
           DetachLineage.RemoveAt(DetachLineage.Count - 1);
         }
 
-        if (ReferenceTracker.ContainsKey(Lineage[Lineage.Count - 1]))
+        if (Transport != null && ReferenceTracker.ContainsKey(Lineage[Lineage.Count - 1]))
           jo.Add("__tree", JToken.FromObject(ReferenceTracker[Lineage[Lineage.Count - 1]]));
 
         Parsed.Add(Lineage[Lineage.Count - 1]);
@@ -279,15 +282,7 @@ namespace Speckle.Serialisation
 
         if (DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1])
         {
-          var stringifiedObject = jo.ToString();
-
-          // Stores/saves the object in the provided transports.
-          // If an actual Transport is provided (besides the session transport),
-          // the memory transport will just store the hash of the object; otherwise,
-          // it will store the full serialized object. 
-
-          SessionTransport.SaveObject(Lineage[Lineage.Count - 1], Transport == null ? stringifiedObject : Lineage[Lineage.Count - 1]);
-          Transport?.SaveObject(Lineage[Lineage.Count - 1], stringifiedObject);
+          Transport?.SaveObject(Lineage[Lineage.Count - 1], jo.ToString());
         }
 
         // Pop lineage tracker
@@ -304,7 +299,7 @@ namespace Speckle.Serialisation
         JArray arr = new JArray();
         foreach (var arrValue in ((IEnumerable)value))
         {
-          if (arrValue is Base && DetachLineage[DetachLineage.Count - 1])
+          if (Transport != null && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var reference = new Reference() { referencedId = ((Base)arrValue).hash };
             TrackReferenceInTree(reference.referencedId);
@@ -327,7 +322,7 @@ namespace Speckle.Serialisation
         foreach (DictionaryEntry kvp in dict)
         {
           JToken jToken;
-          if (kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
+          if (Transport != null && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var reference = new Reference() { referencedId = ((Base)kvp.Value).hash };
             TrackReferenceInTree(reference.referencedId);
@@ -351,158 +346,6 @@ namespace Speckle.Serialisation
 
     #endregion
 
-  }
-
-  internal static class SerializationUtilities
-  {
-    #region Getting Types
-
-    private static Dictionary<string, Type> cachedTypes = new Dictionary<string, Type>();
-
-    internal static Type GetType(string objFullType)
-    {
-      var objectTypes = objFullType.Split(':').Reverse();
-
-      if (cachedTypes.ContainsKey(objectTypes.First()))
-        return cachedTypes[objectTypes.First()];
-
-      foreach (var typeName in objectTypes)
-      {
-        var type = KitManager.Types.FirstOrDefault(tp => tp.FullName == typeName);
-        if (type != null)
-        {
-          cachedTypes[typeName] = type;
-          return type;
-        }
-      }
-
-      return typeof(Base);
-    }
-
-    #endregion
-
-    #region value handling
-
-    internal static object HandleValue(JToken value, Newtonsoft.Json.JsonSerializer serializer, JsonProperty jsonProperty = null, string TypeDiscriminator = "_type")
-    {
-      if (value is JValue)
-      {
-        return ((JValue)value).Value;
-      }
-
-      if (value is JArray)
-      {
-        if (jsonProperty != null && jsonProperty.PropertyType.GetConstructor(Type.EmptyTypes) != null)
-        {
-          var arr = jsonProperty != null ? Activator.CreateInstance(jsonProperty.PropertyType) : new List<object>();
-          foreach (var val in ((JArray)value))
-          {
-            ((IList)arr).Add(HandleValue(val, serializer));
-          }
-          return arr;
-        }
-        else if (jsonProperty != null)
-        {
-          var arr = Activator.CreateInstance(typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType()));
-          var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType(), ((JArray)value).Count);
-
-          foreach (var val in ((JArray)value))
-          {
-            ((IList)arr).Add(Convert.ChangeType(HandleValue(val, serializer), jsonProperty.PropertyType.GetElementType()));
-          }
-
-          ((IList)arr).CopyTo(actualArr, 0);
-          return actualArr;
-        }
-        else
-        {
-          var arr = new List<object>();
-          foreach (var val in ((JArray)value))
-          {
-            arr.Add(HandleValue(val, serializer));
-          }
-          return arr;
-        }
-      }
-
-      if (value is JObject)
-      {
-        if (((JObject)value).Property(TypeDiscriminator) != null)
-        {
-          return value.ToObject<Base>(serializer);
-        }
-
-        var dict = jsonProperty != null ? Activator.CreateInstance(jsonProperty.PropertyType) : new Dictionary<string, object>();
-        foreach (var prop in ((JObject)value))
-        {
-          object key = prop.Key;
-          if (jsonProperty != null)
-            key = Convert.ChangeType(prop.Key, jsonProperty.PropertyType.GetGenericArguments()[0]);
-          ((IDictionary)dict)[key] = HandleValue(prop.Value, serializer);
-        }
-        return dict;
-      }
-      return null;
-    }
-
-    #endregion
-
-    #region Abstract Handling
-
-    private static Dictionary<string, Type> cachedAbstractTypes = new Dictionary<string, Type>();
-
-    internal static object HandleAbstractOriginalValue(JToken jToken, string assemblyQualifiedName, Newtonsoft.Json.JsonSerializer serializer)
-    {
-      if (cachedAbstractTypes.ContainsKey(assemblyQualifiedName))
-        return jToken.ToObject(cachedAbstractTypes[assemblyQualifiedName]);
-
-      var pieces = assemblyQualifiedName.Split(',').Select(s => s.Trim()).ToArray();
-
-      var myAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(ass => ass.GetName().Name == pieces[1]);
-      if (myAssembly == null) throw new Exception("Could not load abstract object's assembly.");
-
-      var myType = myAssembly.GetType(pieces[0]);
-      if (myType == null) throw new Exception("Could not load abstract object's assembly.");
-
-      cachedAbstractTypes[assemblyQualifiedName] = myType;
-
-      return jToken.ToObject(myType);
-    }
-
-    #endregion
-  }
-
-  internal static class CallSiteCache
-  {
-    // Adapted from the answer to 
-    // https://stackoverflow.com/questions/12057516/c-sharp-dynamicobject-dynamic-properties
-    // by jbtule, https://stackoverflow.com/users/637783/jbtule
-    // And also
-    // https://github.com/mgravell/fast-member/blob/master/FastMember/CallSiteCache.cs
-    // by Marc Gravell, https://github.com/mgravell
-
-    private static readonly Dictionary<string, CallSite<Func<CallSite, object, object, object>>> setters
-      = new Dictionary<string, CallSite<Func<CallSite, object, object, object>>>();
-
-    public static void SetValue(string propertyName, object target, object value)
-    {
-      CallSite<Func<CallSite, object, object, object>> site;
-
-      lock (setters)
-      {
-        if (!setters.TryGetValue(propertyName, out site))
-        {
-          var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetMember(CSharpBinderFlags.None,
-               propertyName, typeof(CallSiteCache),
-               new List<CSharpArgumentInfo>{
-                   CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
-                   CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)});
-          setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(binder);
-        }
-      }
-
-      site.Target(site, target, value);
-    }
   }
 
 }

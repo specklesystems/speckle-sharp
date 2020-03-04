@@ -15,8 +15,6 @@ namespace Speckle.Serialisation
 
     public JsonSerializerSettings ConversionSettings;
 
-    //public MemoryTransport DefaultTransport = new MemoryTransport();
-
     public JsonConverter()
     {
       Converter = new BaseObjectSerializer();
@@ -34,56 +32,55 @@ namespace Speckle.Serialisation
       };
     }
 
+    /// <summary>
+    /// Fully serializes an object, and returns its string representation.
+    /// </summary>
+    /// <param name="base"></param>
+    /// <returns></returns>
     public string Serialize(Base @base)
     {
       Converter.ResetAndInitialize();
-      Converter.SessionTransport = new MemoryTransport();
-
-      JsonConvert.SerializeObject(@base, ConversionSettings);
-
-      return "[" + String.Join(",", Converter.SessionTransport.GetAllObjects()) + "]";
+      return JsonConvert.SerializeObject(@base, ConversionSettings);
     }
-
+    
+    /// <summary>
+    /// Serializes an object, and persists its constituent parts via the provided transport.
+    /// </summary>
+    /// <param name="base"></param>
+    /// <param name="transport"></param>
+    /// <returns></returns>
     public string SerializeAndSave(Base @base, ITransport transport)
     {
       Converter.ResetAndInitialize();
-      Converter.SessionTransport = new MemoryTransport();
-      Converter.Transport = new MemoryTransport(); // HACK, to remove
+      Converter.Transport = transport;
 
-      JsonConvert.SerializeObject(@base, ConversionSettings);
-
-      return JsonConvert.SerializeObject(Converter.SessionTransport.GetAllObjects());
+      return JsonConvert.SerializeObject(@base, ConversionSettings);
     }
 
-    public IEnumerable<Base> Deserialize(string objects)
+    /// <summary>
+    /// Deserializes a fully serialized object. If any references are present, it will fail.
+    /// </summary>
+    /// <param name="object"></param>
+    /// <returns></returns>
+    public Base Deserialize(string @object)
     {
       Converter.ResetAndInitialize();
-      Converter.SessionTransport = new MemoryTransport();
-
-      var jarr = JArray.Parse(objects);
-
-      var test = JsonConvert.DeserializeObject<IEnumerable<Base>>(objects, ConversionSettings);
-
-      // TODO: Hydrate memory transport from pre-parsing of the string
-
-      return null;
+      return JsonConvert.DeserializeObject<Base>(@object, ConversionSettings);
     }
 
-    public IEnumerable<Base> DeserializeAndGet(string objects, ITransport transport)
+    /// <summary>
+    /// Deserializes an object, and gets its constituent parts via the provided transport.
+    /// </summary>
+    /// <param name="object"></param>
+    /// <param name="transport"></param>
+    /// <returns></returns>
+    public Base DeserializeAndGet(string @object, ITransport transport)
     {
       Converter.ResetAndInitialize();
-      Converter.SessionTransport = new MemoryTransport();
-      Converter.Transport = new MemoryTransport(); // HACK, to remove
+      Converter.Transport = transport;
 
-      //TODO
-      return null;
+      return JsonConvert.DeserializeObject<Base>(@object, ConversionSettings);
     }
-  }
-
-  class IntermediateObjectState
-  {
-    public string hash;
-    public string @object;
   }
 
 }

@@ -63,6 +63,7 @@ namespace Speckle.Models
   public class Reference
   {
     public string referencedId { get; set; }
+    public string speckle_type = "reference";
 
     public Reference() { }
   }

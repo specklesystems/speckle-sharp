@@ -5,6 +5,7 @@ using Speckle.Models;
 using System.Collections.Generic;
 using Speckle.Kits;
 using System.Linq;
+using Speckle.Transports;
 
 namespace Tests
 {
@@ -21,22 +22,33 @@ namespace Tests
     }
 
     [Fact]
-    public void Test1()
+    public void SimpleSerialization()
     {
       var serializer = new JsonConverter();
 
       var table = new DiningTable();
-      var fixture = new TableLegFixture();
-
-      ((dynamic)table).RANDOM = new TableLegFixture();
+      ((dynamic)table)["@wonkyVariable_Name"] = new TableLegFixture();
 
       var result = serializer.Serialize(table);
-      var copy = result;
-
-      var copyThree = serializer.SerializeAndSave(table, null);
-      var copyFour = copyThree;
 
       var test = serializer.Deserialize(result);
+
+      Assert.Equal(test.hash, table.hash);
+    }
+
+    [Fact]
+    public void TransportSerialization()
+    {
+      var transport = new MemoryTransport();
+      var serializer = new JsonConverter();
+
+      var table = new DiningTable();
+
+      var result = serializer.SerializeAndSave(table, transport);
+
+      var test = serializer.DeserializeAndGet(result, transport);
+
+      Assert.Equal(test.hash, table.hash);
     }
   }
 }
