@@ -75,6 +75,21 @@ namespace Tests
       Assert.Equal(test.hash, table.hash);
     }
 
+    [Fact]
+    public void DynamicDispatchment()
+    {
+      var pt = new Point(1, 2, 3);
+      ((dynamic)pt)["@detach_me"] = new Point(3, 4, 5);
+
+      var transport = new MemoryTransport();
+      var serializer = new JsonConverter();
+
+      var result = serializer.SerializeAndSave(pt, transport);
+
+      Assert.Equal(2, transport.Objects.Count);
+
+    }
+
   }
 
   public class Hashing

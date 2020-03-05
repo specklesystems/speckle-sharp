@@ -247,12 +247,16 @@ namespace Speckle.Serialisation
           if (property != null)
           {
             var attrs = property.AttributeProvider.GetAttributes(typeof(DetachProperty), true);
-            if (attrs.Count > 0 || prop.StartsWith("@"))
+            if (attrs.Count > 0)
+            {
               DetachLineage.Add(((DetachProperty)attrs[0]).Detachable);
+            }
             else
+            {
               DetachLineage.Add(false);
+            }
           }
-          else if (prop.EndsWith("__")) // Convention check for dynamically added properties. Is it really needed?
+          else if (prop.StartsWith("@")) // Convention check for dynamically added properties.
             DetachLineage.Add(true);
           else
             DetachLineage.Add(false);

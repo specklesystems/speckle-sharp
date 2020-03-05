@@ -8,10 +8,15 @@ namespace Speckle.Models
 {
 
   /// <summary>
-  /// Base class implementing a bunch of nice dynamic object methods. Do not use directly unless you know what you're doing :)
+  /// Base class implementing a bunch of nice dynamic object methods, like adding and removing props dynamically. Makes c# feel like json.
+  /// <para>Orginally adapted from Rick Strahl 🤘</para>
+  /// <para>https://weblog.west-wind.com/posts/2012/feb/08/creating-a-dynamic-extensible-c-expando-object</para>
   /// </summary>
   public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   {
+    /// <summary>
+    /// The actual property bag, where dynamically added props are stored.
+    /// </summary>
     private Dictionary<string, object> properties = new Dictionary<string, object>();
 
     public DynamicBase()
@@ -19,17 +24,37 @@ namespace Speckle.Models
 
     }
 
+    /// <summary>
+    /// Gets properties via the dot syntax.
+    /// <para><pre>((dynamic)myObject).superProperty;</pre></para>
+    /// </summary>
+    /// <param name="binder"></param>
+    /// <param name="result"></param>
+    /// <returns></returns>
     public override bool TryGetMember(GetMemberBinder binder, out object result)
     {
       return (properties.TryGetValue(binder.Name, out result));
     }
 
+    /// <summary>
+    /// Sets properties via the dot syntax.
+    /// <para><pre>((dynamic)myObject).superProperty = something;</pre></para>
+    /// </summary>
+    /// <param name="binder"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
     public override bool TrySetMember(SetMemberBinder binder, object value)
     {
       properties[binder.Name] = value;
       return true;
     }
 
+    /// <summary>
+    /// Sets and gets properties using the key accessor pattern. E.g.:
+    /// <para><pre>((dynamic)myObject)["superProperty"] = 42;</pre></para>
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
     public object this[string key]
     {
       get
@@ -69,6 +94,10 @@ namespace Speckle.Models
       }
     }
 
+    /// <summary>
+    /// Gets all of the property names on this class, dynamic or not.
+    /// </summary>
+    /// <returns></returns>
     public override IEnumerable<string> GetDynamicMemberNames()
     {
       var names = new List<string>();
@@ -82,7 +111,7 @@ namespace Speckle.Models
     }
 
     /// <summary>
-    /// Gets the names of the defined class properties
+    /// Gets the names of the defined class properties (typed).
     /// </summary>
     /// <returns></returns>
     public IEnumerable<string> GetInstanceMembers()
@@ -96,7 +125,7 @@ namespace Speckle.Models
     }
 
     /// <summary>
-    /// Gets the dynamically added properties
+    /// Gets the dynamically added property names only.
     /// </summary>
     /// <returns></returns>
     public IEnumerable<string> GetDynamicMembers()
