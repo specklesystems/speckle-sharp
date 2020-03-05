@@ -39,6 +39,9 @@ namespace Speckle.Transports
     }
   }
 
+  /// <summary>
+  /// An in memory storage of speckle objects.
+  /// </summary>
   public class MemoryTransport : ITransport
   {
     public Dictionary<string, string> Objects;
@@ -82,6 +85,9 @@ namespace Speckle.Transports
     }
   }
 
+  /// <summary>
+  /// A transport that writes to disk, under a specified file path.
+  /// </summary>
   public class DiskTransport : ITransport
   {
     public string RootPath { get; set; }
@@ -89,7 +95,7 @@ namespace Speckle.Transports
     /// <summary>
     /// Creates a transport that writes to disk, in the specified file path. Files are saved in folders created from the first two chars of the hash.
     /// </summary>
-    /// <param name="path">If left null, defaults to the a "SpeckleObjectCache" folder in the current environment's ApplicationData location.</param>
+    /// <param name="path">If left null, defaults to a "SpeckleObjectCache" folder in the current environment's ApplicationData location.</param>
     public DiskTransport(string path = null)
     {
       if (path == null)
@@ -100,7 +106,11 @@ namespace Speckle.Transports
 
     public string GetObject(string hash)
     {
-      throw new NotImplementedException();
+      var (dirPath, filePath) = DirFileFromHash(hash);
+      if (File.Exists(filePath))
+        return File.ReadAllText(filePath);
+
+      throw new Exception($"Could not find the specified object ({filePath}).");
     }
 
     public void SaveObject(string hash, string serializedObject)
@@ -110,9 +120,14 @@ namespace Speckle.Transports
       if (File.Exists(filePath)) return;
       if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
 
-      File.WriteAllText(filePath, serializedObject);
+      File.WriteAllTextAsync(filePath, serializedObject);
     }
 
+    /// <summary>
+    /// Internal method used to split hashes into file paths. Returns a tuple containing the path to the subfolder and the full file path.
+    /// </summary>
+    /// <param name="hash"></param>
+    /// <returns>A tuple containing the path to the subfolder and the full file path.</returns>
     (string, string) DirFileFromHash(string hash)
     {
       var subFolder = hash.Substring(0, 2);

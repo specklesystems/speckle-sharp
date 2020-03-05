@@ -92,17 +92,17 @@ namespace Speckle.Serialisation
       if (reader.TokenType == JsonToken.Null)
         return null;
 
+      // Check if we passed in an array, rather than an object.
       if (reader.TokenType == JsonToken.StartArray)
       {
         var list = new List<Base>();
         var jarr = JArray.Load(reader);
 
-        foreach (var val in ((JArray)jarr))
+        foreach (var val in jarr)
         {
           var whatever = SerializationUtilities.HandleValue(val, serializer);
           list.Add(whatever as Base);
         }
-
         return list;
       }
 
@@ -112,8 +112,9 @@ namespace Speckle.Serialisation
         return null;
 
       var discriminator = Extensions.Value<string>(jObject.GetValue(TypeDiscriminator));
-      
-      if (discriminator == "reference" )
+
+      // Check for references.
+      if (discriminator == "reference")
       {
         var id = Extensions.Value<string>(jObject.GetValue("referencedId"));
         string str;
@@ -231,7 +232,7 @@ namespace Speckle.Serialisation
         foreach (var prop in propertyNames)
         {
           // Ignore properties starting with a double underscore.
-          if (prop.StartsWith("__", StringComparison.CurrentCulture)) continue;
+          if (prop.StartsWith("__")) continue;
 
           var property = contract.Properties.GetClosestMatchProperty(prop);
 
@@ -242,11 +243,11 @@ namespace Speckle.Serialisation
           object propValue = obj[prop];
           if (propValue == null) continue;
 
-          // Check if this property is marked for detachment.
+          // Check if this property is marked for detachment: either by the presence of "@" at the beginning of the name, or by the presence of a DetachProperty attribute on a typed property.
           if (property != null)
           {
             var attrs = property.AttributeProvider.GetAttributes(typeof(DetachProperty), true);
-            if (attrs.Count > 0)
+            if (attrs.Count > 0 || prop.StartsWith("@"))
               DetachLineage.Add(((DetachProperty)attrs[0]).Detachable);
             else
               DetachLineage.Add(false);

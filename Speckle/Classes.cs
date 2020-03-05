@@ -24,9 +24,11 @@ namespace Speckle.Models
 
     public string description { get; set; }
 
-    public Revision() : base() { }
+    public List<string> tags { get; set; } = new List<string>();
 
-    public override string hash => base.hash; 
+    public override string hash => base.hash;
+
+    public Revision() : base() { }
   }
 
   /// <summary>

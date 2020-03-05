@@ -87,7 +87,7 @@ namespace Speckle.Serialisation
 
       if (value is JObject)
       {
-        if (((JObject)value).Property(TypeDiscriminator) != null || ((JObject)value).Property("referencedId") != null)
+        if (((JObject)value).Property(TypeDiscriminator) != null)
         {
           return value.ToObject<Base>(serializer);
         }
