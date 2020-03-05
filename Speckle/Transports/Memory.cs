@@ -18,8 +18,6 @@ namespace Speckle.Transports
       throw new NotImplementedException();
     }
 
-    //public ServerTransport ServerTransport; // TODO! 
-
     public string GetObject(string hash)
     {
       throw new NotImplementedException();
@@ -86,16 +84,18 @@ namespace Speckle.Transports
 
   public class DiskTransport : ITransport
   {
+    public string RootPath { get; set; }
+
+    /// <summary>
+    /// Creates a transport that writes to disk, in the specified file path. Files are saved in folders created from the first two chars of the hash.
+    /// </summary>
+    /// <param name="path">If left null, defaults to the a "SpeckleObjectCache" folder in the current environment's ApplicationData location.</param>
     public DiskTransport(string path = null)
     {
       if (path == null)
-        path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SpeckleObjectCache");
-      Directory.CreateDirectory(path);
-    }
+        RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SpeckleObjectCache");
 
-    public IEnumerable<string> GetAllObjects()
-    {
-      throw new NotImplementedException();
+      Directory.CreateDirectory(RootPath);
     }
 
     public string GetObject(string hash)
@@ -103,19 +103,22 @@ namespace Speckle.Transports
       throw new NotImplementedException();
     }
 
-    public IEnumerable<string> GetObjects(IEnumerable<string> id)
-    {
-      throw new NotImplementedException();
-    }
-
     public void SaveObject(string hash, string serializedObject)
     {
-      throw new NotImplementedException();
+      var (dirPath, filePath) = DirFileFromHash(hash);
+
+      if (File.Exists(filePath)) return;
+      if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
+
+      File.WriteAllText(filePath, serializedObject);
     }
 
-    public void SaveObjects(Dictionary<string, string> objects)
+    (string, string) DirFileFromHash(string hash)
     {
-      throw new NotImplementedException();
+      var subFolder = hash.Substring(0, 2);
+      var filename = hash.Substring(2);
+
+      return (Path.Combine(RootPath, subFolder), Path.Combine(RootPath, subFolder, filename));
     }
   }
 }

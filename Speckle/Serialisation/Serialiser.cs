@@ -9,12 +9,18 @@ using Speckle.Transports;
 
 namespace Speckle.Serialisation
 {
+  /// <summary>
+  /// Main serialisation (and persistance) class for speckle objects. Exposes several methods that help with serialisation, simultaneous serialisation and persistance, as well as deserialisation, and simultaneous deserialization and retrieval of objects.
+  /// </summary>
   public class JsonConverter
   {
     public BaseObjectSerializer Converter;
 
     public JsonSerializerSettings ConversionSettings;
 
+    /// <summary>
+    /// Initializes the converter, and sets some default values for newtonsoft. This class exposes several methods that help with serialisation, simultaneous serialisation and persistance, as well as deserialisation, and simultaneous deserialization and retrieval of objects.
+    /// </summary>
     public JsonConverter()
     {
       Converter = new BaseObjectSerializer();
@@ -35,26 +41,38 @@ namespace Speckle.Serialisation
     /// <summary>
     /// Fully serializes an object, and returns its string representation.
     /// </summary>
-    /// <param name="base"></param>
+    /// <param name="objects"></param>
     /// <returns></returns>
-    public string Serialize(Base @base)
+    public string Serialize(Base objects)
     {
       Converter.ResetAndInitialize();
-      return JsonConvert.SerializeObject(@base, ConversionSettings);
+      return JsonConvert.SerializeObject(objects, ConversionSettings);
+    }
+
+    public IEnumerable<string> Serialize(IEnumerable<Base> @objects)
+    {
+      foreach (var obj in objects)
+        yield return Serialize(obj);
     }
     
     /// <summary>
     /// Serializes an object, and persists its constituent parts via the provided transport.
     /// </summary>
-    /// <param name="base"></param>
+    /// <param name="object"></param>
     /// <param name="transport"></param>
     /// <returns></returns>
-    public string SerializeAndSave(Base @base, ITransport transport)
+    public string SerializeAndSave(Base @object, ITransport transport)
     {
       Converter.ResetAndInitialize();
       Converter.Transport = transport;
 
-      return JsonConvert.SerializeObject(@base, ConversionSettings);
+      return JsonConvert.SerializeObject(@object, ConversionSettings);
+    }
+
+    public IEnumerable<string> SerializeAndSave(IEnumerable<Base> objects, ITransport transport)
+    {
+      foreach (var obj in objects)
+        yield return SerializeAndSave(obj, transport);
     }
 
     /// <summary>

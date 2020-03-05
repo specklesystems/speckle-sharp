@@ -11,14 +11,14 @@ namespace Speckle.Transports
 
     public void SaveObject(string hash, string serializedObject);
 
-    public void SaveObjects(Dictionary<string, string> @objects);
+    //public void SaveObjects(Dictionary<string, string> @objects);
 
     //public Task GetObjectsAsync(IEnumerable<string> id);
 
     public string GetObject(string hash);
 
-    public IEnumerable<string> GetObjects(IEnumerable<string> hashes);
+    //public IEnumerable<string> GetObjects(IEnumerable<string> hashes);
 
-    public IEnumerable<string> GetAllObjects();
+    //public IEnumerable<string> GetAllObjects();
   }
 }
