@@ -7,6 +7,7 @@ using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using Speckle.Core;
 using Speckle.Kits;
 using Speckle.Models;
 using Speckle.Transports;
@@ -34,6 +35,8 @@ namespace Speckle.Serialisation
     /// The Transport - if present, the detachment of objects is happening.
     /// </summary>
     public ITransport Transport { get; set; }
+
+    private MemoryTransport InnerReferenceTracker { get; set; }
 
     #region Write Json Helper Properties
 
@@ -81,13 +84,15 @@ namespace Speckle.Serialisation
       ReferenceTracker = new Dictionary<string, HashSet<string>>();
       Parsed = new HashSet<string>();
       CurrentParentObjectHash = "";
+
+      InnerReferenceTracker = new MemoryTransport();
     }
 
     public override bool CanConvert(Type objectType) => true;
 
     #region Read Json
 
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
     {
       if (reader.TokenType == JsonToken.Null)
         return null;
@@ -202,7 +207,7 @@ namespace Speckle.Serialisation
     // The important things to remember is that serialization goes depth first:
     // The first object to get fully serialised is the first nested one, with
     // the parent object being last. 
-    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    public override void WriteJson(JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer)
     {
       if (value == null) return;
 
@@ -210,15 +215,6 @@ namespace Speckle.Serialisation
       {
         var obj = value as Base;
         CurrentParentObjectHash = obj.hash;
-
-        // TODO: figure out circular references, or at least handle them somehow.
-        //if (Parsed.Contains(CurrentParentObjectHash))
-        //{
-        //  //var reference = new Reference() { referencedId = CurrentParentObjectHash };
-        //  //TrackReferenceInTree(reference.referencedId);
-        //  //jo.Add(prop, JToken.FromObject(reference));
-        //  return;
-        //}
 
         // Append to lineage tracker
         Lineage.Add(CurrentParentObjectHash);
@@ -267,6 +263,7 @@ namespace Speckle.Serialisation
             var reference = new Reference() { referencedId = ((Base)propValue).hash };
             TrackReferenceInTree(reference.referencedId);
             jo.Add(prop, JToken.FromObject(reference));
+
             JToken.FromObject(propValue, serializer); // Trigger next. 
           }
           else
@@ -281,14 +278,14 @@ namespace Speckle.Serialisation
         if (Transport != null && ReferenceTracker.ContainsKey(Lineage[Lineage.Count - 1]))
           jo.Add("__tree", JToken.FromObject(ReferenceTracker[Lineage[Lineage.Count - 1]]));
 
-        Parsed.Add(Lineage[Lineage.Count - 1]);
-
         jo.WriteTo(writer);
 
         if (DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1])
         {
           Transport?.SaveObject(Lineage[Lineage.Count - 1], jo.ToString());
         }
+
+        Parsed.Add(Lineage[Lineage.Count - 1]);
 
         // Pop lineage tracker
         Lineage.RemoveAt(Lineage.Count - 1);

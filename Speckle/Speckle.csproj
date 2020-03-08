@@ -15,5 +15,6 @@
     <Folder Include="Http\" />
     <Folder Include="Transports\" />
     <Folder Include="Kits\" />
+    <Folder Include="Core\" />
   </ItemGroup>
 </Project>

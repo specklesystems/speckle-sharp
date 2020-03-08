@@ -8,32 +8,47 @@ namespace Speckle.Transports
   /// </summary>
   public class DiskTransport : ITransport
   {
+    /// <summary>
+    /// The path were files will be saved.
+    /// </summary>
     public string RootPath { get; set; }
 
     /// <summary>
-    /// Creates a transport that writes to disk, in the specified file path. Files are saved in folders created from the first two chars of the hash.
+    /// Flags wether to split the path or not.
     /// </summary>
-    /// <param name="path">If left null, defaults to a "SpeckleObjectCache" folder in the current environment's ApplicationData location.</param>
-    public DiskTransport(string path = null)
+    public bool SplitPath { get; set; }
+
+    /// <summary>
+    /// Creates a transport that writes to disk, in the specified file path.
+    /// </summary>
+    /// <param name="basePath">The current environment's ApplicationData location.</param>
+    /// <param name="applicationName">Defaults to "Speckle".</param>
+    /// <param name="scope">Defaults to "Objects".</param>
+    /// <param name="splitPath">Flags wether to split the object's location by first chars. E.g., an object with an id of "ABCDEF" will be stored in "AB/CD/EF", with "EF" being the actual file.</param>
+    public DiskTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects", bool splitPath = true)
     {
-      if (path == null)
-        RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SpeckleObjectCache");
+      if (basePath == null)
+        basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+      RootPath = Path.Combine(basePath, applicationName, scope);
 
       Directory.CreateDirectory(RootPath);
+
+      this.SplitPath = splitPath;
     }
 
-    public string GetObject(string hash)
+    public string GetObject(string objectId)
     {
-      var (dirPath, filePath) = DirFileFromHash(hash);
+      var (dirPath, filePath) = DirFileFromObjectId(objectId);
       if (File.Exists(filePath))
         return File.ReadAllText(filePath);
 
       throw new Exception($"Could not find the specified object ({filePath}).");
     }
 
-    public void SaveObject(string hash, string serializedObject)
+    public void SaveObject(string objectId, string serializedObject)
     {
-      var (dirPath, filePath) = DirFileFromHash(hash);
+      var (dirPath, filePath) = DirFileFromObjectId(objectId);
 
       if (File.Exists(filePath)) return;
       if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
@@ -46,12 +61,18 @@ namespace Speckle.Transports
     /// </summary>
     /// <param name="hash"></param>
     /// <returns>A tuple containing the path to the subfolder and the full file path.</returns>
-    (string, string) DirFileFromHash(string hash)
+    (string, string) DirFileFromObjectId(string hash)
     {
-      var subFolder = hash.Substring(0, 2);
-      var filename = hash.Substring(2);
+      if (SplitPath == false)
+      {
+        return (RootPath, hash);
+      }
 
-      return (Path.Combine(RootPath, subFolder), Path.Combine(RootPath, subFolder, filename));
+      var subFolder = hash.Substring(0, 2);
+      var secondSubFolder = hash.Substring(2, 2);
+      var filename = hash.Substring(4);
+
+      return (Path.Combine(RootPath, subFolder, secondSubFolder), Path.Combine(RootPath, subFolder, secondSubFolder, filename));
     }
   }
 }

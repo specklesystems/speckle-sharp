@@ -12,7 +12,7 @@ namespace Speckle.Serialisation
   /// <summary>
   /// Main serialisation (and persistance) class for speckle objects. Exposes several methods that help with serialisation, simultaneous serialisation and persistance, as well as deserialisation, and simultaneous deserialization and retrieval of objects.
   /// </summary>
-  public class JsonConverter
+  public class Serializer
   {
     public BaseObjectSerializer Converter;
 
@@ -21,7 +21,7 @@ namespace Speckle.Serialisation
     /// <summary>
     /// Initializes the converter, and sets some default values for newtonsoft. This class exposes several methods that help with serialisation, simultaneous serialisation and persistance, as well as deserialisation, and simultaneous deserialization and retrieval of objects.
     /// </summary>
-    public JsonConverter()
+    public Serializer()
     {
       Converter = new BaseObjectSerializer();
       ConversionSettings = new JsonSerializerSettings()
@@ -33,7 +33,7 @@ namespace Speckle.Serialisation
 #else
         Formatting = Formatting.None,
 #endif
-        ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
         Converters = new List<Newtonsoft.Json.JsonConverter> { Converter }
       };
     }
@@ -71,8 +71,10 @@ namespace Speckle.Serialisation
 
     public IEnumerable<string> SerializeAndSave(IEnumerable<Base> objects, ITransport transport)
     {
+      List<string> results = new List<string>();
       foreach (var obj in objects)
-        yield return SerializeAndSave(obj, transport);
+        results.Add( SerializeAndSave(obj, transport) );
+      return results;
     }
 
     /// <summary>

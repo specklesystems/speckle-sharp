@@ -46,4 +46,9 @@ namespace Speckle.Models
       Save = _save;
     }
   }
+
+  /// <summary>
+  /// Flags wether to ignore this property when generating the hash of an object.
+  /// </summary>
+  public class ExcludeHashing : Attribute { }
 }

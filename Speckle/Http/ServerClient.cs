@@ -11,7 +11,7 @@ namespace Speckle.Http
   {
     public HttpClient HttpClient;
 
-    public ServerClient(string baseUrl, string ApiToken)
+    public ServerClient(string baseUrl, string ApiToken, int timeoutMinutes = 1)
     {
       HttpClient = new HttpClient(new HttpClientHandler()
       {
@@ -24,7 +24,7 @@ namespace Speckle.Http
       HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
       HttpClient.DefaultRequestHeaders.Add("Authorization", ApiToken);
 
-      HttpClient.Timeout = TimeSpan.FromMinutes(1);
+      HttpClient.Timeout = TimeSpan.FromMinutes(timeoutMinutes);
     }
 
     public async void SaveObjects(IEnumerable<string> objects)

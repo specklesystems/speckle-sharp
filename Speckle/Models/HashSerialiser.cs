@@ -8,7 +8,7 @@ using Newtonsoft.Json.Serialization;
 namespace Speckle.Models
 {
   /// <summary>
-  /// Serialiser used to hash objects.
+  /// Serialiser used to hash objects - quick and dirty. 
   /// </summary>
   internal class HashSerialiser : JsonConverter
   {
@@ -61,6 +61,13 @@ namespace Speckle.Models
           // Ignore properties decorated with [JsonIgnore].
           var property = contract?.Properties.GetClosestMatchProperty(prop);
           if (property != null && property.Ignored) continue;
+
+          // Ignore properties flagged with [IgnoreAtHashing]
+          if (property != null)
+          {
+            var attrs = property.AttributeProvider.GetAttributes(typeof(ExcludeHashing), true);
+            if (attrs.Count > 0) continue;
+          }
 
           object propValue = obj[prop];
           if (propValue == null) continue;

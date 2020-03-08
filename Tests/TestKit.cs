@@ -7,13 +7,33 @@ using Speckle.Models;
 
 namespace Tests
 {
+
+  /// <summary>
+  /// Class used to test the abstract object.
+  /// </summary>
+  public class NonKitClass
+  {
+    public string TestProp { get; set; } = "WOW THIS IS NOT A DRILL";
+
+    public List<int> Numbers { get; set; } = new List<int>();
+
+    //public Point MixedUp { get; set; } = new Point(0, 1, 0);
+
+    public NonKitClass()
+    {
+    }
+  }
+
+  /// <summary>
+  /// Simple speckle kit (no conversions) used in tests.
+  /// </summary>
   public class TestKit : ISpeckleKit
   {
     public IEnumerable<Type> Types => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
 
     public IEnumerable<Type> Converters => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Converter)));
 
-    public string Description => "Simple object model for basic geometry types.";
+    public string Description => "Simple object model for with some types for tests.";
 
     public string Name => nameof(TestKit);
 
@@ -38,6 +58,9 @@ namespace Tests
     [DetachProperty]
     public Tabletop Tabletop { get; set; }
 
+    [ExcludeHashing]
+    public string HashIngoredProp { get; set; } = "WOW";
+
     public string TableModel { get; set; } = "Sample Table";
 
     public DiningTable()
@@ -49,8 +72,6 @@ namespace Tests
       MoreLegs.Add(new TableLeg() { height = 10 });
 
       Tabletop = new Tabletop() { length = 200, width = 12, thickness = 3 };
-
-      //TableModel += " :: " + DateTime.Now;
     }
   }
 
