@@ -46,11 +46,11 @@ namespace Speckle.Transports
       throw new Exception($"Could not find the specified object ({filePath}).");
     }
 
-    public void SaveObject(string objectId, string serializedObject)
+    public void SaveObject(string objectId, string serializedObject, bool overwrite = false)
     {
       var (dirPath, filePath) = DirFileFromObjectId(objectId);
 
-      if (File.Exists(filePath)) return;
+      if (File.Exists(filePath) && !overwrite) return;
       if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
 
       File.WriteAllTextAsync(filePath, serializedObject);
@@ -59,18 +59,18 @@ namespace Speckle.Transports
     /// <summary>
     /// Internal method used to split hashes into file paths. Returns a tuple containing the path to the subfolder and the full file path.
     /// </summary>
-    /// <param name="hash"></param>
+    /// <param name="objectId"></param>
     /// <returns>A tuple containing the path to the subfolder and the full file path.</returns>
-    (string, string) DirFileFromObjectId(string hash)
+    (string, string) DirFileFromObjectId(string objectId)
     {
       if (SplitPath == false)
       {
-        return (RootPath, hash);
+        return (RootPath, Path.Combine(RootPath, objectId));
       }
 
-      var subFolder = hash.Substring(0, 2);
-      var secondSubFolder = hash.Substring(2, 2);
-      var filename = hash.Substring(4);
+      var subFolder = objectId.Substring(0, 2);
+      var secondSubFolder = objectId.Substring(2, 2);
+      var filename = objectId.Substring(4);
 
       return (Path.Combine(RootPath, subFolder, secondSubFolder), Path.Combine(RootPath, subFolder, secondSubFolder, filename));
     }

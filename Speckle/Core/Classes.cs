@@ -24,28 +24,6 @@ namespace Speckle.Core
     public CoreKit() { }
   }
 
-  //public class Revision : Base
-  //{
-  //  [DetachProperty]
-  //  public List<Base> objects { get; set; } = new List<Base>();
-
-  //  [ExcludeHashing]
-  //  public string name { get; set; }
-
-  //  [ExcludeHashing]
-  //  public string description { get; set; }
-
-  //  [ExcludeHashing]
-  //  public List<string> tags { get; set; } = new List<string>();
-
-  //  [ExcludeHashing]
-  //  public string previousRevisionHash { get; set; }
-
-  //  public override string hash => base.hash;
-
-  //  public Revision() : base() { }
-  //}
-
   /// <summary>
   /// Wrapper around other, thrid party, classes that are not coming from a speckle kit.
   /// <para>Serialization and deserialization of the base object happens through default Newtonsoft converters. If your object does not de/serialize correctly, this class will not prevent that from happening.</para>
