@@ -1,20 +1,19 @@
 ﻿using System;
 using Speckle.Kits;
-using NUnit.Framework;
-using System.Linq;
+using Xunit;
 
 namespace Tests
 {
   public class Kits
   {
-    [Test]
+    [Fact]
     public void KitsExist()
     {
       var kits = KitManager.Kits;
-      Assert.Greater(kits.Count(), 0);
+      Assert.NotEmpty(kits);
 
       var types = KitManager.Types;
-      Assert.Greater(types.Count(), 0);
+      Assert.NotEmpty(types);
     }
   }
 }

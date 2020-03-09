@@ -1,19 +1,27 @@
-﻿using Speckle.Models;
+﻿using Xunit;
+using Speckle.Models;
 using System.Collections.Generic;
 using Speckle.Core;
+using Xunit.Abstractions;
 using System.Diagnostics;
 using System;
-using NUnit.Framework;
 
 namespace Tests
 {
 
   public class Streams
   {
+    private readonly ITestOutputHelper output;
+
+    public Streams(ITestOutputHelper output)
+    {
+      this.output = output;
+    }
+
     // One stream id hardcoded, for less garbage creation
     string streamId = "b8efc2d5-d1f8-433d-82b3-9ae67a9d2aae";
 
-    [Test]
+    [Fact]
     public void CreateAndCommit()
     {
       var myModel = new Stream() { Id = streamId };
@@ -43,7 +51,7 @@ namespace Tests
     int progressCalls = 0;
     string secondStreamId = "b8efc2d5-d1f8-433d-82b3-9ae67a9d2aae";
 
-    [Test]
+    [Fact]
     public void StreamProgressEvents()
     {
       var stopWatch = new Stopwatch();
@@ -54,7 +62,7 @@ namespace Tests
       myModel.OnProgress += (sender, args) =>
       {
         if (progressCalls++ % 1000 == 0)
-          Console.WriteLine($"{args.scope}: {args.current} / {args.total}");
+          output.WriteLine($"{args.scope}: {args.current} / {args.total}");
 
         //Debug.Write($"{args.scope}: {args.current} / {args.total}");
         //Console.Write($"{args.scope}: {args.current} / {args.total}");
@@ -76,16 +84,16 @@ namespace Tests
 
       myModel.SetState(myState);
 
-      Console.WriteLine("");
-      Console.WriteLine($"Elapsed: {stopWatch.ElapsedMilliseconds}ms");
+      output.WriteLine("");
+      output.WriteLine($"Elapsed: {stopWatch.ElapsedMilliseconds}ms");
 
       myModel.Commit("lol");
 
-      Console.WriteLine($"Elapsed: {stopWatch.ElapsedMilliseconds}ms");
+      output.WriteLine($"Elapsed: {stopWatch.ElapsedMilliseconds}ms");
 
     }
 
-    [Test]
+    [Fact]
     public void LoadStreamLocal()
     {
       var myModel = new Stream() { Id = streamId };
@@ -106,9 +114,9 @@ namespace Tests
 
       Assert.NotNull(myOldStream.CurrentCommit);
 
-      Assert.Equals(3, myOldStream.Commits.Count);
+      Assert.Equal(3, myOldStream.Commits.Count);
 
-      Assert.Equals(latestRevisionId, myOldStream.Commits[myOldStream.Commits.Count - 1]);
+      Assert.Equal(latestRevisionId, myOldStream.Commits[myOldStream.Commits.Count - 1]);
     }
 
   }

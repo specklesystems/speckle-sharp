@@ -1,31 +1,38 @@
-﻿using Speckle.Serialisation;
+﻿using Xunit;
+using Speckle.Serialisation;
 using System.Collections.Generic;
 using Speckle.Kits;
 using Speckle.Core;
 using Speckle.Transports;
 using System.Diagnostics;
-using NUnit.Framework;
-using System;
+using Xunit.Abstractions;
 
 namespace Tests
 {
   public class Hashing
   {
 
-    [Test]
+    private readonly ITestOutputHelper output;
+
+    public Hashing(ITestOutputHelper output)
+    {
+      this.output = output;
+    }
+
+    [Fact]
     public void HashChangeCheck()
     {
       var table = new DiningTable();
       var secondTable = new DiningTable();
 
-      Assert.Equals(table.hash, secondTable.hash);
+      Assert.Equal(table.hash, secondTable.hash);
 
       ((dynamic)secondTable).testProp = "wonderful";
 
-      Assert.AreNotEqual(table.hash, secondTable.hash);
+      Assert.NotEqual(table.hash, secondTable.hash);
     }
 
-    [Test]
+    [Fact]
     public void IgnoredDynamicPropertiesCheck()
     {
       var table = new DiningTable();
@@ -33,20 +40,20 @@ namespace Tests
 
       ((dynamic)table).__testProp = "wonderful";
 
-      Assert.Equals(originalHash, table.hash);
+      Assert.Equal(originalHash, table.hash);
     }
 
-    [Test]
+    [Fact]
     public void IgnoreFlaggedProperties()
     {
       var table = new DiningTable();
       var h1 = table.hash;
       table.HashIngoredProp = "adsfghjkl";
 
-      Assert.Equals(h1, table.hash);
+      Assert.Equal(h1, table.hash);
     }
 
-    [Test]
+    [Fact]
     public void HashingPerformance()
     {
       var polyline = new Polyline();
@@ -66,7 +73,7 @@ namespace Tests
 
       var diff1 = stopWatch.ElapsedMilliseconds - stopWatchStep;
       Assert.True(diff1 < 200, $"Hashing shouldn't take that long ({diff1} ms) for the test object used.");
-      Console.WriteLine($"Big obj hash duration: {diff1} ms");
+      output.WriteLine($"Big obj hash duration: {diff1} ms");
 
       var pt = new Point() { X = 10, Y = 12, Z = 30 };
       stopWatchStep = stopWatch.ElapsedMilliseconds;
@@ -74,10 +81,10 @@ namespace Tests
 
       var diff2 = stopWatch.ElapsedMilliseconds - stopWatchStep;
       Assert.True(diff2 < 10, $"Hashing shouldn't take that long  ({diff2} ms)for the point object used.");
-      Console.WriteLine($"Small obj hash duration: {diff2} ms");
+      output.WriteLine($"Small obj hash duration: {diff2} ms");
     }
 
-    [Test]
+    [Fact]
     public void AbstractHashing()
     {
       var nk1 = new NonKitClass();
@@ -89,11 +96,11 @@ namespace Tests
       var abs1H = abs1.hash;
       var abs2H = abs2.hash;
 
-      Assert.AreNotEqual(abs1H, abs2H);
+      Assert.NotEqual(abs1H, abs2H);
 
       nk1.TestProp = "Wow";
 
-      Assert.AreNotEqual(abs1H, abs1.hash);
+      Assert.NotEqual(abs1H, abs1.hash);
     }
   }
 }

@@ -1,17 +1,24 @@
+using Xunit;
 using Speckle.Serialisation;
 using System.Collections.Generic;
 using Speckle.Kits;
 using Speckle.Core;
 using Speckle.Transports;
 using System.Diagnostics;
-using NUnit.Framework;
+using Xunit.Abstractions;
 
 namespace Tests
 {
   public class Serialization
   {
+    private readonly ITestOutputHelper output;
 
-    [Test]
+    public Serialization(ITestOutputHelper output)
+    {
+      this.output = output;
+    }
+
+    [Fact]
     public void SimpleSerialization()
     {
       var serializer = new Serializer();
@@ -23,7 +30,7 @@ namespace Tests
 
       var test = serializer.Deserialize(result);
 
-      Assert.Equals(test.hash, table.hash);
+      Assert.Equal(test.hash, table.hash);
 
       var polyline = new Polyline();
 
@@ -33,11 +40,11 @@ namespace Tests
       var strPoly = serializer.Serialize(polyline);
       var dePoly = serializer.Deserialize(strPoly);
 
-      Assert.Equals(polyline.hash, dePoly.hash);
+      Assert.Equal(polyline.hash, dePoly.hash);
 
     }
 
-    [Test]
+    [Fact]
     public void DiskTransportSerialization()
     {
       var transport = new DiskTransport();
@@ -49,10 +56,10 @@ namespace Tests
 
       var test = serializer.DeserializeAndGet(result, transport);
 
-      Assert.Equals(test.hash, table.hash);
+      Assert.Equal(test.hash, table.hash);
     }
 
-    [Test]
+    [Fact]
     public void MemoryTransportSerialization()
     {
       var transport = new MemoryTransport();
@@ -64,10 +71,10 @@ namespace Tests
 
       var test = serializer.DeserializeAndGet(result, transport);
 
-      Assert.Equals(test.hash, table.hash);
+      Assert.Equal(test.hash, table.hash);
     }
 
-    [Test]
+    [Fact]
     public void DynamicDispatchment()
     {
       var pt = new Point(1, 2, 3);
@@ -80,15 +87,15 @@ namespace Tests
 
       var result = serializer.SerializeAndSave(pt, transport);
 
-      Assert.Equals(2, transport.Objects.Count);
+      Assert.Equal(2, transport.Objects.Count);
 
       var deserialized = serializer.DeserializeAndGet(result, transport);
 
-      Assert.Equals(pt.hash, deserialized.hash);
-      Assert.Equals(((dynamic)pt).HelloWorld, "whatever");
+      Assert.Equal(pt.hash, deserialized.hash);
+      Assert.Equal(((dynamic)pt).HelloWorld, "whatever");
     }
 
-    [Test]
+    [Fact]
     public void AbstractObjectHandling()
     {
       var nk = new NonKitClass() { TestProp = "Hello", Numbers = new List<int>() { 1, 2, 3, 4, 5 } };
@@ -101,11 +108,11 @@ namespace Tests
       var abs_deserialized = serializer.Deserialize(abs_serialized);
       var abs_se_deserializes = serializer.Serialize(abs_deserialized);
 
-      Assert.Equals(abs.hash, abs_deserialized.hash);
-      Assert.Equals(abs.@base.GetType(), ((Abstract)abs_deserialized).@base.GetType());
+      Assert.Equal(abs.hash, abs_deserialized.hash);
+      Assert.Equal(abs.@base.GetType(), ((Abstract)abs_deserialized).@base.GetType());
     }
 
-    [Test]
+    [Fact]
     public void IgnoreCircularReferences()
     {
       var pt = new Point(1,2,3);
