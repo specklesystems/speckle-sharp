@@ -18,7 +18,7 @@ namespace Tests
       var table = new DiningTable();
       var secondTable = new DiningTable();
 
-      Assert.Equals(table.hash, secondTable.hash);
+      Assert.AreEqual(table.hash, secondTable.hash);
 
       ((dynamic)secondTable).testProp = "wonderful";
 
@@ -33,7 +33,7 @@ namespace Tests
 
       ((dynamic)table).__testProp = "wonderful";
 
-      Assert.Equals(originalHash, table.hash);
+      Assert.AreEqual(originalHash, table.hash);
     }
 
     [Test]
@@ -43,7 +43,7 @@ namespace Tests
       var h1 = table.hash;
       table.HashIngoredProp = "adsfghjkl";
 
-      Assert.Equals(h1, table.hash);
+      Assert.AreEqual(h1, table.hash);
     }
 
     [Test]

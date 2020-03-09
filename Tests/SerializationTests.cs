@@ -23,7 +23,7 @@ namespace Tests
 
       var test = serializer.Deserialize(result);
 
-      Assert.Equals(test.hash, table.hash);
+      Assert.AreEqual(test.hash, table.hash);
 
       var polyline = new Polyline();
 
@@ -33,7 +33,7 @@ namespace Tests
       var strPoly = serializer.Serialize(polyline);
       var dePoly = serializer.Deserialize(strPoly);
 
-      Assert.Equals(polyline.hash, dePoly.hash);
+      Assert.AreEqual(polyline.hash, dePoly.hash);
 
     }
 
@@ -49,7 +49,7 @@ namespace Tests
 
       var test = serializer.DeserializeAndGet(result, transport);
 
-      Assert.Equals(test.hash, table.hash);
+      Assert.AreEqual(test.hash, table.hash);
     }
 
     [Test]
@@ -64,7 +64,7 @@ namespace Tests
 
       var test = serializer.DeserializeAndGet(result, transport);
 
-      Assert.Equals(test.hash, table.hash);
+      Assert.AreEqual(test.hash, table.hash);
     }
 
     [Test]
@@ -80,12 +80,12 @@ namespace Tests
 
       var result = serializer.SerializeAndSave(pt, transport);
 
-      Assert.Equals(2, transport.Objects.Count);
+      Assert.AreEqual(2, transport.Objects.Count);
 
       var deserialized = serializer.DeserializeAndGet(result, transport);
 
-      Assert.Equals(pt.hash, deserialized.hash);
-      Assert.Equals(((dynamic)pt).HelloWorld, "whatever");
+      Assert.AreEqual(pt.hash, deserialized.hash);
+      Assert.AreEqual(((dynamic)pt).HelloWorld, "whatever");
     }
 
     [Test]
@@ -101,8 +101,8 @@ namespace Tests
       var abs_deserialized = serializer.Deserialize(abs_serialized);
       var abs_se_deserializes = serializer.Serialize(abs_deserialized);
 
-      Assert.Equals(abs.hash, abs_deserialized.hash);
-      Assert.Equals(abs.@base.GetType(), ((Abstract)abs_deserialized).@base.GetType());
+      Assert.AreEqual(abs.hash, abs_deserialized.hash);
+      Assert.AreEqual(abs.@base.GetType(), ((Abstract)abs_deserialized).@base.GetType());
     }
 
     [Test]

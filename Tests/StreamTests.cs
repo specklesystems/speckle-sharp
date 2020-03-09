@@ -53,7 +53,7 @@ namespace Tests
 
       myModel.OnProgress += (sender, args) =>
       {
-        if (progressCalls++ % 1000 == 0)
+        if (progressCalls++ % 100 == 0)
           Console.WriteLine($"{args.scope}: {args.current} / {args.total}");
 
         //Debug.Write($"{args.scope}: {args.current} / {args.total}");
@@ -64,7 +64,7 @@ namespace Tests
 
       var myState = new List<Base>();
 
-      for (int i = 0; i < 100000; i++)
+      for (int i = 0; i < 1000; i++)
       {
         if (i % 3 == 0)
           myState.Add(new Polyline() { Points = new List<Point>() { new Point(1, i, i), new Point(4, 3, i) } });
@@ -106,9 +106,9 @@ namespace Tests
 
       Assert.NotNull(myOldStream.CurrentCommit);
 
-      Assert.Equals(3, myOldStream.Commits.Count);
+      Assert.AreEqual(3, myOldStream.Commits.Count);
 
-      Assert.Equals(latestRevisionId, myOldStream.Commits[myOldStream.Commits.Count - 1]);
+      Assert.AreEqual(latestRevisionId, myOldStream.Commits[myOldStream.Commits.Count - 1]);
     }
 
   }
