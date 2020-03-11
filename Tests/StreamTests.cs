@@ -10,6 +10,7 @@ namespace Tests
 
   public class Streams
   {
+
     // One stream id hardcoded, for less garbage creation
     string streamId = "b8efc2d5-d1f8-433d-82b3-9ae67a9d2aae";
 
@@ -53,18 +54,16 @@ namespace Tests
 
       myModel.OnProgress += (sender, args) =>
       {
-        if (progressCalls++ % 100 == 0)
-          Console.WriteLine($"{args.scope}: {args.current} / {args.total}");
-
-        //Debug.Write($"{args.scope}: {args.current} / {args.total}");
-        //Console.Write($"{args.scope}: {args.current} / {args.total}");
-        //Console.CursorLeft = 0;
-        //output.WriteLine($"{args.scope}: {args.current} / {args.total}");
+        if (progressCalls++ % 100 == 0 || args.current >= args.total)
+        {
+          Console.WriteLine($"{args.scope}: {args.current} / {args.total} ({Math.Round(((double)args.current / (double)args.total) * 100, 2)}%)");
+        }
       };
 
       var myState = new List<Base>();
+      int numObjects = 1000;
 
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < numObjects; i++)
       {
         if (i % 3 == 0)
           myState.Add(new Polyline() { Points = new List<Point>() { new Point(1, i, i), new Point(4, 3, i) } });
@@ -77,7 +76,7 @@ namespace Tests
       myModel.SetState(myState);
 
       Console.WriteLine("");
-      Console.WriteLine($"Elapsed: {stopWatch.ElapsedMilliseconds}ms");
+      Console.WriteLine($"Elapsed: {stopWatch.ElapsedMilliseconds}ms; Objs/second: {numObjects * 1000 / (double)stopWatch.ElapsedMilliseconds}");
 
       myModel.Commit("lol");
 
@@ -101,14 +100,17 @@ namespace Tests
       myModel.Commit("added a polyline");
 
       var latestRevisionId = myModel.CurrentCommit.hash;
-
       var myOldStream = Stream.Load(streamId);
+
+      Assert.NotNull(myOldStream.GetCurrentBranch());
+
+      Assert.Greater(myOldStream.Branches.Count, 0);
 
       Assert.NotNull(myOldStream.CurrentCommit);
 
-      Assert.AreEqual(3, myOldStream.Commits.Count);
+      Assert.AreEqual(3, myOldStream.GetCurrentBranch().Commits.Count);
 
-      Assert.AreEqual(latestRevisionId, myOldStream.Commits[myOldStream.Commits.Count - 1]);
+      Assert.AreEqual(latestRevisionId, myOldStream.GetCurrentBranch().Commits[myOldStream.GetCurrentBranch().Commits.Count - 1]);
     }
 
   }

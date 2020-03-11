@@ -65,6 +65,11 @@ namespace Tests
       var test = serializer.DeserializeAndGet(result, transport);
 
       Assert.AreEqual(test.hash, table.hash);
+
+      //table.applicationId = "my arse";
+
+      //serializer.SerializeAndSave(table, transport);
+
     }
 
     [Test]

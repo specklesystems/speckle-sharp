@@ -7,7 +7,7 @@ using Speckle.Models;
 namespace Speckle.Transports
 {
 
-   /// <summary>
+  /// <summary>
   /// An in memory storage of speckle objects.
   /// </summary>
   public class MemoryTransport : ITransport

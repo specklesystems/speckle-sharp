@@ -53,7 +53,7 @@ namespace Speckle.Transports
       if (File.Exists(filePath) && !overwrite) return;
       if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
 
-      File.WriteAllTextAsync(filePath, serializedObject);
+      File.WriteAllText(filePath, serializedObject);
     }
 
     /// <summary>
