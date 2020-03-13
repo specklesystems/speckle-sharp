@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System.Collections;
 using Speckle.Transports;
+using System.Linq;
 
 namespace Speckle.Serialisation
 {
@@ -41,41 +42,46 @@ namespace Speckle.Serialisation
     /// <summary>
     /// Fully serializes an object, and returns its string representation.
     /// </summary>
-    /// <param name="objects"></param>
+    /// <param name="object"></param>
     /// <returns></returns>
-    public string Serialize(Base objects)
+    public string Serialize(Base @object)
     {
       Converter.ResetAndInitialize();
-      return JsonConvert.SerializeObject(objects, ConversionSettings);
+      return JsonConvert.SerializeObject(@object, ConversionSettings);
     }
 
-    public IEnumerable<string> Serialize(IEnumerable<Base> @objects)
-    {
-      foreach (var obj in objects)
-        yield return Serialize(obj);
-    }
-    
     /// <summary>
     /// Serializes an object, and persists its constituent parts via the provided transport.
     /// </summary>
     /// <param name="object"></param>
-    /// <param name="transport"></param>
+    /// <param name="syncTransport">Transport that will be "waited on" during serialisation.</param>
+    /// <param name="asyncTransports">Transports that will not be waited on to complete (ie, remote http based ones)</param>
+    /// <param name="OnProgressAction">Action that will be executed as </param>
     /// <returns></returns>
-    public string SerializeAndSave(Base @object, ITransport transport)
+    public string SerializeAndSave(Base @object, ITransport syncTransport = null, IEnumerable<ITransport> asyncTransports = null, Action<string> OnProgressAction = null)
     {
+      if (syncTransport == null && asyncTransports?.Count() == 0)
+        throw new Exception("You must provide at least one transport.");
+
+      // set up things
       Converter.ResetAndInitialize();
-      Converter.Transport = transport;
+
+      Converter.SyncTransport = syncTransport;
+
+      if (asyncTransports != null && asyncTransports.Count() > 0)
+        Converter.AsyncTransports = asyncTransports.ToList();
+
+      Converter.OnProgressAction = OnProgressAction;
 
       return JsonConvert.SerializeObject(@object, ConversionSettings);
     }
 
-    public IEnumerable<string> SerializeAndSave(IEnumerable<Base> objects, ITransport transport)
+    public string SerializeAndSave(Base @object, IEnumerable<ITransport> transports)
     {
-      List<string> results = new List<string>();
-      foreach (var obj in objects)
-        results.Add( SerializeAndSave(obj, transport) );
-      return results;
+
+      return null;
     }
+
 
     /// <summary>
     /// Deserializes a fully serialized object. If any references are present, it will fail.
@@ -97,7 +103,7 @@ namespace Speckle.Serialisation
     public Base DeserializeAndGet(string @object, ITransport transport)
     {
       Converter.ResetAndInitialize();
-      Converter.Transport = transport;
+      Converter.SyncTransport = transport;
 
       return JsonConvert.DeserializeObject<Base>(@object, ConversionSettings);
     }

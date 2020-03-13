@@ -8,6 +8,9 @@ namespace Speckle.Transports
   /// </summary>
   public class DiskTransport : ITransport
   {
+
+    public string TransportName { get; set; } = "Disk";
+
     /// <summary>
     /// The path were files will be saved.
     /// </summary>

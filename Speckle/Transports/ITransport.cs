@@ -9,6 +9,8 @@ namespace Speckle.Transports
   /// </summary>
   public interface ITransport
   {
+    public string TransportName { get; set; }
+
     /// <summary>
     /// Saves an object.
     /// </summary>

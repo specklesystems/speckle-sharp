@@ -14,6 +14,8 @@ namespace Speckle.Transports
   {
     public Dictionary<string, string> Objects;
 
+    public string TransportName { get; set; } = "Memory";
+
     public MemoryTransport()
     {
       Objects = new Dictionary<string, string>();

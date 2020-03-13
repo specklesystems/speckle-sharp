@@ -25,6 +25,9 @@ namespace Speckle.Core
     [JsonIgnore]
     public Commit CurrentCommit { get; set; }
 
+    //[JsonIgnore]
+    //public List<Base> CurrentCommitObjs { get; set; }
+
     public List<Branch> Branches { get; set; } = new List<Branch>();
 
     public string DefaultBranch { get; set; }
@@ -63,32 +66,17 @@ namespace Speckle.Core
         Initialize();
       }
 
-      //if (CurrentBranch.Commits.Count != 0) CurrentCommit.previousCommit = CurrentBranch.Commits[CurrentBranch.Commits.Count - 1];
-
-      int i = 0, objCount = objects.Count();
-      foreach (var obj in objects)
-      {
-        Serializer.SerializeAndSave(obj, LocalObjectTransport);
-        CurrentCommit.objects.Add(obj.hash);
-        EmitOnProgress(++i, objCount, "Adding objects");
-      }
+      CurrentCommit.RealObjects.AddRange(objects);
     }
 
     public void Remove(IEnumerable<Base> objects)
     {
       if (CurrentCommit == null)
       {
-        Initialize();
+        throw new Exception("No objects present in current commit.");
       }
 
-      //if (CurrentBranch.Commits.Count != 0) CurrentCommit.previousCommit = CurrentBranch.Commits[CurrentBranch.Commits.Count - 1];
-
-      int i = 0, objCount = objects.Count();
-      foreach (var obj in objects)
-      {
-        CurrentCommit.objects.Remove(obj.hash);
-        EmitOnProgress(++i, objCount, "Removing objects");
-      }
+      CurrentCommit.RealObjects.RemoveAll(obj => objects.Contains(obj)); // TODO: this probably relies on GetHashCode, check if it actually does the correct thing
     }
 
     public void SetState(IEnumerable<Base> objects)
@@ -98,15 +86,7 @@ namespace Speckle.Core
         Initialize();
       }
 
-      //if (CurrentBranch.Commits.Count != 0) CurrentCommit.previousCommit = CurrentBranch.Commits[CurrentBranch.Commits.Count - 1];
-
-      int i = 0, objCount = objects.Count();
-      foreach (var obj in objects)
-      {
-        Serializer.SerializeAndSave(obj, LocalObjectTransport);
-        CurrentCommit.objects.Add(obj.hash);
-        EmitOnProgress(++i, objCount, "Adding objects");
-      }
+      CurrentCommit.RealObjects = objects.ToList();
     }
 
     public void Commit(string message)
@@ -117,13 +97,26 @@ namespace Speckle.Core
       }
 
       CurrentCommit.description = message;
-      if (GetCurrentBranch().Commits.Count != 0)
+
+      var currentBranch = GetCurrentBranch();
+
+      // Setup the commit chain
+      if (currentBranch.Commits.Count != 0)
       {
-        CurrentCommit.previousCommit = GetCurrentBranch().Commits[GetCurrentBranch().Commits.Count - 1];
+        CurrentCommit.previousCommit = currentBranch.Commits[currentBranch.Commits.Count - 1];
       }
 
+      var totalObjs = CurrentCommit.RealObjects.Count;
+      var transportProgess = new Dictionary<string, int>(); // Keeps track of each transport's serialisation progress.
 
-      Serializer.SerializeAndSave(CurrentCommit, LocalObjectTransport);
+      Serializer.SerializeAndSave(CurrentCommit, LocalObjectTransport, new ITransport[] { new MemoryTransport() { TransportName = "Test Other Transport" } }, (string scope) =>
+      {
+        if (transportProgess.ContainsKey(scope)) transportProgess[scope]++;
+        else transportProgess[scope] = 1;
+
+        EmitOnProgress(transportProgess[scope], totalObjs, scope);
+      });
+
       EmitOnProgress(1, 2, "Comitting revision");
 
       GetCurrentBranch().Commits.Add(CurrentCommit.hash);
@@ -136,8 +129,7 @@ namespace Speckle.Core
 
     public void Branch(string branchName)
     {
-      //TODO: check unique
-      Branches.Add(new Branch() { name = branchName });
+      Branches.Add(new Branch() { name = branchName }); // TODO: Check branch name uniqueness
       CurrentBranch = branchName;
     }
 
@@ -150,7 +142,7 @@ namespace Speckle.Core
     {
       if (remote == null)
       {
-        CurrentCommit = (Commit)Serializer.Deserialize(LocalObjectTransport.GetObject(commit == null ? branch.head : commit));
+        CurrentCommit = (Commit)Serializer.DeserializeAndGet(LocalObjectTransport.GetObject(commit == null ? branch.head : commit), LocalObjectTransport);
         CurrentBranch = branch.name;
         return;
       }
@@ -216,20 +208,19 @@ namespace Speckle.Core
 
     public static Stream Load(Remote remote)
     {
-
-      return null;
+      throw new NotImplementedException();
     }
 
     #endregion
 
     #region progress events
 
+    public event EventHandler<ProgressEventArgs> OnProgress;
+
     protected virtual void EmitOnProgress(int current, int total, string scope)
     {
       OnProgress?.Invoke(this, new ProgressEventArgs(current, total, scope));
     }
-
-    public event EventHandler<ProgressEventArgs> OnProgress;
 
     #endregion
   }
@@ -248,22 +239,30 @@ namespace Speckle.Core
   public class Remote
   {
     public Account Account { get; set; }
-    public Stream Stream { get; set; }
+    public string Name { get; set; }
 
     public Remote() { }
 
-    public Remote(Account account, string StreamId)
+    public Remote(Account account, string StreamId, string name)
     {
-
+      this.Account = account;
+      this.Name = name;
     }
 
-    public void Refresh() { }
+    public ITransport GetTransport()
+    {
+      return new MemoryTransport() { TransportName = $"Remote {Name} (MOCK)" };
+    }
 
   }
 
   public class Commit : Base
   {
     public List<string> objects { get; set; } = new List<string>();
+
+    [DetachProperty]
+    public List<Base> RealObjects { get; set; } = new List<Base>();
+
 
     [ExcludeHashing]
     public string name { get; set; }

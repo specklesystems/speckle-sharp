@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -32,9 +33,17 @@ namespace Speckle.Serialisation
     //public ITransport SessionTransport { get; set; }
 
     /// <summary>
-    /// The Transport - if present, the detachment of objects is happening.
+    /// The sync transport. This transport will be used synchronously. 
     /// </summary>
-    public ITransport Transport { get; set; }
+    public ITransport SyncTransport { get; set; }
+
+    /// <summary>
+    /// List of other transports to persist objects to. These will be executed async, and not awaited inside.
+    /// </summary>
+    public List<ITransport> AsyncTransports { get; set; } = new List<ITransport>();
+
+
+    public List<ITransport> Transports { get; set; } = new List<ITransport>();
 
     private MemoryTransport InnerReferenceTracker { get; set; }
 
@@ -68,6 +77,8 @@ namespace Speckle.Serialisation
 
     public override bool CanRead => true;
 
+    public Action<string> OnProgressAction { get; set; }
+
     public BaseObjectSerializer()
     {
       ResetAndInitialize();
@@ -84,6 +95,7 @@ namespace Speckle.Serialisation
       ReferenceTracker = new Dictionary<string, HashSet<string>>();
       Parsed = new HashSet<string>();
       CurrentParentObjectHash = "";
+      OnProgressAction = null;
 
       InnerReferenceTracker = new MemoryTransport();
     }
@@ -124,8 +136,8 @@ namespace Speckle.Serialisation
         var id = Extensions.Value<string>(jObject.GetValue("referencedId"));
         string str;
 
-        if (Transport != null)
-          str = Transport.GetObject(id);
+        if (SyncTransport != null)
+          str = SyncTransport.GetObject(id);
         else
           throw new Exception($"Cannot resolve reference with id of {id}: a transport is not defined.");
 
@@ -258,7 +270,7 @@ namespace Speckle.Serialisation
             DetachLineage.Add(false);
 
           // Set and store a reference, if it is marked as detachable and the transport is not null.
-          if (Transport != null && propValue is Base && DetachLineage[DetachLineage.Count - 1])
+          if (SyncTransport != null && propValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var reference = new Reference() { referencedId = ((Base)propValue).hash };
             TrackReferenceInTree(reference.referencedId);
@@ -275,21 +287,41 @@ namespace Speckle.Serialisation
           DetachLineage.RemoveAt(DetachLineage.Count - 1);
         }
 
-        if (Transport != null && ReferenceTracker.ContainsKey(Lineage[Lineage.Count - 1]))
+        // Check if we actually have any transports present that would warrant a 
+        if (((SyncTransport != null) || AsyncTransports.Count != 0) && ReferenceTracker.ContainsKey(Lineage[Lineage.Count - 1]))
           jo.Add("__tree", JToken.FromObject(ReferenceTracker[Lineage[Lineage.Count - 1]]));
 
         jo.WriteTo(writer);
 
-        if (DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1])
+        if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && ((SyncTransport != null) || AsyncTransports.Count != 0))
         {
-          Transport?.SaveObject(Lineage[Lineage.Count - 1], jo.ToString());
+          var objString = jo.ToString();
+
+          if (SyncTransport != null)
+          {
+            SyncTransport.SaveObject(Lineage[Lineage.Count - 1], objString);
+
+            if (OnProgressAction != null)
+              OnProgressAction(SyncTransport.TransportName);
+          }
+
+          foreach (var transport in AsyncTransports)
+          {
+            Task.Run(() =>
+            {
+              transport.SaveObject(Lineage[Lineage.Count - 1], objString);
+            }).ContinueWith((task) =>
+            {
+              OnProgressAction?.Invoke(transport.TransportName);
+            });
+          }
+
         }
 
         Parsed.Add(Lineage[Lineage.Count - 1]);
 
         // Pop lineage tracker
         Lineage.RemoveAt(Lineage.Count - 1);
-
         return;
       }
 
@@ -301,7 +333,7 @@ namespace Speckle.Serialisation
         JArray arr = new JArray();
         foreach (var arrValue in ((IEnumerable)value))
         {
-          if (Transport != null && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
+          if (SyncTransport != null && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var reference = new Reference() { referencedId = ((Base)arrValue).hash };
             TrackReferenceInTree(reference.referencedId);
@@ -324,7 +356,7 @@ namespace Speckle.Serialisation
         foreach (DictionaryEntry kvp in dict)
         {
           JToken jToken;
-          if (Transport != null && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
+          if (SyncTransport != null && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var reference = new Reference() { referencedId = ((Base)kvp.Value).hash };
             TrackReferenceInTree(reference.referencedId);

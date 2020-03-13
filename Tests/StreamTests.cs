@@ -23,22 +23,27 @@ namespace Tests
 
       var myState = new List<Base>()
       {
-        new Point(1,3,4), new Point(4,3,2), new DiningTable(), new Polyline() { Points = new List<Point>(){ new Point(1,3,4), new Point(4,3,2)}}
+        new Point(1,3,4),
+        new Point(4,3,2),
+        new DiningTable(),
+        new Polyline() { Points = new List<Point>(){ new Point(1,3,4), new Point(4,3,2)}}
       };
 
-      for (int i = 0; i < 3; i++)
-      {
-        if (i % 3 == 0)
-          myState.Add(new Polyline() { Points = new List<Point>() { new Point(1, i, i), new Point(4, 3, i) } });
-        else
-          myState.Add(new DiningTable() { TableModel = i + "-table" });
-      }
+      //for (int i = 0; i < 3; i++)
+      //{
+      //  if (i % 3 == 0)
+      //    myState.Add(new Polyline() { Points = new List<Point>() { new Point(1, i, i), new Point(4, 3, i) } });
+      //  else
+      //    myState.Add(new DiningTable() { TableModel = i + "-table" });
+      //}
 
       myModel.SetState(myState);
       myModel.Commit("first commit");
 
       myModel.Add(new Base[] { new Point(-1, -1, -1), new Point(-1, -1, -100) });
       myModel.Commit("added two more points");
+
+      //myModel.Push(new Remote());
     }
 
     int progressCalls = 0;
@@ -54,29 +59,27 @@ namespace Tests
 
       myModel.OnProgress += (sender, args) =>
       {
-        if (progressCalls++ % 100 == 0 || args.current >= args.total)
-        {
-          Console.WriteLine($"{args.scope}: {args.current} / {args.total} ({Math.Round(((double)args.current / (double)args.total) * 100, 2)}%)");
-        }
+        //if (progressCalls++ % 100 == 0 || args.current >= args.total)
+        //{
+        Console.WriteLine($"{args.scope}: {args.current} / {args.total} ({Math.Round(((double)args.current / (double)args.total) * 100, 2)}%)");
+        //}
       };
 
       var myState = new List<Base>();
-      int numObjects = 1000;
+      int numObjects = 3;
 
       for (int i = 0; i < numObjects; i++)
       {
         if (i % 3 == 0)
           myState.Add(new Polyline() { Points = new List<Point>() { new Point(1, i, i), new Point(4, 3, i) } });
         else
-          myState.Add(new DiningTable() { TableModel = i + "-table", LegOne = new TableLeg() { height = i } });
+          //myState.Add(new DiningTable() { TableModel = i + "-table", LegOne = new TableLeg() { height = i } });
+          myState.Add(new Point(10, 12, i));
       }
 
       stopWatch.Start();
 
       myModel.SetState(myState);
-
-      Console.WriteLine("");
-      Console.WriteLine($"Elapsed: {stopWatch.ElapsedMilliseconds}ms; Objs/second: {numObjects * 1000 / (double)stopWatch.ElapsedMilliseconds}");
 
       myModel.Commit("lol");
 
