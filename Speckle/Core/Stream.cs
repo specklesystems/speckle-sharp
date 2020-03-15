@@ -4,13 +4,15 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Speckle.Models;
 using Speckle.Serialisation;
 using Speckle.Transports;
 
 namespace Speckle.Core
 {
-  public class Stream
+
+  public partial class Stream
   {
     ITransport LocalObjectTransport;
     ITransport LocalStreamTransport;
@@ -20,13 +22,10 @@ namespace Speckle.Core
 
     public string Name { get; set; } = "Unnamed Stream";
 
-    //public List<string> Commits { get; set; } = new List<string>();
-
     [JsonIgnore]
     public Commit CurrentCommit { get; set; }
 
-    //[JsonIgnore]
-    //public List<Base> CurrentCommitObjs { get; set; }
+    public string PreviousCommitId { get; set; }
 
     public List<Branch> Branches { get; set; } = new List<Branch>();
 
@@ -45,7 +44,10 @@ namespace Speckle.Core
       Serializer = new Serializer();
     }
 
-    public void Initialize()
+    /// <summary>
+    /// Initializes a bare repository with a default "master" branch and current commit.
+    /// </summary>
+    void Initialize()
     {
       // set up master branch
       var branch = new Branch("master");
@@ -57,8 +59,12 @@ namespace Speckle.Core
       CurrentCommit = new Commit();
     }
 
-    #region Operation 
+    #region Local Operation 
 
+    /// <summary>
+    /// Adds objects to the current commit.
+    /// </summary>
+    /// <param name="objects"></param>
     public void Add(IEnumerable<Base> objects)
     {
       if (CurrentCommit == null)
@@ -69,6 +75,10 @@ namespace Speckle.Core
       CurrentCommit.Objects.AddRange(objects);
     }
 
+    /// <summary>
+    /// Removes objects from the current commit.
+    /// </summary>
+    /// <param name="objects"></param>
     public void Remove(IEnumerable<Base> objects)
     {
       if (CurrentCommit == null)
@@ -79,6 +89,10 @@ namespace Speckle.Core
       CurrentCommit.Objects.RemoveAll(obj => objects.Contains(obj)); // TODO: this probably relies on GetHashCode, check if it actually does the correct thing
     }
 
+    /// <summary>
+    /// Flushes the current commit and sets the provided objects as its state.
+    /// </summary>
+    /// <param name="objects"></param>
     public void SetState(IEnumerable<Base> objects)
     {
       if (CurrentCommit == null)
@@ -89,6 +103,10 @@ namespace Speckle.Core
       CurrentCommit.Objects = objects.ToList();
     }
 
+    /// <summary>
+    /// Persists the current state as a commit in this model's history.
+    /// </summary>
+    /// <param name="message"></param>
     public void Commit(string message)
     {
       if (CurrentBranch == null)
@@ -101,9 +119,9 @@ namespace Speckle.Core
       var currentBranch = GetCurrentBranch();
 
       // Setup the commit chain
-      if (currentBranch.Commits.Count != 0)
+      if (PreviousCommitId != null)
       {
-        CurrentCommit.Parents.Add(currentBranch.Commits[currentBranch.Commits.Count - 1]);
+        CurrentCommit.Parents.Add(PreviousCommitId);
       }
 
       var total = CurrentCommit.Objects.Count + 1; // Total object count needs to include the parent commit object.
@@ -113,7 +131,8 @@ namespace Speckle.Core
 
       EmitOnProgress(1, 2, "Comitting revision");
 
-      GetCurrentBranch().Commits.Add(CurrentCommit.hash);
+      PreviousCommitId = CurrentCommit.hash;
+      GetCurrentBranch().Commits.Add(PreviousCommitId);
 
       var result = JsonConvert.SerializeObject(this);
 
@@ -121,33 +140,55 @@ namespace Speckle.Core
       EmitOnProgress(2, 2, "Comitting revision");
     }
 
+    /// <summary>
+    /// Creates a new branch in this model.
+    /// </summary>
+    /// <param name="branchName">The name of the branch. Needs to be unique.</param>
     public void Branch(string branchName)
     {
-      Branches.Add(new Branch() { name = branchName }); // TODO: Check branch name uniqueness
+      var unique = Branches.FirstOrDefault(br => br.Name == branchName) == null;
+
+      if (!unique)
+        throw new Exception($"A branch called {branchName} already exits.");
+
+      Branches.Add(new Branch() { Name = branchName });
       CurrentBranch = branchName;
     }
 
+    /// <summary>
+    /// Creates a new tag at the specified commit.
+    /// </summary>
+    /// <param name="tagName"></param>
+    /// <param name="commitHash"></param>
     public void Tag(string tagName, string commitHash)
     {
-      //TODO
+      throw new NotImplementedException();
     }
 
-    public void Checkout(Branch branch, string commit = null, Remote remote = null)
+    /// <summary>
+    /// The current state 
+    /// </summary>
+    /// <param name="branch"></param>
+    /// <param name="commit"></param>
+    public void Checkout(string branchName, string commit = null)
     {
-      if (remote == null)
-      {
-        commit = commit == null ? branch.head : commit;
+      var branch = Branches.First(br => br.Name == branchName);
 
-        EmitOnProgress(1, 1, "Checking out commit");
-        var currentCount = 0;
-        CurrentCommit = (Commit)Serializer.DeserializeAndGet(LocalObjectTransport.GetObject(commit), LocalObjectTransport, (string scope) => EmitOnProgress(++currentCount, 1, scope));
-        CurrentBranch = branch.name;
+      commit = commit == null ? branch.Head : commit;
 
-        return;
-      }
-      else
+      EmitOnProgress(1, 1, "Checking out commit");
+
+      var currentCount = 0;
+      var commitString = LocalObjectTransport.GetObject(commit);
+      var total = ((JArray)JObject.Parse(commitString).GetValue("Objects")).Count + 1;
+
+      CurrentCommit = (Commit)Serializer.DeserializeAndGet(commitString, LocalObjectTransport, (string scope) => EmitOnProgress(++currentCount, total, scope));
+
+      CurrentBranch = branch.Name;
+
+      if (branch.Commits.Count > 1)
       {
-        // TODO: Pull from remote
+        PreviousCommitId = branch.Commits[branch.Commits.Count - 2];
       }
     }
 
@@ -164,19 +205,37 @@ namespace Speckle.Core
 
     #endregion
 
-    public Branch GetCurrentBranch()
+    #region Remote Operations
+
+
+    public void Push()
     {
-      return this.Branches.Find(br => br.name == this.CurrentBranch);
+
     }
 
-    public Branch GetDefaultBranch()
+    public void Publish() // ???
     {
-      return this.Branches.Find(br => br.name == this.DefaultBranch);
+
     }
+
+    public void Pull()
+    {
+
+    }
+
+    #endregion
 
     #region Loading
 
-    public static Stream Load(string streamId, ITransport LocalObjectTransport = null, ITransport LocalStreamTransport = null)
+    /// <summary>
+    /// Loads a local stream.
+    /// </summary>
+    /// <param name="streamId"></param>
+    /// <param name="LocalObjectTransport"></param>
+    /// <param name="LocalStreamTransport"></param>
+    /// <param name="OnProgress"></param>
+    /// <returns></returns>
+    public static Stream Load(string streamId, ITransport LocalObjectTransport = null, ITransport LocalStreamTransport = null, EventHandler<ProgressEventArgs> OnProgress = null)
     {
       if (LocalObjectTransport == null)
       {
@@ -192,33 +251,59 @@ namespace Speckle.Core
 
       var stream = JsonConvert.DeserializeObject<Stream>(LocalStreamTransport.GetObject(streamId));
 
+      if (OnProgress != null)
+      {
+        OnProgress.Invoke(stream, new ProgressEventArgs(1, 1, "Loaded stream"));
+        stream.OnProgress += OnProgress;
+      }
+
       // Reinstantiate the current commit, if it exists, from the current branch.
       if (stream.CurrentBranch != null)
       {
-        stream.Checkout(stream.GetCurrentBranch());
+        stream.Checkout(stream.GetCurrentBranch().Name);
       }
       else
       {
-        stream.Checkout(stream.GetDefaultBranch());
+        stream.Checkout(stream.GetDefaultBranch().Name);
       }
 
       return stream;
     }
 
+    /// <summary>
+    /// Loads a stream from a remote.
+    /// </summary>
+    /// <param name="remote"></param>
+    /// <returns></returns>
     public static Stream Load(Remote remote)
     {
+
       throw new NotImplementedException();
     }
 
     #endregion
 
-    #region progress events
+    #region Progress events
 
     public event EventHandler<ProgressEventArgs> OnProgress;
 
     protected virtual void EmitOnProgress(int current, int total, string scope)
     {
       OnProgress?.Invoke(this, new ProgressEventArgs(current, total, scope));
+    }
+
+    #endregion
+
+    #region Branch convenience methods
+
+    public Branch GetCurrentBranch()
+    {
+      return this.Branches.Find(br => br.Name == this.CurrentBranch);
+    }
+
+    public Branch GetDefaultBranch()
+    {
+      return this.Branches.Find(br => br.Name == this.DefaultBranch);
     }
 
     #endregion
@@ -235,34 +320,6 @@ namespace Speckle.Core
     }
   }
 
-  public class Commit : Base
-  {
-    //public List<string> objects { get; set; } = new List<string>();
-
-    [DetachProperty]
-    public List<Base> Objects { get; set; } = new List<Base>();
-
-    [ExcludeHashing]
-    public string Name { get; set; }
-
-    [ExcludeHashing]
-    public string Description { get; set; }
-
-    //[ExcludeHashing]
-    //public string previousCommit { get; set; }
-
-    [ExcludeHashing]
-    public HashSet<string> Parents { get; set; } = new HashSet<string>();
-
-    [ExcludeHashing]
-    public User Author { get; set; }
-
-    [ExcludeHashing]
-    public string CreatedOn { get; } = DateTime.UtcNow.ToString("o");
-
-    public Commit() { }
-  }
-
   public class Tag
   {
     public string name { get; set; }
@@ -271,35 +328,18 @@ namespace Speckle.Core
 
   public class Branch
   {
-    public string name { get; set; }
-    public string head { get => Commits.Count > 0 ? Commits[Commits.Count - 1] : null; }
+    public string Name { get; set; }
+
+    public string Head { get => Commits.Count > 0 ? Commits[Commits.Count - 1] : null; }
+
     public List<string> Commits { get; set; } = new List<string>();
 
     public Branch() { }
 
     public Branch(string name)
     {
-      this.name = name;
+      this.Name = name;
     }
   }
-
-  public class Account
-  {
-    public string Email { get; set; }
-    public string ServerName { get; set; }
-    public string ServerUrl { get; set; }
-    public string ApiToken { get; set; }
-
-    public Account() { }
-  }
-
-  public class User
-  {
-    public string Email { get; set; }
-    public string Name { get; set; }
-
-    public User() { }
-  }
-
 
 }

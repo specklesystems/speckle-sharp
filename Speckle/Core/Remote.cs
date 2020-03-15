@@ -6,7 +6,10 @@ namespace Speckle.Core
   public class Remote
   {
     public Account Account { get; set; }
+
     public string Name { get; set; }
+
+    public Stream Stream { get; set; }
 
     public Remote() { }
 
