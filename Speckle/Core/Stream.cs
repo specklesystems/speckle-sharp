@@ -103,7 +103,7 @@ namespace Speckle.Core
       // Setup the commit chain
       if (currentBranch.Commits.Count != 0)
       {
-        CurrentCommit.previousCommit = currentBranch.Commits[currentBranch.Commits.Count - 1];
+        CurrentCommit.Parents.Add(currentBranch.Commits[currentBranch.Commits.Count - 1]);
       }
 
       var total = CurrentCommit.Objects.Count + 1; // Total object count needs to include the parent commit object.
@@ -237,7 +237,7 @@ namespace Speckle.Core
 
   public class Commit : Base
   {
-    public List<string> objects { get; set; } = new List<string>();
+    //public List<string> objects { get; set; } = new List<string>();
 
     [DetachProperty]
     public List<Base> Objects { get; set; } = new List<Base>();
@@ -248,11 +248,11 @@ namespace Speckle.Core
     [ExcludeHashing]
     public string Description { get; set; }
 
-    [ExcludeHashing]
-    public string previousCommit { get; set; }
+    //[ExcludeHashing]
+    //public string previousCommit { get; set; }
 
     [ExcludeHashing]
-    public List<string> Parents { get; set; } = new List<string>();
+    public HashSet<string> Parents { get; set; } = new HashSet<string>();
 
     [ExcludeHashing]
     public User Author { get; set; }

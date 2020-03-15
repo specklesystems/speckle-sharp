@@ -55,9 +55,10 @@ namespace Speckle.Serialisation
         if (jsonProperty != null && jsonProperty.PropertyType.GetConstructor(Type.EmptyTypes) != null)
         {
           var arr = jsonProperty != null ? Activator.CreateInstance(jsonProperty.PropertyType) : new List<object>();
+          var addMethod = arr.GetType().GetMethod("Add");
           foreach (var val in ((JArray)value))
           {
-            ((IList)arr).Add(HandleValue(val, serializer));
+            addMethod.Invoke(arr, new object[] { HandleValue(val, serializer) });
           }
           return arr;
         }
