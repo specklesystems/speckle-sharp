@@ -90,30 +90,36 @@ namespace Tests
     [Test]
     public void LoadStreamLocal()
     {
+      // Create a stream
       var myModel = new Stream() { Id = streamId };
 
+      myModel.OnProgress += (sender, args) =>
+      {
+        Console.WriteLine($"{args.scope}: {args.current} / {args.total} ({Math.Round(((double)args.current / (double)args.total) * 100, 2)}%)");
+      };
+
+      // Create a couple of commits
       myModel.Add(new Base[] { new Point(-1, -1, -1), new Point(-1, -1, -100) });
       myModel.Commit("added two points");
 
       myModel.Add(new Base[] { new Point(-112, -1, -1), new Point(1, -1, -100) });
       myModel.Commit("added two more points");
 
-
       myModel.Add(new Base[] { new Polyline() { Points = new List<Point>() { new Point(1, 3, 4), new Point(4, 3, 2) } } });
       myModel.Commit("added a polyline");
 
-      var latestRevisionId = myModel.CurrentCommit.hash;
-      var myOldStream = Stream.Load(streamId);
+      // Receive a stream
+      var loadedStream = Stream.Load(streamId);
 
-      Assert.NotNull(myOldStream.GetCurrentBranch());
+      Assert.NotNull(loadedStream.GetCurrentBranch());
 
-      Assert.Greater(myOldStream.Branches.Count, 0);
+      Assert.Greater(loadedStream.Branches.Count, 0);
 
-      Assert.NotNull(myOldStream.CurrentCommit);
+      Assert.NotNull(loadedStream.CurrentCommit);
 
-      Assert.AreEqual(3, myOldStream.GetCurrentBranch().Commits.Count);
+      Assert.AreEqual(3, loadedStream.GetCurrentBranch().Commits.Count);
 
-      Assert.AreEqual(latestRevisionId, myOldStream.GetCurrentBranch().Commits[myOldStream.GetCurrentBranch().Commits.Count - 1]);
+      Assert.AreEqual(myModel.CurrentCommit.hash, loadedStream.GetCurrentBranch().head);
     }
 
   }

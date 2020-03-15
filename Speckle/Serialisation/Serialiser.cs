@@ -54,34 +54,21 @@ namespace Speckle.Serialisation
     /// Serializes an object, and persists its constituent parts via the provided transport.
     /// </summary>
     /// <param name="object"></param>
-    /// <param name="syncTransport">Transport that will be "waited on" during serialisation.</param>
-    /// <param name="asyncTransports">Transports that will not be waited on to complete (ie, remote http based ones)</param>
-    /// <param name="OnProgressAction">Action that will be executed as </param>
+    /// <param name="transport">Transport that will be "waited on" during serialisation.</param>
+    /// <param name="onProgressAction">Action that will be executed as the serializer progresses.</param>
     /// <returns></returns>
-    public string SerializeAndSave(Base @object, ITransport syncTransport = null, IEnumerable<ITransport> asyncTransports = null, Action<string> OnProgressAction = null)
+    public string SerializeAndSave(Base @object, ITransport transport = null, Action<string> onProgressAction = null)
     {
-      if (syncTransport == null && asyncTransports?.Count() == 0)
+      if (transport == null)
         throw new Exception("You must provide at least one transport.");
 
       // set up things
       Converter.ResetAndInitialize();
-
-      Converter.SyncTransport = syncTransport;
-
-      if (asyncTransports != null && asyncTransports.Count() > 0)
-        Converter.AsyncTransports = asyncTransports.ToList();
-
-      Converter.OnProgressAction = OnProgressAction;
+      Converter.Transport = transport;
+      Converter.OnProgressAction = onProgressAction;
 
       return JsonConvert.SerializeObject(@object, ConversionSettings);
     }
-
-    public string SerializeAndSave(Base @object, IEnumerable<ITransport> transports)
-    {
-
-      return null;
-    }
-
 
     /// <summary>
     /// Deserializes a fully serialized object. If any references are present, it will fail.
@@ -100,10 +87,11 @@ namespace Speckle.Serialisation
     /// <param name="object"></param>
     /// <param name="transport"></param>
     /// <returns></returns>
-    public Base DeserializeAndGet(string @object, ITransport transport)
+    public Base DeserializeAndGet(string @object, ITransport transport, Action<string> onProgressAction = null)
     {
       Converter.ResetAndInitialize();
-      Converter.SyncTransport = transport;
+      Converter.Transport = transport;
+      Converter.OnProgressAction = onProgressAction;
 
       return JsonConvert.DeserializeObject<Base>(@object, ConversionSettings);
     }

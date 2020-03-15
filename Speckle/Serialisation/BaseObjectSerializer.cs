@@ -35,15 +35,7 @@ namespace Speckle.Serialisation
     /// <summary>
     /// The sync transport. This transport will be used synchronously. 
     /// </summary>
-    public ITransport SyncTransport { get; set; }
-
-    /// <summary>
-    /// List of other transports to persist objects to. These will be executed async, and not awaited inside.
-    /// </summary>
-    public List<ITransport> AsyncTransports { get; set; } = new List<ITransport>();
-
-
-    public List<ITransport> Transports { get; set; } = new List<ITransport>();
+    public ITransport Transport { get; set; }
 
     private MemoryTransport InnerReferenceTracker { get; set; }
 
@@ -110,6 +102,8 @@ namespace Speckle.Serialisation
         return null;
 
       // Check if we passed in an array, rather than an object.
+      // TODO: Test the following branch. It's not used anywhere at the moment, and the default serializer prevents it from
+      // ever being used (only allows single object serialization)
       if (reader.TokenType == JsonToken.StartArray)
       {
         var list = new List<Base>();
@@ -136,8 +130,8 @@ namespace Speckle.Serialisation
         var id = Extensions.Value<string>(jObject.GetValue("referencedId"));
         string str;
 
-        if (SyncTransport != null)
-          str = SyncTransport.GetObject(id);
+        if (Transport != null)
+          str = Transport.GetObject(id);
         else
           throw new Exception($"Cannot resolve reference with id of {id}: a transport is not defined.");
 
@@ -187,6 +181,7 @@ namespace Speckle.Serialisation
         }
       }
 
+      OnProgressAction?.Invoke(Transport.TransportName);
       return obj;
     }
 
@@ -270,7 +265,7 @@ namespace Speckle.Serialisation
             DetachLineage.Add(false);
 
           // Set and store a reference, if it is marked as detachable and the transport is not null.
-          if (SyncTransport != null && propValue is Base && DetachLineage[DetachLineage.Count - 1])
+          if (Transport != null && propValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var reference = new Reference() { referencedId = ((Base)propValue).hash };
             TrackReferenceInTree(reference.referencedId);
@@ -288,34 +283,19 @@ namespace Speckle.Serialisation
         }
 
         // Check if we actually have any transports present that would warrant a 
-        if (((SyncTransport != null) || AsyncTransports.Count != 0) && ReferenceTracker.ContainsKey(Lineage[Lineage.Count - 1]))
+        if ((Transport != null) && ReferenceTracker.ContainsKey(Lineage[Lineage.Count - 1]))
           jo.Add("__tree", JToken.FromObject(ReferenceTracker[Lineage[Lineage.Count - 1]]));
 
         jo.WriteTo(writer);
 
-        if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && ((SyncTransport != null) || AsyncTransports.Count != 0))
+        if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && (Transport != null))
         {
           var objString = jo.ToString();
+          var objId = Lineage[Lineage.Count - 1];
 
-          if (SyncTransport != null)
-          {
-            SyncTransport.SaveObject(Lineage[Lineage.Count - 1], objString);
+          Transport.SaveObject(objId, objString);
 
-            if (OnProgressAction != null)
-              OnProgressAction(SyncTransport.TransportName);
-          }
-
-          foreach (var transport in AsyncTransports)
-          {
-            Task.Run(() =>
-            {
-              transport.SaveObject(Lineage[Lineage.Count - 1], objString);
-            }).ContinueWith((task) =>
-            {
-              OnProgressAction?.Invoke(transport.TransportName);
-            });
-          }
-
+          OnProgressAction?.Invoke(Transport.TransportName);
         }
 
         Parsed.Add(Lineage[Lineage.Count - 1]);
@@ -333,7 +313,7 @@ namespace Speckle.Serialisation
         JArray arr = new JArray();
         foreach (var arrValue in ((IEnumerable)value))
         {
-          if (SyncTransport != null && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
+          if (Transport != null && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var reference = new Reference() { referencedId = ((Base)arrValue).hash };
             TrackReferenceInTree(reference.referencedId);
@@ -356,7 +336,7 @@ namespace Speckle.Serialisation
         foreach (DictionaryEntry kvp in dict)
         {
           JToken jToken;
-          if (SyncTransport != null && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
+          if (Transport != null && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var reference = new Reference() { referencedId = ((Base)kvp.Value).hash };
             TrackReferenceInTree(reference.referencedId);
