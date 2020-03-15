@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace Speckle.Core
 {
   public class User

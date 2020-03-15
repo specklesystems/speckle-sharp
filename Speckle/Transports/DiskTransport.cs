@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Speckle.Transports
@@ -22,7 +23,7 @@ namespace Speckle.Transports
     public bool SplitPath { get; set; }
 
     /// <summary>
-    /// Creates a transport that writes to disk, in the specified file path.
+    /// Creates a transport that writes & reads from disk, in the specified file path.
     /// </summary>
     /// <param name="basePath">The current environment's ApplicationData location.</param>
     /// <param name="applicationName">Defaults to "Speckle".</param>
@@ -42,11 +43,23 @@ namespace Speckle.Transports
 
     public string GetObject(string objectId)
     {
-      var (dirPath, filePath) = DirFileFromObjectId(objectId);
+      var (_, filePath) = DirFileFromObjectId(objectId);
       if (File.Exists(filePath))
         return File.ReadAllText(filePath);
 
       throw new Exception($"Could not find the specified object ({filePath}).");
+    }
+
+    public IEnumerable<string> GetAllObjects()
+    {
+      if (SplitPath)
+        throw new NotImplementedException("GetAllObjects not supported yet in disk transports with path splits.");
+
+      var files = Directory.GetFiles(RootPath);
+      foreach(var file in files)
+      {
+        yield return File.ReadAllText(file);
+      }
     }
 
     public void SaveObject(string objectId, string serializedObject, bool overwrite = false)
@@ -57,6 +70,16 @@ namespace Speckle.Transports
       if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
 
       File.WriteAllText(filePath, serializedObject);
+    }
+
+    /// <summary>
+    /// Removes an object. <b>Do not use this method unless you know what you're doing; it can invalidate state!</b>
+    /// </summary>
+    /// <param name="objectId"></param>
+    public void RemoveObject(string objectId)
+    {
+      var (_, filePath) = DirFileFromObjectId(objectId);
+      File.Delete(filePath);
     }
 
     /// <summary>

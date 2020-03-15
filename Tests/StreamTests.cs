@@ -7,9 +7,15 @@ using NUnit.Framework;
 
 namespace Tests
 {
-
+  [TestFixture]
   public class Streams
   {
+
+    [SetUp]
+    public void SetUp() { }
+
+    [TearDown]
+    public void TearDown() { }
 
     // One stream id hardcoded, for less garbage creation
     string streamId = "b8efc2d5-d1f8-433d-82b3-9ae67a9d2aae";
@@ -116,17 +122,32 @@ namespace Tests
       });
 
       // Assertion checks
-      Assert.NotNull(loadedStream.GetCurrentBranch());
+      Assert.Multiple(() =>
+      {
+        Assert.NotNull(loadedStream.GetCurrentBranch());
 
-      Assert.Greater(loadedStream.Branches.Count, 0);
+        Assert.Greater(loadedStream.Branches.Count, 0);
 
-      Assert.NotNull(loadedStream.CurrentCommit);
+        Assert.NotNull(loadedStream.CurrentCommit);
 
-      Assert.AreEqual(loadedStream.CurrentCommit.Objects.Count, 5);
+        Assert.AreEqual(loadedStream.CurrentCommit.Objects.Count, 5);
 
-      Assert.AreEqual(3, loadedStream.GetCurrentBranch().Commits.Count);
+        Assert.AreEqual(3, loadedStream.GetCurrentBranch().Commits.Count);
 
-      Assert.AreEqual(myModel.CurrentCommit.hash, loadedStream.GetCurrentBranch().Head);
+        Assert.AreEqual(myModel.CurrentCommit.hash, loadedStream.GetCurrentBranch().Head);
+      });
+    }
+
+    [Test]
+    public void StreamBranching()
+    {
+      Assert.Fail(); // TODO
+    }
+
+    [Test]
+    public void StreamTagging()
+    {
+      Assert.Fail(); // TODO
     }
 
   }

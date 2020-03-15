@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Speckle.Http
 {
+  /// <summary>
+  /// Derived HttpContent class that gzip's up the content, adds the required encoding headers, and saves you transaction space yo.
+  /// </summary>
   internal sealed class GzipContent : HttpContent
   {
     private readonly HttpContent content;
@@ -21,7 +24,7 @@ namespace Speckle.Http
 
       this.content = content;
 
-      // Keep the original content's headers ...
+      // Keep the original content's headers.
       if (content != null)
         foreach (KeyValuePair<string, IEnumerable<string>> header in content.Headers)
         {

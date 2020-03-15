@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Speckle.Models;
@@ -192,23 +190,17 @@ namespace Speckle.Core
       }
     }
 
-    public void Push(Remote remote, Branch branch = null)
-    {
-      if (branch == null && CurrentBranch != null)
-        branch = GetCurrentBranch();
-      else
-        throw new Exception("No current branch to push to remote. Nothing to commit!");
-
-      //TODO: push things
-      //Handover to remote for functionality... I guess.
-    }
-
     #endregion
 
     #region Remote Operations
 
+    public void AddRemote(Remote remote)
+    {
+      // TODO: Check uniquness
+      Remotes.Add(remote);
+    }
 
-    public void Push()
+    public void Push(string commitId, Remote remote)
     {
 
     }
@@ -225,7 +217,7 @@ namespace Speckle.Core
 
     #endregion
 
-    #region Loading
+    #region Loading: local and remote
 
     /// <summary>
     /// Loads a local stream.
@@ -277,7 +269,6 @@ namespace Speckle.Core
     /// <returns></returns>
     public static Stream Load(Remote remote)
     {
-
       throw new NotImplementedException();
     }
 

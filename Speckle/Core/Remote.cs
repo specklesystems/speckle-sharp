@@ -19,9 +19,7 @@ namespace Speckle.Core
       this.Name = name;
     }
 
-    public ITransport GetTransport()
-    {
-      return new MemoryTransport() { TransportName = $"Remote {Name} (MOCK)" };
-    }
+
+
   }
 }

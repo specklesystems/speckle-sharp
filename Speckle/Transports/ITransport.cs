@@ -26,4 +26,9 @@ namespace Speckle.Transports
     /// <returns></returns>
     public string GetObject(string hash);
   }
+
+  public interface IRemoteTransport
+  {
+
+  }
 }
