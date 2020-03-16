@@ -3,7 +3,7 @@ using Speckle.Transports;
 
 namespace Speckle.Core
 {
-  public class Remote
+  public partial class Remote
   {
     public Account Account { get; set; }
 
@@ -18,6 +18,7 @@ namespace Speckle.Core
       this.Account = account;
       this.Name = name;
     }
+
 
 
 
