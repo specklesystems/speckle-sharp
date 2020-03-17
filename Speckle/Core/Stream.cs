@@ -12,9 +12,14 @@ namespace Speckle.Core
 
   public partial class Stream
   {
-    ITransport LocalObjectTransport;
-    ITransport LocalStreamTransport;
-    Serializer Serializer;
+    [JsonIgnore]
+    public readonly ITransport LocalObjectTransport;
+
+    [JsonIgnore]
+    public readonly ITransport LocalStreamTransport;
+
+    [JsonIgnore]
+    public readonly Serializer Serializer;
 
     public string Id { get; set; } = Guid.NewGuid().ToString().ToLower();
 
@@ -119,7 +124,7 @@ namespace Speckle.Core
       // Setup the commit chain
       if (PreviousCommitId != null)
       {
-        CurrentCommit.Parents.Add(PreviousCommitId);
+        CurrentCommit.Parents = new HashSet<string>() { PreviousCommitId };
       }
 
       var total = CurrentCommit.Objects.Count + 1; // Total object count needs to include the parent commit object.
@@ -196,18 +201,19 @@ namespace Speckle.Core
 
     public void AddRemote(Remote remote)
     {
-      // TODO: Check uniquness
-      Remotes.Add(remote);
+      remote.LocalStream = this;
+      Remotes.Add(remote); // TODO: Check uniqueness
     }
 
-    public void Push(string commitId, Remote remote)
+    public void RemoveRemote(string remoteName)
     {
-
+      throw new NotImplementedException();
     }
 
-    public void Publish() // ???
+    public void Push(string remoteName, string branchName, string commit = null, bool preserveHistory = true)
     {
-
+      var remote = Remotes.First(r => r.Name == remoteName);
+      remote.Push(branchName, commit, preserveHistory, OnProgress);
     }
 
     public void Pull()

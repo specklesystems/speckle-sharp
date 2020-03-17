@@ -34,6 +34,10 @@ namespace Speckle.Models
         });
         return Utilities.hashString(str);
       }
+      set
+      {
+        hash = value;
+      }
     }
 
     /// <summary>

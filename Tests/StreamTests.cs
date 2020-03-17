@@ -91,6 +91,18 @@ namespace Tests
     }
 
     [Test]
+    public void StreamBranching()
+    {
+      Assert.Fail(); // TODO
+    }
+
+    [Test]
+    public void StreamTagging()
+    {
+      Assert.Fail(); // TODO
+    }
+
+    [Test(Description = "Loads a stream from the users's local machine.")]
     public void LoadStreamLocal()
     {
       // Create a stream
@@ -137,18 +149,5 @@ namespace Tests
         Assert.AreEqual(myModel.CurrentCommit.hash, loadedStream.GetCurrentBranch().Head);
       });
     }
-
-    [Test]
-    public void StreamBranching()
-    {
-      Assert.Fail(); // TODO
-    }
-
-    [Test]
-    public void StreamTagging()
-    {
-      Assert.Fail(); // TODO
-    }
-
   }
 }
