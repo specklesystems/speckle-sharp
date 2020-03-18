@@ -45,7 +45,7 @@ namespace Speckle.Core
       var shallowCommit = JsonConvert.DeserializeObject<ShallowCommit>(LocalStream.LocalObjectTransport.GetObject(commit != null ? commit : branch.Head));
 
       var allObjs = shallowCommit.GetAllObjects();
-
+      var cp = "test";
       // If preserve history is true, we need to trace all the commits that led to this commit, and their subsequent branches, and push those too.
       // If preserve history is false, we need to "publish" that single commit. Question: what do we do with the history (ie, its parents, parent branches, etc?).
 

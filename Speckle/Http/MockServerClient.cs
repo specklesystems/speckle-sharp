@@ -40,7 +40,6 @@ namespace Speckle.Http
 
       request.Content = new GzipContent(new StringContent("test"));
 
-
       var response = await HttpClient.SendAsync(request);
 
       var status = ((int)response.StatusCode).ToString();

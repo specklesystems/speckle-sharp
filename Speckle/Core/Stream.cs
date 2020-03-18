@@ -13,10 +13,10 @@ namespace Speckle.Core
   public partial class Stream
   {
     [JsonIgnore]
-    public readonly ITransport LocalObjectTransport;
+    public ITransport LocalObjectTransport { get; set; }
 
     [JsonIgnore]
-    public readonly ITransport LocalStreamTransport;
+    public ITransport LocalStreamTransport { get; set; }
 
     [JsonIgnore]
     public readonly Serializer Serializer;
@@ -32,9 +32,11 @@ namespace Speckle.Core
 
     public List<Branch> Branches { get; set; } = new List<Branch>();
 
-    public string DefaultBranch { get; set; }
+    public string DefaultBranch { get; set; } = "master";
 
-    public string CurrentBranch { get; set; }
+    public string CurrentBranch { get; set; } = "master";
+
+    //public string CurrentBranch { get; set; }
 
     public List<Tag> Tags { get; set; } = new List<Tag>();
 
@@ -54,15 +56,15 @@ namespace Speckle.Core
     {
       // set up master branch
       var branch = new Branch("master");
-      CurrentBranch = "master";
       DefaultBranch = "master";
+      CurrentBranch = "master";
       Branches.Add(branch);
 
       // set up an empty staging commit
       CurrentCommit = new Commit();
     }
 
-    #region Local Operation 
+    #region Staging & Comitting
 
     /// <summary>
     /// Adds objects to the current commit.
@@ -109,19 +111,27 @@ namespace Speckle.Core
     /// <summary>
     /// Persists the current state as a commit in this model's history.
     /// </summary>
-    /// <param name="message"></param>
-    public void Commit(string message)
+    /// <param name="message">A short message describing this commit.</param>
+    /// <param name="branchName">The name of the branch you want this commit associated with.</param>
+    public void Commit(string message = "draft commit", string branchName = null)
     {
-      if (CurrentBranch == null)
+      // If no branch name is provided, default to the current branch.
+      if (branchName == null) branchName = CurrentBranch;
+
+      // Check if that branch exists!
+      var branch = Branches.FirstOrDefault(br => br.Name == branchName);
+
+      // If it doesn't, create it.
+      if (branch == null)
       {
-        throw new Exception("No current branch set.");
+        branch = CreateBranch(branchName);
+        // ... and set it as the current branch.
+        CurrentBranch = branchName;
       }
 
       CurrentCommit.Description = message;
 
-      var currentBranch = GetCurrentBranch();
-
-      // Setup the commit chain
+      // Setup the commit chain.
       if (PreviousCommitId != null)
       {
         CurrentCommit.Parents = new HashSet<string>() { PreviousCommitId };
@@ -135,11 +145,11 @@ namespace Speckle.Core
       EmitOnProgress(1, 2, "Comitting revision");
 
       PreviousCommitId = CurrentCommit.hash;
-      GetCurrentBranch().Commits.Add(PreviousCommitId);
 
-      var result = JsonConvert.SerializeObject(this);
+      branch.Commits.Add(PreviousCommitId);
 
-      LocalStreamTransport.SaveObject(this.Id, result, true);
+      // Save the stream locally
+      LocalStreamTransport.SaveObject(this.Id, JsonConvert.SerializeObject(this), true);
       EmitOnProgress(2, 2, "Comitting revision");
     }
 
@@ -147,15 +157,17 @@ namespace Speckle.Core
     /// Creates a new branch in this model.
     /// </summary>
     /// <param name="branchName">The name of the branch. Needs to be unique.</param>
-    public void Branch(string branchName)
+    public Branch CreateBranch(string branchName)
     {
       var unique = Branches.FirstOrDefault(br => br.Name == branchName) == null;
 
       if (!unique)
         throw new Exception($"A branch called {branchName} already exits.");
 
-      Branches.Add(new Branch() { Name = branchName });
-      CurrentBranch = branchName;
+      var branch = new Branch(branchName);
+      Branches.Add(branch);
+
+      return branch;
     }
 
     /// <summary>
@@ -163,9 +175,18 @@ namespace Speckle.Core
     /// </summary>
     /// <param name="tagName"></param>
     /// <param name="commitHash"></param>
-    public void Tag(string tagName, string commitHash)
+    public void CreateTag(string tagName, string commitHash)
     {
-      throw new NotImplementedException();
+      var found = Tags.FindIndex(t => t.name == tagName) != -1;
+
+      if (found) throw new Exception($"Tag {tagName} already exists.");
+
+      found = GetAllCommits().IndexOf(commitHash) != -1;
+
+      if (!found) throw new Exception($"Commit {commitHash} does not exist.");
+
+      var tag = new Tag() { name = tagName, commit = commitHash };
+      Tags.Add(tag);
     }
 
     /// <summary>
@@ -175,24 +196,33 @@ namespace Speckle.Core
     /// <param name="commit"></param>
     public void Checkout(string branchName, string commit = null)
     {
-      var branch = Branches.First(br => br.Name == branchName);
+      // Find that branch; will throw an error if not found.
+      var branch = Branches.FirstOrDefault(br => br.Name == branchName);
 
+      if (branch == null) throw new Exception($"Branch {branchName} does not exist.");
+
+      // If no commit is specified, default to the branch's latest (head).
       commit = commit == null ? branch.Head : commit;
+
+      // Defenisve check on wether the commit is part of the selected branch or not.
+      if (branch.Commits.IndexOf(commit) == -1) throw new Exception($"Commit {commit} does not exist in branch {branchName}.");
 
       EmitOnProgress(1, 1, "Checking out commit");
 
       var currentCount = 0;
       var commitString = LocalObjectTransport.GetObject(commit);
-      var total = ((JArray)JObject.Parse(commitString).GetValue("Objects")).Count + 1;
+      var total = ((JArray)JObject.Parse(commitString).GetValue("Objects")).Count + 1; // Hacky, can be deserialized to a ShallowCommit
 
       CurrentCommit = (Commit)Serializer.DeserializeAndGet(commitString, LocalObjectTransport, (string scope) => EmitOnProgress(++currentCount, total, scope));
 
-      CurrentBranch = branch.Name;
-
+      // Set the previous commit if our branch has more than one commit present.
       if (branch.Commits.Count > 1)
       {
         PreviousCommitId = branch.Commits[branch.Commits.Count - 2];
       }
+
+      // Set the current branch name for subsequent ergonomic calls to Commit()
+      CurrentBranch = branchName;
     }
 
     #endregion
@@ -207,18 +237,33 @@ namespace Speckle.Core
 
     public void RemoveRemote(string remoteName)
     {
-      throw new NotImplementedException();
+      var idx = Remotes.FindIndex(r => r.Name == remoteName);
+      if (idx == -1) throw new Exception($"Remote {remoteName} does not exist in this stream.");
+      Remotes.RemoveAt(idx);
     }
 
-    public void Push(string remoteName, string branchName, string commit = null, bool preserveHistory = true)
+    public void Publish(string remoteName, string branchName = null, string commit = null, bool preserveHistory = false)
     {
-      var remote = Remotes.First(r => r.Name == remoteName);
+      var remote = Remotes.FirstOrDefault(r => r.Name == remoteName);
+
+      if (remote == null) throw new Exception($"Remote {remoteName} could not be found.");
+
+      // Set defaults if not provided explicitely:
+
+      // Fallback to current branch
+      if (branchName == null) branchName = CurrentBranch;
+
+      // Fallback to its head
+      if (commit == null) commit = GetCurrentBranch().Head;
+
+      // Finally, tell the remote to push and pass on the event handler.
       remote.Push(branchName, commit, preserveHistory, OnProgress);
     }
 
     public void Pull()
     {
-
+      // get from remote
+      // then checkout based on arguments
     }
 
     #endregion
@@ -233,7 +278,7 @@ namespace Speckle.Core
     /// <param name="LocalStreamTransport"></param>
     /// <param name="OnProgress"></param>
     /// <returns></returns>
-    public static Stream Load(string streamId, ITransport LocalObjectTransport = null, ITransport LocalStreamTransport = null, EventHandler<ProgressEventArgs> OnProgress = null)
+    public static Stream Load(string streamId, string branchName = null, ITransport LocalObjectTransport = null, ITransport LocalStreamTransport = null, EventHandler<ProgressEventArgs> OnProgress = null)
     {
       if (LocalObjectTransport == null)
       {
@@ -249,6 +294,10 @@ namespace Speckle.Core
 
       var stream = JsonConvert.DeserializeObject<Stream>(LocalStreamTransport.GetObject(streamId));
 
+      // Set the transports in case they were not null originally
+      stream.LocalObjectTransport = LocalObjectTransport;
+      stream.LocalStreamTransport = LocalStreamTransport;
+
       if (OnProgress != null)
       {
         OnProgress.Invoke(stream, new ProgressEventArgs(1, 1, "Loaded stream"));
@@ -256,14 +305,17 @@ namespace Speckle.Core
       }
 
       // Reinstantiate the current commit, if it exists, from the current branch.
-      if (stream.CurrentBranch != null)
+      if (branchName == null)
       {
-        stream.Checkout(stream.GetCurrentBranch().Name);
+        stream.Checkout(stream.DefaultBranch);
       }
       else
       {
-        stream.Checkout(stream.GetDefaultBranch().Name);
+        stream.Checkout(branchName);
       }
+
+      // Set the remote's reference to the local stream.
+      stream.Remotes.ForEach(rem => rem.LocalStream = stream);
 
       return stream;
     }
@@ -291,16 +343,30 @@ namespace Speckle.Core
 
     #endregion
 
-    #region Branch convenience methods
-
-    public Branch GetCurrentBranch()
-    {
-      return this.Branches.Find(br => br.Name == this.CurrentBranch);
-    }
+    #region Convenience methods
 
     public Branch GetDefaultBranch()
     {
-      return this.Branches.Find(br => br.Name == this.DefaultBranch);
+      return Branches.Find(br => br.Name == this.DefaultBranch);
+    }
+
+    public Branch GetCurrentBranch()
+    {
+      return Branches.Find(br => br.Name == this.CurrentBranch);
+    }
+
+    public List<string> GetAllCommits()
+    {
+      var allCommits = new List<string>();
+      foreach (var b in Branches)
+        allCommits.AddRange(b.Commits);
+
+      return allCommits;
+    }
+
+    public Branch GetCommitBranch(string commitId)
+    {
+      return Branches.FirstOrDefault(br => br.Commits.Contains(commitId));
     }
 
     #endregion

@@ -23,7 +23,7 @@ namespace Speckle.Core
     public User Author { get; set; }
 
     [ExcludeHashing]
-    public string CreatedOn { get; } = DateTime.UtcNow.ToString("o");
+    public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 
     public Commit() { }
   }
@@ -53,7 +53,7 @@ namespace Speckle.Core
       foreach(string str in __tree)
       {
         var items = str.Split('.');
-        for(int i = 1; i < items.Count(); i++) // Skip first item as that is always the parent object itself.
+        for(int i = 1; i < items.Count(); i++) // Skip first item as that is always the commit itself.
         {
           objs.Add(items[i]);
         }

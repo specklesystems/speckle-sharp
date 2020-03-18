@@ -17,6 +17,12 @@ namespace Tests
     [TearDown]
     public void TearDown() { }
 
+    // Used for progress reports in tests.
+    private void GenericProgressReporter(object sender, ProgressEventArgs args)
+    {
+      Console.WriteLine($"{args.scope}: {args.current} / {args.total} ({Math.Round(((double)args.current / (double)args.total) * 100, 2)}%)");
+    }
+
     // One stream id hardcoded, for less garbage creation
     string streamId = "b8efc2d5-d1f8-433d-82b3-9ae67a9d2aae";
 
@@ -93,7 +99,60 @@ namespace Tests
     [Test]
     public void StreamBranching()
     {
-      Assert.Fail(); // TODO
+      //
+      // Software A
+      // Create a stream
+      //
+      var myModel = new Stream();
+      myModel.OnProgress += GenericProgressReporter;
+
+      myModel.Add(new Base[] { new Point(-1, -1, -1), new Point(-1, -1, -100) });
+      myModel.Commit();
+
+      myModel.SetState(new Base[] { new DiningTable() });
+      myModel.Commit(branchName: "table-branch");
+
+      myModel.SetState(new Base[] { new Polyline() { applicationId = "test" } });
+      myModel.Commit(branchName: "polyline-branch");
+
+      //
+      // Software B
+      // Retrieve the stream
+      // 
+      var receiver = Stream.Load(myModel.Id, "polyline-branch");
+      receiver.OnProgress += GenericProgressReporter;
+
+      Assert.AreEqual(receiver.CurrentCommit.Objects.Count, 1);
+      Assert.AreEqual(receiver.CurrentCommit.Objects[0].applicationId, "test");
+
+      receiver.Checkout("master");
+      Assert.AreEqual(2, receiver.CurrentCommit.Objects.Count);
+
+      receiver.Checkout("table-branch");
+      Assert.AreEqual(receiver.CurrentCommit.Objects[0].hash, new DiningTable().hash);
+
+      //
+      // Software B
+      // Add some more objects - modify it!
+      // 
+      receiver.Add(new Base[] { new DiningTable() { TableModel = "Super Table Model" }, new DiningTable() { TableModel = "Super Table Model TWO" } });
+      receiver.Commit();
+
+      receiver.SetState(new Base[] { new Point(42, 42, 42) });
+      receiver.Commit("fed up of tables on this branch");
+
+      //
+      // Software C
+      // Retrieve the stream... again
+      //
+
+      var theSameModel = Stream.Load(myModel.Id);
+      theSameModel.OnProgress += GenericProgressReporter;
+
+      theSameModel.Checkout("table-branch");
+      Assert.AreEqual(1, theSameModel.CurrentCommit.Objects.Count);
+      Assert.AreEqual("fed up of tables on this branch", theSameModel.CurrentCommit.Description);
+
     }
 
     [Test]
@@ -136,7 +195,7 @@ namespace Tests
       // Assertion checks
       Assert.Multiple(() =>
       {
-        Assert.NotNull(loadedStream.GetCurrentBranch());
+        Assert.NotNull(loadedStream.GetDefaultBranch());
 
         Assert.Greater(loadedStream.Branches.Count, 0);
 
@@ -144,9 +203,9 @@ namespace Tests
 
         Assert.AreEqual(loadedStream.CurrentCommit.Objects.Count, 5);
 
-        Assert.AreEqual(3, loadedStream.GetCurrentBranch().Commits.Count);
+        Assert.AreEqual(3, loadedStream.GetDefaultBranch().Commits.Count);
 
-        Assert.AreEqual(myModel.CurrentCommit.hash, loadedStream.GetCurrentBranch().Head);
+        Assert.AreEqual(myModel.CurrentCommit.hash, loadedStream.GetDefaultBranch().Head);
       });
     }
   }

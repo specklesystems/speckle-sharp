@@ -60,7 +60,7 @@ namespace Tests
     {
       MyTestStream.AddRemote(new Remote(Account.GetLocalAccounts().First(), "Mock Remote"));
 
-      MyTestStream.Push("Mock Remote", "master");
+      MyTestStream.Publish("Mock Remote", "master");
 
       var test = MyTestStream;
     }
