@@ -177,7 +177,7 @@ namespace Speckle.Core
     /// <param name="commitHash"></param>
     public void CreateTag(string tagName, string commitHash)
     {
-      var found = Tags.FindIndex(t => t.name == tagName) != -1;
+      var found = Tags.FindIndex(t => t.Name == tagName) != -1;
 
       if (found) throw new Exception($"Tag {tagName} already exists.");
 
@@ -185,7 +185,7 @@ namespace Speckle.Core
 
       if (!found) throw new Exception($"Commit {commitHash} does not exist.");
 
-      var tag = new Tag() { name = tagName, commit = commitHash };
+      var tag = new Tag() { Name = tagName, commit = commitHash };
       Tags.Add(tag);
     }
 
@@ -383,19 +383,24 @@ namespace Speckle.Core
     }
   }
 
-  public class Tag
-  {
-    public string name { get; set; }
-    public string commit { get; set; }
-  }
-
-  public class Branch
+  public class Reference
   {
     public string Name { get; set; }
+  }
 
+  public class Tag : Reference
+  {
+    public string commit { get; set; }
+    public string type { get; } = "tag";
+  }
+
+  public class Branch : Reference
+  {
     public string Head { get => Commits.Count > 0 ? Commits[Commits.Count - 1] : null; }
 
     public List<string> Commits { get; set; } = new List<string>();
+
+    public string type { get; } = "branch";
 
     public Branch() { }
 

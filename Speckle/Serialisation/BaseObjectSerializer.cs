@@ -218,7 +218,7 @@ namespace Speckle.Serialisation
     {
       if (value == null) return;
 
-      if (value is Base && !(value is Reference))
+      if (value is Base && !(value is ObjectReference))
       {
         var obj = value as Base;
         CurrentParentObjectHash = obj.hash;
@@ -267,7 +267,7 @@ namespace Speckle.Serialisation
           // Set and store a reference, if it is marked as detachable and the transport is not null.
           if (Transport != null && propValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
-            var reference = new Reference() { referencedId = ((Base)propValue).hash };
+            var reference = new ObjectReference() { referencedId = ((Base)propValue).hash };
             TrackReferenceInTree(reference.referencedId);
             jo.Add(prop, JToken.FromObject(reference));
 
@@ -315,7 +315,7 @@ namespace Speckle.Serialisation
         {
           if (Transport != null && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
-            var reference = new Reference() { referencedId = ((Base)arrValue).hash };
+            var reference = new ObjectReference() { referencedId = ((Base)arrValue).hash };
             TrackReferenceInTree(reference.referencedId);
 
             arr.Add(JToken.FromObject(reference));
@@ -338,7 +338,7 @@ namespace Speckle.Serialisation
           JToken jToken;
           if (Transport != null && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
           {
-            var reference = new Reference() { referencedId = ((Base)kvp.Value).hash };
+            var reference = new ObjectReference() { referencedId = ((Base)kvp.Value).hash };
             TrackReferenceInTree(reference.referencedId);
             jToken = JToken.FromObject(reference);
             JToken.FromObject(kvp.Value, serializer); // Trigger next

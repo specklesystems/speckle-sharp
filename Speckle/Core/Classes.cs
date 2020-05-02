@@ -68,12 +68,12 @@ namespace Speckle.Core
 
   }
 
-  public class Reference
+  public class ObjectReference
   {
     public string referencedId { get; set; }
     public string speckle_type = "reference";
 
-    public Reference() { }
+    public ObjectReference() { }
   }
 
 }

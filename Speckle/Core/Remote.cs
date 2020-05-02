@@ -36,18 +36,23 @@ namespace Speckle.Core
     /// <param name="commit">The specific commit from that branch that you want to push. Defaults to the branch's head.</param>
     /// <param name="preserveHistory"></param>
     /// <param name="OnProgress"></param>
-    public void Push(string branchName, string commit, bool preserveHistory = true, EventHandler<ProgressEventArgs> OnProgress = null)
+    public void Push(string branchName, string commit, bool preserveHistory, EventHandler<ProgressEventArgs> OnProgress = null)
     {
+      if (preserveHistory)
+        throw new Exception("Preserve history is not yet supported.");
+
       OnProgress?.Invoke(this, new ProgressEventArgs(1, 1, $"Pushing to remote {Name}"));
 
       var branch = LocalStream.Branches.Find(b => b.Name == branchName);
 
       var shallowCommit = JsonConvert.DeserializeObject<ShallowCommit>(LocalStream.LocalObjectTransport.GetObject(commit != null ? commit : branch.Head));
 
-      var allObjs = shallowCommit.GetAllObjects();
-      var cp = "test";
-      // If preserve history is true, we need to trace all the commits that led to this commit, and their subsequent branches, and push those too.
-      // If preserve history is false, we need to "publish" that single commit. Question: what do we do with the history (ie, its parents, parent branches, etc?).
+      var allObjIdsToPush = shallowCommit.GetAllObjects();
+
+      // POST /streams/{LocalStream.id} <-- LocalStream is it needed?
+      // POST MANY /streams/objects <-- allObjIdsToPush (pending preflight check, including commit)
+      // POST /streams/commit
+      // POST /streams/{LocalStream.id}/ref/{ref.Name} <-- branch
 
 
       // Steps:

@@ -39,6 +39,14 @@ namespace Speckle.Serialisation
       return typeof(Base);
     }
 
+    /// <summary>
+    /// Flushes kit's (discriminator, type) cache. Useful if you're dynamically loading more kits at runtime, that provide better coverage of what you're deserialising, and it's now somehow poisoned because the higher level types were not originally available.
+    /// </summary>
+    public static void FlushCachedTypes()
+    {
+      cachedTypes = new Dictionary<string, Type>();
+    }
+
     #endregion
 
     #region value handling

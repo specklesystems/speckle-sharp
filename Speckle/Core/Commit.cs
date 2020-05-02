@@ -22,7 +22,7 @@ namespace Speckle.Core
     [ExcludeHashing]
     public User Author { get; set; }
 
-    [ExcludeHashing]
+    //[ExcludeHashing]
     public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 
     public Commit() { }
@@ -35,7 +35,7 @@ namespace Speckle.Core
   {
     public override string hash { get; set; }
 
-    public new List<Reference> Objects { get; set; } = new List<Reference>();
+    public new List<ObjectReference> Objects { get; set; } = new List<ObjectReference>();
 
     public List<string> __tree { get; set; }
 
@@ -48,7 +48,6 @@ namespace Speckle.Core
     public HashSet<string> GetAllObjects()
     {
       var objs = new HashSet<string>();
-      objs.Add(hash);
 
       foreach(string str in __tree)
       {
