@@ -56,6 +56,8 @@ namespace Speckle.Serialisation
     /// </summary>
     Dictionary<string, HashSet<string>> ReferenceTracker { get; set; }
 
+    Dictionary<string, Dictionary<string, int>> RefMinDepthTracker { get; set; }
+
     /// <summary>
     /// Holds all the parsed hashes within this session.
     /// </summary>
@@ -85,6 +87,7 @@ namespace Speckle.Serialisation
       DetachLineage = new List<bool>();
       Lineage = new List<string>();
       ReferenceTracker = new Dictionary<string, HashSet<string>>();
+      RefMinDepthTracker = new Dictionary<string, Dictionary<string, int>>();
       Parsed = new HashSet<string>();
       CurrentParentObjectHash = "";
       OnProgressAction = null;
@@ -208,6 +211,17 @@ namespace Speckle.Serialisation
         else
           ReferenceTracker[parent].Add(path + refId);
       }
+
+      // Help with creating closure table entries.
+      for (int i = 0; i < Lineage.Count; i++)
+      {
+        var parent = Lineage[i];
+
+        if (!RefMinDepthTracker.ContainsKey(parent)) RefMinDepthTracker[parent] = new Dictionary<string, int>();
+
+        if (!RefMinDepthTracker[parent].ContainsKey(refId)) RefMinDepthTracker[parent][refId] = Lineage.Count - i;
+        else if (RefMinDepthTracker[parent][refId] > Lineage.Count - i) RefMinDepthTracker[parent][refId] = Lineage.Count - i;
+      }
     }
 
     // While this function looks complicated, it's actually quite smooth:
@@ -284,7 +298,10 @@ namespace Speckle.Serialisation
 
         // Check if we actually have any transports present that would warrant a 
         if ((Transport != null) && ReferenceTracker.ContainsKey(Lineage[Lineage.Count - 1]))
+        {
           jo.Add("__tree", JToken.FromObject(ReferenceTracker[Lineage[Lineage.Count - 1]]));
+          jo.Add("__closure", JToken.FromObject(RefMinDepthTracker[Lineage[Lineage.Count - 1]]));
+        }
 
         jo.WriteTo(writer);
 

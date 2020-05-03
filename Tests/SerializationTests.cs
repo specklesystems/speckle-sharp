@@ -5,6 +5,9 @@ using Speckle.Core;
 using Speckle.Transports;
 using System.Diagnostics;
 using NUnit.Framework;
+using Speckle.Models;
+using Newtonsoft.Json;
+using System.Dynamic;
 
 namespace Tests
 {
@@ -66,11 +69,67 @@ namespace Tests
       var test = serializer.DeserializeAndGet(result, transport);
 
       Assert.AreEqual(test.hash, table.hash);
+    }
 
-      //table.applicationId = "my arse";
+    [Test]
+    public void TreeTrackingTest()
+    {
+      var d5 = new Base();
+      ((dynamic)d5).name = "depth five"; // end v
 
-      //serializer.SerializeAndSave(table, transport);
+      var d4 = new Base();
+      ((dynamic)d4).name = "depth four";
+      ((dynamic)d4)["@detach"] = d5;
 
+      var d3 = new Base();
+      ((dynamic)d3).name = "depth three";
+      ((dynamic)d3)["@detach"] = d4;
+
+      var d2 = new Base();
+      ((dynamic)d2).name = "depth two";
+      ((dynamic)d2)["@detach"] = d3;
+      ((dynamic)d2)["@joker"] = new object[] { d5 };
+
+      var d1 = new Base();
+      ((dynamic)d1).name = "depth one"; 
+      ((dynamic)d1)["@detach"] = d2;
+      ((dynamic)d1)["@joker"] = d5; // consequently, d5 depth in d1 should be 1
+
+      var transport = new MemoryTransport();
+      var serializer = new Serializer();
+
+      var result = serializer.SerializeAndSave(d1, transport);
+
+      var test = serializer.DeserializeAndGet(result, transport);
+
+      Assert.AreEqual(test.hash, d1.hash);
+
+      var d1_ = JsonConvert.DeserializeObject<dynamic>(result);
+      var d2_ = JsonConvert.DeserializeObject<dynamic>(transport.Objects[d2.hash]);
+      var d3_ = JsonConvert.DeserializeObject<dynamic>(transport.Objects[d3.hash]);
+      var d4_ = JsonConvert.DeserializeObject<dynamic>(transport.Objects[d4.hash]);
+      var d5_ = JsonConvert.DeserializeObject<dynamic>(transport.Objects[d5.hash]);
+
+
+      var depthOf_d5_in_d1 = int.Parse( (string) d1_.__closure[d5.hash] );
+      Assert.AreEqual(1, depthOf_d5_in_d1);
+
+      var depthOf_d4_in_d1 = int.Parse((string)d1_.__closure[d4.hash]);
+      Assert.AreEqual(3, depthOf_d4_in_d1);
+
+      var depthOf_d5_in_d3 = int.Parse((string)d3_.__closure[d5.hash]);
+      Assert.AreEqual(2, depthOf_d5_in_d3);
+
+      var depthOf_d4_in_d3 = int.Parse((string)d3_.__closure[d4.hash]);
+      Assert.AreEqual(1, depthOf_d4_in_d3);
+
+      var depthOf_d5_in_d2= int.Parse((string)d2_.__closure[d5.hash]);
+      Assert.AreEqual(1, depthOf_d5_in_d2);
+    }
+
+    private class ClosureTreeHelper
+    {
+      public Dictionary<string, Dictionary<string, int>> __closure { get; set; }
     }
 
     [Test]
