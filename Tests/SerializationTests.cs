@@ -125,6 +125,14 @@ namespace Tests
 
       var depthOf_d5_in_d2= int.Parse((string)d2_.__closure[d5.hash]);
       Assert.AreEqual(1, depthOf_d5_in_d2);
+
+      var sampleData = "[";
+      foreach(var kvp in transport.Objects)
+      {
+        sampleData += kvp.Value + ", ";
+      }
+      sampleData += "]";
+      var copy = sampleData;
     }
 
     private class ClosureTreeHelper
