@@ -1,0 +1,20 @@
+﻿using Speckle.Models;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Speckle.Elements.Geometry
+{
+  public class Vector : Base
+  {
+    public List<double> value { get; set; }
+
+    public Vector() { }
+
+    public Vector(double x, double y, double z = 0, string applicationId = null, Dictionary<string, object> properties = null)
+    {
+      this.value = new List<double>() { x, y, z };
+      this.applicationId = applicationId;
+    }
+  }
+}
