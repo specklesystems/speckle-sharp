@@ -15,7 +15,6 @@ namespace Speckle.Elements.Geometry
     {
       this.value = new List<double>() { x, y, z };
       this.applicationId = applicationId;
-
     }
   }
 }

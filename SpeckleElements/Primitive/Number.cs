@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Speckle.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Speckle.Elements.Simple
+namespace Speckle.Elements.Primitive
 {
-  public class Number
+  public class Number : Base
   {
     public double? value { get; set; }
 

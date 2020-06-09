@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Speckle.Elements.Simple
+namespace Speckle.Elements.Primitive
 {
   public class Interval : Base
   {
