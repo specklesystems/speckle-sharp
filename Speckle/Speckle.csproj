@@ -16,5 +16,6 @@
     <Folder Include="Transports\" />
     <Folder Include="Kits\" />
     <Folder Include="Core\" />
+    <Folder Include="Core2\" />
   </ItemGroup>
 </Project>
