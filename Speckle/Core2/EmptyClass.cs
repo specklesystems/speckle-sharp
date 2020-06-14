@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Speckle.Models;
@@ -55,6 +56,33 @@ namespace Speckle.Core2
     public string CommitMessage { get; set; }
 
     public Commit() { }
+  }
+
+  /// <summary>
+  /// Class used to shallowly deserialize a commit.
+  /// </summary>
+  public class ShallowCommit 
+  {
+    public Dictionary<string, int> __closure { get; set; } = new Dictionary<string, int>();
+
+    public ShallowCommit() { }
+
+    /// <summary>
+    /// Returns a flattened list of all objects in this commit, including nested ones.
+    /// </summary>
+    /// <returns></returns>
+    public HashSet<string> GetAllObjectIds()
+    {
+      return new HashSet<string>(__closure.Keys.ToArray());
+    }
+  }
+
+  public class ObjectReference
+  {
+    public string referencedId { get; set; }
+    public string speckle_type = "reference";
+
+    public ObjectReference() { }
   }
 
   public class Remote

@@ -7,6 +7,9 @@ using NUnit.Framework;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.IO;
+using Newtonsoft.Json;
+using Speckle.Transports;
+using System.Text;
 
 namespace Tests
 {
@@ -21,11 +24,12 @@ namespace Tests
     public void TearDown() { }
 
     string commitId;
+    Speckle.Core2.Stream myStream;
 
     [Test]
     public async Task PushPullLocal()
     {
-      var myStream = new Speckle.Core2.Stream();
+      myStream = new Speckle.Core2.Stream();
 
       var objects = new List<Base>();
 
@@ -35,6 +39,7 @@ namespace Tests
         if (i % 2 == 0)
         {
           objects.Add(new Point(i, i, i));
+          ((dynamic)objects[i])["@detachment"] = new Point(i, 20, i);
         }
         else
         {
@@ -42,17 +47,21 @@ namespace Tests
         }
       }
 
+      Console.WriteLine("Done adding objects");
       commitId = await myStream.PushLocal(objects);
+      Console.WriteLine("Done pushing locally");
 
-      var localObjects = await myStream.PullLocal(commitId);
+      //var localObjects = await myStream.PullLocal(commitId);
 
-      Assert.AreEqual(100, localObjects.Count);
-      Assert.AreEqual(((Point)localObjects[0]).X, 0);
+      //Assert.AreEqual(numObjects, localObjects.Count);
+      //Assert.AreEqual(((Point)localObjects[0]).X, 0);
     }
 
     [Test]
-    public void StreamObjects()
+    public async Task StreamObjectsProofOfConcept()
     {
+
+      var objectIds = (JsonConvert.DeserializeObject<ShallowCommit>(myStream.LocalObjectTransport.GetObject("f81b3937d13d0c439922b7dec138b4e7"))).GetAllObjectIds();
 
       var HttpClient = new HttpClient(new HttpClientHandler()
       {
@@ -61,23 +70,48 @@ namespace Tests
 
       HttpClient.BaseAddress = new Uri(@"http://localhost:3000");
 
+      var multiForm = new MultipartFormDataContent();
 
-      string[] inputFilePaths = Directory.GetFiles(@"/Users/Bender/.config/Speckle/Streams");
-      var memStream = new MemoryStream();
-      
-      //foreach (var file in inputFilePaths)
-      //{
-      //  using (var inp = File.OpenRead(file))
-      //  {
-      //    Debug.WriteLine(inp);
-      //    inp.CopyTo(memStream);
-      //  }
-      //}
-      //var SourceStream = File.Open(@" / Users/Bender/.config/Speckle/Streams/36dc3ba3-5bf5-4273-ba76-6bd6314b6b36", FileMode.Open);
+      foreach (var objId in objectIds)
+      {
+        multiForm.Add(new StreamContent(((DiskTransport)myStream.LocalObjectTransport).GetObjectStream(objId)), objId, objId);
+      }
 
-      //var test = HttpClient.PostAsync("/streaming", new StreamContent(memStream)).Result;
+      var message = new HttpRequestMessage()
+      {
+        RequestUri = new Uri("/streaming", UriKind.Relative),
+        Method = HttpMethod.Post,
+        Content = multiForm
+      };
 
-      return;
+      var res = await HttpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
+
+      int bufferSize = 15;
+
+      using (var stream = await res.Content.ReadAsStreamAsync())
+      {
+        var buffer = new byte[bufferSize];
+        int read = -1;
+        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+        {
+          var text = Encoding.UTF8.GetString(buffer);
+          Console.WriteLine(text);
+        }
+        // var bytesread = stream.Read(bytes, 0, 1000);
+        stream.Close();
+      }
+      using (var stream = await res.Content.ReadAsStreamAsync())
+      {
+        var buffer = new byte[bufferSize];
+        int read = -1;
+        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+        {
+          var text = Encoding.UTF8.GetString(buffer);
+          Console.WriteLine(text);
+        }
+        // var bytesread = stream.Read(bytes, 0, 1000);
+        stream.Close();
+      }
     }
 
 

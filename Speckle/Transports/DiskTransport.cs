@@ -50,6 +50,15 @@ namespace Speckle.Transports
       throw new Exception($"Could not find the specified object ({filePath}).");
     }
 
+    public Stream GetObjectStream(string objectId)
+    {
+      var (_, filePath) = DirFileFromObjectId(objectId);
+      if (File.Exists(filePath))
+        return File.OpenRead(filePath);
+
+      throw new Exception($"Could not find the specified object ({filePath}).");
+    }
+
     public IEnumerable<string> GetAllObjects()
     {
       if (SplitPath)
