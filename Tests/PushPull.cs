@@ -10,6 +10,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Speckle.Transports;
 using System.Text;
+using System.Net;
 
 namespace Tests
 {
@@ -33,7 +34,7 @@ namespace Tests
 
       var objects = new List<Base>();
 
-      var numObjects = 100;
+      var numObjects = 10000;
       for (int i = 0; i < numObjects; i++)
       {
         if (i % 2 == 0)
@@ -51,17 +52,45 @@ namespace Tests
       commitId = await myStream.PushLocal(objects);
       Console.WriteLine("Done pushing locally");
 
-      //var localObjects = await myStream.PullLocal(commitId);
+      var localObjects = await myStream.PullLocal(commitId);
 
-      //Assert.AreEqual(numObjects, localObjects.Count);
-      //Assert.AreEqual(((Point)localObjects[0]).X, 0);
+      Assert.AreEqual(numObjects, localObjects.Count);
+      Assert.AreEqual(((Point)localObjects[0]).X, 0);
+    }
+
+    [Test]
+    public async Task StreamPOC2()
+    {
+      return;
+      HttpWebRequest request = (HttpWebRequest) WebRequest.Create("http://localhost:3000");
+      request.KeepAlive = true;
+      request.SendChunked = true;
+      request.Method = "POST";
+
+      var objectIds = (JsonConvert.DeserializeObject<ShallowCommit>(myStream.LocalObjectTransport.GetObject(commitId))).GetAllObjectIds();
+      var dt = (DiskTransport)myStream.LocalObjectTransport;
+
+      using(var requestStream = request.GetRequestStream())
+      {
+        foreach(var id in objectIds)
+        {
+          var (_, filePath) = dt.DirFileFromObjectId(id);
+          using (var fs = new FileStream(path: filePath, FileMode.Open, FileAccess.Read))
+          {
+            //requestStream.Write()
+          }
+        }
+      }
+
+      //request.BeginGetRequestStream
     }
 
     [Test]
     public async Task StreamObjectsProofOfConcept()
     {
-
-      var objectIds = (JsonConvert.DeserializeObject<ShallowCommit>(myStream.LocalObjectTransport.GetObject("f81b3937d13d0c439922b7dec138b4e7"))).GetAllObjectIds();
+      return;
+      if (myStream == null) myStream = new Speckle.Core2.Stream();
+      var objectIds = (JsonConvert.DeserializeObject<ShallowCommit>(myStream.LocalObjectTransport.GetObject(commitId))).GetAllObjectIds();
 
       var HttpClient = new HttpClient(new HttpClientHandler()
       {
@@ -83,6 +112,8 @@ namespace Tests
         Method = HttpMethod.Post,
         Content = multiForm
       };
+
+
 
       var res = await HttpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
 

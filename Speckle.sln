@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle", "Speckle\Speckle.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpTests", "HttpTests\HttpTests.csproj", "{BEA11108-7752-485F-B026-5B4A79B0C7AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEA11108-7752-485F-B026-5B4A79B0C7AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEA11108-7752-485F-B026-5B4A79B0C7AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEA11108-7752-485F-B026-5B4A79B0C7AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEA11108-7752-485F-B026-5B4A79B0C7AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0

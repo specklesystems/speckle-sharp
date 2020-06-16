@@ -299,7 +299,6 @@ namespace Speckle.Serialisation
         // Check if we actually have any transports present that would warrant a 
         if ((Transport != null) && ReferenceTracker.ContainsKey(Lineage[Lineage.Count - 1]))
         {
-          jo.Add("__tree", JToken.FromObject(ReferenceTracker[Lineage[Lineage.Count - 1]]));
           jo.Add("__closure", JToken.FromObject(RefMinDepthTracker[Lineage[Lineage.Count - 1]]));
         }
 

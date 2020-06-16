@@ -96,7 +96,7 @@ namespace Speckle.Transports
     /// </summary>
     /// <param name="objectId"></param>
     /// <returns>A tuple containing the path to the subfolder and the full file path.</returns>
-    (string, string) DirFileFromObjectId(string objectId)
+    public (string, string) DirFileFromObjectId(string objectId)
     {
       if (SplitPath == false)
       {
