@@ -23,7 +23,7 @@ namespace Speckle.Core2
     public Stream()
     {
       Serializer = new Serializer();
-      LocalObjectTransport = new DiskTransport();
+      LocalObjectTransport = new SqlLiteObjectTransport();
       LocalStreamTransport = new DiskTransport(scope: "Streams", splitPath: false);
     }
 

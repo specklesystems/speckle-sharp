@@ -104,6 +104,7 @@ namespace Speckle.Models
       foreach (var kvp in properties) names.Add(kvp.Key);
 
       var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+      var test = GetType().Name;
       foreach (var pinfo in pinfos) names.Add(pinfo.Name);
 
       names.Remove("Item"); // TODO: investigate why we get Item out?

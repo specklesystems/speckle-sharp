@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -14,6 +15,7 @@ namespace Speckle.Transports
     /// <returns></returns>
     public static string CompressString(string text)
     {
+      return text;
       byte[] buffer = Encoding.UTF8.GetBytes(text);
       var memoryStream = new MemoryStream();
       using (var gZipStream = new GZipStream(memoryStream, CompressionMode.Compress, true))
@@ -39,6 +41,7 @@ namespace Speckle.Transports
     /// <returns></returns>
     public static string DecompressString(string compressedText)
     {
+      return compressedText;
       byte[] gZipBuffer = Convert.FromBase64String(compressedText);
       using (var memoryStream = new MemoryStream())
       {
@@ -54,6 +57,21 @@ namespace Speckle.Transports
         }
 
         return Encoding.UTF8.GetString(buffer);
+      }
+    }
+
+    /// <summary>
+    /// Chunks a list into pieces.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    /// <param name="chunkSize"></param>
+    /// <returns></returns>
+    public static IEnumerable<List<T>> SplitList<T>(List<T> list, int chunkSize = 50)
+    {
+      for (int i = 0; i < list.Count; i += chunkSize)
+      {
+        yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
       }
     }
   }

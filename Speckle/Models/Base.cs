@@ -24,20 +24,7 @@ namespace Speckle.Models
     /// </summary>
     public virtual string hash
     {
-      get
-      {
-        var str = JsonConvert.SerializeObject(this, new JsonSerializerSettings()
-        {
-          NullValueHandling = NullValueHandling.Ignore,
-          ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-          Converters = new List<JsonConverter> { new HashSerialiser() },
-        });
-        return Utilities.hashString(str);
-      }
-      set
-      {
-        hash = value;
-      }
+      get; set;
     }
 
     /// <summary>

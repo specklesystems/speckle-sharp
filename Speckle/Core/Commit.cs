@@ -33,7 +33,7 @@ namespace Speckle.Core
   /// </summary>
   public class ShallowCommit : Commit
   {
-    public override string hash { get; set; }
+    //public override string hash { get; set; }
 
     public new List<ObjectReference> Objects { get; set; } = new List<ObjectReference>();
 

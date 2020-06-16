@@ -52,10 +52,8 @@ namespace Speckle.Serialisation
     List<string> Lineage { get; set; }
 
     /// <summary>
-    /// Tracks composed tree references for each object, as they get serialized.
+    /// Dictionary of object if and its subsequent closure table (a dictionary of hashes and min depth at which they are found).
     /// </summary>
-    Dictionary<string, HashSet<string>> ReferenceTracker { get; set; }
-
     Dictionary<string, Dictionary<string, int>> RefMinDepthTracker { get; set; }
 
     /// <summary>
@@ -86,7 +84,6 @@ namespace Speckle.Serialisation
     {
       DetachLineage = new List<bool>();
       Lineage = new List<string>();
-      ReferenceTracker = new Dictionary<string, HashSet<string>>();
       RefMinDepthTracker = new Dictionary<string, Dictionary<string, int>>();
       Parsed = new HashSet<string>();
       CurrentParentObjectHash = "";
@@ -197,20 +194,6 @@ namespace Speckle.Serialisation
     void TrackReferenceInTree(string refId)
     {
       var path = "";
-      // Go backwards, to get the last one in first, so we can accumulate the
-      // tree hashes chain.
-      for (int i = Lineage.Count - 1; i >= 0; i--)
-      {
-        var parent = Lineage[i];
-        path = parent + "." + path;
-
-        if (!ReferenceTracker.ContainsKey(parent)) ReferenceTracker[parent] = new HashSet<string>();
-
-        if (i == Lineage.Count - 1)
-          ReferenceTracker[parent].Add(parent + "." + refId);
-        else
-          ReferenceTracker[parent].Add(path + refId);
-      }
 
       // Help with creating closure table entries.
       for (int i = 0; i < Lineage.Count; i++)
@@ -235,10 +218,10 @@ namespace Speckle.Serialisation
       if (value is Base && !(value is ObjectReference))
       {
         var obj = value as Base;
-        CurrentParentObjectHash = obj.hash;
+        //CurrentParentObjectHash = ;
 
         // Append to lineage tracker
-        Lineage.Add(CurrentParentObjectHash);
+        Lineage.Add( Guid.NewGuid().ToString());
 
         var jo = new JObject();
         var propertyNames = obj.GetDynamicMemberNames();
@@ -281,11 +264,12 @@ namespace Speckle.Serialisation
           // Set and store a reference, if it is marked as detachable and the transport is not null.
           if (Transport != null && propValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
-            var reference = new ObjectReference() { referencedId = ((Base)propValue).hash };
-            TrackReferenceInTree(reference.referencedId);
-            jo.Add(prop, JToken.FromObject(reference));
+            var what = JToken.FromObject(propValue, serializer); // Trigger next.
+            var refHash = Speckle.Models.Utilities.hashString(what.ToString());
 
-            JToken.FromObject(propValue, serializer); // Trigger next. 
+            var reference = new ObjectReference() { referencedId = refHash };
+            TrackReferenceInTree(refHash);
+            jo.Add(prop, JToken.FromObject(reference));
           }
           else
           {
@@ -297,17 +281,19 @@ namespace Speckle.Serialisation
         }
 
         // Check if we actually have any transports present that would warrant a 
-        if ((Transport != null) && ReferenceTracker.ContainsKey(Lineage[Lineage.Count - 1]))
+        if ((Transport != null) && RefMinDepthTracker.ContainsKey(Lineage[Lineage.Count - 1]))
         {
           jo.Add("__closure", JToken.FromObject(RefMinDepthTracker[Lineage[Lineage.Count - 1]]));
         }
 
+        var hash = Models.Utilities.hashString(jo.ToString());
+        jo.Add("hash", JToken.FromObject(hash));
         jo.WriteTo(writer);
 
         if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && (Transport != null))
         {
           var objString = jo.ToString();
-          var objId = Lineage[Lineage.Count - 1];
+          var objId = jo["hash"].Value<string>();
 
           Transport.SaveObject(objId, objString);
 
@@ -331,11 +317,12 @@ namespace Speckle.Serialisation
         {
           if (Transport != null && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
-            var reference = new ObjectReference() { referencedId = ((Base)arrValue).hash };
-            TrackReferenceInTree(reference.referencedId);
+            var what = JToken.FromObject(arrValue, serializer); // Trigger next
+            var refHash = Speckle.Models.Utilities.hashString(what.ToString());
 
+            var reference = new ObjectReference() { referencedId = refHash };
+            TrackReferenceInTree(refHash);
             arr.Add(JToken.FromObject(reference));
-            JToken.FromObject(arrValue, serializer); // Trigger next
           }
           else
             arr.Add(JToken.FromObject(arrValue, serializer)); // Default route
@@ -354,10 +341,12 @@ namespace Speckle.Serialisation
           JToken jToken;
           if (Transport != null && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
           {
-            var reference = new ObjectReference() { referencedId = ((Base)kvp.Value).hash };
-            TrackReferenceInTree(reference.referencedId);
+            var what = JToken.FromObject(kvp.Value, serializer); // Trigger next
+            var refHash = Speckle.Models.Utilities.hashString(what.ToString());
+
+            var reference = new ObjectReference() { referencedId = refHash };
+            TrackReferenceInTree(refHash);
             jToken = JToken.FromObject(reference);
-            JToken.FromObject(kvp.Value, serializer); // Trigger next
           }
           else
           {
