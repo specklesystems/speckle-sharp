@@ -31,12 +31,13 @@ namespace Speckle.Core2
 
     public async Task<string> PushLocal(List<Base> objects, string branchName = "master", string commitMessage = "")
     {
-      var commit = new Commit { Objects = objects, CommitMessage = commitMessage };
+      //var commit = new Commit { Objects = objects, CommitMessage = commitMessage };
 
-      Serializer.SerializeAndSave(commit, LocalObjectTransport);
+      //Serializer.SerializeAndSave(commit, LocalObjectTransport);
 
-      //PreviousCommitId = commit.hash;
-      return PreviousCommitId;
+      ////PreviousCommitId = commit.hash;
+      //return PreviousCommitId;
+      return null;
     }
 
     public async Task<List<Base>> PullLocal(string commitId)

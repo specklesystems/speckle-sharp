@@ -1,7 +1,6 @@
 using Speckle.Serialisation;
 using System.Collections.Generic;
 using Speckle.Kits;
-using Speckle.Core;
 using Speckle.Transports;
 using System.Diagnostics;
 using NUnit.Framework;

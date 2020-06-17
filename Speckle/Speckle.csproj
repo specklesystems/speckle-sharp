@@ -16,7 +16,14 @@
     <Folder Include="Http\" />
     <Folder Include="Transports\" />
     <Folder Include="Kits\" />
-    <Folder Include="Core\" />
     <Folder Include="Core2\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Core\Remote.cs" />
+    <Compile Remove="Core\Commit.cs" />
+    <Compile Remove="Core\Stream.cs" />
+    <Compile Remove="Core\Classes.cs" />
+    <Compile Remove="Core\Account.cs" />
+    <Compile Remove="Core\User.cs" />
   </ItemGroup>
 </Project>

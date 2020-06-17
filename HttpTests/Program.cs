@@ -14,39 +14,20 @@ namespace HttpTests
   {
     static async Task Main(string[] args)
     {
-      int numObjects = 100000;
-      //Console.WriteLine($"-------------------------------------------------\n\n");
-      //Console.WriteLine($"Starting to save {numObjects} of objects");
+      //await BufferedWriteTest();
 
-      var stopWatch = new Stopwatch();
-      stopWatch.Start();
+      //await BulkWriteMany();
 
-      var test = new SqlLiteObjectTransport();
-
-      await BufferedWriteTest();
-
-      await BulkWriteMany();
-
-      await BufferedWriteTest();
-
-      await BulkWriteMany();
-
-      await BufferedWriteTest();
-
-      await BulkWriteMany();
-
-      await BufferedWriteTest();
-
-      await BulkWriteMany();
-
-      await BufferedWriteTest();
-
-      await BulkWriteMany();
+      await SerializedBuffering();
 
       return;
+    }
 
-      var objects = new List<Base>();      
-      for (int i = 0; i < 100000; i++)
+    public static async Task SerializedBuffering()
+    {
+      int numObjects = 5;
+      var objects = new List<Base>();
+      for (int i = 0; i < numObjects; i++)
       {
         if (i % 2 == 0)
         {
@@ -62,20 +43,15 @@ namespace HttpTests
       var commit = new Commit();
       commit.Objects = objects;
 
-      var step = stopWatch.ElapsedMilliseconds;
-      //Console.WriteLine("Comm hash: " + commit.hash);
-      
-
       var Serializer = new Serializer();
-      var res = Serializer.SerializeAndSave(commit, test);
+      var res = await Serializer.Serialize(commit, (string transportName, int totalCount) =>
+      {
+        Console.WriteLine($"Transport {transportName} serialized {totalCount} objects out of {numObjects+1}.");
+      });
       var cp = res;
-      Console.WriteLine($"saving took ${(stopWatch.ElapsedMilliseconds - step)} miliseconds to compute");
-      Console.ReadLine();
-    }
 
-    public static async Task SerializedBuffering()
-    {
-      // TODO
+      var res2 = Serializer.Deserialize(res);
+      var cp2 = res2;
     }
 
     public static async Task BufferedWriteTest()
@@ -100,7 +76,7 @@ namespace HttpTests
       await transport.WriteComplete();
 
       var stopWatchStep = stopWatch.ElapsedMilliseconds;
-      var objsPerSecond = (double) numObjects / (stopWatchStep / 1000);
+      var objsPerSecond = (double)numObjects / (stopWatchStep / 1000);
       Console.WriteLine($"-------------------------------------------------");
       Console.WriteLine($"BufferedWriteTest: Wrote {numObjects} in {stopWatchStep} ms -> {objsPerSecond} objects per second");
       Console.WriteLine($"-------------------------------------------------\n");

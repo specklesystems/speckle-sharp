@@ -44,7 +44,7 @@ namespace Speckle.Http
         if (content != null)
           await content.CopyToAsync(gzip);
         else
-          await (new System.Net.Http.StringContent(string.Empty)).CopyToAsync(gzip);
+          await new StringContent(string.Empty).CopyToAsync(gzip);
       }
     }
 

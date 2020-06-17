@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using Speckle.Core;
-using Speckle.Kits;
 using Speckle.Models;
 using Speckle.Transports;
 
@@ -54,14 +48,14 @@ namespace Speckle.Serialisation
     /// </summary>
     Dictionary<string, Dictionary<string, int>> RefMinDepthTracker { get; set; }
 
-
+    public int TotalProcessedCount = 0;
     #endregion
 
     public override bool CanWrite => true;
 
     public override bool CanRead => true;
 
-    public Action<string> OnProgressAction { get; set; }
+    public Action<string, int> OnProgressAction { get; set; }
 
     public BaseObjectSerializer()
     {
@@ -78,7 +72,8 @@ namespace Speckle.Serialisation
       Lineage = new List<string>();
       RefMinDepthTracker = new Dictionary<string, Dictionary<string, int>>();
       OnProgressAction = null;
-    }
+      TotalProcessedCount = 0;
+  }
 
     public override bool CanConvert(Type objectType) => true;
 
@@ -139,9 +134,8 @@ namespace Speckle.Serialisation
       var used = new HashSet<string>();
 
       // remove unsettable properties
-      jObject.Remove("hash");
       jObject.Remove(TypeDiscriminator);
-      jObject.Remove("__tree");
+      jObject.Remove("__closure");
 
       foreach (var jProperty in jObject.Properties())
       {
@@ -169,7 +163,7 @@ namespace Speckle.Serialisation
         }
       }
 
-      OnProgressAction?.Invoke(Transport.TransportName);
+      OnProgressAction?.Invoke(Transport.TransportName, ++TotalProcessedCount);
       return obj;
     }
 
@@ -251,7 +245,7 @@ namespace Speckle.Serialisation
           if (Transport != null && propValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var what = JToken.FromObject(propValue, serializer); // Trigger next.
-            var refHash = Speckle.Models.Utilities.hashString(what.ToString());
+            var refHash = ((JObject)what).GetValue("hash").ToString();
 
             var reference = new ObjectReference() { referencedId = refHash };
             TrackReferenceInTree(refHash);
@@ -283,7 +277,7 @@ namespace Speckle.Serialisation
 
           Transport.SaveObject(objId, objString);
 
-          OnProgressAction?.Invoke(Transport.TransportName);
+          OnProgressAction?.Invoke(Transport.TransportName, ++TotalProcessedCount);
         }
 
         // Pop lineage tracker
@@ -302,7 +296,7 @@ namespace Speckle.Serialisation
           if (Transport != null && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var what = JToken.FromObject(arrValue, serializer); // Trigger next
-            var refHash = Speckle.Models.Utilities.hashString(what.ToString());
+            var refHash = ((JObject)what).GetValue("hash").ToString();
 
             var reference = new ObjectReference() { referencedId = refHash };
             TrackReferenceInTree(refHash);
@@ -326,7 +320,7 @@ namespace Speckle.Serialisation
           if (Transport != null && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var what = JToken.FromObject(kvp.Value, serializer); // Trigger next
-            var refHash = Speckle.Models.Utilities.hashString(what.ToString());
+            var refHash = ((JObject)what).GetValue("hash").ToString();
 
             var reference = new ObjectReference() { referencedId = refHash };
             TrackReferenceInTree(refHash);

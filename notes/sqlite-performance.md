@@ -1,4 +1,18 @@
 
+
+## Storage Size
+1 million objects => 540mb ( based on ~= 4.2 million objects => 2.3GB not gzipped)
+
+1 million objects => 127mb gzipped
+
+4x reduction in space
+
+## Local storage takeaways:
+
+SQLite optimisations make a difference in insertion speed. Insertion speed does slow down on large tables (+1m rows). 
+
+Partioned tables (by, for example, the first two decimals of the hash) have slower but predictable insertion speed. Not sure if compromise is worth it? 
+
 ## Even More Optimised single object table  
 Optimisations are: 
 - `PRAGMA journal_mode = MEMORY;`

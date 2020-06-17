@@ -7,6 +7,7 @@ using Newtonsoft.Json.Serialization;
 using System.Collections;
 using Speckle.Transports;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Speckle.Serialisation
 {
@@ -19,10 +20,12 @@ namespace Speckle.Serialisation
 
     public JsonSerializerSettings RawSerializerSettings;
 
+    public SqlLiteObjectTransport Transport;
+
     /// <summary>
     /// Initializes the converter, and sets some default values for newtonsoft. This class exposes several methods that help with serialisation, simultaneous serialisation and persistance, as well as deserialisation, and simultaneous deserialization and retrieval of objects.
     /// </summary>
-    public Serializer()
+    public Serializer(SqlLiteObjectTransport transport = null)
     {
       RawSerializer = new BaseObjectSerializer();
       RawSerializerSettings = new JsonSerializerSettings()
@@ -30,48 +33,38 @@ namespace Speckle.Serialisation
         NullValueHandling = NullValueHandling.Ignore,
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
 #if DEBUG
-        //Formatting = Formatting.Indented,
+        Formatting = Formatting.Indented,
 #else
         Formatting = Formatting.None,
 #endif
         ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
         Converters = new List<Newtonsoft.Json.JsonConverter> { RawSerializer }
       };
-    }
 
-    /// <summary>
-    /// Fully serializes an object, and returns its string representation.
-    /// </summary>
-    /// <param name="object"></param>
-    /// <returns></returns>
-    public string Serialize(Base @object)
-    {
-      RawSerializer.ResetAndInitialize();
-      var obj =  JsonConvert.SerializeObject(@object, RawSerializerSettings);
-      var hash = JObject.Parse(obj).GetValue("hash").ToString();
-      return obj;
-    }
-
-    /// <summary>
-    /// Serializes an object, and persists its constituent parts via the provided transport.
-    /// </summary>
-    /// <param name="object"></param>
-    /// <param name="transport">Transport that will be "waited on" during serialisation.</param>
-    /// <param name="onProgressAction">Action that will be executed as the serializer progresses.</param>
-    /// <returns></returns>
-    public string SerializeAndSave(Base @object, ITransport transport = null, Action<string> onProgressAction = null)
-    {
       if (transport == null)
-        throw new Exception("You must provide at least one transport.");
+      {
+        Transport = new SqlLiteObjectTransport();
+      }
+      else
+        Transport = transport;
+    }
 
-      // set up things
+    /// <summary>
+    /// Fully serializes an object, and returns its hash.
+    /// </summary>
+    /// <param name="object"></param>
+    /// <returns>The hash of the serialised object.</returns>
+    public async Task<string> Serialize(Base @object, Action<string, int> onProgressAction = null)
+    {
       RawSerializer.ResetAndInitialize();
-      RawSerializer.Transport = transport;
+      RawSerializer.Transport = Transport;
       RawSerializer.OnProgressAction = onProgressAction;
 
-      var obj = JsonConvert.SerializeObject(@object, RawSerializerSettings);
+      var obj =  JsonConvert.SerializeObject(@object, RawSerializerSettings);
       var hash = JObject.Parse(obj).GetValue("hash").ToString();
-      return obj;
+
+      await Transport.WriteComplete();
+      return hash;
     }
 
     /// <summary>
@@ -79,10 +72,13 @@ namespace Speckle.Serialisation
     /// </summary>
     /// <param name="object"></param>
     /// <returns></returns>
-    public Base Deserialize(string @object)
+    public Base Deserialize(string hash, Action<string, int> onProgressAction = null)
     {
       RawSerializer.ResetAndInitialize();
-      return JsonConvert.DeserializeObject<Base>(@object, RawSerializerSettings);
+      RawSerializer.OnProgressAction = onProgressAction;
+
+      var objString = Transport.GetObject(hash);
+      return JsonConvert.DeserializeObject<Base>(objString, RawSerializerSettings);
     }
 
     /// <summary>
@@ -91,7 +87,7 @@ namespace Speckle.Serialisation
     /// <param name="object"></param>
     /// <param name="transport"></param>
     /// <returns></returns>
-    public Base DeserializeAndGet(string @object, ITransport transport, Action<string> onProgressAction = null)
+    public Base DeserializeAndGet(string @object, ITransport transport, Action<string, int> onProgressAction = null)
     {
       RawSerializer.ResetAndInitialize();
       RawSerializer.Transport = transport;

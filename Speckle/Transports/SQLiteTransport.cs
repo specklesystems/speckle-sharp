@@ -12,7 +12,7 @@ namespace Speckle.Transports
   // TODO: Investigate partitioning the object tables by the first two hash charaters. 
   public class SqlLiteObjectTransport : IDisposable, ITransport
   {
-    public string TransportName { get; set; } = "Sqlite";
+    public string TransportName { get; set; } = "LocalTransport";
 
     public string RootPath { get; set; }
     public string ConnectionString { get; set; }
@@ -44,8 +44,8 @@ namespace Speckle.Transports
     private void InitializeTables()
     {
 
+      // NOTE: used for creating partioned object tables.
       //string[] HexChars = new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
-
       //var cart = new List<string>();
       //foreach (var str in HexChars)
       //  foreach (var str2 in HexChars)
@@ -63,7 +63,6 @@ namespace Speckle.Transports
           ";
         command.ExecuteNonQuery();
       }
-
 
       // Insert Optimisations
 
@@ -90,11 +89,9 @@ namespace Speckle.Transports
 
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
     {
-      //Console.WriteLine($"Write Timer Elapsed: {Buffer.Count} / {CURR_BUFFER_SIZE / 1000} kb");
       TotalElapsed += PollInterval;
       if (TotalElapsed > 500)
       {
-        //Console.WriteLine("Calling write buffer!");
         TotalElapsed = 0;
         WriteTimer.Enabled = false;
         WriteBuffer();
@@ -106,7 +103,6 @@ namespace Speckle.Transports
       lock (Buffer)
       {
         if (Buffer.Count == 0) return;
-        //Console.WriteLine($"Writing buffer: {Buffer.Count} / {CURR_BUFFER_SIZE / 1000} kb");
         IsWriting = true;
         using (var t = Connection.BeginTransaction())
         {
@@ -209,6 +205,7 @@ namespace Speckle.Transports
         while (reader.Read())
         {
           return Utilities.DecompressString(reader.GetString(1));
+
         }
         throw new Exception("No object found");
       }
