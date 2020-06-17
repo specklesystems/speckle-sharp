@@ -15,8 +15,8 @@ namespace HttpTests
     static async Task Main(string[] args)
     {
       int numObjects = 100000;
-      Console.WriteLine($"-------------------------------------------------\n\n");
-      Console.WriteLine($"Starting to save {numObjects} of objects");
+      //Console.WriteLine($"-------------------------------------------------\n\n");
+      //Console.WriteLine($"Starting to save {numObjects} of objects");
 
       var stopWatch = new Stopwatch();
       stopWatch.Start();
@@ -26,6 +26,23 @@ namespace HttpTests
       await BufferedWriteTest();
 
       await BulkWriteMany();
+
+      await BufferedWriteTest();
+
+      await BulkWriteMany();
+
+      await BufferedWriteTest();
+
+      await BulkWriteMany();
+
+      await BufferedWriteTest();
+
+      await BulkWriteMany();
+
+      await BufferedWriteTest();
+
+      await BulkWriteMany();
+
       return;
 
       var objects = new List<Base>();      
@@ -75,9 +92,11 @@ namespace HttpTests
 
       for (int i = 0; i < numObjects; i++)
       {
-        var hash = Speckle.Models.Utilities.hashString($"hash-{i}-{rand.NextDouble()}");
-        transport.SaveObject(hash, $"content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}");
+        //var hash = Speckle.Models.Utilities.hashString($"hash-{i}-{rand.NextDouble()}");
+        transport.SaveObject($"hash-{i}-{rand.NextDouble()}", $"content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}");
       }
+
+      // waits for the buffer to be empty. 
       await transport.WriteComplete();
 
       var stopWatchStep = stopWatch.ElapsedMilliseconds;
@@ -97,8 +116,8 @@ namespace HttpTests
       var objs = new List<(string, string)>();
       for (int i = 0; i < numObjects; i++)
       {
-        var hash = Speckle.Models.Utilities.hashString($"hash-{i}-{rand.NextDouble()}");
-        objs.Add((hash, $"content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}"));
+        //var hash = Speckle.Models.Utilities.hashString();
+        objs.Add(($"hash-{i}-{rand.NextDouble()}", $"content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}"));
       }
 
       stopWatch.Start();

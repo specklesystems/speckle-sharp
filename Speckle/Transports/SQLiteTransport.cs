@@ -27,15 +27,13 @@ namespace Speckle.Transports
     private int MAX_BUFFER_SIZE = 5000000; // 5 mb
     private int CURR_BUFFER_SIZE = 0;
 
-    private string[] HexChars = new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
-
     public SqlLiteObjectTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
     {
       if (basePath == null)
         basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
       RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
-      ConnectionString = $@"URI=file:{RootPath}; PRAGMA synchronous = OFF; PRAGMA journal_mode = MEMORY;";
+      ConnectionString = $@"URI=file:{RootPath};";
 
       InitializeTables();
 
@@ -46,10 +44,12 @@ namespace Speckle.Transports
     private void InitializeTables()
     {
 
-      var cart = new List<string>();
-      foreach (var str in HexChars)
-        foreach (var str2 in HexChars)
-          cart.Add(str + str2);
+      //string[] HexChars = new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
+
+      //var cart = new List<string>();
+      //foreach (var str in HexChars)
+      //  foreach (var str2 in HexChars)
+      //    cart.Add(str + str2);
 
       Connection = new SQLiteConnection(ConnectionString);
       Connection.Open();
@@ -62,18 +62,23 @@ namespace Speckle.Transports
             ) WITHOUT ROWID;
           ";
         command.ExecuteNonQuery();
-
-        foreach(var suffix in cart)
-        {
-          command.CommandText = @$"
-            CREATE TABLE IF NOT EXISTS objects{suffix}(
-              hash TEXT PRIMARY KEY,
-              content TEXT
-            ) WITHOUT ROWID;
-          ";
-          command.ExecuteNonQuery();
-        }
       }
+
+
+      // Insert Optimisations
+
+      SQLiteCommand cmd;
+      cmd = new SQLiteCommand("PRAGMA journal_mode=MEMORY;", Connection);
+      cmd.ExecuteNonQuery();
+
+      cmd = new SQLiteCommand("PRAGMA synchronous=OFF;", Connection);
+      cmd.ExecuteNonQuery();
+
+      cmd = new SQLiteCommand("PRAGMA count_changes=OFF;", Connection);
+      cmd.ExecuteNonQuery();
+
+      cmd = new SQLiteCommand("PRAGMA temp_store=MEMORY;", Connection);
+      cmd.ExecuteNonQuery();
     }
 
     #region Writes
@@ -85,11 +90,11 @@ namespace Speckle.Transports
 
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
     {
-      Console.WriteLine($"Write Timer Elapsed: {Buffer.Count} / {CURR_BUFFER_SIZE / 1000} kb");
+      //Console.WriteLine($"Write Timer Elapsed: {Buffer.Count} / {CURR_BUFFER_SIZE / 1000} kb");
       TotalElapsed += PollInterval;
-      if(TotalElapsed > 500)
+      if (TotalElapsed > 500)
       {
-        Console.WriteLine("Calling write buffer!");
+        //Console.WriteLine("Calling write buffer!");
         TotalElapsed = 0;
         WriteTimer.Enabled = false;
         WriteBuffer();
@@ -101,17 +106,15 @@ namespace Speckle.Transports
       lock (Buffer)
       {
         if (Buffer.Count == 0) return;
-        Console.WriteLine($"Writing buffer: {Buffer.Count} / {CURR_BUFFER_SIZE/1000} kb");
+        //Console.WriteLine($"Writing buffer: {Buffer.Count} / {CURR_BUFFER_SIZE / 1000} kb");
         IsWriting = true;
         using (var t = Connection.BeginTransaction())
         {
           using (var command = new SQLiteCommand(Connection))
           {
-            // TODO: bunch these up into bulk inserts of 100 objects?
+            command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
             foreach (var kvp in Buffer)
             {
-              var suffix = kvp.Key.Substring(0, 2);
-              command.CommandText = $"INSERT OR IGNORE INTO objects{suffix}(hash, content) VALUES(@hash, @content)";
               command.Parameters.AddWithValue("@hash", kvp.Key);
               command.Parameters.AddWithValue("@content", Utilities.CompressString(kvp.Value));
               command.ExecuteNonQuery();
@@ -144,7 +147,8 @@ namespace Speckle.Transports
       if (CURR_BUFFER_SIZE > MAX_BUFFER_SIZE)
       {
         WriteBuffer();
-      } else
+      }
+      else
       {
         WriteTimer.Enabled = true;
         WriteTimer.Start();
@@ -160,8 +164,7 @@ namespace Speckle.Transports
     {
       using (var command = new SQLiteCommand(Connection))
       {
-        var suffix = hash.Substring(0, 2);
-        command.CommandText = $"INSERT OR IGNORE INTO objects{suffix}(hash, content) VALUES(@hash, @content)";
+        command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
         command.Parameters.AddWithValue("@hash", hash);
         command.Parameters.AddWithValue("@content", Utilities.CompressString(serializedObject));
         command.ExecuteNonQuery();
@@ -181,8 +184,7 @@ namespace Speckle.Transports
         {
           foreach (var (hash, content) in objects)
           {
-            var suffix = hash.Substring(0, 2);
-            command.CommandText = $"INSERT OR IGNORE INTO objects{suffix}(hash, content) VALUES(@hash, @content)";
+            command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
             command.Parameters.AddWithValue("@hash", hash);
             command.Parameters.AddWithValue("@content", Utilities.CompressString(content));
             command.ExecuteNonQuery();
