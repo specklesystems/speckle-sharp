@@ -14,7 +14,7 @@ namespace HttpTests
   {
     static async Task Main(string[] args)
     {
-      int numObjects = 3;
+      int numObjects = 100000;
       Console.WriteLine($"-------------------------------------------------\n\n");
       Console.WriteLine($"Starting to save {numObjects} of objects");
 
@@ -23,41 +23,28 @@ namespace HttpTests
 
       var test = new SqlLiteObjectTransport();
 
-      //for (int i = 0; i < numObjects; i++)
-      //{
-      //  test.SaveObject($"hash-{i}", $"content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}");
-      //}
+      await BufferedWriteTest();
 
-      //var stopWatchStep = stopWatch.ElapsedMilliseconds;
-
-      //Console.WriteLine($"Wrote {numObjects} in {stopWatchStep} ms");
-      //Console.WriteLine("Press something to continue");
-
-      //Console.ReadLine();
-
-      //var bar = test.GetObject($"hash-{numObjects-1}");
-
-      //Console.WriteLine($"read back obhect: {bar}");
+      await BulkWriteMany();
+      return;
       //Console.ReadLine();
 
       //var objs = new List<(string, string)>();
-      //for(int i = 0; i < numObjects; i++)
+      //for (int i = 0; i < numObjects; i++)
       //{
-      //  objs.Add(($"hash-{i}", $"content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}"));
+      //  objs.Add(($"hash-{i}-second", $"content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}"));
       //}
 
       //await test.SaveObjects(objs);
-      //Console.WriteLine($"Wrote {numObjects} in {stopWatch.ElapsedMilliseconds/1000}s; thats like {numObjects/stopWatch.ElapsedMilliseconds*1000} objs a second");
+      //Console.WriteLine($"Wrote {numObjects} in {(stopWatch.ElapsedMilliseconds -stopWatchStep)/ 1000}s; thats like {numObjects / (stopWatch.ElapsedMilliseconds-stopWatchStep) * 1000} objs a second");
 
-      var objects = new List<Base>();
-
-      
+      var objects = new List<Base>();      
       for (int i = 0; i < 100000; i++)
       {
         if (i % 2 == 0)
         {
           objects.Add(new Point(i, i, i));
-          ((dynamic)objects[i])["@detachment"] = new Point(i, 20, i);
+          //((dynamic)objects[i])["@detachment"] = new Point(i, 20, i);
         }
         else
         {
@@ -77,6 +64,54 @@ namespace HttpTests
       var cp = res;
       Console.WriteLine($"saving took ${(stopWatch.ElapsedMilliseconds - step)} miliseconds to compute");
       Console.ReadLine();
+    }
+
+    public static async Task BufferedWriteTest()
+    {
+      int numObjects = 100000;
+      var transport = new SqlLiteObjectTransport();
+      var rand = new Random();
+      var stopWatch = new Stopwatch();
+
+      Console.WriteLine($"-------------------------------------------------\n");
+      Console.WriteLine($"Starting to save {numObjects} of objects");
+
+      stopWatch.Start();
+
+      for (int i = 0; i < numObjects; i++)
+      {
+        transport.SaveObject($"hash-{i}-{rand.NextDouble()}", $"content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}");
+      }
+      await transport.WriteComplete();
+
+      var stopWatchStep = stopWatch.ElapsedMilliseconds;
+      var objsPerSecond = (double) numObjects / (stopWatchStep / 1000);
+      Console.WriteLine($"-------------------------------------------------");
+      Console.WriteLine($"BufferedWriteTest: Wrote {numObjects} in {stopWatchStep} ms -> {objsPerSecond} objects per second");
+      Console.WriteLine($"-------------------------------------------------\n");
+    }
+
+    public static async Task BulkWriteMany()
+    {
+      int numObjects = 100000;
+      var transport = new SqlLiteObjectTransport();
+      var rand = new Random();
+      var stopWatch = new Stopwatch();
+
+      var objs = new List<(string, string)>();
+      for (int i = 0; i < numObjects; i++)
+      {
+        objs.Add(($"hash-{i}-{rand.NextDouble()}", $"content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}"));
+      }
+
+      stopWatch.Start();
+      await transport.SaveObjects(objs);
+
+      var stopWatchStep = stopWatch.ElapsedMilliseconds;
+      var objsPerSecond = (double)numObjects / (stopWatchStep / 1000);
+      Console.WriteLine($"-------------------------------------------------");
+      Console.WriteLine($"BulkWriteMany: Wrote {numObjects} in {stopWatchStep} ms -> {objsPerSecond} objects per second");
+      Console.WriteLine($"-------------------------------------------------\n");
     }
   }
 }

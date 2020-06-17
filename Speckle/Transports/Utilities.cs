@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Speckle.Transports
 {
@@ -73,6 +74,18 @@ namespace Speckle.Transports
       {
         yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
       }
+    }
+
+    public static async Task WaitUntil(Func<bool> condition, int frequency = 25, int timeout = -1)
+    {
+      var waitTask = Task.Run(async () =>
+      {
+        while (!condition()) await Task.Delay(frequency);
+      });
+
+      if (waitTask != await Task.WhenAny(waitTask,
+              Task.Delay(timeout)))
+        throw new TimeoutException();
     }
   }
 }

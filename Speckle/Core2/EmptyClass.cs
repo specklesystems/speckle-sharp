@@ -35,7 +35,7 @@ namespace Speckle.Core2
 
       Serializer.SerializeAndSave(commit, LocalObjectTransport);
 
-      PreviousCommitId = commit.hash;
+      //PreviousCommitId = commit.hash;
       return PreviousCommitId;
     }
 

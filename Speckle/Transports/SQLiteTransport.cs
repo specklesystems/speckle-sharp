@@ -18,9 +18,13 @@ namespace Speckle.Transports
 
     private SQLiteConnection Connection { get; set; }
 
-    private Dictionary<string, string> Buffer = new Dictionary<string, string>(100);
+    private Dictionary<string, string> Buffer = new Dictionary<string, string>();
     private System.Timers.Timer WriteTimer;
     private int TotalElapsed = 0, PollInterval = 100;
+    private bool IsWriting = false;
+
+    private int MAX_BUFFER_SIZE = 5000000; // 5 mb
+    private int CURR_BUFFER_SIZE = 0;
 
     public SqlLiteObjectTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
     {
@@ -32,10 +36,8 @@ namespace Speckle.Transports
 
       InitializeTables();
 
-      WriteTimer = new System.Timers.Timer() { AutoReset = false, Enabled = false, Interval = PollInterval };
-      WriteTimer.Elapsed += WriteLocalBuffer;
-      WriteTimer.Start();
-
+      WriteTimer = new System.Timers.Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
+      WriteTimer.Elapsed += WriteTimerElapsed;
     }
 
     private void InitializeTables()
@@ -56,26 +58,32 @@ namespace Speckle.Transports
     }
 
     #region Writes
-    private void WriteLocalBuffer(object sender, ElapsedEventArgs e)
-    {
-      TotalElapsed += PollInterval;
-      if(Buffer.Count == 0)
-      {
-        // TODO: Investigate into emitting "completed" event? 
-        return;
-      }
-      // If we don't have enough objects, or less than one second elapsed, exit
-      if (Buffer.Count < 100 && TotalElapsed < 300)
-      {
-        //TotalElapsed = 0;
-        WriteTimer.Start();
-        return;
-      }
 
+    public async Task WriteComplete()
+    {
+      await Utilities.WaitUntil(() => { return CURR_BUFFER_SIZE == 0; }, 100);
+    }
+
+    private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
+    {
+      Console.WriteLine($"Write Timer Elapsed: {Buffer.Count} / {CURR_BUFFER_SIZE / 1000} kb");
+      TotalElapsed += PollInterval;
+      if(TotalElapsed > 500)
+      {
+        Console.WriteLine("Calling write buffer!");
+        TotalElapsed = 0;
+        WriteTimer.Enabled = false;
+        WriteBuffer();
+      }
+    }
+
+    private void WriteBuffer()
+    {
       lock (Buffer)
       {
-        Console.WriteLine($"writing {Buffer.Count} objs");
-        TotalElapsed = 0;
+        if (Buffer.Count == 0) return;
+        Console.WriteLine($"Writing buffer: {Buffer.Count} / {CURR_BUFFER_SIZE/1000} kb");
+        IsWriting = true;
         using (var t = Connection.BeginTransaction())
         {
           using (var command = new SQLiteCommand(Connection))
@@ -90,10 +98,11 @@ namespace Speckle.Transports
             }
           }
           t.Commit();
-          t.CommitAsync();
         }
         Buffer.Clear();
-        WriteTimer.Start();
+        TotalElapsed = 0;
+        CURR_BUFFER_SIZE = 0;
+        IsWriting = false;
       }
     }
 
@@ -105,9 +114,19 @@ namespace Speckle.Transports
     /// <param name="overwrite"></param>
     public void SaveObject(string hash, string serializedObject, bool owerite = false)
     {
+      CURR_BUFFER_SIZE += System.Text.Encoding.UTF8.GetByteCount(serializedObject);
+
       lock (Buffer)
       {
         Buffer.Add(hash, serializedObject);
+      }
+
+      if (CURR_BUFFER_SIZE > MAX_BUFFER_SIZE)
+      {
+        WriteBuffer();
+      } else
+      {
+        WriteTimer.Enabled = true;
         WriteTimer.Start();
       }
     }

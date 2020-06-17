@@ -22,10 +22,10 @@ namespace Speckle.Models
     /// calculate it rather than the default "serialize" everything.
     /// </para>
     /// </summary>
-    public virtual string hash
-    {
-      get; set;
-    }
+    //public virtual string hash
+    //{
+    //  get; set;
+    //}
 
     /// <summary>
     /// Intransient identifier that does not change when properties change. 

@@ -37,8 +37,6 @@ namespace Speckle.Serialisation
     /// </summary>
     public ITransport Transport { get; set; }
 
-    private MemoryTransport InnerReferenceTracker { get; set; }
-
     #region Write Json Helper Properties
 
     /// <summary>
@@ -56,12 +54,6 @@ namespace Speckle.Serialisation
     /// </summary>
     Dictionary<string, Dictionary<string, int>> RefMinDepthTracker { get; set; }
 
-    /// <summary>
-    /// Holds all the parsed hashes within this session.
-    /// </summary>
-    HashSet<string> Parsed { get; set; }
-
-    string CurrentParentObjectHash { get; set; }
 
     #endregion
 
@@ -85,11 +77,7 @@ namespace Speckle.Serialisation
       DetachLineage = new List<bool>();
       Lineage = new List<string>();
       RefMinDepthTracker = new Dictionary<string, Dictionary<string, int>>();
-      Parsed = new HashSet<string>();
-      CurrentParentObjectHash = "";
       OnProgressAction = null;
-
-      InnerReferenceTracker = new MemoryTransport();
     }
 
     public override bool CanConvert(Type objectType) => true;
@@ -193,8 +181,6 @@ namespace Speckle.Serialisation
     // These tree references will thereafter be stored in the __tree prop. 
     void TrackReferenceInTree(string refId)
     {
-      var path = "";
-
       // Help with creating closure table entries.
       for (int i = 0; i < Lineage.Count; i++)
       {
@@ -299,8 +285,6 @@ namespace Speckle.Serialisation
 
           OnProgressAction?.Invoke(Transport.TransportName);
         }
-
-        Parsed.Add(Lineage[Lineage.Count - 1]);
 
         // Pop lineage tracker
         Lineage.RemoveAt(Lineage.Count - 1);

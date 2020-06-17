@@ -144,7 +144,7 @@ namespace Speckle.Core
 
       EmitOnProgress(1, 2, "Comitting revision");
 
-      PreviousCommitId = CurrentCommit.hash;
+      //PreviousCommitId = CurrentCommit.hash;
 
       branch.Commits.Add(PreviousCommitId);
 
