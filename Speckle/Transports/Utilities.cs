@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -86,6 +87,17 @@ namespace Speckle.Transports
       if (waitTask != await Task.WhenAny(waitTask,
               Task.Delay(timeout)))
         throw new TimeoutException();
+    }
+
+    public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<IEnumerable<T>> sequences)
+    {
+      IEnumerable<IEnumerable<T>> emptyProduct = new[] { Enumerable.Empty<T>() };
+      return sequences.Aggregate(
+        emptyProduct,
+        (accumulator, sequence) =>
+          from accseq in accumulator
+          from item in sequence
+          select accseq.Concat(new[] { item }));
     }
   }
 }

@@ -47,7 +47,9 @@ namespace Speckle.Serialisation
     public string Serialize(Base @object)
     {
       Converter.ResetAndInitialize();
-      return JsonConvert.SerializeObject(@object, ConversionSettings);
+      var obj =  JsonConvert.SerializeObject(@object, ConversionSettings);
+      var hash = JObject.Parse(obj).GetValue("hash").ToString();
+      return obj;
     }
 
     /// <summary>

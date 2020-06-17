@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -26,13 +27,15 @@ namespace Speckle.Transports
     private int MAX_BUFFER_SIZE = 5000000; // 5 mb
     private int CURR_BUFFER_SIZE = 0;
 
+    private string[] HexChars = new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
+
     public SqlLiteObjectTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
     {
       if (basePath == null)
         basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
       RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
-      ConnectionString = $@"URI=file:{RootPath}";
+      ConnectionString = $@"URI=file:{RootPath}; PRAGMA synchronous = OFF; PRAGMA journal_mode = MEMORY;";
 
       InitializeTables();
 
@@ -42,6 +45,12 @@ namespace Speckle.Transports
 
     private void InitializeTables()
     {
+
+      var cart = new List<string>();
+      foreach (var str in HexChars)
+        foreach (var str2 in HexChars)
+          cart.Add(str + str2);
+
       Connection = new SQLiteConnection(ConnectionString);
       Connection.Open();
       using (var command = new SQLiteCommand(Connection))
