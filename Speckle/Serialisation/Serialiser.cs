@@ -15,17 +15,17 @@ namespace Speckle.Serialisation
   /// </summary>
   public class Serializer
   {
-    public BaseObjectSerializer Converter;
+    public BaseObjectSerializer RawSerializer;
 
-    public JsonSerializerSettings ConversionSettings;
+    public JsonSerializerSettings RawSerializerSettings;
 
     /// <summary>
     /// Initializes the converter, and sets some default values for newtonsoft. This class exposes several methods that help with serialisation, simultaneous serialisation and persistance, as well as deserialisation, and simultaneous deserialization and retrieval of objects.
     /// </summary>
     public Serializer()
     {
-      Converter = new BaseObjectSerializer();
-      ConversionSettings = new JsonSerializerSettings()
+      RawSerializer = new BaseObjectSerializer();
+      RawSerializerSettings = new JsonSerializerSettings()
       {
         NullValueHandling = NullValueHandling.Ignore,
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -35,7 +35,7 @@ namespace Speckle.Serialisation
         Formatting = Formatting.None,
 #endif
         ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-        Converters = new List<Newtonsoft.Json.JsonConverter> { Converter }
+        Converters = new List<Newtonsoft.Json.JsonConverter> { RawSerializer }
       };
     }
 
@@ -46,8 +46,8 @@ namespace Speckle.Serialisation
     /// <returns></returns>
     public string Serialize(Base @object)
     {
-      Converter.ResetAndInitialize();
-      var obj =  JsonConvert.SerializeObject(@object, ConversionSettings);
+      RawSerializer.ResetAndInitialize();
+      var obj =  JsonConvert.SerializeObject(@object, RawSerializerSettings);
       var hash = JObject.Parse(obj).GetValue("hash").ToString();
       return obj;
     }
@@ -65,11 +65,13 @@ namespace Speckle.Serialisation
         throw new Exception("You must provide at least one transport.");
 
       // set up things
-      Converter.ResetAndInitialize();
-      Converter.Transport = transport;
-      Converter.OnProgressAction = onProgressAction;
+      RawSerializer.ResetAndInitialize();
+      RawSerializer.Transport = transport;
+      RawSerializer.OnProgressAction = onProgressAction;
 
-      return JsonConvert.SerializeObject(@object, ConversionSettings);
+      var obj = JsonConvert.SerializeObject(@object, RawSerializerSettings);
+      var hash = JObject.Parse(obj).GetValue("hash").ToString();
+      return obj;
     }
 
     /// <summary>
@@ -79,8 +81,8 @@ namespace Speckle.Serialisation
     /// <returns></returns>
     public Base Deserialize(string @object)
     {
-      Converter.ResetAndInitialize();
-      return JsonConvert.DeserializeObject<Base>(@object, ConversionSettings);
+      RawSerializer.ResetAndInitialize();
+      return JsonConvert.DeserializeObject<Base>(@object, RawSerializerSettings);
     }
 
     /// <summary>
@@ -91,11 +93,11 @@ namespace Speckle.Serialisation
     /// <returns></returns>
     public Base DeserializeAndGet(string @object, ITransport transport, Action<string> onProgressAction = null)
     {
-      Converter.ResetAndInitialize();
-      Converter.Transport = transport;
-      Converter.OnProgressAction = onProgressAction;
+      RawSerializer.ResetAndInitialize();
+      RawSerializer.Transport = transport;
+      RawSerializer.OnProgressAction = onProgressAction;
 
-      return JsonConvert.DeserializeObject<Base>(@object, ConversionSettings);
+      return JsonConvert.DeserializeObject<Base>(@object, RawSerializerSettings);
     }
   }
 

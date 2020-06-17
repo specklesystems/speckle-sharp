@@ -61,8 +61,18 @@ namespace Speckle.Transports
               content TEXT
             ) WITHOUT ROWID;
           ";
-
         command.ExecuteNonQuery();
+
+        foreach(var suffix in cart)
+        {
+          command.CommandText = @$"
+            CREATE TABLE IF NOT EXISTS objects{suffix}(
+              hash TEXT PRIMARY KEY,
+              content TEXT
+            ) WITHOUT ROWID;
+          ";
+          command.ExecuteNonQuery();
+        }
       }
     }
 
@@ -100,7 +110,8 @@ namespace Speckle.Transports
             // TODO: bunch these up into bulk inserts of 100 objects?
             foreach (var kvp in Buffer)
             {
-              command.CommandText = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+              var suffix = kvp.Key.Substring(0, 2);
+              command.CommandText = $"INSERT OR IGNORE INTO objects{suffix}(hash, content) VALUES(@hash, @content)";
               command.Parameters.AddWithValue("@hash", kvp.Key);
               command.Parameters.AddWithValue("@content", Utilities.CompressString(kvp.Value));
               command.ExecuteNonQuery();
@@ -149,7 +160,8 @@ namespace Speckle.Transports
     {
       using (var command = new SQLiteCommand(Connection))
       {
-        command.CommandText = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+        var suffix = hash.Substring(0, 2);
+        command.CommandText = $"INSERT OR IGNORE INTO objects{suffix}(hash, content) VALUES(@hash, @content)";
         command.Parameters.AddWithValue("@hash", hash);
         command.Parameters.AddWithValue("@content", Utilities.CompressString(serializedObject));
         command.ExecuteNonQuery();
@@ -169,7 +181,8 @@ namespace Speckle.Transports
         {
           foreach (var (hash, content) in objects)
           {
-            command.CommandText = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+            var suffix = hash.Substring(0, 2);
+            command.CommandText = $"INSERT OR IGNORE INTO objects{suffix}(hash, content) VALUES(@hash, @content)";
             command.Parameters.AddWithValue("@hash", hash);
             command.Parameters.AddWithValue("@content", Utilities.CompressString(content));
             command.ExecuteNonQuery();
