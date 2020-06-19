@@ -21,7 +21,7 @@ namespace Speckle.Transports
       Objects = new Dictionary<string, string>();
     }
 
-    public void SaveObject(string hash, string serializedObject, bool overwrite = false)
+    public void SaveObject(string hash, string serializedObject)
     {
       Objects[hash] = serializedObject;
     }

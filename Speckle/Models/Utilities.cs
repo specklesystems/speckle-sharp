@@ -5,6 +5,9 @@ namespace Speckle.Models
 {
   public static class Utilities
   {
+
+    public static int HashLength { get; } = 32;
+
     public enum HashingFuctions
     {
       SHA256, MD5
@@ -15,16 +18,17 @@ namespace Speckle.Models
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
-    public static string hashString(string input, HashingFuctions func = HashingFuctions.MD5)
+    public static string hashString(string input, HashingFuctions func = HashingFuctions.SHA256)
     {
       switch (func)
       {
         case HashingFuctions.SHA256:
-          return Utilities.sha256(input);
+          return Utilities.sha256(input).Substring(0, HashLength);
 
         case HashingFuctions.MD5:
         default:
-          return Utilities.md5(input);
+          return Utilities.md5(input).Substring(0, HashLength);
+        
       }
     }
 

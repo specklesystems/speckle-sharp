@@ -60,10 +60,23 @@ namespace Speckle.Serialisation
       RawSerializer.Transport = Transport;
       RawSerializer.OnProgressAction = onProgressAction;
 
+      // Hack
+      RawSerializer.SecondaryWriteTransports = new List<ITransport>() { new RemoteTransport(@"http://localhost:3000", "lol", "lol") };
+
       var obj =  JsonConvert.SerializeObject(@object, RawSerializerSettings);
       var hash = JObject.Parse(obj).GetValue("hash").ToString();
 
-      await Transport.WriteComplete();
+      //await Transport.WriteComplete();
+      await Transports.Utilities.WaitUntil(() =>
+      {
+        foreach(var t in RawSerializer.SecondaryWriteTransports)
+        {
+          if (!((RemoteTransport)t).GetWriteCompletionStatus()) return false;
+        }
+        if (!Transport.GetWriteCompletionStatus()) return false;
+        return true;
+
+      }, 100);
       return hash;
     }
 
@@ -79,21 +92,6 @@ namespace Speckle.Serialisation
 
       var objString = Transport.GetObject(hash);
       return JsonConvert.DeserializeObject<Base>(objString, RawSerializerSettings);
-    }
-
-    /// <summary>
-    /// Deserializes an object, and gets its constituent parts via the provided transport.
-    /// </summary>
-    /// <param name="object"></param>
-    /// <param name="transport"></param>
-    /// <returns></returns>
-    public Base DeserializeAndGet(string @object, ITransport transport, Action<string, int> onProgressAction = null)
-    {
-      RawSerializer.ResetAndInitialize();
-      RawSerializer.Transport = transport;
-      RawSerializer.OnProgressAction = onProgressAction;
-
-      return JsonConvert.DeserializeObject<Base>(@object, RawSerializerSettings);
     }
   }
 

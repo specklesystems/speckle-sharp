@@ -31,6 +31,8 @@ namespace Speckle.Serialisation
     /// </summary>
     public ITransport Transport { get; set; }
 
+    public List<ITransport> SecondaryWriteTransports { get; set; }
+
     #region Write Json Helper Properties
 
     /// <summary>
@@ -73,7 +75,7 @@ namespace Speckle.Serialisation
       RefMinDepthTracker = new Dictionary<string, Dictionary<string, int>>();
       OnProgressAction = null;
       TotalProcessedCount = 0;
-  }
+    }
 
     public override bool CanConvert(Type objectType) => true;
 
@@ -201,7 +203,7 @@ namespace Speckle.Serialisation
         //CurrentParentObjectHash = ;
 
         // Append to lineage tracker
-        Lineage.Add( Guid.NewGuid().ToString());
+        Lineage.Add(Guid.NewGuid().ToString());
 
         var jo = new JObject();
         var propertyNames = obj.GetDynamicMemberNames();
@@ -278,6 +280,14 @@ namespace Speckle.Serialisation
           Transport.SaveObject(objId, objString);
 
           OnProgressAction?.Invoke(Transport.TransportName, ++TotalProcessedCount);
+
+          if (SecondaryWriteTransports != null && SecondaryWriteTransports.Count != 0)
+          {
+            foreach (var transport in SecondaryWriteTransports)
+            {
+              transport.SaveObject(objId, objString);
+            }
+          }
         }
 
         // Pop lineage tracker

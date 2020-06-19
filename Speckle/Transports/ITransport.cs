@@ -17,7 +17,7 @@ namespace Speckle.Transports
     /// <param name="hash">The hash of the object.</param>
     /// <param name="serializedObject">The full string representation of the object.</param>
     /// <param name="overwrite">If true, will overrwrite the file even if present.</param>
-    public void SaveObject(string hash, string serializedObject, bool overwrite = false);
+    public void SaveObject(string hash, string serializedObject);
 
     /// <summary>
     /// Gets an object.

@@ -42,9 +42,10 @@ namespace Speckle.Core2
 
     public async Task<List<Base>> PullLocal(string commitId)
     {
-      var commit = (Commit) Serializer.DeserializeAndGet(LocalObjectTransport.GetObject(commitId), LocalObjectTransport);
+      //var commit = (Commit) Serializer.DeserializeAndGet(LocalObjectTransport.GetObject(commitId), LocalObjectTransport);
 
-      return commit.Objects;
+      //return commit.Objects;
+      return null;
     }
 
   }

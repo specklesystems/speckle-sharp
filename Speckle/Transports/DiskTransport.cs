@@ -71,6 +71,16 @@ namespace Speckle.Transports
       }
     }
 
+    public void SaveObject(string objectId, string serializedObject)
+    {
+      var (dirPath, filePath) = DirFileFromObjectId(objectId);
+
+      if (File.Exists(filePath)) return;
+      if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
+
+      File.WriteAllText(filePath, serializedObject);
+    }
+
     public void SaveObject(string objectId, string serializedObject, bool overwrite = false)
     {
       var (dirPath, filePath) = DirFileFromObjectId(objectId);

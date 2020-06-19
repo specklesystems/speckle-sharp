@@ -9,7 +9,6 @@ using System.Timers;
 
 namespace Speckle.Transports
 {
-  // TODO: Investigate partitioning the object tables by the first two hash charaters. 
   public class SqlLiteObjectTransport : IDisposable, ITransport
   {
     public string TransportName { get; set; } = "LocalTransport";
@@ -21,9 +20,9 @@ namespace Speckle.Transports
 
     private Dictionary<string, string> Buffer = new Dictionary<string, string>();
     private System.Timers.Timer WriteTimer;
-    private int TotalElapsed = 0, PollInterval = 100;
-    private bool IsWriting = false;
+    private int TotalElapsed = 0, PollInterval = 25;
 
+    private bool IS_WRITING = false;
     private int MAX_BUFFER_SIZE = 5000000; // 5 mb
     private int CURR_BUFFER_SIZE = 0;
 
@@ -70,8 +69,9 @@ namespace Speckle.Transports
       cmd = new SQLiteCommand("PRAGMA journal_mode=MEMORY;", Connection);
       cmd.ExecuteNonQuery();
 
-      cmd = new SQLiteCommand("PRAGMA synchronous=OFF;", Connection);
-      cmd.ExecuteNonQuery();
+      // Note/Hack: This setting has the potential to corrupt the db.
+      //cmd = new SQLiteCommand("PRAGMA synchronous=OFF;", Connection);
+      //cmd.ExecuteNonQuery();
 
       cmd = new SQLiteCommand("PRAGMA count_changes=OFF;", Connection);
       cmd.ExecuteNonQuery();
@@ -84,7 +84,12 @@ namespace Speckle.Transports
 
     public async Task WriteComplete()
     {
-      await Utilities.WaitUntil(() => { return CURR_BUFFER_SIZE == 0; }, 100);
+      await Utilities.WaitUntil(() => { return GetWriteCompletionStatus(); }, 100);
+    }
+
+    public bool GetWriteCompletionStatus()
+    {
+      return CURR_BUFFER_SIZE == 0 && !IS_WRITING;
     }
 
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
@@ -103,7 +108,7 @@ namespace Speckle.Transports
       lock (Buffer)
       {
         if (Buffer.Count == 0) return;
-        IsWriting = true;
+        IS_WRITING = true;
         using (var t = Connection.BeginTransaction())
         {
           using (var command = new SQLiteCommand(Connection))
@@ -121,7 +126,7 @@ namespace Speckle.Transports
         Buffer.Clear();
         TotalElapsed = 0;
         CURR_BUFFER_SIZE = 0;
-        IsWriting = false;
+        IS_WRITING = false;
       }
     }
 
@@ -131,7 +136,7 @@ namespace Speckle.Transports
     /// <param name="hash"></param>
     /// <param name="serializedObject"></param>
     /// <param name="overwrite"></param>
-    public void SaveObject(string hash, string serializedObject, bool owerite = false)
+    public void SaveObject(string hash, string serializedObject)
     {
       CURR_BUFFER_SIZE += System.Text.Encoding.UTF8.GetByteCount(serializedObject);
 
@@ -213,6 +218,7 @@ namespace Speckle.Transports
 
     public IEnumerable<string> GetObjects(IEnumerable<string> hashes)
     {
+      //hashes.
       //using (var command = new SQLiteCommand(Connection))
       //{
       //  command.CommandText = "SELECT * FROM objects WHERE hash = @hash LIMIT 1 ";
