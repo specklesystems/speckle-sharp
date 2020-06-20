@@ -33,7 +33,7 @@ namespace Speckle.Serialisation
         NullValueHandling = NullValueHandling.Ignore,
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
 #if DEBUG
-        Formatting = Formatting.Indented,
+        //Formatting = Formatting.Indented,
 #else
         Formatting = Formatting.None,
 #endif
@@ -76,12 +76,12 @@ namespace Speckle.Serialisation
         if (!Transport.GetWriteCompletionStatus()) return false;
         return true;
 
-      }, 100);
+      });
       return hash;
     }
 
     /// <summary>
-    /// Deserializes a fully serialized object. If any references are present, it will fail.
+    /// Deserializes a fully serialized object.
     /// </summary>
     /// <param name="object"></param>
     /// <returns></returns>

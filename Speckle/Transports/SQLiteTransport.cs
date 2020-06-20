@@ -142,7 +142,9 @@ namespace Speckle.Transports
 
       lock (Buffer)
       {
-        Buffer.Add(hash, serializedObject);
+        //TODO: Protect against saving the same thing twice. Perhaps keep a permanent in memory list of all serialized objs?
+        if (!Buffer.ContainsKey(hash))
+          Buffer.Add(hash, serializedObject);
       }
 
       if (CURR_BUFFER_SIZE > MAX_BUFFER_SIZE)

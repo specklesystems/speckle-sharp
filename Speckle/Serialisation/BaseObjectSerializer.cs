@@ -297,6 +297,11 @@ namespace Speckle.Serialisation
 
       var type = value.GetType();
 
+      // TODO: List handling and dictionary serialisation handling can be sped up significantly if we first check by their inner type.
+      // This handles a broader case in which we are, essentially, checking only for object[] or List<object> / Dictionary<string, object> cases.
+      // A much faster approach is to check for List<primitive>, where primitive = string, number, etc. and directly serialize it in full.
+      // Same goes for dictionaries.
+
       // List handling
       if (typeof(IEnumerable).IsAssignableFrom(type) && !typeof(IDictionary).IsAssignableFrom(type) && type != typeof(string))
       {

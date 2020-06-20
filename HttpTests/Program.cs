@@ -28,29 +28,30 @@ namespace HttpTests
 
     public static async Task SerializedBuffering()
     {
-      int numObjects = 1000;
+      int numObjects = 1_000_000;
       var objects = new List<Base>();
       for (int i = 0; i < numObjects; i++)
       {
         if (i % 2 == 0)
         {
           objects.Add(new Point(i, i, i));
-          ((dynamic)objects[i])["@detachment"] = new Point(i, 20, i);
+          ((dynamic)objects[i])["@wot"] = new Point(i, 20, i);
+          ((dynamic)objects[i])["@bot"] = new Point(20, 20, i);
         }
         else
         {
           objects.Add(new Polyline { Points = new List<Point>() { new Point(i * 3, i * 3, i * 3), new Point(i / 2, i / 2, i / 2) } });
-          for (int j = 0; j < 3000; j++)
+          for (int j = 0; j < 30; j++)
           {
-            ((Polyline)objects[i]).Points.Add(new Point(j, j, j));
+            ((Polyline)objects[i]).Points.Add(new Point(j, j, 10+j));
           }
         }
       }
 
       var p = new Polyline();
-      for (int j = 0; j < 50000; j++)
+      for (int j = 0; j < 500; j++)
       {
-        p.Points.Add(new Point(j, 2, 3));
+        p.Points.Add(new Point(j, 2, 42));
       }
 
       var commit = new Commit();
