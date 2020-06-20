@@ -28,35 +28,41 @@ namespace HttpTests
 
     public static async Task SerializedBuffering()
     {
-      int numObjects = 1_000_000;
+      var sw = new Stopwatch();
+      sw.Start();
+
+      int numObjects = 200_000;
       var objects = new List<Base>();
       for (int i = 0; i < numObjects; i++)
       {
-        if (i % 2 == 0)
+        if (i % 3 == 0)
         {
           objects.Add(new Point(i, i, i));
-          ((dynamic)objects[i])["@wot"] = new Point(i, 20, i);
-          ((dynamic)objects[i])["@bot"] = new Point(20, 20, i);
+          ((dynamic)objects[i])["@bobba"] = new Point(2 + i + i, 42, i);
+          //((dynamic)objects[i])["@botbbb"] = new Point(23, 420, i);
         }
         else
         {
-          objects.Add(new Polyline { Points = new List<Point>() { new Point(i * 3, i * 3, i * 3), new Point(i / 2, i / 2, i / 2) } });
+          objects.Add(new Polyline { Points = new List<Point>() { new Point(i * 3, i / 3 * 2, i * 3), new Point(i / 2, i / 2, i / 2) } });
           for (int j = 0; j < 30; j++)
           {
-            ((Polyline)objects[i]).Points.Add(new Point(j, j, 10+j));
+            ((Polyline)objects[i]).Points.Add(new Point(j + i, j, 42 + j));
           }
         }
       }
 
-      var p = new Polyline();
-      for (int j = 0; j < 500; j++)
-      {
-        p.Points.Add(new Point(j, 2, 42));
-      }
+      //var p = new Polyline();
+      //for (int j = 0; j < 500; j++)
+      //{
+      //  p.Points.Add(new Point(j, 30, 42));
+      //}
 
       var commit = new Commit();
       commit.Objects = objects;
-      commit.Objects.Add(p);
+      //commit.Objects.Add(p);
+
+      var step = sw.ElapsedMilliseconds;
+      Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
 
       var Serializer = new Serializer();
 
@@ -66,6 +72,8 @@ namespace HttpTests
       });
 
       var cp = res;
+      Console.WriteLine($"Finished sending {numObjects} objs or more in ${(sw.ElapsedMilliseconds - step) / 1000f} seconds.");
+
       //var res2 = Serializer.Deserialize(res);
       //var cp2 = res2;
     }

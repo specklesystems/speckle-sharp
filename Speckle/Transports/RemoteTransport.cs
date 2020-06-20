@@ -28,8 +28,8 @@ namespace Speckle.Transports
 
     private bool IS_WRITING = false;
 
-    private int MAX_BUFFER_SIZE = 200000; // 100k
-    private int MAX_MULTIPART_COUNT = 5;
+    private int MAX_BUFFER_SIZE = 250000; // 100k
+    private int MAX_MULTIPART_COUNT = 4;
     private int CURR_BUFFER_SIZE = 0;
 
     public RemoteTransport(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
