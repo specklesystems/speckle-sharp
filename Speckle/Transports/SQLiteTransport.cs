@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -19,10 +20,13 @@ namespace Speckle.Transports
     private SQLiteConnection Connection { get; set; }
 
     private Dictionary<string, string> Buffer = new Dictionary<string, string>();
+    private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
+
     private System.Timers.Timer WriteTimer;
     private int TotalElapsed = 0, PollInterval = 25;
 
     private bool IS_WRITING = false;
+    private int MAX_TRANSACTION_SIZE = 1000;
     private int MAX_BUFFER_SIZE = 5000000; // 5 mb
     private int CURR_BUFFER_SIZE = 0;
 
@@ -84,22 +88,22 @@ namespace Speckle.Transports
 
     public async Task WriteComplete()
     {
-      await Utilities.WaitUntil(() => { return GetWriteCompletionStatus(); }, 100);
+      await Utilities.WaitUntil(() => { return GetWriteCompletionStatus(); }, 50);
     }
 
     public bool GetWriteCompletionStatus()
     {
-      return CURR_BUFFER_SIZE == 0 && !IS_WRITING;
+      return Queue.Count == 0 && !IS_WRITING;
     }
 
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
     {
       TotalElapsed += PollInterval;
-      if (TotalElapsed > 500)
+      if (TotalElapsed > 100)
       {
         TotalElapsed = 0;
         WriteTimer.Enabled = false;
-        WriteBuffer();
+        ConsumeQueue();
       }
     }
 
@@ -130,28 +134,43 @@ namespace Speckle.Transports
       }
     }
 
-    /// <summary>
-    /// Adds the object into a buffer that will be written to the db later.
-    /// </summary>
-    /// <param name="hash"></param>
-    /// <param name="serializedObject"></param>
-    /// <param name="overwrite"></param>
+    private void ConsumeQueue()
+    {
+      IS_WRITING = true;
+
+      var i = 0;
+      ValueTuple<string, string, int> result;
+      using (var t = Connection.BeginTransaction())
+      {
+        using (var command = new SQLiteCommand(Connection))
+        {
+          command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+          while (Queue.TryDequeue(out result) && i < MAX_TRANSACTION_SIZE)
+          {
+            command.Parameters.AddWithValue("@hash", result.Item1);
+            command.Parameters.AddWithValue("@content", result.Item2);
+            i++;
+          }
+          t.Commit();
+        }
+      }
+
+
+      IS_WRITING = false;
+      if (!WriteTimer.Enabled)
+      {
+        WriteTimer.Enabled = true;
+        WriteTimer.Start();
+      }
+    }
+
     public void SaveObject(string hash, string serializedObject)
     {
       CURR_BUFFER_SIZE += System.Text.Encoding.UTF8.GetByteCount(serializedObject);
 
-      lock (Buffer)
-      {
-        //TODO: Protect against saving the same thing twice. Perhaps keep a permanent in memory list of all serialized objs?
-        if (!Buffer.ContainsKey(hash))
-          Buffer.Add(hash, serializedObject);
-      }
+      Queue.Enqueue((hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject)));
 
-      if (CURR_BUFFER_SIZE > MAX_BUFFER_SIZE)
-      {
-        WriteBuffer();
-      }
-      else
+      if (!WriteTimer.Enabled && !IS_WRITING)
       {
         WriteTimer.Enabled = true;
         WriteTimer.Start();

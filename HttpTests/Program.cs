@@ -37,16 +37,16 @@ namespace HttpTests
       {
         if (i % 3 == 0)
         {
-          objects.Add(new Point(i, i, i));
+          objects.Add(new Point(i, i, i + 323 ));
           ((dynamic)objects[i])["@bobba"] = new Point(2 + i + i, 42, i);
           //((dynamic)objects[i])["@botbbb"] = new Point(23, 420, i);
         }
         else
         {
-          objects.Add(new Polyline { Points = new List<Point>() { new Point(i * 3, i / 3 * 2, i * 3), new Point(i / 2, i / 2, i / 2) } });
-          for (int j = 0; j < 30; j++)
+          objects.Add(new Polyline { Points = new List<Point>() { new Point(i * 3, i / 3 * 7, i * 3), new Point(i / 2, i / 2, i / 2) } });
+          for (int j = 0; j < 29; j++)
           {
-            ((Polyline)objects[i]).Points.Add(new Point(j + i, j, 42 + j));
+            ((Polyline)objects[i]).Points.Add(new Point(j + i, 32+j, 42 + j));
           }
         }
       }

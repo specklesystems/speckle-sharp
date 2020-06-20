@@ -66,7 +66,6 @@ namespace Speckle.Serialisation
       var obj =  JsonConvert.SerializeObject(@object, RawSerializerSettings);
       var hash = JObject.Parse(obj).GetValue("hash").ToString();
 
-      //await Transport.WriteComplete();
       await Transports.Utilities.WaitUntil(() =>
       {
         foreach(var t in RawSerializer.SecondaryWriteTransports)

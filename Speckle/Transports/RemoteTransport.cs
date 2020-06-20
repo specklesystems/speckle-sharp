@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace Speckle.Transports
 
     private HttpClient Client { get; set; }
 
-    private List<(string, string)> Buffer = new List<(string, string)>();
+    private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
 
     private System.Timers.Timer WriteTimer;
 
@@ -28,7 +29,7 @@ namespace Speckle.Transports
 
     private bool IS_WRITING = false;
 
-    private int MAX_BUFFER_SIZE = 250000; // 100k
+    private int MAX_BUFFER_SIZE = 250_000;
     private int MAX_MULTIPART_COUNT = 4;
     private int CURR_BUFFER_SIZE = 0;
 
@@ -53,80 +54,30 @@ namespace Speckle.Transports
 
     public async Task WriteComplete()
     {
-      await Utilities.WaitUntil(() => { return GetWriteCompletionStatus(); }, 100);
+      await Utilities.WaitUntil(() => { return GetWriteCompletionStatus(); }, 50);
     }
 
     public bool GetWriteCompletionStatus()
     {
-      return Buffer.Count == 0 && !IS_WRITING;
+      return Queue.Count == 0 && !IS_WRITING;
     }
 
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
     {
       TotalElapsed += PollInterval;
-      if (TotalElapsed > 300 && IS_WRITING == false)
+      if (TotalElapsed > 300 && IS_WRITING == false && Queue.Count != 0)
       {
         TotalElapsed = 0;
         WriteTimer.Enabled = false;
-        if (Buffer.Count > 0)
-          WriteBuffer2();
+        ConsumeQueue();
       }
     }
 
-    private async Task WriteBuffer()
-    {
-      IS_WRITING = true;
-      var message = new HttpRequestMessage()
-      {
-        RequestUri = new Uri("/objects/testStreamId", UriKind.Relative),
-        Method = HttpMethod.Post
-      };
-
-      var _content = "[";
-      var payloadBufferSize = 0;
-      var i = 0;
-
-      lock (Buffer)
-      {
-        if (Buffer.Count == 0)
-          return;
-
-        while (payloadBufferSize < MAX_BUFFER_SIZE && i < Buffer.Count)
-        {
-          var (hash, obj) = Buffer[i++];
-          var len = System.Text.Encoding.UTF8.GetByteCount(obj);
-          payloadBufferSize += len;
-          CURR_BUFFER_SIZE -= len;
-          if (i != 1) _content += ",";
-          _content += obj;
-        }
-        Buffer.RemoveRange(0, i);
-        _content += "]";
-      }
-      var stringContent = new StringContent(_content);
-      stringContent.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
-      message.Content = new GzipContent(stringContent);
-
-      Console.WriteLine($"Sending {payloadBufferSize} bytes ({i} objs)to remote");
-
-      var res = await Client.SendAsync(message);
-      var ids = await res.Content.ReadAsStringAsync();
-      //Console.WriteLine($"{ids.Split(",").Count()} written to remote {Client.BaseAddress}");
-
-      IS_WRITING = false;
-
-      if (CURR_BUFFER_SIZE > MAX_BUFFER_SIZE)
-      {
-        WriteBuffer();
-      }
-      else if (Buffer.Count > 0)
-      {
-        WriteTimer.Enabled = true;
-        WriteTimer.Start();
-      }
-    }
-
-    private async Task WriteBuffer2()
+    /// <summary>
+    /// Nom nom nom.
+    /// </summary>
+    /// <returns></returns>
+    private async Task ConsumeQueue()
     {
       IS_WRITING = true;
       var message = new HttpRequestMessage()
@@ -136,85 +87,52 @@ namespace Speckle.Transports
       };
 
       var multipart = new MultipartFormDataContent("----obj");
-
       var contents = new List<string>();
 
-      lock (Buffer)
-      {
-        if (Buffer.Count == 0)
-          return;
+      ValueTuple<string, string, int> result;
 
-        while (contents.Count < MAX_MULTIPART_COUNT && Buffer.Count != 0)
+      while (contents.Count < MAX_MULTIPART_COUNT && Queue.Count != 0)
+      {
+        var _ct = "[";
+        var payloadBufferSize = 0;
+        var i = 0;
+        while (Queue.TryDequeue(out result) && payloadBufferSize < MAX_BUFFER_SIZE)
         {
-          var _content = "[";
-          var payloadBufferSize = 0;
-          var i = 0;
-
-          while (payloadBufferSize < MAX_BUFFER_SIZE && i < Buffer.Count)
-          {
-            var (hash, obj) = Buffer[i++];
-            var len = System.Text.Encoding.UTF8.GetByteCount(obj);
-            payloadBufferSize += len;
-            CURR_BUFFER_SIZE -= len;
-            if (i != 1) _content += ",";
-            _content += obj;
-          }
-          Buffer.RemoveRange(0, i);
-          _content += "]";
-
-          contents.Add(_content);
+          if (i != 0) _ct += ",";
+          _ct += result.Item2;
+          payloadBufferSize += result.Item3;
+          i++;
         }
-      }
-
-      foreach(var _ct in contents)
-      {
+        _ct += "]";
         multipart.Add(new StringContent(_ct, Encoding.UTF8), "a", "a");
       }
 
-      //multipart.Add(new StringContent(_content, Encoding.UTF8), "b", "b");
-      //multipart.Add(new StringContent(_content, Encoding.UTF8), "c", "c");
-      ////multipart.Add(new GzipContent(new StringContent(_content)), "a", "a");
-
-      //var stringContent = new StringContent(_content);
-      //stringContent.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
-      //message.Content = new GzipContent(multipart);
       message.Content = multipart;
-
-      //Console.WriteLine($"Sending {payloadBufferSize} bytes ({i} objs)to remote");
-
-      var res = await Client.SendAsync(message);
-      var ids = await res.Content.ReadAsStringAsync();
-      //Console.WriteLine($"{ids.Split(",").Count()} written to remote {Client.BaseAddress}");
+      try
+      {
+        await Client.SendAsync(message);
+      } catch(Exception e)
+      {
+        throw new Exception("Remote unreachable");
+      }
 
       IS_WRITING = false;
 
-      if (CURR_BUFFER_SIZE > MAX_BUFFER_SIZE)
-      {
-        WriteBuffer2();
-      }
-      else if (Buffer.Count > 0)
+      if (!WriteTimer.Enabled)
       {
         WriteTimer.Enabled = true;
         WriteTimer.Start();
       }
     }
 
-    public void SaveObject(string hash)
-    {
-
-    }
-
     public void SaveObject(string hash, string serializedObject)
     {
-      CURR_BUFFER_SIZE += System.Text.Encoding.UTF8.GetByteCount(serializedObject);
-      lock (Buffer)
+      Queue.Enqueue((hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject)));
+
+      if(!WriteTimer.Enabled && !IS_WRITING)
       {
-        Buffer.Add((hash, serializedObject));
-        if (!WriteTimer.Enabled)
-        {
-          WriteTimer.Enabled = true;
-          WriteTimer.Start();
-        }
+        WriteTimer.Enabled = true;
+        WriteTimer.Start();
       }
     }
 
