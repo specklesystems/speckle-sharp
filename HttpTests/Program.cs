@@ -31,35 +31,27 @@ namespace HttpTests
       var sw = new Stopwatch();
       sw.Start();
 
-      int numObjects = 200_000;
+      int numObjects = 10_000;
       var objects = new List<Base>();
       for (int i = 0; i < numObjects; i++)
       {
-        if (i % 3 == 0)
+        if (i % 2 == 0)
         {
-          objects.Add(new Point(i, i, i + 323 ));
-          ((dynamic)objects[i])["@bobba"] = new Point(2 + i + i, 42, i);
-          //((dynamic)objects[i])["@botbbb"] = new Point(23, 420, i);
+          objects.Add(new Point(i/5, i/2, i + 12.3233 ));
+          //((dynamic)objects[i])["@bobba"] = new Point(2 + i + i, 42, i);
         }
         else
         {
-          objects.Add(new Polyline { Points = new List<Point>() { new Point(i * 3, i / 3 * 7, i * 3), new Point(i / 2, i / 2, i / 2) } });
-          for (int j = 0; j < 29; j++)
+          objects.Add(new Polyline { Points = new List<Point>() { new Point(i * 3.23, i / 3 * 7, i * 3), new Point(i / 2, i / 2, i / 2) } });
+          for (int j = 0; j < 54; j++)
           {
-            ((Polyline)objects[i]).Points.Add(new Point(j + i, 32+j, 42 + j));
+            ((Polyline)objects[i]).Points.Add(new Point(j + i, 12.2+j, 42.32 + j));
           }
         }
       }
 
-      //var p = new Polyline();
-      //for (int j = 0; j < 500; j++)
-      //{
-      //  p.Points.Add(new Point(j, 30, 42));
-      //}
-
       var commit = new Commit();
       commit.Objects = objects;
-      //commit.Objects.Add(p);
 
       var step = sw.ElapsedMilliseconds;
       Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
@@ -68,14 +60,14 @@ namespace HttpTests
 
       var res = await Serializer.Serialize(commit, (string transportName, int totalCount) =>
       {
-        //Console.WriteLine($"Transport {transportName} serialized {totalCount} objects out of {numObjects + 1}.");
+        Console.WriteLine($"Transport {transportName} serialized {totalCount} objects out of {numObjects + 1}.");
       });
 
       var cp = res;
       Console.WriteLine($"Finished sending {numObjects} objs or more in ${(sw.ElapsedMilliseconds - step) / 1000f} seconds.");
 
-      //var res2 = Serializer.Deserialize(res);
-      //var cp2 = res2;
+      var res2 = Serializer.Deserialize(res);
+      var cp2 = res2;
     }
 
     public static async Task BufferedWriteTest()

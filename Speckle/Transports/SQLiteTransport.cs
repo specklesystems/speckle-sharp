@@ -27,8 +27,6 @@ namespace Speckle.Transports
 
     private bool IS_WRITING = false;
     private int MAX_TRANSACTION_SIZE = 1000;
-    private int MAX_BUFFER_SIZE = 5000000; // 5 mb
-    private int CURR_BUFFER_SIZE = 0;
 
     public SqlLiteObjectTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
     {
@@ -107,33 +105,6 @@ namespace Speckle.Transports
       }
     }
 
-    private void WriteBuffer()
-    {
-      lock (Buffer)
-      {
-        if (Buffer.Count == 0) return;
-        IS_WRITING = true;
-        using (var t = Connection.BeginTransaction())
-        {
-          using (var command = new SQLiteCommand(Connection))
-          {
-            command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
-            foreach (var kvp in Buffer)
-            {
-              command.Parameters.AddWithValue("@hash", kvp.Key);
-              command.Parameters.AddWithValue("@content", Utilities.CompressString(kvp.Value));
-              command.ExecuteNonQuery();
-            }
-          }
-          t.Commit();
-        }
-        Buffer.Clear();
-        TotalElapsed = 0;
-        CURR_BUFFER_SIZE = 0;
-        IS_WRITING = false;
-      }
-    }
-
     private void ConsumeQueue()
     {
       IS_WRITING = true;
@@ -150,11 +121,11 @@ namespace Speckle.Transports
             command.Parameters.AddWithValue("@hash", result.Item1);
             command.Parameters.AddWithValue("@content", result.Item2);
             i++;
+            command.ExecuteNonQuery();
           }
           t.Commit();
         }
       }
-
 
       IS_WRITING = false;
       if (!WriteTimer.Enabled)
@@ -166,8 +137,6 @@ namespace Speckle.Transports
 
     public void SaveObject(string hash, string serializedObject)
     {
-      CURR_BUFFER_SIZE += System.Text.Encoding.UTF8.GetByteCount(serializedObject);
-
       Queue.Enqueue((hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject)));
 
       if (!WriteTimer.Enabled && !IS_WRITING)

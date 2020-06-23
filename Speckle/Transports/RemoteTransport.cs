@@ -19,7 +19,10 @@ namespace Speckle.Transports
 
     public string StreamId { get; private set; }
 
+    public SqlLiteObjectTransport LocalTransport { get; set; }
+
     private HttpClient Client { get; set; }
+
 
     private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
 
@@ -73,10 +76,6 @@ namespace Speckle.Transports
       }
     }
 
-    /// <summary>
-    /// Nom nom nom.
-    /// </summary>
-    /// <returns></returns>
     private async Task ConsumeQueue()
     {
       IS_WRITING = true;
@@ -127,7 +126,13 @@ namespace Speckle.Transports
 
     public void SaveObject(string hash, string serializedObject)
     {
-      Queue.Enqueue((hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject)));
+      if (serializedObject == null && LocalTransport == null)
+        throw new Exception("Cannot push object by reference if no local transport is provided.");
+
+      if(serializedObject == null)
+        serializedObject = LocalTransport.GetObject(hash);
+
+      Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 
       if(!WriteTimer.Enabled && !IS_WRITING)
       {

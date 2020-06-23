@@ -63,20 +63,25 @@ namespace Speckle.Serialisation
       // Hack
       RawSerializer.SecondaryWriteTransports = new List<ITransport>() { new RemoteTransport(@"http://localhost:3000", "lol", "lol") };
 
-      var obj =  JsonConvert.SerializeObject(@object, RawSerializerSettings);
+      var obj = JsonConvert.SerializeObject(@object, RawSerializerSettings);
       var hash = JObject.Parse(obj).GetValue("hash").ToString();
 
       await Transports.Utilities.WaitUntil(() =>
       {
-        foreach(var t in RawSerializer.SecondaryWriteTransports)
+        foreach (var t in RawSerializer.SecondaryWriteTransports)
         {
           if (!((RemoteTransport)t).GetWriteCompletionStatus()) return false;
         }
         if (!Transport.GetWriteCompletionStatus()) return false;
         return true;
 
-      });
+      }, 200);
       return hash;
+    }
+
+    public async Task<string> Serialize(IEnumerable<Base> objects, Action<string, int> onProgressAction = null)
+    {
+      return null;
     }
 
     /// <summary>
