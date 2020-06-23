@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Polyline : Base
+  public class Polyline : Geometry
   {
     public List<double> value { get; set; }
     public bool closed { get; set; }

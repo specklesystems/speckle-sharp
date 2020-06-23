@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Brep : Base
+  public class Brep : Geometry
   {
     public object rawData { get; set; }
     public string provenance { get; set; }

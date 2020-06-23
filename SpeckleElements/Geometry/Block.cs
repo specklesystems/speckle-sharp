@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Block : Base
+  public class Block : Geometry
   {
     public string description { get; set; }
     public List<Base> objects { get; set; }

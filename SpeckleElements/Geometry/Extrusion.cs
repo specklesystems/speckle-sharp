@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Extrusion : Base
+  public class Extrusion : Geometry
   {
     public bool? capped { get; set; }
     public Base profile { get; set; }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Annotation : Base
+  public class Annotation : Geometry
   {
     public string text { get; set; }
     public double? textHeight { get; set; }

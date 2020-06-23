@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Line : Base
+  public class Line : Geometry
   {
     public List<double> value { get; set; }
     public Interval domain { get; set; }

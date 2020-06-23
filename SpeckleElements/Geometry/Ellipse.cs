@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Ellipse : Base
+  public class Ellipse : Geometry
   {
     public double? firstRadius { get; set; }
     public double? secondRadius { get; set; }

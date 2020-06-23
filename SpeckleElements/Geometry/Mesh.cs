@@ -6,18 +6,18 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Mesh : Base
+  public class Mesh : Geometry
   {
-    public List<double> vertices { get; set; }
+    public List<double> vertices { get; set; } = new List<double>();
 
     /// <summary>The faces array.</summary>
-    public List<int> faces { get; set; }
+    public List<int> faces { get; set; } = new List<int>();
 
     /// <summary>If any, the colours per vertex.</summary>
-    public List<int> colors { get; set; }
+    public List<int> colors { get; set; } = new List<int>();
 
     /// <summary>If any, the colours per vertex.</summary>
-    public List<double> textureCoordinates { get; set; }
+    public List<double> textureCoordinates { get; set; } = new List<double>();
 
     public Mesh()
     {

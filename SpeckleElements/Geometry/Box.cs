@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Box : Base
+  public class Box : Geometry
   {
     public Plane basePlane { get; set; }
     public Interval xSize { get; set; }

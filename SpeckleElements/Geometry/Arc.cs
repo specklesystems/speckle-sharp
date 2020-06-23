@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Arc : Base
+  public class Arc : Geometry
   {
     public double? radius { get; set; }
 
