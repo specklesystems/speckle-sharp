@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Speckle.Core2;
+using Newtonsoft.Json;
+using Speckle.Core;
 using Speckle.Models;
 using Speckle.Serialisation;
 using Speckle.Transports;
@@ -18,7 +19,9 @@ namespace HttpTests
 
       //await BulkWriteMany();
 
-      await SerializedBuffering();
+      await Whapp();
+
+      await SerializedBuffering(10);
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
@@ -26,18 +29,34 @@ namespace HttpTests
       return;
     }
 
-    public static async Task SerializedBuffering()
+    public static async Task Whapp()
+    {
+      var objects = new List<Base>();
+      for (int i = 0; i < 10; i++)
+      {
+        if (i % 2 == 0)
+        {
+          objects.Add(new Point(i / 5, i / 2, i + 12.3233));
+        }
+      }
+
+      var (s, st) = Operations.GetSerializerInstance();
+      //s.Transport = new SqlLiteObjectTransport();
+      var test = JsonConvert.SerializeObject(objects, st);
+      var cp = test;
+    }
+
+    public static async Task SerializedBuffering(int numObjects = 100_000)
     {
       var sw = new Stopwatch();
       sw.Start();
 
-      int numObjects = 10_000;
       var objects = new List<Base>();
       for (int i = 0; i < numObjects; i++)
       {
         if (i % 2 == 0)
         {
-          objects.Add(new Point(i/5, i/2, i + 12.3233 ));
+          objects.Add(new Point(i / 5, i / 2, i + 12.3233));
           //((dynamic)objects[i])["@bobba"] = new Point(2 + i + i, 42, i);
         }
         else
@@ -45,7 +64,7 @@ namespace HttpTests
           objects.Add(new Polyline { Points = new List<Point>() { new Point(i * 3.23, i / 3 * 7, i * 3), new Point(i / 2, i / 2, i / 2) } });
           for (int j = 0; j < 54; j++)
           {
-            ((Polyline)objects[i]).Points.Add(new Point(j + i, 12.2+j, 42.32 + j));
+            ((Polyline)objects[i]).Points.Add(new Point(j + i, 12.2 + j, 42.32 + j));
           }
         }
       }
@@ -56,18 +75,21 @@ namespace HttpTests
       var step = sw.ElapsedMilliseconds;
       Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
 
-      var Serializer = new Serializer();
 
-      var res = await Serializer.Serialize(commit, (string transportName, int totalCount) =>
+      var res = await Operations.Push(commit, new SqlLiteObjectTransport(), null, (string transportName, int totalCount) =>
       {
         Console.WriteLine($"Transport {transportName} serialized {totalCount} objects out of {numObjects + 1}.");
       });
 
       var cp = res;
       Console.WriteLine($"Finished sending {numObjects} objs or more in ${(sw.ElapsedMilliseconds - step) / 1000f} seconds.");
+      Console.WriteLine($"Parent object id: {res}");
 
-      var res2 = Serializer.Deserialize(res);
-      var cp2 = res2;
+      Console.WriteLine("Press any key to continue to deserialisation");
+      Console.ReadLine();
+
+      //var res2 = Serializer.Deserialize(res);
+      //var cp2 = res2;
     }
 
     public static async Task BufferedWriteTest()
@@ -100,7 +122,7 @@ namespace HttpTests
 
     public static async Task BulkWriteMany()
     {
-      int numObjects = 100000;
+      int numObjects = 100_000;
       var transport = new SqlLiteObjectTransport();
       var rand = new Random();
       var stopWatch = new Stopwatch();

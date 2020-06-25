@@ -4,7 +4,7 @@ using System.Linq;
 using Speckle.Kits;
 using Speckle.Models;
 
-namespace Speckle.Core2
+namespace Speckle.Core
 {
   public class CoreKit : ISpeckleKit
   {

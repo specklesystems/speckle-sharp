@@ -31,7 +31,7 @@ namespace Speckle.Serialisation
     /// </summary>
     public ITransport Transport { get; set; }
 
-    public List<ITransport> SecondaryWriteTransports { get; set; }
+    public List<ITransport> SecondaryWriteTransports { get; set; } = new List<ITransport>();
 
     #region Write Json Helper Properties
 
@@ -197,6 +197,13 @@ namespace Speckle.Serialisation
     {
       if (value == null) return;
 
+      if (value.GetType().IsPrimitive)
+      {
+        // Primitives, and all others
+        var t = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer
+        t.WriteTo(writer);
+      }
+
       if (value is Base && !(value is ObjectReference))
       {
         var obj = value as Base;
@@ -302,9 +309,18 @@ namespace Speckle.Serialisation
       // A much faster approach is to check for List<primitive>, where primitive = string, number, etc. and directly serialize it in full.
       // Same goes for dictionaries.
 
+      // TODO: What if a list/dictionary is the entry point?
+      // If a transport is present, we should assume detachability (ie, ultimately return just a list of object references).
+      // Question: do we need to pop the lineage after we're done? Not really, but it would be good form.
+
       // List handling
       if (typeof(IEnumerable).IsAssignableFrom(type) && !typeof(IDictionary).IsAssignableFrom(type) && type != typeof(string))
       {
+        if (TotalProcessedCount == 0)
+        {
+          DetachLineage.Add(Transport != null ? true : false);
+        }
+
         JArray arr = new JArray();
         foreach (var arrValue in ((IEnumerable)value))
         {
@@ -321,12 +337,20 @@ namespace Speckle.Serialisation
             arr.Add(JToken.FromObject(arrValue, serializer)); // Default route
         }
         arr.WriteTo(writer);
+
+        if (DetachLineage.Count == 1) // are we in a list entry point case?
+          DetachLineage.RemoveAt(0);
+
         return;
       }
 
       // Dictionary handling
       if (typeof(IDictionary).IsAssignableFrom(type))
       {
+        if (TotalProcessedCount == 0)
+        {
+          DetachLineage.Add(Transport != null ? true : false);
+        }
         var dict = value as IDictionary;
         var dictJo = new JObject();
         foreach (DictionaryEntry kvp in dict)
@@ -348,12 +372,16 @@ namespace Speckle.Serialisation
           dictJo.Add(kvp.Key.ToString(), jToken);
         }
         dictJo.WriteTo(writer);
+
+        if (DetachLineage.Count == 1) // are we in a dictionary entry point case?
+          DetachLineage.RemoveAt(0);
+
         return;
       }
 
-      // Primitives, and all others
-      var t = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer
-      t.WriteTo(writer);
+      // All others non-primitive types
+      var lastCall = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer
+      lastCall.WriteTo(writer);
     }
 
     #endregion

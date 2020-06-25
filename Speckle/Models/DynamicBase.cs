@@ -33,7 +33,7 @@ namespace Speckle.Models
     /// <returns></returns>
     public override bool TryGetMember(GetMemberBinder binder, out object result)
     {
-      return (properties.TryGetValue(binder.Name, out result));
+      return properties.TryGetValue(binder.Name, out result);
     }
 
     /// <summary>

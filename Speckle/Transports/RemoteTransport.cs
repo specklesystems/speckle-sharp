@@ -19,10 +19,9 @@ namespace Speckle.Transports
 
     public string StreamId { get; private set; }
 
-    public SqlLiteObjectTransport LocalTransport { get; set; }
+    public ITransport LocalTransport { get; set; }
 
     private HttpClient Client { get; set; }
-
 
     private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
 
@@ -34,7 +33,6 @@ namespace Speckle.Transports
 
     private int MAX_BUFFER_SIZE = 250_000;
     private int MAX_MULTIPART_COUNT = 4;
-    private int CURR_BUFFER_SIZE = 0;
 
     public RemoteTransport(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
     {
@@ -85,7 +83,7 @@ namespace Speckle.Transports
         Method = HttpMethod.Post
       };
 
-      var multipart = new MultipartFormDataContent("----obj");
+      var multipart = new MultipartFormDataContent("--obj--");
       var contents = new List<string>();
 
       ValueTuple<string, string, int> result;

@@ -16,7 +16,8 @@
     <Folder Include="Http\" />
     <Folder Include="Transports\" />
     <Folder Include="Kits\" />
-    <Folder Include="Core2\" />
+    <Folder Include="Core\" />
+    <Folder Include="Core\Operations\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Core\Remote.cs" />

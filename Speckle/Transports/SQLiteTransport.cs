@@ -86,7 +86,7 @@ namespace Speckle.Transports
 
     public async Task WriteComplete()
     {
-      await Utilities.WaitUntil(() => { return GetWriteCompletionStatus(); }, 50);
+      await Utilities.WaitUntil(() => { return GetWriteCompletionStatus(); }, 500);
     }
 
     public bool GetWriteCompletionStatus()
