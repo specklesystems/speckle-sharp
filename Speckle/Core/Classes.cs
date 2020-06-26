@@ -7,22 +7,22 @@ using Speckle.Models;
 namespace Speckle.Core
 {
 
-  public class CoreKit : ISpeckleKit
-  {
-    public IEnumerable<Type> Types => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
+  //public class CoreKit : ISpeckleKit
+  //{
+  //  public IEnumerable<Type> Types => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
 
-    public IEnumerable<Type> Converters => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Converter)));
+  //  public IEnumerable<Type> Converters => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Converter)));
 
-    public string Description => "Base Speckle models for revisions, streams, etc.";
+  //  public string Description => "Base Speckle models for revisions, streams, etc.";
 
-    public string Name => nameof(CoreKit);
+  //  public string Name => nameof(CoreKit);
 
-    public string Author => "Dimitrie";
+  //  public string Author => "Dimitrie";
 
-    public string WebsiteOrEmail => "hello@speckle.works";
+  //  public string WebsiteOrEmail => "hello@speckle.works";
 
-    public CoreKit() { }
-  }
+  //  public CoreKit() { }
+  //}
 
   /// <summary>
   /// Wrapper around other, thrid party, classes that are not coming from a speckle kit.

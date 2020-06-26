@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
@@ -50,6 +52,46 @@ namespace Speckle.Models
     }
 
     /// <summary>
+    /// Checks if a dynamic propery exists or not
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public bool HasMember(string key)
+    {
+      return properties.ContainsKey(key);
+    }
+
+    /// <summary>
+    /// Checks if a dynamic propery exists or not and has a specific type
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public bool HasMember<T>(string key)
+    {
+      return properties.ContainsKey(key) && (T)properties[key] != null ;
+    }
+
+    /// <summary>
+    /// Safely gets a dynamic property
+    /// </summary>
+    /// <typeparam name="T">Type of the property</typeparam>
+    /// <param name="object">Base object</param>
+    /// <param name="key">Name of the property to get</param>
+    /// <param name="def">Default value of the property to use if missing</param>
+    /// <returns></returns>
+    public T GetMemberSafe<T>(string key, T def)
+    {
+      //if prop does't exist of has the wrong type, re-assign it
+      if (!HasMember(key) || properties[key].GetType() != typeof(T))
+      {
+        properties[key] = def;
+
+      }
+
+      return (T)properties[key];
+    }
+
+    /// <summary>
     /// Sets and gets properties using the key accessor pattern. E.g.:
     /// <para><pre>((dynamic)myObject)["superProperty"] = 42;</pre></para>
     /// </summary>
@@ -94,6 +136,8 @@ namespace Speckle.Models
       }
     }
 
+
+
     /// <summary>
     /// Gets all of the property names on this class, dynamic or not.
     /// </summary>
@@ -133,6 +177,24 @@ namespace Speckle.Models
       foreach (var kvp in properties)
         yield return kvp.Key;
     }
+
+    /// <summary>
+    /// Gets & sets the dynamic properties quickly
+    /// </summary>
+    /// <returns></returns>
+    [JsonIgnore]
+    public Dictionary<string, object> DynamicProperties
+    {
+      get
+      {
+        return properties;
+      }
+      set
+      {
+        this.properties = value;
+      }
+    }
+
   }
 
 }

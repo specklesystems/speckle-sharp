@@ -33,6 +33,8 @@ namespace Tests
       var originalHash = table.hash;
 
       ((dynamic)table).__testProp = "wonderful";
+      ((dynamic)table)["aa"] = "culo";
+      table.
 
       Assert.AreEqual(originalHash, table.hash);
     }

@@ -61,7 +61,7 @@ namespace Speckle.Http
       var request = new HttpRequestMessage()
       {
         Method = HttpMethod.Get,
-        RequestUri = new Uri($"/streams/{streamId}/objects" + String.Join(',', objects), UriKind.Relative)
+        RequestUri = new Uri($"/streams/{streamId}/objects" + String.Join(",", objects), UriKind.Relative)
       };
 
       var response = await HttpClient.SendAsync(request);
