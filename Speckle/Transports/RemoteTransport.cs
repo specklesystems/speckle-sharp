@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using Newtonsoft.Json.Linq;
 using Speckle.Http;
 
 namespace Speckle.Transports
@@ -53,6 +54,8 @@ namespace Speckle.Transports
 
     }
 
+    #region Writing objects
+
     public async Task WriteComplete()
     {
       await Utilities.WaitUntil(() => { return GetWriteCompletionStatus(); }, 50);
@@ -79,7 +82,7 @@ namespace Speckle.Transports
       IS_WRITING = true;
       var message = new HttpRequestMessage()
       {
-        RequestUri = new Uri("/objects/multipart/testStreamId", UriKind.Relative),
+        RequestUri = new Uri("/objects/testStreamId", UriKind.Relative),
         Method = HttpMethod.Post
       };
 
@@ -108,7 +111,8 @@ namespace Speckle.Transports
       try
       {
         await Client.SendAsync(message);
-      } catch(Exception e)
+      }
+      catch (Exception e)
       {
         throw new Exception("Remote unreachable");
       }
@@ -127,26 +131,66 @@ namespace Speckle.Transports
       if (serializedObject == null && LocalTransport == null)
         throw new Exception("Cannot push object by reference if no local transport is provided.");
 
-      if(serializedObject == null)
+      if (serializedObject == null)
         serializedObject = LocalTransport.GetObject(hash);
 
       Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 
-      if(!WriteTimer.Enabled && !IS_WRITING)
+      if (!WriteTimer.Enabled && !IS_WRITING)
       {
         WriteTimer.Enabled = true;
         WriteTimer.Start();
       }
     }
 
+
+    #endregion
     public string GetObject(string hash)
     {
       throw new NotImplementedException();
     }
 
+    public async Task<string> GetObjectChildren(string hash)
+    {
+
+      var message = new HttpRequestMessage()
+      {
+        RequestUri = new Uri($"/objects/testStreamId/{hash}", UriKind.Relative),
+        Method = HttpMethod.Get,
+      };
+
+      message.Headers.Add("Accept", "text/plain");
+      string commitObj = null;
+      var first = true;
+
+      var response = await Client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
+      using (var stream = await response.Content.ReadAsStreamAsync())
+      {
+        using (var reader = new StreamReader(stream, Encoding.UTF8))
+        {
+          while (reader.Peek() > 0)
+          {
+            var line = reader.ReadLine();
+            var pcs = line.Split('\t', 2);
+            LocalTransport.SaveObject(pcs[0], pcs[1]);
+            Console.WriteLine(line);
+            if (first)
+            {
+              commitObj = pcs[1];
+              first = false;
+            }
+          }
+        }
+      }
+
+      await ((SqlLiteObjectTransport)LocalTransport).WriteComplete();
+      return commitObj;
+    }
+
 
     public void Dispose()
     {
+      Client.Dispose();
       throw new NotImplementedException();
     }
   }

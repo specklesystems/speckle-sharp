@@ -19,9 +19,9 @@ namespace HttpTests
 
       //await BulkWriteMany();
 
-      await Whapp();
+      //await Whapp();
 
-      await SerializedBuffering(10);
+      await SerializedBuffering(30);
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
@@ -32,17 +32,20 @@ namespace HttpTests
     public static async Task Whapp()
     {
       var objects = new List<Base>();
+      var dict = new Dictionary<string, Base>();
+
       for (int i = 0; i < 10; i++)
       {
         if (i % 2 == 0)
         {
           objects.Add(new Point(i / 5, i / 2, i + 12.3233));
+          dict.Add($"key-{i}", new Point(i, i, i));
         }
       }
 
       var (s, st) = Operations.GetSerializerInstance();
-      //s.Transport = new SqlLiteObjectTransport();
-      var test = JsonConvert.SerializeObject(objects, st);
+      s.Transport = new SqlLiteObjectTransport();
+      var test = JsonConvert.SerializeObject(dict, st);
       var cp = test;
     }
 
@@ -76,7 +79,7 @@ namespace HttpTests
       Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
 
 
-      var res = await Operations.Push(commit, new SqlLiteObjectTransport(), null, (string transportName, int totalCount) =>
+      var res = await Operations.Push(commit, new SqlLiteObjectTransport(), new Remote[] { new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" } }, (string transportName, int totalCount) =>
       {
         Console.WriteLine($"Transport {transportName} serialized {totalCount} objects out of {numObjects + 1}.");
       });
@@ -85,11 +88,12 @@ namespace HttpTests
       Console.WriteLine($"Finished sending {numObjects} objs or more in ${(sw.ElapsedMilliseconds - step) / 1000f} seconds.");
       Console.WriteLine($"Parent object id: {res}");
 
-      Console.WriteLine("Press any key to continue to deserialisation");
-      Console.ReadLine();
+      //    Console.WriteLine("Press any key to continue to deserialisation");
+      //  Console.ReadLine();
 
-      //var res2 = Serializer.Deserialize(res);
-      //var cp2 = res2;
+      var res2 = await Operations.Pull(res);
+      var cp2 = res2;
+      Console.WriteLine($"Pulled (locally) obj");
     }
 
     public static async Task BufferedWriteTest()

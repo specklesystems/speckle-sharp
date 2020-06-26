@@ -12,12 +12,7 @@ namespace Speckle.Core
 
   public class Stream
   {
-    [JsonIgnore]
-    public ITransport LocalObjectTransport { get; set; }
-
-    [JsonIgnore]
-    public ITransport LocalStreamTransport { get; set; }
-
+  
     public string PreviousCommitId { get; set; }
 
     public Stream()

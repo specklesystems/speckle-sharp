@@ -49,7 +49,6 @@ namespace Speckle.Core
         return true;
       }, 500);
 
-
       return hash;
     }
 
@@ -61,14 +60,33 @@ namespace Speckle.Core
     /// <param name="remotes"></param>
     /// <param name="onProgressAction"></param>
     /// <returns>The commit's id (hash).</returns>
-    public static async Task<string> Push(IEnumerable<Base> objects, SqlLiteObjectTransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null)
+    public static async Task<List<string>> Push(IEnumerable<Base> objects, SqlLiteObjectTransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null)
     {
-      var commit = new Commit()
-      {
-        Objects = objects.ToList()
-      };
+      var (serializer, settings) = GetSerializerInstance();
 
-      return await Push(commit, localTransport, remotes, onProgressAction);
+      serializer.Transport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
+      serializer.OnProgressAction = onProgressAction;
+
+      if (remotes != null)
+        foreach (var remote in remotes)
+        {
+          serializer.SecondaryWriteTransports.Add(new RemoteTransport(remote.ServerUrl, remote.StreamId, remote.ApiToken) { LocalTransport = serializer.Transport });
+        }
+
+      var obj = JsonConvert.SerializeObject(objects, settings);
+      var res = JsonConvert.DeserializeObject<List<ObjectReference>>(obj);
+
+      await Transports.Utilities.WaitUntil(() =>
+      {
+        foreach (var t in serializer.SecondaryWriteTransports)
+        {
+          if (!((RemoteTransport)t).GetWriteCompletionStatus()) return false;
+        }
+        if (!localTransport.GetWriteCompletionStatus()) return false;
+        return true;
+      }, 500);
+
+      return res.Select(o => o.referencedId).ToList();
     }
 
     /// <summary>
