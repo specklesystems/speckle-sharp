@@ -58,9 +58,6 @@ namespace Tests
     [DetachProperty]
     public Tabletop Tabletop { get; set; }
 
-    [ExcludeHashing]
-    public string HashIngoredProp { get; set; } = "WOW";
-
     public string TableModel { get; set; } = "Sample Table";
 
     public DiningTable()

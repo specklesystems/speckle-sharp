@@ -8,6 +8,7 @@ using Newtonsoft.Json.Serialization;
 using Speckle.Models;
 using Speckle.Serialisation;
 using Speckle.Transports;
+using Speckle.Core;
 
 namespace Speckle.Core
 {
@@ -21,20 +22,18 @@ namespace Speckle.Core
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
       serializer.Transport = localTransport;
 
-      try
-      {
-        // if the object is not present in the local transport, it means we need to get it (and its children!) from the remote. 
-        var objString = localTransport.GetObject(objectId);
-        return JsonConvert.DeserializeObject<Base>(objString, settings);
-      }
-      catch (Exception err)
-      {
+      var objString = localTransport.GetObject(objectId);
 
+      if (objString == null)
+      {
         var rem = new RemoteTransport("http://localhost:3000", "lol", "lol", 1000);
         rem.LocalTransport = localTransport;
         var res = await rem.GetObjectAndChildren(objectId);
+        await localTransport.WriteComplete();
         return JsonConvert.DeserializeObject<Base>(res, settings);
       }
+
+      return JsonConvert.DeserializeObject<Base>(objString, settings);
     }
 
     #endregion

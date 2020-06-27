@@ -72,7 +72,9 @@ namespace Speckle.Transports
       {
         TotalElapsed = 0;
         WriteTimer.Enabled = false;
+#pragma warning disable CS4014 
         ConsumeQueue();
+#pragma warning restore CS4014
       }
     }
 
@@ -112,9 +114,9 @@ namespace Speckle.Transports
       {
         await Client.SendAsync(message);
       }
-      catch (Exception e)
+      catch (Exception)
       {
-        throw new Exception("Remote unreachable ");
+        throw new Exception($"Remote unreachable ({Client.BaseAddress.ToString()})");
       }
 
       IS_WRITING = false;

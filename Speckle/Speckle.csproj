@@ -19,7 +19,6 @@
     <Folder Include="Core\Operations\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="Core\Remote.cs" />
     <Compile Remove="Core\Commit.cs" />
     <Compile Remove="Core\Stream.cs" />
     <Compile Remove="Core\Classes.cs" />

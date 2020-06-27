@@ -52,34 +52,37 @@ namespace Speckle.Transports
       //  foreach (var str2 in HexChars)
       //    cart.Add(str + str2);
 
-      Connection = new SQLiteConnection(ConnectionString);
-      Connection.Open();
-      using (var command = new SQLiteCommand(Connection))
+
+      using (var c = new SQLiteConnection(ConnectionString))
       {
-        command.CommandText = @"
+        c.Open();
+        using (var command = new SQLiteCommand(c))
+        {
+          command.CommandText = @"
             CREATE TABLE IF NOT EXISTS objects(
               hash TEXT PRIMARY KEY,
               content TEXT
             ) WITHOUT ROWID;
           ";
-        command.ExecuteNonQuery();
+          command.ExecuteNonQuery();
+        }
+
+        // Insert Optimisations
+
+        SQLiteCommand cmd;
+        cmd = new SQLiteCommand("PRAGMA journal_mode=MEMORY;", c);
+        cmd.ExecuteNonQuery();
+
+        // Note/Hack: This setting has the potential to corrupt the db.
+        //cmd = new SQLiteCommand("PRAGMA synchronous=OFF;", Connection);
+        //cmd.ExecuteNonQuery();
+
+        cmd = new SQLiteCommand("PRAGMA count_changes=OFF;", c);
+        cmd.ExecuteNonQuery();
+
+        cmd = new SQLiteCommand("PRAGMA temp_store=MEMORY;", c);
+        cmd.ExecuteNonQuery();
       }
-
-      // Insert Optimisations
-
-      SQLiteCommand cmd;
-      cmd = new SQLiteCommand("PRAGMA journal_mode=MEMORY;", Connection);
-      cmd.ExecuteNonQuery();
-
-      // Note/Hack: This setting has the potential to corrupt the db.
-      //cmd = new SQLiteCommand("PRAGMA synchronous=OFF;", Connection);
-      //cmd.ExecuteNonQuery();
-
-      cmd = new SQLiteCommand("PRAGMA count_changes=OFF;", Connection);
-      cmd.ExecuteNonQuery();
-
-      cmd = new SQLiteCommand("PRAGMA temp_store=MEMORY;", Connection);
-      cmd.ExecuteNonQuery();
     }
 
     #region Writes
@@ -111,19 +114,24 @@ namespace Speckle.Transports
 
       var i = 0;
       ValueTuple<string, string, int> result;
-      using (var t = Connection.BeginTransaction())
+
+      using (var c = new SQLiteConnection(ConnectionString))
       {
-        using (var command = new SQLiteCommand(Connection))
+        c.Open();
+        using (var t = c.BeginTransaction())
         {
-          command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
-          while (Queue.TryDequeue(out result) && i < MAX_TRANSACTION_SIZE)
+          using (var command = new SQLiteCommand(c))
           {
-            command.Parameters.AddWithValue("@hash", result.Item1);
-            command.Parameters.AddWithValue("@content", result.Item2);
-            i++;
-            command.ExecuteNonQuery();
+            command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+            while (Queue.TryDequeue(out result) && i < MAX_TRANSACTION_SIZE)
+            {
+              command.Parameters.AddWithValue("@hash", result.Item1);
+              command.Parameters.AddWithValue("@content", Utilities.CompressString(result.Item2));
+              i++;
+              command.ExecuteNonQuery();
+            }
+            t.Commit();
           }
-          t.Commit();
         }
       }
 
@@ -153,12 +161,16 @@ namespace Speckle.Transports
     /// <param name="serializedObject"></param>
     public void SaveObjectSync(string hash, string serializedObject)
     {
-      using (var command = new SQLiteCommand(Connection))
+      using (var c = new SQLiteConnection(ConnectionString))
       {
-        command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
-        command.Parameters.AddWithValue("@hash", hash);
-        command.Parameters.AddWithValue("@content", Utilities.CompressString(serializedObject));
-        command.ExecuteNonQuery();
+        c.Open();
+        using (var command = new SQLiteCommand(c))
+        {
+          command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+          command.Parameters.AddWithValue("@hash", hash);
+          command.Parameters.AddWithValue("@content", Utilities.CompressString(serializedObject));
+          command.ExecuteNonQuery();
+        }
       }
     }
 
@@ -169,20 +181,24 @@ namespace Speckle.Transports
     /// <returns></returns>
     public async Task SaveObjects(IEnumerable<(string, string)> objects)
     {
-      using (var t = Connection.BeginTransaction())
+      using (var c = new SQLiteConnection(ConnectionString))
       {
-        using (var command = new SQLiteCommand(Connection))
+        c.Open();
+        using (var t = Connection.BeginTransaction())
         {
-          foreach (var (hash, content) in objects)
+          using (var command = new SQLiteCommand(c))
           {
-            command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
-            command.Parameters.AddWithValue("@hash", hash);
-            command.Parameters.AddWithValue("@content", Utilities.CompressString(content));
-            command.ExecuteNonQuery();
+            foreach (var (hash, content) in objects)
+            {
+              command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+              command.Parameters.AddWithValue("@hash", hash);
+              command.Parameters.AddWithValue("@content", Utilities.CompressString(content));
+              command.ExecuteNonQuery();
+            }
           }
+          await t.CommitAsync();
+          return;
         }
-        await t.CommitAsync();
-        return;
       }
     }
 
@@ -192,18 +208,24 @@ namespace Speckle.Transports
 
     public string GetObject(string hash)
     {
-      using (var command = new SQLiteCommand(Connection))
+      using (var c = new SQLiteConnection(ConnectionString))
       {
-        command.CommandText = "SELECT * FROM objects WHERE hash = @hash LIMIT 1 ";
-        command.Parameters.AddWithValue("@hash", hash);
-        var reader = command.ExecuteReader();
-        while (reader.Read())
+        c.Open();
+        using (var command = new SQLiteCommand(c))
         {
-          return Utilities.DecompressString(reader.GetString(1));
-
+          command.CommandText = "SELECT * FROM objects WHERE hash = @hash LIMIT 1 ";
+          command.Parameters.AddWithValue("@hash", hash);
+          using (var reader = command.ExecuteReader())
+          {
+            while (reader.Read())
+            {
+              return Utilities.DecompressString(reader.GetString(1));
+            }
+          }
         }
-        throw new Exception("No object found");
       }
+      return null;
+      //throw new Exception($"No object found with id {hash}");
     }
 
     #endregion

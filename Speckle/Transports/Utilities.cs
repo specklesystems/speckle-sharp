@@ -17,7 +17,7 @@ namespace Speckle.Transports
     /// <returns></returns>
     public static string CompressString(string text)
     {
-      return text;
+      //return text;
       byte[] buffer = Encoding.UTF8.GetBytes(text);
       var memoryStream = new MemoryStream();
       using (var gZipStream = new GZipStream(memoryStream, CompressionMode.Compress, true))
@@ -43,7 +43,7 @@ namespace Speckle.Transports
     /// <returns></returns>
     public static string DecompressString(string compressedText)
     {
-      return compressedText;
+      //return compressedText;
       byte[] gZipBuffer = Convert.FromBase64String(compressedText);
       using (var memoryStream = new MemoryStream())
       {

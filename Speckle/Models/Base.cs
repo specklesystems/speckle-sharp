@@ -16,11 +16,7 @@ namespace Speckle.Models
   public class Base : DynamicBase
   {
     /// <summary>
-    /// Unique hash based on the object's properties.
-    /// <para>
-    /// Override the hash property if you need/want to define a more efficient way to
-    /// calculate it rather than the default "serialize" everything.
-    /// </para>
+    /// A speckle object's id is an unique hash based on its properties.
     /// </summary>
     public virtual string id
     {
@@ -28,7 +24,7 @@ namespace Speckle.Models
     }
 
     /// <summary>
-    /// Intransient identifier that does not change when properties change. 
+    /// Secondary, ideally host application driven, object identifier.
     /// </summary>
     public string applicationId { get; set; }
 
