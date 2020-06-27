@@ -21,7 +21,7 @@ namespace HttpTests
 
       //await Whapp();
 
-      await SerializedBuffering(3000);
+      await SerializedBuffering(5);
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();

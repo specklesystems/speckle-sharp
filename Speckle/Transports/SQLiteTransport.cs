@@ -126,7 +126,7 @@ namespace Speckle.Transports
             while (Queue.TryDequeue(out result) && i < MAX_TRANSACTION_SIZE)
             {
               command.Parameters.AddWithValue("@hash", result.Item1);
-              command.Parameters.AddWithValue("@content", Utilities.CompressString(result.Item2));
+              command.Parameters.AddWithValue("@content", result.Item2);
               i++;
               command.ExecuteNonQuery();
             }
@@ -168,7 +168,7 @@ namespace Speckle.Transports
         {
           command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
           command.Parameters.AddWithValue("@hash", hash);
-          command.Parameters.AddWithValue("@content", Utilities.CompressString(serializedObject));
+          command.Parameters.AddWithValue("@content", serializedObject);
           command.ExecuteNonQuery();
         }
       }
@@ -192,7 +192,7 @@ namespace Speckle.Transports
             {
               command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
               command.Parameters.AddWithValue("@hash", hash);
-              command.Parameters.AddWithValue("@content", Utilities.CompressString(content));
+              command.Parameters.AddWithValue("@content", content);
               command.ExecuteNonQuery();
             }
           }
@@ -219,7 +219,7 @@ namespace Speckle.Transports
           {
             while (reader.Read())
             {
-              return Utilities.DecompressString(reader.GetString(1));
+              return reader.GetString(1);
             }
           }
         }

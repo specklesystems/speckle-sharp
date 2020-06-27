@@ -55,7 +55,8 @@ namespace Speckle.Serialisation
     {
       if (value is JValue)
       {
-        return ((JValue)value).Value;
+        if (jsonProperty != null) return value.ToObject(jsonProperty.PropertyType);
+        else return ((JValue)value).Value;
       }
 
       if (value is JArray)

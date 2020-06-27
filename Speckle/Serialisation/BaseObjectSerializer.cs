@@ -156,7 +156,10 @@ namespace Speckle.Serialisation
             property.ValueProvider.SetValue(obj, propertyValue);
           }
           else
-            property.ValueProvider.SetValue(obj, SerializationUtilities.HandleValue(jProperty.Value, serializer, property));
+          {
+            var val = SerializationUtilities.HandleValue(jProperty.Value, serializer, property);
+            property.ValueProvider.SetValue(obj, val);
+          }
         }
         else
         {
