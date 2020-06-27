@@ -40,6 +40,12 @@ namespace Speckle.Core
       var (_, settings) = GetSerializerInstance();
       return JsonConvert.DeserializeObject<Base>(@object, settings);
     }
+
+    public static List<Base> DeserializeArray(string @object)
+    {
+      var (_, settings) = GetSerializerInstance();
+      return JsonConvert.DeserializeObject<List<Base>>(@object, settings);
+    }
     #endregion
   }
 }

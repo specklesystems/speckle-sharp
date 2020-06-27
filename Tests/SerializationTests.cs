@@ -7,6 +7,7 @@ using NUnit.Framework;
 using Speckle.Models;
 using Newtonsoft.Json;
 using System.Dynamic;
+using Speckle.Core;
 
 namespace Tests
 {
@@ -14,61 +15,38 @@ namespace Tests
   public class Serialization
   {
 
-    //[Test]
-    //public void SimpleSerialization()
-    //{
-    //  var serializer = new Serializer();
+    [Test]
+    public void SimpleSerialization()
+    {
+      var table = new DiningTable();
+      ((dynamic)table)["@strangeVariable_NAme3"] = new TableLegFixture();
 
-    //  var table = new DiningTable();
-    //  ((dynamic)table)["@wonkyVariable_Name"] = new TableLegFixture();
+      var result = Operations.Serialize(table);
+      var test = Operations.Deserialize(result);
 
-    //  var result = serializer.Serialize(table);
+      Assert.AreEqual(test.GetId(), table.GetId());
 
-    //  var test = serializer.Deserialize(result);
+      var polyline = new Polyline();
+      for (int i = 0; i < 100; i++)
+        polyline.Points.Add(new Point() { X = i * 2, Y = i % 2 });
 
-    //  Assert.AreEqual(test.hash, table.hash);
+      var strPoly = Operations.Serialize(polyline);
+      var dePoly = Operations.Deserialize(strPoly);
 
-    //  var polyline = new Polyline();
+      Assert.AreEqual(polyline.GetId(), dePoly.GetId());
+    }
 
-    //  for (int i = 0; i < 100; i++)
-    //    polyline.Points.Add(new Point() { X = i * 2, Y = i % 2 });
+    [Test]
+    public void ListSerialisation()
+    {
+      var objs = new List<Base>();
+      for (int i = 0; i < 10; i++)
+        objs.Add(new Point(i, i, i));
 
-    //  var strPoly = serializer.Serialize(polyline);
-    //  var dePoly = serializer.Deserialize(strPoly);
-
-    //  Assert.AreEqual(polyline.hash, dePoly.hash);
-
-    //}
-
-    //[Test]
-    //public void DiskTransportSerialization()
-    //{
-    //  var transport = new DiskTransport();
-    //  var serializer = new Serializer();
-
-    //  var table = new DiningTable();
-
-    //  var result = serializer.SerializeAndSave(table, transport);
-
-    //  var test = serializer.DeserializeAndGet(result, transport);
-
-    //  Assert.AreEqual(test.hash, table.hash);
-    //}
-
-    //[Test]
-    //public void MemoryTransportSerialization()
-    //{
-    //  var transport = new MemoryTransport();
-    //  var serializer = new Serializer();
-
-    //  var table = new DiningTable();
-
-    //  var result = serializer.SerializeAndSave(table, transport);
-
-    //  var test = serializer.DeserializeAndGet(result, transport);
-
-    //  Assert.AreEqual(test.hash, table.hash);
-    //}
+      var result = Operations.Serialize(objs);
+      var test = Operations.DeserializeArray(result);
+      Assert.AreEqual(10, test.Count);
+    }
 
     //[Test]
     //public void TreeTrackingTest()
@@ -160,39 +138,35 @@ namespace Tests
     //  Assert.AreEqual(((dynamic)pt).HelloWorld, "whatever");
     //}
 
-    //[Test]
-    //public void AbstractObjectHandling()
-    //{
-    //  var nk = new NonKitClass() { TestProp = "Hello", Numbers = new List<int>() { 1, 2, 3, 4, 5 } };
-    //  var abs = new Abstract(nk);
+    [Test]
+    public void SerialisationAbstractObjects()
+    {
+      var nk = new NonKitClass() { TestProp = "Hello", Numbers = new List<int>() { 1, 2, 3, 4, 5 } };
+      var abs = new Abstract(nk);
 
-    //  var transport = new MemoryTransport();
-    //  var serializer = new Serializer();
+      var transport = new MemoryTransport();
 
-    //  var abs_serialized = serializer.Serialize(abs);
-    //  var abs_deserialized = serializer.Deserialize(abs_serialized);
-    //  var abs_se_deserializes = serializer.Serialize(abs_deserialized);
+      var abs_serialized = Operations.Serialize(abs);
+      var abs_deserialized = Operations.Deserialize(abs_serialized);
+      var abs_se_deserializes = Operations.Serialize(abs_deserialized);
 
-    //  Assert.AreEqual(abs.hash, abs_deserialized.hash);
-    //  Assert.AreEqual(abs.@base.GetType(), ((Abstract)abs_deserialized).@base.GetType());
-    //}
+      Assert.AreEqual(abs.GetId(), abs_deserialized.GetId());
+      Assert.AreEqual(abs.@base.GetType(), ((Abstract)abs_deserialized).@base.GetType());
+    }
 
-    //[Test]
-    //public void IgnoreCircularReferences()
-    //{
-    //  var pt = new Point(1,2,3);
-    //  ((dynamic)pt).circle = pt;
+    [Test]
+    public void IgnoreCircularReferences()
+    {
+      var pt = new Point(1, 2, 3);
+      ((dynamic)pt).circle = pt;
 
-    //  var test = (new Serializer()).Serialize(pt);
-    //  var tt = test;
+      var test = Operations.Serialize(pt);
 
-    //  var memTransport = new MemoryTransport();
-    //  var test2 = (new Serializer()).SerializeAndSave(pt, memTransport);
-    //  var ttt = test2;
+      var result = Operations.Deserialize(test);
+      var circle = ((dynamic)result).circle;
 
-    //  var test2_deserialized = (new Serializer()).DeserializeAndGet(ttt, memTransport);
-    //  var t = test2_deserialized;
-    //}
+      Assert.Null(circle);
+    }
 
   }
 }

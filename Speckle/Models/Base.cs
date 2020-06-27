@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Speckle.Core;
 
 namespace Speckle.Models
 {
@@ -21,6 +23,19 @@ namespace Speckle.Models
     public virtual string id
     {
       get; set;
+    }
+
+    /// <summary>
+    /// Gets the id (a unique hash) of this object. ⚠️ This method fully serializes the object, which in the case of large objects (with many sub-objects), has a tangible cost. Avoid using it!
+    /// <para><b>Hint:</b> Objects that are retrieved/pulled from a server/local cache do have an id (hash) property pre-populated.</para>
+    /// <para><b>Note:</b>The hash of a decomposed object differs from the hash of a non-decomposed object.</para>
+    /// </summary>
+    /// <returns></returns>
+    public string GetId()
+    {
+      var (_, t) = Operations.GetSerializerInstance();
+      var obj = JsonConvert.SerializeObject(this, t);
+      return JObject.Parse(obj).GetValue("id").ToString();
     }
 
     /// <summary>

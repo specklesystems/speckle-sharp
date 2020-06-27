@@ -279,7 +279,10 @@ namespace Speckle.Serialisation
         }
 
         var hash = Models.Utilities.hashString(jo.ToString());
-        jo.Add("id", JToken.FromObject(hash));
+        if (!jo.ContainsKey("id"))
+        {
+          jo.Add("id", JToken.FromObject(hash));
+        }
         jo.WriteTo(writer);
 
         if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && (Transport != null))
