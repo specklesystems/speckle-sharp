@@ -22,7 +22,7 @@ namespace Speckle.Models
     /// calculate it rather than the default "serialize" everything.
     /// </para>
     /// </summary>
-    public virtual string hash
+    public virtual string id
     {
       get; set;
     }

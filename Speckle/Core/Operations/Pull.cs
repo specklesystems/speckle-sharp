@@ -23,8 +23,8 @@ namespace Speckle.Core
 
       try
       {
+        // if the object is not present in the local transport, it means we need to get it (and its children!) from the remote. 
         var objString = localTransport.GetObject(objectId);
-
         return JsonConvert.DeserializeObject<Base>(objString, settings);
       }
       catch (Exception err)
@@ -32,15 +32,10 @@ namespace Speckle.Core
 
         var rem = new RemoteTransport("http://localhost:3000", "lol", "lol", 1000);
         rem.LocalTransport = localTransport;
-        var res = await rem.GetObjectChildren(objectId);
+        var res = await rem.GetObjectAndChildren(objectId);
         return JsonConvert.DeserializeObject<Base>(res, settings);
       }
-
-
-      return null;
     }
-
-    
 
     #endregion
   }

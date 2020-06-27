@@ -37,7 +37,7 @@ namespace Speckle.Core
         }
 
       var obj = JsonConvert.SerializeObject(@object, settings);
-      var hash = JObject.Parse(obj).GetValue("hash").ToString();
+      var hash = JObject.Parse(obj).GetValue("id").ToString();
 
       await Transports.Utilities.WaitUntil(() =>
       {

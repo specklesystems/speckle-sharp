@@ -7,12 +7,10 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
-using Newtonsoft.Json.Linq;
-using Speckle.Http;
 
 namespace Speckle.Transports
 {
-  public class RemoteTransport : IDisposable, ITransport
+  public class RemoteTransport : IDisposable, ITransport, IRemoteTransport
   {
     public string TransportName { get; set; } = "RemoteTransport";
 
@@ -49,9 +47,10 @@ namespace Speckle.Transports
         Timeout = new TimeSpan(0, 0, timeoutSeconds),
       };
 
+      Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authorizationToken}");
+
       WriteTimer = new System.Timers.Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
       WriteTimer.Elapsed += WriteTimerElapsed;
-
     }
 
     #region Writing objects
@@ -77,12 +76,13 @@ namespace Speckle.Transports
       }
     }
 
+    // TODO: Gzip
     private async Task ConsumeQueue()
     {
       IS_WRITING = true;
       var message = new HttpRequestMessage()
       {
-        RequestUri = new Uri("/objects/testStreamId", UriKind.Relative),
+        RequestUri = new Uri($"/objects/{StreamId}", UriKind.Relative),
         Method = HttpMethod.Post
       };
 
@@ -104,7 +104,7 @@ namespace Speckle.Transports
           i++;
         }
         _ct += "]";
-        multipart.Add(new StringContent(_ct, Encoding.UTF8), "a", "a");
+        multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{i}", $"batch-{i}");
       }
 
       message.Content = multipart;
@@ -114,7 +114,7 @@ namespace Speckle.Transports
       }
       catch (Exception e)
       {
-        throw new Exception("Remote unreachable");
+        throw new Exception("Remote unreachable ");
       }
 
       IS_WRITING = false;
@@ -147,15 +147,23 @@ namespace Speckle.Transports
     #endregion
     public string GetObject(string hash)
     {
-      throw new NotImplementedException();
+      // TODO: Untested
+      var message = new HttpRequestMessage()
+      {
+        RequestUri = new Uri($"/objects/{StreamId}/{hash}/single", UriKind.Relative),
+        Method = HttpMethod.Get,
+      };
+
+      var response = Client.SendAsync(message, HttpCompletionOption.ResponseContentRead).Result.Content;
+      return response.ReadAsStringAsync().Result;
     }
 
-    public async Task<string> GetObjectChildren(string hash)
+    public async Task<string> GetObjectAndChildren(string hash)
     {
 
       var message = new HttpRequestMessage()
       {
-        RequestUri = new Uri($"/objects/testStreamId/{hash}", UriKind.Relative),
+        RequestUri = new Uri($"/objects/{StreamId}/{hash}", UriKind.Relative),
         Method = HttpMethod.Get,
       };
 
@@ -173,7 +181,6 @@ namespace Speckle.Transports
             var line = reader.ReadLine();
             var pcs = line.Split('\t', 2);
             LocalTransport.SaveObject(pcs[0], pcs[1]);
-            Console.WriteLine(line);
             if (first)
             {
               commitObj = pcs[1];
@@ -190,8 +197,8 @@ namespace Speckle.Transports
 
     public void Dispose()
     {
+      // TODO: check if it's writing first? 
       Client.Dispose();
-      throw new NotImplementedException();
     }
   }
 }

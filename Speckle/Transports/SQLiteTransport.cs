@@ -206,32 +206,13 @@ namespace Speckle.Transports
       }
     }
 
-    public IEnumerable<string> GetObjects(IEnumerable<string> hashes)
-    {
-      //hashes.
-      //using (var command = new SQLiteCommand(Connection))
-      //{
-      //  command.CommandText = "SELECT * FROM objects WHERE hash = @hash LIMIT 1 ";
-      //  command.Parameters.AddWithValue("@hash", hash);
-      //  var reader = command.ExecuteReader();
-      //  while (reader.Read())
-      //  {
-      //    yield return Utilities.DecompressString(reader.GetString(1));
-      //  }
-      //  throw new Exception("No object found");
-      //}
-      throw new NotImplementedException();
-    }
-
     #endregion
 
     public void Dispose()
     {
-      lock (Buffer) // wait for a lock on the buffer, in case the timer is now executing
-      {
-        Connection.Close();
-        Connection.Dispose();
-      }
+      // TODO: Check if it's still writing?
+      Connection.Close();
+      Connection.Dispose();
     }
   }
 }

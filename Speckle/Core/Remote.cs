@@ -10,26 +10,6 @@ using Speckle.Transports;
 namespace Speckle.Core
 {
 
-  public class Stream
-  {
-  
-    public string PreviousCommitId { get; set; }
-
-    public Stream()
-    {
-    }
-  }
-
-  public class Commit : Base
-  {
-    [DetachProperty]
-    public List<Base> Objects { get; set; }
-
-    public string CommitMessage { get; set; }
-
-    public Commit() { }
-  }
-
   public class Remote
   {
     public string ServerUrl { get; set; }
@@ -42,6 +22,5 @@ namespace Speckle.Core
 
     public Remote() { }
   }
-
 
 }

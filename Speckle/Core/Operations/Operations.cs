@@ -35,12 +35,6 @@ namespace Speckle.Core
 
       return (serializer, settings);
     }
-
-
-
-    #region Getting objects
-    // TODO
-    #endregion
   }
 
 }

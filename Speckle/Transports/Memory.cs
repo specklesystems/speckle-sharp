@@ -6,7 +6,6 @@ using Speckle.Models;
 
 namespace Speckle.Transports
 {
-
   /// <summary>
   /// An in memory storage of speckle objects.
   /// </summary>

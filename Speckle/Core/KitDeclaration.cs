@@ -6,6 +6,9 @@ using Speckle.Models;
 
 namespace Speckle.Core
 {
+  /// <summary>
+  /// Needed so we can properly deserialize all the Base-derived objects from Core itself.
+  /// </summary>
   public class CoreKit : ISpeckleKit
   {
     public IEnumerable<Type> Types => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));

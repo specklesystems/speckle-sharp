@@ -29,6 +29,6 @@ namespace Speckle.Transports
 
   public interface IRemoteTransport
   {
-
+    public Task<string> GetObjectAndChildren(string hash);
   }
 }

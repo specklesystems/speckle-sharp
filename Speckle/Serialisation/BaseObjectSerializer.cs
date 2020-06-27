@@ -254,7 +254,7 @@ namespace Speckle.Serialisation
           if (Transport != null && propValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var what = JToken.FromObject(propValue, serializer); // Trigger next.
-            var refHash = ((JObject)what).GetValue("hash").ToString();
+            var refHash = ((JObject)what).GetValue("id").ToString();
 
             var reference = new ObjectReference() { referencedId = refHash };
             TrackReferenceInTree(refHash);
@@ -276,13 +276,13 @@ namespace Speckle.Serialisation
         }
 
         var hash = Models.Utilities.hashString(jo.ToString());
-        jo.Add("hash", JToken.FromObject(hash));
+        jo.Add("id", JToken.FromObject(hash));
         jo.WriteTo(writer);
 
         if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && (Transport != null))
         {
           var objString = jo.ToString();
-          var objId = jo["hash"].Value<string>();
+          var objId = jo["id"].Value<string>();
 
           Transport.SaveObject(objId, objString);
 
@@ -327,7 +327,7 @@ namespace Speckle.Serialisation
           if (Transport != null && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var what = JToken.FromObject(arrValue, serializer); // Trigger next
-            var refHash = ((JObject)what).GetValue("hash").ToString();
+            var refHash = ((JObject)what).GetValue("id").ToString();
 
             var reference = new ObjectReference() { referencedId = refHash };
             TrackReferenceInTree(refHash);
@@ -359,7 +359,7 @@ namespace Speckle.Serialisation
           if (Transport != null && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var what = JToken.FromObject(kvp.Value, serializer); // Trigger next
-            var refHash = ((JObject)what).GetValue("hash").ToString();
+            var refHash = ((JObject)what).GetValue("id").ToString();
 
             var reference = new ObjectReference() { referencedId = refHash };
             TrackReferenceInTree(refHash);

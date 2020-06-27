@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace Speckle.Models
 {
   /// <summary>
@@ -43,6 +45,16 @@ namespace Speckle.Models
       assemblyQualifiedName = @base.GetType().AssemblyQualifiedName;
     }
 
+  }
+
+  public class Commit : Base
+  {
+    [DetachProperty]
+    public List<Base> Objects { get; set; }
+
+    public string CommitMessage { get; set; }
+
+    public Commit() { }
   }
 
   public class ObjectReference
