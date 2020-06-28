@@ -315,10 +315,6 @@ namespace Speckle.Serialisation
       // A much faster approach is to check for List<primitive>, where primitive = string, number, etc. and directly serialize it in full.
       // Same goes for dictionaries.
 
-      // TODO: What if a list/dictionary is the entry point?
-      // If a transport is present, we should assume detachability (ie, ultimately return just a list of object references).
-      // Question: do we need to pop the lineage after we're done? Not really, but it would be good form.
-
       // List handling
       if (typeof(IEnumerable).IsAssignableFrom(type) && !typeof(IDictionary).IsAssignableFrom(type) && type != typeof(string))
       {

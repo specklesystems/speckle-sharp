@@ -25,6 +25,10 @@ namespace Speckle.Transports
     /// <param name="hash">The object's hash.</param>
     /// <returns></returns>
     public string GetObject(string hash);
+
+    public bool GetWriteCompletionStatus();
+
+    public Task WriteComplete();
   }
 
   public interface IRemoteTransport

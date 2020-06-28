@@ -31,6 +31,16 @@ namespace Speckle.Transports
       else
         throw new Exception("No object found in this memory transport.");
     }
+
+    public bool GetWriteCompletionStatus()
+    {
+      return true; // can safely assume it's always true, as ops are atomic?
+    }
+
+    public Task WriteComplete()
+    {
+      return Utilities.WaitUntil(() => true); 
+    }
   }
 
 }

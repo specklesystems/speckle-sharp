@@ -1,9 +1,4 @@
-﻿using Speckle.Serialisation;
-using System.Collections.Generic;
-using Speckle.Kits;
-//using Speckle.Core;
-using Speckle.Transports;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using NUnit.Framework;
 using System;
 using Speckle.Models;
@@ -13,10 +8,8 @@ namespace Tests
   [TestFixture]
   public class Hashing
   {
-    /// <summary>
-    /// Checks that hashing (as represented by object ids) actually works.
-    /// </summary>
-    [Test]
+    
+    [Test(Description = "Checks that hashing (as represented by object ids) actually works.")]
     public void HashChangeCheck()
     {
       var table = new DiningTable();
@@ -29,10 +22,7 @@ namespace Tests
       Assert.AreNotEqual(table.GetId(), secondTable.GetId());
     }
 
-    /// <summary>
-    /// Tests the convention that dynamic properties that have key names prepended with "__" are ignored.
-    /// </summary>
-    [Test]
+    [Test(Description = "Tests the convention that dynamic properties that have key names prepended with '__' are ignored.")]
     public void IgnoredDynamicPropertiesCheck()
     {
       var table = new DiningTable();
@@ -43,10 +33,7 @@ namespace Tests
       Assert.AreEqual(originalHash, table.GetId());
     }
 
-    /// <summary>
-    /// Rather stupid test as results vary wildly even on one machine.
-    /// </summary>
-    [Test]
+    [Test(Description = "Rather stupid test as results vary wildly even on one machine.")]
     public void HashingPerformance()
     {
       var polyline = new Polyline();
@@ -77,10 +64,19 @@ namespace Tests
       Console.WriteLine($"Small obj hash duration: {diff2} ms");
     }
 
-    /// <summary>
-    /// Checks to see if abstract object wrappers actually work.
-    /// </summary>
-    [Test]
+    [Test(Description ="The hash of a decomposed object is different that that of a non-decomposed object.")]
+    public void DecompositionHashes()
+    {
+      var table = new DiningTable();
+      ((dynamic)table)["@decomposeMePlease"] = new Point();
+
+      var hash1 = table.GetId();
+      var hash2 = table.GetId(true);
+
+      Assert.AreNotEqual(hash1, hash2);
+    }
+
+    [Test(Description = "Checks to see if abstract object wrappers actually work.")]
     public void AbstractHashing()
     {
       var nk1 = new NonKitClass();

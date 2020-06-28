@@ -16,7 +16,7 @@ namespace Speckle.Core
   {
     #region Pulling objects
 
-    public static async Task<Base> Pull(string objectId, SqlLiteObjectTransport localTransport = null, Remote remote = null)
+    public static async Task<Base> Pull(string objectId, ITransport localTransport = null, Remote remote = null)
     {
       var (serializer, settings) = GetSerializerInstance();
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();

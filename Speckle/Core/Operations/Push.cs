@@ -23,7 +23,7 @@ namespace Speckle.Core
     /// <param name="remotes"></param>
     /// <param name="onProgressAction"></param>
     /// <returns>The object's id (hash).</returns>
-    public static async Task<string> Push(Base @object, SqlLiteObjectTransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null)
+    public static async Task<string> Push(Base @object, ITransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null)
     {
       var (serializer, settings) = GetSerializerInstance();
 

@@ -15,13 +15,13 @@ namespace HttpTests
   {
     static async Task Main(string[] args)
     {
-      //await BufferedWriteTest();
+      await BufferedWriteTest();
 
       //await BulkWriteMany();
 
       //await Whapp();
 
-      await SerializedBuffering(5);
+      //await SerializedBuffering(5);
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
@@ -33,7 +33,7 @@ namespace HttpTests
     {
       var objects = new List<Base>();
       var dict = new Dictionary<string, Base>();
-
+      
       for (int i = 0; i < 10; i++)
       {
         if (i % 2 == 0)
@@ -98,7 +98,7 @@ namespace HttpTests
 
     public static async Task BufferedWriteTest()
     {
-      int numObjects = 1000;
+      int numObjects = 100_000;
       var transport = new SqlLiteObjectTransport();
       var rand = new Random();
       var stopWatch = new Stopwatch();

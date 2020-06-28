@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Speckle.Core;
+using Speckle.Transports;
 
 namespace Speckle.Models
 {
@@ -30,10 +31,15 @@ namespace Speckle.Models
     /// <para><b>Hint:</b> Objects that are retrieved/pulled from a server/local cache do have an id (hash) property pre-populated.</para>
     /// <para><b>Note:</b>The hash of a decomposed object differs from the hash of a non-decomposed object.</para>
     /// </summary>
+    /// <param name="decompose">If true, will decompose the object in the process of hashing.</param>
     /// <returns></returns>
-    public string GetId()
+    public string GetId(bool decompose = false)
     {
-      var (_, t) = Operations.GetSerializerInstance();
+      var (s, t) = Operations.GetSerializerInstance();
+      if(decompose)
+      {
+        s.Transport = new MemoryTransport();
+      }
       var obj = JsonConvert.SerializeObject(this, t);
       return JObject.Parse(obj).GetValue("id").ToString();
     }
