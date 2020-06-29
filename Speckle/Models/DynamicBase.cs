@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
@@ -33,7 +35,7 @@ namespace Speckle.Models
     /// <returns></returns>
     public override bool TryGetMember(GetMemberBinder binder, out object result)
     {
-      return properties.TryGetValue(binder.Name, out result);
+      return (properties.TryGetValue(binder.Name, out result));
     }
 
     /// <summary>
@@ -48,6 +50,67 @@ namespace Speckle.Models
       properties[binder.Name] = value;
       return true;
     }
+
+    /// <summary>
+    /// Checks if a dynamic propery exists or not
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    //public bool HasMember(string key)
+    //{
+    //  return properties.ContainsKey(key);
+    //}
+
+    /// <summary>
+    /// Checks if a dynamic propery exists or not and has a specific type
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public bool HasMember<T>(string key)
+    {
+      if (properties.ContainsKey(key) && (T)properties[key] != null)
+        return true;
+
+      try
+      {
+        return (T)GetType().GetProperty(key).GetValue(this) != null;
+      }
+      catch
+      {}
+
+      return false;
+    }
+
+    /// <summary>
+    /// Safely gets a dynamic property
+    /// </summary>
+    /// <typeparam name="T">Type of the property</typeparam>
+    /// <param name="key">Name of the property to get</param>
+    /// <returns></returns>
+    public T GetMemberSafe<T>(string key)
+    {
+      if (!HasMember<T>(key))
+      {
+        properties[key] = default(T);
+      }
+      return (T)this[key];
+    }
+
+    /// <summary>
+    /// Safely gets a dynamic property
+    /// </summary>
+    /// <typeparam name="T">Type of the property</typeparam>
+    /// <param name="key">Name of the property to get</param>
+    /// <returns></returns>
+    public T GetMemberSafe<T>(string key, T def)
+    {
+      if (!HasMember<T>(key))
+      {
+        properties[key] = def;
+      }
+      return (T)this[key];
+    }
+
 
     /// <summary>
     /// Sets and gets properties using the key accessor pattern. E.g.:
@@ -94,6 +157,8 @@ namespace Speckle.Models
       }
     }
 
+
+
     /// <summary>
     /// Gets all of the property names on this class, dynamic or not.
     /// </summary>
@@ -104,7 +169,6 @@ namespace Speckle.Models
       foreach (var kvp in properties) names.Add(kvp.Key);
 
       var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-      var test = GetType().Name;
       foreach (var pinfo in pinfos) names.Add(pinfo.Name);
 
       names.Remove("Item"); // TODO: investigate why we get Item out?
@@ -134,6 +198,24 @@ namespace Speckle.Models
       foreach (var kvp in properties)
         yield return kvp.Key;
     }
+
+    /// <summary>
+    /// Gets & sets the dynamic properties quickly
+    /// </summary>
+    /// <returns></returns>
+    [JsonIgnore]
+    public Dictionary<string, object> DynamicProperties
+    {
+      get
+      {
+        return properties;
+      }
+      set
+      {
+        this.properties = value;
+      }
+    }
+
   }
 
 }

@@ -9,23 +9,6 @@ using Speckle.Models;
 
 namespace Speckle.Kits
 {
-  public interface ISpeckleKit
-  {
-    /// <summary>
-    /// Returns all the object types (the object model) provided by this kit.
-    /// </summary>
-    IEnumerable<Type> Types { get; }
-
-    /// <summary>
-    /// Returns all the converters provided by this kit.
-    /// </summary>
-    IEnumerable<Type> Converters { get; }
-
-    string Description { get; }
-    string Name { get; }
-    string Author { get; }
-    string WebsiteOrEmail { get; }
-  }
 
   public static class KitManager
   {
@@ -33,24 +16,31 @@ namespace Speckle.Kits
 
     public static readonly AssemblyName SpeckleAssemblyName = typeof(Base).GetTypeInfo().Assembly.GetName();
 
-    private static List<ISpeckleKit> _SpeckleKits = new List<ISpeckleKit>();
+    private static Dictionary<string,ISpeckleKit> _SpeckleKits = new Dictionary<string, ISpeckleKit>();
 
     private static List<Type> _AvailableTypes = new List<Type>();
 
-    private static HashSet<string> AssemblyNames = new HashSet<string>();
-
     private static bool _initialized = false;
 
+    //TODO: get kit by path?
+    public static bool HasKit(string assemblyFullName)
+    {
+      Initialize();
+      return _SpeckleKits.ContainsKey(assemblyFullName);
+      
+    }
+    public static ISpeckleKit GetKit(string assemblyFullName)
+    {
+      Initialize();
+      return _SpeckleKits[assemblyFullName];
+
+    }
     public static IEnumerable<ISpeckleKit> Kits
     {
       get
       {
-        if (!_initialized)
-        {
-          Load();
-          _initialized = true;
-        }
-        return _SpeckleKits;
+        Initialize();
+        return _SpeckleKits.Values;
       }
     }
 
@@ -58,21 +48,24 @@ namespace Speckle.Kits
     {
       get
       {
-        if (!_initialized)
-        {
-          Load();
-          _initialized = true;
-        }
+        Initialize();
         return _AvailableTypes;
       }
     }
-
+    private static void Initialize()
+    {
+      if (!_initialized)
+      {
+        Load();
+        _initialized = true;
+      }
+    }
     private static void Load()
     {
       GetLoadedSpeckleReferencingAssemblies();
       LoadSpeckleReferencingAssemblies();
 
-      _AvailableTypes = _SpeckleKits.SelectMany(kit => kit.Types).ToList();
+      _AvailableTypes = _SpeckleKits.SelectMany(kit => kit.Value.Types).ToList();
     }
 
     private static void GetLoadedSpeckleReferencingAssemblies()
@@ -84,9 +77,8 @@ namespace Speckle.Kits
           var kitClass = GetKitClass(assembly);
           if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
           {
-            var isNew = AssemblyNames.Add(assembly.FullName);
-            if (isNew)
-              _SpeckleKits.Add(Activator.CreateInstance(kitClass) as ISpeckleKit);
+            if (!_SpeckleKits.ContainsKey(assembly.FullName))
+              _SpeckleKits.Add(assembly.FullName, Activator.CreateInstance(kitClass) as ISpeckleKit);
           }
         }
       }
@@ -94,6 +86,9 @@ namespace Speckle.Kits
 
     private static void LoadSpeckleReferencingAssemblies()
     {
+      if (!Directory.Exists(KitsFolder))
+        return;
+
       var assemblies = new HashSet<Assembly>();
       var directories = Directory.GetDirectories(KitsFolder);
       var currDomain = AppDomain.CurrentDomain;
@@ -111,9 +106,8 @@ namespace Speckle.Kits
           var kitClass = GetKitClass(assembly);
           if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
           {
-            var isNew = AssemblyNames.Add(assembly.FullName);
-            if (isNew)
-              _SpeckleKits.Add(Activator.CreateInstance(kitClass) as ISpeckleKit);
+            if (!_SpeckleKits.ContainsKey(assembly.FullName))
+              _SpeckleKits.Add(assembly.FullName, Activator.CreateInstance(kitClass) as ISpeckleKit);
           }
         }
       }
