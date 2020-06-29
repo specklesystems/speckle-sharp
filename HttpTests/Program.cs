@@ -123,29 +123,5 @@ namespace HttpTests
       Console.WriteLine($"BufferedWriteTest: Wrote {numObjects} in {stopWatchStep} ms -> {objsPerSecond} objects per second");
       Console.WriteLine($"-------------------------------------------------\n");
     }
-
-    public static async Task BulkWriteMany()
-    {
-      int numObjects = 100_000;
-      var transport = new SqlLiteObjectTransport();
-      var rand = new Random();
-      var stopWatch = new Stopwatch();
-
-      var objs = new List<(string, string)>();
-      for (int i = 0; i < numObjects; i++)
-      {
-        //var hash = Speckle.Models.Utilities.hashString();
-        objs.Add(($"hash-{i}-{rand.NextDouble()}", $"content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}"));
-      }
-
-      stopWatch.Start();
-      await transport.SaveObjects(objs);
-
-      var stopWatchStep = stopWatch.ElapsedMilliseconds;
-      var objsPerSecond = (double)numObjects / (stopWatchStep / 1000);
-      Console.WriteLine($"-------------------------------------------------");
-      Console.WriteLine($"BulkWriteMany: Wrote {numObjects} in {stopWatchStep} ms -> {objsPerSecond} objects per second");
-      Console.WriteLine($"-------------------------------------------------\n");
-    }
   }
 }

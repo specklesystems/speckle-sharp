@@ -181,7 +181,7 @@ namespace Speckle.Transports
           while (reader.Peek() > 0)
           {
             var line = reader.ReadLine();
-            var pcs = line.Split('\t', 2);
+            var pcs = line.Split(new char[] { '\t' }, count: 2);
             LocalTransport.SaveObject(pcs[0], pcs[1]);
             if (first)
             {

@@ -13,7 +13,7 @@ namespace Speckle.Core
   {
     public IEnumerable<Type> Types => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
 
-    public IEnumerable<Type> Converters => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Converter)));
+    public IEnumerable<Type> Converters => throw new NotImplementedException();
 
     public string Description => "Base Speckle models for revisions, streams, etc.";
 
@@ -24,5 +24,35 @@ namespace Speckle.Core
     public string WebsiteOrEmail => "hello@speckle.works";
 
     public CoreKit() { }
+
+    public Base ToSpeckle(object @object)
+    {
+      throw new NotImplementedException();
+    }
+
+    public bool CanConvertToSpeckle(object @object)
+    {
+      throw new NotImplementedException();
+    }
+
+    public object ToNative(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
+    public bool CanConvertToNative(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
+    public IEnumerable<string> GetServicedApplications()
+    {
+      throw new NotImplementedException();
+    }
+
+    public void SetContextDocument(object @object)
+    {
+      throw new NotImplementedException();
+    }
   }
 }

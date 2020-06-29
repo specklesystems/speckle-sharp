@@ -107,7 +107,21 @@ namespace Speckle.Serialisation
       if (jObject == null)
         return null;
 
-      var discriminator = Extensions.Value<string>(jObject.GetValue(TypeDiscriminator));
+      var objType = jObject.GetValue(TypeDiscriminator);
+
+      // Assume dictionary!
+      if(objType == null)
+      {
+        var dict = new Dictionary<string, object>();
+
+        foreach(var val in jObject)
+        {
+          dict[val.Key] = SerializationUtilities.HandleValue(val.Value, serializer);
+        }
+        return dict;
+      }
+
+      var discriminator = Extensions.Value<string>(objType);
 
       // Check for references.
       if (discriminator == "reference")

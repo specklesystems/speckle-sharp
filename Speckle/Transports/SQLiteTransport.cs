@@ -70,7 +70,7 @@ namespace Speckle.Transports
         // Insert Optimisations
 
         SQLiteCommand cmd;
-        cmd = new SQLiteCommand("PRAGMA journal_mode=MEMORY;", c);
+        cmd = new SQLiteCommand("PRAGMA journal_mode='wal';", c);
         cmd.ExecuteNonQuery();
 
         // Note/Hack: This setting has the potential to corrupt the db.
@@ -174,34 +174,6 @@ namespace Speckle.Transports
       }
     }
 
-    /// <summary>
-    /// Directly saves the objects into the db.
-    /// </summary>
-    /// <param name="objects"></param>
-    /// <returns></returns>
-    public async Task SaveObjects(IEnumerable<(string, string)> objects)
-    {
-      using (var c = new SQLiteConnection(ConnectionString))
-      {
-        c.Open();
-        using (var t = Connection.BeginTransaction())
-        {
-          using (var command = new SQLiteCommand(c))
-          {
-            foreach (var (hash, content) in objects)
-            {
-              command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
-              command.Parameters.AddWithValue("@hash", hash);
-              command.Parameters.AddWithValue("@content", content);
-              command.ExecuteNonQuery();
-            }
-          }
-          await t.CommitAsync();
-          return;
-        }
-      }
-    }
-
     #endregion
 
     #region Reads
@@ -224,8 +196,7 @@ namespace Speckle.Transports
           }
         }
       }
-      return null;
-      //throw new Exception($"No object found with id {hash}");
+      return null; // pass on the duty of null checks to consumers
     }
 
     #endregion

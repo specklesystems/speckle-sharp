@@ -32,7 +32,7 @@ namespace Tests
     }
 
     [Test]
-    public void ListSerialisation()
+    public void ListSerialisationAndDeserialisation()
     {
       var objs = new List<Base>();
       for (int i = 0; i < 10; i++)
@@ -43,26 +43,19 @@ namespace Tests
       Assert.AreEqual(10, test.Count);
     }
 
-    //[Test]
-    //public void DynamicDispatchment()
-    //{
-    //  var pt = new Point(1, 2, 3);
-    //  ((dynamic)pt).HelloWorld = "whatever";
-    //  ((dynamic)pt)["@detach_me"] = new Point(3, 4, 5);
-    //  ((dynamic)pt)["@detach_me_too"] = new Point(3, 4, 5); // same point, same hash, should not create a new object in the transport.
+    [Test]
+    public void DictionarySerialisation()
+    {
+      // TODO
+      var dict = new Dictionary<string, Base>();
+      for (int i = 0; i < 10; i++)
+        dict[$"key{i}"] = new Point(i, i, i);
 
-    //  var transport = new MemoryTransport();
-    //  var serializer = new Serializer();
+      var result = Operations.Serialize(dict);
+      var test = Operations.DeserializeDictionary(result);
 
-    //  var result = serializer.SerializeAndSave(pt, transport);
-
-    //  Assert.AreEqual(2, transport.Objects.Count);
-
-    //  var deserialized = serializer.DeserializeAndGet(result, transport);
-
-    //  Assert.AreEqual(pt.hash, deserialized.hash);
-    //  Assert.AreEqual(((dynamic)pt).HelloWorld, "whatever");
-    //}
+      Assert.AreEqual(test.Keys, dict.Keys);
+    }
 
     [Test]
     public void SerialisationAbstractObjects()

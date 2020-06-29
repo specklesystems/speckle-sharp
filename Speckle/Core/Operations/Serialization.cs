@@ -31,6 +31,18 @@ namespace Speckle.Core
     }
 
     /// <summary>
+    /// Serializes a list of objects. Note: if you want to save and persist objects to speckle, please use any of the "Push" methods.
+    /// </summary>
+    /// <param name="objects"></param>
+    /// <returns></returns>
+    public static string Serialize(Dictionary<string,Base> objects)
+    {
+      var (_, settings) = GetSerializerInstance();
+      return JsonConvert.SerializeObject(objects, settings);
+    }
+
+
+    /// <summary>
     /// Deserializes a given object. 
     /// </summary>
     /// <param name="object"></param>
@@ -45,6 +57,12 @@ namespace Speckle.Core
     {
       var (_, settings) = GetSerializerInstance();
       return JsonConvert.DeserializeObject<List<Base>>(@object, settings);
+    }
+
+    public static Dictionary<string,object> DeserializeDictionary(string @object)
+    {
+      var (_, settings) = GetSerializerInstance();
+      return JsonConvert.DeserializeObject<Dictionary<string, object>>(@object, settings);
     }
     #endregion
   }
