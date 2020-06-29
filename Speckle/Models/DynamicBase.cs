@@ -56,10 +56,10 @@ namespace Speckle.Models
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public bool HasMember(string key)
-    {
-      return properties.ContainsKey(key);
-    }
+    //public bool HasMember(string key)
+    //{
+    //  return properties.ContainsKey(key);
+    //}
 
     /// <summary>
     /// Checks if a dynamic propery exists or not and has a specific type
@@ -68,28 +68,49 @@ namespace Speckle.Models
     /// <returns></returns>
     public bool HasMember<T>(string key)
     {
-      return properties.ContainsKey(key) && (T)properties[key] != null ;
+      if (properties.ContainsKey(key) && (T)properties[key] != null)
+        return true;
+
+      try
+      {
+        return (T)GetType().GetProperty(key).GetValue(this) != null;
+      }
+      catch
+      {}
+
+      return false;
     }
 
     /// <summary>
     /// Safely gets a dynamic property
     /// </summary>
     /// <typeparam name="T">Type of the property</typeparam>
-    /// <param name="object">Base object</param>
     /// <param name="key">Name of the property to get</param>
-    /// <param name="def">Default value of the property to use if missing</param>
+    /// <returns></returns>
+    public T GetMemberSafe<T>(string key)
+    {
+      if (!HasMember<T>(key))
+      {
+        properties[key] = default(T);
+      }
+      return (T)this[key];
+    }
+
+    /// <summary>
+    /// Safely gets a dynamic property
+    /// </summary>
+    /// <typeparam name="T">Type of the property</typeparam>
+    /// <param name="key">Name of the property to get</param>
     /// <returns></returns>
     public T GetMemberSafe<T>(string key, T def)
     {
-      //if prop does't exist of has the wrong type, re-assign it
-      if (!HasMember(key) || properties[key].GetType() != typeof(T))
+      if (!HasMember<T>(key))
       {
         properties[key] = def;
-
       }
-
-      return (T)properties[key];
+      return (T)this[key];
     }
+
 
     /// <summary>
     /// Sets and gets properties using the key accessor pattern. E.g.:
