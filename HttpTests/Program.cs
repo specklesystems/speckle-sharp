@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -15,11 +16,12 @@ namespace HttpTests
   {
     static async Task Main(string[] args)
     {
+      Console.Clear();
       //await BufferedWriteTest();
 
       //await Whapp();
-      //TestCase();
-      await SerializedBuffering(10_000);
+      TestCase();
+      //await SerializedBuffering(20_000);
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
@@ -48,7 +50,7 @@ namespace HttpTests
     {
       var objects = new List<Base>();
       var dict = new Dictionary<string, Base>();
-      
+
       for (int i = 0; i < 10; i++)
       {
         if (i % 2 == 0)
@@ -64,7 +66,7 @@ namespace HttpTests
       var cp = test;
     }
 
-    public static async Task SerializedBuffering(int numObjects = 100_000)
+    public static async Task SerializedBuffering(int numObjects = 3000)
     {
       var sw = new Stopwatch();
       sw.Start();
@@ -93,13 +95,28 @@ namespace HttpTests
       var step = sw.ElapsedMilliseconds;
       Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
 
-
-      var res = await Operations.Push(commit, new SqlLiteObjectTransport(), /*new Remote[] { new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" } }*/ null, (string transportName, int totalCount) =>
+      //Dictionary<string, int> progress = new Dictionary<string, int>();
+      ConcurrentDictionary<string, int> progress = new ConcurrentDictionary<string, int>();
+      var progressAction = new Action<string, int>((name, processed) =>
       {
-        Console.WriteLine($"Transport {transportName} serialized {totalCount} objects out of {numObjects + 1}.");
+
+        if (progress.ContainsKey(name))
+          progress[name] += processed;
+
+        else progress[name] = processed;
+
+        Console.Clear();
+        Console.CursorLeft = 0;
+        Console.CursorTop = 0;
+
+        foreach (var kvp in progress)
+          Console.WriteLine($">>> {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
       });
 
+      var res = await Operations.Push(commit, new SqlLiteObjectTransport(), new Remote[] { new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" } }, progressAction, progressAction);
+
       var cp = res;
+      Console.CursorTop = 3;
       Console.WriteLine($"Finished sending {numObjects} objs or more in ${(sw.ElapsedMilliseconds - step) / 1000f} seconds.");
       Console.WriteLine($"Parent object id: {res}");
 

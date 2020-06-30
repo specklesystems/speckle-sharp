@@ -181,8 +181,8 @@ namespace Speckle.Serialisation
           CallSiteCache.SetValue(jProperty.Name, obj, SerializationUtilities.HandleValue(jProperty.Value, serializer));
         }
       }
-
-      OnProgressAction?.Invoke(Transport.TransportName, ++TotalProcessedCount);
+      TotalProcessedCount++;
+      OnProgressAction?.Invoke("Deserialization", 1);
       return obj;
     }
 
@@ -192,7 +192,7 @@ namespace Speckle.Serialisation
 
     // Keeps track of the actual tree structure of the objects being serialised.
     // These tree references will thereafter be stored in the __tree prop. 
-    void TrackReferenceInTree(string refId)
+    private void TrackReferenceInTree(string refId)
     {
       // Help with creating closure table entries.
       for (int i = 0; i < Lineage.Count; i++)
@@ -306,7 +306,7 @@ namespace Speckle.Serialisation
 
           Transport.SaveObject(objId, objString);
 
-          OnProgressAction?.Invoke(Transport.TransportName, ++TotalProcessedCount);
+          OnProgressAction?.Invoke("Serialization", 1);
 
           if (SecondaryWriteTransports != null && SecondaryWriteTransports.Count != 0)
           {
@@ -334,6 +334,7 @@ namespace Speckle.Serialisation
       {
         if (TotalProcessedCount == 0)
         {
+          TotalProcessedCount += 1;
           DetachLineage.Add(Transport != null ? true : false);
         }
 
@@ -365,6 +366,7 @@ namespace Speckle.Serialisation
       {
         if (TotalProcessedCount == 0)
         {
+          TotalProcessedCount += 1;
           DetachLineage.Add(Transport != null ? true : false);
         }
         var dict = value as IDictionary;

@@ -13,7 +13,7 @@ namespace Tests
   public class PushPull
   {
     string commitId;
-    int numObjects = 3_000;
+    int numObjects = 1001;
 
 
     [Test(Description = "Pushing a commit locally"), Order(1)]
@@ -39,6 +39,6 @@ namespace Tests
       return;
     }
 
-    //TODO: add
+    
   }
 }

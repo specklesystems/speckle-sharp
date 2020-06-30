@@ -4,9 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using Speckle.Models;
-using Speckle.Serialisation;
 using Speckle.Transports;
 
 namespace Speckle.Core
@@ -23,7 +21,7 @@ namespace Speckle.Core
     /// <param name="remotes"></param>
     /// <param name="onProgressAction"></param>
     /// <returns>The object's id (hash).</returns>
-    public static async Task<string> Push(Base @object, ITransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null)
+    public static async Task<string> Push(Base @object, ITransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null, Action<string, int> onRemoteProgressAction = null)
     {
       var (serializer, settings) = GetSerializerInstance();
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
@@ -32,10 +30,16 @@ namespace Speckle.Core
       serializer.OnProgressAction = onProgressAction;
 
       if (remotes != null)
+      {
         foreach (var remote in remotes)
         {
-          serializer.SecondaryWriteTransports.Add(new RemoteTransport(remote.ServerUrl, remote.StreamId, remote.ApiToken) { LocalTransport = serializer.Transport });
+          serializer.SecondaryWriteTransports.Add(new RemoteTransport(remote.ServerUrl, remote.StreamId, remote.ApiToken)
+          {
+            LocalTransport = serializer.Transport,
+            OnProgressAction = onProgressAction
+          });
         }
+      }
 
       var obj = JsonConvert.SerializeObject(@object, settings);
       var hash = JObject.Parse(obj).GetValue("id").ToString();
@@ -60,7 +64,7 @@ namespace Speckle.Core
     /// <param name="remotes"></param>
     /// <param name="onProgressAction"></param>
     /// <returns>The commit's id (hash).</returns>
-    public static async Task<List<string>> Push(IEnumerable<Base> objects, SqlLiteObjectTransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null)
+    public static async Task<List<string>> Push(IEnumerable<Base> objects, SqlLiteObjectTransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null, Action<string, int> onRemoteProgressAction = null)
     {
       var (serializer, settings) = GetSerializerInstance();
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
@@ -69,10 +73,12 @@ namespace Speckle.Core
       serializer.OnProgressAction = onProgressAction;
 
       if (remotes != null)
+      {
         foreach (var remote in remotes)
         {
-          serializer.SecondaryWriteTransports.Add(new RemoteTransport(remote.ServerUrl, remote.StreamId, remote.ApiToken) { LocalTransport = serializer.Transport });
+          serializer.SecondaryWriteTransports.Add(new RemoteTransport(remote.ServerUrl, remote.StreamId, remote.ApiToken) { LocalTransport = serializer.Transport, OnProgressAction = onRemoteProgressAction });
         }
+      }
 
       var obj = JsonConvert.SerializeObject(objects, settings);
       var res = JsonConvert.DeserializeObject<List<ObjectReference>>(obj);

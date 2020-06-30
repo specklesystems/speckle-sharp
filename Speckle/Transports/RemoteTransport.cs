@@ -33,6 +33,10 @@ namespace Speckle.Transports
     private int MAX_BUFFER_SIZE = 250_000;
     private int MAX_MULTIPART_COUNT = 4;
 
+    private int totalProcessedCount = 0;
+
+    public Action<string, int> OnProgressAction;
+
     public RemoteTransport(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
     {
       BaseUri = baseUri;
@@ -92,7 +96,7 @@ namespace Speckle.Transports
       var contents = new List<string>();
 
       ValueTuple<string, string, int> result;
-
+      totalProcessedCount = 0;
       while (contents.Count < MAX_MULTIPART_COUNT && Queue.Count != 0)
       {
         var _ct = "[";
@@ -107,6 +111,7 @@ namespace Speckle.Transports
         }
         _ct += "]";
         multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{i}", $"batch-{i}");
+        totalProcessedCount += i;
       }
 
       message.Content = multipart;
@@ -120,6 +125,8 @@ namespace Speckle.Transports
       }
 
       IS_WRITING = false;
+
+      OnProgressAction?.Invoke($"POST Remote ({Client.BaseAddress.ToString()})", totalProcessedCount);
 
       if (!WriteTimer.Enabled)
       {
@@ -171,9 +178,10 @@ namespace Speckle.Transports
 
       message.Headers.Add("Accept", "text/plain");
       string commitObj = null;
-      var first = true;
+      
 
       var response = await Client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
+      var i = 0;
       using (var stream = await response.Content.ReadAsStreamAsync())
       {
         using (var reader = new StreamReader(stream, Encoding.UTF8))
@@ -183,11 +191,11 @@ namespace Speckle.Transports
             var line = reader.ReadLine();
             var pcs = line.Split(new char[] { '\t' }, count: 2);
             LocalTransport.SaveObject(pcs[0], pcs[1]);
-            if (first)
+            if (i == 0)
             {
               commitObj = pcs[1];
-              first = false;
             }
+            OnProgressAction?.Invoke($"GET Remote ({Client.BaseAddress.ToString()})", i++);
           }
         }
       }

@@ -31,7 +31,7 @@ namespace Speckle.Transports
     private bool IS_WRITING = false;
     private int MAX_TRANSACTION_SIZE = 1000;
 
-    Action<string,int,int> OnProgressAction;
+    Action<string,int,int> OnWriteProgressAction;
 
     public SqlLiteObjectTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
     {
@@ -75,18 +75,19 @@ namespace Speckle.Transports
         // Insert Optimisations
 
         SQLiteCommand cmd;
-        cmd = new SQLiteCommand("PRAGMA journal_mode='wal';", c);
-        cmd.ExecuteNonQuery();
+        //cmd = new SQLiteCommand("PRAGMA journal_mode='wal';", c);
+        //cmd.ExecuteNonQuery();
 
         //Note / Hack: This setting has the potential to corrupt the db.
         //cmd = new SQLiteCommand("PRAGMA synchronous=OFF;", Connection);
         //cmd.ExecuteNonQuery();
 
-        cmd = new SQLiteCommand("PRAGMA count_changes=OFF;", c);
-        cmd.ExecuteNonQuery();
+        //cmd = new SQLiteCommand("PRAGMA count_changes=OFF;", c);
+        //cmd.ExecuteNonQuery();
 
-        cmd = new SQLiteCommand("PRAGMA temp_store=MEMORY;", c);
-        cmd.ExecuteNonQuery();
+        //Note: Enabling this fucks the tests up. It's theoretically fine in non-test environments (adds a few ms sync issues).
+        //cmd = new SQLiteCommand("PRAGMA temp_store=MEMORY;", c);
+        //cmd.ExecuteNonQuery();
       }
     }
 
@@ -102,13 +103,13 @@ namespace Speckle.Transports
     }
 
     /// <summary>
-    /// 
+    /// Returns true if the current write queue is empty and comitted.
     /// </summary>
     /// <returns></returns>
     public bool GetWriteCompletionStatus()
     {
-      var count = Queue.Count;
-      return Queue.Count == 0 && !IS_WRITING;
+      Console.WriteLine($"write completion {Queue.Count == 0 && !IS_WRITING}");
+      return Queue.Count == 0 && !IS_WRITING; 
     }
 
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
@@ -144,7 +145,9 @@ namespace Speckle.Transports
         }
       }
       //Console.WriteLine($"wrote {i} objects in transaction");
-      OnProgressAction?.Invoke("Local", i, 0);
+
+      OnWriteProgressAction?.Invoke($"Local ({ConnectionString})", i, Queue.Count);
+
       if (Queue.Count > 0)
         ConsumeQueue();
       IS_WRITING = false;
