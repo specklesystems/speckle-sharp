@@ -26,8 +26,9 @@ namespace Speckle.Core
     public static async Task<string> Push(Base @object, ITransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null)
     {
       var (serializer, settings) = GetSerializerInstance();
+      localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
 
-      serializer.Transport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
+      serializer.Transport = localTransport;
       serializer.OnProgressAction = onProgressAction;
 
       if (remotes != null)
@@ -39,15 +40,14 @@ namespace Speckle.Core
       var obj = JsonConvert.SerializeObject(@object, settings);
       var hash = JObject.Parse(obj).GetValue("id").ToString();
 
-      await Transports.Utilities.WaitUntil(() =>
+      var transportAwaits = new List<Task>();
+      transportAwaits.Add(localTransport.WriteComplete());
+      foreach (var t in serializer.SecondaryWriteTransports)
       {
-        foreach (var t in serializer.SecondaryWriteTransports)
-        {
-          if (!((RemoteTransport)t).GetWriteCompletionStatus()) return false;
-        }
-        if (!localTransport.GetWriteCompletionStatus()) return false;
-        return true;
-      }, 500);
+        transportAwaits.Add(t.WriteComplete());
+      }
+
+      await Task.WhenAll(transportAwaits);
 
       return hash;
     }
@@ -63,8 +63,9 @@ namespace Speckle.Core
     public static async Task<List<string>> Push(IEnumerable<Base> objects, SqlLiteObjectTransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null)
     {
       var (serializer, settings) = GetSerializerInstance();
+      localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
 
-      serializer.Transport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
+      serializer.Transport = localTransport;
       serializer.OnProgressAction = onProgressAction;
 
       if (remotes != null)
@@ -76,61 +77,16 @@ namespace Speckle.Core
       var obj = JsonConvert.SerializeObject(objects, settings);
       var res = JsonConvert.DeserializeObject<List<ObjectReference>>(obj);
 
-      await Transports.Utilities.WaitUntil(() =>
+      var transportAwaits = new List<Task>();
+      transportAwaits.Add(localTransport.WriteComplete());
+      foreach (var t in serializer.SecondaryWriteTransports)
       {
-        foreach (var t in serializer.SecondaryWriteTransports)
-        {
-          if (!((RemoteTransport)t).GetWriteCompletionStatus()) return false;
-        }
-        if (!localTransport.GetWriteCompletionStatus()) return false;
-        return true;
-      }, 500);
+        transportAwaits.Add(t.WriteComplete());
+      }
+
+      await Task.WhenAll(transportAwaits);
 
       return res.Select(o => o.referencedId).ToList();
-    }
-
-    /// <summary>
-    /// Pushes a previously serialized object (and its children) to the given remotes.
-    /// </summary>
-    /// <param name="objectId"></param>
-    /// <param name="localTransport"></param>
-    /// <param name="remotes"></param>
-    /// <param name="onProgressAction"></param>
-    /// <returns></returns>
-    public static async Task<string> Push(string objectId, SqlLiteObjectTransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null)
-    {
-      var remoteTransports = new List<RemoteTransport>();
-
-      localTransport = localTransport == null ? new SqlLiteObjectTransport() : localTransport;
-
-      foreach (var remote in remotes)
-      {
-        remoteTransports.Add(new RemoteTransport(remote.ServerUrl, remote.StreamId, remote.ApiToken) { LocalTransport = localTransport });
-      }
-
-      var obj = localTransport.GetObject(objectId);
-      var childrenIds = JObject.Parse(obj).GetValue("__closure").ToObject<Dictionary<string, int>>().Keys.ToArray();
-
-      foreach (var t in remoteTransports)
-      {
-        t.SaveObject(objectId, obj);
-        foreach (var childId in childrenIds)
-        {
-          var childObj = localTransport.GetObject(childId);
-          t.SaveObject(childId, childObj);
-        }
-      }
-
-      await Transports.Utilities.WaitUntil(() =>
-      {
-        foreach (var t in remoteTransports)
-        {
-          if (!t.GetWriteCompletionStatus()) return false;
-        }
-        return true;
-      }, 500);
-
-      return objectId;
     }
 
     #endregion

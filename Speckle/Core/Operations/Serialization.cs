@@ -5,6 +5,7 @@ using Speckle.Models;
 
 namespace Speckle.Core
 {
+  // TODO: cleanup a bit
   public static partial class Operations
   {
     #region Classic serialization

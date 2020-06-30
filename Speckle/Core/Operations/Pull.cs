@@ -14,7 +14,6 @@ namespace Speckle.Core
 {
   public static partial class Operations
   {
-    #region Pulling objects
 
     public static async Task<Base> Pull(string objectId, ITransport localTransport = null, Remote remote = null)
     {
@@ -36,6 +35,5 @@ namespace Speckle.Core
       return JsonConvert.DeserializeObject<Base>(objString, settings);
     }
 
-    #endregion
   }
 }

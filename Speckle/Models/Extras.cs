@@ -50,7 +50,7 @@ namespace Speckle.Models
   public class Commit : Base
   {
     [DetachProperty]
-    public List<Base> Objects { get; set; }
+    public List<Base> Objects { get; set; } = new List<Base>();
 
     public string CommitMessage { get; set; }
 

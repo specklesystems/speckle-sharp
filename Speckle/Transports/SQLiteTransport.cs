@@ -15,18 +15,23 @@ namespace Speckle.Transports
     public string TransportName { get; set; } = "LocalTransport";
 
     public string RootPath { get; set; }
+
     public string ConnectionString { get; set; }
 
     private SQLiteConnection Connection { get; set; }
 
-    private Dictionary<string, string> Buffer = new Dictionary<string, string>();
     private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
 
+    /// <summary>
+    /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
+    /// </summary>
     private System.Timers.Timer WriteTimer;
-    private int TotalElapsed = 0, PollInterval = 25;
+    private int PollInterval = 500;
 
     private bool IS_WRITING = false;
     private int MAX_TRANSACTION_SIZE = 1000;
+
+    Action<string,int,int> OnProgressAction;
 
     public SqlLiteObjectTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
     {
@@ -36,13 +41,13 @@ namespace Speckle.Transports
       RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
       ConnectionString = $@"URI=file:{RootPath};";
 
-      InitializeTables();
+      Initialize();
 
       WriteTimer = new System.Timers.Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
       WriteTimer.Elapsed += WriteTimerElapsed;
     }
 
-    private void InitializeTables()
+    private void Initialize()
     {
 
       // NOTE: used for creating partioned object tables.
@@ -73,7 +78,7 @@ namespace Speckle.Transports
         cmd = new SQLiteCommand("PRAGMA journal_mode='wal';", c);
         cmd.ExecuteNonQuery();
 
-        // Note/Hack: This setting has the potential to corrupt the db.
+        //Note / Hack: This setting has the potential to corrupt the db.
         //cmd = new SQLiteCommand("PRAGMA synchronous=OFF;", Connection);
         //cmd.ExecuteNonQuery();
 
@@ -87,31 +92,35 @@ namespace Speckle.Transports
 
     #region Writes
 
+    /// <summary>
+    /// Awaits untill write completion (ie, the current queue is fully consumed).
+    /// </summary>
+    /// <returns></returns>
     public async Task WriteComplete()
     {
       await Utilities.WaitUntil(() => { return GetWriteCompletionStatus(); }, 500);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public bool GetWriteCompletionStatus()
     {
+      var count = Queue.Count;
       return Queue.Count == 0 && !IS_WRITING;
     }
 
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
     {
-      TotalElapsed += PollInterval;
-      if (TotalElapsed > 100)
-      {
-        TotalElapsed = 0;
-        WriteTimer.Enabled = false;
+      WriteTimer.Enabled = false;
+      if (!IS_WRITING && Queue.Count != 0)
         ConsumeQueue();
-      }
     }
 
     private void ConsumeQueue()
     {
       IS_WRITING = true;
-
       var i = 0;
       ValueTuple<string, string, int> result;
 
@@ -130,28 +139,28 @@ namespace Speckle.Transports
               i++;
               command.ExecuteNonQuery();
             }
-            t.Commit();
           }
+          t.Commit();
         }
       }
-
+      //Console.WriteLine($"wrote {i} objects in transaction");
+      OnProgressAction?.Invoke("Local", i, 0);
+      if (Queue.Count > 0)
+        ConsumeQueue();
       IS_WRITING = false;
-      if (!WriteTimer.Enabled)
-      {
-        WriteTimer.Enabled = true;
-        WriteTimer.Start();
-      }
     }
 
+    /// <summary>
+    /// Adds an object to the saving queue. 
+    /// </summary>
+    /// <param name="hash"></param>
+    /// <param name="serializedObject"></param>
     public void SaveObject(string hash, string serializedObject)
     {
       Queue.Enqueue((hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject)));
 
-      if (!WriteTimer.Enabled && !IS_WRITING)
-      {
-        WriteTimer.Enabled = true;
-        WriteTimer.Start();
-      }
+      WriteTimer.Enabled = true;
+      WriteTimer.Start();
     }
 
     /// <summary>
@@ -178,6 +187,11 @@ namespace Speckle.Transports
 
     #region Reads
 
+    /// <summary>
+    /// Gets an object.
+    /// </summary>
+    /// <param name="hash"></param>
+    /// <returns></returns>
     public string GetObject(string hash)
     {
       using (var c = new SQLiteConnection(ConnectionString))

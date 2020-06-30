@@ -15,18 +15,33 @@ namespace HttpTests
   {
     static async Task Main(string[] args)
     {
-      await BufferedWriteTest();
-
-      //await BulkWriteMany();
+      //await BufferedWriteTest();
 
       //await Whapp();
-
-      //await SerializedBuffering(5);
+      //TestCase();
+      await SerializedBuffering(10_000);
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
 
       return;
+    }
+
+    public static void TestCase()
+    {
+      string commitId;
+      int numObjects = 3_000;
+      var commit = new Commit();
+      var rand = new Random();
+
+      for (int i = 0; i < numObjects; i++)
+      {
+        commit.Objects.Add(new Point(i, i, i) { applicationId = i + "-id" });
+      }
+
+      commitId = Operations.Push(commit).Result;
+
+      var commitPulled = (Commit)Operations.Pull(commitId).Result;
     }
 
     public static async Task Whapp()
@@ -79,7 +94,7 @@ namespace HttpTests
       Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
 
 
-      var res = await Operations.Push(commit, new SqlLiteObjectTransport(), new Remote[] { new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" } }, (string transportName, int totalCount) =>
+      var res = await Operations.Push(commit, new SqlLiteObjectTransport(), /*new Remote[] { new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" } }*/ null, (string transportName, int totalCount) =>
       {
         Console.WriteLine($"Transport {transportName} serialized {totalCount} objects out of {numObjects + 1}.");
       });
@@ -88,7 +103,7 @@ namespace HttpTests
       Console.WriteLine($"Finished sending {numObjects} objs or more in ${(sw.ElapsedMilliseconds - step) / 1000f} seconds.");
       Console.WriteLine($"Parent object id: {res}");
 
-      //    Console.WriteLine("Press any key to continue to deserialisation");
+      //  Console.WriteLine("Press any key to continue to deserialisation");
       //  Console.ReadLine();
 
       var res2 = await Operations.Pull(res);
