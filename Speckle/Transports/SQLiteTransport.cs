@@ -38,6 +38,8 @@ namespace Speckle.Transports
       if (basePath == null)
         basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
+      Directory.CreateDirectory(Path.Combine(basePath, applicationName)); //ensure dir is there
+
       RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
       ConnectionString = $@"URI=file:{RootPath};";
 
