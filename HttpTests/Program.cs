@@ -20,8 +20,8 @@ namespace HttpTests
       //await BufferedWriteTest();
 
       //await Whapp();
-      TestCase();
-      //await SerializedBuffering(20_000);
+      //TestCase();
+      await SerializedBuffering(5_000);
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
@@ -96,16 +96,9 @@ namespace HttpTests
       Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
 
       //Dictionary<string, int> progress = new Dictionary<string, int>();
-      ConcurrentDictionary<string, int> progress = new ConcurrentDictionary<string, int>();
-      var progressAction = new Action<string, int>((name, processed) =>
+      Console.Clear();
+      var progressAction = new Action<ConcurrentDictionary<string, int>>((progress) =>
       {
-
-        if (progress.ContainsKey(name))
-          progress[name] += processed;
-
-        else progress[name] = processed;
-
-        Console.Clear();
         Console.CursorLeft = 0;
         Console.CursorTop = 0;
 
@@ -113,17 +106,22 @@ namespace HttpTests
           Console.WriteLine($">>> {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
       });
 
-      var res = await Operations.Push(commit, new SqlLiteObjectTransport(), new Remote[] { new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" } }, progressAction, progressAction);
+      var res = await Operations.Push(commit, new SqlLiteObjectTransport(), new Remote[] { new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" } }, progressAction);
 
       var cp = res;
-      Console.CursorTop = 3;
+      Console.Clear();
       Console.WriteLine($"Finished sending {numObjects} objs or more in ${(sw.ElapsedMilliseconds - step) / 1000f} seconds.");
       Console.WriteLine($"Parent object id: {res}");
 
-      //  Console.WriteLine("Press any key to continue to deserialisation");
-      //  Console.ReadLine();
+      var res2 = await Operations.Pull(res, remote: new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" }, onProgressAction: dict =>
+      {
+        Console.CursorLeft = 0;
+        Console.CursorTop = 0;
 
-      var res2 = await Operations.Pull(res);
+        foreach (var kvp in dict)
+          Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
+      });
+
       var cp2 = res2;
       Console.WriteLine($"Pulled (locally) obj");
     }

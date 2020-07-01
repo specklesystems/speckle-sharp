@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,13 +22,23 @@ namespace Speckle.Core
     /// <param name="remotes"></param>
     /// <param name="onProgressAction"></param>
     /// <returns>The object's id (hash).</returns>
-    public static async Task<string> Push(Base @object, ITransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null, Action<string, int> onRemoteProgressAction = null)
+    public static async Task<string> Push(Base @object, ITransport localTransport = null, IEnumerable<Remote> remotes = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
       var (serializer, settings) = GetSerializerInstance();
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
 
+      var localProgressDict = new ConcurrentDictionary<string, int>();
+      var internalProgressAction = new Action<string, int>((name, processed) =>
+      {
+        if (localProgressDict.ContainsKey(name))
+          localProgressDict[name] += processed;
+        else
+          localProgressDict[name] = processed;
+        onProgressAction?.Invoke(localProgressDict);
+      });
+
       serializer.Transport = localTransport;
-      serializer.OnProgressAction = onProgressAction;
+      serializer.OnProgressAction = internalProgressAction;
 
       if (remotes != null)
       {
@@ -36,7 +47,7 @@ namespace Speckle.Core
           serializer.SecondaryWriteTransports.Add(new RemoteTransport(remote.ServerUrl, remote.StreamId, remote.ApiToken)
           {
             LocalTransport = serializer.Transport,
-            OnProgressAction = onProgressAction
+            OnProgressAction = internalProgressAction
           });
         }
       }
@@ -44,25 +55,11 @@ namespace Speckle.Core
       var obj = JsonConvert.SerializeObject(@object, settings);
       var hash = JObject.Parse(obj).GetValue("id").ToString();
 
-      //var transportAwaits = new List<Task>();
-      //transportAwaits.Add(localTransport.WriteComplete());
-      //foreach (var t in serializer.SecondaryWriteTransports)
-      //{
-      //  transportAwaits.Add(t.WriteComplete());
-      //}
+      var transportAwaits = serializer.SecondaryWriteTransports.Select(t => t.WriteComplete()).ToList();
+      transportAwaits.Add(localTransport.WriteComplete());
 
-      //await Task.WhenAll(transportAwaits);
-      await Transports.Utilities.WaitUntil(() =>
-      {
-        Console.WriteLine("Chekcing...");
-        foreach (var t in serializer.SecondaryWriteTransports)
-        {
-          if (!t.GetWriteCompletionStatus()) return false;
-        }
-        return localTransport.GetWriteCompletionStatus();
-      }, 1000);
+      await Task.WhenAll(transportAwaits);
 
-      Console.WriteLine("Already returned");
       return hash;
     }
 
@@ -93,15 +90,11 @@ namespace Speckle.Core
       var obj = JsonConvert.SerializeObject(objects, settings);
       var res = JsonConvert.DeserializeObject<List<ObjectReference>>(obj);
 
-      var transportAwaits = new List<Task>();
+      var transportAwaits = serializer.SecondaryWriteTransports.Select(t => t.WriteComplete()).ToList();
       transportAwaits.Add(localTransport.WriteComplete());
-      foreach (var t in serializer.SecondaryWriteTransports)
-      {
-        transportAwaits.Add(t.WriteComplete());
-      }
 
       await Task.WhenAll(transportAwaits);
-      Console.WriteLine("Already returned");
+
       return res.Select(o => o.referencedId).ToList();
     }
 
