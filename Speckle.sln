@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle", "Speckle\Speckle.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpTests", "HttpTests\HttpTests.csproj", "{BEA11108-7752-485F-B026-5B4A79B0C7AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSketches", "HttpTests\ConsoleSketches.csproj", "{BEA11108-7752-485F-B026-5B4A79B0C7AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

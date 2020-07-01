@@ -8,7 +8,6 @@ namespace Speckle.Core
   // TODO: cleanup a bit
   public static partial class Operations
   {
-    #region Classic serialization
     /// <summary>
     /// Serializes a given object. Note: if you want to save and persist an object to speckle, please use any of the "Push" methods.
     /// </summary>
@@ -42,9 +41,8 @@ namespace Speckle.Core
       return JsonConvert.SerializeObject(objects, settings);
     }
 
-
     /// <summary>
-    /// Deserializes a given object. 
+    /// Deserializes a given object. Note: if you want to pull an object from speckle (either local or remote), please use any of the "Pull" methods.
     /// </summary>
     /// <param name="object"></param>
     /// <returns></returns>
@@ -54,17 +52,26 @@ namespace Speckle.Core
       return JsonConvert.DeserializeObject<Base>(@object, settings);
     }
 
-    public static List<Base> DeserializeArray(string @object)
+    /// <summary>
+    /// Deserializes a list of objects into an array. Note: if you want to pull an object from speckle (either local or remote), please use any of the "Pull" methods.
+    /// </summary>
+    /// <param name="objectArr"></param>
+    /// <returns></returns>
+    public static List<Base> DeserializeArray(string objectArr)
     {
       var (_, settings) = GetSerializerInstance();
-      return JsonConvert.DeserializeObject<List<Base>>(@object, settings);
+      return JsonConvert.DeserializeObject<List<Base>>(objectArr, settings);
     }
 
-    public static Dictionary<string,object> DeserializeDictionary(string @object)
+    /// <summary>
+    /// Deserializes a dictionary object. Note: if you want to pull an object from speckle (either local or remote), please use any of the "Pull" methods.
+    /// </summary>
+    /// <param name="dictionary"></param>
+    /// <returns></returns>
+    public static Dictionary<string,object> DeserializeDictionary(string dictionary)
     {
       var (_, settings) = GetSerializerInstance();
-      return JsonConvert.DeserializeObject<Dictionary<string, object>>(@object, settings);
+      return JsonConvert.DeserializeObject<Dictionary<string, object>>(dictionary, settings);
     }
-    #endregion
   }
 }

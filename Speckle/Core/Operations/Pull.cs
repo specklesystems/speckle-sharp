@@ -10,6 +10,14 @@ namespace Speckle.Core
   public static partial class Operations
   {
 
+    /// <summary>
+    /// Pulls an object and deserializes it. If found in the local transport, the remote will not be used.
+    /// </summary>
+    /// <param name="objectId"></param>
+    /// <param name="localTransport"></param>
+    /// <param name="remote"></param>
+    /// <param name="onProgressAction">An action that is invoked with a dictionary argument containing key value pairs of (process name, processed items).</param>
+    /// <returns></returns>
     public static async Task<Base> Pull(string objectId, ITransport localTransport = null, Remote remote = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
       var (serializer, settings) = GetSerializerInstance();
@@ -37,10 +45,10 @@ namespace Speckle.Core
       }
       else if (objString == null)
       {
-        var rem = new RemoteTransport("http://localhost:3000", "lol", "lol", 1000) { OnProgressAction = internalProgressAction };
+        var rem = new RemoteTransport(remote.ServerUrl, remote.StreamId, remote.ApiToken, 1000) { OnProgressAction = internalProgressAction };
         rem.LocalTransport = localTransport;
         var res = await rem.GetObjectAndChildren(objectId);
-        await localTransport.WriteComplete();
+        await localTransport.WriteComplete(); // wait for the remote transport to write to the local one.
         return JsonConvert.DeserializeObject<Base>(res, settings);
       }
       else

@@ -10,18 +10,18 @@ using Speckle.Serialisation;
 using Speckle.Transports;
 using Tests;
 
-namespace HttpTests
+/// <summary>
+/// Quick and dirty tests, specifically involving a remote transport. Once we'll have a test server up and running, I assume these will migrate to tests.  
+/// </summary>
+namespace ConsoleSketches
 {
   class Program
   {
     static async Task Main(string[] args)
     {
       Console.Clear();
-      //await BufferedWriteTest();
 
-      //await Whapp();
-      //TestCase();
-      await SerializedBuffering(5_000);
+      await PushAndPullToRemote(5_000);
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
@@ -29,55 +29,19 @@ namespace HttpTests
       return;
     }
 
-    public static void TestCase()
-    {
-      string commitId;
-      int numObjects = 3_000;
-      var commit = new Commit();
-      var rand = new Random();
-
-      for (int i = 0; i < numObjects; i++)
-      {
-        commit.Objects.Add(new Point(i, i, i) { applicationId = i + "-id" });
-      }
-
-      commitId = Operations.Push(commit).Result;
-
-      var commitPulled = (Commit)Operations.Pull(commitId).Result;
-    }
-
-    public static async Task Whapp()
-    {
-      var objects = new List<Base>();
-      var dict = new Dictionary<string, Base>();
-
-      for (int i = 0; i < 10; i++)
-      {
-        if (i % 2 == 0)
-        {
-          objects.Add(new Point(i / 5, i / 2, i + 12.3233));
-          dict.Add($"key-{i}", new Point(i, i, i));
-        }
-      }
-
-      var (s, st) = Operations.GetSerializerInstance();
-      s.Transport = new SqlLiteObjectTransport();
-      var test = JsonConvert.SerializeObject(dict, st);
-      var cp = test;
-    }
-
-    public static async Task SerializedBuffering(int numObjects = 3000)
+    public static async Task PushAndPullToRemote(int numObjects = 3000)
     {
       var sw = new Stopwatch();
       sw.Start();
 
+      // Create a bunch of objects!
       var objects = new List<Base>();
       for (int i = 0; i < numObjects; i++)
       {
         if (i % 2 == 0)
         {
           objects.Add(new Point(i / 5, i / 2, i + 12.3233));
-          //((dynamic)objects[i])["@bobba"] = new Point(2 + i + i, 42, i);
+          ((dynamic)objects[i])["@bobba"] = new Point(2 + i + i, 42, i); // This will throw our progress reporting off, as our total object count will not reflect detached objects. C'est la vie.
         }
         else
         {
@@ -89,30 +53,40 @@ namespace HttpTests
         }
       }
 
+      // Store them into a commit object
       var commit = new Commit();
       commit.Objects = objects;
 
       var step = sw.ElapsedMilliseconds;
       Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
 
-      //Dictionary<string, int> progress = new Dictionary<string, int>();
       Console.Clear();
-      var progressAction = new Action<ConcurrentDictionary<string, int>>((progress) =>
+
+      // This action will get invoked on progress.
+      var pushProgressAction = new Action<ConcurrentDictionary<string, int>>((progress) =>
       {
         Console.CursorLeft = 0;
         Console.CursorTop = 0;
 
+        // The provided dictionary has an individual kvp for each provided transport.
         foreach (var kvp in progress)
-          Console.WriteLine($">>> {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
+          Console.WriteLine($">>> {kvp.Key} : {kvp.Value} / {numObjects + 1}");
       });
 
-      var res = await Operations.Push(commit, new SqlLiteObjectTransport(), new Remote[] { new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" } }, progressAction);
 
-      var cp = res;
+      // Finally, let's push the commit object. The push action returns the object's id (hash!) that you can use downstream.
+      var res = await Operations.Push(commit, new SqlLiteObjectTransport(), new Remote[] { new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" } }, pushProgressAction);
+
       Console.Clear();
+      Console.CursorLeft = 0;
+      Console.CursorTop = 0;
+
       Console.WriteLine($"Finished sending {numObjects} objs or more in ${(sw.ElapsedMilliseconds - step) / 1000f} seconds.");
       Console.WriteLine($"Parent object id: {res}");
 
+      Console.Clear();
+
+      // Time for pulling an object out. 
       var res2 = await Operations.Pull(res, remote: new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" }, onProgressAction: dict =>
       {
         Console.CursorLeft = 0;
@@ -121,12 +95,10 @@ namespace HttpTests
         foreach (var kvp in dict)
           Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
       });
-
-      var cp2 = res2;
-      Console.WriteLine($"Pulled (locally) obj");
     }
 
-    public static async Task BufferedWriteTest()
+    // Some stress tests for the sqlite local transport.
+    public static async Task SqliteStressTest()
     {
       int numObjects = 100_000;
       var transport = new SqlLiteObjectTransport();

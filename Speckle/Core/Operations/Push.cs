@@ -20,7 +20,7 @@ namespace Speckle.Core
     /// <param name="object"></param>
     /// <param name="localTransport"></param>
     /// <param name="remotes"></param>
-    /// <param name="onProgressAction"></param>
+    /// <param name="onProgressAction">An action that is invoked with a dictionary argument containing key value pairs of (process name, processed items).</param>
     /// <returns>The object's id (hash).</returns>
     public static async Task<string> Push(Base @object, ITransport localTransport = null, IEnumerable<Remote> remotes = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
@@ -69,21 +69,31 @@ namespace Speckle.Core
     /// <param name="objects"></param>
     /// <param name="localTransport"></param>
     /// <param name="remotes"></param>
-    /// <param name="onProgressAction"></param>
+    /// <param name="onProgressAction">An action that is invoked with a dictionary argument containing key value pairs of (process name, processed items).</param>
     /// <returns>The commit's id (hash).</returns>
-    public static async Task<List<string>> Push(IEnumerable<Base> objects, SqlLiteObjectTransport localTransport = null, IEnumerable<Remote> remotes = null, Action<string, int> onProgressAction = null, Action<string, int> onRemoteProgressAction = null)
+    public static async Task<List<string>> Push(IEnumerable<Base> objects, SqlLiteObjectTransport localTransport = null, IEnumerable<Remote> remotes = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
       var (serializer, settings) = GetSerializerInstance();
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
 
+      var localProgressDict = new ConcurrentDictionary<string, int>();
+      var internalProgressAction = new Action<string, int>((name, processed) =>
+      {
+        if (localProgressDict.ContainsKey(name))
+          localProgressDict[name] += processed;
+        else
+          localProgressDict[name] = processed;
+        onProgressAction?.Invoke(localProgressDict);
+      });
+
       serializer.Transport = localTransport;
-      serializer.OnProgressAction = onProgressAction;
+      serializer.OnProgressAction = internalProgressAction;
 
       if (remotes != null)
       {
         foreach (var remote in remotes)
         {
-          serializer.SecondaryWriteTransports.Add(new RemoteTransport(remote.ServerUrl, remote.StreamId, remote.ApiToken) { LocalTransport = serializer.Transport, OnProgressAction = onRemoteProgressAction });
+          serializer.SecondaryWriteTransports.Add(new RemoteTransport(remote.ServerUrl, remote.StreamId, remote.ApiToken) { LocalTransport = serializer.Transport, OnProgressAction = internalProgressAction });
         }
       }
 

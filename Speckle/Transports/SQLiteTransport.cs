@@ -31,8 +31,6 @@ namespace Speckle.Transports
     private bool IS_WRITING = false;
     private int MAX_TRANSACTION_SIZE = 1000;
 
-    Action<string, int, int> OnWriteProgressAction;
-
     public SqlLiteObjectTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
     {
       if (basePath == null)
@@ -144,9 +142,6 @@ namespace Speckle.Transports
           }
         }
       }
-
-      OnWriteProgressAction?.Invoke($"Local ({ConnectionString})", i, Queue.Count);
-      //Console.WriteLine($"wrote {i} objects in transaction; queue len {Queue.Count}; added {added.Count}; total {totalAdded}");
 
       if (Queue.Count > 0)
         ConsumeQueue();

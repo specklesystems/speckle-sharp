@@ -24,7 +24,7 @@ namespace Speckle.Transports
 
     private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
 
-    private System.Timers.Timer WriteTimer;
+    private Timer WriteTimer;
 
     private int TotalElapsed = 0, PollInterval = 50;
 
@@ -154,6 +154,9 @@ namespace Speckle.Transports
     }
 
     #endregion
+
+    #region Getting objects
+
     public string GetObject(string hash)
     {
       // TODO: Untested
@@ -181,6 +184,8 @@ namespace Speckle.Transports
       
 
       var response = await Client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
+      response.EnsureSuccessStatusCode();
+
       var i = 0;
       using (var stream = await response.Content.ReadAsStreamAsync())
       {
@@ -195,7 +200,7 @@ namespace Speckle.Transports
             {
               commitObj = pcs[1];
             }
-            OnProgressAction?.Invoke($"GET Remote ({Client.BaseAddress.ToString()})", i++);
+            OnProgressAction?.Invoke($"GET Remote ({Client.BaseAddress.ToString()})", i++); // possibly make this more friendly
           }
         }
       }
@@ -204,6 +209,7 @@ namespace Speckle.Transports
       return commitObj;
     }
 
+    #endregion
 
     public void Dispose()
     {
