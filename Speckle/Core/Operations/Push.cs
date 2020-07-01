@@ -44,15 +44,25 @@ namespace Speckle.Core
       var obj = JsonConvert.SerializeObject(@object, settings);
       var hash = JObject.Parse(obj).GetValue("id").ToString();
 
-      var transportAwaits = new List<Task>();
-      transportAwaits.Add(localTransport.WriteComplete());
-      foreach (var t in serializer.SecondaryWriteTransports)
+      //var transportAwaits = new List<Task>();
+      //transportAwaits.Add(localTransport.WriteComplete());
+      //foreach (var t in serializer.SecondaryWriteTransports)
+      //{
+      //  transportAwaits.Add(t.WriteComplete());
+      //}
+
+      //await Task.WhenAll(transportAwaits);
+      await Transports.Utilities.WaitUntil(() =>
       {
-        transportAwaits.Add(t.WriteComplete());
-      }
+        Console.WriteLine("Chekcing...");
+        foreach (var t in serializer.SecondaryWriteTransports)
+        {
+          if (!t.GetWriteCompletionStatus()) return false;
+        }
+        return localTransport.GetWriteCompletionStatus();
+      }, 1000);
 
-      await Task.WhenAll(transportAwaits);
-
+      Console.WriteLine("Already returned");
       return hash;
     }
 
@@ -91,7 +101,7 @@ namespace Speckle.Core
       }
 
       await Task.WhenAll(transportAwaits);
-
+      Console.WriteLine("Already returned");
       return res.Select(o => o.referencedId).ToList();
     }
 

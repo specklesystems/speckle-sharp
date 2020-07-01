@@ -31,7 +31,7 @@ namespace Speckle.Transports
     private bool IS_WRITING = false;
     private int MAX_TRANSACTION_SIZE = 1000;
 
-    Action<string,int,int> OnWriteProgressAction;
+    Action<string, int, int> OnWriteProgressAction;
 
     public SqlLiteObjectTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
     {
@@ -57,7 +57,6 @@ namespace Speckle.Transports
       //  foreach (var str2 in HexChars)
       //    cart.Add(str + str2);
 
-
       using (var c = new SQLiteConnection(ConnectionString))
       {
         c.Open();
@@ -75,19 +74,18 @@ namespace Speckle.Transports
         // Insert Optimisations
 
         SQLiteCommand cmd;
-        //cmd = new SQLiteCommand("PRAGMA journal_mode='wal';", c);
-        //cmd.ExecuteNonQuery();
+        cmd = new SQLiteCommand("PRAGMA journal_mode='wal';", c);
+        cmd.ExecuteNonQuery();
 
         //Note / Hack: This setting has the potential to corrupt the db.
         //cmd = new SQLiteCommand("PRAGMA synchronous=OFF;", Connection);
         //cmd.ExecuteNonQuery();
 
-        //cmd = new SQLiteCommand("PRAGMA count_changes=OFF;", c);
-        //cmd.ExecuteNonQuery();
+        cmd = new SQLiteCommand("PRAGMA count_changes=OFF;", c);
+        cmd.ExecuteNonQuery();
 
-        //Note: Enabling this fucks the tests up. It's theoretically fine in non-test environments (adds a few ms sync issues).
-        //cmd = new SQLiteCommand("PRAGMA temp_store=MEMORY;", c);
-        //cmd.ExecuteNonQuery();
+        cmd = new SQLiteCommand("PRAGMA temp_store=MEMORY;", c);
+        cmd.ExecuteNonQuery();
       }
     }
 
@@ -109,7 +107,7 @@ namespace Speckle.Transports
     public bool GetWriteCompletionStatus()
     {
       Console.WriteLine($"write completion {Queue.Count == 0 && !IS_WRITING}");
-      return Queue.Count == 0 && !IS_WRITING; 
+      return Queue.Count == 0 && !IS_WRITING;
     }
 
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
@@ -133,23 +131,24 @@ namespace Speckle.Transports
           using (var command = new SQLiteCommand(c))
           {
             command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
-            while (Queue.TryDequeue(out result) && i < MAX_TRANSACTION_SIZE)
+            while (i < MAX_TRANSACTION_SIZE && Queue.TryPeek(out result))
             {
+              Queue.TryDequeue(out result);
               command.Parameters.AddWithValue("@hash", result.Item1);
               command.Parameters.AddWithValue("@content", result.Item2);
-              i++;
               command.ExecuteNonQuery();
             }
+            t.Commit();
           }
-          t.Commit();
         }
       }
-      //Console.WriteLine($"wrote {i} objects in transaction");
 
       OnWriteProgressAction?.Invoke($"Local ({ConnectionString})", i, Queue.Count);
+      //Console.WriteLine($"wrote {i} objects in transaction; queue len {Queue.Count}; added {added.Count}; total {totalAdded}");
 
       if (Queue.Count > 0)
         ConsumeQueue();
+
       IS_WRITING = false;
     }
 
