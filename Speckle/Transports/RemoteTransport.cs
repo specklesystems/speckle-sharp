@@ -102,8 +102,9 @@ namespace Speckle.Transports
         var _ct = "[";
         var payloadBufferSize = 0;
         var i = 0;
-        while (Queue.TryDequeue(out result) && payloadBufferSize < MAX_BUFFER_SIZE)
+        while (Queue.TryPeek(out result) && payloadBufferSize < MAX_BUFFER_SIZE)
         {
+          Queue.TryDequeue(out result);
           if (i != 0) _ct += ",";
           _ct += result.Item2;
           payloadBufferSize += result.Item3;
@@ -151,7 +152,6 @@ namespace Speckle.Transports
         WriteTimer.Start();
       }
     }
-
 
     #endregion
     public string GetObject(string hash)
