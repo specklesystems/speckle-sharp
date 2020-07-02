@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Speckle.Elements
 {
-  public class Wall : Element
+  public class Wall :Element
   {
     public Level topLevel { get; set; }
     public double height { get; set; }

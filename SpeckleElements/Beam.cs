@@ -8,7 +8,6 @@ namespace Speckle.Elements
 {
   public class Beam : Element
   {
-    
     public Beam()
     {
 

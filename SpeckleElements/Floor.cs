@@ -8,7 +8,7 @@ namespace Speckle.Elements
 {
   public class Floor : Element
   {
-    
+    public List<ICurve> holes { get; set; } = new List<ICurve>();
     public Floor()
     {
 

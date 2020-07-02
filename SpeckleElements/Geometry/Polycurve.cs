@@ -6,9 +6,9 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Polycurve : Geometry
+  public class Polycurve : Base, ICurve
   {
-    public List<Geometry> segments { get; set; }
+    public List<ICurve> segments { get; set; } = new List<ICurve>();
     public Interval domain { get; set; }
     public bool closed { get; set; }
 

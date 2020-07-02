@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Mesh : Geometry
+  public class Mesh : Base, IGeometry
   {
     public List<double> vertices { get; set; } = new List<double>();
 

@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Curve : Geometry
+  public class Curve : Base, ICurve
   {
     public int degree { get; set; }
     public bool periodic { get; set; }

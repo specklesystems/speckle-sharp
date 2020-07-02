@@ -6,11 +6,10 @@ using System.Text;
 
 namespace Speckle.Elements
 {
-  public class Shaft : Element
+  public class Opening : Element
   {
-    public Level topLevel { get; set; }
-
-    public Shaft()
+    //public List<ICurve> profiles { get; set; }  = new List<ICurve>();
+    public Opening()
     {
 
     }

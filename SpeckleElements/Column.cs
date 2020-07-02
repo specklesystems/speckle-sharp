@@ -8,7 +8,6 @@ namespace Speckle.Elements
 {
   public class Column : Element
   {
-    public Level topLevel { get; set; }
     public double height { get; set; }
 
     public Column()

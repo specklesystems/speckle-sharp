@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Speckle.Elements.Geometry
 {
-  public class Plane : Geometry
+  public class Plane : Base, IGeometry
   {
     public Point origin { get; set; }
     public Vector normal { get; set; }
