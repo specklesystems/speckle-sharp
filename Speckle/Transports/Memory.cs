@@ -6,7 +6,6 @@ using Speckle.Models;
 
 namespace Speckle.Transports
 {
-
   /// <summary>
   /// An in memory storage of speckle objects.
   /// </summary>
@@ -21,7 +20,7 @@ namespace Speckle.Transports
       Objects = new Dictionary<string, string>();
     }
 
-    public void SaveObject(string hash, string serializedObject, bool overwrite = false)
+    public void SaveObject(string hash, string serializedObject)
     {
       Objects[hash] = serializedObject;
     }
@@ -31,6 +30,16 @@ namespace Speckle.Transports
       if (Objects.ContainsKey(hash)) return Objects[hash];
       else
         throw new Exception("No object found in this memory transport.");
+    }
+
+    public bool GetWriteCompletionStatus()
+    {
+      return true; // can safely assume it's always true, as ops are atomic?
+    }
+
+    public Task WriteComplete()
+    {
+      return Utilities.WaitUntil(() => true); 
     }
   }
 

@@ -1,29 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Speckle.Kits;
-using Speckle.Models;
 
-namespace Speckle.Core
+namespace Speckle.Models
 {
-
-  public class CoreKit : ISpeckleKit
-  {
-    public IEnumerable<Type> Types => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
-
-    public IEnumerable<Type> Converters => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Converter)));
-
-    public string Description => "Base Speckle models for revisions, streams, etc.";
-
-    public string Name => nameof(CoreKit);
-
-    public string Author => "Dimitrie";
-
-    public string WebsiteOrEmail => "hello@speckle.works";
-
-    public CoreKit() { }
-  }
-
   /// <summary>
   /// Wrapper around other, thrid party, classes that are not coming from a speckle kit.
   /// <para>Serialization and deserialization of the base object happens through default Newtonsoft converters. If your object does not de/serialize correctly, this class will not prevent that from happening.</para>
@@ -68,6 +47,16 @@ namespace Speckle.Core
 
   }
 
+  public class Commit : Base
+  {
+    [DetachProperty]
+    public List<Base> Objects { get; set; } = new List<Base>();
+
+    public string CommitMessage { get; set; }
+
+    public Commit() { }
+  }
+
   public class ObjectReference
   {
     public string referencedId { get; set; }
@@ -76,4 +65,14 @@ namespace Speckle.Core
     public ObjectReference() { }
   }
 
+  public class ProgressEventArgs : EventArgs
+  {
+    public int current { get; set; }
+    public int total { get; set; }
+    public string scope { get; set; }
+    public ProgressEventArgs(int current, int total, string scope)
+    {
+      this.current = current; this.total = total; this.scope = scope;
+    }
+  }
 }

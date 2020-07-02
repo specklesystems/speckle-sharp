@@ -28,6 +28,8 @@ namespace Speckle.Serialisation
 
       foreach (var typeName in objectTypes)
       {
+        //TODO: rather than getting the type from the first loaded kit that has it, maybe 
+        //we get it from a specific Kit
         var type = KitManager.Types.FirstOrDefault(tp => tp.FullName == typeName);
         if (type != null)
         {
@@ -55,7 +57,8 @@ namespace Speckle.Serialisation
     {
       if (value is JValue)
       {
-        return ((JValue)value).Value;
+        if (jsonProperty != null) return value.ToObject(jsonProperty.PropertyType);
+        else return ((JValue)value).Value;
       }
 
       if (value is JArray)
