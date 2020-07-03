@@ -1,16 +1,12 @@
 ﻿using Speckle.Elements.Geometry;
-using Speckle.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Speckle.Elements
+namespace Speckle.Elements.Revit
 {
-  public class Opening : Element
+  public class RevitRoom : Room
   {
-    public Opening()
-    {
-
-    }
+    public Point basePoint { get; set; }
   }
 }

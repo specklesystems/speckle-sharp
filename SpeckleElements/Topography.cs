@@ -8,7 +8,7 @@ namespace Speckle.Elements
 {
   public class Topography : Base
   {
-    public Mesh baseGeometry { get; set; }
+    public Mesh baseGeometry { get; set; } = new Mesh();
     public Topography()
     {
       
