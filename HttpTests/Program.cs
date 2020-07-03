@@ -21,7 +21,7 @@ namespace ConsoleSketches
     {
       Console.Clear();
 
-      await PushAndPullToRemote(5_000);
+      await PushAndPullToRemote(1);
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
@@ -54,8 +54,11 @@ namespace ConsoleSketches
       }
 
       // Store them into a commit object
-      var commit = new Commit();
-      commit.Objects = objects;
+      //var commit = new Commit();
+      var commit2 = new Base();
+      ((dynamic)commit2)["LOL"] = objects;
+      //commit.Objects = objects;
+      
 
       var step = sw.ElapsedMilliseconds;
       Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
@@ -75,7 +78,22 @@ namespace ConsoleSketches
 
 
       // Finally, let's push the commit object. The push action returns the object's id (hash!) that you can use downstream.
-      var res = await Operations.Push(commit, new SqlLiteObjectTransport(), new Remote[] { new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" } }, pushProgressAction);
+
+      var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var mySecondRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+
+      var res = await Operations.Push(
+        @object: commit2,
+        remotes: new Remote[] { myRemote, mySecondRemote },
+        onProgressAction: pushProgressAction);
+
+      //myRemote.Push(myCommit, pushProgressAction);
+
+      // Store this commit as a commit of this stream (graphql)
+      // Stream.AddCommit( objectHasdh, commitMesage)
+      // Remote.AddCommit( BaseObject, message, etc. )
+
+      // -> branch?
 
       Console.Clear();
       Console.CursorLeft = 0;

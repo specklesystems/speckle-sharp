@@ -60,6 +60,7 @@ namespace Speckle.Core
 
       await Task.WhenAll(transportAwaits);
 
+
       return hash;
     }
 
