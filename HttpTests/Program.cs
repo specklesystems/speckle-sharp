@@ -21,12 +21,98 @@ namespace ConsoleSketches
     {
       Console.Clear();
 
-      await PushAndPullToRemote(1);
+      //await PushAndPullToRemote(10_000);
+
+      Console.Clear();
+
+      //await LargeSingleObjects(50_000); // pass in 500k for a 500k vertices mesh. gzipped size: ± 5.4mb, decompressed json: 21.7mb. Works :) 
+
+      Console.Clear();
+
+      await ManyLargeObjects(); // defaults to 10k meshes with 1k vertices and faces
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
 
       return;
+    }
+
+    public static async Task ManyLargeObjects(int numVertices = 1000, int numObjects = 10_000)
+    {
+      var objs = new List<Base>();
+
+      Console.WriteLine($"Generating {numObjects} meshes with {numVertices} each. That's like {numVertices*numObjects} points. Might take a while?");
+
+      for (int i = 1; i <= numObjects; i++)
+      {
+        Console.CursorTop = 1;
+        Console.WriteLine($"Generating mesh {i}");
+        var myMesh = new Mesh();
+        for (int j = 1; j <= numVertices; j++)
+        {
+          myMesh.Points.Add(new Point(j / 0.3f, 2 * j + 3.2301000111, 0.22229 * j));
+          myMesh.Faces.AddRange(new int[] { j, j + i, j + 3, j + 23 + i, 100 % i + j });
+        }
+        objs.Add(myMesh);
+      }
+
+      Console.Clear();
+      Console.WriteLine("Done generating objects.");
+
+      var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+
+      var res = await Operations.Send(
+        @object: new Commit() { Objects = objs },
+        remotes: new Remote[] { myRemote },
+        onProgressAction: dict =>
+        {
+          Console.CursorLeft = 0;
+          Console.CursorTop = 2;
+
+          foreach (var kvp in dict)
+            Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
+        });
+
+      Console.WriteLine($"Big commit id is {res}");
+      
+      var receivedCommit = await Operations.Receive(res, remote: myRemote, onProgressAction: dict =>
+      {
+        Console.CursorLeft = 0;
+        Console.CursorTop = 7;
+
+        foreach (var kvp in dict)
+          Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
+      });
+
+      Console.Clear();
+      Console.WriteLine($"Received big commit {res}");
+    }
+
+    public static async Task LargeSingleObjects(int numVertices = 100_000)
+    {
+      Console.Clear();
+      Console.WriteLine($"Big mesh time! ({numVertices} vertices, and some {numVertices * 1.5} faces");
+      var myMesh = new Mesh();
+
+      for (int i = 1; i <= numVertices; i++)
+      {
+        myMesh.Points.Add(new Point(i / 0.3f, 2 * i + 3.2301000111, 0.22229 * i));
+        myMesh.Faces.AddRange(new int[] { i, i + i, i + 3, 23 + i, 100 % i });
+      }
+
+      var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+
+      var res = await Operations.Send(
+        @object: myMesh,
+        remotes: new Remote[] { myRemote });
+
+      Console.WriteLine($"Big mesh id is {res}");
+
+      var cp = res;
+
+      var pullMyMesh = await Operations.Receive(res);
+
+      Console.WriteLine("Pulled back big mesh.");
     }
 
     public static async Task PushAndPullToRemote(int numObjects = 3000)
@@ -55,10 +141,14 @@ namespace ConsoleSketches
 
       // Store them into a commit object
       //var commit = new Commit();
-      var commit2 = new Base();
-      ((dynamic)commit2)["LOL"] = objects;
       //commit.Objects = objects;
-      
+
+      // Or... in any other type of object you would want to.
+      var funkyStructure = new Base();
+      ((dynamic)funkyStructure)["@LolLayer"] = objects.GetRange(0, 30);
+      ((dynamic)funkyStructure)["@WooTLayer"] = objects.GetRange(30, 100);
+      ((dynamic)funkyStructure)["@FTW"] = objects.GetRange(100, objects.Count - 1);
+
 
       var step = sw.ElapsedMilliseconds;
       Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
@@ -71,7 +161,7 @@ namespace ConsoleSketches
         Console.CursorLeft = 0;
         Console.CursorTop = 0;
 
-        // The provided dictionary has an individual kvp for each provided transport.
+        // The provided dictionary has an individual kvp for each provided transport/process.
         foreach (var kvp in progress)
           Console.WriteLine($">>> {kvp.Key} : {kvp.Value} / {numObjects + 1}");
       });
@@ -79,21 +169,14 @@ namespace ConsoleSketches
 
       // Finally, let's push the commit object. The push action returns the object's id (hash!) that you can use downstream.
 
+      // Create some remotes
       var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
       var mySecondRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
 
-      var res = await Operations.Push(
-        @object: commit2,
+      var res = await Operations.Send(
+        @object: funkyStructure,
         remotes: new Remote[] { myRemote, mySecondRemote },
         onProgressAction: pushProgressAction);
-
-      //myRemote.Push(myCommit, pushProgressAction);
-
-      // Store this commit as a commit of this stream (graphql)
-      // Stream.AddCommit( objectHasdh, commitMesage)
-      // Remote.AddCommit( BaseObject, message, etc. )
-
-      // -> branch?
 
       Console.Clear();
       Console.CursorLeft = 0;
@@ -105,7 +188,7 @@ namespace ConsoleSketches
       Console.Clear();
 
       // Time for pulling an object out. 
-      var res2 = await Operations.Pull(res, remote: new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" }, onProgressAction: dict =>
+      var res2 = await Operations.Receive(res, remote: new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" }, onProgressAction: dict =>
       {
         Console.CursorLeft = 0;
         Console.CursorTop = 0;
@@ -113,6 +196,8 @@ namespace ConsoleSketches
         foreach (var kvp in dict)
           Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
       });
+      Console.Clear();
+      Console.WriteLine("Got those objects back");
     }
 
     // Some stress tests for the sqlite local transport.
