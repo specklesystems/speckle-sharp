@@ -18,7 +18,7 @@ namespace Speckle.Core
     /// <param name="remote"></param>
     /// <param name="onProgressAction">An action that is invoked with a dictionary argument containing key value pairs of (process name, processed items).</param>
     /// <returns></returns>
-    public static async Task<Base> Receive(string objectId, ITransport localTransport = null, Remote remote = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    public static async Task<Base> Download(string objectId, ITransport localTransport = null, Remote remote = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
       var (serializer, settings) = GetSerializerInstance();
 

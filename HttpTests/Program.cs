@@ -61,7 +61,7 @@ namespace ConsoleSketches
 
       var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
 
-      var res = await Operations.Send(
+      var res = await Operations.Upload(
         @object: new Commit() { Objects = objs },
         remotes: new Remote[] { myRemote },
         onProgressAction: dict =>
@@ -75,7 +75,7 @@ namespace ConsoleSketches
 
       Console.WriteLine($"Big commit id is {res}");
       
-      var receivedCommit = await Operations.Receive(res, remote: myRemote, onProgressAction: dict =>
+      var receivedCommit = await Operations.Download(res, remote: myRemote, onProgressAction: dict =>
       {
         Console.CursorLeft = 0;
         Console.CursorTop = 7;
@@ -102,7 +102,7 @@ namespace ConsoleSketches
 
       var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
 
-      var res = await Operations.Send(
+      var res = await Operations.Upload(
         @object: myMesh,
         remotes: new Remote[] { myRemote });
 
@@ -110,7 +110,7 @@ namespace ConsoleSketches
 
       var cp = res;
 
-      var pullMyMesh = await Operations.Receive(res);
+      var pullMyMesh = await Operations.Download(res);
 
       Console.WriteLine("Pulled back big mesh.");
     }
@@ -173,7 +173,7 @@ namespace ConsoleSketches
       var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
       var mySecondRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
 
-      var res = await Operations.Send(
+      var res = await Operations.Upload(
         @object: funkyStructure,
         remotes: new Remote[] { myRemote, mySecondRemote },
         onProgressAction: pushProgressAction);
@@ -188,7 +188,7 @@ namespace ConsoleSketches
       Console.Clear();
 
       // Time for pulling an object out. 
-      var res2 = await Operations.Receive(res, remote: new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" }, onProgressAction: dict =>
+      var res2 = await Operations.Download(res, remote: new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" }, onProgressAction: dict =>
       {
         Console.CursorLeft = 0;
         Console.CursorTop = 0;

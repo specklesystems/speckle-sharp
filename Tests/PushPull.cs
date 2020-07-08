@@ -29,7 +29,7 @@ namespace Tests
         commit.Objects.Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
       }
 
-      commitId_01 = Operations.Send(commit).Result;
+      commitId_01 = Operations.Upload(commit).Result;
 
       Assert.NotNull(commitId_01);
       TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {commitId_01}");
@@ -39,7 +39,7 @@ namespace Tests
     [Test(Description = "Pulling a commit locally"), Order(2)]
     public void PullCommitLocal()
     {
-      var commitPulled = (Commit)Operations.Receive(commitId_01).Result;
+      var commitPulled = (Commit)Operations.Download(commitId_01).Result;
 
       Assert.AreEqual(commitPulled.GetType(), typeof(Commit));
       Assert.AreEqual(commitPulled.Objects.Count, numObjects);
@@ -56,12 +56,12 @@ namespace Tests
         commit.Objects.Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-ugh/---" });
       }
 
-      commitId_01 = await Operations.Send(commit);
+      commitId_01 = await Operations.Upload(commit);
 
       Assert.NotNull(commitId_01);
       TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {commitId_01}");
 
-      var commitPulled = (Commit)await Operations.Receive(commitId_01);
+      var commitPulled = (Commit)await Operations.Download(commitId_01);
 
       Assert.AreEqual(commitPulled.GetType(), typeof(Commit));
       Assert.AreEqual(commitPulled.Objects.Count, 30);
@@ -93,12 +93,12 @@ namespace Tests
         ((List<Base>)((dynamic)commit)["@LayerC"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "baz" });
       }
 
-      commitId_01 = await Operations.Send(commit);
+      commitId_01 = await Operations.Upload(commit);
 
       Assert.NotNull(commitId_01);
       TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {commitId_01}");
 
-      var commitPulled = (Base)await Operations.Receive(commitId_01);
+      var commitPulled = (Base)await Operations.Download(commitId_01);
 
       Assert.AreEqual(commitPulled.GetType(), typeof(Base));
 
@@ -129,7 +129,7 @@ namespace Tests
       }
 
       ConcurrentDictionary<string, int> progress = null;
-      commitId_02 = await Operations.Send(commit, onProgressAction: (dict) =>
+      commitId_02 = await Operations.Upload(commit, onProgressAction: (dict) =>
       {
         progress = dict;
       });
@@ -142,7 +142,7 @@ namespace Tests
     public async Task PullProgressReports()
     {
       ConcurrentDictionary<string, int> progress = null;
-      var pulledCommit = await Operations.Receive(commitId_02, onProgressAction: (dict) =>
+      var pulledCommit = await Operations.Download(commitId_02, onProgressAction: (dict) =>
       {
         progress = dict;
       });
