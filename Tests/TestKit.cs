@@ -129,6 +129,7 @@ namespace Tests
     public TableLegFixture() { }
   }
 
+  // Speckle.Elements
   public class Point : Base
   {
     public double X { get; set; }
@@ -143,6 +144,28 @@ namespace Tests
       this.Y = Y;
       this.Z = Z;
     }
+  }
+
+  public class Mesh : Base
+  {
+    [JsonIgnore]
+    public List<Point> Points = new List<Point>();
+
+    public List<double> Vertices
+    {
+      get => Points.SelectMany(pt => new List<double>() { pt.X, pt.Y, pt.Z }).ToList();
+      set
+      {
+        for (int i = 0; i < value.Count; i += 3)
+        {
+          Points.Add(new Point(value[i], value[i + 1], value[i + 2]));
+        }
+      }
+    }
+
+    public List<int> Faces = new List<int>();
+
+    public Mesh() { }
   }
 
   /// <summary>

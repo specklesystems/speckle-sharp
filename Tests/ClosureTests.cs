@@ -37,9 +37,9 @@ namespace Tests
 
       var transport = new MemoryTransport();
 
-      var result = Operations.Push(d1, transport).Result;
+      var result = Operations.Send(d1, transport).Result;
 
-      var test = Operations.Pull(result, transport).Result;
+      var test = Operations.Receive(result, transport).Result;
 
       Assert.IsNotNull(test.id);
       Assert.AreEqual(test.id, d1.GetId(true));

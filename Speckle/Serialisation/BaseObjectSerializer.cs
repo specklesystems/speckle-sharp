@@ -206,25 +206,41 @@ namespace Speckle.Serialisation
       }
     }
 
+    private bool FirstEntry = true, FirstEntryWasListOrDict = false;
+
     // While this function looks complicated, it's actually quite smooth:
     // The important things to remember is that serialization goes depth first:
     // The first object to get fully serialised is the first nested one, with
     // the parent object being last. 
     public override void WriteJson(JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer)
     {
+      /////////////////////////////////////
+      // Path one: nulls
+      /////////////////////////////////////
+
       if (value == null) return;
+
+      /////////////////////////////////////
+      // Path two: primitives (string, bool, int, etc)
+      /////////////////////////////////////
 
       if (value.GetType().IsPrimitive)
       {
-        // Primitives, and all others
+        FirstEntry = false;
         var t = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer
         t.WriteTo(writer);
       }
 
+      /////////////////////////////////////
+      // Path three: Bases
+      /////////////////////////////////////
+
       if (value is Base && !(value is ObjectReference))
       {
         var obj = value as Base;
-        //CurrentParentObjectHash = ;
+
+        FirstEntry = false;
+        //TotalProcessedCount++;
 
         // Append to lineage tracker
         Lineage.Add(Guid.NewGuid().ToString());
@@ -322,6 +338,10 @@ namespace Speckle.Serialisation
         return;
       }
 
+      /////////////////////////////////////
+      // Path four: lists/arrays & dicts
+      /////////////////////////////////////
+
       var type = value.GetType();
 
       // TODO: List handling and dictionary serialisation handling can be sped up significantly if we first check by their inner type.
@@ -329,11 +349,12 @@ namespace Speckle.Serialisation
       // A much faster approach is to check for List<primitive>, where primitive = string, number, etc. and directly serialize it in full.
       // Same goes for dictionaries.
 
-      // List handling
       if (typeof(IEnumerable).IsAssignableFrom(type) && !typeof(IDictionary).IsAssignableFrom(type) && type != typeof(string))
       {
-        if (TotalProcessedCount == 0)
+        if (TotalProcessedCount == 0 && FirstEntry)
         {
+          FirstEntry = false;
+          FirstEntryWasListOrDict = true;
           TotalProcessedCount += 1;
           DetachLineage.Add(Transport != null ? true : false);
         }
@@ -355,17 +376,18 @@ namespace Speckle.Serialisation
         }
         arr.WriteTo(writer);
 
-        if (DetachLineage.Count == 1) // are we in a list entry point case?
+        if (DetachLineage.Count == 1 && FirstEntryWasListOrDict) // are we in a list entry point case?
           DetachLineage.RemoveAt(0);
 
         return;
       }
 
-      // Dictionary handling
       if (typeof(IDictionary).IsAssignableFrom(type))
       {
-        if (TotalProcessedCount == 0)
+        if (TotalProcessedCount == 0 && FirstEntry)
         {
+          FirstEntry = false;
+          FirstEntryWasListOrDict = true;
           TotalProcessedCount += 1;
           DetachLineage.Add(Transport != null ? true : false);
         }
@@ -391,13 +413,17 @@ namespace Speckle.Serialisation
         }
         dictJo.WriteTo(writer);
 
-        if (DetachLineage.Count == 1) // are we in a dictionary entry point case?
+        if (DetachLineage.Count == 1 && FirstEntryWasListOrDict) // are we in a dictionary entry point case?
           DetachLineage.RemoveAt(0);
 
         return;
       }
 
-      // All others non-primitive types
+      /////////////////////////////////////
+      // Path five: everything else (enums?)
+      /////////////////////////////////////
+
+      FirstEntry = false;
       var lastCall = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer
       lastCall.WriteTo(writer);
     }

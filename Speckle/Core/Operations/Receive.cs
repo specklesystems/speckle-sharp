@@ -22,7 +22,7 @@ namespace Speckle.Core
     /// <param name="remotes"></param>
     /// <param name="onProgressAction">An action that is invoked with a dictionary argument containing key value pairs of (process name, processed items).</param>
     /// <returns>The object's id (hash).</returns>
-    public static async Task<string> Push(Base @object, ITransport localTransport = null, IEnumerable<Remote> remotes = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    public static async Task<string> Send(Base @object, ITransport localTransport = null, IEnumerable<Remote> remotes = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
       var (serializer, settings) = GetSerializerInstance();
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
@@ -60,6 +60,7 @@ namespace Speckle.Core
 
       await Task.WhenAll(transportAwaits);
 
+
       return hash;
     }
 
@@ -71,7 +72,7 @@ namespace Speckle.Core
     /// <param name="remotes"></param>
     /// <param name="onProgressAction">An action that is invoked with a dictionary argument containing key value pairs of (process name, processed items).</param>
     /// <returns>The commit's id (hash).</returns>
-    public static async Task<List<string>> Push(IEnumerable<Base> objects, SqlLiteObjectTransport localTransport = null, IEnumerable<Remote> remotes = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    public static async Task<List<string>> Send(IEnumerable<Base> objects, SqlLiteObjectTransport localTransport = null, IEnumerable<Remote> remotes = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
       var (serializer, settings) = GetSerializerInstance();
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();

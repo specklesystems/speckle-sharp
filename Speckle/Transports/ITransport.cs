@@ -31,8 +31,13 @@ namespace Speckle.Transports
     public Task WriteComplete();
   }
 
-  public interface IRemoteTransport
+  public interface IRemoteTransport : ITransport
   {
+    /// <summary>
+    /// Should get an object with all of its children from a remote, and store them locally.
+    /// </summary>
+    /// <param name="hash"></param>
+    /// <returns></returns>
     public Task<string> GetObjectAndChildren(string hash);
   }
 }
