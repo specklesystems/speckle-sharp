@@ -17,6 +17,7 @@
     <Folder Include="Transports\" />
     <Folder Include="Core\" />
     <Folder Include="Core\Operations\" />
+    <Folder Include="Accounts\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Core\Commit.cs" />

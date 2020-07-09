@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Speckle;
 using Speckle.Core;
 using Speckle.Models;
 using Speckle.Serialisation;
@@ -29,12 +30,19 @@ namespace ConsoleSketches
 
       Console.Clear();
 
-      await ManyLargeObjects(); // defaults to 10k meshes with 1k vertices and faces
+      //await ManyLargeObjects(); // defaults to 10k meshes with 1k vertices and faces
+
+      await Auth();
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
 
       return;
+    }
+
+    public static async Task Auth()
+    {
+      await Account.AddAccount("http://localhost:3000");
     }
 
     public static async Task ManyLargeObjects(int numVertices = 1000, int numObjects = 10_000)

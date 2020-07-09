@@ -214,6 +214,19 @@ namespace Speckle.Transports
 
     #endregion
 
+    public void DeleteObject(string hash)
+    {
+      using (var c = new SQLiteConnection(ConnectionString))
+      {
+        c.Open();
+        using (var command = new SQLiteCommand(c))
+        {
+          command.CommandText = "DELETE FROM objects WHERE hash = @hash";
+          command.ExecuteNonQuery();
+        }
+      }
+    }
+
     public void Dispose()
     {
       // TODO: Check if it's still writing?

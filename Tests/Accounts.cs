@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace Tests
 {
   [TestFixture]
-  public class Accounts
+  public class AccountTests
   {
     //Account TestAccount;
 
