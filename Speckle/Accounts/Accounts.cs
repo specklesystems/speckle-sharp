@@ -6,6 +6,8 @@ using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Speckle.Transports;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Speckle
 {
@@ -18,9 +20,9 @@ namespace Speckle
 
     public string refreshToken { get; private set; }
 
-    public Account()
-    {
-    }
+    public Account() { }
+
+    #region static methods
 
     private static SqlLiteObjectTransport AccountStorage = new SqlLiteObjectTransport(scope: "Accounts");
 
@@ -30,7 +32,8 @@ namespace Speckle
     private static int PORT = 24707;
 
     /// <summary>
-    /// Adds a new account at the specified server via the standard authentication flow. 
+    /// Adds a new account at the specified server via the standard authentication flow.
+    /// <para>Note: this will work only in desktop environments that have a browser, and it depends on user interaction.</para>
     /// </summary>
     /// <param name="serverUrl"></param>
     /// <returns></returns>
@@ -135,6 +138,42 @@ namespace Speckle
         return account;
       }
     }
+
+    /// <summary>
+    /// Gets a specific account from this environment.
+    /// </summary>
+    /// <param name="serverUrl"></param>
+    /// <returns></returns>
+    public static Account GetLocalAccount(string serverUrl)
+    {
+      var _acc = AccountStorage.GetObject(serverUrl);
+
+      if (_acc == null) throw new Exception($"No account found for {serverUrl}.");
+
+      return JsonConvert.DeserializeObject<Account>(_acc);
+    }
+
+    /// <summary>
+    /// Deletes an account from this environment.
+    /// </summary>
+    /// <param name="serverUrl"></param>
+    public static void DeleteLocalAccount(string serverUrl)
+    {
+      AccountStorage.DeleteObject(serverUrl);
+    }
+
+    /// <summary>
+    /// Gets all the accounts present in this environment.
+    /// </summary>
+    /// <returns></returns>
+    public static IEnumerable<Account> GetAllLocalAccounts()
+    {
+      var _accs = AccountStorage.GetAllObjects();
+      foreach(var _acc in _accs)
+        yield return JsonConvert.DeserializeObject<Account>(_acc);
+    }
+
+    #endregion
 
     private class TokenExchangeResponse
     {

@@ -42,7 +42,7 @@ namespace ConsoleSketches
 
     public static async Task Auth()
     {
-      await Account.AddAccount("http://localhost:3000");
+      await Account.AddNewAccount("http://localhost:3000");
     }
 
     public static async Task ManyLargeObjects(int numVertices = 1000, int numObjects = 10_000)
