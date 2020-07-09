@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Speckle;
 using Speckle.Core;
+using Speckle.Credentials;
 using Speckle.Models;
 using Speckle.Serialisation;
 using Speckle.Transports;
@@ -32,7 +33,7 @@ namespace ConsoleSketches
 
       //await ManyLargeObjects(); // defaults to 10k meshes with 1k vertices and faces
 
-      await Auth();
+      await ValidateAccount();
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
@@ -40,9 +41,18 @@ namespace ConsoleSketches
       return;
     }
 
+    public static async Task ValidateAccount()
+    {
+      var myAccount = AccountManager.GetLocalAccount("http://localhost:3000");
+      var user = await myAccount.Validate();
+      var cp = user;
+
+    }
+
     public static async Task Auth()
     {
-      await Account.AddNewAccount("http://localhost:3000");
+      var myAccount = await AccountManager.AddNewAccount("http://localhost:3000");
+
     }
 
     public static async Task ManyLargeObjects(int numVertices = 1000, int numObjects = 10_000)
@@ -67,7 +77,7 @@ namespace ConsoleSketches
       Console.Clear();
       Console.WriteLine("Done generating objects.");
 
-      var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var myRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
 
       var res = await Operations.Upload(
         @object: new Commit() { Objects = objs },
@@ -108,7 +118,7 @@ namespace ConsoleSketches
         myMesh.Faces.AddRange(new int[] { i, i + i, i + 3, 23 + i, 100 % i });
       }
 
-      var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var myRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
 
       var res = await Operations.Upload(
         @object: myMesh,
@@ -178,8 +188,8 @@ namespace ConsoleSketches
       // Finally, let's push the commit object. The push action returns the object's id (hash!) that you can use downstream.
 
       // Create some remotes
-      var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
-      var mySecondRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var myRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var mySecondRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
 
       var res = await Operations.Upload(
         @object: funkyStructure,
@@ -196,7 +206,7 @@ namespace ConsoleSketches
       Console.Clear();
 
       // Time for pulling an object out. 
-      var res2 = await Operations.Download(res, remote: new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" }, onProgressAction: dict =>
+      var res2 = await Operations.Download(res, remote: new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" }, onProgressAction: dict =>
       {
         Console.CursorLeft = 0;
         Console.CursorTop = 0;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
@@ -9,20 +10,11 @@ using Speckle.Transports;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Speckle
+namespace Speckle.Credentials
 {
 
-  public class Account
+  public static class AccountManager
   {
-    public string url { get; set; }
-
-    public string token { get; private set; }
-
-    public string refreshToken { get; private set; }
-
-    public Account() { }
-
-    #region static methods
 
     private static SqlLiteObjectTransport AccountStorage = new SqlLiteObjectTransport(scope: "Accounts");
 
@@ -169,11 +161,9 @@ namespace Speckle
     public static IEnumerable<Account> GetAllLocalAccounts()
     {
       var _accs = AccountStorage.GetAllObjects();
-      foreach(var _acc in _accs)
+      foreach (var _acc in _accs)
         yield return JsonConvert.DeserializeObject<Account>(_acc);
     }
-
-    #endregion
 
     private class TokenExchangeResponse
     {
