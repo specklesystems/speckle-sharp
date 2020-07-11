@@ -14,17 +14,17 @@ namespace Speckle.Transports
     /// <summary>
     /// Saves an object.
     /// </summary>
-    /// <param name="hash">The hash of the object.</param>
+    /// <param name="id">The hash of the object.</param>
     /// <param name="serializedObject">The full string representation of the object.</param>
     /// <param name="overwrite">If true, will overrwrite the file even if present.</param>
-    public void SaveObject(string hash, string serializedObject);
+    public void SaveObject(string id, string serializedObject);
 
     /// <summary>
     /// Gets an object.
     /// </summary>
-    /// <param name="hash">The object's hash.</param>
+    /// <param name="id">The object's hash.</param>
     /// <returns></returns>
-    public string GetObject(string hash);
+    public string GetObject(string id);
 
     public bool GetWriteCompletionStatus();
 

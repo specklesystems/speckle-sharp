@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Speckle;
@@ -43,18 +44,31 @@ namespace ConsoleSketches
       return;
     }
 
-    public static async Task ValidateAccount()
-    {
-      var myAccount = AccountManager.GetLocalAccount("http://localhost:3000");
-      var user = await myAccount.Validate();
-      var cp = user;
-       
-    }
-
     public static async Task Auth()
     {
-      var myAccount = await AccountManager.AddNewAccount("http://localhost:3000");
-      Console.WriteLine($"Succesfully added/updated account server: {myAccount.serverInfo.url} user email: {myAccount.userInfo.email}");
+      //// First log in
+      //var myAccount = await AccountManager.Authenticate("http://localhost:3000");
+      //Console.WriteLine($"Succesfully added/updated account server: {myAccount.serverInfo.url} user email: {myAccount.userInfo.email}");
+
+      //// Second log in (make sure you use two different email addresses :D )
+      //var myAccount2 = await AccountManager.Authenticate("http://localhost:3000");
+
+      //AccountManager.SetDefaultAccount(myAccount2.id);
+
+      var accs = AccountManager.GetAllLocalAccounts().ToList();
+      //var deff = AccountManager.GetDefaultAccount();
+
+      //Console.WriteLine($"There are {accs.Count} accounts. The default one is {deff.id} {deff.userInfo.email}");
+
+      foreach (var acc in accs)
+      {
+        var res = await acc.Validate();
+
+        if (res != null)
+          Console.WriteLine($"Validated {acc.id}: {acc.serverInfo.url} / {res.email} / {res.name}");
+        else
+          Console.WriteLine($"Failed to validate acc {acc.id} / {acc.serverInfo.url} / {acc.userInfo.email}");
+      }
     }
 
     public static async Task ManyLargeObjects(int numVertices = 1000, int numObjects = 10_000)

@@ -12,13 +12,16 @@ using System.Collections.Generic;
 using GraphQL;
 using GraphQL.Client.Serializer.Newtonsoft;
 using GraphQL.Client.Http;
+using System.Linq;
 
 namespace Speckle.Credentials
 {
 
+  /// <summary>
+  /// Manage accounts locally for desktop applications.
+  /// </summary>
   public static class AccountManager
   {
-
     private static SqlLiteObjectTransport AccountStorage = new SqlLiteObjectTransport(scope: "Accounts");
 
     // NOTE: These need to be coordinated with the server.
@@ -27,12 +30,12 @@ namespace Speckle.Credentials
     private static int PORT = 24707;
 
     /// <summary>
-    /// Adds a new account at the specified server via the standard authentication flow.
-    /// <para>Note: this will work only in desktop environments that have a browser, and it depends on user interaction.</para>
+    /// Adds a new account at the specified server via the standard authentication flow. It will open the default browser and load the authentication endpoint of the given server, where the end user will need to authenticate and then grant permissions to your app.
+    /// <para>Note: this method depends on user interaction. For use cases where this is not possible (e.g., server-side apps/scripts), set tokens otherwise (e.g., via environment variables).</para>
     /// </summary>
     /// <param name="serverUrl"></param>
     /// <returns></returns>
-    public static async Task<Account> AddNewAccount(string serverUrl)
+    public static async Task<Account> Authenticate(string serverUrl)
     {
       Uri serverUri;
       var uriOk = Uri.TryCreate(serverUrl, UriKind.Absolute, out serverUri);
@@ -135,14 +138,7 @@ namespace Speckle.Credentials
           userInfo = _userInfo
         };
 
-        //var existing = AccountStorage.GetObject(serverUrl);
-
-        //if (existing != null)
-        //{
-        //  AccountStorage.DeleteObject(serverUrl);
-        //}
-
-        //AccountStorage.SaveObjectSync(serverUrl, Newtonsoft.Json.JsonConvert.SerializeObject(account));
+        UpdateOrSaveAccount(account);
 
         return account;
       }
@@ -175,7 +171,7 @@ namespace Speckle.Credentials
     }
 
     /// <summary>
-    /// Gets basic user information.
+    /// Gets basic user information given a token and a server.
     /// </summary>
     /// <param name="token"></param>
     /// <param name="url"></param>
@@ -206,22 +202,57 @@ namespace Speckle.Credentials
     /// </summary>
     /// <param name="serverUrl"></param>
     /// <returns></returns>
-    public static Account GetLocalAccount(string serverUrl)
+    public static IEnumerable<Account> GetLocalAccounts(string serverUrl)
     {
-      var _acc = AccountStorage.GetObject(serverUrl);
+      return GetAllLocalAccounts().Where(acc => acc.serverInfo.url == serverUrl);
+    }
 
-      if (_acc == null) throw new Exception($"No account found for {serverUrl}.");
+    /// <summary>
+    /// Gets this environment's default account if any.
+    /// </summary>
+    /// <returns>The default account or null.</returns>
+    public static Account GetDefaultAccount()
+    {
+      return GetAllLocalAccounts().Where(acc => acc.isDefault).FirstOrDefault();
+    }
 
-      return JsonConvert.DeserializeObject<Account>(_acc);
+    /// <summary>
+    /// Sets the default account.
+    /// </summary>
+    /// <param name="id"></param>
+    public static void SetDefaultAccount(string id)
+    {
+      foreach(var acc in GetAllLocalAccounts())
+      {
+        if(acc.id == id)
+        {
+          acc.isDefault = true;
+        } else
+        {
+          acc.isDefault = false;
+        }
+
+        UpdateOrSaveAccount(acc);
+      }
+    }
+
+    /// <summary>
+    /// Creates or updates an account. 
+    /// </summary>
+    /// <param name="account"></param>
+    public static void UpdateOrSaveAccount(Account account)
+    {
+      AccountStorage.DeleteObject(account.id);
+      AccountStorage.SaveObjectSync(account.id, JsonConvert.SerializeObject(account));
     }
 
     /// <summary>
     /// Deletes an account from this environment.
     /// </summary>
-    /// <param name="serverUrl"></param>
-    public static void DeleteLocalAccount(string serverUrl)
+    /// <param name="id"></param>
+    public static void DeleteLocalAccount(string id)
     {
-      AccountStorage.DeleteObject(serverUrl);
+      AccountStorage.DeleteObject(id);
     }
 
     /// <summary>

@@ -2,20 +2,29 @@
 using System.Threading.Tasks;
 using GraphQL.Client.Http;
 using GraphQL;
-using System.IO;
-using System.Threading;
 using GraphQL.Client.Serializer.Newtonsoft;
 using System.Net.Http;
-using System.Collections.Generic;
 
 namespace Speckle.Credentials
 {
 
-  public class Account
+  public class Account : IEquatable<Account>
   {
+
+    public string id
+    {
+      get
+      {
+        if (serverInfo == null || userInfo == null) throw new Exception("Incomplete account info: cannot generate id.");
+        return Speckle.Models.Utilities.hashString(serverInfo.url + userInfo.email);
+      }
+    }
+
     public string token { get; set; }
 
     public string refreshToken { get; set; }
+
+    public bool isDefault { get; set; } = false;
 
     public ServerInfo serverInfo { get; set; }
 
@@ -44,13 +53,14 @@ namespace Speckle.Credentials
       return response.Data.user;
     }
 
-    public async Task RefreshAndUpdate()
+    public async Task RotateToken()
     {
+      throw new NotImplementedException();
+    }
 
+    public bool Equals(Account other)
+    {
+      return other.userInfo.email == userInfo.email && other.serverInfo.url == serverInfo.url;
     }
   }
-
-
-
-
 }
