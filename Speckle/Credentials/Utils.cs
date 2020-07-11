@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using Speckle.Transports;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using GraphQL;
+using GraphQL.Client.Serializer.Newtonsoft;
+using GraphQL.Client.Http;
 
 namespace Speckle.Credentials
 {
@@ -36,6 +39,11 @@ namespace Speckle.Credentials
 
       if (!uriOk)
         throw new Exception("Invalid url provided.");
+
+      var _serverInfo = await GetServerInfo(serverUrl);
+
+      if (_serverInfo == null)
+        throw new Exception($"Could not get the server information for {serverUrl}");
 
       var challenge = Speckle.Models.Utilities.hashString(DateTime.UtcNow.ToString());
       var url = $"{serverUri}auth?appId={APPID}&challenge={challenge}";
@@ -81,8 +89,14 @@ namespace Speckle.Credentials
         throw new Exception($"Permission denied/failed ({serverUrl}).");
       }
 
-      var accessCode = req.Url.Query.Split('=')[1];
-      var cp = accessCode;
+      var queryPieces = req.Url.Query.Split('=');
+
+      if(queryPieces.Length < 2 || !queryPieces[0].Contains("access_code"))
+      {
+        throw new Exception($"Invalid access token response ({req.Url.Query}).");
+      }
+
+      var accessCode = queryPieces[1];
 
       // exchange access code for token
       using (var client = new HttpClient())
@@ -106,29 +120,85 @@ namespace Speckle.Credentials
         }
         catch
         {
-          throw new Exception($"Failed to get api token for {serverUrl}");
+          throw new Exception($"Failed to get api token for {serverUrl}. Response status: {_response.StatusCode}.");
         }
 
-        var response = Newtonsoft.Json.JsonConvert.DeserializeObject<TokenExchangeResponse>(await _response.Content.ReadAsStringAsync());
+        var _tokens = JsonConvert.DeserializeObject<TokenExchangeResponse>(await _response.Content.ReadAsStringAsync());
+
+        var _userInfo = await GetUserInfo(_tokens.token, serverUrl);
 
         var account = new Account()
         {
-          refreshToken = response.refreshToken,
-          token = response.token,
-          url = serverUrl
+          refreshToken = _tokens.refreshToken,
+          token = _tokens.token,
+          serverInfo = _serverInfo,
+          userInfo = _userInfo
         };
 
-        var existing = AccountStorage.GetObject(serverUrl);
+        //var existing = AccountStorage.GetObject(serverUrl);
 
-        if (existing != null)
-        {
-          AccountStorage.DeleteObject(serverUrl);
-        }
+        //if (existing != null)
+        //{
+        //  AccountStorage.DeleteObject(serverUrl);
+        //}
 
-        AccountStorage.SaveObjectSync(serverUrl, Newtonsoft.Json.JsonConvert.SerializeObject(account));
+        //AccountStorage.SaveObjectSync(serverUrl, Newtonsoft.Json.JsonConvert.SerializeObject(account));
 
         return account;
       }
+    }
+
+    /// <summary>
+    /// Gets the basic information about a server. 
+    /// </summary>
+    /// <param name="serverUrl"></param>
+    /// <returns></returns>
+    public static async Task<ServerInfo> GetServerInfo(string serverUrl)
+    {
+      using var httpClient = new HttpClient();
+
+      using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(serverUrl), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
+
+      var request = new GraphQLRequest
+      {
+        Query = @" query { serverInfo { name company } }"
+      };
+
+      var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request);
+
+      if (response.Errors != null)
+        return null;
+
+      response.Data.serverInfo.url = serverUrl;
+
+      return response.Data.serverInfo;
+    }
+
+    /// <summary>
+    /// Gets basic user information.
+    /// </summary>
+    /// <param name="token"></param>
+    /// <param name="url"></param>
+    /// <returns></returns>
+    public static async Task<UserInfo> GetUserInfo(string token, string url)
+    {
+      using var httpClient = new HttpClient();
+
+      httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+
+      using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(url), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
+
+      var request = new GraphQLRequest
+      {
+        Query = @" query { user { name email id company } }"
+      };
+
+      var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request);
+
+      if (response.Errors != null)
+        return null;
+
+      return response.Data.user;
     }
 
     /// <summary>
@@ -165,10 +235,5 @@ namespace Speckle.Credentials
         yield return JsonConvert.DeserializeObject<Account>(_acc);
     }
 
-    private class TokenExchangeResponse
-    {
-      public string token { get; set; }
-      public string refreshToken { get; set; }
-    }
   }
 }

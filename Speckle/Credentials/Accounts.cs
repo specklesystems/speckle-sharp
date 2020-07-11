@@ -13,11 +13,13 @@ namespace Speckle.Credentials
 
   public class Account
   {
-    public string url { get; set; }
-
     public string token { get; set; }
 
     public string refreshToken { get; set; }
+
+    public ServerInfo serverInfo { get; set; }
+
+    public UserInfo userInfo { get; set; }
 
     public Account() { }
 
@@ -27,7 +29,7 @@ namespace Speckle.Credentials
 
       httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-      using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(url), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
+      using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(serverInfo.url), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
 
       var request = new GraphQLRequest
       {
@@ -46,20 +48,9 @@ namespace Speckle.Credentials
     {
 
     }
-
-    public class UserInfoResponse
-    {
-      public UserInfo user { get; set; }
-    }
-
-    public class UserInfo
-    {
-      public string id { get; set; }
-      public string name { get; set; }
-      public string email { get; set; }
-      public string company { get; set; }
-    }
   }
+
+
 
 
 }

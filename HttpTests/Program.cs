@@ -33,7 +33,9 @@ namespace ConsoleSketches
 
       //await ManyLargeObjects(); // defaults to 10k meshes with 1k vertices and faces
 
-      await ValidateAccount();
+      //await ValidateAccount();
+
+      await Auth();
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
@@ -46,13 +48,13 @@ namespace ConsoleSketches
       var myAccount = AccountManager.GetLocalAccount("http://localhost:3000");
       var user = await myAccount.Validate();
       var cp = user;
-
+       
     }
 
     public static async Task Auth()
     {
       var myAccount = await AccountManager.AddNewAccount("http://localhost:3000");
-
+      Console.WriteLine($"Succesfully added/updated account server: {myAccount.serverInfo.url} user email: {myAccount.userInfo.email}");
     }
 
     public static async Task ManyLargeObjects(int numVertices = 1000, int numObjects = 10_000)

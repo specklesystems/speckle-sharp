@@ -245,6 +245,7 @@ namespace Speckle.Transports
         using (var command = new SQLiteCommand(c))
         {
           command.CommandText = "DELETE FROM objects WHERE hash = @hash";
+          command.Parameters.AddWithValue("@hash", hash);
           command.ExecuteNonQuery();
         }
       }
