@@ -214,6 +214,43 @@ namespace Speckle.Transports
 
     #endregion
 
+    /// <summary>
+    /// Returns all the objects in the store. Note: do not use for large collections.
+    /// </summary>
+    /// <returns></returns>
+    internal IEnumerable<string> GetAllObjects()
+    {
+      using var c = new SQLiteConnection(ConnectionString);
+      c.Open();
+
+      using var command = new SQLiteCommand(c);
+      command.CommandText = "SELECT * FROM objects";
+
+      using var reader = command.ExecuteReader();
+      while (reader.Read())
+      {
+        yield return reader.GetString(1);
+      }
+    }
+
+    /// <summary>
+    /// Deletes an object. Note: do not use for any speckle object transport, as it will corrupt the database.
+    /// </summary>
+    /// <param name="hash"></param>
+    internal void DeleteObject(string hash)
+    {
+      using (var c = new SQLiteConnection(ConnectionString))
+      {
+        c.Open();
+        using (var command = new SQLiteCommand(c))
+        {
+          command.CommandText = "DELETE FROM objects WHERE hash = @hash";
+          command.Parameters.AddWithValue("@hash", hash);
+          command.ExecuteNonQuery();
+        }
+      }
+    }
+
     public void Dispose()
     {
       // TODO: Check if it's still writing?

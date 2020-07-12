@@ -16,11 +16,10 @@ namespace Speckle.Core
 
     public string StreamId { get; set; }
 
-    public string Email { get; set; }
-
     public string ApiToken { get; set; }
 
     public Remote() { }
+
   }
 
 }

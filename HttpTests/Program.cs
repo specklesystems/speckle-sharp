@@ -2,9 +2,12 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Speckle;
 using Speckle.Core;
+using Speckle.Credentials;
 using Speckle.Models;
 using Speckle.Serialisation;
 using Speckle.Transports;
@@ -29,12 +32,53 @@ namespace ConsoleSketches
 
       Console.Clear();
 
-      await ManyLargeObjects(); // defaults to 10k meshes with 1k vertices and faces
+      //await ManyLargeObjects(); // defaults to 10k meshes with 1k vertices and faces
+
+      //await ValidateAccount();
+
+      await Auth();
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
 
       return;
+    }
+
+    public static async Task Auth()
+    {
+      // First log in (uncomment the two lines below to simulate a login/register)
+      //var myAccount = await AccountManager.Authenticate("http://localhost:3000");
+      //Console.WriteLine($"Succesfully added/updated account server: {myAccount.serverInfo.url} user email: {myAccount.userInfo.email}");
+
+      //// Second log in (make sure you use two different email addresses :D )
+      //var myAccount2 = await AccountManager.Authenticate("http://localhost:3000");
+
+      //AccountManager.SetDefaultAccount(myAccount2.id);
+
+      var accs = AccountManager.GetAllAccounts().ToList();
+      var deff = AccountManager.GetDefaultAccount();
+
+      //Console.WriteLine($"There are {accs.Count} accounts. The default one is {deff.id} {deff.userInfo.email}");
+
+      foreach (var acc in accs)
+      {
+        var res = await acc.Validate();
+
+        if (res != null)
+          Console.WriteLine($"Validated {acc.id}: {acc.serverInfo.url} / {res.email} / {res.name} (token: {acc.token})");
+        else
+          Console.WriteLine($"Failed to validate acc {acc.id} / {acc.serverInfo.url} / {acc.userInfo.email}");
+
+        try
+        {
+          await acc.RotateToken();
+          Console.WriteLine($"Rotated {acc.id}: {acc.serverInfo.url} / {res.email} / {res.name} (token: {acc.token})");
+        } catch(Exception e)
+        {
+          Console.WriteLine($"Failed to rotate acc {acc.id} / {acc.serverInfo.url} / {acc.userInfo.email}");
+        }
+
+      }
     }
 
     public static async Task ManyLargeObjects(int numVertices = 1000, int numObjects = 10_000)
@@ -59,7 +103,7 @@ namespace ConsoleSketches
       Console.Clear();
       Console.WriteLine("Done generating objects.");
 
-      var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var myRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
 
       var res = await Operations.Upload(
         @object: new Commit() { Objects = objs },
@@ -100,7 +144,7 @@ namespace ConsoleSketches
         myMesh.Faces.AddRange(new int[] { i, i + i, i + 3, 23 + i, 100 % i });
       }
 
-      var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var myRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
 
       var res = await Operations.Upload(
         @object: myMesh,
@@ -170,8 +214,8 @@ namespace ConsoleSketches
       // Finally, let's push the commit object. The push action returns the object's id (hash!) that you can use downstream.
 
       // Create some remotes
-      var myRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
-      var mySecondRemote = new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var myRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var mySecondRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
 
       var res = await Operations.Upload(
         @object: funkyStructure,
@@ -188,7 +232,7 @@ namespace ConsoleSketches
       Console.Clear();
 
       // Time for pulling an object out. 
-      var res2 = await Operations.Download(res, remote: new Remote() { ApiToken = "lol", Email = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" }, onProgressAction: dict =>
+      var res2 = await Operations.Download(res, remote: new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" }, onProgressAction: dict =>
       {
         Console.CursorLeft = 0;
         Console.CursorTop = 0;
