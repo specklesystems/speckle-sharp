@@ -46,7 +46,7 @@ namespace ConsoleSketches
 
     public static async Task Auth()
     {
-      //// First log in
+      // First log in (uncomment the two lines below to simulate a login/register)
       //var myAccount = await AccountManager.Authenticate("http://localhost:3000");
       //Console.WriteLine($"Succesfully added/updated account server: {myAccount.serverInfo.url} user email: {myAccount.userInfo.email}");
 
@@ -65,9 +65,19 @@ namespace ConsoleSketches
         var res = await acc.Validate();
 
         if (res != null)
-          Console.WriteLine($"Validated {acc.id}: {acc.serverInfo.url} / {res.email} / {res.name}");
+          Console.WriteLine($"Validated {acc.id}: {acc.serverInfo.url} / {res.email} / {res.name} (token: {acc.token})");
         else
           Console.WriteLine($"Failed to validate acc {acc.id} / {acc.serverInfo.url} / {acc.userInfo.email}");
+
+        try
+        {
+          await acc.RotateToken();
+          Console.WriteLine($"Rotated {acc.id}: {acc.serverInfo.url} / {res.email} / {res.name} (token: {acc.token})");
+        } catch(Exception e)
+        {
+          Console.WriteLine($"Failed to rotate acc {acc.id} / {acc.serverInfo.url} / {acc.userInfo.email}");
+        }
+
       }
     }
 

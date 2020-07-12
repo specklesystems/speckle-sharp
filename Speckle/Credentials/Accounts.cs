@@ -4,6 +4,8 @@ using GraphQL.Client.Http;
 using GraphQL;
 using GraphQL.Client.Serializer.Newtonsoft;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
 
 namespace Speckle.Credentials
 {
@@ -55,7 +57,44 @@ namespace Speckle.Credentials
 
     public async Task RotateToken()
     {
-      throw new NotImplementedException();
+      using (var client = new HttpClient())
+      {
+        var request = new HttpRequestMessage()
+        {
+          RequestUri = new Uri(new Uri(serverInfo.url), "auth/token"),
+          Method = HttpMethod.Post
+        };
+
+        var payload = new
+        {
+          appId = AccountManager.APPID,
+          appSecret = AccountManager.SECRET,
+          refreshToken
+        };
+
+        request.Content = new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(payload));
+
+        request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        var _response = await client.SendAsync(request);
+
+        try
+        {
+          _response.EnsureSuccessStatusCode();
+        }
+        catch
+        {
+          throw new Exception($"Failed to rotate token for {serverInfo.url}. Response status: {_response.StatusCode}.");
+        }
+
+        var _tokens = JsonConvert.DeserializeObject<TokenExchangeResponse>(await _response.Content.ReadAsStringAsync());
+
+        refreshToken = _tokens.refreshToken;
+        token = _tokens.token;
+
+        AccountManager.UpdateOrSaveAccount(this);
+      }
     }
 
     public bool Equals(Account other)

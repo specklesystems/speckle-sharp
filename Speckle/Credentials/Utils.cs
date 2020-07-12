@@ -25,9 +25,9 @@ namespace Speckle.Credentials
     private static SqlLiteObjectTransport AccountStorage = new SqlLiteObjectTransport(scope: "Accounts");
 
     // NOTE: These need to be coordinated with the server.
-    private static string APPID = "connectors";
-    private static string SECRET = "connectors";
-    private static int PORT = 24707;
+    internal static string APPID = "connectors";
+    internal static string SECRET = "connectors";
+    internal static int PORT = 24707;
 
     /// <summary>
     /// Adds a new account at the specified server via the standard authentication flow. It will open the default browser and load the authentication endpoint of the given server, where the end user will need to authenticate and then grant permissions to your app.
@@ -110,7 +110,14 @@ namespace Speckle.Credentials
           Method = HttpMethod.Post
         };
 
-        request.Content = new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(new { appId = APPID, appSecret = SECRET, accessCode = accessCode, challenge = challenge }));
+        var payload = new {
+          appId = APPID,
+          appSecret = SECRET,
+          accessCode,
+          challenge
+        };
+
+        request.Content = new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(payload));
 
         request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
