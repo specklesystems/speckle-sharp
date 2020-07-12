@@ -12,14 +12,14 @@ using System.Linq;
 namespace Tests
 {
   [TestFixture]
-  public class PushPull
+  public class UploadDownload
   {
     string commitId_01, commitId_02;
     int numObjects = 3001;
 
 
     [Test(Description = "Pushing a commit locally"), Order(1)]
-    public void PushCommitLocal()
+    public void LocalUpload()
     {
       var commit = new Commit();
       var rand = new Random();
@@ -46,7 +46,7 @@ namespace Tests
     }
 
     [Test(Description = "Pushing and pulling a commit locally"), Order(3)]
-    public async Task PushPullSmallCommitLocal()
+    public async Task LocalUploadDownloadSmall()
     {
       var commit = new Commit();
       var rand = new Random();
@@ -68,7 +68,7 @@ namespace Tests
     }
 
     [Test(Description = "Pushing and pulling a random object, with our without detachment"), Order(3)]
-    public async Task PushPullNonCommitObject()
+    public async Task UploadDownloadNonCommitObject()
     {
       var commit = new Base();
       // Here we are creating a "non-standard" object to act as a base for our multiple objects.
@@ -118,7 +118,7 @@ namespace Tests
     }
 
     [Test(Description = "Should show progress!"), Order(4)]
-    public async Task PushProgressReports()
+    public async Task UploadProgressReports()
     {
       var commit = new Commit();
       var rand = new Random();
@@ -139,7 +139,7 @@ namespace Tests
     }
 
     [Test(Description = "Should show progress!"), Order(5)]
-    public async Task PullProgressReports()
+    public async Task DownloadProgressReports()
     {
       ConcurrentDictionary<string, int> progress = null;
       var pulledCommit = await Operations.Download(commitId_02, onProgressAction: (dict) =>

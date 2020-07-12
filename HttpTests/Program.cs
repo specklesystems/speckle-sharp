@@ -55,8 +55,8 @@ namespace ConsoleSketches
 
       //AccountManager.SetDefaultAccount(myAccount2.id);
 
-      var accs = AccountManager.GetAllLocalAccounts().ToList();
-      //var deff = AccountManager.GetDefaultAccount();
+      var accs = AccountManager.GetAllAccounts().ToList();
+      var deff = AccountManager.GetDefaultAccount();
 
       //Console.WriteLine($"There are {accs.Count} accounts. The default one is {deff.id} {deff.userInfo.email}");
 

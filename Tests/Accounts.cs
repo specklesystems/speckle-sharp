@@ -1,109 +1,85 @@
 ﻿using System;
 using System.Linq;
 using NUnit.Framework;
-//using Speckle.Core;
+using Speckle.Credentials;
 
 namespace Tests
 {
   [TestFixture]
-  public class AccountTests
+  public class CredentialInfrastructure
   {
-    //Account TestAccount;
+    Account TestAccount1, TestAccount2;
 
-    //[SetUp]
-    //public void SetUp()
-    //{
-    //  TestAccount = new Account()
-    //  {
-    //    ApiToken = "Butt",
-    //    ServerName = "SERVER BOT DOUND",
-    //    Email = "dimitrie@speckle.systems",
-    //    ServerUrl = "https://hesita.speckle.works"
-    //  };
+    [SetUp]
+    public void SetUp()
+    {
+      TestAccount1 = new Account
+      {
+        refreshToken = "bla",
+        token = "bla",
+        serverInfo = new ServerInfo
+        {
+          url = "bla",
+          company = "bla"
+        },
+        userInfo = new UserInfo
+        {
+          email = "one@two.com"
+        }
+      };
 
-    //  Account.SaveAccount(TestAccount);
-    //}
+      TestAccount2 = new Account
+      {
+        refreshToken = "foo",
+        token = "bar",
+        serverInfo = new ServerInfo
+        {
+          url = "baz",
+          company = "qux"
+        },
+        userInfo = new UserInfo
+        {
+          email = "three@four.com"
+        }
+      };
 
-    //[TearDown]
-    //public void TearDown()
-    //{
-    //  Account.DeleteAccount(TestAccount.Id);
-    //}
+      AccountManager.UpdateOrSaveAccount(TestAccount1);
+      AccountManager.UpdateOrSaveAccount(TestAccount2);
+    }
 
-    //[Test]
-    //public void CreateAndGetAccount()
-    //{
-    //  var acc = new Account()
-    //  {
-    //    ApiToken = "SuckThisToken",
-    //    ServerName = "SERVER BOT DOUND",
-    //    Email = "dimitrie@speckle.systems",
-    //    ServerUrl = "https://hesita.speckle.works",
-    //    Id = "GarbageAccount"
-    //  };
+    [TearDown]
+    public void TearDown()
+    {
+      AccountManager.DeleteLocalAccount(TestAccount1.id);
+      AccountManager.DeleteLocalAccount(TestAccount2.id);
+    }
 
-    //  Account.SaveAccount(acc);
+    [Test]
+    public void GetAllAccounts()
+    {
+      var accs = AccountManager.GetAllAccounts();
+      Assert.GreaterOrEqual(accs.Count(), 2); // Tests are adding two accounts, you might have extra accounts on your machine when testing :D 
+    }
 
-    //  var accGet = Account.GetAccount(acc.Id);
+    [Test]
+    public void GetAccountsForServer()
+    {
+      var accs = AccountManager.GetServerAccounts("baz").ToList();
 
-    //  Assert.NotNull(accGet);
-    //  Assert.AreEqual(accGet.Id, acc.Id);
-    //}
+      Assert.AreEqual(1, accs.Count);
+      Assert.AreEqual("qux", accs[0].serverInfo.company);
+    }
 
-    //[Test]
-    //public void GetAllAccounts()
-    //{
-    //  var accs = Account.GetLocalAccounts();
+    [Test]
+    public void UpdateAccount()
+    {
+      AccountManager.SetDefaultAccount(TestAccount2.id);
+      var acc = AccountManager.GetDefaultAccount();
+      Assert.AreEqual(TestAccount2.userInfo.email, acc.userInfo.email);
 
-    //  Assert.GreaterOrEqual(accs.Count(), 1);
-    //}
-
-    //[Test]
-    //public void UpdateAccount()
-    //{
-    //  TestAccount.Email = "spammeister@woot.com";
-    //  Account.UpdateAccount(TestAccount);
-
-    //  var acc = Account.GetLocalAccounts().First(acc => acc.Email == "spammeister@woot.com");
-    //  Assert.NotNull(acc);
-    //}
-
-    //[Test]
-    //public void DefaultAccount()
-    //{
-    //  var acc1 = new Account()
-    //  {
-    //    ApiToken = "SuckThisToken",
-    //    ServerName = "SERVER BOT DOUND",
-    //    Email = "dimitrie@speckle.systems",
-    //    ServerUrl = "https://hesita.speckle.works"
-    //  };
-    //  Account.SaveAccount(acc1);
-
-
-    //  var acc2 = new Account()
-    //  {
-    //    ApiToken = "SuckThisToken",
-    //    ServerName = "SUPER DUPER",
-    //    Email = "dimitrie@speckle.systems",
-    //    ServerUrl = "https://hesita.speckle.works"
-    //  };
-    //  Account.SaveAccount(acc2);
-
-    //  var acc3 = TestAccount;
-
-    //  Account.SetDefaultAccount(acc3.Id);
-
-    //  Assert.AreEqual(Account.GetDefaultAccount().Id, acc3.Id);
-
-    //  Account.SetDefaultAccount(TestAccount.Id);
-
-    //  Assert.AreEqual(Account.GetDefaultAccount().Id, TestAccount.Id);
-
-    //  Account.ClearDefaultAccount();
-
-    //  Assert.IsNull(Account.GetDefaultAccount());
-
-    //}
+      AccountManager.SetDefaultAccount(TestAccount1.id);
+      var acc2 = AccountManager.GetDefaultAccount();
+      Assert.AreEqual(TestAccount1.id, acc2.id);
+    }
   }
 }

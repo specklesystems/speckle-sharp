@@ -198,13 +198,13 @@ namespace Speckle.Credentials
     }
 
     /// <summary>
-    /// Gets a specific account from this environment.
+    /// Gets all the accounts for a given server.
     /// </summary>
     /// <param name="serverUrl"></param>
     /// <returns></returns>
-    public static IEnumerable<Account> GetLocalAccounts(string serverUrl)
+    public static IEnumerable<Account> GetServerAccounts(string serverUrl)
     {
-      return GetAllLocalAccounts().Where(acc => acc.serverInfo.url == serverUrl);
+      return GetAllAccounts().Where(acc => acc.serverInfo.url == serverUrl);
     }
 
     /// <summary>
@@ -213,7 +213,7 @@ namespace Speckle.Credentials
     /// <returns>The default account or null.</returns>
     public static Account GetDefaultAccount()
     {
-      return GetAllLocalAccounts().Where(acc => acc.isDefault).FirstOrDefault();
+      return GetAllAccounts().Where(acc => acc.isDefault).FirstOrDefault();
     }
 
     /// <summary>
@@ -222,7 +222,7 @@ namespace Speckle.Credentials
     /// <param name="id"></param>
     public static void SetDefaultAccount(string id)
     {
-      foreach(var acc in GetAllLocalAccounts())
+      foreach(var acc in GetAllAccounts())
       {
         if(acc.id == id)
         {
@@ -237,7 +237,7 @@ namespace Speckle.Credentials
     }
 
     /// <summary>
-    /// Creates or updates an account. 
+    /// Creates or updates an account. <b>Note:</b> This method allows you to change any properties <i>besides</i> the serverInfo's url and userInfo's email. 
     /// </summary>
     /// <param name="account"></param>
     public static void UpdateOrSaveAccount(Account account)
@@ -259,7 +259,7 @@ namespace Speckle.Credentials
     /// Gets all the accounts present in this environment.
     /// </summary>
     /// <returns></returns>
-    public static IEnumerable<Account> GetAllLocalAccounts()
+    public static IEnumerable<Account> GetAllAccounts()
     {
       var _accs = AccountStorage.GetAllObjects();
       foreach (var _acc in _accs)
