@@ -5,7 +5,8 @@ using System.Text;
 
 namespace Speckle.Kits
 {
-  public interface ISpeckleKit
+
+  public interface ISpeckleConverter
   {
     /// <summary>
     /// Converts a native object to a Speckle one
@@ -34,28 +35,14 @@ namespace Speckle.Kits
     /// <param name="object">Speckle object to convert</param>
     /// <returns></returns>
     public bool CanConvertToNative(Base @object);
+  }
 
-    /// <summary>
-    /// Returns a list of application names the kit is compatible with
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<string> GetServicedApplications();
-
-    /// <summary>
-    /// Sets the (optional) context document the kit needs to operate
-    /// </summary>
-    /// <param name="object"></param>
-    public void SetContextDocument(object @object);
-
+  public interface ISpeckleKit
+  {
     /// <summary>
     /// Returns all the object types (the object model) provided by this kit.
     /// </summary>
     IEnumerable<Type> Types { get; }
-
-    /// <summary>
-    /// Returns all the converters provided by this kit.
-    /// </summary>
-    IEnumerable<Type> Converters { get; }
 
     string Description { get; }
     string Name { get; }
