@@ -1,4 +1,5 @@
-﻿using Speckle.Models;
+﻿using Newtonsoft.Json;
+using Speckle.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,6 +16,31 @@ namespace Speckle.Elements.Geometry
     {
       this.value = new List<double>() { x, y, z };
       this.applicationId = applicationId;
+    }
+
+    [JsonIgnore]
+    public double x
+    {
+      get
+      {
+        return value[0];
+      }
+    }
+    [JsonIgnore]
+    public double y
+    {
+      get
+      {
+        return value[1];
+      }
+    }
+    [JsonIgnore]
+    public double z
+    {
+      get
+      {
+        return value[2];
+      }
     }
   }
 }
