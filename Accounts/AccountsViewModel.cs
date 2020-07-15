@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-//using SpeckleCore;
 using System.Collections.ObjectModel;
 using System.Windows;
 using Speckle.Credentials;
@@ -35,15 +34,6 @@ namespace SpeckleDesktopUI.Accounts
         {
             get => _selectedAccount;
             set => SetProperty(ref _selectedAccount, value);
-        }
-
-        public void LoadAccounts()
-        {
-            //AccountsList = new ObservableCollection<Account>(LocalContext.GetAllAccounts());
-            //DefaultAccount = LocalContext.GetDefaultAccount();
-
-            //AccountsList = new ObservableCollection<Account>(AccountManager.GetAllAccounts());
-            //DefaultAccount = AccountManager.GetDefaultAccount();
         }
     }
 }

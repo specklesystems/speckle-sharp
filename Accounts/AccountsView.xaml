@@ -45,7 +45,7 @@
         </b:EventTrigger>
     </b:Interaction.Triggers>-->
 
-    <Grid>
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
