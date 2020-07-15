@@ -11,7 +11,6 @@
     <UserControl.Resources>
         <DataTemplate x:Key="AccountInfoTemplate">
             <StackPanel Margin="10" HorizontalAlignment="Stretch">
-                <TextBlock Text="{Binding}" />
                 <Grid HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -23,18 +22,18 @@
                             FontSize="16"
                             Style="{StaticResource MaterialDesignHeadline3TextBlock}"
                             Margin="0,10"
-                            Text="{Binding RestApi}" />
+                            Text="{Binding serverInfo.url}" />
                 </Grid>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock
                             FontSize="11"
-                            Text="{Binding Email}" />
+                            Text="{Binding userInfo.email}" />
                     <TextBlock
                             FontSize="11"
                             Text="     Server: " />
                     <TextBlock
                             FontSize="11"
-                            Text="{Binding ServerName}" />
+                            Text="{Binding serverInfo.name}" />
                 </StackPanel>
             </StackPanel>
         </DataTemplate>
