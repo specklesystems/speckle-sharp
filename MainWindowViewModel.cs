@@ -18,7 +18,6 @@ namespace SpeckleDesktopUI
             SpeckleCore.SpeckleInitializer.Initialize();
 
             _viewItems = GetViewItems();
-            NavCommand = new RelayCommand<string>(OnNav);
         }
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
@@ -33,8 +32,6 @@ namespace SpeckleDesktopUI
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ViewItems)));
             }
         }
-        private StreamsViewModel _streamsViewModel = new StreamsViewModel();
-        private AccountsViewModel _accountsViewModel = new AccountsViewModel();
 
         private BindableBase _currentViewModel;
         public BindableBase CurrentViewModel
@@ -70,20 +67,6 @@ namespace SpeckleDesktopUI
             }
         }
 
-        public RelayCommand<string> NavCommand { get; private set; }
-        private void OnNav(string destination)
-        {
-            switch (destination)
-            {
-                case "Accounts":
-                    CurrentViewModel = _accountsViewModel;
-                    break;
-                case "Streams":
-                default:
-                    CurrentViewModel = _streamsViewModel;
-                    break;
-            }
-        }
         private ObservableCollection<ViewItem> GetViewItems()
         {
             return new ObservableCollection<ViewItem>
