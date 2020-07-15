@@ -15,8 +15,7 @@ namespace SpeckleDesktopUI
     {
         public MainWindowViewModel()
         {
-            //SpeckleCore.SpeckleInitializer.Initialize();
-            //SpeckleCore.LocalContext.Init();
+            SpeckleCore.SpeckleInitializer.Initialize();
 
             _viewItems = GetViewItems();
             NavCommand = new RelayCommand<string>(OnNav);
