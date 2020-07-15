@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30225.117
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpeckleDesktopUI", "SpeckleDesktopUI.csproj", "{5B37A9F1-1F63-4573-BA3F-89F37B6FD2F0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5B37A9F1-1F63-4573-BA3F-89F37B6FD2F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B37A9F1-1F63-4573-BA3F-89F37B6FD2F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B37A9F1-1F63-4573-BA3F-89F37B6FD2F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B37A9F1-1F63-4573-BA3F-89F37B6FD2F0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F12BF2FA-1018-49F1-B6D3-54EF22FE6802}
+	EndGlobalSection
+EndGlobal
