@@ -16,6 +16,8 @@ namespace SpeckleDesktopUI.Accounts
         {
             var accountModel = new AccountModel();
             AccountsList = accountModel.LoadTestAccounts();
+
+            RemoveCommand = new RelayCommand<Account>(OnRemove);
         }
         private Account _defaultAccount;
         private Account _selectedAccount;
@@ -34,6 +36,11 @@ namespace SpeckleDesktopUI.Accounts
         {
             get => _selectedAccount;
             set => SetProperty(ref _selectedAccount, value);
+        }
+
+        public RelayCommand<Account> RemoveCommand { get; set; }
+        private void OnRemove(Account account)
+        {
         }
     }
 }
