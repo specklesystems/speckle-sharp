@@ -78,7 +78,38 @@
                     Text="Default Account"
                     FontSize="22"
                     Style="{StaticResource MaterialDesignHeadline3TextBlock}"/>
-                <TextBlock Text="{Binding DefaultAccount.serverInfo.url}" />
+
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                            FontSize="16"
+                            Style="{StaticResource MaterialDesignHeadline3TextBlock}"
+                            Margin="0,5"
+                            Text="{Binding DefaultAccount.serverInfo.url}" />
+                    </Grid>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <TextBlock
+                            FontSize="11"
+                            Text="{Binding DefaultAccount.userInfo.email}" />
+                        <TextBlock
+                            FontSize="11"
+                            Text="     Server: " />
+                        <TextBlock
+                            FontSize="11"
+                            Text="{Binding DefaultAccount.serverInfo.name}" />
+                    </StackPanel>
+                </Grid>
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1">
@@ -91,7 +122,7 @@
                     Style="{StaticResource MaterialDesignHeadline3TextBlock}"/>
 
                 <ListView
-                    x:Name="AccountsList"
+                    x:Name="ExistingAccountsList"
                     ItemTemplate="{StaticResource AccountInfoTemplate}"
                     ItemsSource="{Binding AccountsNonDefault}"
                     HorizontalContentAlignment="Stretch"/>
