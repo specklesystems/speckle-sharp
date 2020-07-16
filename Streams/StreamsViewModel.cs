@@ -18,6 +18,7 @@ namespace SpeckleDesktopUI.Streams
             LoadUserStreams();
             RemoveCommand = new RelayCommand<SpeckleStream>(OnRemove);
 
+            OpenLinkCommand = new RelayCommand<string>(OnOpenLink);
         }
 
         private Account _account;
@@ -56,7 +57,7 @@ namespace SpeckleDesktopUI.Streams
             var client = new SpeckleApiClient(Account.RestApi, false, "wpf_ui");
             client.AuthToken = Account.Token;
 
-            // dumb data for now as I am getting build errors when I init speckspock
+            //var streams = client.StreamsGetAllAsync("").Result.Resource;
 
             SenderStreams = new ObservableCollection<SpeckleStream>()
             {
@@ -91,6 +92,12 @@ namespace SpeckleDesktopUI.Streams
                     Objects = new List<SpeckleObject>()
                 }
             };
+        }
+
+        public RelayCommand<string> OpenLinkCommand { get; set; }
+        private void OnOpenLink(string url)
+        {
+            Link.OpenInBrowser(url);
         }
     }
 }

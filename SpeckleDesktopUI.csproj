@@ -128,11 +128,13 @@
     </Compile>
     <Compile Include="Accounts\AccountsViewModel.cs" />
     <Compile Include="MainWindowViewModel.cs" />
+    <Compile Include="Streams\StreamsRepository.cs" />
     <Compile Include="Streams\StreamsView.xaml.cs">
       <DependentUpon>StreamsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Streams\StreamsViewModel.cs" />
     <Compile Include="Utils\BindableBase.cs" />
+    <Compile Include="Utils\Link.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\ViewItem.cs" />
     <Page Include="Accounts\AccountsView.xaml">
