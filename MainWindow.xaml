@@ -30,7 +30,7 @@
     </Window.Resources>
     <md:DialogHost>
         <md:DrawerHost IsLeftDrawerOpen="{Binding ElementName=MenuToggleButton, Path=IsChecked}">
-            <!-- Left Navigation Drawer -->
+            <!--#region Left Navigation Drawer-->
             <md:DrawerHost.LeftDrawerContent>
                 <DockPanel MinWidth="220">
                     <ToggleButton 
@@ -72,9 +72,11 @@
                     </ListBox>
                 </DockPanel>
             </md:DrawerHost.LeftDrawerContent>
+            <!--#endregion-->
             
-            <!-- Top Menu Bar -->
             <DockPanel>
+                
+                <!--#region Top Menu Bar-->
                 <md:ColorZone 
                     Padding="16" 
                     md:ShadowAssist.ShadowDepth="Depth2"
@@ -116,6 +118,8 @@
                         </StackPanel>
                     </DockPanel>
                 </md:ColorZone>
+                <!--#endregion-->
+                
                 <Grid x:Name="MainContent">
 
                     <!-- Page Content -->
