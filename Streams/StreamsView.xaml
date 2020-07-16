@@ -30,6 +30,7 @@
                                 VerticalAlignment="Top"
                                 Style="{StaticResource MaterialDesignIconButton}"
                                 Content="{md:PackIcon Kind=Delete}"
+                                Foreground="White"
                                 Command="{Binding RemoveStream}" />
                         </DockPanel>
 
@@ -60,10 +61,10 @@
                                     <StackPanel Margin="16">
                                         <ProgressBar Style="{DynamicResource MaterialDesignCircularProgressBar}" HorizontalAlignment="Center" Margin="16" IsIndeterminate="True" Value="0" />
                                         <Button 
-                                Style="{StaticResource MaterialDesignFlatButton}" IsCancel="True" 
-                                Command="{x:Static md:DialogHost.CloseDialogCommand}"
-                                CommandParameter="Sample2Cancel"
-                                HorizontalAlignment="Center">CANCEL</Button>
+                                            Style="{StaticResource MaterialDesignFlatButton}" IsCancel="True" 
+                                            Command="{x:Static md:DialogHost.CloseDialogCommand}"
+                                            CommandParameter="Sample2Cancel"
+                                            HorizontalAlignment="Center">CANCEL</Button>
                                     </StackPanel>
                                 </Button.CommandParameter>
                             </Button>
@@ -74,6 +75,7 @@
                             <Button HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
                                 Style="{StaticResource MaterialDesignIconButton}"
+                                Foreground="White"
                                 Content="{md:PackIcon Kind=Delete}" />
 
                         </DockPanel>
@@ -153,6 +155,7 @@
                         ToolTipService.Placement="Left"
                         Style="{StaticResource MaterialDesignFloatingActionLightButton}"
                         Content="{md:PackIcon Kind=CloudUpload, Size=20}"
+                        Foreground="White"
                         Height="40" Width="40" Margin="3"
                         Command="{Binding }" />
 
@@ -161,6 +164,7 @@
                         ToolTipService.Placement="Left"
                         Style="{StaticResource MaterialDesignFloatingActionButton}"
                         Content="{md:PackIcon Kind=CloudDownload, Size=20}"
+                        Foreground="White"
                         Height="40" Width="40" Margin="3"
                         Command="{Binding }" />
 
