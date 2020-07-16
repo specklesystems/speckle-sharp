@@ -1,23 +1,15 @@
-﻿using SpeckleDesktopUI.Utils;
+﻿using Speckle.Credentials;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Speckle.Credentials;
-using System.Collections.ObjectModel;
 
 namespace SpeckleDesktopUI.Accounts
 {
-    class AccountModel : BindableBase
+    class AccountsRepository
     {
-        private bool _isDefault;
-        public bool IsDefault
-        {
-            get => _isDefault;
-            set => SetProperty(ref _isDefault, value);
-        }
-
         public ObservableCollection<Account> LoadTestAccounts()
         {
             List<Account> TestAccounts = new List<Account>(){
@@ -51,6 +43,11 @@ namespace SpeckleDesktopUI.Accounts
         public ObservableCollection<Account> LoadAccounts()
         {
             return new ObservableCollection<Account>(AccountManager.GetAllAccounts());
+        }
+
+        public void RemoveAccount(string id)
+        {
+            AccountManager.DeleteLocalAccount(id);
         }
     }
 }

@@ -122,7 +122,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Accounts\AccountModel.cs" />
+    <Compile Include="Accounts\AccountsRepository.cs" />
     <Compile Include="Accounts\AccountsView.xaml.cs">
       <DependentUpon>AccountsView.xaml</DependentUpon>
     </Compile>

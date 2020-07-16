@@ -14,11 +14,12 @@ namespace SpeckleDesktopUI.Accounts
     {
         public AccountsViewModel()
         {
-            var accountModel = new AccountModel();
-            AccountsList = accountModel.LoadTestAccounts();
+            _repo = new AccountsRepository();
+            AccountsList = _repo.LoadTestAccounts();
 
             RemoveCommand = new RelayCommand<Account>(OnRemove);
         }
+        private AccountsRepository _repo;
         private Account _defaultAccount;
         private Account _selectedAccount;
         private ObservableCollection<Account> _accountsList;
@@ -41,6 +42,8 @@ namespace SpeckleDesktopUI.Accounts
         public RelayCommand<Account> RemoveCommand { get; set; }
         private void OnRemove(Account account)
         {
+            _repo.RemoveAccount(account.id);
+            AccountsList = _repo.LoadAccounts();
         }
     }
 }
