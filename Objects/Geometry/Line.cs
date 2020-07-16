@@ -20,6 +20,12 @@ namespace Speckle.Objects.Geometry
       this.applicationId = applicationId;
     }
 
+    public Line(Point start, Point end, string applicationId = null)
+    {
+      this.value = start.value.Concat(end.value).ToList();
+      this.applicationId = applicationId;
+    }
+
     public Line(IEnumerable<double> coordinatesArray, string applicationId = null)
     {
       this.value = coordinatesArray.ToList();

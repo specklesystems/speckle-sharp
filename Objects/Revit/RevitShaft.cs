@@ -4,11 +4,10 @@ using System.Text;
 
 namespace Speckle.Objects.Revit
 {
-  public class FamilyInstance : Element
+  public class RevitShaft : Opening
   {
-    public string family { get; set; }
-    public bool flipped { get; set; }
-    public Element host { get; set; }
+    public Level topLevel { get; set; }
+
     public Dictionary<string, object> parameters { get; set; }
   }
 }

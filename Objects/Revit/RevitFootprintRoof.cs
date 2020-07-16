@@ -4,11 +4,9 @@ using System.Text;
 
 namespace Speckle.Objects.Revit
 {
-  public class FamilyInstance : Element
+  public class RevitFootprintRoof : Roof
   {
-    public string family { get; set; }
-    public bool flipped { get; set; }
-    public Element host { get; set; }
+    public Level cutOffLevel { get; set; }
     public Dictionary<string, object> parameters { get; set; }
   }
 }

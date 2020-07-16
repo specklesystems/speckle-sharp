@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Speckle.Objects.Revit
 {
-  public class RevitOpening
+  public class RevitWallOpening : Opening
   {
-    public Level topLevel { get; set; }
+    public RevitWall host { get; set; }
 
     public Dictionary<string, object> parameters { get; set; }
   }
