@@ -10,12 +10,12 @@ namespace SpeckleDesktopUI.Utils
 {
     public class BindableBase : INotifyPropertyChanged
     {
-        protected virtual void SetProperty<T>(ref T member, T val)
+        protected virtual void SetProperty<T>(ref T member, T val, [CallerMemberName]string propertyName = null)
         {
             if (val == null || val.Equals(member)) return;
 
             member = val;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(member)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         protected virtual void OnPropertyChanged(string propertyName)
