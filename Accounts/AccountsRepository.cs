@@ -72,5 +72,10 @@ namespace SpeckleDesktopUI.Accounts
         {
             AccountManager.SetDefaultAccount(account.id);
         }
+
+        public Account AuthenticateAccount(string serverUrl)
+        {
+            return AccountManager.Authenticate(serverUrl).Result;
+        }
     }
 }

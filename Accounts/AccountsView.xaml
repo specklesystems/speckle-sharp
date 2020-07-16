@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SpeckleDesktopUI.Accounts"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:spkcreds="clr-namespace:Speckle.Credentials;assembly=Speckle"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors" x:Class="SpeckleDesktopUI.Accounts.AccountsView"
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="500">
@@ -63,73 +64,86 @@
                 </StackPanel>
             </Grid>
         </DataTemplate>
-    </UserControl.Resources>
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <StackPanel Orientation="Vertical">
-                <TextBlock
-                    Margin="0,10"
-                    HorizontalAlignment="Center"
-                    Text="Default Account"
-                    FontSize="22"
-                    Style="{StaticResource MaterialDesignHeadline3TextBlock}"/>
+        <DataTemplate DataType="{x:Type spkcreds:Account}">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                <Grid Margin="10">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0"
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
                             FontSize="16"
                             Style="{StaticResource MaterialDesignHeadline3TextBlock}"
                             Margin="0,5"
-                            Text="{Binding DefaultAccount.serverInfo.url}" />
-                    </Grid>
+                            Text="{Binding serverInfo.url}" />
+                </Grid>
 
-                    <StackPanel Grid.Row="1" Orientation="Horizontal">
-                        <TextBlock
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <TextBlock
                             FontSize="11"
-                            Text="{Binding DefaultAccount.userInfo.email}" />
-                        <TextBlock
+                            Text="{Binding userInfo.email}" />
+                    <TextBlock
                             FontSize="11"
                             Text="     Server: " />
-                        <TextBlock
+                    <TextBlock
                             FontSize="11"
-                            Text="{Binding DefaultAccount.serverInfo.name}" />
-                    </StackPanel>
-                </Grid>
-            </StackPanel>
+                            Text="{Binding serverInfo.name}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock
+                        Margin="0,10,0,5"
+                        HorizontalAlignment="Center"
+                        Text="Default Account"
+                        FontSize="22"
+                        Style="{StaticResource MaterialDesignHeadline3TextBlock}"/>
+                    <ContentControl Content="{Binding DefaultAccount}"/>
+                </StackPanel>
+            </Grid>
+            <Grid Grid.Row="1">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock
+                        Margin="0,10,0,5"
+                        HorizontalAlignment="Center"
+                        Text="Existing Accounts"
+                        FontSize="22"
+                        Style="{StaticResource MaterialDesignHeadline3TextBlock}"/>
+                    <TextBlock 
+                        Text="Testy McTest - click the check to set as default; click the bin to bin it" 
+                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                        Margin="20,0"/>
+                    <ListView
+                        x:Name="ExistingAccountsList"
+                        ItemTemplate="{StaticResource AccountInfoTemplate}"
+                        ItemsSource="{Binding AccountsNonDefault}"
+                        HorizontalContentAlignment="Stretch"/>
+                </StackPanel>
+
+            </Grid>
         </Grid>
-        <Grid Grid.Row="1">
-            <StackPanel Orientation="Vertical">
-                <TextBlock
-                    Margin="0,10"
-                    HorizontalAlignment="Center"
-                    Text="Existing Accounts"
-                    FontSize="22"
-                    Style="{StaticResource MaterialDesignHeadline3TextBlock}"/>
-
-                <ListView
-                    x:Name="ExistingAccountsList"
-                    ItemTemplate="{StaticResource AccountInfoTemplate}"
-                    ItemsSource="{Binding AccountsNonDefault}"
-                    HorizontalContentAlignment="Stretch"/>
-            </StackPanel>
-            
-        </Grid>
-
-
+        <Button x:Name="AddReceiverButton"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Right"
+                Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
+                Content="{md:PackIcon Kind=Plus, Size=30}"
+                Height="50" Width="50" Margin="0,0,5,0"
+                Command="{Binding }" />
     </Grid>
 </UserControl>

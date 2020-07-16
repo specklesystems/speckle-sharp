@@ -19,8 +19,10 @@ namespace SpeckleDesktopUI.Accounts
             _allAccounts = _repo.LoadTestAccounts();
             _accountsNonDefault = _repo.LoadNonDefaultAccounts();
             _defaultAccount = _repo.GetDefault();
+
             SetDefaultCommand = new RelayCommand<Account>(OnSetDefault);
             RemoveCommand = new RelayCommand<Account>(OnRemove);
+            AuthenticateCommand = new RelayCommand<string>(OnAuthenticate);
         }
         private AccountsRepository _repo;
         private Account _defaultAccount;
@@ -48,14 +50,14 @@ namespace SpeckleDesktopUI.Accounts
             set => SetProperty(ref _selectedAccount, value);
         }
 
+        // TODO: handle when commands fail (prob with a dialogue popup)
         public RelayCommand<Account> RemoveCommand { get; set; }
         public RelayCommand<Account> SetDefaultCommand { get; set; }
+        public RelayCommand<string> AuthenticateCommand { get; set; }
         private void OnRemove(Account account)
         {
             _repo.RemoveAccount(account.id);
             AccountsNonDefault = _repo.LoadNonDefaultAccounts();
-
-            // TODO: handle if this fails
         }
 
         private void OnSetDefault(Account account)
@@ -63,7 +65,11 @@ namespace SpeckleDesktopUI.Accounts
             _repo.SetDefault(account);
             DefaultAccount = _repo.GetDefault();
             AccountsNonDefault = _repo.LoadNonDefaultAccounts();
-            // TODO: handle if this fails
+        }
+
+        private void OnAuthenticate(string serverUrl)
+        {
+            var acc = _repo.AuthenticateAccount(serverUrl);
         }
     }
 }
