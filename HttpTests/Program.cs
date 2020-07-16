@@ -24,7 +24,7 @@ namespace ConsoleSketches
     {
       Console.Clear();
 
-      //await PushAndPullToRemote(10_000);
+      await PushAndPullToRemote(1_000);
 
       Console.Clear();
 
@@ -36,7 +36,7 @@ namespace ConsoleSketches
 
       //await ValidateAccount();
 
-      await Auth();
+      //await Auth();
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
@@ -55,7 +55,7 @@ namespace ConsoleSketches
 
       //AccountManager.SetDefaultAccount(myAccount2.id);
 
-      var accs = AccountManager.GetAllAccounts().ToList();
+      var accs = AccountManager.GetAccounts().ToList();
       var deff = AccountManager.GetDefaultAccount();
 
       //Console.WriteLine($"There are {accs.Count} accounts. The default one is {deff.id} {deff.userInfo.email}");
@@ -103,7 +103,7 @@ namespace ConsoleSketches
       Console.Clear();
       Console.WriteLine("Done generating objects.");
 
-      var myRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var myRemote = new Remote(AccountManager.GetDefaultAccount());
 
       var res = await Operations.Upload(
         @object: new Commit() { Objects = objs },
@@ -144,7 +144,7 @@ namespace ConsoleSketches
         myMesh.Faces.AddRange(new int[] { i, i + i, i + 3, 23 + i, 100 % i });
       }
 
-      var myRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var myRemote = new Remote(AccountManager.GetDefaultAccount());
 
       var res = await Operations.Upload(
         @object: myMesh,
@@ -191,7 +191,7 @@ namespace ConsoleSketches
       var funkyStructure = new Base();
       ((dynamic)funkyStructure)["@LolLayer"] = objects.GetRange(0, 30);
       ((dynamic)funkyStructure)["@WooTLayer"] = objects.GetRange(30, 100);
-      ((dynamic)funkyStructure)["@FTW"] = objects.GetRange(100, objects.Count - 1);
+      ((dynamic)funkyStructure)["@FTW"] = objects.GetRange(130, objects.Count - 130 - 1);
 
 
       var step = sw.ElapsedMilliseconds;
@@ -213,9 +213,12 @@ namespace ConsoleSketches
 
       // Finally, let's push the commit object. The push action returns the object's id (hash!) that you can use downstream.
 
+
       // Create some remotes
-      var myRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
-      var mySecondRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+
+      var myRemote = new Remote(AccountManager.GetDefaultAccount());
+
+      var mySecondRemote = new Remote(AccountManager.GetDefaultAccount());
 
       var res = await Operations.Upload(
         @object: funkyStructure,
@@ -232,7 +235,7 @@ namespace ConsoleSketches
       Console.Clear();
 
       // Time for pulling an object out. 
-      var res2 = await Operations.Download(res, remote: new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" }, onProgressAction: dict =>
+      var res2 = await Operations.Download(res, remote: myRemote, onProgressAction: dict =>
       {
         Console.CursorLeft = 0;
         Console.CursorTop = 0;

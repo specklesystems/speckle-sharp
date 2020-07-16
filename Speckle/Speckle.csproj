@@ -20,6 +20,7 @@
     <Folder Include="Core\" />
     <Folder Include="Core\Operations\" />
     <Folder Include="Credentials\" />
+    <Folder Include="Core\Remote\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Core\Commit.cs" />

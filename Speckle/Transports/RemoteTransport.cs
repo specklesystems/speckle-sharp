@@ -118,7 +118,8 @@ namespace Speckle.Transports
       message.Content = multipart;
       try
       {
-        await Client.SendAsync(message);
+        var response = await Client.SendAsync(message);
+        response.EnsureSuccessStatusCode();
       }
       catch (Exception)
       {

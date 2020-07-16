@@ -209,9 +209,9 @@ namespace Speckle.Credentials
     /// </summary>
     /// <param name="serverUrl"></param>
     /// <returns></returns>
-    public static IEnumerable<Account> GetServerAccounts(string serverUrl)
+    public static IEnumerable<Account> GetAccounts(string serverUrl)
     {
-      return GetAllAccounts().Where(acc => acc.serverInfo.url == serverUrl);
+      return GetAccounts().Where(acc => acc.serverInfo.url == serverUrl);
     }
 
     /// <summary>
@@ -220,7 +220,7 @@ namespace Speckle.Credentials
     /// <returns>The default account or null.</returns>
     public static Account GetDefaultAccount()
     {
-      return GetAllAccounts().Where(acc => acc.isDefault).FirstOrDefault();
+      return GetAccounts().Where(acc => acc.isDefault).FirstOrDefault();
     }
 
     /// <summary>
@@ -229,7 +229,7 @@ namespace Speckle.Credentials
     /// <param name="id"></param>
     public static void SetDefaultAccount(string id)
     {
-      foreach(var acc in GetAllAccounts())
+      foreach(var acc in GetAccounts())
       {
         if(acc.id == id)
         {
@@ -266,7 +266,7 @@ namespace Speckle.Credentials
     /// Gets all the accounts present in this environment.
     /// </summary>
     /// <returns></returns>
-    public static IEnumerable<Account> GetAllAccounts()
+    public static IEnumerable<Account> GetAccounts()
     {
       var _accs = AccountStorage.GetAllObjects();
       foreach (var _acc in _accs)
