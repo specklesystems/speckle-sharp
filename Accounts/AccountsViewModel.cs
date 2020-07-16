@@ -15,18 +15,27 @@ namespace SpeckleDesktopUI.Accounts
         public AccountsViewModel()
         {
             _repo = new AccountsRepository();
-            AccountsList = _repo.LoadTestAccounts();
 
+            _allAccounts = _repo.LoadTestAccounts();
+            _accountsNonDefault = _repo.LoadNonDefaultAccounts();
+            _defaultAccount = _repo.GetDefault();
+            SetDefaultCommand = new RelayCommand<Account>(OnSetDefault);
             RemoveCommand = new RelayCommand<Account>(OnRemove);
         }
         private AccountsRepository _repo;
         private Account _defaultAccount;
         private Account _selectedAccount;
-        private ObservableCollection<Account> _accountsList;
-        public ObservableCollection<Account> AccountsList
+        private ObservableCollection<Account> _allAccounts;
+        private ObservableCollection<Account> _accountsNonDefault;
+        public ObservableCollection<Account> AllAccounts
         {
-            get => _accountsList;
-            set => SetProperty(ref _accountsList, value);
+            get => _allAccounts;
+            set => SetProperty(ref _allAccounts, value);
+        }
+        public ObservableCollection<Account> AccountsNonDefault
+        {
+            get => _accountsNonDefault;
+            set => SetProperty(ref _accountsNonDefault, value);
         }
         public Account DefaultAccount
         {
@@ -40,10 +49,21 @@ namespace SpeckleDesktopUI.Accounts
         }
 
         public RelayCommand<Account> RemoveCommand { get; set; }
+        public RelayCommand<Account> SetDefaultCommand { get; set; }
         private void OnRemove(Account account)
         {
             _repo.RemoveAccount(account.id);
-            AccountsList = _repo.LoadAccounts();
+            AccountsNonDefault = _repo.LoadNonDefaultAccounts();
+
+            // TODO: handle if this fails
+        }
+
+        private void OnSetDefault(Account account)
+        {
+            _repo.SetDefault(account);
+            DefaultAccount = _repo.GetDefault();
+            AccountsNonDefault = _repo.LoadNonDefaultAccounts();
+            // TODO: handle if this fails
         }
     }
 }

@@ -45,9 +45,32 @@ namespace SpeckleDesktopUI.Accounts
             return new ObservableCollection<Account>(AccountManager.GetAllAccounts());
         }
 
+        public ObservableCollection<Account> LoadNonDefaultAccounts()
+        {
+            var accounts = new ObservableCollection<Account>();
+            foreach (var acc in LoadAccounts())
+            {
+                if (!acc.isDefault)
+                {
+                    accounts.Add(acc);
+                }
+            }
+            return accounts;
+        }
+
         public void RemoveAccount(string id)
         {
             AccountManager.DeleteLocalAccount(id);
+        }
+
+        public Account GetDefault()
+        {
+            return AccountManager.GetDefaultAccount();
+        }
+
+        public void SetDefault(Account account)
+        {
+            AccountManager.SetDefaultAccount(account.id);
         }
     }
 }

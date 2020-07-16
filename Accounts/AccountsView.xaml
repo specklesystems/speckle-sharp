@@ -15,26 +15,40 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                
+
+                <!--<b:Interaction.Triggers>
+                    <b:EventTrigger EventName="MouseLeftButtonUp">
+                        <b:InvokeCommandAction
+                            Command="{Binding DataContext.SetDefaultCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                            CommandParameter="{Binding}">
+                        </b:InvokeCommandAction>
+                    </b:EventTrigger>
+                </b:Interaction.Triggers>-->
+
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0"
                             FontSize="16"
                             Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-                            Margin="0,10"
+                            Margin="0,5"
                             Text="{Binding serverInfo.url}" />
                     <Button Grid.Column="2"
+                            Style="{StaticResource MaterialDesignIconForegroundButton}"
+                            Content="{md:PackIcon Kind=Check}"
+                            Command="{Binding DataContext.SetDefaultCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                            CommandParameter="{Binding}" />
+                    <Button Grid.Column="3"
                             Style="{StaticResource MaterialDesignIconForegroundButton}"
                             Content="{md:PackIcon Kind=Delete}"
                             Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                             CommandParameter="{Binding}" />
                     <!--<TextBlock Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"></TextBlock>-->
                 </Grid>
-
 
                 <StackPanel Grid.Row="1" Orientation="Horizontal">
                     <TextBlock
@@ -51,30 +65,40 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <!--<b:Interaction.Triggers>
-        <b:EventTrigger EventName="Loaded">
-            <b:CallMethodAction TargetObject="{Binding}" MethodName="LoadAccounts" />
-        </b:EventTrigger>
-    </b:Interaction.Triggers>-->
-
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <StackPanel Orientation="Vertical">
+                <TextBlock
+                    Margin="0,10"
+                    HorizontalAlignment="Center"
+                    Text="Default Account"
+                    FontSize="22"
+                    Style="{StaticResource MaterialDesignHeadline3TextBlock}"/>
+                <TextBlock Text="{Binding DefaultAccount.serverInfo.url}" />
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1">
+            <StackPanel Orientation="Vertical">
+                <TextBlock
+                    Margin="0,10"
+                    HorizontalAlignment="Center"
+                    Text="Existing Accounts"
+                    FontSize="22"
+                    Style="{StaticResource MaterialDesignHeadline3TextBlock}"/>
 
-        <TextBlock
-          Margin="0,10"
-          HorizontalAlignment="Center"
-          Text="Existing Accounts"
-          FontSize="22"
-          Style="{StaticResource MaterialDesignHeadline3TextBlock}"/>
+                <ListView
+                    x:Name="AccountsList"
+                    ItemTemplate="{StaticResource AccountInfoTemplate}"
+                    ItemsSource="{Binding AccountsNonDefault}"
+                    HorizontalContentAlignment="Stretch"/>
+            </StackPanel>
+            
+        </Grid>
 
-        <ListView
-            x:Name="AccountsList"
-            Grid.Row="1"
-            ItemTemplate="{StaticResource AccountInfoTemplate}"
-            ItemsSource="{Binding AccountsList}"
-            HorizontalContentAlignment="Stretch"/>
+
     </Grid>
 </UserControl>
