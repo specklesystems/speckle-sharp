@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:SpeckleDesktopUI.Streams"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="600">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -21,6 +21,7 @@
                             HorizontalAlignment="Left"
                             Style="{StaticResource MaterialDesignFloatingActionButton}"
                             Content="{md:PackIcon Kind=CloudUpload, Size=25}"
+                            Foreground="{StaticResource MaterialDesignLightBackground}"
                             Width="40" Height="40" Margin="10" />
                             <TextBlock Text="{Binding Name}"
                                    FontSize="25"
@@ -30,7 +31,6 @@
                                 VerticalAlignment="Top"
                                 Style="{StaticResource MaterialDesignIconButton}"
                                 Content="{md:PackIcon Kind=Delete}"
-                                Foreground="White"
                                 Command="{Binding RemoveStream}" />
                         </DockPanel>
 
@@ -56,6 +56,7 @@
                                     HorizontalAlignment="Left"
                                     Style="{StaticResource MaterialDesignFloatingActionLightButton}"
                                     Content="{md:PackIcon Kind=CloudDownload, Size=25}"
+                                    Foreground="{StaticResource MaterialDesignLightBackground}"
                                     Height="40" Width="40" Margin="10">
                                 <Button.CommandParameter>
                                     <StackPanel Margin="16">
@@ -75,7 +76,6 @@
                             <Button HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
                                 Style="{StaticResource MaterialDesignIconButton}"
-                                Foreground="White"
                                 Content="{md:PackIcon Kind=Delete}" />
 
                         </DockPanel>
@@ -146,7 +146,8 @@
         </Grid>
 
 
-        <md:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
+        <md:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}"
+                     Foreground="{StaticResource MaterialDesignLightBackground}"
                      HorizontalAlignment="Right" VerticalAlignment="Bottom"
                      Height="45" Width="45" Margin="32">
             <StackPanel>
@@ -155,7 +156,7 @@
                         ToolTipService.Placement="Left"
                         Style="{StaticResource MaterialDesignFloatingActionLightButton}"
                         Content="{md:PackIcon Kind=CloudUpload, Size=20}"
-                        Foreground="White"
+                        Foreground="{StaticResource MaterialDesignLightBackground}"
                         Height="40" Width="40" Margin="3"
                         Command="{Binding }" />
 
@@ -164,7 +165,7 @@
                         ToolTipService.Placement="Left"
                         Style="{StaticResource MaterialDesignFloatingActionButton}"
                         Content="{md:PackIcon Kind=CloudDownload, Size=20}"
-                        Foreground="White"
+                        Foreground="{StaticResource MaterialDesignLightBackground}"
                         Height="40" Width="40" Margin="3"
                         Command="{Binding }" />
 

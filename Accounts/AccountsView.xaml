@@ -10,94 +10,100 @@
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="500">
     <UserControl.Resources>
-        <DataTemplate x:Key="AccountInfoTemplate">
-            <Grid Margin="10">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-                <!--<b:Interaction.Triggers>
-                    <b:EventTrigger EventName="MouseLeftButtonUp">
-                        <b:InvokeCommandAction
-                            Command="{Binding DataContext.SetDefaultCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
-                            CommandParameter="{Binding}">
-                        </b:InvokeCommandAction>
-                    </b:EventTrigger>
-                </b:Interaction.Triggers>-->
+            <DataTemplate x:Key="AccountInfoTemplate">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0"
-                            FontSize="16"
-                            Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-                            Margin="0,5"
-                            Text="{Binding serverInfo.url}" />
-                    <Button Grid.Column="2"
-                            Style="{StaticResource MaterialDesignIconForegroundButton}"
-                            Content="{md:PackIcon Kind=Check}"
-                            Command="{Binding DataContext.SetDefaultCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
-                            CommandParameter="{Binding}" />
-                    <Button Grid.Column="3"
-                            Style="{StaticResource MaterialDesignIconForegroundButton}"
-                            Content="{md:PackIcon Kind=Delete}"
-                            Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
-                            CommandParameter="{Binding}" />
-                    <!--<TextBlock Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"></TextBlock>-->
+                    <!--<b:Interaction.Triggers>
+                        <b:EventTrigger EventName="MouseLeftButtonUp">
+                            <b:InvokeCommandAction
+                                Command="{Binding DataContext.SetDefaultCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                                CommandParameter="{Binding}">
+                            </b:InvokeCommandAction>
+                        </b:EventTrigger>
+                    </b:Interaction.Triggers>-->
+
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignHeadline3TextBlock}"
+                                Margin="0,5"
+                                Text="{Binding serverInfo.url}" />
+                        <Button Grid.Column="2"
+                                Style="{StaticResource MaterialDesignIconForegroundButton}"
+                                Content="{md:PackIcon Kind=Check}"
+                                Command="{Binding DataContext.SetDefaultCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                                CommandParameter="{Binding}" />
+                        <Button Grid.Column="3"
+                                Style="{StaticResource MaterialDesignIconForegroundButton}"
+                                Content="{md:PackIcon Kind=Delete}"
+                                Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                                CommandParameter="{Binding}" />
+                        <!--<TextBlock Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"></TextBlock>-->
+                    </Grid>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <TextBlock
+                                FontSize="11"
+                                Text="{Binding userInfo.email}" />
+                        <TextBlock
+                                FontSize="11"
+                                Text="     Server: " />
+                        <TextBlock
+                                FontSize="11"
+                                Text="{Binding serverInfo.name}" />
+                    </StackPanel>
                 </Grid>
+            </DataTemplate>
 
-                <StackPanel Grid.Row="1" Orientation="Horizontal">
-                    <TextBlock
-                            FontSize="11"
-                            Text="{Binding userInfo.email}" />
-                    <TextBlock
-                            FontSize="11"
-                            Text="     Server: " />
-                    <TextBlock
-                            FontSize="11"
-                            Text="{Binding serverInfo.name}" />
-                </StackPanel>
-            </Grid>
-        </DataTemplate>
+            <DataTemplate DataType="{x:Type spkcreds:Account}">
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-        <DataTemplate DataType="{x:Type spkcreds:Account}">
-            <Grid Margin="10">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignHeadline3TextBlock}"
+                                Margin="0,5"
+                                Text="{Binding serverInfo.url}" />
+                    </Grid>
 
-                <Grid Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0"
-                            FontSize="16"
-                            Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-                            Margin="0,5"
-                            Text="{Binding serverInfo.url}" />
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <TextBlock
+                                FontSize="11"
+                                Text="{Binding userInfo.email}" />
+                        <TextBlock
+                                FontSize="11"
+                                Text="     Server: " />
+                        <TextBlock
+                                FontSize="11"
+                                Text="{Binding serverInfo.name}" />
+                    </StackPanel>
                 </Grid>
-
-                <StackPanel Grid.Row="1" Orientation="Horizontal">
-                    <TextBlock
-                            FontSize="11"
-                            Text="{Binding userInfo.email}" />
-                    <TextBlock
-                            FontSize="11"
-                            Text="     Server: " />
-                    <TextBlock
-                            FontSize="11"
-                            Text="{Binding serverInfo.name}" />
-                </StackPanel>
-            </Grid>
-        </DataTemplate>
+            </DataTemplate>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid Margin="20">
@@ -138,12 +144,13 @@
 
             </Grid>
         </Grid>
-        <Button x:Name="AddReceiverButton"
-                VerticalAlignment="Bottom"
-                HorizontalAlignment="Right"
-                Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
-                Content="{md:PackIcon Kind=Plus, Size=30}"
-                Height="50" Width="50" Margin="0,0,5,0"
-                Command="{Binding }" />
+        <md:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
+                     Foreground="{StaticResource MaterialDesignLightBackground}"
+                     HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                     Height="45" Width="45" Margin="12">
+            <StackPanel>
+                
+            </StackPanel>
+            </md:PopupBox>
     </Grid>
 </UserControl>

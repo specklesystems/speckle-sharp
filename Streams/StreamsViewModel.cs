@@ -48,6 +48,12 @@ namespace SpeckleDesktopUI.Streams
         }
 
         public RelayCommand<SpeckleStream> RemoveCommand { get; set; }
+        public RelayCommand<SpeckleStream> AddSenderCommand { get; set; }
+        public RelayCommand<SpeckleStream> AddReceiverCommand { get; set; }
+        public RelayCommand<SpeckleStream> StartUploadCommand { get; set; }
+        public RelayCommand<SpeckleStream> StartDownloadCommand { get; set; }
+        public RelayCommand<string> OpenLinkCommand { get; set; }
+
         private void OnRemove(SpeckleStream stream)
         {
         }
@@ -94,7 +100,7 @@ namespace SpeckleDesktopUI.Streams
             };
         }
 
-        public RelayCommand<string> OpenLinkCommand { get; set; }
+        
         private void OnOpenLink(string url)
         {
             Link.OpenInBrowser(url);

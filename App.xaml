@@ -6,7 +6,7 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
-        <!-- primary -->
+            <!-- primary -->
             <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="#26C2F2"/>
             <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="#FFFFFF"/>
             <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#0080FF"/>
@@ -22,7 +22,5 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-
-        
     </Application.Resources>
 </Application>
