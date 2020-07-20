@@ -14,7 +14,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate x:Key="StreamCardTemplate">
-                <md:Card Width="Auto" Padding="10" Margin="10">
+                <md:Card Width="Auto" Padding="10">
                     <StackPanel Orientation="Vertical">
                         <DockPanel>
                             <Button 
@@ -49,7 +49,7 @@
             </DataTemplate>
 
             <DataTemplate x:Key="StreamCardRec">
-                <md:Card Width="Auto" Padding="10" Margin="10">
+                <md:Card Width="Auto" Padding="10">
                     <StackPanel Orientation="Vertical">
                         <DockPanel>
                             <Button Command="{x:Static md:DialogHost.OpenDialogCommand}"
