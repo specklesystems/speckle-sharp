@@ -27,7 +27,11 @@
         <DataTemplate DataType="{x:Type acct:AccountsViewModel}">
             <acct:AccountsView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type acct:AddAccountViewModel}">
+            <acct:AddAccountView />
+        </DataTemplate>
     </Window.Resources>
+    
     <md:DialogHost>
         <md:DrawerHost IsLeftDrawerOpen="{Binding ElementName=MenuToggleButton, Path=IsChecked}">
             <!--#region Left Navigation Drawer-->
@@ -73,7 +77,6 @@
                 </DockPanel>
             </md:DrawerHost.LeftDrawerContent>
             <!--#endregion-->
-            
             <DockPanel>
                 
                 <!--#region Top Menu Bar-->
@@ -104,9 +107,6 @@
                                 <Button Content="Accounts"
                                         Command="{Binding NavCommand}"
                                         CommandParameter="Accounts" />
-                                <Button Content="Streams"
-                                        Command="{Binding NavCommand}"
-                                        CommandParameter="Streams" />
                                 <Button Content="Oopsies!" IsEnabled="False" />
                                 <Separator/>
                                 <Button Content="Goodbye"/>

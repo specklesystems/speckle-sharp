@@ -11,10 +11,10 @@
              d:DesignHeight="400" d:DesignWidth="500">
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+        </ResourceDictionary.MergedDictionaries>
+            <!--#region Account Data Templates-->
             <DataTemplate x:Key="AccountInfoTemplate">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
@@ -69,7 +69,7 @@
                     </StackPanel>
                 </Grid>
             </DataTemplate>
-
+            
             <DataTemplate DataType="{x:Type spkcreds:Account}">
                 <Grid Margin="20">
                     <Grid.RowDefinitions>
@@ -103,11 +103,13 @@
                     </StackPanel>
                 </Grid>
             </DataTemplate>
+            <!--#endregion-->
+
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="20">
-        <Grid>
+    <Grid>
+        <Grid Margin="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -144,13 +146,17 @@
 
             </Grid>
         </Grid>
-        <md:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
-                     Foreground="{StaticResource MaterialDesignLightBackground}"
-                     HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                     Height="45" Width="45" Margin="12">
-            <StackPanel>
-                
-            </StackPanel>
-            </md:PopupBox>
+
+        <Button Command="{x:Static md:DialogHost.OpenDialogCommand}"
+                Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
+                Content="{md:PackIcon Kind=Plus,Size=25}"
+                Foreground="{StaticResource MaterialDesignLightBackground}"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Height="45" Width="45" Margin="32">
+            <Button.CommandParameter>
+                <local:AddAccountViewModel/>
+            </Button.CommandParameter>
+        </Button>
+
     </Grid>
 </UserControl>
