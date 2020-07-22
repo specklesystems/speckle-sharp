@@ -45,6 +45,31 @@ namespace IntegrationTests
     }
 
     [Test, Order(2)]
+    public async Task StreamGrantPermission()
+    {
+      var res = await myRemote.StreamGrantPermission(
+      
+        myRemote.StreamId,
+        "b4b7f800ac", //TODO: get user id dynamically
+        "stream:owner"
+      );
+
+      Assert.IsTrue(res);
+    }
+
+    [Test, Order(3)]
+    public async Task StreamRevokePermission()
+    {
+      var res = await myRemote.StreamRevokePermission(
+
+        myRemote.StreamId,
+        "b4b7f800ac" //TODO: get user id dynamically
+      );
+
+      Assert.IsTrue(res);
+    }
+
+    [Test, Order(10)]
     public async Task StreamDelete()
     {
       var res = await myRemote.StreamDelete(myRemote.StreamId);

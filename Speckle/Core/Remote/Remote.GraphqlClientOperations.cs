@@ -106,5 +106,75 @@ namespace Speckle.Core
         throw e;
       }
     }
+
+    /// <summary>
+    /// Grants permissions to a user on a given stream.
+    /// </summary>
+    /// <param name="streamId"></param>
+    /// <param name="userId"></param>
+    /// <param name="role"></param>
+    /// <returns></returns>
+    public async Task<bool> StreamGrantPermission(string streamId, string userId, string role)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"mutation streamGrantPermission($streamId: String!, $userId: String!, $role: String!)
+                    { streamGrantPermission(streamId:$streamId, userId:$userId, role:$role ) }",
+          Variables = new
+          {
+            streamId,
+            userId,
+            role
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request);
+
+        if (res.Errors != null)
+          throw new Exception(res.Errors[0].Message);
+
+        return (bool)res.Data["streamGrantPermission"];
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
+
+    /// <summary>
+    /// Revokes permissions of a user on a given stream.
+    /// </summary>
+    /// <param name="streamId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    public async Task<bool> StreamRevokePermission(string streamId, string userId)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"mutation streamRevokePermission($streamId: String!, $userId: String!)
+                    { streamRevokePermission(streamId:$streamId, userId:$userId) }",
+          Variables = new
+          {
+            streamId,
+            userId,
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request);
+
+        if (res.Errors != null)
+          throw new Exception(res.Errors[0].Message);
+
+        return (bool)res.Data["streamRevokePermission"];
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
   }
 }
