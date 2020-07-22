@@ -49,7 +49,7 @@ namespace Speckle.Core
 
     public async Task<string> InitializeNewStream()
     {
-      StreamId = await StreamCreate(new GqlModels.StreamInput { name = "Test Stream", description = "Really this is just a test stream." });
+      StreamId = await StreamCreate(new GqlModels.StreamCreateInput { name = "Test Stream", description = "Really this is just a test stream." });
 
       return StreamId;
     }

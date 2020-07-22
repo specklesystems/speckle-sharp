@@ -17,13 +17,13 @@ namespace Speckle.Core
     /// </summary>
     /// <param name="streamInput"></param>
     /// <returns>The stream's id.</returns>
-    public async Task<string> StreamCreate(StreamInput streamInput)
+    public async Task<string> StreamCreate(StreamCreateInput streamInput)
     {
       try
       {
         var request = new GraphQLRequest
         {
-          Query = @"mutation streamCreate($myStream: StreamInput!) { streamCreate(stream: $myStream) }",
+          Query = @"mutation streamCreate($myStream: StreamCreateInput!) { streamCreate(stream: $myStream) }",
           Variables = new
           {
             myStream = streamInput
@@ -48,13 +48,13 @@ namespace Speckle.Core
     /// </summary>
     /// <param name="streamInput">Note: the id field needs to be a valid stream id.</param>
     /// <returns>The stream's id.</returns>
-    public async Task<bool> StreamUpdate(StreamInput streamInput)
+    public async Task<bool> StreamUpdate(StreamUpdateInput streamInput)
     {
       try
       {
         var request = new GraphQLRequest
         {
-          Query = @"mutation streamUpdate($myStream: StreamInput!) { streamUpdate(stream:$myStream) }",
+          Query = @"mutation streamUpdate($myStream: StreamUpdateInput!) { streamUpdate(stream:$myStream) }",
           Variables = new
           {
             myStream = streamInput

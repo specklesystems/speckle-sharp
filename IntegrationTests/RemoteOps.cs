@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -20,7 +21,7 @@ namespace IntegrationTests
     [Test, Order(0)]
     public async Task StreamCreate()
     {
-      var res = await myRemote.StreamCreate(new StreamInput
+      var res = await myRemote.StreamCreate(new StreamCreateInput
       {
         description = "Hello World",
         name = "Super Stream 01"
@@ -33,7 +34,7 @@ namespace IntegrationTests
     [Test, Order(1)]
     public async Task StreamUpdate()
     {
-      var res = await myRemote.StreamUpdate(new StreamInput
+      var res = await myRemote.StreamUpdate(new StreamUpdateInput
       {
         id = myRemote.StreamId,
         description = "Hello World",
