@@ -35,7 +35,7 @@ namespace Speckle.Credentials
     /// </summary>
     /// <param name="serverUrl"></param>
     /// <returns></returns>
-    public static async Task<Account> Authenticate(string serverUrl)
+    public static async Task<Account> AuthenticateConnectors(string serverUrl)
     {
       Uri serverUri;
       var uriOk = Uri.TryCreate(serverUrl, UriKind.Absolute, out serverUri);

@@ -23,7 +23,7 @@ namespace Speckle.Core
       {
         var request = new GraphQLRequest
         {
-          Query = @"mutation streamCreate($myStream: StreamInput!) { streamCreate(stream:$myStream) }",
+          Query = @"mutation streamCreate($myStream: StreamInput!) { streamCreate(stream: $myStream) }",
           Variables = new
           {
             myStream = streamInput

@@ -24,7 +24,7 @@ namespace ConsoleSketches
     {
       Console.Clear();
 
-      await PushAndPullToRemote(1_000);
+     // await PushAndPullToRemote(1_000);
 
       Console.Clear();
 
@@ -36,7 +36,7 @@ namespace ConsoleSketches
 
       //await ValidateAccount();
 
-      //await Auth();
+      await Auth();
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
@@ -47,8 +47,8 @@ namespace ConsoleSketches
     public static async Task Auth()
     {
       // First log in (uncomment the two lines below to simulate a login/register)
-      //var myAccount = await AccountManager.Authenticate("http://localhost:3000");
-      //Console.WriteLine($"Succesfully added/updated account server: {myAccount.serverInfo.url} user email: {myAccount.userInfo.email}");
+      var myAccount = await AccountManager.AuthenticateConnectors("http://localhost:3000");
+      Console.WriteLine($"Succesfully added/updated account server: {myAccount.serverInfo.url} user email: {myAccount.userInfo.email}");
 
       //// Second log in (make sure you use two different email addresses :D )
       //var myAccount2 = await AccountManager.Authenticate("http://localhost:3000");

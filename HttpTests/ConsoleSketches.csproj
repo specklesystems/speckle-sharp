@@ -7,6 +7,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Speckle\Speckle.csproj" />
-    <ProjectReference Include="..\Tests\Tests.csproj" />
+    <ProjectReference Include="..\Tests\TestsUnit.csproj" />
   </ItemGroup>
 </Project>
