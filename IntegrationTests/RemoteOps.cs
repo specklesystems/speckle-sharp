@@ -47,6 +47,16 @@ namespace IntegrationTests
       Assert.NotNull(res);
     }
 
+    [Test, Order(11)]
+    public async Task StreamGet()
+    {
+      var res = await myRemote.StreamGet(myRemote.StreamId);
+
+      Assert.NotNull(res);
+      Assert.Equals("master", res.branches.items[0].name);
+      Assert.IsNotEmpty(res.collaborators);
+    }
+
     [Test, Order(20)]
     public async Task StreamUpdate()
     {

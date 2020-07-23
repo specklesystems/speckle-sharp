@@ -31,6 +31,7 @@ namespace Speckle.Core.GqlModels
     public string updatedAt { get; set; }
 
     public List<Collaborator> collaborators { get; set; }
+    public Branches branches { get; set; }
   }
 
   public class Collaborator
@@ -38,6 +39,31 @@ namespace Speckle.Core.GqlModels
     public string id { get; set; }
     public string name { get; set; }
     public string role { get; set; }
+  }
+
+  public class Branches
+  {
+    public int totalCount { get; set; }
+    public DateTime cursor { get; set; }
+    public List<Branch> items { get; set; }
+
+  }
+
+  public class Commits
+  {
+    public int totalCount { get; set; }
+    public object cursor { get; set; }
+    public List<object> items { get; set; }
+
+  }
+
+  public class Branch
+  {
+    public string id { get; set; }
+    public string name { get; set; }
+    public string description { get; set; }
+    public Commits commits { get; set; }
+
   }
 
 
@@ -68,6 +94,12 @@ namespace Speckle.Core.GqlModels
   public class UserData
   {
     public User user { get; set; }
+
+  }
+
+  public class StreamData
+  {
+    public Stream stream { get; set; }
 
   }
 }

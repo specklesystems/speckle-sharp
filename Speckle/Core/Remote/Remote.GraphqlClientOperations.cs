@@ -52,17 +52,86 @@ namespace Speckle.Core
     }
 
     /// <summary>
-    /// Gets all streams for the current user
+    /// Gets a stream by id, includes commits and branches
     /// </summary>
+    /// <param name="id">Id of the stream to get</param>
+    /// <param name="branchesLimit">Max number of branches to retrieve</param>
+    /// <param name="commitsLimit">Max number of commits per branch to retrieve</param>
     /// <returns></returns>
-    public async Task<List<Stream>> StreamsGet()
+    public async Task<Stream> StreamGet(string id, int branchesLimit = 10, int commitsLimit = 10)
     {
       try
       {
         var request = new GraphQLRequest
         {
-          Query = @"query User {
-                      user{
+          Query = $@"query Stream($id: String!) {{
+                      stream(id: $id) {{
+                        id
+                        name
+                        description
+                        isPublic
+                        createdAt
+                        updatedAt
+                        collaborators {{
+                          id
+                          name
+                          role
+                        }},
+                        branches (limit: {branchesLimit}){{
+                          totalCount,
+                          cursor,
+                          items {{
+                          id,
+                          name,
+                          description,
+                          commits (limit: {commitsLimit}) {{
+                            totalCount,
+                            cursor,
+                            items {{
+                              id,
+                              message,
+                              authorName,
+                              authorId,
+                              createdAt
+                            }}
+                          }}
+                        }}
+                        }}
+                      }}
+                    }}",
+          Variables = new
+          {
+            id
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<StreamData>(request);
+
+        if (res.Errors != null)
+          throw new Exception(res.Errors[0].Message);
+
+        return res.Data.stream;
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
+
+
+    /// <summary>
+    /// Gets all streams for the current user
+    /// </summary>
+    /// <param name="limit">Max number of streams to return</param>
+    /// <returns></returns>
+    public async Task<List<Stream>> StreamsGet(int limit = 10)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = $@"query User {{
+                      user{{
                         id,
                         username,
                         email,
@@ -73,25 +142,25 @@ namespace Speckle.Core
                         verified,
                         profiles,
                         role,
-                        streams(limit:20) {
+                        streams(limit:{limit}) {{
                           totalCount,
                           cursor,
-                          items {
+                          items {{
                             id,
                             name,
                             description,
                             isPublic,
                             createdAt,
                             updatedAt,
-                            collaborators {
+                            collaborators {{
                               id,
                               name,
                               role
-                            }
-                          }
-                        }
-                      }
-                    }"
+                            }}
+                          }}
+                        }}
+                      }}
+                    }}"
         };
 
         var res = await GQLClient.SendMutationAsync<UserData>(request);
