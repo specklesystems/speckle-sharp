@@ -1,4 +1,7 @@
 ﻿using SpeckleDesktopUI.Accounts;
+using SpeckleDesktopUI.Feed;
+using SpeckleDesktopUI.Inbox;
+using SpeckleDesktopUI.Settings;
 using SpeckleDesktopUI.Streams;
 using SpeckleDesktopUI.Utils;
 using System;
@@ -71,8 +74,11 @@ namespace SpeckleDesktopUI
         {
             return new ObservableCollection<ViewItem>
             {
-                new ViewItem("Streams", new StreamsViewModel()),
-                new ViewItem("Accounts", new AccountsViewModel())
+                new ViewItem("Home", new StreamsViewModel()),
+                new ViewItem("Inbox", new InboxViewModel()),
+                new ViewItem("Feed", new FeedViewModel()),
+                new ViewItem("Accounts", new AccountsViewModel()),
+                new ViewItem("Settings", new SettingsViewModel())
             };
         }
     }

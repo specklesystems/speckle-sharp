@@ -16,7 +16,7 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{md:MaterialDesignFont}"
         mc:Ignorable="d"
-        Title="Speckle" Height="800" Width="600" Icon="Resources/s2block.ico">
+        Title="Speckle" Height="800" Width="450" Icon="Resources/s2block.ico">
     <Window.DataContext>
         <local:MainWindowViewModel />
     </Window.DataContext>
@@ -36,16 +36,25 @@
         <md:DrawerHost IsLeftDrawerOpen="{Binding ElementName=MenuToggleButton, Path=IsChecked}">
             <!--#region Left Navigation Drawer-->
             <md:DrawerHost.LeftDrawerContent>
-                <DockPanel MinWidth="220">
+                <Grid MinWidth="220">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    
                     <ToggleButton 
+                        Grid.Row="0"
                         Style="{StaticResource MaterialDesignHamburgerToggleButton}" 
-                        DockPanel.Dock="Top"
+                        VerticalAlignment="Top"
                         HorizontalAlignment="Right" 
                         Margin="16"
                         IsChecked="{Binding ElementName=MenuToggleButton, Path=IsChecked, Mode=TwoWay}" />
 
                     <TextBox 
                         x:Name="DemoItemsSearchBox"
+                        Grid.Row="1"
                         Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
                         DockPanel.Dock="Top"
                         Margin="16, 4"
@@ -58,8 +67,11 @@
                         md:TextFieldAssist.DecorationVisibility="Collapsed"
                         md:TextFieldAssist.TextFieldCornerRadius="4"/>
 
+                    <!--Main Navigation-->
                     <ListBox 
+                        Grid.Row="2"
                         x:Name="NavDrawerListBox" 
+                        DockPanel.Dock="Top"
                         Margin="0 16 0 16"
                         SelectedIndex="{Binding SelectedIndex}"
                         SelectedItem="{Binding SelectedItem, UpdateSourceTrigger=PropertyChanged}"
@@ -74,7 +86,32 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                </DockPanel>
+                    
+                    <!--Bottom Section-->
+                    <StackPanel Orientation="Vertical" Grid.Row="3" VerticalAlignment="Bottom">
+                        <Separator Margin="0 8" />
+                        <!--Dark Mode 😎-->
+                        <StackPanel 
+                            Orientation="Horizontal"
+                            Margin="0 8">
+                            <TextBlock Text="Dark Mode" Margin="32 0"/>
+                            <TextBlock Margin="0 0 8 0"><md:PackIcon Kind="WhiteBalanceSunny" /></TextBlock>
+                            <ToggleButton x:Name="DarkModeToggleButton"
+                                            Click="MenuDarkModeButton_Click" />
+                            <TextBlock Margin="8 0 0 0"><md:PackIcon Kind="NightSky"/></TextBlock>
+                        </StackPanel>
+                        <TextBlock Text="Help link" Margin="32 8"/>
+                        <Separator Margin="0 8"/>
+                        <TextBlock Text="Speckle version 2.😮" 
+                                   Foreground="Gray"
+                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                   FontSize="12"
+                                   HorizontalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Margin="0 16 0 24"/>
+                    </StackPanel>
+                    
+                </Grid>
             </md:DrawerHost.LeftDrawerContent>
             <!--#endregion-->
             <DockPanel>
@@ -93,16 +130,6 @@
 
                         <md:PopupBox DockPanel.Dock="Right" PlacementMode="BottomAndAlignRightEdges" StaysOpen="True">
                             <StackPanel>
-                                <StackPanel Orientation="Horizontal"
-                                            HorizontalAlignment="Center"
-                                            Margin="10">
-                                    <TextBlock Text="Light"
-                                               Margin="0 0 10 0"/>
-                                    <ToggleButton x:Name="DarkModeToggleButton" 
-                                                  Click="MenuDarkModeButton_Click" />
-                                    <TextBlock Text="Dark"
-                                               Margin="10 0 0 0"/>
-                                </StackPanel>
                                 <Button Content="Settings"/>
                                 <Button Content="Accounts"
                                         Command="{Binding NavCommand}"
@@ -113,8 +140,8 @@
                             </StackPanel>
                         </md:PopupBox>
                         <StackPanel Orientation="Horizontal" Margin="16 0 0 0 ">
-                            <TextBlock Text="SPECKLE" VerticalAlignment="Center" FontSize="28" Style="{StaticResource MaterialDesignHeadline3TextBlock}" />
-                            <TextBlock Text="SPOCKLE" VerticalAlignment="Center" FontSize="28" Style="{StaticResource MaterialDesignHeadline2TextBlock}" />
+                            <TextBlock Text="SPECKLE" VerticalAlignment="Center" FontSize="26" Style="{StaticResource MaterialDesignHeadline3TextBlock}" />
+                            <TextBlock Text="SPOCKLE" VerticalAlignment="Center" FontSize="26" Style="{StaticResource MaterialDesignHeadline2TextBlock}" />
                         </StackPanel>
                     </DockPanel>
                 </md:ColorZone>
