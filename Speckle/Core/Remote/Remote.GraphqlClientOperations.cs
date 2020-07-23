@@ -13,6 +13,102 @@ namespace Speckle.Core
   public partial class Remote
   {
     /// <summary>
+    /// Gets the current user
+    /// </summary>
+    /// <returns></returns>
+    public async Task<User> UserGet()
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query User {
+                      user{
+                        id,
+                        username,
+                        email,
+                        name,
+                        bio,
+                        company,
+                        avatar,
+                        verified,
+                        profiles,
+                        role,
+                      }
+                    }"
+        };
+
+        var res = await GQLClient.SendMutationAsync<UserData>(request);
+
+        if (res.Errors != null)
+          throw new Exception(res.Errors[0].Message);
+
+        return res.Data.user;
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
+
+    /// <summary>
+    /// Gets all streams for the current user
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<Stream>> StreamsGet()
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query User {
+                      user{
+                        id,
+                        username,
+                        email,
+                        name,
+                        bio,
+                        company,
+                        avatar,
+                        verified,
+                        profiles,
+                        role,
+                        streams(limit:20) {
+                          totalCount,
+                          cursor,
+                          items {
+                            id,
+                            name,
+                            description,
+                            isPublic,
+                            createdAt,
+                            updatedAt,
+                            collaborators {
+                              id,
+                              name,
+                              role
+                            }
+                          }
+                        }
+                      }
+                    }"
+        };
+
+        var res = await GQLClient.SendMutationAsync<UserData>(request);
+
+        if (res.Errors != null)
+          throw new Exception(res.Errors[0].Message);
+
+        return res.Data.user.streams.items;
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
+
+
+    /// <summary>
     /// Creates a stream.
     /// </summary>
     /// <param name="streamInput"></param>

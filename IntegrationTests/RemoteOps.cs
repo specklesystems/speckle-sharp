@@ -18,6 +18,14 @@ namespace IntegrationTests
       myRemote = new Remote(AccountManager.GetAccounts().First());
     }
 
+    [Test]
+    public async Task UserGet()
+    {
+      var res = await myRemote.UserGet();
+
+      Assert.NotNull(res);
+    }
+
     [Test, Order(0)]
     public async Task StreamCreate()
     {
@@ -31,7 +39,15 @@ namespace IntegrationTests
       myRemote.StreamId = res;
     }
 
-    [Test, Order(1)]
+    [Test, Order(10)]
+    public async Task StreamsGet()
+    {
+      var res = await myRemote.StreamsGet();
+
+      Assert.NotNull(res);
+    }
+
+    [Test, Order(20)]
     public async Task StreamUpdate()
     {
       var res = await myRemote.StreamUpdate(new StreamUpdateInput
@@ -44,7 +60,7 @@ namespace IntegrationTests
       Assert.IsTrue(res);
     }
 
-    [Test, Order(2)]
+    [Test, Order(30)]
     public async Task StreamGrantPermission()
     {
       var res = await myRemote.StreamGrantPermission(
@@ -57,7 +73,7 @@ namespace IntegrationTests
       Assert.IsTrue(res);
     }
 
-    [Test, Order(3)]
+    [Test, Order(40)]
     public async Task StreamRevokePermission()
     {
       var res = await myRemote.StreamRevokePermission(
@@ -69,7 +85,7 @@ namespace IntegrationTests
       Assert.IsTrue(res);
     }
 
-    [Test, Order(10)]
+    [Test, Order(50)]
     public async Task StreamDelete()
     {
       var res = await myRemote.StreamDelete(myRemote.StreamId);
