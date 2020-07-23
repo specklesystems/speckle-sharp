@@ -16,23 +16,33 @@
             <DataTemplate x:Key="StreamCardTemplate">
                 <md:Card Width="Auto" Padding="10">
                     <StackPanel Orientation="Vertical">
-                        <DockPanel>
-                            <Button 
-                            HorizontalAlignment="Left"
-                            Style="{StaticResource MaterialDesignFloatingActionButton}"
-                            Content="{md:PackIcon Kind=CloudUpload, Size=25}"
-                            Foreground="{StaticResource MaterialDesignLightBackground}"
-                            Width="40" Height="40" Margin="10" />
-                            <TextBlock Text="{Binding Name}"
-                                   FontSize="25"
-                                   Style="{StaticResource MaterialDesignHeadline2TextBlock}"
-                                   VerticalAlignment="Center" />
-                            <Button HorizontalAlignment="Right"
-                                VerticalAlignment="Top"
-                                Style="{StaticResource MaterialDesignIconButton}"
-                                Content="{md:PackIcon Kind=Delete}"
-                                Command="{Binding RemoveStream}" />
-                        </DockPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                                <Button 
+                                    Grid.Column="0"
+                                    Style="{StaticResource MaterialDesignFloatingActionButton}"
+                                    Content="{md:PackIcon Kind=CloudUpload, Size=20}"
+                                    Foreground="{StaticResource MaterialDesignLightBackground}"
+                                    Width="32" Height="32" Margin="10" />
+                                <TextBlock 
+                                    Grid.Column="1"
+                                    Text="{Binding Name}"
+                                    TextWrapping="Wrap"
+                                    FontSize="20"
+                                    Style="{StaticResource MaterialDesignHeadline2TextBlock}"
+                                    VerticalAlignment="Center" />
+                                <Button 
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Top"
+                                    Style="{StaticResource MaterialDesignIconButton}"
+                                    Content="{md:PackIcon Kind=Delete}"
+                                    Command="{Binding RemoveStream}" />
+                        </Grid>
 
                         <StackPanel Orientation="Horizontal" Margin="10, 5">
                             <TextBlock Text="Server: " />
@@ -51,34 +61,43 @@
             <DataTemplate x:Key="StreamCardRec">
                 <md:Card Width="Auto" Padding="10">
                     <StackPanel Orientation="Vertical">
-                        <DockPanel>
-                            <Button Command="{x:Static md:DialogHost.OpenDialogCommand}"
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                                <Button 
+                                    Grid.Column="0"
+                                    Command="{x:Static md:DialogHost.OpenDialogCommand}"
                                     HorizontalAlignment="Left"
                                     Style="{StaticResource MaterialDesignFloatingActionLightButton}"
-                                    Content="{md:PackIcon Kind=CloudDownload, Size=25}"
+                                    Content="{md:PackIcon Kind=CloudDownload, Size=20}"
                                     Foreground="{StaticResource MaterialDesignLightBackground}"
-                                    Height="40" Width="40" Margin="10">
-                                <Button.CommandParameter>
-                                    <StackPanel Margin="16">
-                                        <ProgressBar Style="{DynamicResource MaterialDesignCircularProgressBar}" HorizontalAlignment="Center" Margin="16" IsIndeterminate="True" Value="0" />
-                                        <Button 
-                                            Style="{StaticResource MaterialDesignFlatButton}" IsCancel="True" 
-                                            Command="{x:Static md:DialogHost.CloseDialogCommand}"
-                                            CommandParameter="Sample2Cancel"
-                                            HorizontalAlignment="Center">CANCEL</Button>
-                                    </StackPanel>
-                                </Button.CommandParameter>
-                            </Button>
-                            <TextBlock Text="{Binding Name}"
-                                   FontSize="25"
-                                   Style="{StaticResource MaterialDesignHeadline2TextBlock}"
-                                   VerticalAlignment="Center" />
-                            <Button HorizontalAlignment="Right"
-                                VerticalAlignment="Top"
-                                Style="{StaticResource MaterialDesignIconButton}"
-                                Content="{md:PackIcon Kind=Delete}" />
-
-                        </DockPanel>
+                                    Height="32" Width="32" Margin="10">
+                                    <Button.CommandParameter>
+                                        <StackPanel Margin="16">
+                                            <ProgressBar Style="{DynamicResource MaterialDesignCircularProgressBar}" HorizontalAlignment="Center" Margin="16" IsIndeterminate="True" Value="0" />
+                                            <Button 
+                                                Style="{StaticResource MaterialDesignFlatButton}" IsCancel="True" 
+                                                Command="{x:Static md:DialogHost.CloseDialogCommand}"
+                                                CommandParameter="Sample2Cancel"
+                                                HorizontalAlignment="Center">CANCEL</Button>
+                                        </StackPanel>
+                                    </Button.CommandParameter>
+                                </Button>
+                            
+                                <TextBlock Grid.Column="1"
+                                    Text="{Binding Name}"
+                                    TextWrapping="Wrap"
+                                    FontSize="20"
+                                    Style="{StaticResource MaterialDesignHeadline2TextBlock}"
+                                    VerticalAlignment="Center" />
+                                <Button Grid.Column="2"
+                                    VerticalAlignment="Top"
+                                    Style="{StaticResource MaterialDesignIconButton}"
+                                    Content="{md:PackIcon Kind=Delete}" />
+                        </Grid>
 
                         <StackPanel Orientation="Horizontal" Margin="10, 5">
                             <TextBlock Text="Server: " />
@@ -99,49 +118,53 @@
         
     </UserControl.Resources>
 
-    <Grid>
-        <Grid Margin="20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0*"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
+    <Grid ScrollViewer.VerticalScrollBarVisibility="Auto">
+        <Grid Margin="20, 10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Grid Grid.Row="0" Grid.ColumnSpan="2">
-                <StackPanel Orientation="Vertical">
-                    <TextBlock
-                        HorizontalAlignment="Left"
-                        Text="RECEIVERS"
-                        FontSize="28"
-                        Padding="5,0"
-                        Style="{StaticResource MaterialDesignHeadline3TextBlock}" />
+            <Grid Grid.Row="0" Margin="0 8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    HorizontalAlignment="Left"
+                    Text="RECEIVERS"
+                    FontSize="24"
+                    Padding="5,0"
+                    Style="{StaticResource MaterialDesignHeadline3TextBlock}" />
 
-                    <ListView
-                        Grid.Row="1" Grid.ColumnSpan="2"
-                        HorizontalContentAlignment="Stretch"
-                        ItemTemplate="{StaticResource StreamCardRec}"
-                        ItemsSource="{Binding ReceiverStreams}"
-                        SelectedItem="{Binding SelectedStream}"/>
-                </StackPanel>
+                <ListView
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    ScrollViewer.CanContentScroll="False"
+                    Grid.Row="1" Grid.ColumnSpan="2"
+                    HorizontalContentAlignment="Stretch"
+                    ItemTemplate="{StaticResource StreamCardRec}"
+                    ItemsSource="{Binding ReceiverStreams}"
+                    SelectedItem="{Binding SelectedStream}"/>
             </Grid>
 
-            <Grid Grid.Row="1" Grid.ColumnSpan="2">
-                <StackPanel Orientation="Vertical">
-                    <TextBlock
-                        HorizontalAlignment="Left"
-                        Text="SENDERS"
-                        FontSize="28"
-                        Padding="5,0"
-                        Style="{StaticResource MaterialDesignHeadline3TextBlock}" />
-                    <ListView
-                        Grid.Row="1" Grid.ColumnSpan="2"
-                        HorizontalContentAlignment="Stretch"
-                        ItemTemplate="{StaticResource StreamCardTemplate}"
-                        ItemsSource="{Binding SenderStreams}"
-                        SelectedItem="{Binding SelectedStream}"/>
-                </StackPanel>
+            <Grid Grid.Row="1" Margin="0 8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    HorizontalAlignment="Left"
+                    Text="SENDERS"
+                    FontSize="24"
+                    Padding="5,0"
+                    Style="{StaticResource MaterialDesignHeadline3TextBlock}" />
+                <ListView
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    ScrollViewer.CanContentScroll="False"
+                    Grid.Row="1" Grid.ColumnSpan="2"
+                    HorizontalContentAlignment="Stretch"
+                    ItemTemplate="{StaticResource StreamCardTemplate}"
+                    ItemsSource="{Binding SenderStreams}"
+                    SelectedItem="{Binding SelectedStream}"/>
             </Grid>
         </Grid>
 
