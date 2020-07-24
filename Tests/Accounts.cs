@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using NUnit.Framework;
-using Speckle.Credentials;
+using Speckle.Core.Credentials;
 
 namespace Tests
 {

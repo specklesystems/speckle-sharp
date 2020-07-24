@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using NUnit.Framework;
 using System;
-using Speckle.Models;
+using Speckle.Core.Models;
 
 namespace Tests
 {

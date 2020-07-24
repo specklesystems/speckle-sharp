@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Speckle.Core;
-using Speckle.Core.GqlModels;
-using Speckle.Credentials;
+using Speckle.Core.Api;
+using Speckle.Core.Api.GqlModels;
+using Speckle.Core.Credentials;
 
 namespace IntegrationTests
 {

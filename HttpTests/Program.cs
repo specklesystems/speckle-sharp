@@ -4,13 +4,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Speckle;
-using Speckle.Core;
-using Speckle.Credentials;
-using Speckle.Models;
-using Speckle.Serialisation;
-using Speckle.Transports;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
+using Speckle.Core.Models;
+using Speckle.Core.Transports;
 using Tests;
 
 /// <summary>
@@ -262,7 +259,7 @@ namespace ConsoleSketches
 
       for (int i = 0; i < numObjects; i++)
       {
-        //var hash = Speckle.Models.Utilities.hashString($"hash-{i}-{rand.NextDouble()}");
+        //var hash = Speckle.Core.Models.Utilities.hashString($"hash-{i}-{rand.NextDouble()}");
         transport.SaveObject($"hash-{i}-{rand.NextDouble()}", $"content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}");
       }
 
