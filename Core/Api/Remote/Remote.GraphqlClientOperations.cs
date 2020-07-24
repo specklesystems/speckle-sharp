@@ -7,6 +7,7 @@ using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using Newtonsoft.Json;
 using Speckle.Core.Api.GqlModels;
+using Speckle.Core.Models;
 
 namespace Speckle.Core.Api
 {
@@ -50,6 +51,8 @@ namespace Speckle.Core.Api
         throw e;
       }
     }
+
+    #region streams
 
     /// <summary>
     /// Gets a stream by id, includes commits and branches
@@ -341,5 +344,202 @@ namespace Speckle.Core.Api
         throw e;
       }
     }
+
+    #endregion
+
+    #region branches
+    /// <summary>
+    /// Creates a branch on a stream.
+    /// </summary>
+    /// <param name="branchInput"></param>
+    /// <returns>The stream's id.</returns>
+    public async Task<string> BranchCreate(BranchCreateInput branchInput)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"mutation branchCreate($myBranch: BranchCreateInput!){ branchCreate(branch: $myBranch)}",
+          Variables = new
+          {
+            myBranch = branchInput
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request);
+
+        if (res.Errors != null)
+          throw new Exception(res.Errors[0].Message);
+
+        return (string)res.Data["branchCreate"];
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
+
+    /// <summary>
+    /// Updates a branch.
+    /// </summary>
+    /// <param name="branchInput"></param>
+    /// <returns>The stream's id.</returns>
+    public async Task<bool> BranchUpdate(BranchUpdateInput branchInput)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"mutation branchUpdate($myBranch: BranchUpdateInput!){ branchUpdate(branch: $myBranch)}",
+          Variables = new
+          {
+            myBranch = branchInput
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request);
+
+        if (res.Errors != null)
+          throw new Exception(res.Errors[0].Message);
+
+        return (bool)res.Data["branchUpdate"];
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
+
+    /// <summary>
+    /// Deletes a stream.
+    /// </summary>
+    /// <param name="branchInput"></param>
+    /// <returns></returns>
+    public async Task<bool> BranchDelete(BranchDeleteInput branchInput)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"mutation branchDelete($myBranch: BranchDeleteInput!){ branchDelete(branch: $myBranch)}",
+          Variables = new
+          {
+            myBranch = branchInput
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request);
+
+        if (res.Errors != null)
+        {
+          throw new Exception(res.Errors[0].Message);
+        }
+
+        return (bool)res.Data["branchDelete"];
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
+    #endregion
+
+    #region commits
+    /// <summary>
+    /// Creates a commit on a branch.
+    /// </summary>
+    /// <param name="commitInput"></param>
+    /// <returns>The commit id.</returns>
+    public async Task<string> CommitCreate(CommitCreateInput commitInput)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"mutation commitCreate($myCommit: CommitCreateInput!){ commitCreate(commit: $myCommit)}",
+          Variables = new
+          {
+            myCommit = commitInput
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request);
+
+        if (res.Errors != null)
+          throw new Exception(res.Errors[0].Message);
+
+        return (string)res.Data["commitCreate"];
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
+
+    /// <summary>
+    /// Updates a commit.
+    /// </summary>
+    /// <param name="commitInput"></param>
+    /// <returns>The stream's id.</returns>
+    public async Task<bool> CommitUpdate(CommitUpdateInput commitInput)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"mutation commitUpdate($myCommit: CommitUpdateInput!){ commitUpdate(commit: $myCommit)}",
+          Variables = new
+          {
+            myCommit = commitInput
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request);
+
+        if (res.Errors != null)
+          throw new Exception(res.Errors[0].Message);
+
+        return (bool)res.Data["commitUpdate"];
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
+
+    /// <summary>
+    /// Deletes a commit.
+    /// </summary>
+    /// <param name="commitInput"></param>
+    /// <returns></returns>
+    public async Task<bool> CommmitDelete(CommitDeleteInput commitInput)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"mutation commitDelete($myCommit: CommitDeleteInput!){ commitDelete(commit: $myCommit)}",
+          Variables = new
+          {
+            myBranch = commitInput
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request);
+
+        if (res.Errors != null)
+        {
+          throw new Exception(res.Errors[0].Message);
+        }
+
+        return (bool)res.Data["commitDelete"];
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
+    #endregion
+
   }
 }

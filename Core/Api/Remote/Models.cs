@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace Speckle.Core.Api.GqlModels
 {
+  #region inputs
   public class StreamCreateInput
   {
     public string name { get; set; }
@@ -18,6 +19,51 @@ namespace Speckle.Core.Api.GqlModels
     public string description { get; set; }
     public bool isPublic { get; set; }
   }
+
+  public class BranchCreateInput
+  {
+    public string streamId { get; set; }
+    public string name { get; set; }
+    public string description { get; set; }
+  }
+
+  public class BranchUpdateInput
+  {
+    public string streamId { get; set; }
+    public string id { get; set; }
+    public string name { get; set; }
+    public string description { get; set; }
+  }
+
+  public class BranchDeleteInput
+  {
+    public string streamId { get; set; }
+    public string id { get; set; }
+  }
+
+  public class CommitCreateInput
+  {
+    public string streamId { get; set; }
+    public string branchName { get; set; }
+    public string objectId { get; set; }
+    public string message { get; set; }
+    public List<string> previousCommitIds { get; set; }
+  }
+
+  public class CommitUpdateInput
+  {
+    public string streamId { get; set; }
+    public string id { get; set; }
+    public string message { get; set; }
+  }
+
+  public class CommitDeleteInput
+  {
+    public string streamId { get; set; }
+    public string id { get; set; }
+  }
+
+  #endregion
 
   public class Stream
   {

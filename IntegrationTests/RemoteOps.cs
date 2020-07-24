@@ -5,12 +5,17 @@ using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GqlModels;
 using Speckle.Core.Credentials;
+using Speckle.Core.Models;
+using Tests;
 
 namespace IntegrationTests
 {
   public class RemoteOps
   {
     public Remote myRemote;
+    private string branchId = "";
+    private string branchName = "";
+    private string commitId = "";
 
     [OneTimeSetUp]
     public void Setup()
@@ -25,6 +30,7 @@ namespace IntegrationTests
 
       Assert.NotNull(res);
     }
+
 
     [Test, Order(0)]
     public async Task StreamCreate()
@@ -53,7 +59,7 @@ namespace IntegrationTests
       var res = await myRemote.StreamGet(myRemote.StreamId);
 
       Assert.NotNull(res);
-      Assert.Equals("master", res.branches.items[0].name);
+      Assert.AreEqual("master", res.branches.items[0].name);
       Assert.IsNotEmpty(res.collaborators);
     }
 
@@ -95,7 +101,101 @@ namespace IntegrationTests
       Assert.IsTrue(res);
     }
 
+    #region branches
+    [Test, Order(41)]
+    public async Task BranchCreate()
+    {
+      var res = await myRemote.BranchCreate(new BranchCreateInput
+      {
+        streamId = myRemote.StreamId,
+        description = "this is a sample branch",
+        name = "sample-branch"
+      });
+      Assert.NotNull(res);
+      branchId = res;
+      branchName = "sample-branch";
+    }
+
+
+    
+
+    #region commit
+
+    [Test, Order(43)]
+    public async Task CommitCreate()
+    {
+      var commit = new Commit();
+      commit.Objects.Add(new Point(1,2,3));
+      commitId = Operations.Upload(commit).Result;
+
+
+      var res = await myRemote.CommitCreate(new CommitCreateInput
+      {
+        streamId = myRemote.StreamId,
+        branchName = branchName,
+        objectId = commitId,
+        message = "adding some objects"
+      });
+      Assert.NotNull(res);
+      commitId = res;
+    }
+
+
+    [Test, Order(44)]
+    public async Task CommitUpdate()
+    {
+      var res = await myRemote.CommitUpdate(new CommitUpdateInput
+      {
+        streamId = myRemote.StreamId,
+        id = commitId,
+        message = "actually, not adding objects"
+      });
+
+      Assert.IsTrue(res);
+    }
+    [Test, Order(45)]
+    public async Task CommitDelete()
+    {
+      var res = await myRemote.CommmitDelete(new CommitDeleteInput
+      {
+        id = commitId,
+        streamId = myRemote.StreamId
+      }
+      );
+      Assert.IsTrue(res);
+    }
+    #endregion
+
+    [Test, Order(46)]
+    public async Task BranchUpdate()
+    {
+      var res = await myRemote.BranchUpdate(new BranchUpdateInput
+      {
+        streamId = myRemote.StreamId,
+        id = branchId,
+        name = "sample-branch EDITED"
+      });
+
+      Assert.IsTrue(res);
+    }
+
     [Test, Order(50)]
+    public async Task BranchDelete()
+    {
+      var res = await myRemote.BranchDelete(new BranchDeleteInput
+      {
+         id = branchId,
+        streamId = myRemote.StreamId
+      }
+      );
+      Assert.IsTrue(res);
+    }
+
+    #endregion
+
+
+
+    [Test, Order(60)]
     public async Task StreamDelete()
     {
       var res = await myRemote.StreamDelete(myRemote.StreamId);
