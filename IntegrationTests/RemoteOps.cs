@@ -80,7 +80,7 @@ namespace IntegrationTests
     public async Task StreamGrantPermission()
     {
       var res = await myRemote.StreamGrantPermission(
-      
+
         myRemote.StreamId,
         "b4b7f800ac", //TODO: get user id dynamically
         "stream:owner"
@@ -117,7 +117,7 @@ namespace IntegrationTests
     }
 
 
-    
+
 
     #region commit
 
@@ -125,8 +125,9 @@ namespace IntegrationTests
     public async Task CommitCreate()
     {
       var commit = new Commit();
-      commit.Objects.Add(new Point(1,2,3));
-      commitId = Operations.Upload(commit).Result;
+      //for (int i = 0; i < 10; i++) commit.Objects.Add(new Point(i, i, i));
+      commit.Objects.Add(new Point(1, 2, 3));
+      commitId = await Operations.Upload(commit, remotes: new Remote[] { myRemote });
 
 
       var res = await myRemote.CommitCreate(new CommitCreateInput
@@ -184,7 +185,7 @@ namespace IntegrationTests
     {
       var res = await myRemote.BranchDelete(new BranchDeleteInput
       {
-         id = branchId,
+        id = branchId,
         streamId = myRemote.StreamId
       }
       );

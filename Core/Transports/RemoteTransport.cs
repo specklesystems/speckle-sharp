@@ -85,6 +85,8 @@ namespace Speckle.Core.Transports
     // TODO: Gzip
     private async Task ConsumeQueue()
     {
+      if (Queue.Count == 0) return;
+
       IS_WRITING = true;
       var message = new HttpRequestMessage()
       {
@@ -121,9 +123,10 @@ namespace Speckle.Core.Transports
         var response = await Client.SendAsync(message);
         response.EnsureSuccessStatusCode();
       }
-      catch (Exception)
+      catch (Exception e)
       {
-        throw new Exception($"Remote unreachable ({Client.BaseAddress.ToString()})");
+        IS_WRITING = false;
+        throw new Exception($"Remote unreachable ({Client.BaseAddress.ToString()}. {e.Message})");
       }
 
       IS_WRITING = false;
