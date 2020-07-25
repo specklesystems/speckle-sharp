@@ -80,7 +80,7 @@ namespace IntegrationTests
     public async Task StreamGrantPermission()
     {
       var res = await myRemote.StreamGrantPermission(
-      
+
         myRemote.StreamId,
         "b4b7f800ac", //TODO: get user id dynamically
         "stream:owner"
@@ -117,7 +117,7 @@ namespace IntegrationTests
     }
 
 
-    
+
 
     #region commit
 
@@ -125,16 +125,20 @@ namespace IntegrationTests
     public async Task CommitCreate()
     {
       var commit = new Commit();
-      commit.Objects.Add(new Point(1,2,3));
-      commitId = Operations.Upload(commit).Result;
+      for (int i = 0; i < 100; i++)
+        commit.Objects.Add(new Point(i, i, i));
 
+      // NOTE:
+      // Operations.Upload is designed to be called from the connector, with potentially multiple responses.
+      // We could (should?) scaffold a corrolary Remote.Upload() at one point - in beta maybe?
+      commitId = await Operations.Upload(commit, remotes: new Remote[] { myRemote });
 
       var res = await myRemote.CommitCreate(new CommitCreateInput
       {
         streamId = myRemote.StreamId,
         branchName = branchName,
         objectId = commitId,
-        message = "adding some objects"
+        message = "MATT0E IS THE B3ST"
       });
       Assert.NotNull(res);
       commitId = res;
@@ -148,7 +152,7 @@ namespace IntegrationTests
       {
         streamId = myRemote.StreamId,
         id = commitId,
-        message = "actually, not adding objects"
+        message = "DIM IS DA BEST"
       });
 
       Assert.IsTrue(res);
@@ -184,7 +188,7 @@ namespace IntegrationTests
     {
       var res = await myRemote.BranchDelete(new BranchDeleteInput
       {
-         id = branchId,
+        id = branchId,
         streamId = myRemote.StreamId
       }
       );
