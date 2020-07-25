@@ -125,17 +125,20 @@ namespace IntegrationTests
     public async Task CommitCreate()
     {
       var commit = new Commit();
-      //for (int i = 0; i < 10; i++) commit.Objects.Add(new Point(i, i, i));
-      commit.Objects.Add(new Point(1, 2, 3));
-      commitId = await Operations.Upload(commit, remotes: new Remote[] { myRemote });
+      for (int i = 0; i < 100; i++)
+        commit.Objects.Add(new Point(i, i, i));
 
+      // NOTE:
+      // Operations.Upload is designed to be called from the connector, with potentially multiple responses.
+      // We could (should?) scaffold a corrolary Remote.Upload() at one point - in beta maybe?
+      commitId = await Operations.Upload(commit, remotes: new Remote[] { myRemote });
 
       var res = await myRemote.CommitCreate(new CommitCreateInput
       {
         streamId = myRemote.StreamId,
         branchName = branchName,
         objectId = commitId,
-        message = "adding some objects"
+        message = "MATT0E IS THE B3ST"
       });
       Assert.NotNull(res);
       commitId = res;
@@ -149,7 +152,7 @@ namespace IntegrationTests
       {
         streamId = myRemote.StreamId,
         id = commitId,
-        message = "actually, not adding objects"
+        message = "DIM IS DA BEST"
       });
 
       Assert.IsTrue(res);
