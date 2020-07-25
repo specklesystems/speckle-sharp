@@ -466,7 +466,7 @@ namespace Speckle.Core.Api
         var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request);
 
         if (res.Errors != null)
-          throw new Exception(res.Errors[0].Message);
+           throw new Exception(res.Errors[0].Message);
 
         return (string)res.Data["commitCreate"];
       }
@@ -521,7 +521,7 @@ namespace Speckle.Core.Api
           Query = @"mutation commitDelete($myCommit: CommitDeleteInput!){ commitDelete(commit: $myCommit)}",
           Variables = new
           {
-            myBranch = commitInput
+            myCommit = commitInput
           }
         };
 
