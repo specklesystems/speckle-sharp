@@ -1,9 +1,9 @@
-﻿using SpeckleDesktopUI.Accounts;
-using SpeckleDesktopUI.Feed;
-using SpeckleDesktopUI.Inbox;
-using SpeckleDesktopUI.Settings;
-using SpeckleDesktopUI.Streams;
-using SpeckleDesktopUI.Utils;
+﻿using Speckle.DesktopUI.Accounts;
+using Speckle.DesktopUI.Feed;
+using Speckle.DesktopUI.Inbox;
+using Speckle.DesktopUI.Settings;
+using Speckle.DesktopUI.Streams;
+using Speckle.DesktopUI.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpeckleDesktopUI
+namespace Speckle.DesktopUI
 {
     class MainWindowViewModel : INotifyPropertyChanged
     {

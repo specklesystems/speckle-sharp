@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpeckleDesktopUI.Inbox
+namespace Speckle.DesktopUI.Inbox
 {
     class InboxViewModel
     {

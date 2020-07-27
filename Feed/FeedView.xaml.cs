@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SpeckleDesktopUI.Feed
+namespace Speckle.DesktopUI.Feed
 {
     /// <summary>
     /// Interaction logic for FeedView.xaml

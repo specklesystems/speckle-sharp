@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SpeckleDesktopUI.Inbox
+namespace Speckle.DesktopUI.Inbox
 {
     /// <summary>
     /// Interaction logic for InboxView.xaml

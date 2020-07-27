@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpeckleDesktopUI.Feed
+namespace Speckle.DesktopUI.Feed
 {
     class FeedViewModel
     {

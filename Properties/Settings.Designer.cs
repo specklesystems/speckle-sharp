@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SpeckleDesktopUI.Properties
+namespace Speckle.DesktopUI.Properties
 {
 
 

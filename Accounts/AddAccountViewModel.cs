@@ -1,6 +1,6 @@
 ﻿using MaterialDesignThemes.Wpf;
 using Speckle.Credentials;
-using SpeckleDesktopUI.Utils;
+using Speckle.DesktopUI.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace SpeckleDesktopUI.Accounts
+namespace Speckle.DesktopUI.Accounts
 {
     class AddAccountViewModel : BindableBase
     {

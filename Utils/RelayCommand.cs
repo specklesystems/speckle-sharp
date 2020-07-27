@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace SpeckleDesktopUI.Utils
+namespace Speckle.DesktopUI.Utils
 {
     public class RelayCommand<T> : ICommand
     {

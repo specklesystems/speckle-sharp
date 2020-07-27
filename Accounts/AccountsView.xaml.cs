@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SpeckleDesktopUI.Accounts
+namespace Speckle.DesktopUI.Accounts
 {
     /// <summary>
     /// Interaction logic for AccountsView.xaml

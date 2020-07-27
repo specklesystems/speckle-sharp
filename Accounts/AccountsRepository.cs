@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpeckleDesktopUI.Accounts
+namespace Speckle.DesktopUI.Accounts
 {
     class AccountsRepository
     {

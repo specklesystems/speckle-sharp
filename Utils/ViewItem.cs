@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SpeckleDesktopUI.Utils
+namespace Speckle.DesktopUI.Utils
 {
     public class ViewItem : BindableBase
     {

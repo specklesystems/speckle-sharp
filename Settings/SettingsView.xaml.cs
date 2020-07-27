@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SpeckleDesktopUI.Settings
+namespace Speckle.DesktopUI.Settings
 {
     /// <summary>
     /// Interaction logic for SettingsView.xaml

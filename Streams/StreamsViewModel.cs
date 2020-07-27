@@ -1,4 +1,4 @@
-﻿using SpeckleDesktopUI.Utils;
+﻿using Speckle.DesktopUI.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using SpeckleCore;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
-namespace SpeckleDesktopUI.Streams
+namespace Speckle.DesktopUI.Streams
 {
     class StreamsViewModel : BindableBase
     {

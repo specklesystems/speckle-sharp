@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpeckleDesktopUI.Utils
+namespace Speckle.DesktopUI.Utils
 {
     public class BindableBase : INotifyPropertyChanged
     {

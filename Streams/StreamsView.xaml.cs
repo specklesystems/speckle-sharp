@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SpeckleDesktopUI.Streams
+namespace Speckle.DesktopUI.Streams
 {
     /// <summary>
     /// Interaction logic for StreamsView.xaml

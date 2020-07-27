@@ -3,10 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:SpeckleDesktopUI.Accounts"
+             xmlns:local="clr-namespace:Speckle.DesktopUI.Accounts"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:spkcreds="clr-namespace:Speckle.Credentials;assembly=Speckle"
-             xmlns:b="http://schemas.microsoft.com/xaml/behaviors" x:Class="SpeckleDesktopUI.Accounts.AccountsView"
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors" x:Class="Speckle.DesktopUI.Accounts.AccountsView"
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="500">
     <UserControl.Resources>

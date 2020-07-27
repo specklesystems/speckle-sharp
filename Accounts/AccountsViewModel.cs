@@ -1,4 +1,4 @@
-﻿using SpeckleDesktopUI.Utils;
+﻿using Speckle.DesktopUI.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using Speckle.Credentials;
 
-namespace SpeckleDesktopUI.Accounts
+namespace Speckle.DesktopUI.Accounts
 {
     class AccountsViewModel : BindableBase
     {
