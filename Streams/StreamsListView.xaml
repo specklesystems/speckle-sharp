@@ -1,11 +1,10 @@
-﻿<UserControl x:Class="Speckle.DesktopUI.Streams.StreamsView"
+﻿<UserControl x:Class="Speckle.DesktopUI.Streams.StreamsListView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-             xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="600">
     <UserControl.Resources>
@@ -15,47 +14,67 @@
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate x:Key="StreamCardTemplate">
-                <md:Card Width="Auto" Padding="10">
-                    <StackPanel Orientation="Vertical">
-                        <Grid>
+                <md:Card Width="Auto" Padding="10" Margin="8">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                                <Button 
+                            <Button 
                                     Grid.Column="0"
                                     Style="{StaticResource MaterialDesignFloatingActionButton}"
                                     Content="{md:PackIcon Kind=CloudUpload, Size=20}"
                                     Foreground="{StaticResource MaterialDesignLightBackground}"
                                     Width="32" Height="32" Margin="10" />
-                                <TextBlock 
+                            <TextBlock 
                                     Grid.Column="1"
-                                    Text="{Binding Name}"
+                                    Text="{Binding name}"
                                     TextWrapping="Wrap"
                                     FontSize="20"
-                                    Style="{StaticResource MaterialDesignHeadline2TextBlock}"
+                                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                                     VerticalAlignment="Center" />
-                                <Button 
+                            <Button 
                                     Grid.Column="2"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Top"
                                     Style="{StaticResource MaterialDesignIconButton}"
-                                    Content="{md:PackIcon Kind=Delete}"
+                                    Content="{md:PackIcon Kind=Send}"
                                     Command="{Binding RemoveStream}" />
                         </Grid>
 
-                        <StackPanel Orientation="Horizontal" Margin="10, 5">
-                            <TextBlock Text="Server: " />
-                            <TextBlock Text="{Binding Account.ServerName}" />
-                            <TextBlock Text="Stream ID: " />
-                            <TextBlock Text="{Binding StreamId}"  />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="10,5" >
-                            <TextBlock Text="Objects: " />
-                            <TextBlock Text="{Binding Objects.Count}" />
-                        </StackPanel>
-                    </StackPanel>
+                        <Grid Grid.Row="1">
+                            <StackPanel Orientation="Horizontal" Margin="10, 5">
+                                <TextBlock Text="Server: " />
+                                <TextBlock Text="{Binding Account.ServerName}" />
+                                <TextBlock Text="Stream ID: " />
+                                <TextBlock Text="{Binding id}"  />
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="2" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Margin="10,5" 
+                                       FontSize="10"
+                                       Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+                            <Button Grid.Column="1"
+                                    Style="{StaticResource MaterialDesignFlatButton}"
+                                    Content="DETAILS"
+                                    Width="90"
+                                    Command="{Binding DataContext.ShowStreamInfoCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                    CommandParameter="{Binding}"/>
+                        </Grid>
+                    </Grid>
                 </md:Card>
             </DataTemplate>
 
@@ -68,7 +87,7 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                                <Button 
+                            <Button 
                                     Grid.Column="0"
                                     Command="{x:Static md:DialogHost.OpenDialogCommand}"
                                     HorizontalAlignment="Left"
@@ -76,25 +95,25 @@
                                     Content="{md:PackIcon Kind=CloudDownload, Size=20}"
                                     Foreground="{StaticResource MaterialDesignLightBackground}"
                                     Height="32" Width="32" Margin="10">
-                                    <Button.CommandParameter>
-                                        <StackPanel Margin="16">
-                                            <ProgressBar Style="{DynamicResource MaterialDesignCircularProgressBar}" HorizontalAlignment="Center" Margin="16" IsIndeterminate="True" Value="0" />
-                                            <Button 
+                                <Button.CommandParameter>
+                                    <StackPanel Margin="16">
+                                        <ProgressBar Style="{DynamicResource MaterialDesignCircularProgressBar}" HorizontalAlignment="Center" Margin="16" IsIndeterminate="True" Value="0" />
+                                        <Button 
                                                 Style="{StaticResource MaterialDesignFlatButton}" IsCancel="True" 
                                                 Command="{x:Static md:DialogHost.CloseDialogCommand}"
                                                 CommandParameter="Sample2Cancel"
                                                 HorizontalAlignment="Center">CANCEL</Button>
-                                        </StackPanel>
-                                    </Button.CommandParameter>
-                                </Button>
-                            
-                                <TextBlock Grid.Column="1"
+                                    </StackPanel>
+                                </Button.CommandParameter>
+                            </Button>
+
+                            <TextBlock Grid.Column="1"
                                     Text="{Binding Name}"
                                     TextWrapping="Wrap"
                                     FontSize="20"
                                     Style="{StaticResource MaterialDesignHeadline2TextBlock}"
                                     VerticalAlignment="Center" />
-                                <Button Grid.Column="2"
+                            <Button Grid.Column="2"
                                     VerticalAlignment="Top"
                                     Style="{StaticResource MaterialDesignIconButton}"
                                     Content="{md:PackIcon Kind=Delete}" />
@@ -113,19 +132,13 @@
                     </StackPanel>
                 </md:Card>
             </DataTemplate>
-            
+
         </ResourceDictionary>
-        
-        
     </UserControl.Resources>
 
-    <Grid ScrollViewer.VerticalScrollBarVisibility="Auto">
-        <Grid Margin="20, 10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid Grid.Row="0" Margin="0 8">
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid Margin="20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
@@ -136,59 +149,36 @@
                     FontSize="24"
                     Padding="5,0"
                     Style="{StaticResource MaterialDesignHeadline3TextBlock}" />
-
-                <ListView
-                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                    ScrollViewer.CanContentScroll="False"
-                    Grid.Row="1" Grid.ColumnSpan="2"
-                    HorizontalContentAlignment="Stretch"
-                    ItemTemplate="{StaticResource StreamCardRec}"
-                    ItemsSource="{Binding ReceiverStreams}"
-                    SelectedItem="{Binding SelectedStream}"/>
-            </Grid>
-
-            <Grid Grid.Row="1" Margin="0 8">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <TextBlock
-                    HorizontalAlignment="Left"
-                    Text="SENDERS"
-                    FontSize="24"
-                    Padding="5,0"
-                    Style="{StaticResource MaterialDesignHeadline3TextBlock}" />
-                <ListView
-                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                    ScrollViewer.CanContentScroll="False"
-                    Grid.Row="1" Grid.ColumnSpan="2"
-                    HorizontalContentAlignment="Stretch"
+                <ItemsControl 
+                    ItemsSource="{Binding AllStreams}" 
                     ItemTemplate="{StaticResource StreamCardTemplate}"
-                    ItemsSource="{Binding SenderStreams}"
-                    SelectedItem="{Binding SelectedStream}"/>
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    Grid.Row="1"/>
             </Grid>
-        </Grid>
+        </ScrollViewer>
 
 
+        <!--#region Flotion Action Button-->
         <md:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}"
                      Foreground="{StaticResource MaterialDesignLightBackground}"
                      HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                     Height="50" Width="50" Margin="32">
+                     Height="45" Width="45" Margin="32">
             <StackPanel>
-                <Button x:Name="AddSenderButton"
-                        ToolTip="Add a new sender"
+                <Button x:Name="AddStreamButton"
+                        ToolTip="Add an existing stream"
                         ToolTipService.Placement="Left"
-                        Style="{StaticResource MaterialDesignFloatingActionLightButton}"
-                        Content="{md:PackIcon Kind=CloudUpload, Size=20}"
+                        Style="{StaticResource MaterialDesignFloatingActionButton}"
+                        Content="{md:PackIcon Kind=GetApp, Size=20}"
                         Foreground="{StaticResource MaterialDesignLightBackground}"
                         Height="40" Width="40" Margin="3"
                         Command="{Binding }" />
 
-                <Button x:Name="AddReceiverButton"
-                        ToolTip="Add a new receiver"
+                <Button x:Name="CreateStreamButton"
+                        ToolTip="Create a new stream"
                         ToolTipService.Placement="Left"
                         Style="{StaticResource MaterialDesignFloatingActionButton}"
-                        Content="{md:PackIcon Kind=CloudDownload, Size=20}"
+                        Content="{md:PackIcon Kind=Pencil, Size=20}"
                         Foreground="{StaticResource MaterialDesignLightBackground}"
                         Height="40" Width="40" Margin="3"
                         Command="{Binding }" />
@@ -203,7 +193,6 @@
                         CommandParameter="https://speckle.systems/docs/essentials/start"/>
             </StackPanel>
         </md:PopupBox>
-
+        <!--#endregion-->
     </Grid>
-
 </UserControl>

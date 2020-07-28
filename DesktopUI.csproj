@@ -37,6 +37,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Core">
+      <HintPath>..\Core\Core\bin\Release\netstandard2.0\Core.dll</HintPath>
+    </Reference>
     <Reference Include="Countly, Version=19.8.0.0, Culture=neutral, PublicKeyToken=30fd2b3d8bfe4882, processorArchitecture=MSIL">
       <HintPath>packages\Countly.19.8.0\lib\net40-client\Countly.dll</HintPath>
     </Reference>
@@ -183,6 +186,16 @@
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\SettingsViewModel.cs" />
+    <Compile Include="Streams\StreamInfoView.xaml.cs">
+      <DependentUpon>StreamInfoView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Streams\StreamsHomeView.xaml.cs">
+      <DependentUpon>StreamsHomeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Streams\StreamsHomeViewModel.cs" />
+    <Compile Include="Streams\StreamsListView.xaml.cs">
+      <DependentUpon>StreamsListView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Streams\StreamsRepository.cs" />
     <Compile Include="Streams\StreamsView.xaml.cs">
       <DependentUpon>StreamsView.xaml</DependentUpon>
@@ -221,6 +234,18 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Settings\SettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Streams\StreamInfoView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Streams\StreamsHomeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Streams\StreamsListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

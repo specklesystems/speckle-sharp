@@ -7,6 +7,8 @@
         xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
         xmlns:acct="clr-namespace:Speckle.DesktopUI.Accounts"
         xmlns:stream="clr-namespace:Speckle.DesktopUI.Streams"
+        xmlns:settings="clr-namespace:Speckle.DesktopUI.Settings"
+        xmlns:inbox="clr-namespace:Speckle.DesktopUI.Inbox"
         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Medium"
@@ -24,11 +26,20 @@
         <DataTemplate DataType="{x:Type stream:StreamsViewModel}">
             <stream:StreamsView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type stream:StreamsHomeViewModel}">
+            <stream:StreamsHomeView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type acct:AccountsViewModel}">
             <acct:AccountsView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type acct:AddAccountViewModel}">
             <acct:AddAccountView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type inbox:InboxViewModel}">
+            <inbox:InboxView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type settings:SettingsViewModel}">
+            <settings:SettingsView />
         </DataTemplate>
     </Window.Resources>
     

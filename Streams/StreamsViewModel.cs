@@ -69,7 +69,7 @@ namespace Speckle.DesktopUI.Streams
             {
                 new SpeckleStream()
                 {
-                    Name = "Random Stream To Send 👋",
+                    Name = "Random Stream here 👋",
                     Description = "This is a random stream I made today w0w",
                     Owner = "Izzy Lyseggen",
                     Private = false,
@@ -90,7 +90,7 @@ namespace Speckle.DesktopUI.Streams
             {
                 new SpeckleStream()
                 {
-                    Name = "Random Stream To Receive 🌊",
+                    Name = "Woop Cool Stream 🌊",
                     Description = "This is a random stream I made today w0w",
                     Owner = "Izzy Lyseggen",
                     Private = false,

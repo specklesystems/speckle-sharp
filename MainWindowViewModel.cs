@@ -74,7 +74,7 @@ namespace Speckle.DesktopUI
         {
             return new ObservableCollection<ViewItem>
             {
-                new ViewItem("Home", new StreamsViewModel()),
+                new ViewItem("Home", new StreamsHomeViewModel()),
                 new ViewItem("Inbox", new InboxViewModel()),
                 new ViewItem("Feed", new FeedViewModel()),
                 new ViewItem("Accounts", new AccountsViewModel()),
