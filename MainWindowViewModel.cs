@@ -18,13 +18,13 @@ namespace Speckle.DesktopUI
     {
         public MainWindowViewModel()
         {
-            SpeckleCore.SpeckleInitializer.Initialize();
+            OpenLinkCommand = new RelayCommand<string>(OnOpenLink);
 
             _viewItems = GetViewItems();
         }
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
-
+        public RelayCommand<string> OpenLinkCommand { get; set; }
         private ObservableCollection<ViewItem> _viewItems;
         public ObservableCollection<ViewItem> ViewItems
         {
@@ -80,6 +80,11 @@ namespace Speckle.DesktopUI
                 new ViewItem("Accounts", new AccountsViewModel()),
                 new ViewItem("Settings", new SettingsViewModel())
             };
+        }
+
+        private void OnOpenLink(string url)
+        {
+            Link.OpenInBrowser(url);
         }
     }
 }

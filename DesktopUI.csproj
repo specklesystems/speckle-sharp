@@ -197,10 +197,6 @@
       <DependentUpon>StreamsListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Streams\StreamsRepository.cs" />
-    <Compile Include="Streams\StreamsView.xaml.cs">
-      <DependentUpon>StreamsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Streams\StreamsViewModel.cs" />
     <Compile Include="Utils\BindableBase.cs" />
     <Compile Include="Utils\Link.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
@@ -249,10 +245,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Streams\StreamsView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -283,6 +275,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\s2block.ico" />
+    <Resource Include="Resources\s2logo.png" />
     <Content Include="Resources\s2logo.svg" />
   </ItemGroup>
   <ItemGroup />

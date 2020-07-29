@@ -9,15 +9,25 @@
              d:DesignHeight="450" d:DesignWidth="600">
     <Grid>
         <md:Transitioner SelectedIndex="{Binding SelectedSlide}" AutoApplyTransitionOrigins="True">
-
-            <md:TransitionerSlide>
-                <md:TransitionerSlide.ForwardWipe>
-                    <md:CircleWipe />
-                </md:TransitionerSlide.ForwardWipe>
+            <md:Transitioner.InputBindings>
+                <KeyBinding Key="Esc" Command="{x:Static md:Transitioner.MovePreviousCommand}" />
+            </md:Transitioner.InputBindings>
+            
+            <md:TransitionerSlide OpeningEffect="{md:TransitionEffect FadeIn}">
                 <local:StreamsListView />
             </md:TransitionerSlide>
 
-            <local:StreamInfoView/>
+            <md:TransitionerSlide 
+                Foreground="{DynamicResource MaterialDesignBody}"
+                Background="{DynamicResource MaterialDesignPaper}"
+                ClipToBounds="True"
+                Margin="0 10 0 0">
+                <md:TransitionerSlide.OpeningEffects>
+                    
+                </md:TransitionerSlide.OpeningEffects>
+                <local:StreamInfoView/>
+            </md:TransitionerSlide>
+            
         </md:Transitioner>
     </Grid>
 </UserControl>

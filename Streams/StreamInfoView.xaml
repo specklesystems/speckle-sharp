@@ -12,50 +12,115 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <DataTemplate x:Key="CollaboratorSmallCardTemplate">
+                <md:Card Width="120" Height="120" Padding="10" Margin="8">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="{Binding name}" TextAlignment="Center" />
+                        <TextBlock Grid.Row="1" Text="{Binding role}" TextAlignment="Center" />
+                    </Grid>
+                </md:Card>
+            </DataTemplate>
+
+            <DataTemplate x:Key="CollboratorChipTemplate">
+                <md:Chip Content="{Binding name}" Command="" ToolTip="{Binding role}" Margin="4">
+                    <md:Chip.Icon>
+                        <Image Source="../Resources/s2logo.png" />
+                    </md:Chip.Icon>
+                </md:Chip>
+            </DataTemplate>
+            
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+        <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <Grid Margin="20 0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock 
-                Grid.Column="0" Margin="20 20 20 0"
-                Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                Text="{Binding SelectedStream.name}"
-                FontSize="21"/>
-            <Button Grid.Column="2"
-                Margin="0"
-                Style="{StaticResource MaterialDesignIconForegroundButton}"
-                Content="{md:PackIcon Kind=Close}"
-                Command="{x:Static md:Transitioner.MovePreviousCommand}"/>
-        </Grid>
+                <Grid Grid.Row="0" Margin="-8 0 -8 8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button 
+                        Grid.Column="0"
+                        Style="{StaticResource MaterialDesignIconForegroundButton}"
+                        Height="35" Width="35"
+                        ToolTip="Back to home"
+                        Content="{md:PackIcon Kind=ArrowBack}"
+                        Command="{x:Static md:Transitioner.MovePreviousCommand}"/>
+                    <TextBlock 
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                        Text="{Binding SelectedStream.name}"
+                        FontSize="21"/>
+                    <Button 
+                        x:Name="ShareStreamButton" 
+                        Style="{StaticResource MaterialDesignIconButton}"
+                        Content="{md:PackIcon Kind=Send}"
+                        ToolTip="Share this stream!"
+                        Command="{Binding}"
+                        Grid.Column="2" />
+                </Grid>
 
-        
-        <StackPanel Grid.Row="1" Margin="20 4">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="{Binding SelectedStream.id}" Margin="0 4" />
-                
+                <StackPanel Grid.Row="1" >
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <md:Chip 
+                            Content="{Binding SelectedStream.id}"
+                            FontSize="13" FontFamily="Consolas"
+                            ToolTip="Stream ID" Margin="0 0 8 0" 
+                            Height="28" md:ButtonAssist.CornerRadius="14"/>
+                        <md:Chip 
+                            Grid.Column="1" 
+                            Content="{Binding SelectedBranch.name}" 
+                            FontSize="13" FontFamily="Consolas"
+                            ToolTip="Current branch"
+                            Height="28" md:ButtonAssist.CornerRadius="14"/>
+                    </Grid>
+                    <TextBlock Text="{Binding SelectedStream.description}" Margin="0 4"/>
+                    <TextBlock 
+                        Text="Collaborators" 
+                        Style="{StaticResource MaterialDesignHeadline4TextBlock}" 
+                        FontSize="18" Margin="0 24 0 8"/>
+                    
+                    <ItemsControl 
+                        ItemsSource="{Binding SelectedStream.collaborators}"
+                        ItemTemplate="{StaticResource CollboratorChipTemplate}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                    
+                    <TextBlock 
+                        Text="History" 
+                        Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                        FontSize="18" Margin="0 24 0 8" />
+                    <TextBlock Text="what is this, a commit history?" />
+                    <TextBlock Text="{Binding SelectedBranch.commits}" />
+                    <TextBlock Text="{Binding SelectedBranch.commits.totalCount}" />
+                </StackPanel>
             </Grid>
-            <TextBlock Text="{Binding SelectedStream.description}" Margin="0 4"/>
-            <TextBlock Style="{StaticResource MaterialDesignHeadline4TextBlock}" FontSize="18" Text="Collaborators" Margin="0 12 0 8"/>
-            <TextBlock Text="wow people who contribute" />
-            <TextBlock Style="{StaticResource MaterialDesignHeadline4TextBlock}" FontSize="18" Text="History" Margin="0 12 0 8" />
-            <TextBlock Text="what is this, a commit history?" />
-        </StackPanel>
+        </ScrollViewer>
+
         <!--#region Floating Action Button-->
         <md:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}"
                      Foreground="{StaticResource MaterialDesignLightBackground}"
@@ -95,8 +160,8 @@
                         Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
                         Content="{md:PackIcon Kind=QuestionMarkCircle, Size=20}"
                         Height="40" Width="40" Margin="3"
-                        Command="{Binding OpenLinkCommand}"
-                        CommandParameter="https://speckle.systems/docs/essentials/start"/>
+                        Command="{Binding DataContext.OpenLinkCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                        CommandParameter="https://speckle.systems/docs/essentials/introduction/streams"/>
             </StackPanel>
         </md:PopupBox>
         <!--#endregion-->

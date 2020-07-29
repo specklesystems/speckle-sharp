@@ -9,6 +9,7 @@
         xmlns:stream="clr-namespace:Speckle.DesktopUI.Streams"
         xmlns:settings="clr-namespace:Speckle.DesktopUI.Settings"
         xmlns:inbox="clr-namespace:Speckle.DesktopUI.Inbox"
+        xmlns:feed="clr-namespace:Speckle.DesktopUI.Feed"
         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Medium"
@@ -23,9 +24,6 @@
         <local:MainWindowViewModel />
     </Window.DataContext>
     <Window.Resources>
-        <DataTemplate DataType="{x:Type stream:StreamsViewModel}">
-            <stream:StreamsView />
-        </DataTemplate>
         <DataTemplate DataType="{x:Type stream:StreamsHomeViewModel}">
             <stream:StreamsHomeView />
         </DataTemplate>
@@ -37,6 +35,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type inbox:InboxViewModel}">
             <inbox:InboxView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type feed:FeedViewModel}">
+            <feed:FeedView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type settings:SettingsViewModel}">
             <settings:SettingsView />

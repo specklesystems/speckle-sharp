@@ -15,7 +15,7 @@
 
             <DataTemplate x:Key="StreamCardTemplate">
                 <md:Card Width="Auto" Padding="10" Margin="8">
-                    <Grid>
+                    <Grid Margin="8 0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -28,34 +28,29 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Button 
-                                    Grid.Column="0"
-                                    Style="{StaticResource MaterialDesignFloatingActionButton}"
-                                    Content="{md:PackIcon Kind=CloudUpload, Size=20}"
-                                    Foreground="{StaticResource MaterialDesignLightBackground}"
-                                    Width="32" Height="32" Margin="10" />
                             <TextBlock 
-                                    Grid.Column="1"
+                                    Grid.Column="0"
                                     Text="{Binding name}"
                                     TextWrapping="Wrap"
                                     FontSize="20"
                                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                                     VerticalAlignment="Center" />
                             <Button 
-                                    Grid.Column="2"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Top"
-                                    Style="{StaticResource MaterialDesignIconButton}"
-                                    Content="{md:PackIcon Kind=Send}"
-                                    Command="{Binding RemoveStream}" />
+                                Grid.Column="2"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Style="{StaticResource MaterialDesignIconButton}"
+                                Content="{md:PackIcon Kind=Send}"
+                                Command="{Binding }" />
                         </Grid>
 
-                        <Grid Grid.Row="1">
-                            <StackPanel Orientation="Horizontal" Margin="10, 5">
-                                <TextBlock Text="Server: " />
-                                <TextBlock Text="{Binding Account.ServerName}" />
-                                <TextBlock Text="Stream ID: " />
-                                <TextBlock Text="{Binding id}"  />
+                        <Grid Grid.Row="1" >
+                            <StackPanel Orientation="Horizontal" >
+                                <md:Chip 
+                                    Content="{Binding id}" 
+                                    FontSize="13" FontFamily="Consolas"
+                                    ToolTip="Stream ID"
+                                    Height="28" md:ButtonAssist.CornerRadius="14"/>
                             </StackPanel>
                         </Grid>
 
@@ -64,15 +59,17 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Margin="10,5" 
-                                       FontSize="10"
-                                       Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
-                            <Button Grid.Column="1"
-                                    Style="{StaticResource MaterialDesignFlatButton}"
-                                    Content="DETAILS"
-                                    Width="90"
-                                    Command="{Binding DataContext.ShowStreamInfoCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
-                                    CommandParameter="{Binding}"/>
+                            <TextBlock 
+                                Grid.Column="0" Margin="0 12" 
+                                FontSize="10"
+                                Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+                            <Button 
+                                Grid.Column="1"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                Content="DETAILS"
+                                Width="90"
+                                Command="{Binding DataContext.ShowStreamInfoCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                CommandParameter="{Binding}"/>
                         </Grid>
                     </Grid>
                 </md:Card>
@@ -147,7 +144,7 @@
                     HorizontalAlignment="Left"
                     Text="STREAMS"
                     FontSize="24"
-                    Padding="5,0"
+                    Padding="5 0 5 10"
                     Style="{StaticResource MaterialDesignHeadline3TextBlock}" />
                 <ItemsControl 
                     ItemsSource="{Binding AllStreams}" 
@@ -189,7 +186,7 @@
                         Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
                         Content="{md:PackIcon Kind=QuestionMarkCircle, Size=20}"
                         Height="40" Width="40" Margin="3"
-                        Command="{Binding OpenLinkCommand}"
+                        Command="{Binding DataContext.OpenLinkCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                         CommandParameter="https://speckle.systems/docs/essentials/start"/>
             </StackPanel>
         </md:PopupBox>

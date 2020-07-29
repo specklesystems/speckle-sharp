@@ -25,18 +25,19 @@ namespace Speckle.DesktopUI.Streams
             ShowStreamInfoCommand = new RelayCommand<Stream>(OnShowStreamInfo);
             
 
-            //Slides = new object[] { };
         }
 
         private StreamsRepository _repo;
 
         private ObservableCollection<Stream> _allStreams;
         private Stream _selectedStream;
+        private Branch _selectedBranch;
         private int _selectedSlide;
 
         private void OnShowStreamInfo(Stream stream)
         {
             SelectedStream = stream;
+            SelectedBranch = _repo.GetMasterBranch(stream.branches.items);
             SelectedSlide += 1; //TODO: this is sloppy lol fix this
         }
         public RelayCommand<Stream> ShowStreamInfoCommand { get; set; }
@@ -50,6 +51,12 @@ namespace Speckle.DesktopUI.Streams
         {
             get => _selectedStream;
             set => SetProperty(ref _selectedStream, value);
+        }
+
+        public Branch SelectedBranch
+        {
+            get => _selectedBranch;
+            set => SetProperty(ref _selectedBranch, value);
         }
 
         public int SelectedSlide
