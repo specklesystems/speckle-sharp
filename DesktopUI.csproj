@@ -186,6 +186,10 @@
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\SettingsViewModel.cs" />
+    <Compile Include="Streams\StreamCreateView.xaml.cs">
+      <DependentUpon>StreamCreateView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Streams\StreamCreateViewModel.cs" />
     <Compile Include="Streams\StreamInfoView.xaml.cs">
       <DependentUpon>StreamInfoView.xaml</DependentUpon>
     </Compile>
@@ -230,6 +234,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Settings\SettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Streams\StreamCreateView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -27,6 +27,9 @@
         <DataTemplate DataType="{x:Type stream:StreamsHomeViewModel}">
             <stream:StreamsHomeView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type stream:StreamCreateViewModel}">
+            <stream:StreamCreateView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type acct:AccountsViewModel}">
             <acct:AccountsView />
         </DataTemplate>
@@ -163,7 +166,7 @@
 
                     <!-- Page Content -->
                     <ContentControl Content="{Binding SelectedItem.Content, UpdateSourceTrigger=PropertyChanged}" />
-
+                    <md:Snackbar x:Name="MainWindowSnackbar" MessageQueue="{Binding MessageQueue}" />
                 </Grid>
             </DockPanel>
         </md:DrawerHost>

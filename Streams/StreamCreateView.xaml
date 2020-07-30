@@ -1,0 +1,73 @@
+﻿<UserControl x:Class="Speckle.DesktopUI.Streams.StreamCreateView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="400">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Width="400" >
+            <Button 
+                Style="{StaticResource MaterialDesignIconForegroundButton}"
+                Height="32" Width="32" Margin="12"
+                md:RippleAssist.IsDisabled="True"
+                VerticalAlignment="Top" HorizontalAlignment="Right"
+                ToolTip="Cancel"
+                Content="{md:PackIcon Kind=Close}"
+                Command="{x:Static md:DialogHost.CloseDialogCommand}"/>
+            <StackPanel Orientation="Vertical" Margin="24">
+                <TextBlock 
+                        Text="Create a new stream" 
+                        Style="{StaticResource MaterialDesignHeadline4TextBlock}" 
+                        FontSize="20" Margin="0 0 0 12"/>
+                
+                <TextBlock 
+                    TextWrapping="Wrap"
+                    Text="Send objects to Speckle by creating a new stream. You can send all selected objects in a quick way with default settings or customise the stream with advanced settings"
+                    Margin="0 0 0 8"/>
+
+                <TextBox
+                    x:Name="StreamNameInput"
+                    Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+                    Height="40"
+                    AcceptsReturn="False"
+                    md:HintAssist.Hint="Give your stream a name" 
+                    Margin="0 8"/>
+
+                <Grid Margin="0 8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="SimpleStreamButton"
+                            Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                            Content="{md:PackIcon Kind=ShareAll, Size=20}"
+                            Margin="8" Grid.Column="0"/>
+                    <TextBlock 
+                        Grid.Column="1" 
+                        Text="Send the currently selected objects to Speckle!" 
+                        TextWrapping="Wrap" VerticalAlignment="Center" Margin="8 0"/>
+                </Grid>
+                
+                <Grid Margin="0 8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="AdvancedStreamButton"
+                            Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                            Content="{md:PackIcon Kind=Tools, Size=20}"
+                            Margin="8" Grid.Column="0"/>
+                    <TextBlock 
+                        Grid.Column="1" 
+                        Text="Customise your stream settings before sending it to Speckle." 
+                        TextWrapping="Wrap" VerticalAlignment="Center" Margin="8 0"/>
+                </Grid>
+
+            </StackPanel>
+            
+        </Grid>
+    </ScrollViewer>
+</UserControl>
