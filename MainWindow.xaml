@@ -46,8 +46,8 @@
             <settings:SettingsView />
         </DataTemplate>
     </Window.Resources>
-    
-    <md:DialogHost>
+
+    <md:DialogHost DialogTheme="Inherit">
         <md:DrawerHost IsLeftDrawerOpen="{Binding ElementName=MenuToggleButton, Path=IsChecked}">
             <!--#region Left Navigation Drawer-->
             <md:DrawerHost.LeftDrawerContent>
