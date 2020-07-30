@@ -14,8 +14,8 @@
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate x:Key="StreamCardTemplate">
-                <md:Card Width="Auto" Padding="10" Margin="8">
-                    <Grid Margin="8 0">
+                <md:Card Width="Auto" Margin="8">
+                    <Grid Margin="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -39,9 +39,9 @@
                                 Grid.Column="2"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
-                                Style="{StaticResource MaterialDesignIconButton}"
-                                Content="{md:PackIcon Kind=Send}"
-                                Command="{Binding }" />
+                                Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                                Content="{md:PackIcon Kind=Send,Size=20}"
+                                Command="{Binding }" Margin="4"/>
                         </Grid>
 
                         <Grid Grid.Row="1" >

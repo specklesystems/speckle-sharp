@@ -24,8 +24,8 @@ namespace Speckle.DesktopUI
         {
             OpenLinkCommand = new RelayCommand<string>(OnOpenLink);
             CopyStreamCommand = new RelayCommand<string>(OnCopyStreamCommand);
-            _viewItems = GetViewItems();
-            _messageQueue = new SnackbarMessageQueue();
+            ViewItems = GetViewItems();
+            MessageQueue = new SnackbarMessageQueue();
         }
 
         public RelayCommand<string> OpenLinkCommand { get; set; }

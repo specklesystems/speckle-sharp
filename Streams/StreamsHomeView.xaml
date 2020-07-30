@@ -22,9 +22,6 @@
                 Background="{DynamicResource MaterialDesignPaper}"
                 ClipToBounds="True"
                 Margin="0 10 0 0">
-                <md:TransitionerSlide.OpeningEffects>
-                    
-                </md:TransitionerSlide.OpeningEffects>
                 <local:StreamInfoView/>
             </md:TransitionerSlide>
             
