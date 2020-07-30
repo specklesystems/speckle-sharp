@@ -1,4 +1,6 @@
-﻿using Speckle.DesktopUI.Accounts;
+﻿using MaterialDesignThemes.Wpf;
+using Microsoft.Xaml.Behaviors.Media;
+using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Feed;
 using Speckle.DesktopUI.Inbox;
 using Speckle.DesktopUI.Settings;
@@ -8,66 +10,54 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Speckle.DesktopUI
 {
-    class MainWindowViewModel : INotifyPropertyChanged
+    class MainWindowViewModel : BindableBase
     {
         public MainWindowViewModel()
         {
             OpenLinkCommand = new RelayCommand<string>(OnOpenLink);
-
+            CopyStreamCommand = new RelayCommand<string>(OnCopyStreamCommand);
             _viewItems = GetViewItems();
+            _messageQueue = new SnackbarMessageQueue();
         }
 
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
         public RelayCommand<string> OpenLinkCommand { get; set; }
+        public RelayCommand<string> CopyToClipboardCommand { get; set; }
+        public RelayCommand<string> CopyStreamCommand { get; set; }
+
         private ObservableCollection<ViewItem> _viewItems;
         public ObservableCollection<ViewItem> ViewItems
         {
             get => _viewItems;
-            set
-            {
-                _viewItems = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ViewItems)));
-            }
+            set => SetProperty(ref _viewItems, value);
         }
 
-        private BindableBase _currentViewModel;
-        public BindableBase CurrentViewModel
-        {
-            get => _currentViewModel;
-            set
-            {
-                _currentViewModel = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CurrentViewModel)));
-            }
-        }
         private ViewItem _selectedItem;
         public ViewItem SelectedItem
         {
             get => _selectedItem;
-            set
-            {
-                if (value == null || value.Equals(_selectedItem)) return;
-
-                _selectedItem = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItem)));
-            }
+            set => SetProperty(ref _selectedItem, value);
         }
         private int _selectedIndex;
 
         public int SelectedIndex
         {
             get => _selectedIndex;
-            set
-            {
-                _selectedIndex = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedIndex)));
-            }
+            set => SetProperty(ref _selectedIndex, value);
+        }
+
+        private SnackbarMessageQueue _messageQueue;
+        public SnackbarMessageQueue MessageQueue
+        {
+            get => _messageQueue;
+            set => SetProperty(ref _messageQueue, value);
         }
 
         private ObservableCollection<ViewItem> GetViewItems()
@@ -85,6 +75,20 @@ namespace Speckle.DesktopUI
         private void OnOpenLink(string url)
         {
             Link.OpenInBrowser(url);
+        }
+
+        private void OnCopyStreamCommand(string text)
+        {
+            if (text != null)
+            {
+                CopyAndSnackbar(text, "Stream ID copied to clipboard!");
+            }
+        }
+
+        private void CopyAndSnackbar(string text, string message)
+        {
+            Clipboard.SetText(text);
+            MessageQueue.Enqueue(message);
         }
     }
 }

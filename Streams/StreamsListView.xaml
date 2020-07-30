@@ -47,7 +47,9 @@
                         <Grid Grid.Row="1" >
                             <StackPanel Orientation="Horizontal" >
                                 <md:Chip 
-                                    Content="{Binding id}" 
+                                    Content="{Binding id}"
+                                    Command="{Binding DataContext.CopyStreamCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                    CommandParameter="{Binding id}"
                                     FontSize="13" FontFamily="Consolas"
                                     ToolTip="Stream ID"
                                     Height="28" md:ButtonAssist.CornerRadius="14"/>
@@ -178,7 +180,11 @@
                         Content="{md:PackIcon Kind=Pencil, Size=20}"
                         Foreground="{StaticResource MaterialDesignLightBackground}"
                         Height="40" Width="40" Margin="3"
-                        Command="{Binding }" />
+                        Command="{x:Static md:DialogHost.OpenDialogCommand}">
+                    <Button.CommandParameter>
+                        <local:StreamCreateViewModel />
+                    </Button.CommandParameter>
+                </Button>
 
                 <Button x:Name="HelpButton"
                         ToolTip="Confused? Have a look at the docs!"

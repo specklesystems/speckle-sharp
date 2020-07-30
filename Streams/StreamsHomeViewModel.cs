@@ -23,8 +23,6 @@ namespace Speckle.DesktopUI.Streams
             // do this properly
 #endif
             ShowStreamInfoCommand = new RelayCommand<Stream>(OnShowStreamInfo);
-            
-
         }
 
         private StreamsRepository _repo;

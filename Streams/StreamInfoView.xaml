@@ -84,6 +84,8 @@
                         </Grid.ColumnDefinitions>
                         <md:Chip 
                             Content="{Binding SelectedStream.id}"
+                            Command="{Binding DataContext.CopyStreamCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                            CommandParameter="{Binding SelectedStream.id}"
                             FontSize="13" FontFamily="Consolas"
                             ToolTip="Stream ID" Margin="0 0 8 0" 
                             Height="28" md:ButtonAssist.CornerRadius="14"/>
