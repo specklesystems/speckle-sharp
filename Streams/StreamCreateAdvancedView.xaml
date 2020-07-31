@@ -28,12 +28,20 @@
                 x:Name="AccountSelectionBox"
                 md:HintAssist.Hint="Account"
                 Width="Auto" Margin="0 12"
+                IsEnabled="True"
                 ItemsSource="{Binding Source={StaticResource AccountsViewModel}, Path=AllAccounts}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding userInfo.email}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <ComboBox
+                md:HintAssist.Hint="Collaborators"
+                md:HintAssist.HintOpacity=".26"
+                IsEditable="True"
+                IsEnabled="True">
             </ComboBox>
 
             <Grid Margin="0 16">
