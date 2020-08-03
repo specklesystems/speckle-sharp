@@ -15,9 +15,19 @@ namespace Speckle.DesktopUI.Streams
     class StreamsRepository
     {
         private AccountsRepository _acctRepo = new AccountsRepository();
-        private Remote _remote = new Remote(AccountManager.GetDefaultAccount());
+        private Remote _remote
+        {
+          get
+          {
+            var defaultAccount = AccountManager.GetDefaultAccount();
+            if (defaultAccount != null)
+              return new Remote(defaultAccount);
+            return new Remote();
+          }
 
-        public Branch GetMasterBranch(List<Branch> branches)
+        }
+
+    public Branch GetMasterBranch(List<Branch> branches)
         {
             Branch master = branches.Find(branch => branch.name == "master");
             return master;
