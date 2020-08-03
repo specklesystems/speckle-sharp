@@ -91,9 +91,9 @@ namespace Speckle.DesktopUI.Accounts
             AccountManager.SetDefaultAccount(account.id);
         }
 
-        public Task<Account> AuthenticateAccount(string serverUrl)
+        public async Task<Account> AuthenticateAccount(string serverUrl)
         {
-            return AccountManager.AuthenticateConnectors(serverUrl);
+            return await AccountManager.AuthenticateConnectors(serverUrl);
         }
     }
 }
