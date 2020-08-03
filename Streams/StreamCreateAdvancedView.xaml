@@ -29,6 +29,7 @@
                 md:HintAssist.Hint="Account"
                 Width="Auto" Margin="0 12"
                 IsEnabled="True"
+                SelectedItem="{Binding AccountToSendFrom}"
                 ItemsSource="{Binding Source={StaticResource AccountsViewModel}, Path=AllAccounts}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -57,7 +58,7 @@
                     CommandParameter="0"
                     Grid.Column="0" HorizontalAlignment="Center" />
                 <Button
-                    x:Name="SendStreamButton"
+                    x:Name="SendAdvancedStreamButton"
                     Style="{StaticResource MaterialDesignFlatMidBgButton}"
                     Content="SEND"
                     Command="{Binding}"

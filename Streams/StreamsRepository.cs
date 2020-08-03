@@ -4,19 +4,35 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Speckle.Core;
-using Speckle.Credentials;
 using Speckle.Core.Api.GqlModels;
 using System.Collections.ObjectModel;
+using Speckle.Core.Api;
+using Speckle.DesktopUI.Accounts;
+using Speckle.Core.Credentials;
 
 namespace Speckle.DesktopUI.Streams
 {
     class StreamsRepository
     {
+        private AccountsRepository _acctRepo = new AccountsRepository();
+        private Remote _remote = new Remote(AccountManager.GetDefaultAccount());
 
         public Branch GetMasterBranch(List<Branch> branches)
         {
             Branch master = branches.Find(branch => branch.name == "master");
             return master;
+        }
+
+        public Task<string> CreateStream(Stream stream)
+        {
+            var streamInput = new StreamCreateInput()
+            {
+                name = stream.name,
+                description = stream.description,
+                isPublic = stream.isPublic
+            };
+
+            return _remote.StreamCreate(streamInput);
         }
 
         public ObservableCollection<Stream> LoadTestStreams()

@@ -1,5 +1,7 @@
 ﻿using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api.GqlModels;
+using Speckle.Core.Credentials;
+using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
 using System;
 using System.Collections.Generic;
@@ -17,20 +19,32 @@ namespace Speckle.DesktopUI.Streams
         public StreamCreateViewModel()
         {
             SelectedSlide = 0;
+            StreamToCreate = new Stream();
 
+            AccountToSendFrom = _acctRepo.GetDefault();
             MessageQueue = new SnackbarMessageQueue();
-            ChooseSimpleCommand = new RelayCommand<string>(OnChooseSimple);
-            ChooseAdvancedCommand = new RelayCommand<string>(OnChooseAdvanced);
+            ContinueStreamCreatecommand = new RelayCommand<string>(OnContinueStreamCreate);
             ChangeSlideCommand = new RelayCommand<string>(OnChangeSlide);
             CloseDialogCommand = new RelayCommand<string>(OnCloseDialog);
+            CreateStreamCommand = new RelayCommand<string>(OnCreateStream);
         }
 
+        private StreamsRepository _repo = new StreamsRepository();
+        private AccountsRepository _acctRepo = new AccountsRepository();
+        
         private Stream _streamToCreate;
         public Stream StreamToCreate
         {
             get => _streamToCreate;
             set => SetProperty(ref _streamToCreate, value);
         }
+        private Account _accountToSendFrom;
+        public Account AccountToSendFrom
+        {
+            get => _accountToSendFrom;
+            set => SetProperty(ref _accountToSendFrom, value);
+        }
+
         private int _selectedSlide;
         public int SelectedSlide
         {
@@ -43,54 +57,43 @@ namespace Speckle.DesktopUI.Streams
             get => _messageQueue;
             set => SetProperty(ref _messageQueue, value);
         }
-        public RelayCommand<string> ChooseAdvancedCommand { get; set; }
-        private void OnChooseAdvanced(string name)
+
+        public RelayCommand<string> ContinueStreamCreatecommand { get; set; }
+        private void OnContinueStreamCreate(string slideIndex)
         {
-            if(name == "")
+            if (StreamToCreate.name == null || StreamToCreate.name.Length < 2)
             {
                 MessageQueue.Enqueue("Please choose a name for your stream!");
                 return;
             }
-            StreamToCreate = new Stream
-            {
-                name = name
-            };
-            SelectedSlide = 2;
-        }
-        public RelayCommand<string> ChooseSimpleCommand { get; set; }
-        private void OnChooseSimple(string name)
-        {
-            if (name == "")
-            {
-                MessageQueue.Enqueue("Please choose a name for your stream!");
-                return;
-            }
-            StreamToCreate = new Stream
-            {
-                name = name
-            };
-            SelectedSlide = 1;
+            SelectedSlide = Int32.Parse(slideIndex);
+
         }
         public RelayCommand<string> ChangeSlideCommand { get; set; }
         public RelayCommand<string> CloseDialogCommand { get; set; }
-        private void OnChangeSlide(string slide)
+        private void OnChangeSlide(string slideIndex)
         {
-            int index = -1;
-            try
-            {
-                int.TryParse(slide, out index);
-                SelectedSlide = index;
-            }
-            catch
-            {
-                return;
-            }
+            SelectedSlide = Int32.Parse(slideIndex);
         }
 
         private void OnCloseDialog(string arg)
         {
             DialogHost.CloseDialogCommand.Execute(null, null);
             SelectedSlide = 0;
+            StreamToCreate = new Stream();
+        }
+        public RelayCommand<string> CreateStreamCommand { get; set; }
+        private async void OnCreateStream(string arg)
+        {
+            try
+            {
+                var res = await _repo.CreateStream(StreamToCreate);
+            }
+            catch (Exception e)
+            {
+                MessageQueue.Enqueue($"Error: {e.Message}");
+            }
+            
         }
     }
 }
