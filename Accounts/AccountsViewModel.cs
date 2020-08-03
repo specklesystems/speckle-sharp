@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Windows;
-using Speckle.Credentials;
+using Speckle.Core.Credentials;
 
 namespace Speckle.DesktopUI.Accounts
 {

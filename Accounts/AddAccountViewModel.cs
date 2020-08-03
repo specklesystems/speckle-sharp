@@ -1,5 +1,4 @@
 ﻿using MaterialDesignThemes.Wpf;
-using Speckle.Credentials;
 using Speckle.DesktopUI.Utils;
 using System;
 using System.Collections.Generic;

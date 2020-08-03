@@ -1,4 +1,4 @@
-﻿using Speckle.Credentials;
+﻿using Speckle.Core.Credentials;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -42,7 +42,7 @@ namespace Speckle.DesktopUI.Accounts
 
         public ObservableCollection<Account> LoadAccounts()
         {
-            return new ObservableCollection<Account>(AccountManager.GetAllAccounts());
+            return new ObservableCollection<Account>(AccountManager.GetAccounts());
         }
 
         public ObservableCollection<Account> LoadNonDefaultAccounts()
@@ -75,7 +75,7 @@ namespace Speckle.DesktopUI.Accounts
 
         public Task<Account> AuthenticateAccount(string serverUrl)
         {
-            return AccountManager.Authenticate(serverUrl);
+            return AccountManager.AuthenticateConnectors(serverUrl);
         }
     }
 }
