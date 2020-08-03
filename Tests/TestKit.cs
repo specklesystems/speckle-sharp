@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using Speckle.Kits;
-using Speckle.Models;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace Tests
 {
@@ -39,7 +39,7 @@ namespace Tests
 
     public string Author => "Dimitrie";
 
-    public string WebsiteOrEmail => "hello@speckle.works";
+    public string WebsiteOrEmail => "hello@Speckle.Core.works";
 
     public TestKit() { }
 
@@ -129,7 +129,7 @@ namespace Tests
     public TableLegFixture() { }
   }
 
-  // Speckle.Elements
+  // Speckle.Core.Elements
   public class Point : Base
   {
     public double X { get; set; }

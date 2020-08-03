@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using NUnit.Framework;
-using Speckle.Credentials;
+using Speckle.Core.Credentials;
 
 namespace Tests
 {
@@ -57,14 +57,14 @@ namespace Tests
     [Test]
     public void GetAllAccounts()
     {
-      var accs = AccountManager.GetAllAccounts();
+      var accs = AccountManager.GetAccounts();
       Assert.GreaterOrEqual(accs.Count(), 2); // Tests are adding two accounts, you might have extra accounts on your machine when testing :D 
     }
 
     [Test]
     public void GetAccountsForServer()
     {
-      var accs = AccountManager.GetServerAccounts("baz").ToList();
+      var accs = AccountManager.GetAccounts("baz").ToList();
 
       Assert.AreEqual(1, accs.Count);
       Assert.AreEqual("qux", accs[0].serverInfo.company);

@@ -1,0 +1,184 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using Speckle.Core.Models;
+
+namespace Speckle.Core.Kits
+{
+
+  public static class KitManager
+  {
+    public static readonly string KitsFolder = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "Speckle", "Kits");
+
+    public static readonly AssemblyName SpeckleAssemblyName = typeof(Base).GetTypeInfo().Assembly.GetName();
+
+    private static Dictionary<string,ISpeckleKit> _SpeckleKits = new Dictionary<string, ISpeckleKit>();
+
+    private static List<Type> _AvailableTypes = new List<Type>();
+
+    private static bool _initialized = false;
+
+    //TODO: get kit by path?
+    public static bool HasKit(string assemblyFullName)
+    {
+      Initialize();
+      return _SpeckleKits.ContainsKey(assemblyFullName);
+      
+    }
+    public static ISpeckleKit GetKit(string assemblyFullName)
+    {
+      Initialize();
+      return _SpeckleKits[assemblyFullName];
+
+    }
+    public static IEnumerable<ISpeckleKit> Kits
+    {
+      get
+      {
+        Initialize();
+        return _SpeckleKits.Values;
+      }
+    }
+
+    public static IEnumerable<Type> Types
+    {
+      get
+      {
+        Initialize();
+        return _AvailableTypes;
+      }
+    }
+    private static void Initialize()
+    {
+      if (!_initialized)
+      {
+        Load();
+        _initialized = true;
+      }
+    }
+    private static void Load()
+    {
+      GetLoadedSpeckleReferencingAssemblies();
+      LoadSpeckleReferencingAssemblies();
+
+      _AvailableTypes = _SpeckleKits.SelectMany(kit => kit.Value.Types).ToList();
+    }
+
+    private static void GetLoadedSpeckleReferencingAssemblies()
+    {
+      foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+      {
+        if (!assembly.IsDynamic && !assembly.ReflectionOnly)
+        {
+          var kitClass = GetKitClass(assembly);
+          if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
+          {
+            if (!_SpeckleKits.ContainsKey(assembly.FullName))
+              _SpeckleKits.Add(assembly.FullName, Activator.CreateInstance(kitClass) as ISpeckleKit);
+          }
+        }
+      }
+    }
+
+    private static void LoadSpeckleReferencingAssemblies()
+    {
+      if (!Directory.Exists(KitsFolder))
+        return;
+
+      var assemblies = new HashSet<Assembly>();
+      var directories = Directory.GetDirectories(KitsFolder);
+      var currDomain = AppDomain.CurrentDomain;
+
+      foreach (var directory in directories)
+      {
+        foreach (var assemblyPath in System.IO.Directory.EnumerateFiles(directory, "*.dll"))
+        {
+          var unloadedAssemblyName = SafeGetAssemblyName(assemblyPath);
+
+          if (unloadedAssemblyName == null)
+            continue;
+
+          var assembly = Assembly.LoadFrom(assemblyPath);
+          var kitClass = GetKitClass(assembly);
+          if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
+          {
+            if (!_SpeckleKits.ContainsKey(assembly.FullName))
+              _SpeckleKits.Add(assembly.FullName, Activator.CreateInstance(kitClass) as ISpeckleKit);
+          }
+        }
+      }
+    }
+
+    private static Type GetKitClass(Assembly assembly)
+    {
+      var kitClass = assembly.GetTypes().FirstOrDefault(type =>
+      {
+        return type
+        .GetInterfaces()
+        .FirstOrDefault(iface =>
+        {
+          return iface.Name == typeof(Speckle.Core.Kits.ISpeckleKit).Name;
+        }) != null;
+      });
+
+      return kitClass;
+    }
+
+    private static Assembly SafeLoadAssembly(AppDomain domain, AssemblyName assemblyName)
+    {
+      try
+      {
+        return domain.Load(assemblyName);
+      }
+      catch
+      {
+        return null;
+      }
+    }
+
+    private static AssemblyName SafeGetAssemblyName(string assemblyPath)
+    {
+      try
+      {
+        return AssemblyName.GetAssemblyName(assemblyPath);
+      }
+      catch
+      {
+        return null;
+      }
+    }
+
+  }
+
+  public static class AssemblyExtensions
+  {
+    /// <summary>
+    /// Indicates if a given assembly references another which is identified by its name.
+    /// </summary>
+    /// <param name="assembly">The assembly which will be probed.</param>
+    /// <param name="referenceName">The reference assembly name.</param>
+    /// <returns>A boolean value indicating if there is a reference.</returns>
+    public static bool IsReferencing(this Assembly assembly, AssemblyName referenceName)
+    {
+      if (AssemblyName.ReferenceMatchesDefinition(assembly.GetName(), referenceName))
+      {
+        return true;
+      }
+
+      foreach (var referencedAssemblyName in assembly.GetReferencedAssemblies())
+      {
+        if (AssemblyName.ReferenceMatchesDefinition(referencedAssemblyName, referenceName))
+        {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+  }
+}

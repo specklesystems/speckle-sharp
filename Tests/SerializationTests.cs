@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Speckle.Transports;
+using Speckle.Core.Transports;
 using NUnit.Framework;
-using Speckle.Models;
-using Speckle.Core;
+using Speckle.Core.Models;
+using Speckle.Core.Api;
 
 namespace Tests
 {

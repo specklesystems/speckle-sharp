@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Speckle\Speckle.csproj" />
-    <ProjectReference Include="..\Tests\Tests.csproj" />
+    <ProjectReference Include="..\Tests\TestsUnit.csproj" />
+    <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
 </Project>

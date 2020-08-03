@@ -4,13 +4,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Speckle;
-using Speckle.Core;
-using Speckle.Credentials;
-using Speckle.Models;
-using Speckle.Serialisation;
-using Speckle.Transports;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
+using Speckle.Core.Models;
+using Speckle.Core.Transports;
 using Tests;
 
 /// <summary>
@@ -24,7 +21,7 @@ namespace ConsoleSketches
     {
       Console.Clear();
 
-      //await PushAndPullToRemote(10_000);
+     // await PushAndPullToRemote(1_000);
 
       Console.Clear();
 
@@ -47,15 +44,15 @@ namespace ConsoleSketches
     public static async Task Auth()
     {
       // First log in (uncomment the two lines below to simulate a login/register)
-      //var myAccount = await AccountManager.Authenticate("http://localhost:3000");
-      //Console.WriteLine($"Succesfully added/updated account server: {myAccount.serverInfo.url} user email: {myAccount.userInfo.email}");
+      var myAccount = await AccountManager.AuthenticateConnectors("http://localhost:3000");
+      Console.WriteLine($"Succesfully added/updated account server: {myAccount.serverInfo.url} user email: {myAccount.userInfo.email}");
 
       //// Second log in (make sure you use two different email addresses :D )
       //var myAccount2 = await AccountManager.Authenticate("http://localhost:3000");
 
       //AccountManager.SetDefaultAccount(myAccount2.id);
 
-      var accs = AccountManager.GetAllAccounts().ToList();
+      var accs = AccountManager.GetAccounts().ToList();
       var deff = AccountManager.GetDefaultAccount();
 
       //Console.WriteLine($"There are {accs.Count} accounts. The default one is {deff.id} {deff.userInfo.email}");
@@ -103,7 +100,7 @@ namespace ConsoleSketches
       Console.Clear();
       Console.WriteLine("Done generating objects.");
 
-      var myRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var myRemote = new Remote(AccountManager.GetDefaultAccount());
 
       var res = await Operations.Upload(
         @object: new Commit() { Objects = objs },
@@ -144,7 +141,7 @@ namespace ConsoleSketches
         myMesh.Faces.AddRange(new int[] { i, i + i, i + 3, 23 + i, 100 % i });
       }
 
-      var myRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+      var myRemote = new Remote(AccountManager.GetDefaultAccount());
 
       var res = await Operations.Upload(
         @object: myMesh,
@@ -191,7 +188,7 @@ namespace ConsoleSketches
       var funkyStructure = new Base();
       ((dynamic)funkyStructure)["@LolLayer"] = objects.GetRange(0, 30);
       ((dynamic)funkyStructure)["@WooTLayer"] = objects.GetRange(30, 100);
-      ((dynamic)funkyStructure)["@FTW"] = objects.GetRange(100, objects.Count - 1);
+      ((dynamic)funkyStructure)["@FTW"] = objects.GetRange(130, objects.Count - 130 - 1);
 
 
       var step = sw.ElapsedMilliseconds;
@@ -213,9 +210,12 @@ namespace ConsoleSketches
 
       // Finally, let's push the commit object. The push action returns the object's id (hash!) that you can use downstream.
 
+
       // Create some remotes
-      var myRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
-      var mySecondRemote = new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" };
+
+      var myRemote = new Remote(AccountManager.GetDefaultAccount());
+
+      var mySecondRemote = new Remote(AccountManager.GetDefaultAccount());
 
       var res = await Operations.Upload(
         @object: funkyStructure,
@@ -232,7 +232,7 @@ namespace ConsoleSketches
       Console.Clear();
 
       // Time for pulling an object out. 
-      var res2 = await Operations.Download(res, remote: new Remote() { ApiToken = "lol", ServerUrl = "http://localhost:3000", StreamId = "lol" }, onProgressAction: dict =>
+      var res2 = await Operations.Download(res, remote: myRemote, onProgressAction: dict =>
       {
         Console.CursorLeft = 0;
         Console.CursorTop = 0;
@@ -259,7 +259,7 @@ namespace ConsoleSketches
 
       for (int i = 0; i < numObjects; i++)
       {
-        //var hash = Speckle.Models.Utilities.hashString($"hash-{i}-{rand.NextDouble()}");
+        //var hash = Speckle.Core.Models.Utilities.hashString($"hash-{i}-{rand.NextDouble()}");
         transport.SaveObject($"hash-{i}-{rand.NextDouble()}", $"content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}content-longer-maye-it's-ok-{i}");
       }
 
