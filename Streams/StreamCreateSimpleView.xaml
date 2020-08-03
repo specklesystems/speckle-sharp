@@ -30,10 +30,10 @@
                     CommandParameter="0"
                     Grid.Column="0" HorizontalAlignment="Center" />
                 <Button
-                    x:Name="SendStreamButton"
+                    x:Name="SendSimpleStreamButton"
                     Style="{StaticResource MaterialDesignFlatMidBgButton}"
                     Content="SEND"
-                    Command="{Binding}"
+                    Command="{Binding CreateStreamCommand}"
                     CommandParameter=""
                     Grid.Column="1" HorizontalAlignment="Center" />
             </Grid>

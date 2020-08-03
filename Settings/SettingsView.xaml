@@ -3,14 +3,26 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:acct="clr-namespace:Speckle.DesktopUI.Accounts"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:Speckle.DesktopUI.Settings"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <StackPanel>
-            <TextBlock Text="Settings View"/>
-            <TextBlock Text="{Binding}"/>
-        </StackPanel>
-    </Grid>
+             d:DesignHeight="450" d:DesignWidth="400">
+    <UserControl.Resources>
+        
+    </UserControl.Resources>
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="20">
+            <StackPanel>
+                <TextBlock
+                    HorizontalAlignment="Left"
+                    Text="SETTINGS"
+                    FontSize="24"
+                    Margin="0 0 0 12"
+                    Style="{StaticResource MaterialDesignHeadline3TextBlock}" />
+                <TextBlock Text="{Binding DataContext.ViewItems, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
 </UserControl>
