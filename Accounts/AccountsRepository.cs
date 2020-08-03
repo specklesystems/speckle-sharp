@@ -13,6 +13,24 @@ namespace Speckle.DesktopUI.Accounts
         public ObservableCollection<Account> LoadTestAccounts()
         {
             List<Account> TestAccounts = new List<Account>(){
+                new Account()
+                {
+                    isDefault = true,
+                    serverInfo = new ServerInfo()
+                    {
+                        company = "Speckle",
+                        name = "Hella Cool Server",
+                        url = "http://localhost:3000/"
+                    },
+                    userInfo = new UserInfo()
+                    {
+                        name = Environment.UserName,
+                        company = "Testing Desktop UI Inc",
+                        id = "user123",
+                        email = "testing@speckle.systems"
+                    },
+                    token = Environment.GetEnvironmentVariable("speckle2_dev_token")
+                },
                 new Account
                 {
                     refreshToken = "fresh",
