@@ -12,42 +12,42 @@ using Speckle.Core.Credentials;
 
 namespace Speckle.DesktopUI.Streams
 {
-    class StreamsRepository
+  class StreamsRepository
+  {
+    private AccountsRepository _acctRepo = new AccountsRepository();
+    private Remote _remote
     {
-        private AccountsRepository _acctRepo = new AccountsRepository();
-        private Remote _remote
-        {
-          get
-          {
-            var defaultAccount = AccountManager.GetDefaultAccount();
-            if (defaultAccount != null)
-              return new Remote(defaultAccount);
-            return new Remote();
-          }
+      get
+      {
+        var defaultAccount = AccountManager.GetDefaultAccount();
+        if (defaultAccount != null)
+          return new Remote(defaultAccount);
+        return new Remote();
+      }
 
-        }
+    }
 
     public Branch GetMasterBranch(List<Branch> branches)
-        {
-            Branch master = branches.Find(branch => branch.name == "master");
-            return master;
-        }
+    {
+      Branch master = branches.Find(branch => branch.name == "master");
+      return master;
+    }
 
-        public Task<string> CreateStream(Stream stream)
-        {
-            var streamInput = new StreamCreateInput()
-            {
-                name = stream.name,
-                description = stream.description,
-                isPublic = stream.isPublic
-            };
+    public Task<string> CreateStream(Stream stream)
+    {
+      var streamInput = new StreamCreateInput()
+      {
+        name = stream.name,
+        description = stream.description,
+        isPublic = stream.isPublic
+      };
 
-            return _remote.StreamCreate(streamInput);
-        }
+      return _remote.StreamCreate(streamInput);
+    }
 
-        public ObservableCollection<Stream> LoadTestStreams()
-        {
-            var collabs = new List<Collaborator>()
+    public ObservableCollection<Stream> LoadTestStreams()
+    {
+      var collabs = new List<Collaborator>()
             {
                 new Collaborator
                 {
@@ -68,10 +68,10 @@ namespace Speckle.DesktopUI.Streams
                     role = "stream:contributor"
                 }
             };
-            var branches = new Branches()
-            {
-                totalCount = 2,
-                items = new List<Branch>()
+      var branches = new Branches()
+      {
+        totalCount = 2,
+        items = new List<Branch>()
                         {
                             new Branch()
                             {
@@ -88,9 +88,9 @@ namespace Speckle.DesktopUI.Streams
                                 name = "dev"
                             }
                         }
-            };
+      };
 
-            var TestStreams = new ObservableCollection<Stream>()
+      var TestStreams = new ObservableCollection<Stream>()
             {
                 new Stream
                 {
@@ -121,8 +121,8 @@ namespace Speckle.DesktopUI.Streams
                 },
             };
 
-            return TestStreams;
-        }
-
+      return TestStreams;
     }
+
+  }
 }

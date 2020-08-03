@@ -54,6 +54,8 @@ namespace Speckle.DesktopUI.Accounts
             }
 
             SubmitServerLoading = false;
+
+      //TODO: close window
         }
     }
 }

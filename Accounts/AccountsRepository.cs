@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace Speckle.DesktopUI.Accounts
 {
-    class AccountsRepository
+  class AccountsRepository
+  {
+    public ObservableCollection<Account> LoadTestAccounts()
     {
-        public ObservableCollection<Account> LoadTestAccounts()
-        {
-            List<Account> TestAccounts = new List<Account>(){
+      List<Account> TestAccounts = new List<Account>(){
                 new Account()
                 {
                     isDefault = true,
@@ -53,47 +53,47 @@ namespace Speckle.DesktopUI.Accounts
                     userInfo = new UserInfo { name = "dangle", email = "me@dope.gov" }
                 }
             };
-            TestAccounts.ForEach(acc => AccountManager.UpdateOrSaveAccount(acc));
+      TestAccounts.ForEach(acc => AccountManager.UpdateOrSaveAccount(acc));
 
-            return LoadAccounts();
-        }
-
-        public ObservableCollection<Account> LoadAccounts()
-        {
-            return new ObservableCollection<Account>(AccountManager.GetAccounts());
-        }
-
-        public ObservableCollection<Account> LoadNonDefaultAccounts()
-        {
-            var accounts = new ObservableCollection<Account>();
-            foreach (var acc in LoadAccounts())
-            {
-                if (!acc.isDefault)
-                {
-                    accounts.Add(acc);
-                }
-            }
-            return accounts;
-        }
-
-        public void RemoveAccount(string id)
-        {
-            AccountManager.DeleteLocalAccount(id);
-        }
-
-        public Account GetDefault()
-        {
-            return AccountManager.GetDefaultAccount();
-        }
-
-        public void SetDefault(Account account)
-        {
-            AccountManager.SetDefaultAccount(account.id);
-        }
-
-        public async Task<Account> AuthenticateAccount(string serverUrl)
-        {
-            return await AccountManager.AuthenticateConnectors(serverUrl);
-        }
+      return LoadAccounts();
     }
+
+    public ObservableCollection<Account> LoadAccounts()
+    {
+      return new ObservableCollection<Account>(AccountManager.GetAccounts());
+    }
+
+    public ObservableCollection<Account> LoadNonDefaultAccounts()
+    {
+      var accounts = new ObservableCollection<Account>();
+      foreach (var acc in LoadAccounts())
+      {
+        if (!acc.isDefault)
+        {
+          accounts.Add(acc);
+        }
+      }
+      return accounts;
+    }
+
+    public void RemoveAccount(string id)
+    {
+      AccountManager.DeleteLocalAccount(id);
+    }
+
+    public Account GetDefault()
+    {
+      return AccountManager.GetDefaultAccount();
+    }
+
+    public void SetDefault(Account account)
+    {
+      AccountManager.SetDefaultAccount(account.id);
+    }
+
+    public async Task<Account> AuthenticateAccount(string serverUrl)
+    {
+      return await AccountManager.AuthenticateConnectors(serverUrl);
+    }
+  }
 }
