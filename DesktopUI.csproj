@@ -59,8 +59,9 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Core">
-      <HintPath>..\Core\Core\bin\Release\netstandard2.0\Core.dll</HintPath>
+    <Reference Include="Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Core\Core\bin\Debug\netstandard2.0\Core.dll</HintPath>
     </Reference>
     <Reference Include="Countly, Version=19.8.0.0, Culture=neutral, PublicKeyToken=30fd2b3d8bfe4882, processorArchitecture=MSIL">
       <HintPath>packages\Countly.19.8.0\lib\net40-client\Countly.dll</HintPath>
@@ -103,12 +104,6 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Speckle">
-      <HintPath>..\Core\Speckle\bin\Release\netstandard2.0\Speckle.dll</HintPath>
-    </Reference>
-    <Reference Include="SpeckleCore, Version=1.8.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\SpeckleCore.1.8.2.456\lib\net45\SpeckleCore.dll</HintPath>
     </Reference>
     <Reference Include="SQLite-net, Version=1.5.231.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\sqlite-net-pcl.1.5.231\lib\netstandard1.1\SQLite-net.dll</HintPath>
