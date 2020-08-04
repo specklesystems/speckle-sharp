@@ -1,0 +1,66 @@
+﻿<UserControl
+  x:Class="Speckle.DesktopUI.Streams.StreamCreateFinalView"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  d:DesignHeight="450"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <Grid>
+    <StackPanel Margin="24,0,24,24" Orientation="Vertical">
+      <TextBlock
+        Margin="0,0,0,12"
+        FontSize="20"
+        Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+        Text="{Binding StreamToCreate.name}" />
+      <TextBlock Text="Stream successfully created!" TextWrapping="Wrap" />
+      <md:Chip
+        Height="28"
+        Margin="0,8"
+        md:ButtonAssist.CornerRadius="14"
+        Command="{Binding CopyStreamCommand}"
+        Content="{Binding StreamToCreate.id}"
+        FontFamily="Consolas"
+        FontSize="13"
+        ToolTip="Stream ID" />
+      <Button
+        x:Name="ShareButton"
+        Grid.Column="1"
+        Margin="0,8"
+        HorizontalAlignment="Center"
+        Command="{Binding}"
+        CommandParameter=""
+        Content="Share"
+        IsEnabled="False"
+        Style="{StaticResource MaterialDesignFlatMidBgButton}" />
+      <Button
+        x:Name="OpenInWebButton"
+        Grid.Column="1"
+        Margin="0,8"
+        HorizontalAlignment="Center"
+        Command="{Binding}"
+        CommandParameter=""
+        Content="Open in web app"
+        IsEnabled="False"
+        Style="{StaticResource MaterialDesignFlatMidBgButton}" />
+
+      <Button
+        x:Name="CloseDialogButton"
+        Grid.Column="1"
+        Margin="0,20"
+        HorizontalAlignment="Center"
+        Command="{Binding CloseDialogCommand}"
+        Content="DONE"
+        Style="{StaticResource MaterialDesignFlatMidBgButton}" />
+      <Grid Margin="0,16">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+      </Grid>
+    </StackPanel>
+  </Grid>
+</UserControl>

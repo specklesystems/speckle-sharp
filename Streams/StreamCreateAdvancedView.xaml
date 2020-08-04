@@ -64,7 +64,10 @@
           x:Name="SendAdvancedStreamButton"
           Grid.Column="1"
           HorizontalAlignment="Center"
-          Command="{Binding}"
+          md:ButtonProgressAssist.IsIndeterminate="True"
+          md:ButtonProgressAssist.IsIndicatorVisible="{Binding CreateButtonLoading, Mode=OneWay}"
+          md:ButtonProgressAssist.Value="-1"
+          Command="{Binding CreateStreamCommand}"
           CommandParameter=""
           Content="SEND"
           Style="{StaticResource MaterialDesignFlatMidBgButton}" />

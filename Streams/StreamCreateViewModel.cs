@@ -19,14 +19,16 @@ namespace Speckle.DesktopUI.Streams
     public StreamCreateViewModel()
     {
       SelectedSlide = 0;
-      StreamToCreate = new Stream();
+      _createButtonLoading = false;
+      _streamToCreate = new Stream();
+      _accountToSendFrom = _acctRepo.GetDefault();
 
-      AccountToSendFrom = _acctRepo.GetDefault();
       MessageQueue = new SnackbarMessageQueue();
       ContinueStreamCreatecommand = new RelayCommand<string>(OnContinueStreamCreate);
       ChangeSlideCommand = new RelayCommand<string>(OnChangeSlide);
       CloseDialogCommand = new RelayCommand<string>(OnCloseDialog);
       CreateStreamCommand = new RelayCommand<string>(OnCreateStream);
+      CopyStreamCommand = new RelayCommand<string>(OnCopyStreamCommand);
     }
 
     private StreamsRepository _repo = new StreamsRepository();
@@ -58,6 +60,13 @@ namespace Speckle.DesktopUI.Streams
       set => SetProperty(ref _messageQueue, value);
     }
 
+    private bool _createButtonLoading;
+    public bool CreateButtonLoading
+    {
+      get => _createButtonLoading;
+      set => SetProperty(ref _createButtonLoading, value);
+    }
+
     public RelayCommand<string> ContinueStreamCreatecommand { get; set; }
     private void OnContinueStreamCreate(string slideIndex)
     {
@@ -66,6 +75,7 @@ namespace Speckle.DesktopUI.Streams
         MessageQueue.Enqueue("Please choose a name for your stream!");
         return;
       }
+      AccountToSendFrom = _acctRepo.GetDefault();
       SelectedSlide = Int32.Parse(slideIndex);
 
     }
@@ -85,15 +95,24 @@ namespace Speckle.DesktopUI.Streams
     public RelayCommand<string> CreateStreamCommand { get; set; }
     private async void OnCreateStream(string arg)
     {
+      CreateButtonLoading = true;
       try
       {
-        var res = await _repo.CreateStream(StreamToCreate);
+        string streamId = await _repo.CreateStream(StreamToCreate, AccountToSendFrom);
+        StreamToCreate = await _repo.GetStream(streamId, AccountToSendFrom);
+        SelectedSlide = 3;
       }
       catch (Exception e)
       {
         MessageQueue.Enqueue($"Error: {e.Message}");
       }
-
+      CreateButtonLoading = false;
+    }
+    public RelayCommand<string> CopyStreamCommand { get; set; }
+    private void OnCopyStreamCommand(string arg)
+    {
+      Clipboard.SetText(StreamToCreate.id);
+      MessageQueue.Enqueue("Stream ID copied to clipboard!");
     }
   }
 }

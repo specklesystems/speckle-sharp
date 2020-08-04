@@ -44,6 +44,9 @@
           <local:StreamCreateSimpleView />
 
           <local:StreamCreateAdvancedView />
+
+          <local:StreamCreateFinalView />
+
         </md:Transitioner>
         <md:Snackbar MessageQueue="{Binding MessageQueue}" />
       </Grid>

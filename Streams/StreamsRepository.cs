@@ -33,8 +33,14 @@ namespace Speckle.DesktopUI.Streams
       return master;
     }
 
-    public Task<string> CreateStream(Stream stream)
+    public Task<string> CreateStream(Stream stream, Account account)
     {
+      var remote = _remote;
+      if (!account.isDefault)
+      {
+        remote = new Remote(account);
+      }
+
       var streamInput = new StreamCreateInput()
       {
         name = stream.name,
@@ -42,7 +48,18 @@ namespace Speckle.DesktopUI.Streams
         isPublic = stream.isPublic
       };
 
-      return _remote.StreamCreate(streamInput);
+      return remote.StreamCreate(streamInput);
+    }
+
+    public Task<Stream> GetStream(string streamId, Account account)
+    {
+      var remote = _remote;
+      if (!account.isDefault)
+      {
+        remote = new Remote(account);
+      }
+
+      return remote.StreamGet(streamId);
     }
 
     public ObservableCollection<Stream> LoadTestStreams()
