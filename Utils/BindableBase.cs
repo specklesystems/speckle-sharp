@@ -8,21 +8,21 @@ using System.Threading.Tasks;
 
 namespace Speckle.DesktopUI.Utils
 {
-    public class BindableBase : INotifyPropertyChanged
+  public class BindableBase : INotifyPropertyChanged
+  {
+    protected virtual void SetProperty<T>(ref T member, T val, [CallerMemberName] string propertyName = null)
     {
-        protected virtual void SetProperty<T>(ref T member, T val, [CallerMemberName]string propertyName = null)
-        {
-            if (val == null || val.Equals(member)) return;
+      if (val == null || val.Equals(member)) return;
 
-            member = val;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+      member = val;
+      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+
+    protected virtual void OnPropertyChanged(string propertyName)
+    {
+      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged = delegate { };
+  }
 }

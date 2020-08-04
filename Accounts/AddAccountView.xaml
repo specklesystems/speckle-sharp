@@ -1,59 +1,60 @@
-﻿<UserControl x:Class="Speckle.DesktopUI.Accounts.AddAccountView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:local="clr-namespace:Speckle.DesktopUI.Accounts"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="432">
-    <Grid MinWidth="400">
-        <StackPanel Margin="32">
-            <TextBlock
-                Text="ADD AN ACCOUNT"
-                Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-                FontSize="24"
-                Margin="0 6"/>
-            <TextBlock 
-                Text="Sign in to your server by inputting the url below:"
-                Margin="0 10"/>
-            <TextBox
-                x:Name="ServerTextBoxInput"
-                Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
-                Height="40"
-                AcceptsReturn="False"
-                TextWrapping="Wrap"
-                VerticalScrollBarVisibility="Auto"
-                md:HintAssist.Hint="server url" />
-            <TextBlock Text="{Binding}"/>
-            <Grid Margin="0 16 0 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="0.5*" />
-                    <ColumnDefinition Width="0.5*" />
-                </Grid.ColumnDefinitions>
-                <Button 
-                    Grid.Column="0"
-                    Style="{StaticResource MaterialDesignFlatButton}" IsCancel="True" 
-                    Command="{x:Static md:DialogHost.CloseDialogCommand}"
-                    CommandParameter="Sample2Cancel"
-                    Margin="0,16,0,0"
-                    HorizontalAlignment="Center"
-                    Content="CANCEL" />
-                <Button 
-                    Grid.Column="1"
-                    Style="{StaticResource MaterialDesignRaisedButton}"
-                    md:ButtonProgressAssist.Value="-1"
-                    md:ButtonProgressAssist.IsIndicatorVisible="{Binding SubmitServerLoading, Mode=OneWay}"
-                    md:ButtonProgressAssist.IsIndeterminate="True"
-                    Command="{Binding SubmitUrlCommand}"
-                    CommandParameter="{Binding Text, ElementName=ServerTextBoxInput}"
-                    IsDefault="{Binding IsFocused, ElementName=ServerTextBoxInput}"
-                    IsEnabled="{Binding Path=Text.Length, ElementName=ServerTextBoxInput}"
-                    Margin="0,16,0,0"
-                    HorizontalAlignment="Center"
-                    Content="SUBMIT" />
-            </Grid>
-        </StackPanel>
-        <md:Snackbar MessageQueue="{Binding MessageQueue}" />
-    </Grid>
+﻿<UserControl
+  x:Class="Speckle.DesktopUI.Accounts.AddAccountView"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:local="clr-namespace:Speckle.DesktopUI.Accounts"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  d:DesignHeight="450"
+  d:DesignWidth="432"
+  mc:Ignorable="d">
+  <Grid MinWidth="400">
+    <StackPanel Margin="32">
+      <TextBlock
+        Margin="0,6"
+        FontSize="24"
+        Style="{StaticResource MaterialDesignHeadline3TextBlock}"
+        Text="ADD AN ACCOUNT" />
+      <TextBlock Margin="0,10" Text="Sign in to your server by inputting the url below:" />
+      <TextBox
+        x:Name="ServerTextBoxInput"
+        Height="40"
+        md:HintAssist.Hint="server url"
+        AcceptsReturn="False"
+        Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+        TextWrapping="Wrap"
+        VerticalScrollBarVisibility="Auto" />
+      <TextBlock Text="{Binding}" />
+      <Grid Margin="0,16,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="0.5*" />
+          <ColumnDefinition Width="0.5*" />
+        </Grid.ColumnDefinitions>
+        <Button
+          Grid.Column="0"
+          Margin="0,16,0,0"
+          HorizontalAlignment="Center"
+          Command="{x:Static md:DialogHost.CloseDialogCommand}"
+          CommandParameter="Sample2Cancel"
+          Content="CANCEL"
+          IsCancel="True"
+          Style="{StaticResource MaterialDesignFlatButton}" />
+        <Button
+          Grid.Column="1"
+          Margin="0,16,0,0"
+          HorizontalAlignment="Center"
+          md:ButtonProgressAssist.IsIndeterminate="True"
+          md:ButtonProgressAssist.IsIndicatorVisible="{Binding SubmitServerLoading, Mode=OneWay}"
+          md:ButtonProgressAssist.Value="-1"
+          Command="{Binding SubmitUrlCommand}"
+          CommandParameter="{Binding Text, ElementName=ServerTextBoxInput}"
+          Content="SUBMIT"
+          IsDefault="{Binding IsFocused, ElementName=ServerTextBoxInput}"
+          IsEnabled="{Binding Path=Text.Length, ElementName=ServerTextBoxInput}"
+          Style="{StaticResource MaterialDesignRaisedButton}" />
+      </Grid>
+    </StackPanel>
+    <md:Snackbar MessageQueue="{Binding MessageQueue}" />
+  </Grid>
 </UserControl>

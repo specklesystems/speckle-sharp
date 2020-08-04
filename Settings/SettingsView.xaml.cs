@@ -15,14 +15,14 @@ using System.Windows.Shapes;
 
 namespace Speckle.DesktopUI.Settings
 {
-    /// <summary>
-    /// Interaction logic for SettingsView.xaml
-    /// </summary>
-    public partial class SettingsView : UserControl
+  /// <summary>
+  /// Interaction logic for SettingsView.xaml
+  /// </summary>
+  public partial class SettingsView : UserControl
+  {
+    public SettingsView()
     {
-        public SettingsView()
-        {
-            InitializeComponent();
-        }
+      InitializeComponent();
     }
+  }
 }

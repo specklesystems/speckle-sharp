@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Speckle.DesktopUI.Settings
 {
-    class SettingsViewModel : BindableBase
-    {
-    }
+  class SettingsViewModel : BindableBase
+  {
+  }
 }

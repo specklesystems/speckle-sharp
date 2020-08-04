@@ -18,51 +18,51 @@ using System.Windows;
 
 namespace Speckle.DesktopUI
 {
-    class MainWindowViewModel : BindableBase
+  class MainWindowViewModel : BindableBase
+  {
+    public MainWindowViewModel()
     {
-        public MainWindowViewModel()
-        {
-            OpenLinkCommand = new RelayCommand<string>(OnOpenLink);
-            CopyStreamCommand = new RelayCommand<string>(OnCopyStreamCommand);
-            ViewItems = GetViewItems();
-            MessageQueue = new SnackbarMessageQueue();
-        }
+      OpenLinkCommand = new RelayCommand<string>(OnOpenLink);
+      CopyStreamCommand = new RelayCommand<string>(OnCopyStreamCommand);
+      ViewItems = GetViewItems();
+      MessageQueue = new SnackbarMessageQueue();
+    }
 
-        public RelayCommand<string> OpenLinkCommand { get; set; }
-        public RelayCommand<string> CopyToClipboardCommand { get; set; }
-        public RelayCommand<string> CopyStreamCommand { get; set; }
+    public RelayCommand<string> OpenLinkCommand { get; set; }
+    public RelayCommand<string> CopyToClipboardCommand { get; set; }
+    public RelayCommand<string> CopyStreamCommand { get; set; }
 
-        private ObservableCollection<ViewItem> _viewItems;
-        public ObservableCollection<ViewItem> ViewItems
-        {
-            get => _viewItems;
-            set => SetProperty(ref _viewItems, value);
-        }
+    private ObservableCollection<ViewItem> _viewItems;
+    public ObservableCollection<ViewItem> ViewItems
+    {
+      get => _viewItems;
+      set => SetProperty(ref _viewItems, value);
+    }
 
-        private ViewItem _selectedItem;
-        public ViewItem SelectedItem
-        {
-            get => _selectedItem;
-            set => SetProperty(ref _selectedItem, value);
-        }
-        private int _selectedIndex;
+    private ViewItem _selectedItem;
+    public ViewItem SelectedItem
+    {
+      get => _selectedItem;
+      set => SetProperty(ref _selectedItem, value);
+    }
+    private int _selectedIndex;
 
-        public int SelectedIndex
-        {
-            get => _selectedIndex;
-            set => SetProperty(ref _selectedIndex, value);
-        }
+    public int SelectedIndex
+    {
+      get => _selectedIndex;
+      set => SetProperty(ref _selectedIndex, value);
+    }
 
-        private SnackbarMessageQueue _messageQueue;
-        public SnackbarMessageQueue MessageQueue
-        {
-            get => _messageQueue;
-            set => SetProperty(ref _messageQueue, value);
-        }
+    private SnackbarMessageQueue _messageQueue;
+    public SnackbarMessageQueue MessageQueue
+    {
+      get => _messageQueue;
+      set => SetProperty(ref _messageQueue, value);
+    }
 
-        private ObservableCollection<ViewItem> GetViewItems()
-        {
-            return new ObservableCollection<ViewItem>
+    private ObservableCollection<ViewItem> GetViewItems()
+    {
+      return new ObservableCollection<ViewItem>
             {
                 new ViewItem("Home", new StreamsHomeViewModel()),
                 new ViewItem("Inbox", new InboxViewModel()),
@@ -70,25 +70,25 @@ namespace Speckle.DesktopUI
                 new ViewItem("Accounts", new AccountsViewModel()),
                 new ViewItem("Settings", new SettingsViewModel())
             };
-        }
-
-        private void OnOpenLink(string url)
-        {
-            Link.OpenInBrowser(url);
-        }
-
-        private void OnCopyStreamCommand(string text)
-        {
-            if (text != null)
-            {
-                CopyAndSnackbar(text, "Stream ID copied to clipboard!");
-            }
-        }
-
-        private void CopyAndSnackbar(string text, string message)
-        {
-            Clipboard.SetText(text);
-            MessageQueue.Enqueue(message);
-        }
     }
+
+    private void OnOpenLink(string url)
+    {
+      Link.OpenInBrowser(url);
+    }
+
+    private void OnCopyStreamCommand(string text)
+    {
+      if (text != null)
+      {
+        CopyAndSnackbar(text, "Stream ID copied to clipboard!");
+      }
+    }
+
+    private void CopyAndSnackbar(string text, string message)
+    {
+      Clipboard.SetText(text);
+      MessageQueue.Enqueue(message);
+    }
+  }
 }

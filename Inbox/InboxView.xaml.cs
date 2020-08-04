@@ -15,14 +15,14 @@ using System.Windows.Shapes;
 
 namespace Speckle.DesktopUI.Inbox
 {
-    /// <summary>
-    /// Interaction logic for InboxView.xaml
-    /// </summary>
-    public partial class InboxView : UserControl
+  /// <summary>
+  /// Interaction logic for InboxView.xaml
+  /// </summary>
+  public partial class InboxView : UserControl
+  {
+    public InboxView()
     {
-        public InboxView()
-        {
-            InitializeComponent();
-        }
+      InitializeComponent();
     }
+  }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Speckle.DesktopUI.Feed
 {
-    class FeedViewModel : BindableBase
-    {
-    }
+  class FeedViewModel : BindableBase
+  {
+  }
 }

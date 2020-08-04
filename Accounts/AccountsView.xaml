@@ -1,28 +1,30 @@
 ﻿<UserControl
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Speckle.DesktopUI.Accounts"
-             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:spkcreds="clr-namespace:Speckle.Core.Credentials;assembly=Core"
-             xmlns:b="http://schemas.microsoft.com/xaml/behaviors" x:Class="Speckle.DesktopUI.Accounts.AccountsView"
-             mc:Ignorable="d" 
-             d:DesignHeight="400" d:DesignWidth="500">
-    <UserControl.Resources>
-        <ResourceDictionary>
-        <ResourceDictionary.MergedDictionaries>
-            <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
-        </ResourceDictionary.MergedDictionaries>
-            <!--#region Account Data Templates-->
-            <DataTemplate x:Key="AccountInfoTemplate">
-                <Grid Margin="10">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+  x:Class="Speckle.DesktopUI.Accounts.AccountsView"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:local="clr-namespace:Speckle.DesktopUI.Accounts"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:spkcreds="clr-namespace:Speckle.Core.Credentials;assembly=Core"
+  d:DesignHeight="400"
+  d:DesignWidth="500"
+  mc:Ignorable="d">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <!--#region Account Data Templates-->
+      <DataTemplate x:Key="AccountInfoTemplate">
+        <Grid Margin="10">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
 
-                    <!--<b:Interaction.Triggers>
+          <!--<b:Interaction.Triggers>
                         <b:EventTrigger EventName="MouseLeftButtonUp">
                             <b:InvokeCommandAction
                                 Command="{Binding DataContext.SetDefaultCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
@@ -31,132 +33,129 @@
                         </b:EventTrigger>
                     </b:Interaction.Triggers>-->
 
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0"
-                                FontSize="16"
-                                Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-                                Margin="0,5"
-                                Text="{Binding serverInfo.url}" />
-                        <Button Grid.Column="2"
-                                Style="{StaticResource MaterialDesignIconForegroundButton}"
-                                Content="{md:PackIcon Kind=Check}"
-                                Command="{Binding DataContext.SetDefaultCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
-                                CommandParameter="{Binding}" />
-                        <Button Grid.Column="3"
-                                Style="{StaticResource MaterialDesignIconForegroundButton}"
-                                Content="{md:PackIcon Kind=Delete}"
-                                Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
-                                CommandParameter="{Binding}" />
-                        <!--<TextBlock Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"></TextBlock>-->
-                    </Grid>
+          <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+              Grid.Column="0"
+              Margin="0,5"
+              FontSize="16"
+              Style="{StaticResource MaterialDesignHeadline3TextBlock}"
+              Text="{Binding serverInfo.url}" />
+            <Button
+              Grid.Column="2"
+              Command="{Binding DataContext.SetDefaultCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+              CommandParameter="{Binding}"
+              Content="{md:PackIcon Kind=Check}"
+              Style="{StaticResource MaterialDesignIconForegroundButton}" />
+            <Button
+              Grid.Column="3"
+              Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+              CommandParameter="{Binding}"
+              Content="{md:PackIcon Kind=Delete}"
+              Style="{StaticResource MaterialDesignIconForegroundButton}" />
+            <!--<TextBlock Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"></TextBlock>-->
+          </Grid>
 
-                    <StackPanel Grid.Row="1" Orientation="Horizontal">
-                        <TextBlock
-                                FontSize="11"
-                                Text="{Binding userInfo.email}" />
-                        <TextBlock
-                                FontSize="11"
-                                Text="     Server: " />
-                        <TextBlock
-                                FontSize="11"
-                                Text="{Binding serverInfo.name}" />
-                    </StackPanel>
-                </Grid>
-            </DataTemplate>
-            
-            <DataTemplate DataType="{x:Type spkcreds:Account}">
-                <Grid Margin="20">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0"
-                                FontSize="16"
-                                Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-                                Margin="0,5"
-                                Text="{Binding serverInfo.url}" />
-                    </Grid>
-
-                    <StackPanel Grid.Row="1" Orientation="Horizontal">
-                        <TextBlock
-                                FontSize="11"
-                                Text="{Binding userInfo.email}" />
-                        <TextBlock
-                                FontSize="11"
-                                Text="     Server: " />
-                        <TextBlock
-                                FontSize="11"
-                                Text="{Binding serverInfo.name}" />
-                    </StackPanel>
-                </Grid>
-            </DataTemplate>
-            <!--#endregion-->
-
-        </ResourceDictionary>
-    </UserControl.Resources>
-
-    <Grid>
-        <Grid Margin="20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid Grid.Row="0">
-                <StackPanel Orientation="Vertical">
-                    <TextBlock
-                        Margin="0,10,0,5"
-                        HorizontalAlignment="Center"
-                        Text="Default Account"
-                        FontSize="22"
-                        Style="{StaticResource MaterialDesignHeadline3TextBlock}"/>
-                    <ContentControl Content="{Binding DefaultAccount}"/>
-                </StackPanel>
-            </Grid>
-            <Grid Grid.Row="1">
-                <StackPanel Orientation="Vertical">
-                    <TextBlock
-                        Margin="0,10,0,5"
-                        HorizontalAlignment="Center"
-                        Text="Existing Accounts"
-                        FontSize="22"
-                        Style="{StaticResource MaterialDesignHeadline3TextBlock}"/>
-                    <TextBlock 
-                        Text="Testy McTest - click the check to set as default; click the bin to bin it" 
-                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                        Margin="20,0"/>
-                    <ListView
-                        x:Name="ExistingAccountsList"
-                        ItemTemplate="{StaticResource AccountInfoTemplate}"
-                        ItemsSource="{Binding AccountsNonDefault}"
-                        HorizontalContentAlignment="Stretch"/>
-                </StackPanel>
-
-            </Grid>
+          <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <TextBlock FontSize="11" Text="{Binding userInfo.email}" />
+            <TextBlock FontSize="11" Text="     Server: " />
+            <TextBlock FontSize="11" Text="{Binding serverInfo.name}" />
+          </StackPanel>
         </Grid>
+      </DataTemplate>
 
-        <Button Command="{x:Static md:DialogHost.OpenDialogCommand}"
-                Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
-                Content="{md:PackIcon Kind=Plus,Size=25}"
-                Foreground="{StaticResource MaterialDesignLightBackground}"
-                HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                Height="45" Width="45" Margin="32">
-            <Button.CommandParameter>
-                <local:AddAccountViewModel/>
-            </Button.CommandParameter>
-        </Button>
+      <DataTemplate DataType="{x:Type spkcreds:Account}">
+        <Grid Margin="20">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
 
+          <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+              Grid.Column="0"
+              Margin="0,5"
+              FontSize="16"
+              Style="{StaticResource MaterialDesignHeadline3TextBlock}"
+              Text="{Binding serverInfo.url}" />
+          </Grid>
+
+          <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <TextBlock FontSize="11" Text="{Binding userInfo.email}" />
+            <TextBlock FontSize="11" Text="     Server: " />
+            <TextBlock FontSize="11" Text="{Binding serverInfo.name}" />
+          </StackPanel>
+        </Grid>
+      </DataTemplate>
+      <!--#endregion-->
+
+    </ResourceDictionary>
+  </UserControl.Resources>
+
+  <Grid>
+    <Grid Margin="20">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Grid Grid.Row="0">
+        <StackPanel Orientation="Vertical">
+          <TextBlock
+            Margin="0,10,0,5"
+            HorizontalAlignment="Center"
+            FontSize="22"
+            Style="{StaticResource MaterialDesignHeadline3TextBlock}"
+            Text="Default Account" />
+          <ContentControl Content="{Binding DefaultAccount}" />
+        </StackPanel>
+      </Grid>
+      <Grid Grid.Row="1">
+        <StackPanel Orientation="Vertical">
+          <TextBlock
+            Margin="0,10,0,5"
+            HorizontalAlignment="Center"
+            FontSize="22"
+            Style="{StaticResource MaterialDesignHeadline3TextBlock}"
+            Text="Existing Accounts" />
+          <TextBlock
+            Margin="20,0"
+            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+            Text="Testy McTest - click the check to set as default; click the bin to bin it" />
+          <ListView
+            x:Name="ExistingAccountsList"
+            HorizontalContentAlignment="Stretch"
+            ItemTemplate="{StaticResource AccountInfoTemplate}"
+            ItemsSource="{Binding AccountsNonDefault}" />
+        </StackPanel>
+
+      </Grid>
     </Grid>
+
+    <Button
+      Width="45"
+      Height="45"
+      Margin="32"
+      HorizontalAlignment="Right"
+      VerticalAlignment="Bottom"
+      Command="{x:Static md:DialogHost.OpenDialogCommand}"
+      Content="{md:PackIcon Kind=Plus,
+                            Size=25}"
+      Foreground="{StaticResource MaterialDesignLightBackground}"
+      Style="{StaticResource MaterialDesignFloatingActionAccentButton}">
+      <Button.CommandParameter>
+        <local:AddAccountViewModel />
+      </Button.CommandParameter>
+    </Button>
+
+  </Grid>
 </UserControl>

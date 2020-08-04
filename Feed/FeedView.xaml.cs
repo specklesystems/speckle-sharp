@@ -15,14 +15,14 @@ using System.Windows.Shapes;
 
 namespace Speckle.DesktopUI.Feed
 {
-    /// <summary>
-    /// Interaction logic for FeedView.xaml
-    /// </summary>
-    public partial class FeedView : UserControl
+  /// <summary>
+  /// Interaction logic for FeedView.xaml
+  /// </summary>
+  public partial class FeedView : UserControl
+  {
+    public FeedView()
     {
-        public FeedView()
-        {
-            InitializeComponent();
-        }
+      InitializeComponent();
     }
+  }
 }

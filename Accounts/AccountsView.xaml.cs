@@ -15,14 +15,14 @@ using System.Windows.Shapes;
 
 namespace Speckle.DesktopUI.Accounts
 {
-    /// <summary>
-    /// Interaction logic for AccountsView.xaml
-    /// </summary>
-    public partial class AccountsView : UserControl
+  /// <summary>
+  /// Interaction logic for AccountsView.xaml
+  /// </summary>
+  public partial class AccountsView : UserControl
+  {
+    public AccountsView()
     {
-        public AccountsView()
-        {
-            InitializeComponent();
-        }
+      InitializeComponent();
     }
+  }
 }

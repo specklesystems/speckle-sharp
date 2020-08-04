@@ -15,14 +15,14 @@ using System.Windows.Shapes;
 
 namespace Speckle.DesktopUI.Streams
 {
-    /// <summary>
-    /// Interaction logic for StreamsListView.xaml
-    /// </summary>
-    public partial class StreamsListView : UserControl
+  /// <summary>
+  /// Interaction logic for StreamsListView.xaml
+  /// </summary>
+  public partial class StreamsListView : UserControl
+  {
+    public StreamsListView()
     {
-        public StreamsListView()
-        {
-            InitializeComponent();
-        }
+      InitializeComponent();
     }
+  }
 }

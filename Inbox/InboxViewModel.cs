@@ -8,32 +8,32 @@ using System.Threading.Tasks;
 
 namespace Speckle.DesktopUI.Inbox
 {
-    class InboxViewModel : BindableBase
+  class InboxViewModel : BindableBase
+  {
+    public InboxViewModel()
     {
-        public InboxViewModel()
-        {
 
-            RefreshInboxCommand = new RelayCommand<string>(OnRefreshInbox);
-        }
-
-        private ObservableCollection<object> _allNotifications;
-        private ObservableCollection<object> _filteredNotifications;
-        public ObservableCollection<object> AllNotifications
-        {
-            get => _allNotifications;
-            set => SetProperty(ref _allNotifications, value);
-        }
-        public ObservableCollection<object> FilteredNotifications
-        {
-            get => _filteredNotifications;
-            set => SetProperty(ref _filteredNotifications, value);
-        }
-
-        public RelayCommand<string> RefreshInboxCommand;
-        private void OnRefreshInbox(string arg)
-        {
-            // refresh AllNotifications
-        }
-
+      RefreshInboxCommand = new RelayCommand<string>(OnRefreshInbox);
     }
+
+    private ObservableCollection<object> _allNotifications;
+    private ObservableCollection<object> _filteredNotifications;
+    public ObservableCollection<object> AllNotifications
+    {
+      get => _allNotifications;
+      set => SetProperty(ref _allNotifications, value);
+    }
+    public ObservableCollection<object> FilteredNotifications
+    {
+      get => _filteredNotifications;
+      set => SetProperty(ref _filteredNotifications, value);
+    }
+
+    public RelayCommand<string> RefreshInboxCommand;
+    private void OnRefreshInbox(string arg)
+    {
+      // refresh AllNotifications
+    }
+
+  }
 }

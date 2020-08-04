@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace Speckle.DesktopUI.Utils
 {
-    public static class Link
+  public static class Link
+  {
+    public static void OpenInBrowser(string url)
     {
-        public static void OpenInBrowser(string url)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                url = url.Replace("&", "^&");
-                Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
-            }
-        }
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      {
+        url = url.Replace("&", "^&");
+        Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+      }
     }
+  }
 }

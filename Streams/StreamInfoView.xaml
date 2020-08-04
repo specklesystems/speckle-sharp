@@ -1,171 +1,214 @@
-﻿<UserControl x:Class="Speckle.DesktopUI.Streams.StreamInfoView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
-             mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="450">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
-            </ResourceDictionary.MergedDictionaries>
+﻿<UserControl
+  x:Class="Speckle.DesktopUI.Streams.StreamInfoView"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  d:DesignHeight="600"
+  d:DesignWidth="450"
+  mc:Ignorable="d">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+      </ResourceDictionary.MergedDictionaries>
 
-            <DataTemplate x:Key="CollaboratorSmallCardTemplate">
-                <md:Card Width="120" Height="120" Padding="10" Margin="8">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="{Binding name}" TextAlignment="Center" />
-                        <TextBlock Grid.Row="1" Text="{Binding role}" TextAlignment="Center" />
-                    </Grid>
-                </md:Card>
-            </DataTemplate>
+      <DataTemplate x:Key="CollaboratorSmallCardTemplate">
+        <md:Card
+          Width="120"
+          Height="120"
+          Margin="8"
+          Padding="10">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock
+              Grid.Row="0"
+              Text="{Binding name}"
+              TextAlignment="Center" />
+            <TextBlock
+              Grid.Row="1"
+              Text="{Binding role}"
+              TextAlignment="Center" />
+          </Grid>
+        </md:Card>
+      </DataTemplate>
 
-            <DataTemplate x:Key="CollboratorChipTemplate">
-                <md:Chip Content="{Binding name}" Command="" ToolTip="{Binding role}" Margin="4">
-                    <md:Chip.Icon>
-                        <Image Source="../Resources/s2logo.png" />
-                    </md:Chip.Icon>
-                </md:Chip>
-            </DataTemplate>
-            
-        </ResourceDictionary>
-    </UserControl.Resources>
-    <Grid>
-        <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
-            <Grid Margin="20 0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+      <DataTemplate x:Key="CollboratorChipTemplate">
+        <md:Chip
+          Margin="4"
+          Command=""
+          Content="{Binding name}"
+          ToolTip="{Binding role}">
+          <md:Chip.Icon>
+            <Image Source="../Resources/s2logo.png" />
+          </md:Chip.Icon>
+        </md:Chip>
+      </DataTemplate>
 
-                <Grid Grid.Row="0" Margin="-8 0 -8 8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Button 
-                        Grid.Column="0"
-                        Style="{StaticResource MaterialDesignIconForegroundButton}"
-                        Height="35" Width="35"
-                        ToolTip="Back to home"
-                        Content="{md:PackIcon Kind=ArrowBack}"
-                        Command="{x:Static md:Transitioner.MovePreviousCommand}"/>
-                    <TextBlock 
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                        Text="{Binding SelectedStream.name}"
-                        FontSize="21"/>
-                    <Button 
-                        x:Name="ShareStreamButton" 
-                        Style="{StaticResource MaterialDesignIconButton}"
-                        Content="{md:PackIcon Kind=Send}"
-                        ToolTip="Share this stream!"
-                        Command="{Binding}"
-                        Grid.Column="2" />
-                </Grid>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Grid>
+    <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
+      <Grid Margin="20,0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="1" >
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <md:Chip 
-                            Content="{Binding SelectedStream.id}"
-                            Command="{Binding DataContext.CopyStreamCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                            CommandParameter="{Binding SelectedStream.id}"
-                            FontSize="13" FontFamily="Consolas"
-                            ToolTip="Stream ID" Margin="0 0 8 0" 
-                            Height="28" md:ButtonAssist.CornerRadius="14"/>
-                        <md:Chip 
-                            Grid.Column="1" 
-                            Content="{Binding SelectedBranch.name}" 
-                            FontSize="13" FontFamily="Consolas"
-                            ToolTip="Current branch"
-                            Height="28" md:ButtonAssist.CornerRadius="14"/>
-                    </Grid>
-                    <TextBlock Text="{Binding SelectedStream.description}" Margin="0 4"/>
-                    <TextBlock 
-                        Text="Collaborators" 
-                        Style="{StaticResource MaterialDesignHeadline4TextBlock}" 
-                        FontSize="18" Margin="0 24 0 8"/>
-                    
-                    <ItemsControl 
-                        ItemsSource="{Binding SelectedStream.collaborators}"
-                        ItemTemplate="{StaticResource CollboratorChipTemplate}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
-                    
-                    <TextBlock 
-                        Text="History" 
-                        Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                        FontSize="18" Margin="0 24 0 8" />
-                    <TextBlock Text="what is this, a commit history?" />
-                    <TextBlock Text="{Binding SelectedBranch.commits}" />
-                    <TextBlock Text="{Binding SelectedBranch.commits.totalCount}" />
-                </StackPanel>
-            </Grid>
-        </ScrollViewer>
+        <Grid Grid.Row="0" Margin="-8,0,-8,8">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <Button
+            Grid.Column="0"
+            Width="35"
+            Height="35"
+            Command="{x:Static md:Transitioner.MovePreviousCommand}"
+            Content="{md:PackIcon Kind=ArrowBack}"
+            Style="{StaticResource MaterialDesignIconForegroundButton}"
+            ToolTip="Back to home" />
+          <TextBlock
+            Grid.Column="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="21"
+            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+            Text="{Binding SelectedStream.name}" />
+          <Button
+            x:Name="ShareStreamButton"
+            Grid.Column="2"
+            Command="{Binding}"
+            Content="{md:PackIcon Kind=Send}"
+            Style="{StaticResource MaterialDesignIconButton}"
+            ToolTip="Share this stream!" />
+        </Grid>
 
-        <!--#region Floating Action Button-->
-        <md:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}"
-                     Foreground="{StaticResource MaterialDesignLightBackground}"
-                     HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                     Height="45" Width="45" Margin="32" Grid.Row="2">
-            <StackPanel>
-                <Button x:Name="UploadChangesButton"
-                        ToolTip="Upload your changes to Speckle"
-                        ToolTipService.Placement="Left"
-                        Style="{StaticResource MaterialDesignFloatingActionButton}"
-                        Content="{md:PackIcon Kind=CloudUpload, Size=20}"
-                        Foreground="{StaticResource MaterialDesignLightBackground}"
-                        Height="40" Width="40" Margin="3"
-                        Command="{Binding }" />
+        <StackPanel Grid.Row="1">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <md:Chip
+              Height="28"
+              Margin="0,0,8,0"
+              md:ButtonAssist.CornerRadius="14"
+              Command="{Binding DataContext.CopyStreamCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+              CommandParameter="{Binding SelectedStream.id}"
+              Content="{Binding SelectedStream.id}"
+              FontFamily="Consolas"
+              FontSize="13"
+              ToolTip="Stream ID" />
+            <md:Chip
+              Grid.Column="1"
+              Height="28"
+              md:ButtonAssist.CornerRadius="14"
+              Content="{Binding SelectedBranch.name}"
+              FontFamily="Consolas"
+              FontSize="13"
+              ToolTip="Current branch" />
+          </Grid>
+          <TextBlock Margin="0,4" Text="{Binding SelectedStream.description}" />
+          <TextBlock
+            Margin="0,24,0,8"
+            FontSize="18"
+            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+            Text="Collaborators" />
 
-                <Button x:Name="DownloadChangesButton"
-                        ToolTip="Download new changes from Speckle"
-                        ToolTipService.Placement="Left"
-                        Style="{StaticResource MaterialDesignFloatingActionButton}"
-                        Content="{md:PackIcon Kind=CloudDownload, Size=20}"
-                        Foreground="{StaticResource MaterialDesignLightBackground}"
-                        Height="40" Width="40" Margin="3"
-                        Command="{Binding }" />
+          <ItemsControl ItemTemplate="{StaticResource CollboratorChipTemplate}" ItemsSource="{Binding SelectedStream.collaborators}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+          </ItemsControl>
 
-                <Button x:Name="AddObjectsButton"
-                        ToolTip="Add more objects to this stream"
-                        ToolTipService.Placement="Left"
-                        Style="{StaticResource MaterialDesignFloatingActionButton}"
-                        Content="{md:PackIcon Kind=Category, Size=20}"
-                        Foreground="{StaticResource MaterialDesignLightBackground}"
-                        Height="40" Width="40" Margin="3"
-                        Command="{Binding }" />
+          <TextBlock
+            Margin="0,24,0,8"
+            FontSize="18"
+            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+            Text="History" />
+          <TextBlock Text="what is this, a commit history?" />
+          <TextBlock Text="{Binding SelectedBranch.commits}" />
+          <TextBlock Text="{Binding SelectedBranch.commits.totalCount}" />
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
 
-                <Button x:Name="HelpButton"
-                        ToolTip="Confused? Have a look at the docs!"
-                        ToolTipService.Placement="Left"
-                        Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
-                        Content="{md:PackIcon Kind=QuestionMarkCircle, Size=20}"
-                        Height="40" Width="40" Margin="3"
-                        Command="{Binding DataContext.OpenLinkCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                        CommandParameter="https://speckle.systems/docs/essentials/introduction/streams"/>
-            </StackPanel>
-        </md:PopupBox>
-        <!--#endregion-->
-    </Grid>
+    <!--#region Floating Action Button-->
+    <md:PopupBox
+      Grid.Row="2"
+      Width="45"
+      Height="45"
+      Margin="32"
+      HorizontalAlignment="Right"
+      VerticalAlignment="Bottom"
+      Foreground="{StaticResource MaterialDesignLightBackground}"
+      Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}">
+      <StackPanel>
+        <Button
+          x:Name="UploadChangesButton"
+          Width="40"
+          Height="40"
+          Margin="3"
+          Command="{Binding}"
+          Content="{md:PackIcon Kind=CloudUpload,
+                                Size=20}"
+          Foreground="{StaticResource MaterialDesignLightBackground}"
+          Style="{StaticResource MaterialDesignFloatingActionButton}"
+          ToolTip="Upload your changes to Speckle"
+          ToolTipService.Placement="Left" />
+
+        <Button
+          x:Name="DownloadChangesButton"
+          Width="40"
+          Height="40"
+          Margin="3"
+          Command="{Binding}"
+          Content="{md:PackIcon Kind=CloudDownload,
+                                Size=20}"
+          Foreground="{StaticResource MaterialDesignLightBackground}"
+          Style="{StaticResource MaterialDesignFloatingActionButton}"
+          ToolTip="Download new changes from Speckle"
+          ToolTipService.Placement="Left" />
+
+        <Button
+          x:Name="AddObjectsButton"
+          Width="40"
+          Height="40"
+          Margin="3"
+          Command="{Binding}"
+          Content="{md:PackIcon Kind=Category,
+                                Size=20}"
+          Foreground="{StaticResource MaterialDesignLightBackground}"
+          Style="{StaticResource MaterialDesignFloatingActionButton}"
+          ToolTip="Add more objects to this stream"
+          ToolTipService.Placement="Left" />
+
+        <Button
+          x:Name="HelpButton"
+          Width="40"
+          Height="40"
+          Margin="3"
+          Command="{Binding DataContext.OpenLinkCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+          CommandParameter="https://speckle.systems/docs/essentials/introduction/streams"
+          Content="{md:PackIcon Kind=QuestionMarkCircle,
+                                Size=20}"
+          Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
+          ToolTip="Confused? Have a look at the docs!"
+          ToolTipService.Placement="Left" />
+      </StackPanel>
+    </md:PopupBox>
+    <!--#endregion-->
+  </Grid>
 </UserControl>

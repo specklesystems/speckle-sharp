@@ -1,42 +1,45 @@
-﻿<UserControl x:Class="Speckle.DesktopUI.Streams.StreamCreateSimpleView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="400">
-    <Grid>
-        <StackPanel Orientation="Vertical" Margin="24 0 24 24">
-            <TextBlock 
-                    Text="{Binding StreamToCreate.name}" 
-                    Style="{StaticResource MaterialDesignHeadline4TextBlock}" 
-                    FontSize="20" Margin="0 0 0 12"/>
-            <TextBlock
-                Text="Send the currently selected objects to Speckle using default settings."
-                TextWrapping="Wrap" />
+﻿<UserControl
+  x:Class="Speckle.DesktopUI.Streams.StreamCreateSimpleView"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  d:DesignHeight="450"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <Grid>
+    <StackPanel Margin="24,0,24,24" Orientation="Vertical">
+      <TextBlock
+        Margin="0,0,0,12"
+        FontSize="20"
+        Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+        Text="{Binding StreamToCreate.name}" />
+      <TextBlock Text="Send the currently selected objects to Speckle using default settings." TextWrapping="Wrap" />
 
-            <Grid Margin="0 16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Button
-                    x:Name="BackButton"
-                    Style="{StaticResource MaterialDesignFlatButton}"
-                    Content="BACK"
-                    Command="{Binding ChangeSlideCommand}"
-                    CommandParameter="0"
-                    Grid.Column="0" HorizontalAlignment="Center" />
-                <Button
-                    x:Name="SendSimpleStreamButton"
-                    Style="{StaticResource MaterialDesignFlatMidBgButton}"
-                    Content="SEND"
-                    Command="{Binding CreateStreamCommand}"
-                    CommandParameter=""
-                    Grid.Column="1" HorizontalAlignment="Center" />
-            </Grid>
-        </StackPanel>
-    </Grid>
+      <Grid Margin="0,16">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Button
+          x:Name="BackButton"
+          Grid.Column="0"
+          HorizontalAlignment="Center"
+          Command="{Binding ChangeSlideCommand}"
+          CommandParameter="0"
+          Content="BACK"
+          Style="{StaticResource MaterialDesignFlatButton}" />
+        <Button
+          x:Name="SendSimpleStreamButton"
+          Grid.Column="1"
+          HorizontalAlignment="Center"
+          Command="{Binding CreateStreamCommand}"
+          CommandParameter=""
+          Content="SEND"
+          Style="{StaticResource MaterialDesignFlatMidBgButton}" />
+      </Grid>
+    </StackPanel>
+  </Grid>
 </UserControl>
