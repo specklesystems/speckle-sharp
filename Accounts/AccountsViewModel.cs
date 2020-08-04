@@ -18,7 +18,7 @@ namespace Speckle.DesktopUI.Accounts
 #if DEBUG
       _allAccounts = _repo.LoadTestAccounts();
 #else
-            _allAccounts = _repo.LoadAccounts();
+       _allAccounts = _repo.LoadAccounts();
 #endif
       _accountsNonDefault = _repo.LoadNonDefaultAccounts();
       _defaultAccount = _repo.GetDefault();

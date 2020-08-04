@@ -16,7 +16,7 @@ namespace Speckle.DesktopUI.Accounts
     {
       _repo = new AccountsRepository();
       _messageQueue = new SnackbarMessageQueue();
-      SubmitServerLoading = false;
+      _submitServerLoading = false;
       SubmitUrlCommand = new RelayCommand<string>(OnSubmitUrl);
     }
 
@@ -38,7 +38,7 @@ namespace Speckle.DesktopUI.Accounts
 
     private async void OnSubmitUrl(string url)
     {
-      SubmitServerLoading = true; // this isn't working quite right atm
+      SubmitServerLoading = true;
 
       if (!Regex.IsMatch(url, "^(http|https)://.*"))
       {
@@ -46,16 +46,17 @@ namespace Speckle.DesktopUI.Accounts
       }
       try
       {
-        var acct = await _repo.AuthenticateAccount(url); // redirecting to 24707 and failing
+        var acct = await _repo.AuthenticateAccount(url);
+        MessageQueue.Enqueue($"Added {acct.userInfo.name} from server {acct.serverInfo.name}");
+        DialogHost.CloseDialogCommand.Execute(null, null);
+        // TODO: closing the dialog here isn't working for some reason - check what's diff from streams
+        // TODO: reload accounts list after adding a new account
       }
       catch (Exception e)
       {
         await Task.Factory.StartNew(() => MessageQueue.Enqueue($"Error: {e.Message}"));
       }
-
       SubmitServerLoading = false;
-
-      //TODO: close window
     }
   }
 }
