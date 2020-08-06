@@ -1,13 +1,19 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{CB85D2B2-9837-40B8-91DB-3C0636B1174D}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{CB85D2B2-9837-40B8-91DB-3C0636B1174D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsUnit", "Tests\TestsUnit.csproj", "{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestsUnit", "Tests\TestsUnit.csproj", "{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSketches", "HttpTests\ConsoleSketches.csproj", "{BEA11108-7752-485F-B026-5B4A79B0C7AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleSketches", "HttpTests\ConsoleSketches.csproj", "{BEA11108-7752-485F-B026-5B4A79B0C7AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsIntegration", "IntegrationTests\TestsIntegration.csproj", "{4A79F5D2-3B66-43E3-BE33-0BB79FBFDC61}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestsIntegration", "IntegrationTests\TestsIntegration.csproj", "{4A79F5D2-3B66-43E3-BE33-0BB79FBFDC61}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FF890E88-185B-4A99-9391-6342F22279D0}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,11 +38,17 @@ Global
 		{4A79F5D2-3B66-43E3-BE33-0BB79FBFDC61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A79F5D2-3B66-43E3-BE33-0BB79FBFDC61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1378F8F4-B354-4DB6-8052-A1A69B59BC2C}
+	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
 		$0.DotNetNamingPolicy = $1
 		$1.DirectoryNamespaceAssociation = PrefixedHierarchical
-		$0.TextStylePolicy = $2
+		$0.TextStylePolicy = $4
 		$2.FileWidth = 80
 		$2.TabWidth = 2
 		$2.TabsToSpaces = True
@@ -44,7 +56,6 @@ Global
 		$2.scope = text/x-csharp
 		$0.CSharpFormattingPolicy = $3
 		$3.scope = text/x-csharp
-		$0.TextStylePolicy = $4
 		$4.FileWidth = 80
 		$4.TabsToSpaces = True
 		$4.scope = text/plain
