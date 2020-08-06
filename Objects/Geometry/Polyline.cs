@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Speckle.Objects.Primitive;
-using Speckle.Models;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
