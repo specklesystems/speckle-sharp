@@ -56,6 +56,7 @@
           CommandParameter="1"
           Content="{md:PackIcon Kind=ShareAll,
                                 Size=20}"
+          Foreground="{StaticResource MaterialDesignLightBackground}"
           Style="{StaticResource MaterialDesignFloatingActionMiniButton}" />
         <TextBlock
           Grid.Column="1"
@@ -78,6 +79,7 @@
           CommandParameter="2"
           Content="{md:PackIcon Kind=Tools,
                                 Size=20}"
+          Foreground="{StaticResource MaterialDesignLightBackground}"
           Style="{StaticResource MaterialDesignFloatingActionMiniButton}" />
         <TextBlock
           Grid.Column="1"

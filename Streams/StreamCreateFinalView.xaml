@@ -34,6 +34,7 @@
         Command="{Binding}"
         CommandParameter=""
         Content="Share"
+        Foreground="{StaticResource MaterialDesignLightBackground}"
         IsEnabled="False"
         Style="{StaticResource MaterialDesignFlatMidBgButton}" />
       <Button
@@ -44,6 +45,7 @@
         Command="{Binding}"
         CommandParameter=""
         Content="Open in web app"
+        Foreground="{StaticResource MaterialDesignLightBackground}"
         IsEnabled="False"
         Style="{StaticResource MaterialDesignFlatMidBgButton}" />
 
@@ -54,6 +56,7 @@
         HorizontalAlignment="Center"
         Command="{Binding CloseDialogCommand}"
         Content="DONE"
+        Foreground="{StaticResource MaterialDesignLightBackground}"
         Style="{StaticResource MaterialDesignFlatMidBgButton}" />
       <Grid Margin="0,16">
         <Grid.ColumnDefinitions>

@@ -44,6 +44,7 @@
                 Command="{Binding}"
                 Content="{md:PackIcon Kind=Send,
                                       Size=20}"
+                Foreground="{StaticResource MaterialDesignLightBackground}"
                 Style="{StaticResource MaterialDesignFloatingActionMiniButton}" />
             </Grid>
 

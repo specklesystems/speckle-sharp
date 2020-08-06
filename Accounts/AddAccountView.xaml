@@ -50,6 +50,7 @@
           Command="{Binding SubmitUrlCommand}"
           CommandParameter="{Binding Text, ElementName=ServerTextBoxInput}"
           Content="SUBMIT"
+          Foreground="{StaticResource MaterialDesignLightBackground}"
           IsDefault="{Binding IsFocused, ElementName=ServerTextBoxInput}"
           IsEnabled="{Binding Path=Text.Length, ElementName=ServerTextBoxInput}"
           Style="{StaticResource MaterialDesignRaisedButton}" />

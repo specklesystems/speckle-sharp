@@ -70,6 +70,7 @@
           Command="{Binding CreateStreamCommand}"
           CommandParameter=""
           Content="SEND"
+          Foreground="{StaticResource MaterialDesignLightBackground}"
           Style="{StaticResource MaterialDesignFlatMidBgButton}" />
       </Grid>
     </StackPanel>

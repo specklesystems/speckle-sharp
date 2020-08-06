@@ -88,7 +88,8 @@
             Grid.Column="2"
             Command="{Binding}"
             Content="{md:PackIcon Kind=Send}"
-            Style="{StaticResource MaterialDesignIconButton}"
+            Foreground="{StaticResource MaterialDesignLightBackground}"
+            Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
             ToolTip="Share this stream!" />
         </Grid>
 
