@@ -37,11 +37,34 @@ namespace Tests
     }
 
     [Test(Description = "Pulling a commit locally"), Order(2)]
-    public void PullCommitLocal()
+    public void LocalDownload()
     {
       var commitPulled = (Commit)Operations.Download(commitId_01).Result;
 
       Assert.AreEqual(commitPulled.GetType(), typeof(Commit));
+      Assert.AreEqual(commitPulled.Objects[0].GetType(), typeof(Point));
+      Assert.AreEqual(commitPulled.Objects.Count, numObjects);
+    }
+
+    [Test(Description = "Pushing and Pulling a commit locally")]
+    public void LocalUploadDownload()
+    {
+      var baseObjects = new List<Base>();
+      var rand = new Random();
+
+      for (int i = 0; i < numObjects; i++)
+      {
+        baseObjects.Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
+      }
+
+      var commit = new Commit();
+      commit.Objects.AddRange(baseObjects);
+      commitId_01 = Operations.Upload(commit).Result;
+
+      var commitPulled = (Commit)Operations.Download(commitId_01).Result;
+
+      Assert.AreEqual(commitPulled.GetType(), typeof(Commit));
+      Assert.AreEqual(commitPulled.Objects[0].GetType(), typeof(Point));
       Assert.AreEqual(commitPulled.Objects.Count, numObjects);
     }
 

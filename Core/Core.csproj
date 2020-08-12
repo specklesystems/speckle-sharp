@@ -8,6 +8,7 @@
     <Authors>Speckle</Authors>
     <Company>SpeckleSpeckle</Company>
     <Product>SpeckleCore</Product>
+    <AssemblyName>SpeckleCore</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,8 +22,6 @@
     <Folder Include="Models\" />
     <Folder Include="Serialisation\" />
     <Folder Include="Transports\" />
-    <Folder Include="Api\" />
-    <Folder Include="Api\Operations\" />
     <Folder Include="Credentials\" />
     <Folder Include="Api\Remote\" />
   </ItemGroup>
