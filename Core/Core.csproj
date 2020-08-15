@@ -23,7 +23,6 @@
     <Folder Include="Serialisation\" />
     <Folder Include="Transports\" />
     <Folder Include="Credentials\" />
-    <Folder Include="Api\Models\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Core\Commit.cs" />

@@ -3,15 +3,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
-using GraphQL.Client.Http;
-using GraphQL.Client.Serializer.Newtonsoft;
-using Newtonsoft.Json;
-using Speckle.Core.Api.Models;
-using Speckle.Core.Models;
 
-namespace Speckle.Core.Api.Models
+namespace Speckle.Core.Api
 {
-  public partial class Remote
+  public partial class Client
   {
     /// <summary>
     /// Gets the current user

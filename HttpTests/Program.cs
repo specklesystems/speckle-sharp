@@ -100,11 +100,13 @@ namespace ConsoleSketches
       Console.Clear();
       Console.WriteLine("Done generating objects.");
 
-      var myRemote = new Remote(AccountManager.GetDefaultAccount());
+      var myClient = new Client(AccountManager.GetDefaultAccount());
+      var streamId = await myClient.StreamCreate(new StreamCreateInput { name = "test", description = "this is a test" });
 
-      var res = await Operations.Upload(
-        @object: new Commit() { Objects = objs },
-        remotes: new Remote[] { myRemote },
+      var res = await Operations.Send(
+        new BaseList() { Items = objs },
+        streamId,
+        myClient,
         onProgressAction: dict =>
         {
           Console.CursorLeft = 0;
@@ -116,7 +118,7 @@ namespace ConsoleSketches
 
       Console.WriteLine($"Big commit id is {res}");
       
-      var receivedCommit = await Operations.Download(res, remote: myRemote, onProgressAction: dict =>
+      var receivedCommit = await Operations.Receive(res, streamId, myClient, onProgressAction: dict =>
       {
         Console.CursorLeft = 0;
         Console.CursorTop = 7;
@@ -141,17 +143,19 @@ namespace ConsoleSketches
         myMesh.Faces.AddRange(new int[] { i, i + i, i + 3, 23 + i, 100 % i });
       }
 
-      var myRemote = new Remote(AccountManager.GetDefaultAccount());
+      var myClient = new Client(AccountManager.GetDefaultAccount());
+      var streamId = await myClient.StreamCreate(new StreamCreateInput { name = "test", description = "this is a test" });
 
-      var res = await Operations.Upload(
-        @object: myMesh,
-        remotes: new Remote[] { myRemote });
+      var res = await Operations.Send(
+        myMesh,
+        streamId,
+        myClient );
 
       Console.WriteLine($"Big mesh id is {res}");
 
       var cp = res;
 
-      var pullMyMesh = await Operations.Download(res);
+      var pullMyMesh = await Operations.Receive(res);
 
       Console.WriteLine("Pulled back big mesh.");
     }
@@ -213,14 +217,20 @@ namespace ConsoleSketches
 
       // Create some remotes
 
-      var myRemote = new Remote(AccountManager.GetDefaultAccount());
+      var myClient = new Client(AccountManager.GetDefaultAccount());
+      var streamId = await myClient.StreamCreate(new StreamCreateInput { name = "test", description = "this is a test" });
 
-      var mySecondRemote = new Remote(AccountManager.GetDefaultAccount());
 
-      var res = await Operations.Upload(
-        @object: funkyStructure,
-        remotes: new Remote[] { myRemote, mySecondRemote },
-        onProgressAction: pushProgressAction);
+      var mySecondClient = new Client(AccountManager.GetDefaultAccount());
+      var secondStreamId = await myClient.StreamCreate(new StreamCreateInput { name = "test2", description = "this is a second test" });
+
+
+      var res = await Operations.Send(
+        funkyStructure,
+        new string[] { streamId, secondStreamId },
+        new Client[] { myClient, mySecondClient },
+        null,
+        pushProgressAction) ;
 
       Console.Clear();
       Console.CursorLeft = 0;
@@ -232,7 +242,7 @@ namespace ConsoleSketches
       Console.Clear();
 
       // Time for pulling an object out. 
-      var res2 = await Operations.Download(res, remote: myRemote, onProgressAction: dict =>
+      var res2 = await Operations.Receive(res, streamId, myClient, onProgressAction: dict =>
       {
         Console.CursorLeft = 0;
         Console.CursorTop = 0;

@@ -47,14 +47,12 @@ namespace Speckle.Core.Models
 
   }
 
-  public class Commit : Base
+  public class BaseList : Base
   {
     [DetachProperty]
-    public List<Base> Objects { get; set; } = new List<Base>();
+    public List<Base> Items { get; set; } = new List<Base>();
 
-    public string CommitMessage { get; set; }
-
-    public Commit() { }
+    public BaseList() { }
   }
 
   public class ObjectReference

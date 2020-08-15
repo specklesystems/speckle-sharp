@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Speckle.Core.Api.Models
+namespace Speckle.Core.Api
 {
   #region inputs
   public class StreamCreateInput
