@@ -6,7 +6,7 @@ using GraphQL.Client.Serializer.Newtonsoft;
 using Newtonsoft.Json;
 using Speckle.Core.Credentials;
 
-namespace Speckle.Core.Api
+namespace Speckle.Core.Api.Models
 {
   public partial class Remote
   {
@@ -49,7 +49,7 @@ namespace Speckle.Core.Api
 
     public async Task<string> InitializeNewStream()
     {
-      StreamId = await StreamCreate(new GqlModels.StreamCreateInput { name = "Test Stream", description = "Really this is just a test stream." });
+      StreamId = await StreamCreate(new StreamCreateInput { name = "Test Stream", description = "Really this is just a test stream." });
 
       return StreamId;
     }

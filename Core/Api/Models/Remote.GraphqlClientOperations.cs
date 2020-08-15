@@ -6,10 +6,10 @@ using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using Newtonsoft.Json;
-using Speckle.Core.Api.GqlModels;
+using Speckle.Core.Api.Models;
 using Speckle.Core.Models;
 
-namespace Speckle.Core.Api
+namespace Speckle.Core.Api.Models
 {
   public partial class Remote
   {
@@ -92,6 +92,7 @@ namespace Speckle.Core.Api
                             cursor,
                             items {{
                               id,
+                              referencedObject,
                               message,
                               authorName,
                               authorId,

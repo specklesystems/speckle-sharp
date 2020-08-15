@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Speckle.Core.Api.Models;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 

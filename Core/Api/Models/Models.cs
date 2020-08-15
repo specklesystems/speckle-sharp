@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Speckle.Core.Api.GqlModels
+namespace Speckle.Core.Api.Models
 {
   #region inputs
   public class StreamCreateInput
@@ -99,9 +99,22 @@ namespace Speckle.Core.Api.GqlModels
   {
     public int totalCount { get; set; }
     public object cursor { get; set; }
-    public List<object> items { get; set; }
+    public List<Commit> items { get; set; }
 
   }
+
+  public class Commit
+  {
+    public string id { get; set; }
+    public string message { get; set; }
+    public string authorName { get; set; }
+    public string authorId { get; set; }
+    public string createdAt { get; set; }
+
+    public string referencedObject { get; set; }
+
+  }
+
 
   public class Branch
   {

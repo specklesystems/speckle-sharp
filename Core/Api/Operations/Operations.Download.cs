@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using System.Collections.Concurrent;
+using Speckle.Core.Api.Models;
 
 namespace Speckle.Core.Api
 {

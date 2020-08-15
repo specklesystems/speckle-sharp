@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Speckle.Core.Api;
-using Speckle.Core.Api.GqlModels;
+using Speckle.Core.Api.Models;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Tests;
