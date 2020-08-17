@@ -25,11 +25,11 @@ namespace Tests
       var myObject = new Base();
       var rand = new Random();
 
-      myObject["items"] = new List<Base>();
+      myObject["@items"] = new List<Base>();
 
       for (int i = 0; i < numObjects; i++)
       {
-        ((List<Base>)myObject["items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
+        ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
       }
 
       objId_01 = Operations.Send(myObject).Result;
@@ -44,42 +44,42 @@ namespace Tests
     {
       var commitPulled = Operations.Receive(objId_01).Result;
 
-      Assert.AreEqual(((List<Base>)commitPulled["items"])[0].GetType(), typeof(Point));
-      Assert.AreEqual(((List<Base>)commitPulled["items"]).Count, numObjects);
+      Assert.AreEqual(((List<object>)commitPulled["@items"])[0].GetType(), typeof(Point));
+      Assert.AreEqual(((List<object>)commitPulled["@items"]).Count, numObjects);
     }
 
     [Test(Description = "Pushing and Pulling a commit locally")]
     public void LocalUploadDownload()
     {
       var myObject = new Base();
-      myObject["items"] = new List<Base>();
+      myObject["@items"] = new List<Base>();
 
       var rand = new Random();
 
       for (int i = 0; i < numObjects; i++)
       {
-        ((List<Base>)myObject["items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
+        ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
       }
 
       objId_01 = Operations.Send(myObject).Result;
 
       var commitPulled = Operations.Receive(objId_01).Result;
 
-      Assert.AreEqual(((List<Base>)commitPulled["items"])[0].GetType(), typeof(Point));
-      Assert.AreEqual(((List<Base>)commitPulled["items"]).Count, numObjects);
+      Assert.AreEqual(((List<object>)commitPulled["@items"])[0].GetType(), typeof(Point));
+      Assert.AreEqual(((List<object>)commitPulled["@items"]).Count, numObjects);
     }
 
     [Test(Description = "Pushing and pulling a commit locally"), Order(3)]
     public async Task LocalUploadDownloadSmall()
     {
       var myObject = new Base();
-      myObject["items"] = new List<Base>();
+      myObject["@items"] = new List<Base>();
 
       var rand = new Random();
 
       for (int i = 0; i < 30; i++)
       {
-        myObject.GetMemberSafe("items", new List<Base>()).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-ugh/---" });
+        ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-ugh/---" });
       }
 
       objId_01 = await Operations.Send(myObject);
@@ -88,7 +88,7 @@ namespace Tests
       TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {objId_01}");
 
       var objsPulled = await Operations.Receive(objId_01);
-      Assert.AreEqual(objsPulled.GetMemberSafe("items", new List<Base>()).Count, 30);
+      Assert.AreEqual(((List<object>)objsPulled["@items"]).Count, 30);
     }
 
     [Test(Description = "Pushing and pulling a random object, with our without detachment"), Order(3)]
