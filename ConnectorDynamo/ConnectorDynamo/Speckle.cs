@@ -66,12 +66,10 @@ namespace Speckle.ConnectorDynamo
 
       var converter = new ConverterDynamo();
       var spkbase = converter.ConvertToSpeckle(data);
-      var baseObject = new Base();
-      baseObject["@child"] = spkbase;
 
       var client = new Client(account);
 
-      var commitId = Operations.Send(baseObject, streamId, client).Result;
+      var commitId = Operations.Send(spkbase, streamId, client).Result;
 
       var res = client.CommitCreate(new CommitCreateInput
       {
