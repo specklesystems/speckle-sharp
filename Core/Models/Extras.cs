@@ -47,14 +47,6 @@ namespace Speckle.Core.Models
 
   }
 
-  public class BaseList : Base
-  {
-    [DetachProperty]
-    public List<Base> Items { get; set; } = new List<Base>();
-
-    public BaseList() { }
-  }
-
   public class ObjectReference
   {
     public string referencedId { get; set; }

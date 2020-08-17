@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -124,14 +125,15 @@ namespace IntegrationTests
     [Test, Order(43)]
     public async Task CommitCreate()
     {
-      var commit = new BaseList();
+      var myObject = new Base();
+      myObject["items"] = new List<Point>();
       for (int i = 0; i < 100; i++)
-        commit.Items.Add(new Point(i, i, i));
+        myObject.GetMemberSafe("items", new List<Point>()).Add(new Point(i, i, i));
 
       // NOTE:
       // Operations.Upload is designed to be called from the connector, with potentially multiple responses.
       // We could (should?) scaffold a corrolary Remote.Upload() at one point - in beta maybe?
-      commitId = await Operations.Send(commit, streamId, myClient );
+      commitId = await Operations.Send(myObject, streamId, myClient );
 
       var res = await myClient.CommitCreate(new CommitCreateInput
       {

@@ -103,8 +103,11 @@ namespace ConsoleSketches
       var myClient = new Client(AccountManager.GetDefaultAccount());
       var streamId = await myClient.StreamCreate(new StreamCreateInput { name = "test", description = "this is a test" });
 
+      var myObject = new Base();
+      myObject["items"] = objs;
+
       var res = await Operations.Send(
-        new BaseList() { Items = objs },
+        myObject,
         streamId,
         myClient,
         onProgressAction: dict =>
