@@ -1,0 +1,20 @@
+﻿{
+  "license": "MIT",
+  "file_hash": null,
+  "name": "SpeckleDynamo",
+  "version": "0.0.1",
+  "description": "The Speckle connector for Dynamo AKA SpeckleDynamo or Dynamo client.",
+  "group": "",
+  "keywords": ["speckle", "connector", "dynamo"],
+  "dependencies": [],
+  "contents": "",
+  "engine_version": "2.7",
+  "engine": "dynamo",
+  "engine_metadata": "",
+  "site_url": "https://speckle.systems/",
+  "repository_url": "https://github.com/Speckle-Next/ConnectorDynamo",
+  "contains_binaries": true,
+  "node_libraries": [
+    "SpeckleConnectorDynamo, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+  ]
+}

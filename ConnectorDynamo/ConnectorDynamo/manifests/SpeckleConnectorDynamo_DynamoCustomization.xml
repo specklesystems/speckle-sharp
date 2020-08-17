@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<doc>
+  <assembly>
+    <name>SpeckleConnectorDynamo</name>
+  </assembly>
+  <namespaces>
+    <namespace name="Speckle.ConnectorDynamo">
+      <category>Speckle</category>
+    </namespace>
+  </namespaces>
+</doc>
