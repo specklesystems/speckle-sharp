@@ -215,12 +215,23 @@ namespace Speckle.Core.Credentials
     }
 
     /// <summary>
-    /// Gets this environment's default account if any.
+    /// Gets this environment's default account if any. If there is no default, the first found will be returned and set as default.
     /// </summary>
     /// <returns>The default account or null.</returns>
     public static Account GetDefaultAccount()
     {
-      return GetAccounts().Where(acc => acc.isDefault).FirstOrDefault();
+      var defaultAccount = GetAccounts().Where(acc => acc.isDefault).FirstOrDefault();
+      if (defaultAccount == null)
+      {
+        var firstAccount = GetAccounts().FirstOrDefault();
+        if(firstAccount == null)
+        {
+          throw new Exception("You don't have any Speckle accounts! Visit the Speckle web app to create one.");
+        }
+        SetDefaultAccount(firstAccount.id);
+        return firstAccount;
+      }
+      return defaultAccount;
     }
 
     /// <summary>
