@@ -91,6 +91,26 @@ namespace Tests
       Assert.AreEqual(((List<object>)objsPulled["@items"]).Count, 30);
     }
 
+    [Test(Description = "Pushing and pulling a commit locally"), Order(3)]
+    public async Task LocalUploadDownloadListDic()
+    {
+      
+      var myList = new List<object> { 1, 2, 3, "ciao" };
+      var myDic = new Dictionary<string, object> { { "a", myList }, { "b", 2 }, { "c", "ciao" } };
+
+      var myObject = new Base();
+      myObject["@dictionary"] = myDic;
+      myObject["@list"] = myList;
+
+      objId_01 = await Operations.Send(myObject);
+
+      Assert.NotNull(objId_01);
+
+      var objsPulled = await Operations.Receive(objId_01);
+      Assert.AreEqual(((List<object>)((Dictionary<string, object>)objsPulled["@dictionary"])["a"]).First(), 1);
+      Assert.AreEqual(((List<object>)objsPulled["@list"]).Last(), "ciao");
+    }
+
     [Test(Description = "Pushing and pulling a random object, with our without detachment"), Order(3)]
     public async Task UploadDownloadNonCommitObject()
     {

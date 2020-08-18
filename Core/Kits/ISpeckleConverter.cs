@@ -20,13 +20,6 @@ namespace Speckle.Core.Kits
     public Base ConvertToSpeckle(object @object);
 
     /// <summary>
-    /// Converts a list of native objects to a list Speckle ones
-    /// </summary>
-    /// <param name="objects">List of native objects to convert</param>
-    /// <returns></returns>
-    public IEnumerable<Base> ConvertBatchToSpeckle(IEnumerable<object> objects);
-
-    /// <summary>
     /// Checks if it can onvert a native object to a Speckle one
     /// </summary>
     /// <param name="object">Native object to convert</param>
@@ -40,12 +33,6 @@ namespace Speckle.Core.Kits
     /// <returns></returns>
     public object ConvertToNative(Base @object);
 
-    /// <summary>
-    /// Converts a list of Speckle objects to a list native ones
-    /// </summary>
-    /// <param name="objects">List of Speckle objects to convert</param>
-    /// <returns></returns>
-    public IEnumerable<object> ConvertBatchToNative(IEnumerable<Base> objects);
 
     /// <summary>
     /// Checks if it can convert a Speckle object to a native one
