@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
+using Speckle.Core.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
@@ -124,14 +124,18 @@ namespace Speckle.Core.Models
       {
         if (properties.ContainsKey(key))
           return properties[key];
-        try
+
+        var prop = GetType().GetProperty(key);
+        if (prop == null)
         {
-          return GetType().GetProperty(key).GetValue(this);
+          var ex = new SpeckleException($"Dynamic object does not have the provided key.");
+          //unhandled exceptions not caught when running in hosted applications, sending it explicitly
+          Log.Instance().CaptureException(ex);
+          throw ex;
         }
-        catch
-        {
-          throw;
-        }
+
+        return prop.GetValue(this);
+
       }
       set
       {
@@ -150,8 +154,9 @@ namespace Speckle.Core.Models
         {
           prop.SetValue(this, value);
         }
-        catch
+        catch (Exception ex)
         {
+          Log.Instance().CaptureException(ex);
           throw;
         }
       }
