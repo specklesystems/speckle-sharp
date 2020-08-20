@@ -56,10 +56,10 @@ namespace Speckle.Core.Models
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    //public bool HasMember(string key)
-    //{
-    //  return properties.ContainsKey(key);
-    //}
+    public bool HasMember(string key)
+    {
+      return properties.ContainsKey(key) && properties[key] !=null;
+    }
 
     /// <summary>
     /// Checks if a dynamic propery exists or not and has a specific type
