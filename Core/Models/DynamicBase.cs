@@ -76,7 +76,9 @@ namespace Speckle.Core.Models
         return (T)GetType().GetProperty(key).GetValue(this) != null;
       }
       catch
-      {}
+      {
+
+      }
 
       return false;
     }
@@ -130,7 +132,7 @@ namespace Speckle.Core.Models
         {
           var ex = new SpeckleException($"Dynamic object does not have the provided key.");
           //unhandled exceptions not caught when running in hosted applications, sending it explicitly
-          Log.Instance().CaptureException(ex);
+          Log.CaptureException(ex);
           throw ex;
         }
 
@@ -156,7 +158,7 @@ namespace Speckle.Core.Models
         }
         catch (Exception ex)
         {
-          Log.Instance().CaptureException(ex);
+          Log.CaptureException(ex);
           throw;
         }
       }

@@ -26,12 +26,12 @@ namespace Speckle.Core.Logging
 
       SentrySdk.ConfigureScope(scope =>
       {
+        scope.SetTag("project", "core");
         scope.User = new User
         {
           Id = deviceId,
         };
       });
-
     }
 
     public static Log Instance()
@@ -44,10 +44,19 @@ namespace Speckle.Core.Logging
       return _instance;
     }
 
+    public static void CaptureAndThrow(Exception e)
+    {
+      var ex = new SpeckleException($"Dynamic object does not have the provided key.");
+      //unhandled exceptions not caught when running in hosted applications, sending it explicitly
+      Log.CaptureException(ex);
+      throw ex;
+    }
+
 
     //capture and make sure Sentry is initialized
-    public void CaptureException(Exception e)
+    public static void CaptureException(Exception e)
     {
+      Instance();
       SentrySdk.CaptureException(e);
     }
   }
