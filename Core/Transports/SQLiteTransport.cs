@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
 {
@@ -33,6 +34,8 @@ namespace Speckle.Core.Transports
 
     public SqlLiteObjectTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
     {
+      Log.AddBreadcrumb("New SqlLite Transport");
+
       if (basePath == null)
         basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 

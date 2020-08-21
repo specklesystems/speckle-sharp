@@ -85,5 +85,11 @@ namespace Speckle.Core.Logging
         SentrySdk.CaptureException(e);
       });
     }
+
+    public static void AddBreadcrumb(string message)
+    {
+      Instance();
+      SentrySdk.AddBreadcrumb(message);
+    }
   }
 }

@@ -21,8 +21,9 @@ namespace Speckle.Core.Api
     /// <returns></returns>
     public static async Task<Base> Receive(string objectId, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
-      var (serializer, settings) = GetSerializerInstance();
+      Log.AddBreadcrumb("Receive local");
 
+      var (serializer, settings) = GetSerializerInstance();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = new Action<string, int>((name, processed) =>
@@ -67,6 +68,8 @@ namespace Speckle.Core.Api
         return await Receive(objectId, localTransport, onProgressAction);
       }
       catch {  }
+
+      Log.AddBreadcrumb("Receive");
 
       var (serializer, settings) = GetSerializerInstance();
 

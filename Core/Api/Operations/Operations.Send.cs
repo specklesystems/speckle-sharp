@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Sentry;
 using Sentry.Protocol;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -25,6 +26,7 @@ namespace Speckle.Core.Api
     /// <returns>The object's id (hash).</returns>
     public static async Task<string> Send(Base @object, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
+      Log.AddBreadcrumb("Send local");
       var (serializer, settings) = GetSerializerInstance();
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
 
@@ -71,6 +73,8 @@ namespace Speckle.Core.Api
       {
         Log.CaptureAndThrow(new SpeckleException($"The number of streams and clients provided does not match."), SentryLevel.Error);
       }
+
+      Log.AddBreadcrumb("Send");
 
       var (serializer, settings) = GetSerializerInstance();
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
@@ -137,6 +141,8 @@ namespace Speckle.Core.Api
     /// <returns>The commit's id (hash).</returns>
     public static async Task<List<string>> Send(IEnumerable<Base> objects, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
+      Log.AddBreadcrumb("Send local");
+
       var (serializer, settings) = GetSerializerInstance();
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
 
@@ -181,6 +187,8 @@ namespace Speckle.Core.Api
       {
         Log.CaptureAndThrow(new SpeckleException($"The number of streams and clients provided does not match."), SentryLevel.Error);
       }
+
+      Log.AddBreadcrumb("Send");
 
       var (serializer, settings) = GetSerializerInstance();
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();

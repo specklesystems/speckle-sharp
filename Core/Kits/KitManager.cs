@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace Speckle.Core.Kits
@@ -62,6 +63,8 @@ namespace Speckle.Core.Kits
     }
     private static void Load()
     {
+      Log.AddBreadcrumb("Initialize Kit Manager");
+
       GetLoadedSpeckleReferencingAssemblies();
       LoadSpeckleReferencingAssemblies();
 

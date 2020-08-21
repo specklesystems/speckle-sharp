@@ -18,6 +18,8 @@ namespace Speckle.Core.Transports
 
     public MemoryTransport()
     {
+      Log.AddBreadcrumb("New Memory Transport");
+
       Objects = new Dictionary<string, string>();
     }
 

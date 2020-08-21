@@ -40,6 +40,8 @@ namespace Speckle.Core.Transports
 
     public RemoteTransport(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
     {
+      Log.AddBreadcrumb("New Remote Transport");
+
       BaseUri = baseUri;
       StreamId = streamId;
 
