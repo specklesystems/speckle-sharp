@@ -4,6 +4,8 @@ using Newtonsoft.Json;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using System.Collections.Concurrent;
+using Speckle.Core.Logging;
+using Sentry.Protocol;
 
 namespace Speckle.Core.Api
 {
@@ -40,7 +42,8 @@ namespace Speckle.Core.Api
 
       if (objString == null)
       {
-        throw new Exception($"Object {objectId} was not found in the local cache.");
+        Log.CaptureException(new SpeckleException($"Object not found in the local cache."), level:SentryLevel.Info);
+        throw new SpeckleException($"Object {objectId} was not found in the local cache.");
       }
       else
       {

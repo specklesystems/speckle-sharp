@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
@@ -131,10 +132,12 @@ namespace Speckle.Core.Serialisation
       var pieces = assemblyQualifiedName.Split(',').Select(s => s.Trim()).ToArray();
 
       var myAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(ass => ass.GetName().Name == pieces[1]);
-      if (myAssembly == null) throw new Exception("Could not load abstract object's assembly.");
+      if (myAssembly == null)
+        Log.CaptureAndThrow(new SpeckleException("Could not load abstract object's assembly."), level: Sentry.Protocol.SentryLevel.Warning);
 
       var myType = myAssembly.GetType(pieces[0]);
-      if (myType == null) throw new Exception("Could not load abstract object's assembly.");
+      if (myType == null)
+        Log.CaptureAndThrow(new SpeckleException("Could not load abstract object's assembly."), level: Sentry.Protocol.SentryLevel.Warning);
 
       cachedAbstractTypes[assemblyQualifiedName] = myType;
 

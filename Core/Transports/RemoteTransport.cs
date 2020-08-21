@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
 {
@@ -126,7 +127,7 @@ namespace Speckle.Core.Transports
       catch (Exception e)
       {
         IS_WRITING = false;
-        throw new Exception($"Remote unreachable ({Client.BaseAddress.ToString()}. {e.Message})");
+        Log.CaptureAndThrow(new SpeckleException("Remote unreachable.", e));
       }
 
       IS_WRITING = false;
@@ -143,7 +144,7 @@ namespace Speckle.Core.Transports
     public void SaveObject(string hash, string serializedObject)
     {
       if (serializedObject == null && LocalTransport == null)
-        throw new Exception("Cannot push object by reference if no local transport is provided.");
+        Log.CaptureAndThrow(new SpeckleException("Cannot push object by reference if no local transport is provided."), level: Sentry.Protocol.SentryLevel.Warning);
 
       if (serializedObject == null)
         serializedObject = LocalTransport.GetObject(hash);

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
@@ -127,12 +128,12 @@ namespace Speckle.Core.Serialisation
       if (discriminator == "reference")
       {
         var id = Extensions.Value<string>(jObject.GetValue("referencedId"));
-        string str;
+        string str = "";
 
         if (Transport != null)
           str = Transport.GetObject(id);
         else
-          throw new Exception($"Cannot resolve reference with id of {id}: a transport is not defined.");
+          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference, no transport is defined."), level: Sentry.Protocol.SentryLevel.Warning);
 
         if (str != null && str != "")
         {
@@ -140,7 +141,8 @@ namespace Speckle.Core.Serialisation
           discriminator = Extensions.Value<string>(jObject.GetValue(TypeDiscriminator));
         }
         else
-          throw new Exception($"Cannot resolve reference with id of {id}. The provided transport could not find it.");
+          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference. The provided transport could not find it."), level: Sentry.Protocol.SentryLevel.Warning);
+
       }
 
       var type = SerializationUtilities.GetType(discriminator);

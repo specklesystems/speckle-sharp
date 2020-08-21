@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using Newtonsoft.Json;
+using Sentry.Protocol;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Api
 {
@@ -28,7 +30,7 @@ namespace Speckle.Core.Api
     public Client(Account account)
     {
       if (account == null)
-        throw new Exception("Provided account is null.");
+        Log.CaptureAndThrow(new SpeckleException($"Provided account is null."));
 
       Account = account;
       AccountId = account.id;

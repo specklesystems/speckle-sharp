@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Sentry.Protocol;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
@@ -67,7 +69,7 @@ namespace Speckle.Core.Api
 
       if (streamIds.Count() != clients.Count())
       {
-        throw new Exception($"The number of streams and clients provided does not match.");
+        Log.CaptureAndThrow(new SpeckleException($"The number of streams and clients provided does not match."), SentryLevel.Error);
       }
 
       var (serializer, settings) = GetSerializerInstance();
@@ -177,7 +179,7 @@ namespace Speckle.Core.Api
     {
       if (streamIds.Count() != clients.Count())
       {
-        throw new Exception($"The number of streams and clients provided does not match.");
+        Log.CaptureAndThrow(new SpeckleException($"The number of streams and clients provided does not match."), SentryLevel.Error);
       }
 
       var (serializer, settings) = GetSerializerInstance();

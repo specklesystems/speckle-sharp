@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace Speckle.Core.Transports
@@ -29,7 +30,10 @@ namespace Speckle.Core.Transports
     {
       if (Objects.ContainsKey(hash)) return Objects[hash];
       else
-        throw new Exception("No object found in this memory transport.");
+      {
+        Log.CaptureException(new SpeckleException("No object found in this memory transport."), level: Sentry.Protocol.SentryLevel.Warning);
+        throw new SpeckleException("No object found in this memory transport.");
+      }
     }
 
     public bool GetWriteCompletionStatus()
@@ -39,7 +43,7 @@ namespace Speckle.Core.Transports
 
     public Task WriteComplete()
     {
-      return Utilities.WaitUntil(() => true); 
+      return Utilities.WaitUntil(() => true);
     }
   }
 

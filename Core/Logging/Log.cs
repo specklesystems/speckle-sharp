@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using DeviceId;
 using Sentry;
 using Sentry.Protocol;
@@ -17,16 +18,18 @@ namespace Speckle.Core.Logging
         .AddMotherboardSerialNumber()
         .ToString();
 
-      //TODO: set DSN & env in CI/CD pipeline, currently it's picked automatically from the SENTRY_DSN env variable
-      //to set it on mac: https://stackoverflow.com/a/32405815/826060
+      //TODO: set DSN & env in CI/CD pipeline
+      //TODO: turn Debug off
       SentrySdk.Init(o =>
         {
+          o.Dsn = new Dsn("https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846");
           o.Environment = "dev";
+          o.Debug = true;
+          o.Release = "SpeckleCore@"+Assembly.GetExecutingAssembly().GetName().Version.ToString();  
         });
 
       SentrySdk.ConfigureScope(scope =>
       {
-        scope.SetTag("project", "core");
         scope.User = new User
         {
           Id = deviceId,
@@ -44,20 +47,43 @@ namespace Speckle.Core.Logging
       return _instance;
     }
 
-    public static void CaptureAndThrow(Exception e)
+    /// <summary>
+    /// Captures and throws an exception
+    /// Unhandled exceptions are usually swallowed by host applications like Revit, Dynamo
+    /// So they need to be sent manually.
+    /// </summary>
+    /// <param name="e">Exception to capture and throw</param>
+    internal static void CaptureAndThrow(Exception e, SentryLevel level = SentryLevel.Error)
     {
-      var ex = new SpeckleException($"Dynamic object does not have the provided key.");
-      //unhandled exceptions not caught when running in hosted applications, sending it explicitly
-      Log.CaptureException(ex);
-      throw ex;
+      CaptureException(e, "core", level);
+      throw e;
+    }
+
+    /// <summary>
+    /// Captures and throws an exception
+    /// Unhandled exceptions are usually swallowed by host applications like Revit, Dynamo
+    /// So they need to be sent manually.
+    /// </summary>
+    /// <param name="e">Exception to capture and throw</param>
+    /// <param name="e">Product where error is generated eg: core, connectorDynamo etc</param>
+    public static void CaptureAndThrow(Exception e, string product, SentryLevel level = SentryLevel.Error)
+    {
+      CaptureException(e, product, level);
+      throw e;
     }
 
 
     //capture and make sure Sentry is initialized
-    public static void CaptureException(Exception e)
+    public static void CaptureException(Exception e, string product = "core", SentryLevel level = SentryLevel.Error)
     {
       Instance();
-      SentrySdk.CaptureException(e);
+
+      SentrySdk.WithScope(s =>
+      {
+        s.Level = level;
+        s.SetTag("product", product);
+        SentrySdk.CaptureException(e);
+      });
     }
   }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using Speckle.Core.Logging;
+
 namespace Speckle.Core.Kits
 {
   public static class LengthUnits
@@ -120,7 +122,9 @@ namespace Speckle.Core.Kits
         case "meters":
           return LengthUnits.Meters;
       }
-      throw new Exception($"Cannot understand what unit {unit} is.");
+      var e = new SpeckleException($"Cannot understand what unit {unit} is.");
+      Log.CaptureException(e);
+      throw e;
     }
   }
 }
