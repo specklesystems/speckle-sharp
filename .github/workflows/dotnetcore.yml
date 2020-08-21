@@ -18,4 +18,4 @@ jobs:
     - name: Build with dotnet
       run: dotnet build --configuration Release
     - name: Test Unit Tests
-      run: dotnet test Tests\TestsUnit.csproj
+      run: dotnet test Tests/TestsUnit.csproj
