@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using DeviceId;
+using GraphQL;
 using Sentry;
 using Sentry.Protocol;
 
@@ -60,6 +62,21 @@ namespace Speckle.Core.Logging
     }
 
     /// <summary>
+    /// Captures and throws a GraphQL exception
+    /// </summary>
+    /// <param name="e">Exception to capture and throw</param>
+    internal static void CaptureAndThrow(Exception e, GraphQLError[] errors)
+    {
+      var extra = new List<KeyValuePair<string, object>>();
+      foreach(var error in errors)
+      {
+        extra.Add(new KeyValuePair<string, object>("error", error.Message));
+      }
+      CaptureException(e, "core", extra: extra);
+      throw e;
+    }
+
+    /// <summary>
     /// Captures and throws an exception
     /// Unhandled exceptions are usually swallowed by host applications like Revit, Dynamo
     /// So they need to be sent manually.
@@ -74,7 +91,10 @@ namespace Speckle.Core.Logging
 
 
     //capture and make sure Sentry is initialized
-    public static void CaptureException(Exception e, string product = "core", SentryLevel level = SentryLevel.Error)
+    public static void CaptureException(
+      Exception e, string product = "core", 
+      SentryLevel level = SentryLevel.Error, 
+      List<KeyValuePair<string, object>> extra = null)
     {
       Instance();
 
@@ -82,6 +102,8 @@ namespace Speckle.Core.Logging
       {
         s.Level = level;
         s.SetTag("product", product);
+        if (extra!=null)
+          s.SetExtras(extra);
         SentrySdk.CaptureException(e);
       });
     }

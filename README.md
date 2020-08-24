@@ -27,9 +27,9 @@ Core is the .NET SDK for Speckle 2.0. It uses .NET Standard 2.0 and has been tes
 
 ## Developing & Debugging
 
-### Getting started
+### Building
 
-Just restore all the NuGet packages and hit Debug!
+Just restore all the NuGet packages and hit Build!
 
 ### Developing
 
