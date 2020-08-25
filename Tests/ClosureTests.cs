@@ -39,7 +39,7 @@ namespace Tests
 
       var result = Operations.Send(d1, new List<ITransport>() { transport }, false).Result;
 
-      var test = Operations.Receive(result, transport).Result;
+      var test = Operations.Receive(result, localTransport: transport).Result;
 
       Assert.IsNotNull(test.id);
       Assert.AreEqual(test.id, d1.GetId(true));
