@@ -55,13 +55,13 @@ namespace Speckle.Core.Api
       foreach(var t in transports)
       {
         t.OnProgressAction = internalProgressAction;
-        serializer.SecondaryWriteTransports.Add(t);
+        serializer.WriteTransports.Add(t);
       }
 
       var obj = JsonConvert.SerializeObject(@object, settings);
       var hash = JObject.Parse(obj).GetValue("id").ToString();
 
-      var transportAwaits = serializer.SecondaryWriteTransports.Select(t => t.WriteComplete()).ToList();
+      var transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
 
       await Task.WhenAll(transportAwaits);
 
@@ -110,13 +110,13 @@ namespace Speckle.Core.Api
       foreach (var t in transports)
       {
         t.OnProgressAction = internalProgressAction;
-        serializer.SecondaryWriteTransports.Add(t);
+        serializer.WriteTransports.Add(t);
       }
 
       var obj = JsonConvert.SerializeObject(objects, settings);
       var res = JsonConvert.DeserializeObject<List<ObjectReference>>(obj);
 
-      var transportAwaits = serializer.SecondaryWriteTransports.Select(t => t.WriteComplete()).ToList();
+      var transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
 
       await Task.WhenAll(transportAwaits);
 

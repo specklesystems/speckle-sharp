@@ -37,7 +37,7 @@ namespace Tests
 
       var transport = new MemoryTransport();
 
-      var result = Operations.Send(d1, transport).Result;
+      var result = Operations.Send(d1, new List<ITransport>() { transport }, false).Result;
 
       var test = Operations.Receive(result, transport).Result;
 

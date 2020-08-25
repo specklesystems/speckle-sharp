@@ -30,9 +30,9 @@ namespace Speckle.Core.Serialisation
     /// <summary>
     /// The sync transport. This transport will be used synchronously. 
     /// </summary>
-    public ITransport Transport { get; set; }
+    public ITransport ReadTransport { get; set; }
 
-    public List<ITransport> SecondaryWriteTransports { get; set; } = new List<ITransport>();
+    public List<ITransport> WriteTransports { get; set; } = new List<ITransport>();
 
     #region Write Json Helper Properties
 
@@ -111,11 +111,11 @@ namespace Speckle.Core.Serialisation
       var objType = jObject.GetValue(TypeDiscriminator);
 
       // Assume dictionary!
-      if(objType == null)
+      if (objType == null)
       {
         var dict = new Dictionary<string, object>();
 
-        foreach(var val in jObject)
+        foreach (var val in jObject)
         {
           dict[val.Key] = SerializationUtilities.HandleValue(val.Value, serializer);
         }
@@ -130,8 +130,8 @@ namespace Speckle.Core.Serialisation
         var id = Extensions.Value<string>(jObject.GetValue("referencedId"));
         string str = "";
 
-        if (Transport != null)
-          str = Transport.GetObject(id);
+        if (ReadTransport != null)
+          str = ReadTransport.GetObject(id);
         else
           Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference, no transport is defined."), level: Sentry.Protocol.SentryLevel.Warning);
 
@@ -286,7 +286,7 @@ namespace Speckle.Core.Serialisation
             DetachLineage.Add(false);
 
           // Set and store a reference, if it is marked as detachable and the transport is not null.
-          if (Transport != null && propValue is Base && DetachLineage[DetachLineage.Count - 1])
+          if (WriteTransports != null && WriteTransports.Count != 0 && propValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var what = JToken.FromObject(propValue, serializer); // Trigger next.
             var refHash = ((JObject)what).GetValue("id").ToString();
@@ -305,7 +305,7 @@ namespace Speckle.Core.Serialisation
         }
 
         // Check if we actually have any transports present that would warrant a 
-        if ((Transport != null) && RefMinDepthTracker.ContainsKey(Lineage[Lineage.Count - 1]))
+        if ((WriteTransports != null && WriteTransports.Count != 0) && RefMinDepthTracker.ContainsKey(Lineage[Lineage.Count - 1]))
         {
           jo.Add("__closure", JToken.FromObject(RefMinDepthTracker[Lineage[Lineage.Count - 1]]));
         }
@@ -317,21 +317,16 @@ namespace Speckle.Core.Serialisation
         }
         jo.WriteTo(writer);
 
-        if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && (Transport != null))
+        if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && WriteTransports != null && WriteTransports.Count != 0)
         {
           var objString = jo.ToString();
           var objId = jo["id"].Value<string>();
 
-          Transport.SaveObject(objId, objString);
-
           OnProgressAction?.Invoke("Serialization", 1);
 
-          if (SecondaryWriteTransports != null && SecondaryWriteTransports.Count != 0)
+          foreach (var transport in WriteTransports)
           {
-            foreach (var transport in SecondaryWriteTransports)
-            {
-              transport.SaveObject(objId, objString);
-            }
+            transport.SaveObject(objId, objString);
           }
         }
 
@@ -358,13 +353,13 @@ namespace Speckle.Core.Serialisation
           FirstEntry = false;
           FirstEntryWasListOrDict = true;
           TotalProcessedCount += 1;
-          DetachLineage.Add(Transport != null ? true : false);
+          DetachLineage.Add(WriteTransports != null && WriteTransports.Count != 0 ? true : false);
         }
 
         JArray arr = new JArray();
         foreach (var arrValue in ((IEnumerable)value))
         {
-          if (Transport != null && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
+          if (WriteTransports != null && WriteTransports.Count != 0 && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var what = JToken.FromObject(arrValue, serializer); // Trigger next
             var refHash = ((JObject)what).GetValue("id").ToString();
@@ -391,14 +386,14 @@ namespace Speckle.Core.Serialisation
           FirstEntry = false;
           FirstEntryWasListOrDict = true;
           TotalProcessedCount += 1;
-          DetachLineage.Add(Transport != null ? true : false);
+          DetachLineage.Add(WriteTransports != null && WriteTransports.Count != 0 ? true : false);
         }
         var dict = value as IDictionary;
         var dictJo = new JObject();
         foreach (DictionaryEntry kvp in dict)
         {
           JToken jToken;
-          if (Transport != null && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
+          if (WriteTransports != null && WriteTransports.Count != 0 && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var what = JToken.FromObject(kvp.Value, serializer); // Trigger next
             var refHash = ((JObject)what).GetValue("id").ToString();

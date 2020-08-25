@@ -31,7 +31,7 @@ namespace Speckle.Core.Api
 
       localTransport = localTransport != null ? localTransport : new SQLiteTransport();
 
-      serializer.Transport = localTransport;
+      serializer.ReadTransport = localTransport;
       serializer.OnProgressAction = internalProgressAction;
 
       var objString = localTransport.GetObject(objectId);

@@ -17,7 +17,7 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Instantiates an instance of the default object serializer and settings pre-populated with it. 
     /// <returns>A tuple of Serializer and Settings.</returns>
-    private static (BaseObjectSerializer, JsonSerializerSettings) GetSerializerInstance()
+    public static (BaseObjectSerializer, JsonSerializerSettings) GetSerializerInstance()
     {
       var serializer = new BaseObjectSerializer();
       var settings = new JsonSerializerSettings()
