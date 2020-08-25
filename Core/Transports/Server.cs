@@ -36,7 +36,7 @@ namespace Speckle.Core.Transports
 
     private int totalProcessedCount = 0;
 
-    public Action<string, int> OnProgressAction;
+    public Action<string, int> OnProgressAction { get; set; }
 
     private Account Account { get; set; }
 

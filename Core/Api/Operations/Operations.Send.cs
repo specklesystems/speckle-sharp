@@ -46,9 +46,18 @@ namespace Speckle.Core.Api
 
       foreach(var t in transports)
       {
+        t.OnProgressAction = internalProgressAction;
         serializer.SecondaryWriteTransports.Add(t);
       }
 
+      var obj = JsonConvert.SerializeObject(@object, settings);
+      var hash = JObject.Parse(obj).GetValue("id").ToString();
+
+      var transportAwaits = serializer.SecondaryWriteTransports.Select(t => t.WriteComplete()).ToList();
+
+      await Task.WhenAll(transportAwaits);
+
+      return hash;
     }
 
     #region Pushing objects

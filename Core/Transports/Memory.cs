@@ -16,6 +16,8 @@ namespace Speckle.Core.Transports
 
     public string TransportName { get; set; } = "Memory";
 
+    public Action<string, int> OnProgressAction { get; set; }
+
     public MemoryTransport()
     {
       Log.AddBreadcrumb("New Memory Transport");

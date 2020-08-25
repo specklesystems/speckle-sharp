@@ -23,6 +23,8 @@ namespace Speckle.Core.Transports
 
     private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
 
+    public Action<string, int> OnProgressAction { get; set; }
+
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
     /// </summary>
