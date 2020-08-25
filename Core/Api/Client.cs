@@ -49,12 +49,18 @@ namespace Speckle.Core.Api
         new NewtonsoftJsonSerializer(),
         HttpClient);
 
-      var c = new ClientWebSocket();
-      c.Options.UseDefaultCredentials = true;
-      c.Options.SetRequestHeader("Authorization", $"Bearer {account.token}");
-      GQLClient.Options.ConfigureWebsocketOptions(c.Options);
+      var ws = new ClientWebSocket();;
+      ws.Options.SetRequestHeader("Authorization", $"Bearer {account.token}");
 
-      GQLClient.InitializeWebsocketConnection();
+      GQLClient.Options.ConfigureWebsocketOptions(ws.Options);
+
+      GQLClient.WebSocketReceiveErrors.Subscribe(e =>
+      {
+        if (e is WebSocketException we)
+          Console.WriteLine($"WebSocketException: {we.Message} (WebSocketError {we.WebSocketErrorCode}, ErrorCode {we.ErrorCode}, NativeErrorCode {we.NativeErrorCode}");
+        else
+          Console.WriteLine($"Exception in websocket receive stream: {e.ToString()}");
+      });
 
     }
 
