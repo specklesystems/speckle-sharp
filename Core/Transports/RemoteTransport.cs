@@ -7,11 +7,12 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
 {
-  public class RemoteTransport : IDisposable, ITransport, IRemoteTransport
+  public class ServerTransport : IDisposable, ITransport
   {
     public string TransportName { get; set; } = "RemoteTransport";
 
@@ -38,7 +39,17 @@ namespace Speckle.Core.Transports
 
     public Action<string, int> OnProgressAction;
 
-    public RemoteTransport(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
+    public ServerTransport(Account account, string streamId, int timeoutSeconds = 60)
+    {
+      Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
+    }
+
+    public ServerTransport(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
+    {
+      Initialize(baseUri, streamId, authorizationToken, timeoutSeconds);
+    }
+
+    private void Initialize(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
     {
       Log.AddBreadcrumb("New Remote Transport");
 
@@ -177,7 +188,7 @@ namespace Speckle.Core.Transports
       return response.ReadAsStringAsync().Result;
     }
 
-    public async Task<string> GetObjectAndChildren(string hash)
+    public async Task<string> CopyObjectAndChildren(string hash, ITransport transport)
     {
 
       var message = new HttpRequestMessage()
@@ -202,7 +213,7 @@ namespace Speckle.Core.Transports
           {
             var line = reader.ReadLine();
             var pcs = line.Split(new char[] { '\t' }, count: 2);
-            LocalTransport.SaveObject(pcs[0], pcs[1]);
+            transport.SaveObject(pcs[0], pcs[1]);
             if (i == 0)
             {
               commitObj = pcs[1];
@@ -212,7 +223,7 @@ namespace Speckle.Core.Transports
         }
       }
 
-      await ((SqlLiteObjectTransport)LocalTransport).WriteComplete();
+      await transport.WriteComplete();
       return commitObj;
     }
 

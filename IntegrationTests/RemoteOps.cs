@@ -8,6 +8,9 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Tests;
 
+/// <summary>
+/// NOTE: These tests require a instance of the speckle server to be running locally. We'll figure out the CI part later. 
+/// </summary>
 namespace IntegrationTests
 {
   public class RemoteOps

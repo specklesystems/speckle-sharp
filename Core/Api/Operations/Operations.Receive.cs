@@ -85,7 +85,7 @@ namespace Speckle.Core.Api
 
       localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
 
-      var rem = new RemoteTransport(client.ServerUrl, streamId, client.ApiToken, 1000) { OnProgressAction = internalProgressAction };
+      var rem = new ServerTransport(client.ServerUrl, streamId, client.ApiToken, 1000) { OnProgressAction = internalProgressAction };
         rem.LocalTransport = localTransport;
         var res = await rem.GetObjectAndChildren(objectId);
         await localTransport.WriteComplete(); // wait for the remote transport to write to the local one.

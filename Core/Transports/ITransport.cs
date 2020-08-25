@@ -6,6 +6,7 @@ namespace Speckle.Core.Transports
 {
   /// <summary>
   /// Interface defining the contract for transport implementations.
+  /// TODO: This is not its final form yet. We need to clean it up and "regularise" it a bit. Add some best practices too. Defs in the implementations.
   /// </summary>
   public interface ITransport
   {
@@ -20,24 +21,23 @@ namespace Speckle.Core.Transports
     public void SaveObject(string id, string serializedObject);
 
     /// <summary>
+    /// Awaitable method to figure out whether writing is completed. 
+    /// </summary>
+    /// <returns></returns>
+    public Task WriteComplete();
+
+    /// <summary>
     /// Gets an object.
     /// </summary>
     /// <param name="id">The object's hash.</param>
     /// <returns></returns>
     public string GetObject(string id);
 
-    public bool GetWriteCompletionStatus();
-
-    public Task WriteComplete();
-  }
-
-  public interface IRemoteTransport : ITransport
-  {
     /// <summary>
-    /// Should get an object with all of its children from a remote, and store them locally.
+    /// 
     /// </summary>
     /// <param name="hash"></param>
     /// <returns></returns>
-    public Task<string> GetObjectAndChildren(string hash);
+    public Task<string> CopyObjectAndChildren(string hash, ITransport transport);
   }
 }

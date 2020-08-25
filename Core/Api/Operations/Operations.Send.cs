@@ -97,7 +97,7 @@ namespace Speckle.Core.Api
       {
         var client = clients.ElementAt(i);
         var streamId = streamIds.ElementAt(i);
-        serializer.SecondaryWriteTransports.Add(new RemoteTransport(client.ServerUrl, streamId, client.ApiToken)
+        serializer.SecondaryWriteTransports.Add(new ServerTransport(client.ServerUrl, streamId, client.ApiToken)
         {
           LocalTransport = serializer.Transport,
           OnProgressAction = internalProgressAction
@@ -210,7 +210,7 @@ namespace Speckle.Core.Api
       {
         var client = clients.ElementAt(i);
         var streamId = streamIds.ElementAt(i);
-        serializer.SecondaryWriteTransports.Add(new RemoteTransport(client.ServerUrl, streamId, client.ApiToken)
+        serializer.SecondaryWriteTransports.Add(new ServerTransport(client.ServerUrl, streamId, client.ApiToken)
         {
           LocalTransport = serializer.Transport,
           OnProgressAction = internalProgressAction
