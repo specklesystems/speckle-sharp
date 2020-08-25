@@ -15,8 +15,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
-    <PackageReference Include="GraphQL.Client" Version="3.1.4" />
-    <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="3.1.4" />
+    <PackageReference Include="GraphQL.Client" Version="3.1.5" />
+    <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="3.1.5" />
     <PackageReference Include="Sentry" Version="2.1.6" />
     <PackageReference Include="DeviceId" Version="5.1.1" />
   </ItemGroup>
