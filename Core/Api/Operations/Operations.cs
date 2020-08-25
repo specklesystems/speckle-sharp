@@ -17,7 +17,7 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Instantiates an instance of the default object serializer and settings pre-populated with it. 
     /// <returns>A tuple of Serializer and Settings.</returns>
-    public static (BaseObjectSerializer, JsonSerializerSettings) GetSerializerInstance()
+    private static (BaseObjectSerializer, JsonSerializerSettings) GetSerializerInstance()
     {
       var serializer = new BaseObjectSerializer();
       var settings = new JsonSerializerSettings()
@@ -32,7 +32,13 @@ namespace Speckle.Core.Api
       return (serializer, settings);
     }
 
-    public static Action<string, int> GetInternalProgressAction(ConcurrentDictionary<string, int> localProgressDict, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    /// <summary>
+    /// Factory for progress actions to be used internally inside send & receive methods.
+    /// </summary>
+    /// <param name="localProgressDict"></param>
+    /// <param name="onProgressAction"></param>
+    /// <returns></returns>
+    private static Action<string, int> GetInternalProgressAction(ConcurrentDictionary<string, int> localProgressDict, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
       return new Action<string, int>((name, processed) =>
       {

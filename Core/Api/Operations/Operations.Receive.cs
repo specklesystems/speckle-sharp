@@ -20,7 +20,7 @@ namespace Speckle.Core.Api
     /// <param name="localTransport"></param>
     /// <param name="onProgressAction"></param>
     /// <returns></returns>
-    public static async Task<Base> Receive(string objectId, ITransport remoteTransport, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    public static async Task<Base> Receive(string objectId, ITransport localTransport = null, ITransport remoteTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
       Log.AddBreadcrumb("Receive");
 
@@ -30,6 +30,7 @@ namespace Speckle.Core.Api
       var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
 
       localTransport = localTransport != null ? localTransport : new SQLiteTransport();
+
       serializer.Transport = localTransport;
       serializer.OnProgressAction = internalProgressAction;
 
@@ -39,6 +40,9 @@ namespace Speckle.Core.Api
       {
         Log.AddBreadcrumb("CacheHit");
         return JsonConvert.DeserializeObject<Base>(objString, settings);
+      } else if( remoteTransport == null )
+      {
+        Log.CaptureAndThrow(new SpeckleException($"Could not find specified object using the local transport, and you didn't provide a fallback remote from which to pull it."), SentryLevel.Error);
       }
 
       Log.AddBreadcrumb("RemoteHit");
