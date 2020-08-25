@@ -12,6 +12,9 @@ namespace Speckle.Core.Transports
   {
     public string TransportName { get; set; }
 
+
+    public Action<string, int> OnProgressAction { get; set; }
+
     /// <summary>
     /// Saves an object.
     /// </summary>
@@ -43,7 +46,7 @@ namespace Speckle.Core.Transports
     /// Copies the parent object and all its children to the provided transport.
     /// </summary>
     /// <param name="hash"></param>
-    /// <returns>The string representation of the object.</returns>
+    /// <returns>The string representation of the root object.</returns>
     public Task<string> CopyObjectAndChildren(string id, ITransport transport);
   }
 }

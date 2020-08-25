@@ -15,6 +15,42 @@ namespace Speckle.Core.Api
 {
   public static partial class Operations
   {
+
+    public static async Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    {
+      Log.AddBreadcrumb("Send");
+
+      if (transports == null)
+      {
+        transports = new List<ITransport>();
+        Log.AddBreadcrumb("Null_Transport_List");
+      }
+
+      if (transports.Count == 0 && useDefaultCache == false)
+      {
+        Log.CaptureAndThrow(new SpeckleException($"You need to provide at least one transport: cannot send with an empty transport list and no default cache."), SentryLevel.Error);
+      }
+
+      if (useDefaultCache)
+      {
+        Log.AddBreadcrumb("Add_Default_Cache");
+        transports.Insert(0, new SQLiteTransport());
+      }
+
+      var (serializer, settings) = GetSerializerInstance();
+
+      var localProgressDict = new ConcurrentDictionary<string, int>();
+      var internalProgressAction = Operations.GetInternalProgressAction(localProgressDict, onProgressAction);
+
+      serializer.OnProgressAction = internalProgressAction;
+
+      foreach(var t in transports)
+      {
+        serializer.SecondaryWriteTransports.Add(t);
+      }
+
+    }
+
     #region Pushing objects
     /// <summary>
     /// Pushes and transports an object, as well as any of its detachable children, to all the transports provided.
@@ -28,7 +64,7 @@ namespace Speckle.Core.Api
     {
       Log.AddBreadcrumb("Send local");
       var (serializer, settings) = GetSerializerInstance();
-      localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
+      localTransport = localTransport != null ? localTransport : new SQLiteTransport();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = new Action<string, int>((name, processed) =>
@@ -77,7 +113,7 @@ namespace Speckle.Core.Api
       Log.AddBreadcrumb("Send");
 
       var (serializer, settings) = GetSerializerInstance();
-      localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
+      localTransport = localTransport != null ? localTransport : new SQLiteTransport();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = new Action<string, int>((name, processed) =>
@@ -144,7 +180,7 @@ namespace Speckle.Core.Api
       Log.AddBreadcrumb("Send local");
 
       var (serializer, settings) = GetSerializerInstance();
-      localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
+      localTransport = localTransport != null ? localTransport : new SQLiteTransport();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = new Action<string, int>((name, processed) =>
@@ -170,7 +206,7 @@ namespace Speckle.Core.Api
       return res.Select(o => o.referencedId).ToList();
     }
 
- 
+
     /// <summary>
     /// Pushes and transports a list of object, as well as any of their detachable children, to all the transports provided.
     /// <para>This method is an integrated serialization and transportation step.</para>
@@ -191,7 +227,7 @@ namespace Speckle.Core.Api
       Log.AddBreadcrumb("Send");
 
       var (serializer, settings) = GetSerializerInstance();
-      localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
+      localTransport = localTransport != null ? localTransport : new SQLiteTransport();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = new Action<string, int>((name, processed) =>
@@ -206,7 +242,7 @@ namespace Speckle.Core.Api
       serializer.Transport = localTransport;
       serializer.OnProgressAction = internalProgressAction;
 
-     for (var i = 0; i < clients.Count(); i++)
+      for (var i = 0; i < clients.Count(); i++)
       {
         var client = clients.ElementAt(i);
         var streamId = streamIds.ElementAt(i);
@@ -242,7 +278,7 @@ namespace Speckle.Core.Api
     {
       return await Send(objects, new List<string> { streamId }, new List<Client> { client }, localTransport, onProgressAction);
     }
-      #endregion
+    #endregion
 
-    }
+  }
 }

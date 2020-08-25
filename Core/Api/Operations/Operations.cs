@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Speckle.Core.Serialisation;
@@ -28,6 +30,18 @@ namespace Speckle.Core.Api
       };
 
       return (serializer, settings);
+    }
+
+    public static Action<string, int> GetInternalProgressAction(ConcurrentDictionary<string, int> localProgressDict, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    {
+      return new Action<string, int>((name, processed) =>
+      {
+        if (localProgressDict.ContainsKey(name))
+          localProgressDict[name] += processed;
+        else
+          localProgressDict[name] = processed;
+        onProgressAction?.Invoke(localProgressDict);
+      });
     }
   }
 

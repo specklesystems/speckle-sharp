@@ -38,8 +38,11 @@ namespace Speckle.Core.Transports
 
     public Action<string, int> OnProgressAction;
 
+    private Account Account { get; set; }
+
     public ServerTransport(Account account, string streamId, int timeoutSeconds = 60)
     {
+      Account = account;
       Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
     }
 

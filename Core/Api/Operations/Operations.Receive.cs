@@ -35,7 +35,7 @@ namespace Speckle.Core.Api
         onProgressAction?.Invoke(localProgressDict);
       });
 
-      localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
+      localTransport = localTransport != null ? localTransport : new SQLiteTransport();
       serializer.Transport = localTransport;
       serializer.OnProgressAction = internalProgressAction;
 
@@ -83,7 +83,7 @@ namespace Speckle.Core.Api
         onProgressAction?.Invoke(localProgressDict);
       });
 
-      localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
+      localTransport = localTransport != null ? localTransport : new SQLiteTransport();
 
       var rem = new ServerTransport(client.ServerUrl, streamId, client.ApiToken, 1000) { OnProgressAction = internalProgressAction };
         rem.LocalTransport = localTransport;

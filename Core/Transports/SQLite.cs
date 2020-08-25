@@ -11,7 +11,7 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
 {
-  public class SqlLiteObjectTransport : IDisposable, ITransport
+  public class SQLiteTransport : IDisposable, ITransport
   {
     public string TransportName { get; set; } = "LocalTransport";
 
@@ -32,7 +32,7 @@ namespace Speckle.Core.Transports
     private bool IS_WRITING = false;
     private int MAX_TRANSACTION_SIZE = 1000;
 
-    public SqlLiteObjectTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
+    public SQLiteTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
     {
       Log.AddBreadcrumb("New SqlLite Transport");
 
