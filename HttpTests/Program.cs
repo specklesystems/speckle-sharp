@@ -261,7 +261,7 @@ namespace ConsoleSketches
     public static async Task SqliteStressTest()
     {
       int numObjects = 100_000;
-      var transport = new SqlLiteObjectTransport();
+      var transport = new SQLiteTransport();
       var rand = new Random();
       var stopWatch = new Stopwatch();
 
