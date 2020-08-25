@@ -17,10 +17,10 @@ namespace Speckle.Core.Api
     /// </summary>
     /// <param name="objectId"></param>
     /// <param name="remoteTransport"></param>
-    /// <param name="localTransport"></param>
+    /// <param name="localTransport">Leave null to use the default cache.</param>
     /// <param name="onProgressAction"></param>
     /// <returns></returns>
-    public static async Task<Base> Receive(string objectId, ITransport localTransport = null, ITransport remoteTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    public static async Task<Base> Receive(string objectId, ITransport remoteTransport = null, ITransport localTransport = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
       Log.AddBreadcrumb("Receive");
 
@@ -38,7 +38,6 @@ namespace Speckle.Core.Api
 
       if (objString != null)
       {
-        Log.AddBreadcrumb("CacheHit");
         return JsonConvert.DeserializeObject<Base>(objString, settings);
       } else if( remoteTransport == null )
       {
@@ -49,6 +48,7 @@ namespace Speckle.Core.Api
       objString = await remoteTransport.CopyObjectAndChildren(objectId, localTransport);
 
       await localTransport.WriteComplete();
+
       return JsonConvert.DeserializeObject<Base>(objString, settings);
     }
 

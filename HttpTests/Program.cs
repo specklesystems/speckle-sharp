@@ -21,7 +21,7 @@ namespace ConsoleSketches
     {
       Console.Clear();
 
-     // await PushAndPullToRemote(1_000);
+      // await PushAndPullToRemote(1_000);
 
       Console.Clear();
 
@@ -70,7 +70,8 @@ namespace ConsoleSketches
         {
           await acc.RotateToken();
           Console.WriteLine($"Rotated {acc.id}: {acc.serverInfo.url} / {res.email} / {res.name} (token: {acc.token})");
-        } catch(Exception e)
+        }
+        catch (Exception e)
         {
           Console.WriteLine($"Failed to rotate acc {acc.id} / {acc.serverInfo.url} / {acc.userInfo.email}");
         }
@@ -82,7 +83,7 @@ namespace ConsoleSketches
     {
       var objs = new List<Base>();
 
-      Console.WriteLine($"Generating {numObjects} meshes with {numVertices} each. That's like {numVertices*numObjects} points. Might take a while?");
+      Console.WriteLine($"Generating {numObjects} meshes with {numVertices} each. That's like {numVertices * numObjects} points. Might take a while?");
 
       for (int i = 1; i <= numObjects; i++)
       {
@@ -103,13 +104,14 @@ namespace ConsoleSketches
       var myClient = new Client(AccountManager.GetDefaultAccount());
       var streamId = await myClient.StreamCreate(new StreamCreateInput { name = "test", description = "this is a test" });
 
+      var myServer = new ServerTransport(AccountManager.GetDefaultAccount(), streamId);
+
       var myObject = new Base();
       myObject["items"] = objs;
 
       var res = await Operations.Send(
         myObject,
-        streamId,
-        myClient,
+        new List<ITransport>() { myServer },
         onProgressAction: dict =>
         {
           Console.CursorLeft = 0;
@@ -120,15 +122,15 @@ namespace ConsoleSketches
         });
 
       Console.WriteLine($"Big commit id is {res}");
-      
-      var receivedCommit = await Operations.Receive(res, streamId, myClient, onProgressAction: dict =>
-      {
-        Console.CursorLeft = 0;
-        Console.CursorTop = 7;
 
-        foreach (var kvp in dict)
-          Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
-      });
+      var receivedCommit = await Operations.Receive(res, remoteTransport: myServer, onProgressAction: dict =>
+       {
+         Console.CursorLeft = 0;
+         Console.CursorTop = 7;
+
+         foreach (var kvp in dict)
+           Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
+       });
 
       Console.Clear();
       Console.WriteLine($"Received big commit {res}");
@@ -148,11 +150,11 @@ namespace ConsoleSketches
 
       var myClient = new Client(AccountManager.GetDefaultAccount());
       var streamId = await myClient.StreamCreate(new StreamCreateInput { name = "test", description = "this is a test" });
+      var server = new ServerTransport(AccountManager.GetDefaultAccount(), streamId);
 
       var res = await Operations.Send(
         myMesh,
-        streamId,
-        myClient );
+        transports: new List<ITransport>() { server }); ;
 
       Console.WriteLine($"Big mesh id is {res}");
 
@@ -222,18 +224,17 @@ namespace ConsoleSketches
 
       var myClient = new Client(AccountManager.GetDefaultAccount());
       var streamId = await myClient.StreamCreate(new StreamCreateInput { name = "test", description = "this is a test" });
-
+      var firstServer = new ServerTransport(AccountManager.GetDefaultAccount(), streamId);
 
       var mySecondClient = new Client(AccountManager.GetDefaultAccount());
       var secondStreamId = await myClient.StreamCreate(new StreamCreateInput { name = "test2", description = "this is a second test" });
-
+      var secondServer = new ServerTransport(AccountManager.GetDefaultAccount(), secondStreamId);
 
       var res = await Operations.Send(
-        funkyStructure,
-        new string[] { streamId, secondStreamId },
-        new Client[] { myClient, mySecondClient },
-        null,
-        pushProgressAction) ;
+        @object: funkyStructure,
+        transports: new List<ITransport>() { firstServer, secondServer },
+        onProgressAction: pushProgressAction
+        );
 
       Console.Clear();
       Console.CursorLeft = 0;
@@ -245,7 +246,7 @@ namespace ConsoleSketches
       Console.Clear();
 
       // Time for pulling an object out. 
-      var res2 = await Operations.Receive(res, streamId, myClient, onProgressAction: dict =>
+      var res2 = await Operations.Receive(res, remoteTransport: firstServer, onProgressAction: dict =>
       {
         Console.CursorLeft = 0;
         Console.CursorTop = 0;
@@ -253,6 +254,7 @@ namespace ConsoleSketches
         foreach (var kvp in dict)
           Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
       });
+
       Console.Clear();
       Console.WriteLine("Got those objects back");
     }

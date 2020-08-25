@@ -31,7 +31,6 @@ namespace Speckle.Core.Api
       if (transports == null)
       {
         transports = new List<ITransport>();
-        Log.AddBreadcrumb("Null_Transport_List");
       }
 
       if (transports.Count == 0 && useDefaultCache == false)
@@ -41,7 +40,6 @@ namespace Speckle.Core.Api
 
       if (useDefaultCache)
       {
-        Log.AddBreadcrumb("Add_Default_Cache");
         transports.Insert(0, new SQLiteTransport());
       }
 
@@ -81,12 +79,11 @@ namespace Speckle.Core.Api
     /// <returns>The object's id (hash).</returns>
     public static async Task<List<string>> Send(IEnumerable<Base> objects, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
-      Log.AddBreadcrumb("SendMultiple");
+      Log.AddBreadcrumb("Send Multiple");
 
       if (transports == null)
       {
         transports = new List<ITransport>();
-        Log.AddBreadcrumb("Null_Transport_List");
       }
 
       if (transports.Count == 0 && useDefaultCache == false)
@@ -96,7 +93,6 @@ namespace Speckle.Core.Api
 
       if (useDefaultCache)
       {
-        Log.AddBreadcrumb("Add_Default_Cache");
         transports.Insert(0, new SQLiteTransport());
       }
 

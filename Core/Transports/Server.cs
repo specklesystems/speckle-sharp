@@ -18,7 +18,7 @@ namespace Speckle.Core.Transports
 
     public string BaseUri { get; private set; }
 
-    public string StreamId { get; private set; }
+    public string StreamId { get; set; }
 
     private HttpClient Client { get; set; }
 
