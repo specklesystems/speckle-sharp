@@ -20,8 +20,6 @@ namespace Speckle.Core.Transports
 
     public string StreamId { get; private set; }
 
-    public ITransport LocalTransport { get; set; }
-
     private HttpClient Client { get; set; }
 
     private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
@@ -33,6 +31,7 @@ namespace Speckle.Core.Transports
     private bool IS_WRITING = false;
 
     private int MAX_BUFFER_SIZE = 250_000;
+
     private int MAX_MULTIPART_COUNT = 4;
 
     private int totalProcessedCount = 0;
@@ -156,11 +155,18 @@ namespace Speckle.Core.Transports
 
     public void SaveObject(string hash, string serializedObject)
     {
-      if (serializedObject == null && LocalTransport == null)
-        Log.CaptureAndThrow(new SpeckleException("Cannot push object by reference if no local transport is provided."), level: Sentry.Protocol.SentryLevel.Warning);
+      Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 
-      if (serializedObject == null)
-        serializedObject = LocalTransport.GetObject(hash);
+      if (!WriteTimer.Enabled && !IS_WRITING)
+      {
+        WriteTimer.Enabled = true;
+        WriteTimer.Start();
+      }
+    }
+
+    public void SaveObject(string hash, ITransport transport)
+    {
+      var serializedObject = transport.GetObject(hash);
 
       Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 

@@ -28,6 +28,11 @@ namespace Speckle.Core.Transports
       Objects[hash] = serializedObject;
     }
 
+    public void SaveObject(string id, ITransport transport)
+    {
+      throw new NotImplementedException();
+    }
+
     public string GetObject(string hash)
     {
       if (Objects.ContainsKey(hash)) return Objects[hash];
@@ -36,6 +41,11 @@ namespace Speckle.Core.Transports
         Log.CaptureException(new SpeckleException("No object found in this memory transport."), level: Sentry.Protocol.SentryLevel.Warning);
         throw new SpeckleException("No object found in this memory transport.");
       }
+    }
+
+    public Task<string> CopyObjectAndChildren(string id, ITransport transport)
+    {
+      throw new NotImplementedException();
     }
 
     public bool GetWriteCompletionStatus()

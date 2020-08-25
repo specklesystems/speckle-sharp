@@ -17,8 +17,14 @@ namespace Speckle.Core.Transports
     /// </summary>
     /// <param name="id">The hash of the object.</param>
     /// <param name="serializedObject">The full string representation of the object.</param>
-    /// <param name="overwrite">If true, will overrwrite the file even if present.</param>
     public void SaveObject(string id, string serializedObject);
+
+    /// <summary>
+    /// Saves an object, retrieveing its serialised version from the provided transport. 
+    /// </summary>
+    /// <param name="id">The hash of the object.</param>
+    /// <param name="transport">The transport from where to retrieve it.</param>
+    public void SaveObject(string id, ITransport transport);
 
     /// <summary>
     /// Awaitable method to figure out whether writing is completed. 
@@ -34,10 +40,10 @@ namespace Speckle.Core.Transports
     public string GetObject(string id);
 
     /// <summary>
-    /// 
+    /// Copies the parent object and all its children to the provided transport.
     /// </summary>
     /// <param name="hash"></param>
-    /// <returns></returns>
-    public Task<string> CopyObjectAndChildren(string hash, ITransport transport);
+    /// <returns>The string representation of the object.</returns>
+    public Task<string> CopyObjectAndChildren(string id, ITransport transport);
   }
 }
