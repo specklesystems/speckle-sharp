@@ -36,9 +36,9 @@ namespace Speckle.Core.Models
     public string GetId(bool decompose = false)
     {
       var (s, t) = Operations.GetSerializerInstance();
-      if(decompose)
+      if (decompose)
       {
-        s.Transport = new MemoryTransport();
+        s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
       }
       var obj = JsonConvert.SerializeObject(this, t);
       return JObject.Parse(obj).GetValue("id").ToString();

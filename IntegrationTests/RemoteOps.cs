@@ -6,13 +6,22 @@ using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
+using Speckle.Core.Transports;
 using Tests;
 
+////////////////////////////////////////////////////////////////////////////
+/// NOTE:                                                                ///
+/// These tests don't run without a server running locally.              ///
+/// Check out https://github.com/specklesystems/server for               ///
+/// more info on the server.                                             ///
+////////////////////////////////////////////////////////////////////////////
 namespace IntegrationTests
 {
   public class RemoteOps
   {
     public Client myClient;
+    public ServerTransport myServerTransport;
+
     private string streamId = "";
     private string branchId = "";
     private string branchName = "";
@@ -22,6 +31,7 @@ namespace IntegrationTests
     public void Setup()
     {
       myClient = new Client(AccountManager.GetAccounts().First());
+      myServerTransport = new ServerTransport(AccountManager.GetDefaultAccount(), null);
     }
 
     [Test]
@@ -42,6 +52,7 @@ namespace IntegrationTests
         name = "Super Stream 01"
       });
 
+      myServerTransport.StreamId = res;
       Assert.NotNull(res);
       streamId = res;
     }
@@ -119,9 +130,6 @@ namespace IntegrationTests
       branchName = "sample-branch";
     }
 
-
-
-
     #region commit
 
     [Test, Order(43)]
@@ -135,7 +143,7 @@ namespace IntegrationTests
       // NOTE:
       // Operations.Upload is designed to be called from the connector, with potentially multiple responses.
       // We could (should?) scaffold a corrolary Remote.Upload() at one point - in beta maybe?
-      commitId = await Operations.Send(myObject, streamId, myClient );
+      commitId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport });
 
       var res = await myClient.CommitCreate(new CommitCreateInput
       {
@@ -147,7 +155,6 @@ namespace IntegrationTests
       Assert.NotNull(res);
       commitId = res;
     }
-
 
     [Test, Order(44)]
     public async Task CommitUpdate()
@@ -201,15 +208,11 @@ namespace IntegrationTests
 
     #endregion
 
-
-
     [Test, Order(60)]
     public async Task StreamDelete()
     {
       var res = await myClient.StreamDelete(streamId);
       Assert.IsTrue(res);
     }
-
-
   }
 }

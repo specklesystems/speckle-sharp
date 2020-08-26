@@ -13,83 +13,43 @@ namespace Speckle.Core.Api
   {
 
     /// <summary>
-    /// Pulls an object from a local transport and deserializes it.
+    /// Receives an object from a transport.
     /// </summary>
     /// <param name="objectId"></param>
-    /// <param name="localTransport"></param>
-    /// <param name="onProgressAction">An action that is invoked with a dictionary argument containing key value pairs of (process name, processed items).</param>
-    /// <returns></returns>
-    public static async Task<Base> Receive(string objectId, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
-    {
-      Log.AddBreadcrumb("Receive local");
-
-      var (serializer, settings) = GetSerializerInstance();
-
-      var localProgressDict = new ConcurrentDictionary<string, int>();
-      var internalProgressAction = new Action<string, int>((name, processed) =>
-      {
-        if (localProgressDict.ContainsKey(name))
-          localProgressDict[name] += processed;
-        else
-          localProgressDict[name] = processed;
-        onProgressAction?.Invoke(localProgressDict);
-      });
-
-      localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
-      serializer.Transport = localTransport;
-      serializer.OnProgressAction = internalProgressAction;
-
-      var objString = localTransport.GetObject(objectId);
-
-      if (objString == null)
-      {
-        Log.CaptureException(new SpeckleException($"Object not found in the local cache."), level:SentryLevel.Info);
-        throw new SpeckleException($"Object {objectId} was not found in the local cache.");
-      }
-      else
-      {
-        return JsonConvert.DeserializeObject<Base>(objString, settings);
-      }
-    }
-
-    /// <summary>
-    /// Pulls an object from a Speckle server. If found in the local transport, that will be used.
-    /// </summary>
-    /// <param name="objectId"></param>
-    /// <param name="streamId"></param>
-    /// <param name="client"></param>
+    /// <param name="remoteTransport">The transport to receive from.</param>
+    /// <param name="localTransport">Leave null to use the default cache.</param>
     /// <param name="onProgressAction"></param>
     /// <returns></returns>
-    public static async Task<Base> Receive(string objectId, string streamId, Client client, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    public static async Task<Base> Receive(string objectId, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
-      try
-      {
-        // try receive from local cache
-        return await Receive(objectId, localTransport, onProgressAction);
-      }
-      catch {  }
-
       Log.AddBreadcrumb("Receive");
 
       var (serializer, settings) = GetSerializerInstance();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
-      var internalProgressAction = new Action<string, int>((name, processed) =>
+      var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
+
+      localTransport = localTransport != null ? localTransport : new SQLiteTransport();
+
+      serializer.ReadTransport = localTransport;
+      serializer.OnProgressAction = internalProgressAction;
+
+      var objString = localTransport.GetObject(objectId);
+
+      if (objString != null)
       {
-        if (localProgressDict.ContainsKey(name))
-          localProgressDict[name] += processed;
-        else
-          localProgressDict[name] = processed;
-        onProgressAction?.Invoke(localProgressDict);
-      });
+        return JsonConvert.DeserializeObject<Base>(objString, settings);
+      } else if( remoteTransport == null )
+      {
+        Log.CaptureAndThrow(new SpeckleException($"Could not find specified object using the local transport, and you didn't provide a fallback remote from which to pull it."), SentryLevel.Error);
+      }
 
-      localTransport = localTransport != null ? localTransport : new SqlLiteObjectTransport();
+      Log.AddBreadcrumb("RemoteHit");
+      objString = await remoteTransport.CopyObjectAndChildren(objectId, localTransport);
 
-      var rem = new RemoteTransport(client.ServerUrl, streamId, client.ApiToken, 1000) { OnProgressAction = internalProgressAction };
-        rem.LocalTransport = localTransport;
-        var res = await rem.GetObjectAndChildren(objectId);
-        await localTransport.WriteComplete(); // wait for the remote transport to write to the local one.
-        return JsonConvert.DeserializeObject<Base>(res, settings);
+      await localTransport.WriteComplete();
+
+      return JsonConvert.DeserializeObject<Base>(objString, settings);
     }
 
   }

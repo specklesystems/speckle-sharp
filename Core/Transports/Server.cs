@@ -7,19 +7,18 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
 {
-  public class RemoteTransport : IDisposable, ITransport, IRemoteTransport
+  public class ServerTransport : IDisposable, ITransport
   {
     public string TransportName { get; set; } = "RemoteTransport";
 
     public string BaseUri { get; private set; }
 
-    public string StreamId { get; private set; }
-
-    public ITransport LocalTransport { get; set; }
+    public string StreamId { get; set; }
 
     private HttpClient Client { get; set; }
 
@@ -32,13 +31,22 @@ namespace Speckle.Core.Transports
     private bool IS_WRITING = false;
 
     private int MAX_BUFFER_SIZE = 250_000;
+
     private int MAX_MULTIPART_COUNT = 4;
 
     private int totalProcessedCount = 0;
 
-    public Action<string, int> OnProgressAction;
+    public Action<string, int> OnProgressAction { get; set; }
 
-    public RemoteTransport(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
+    private Account Account { get; set; }
+
+    public ServerTransport(Account account, string streamId, int timeoutSeconds = 60)
+    {
+      Account = account;
+      Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
+    }
+
+    private void Initialize(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
     {
       Log.AddBreadcrumb("New Remote Transport");
 
@@ -145,11 +153,18 @@ namespace Speckle.Core.Transports
 
     public void SaveObject(string hash, string serializedObject)
     {
-      if (serializedObject == null && LocalTransport == null)
-        Log.CaptureAndThrow(new SpeckleException("Cannot push object by reference if no local transport is provided."), level: Sentry.Protocol.SentryLevel.Warning);
+      Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 
-      if (serializedObject == null)
-        serializedObject = LocalTransport.GetObject(hash);
+      if (!WriteTimer.Enabled && !IS_WRITING)
+      {
+        WriteTimer.Enabled = true;
+        WriteTimer.Start();
+      }
+    }
+
+    public void SaveObject(string hash, ITransport sourceTransport)
+    {
+      var serializedObject = sourceTransport.GetObject(hash);
 
       Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 
@@ -177,7 +192,7 @@ namespace Speckle.Core.Transports
       return response.ReadAsStringAsync().Result;
     }
 
-    public async Task<string> GetObjectAndChildren(string hash)
+    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport)
     {
 
       var message = new HttpRequestMessage()
@@ -202,7 +217,7 @@ namespace Speckle.Core.Transports
           {
             var line = reader.ReadLine();
             var pcs = line.Split(new char[] { '\t' }, count: 2);
-            LocalTransport.SaveObject(pcs[0], pcs[1]);
+            targetTransport.SaveObject(pcs[0], pcs[1]);
             if (i == 0)
             {
               commitObj = pcs[1];
@@ -212,7 +227,7 @@ namespace Speckle.Core.Transports
         }
       }
 
-      await ((SqlLiteObjectTransport)LocalTransport).WriteComplete();
+      await targetTransport.WriteComplete();
       return commitObj;
     }
 

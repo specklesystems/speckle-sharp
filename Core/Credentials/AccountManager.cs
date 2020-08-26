@@ -24,7 +24,7 @@ namespace Speckle.Core.Credentials
   /// </summary>
   public static class AccountManager
   {
-    private static SqlLiteObjectTransport AccountStorage = new SqlLiteObjectTransport(scope: "Accounts");
+    private static SQLiteTransport AccountStorage = new SQLiteTransport(scope: "Accounts");
 
     // NOTE: These need to be coordinated with the server.
     internal static string APPID = "connectors";
