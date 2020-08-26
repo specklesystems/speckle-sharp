@@ -8,7 +8,9 @@ using Dynamo.Graph.Nodes;
 using Speckle.Converter.Dynamo;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorDynamo
 {
@@ -17,6 +19,27 @@ namespace Speckle.ConnectorDynamo
   /// </summary>
   public static class Speckle
   {
+
+    //[NodeName("Sentry")]
+    //[NodeCategory("Speckle")]
+    //public static int Sentry(int input)
+    //{
+    //  var g = Environment.GetEnvironmentVariable("SENTRY_DSN");
+    //  Log.Instance();
+
+    //  if(input == 1)
+    //    throw new SpeckleException("Dynamo sucks");
+
+    //  if (input == 2)
+    //    Log.CaptureAndThrow(new SpeckleException("Dynamo really sucks"), "dynamo");
+
+
+    //  Log.CaptureAndThrow(new SpeckleException("Manual Exception"), "dynamo");
+      
+
+    //  return 0;
+
+    //}
 
     /// <summary>
     /// Your default Speckle account
@@ -59,23 +82,20 @@ namespace Speckle.ConnectorDynamo
     [NodeCategory("Speckle")]
     [NodeDescription("Sends data to Speckle")]
     [NodeSearchTags("send", "speckle")]
-    public static string Send(object data, string streamId, [DefaultArgument("null")] Account account = null)
+    public static string Send([ArbitraryDimensionArrayImport] object data, string streamId, [DefaultArgument("null")] Account account = null)
     {
       if (account == null)
         account = AccountManager.GetDefaultAccount();
-
-      var converter = new ConverterDynamo();
-      var spkbase = converter.ConvertToSpeckle(data);
-
       var client = new Client(account);
-
-      var commitId = Operations.Send(spkbase, streamId, client).Result;
+      var @base = Utils.ConvertRecursivelyToSpeckle(data);
+      var transport = new ServerTransport(account, streamId);
+      var objectId = Operations.Send(@base, new List<ITransport>() { transport }).Result;
 
       var res = client.CommitCreate(new CommitCreateInput
       {
         streamId = streamId,
         branchName = "master",
-        objectId = commitId,
+        objectId = objectId,
         message = "Automatic commit from Dynamo"
       }).Result;
 
@@ -93,13 +113,12 @@ namespace Speckle.ConnectorDynamo
     [NodeCategory("Speckle")]
     [NodeDescription("Sends data locally")]
     [NodeSearchTags("send", "speckle")]
-    public static string SendLocal(object data)
+    public static string SendLocal([ArbitraryDimensionArrayImport] object data)
     {
-      var converter = new ConverterDynamo();
-      var spkbase = converter.ConvertToSpeckle(data);
-      var commitId = Operations.Send(spkbase).Result;
+      var @base = Utils.ConvertRecursivelyToSpeckle(data);
+      var objectId = Operations.Send(@base).Result;
 
-      return commitId;
+      return objectId;
     }
 
 
@@ -122,13 +141,11 @@ namespace Speckle.ConnectorDynamo
       var res = client.StreamGet(streamId).Result;
       var lastCommit = res.branches.items[0].commits.items[0];
 
-      var converter = new ConverterDynamo();
-
-      var spkbase = Operations.Receive(lastCommit.referencedObject, streamId, client).Result;
-      var data = converter.ConvertToNative(spkbase);
+      var transport = new ServerTransport(account, streamId);
+      var @base = Operations.Receive(lastCommit.referencedObject, remoteTransport: transport).Result;
+      var data = Utils.ConvertRecursivelyToNative(@base);
 
       return data;
-
     }
 
     /// <summary>
@@ -143,11 +160,9 @@ namespace Speckle.ConnectorDynamo
     public static object ReceiveLocal(string localDataId)
     {
       var converter = new ConverterDynamo();
-      var spkbase = Operations.Receive(localDataId).Result;
-      var data = converter.ConvertToNative(spkbase);
-
+      var @base = Operations.Receive(localDataId).Result;
+      var data = Utils.ConvertRecursivelyToNative(@base);
       return data;
-
     }
 
 
