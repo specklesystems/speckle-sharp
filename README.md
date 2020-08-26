@@ -7,19 +7,12 @@
 
 ![.NET Core](https://github.com/specklesystems/Core/workflows/.NET%20Core/badge.svg)
 
-### **DISCLAIMER**
+### **Disclaimer**
 
-**THIS IS AN EARLY ALPHA RELEASE NOT MEANT FOR USE IN PRODUCTION, OUR TEAM IS WORKING HARD TOWARDS A STABLE RELEASE.**
-
+This is an early alpha release, not meant for use in production! We're working to stabilise the 2.0 API, and until then there will be breaking changes. You have been warned! 
 
 
 ## Introduction
-
-Before venturing any further please make sure to check the following: 
-
-- [Code of Conduct](CODE_OF_CONDUCT.md), 
-- [Contribution Guidelines](CONTRIBUTING.md), 
-- [License](LICENSE)
 
 ### Core
 
@@ -39,7 +32,10 @@ We'll be also adding [preliminary documentation on our forum](https://discourse.
 
 ## Contributing
 
-Please make sure you read the [contribution guidelines](CONTRIBUTING.md) for an overview of the best practices we try to follow.
+Before embarking on submitting a patch, please make sure you read:
+
+- [Contribution Guidelines](CONTRIBUTING.md), 
+- [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## Community 
 
