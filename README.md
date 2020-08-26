@@ -7,11 +7,8 @@
 
 ![.NET Core](https://github.com/specklesystems/Objects/workflows/.NET%20Core/badge.svg)
 
-### **DISCLAIMER**
-
-**THIS IS AN EARLY ALPHA RELEASE NOT MEANT FOR USE IN PRODUCTION, OUR TEAM IS WORKING HARD TOWARDS A STABLE RELEASE.**
-
-
+## Disclaimer
+This is an early alpha release, not meant for use in production! We're working to stabilise the 2.0 API, and until then there will be breaking changes. You have been warned!
 
 ## Introduction
 
