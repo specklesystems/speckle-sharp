@@ -24,11 +24,12 @@ namespace Speckle.Objects.Geometry
 
     }
 
-    public Mesh(double[] vertices, int[] faces, int[] colors, double[] texture_coords, string applicationId = null)
+    public Mesh(double[] vertices, int[] faces, int[] colors = null, double[] texture_coords = null, string applicationId = null)
     {
       this.vertices = vertices.ToList();
       this.faces = faces.ToList();
-      this.colors = colors.ToList();
+      this.colors = colors?.ToList();
+      this.textureCoordinates = texture_coords?.ToList();
       this.applicationId = applicationId;
     }
   }
