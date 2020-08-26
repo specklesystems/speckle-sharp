@@ -9,10 +9,12 @@ using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Tests;
 
-/// <summary>
-/// NOTE: These tests require a instance of the speckle server to be running locally as well as a default account with that server.
-/// TODO: Unitise these tests a bit more - needs resolutions on the server side.
-/// </summary>
+////////////////////////////////////////////////////////////////////////////
+/// NOTE:                                                                ///
+/// These tests don't run without a server running locally.              ///
+/// Check out https://github.com/specklesystems/server for               ///
+/// more info on the server.                                             ///
+////////////////////////////////////////////////////////////////////////////
 namespace IntegrationTests
 {
   public class RemoteOps

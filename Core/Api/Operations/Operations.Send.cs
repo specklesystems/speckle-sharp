@@ -16,6 +16,7 @@ namespace Speckle.Core.Api
   public static partial class Operations
   {
     #region Pushing objects
+
     /// <summary>
     /// Sends an object via the provided transports. Defaults to the local cache. 
     /// </summary>

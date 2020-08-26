@@ -167,9 +167,9 @@ namespace Speckle.Core.Transports
       WriteTimer.Start();
     }
 
-    public void SaveObject(string hash, ITransport transport)
+    public void SaveObject(string hash, ITransport sourceTransport)
     {
-      var serializedObject = transport.GetObject(hash);
+      var serializedObject = sourceTransport.GetObject(hash);
       Queue.Enqueue((hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject)));
     }
 
@@ -223,7 +223,7 @@ namespace Speckle.Core.Transports
       return null; // pass on the duty of null checks to consumers
     }
 
-    public async Task<string> CopyObjectAndChildren(string hash, ITransport transport)
+    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport)
     {
       throw new NotImplementedException();
     }

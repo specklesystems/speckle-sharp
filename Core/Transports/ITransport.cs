@@ -26,8 +26,8 @@ namespace Speckle.Core.Transports
     /// Saves an object, retrieveing its serialised version from the provided transport. 
     /// </summary>
     /// <param name="id">The hash of the object.</param>
-    /// <param name="transport">The transport from where to retrieve it.</param>
-    public void SaveObject(string id, ITransport transport);
+    /// <param name="sourceTransport">The transport from where to retrieve it.</param>
+    public void SaveObject(string id, ITransport sourceTransport);
 
     /// <summary>
     /// Awaitable method to figure out whether writing is completed. 
@@ -47,6 +47,6 @@ namespace Speckle.Core.Transports
     /// </summary>
     /// <param name="hash"></param>
     /// <returns>The string representation of the root object.</returns>
-    public Task<string> CopyObjectAndChildren(string id, ITransport transport);
+    public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport);
   }
 }

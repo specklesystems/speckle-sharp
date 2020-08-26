@@ -11,27 +11,38 @@ using Speckle.Core.Transports;
 using Tests;
 
 /// <summary>
-/// Quick and dirty tests, specifically involving a remote transport. Once we'll have a test server up and running, I assume these will migrate to tests.  
+/// Quick and dirty tests/examples of Speckle usage. 
 /// </summary>
 namespace ConsoleSketches
 {
+  ////////////////////////////////////////////////////////////////////////////
+  /// NOTE:                                                                ///
+  /// These tests don't run without a server running locally.              ///
+  /// Check out https://github.com/specklesystems/server for               ///
+  /// more info on the server.                                             ///
+  ////////////////////////////////////////////////////////////////////////////
+
   class Program
   {
     static async Task Main(string[] args)
     {
-      Console.Clear();
-
-      await PushAndPullToRemote(1_000);
-
-      Console.Clear();
-
-      await LargeSingleObjects(50_000); // pass in 500k for a 500k vertices mesh. gzipped size: ± 5.4mb, decompressed json: 21.7mb. Works :) 
-
-      Console.Clear();
-
-      await ManyLargeObjects(); // defaults to 10k meshes with 1k vertices and faces
+      // Run the function below once, then comment it out. Make sure your local speckle
+      // server is running (`npm run dev:server`) as well as the frontend (`npm run dev:frontend`).
+      // It will open a browser window where you can register or login.
 
       //await Auth();
+
+      Console.Clear();
+
+      await SendAndReceive(1_000);
+
+      Console.Clear();
+
+      await SendReceiveLargeSingleObjects(50_000); // pass in 500k for a 500k vertices mesh. gzipped size: ± 5.4mb, decompressed json: 21.7mb. Works :) 
+
+      Console.Clear();
+
+      await SendReceiveManyLargeObjects(); // defaults to 10k meshes with 1k vertices and faces
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
@@ -39,6 +50,10 @@ namespace ConsoleSketches
       return;
     }
 
+    /// <summary>
+    /// Simulates an authentication flow. 
+    /// </summary>
+    /// <returns></returns>
     public static async Task Auth()
     {
       // First log in (uncomment the two lines below to simulate a login/register)
@@ -77,7 +92,13 @@ namespace ConsoleSketches
       }
     }
 
-    public static async Task ManyLargeObjects(int numVertices = 1000, int numObjects = 10_000)
+    /// <summary>
+    /// Sends many large objects. It's more of a stress test.
+    /// </summary>
+    /// <param name="numVertices"></param>
+    /// <param name="numObjects"></param>
+    /// <returns></returns>
+    public static async Task SendReceiveManyLargeObjects(int numVertices = 1000, int numObjects = 10_000)
     {
       var objs = new List<Base>();
 
@@ -101,7 +122,6 @@ namespace ConsoleSketches
 
       var myClient = new Client(AccountManager.GetDefaultAccount());
       var streamId = await myClient.StreamCreate(new StreamCreateInput { name = "test", description = "this is a test" });
-
       var myServer = new ServerTransport(AccountManager.GetDefaultAccount(), streamId);
 
       var myObject = new Base();
@@ -134,7 +154,12 @@ namespace ConsoleSketches
       Console.WriteLine($"Received big commit {res}");
     }
 
-    public static async Task LargeSingleObjects(int numVertices = 100_000)
+    /// <summary>
+    /// Speckle 1.0 had some inherited limitations on object size from MongoDB. Since we've moved to postgres, let's flex.
+    /// </summary>
+    /// <param name="numVertices"></param>
+    /// <returns></returns>
+    public static async Task SendReceiveLargeSingleObjects(int numVertices = 100_000)
     {
       Console.Clear();
       Console.WriteLine($"Big mesh time! ({numVertices} vertices, and some {numVertices * 1.5} faces");
@@ -163,7 +188,12 @@ namespace ConsoleSketches
       Console.WriteLine("Pulled back big mesh.");
     }
 
-    public static async Task PushAndPullToRemote(int numObjects = 3000)
+    /// <summary>
+    /// A more generic version of the above. 
+    /// </summary>
+    /// <param name="numObjects"></param>
+    /// <returns></returns>
+    public static async Task SendAndReceive(int numObjects = 3000)
     {
       var sw = new Stopwatch();
       sw.Start();
@@ -187,15 +217,10 @@ namespace ConsoleSketches
         }
       }
 
-      // Store them into a commit object
-      //var commit = new Commit();
-      //commit.Objects = objects;
-
-      // Or... in any other type of object you would want to.
-      var funkyStructure = new Base();
-      ((dynamic)funkyStructure)["@LolLayer"] = objects.GetRange(0, 30);
-      ((dynamic)funkyStructure)["@WooTLayer"] = objects.GetRange(30, 100);
-      ((dynamic)funkyStructure)["@FTW"] = objects.GetRange(130, objects.Count - 130 - 1);
+      var myRevision = new Base();
+      ((dynamic)myRevision)["@LolLayer"] = objects.GetRange(0, 30);
+      ((dynamic)myRevision)["@WooTLayer"] = objects.GetRange(30, 100);
+      ((dynamic)myRevision)["@FTW"] = objects.GetRange(130, objects.Count - 130 - 1);
 
 
       var step = sw.ElapsedMilliseconds;
@@ -214,12 +239,7 @@ namespace ConsoleSketches
           Console.WriteLine($">>> {kvp.Key} : {kvp.Value} / {numObjects + 1}");
       });
 
-
-      // Finally, let's push the commit object. The push action returns the object's id (hash!) that you can use downstream.
-
-
-      // Create some remotes
-
+      // Let's set up some fake server transports. 
       var myClient = new Client(AccountManager.GetDefaultAccount());
       var streamId = await myClient.StreamCreate(new StreamCreateInput { name = "test", description = "this is a test" });
       var firstServer = new ServerTransport(AccountManager.GetDefaultAccount(), streamId);
@@ -229,7 +249,7 @@ namespace ConsoleSketches
       var secondServer = new ServerTransport(AccountManager.GetDefaultAccount(), secondStreamId);
 
       var res = await Operations.Send(
-        @object: funkyStructure,
+        @object: myRevision,
         transports: new List<ITransport>() { firstServer, secondServer },
         onProgressAction: pushProgressAction
         );
@@ -243,7 +263,7 @@ namespace ConsoleSketches
 
       Console.Clear();
 
-      // Time for pulling an object out. 
+      // Time for getting our revision object back.
       var res2 = await Operations.Receive(res, remoteTransport: firstServer, onProgressAction: dict =>
       {
         Console.CursorLeft = 0;
@@ -257,7 +277,10 @@ namespace ConsoleSketches
       Console.WriteLine("Got those objects back");
     }
 
-    // Some stress tests for the sqlite local transport.
+    /// <summary>
+    /// Some stress tests for the sqlite transport. Perhaps useful later.
+    /// </summary>
+    /// <returns></returns>
     public static async Task SqliteStressTest()
     {
       int numObjects = 100_000;

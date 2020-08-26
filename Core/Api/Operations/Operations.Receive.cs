@@ -13,14 +13,14 @@ namespace Speckle.Core.Api
   {
 
     /// <summary>
-    /// 
+    /// Receives an object from a transport.
     /// </summary>
     /// <param name="objectId"></param>
-    /// <param name="remoteTransport"></param>
+    /// <param name="remoteTransport">The transport to receive from.</param>
     /// <param name="localTransport">Leave null to use the default cache.</param>
     /// <param name="onProgressAction"></param>
     /// <returns></returns>
-    public static async Task<Base> Receive(string objectId, ITransport remoteTransport = null, ITransport localTransport = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    public static async Task<Base> Receive(string objectId, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
       Log.AddBreadcrumb("Receive");
 

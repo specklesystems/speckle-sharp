@@ -30,7 +30,7 @@ namespace Speckle.Core.Transports
       Objects[hash] = serializedObject;
     }
 
-    public void SaveObject(string id, ITransport transport)
+    public void SaveObject(string id, ITransport sourceTransport)
     {
       throw new NotImplementedException();
     }
@@ -45,7 +45,7 @@ namespace Speckle.Core.Transports
       }
     }
 
-    public Task<string> CopyObjectAndChildren(string id, ITransport transport)
+    public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport)
     {
       throw new NotImplementedException();
     }

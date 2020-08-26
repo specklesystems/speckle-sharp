@@ -46,11 +46,6 @@ namespace Speckle.Core.Transports
       Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
     }
 
-    public ServerTransport(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
-    {
-      Initialize(baseUri, streamId, authorizationToken, timeoutSeconds);
-    }
-
     private void Initialize(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
     {
       Log.AddBreadcrumb("New Remote Transport");
@@ -167,9 +162,9 @@ namespace Speckle.Core.Transports
       }
     }
 
-    public void SaveObject(string hash, ITransport transport)
+    public void SaveObject(string hash, ITransport sourceTransport)
     {
-      var serializedObject = transport.GetObject(hash);
+      var serializedObject = sourceTransport.GetObject(hash);
 
       Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 
@@ -197,7 +192,7 @@ namespace Speckle.Core.Transports
       return response.ReadAsStringAsync().Result;
     }
 
-    public async Task<string> CopyObjectAndChildren(string hash, ITransport transport)
+    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport)
     {
 
       var message = new HttpRequestMessage()
@@ -222,7 +217,7 @@ namespace Speckle.Core.Transports
           {
             var line = reader.ReadLine();
             var pcs = line.Split(new char[] { '\t' }, count: 2);
-            transport.SaveObject(pcs[0], pcs[1]);
+            targetTransport.SaveObject(pcs[0], pcs[1]);
             if (i == 0)
             {
               commitObj = pcs[1];
@@ -232,7 +227,7 @@ namespace Speckle.Core.Transports
         }
       }
 
-      await transport.WriteComplete();
+      await targetTransport.WriteComplete();
       return commitObj;
     }
 
