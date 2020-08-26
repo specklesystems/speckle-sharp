@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace Speckle.Core.Transports
@@ -15,8 +16,12 @@ namespace Speckle.Core.Transports
 
     public string TransportName { get; set; } = "Memory";
 
+    public Action<string, int> OnProgressAction { get; set; }
+
     public MemoryTransport()
     {
+      Log.AddBreadcrumb("New Memory Transport");
+
       Objects = new Dictionary<string, string>();
     }
 
@@ -25,11 +30,24 @@ namespace Speckle.Core.Transports
       Objects[hash] = serializedObject;
     }
 
+    public void SaveObject(string id, ITransport sourceTransport)
+    {
+      throw new NotImplementedException();
+    }
+
     public string GetObject(string hash)
     {
       if (Objects.ContainsKey(hash)) return Objects[hash];
       else
-        throw new Exception("No object found in this memory transport.");
+      {
+        Log.CaptureException(new SpeckleException("No object found in this memory transport."), level: Sentry.Protocol.SentryLevel.Warning);
+        throw new SpeckleException("No object found in this memory transport.");
+      }
+    }
+
+    public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport)
+    {
+      throw new NotImplementedException();
     }
 
     public bool GetWriteCompletionStatus()
@@ -39,7 +57,7 @@ namespace Speckle.Core.Transports
 
     public Task WriteComplete()
     {
-      return Utilities.WaitUntil(() => true); 
+      return Utilities.WaitUntil(() => true);
     }
   }
 

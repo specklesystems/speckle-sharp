@@ -5,12 +5,13 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
 {
   public static class Utilities
   {
-     /// <summary>
+    /// <summary>
     /// Chunks a list into pieces.
     /// </summary>
     /// <typeparam name="T"></typeparam>
@@ -41,7 +42,7 @@ namespace Speckle.Core.Transports
 
       if (waitTask != await Task.WhenAny(waitTask,
               Task.Delay(timeout)))
-        throw new TimeoutException();
+        Log.CaptureAndThrow(new TimeoutException());
     }
 
   }

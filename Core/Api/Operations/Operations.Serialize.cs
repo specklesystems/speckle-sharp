@@ -9,7 +9,7 @@ namespace Speckle.Core.Api
   public static partial class Operations
   {
     /// <summary>
-    /// Serializes a given object. Note: if you want to save and persist an object to speckle, please use any of the "Push" methods.
+    /// Serializes a given object. Note: if you want to save and persist an object to speckle, please use any of the "Send" methods.
     /// </summary>
     /// <param name="object"></param>
     /// <returns></returns>
@@ -20,7 +20,7 @@ namespace Speckle.Core.Api
     }
 
     /// <summary>
-    /// Serializes a list of objects. Note: if you want to save and persist objects to speckle, please use any of the "Push" methods.
+    /// Serializes a list of objects. Note: if you want to save and persist objects to speckle, please use any of the "Send" methods.
     /// </summary>
     /// <param name="objects"></param>
     /// <returns></returns>
@@ -31,7 +31,7 @@ namespace Speckle.Core.Api
     }
 
     /// <summary>
-    /// Serializes a list of objects. Note: if you want to save and persist objects to speckle, please use any of the "Push" methods.
+    /// Serializes a list of objects. Note: if you want to save and persist objects to speckle, please use any of the "Send" methods.
     /// </summary>
     /// <param name="objects"></param>
     /// <returns></returns>
@@ -42,7 +42,7 @@ namespace Speckle.Core.Api
     }
 
     /// <summary>
-    /// Deserializes a given object. Note: if you want to pull an object from speckle (either local or remote), please use any of the "Pull" methods.
+    /// Deserializes a given object. Note: if you want to pull an object from speckle (either local or remote), please use any of the "Receive" methods.
     /// </summary>
     /// <param name="object"></param>
     /// <returns></returns>
@@ -53,7 +53,7 @@ namespace Speckle.Core.Api
     }
 
     /// <summary>
-    /// Deserializes a list of objects into an array. Note: if you want to pull an object from speckle (either local or remote), please use any of the "Pull" methods.
+    /// Deserializes a list of objects into an array. Note: if you want to pull an object from speckle (either local or remote), please use any of the "Receive" methods.
     /// </summary>
     /// <param name="objectArr"></param>
     /// <returns></returns>
@@ -64,7 +64,7 @@ namespace Speckle.Core.Api
     }
 
     /// <summary>
-    /// Deserializes a dictionary object. Note: if you want to pull an object from speckle (either local or remote), please use any of the "Pull" methods.
+    /// Deserializes a dictionary object. Note: if you want to pull an object from speckle (either local or remote), please use any of the "Receive" methods.
     /// </summary>
     /// <param name="dictionary"></param>
     /// <returns></returns>

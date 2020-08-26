@@ -13,6 +13,8 @@ using GraphQL;
 using GraphQL.Client.Serializer.Newtonsoft;
 using GraphQL.Client.Http;
 using System.Linq;
+using Speckle.Core.Logging;
+using Sentry;
 
 namespace Speckle.Core.Credentials
 {
@@ -22,7 +24,7 @@ namespace Speckle.Core.Credentials
   /// </summary>
   public static class AccountManager
   {
-    private static SqlLiteObjectTransport AccountStorage = new SqlLiteObjectTransport(scope: "Accounts");
+    private static SQLiteTransport AccountStorage = new SQLiteTransport(scope: "Accounts");
 
     // NOTE: These need to be coordinated with the server.
     internal static string APPID = "connectors";
@@ -37,16 +39,18 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     public static async Task<Account> AuthenticateConnectors(string serverUrl)
     {
+      SentrySdk.AddBreadcrumb("AuthenticateConnectors");
+
       Uri serverUri;
       var uriOk = Uri.TryCreate(serverUrl, UriKind.Absolute, out serverUri);
 
       if (!uriOk)
-        throw new Exception("Invalid url provided.");
+        Log.CaptureAndThrow(new SpeckleException("Invalid url provided."), level:Sentry.Protocol.SentryLevel.Info);
 
       var _serverInfo = await GetServerInfo(serverUrl);
 
       if (_serverInfo == null)
-        throw new Exception($"Could not get the server information for {serverUrl}");
+        Log.CaptureAndThrow(new SpeckleException("Could not get server information"), level: Sentry.Protocol.SentryLevel.Info);
 
       var challenge = Speckle.Core.Models.Utilities.hashString(DateTime.UtcNow.ToString());
       var url = $"{serverUri}auth?appId={APPID}&challenge={challenge}";
@@ -73,7 +77,7 @@ namespace Speckle.Core.Credentials
         }
         else
         {
-          throw;
+          Log.CaptureAndThrow(new SpeckleException("Running on unknown platform"), level: Sentry.Protocol.SentryLevel.Error);
         }
       }
 
@@ -89,14 +93,14 @@ namespace Speckle.Core.Credentials
 
       if (req.Url.Query.Contains("success=false"))
       {
-        throw new Exception($"Permission denied/failed ({serverUrl}).");
+        Log.CaptureAndThrow(new SpeckleException("Permission denied/failed"), level: Sentry.Protocol.SentryLevel.Warning);
       }
 
       var queryPieces = req.Url.Query.Split('=');
 
       if(queryPieces.Length < 2 || !queryPieces[0].Contains("access_code"))
       {
-        throw new Exception($"Invalid access token response ({req.Url.Query}).");
+        Log.CaptureAndThrow(new SpeckleException("Invalid access token response"), level: Sentry.Protocol.SentryLevel.Warning);
       }
 
       var accessCode = queryPieces[1];
@@ -128,9 +132,9 @@ namespace Speckle.Core.Credentials
         {
           _response.EnsureSuccessStatusCode();
         }
-        catch
+        catch (Exception e)
         {
-          throw new Exception($"Failed to get api token for {serverUrl}. Response status: {_response.StatusCode}.");
+          Log.CaptureAndThrow(new SpeckleException($"Failed to get api token. Response status: {_response.StatusCode}.", e));
         }
 
         var _tokens = JsonConvert.DeserializeObject<TokenExchangeResponse>(await _response.Content.ReadAsStringAsync());
@@ -215,12 +219,23 @@ namespace Speckle.Core.Credentials
     }
 
     /// <summary>
-    /// Gets this environment's default account if any.
+    /// Gets this environment's default account if any. If there is no default, the first found will be returned and set as default.
     /// </summary>
     /// <returns>The default account or null.</returns>
     public static Account GetDefaultAccount()
     {
-      return GetAccounts().Where(acc => acc.isDefault).FirstOrDefault();
+      var defaultAccount = GetAccounts().Where(acc => acc.isDefault).FirstOrDefault();
+      if (defaultAccount == null)
+      {
+        var firstAccount = GetAccounts().FirstOrDefault();
+        if(firstAccount == null)
+        {
+          Log.CaptureAndThrow(new SpeckleException("No Speckle accounts found. Visit the Speckle web app to create one."), level: Sentry.Protocol.SentryLevel.Info);
+        }
+        SetDefaultAccount(firstAccount.id);
+        return firstAccount;
+      }
+      return defaultAccount;
     }
 
     /// <summary>

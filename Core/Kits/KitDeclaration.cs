@@ -4,7 +4,7 @@ using System.Linq;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Speckle.Core.Api
+namespace Speckle.Core.Kits
 {
   /// <summary>
   /// Needed so we can properly deserialize all the Base-derived objects from Core itself.
@@ -21,7 +21,7 @@ namespace Speckle.Core.Api
 
     public string Author => "Dimitrie";
 
-    public string WebsiteOrEmail => "hello@Speckle.Core..works";
+    public string WebsiteOrEmail => "hello@speckle.systems";
 
     public CoreKit() { }
 

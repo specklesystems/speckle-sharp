@@ -4,17 +4,17 @@ using System.Threading.Tasks;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using Newtonsoft.Json;
+using Sentry.Protocol;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Api
 {
-  public partial class Remote
+  public partial class Client
   {
     public string ServerUrl { get => Account.serverInfo.url; }
 
     public string ApiToken { get => Account.token; }
-
-    public string StreamId { get; set; }
 
     public string AccountId { get; set;}
 
@@ -25,12 +25,12 @@ namespace Speckle.Core.Api
 
     GraphQLHttpClient GQLClient { get; set; }
 
-    public Remote() { }
+    public Client() { }
 
-    public Remote(Account account)
+    public Client(Account account)
     {
       if (account == null)
-        throw new Exception("Provided account is null.");
+        Log.CaptureAndThrow(new SpeckleException($"Provided account is null."));
 
       Account = account;
       AccountId = account.id;
@@ -45,13 +45,6 @@ namespace Speckle.Core.Api
         },
         new NewtonsoftJsonSerializer(),
         HttpClient); 
-    }
-
-    public async Task<string> InitializeNewStream()
-    {
-      StreamId = await StreamCreate(new GqlModels.StreamCreateInput { name = "Test Stream", description = "Really this is just a test stream." });
-
-      return StreamId;
     }
 
   }

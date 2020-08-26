@@ -6,6 +6,7 @@ using GraphQL.Client.Serializer.Newtonsoft;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Credentials
 {
@@ -17,7 +18,8 @@ namespace Speckle.Core.Credentials
     {
       get
       {
-        if (serverInfo == null || userInfo == null) throw new Exception("Incomplete account info: cannot generate id.");
+        if (serverInfo == null || userInfo == null)
+          Log.CaptureAndThrow(new SpeckleException("Incomplete account info: cannot generate id."));
         return Speckle.Core.Models.Utilities.hashString(serverInfo.url + userInfo.email);
       }
     }
@@ -83,9 +85,9 @@ namespace Speckle.Core.Credentials
         {
           _response.EnsureSuccessStatusCode();
         }
-        catch
+        catch (Exception e)
         {
-          throw new Exception($"Failed to rotate token for {serverInfo.url}. Response status: {_response.StatusCode}.");
+          Log.CaptureAndThrow(new SpeckleException($"Failed to rotate token. Response status: {_response.StatusCode}.", e));
         }
 
         var _tokens = JsonConvert.DeserializeObject<TokenExchangeResponse>(await _response.Content.ReadAsStringAsync());
