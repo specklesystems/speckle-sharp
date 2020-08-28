@@ -11,7 +11,7 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
 {
-  public class SqlLiteObjectTransport : IDisposable, ITransport
+  public class SQLiteTransport : IDisposable, ITransport
   {
     public string TransportName { get; set; } = "LocalTransport";
 
@@ -23,6 +23,8 @@ namespace Speckle.Core.Transports
 
     private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
 
+    public Action<string, int> OnProgressAction { get; set; }
+
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
     /// </summary>
@@ -32,7 +34,7 @@ namespace Speckle.Core.Transports
     private bool IS_WRITING = false;
     private int MAX_TRANSACTION_SIZE = 1000;
 
-    public SqlLiteObjectTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
+    public SQLiteTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
     {
       Log.AddBreadcrumb("New SqlLite Transport");
 
@@ -165,6 +167,12 @@ namespace Speckle.Core.Transports
       WriteTimer.Start();
     }
 
+    public void SaveObject(string hash, ITransport sourceTransport)
+    {
+      var serializedObject = sourceTransport.GetObject(hash);
+      Queue.Enqueue((hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject)));
+    }
+
     /// <summary>
     /// Directly saves the object in the db.
     /// </summary>
@@ -213,6 +221,11 @@ namespace Speckle.Core.Transports
         }
       }
       return null; // pass on the duty of null checks to consumers
+    }
+
+    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport)
+    {
+      throw new NotImplementedException();
     }
 
     #endregion

@@ -13,7 +13,7 @@ using NUnit.Framework.Constraints;
 namespace Tests
 {
   [TestFixture]
-  public class UploadDownload
+  public class SendReceiveLocal
   {
     string objId_01, commitId_02;
     int numObjects = 3001;
