@@ -24,7 +24,7 @@ namespace Speckle.Core.Api
 
     HttpClient HttpClient { get; set; }
 
-    GraphQLHttpClient GQLClient { get; set; }
+    public GraphQLHttpClient GQLClient { get; set; }
 
     public Client() { }
 
@@ -45,14 +45,19 @@ namespace Speckle.Core.Api
           EndPoint = new Uri(new Uri(account.serverInfo.url), "/graphql"),
           UseWebSocketForQueriesAndMutations = false,
           OnWebsocketConnected = OnWebSocketConnect,
+          ConfigureWebsocketOptions = (opts) =>
+          {
+            opts.SetRequestHeader("Authorization", $"Bearer {account.token}");
+          },
+          
         },
         new NewtonsoftJsonSerializer(),
         HttpClient);
 
-      var ws = new ClientWebSocket();;
-      ws.Options.SetRequestHeader("Authorization", $"Bearer {account.token}");
+      //var ws = new ClientWebSocket(); ;
+      //ws.Options.SetRequestHeader("Authorization", $"Bearer {account.token}");
 
-      GQLClient.Options.ConfigureWebsocketOptions(ws.Options);
+      //GQLClient.Options.ConfigureWebsocketOptions(ws.Options);
 
       GQLClient.WebSocketReceiveErrors.Subscribe(e =>
       {
@@ -67,7 +72,7 @@ namespace Speckle.Core.Api
     public Task OnWebSocketConnect(GraphQLHttpClient client)
     {
       //logger.LogInformation("Main websocket is open");
-
+      Console.WriteLine("Websocket is open");
       return Task.CompletedTask;
     }
 

@@ -53,10 +53,10 @@ namespace Speckle.Core.Api
       {
         var request = new GraphQLRequest
         {
-          Query = @"subscription { streamUpdated }"
+          Query = @"subscription { streamUpdated }",
         };
 
-        var res = GQLClient.CreateSubscriptionStream<object>(request);
+        var res = GQLClient.CreateSubscriptionStream<dynamic>(request);
         var subscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
@@ -65,7 +65,6 @@ namespace Speckle.Core.Api
           if (response.Data != null)
             OnUserStreamCreated(this, response.Data);
         });
-
       }
       catch (Exception e)
       {
