@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Speckle.Core;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Newtonsoft.Json;
+using Speckle.Core.Api.SubscriptionModels;
 
 namespace ConsoleSketches
 {
@@ -12,23 +14,34 @@ namespace ConsoleSketches
     {
       var myClient = new Client(AccountManager.GetDefaultAccount());
 
-      Console.WriteLine("client created... press a key to init ws");
-      Console.ReadLine();
+      Console.WriteLine("Client created...");
 
-      myClient.GQLClient.InitializeWebsocketConnection().Wait();
+      Console.WriteLine("Subscribing to stream created. On first created event will subscribe to that stream's updates.");
 
-      Console.WriteLine("press a key to subscribe");
       myClient.SubscribeUserStreamCreated();
+
+      bool first = true;
 
       myClient.OnUserStreamCreated += (sender, e) =>
       {
-        Console.WriteLine("FTW");
-      };
+        if (first)
+        {
+          first = false;
+          myClient.SubscribeStreamUpdated(e.id);
+          myClient.OnStreamUpdated += MyClient_OnStreamUpdated;
+        }
 
-      var xxx = 10;
-      //Console.WriteLine("Press any key to exit");
-      //Console.ReadLine();
+        Console.WriteLine("UserStreamCreated Fired");
+        Console.WriteLine(JsonConvert.SerializeObject(e));
+      };
+      
       Console.ReadLine();
+    }
+
+    private static void MyClient_OnStreamUpdated(object sender, StreamUpdatedContent e)
+    {
+      Console.WriteLine("StreamUpdated Fired");
+      Console.WriteLine(JsonConvert.SerializeObject(e));
     }
   }
 }

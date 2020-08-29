@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{CB85D2B2-9837-40B8-91DB-3C0636B1174D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{CB85D2B2-9837-40B8-91DB-3C0636B1174D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestsUnit", "Tests\TestsUnit.csproj", "{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}"
 EndProject
@@ -13,7 +13,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSketches", "Sketches\ConsoleSketches.csproj", "{41ED35C7-5E0B-4BA8-B7F8-F797BABB2230}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleSketches", "Sketches\ConsoleSketches.csproj", "{41ED35C7-5E0B-4BA8-B7F8-F797BABB2230}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Client", "..\..\GraphQLClient\src\GraphQL.Client\GraphQL.Client.csproj", "{AA3B48C5-47E4-4D2A-A969-2007066AD2AB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Client.Abstractions", "..\..\GraphQLClient\src\GraphQL.Client.Abstractions\GraphQL.Client.Abstractions.csproj", "{EFC9234B-8A53-480E-BE64-A3EE02200E77}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Client.Abstractions.Websocket", "..\..\GraphQLClient\src\GraphQL.Client.Abstractions.Websocket\GraphQL.Client.Abstractions.Websocket.csproj", "{22C4006F-E3CE-4B0F-945C-4B133261D615}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Client.Serializer.Newtonsoft", "..\..\GraphQLClient\src\GraphQL.Client.Serializer.Newtonsoft\GraphQL.Client.Serializer.Newtonsoft.csproj", "{CCAC78E8-1428-4FBE-A695-6567EDED73B7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Primitives", "..\..\GraphQLClient\src\GraphQL.Primitives\GraphQL.Primitives.csproj", "{A330252E-3EDE-4C24-83DB-4511FFCB114E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +47,26 @@ Global
 		{41ED35C7-5E0B-4BA8-B7F8-F797BABB2230}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41ED35C7-5E0B-4BA8-B7F8-F797BABB2230}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41ED35C7-5E0B-4BA8-B7F8-F797BABB2230}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA3B48C5-47E4-4D2A-A969-2007066AD2AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA3B48C5-47E4-4D2A-A969-2007066AD2AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA3B48C5-47E4-4D2A-A969-2007066AD2AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA3B48C5-47E4-4D2A-A969-2007066AD2AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFC9234B-8A53-480E-BE64-A3EE02200E77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFC9234B-8A53-480E-BE64-A3EE02200E77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFC9234B-8A53-480E-BE64-A3EE02200E77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFC9234B-8A53-480E-BE64-A3EE02200E77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22C4006F-E3CE-4B0F-945C-4B133261D615}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22C4006F-E3CE-4B0F-945C-4B133261D615}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22C4006F-E3CE-4B0F-945C-4B133261D615}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22C4006F-E3CE-4B0F-945C-4B133261D615}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCAC78E8-1428-4FBE-A695-6567EDED73B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCAC78E8-1428-4FBE-A695-6567EDED73B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCAC78E8-1428-4FBE-A695-6567EDED73B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCAC78E8-1428-4FBE-A695-6567EDED73B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A330252E-3EDE-4C24-83DB-4511FFCB114E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A330252E-3EDE-4C24-83DB-4511FFCB114E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A330252E-3EDE-4C24-83DB-4511FFCB114E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A330252E-3EDE-4C24-83DB-4511FFCB114E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
