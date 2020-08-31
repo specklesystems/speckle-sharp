@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RootNamespace>Speckle.Core</RootNamespace>
     <LangVersion>8.0</LangVersion>
     <PackageId>SpeckleCore</PackageId>
@@ -15,8 +16,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
-    <PackageReference Include="GraphQL.Client" Version="3.1.4" />
-    <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="3.1.4" />
+    <PackageReference Include="GraphQL.Client" Version="3.1.6" />
+    <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="3.1.6" />
     <PackageReference Include="Sentry" Version="2.1.6" />
     <PackageReference Include="DeviceId" Version="5.1.1" />
   </ItemGroup>
@@ -24,7 +25,6 @@
     <Folder Include="Models\" />
     <Folder Include="Serialisation\" />
     <Folder Include="Transports\" />
-    <Folder Include="Credentials\" />
     <Folder Include="Logging\" />
   </ItemGroup>
   <ItemGroup>
