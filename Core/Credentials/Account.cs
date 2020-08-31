@@ -36,6 +36,7 @@ namespace Speckle.Core.Credentials
 
     public Account() { }
 
+    #region public methods
     public async Task<UserInfo> Validate()
     {
       using var httpClient = new HttpClient();
@@ -103,5 +104,12 @@ namespace Speckle.Core.Credentials
     {
       return other.userInfo.email == userInfo.email && other.serverInfo.url == serverInfo.url;
     }
+
+    public override string ToString() 
+    {
+      return userInfo.email + " - " + serverInfo.name;
+    }
+
+    #endregion
   }
 }
