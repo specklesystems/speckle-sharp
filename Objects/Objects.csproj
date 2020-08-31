@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RootNamespace>Speckle.Objects</RootNamespace>
     <Version>0.0.1</Version>
     <AssemblyName>SpeckleObjects</AssemblyName>
