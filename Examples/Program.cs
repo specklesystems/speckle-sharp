@@ -32,17 +32,19 @@ namespace ConsoleSketches
 
       //await Auth();
 
-      Console.Clear();
-
-      await SendAndReceive(1_000);
+      await Subscriptions.SubscriptionConnection();
 
       Console.Clear();
 
-      await SendReceiveLargeSingleObjects(50_000); // pass in 500k for a 500k vertices mesh. gzipped size: ± 5.4mb, decompressed json: 21.7mb. Works :) 
+      //await SendAndReceive(1_000);
 
       Console.Clear();
 
-      await SendReceiveManyLargeObjects(); // defaults to 10k meshes with 1k vertices and faces
+      //await SendReceiveLargeSingleObjects(50_000); // pass in 500k for a 500k vertices mesh. gzipped size: ± 5.4mb, decompressed json: 21.7mb. Works :) 
+
+      Console.Clear();
+
+      //await SendReceiveManyLargeObjects(); // defaults to 10k meshes with 1k vertices and faces
 
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();

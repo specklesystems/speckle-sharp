@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
@@ -16,14 +17,14 @@ namespace Speckle.Core.Api
 
     public string ApiToken { get => Account.token; }
 
-    public string AccountId { get; set;}
+    public string AccountId { get; set; }
 
     [JsonIgnore]
     public Account Account { get; set; }
 
     HttpClient HttpClient { get; set; }
 
-    GraphQLHttpClient GQLClient { get; set; }
+    public GraphQLHttpClient GQLClient { get; set; }
 
     public Client() { }
 
@@ -42,10 +43,39 @@ namespace Speckle.Core.Api
         new GraphQLHttpClientOptions
         {
           EndPoint = new Uri(new Uri(account.serverInfo.url), "/graphql"),
+          UseWebSocketForQueriesAndMutations = false,
+          OnWebsocketConnected = OnWebSocketConnect,
+          ConfigureWebsocketOptions = (opts) =>
+          {
+            opts.SetRequestHeader("Authorization", $"Bearer {account.token}");
+          },
+          
         },
         new NewtonsoftJsonSerializer(),
-        HttpClient); 
+        HttpClient);
+
+      //var ws = new ClientWebSocket(); ;
+      //ws.Options.SetRequestHeader("Authorization", $"Bearer {account.token}");
+
+      //GQLClient.Options.ConfigureWebsocketOptions(ws.Options);
+
+      GQLClient.WebSocketReceiveErrors.Subscribe(e =>
+      {
+        if (e is WebSocketException we)
+          Console.WriteLine($"WebSocketException: {we.Message} (WebSocketError {we.WebSocketErrorCode}, ErrorCode {we.ErrorCode}, NativeErrorCode {we.NativeErrorCode}");
+        else
+          Console.WriteLine($"Exception in websocket receive stream: {e.ToString()}");
+      });
+
     }
+
+    public Task OnWebSocketConnect(GraphQLHttpClient client)
+    {
+      //logger.LogInformation("Main websocket is open");
+      Console.WriteLine("Websocket is open");
+      return Task.CompletedTask;
+    }
+
 
   }
 }

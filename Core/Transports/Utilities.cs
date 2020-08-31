@@ -42,7 +42,7 @@ namespace Speckle.Core.Transports
 
       if (waitTask != await Task.WhenAny(waitTask,
               Task.Delay(timeout)))
-        Log.CaptureAndThrow(new TimeoutException());
+        Log.CaptureAndThrow(new TimeoutException()); 
     }
 
   }
