@@ -45,10 +45,10 @@ jobs:
           sudo apt-get install -y nodejs
       - run:
         name: "Checkout server"
-        command: git clone https://github.com/specklesystems/Server.git server
+        command: "git clone https://github.com/specklesystems/Server.git server"
       - run:
         name: "Install deps"
-        command: cd server && npm install
+        command: "cd server && npm install"
 
       # - checkout
       # - run: 
