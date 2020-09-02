@@ -138,7 +138,6 @@ namespace IntegrationTests
       Assert.IsTrue(res);
     }
 
-    //[Ignore("This test needs additional config")]
     [Test, Order(30)]
     public async Task StreamGrantPermission()
     {
@@ -154,7 +153,6 @@ namespace IntegrationTests
       Assert.IsTrue(res);
     }
 
-    //[Ignore("This test needs additional config")]
     [Test, Order(40)]
     public async Task StreamRevokePermission()
     {
