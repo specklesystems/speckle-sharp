@@ -34,6 +34,7 @@ namespace IntegrationTests
     private string branchId = "";
     private string branchName = "";
     private string commitId = "";
+    private string objectId = "";
 
     [OneTimeSetUp]
     public void Setup()
@@ -194,9 +195,6 @@ namespace IntegrationTests
 
       myObject["Points"] = ptsList;
 
-      // NOTE:
-      // Operations.Upload is designed to be called from the connector, with potentially multiple responses.
-      // We could (should?) scaffold a corrolary Remote.Upload() at one point - in beta maybe?
       commitId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport }, false);
 
       var res = await myClient.CommitCreate(new CommitCreateInput
@@ -223,6 +221,7 @@ namespace IntegrationTests
 
       Assert.IsTrue(res);
     }
+
     [Test, Order(45)]
     public async Task CommitDelete()
     {
@@ -260,6 +259,34 @@ namespace IntegrationTests
       );
       Assert.IsTrue(res);
     }
+
+    #endregion
+
+    #region send/receive bare
+
+    [Test, Order(60)]
+    public async Task SendDetached()
+    {
+      var myObject = new Base();
+      var ptsList = new List<Point>();
+      for (int i = 0; i < 100; i++)
+        ptsList.Add(new Point(i, i, i));
+
+      myObject["@Points"] = ptsList;
+
+      objectId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport });
+    }
+
+    [Test, Order(61)]
+    public async Task ReceiveAndCompose()
+    {
+      var myObject = await Operations.Receive(objectId, myServerTransport);
+      Assert.NotNull(myObject);
+      Assert.AreEqual(100, ((List<object>)myObject["@Points"]).Count);
+    }
+
+
+
 
     #endregion
 

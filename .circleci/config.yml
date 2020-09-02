@@ -73,6 +73,7 @@ jobs:
           working_directory: core
           command: dotnet test IntegrationTests/TestsIntegration.csproj
 workflows: 
-  test-integration:
+  test-all:
     jobs: 
       - integrationtest
+      - unittest
