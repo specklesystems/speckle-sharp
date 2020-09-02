@@ -55,7 +55,7 @@ jobs:
           working_directory: server
           command: "npm run dev:server"
           background: true
-      - checkout
+      - checkout:
           path: core
       - run: 
           working_directory: core
