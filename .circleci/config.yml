@@ -49,7 +49,7 @@ jobs:
       - run:
           working_directory: server
           name: "Install deps"
-          command: "cd server && npm install"
+          command: "npm install"
       - run: 
           name: "Start server"
           working_directory: server
