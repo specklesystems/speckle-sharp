@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Speckle.Core;
-using Speckle.Core.Api.GqlModels;
-using System.Collections.ObjectModel;
 using Speckle.Core.Api;
+using System.Collections.ObjectModel;
 using Speckle.DesktopUI.Accounts;
 using Speckle.Core.Credentials;
 
@@ -15,14 +14,14 @@ namespace Speckle.DesktopUI.Streams
   class StreamsRepository
   {
     private AccountsRepository _acctRepo = new AccountsRepository();
-    private Remote _remote
+    private Client _remote
     {
       get
       {
         var defaultAccount = AccountManager.GetDefaultAccount();
         if (defaultAccount != null)
-          return new Remote(defaultAccount);
-        return new Remote();
+          return new Client(defaultAccount);
+        return new Client();
       }
 
     }
@@ -38,7 +37,7 @@ namespace Speckle.DesktopUI.Streams
       var remote = _remote;
       if (!account.isDefault)
       {
-        remote = new Remote(account);
+        remote = new Client(account);
       }
 
       var streamInput = new StreamCreateInput()
@@ -56,7 +55,7 @@ namespace Speckle.DesktopUI.Streams
       var remote = _remote;
       if (!account.isDefault)
       {
-        remote = new Remote(account);
+        remote = new Client(account);
       }
 
       return remote.StreamGet(streamId);

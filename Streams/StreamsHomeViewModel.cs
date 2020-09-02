@@ -1,4 +1,4 @@
-﻿using Speckle.Core.Api.GqlModels;
+﻿using Speckle.Core.Api;
 using Speckle.DesktopUI.Utils;
 using System;
 using System.Collections.Generic;

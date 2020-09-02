@@ -1,6 +1,6 @@
 ﻿using MaterialDesignThemes.Wpf;
-using Speckle.Core.Api.GqlModels;
 using Speckle.Core.Credentials;
+using Speckle.Core.Api;
 using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
 using System;
