@@ -56,14 +56,22 @@ jobs:
           command: "npm run dev:server"
           background: true
       - checkout
+        path: core
       - run: 
+          working_directory: core
           name: "Pull core submodules"
           command: |
             git submodule init
             git submodule update --remote
-      - run: dotnet restore
-      - run: dotnet build --configuration Release
-      - run: dotnet test IntegrationTests/TestsIntegration.csproj
+      - run: 
+          working_directory: core
+          command: dotnet restore
+      - run:  
+          working_directory: core
+          command: dotnet build --configuration Release
+      - run: 
+          working_directory: core
+          command: dotnet test IntegrationTests/TestsIntegration.csproj
 workflows: 
   test-integration:
     jobs: 
