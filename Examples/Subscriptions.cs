@@ -6,7 +6,7 @@ using Speckle.Core.Credentials;
 using Newtonsoft.Json;
 using Speckle.Core.Api.SubscriptionModels;
 
-namespace ConsoleSketches
+namespace ExampleApp
 {
   public static class Subscriptions
   {
