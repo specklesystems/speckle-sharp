@@ -1,13 +1,79 @@
 version: 2.1
 jobs:
-  build:
+  unittest:
     working_directory: /temp
     docker: 
-      - image: microsoft/dotnet:sdk
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
     environment:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
       - checkout
+      - run: 
+          name: "Pull core submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - run: dotnet restore
       - run: dotnet build --configuration Release
+      - run: dotnet test Tests/TestsUnit.csproj
+  integrationtest:
+    working_directory: /temp
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+      - image: 'circleci/redis:6'
+      - image: 'circleci/postgres:12'
+        environment:
+          POSTGRES_DB: speckle2_dev
+          POSTGRES_PASSWORD: speckle
+          POSTGRES_USER: speckle
+    environment:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      NODE_ENV: test
+      DATABASE_URL: 'postgres://speckle:speckle@localhost:5432/speckle2_dev'
+      PGDATABASE: speckle2_dev
+      PGUSER: speckle
+      SESSION_SECRET: 'keyboard cat'
+      STRATEGY_LOCAL: true
+      CANONICAL_URL: 'http://localhost:3000'
+    steps:
+      - run:
+          name: "Install node"
+          command: |
+            curl -sL https://deb.nodesource.com/setup_lts.x | bash -
+            apt-get install -y nodejs
+      - run:
+          name: "Checkout server"
+          command: "git clone https://github.com/specklesystems/Server.git server"
+      - run:
+          working_directory: server
+          name: "Install deps"
+          command: "npm install"
+      - run: 
+          name: "Start server"
+          working_directory: server
+          command: "npm run dev:server"
+          background: true
+      - checkout:
+          path: core
+      - run: 
+          working_directory: core
+          name: "Pull core submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
+      - run: 
+          working_directory: core
+          command: dotnet restore
+      - run:  
+          working_directory: core
+          command: dotnet build --configuration Release
+      - run: 
+          working_directory: core
+          command: dotnet test IntegrationTests/TestsIntegration.csproj
+workflows: 
+  test-all:
+    jobs: 
+      - integrationtest
+      - unittest

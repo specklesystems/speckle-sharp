@@ -34,11 +34,12 @@ namespace IntegrationTests
     private string branchId = "";
     private string branchName = "";
     private string commitId = "";
+    private string objectId = "";
 
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo { url = "http://localhost:3000", name = "TestServer" };
+      testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
 
       // set up some users
       using (var client = new WebClient())
@@ -51,7 +52,7 @@ namespace IntegrationTests
         user_1["name"] = $"{seed_1.Substring(0, 5)} Name";
         user_1["username"] = $"{seed_1.Substring(0, 5)}_Name";
 
-        var raw_1 = client.UploadValues("http://localhost:3000/auth/local/register", "POST", user_1);
+        var raw_1 = client.UploadValues("http://127.0.0.1:3000/auth/local/register", "POST", user_1);
         var info_1 = JsonConvert.DeserializeObject<UserIdResponse>(Encoding.UTF8.GetString(raw_1));
 
         firstUserAccount = new Account { token = "Bearer " + info_1.apiToken, userInfo = new UserInfo { id = info_1.userId, email = user_1["email"] }, serverInfo = testServer };
@@ -64,7 +65,7 @@ namespace IntegrationTests
         user_2["name"] = $"{seed_2.Substring(0, 5)} Name";
         user_2["username"] = $"{seed_2.Substring(0, 5)}_Name";
 
-        var raw_2 = client.UploadValues("http://localhost:3000/auth/local/register", "POST", user_2);
+        var raw_2 = client.UploadValues("http://127.0.0.1:3000/auth/local/register", "POST", user_2);
         var info_2 = JsonConvert.DeserializeObject<UserIdResponse>(Encoding.UTF8.GetString(raw_2));
 
         secondUserAccount = new Account { token = "Bearer " + info_2.apiToken, userInfo = new UserInfo { id = info_2.userId, email = user_2["email"] }, serverInfo = testServer };
@@ -188,14 +189,13 @@ namespace IntegrationTests
     public async Task CommitCreate()
     {
       var myObject = new Base();
-      myObject["items"] = new List<Point>();
+      var ptsList = new List<Point>();
       for (int i = 0; i < 100; i++)
-        myObject.GetMemberSafe("items", new List<Point>()).Add(new Point(i, i, i));
+        ptsList.Add(new Point(i, i, i));
 
-      // NOTE:
-      // Operations.Upload is designed to be called from the connector, with potentially multiple responses.
-      // We could (should?) scaffold a corrolary Remote.Upload() at one point - in beta maybe?
-      commitId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport });
+      myObject["Points"] = ptsList;
+
+      commitId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport }, false);
 
       var res = await myClient.CommitCreate(new CommitCreateInput
       {
@@ -204,6 +204,7 @@ namespace IntegrationTests
         objectId = commitId,
         message = "MATT0E IS THE B3ST"
       });
+
       Assert.NotNull(res);
       commitId = res;
     }
@@ -220,6 +221,7 @@ namespace IntegrationTests
 
       Assert.IsTrue(res);
     }
+
     [Test, Order(45)]
     public async Task CommitDelete()
     {
@@ -257,6 +259,34 @@ namespace IntegrationTests
       );
       Assert.IsTrue(res);
     }
+
+    #endregion
+
+    #region send/receive bare
+
+    [Test, Order(60)]
+    public async Task SendDetached()
+    {
+      var myObject = new Base();
+      var ptsList = new List<Point>();
+      for (int i = 0; i < 100; i++)
+        ptsList.Add(new Point(i, i, i));
+
+      myObject["@Points"] = ptsList;
+
+      objectId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport });
+    }
+
+    [Test, Order(61)]
+    public async Task ReceiveAndCompose()
+    {
+      var myObject = await Operations.Receive(objectId, myServerTransport);
+      Assert.NotNull(myObject);
+      Assert.AreEqual(100, ((List<object>)myObject["@Points"]).Count);
+    }
+
+
+
 
     #endregion
 
