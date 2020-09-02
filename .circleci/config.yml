@@ -56,7 +56,7 @@ jobs:
           command: "npm run dev:server"
           background: true
       - checkout
-        path: core
+          path: core
       - run: 
           working_directory: core
           name: "Pull core submodules"
