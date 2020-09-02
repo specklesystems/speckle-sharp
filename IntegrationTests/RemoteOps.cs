@@ -38,7 +38,7 @@ namespace IntegrationTests
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo { url = "http://0.0.0.0:3000", name = "TestServer" };
+      testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
 
       // set up some users
       using (var client = new WebClient())
@@ -51,7 +51,7 @@ namespace IntegrationTests
         user_1["name"] = $"{seed_1.Substring(0, 5)} Name";
         user_1["username"] = $"{seed_1.Substring(0, 5)}_Name";
 
-        var raw_1 = client.UploadValues("http://0.0.0.0:3000/auth/local/register", "POST", user_1);
+        var raw_1 = client.UploadValues("http://127.0.0.1:3000/auth/local/register", "POST", user_1);
         var info_1 = JsonConvert.DeserializeObject<UserIdResponse>(Encoding.UTF8.GetString(raw_1));
 
         firstUserAccount = new Account { token = "Bearer " + info_1.apiToken, userInfo = new UserInfo { id = info_1.userId, email = user_1["email"] }, serverInfo = testServer };
@@ -64,7 +64,7 @@ namespace IntegrationTests
         user_2["name"] = $"{seed_2.Substring(0, 5)} Name";
         user_2["username"] = $"{seed_2.Substring(0, 5)}_Name";
 
-        var raw_2 = client.UploadValues("http://0.0.0.0:3000/auth/local/register", "POST", user_2);
+        var raw_2 = client.UploadValues("http://127.0.0.1:3000/auth/local/register", "POST", user_2);
         var info_2 = JsonConvert.DeserializeObject<UserIdResponse>(Encoding.UTF8.GetString(raw_2));
 
         secondUserAccount = new Account { token = "Bearer " + info_2.apiToken, userInfo = new UserInfo { id = info_2.userId, email = user_2["email"] }, serverInfo = testServer };
