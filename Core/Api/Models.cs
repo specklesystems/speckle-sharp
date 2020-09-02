@@ -20,6 +20,19 @@ namespace Speckle.Core.Api
     public bool isPublic { get; set; }
   }
 
+  public class StreamGrantPermissionInput
+  {
+    public string streamId { get; set; }
+    public string userId { get; set; }
+    public string role { get; set; }
+  }
+
+  public class StreamRevokePermissionInput
+  {
+    public string streamId { get; set; }
+    public string userId { get; set; }
+  }
+
   public class BranchCreateInput
   {
     public string streamId { get; set; }

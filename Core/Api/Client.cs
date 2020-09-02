@@ -37,7 +37,15 @@ namespace Speckle.Core.Api
       AccountId = account.id;
 
       HttpClient = new HttpClient();
-      HttpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {account.token}");
+
+      if (account.token.ToLowerInvariant().Contains("bearer"))
+      {
+        HttpClient.DefaultRequestHeaders.Add("Authorization", account.token);
+      }
+      else
+      {
+        HttpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {account.token}");
+      }
 
       GQLClient = new GraphQLHttpClient(
         new GraphQLHttpClientOptions
