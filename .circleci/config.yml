@@ -24,15 +24,15 @@ jobs:
       - image: 'circleci/redis:6'
       - image: 'circleci/postgres:12'
         environment:
-          POSTGRES_DB: speckle2_test
+          POSTGRES_DB: speckle2_dev
           POSTGRES_PASSWORD: speckle
           POSTGRES_USER: speckle
     environment:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       NODE_ENV: test
-      DATABASE_URL: 'postgres://speckle:speckle@localhost:5432/speckle2_test'
-      PGDATABASE: speckle2_test
+      DATABASE_URL: 'postgres://speckle:speckle@localhost:5432/speckle2_dev'
+      PGDATABASE: speckle2_dev
       PGUSER: speckle
       SESSION_SECRET: 'keyboard cat'
       STRATEGY_LOCAL: true
