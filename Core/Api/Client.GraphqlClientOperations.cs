@@ -285,19 +285,20 @@ namespace Speckle.Core.Api
     /// <param name="userId"></param>
     /// <param name="role"></param>
     /// <returns></returns>
-    public async Task<bool> StreamGrantPermission(string streamId, string userId, string role)
+    public async Task<bool> StreamGrantPermission(StreamGrantPermissionInput permissionInput)
     {
       try
       {
         var request = new GraphQLRequest
         {
-          Query = @"mutation streamGrantPermission($streamId: String!, $userId: String!, $role: String!)
-                    { streamGrantPermission(streamId:$streamId, userId:$userId, role:$role ) }",
+          Query =
+          @"
+          mutation streamGrantPermission($permissionParams: StreamGrantPermissionInput!) {
+            streamGrantPermission(permissionParams:$permissionParams)
+          }",
           Variables = new
           {
-            streamId,
-            userId,
-            role
+            permissionParams = permissionInput
           }
         };
 
@@ -321,18 +322,19 @@ namespace Speckle.Core.Api
     /// <param name="streamId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    public async Task<bool> StreamRevokePermission(string streamId, string userId)
+    public async Task<bool> StreamRevokePermission(StreamRevokePermissionInput permissionInput)
     {
       try
       {
         var request = new GraphQLRequest
         {
-          Query = @"mutation streamRevokePermission($streamId: String!, $userId: String!)
-                    { streamRevokePermission(streamId:$streamId, userId:$userId) }",
+          Query =
+          @"mutation streamRevokePermission($permissionParams: StreamRevokePermissionInput!) {
+            streamRevokePermission(permissionParams: $permissionParams)
+          }",
           Variables = new
           {
-            streamId,
-            userId,
+            permissionParams = permissionInput
           }
         };
 

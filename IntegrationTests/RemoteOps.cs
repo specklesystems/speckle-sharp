@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +9,10 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Tests;
+using System.Net;
+using System.Collections.Specialized;
+using System.Text;
+using Newtonsoft.Json;
 
 ////////////////////////////////////////////////////////////////////////////
 /// NOTE:                                                                ///
@@ -19,6 +24,9 @@ namespace IntegrationTests
 {
   public class RemoteOps
   {
+    public ServerInfo testServer;
+    public Account firstUserAccount, secondUserAccount;
+
     public Client myClient;
     public ServerTransport myServerTransport;
 
@@ -30,9 +38,51 @@ namespace IntegrationTests
     [OneTimeSetUp]
     public void Setup()
     {
-      myClient = new Client(AccountManager.GetAccounts().First());
-      myServerTransport = new ServerTransport(AccountManager.GetDefaultAccount(), null);
+      testServer = new ServerInfo { url = "http://localhost:3000", name = "TestServer" };
+
+      // set up some users
+      using (var client = new WebClient())
+      {
+        // First user - will own the client and streams
+        var seed_1 = Guid.NewGuid().ToString().ToLower();
+        var user_1 = new NameValueCollection();
+        user_1["email"] = $"{seed_1.Substring(0, 7)}@acme.com";
+        user_1["password"] = "12ABC3456789DEF0GHO";
+        user_1["name"] = $"{seed_1.Substring(0, 5)} Name";
+        user_1["username"] = $"{seed_1.Substring(0, 5)}_Name";
+
+        var raw_1 = client.UploadValues("http://localhost:3000/auth/local/register", "POST", user_1);
+        var info_1 = JsonConvert.DeserializeObject<UserIdResponse>(Encoding.UTF8.GetString(raw_1));
+
+        firstUserAccount = new Account { token = "Bearer " + info_1.apiToken, userInfo = new UserInfo { id = info_1.userId, email = user_1["email"] }, serverInfo = testServer };
+
+        // Second user - for permission grants tests
+        var seed_2 = Guid.NewGuid().ToString().ToLower();
+        var user_2 = new NameValueCollection();
+        user_2["email"] = $"{seed_2.Substring(0, 7)}@acme.com";
+        user_2["password"] = "12ABC3456789DEF0GHO";
+        user_2["name"] = $"{seed_2.Substring(0, 5)} Name";
+        user_2["username"] = $"{seed_2.Substring(0, 5)}_Name";
+
+        var raw_2 = client.UploadValues("http://localhost:3000/auth/local/register", "POST", user_2);
+        var info_2 = JsonConvert.DeserializeObject<UserIdResponse>(Encoding.UTF8.GetString(raw_2));
+
+        secondUserAccount = new Account { token = "Bearer " + info_2.apiToken, userInfo = new UserInfo { id = info_2.userId, email = user_2["email"] }, serverInfo = testServer };
+        AccountManager.UpdateOrSaveAccount(firstUserAccount);
+        AccountManager.UpdateOrSaveAccount(secondUserAccount);
+      }
+
+      myClient = new Client(firstUserAccount);
+      myServerTransport = new ServerTransport(firstUserAccount, null);
+
     }
+
+    public class UserIdResponse
+    {
+      public string userId { get; set; }
+      public string apiToken { get; set; }
+    }
+
 
     [Test]
     public async Task UserGet()
@@ -88,28 +138,32 @@ namespace IntegrationTests
       Assert.IsTrue(res);
     }
 
-    [Ignore("This test needs additional config")]
+    //[Ignore("This test needs additional config")]
     [Test, Order(30)]
     public async Task StreamGrantPermission()
     {
       var res = await myClient.StreamGrantPermission(
-
-        streamId,
-        "b4b7f800ac", //TODO: get user id dynamically
-        "stream:owner"
+        new StreamGrantPermissionInput
+        {
+          streamId = streamId,
+          userId = secondUserAccount.userInfo.id,
+          role = "stream:owner"
+        }
       );
 
       Assert.IsTrue(res);
     }
 
-    [Ignore("This test needs additional config")]
+    //[Ignore("This test needs additional config")]
     [Test, Order(40)]
     public async Task StreamRevokePermission()
     {
       var res = await myClient.StreamRevokePermission(
-
-        streamId,
-        "b4b7f800ac" //TODO: get user id dynamically
+        new StreamRevokePermissionInput
+        {
+          streamId = streamId,
+          userId = secondUserAccount.userInfo.id
+        }
       );
 
       Assert.IsTrue(res);
