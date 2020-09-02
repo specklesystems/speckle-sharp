@@ -18,11 +18,11 @@ namespace ExampleApp
 
       Console.WriteLine("Subscribing to stream created. On first created event will subscribe to that stream's updates.");
 
-      myClient.SubscribeUserStreamCreated();
+      myClient.SubscribeUserStreamAdded();
 
       bool first = true;
 
-      myClient.OnUserStreamCreated += (sender, e) =>
+      myClient.OnUserStreamAdded += (sender, e) =>
       {
         if (first)
         {

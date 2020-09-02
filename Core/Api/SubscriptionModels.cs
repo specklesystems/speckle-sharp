@@ -4,26 +4,29 @@ using System.Text;
 
 namespace Speckle.Core.Api.SubscriptionModels
 {
-  public class UserStreamCreatedResult
-  {
-    public UserStreamCreatedContent UserStreamCreated { get; set; }
-  }
-
-  public class UserStreamCreatedContent
+  public class StreamInfo
   {
     public string id { get; set; }
     public string name { get; set; }
     public string description { get; set; }
   }
 
-  public class StreamUpdatedResult
+  public class UserStreamAddedResult
   {
-    public StreamUpdatedContent StreamUpdated { get; set; }
+    public StreamInfo userStreamAdded { get; set; }
+    public string ownerId { get; set; }
   }
 
-  public class StreamUpdatedContent
+  public class StreamUpdatedResult
   {
-    public string name { get; set; }
-    public string description { get; set; }
+    public StreamInfo streamUpdated { get; set; }
+    public string ownerId { get; set; }
   }
+
+  public class UserStreamRemovedResult
+  {
+    public StreamInfo userStreamRemoved { get; set; }
+    public string ownerId { get; set; }
+  }
+
 }

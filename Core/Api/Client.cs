@@ -11,7 +11,7 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Core.Api
 {
-  public partial class Client
+  public partial class Client : IDisposable
   {
     public string ServerUrl { get => Account.serverInfo.url; }
 
@@ -49,15 +49,10 @@ namespace Speckle.Core.Api
           {
             opts.SetRequestHeader("Authorization", $"Bearer {account.token}");
           },
-          
+
         },
         new NewtonsoftJsonSerializer(),
         HttpClient);
-
-      //var ws = new ClientWebSocket(); ;
-      //ws.Options.SetRequestHeader("Authorization", $"Bearer {account.token}");
-
-      //GQLClient.Options.ConfigureWebsocketOptions(ws.Options);
 
       GQLClient.WebSocketReceiveErrors.Subscribe(e =>
       {
@@ -71,9 +66,16 @@ namespace Speckle.Core.Api
 
     public Task OnWebSocketConnect(GraphQLHttpClient client)
     {
-      //logger.LogInformation("Main websocket is open");
       Console.WriteLine("Websocket is open");
       return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+      UserStreamAddedSubscription.Dispose();
+      StreamRemovedSubscription.Dispose();
+      StreamUpdatedSubscription.Dispose();
+      GQLClient.Dispose();
     }
 
 
