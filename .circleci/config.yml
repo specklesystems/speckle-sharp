@@ -9,5 +9,10 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
       - checkout
+      - run: 
+          name: "Pull submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - run: dotnet restore
       - run: dotnet build --configuration Release
