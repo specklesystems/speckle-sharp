@@ -62,8 +62,14 @@ namespace Speckle.Core.Transports
         Timeout = new TimeSpan(0, 0, timeoutSeconds),
       };
 
-      Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authorizationToken}");
-
+      if (authorizationToken.ToLowerInvariant().Contains("bearer"))
+      {
+        Client.DefaultRequestHeaders.Add("Authorization", authorizationToken);
+      }
+      else
+      {
+        Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authorizationToken}");
+      }
       WriteTimer = new System.Timers.Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
       WriteTimer.Elapsed += WriteTimerElapsed;
     }

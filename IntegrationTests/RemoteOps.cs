@@ -188,14 +188,16 @@ namespace IntegrationTests
     public async Task CommitCreate()
     {
       var myObject = new Base();
-      myObject["items"] = new List<Point>();
+      var ptsList = new List<Point>();
       for (int i = 0; i < 100; i++)
-        myObject.GetMemberSafe("items", new List<Point>()).Add(new Point(i, i, i));
+        ptsList.Add(new Point(i, i, i));
+
+      myObject["Points"] = ptsList;
 
       // NOTE:
       // Operations.Upload is designed to be called from the connector, with potentially multiple responses.
       // We could (should?) scaffold a corrolary Remote.Upload() at one point - in beta maybe?
-      commitId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport });
+      commitId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport }, false);
 
       var res = await myClient.CommitCreate(new CommitCreateInput
       {
@@ -204,6 +206,7 @@ namespace IntegrationTests
         objectId = commitId,
         message = "MATT0E IS THE B3ST"
       });
+
       Assert.NotNull(res);
       commitId = res;
     }
