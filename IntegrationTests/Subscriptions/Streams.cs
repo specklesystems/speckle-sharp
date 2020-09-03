@@ -7,7 +7,7 @@ using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Transports;
 
-namespace TestsSubscriptions
+namespace IntegrationTests.Subscriptions
 {
   public class Tests
   {
