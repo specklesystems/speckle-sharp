@@ -1,5 +1,4 @@
 ﻿using MaterialDesignThemes.Wpf;
-using Microsoft.Xaml.Behaviors.Media;
 using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Feed;
 using Speckle.DesktopUI.Inbox;
