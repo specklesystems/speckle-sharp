@@ -1,0 +1,24 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:Speckle.DesktopUI.Themes"
+                    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes">
+
+    <!--  primary  -->
+    <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="#26C2F2" />
+    <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#0080FF" />
+    <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="#0055cb" />
+    <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="#FFFFFF" />
+    <!--  accent  -->
+    <SolidColorBrush x:Key="SecondaryAccentBrush" Color="#fb8004" />
+    <SolidColorBrush x:Key="SecondaryAccentForegroundBrush" Color="#FFFFFF" />
+
+    <ResourceDictionary.MergedDictionaries>
+      <md:BundledTheme
+          BaseTheme="Light"
+          PrimaryColor="LightBlue"
+          SecondaryColor="Blue" />
+      <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+  </ResourceDictionary>

@@ -28,8 +28,8 @@
     <local:MainWindowViewModel />
   </Window.DataContext>
   <Window.Resources>
-    <ResourceDictionary>
-      <DataTemplate DataType="{x:Type stream:StreamsHomeViewModel}">
+    
+      <!--<DataTemplate DataType="{x:Type stream:StreamsHomeViewModel}">
         <stream:StreamsHomeView />
       </DataTemplate>
       <DataTemplate DataType="{x:Type stream:StreamCreateViewModel}">
@@ -49,29 +49,11 @@
       </DataTemplate>
       <DataTemplate DataType="{x:Type settings:SettingsViewModel}">
         <settings:SettingsView />
-      </DataTemplate>
+      </DataTemplate>-->
 
-      <ResourceDictionary x:Key="styles">
-        <!--  primary  -->
-        <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="#26C2F2" />
-        <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#0080FF" />
-        <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="#0055cb" />
-        <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="#FFFFFF" />
-        <!--  accent  -->
-        <SolidColorBrush x:Key="SecondaryAccentBrush" Color="#fb8004" />
-        <SolidColorBrush x:Key="SecondaryAccentForegroundBrush" Color="#FFFFFF" />
+      <ResourceDictionary Source="Themes/Generic.xaml" />
 
-        <ResourceDictionary.MergedDictionaries>
-          <md:BundledTheme
-          BaseTheme="Light"
-          PrimaryColor="LightBlue"
-          SecondaryColor="Blue" />
-          <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
-        </ResourceDictionary.MergedDictionaries>
-      </ResourceDictionary>
-    </ResourceDictionary>
+   
   </Window.Resources>
 
   <md:DialogHost DialogTheme="Inherit">
