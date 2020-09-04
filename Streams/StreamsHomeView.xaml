@@ -9,6 +9,9 @@
   d:DesignHeight="450"
   d:DesignWidth="600"
   mc:Ignorable="d">
+  <UserControl.Resources>
+    <ResourceDictionary Source="../Themes/Generic.xaml" />
+  </UserControl.Resources>
   <Grid>
     <md:Transitioner AutoApplyTransitionOrigins="True" SelectedIndex="{Binding SelectedSlide}">
       <md:Transitioner.InputBindings>

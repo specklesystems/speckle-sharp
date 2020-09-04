@@ -28,8 +28,8 @@
     <local:MainWindowViewModel />
   </Window.DataContext>
   <Window.Resources>
-    
-      <!--<DataTemplate DataType="{x:Type stream:StreamsHomeViewModel}">
+    <ResourceDictionary>
+      <DataTemplate DataType="{x:Type stream:StreamsHomeViewModel}">
         <stream:StreamsHomeView />
       </DataTemplate>
       <DataTemplate DataType="{x:Type stream:StreamCreateViewModel}">
@@ -49,11 +49,8 @@
       </DataTemplate>
       <DataTemplate DataType="{x:Type settings:SettingsViewModel}">
         <settings:SettingsView />
-      </DataTemplate>-->
-
-      <ResourceDictionary Source="Themes/Generic.xaml" />
-
-   
+      </DataTemplate>
+    </ResourceDictionary>
   </Window.Resources>
 
   <md:DialogHost DialogTheme="Inherit">
