@@ -1,28 +1,23 @@
 ﻿using System;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
-using Speckle.Core.Transports;
 
 namespace TestsIntegration.Subscriptions
 {
-  public class Streams
+  public class Branches
   {
     public Client client;
     public ServerInfo testServer;
     public Account testUserAccount;
 
-    private StreamInfo StreamAddedInfo;
-    private StreamInfo StreamUpdatedInfo;
-    private StreamInfo StreamRemovedInfo;
+    private BranchInfo BranchCreatedInfo;
+    private BranchInfo BranchUpdatedInfo;
+    private BranchInfo BranchDeletedInfo;
+    string branchId;
     string streamId;
 
     [OneTimeSetUp]
@@ -37,90 +32,103 @@ namespace TestsIntegration.Subscriptions
     }
 
     [Test, Order(0)]
-    public async Task SubscribeStreamAdded()
+    public async Task SubscribeBranchCreated()
     {
-      client.SubscribeUserStreamAdded();
-      client.OnUserStreamAdded += Client_OnUserStreamAdded;
-
-      Thread.Sleep(100); //let server catch-up
-
       var streamInput = new StreamCreateInput
       {
         description = "Hello World",
         name = "Super Stream 01"
       };
 
-      var res = await client.StreamCreate(streamInput);
-      streamId = res;
-      Assert.NotNull(res);
+      streamId = await client.StreamCreate(streamInput);
+      Assert.NotNull(streamId);
+
+      client.SubscribeBranchCreated(streamId);
+      client.OnBranchCreated += Client_OnBranchCreated;
+
+      Thread.Sleep(100); //let server catch-up
+
+      var branchInput = new BranchCreateInput
+      {
+        description = "Just testing branch create...",
+        name = "awesome-features",
+        streamId = streamId
+      };
+
+      branchId  = await client.BranchCreate(branchInput);
+      Assert.NotNull(branchId);
 
       await Task.Run(() => {
         Thread.Sleep(100); //let client catch-up
-        Assert.NotNull(StreamAddedInfo);
-        Assert.AreEqual(streamInput.name, StreamAddedInfo.name);
+        Assert.NotNull(BranchCreatedInfo);
+        Assert.AreEqual(branchInput.name, BranchCreatedInfo.name);
       });
     }
 
-    private void Client_OnUserStreamAdded(object sender, StreamInfo e)
+    private void Client_OnBranchCreated(object sender, BranchInfo e)
     {
-      StreamAddedInfo = e;
+      BranchCreatedInfo = e;
     }
 
     [Test, Order(1)]
-    public async Task SubscribeStreamUpdated()
+    public async Task SubscribeBranchUpdated()
     {
-      client.SubscribeStreamUpdated(streamId);
-      client.OnStreamUpdated += Client_OnStreamUpdated; ;
+      client.SubscribeBranchUpdated(streamId);
+      client.OnBranchUpdated += Client_OnBranchUpdated;
 
       Thread.Sleep(100); //let server catch-up
 
-      var streamInput = new StreamUpdateInput
+      var branchInput = new BranchUpdateInput
       {
-        id = streamId,
-        description = "Hello World",
-        name = "Super Stream 01 EDITED"
+        description = "Just testing branch bpdate...",
+        name = "cool-features",
+        streamId = streamId,
+        id = branchId,
       };
 
-      var res = await client.StreamUpdate(streamInput);
-
+      var res = await client.BranchUpdate(branchInput);
       Assert.True(res);
-      
+
       await Task.Run(() => {
         Thread.Sleep(100); //let client catch-up
-        Assert.NotNull(StreamUpdatedInfo);
-        Assert.AreEqual(streamInput.name, StreamUpdatedInfo.name);
+        Assert.NotNull(BranchUpdatedInfo);
+        Assert.AreEqual(branchInput.name, BranchUpdatedInfo.name);
       });
-
     }
 
-    private void Client_OnStreamUpdated(object sender, StreamInfo e)
+    private void Client_OnBranchUpdated(object sender, BranchInfo e)
     {
-      StreamUpdatedInfo = e;
+      BranchUpdatedInfo = e;
     }
 
-    [Test, Order(2)]
-    public async Task SubscribeStreamRemoved()
+    [Test, Order(3)]
+    public async Task SubscribeBranchDeleted()
     {
-      client.SubscribeStreamRemoved(streamId);
-      client.OnStreamRemoved += Client_OnStreamRemoved; ;
+      client.SubscribeBranchDeleted(streamId);
+      client.OnBranchDeleted += Client_OnBranchDeleted;
 
       Thread.Sleep(100); //let server catch-up
 
-      var res = await client.StreamDelete(streamId);
+      var branchInput = new BranchDeleteInput
+      {
+        streamId = streamId,
+        id = branchId,
+      };
 
+      var res = await client.BranchDelete(branchInput);
       Assert.True(res);
 
       await Task.Run(() => {
         Thread.Sleep(100); //let client catch-up
-        Assert.NotNull(StreamRemovedInfo);
-        Assert.AreEqual(streamId, StreamRemovedInfo.id);
+        Assert.NotNull(BranchDeletedInfo);
+        Assert.AreEqual(branchId, BranchDeletedInfo.id);
       });
-
     }
 
-    private void Client_OnStreamRemoved(object sender, StreamInfo e)
+    private void Client_OnBranchDeleted(object sender, BranchInfo e)
     {
-      StreamRemovedInfo = e;
+      BranchDeletedInfo = e;
     }
+
   }
 }

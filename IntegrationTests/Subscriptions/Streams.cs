@@ -1,18 +1,18 @@
-﻿using System.Linq;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
-using Speckle.Core.Transports;
 
-namespace IntegrationTests.Subscriptions
+namespace TestsIntegration.Subscriptions
 {
-  public class Tests
+  public class Streams
   {
     public Client client;
-    public ServerTransport myServerTransport;
+    public ServerInfo testServer;
+    public Account testUserAccount;
 
     private StreamInfo StreamAddedInfo;
     private StreamInfo StreamUpdatedInfo;
@@ -22,8 +22,12 @@ namespace IntegrationTests.Subscriptions
     [OneTimeSetUp]
     public void Setup()
     {
-      client = new Client(AccountManager.GetAccounts().First());
-      myServerTransport = new ServerTransport(AccountManager.GetDefaultAccount(), null);
+      testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
+
+      testUserAccount = Utils.SeedUser(testServer);
+      AccountManager.UpdateOrSaveAccount(testUserAccount);
+
+      client = new Client(testUserAccount);
     }
 
     [Test, Order(0)]
@@ -89,10 +93,10 @@ namespace IntegrationTests.Subscriptions
     }
 
     [Test, Order(2)]
-    public async Task SubscribeStreamRemoved()
+    public async Task SubscribeUserStreamRemoved()
     {
-      client.SubscribeStreamRemoved(streamId);
-      client.OnStreamRemoved += Client_OnStreamRemoved; ;
+      client.SubscribeUserStreamRemoved();
+      client.OnUserStreamRemoved += Client_OnStreamRemoved; ;
 
       Thread.Sleep(100); //let server catch-up
 
