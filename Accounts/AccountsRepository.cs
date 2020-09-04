@@ -16,19 +16,18 @@ namespace Speckle.DesktopUI.Accounts
       {
         new Account()
         {
-          isDefault = true,
           serverInfo = new ServerInfo()
           {
             company = "Speckle",
-            name = "Hella Cool Server",
+            name = "Hella Cool Test Server",
             url = "http://localhost:3000/"
           },
           userInfo = new UserInfo()
           {
             name = Environment.UserName,
             company = "Testing Desktop UI Inc",
-            id = "user123",
-            email = "testing@speckle.systems"
+            id = "izzyui",
+            email = "izzy@speckle.systems"
           },
           token = Environment.GetEnvironmentVariable("speckle2_dev_token")
         },
@@ -55,6 +54,7 @@ namespace Speckle.DesktopUI.Accounts
         }
       };
       TestAccounts.ForEach(acc => AccountManager.UpdateOrSaveAccount(acc));
+      SetDefault(TestAccounts[0]);
 
       return LoadAccounts();
     }
