@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
@@ -25,6 +26,11 @@ namespace Speckle.Core.Api
     HttpClient HttpClient { get; set; }
 
     public GraphQLHttpClient GQLClient { get; set; }
+
+    public object UploadValues(string v1, string v2, NameValueCollection user_1)
+    {
+      throw new NotImplementedException();
+    }
 
     public Client() { }
 
@@ -81,8 +87,11 @@ namespace Speckle.Core.Api
     public void Dispose()
     {
       UserStreamAddedSubscription.Dispose();
-      StreamRemovedSubscription.Dispose();
+      UserStreamRemovedSubscription.Dispose();
       StreamUpdatedSubscription.Dispose();
+      BranchCreatedSubscription.Dispose();
+      BranchUpdatedSubscription.Dispose();
+      BranchDeletedSubscription.Dispose();
       GQLClient.Dispose();
     }
 
