@@ -26,32 +26,21 @@ namespace Speckle.DesktopUI
   {
     public MainWindow()
     {
-      //manually inject our main resource dic
-      //we can't put it in app.xml since this window can be loaded by another app
-      ResourceDictionary MyResourceDictionary = new ResourceDictionary();
-      MyResourceDictionary.Source = new Uri("SpeckleDesktopUI;component/Themes/Generic.xaml", UriKind.Relative);
-
 
       if (Application.Current == null)
       {
         //if the app is null, eg revit, make one
         new Application();
-
-        //load all resources form material design, they are not loaded automatically at times
-        //eg when revit starts
-        Assembly assembly = typeof(MaterialDesignThemes.Wpf.Card).Assembly;
-        foreach (var key in assembly.GetManifestResourceNames())
-        {
-          if (key.ToLower().EndsWith(".resources.xaml"))
-          {
-            Stream resource = assembly.GetManifestResourceStream(key);
-            ResourceDictionary dict = XamlReader.Load(resource) as ResourceDictionary;
-            Application.Current.Resources.MergedDictionaries.Add(dict);
-          }
-        }
+        //make sure material design is loaded
+        var type = typeof(PaletteHelper);
       }
 
-      App.Current.Resources.MergedDictionaries.Add(MyResourceDictionary);
+      //manually inject our main resource dic
+      //we can't put it in app.xml since this window can be loaded by another app
+      Application.Current.Resources.MergedDictionaries.Add(
+      Application.LoadComponent(
+        new Uri("SpeckleDesktopUI;component/Themes/Generic.xaml", UriKind.Relative)
+        ) as ResourceDictionary);
 
       InitializeComponent();
     }
