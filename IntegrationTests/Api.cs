@@ -193,7 +193,7 @@ namespace TestsIntegration
     [Test, Order(45)]
     public async Task CommitDelete()
     {
-      var res = await myClient.CommmitDelete(new CommitDeleteInput
+      var res = await myClient.CommitDelete(new CommitDeleteInput
       {
         id = commitId,
         streamId = streamId
