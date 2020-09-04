@@ -4,6 +4,7 @@ using System.Text;
 
 namespace Speckle.Core.Api.SubscriptionModels
 {
+  #region streams 
   public class StreamInfo
   {
     public string id { get; set; }
@@ -25,7 +26,9 @@ namespace Speckle.Core.Api.SubscriptionModels
   {
     public StreamInfo userStreamRemoved { get; set; }
   }
+  #endregion
 
+  #region branches
 
   public class BranchInfo
   {
@@ -36,7 +39,7 @@ namespace Speckle.Core.Api.SubscriptionModels
     public string authorId { get; set; }
   }
 
-  public class BranchEventResult
+  public class BranchCreatedResult
   {
     public BranchInfo branchCreated { get; set; }
   }
@@ -50,5 +53,36 @@ namespace Speckle.Core.Api.SubscriptionModels
   {
     public BranchInfo branchDeleted { get; set; }
   }
+  #endregion
 
+  #region commits
+
+  public class CommitInfo
+  {
+    public string id { get; set; }
+    public string streamId { get; set; }
+    public string branchName { get; set; }
+    public string objectId { get; set; }
+    public string authorId { get; set; }
+    public string message { get; set; }
+    public string[] previousCommitIds { get; set; }
+    
+    
+  }
+
+  public class CommitCreatedResult
+  {
+    public CommitInfo commitCreated { get; set; }
+  }
+
+  public class CommitUpdatedResult
+  {
+    public CommitInfo commitUpdated { get; set; }
+  }
+
+  public class CommitDeletedResult
+  {
+    public CommitInfo commitDeleted { get; set; }
+  }
+  #endregion
 }

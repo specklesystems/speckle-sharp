@@ -522,7 +522,7 @@ namespace Speckle.Core.Api
     /// </summary>
     /// <param name="commitInput"></param>
     /// <returns></returns>
-    public async Task<bool> CommmitDelete(CommitDeleteInput commitInput)
+    public async Task<bool> CommitDelete(CommitDeleteInput commitInput)
     {
       try
       {
