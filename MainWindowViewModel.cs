@@ -1,4 +1,4 @@
-﻿using MaterialDesignThemes.Wpf;
+using MaterialDesignThemes.Wpf;
 using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Feed;
 using Speckle.DesktopUI.Inbox;
@@ -67,7 +67,6 @@ namespace Speckle.DesktopUI
                 new ViewItem("Home", new StreamsHomeViewModel()),
                 new ViewItem("Inbox", new InboxViewModel()),
                 new ViewItem("Feed", new FeedViewModel()),
-                new ViewItem("Accounts", new AccountsViewModel()),
                 new ViewItem("Settings", new SettingsViewModel())
             };
     }

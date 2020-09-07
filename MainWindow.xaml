@@ -1,4 +1,4 @@
-﻿<Window
+<Window
   x:Class="Speckle.DesktopUI.MainWindow"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -34,12 +34,6 @@
       </DataTemplate>
       <DataTemplate DataType="{x:Type stream:StreamCreateViewModel}">
         <stream:StreamCreateView />
-      </DataTemplate>
-      <DataTemplate DataType="{x:Type acct:AccountsViewModel}">
-        <acct:AccountsView />
-      </DataTemplate>
-      <DataTemplate DataType="{x:Type acct:AddAccountViewModel}">
-        <acct:AddAccountView />
       </DataTemplate>
       <DataTemplate DataType="{x:Type inbox:InboxViewModel}">
         <inbox:InboxView />
