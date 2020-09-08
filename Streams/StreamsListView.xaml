@@ -11,9 +11,6 @@
   mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
-      <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
-      </ResourceDictionary.MergedDictionaries>
 
       <DataTemplate x:Key="StreamCardTemplate">
         <md:Card Width="Auto" Margin="8">
@@ -81,74 +78,6 @@
                 Style="{StaticResource MaterialDesignFlatButton}" />
             </Grid>
           </Grid>
-        </md:Card>
-      </DataTemplate>
-
-      <DataTemplate x:Key="StreamCardRec">
-        <md:Card Width="Auto" Padding="10">
-          <StackPanel Orientation="Vertical">
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-              </Grid.ColumnDefinitions>
-              <Button
-                Grid.Column="0"
-                Width="32"
-                Height="32"
-                Margin="10"
-                HorizontalAlignment="Left"
-                Command="{x:Static md:DialogHost.OpenDialogCommand}"
-                Content="{md:PackIcon Kind=CloudDownload,
-                                      Size=20}"
-                Foreground="{StaticResource MaterialDesignLightBackground}"
-                Style="{StaticResource MaterialDesignFloatingActionLightButton}">
-                <Button.CommandParameter>
-                  <StackPanel Margin="16">
-                    <ProgressBar
-                      Margin="16"
-                      HorizontalAlignment="Center"
-                      IsIndeterminate="True"
-                      Style="{DynamicResource MaterialDesignCircularProgressBar}"
-                      Value="0" />
-                    <Button
-                      HorizontalAlignment="Center"
-                      Command="{x:Static md:DialogHost.CloseDialogCommand}"
-                      CommandParameter="Sample2Cancel"
-                      IsCancel="True"
-                      Style="{StaticResource MaterialDesignFlatButton}">
-                      CANCEL
-                    </Button>
-                  </StackPanel>
-                </Button.CommandParameter>
-              </Button>
-
-              <TextBlock
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                FontSize="20"
-                Style="{StaticResource MaterialDesignHeadline2TextBlock}"
-                Text="{Binding Name}"
-                TextWrapping="Wrap" />
-              <Button
-                Grid.Column="2"
-                VerticalAlignment="Top"
-                Content="{md:PackIcon Kind=Delete}"
-                Style="{StaticResource MaterialDesignIconButton}" />
-            </Grid>
-
-            <StackPanel Margin="10,5" Orientation="Horizontal">
-              <TextBlock Text="Server: " />
-              <TextBlock Text="{Binding Account.ServerName}" />
-              <TextBlock Text="Stream ID: " />
-              <TextBlock Text="{Binding StreamId}" />
-            </StackPanel>
-            <StackPanel Margin="10,5" Orientation="Horizontal">
-              <TextBlock Text="Objects: " />
-              <TextBlock Text="{Binding Objects.Count}" />
-            </StackPanel>
-          </StackPanel>
         </md:Card>
       </DataTemplate>
 

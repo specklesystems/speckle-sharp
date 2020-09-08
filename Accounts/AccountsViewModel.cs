@@ -16,12 +16,12 @@ namespace Speckle.DesktopUI.Accounts
     {
       _repo = new AccountsRepository();
 #if DEBUG
-      _allAccounts = _repo.LoadTestAccounts();
+      AllAccounts = _repo.LoadTestAccounts();
 #else
-       _allAccounts = _repo.LoadAccounts();
+       AllAccounts = _repo.LoadAccounts();
 #endif
-      _accountsNonDefault = _repo.LoadNonDefaultAccounts();
-      _defaultAccount = _repo.GetDefault();
+      AccountsNonDefault = _repo.LoadNonDefaultAccounts();
+      DefaultAccount = _repo.GetDefault();
       SetDefaultCommand = new RelayCommand<Account>(OnSetDefault);
       RemoveCommand = new RelayCommand<Account>(OnRemove);
       AuthenticateCommand = new RelayCommand<string>(OnAuthenticate);

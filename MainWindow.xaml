@@ -28,27 +28,23 @@
     <local:MainWindowViewModel />
   </Window.DataContext>
   <Window.Resources>
-    <DataTemplate DataType="{x:Type stream:StreamsHomeViewModel}">
-      <stream:StreamsHomeView />
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type stream:StreamCreateViewModel}">
-      <stream:StreamCreateView />
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type acct:AccountsViewModel}">
-      <acct:AccountsView />
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type acct:AddAccountViewModel}">
-      <acct:AddAccountView />
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type inbox:InboxViewModel}">
-      <inbox:InboxView />
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type feed:FeedViewModel}">
-      <feed:FeedView />
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type settings:SettingsViewModel}">
-      <settings:SettingsView />
-    </DataTemplate>
+    <ResourceDictionary>
+      <DataTemplate DataType="{x:Type stream:StreamsHomeViewModel}">
+        <stream:StreamsHomeView />
+      </DataTemplate>
+      <DataTemplate DataType="{x:Type stream:StreamCreateViewModel}">
+        <stream:StreamCreateView />
+      </DataTemplate>
+      <DataTemplate DataType="{x:Type inbox:InboxViewModel}">
+        <inbox:InboxView />
+      </DataTemplate>
+      <DataTemplate DataType="{x:Type feed:FeedViewModel}">
+        <feed:FeedView />
+      </DataTemplate>
+      <DataTemplate DataType="{x:Type settings:SettingsViewModel}">
+        <settings:SettingsView />
+      </DataTemplate>
+    </ResourceDictionary>
   </Window.Resources>
 
   <md:DialogHost DialogTheme="Inherit">
@@ -118,7 +114,16 @@
               <TextBlock Margin="0,0,8,0">
                 <md:PackIcon Kind="WhiteBalanceSunny" />
               </TextBlock>
-              <ToggleButton x:Name="DarkModeToggleButton" Click="MenuDarkModeButton_Click" />
+              <!--  TODO figure out why this isn't changing the theme  -->
+              <!--<ToggleButton
+                x:Name="DarkModeToggleButton"
+                Command="{Binding ToggleThemeCommand}"
+                CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
+                IsChecked="{Binding DarkMode, Mode=TwoWay}" />-->
+              <ToggleButton
+                x:Name="DarkModeToggleButton"
+                Click="MenuDarkModeButton_Click"
+                IsChecked="{Binding DarkMode, Mode=TwoWay}" />
               <TextBlock Margin="8,0,0,0">
                 <md:PackIcon Kind="NightSky" />
               </TextBlock>

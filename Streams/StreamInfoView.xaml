@@ -8,6 +8,7 @@
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
   d:DesignHeight="600"
   d:DesignWidth="450"
+  Background="{DynamicResource MaterialDesignPaper}"
   mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>

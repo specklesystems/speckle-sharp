@@ -1,5 +1,4 @@
 ﻿using MaterialDesignThemes.Wpf;
-using Microsoft.Xaml.Behaviors.Media;
 using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Feed;
 using Speckle.DesktopUI.Inbox;
@@ -15,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 
 namespace Speckle.DesktopUI
 {
@@ -24,15 +24,26 @@ namespace Speckle.DesktopUI
     {
       OpenLinkCommand = new RelayCommand<string>(OnOpenLink);
       CopyStreamCommand = new RelayCommand<string>(OnCopyStreamCommand);
+      ToggleThemeCommand = new RelayCommand<bool>(OnToggleTheme);
       ViewItems = GetViewItems();
       SelectedItem = ViewItems[0];
       MessageQueue = new SnackbarMessageQueue();
+
+      ITheme theme = new PaletteHelper().GetTheme();
+      _darkMode = theme.Body == (Color)ColorConverter.ConvertFromString("#DD000000") ? false : true;
     }
 
     public RelayCommand<string> OpenLinkCommand { get; set; }
     public RelayCommand<string> CopyToClipboardCommand { get; set; }
     public RelayCommand<string> CopyStreamCommand { get; set; }
+    public RelayCommand<bool> ToggleThemeCommand { get; set; }
 
+    private bool _darkMode;
+    public bool DarkMode
+    {
+      get => _darkMode;
+      set => SetProperty(ref _darkMode, value);
+    }
     private ObservableCollection<ViewItem> _viewItems;
     public ObservableCollection<ViewItem> ViewItems
     {
@@ -68,7 +79,6 @@ namespace Speckle.DesktopUI
                 new ViewItem("Home", new StreamsHomeViewModel()),
                 new ViewItem("Inbox", new InboxViewModel()),
                 new ViewItem("Feed", new FeedViewModel()),
-                new ViewItem("Accounts", new AccountsViewModel()),
                 new ViewItem("Settings", new SettingsViewModel())
             };
     }
@@ -90,6 +100,14 @@ namespace Speckle.DesktopUI
     {
       Clipboard.SetText(text);
       MessageQueue.Enqueue(message);
+    }
+
+    private void OnToggleTheme(bool darkmode)
+    {
+      PaletteHelper paletteHelper = new PaletteHelper();
+      ITheme theme = paletteHelper.GetTheme();
+      theme.SetBaseTheme(darkmode ? Theme.Dark : Theme.Light);
+      DarkMode = darkmode;
     }
   }
 }
