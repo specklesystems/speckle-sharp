@@ -6,6 +6,7 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Speckle.DesktopUI;
+using Speckle.ConnectorRevit.UI;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -23,7 +24,7 @@ namespace Speckle.ConnectorRevit.Entry
     {
       UIApplication uiapp = commandData.Application;
 
-      var win = new MainWindow();
+      var win = new MainWindow(new ConnectorBindingsRevit());
       win.Show();
 
       return Result.Succeeded;
