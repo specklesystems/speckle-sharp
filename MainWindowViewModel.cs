@@ -49,6 +49,10 @@ namespace Speckle.DesktopUI
         SetProperty(ref _bindings, value);
       }
     }
+    public string HostName
+    {
+      get => (Bindings is null) ? "Spockle" : Bindings.GetApplicationHostName();
+    }
 
     private bool _darkMode;
     public bool DarkMode
