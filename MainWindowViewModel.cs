@@ -41,7 +41,13 @@ namespace Speckle.DesktopUI
     public ConnectorBindings Bindings
     {
       get => _bindings;
-      set => SetProperty(ref _bindings, value);
+      set
+      {
+        var homeViewModel = (StreamsHomeViewModel)ViewItems.FirstOrDefault(item => item.Name == "Home").Content;
+        homeViewModel.ConnectorBindings = value;
+
+        SetProperty(ref _bindings, value);
+      }
     }
 
     private bool _darkMode;
