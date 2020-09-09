@@ -24,7 +24,7 @@ namespace Speckle.ConnectorRevit.Entry
     {
       UIApplication uiapp = commandData.Application;
 
-      var win = new MainWindow(new ConnectorBindingsRevit());
+      var win = new MainWindow(new ConnectorBindingsRevit(uiapp));
       win.Show();
 
       return Result.Succeeded;
