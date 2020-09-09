@@ -18,7 +18,7 @@ using System.Windows.Media;
 
 namespace Speckle.DesktopUI
 {
-  class MainWindowViewModel : BindableBase
+  public class MainWindowViewModel : BindableBase
   {
     public MainWindowViewModel()
     {
@@ -37,6 +37,7 @@ namespace Speckle.DesktopUI
     public RelayCommand<string> CopyToClipboardCommand { get; set; }
     public RelayCommand<string> CopyStreamCommand { get; set; }
     public RelayCommand<bool> ToggleThemeCommand { get; set; }
+    public ConnectorBindings Bindings { get; set; }
 
     private bool _darkMode;
     public bool DarkMode

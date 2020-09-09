@@ -102,6 +102,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ConnectorBindings.cs" />
     <Compile Include="Settings\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
@@ -133,6 +134,7 @@
       <DependentUpon>StreamsListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Streams\StreamsRepository.cs" />
+    <Compile Include="Utils\SelectionFilter.cs" />
     <Compile Include="Utils\BindableBase.cs" />
     <Compile Include="Utils\Link.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
@@ -150,8 +152,7 @@
       <SubType>Designer</SubType>
     </Page>
     <Compile Include="Accounts\AccountsRepository.cs" />
-        <Compile Include="Accounts\AccountsViewModel.cs" />
-
+    <Compile Include="Accounts\AccountsViewModel.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
