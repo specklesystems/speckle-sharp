@@ -110,8 +110,8 @@ namespace Speckle.Core.Kits
       {
         case "mm":
         case "mil":
-        case "millimiters":
-        case "milimiters":
+        case "millimeters":
+        case "millimetres":
           return LengthUnits.Millimeters;
         case "cm":
         case "centimetre":
