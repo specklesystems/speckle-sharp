@@ -115,11 +115,15 @@ namespace Speckle.Core.Kits
           return LengthUnits.Millimiters;
         case "cm":
         case "centimetre":
+        case "centimeter":
+        case "centimetres":
         case "centimeters":
           return LengthUnits.Centimeters;
         case "m":
         case "meter":
+        case "metre":
         case "meters":
+        case "metres":
           return LengthUnits.Meters;
       }
       var e = new SpeckleException($"Cannot understand what unit {unit} is.");
