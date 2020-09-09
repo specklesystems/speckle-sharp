@@ -134,6 +134,7 @@
       <DependentUpon>StreamsListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Streams\StreamsRepository.cs" />
+    <Compile Include="Utils\Converters.cs" />
     <Compile Include="Utils\SelectionFilter.cs" />
     <Compile Include="Utils\BindableBase.cs" />
     <Compile Include="Utils\Link.cs" />

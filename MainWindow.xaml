@@ -41,6 +41,8 @@
       <DataTemplate DataType="{x:Type settings:SettingsViewModel}">
         <settings:SettingsView />
       </DataTemplate>
+
+      <utils:StringToUpperConverter x:Key="StringToUpperConverter" />
     </ResourceDictionary>
   </Window.Resources>
 
@@ -179,7 +181,7 @@
                 VerticalAlignment="Center"
                 FontSize="26"
                 Style="{StaticResource MaterialDesignHeadline2TextBlock}"
-                Text="SPOCKLE" />
+                Text="{Binding HostName, Converter={StaticResource StringToUpperConverter}}" />
             </StackPanel>
           </DockPanel>
         </md:ColorZone>
