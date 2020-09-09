@@ -24,9 +24,6 @@
   TextOptions.TextFormattingMode="Ideal"
   TextOptions.TextRenderingMode="Auto"
   mc:Ignorable="d">
-  <Window.DataContext>
-    <local:MainWindowViewModel />
-  </Window.DataContext>
   <Window.Resources>
     <ResourceDictionary>
       <DataTemplate DataType="{x:Type stream:StreamsHomeViewModel}">
