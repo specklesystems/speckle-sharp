@@ -20,6 +20,8 @@
           Style="{StaticResource MaterialDesignHeadline3TextBlock}"
           Text="INBOX" />
         <TextBlock Text="{Binding AllNotifications}" />
+        <TextBlock Text="{Binding DataContext.Bindings, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+        <TextBlock Text="{Binding DataContext.Bindings.GetApplicationHostName, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
       </StackPanel>
     </Grid>
   </ScrollViewer>
