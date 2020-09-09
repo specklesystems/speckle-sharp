@@ -108,7 +108,12 @@
     <Compile Include="Entry\CmdAvailabilityViews.cs" />
     <Compile Include="Entry\Cmd.cs" />
     <Compile Include="ExternalEventHandler.cs" />
+    <Compile Include="Globals.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Storage\StateStorage.cs" />
+    <Compile Include="Storage\ClientsStorage.cs" />
+    <Compile Include="Storage\HelperClasses.cs" />
+    <Compile Include="UI\ConnectorBindingsRevit.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
