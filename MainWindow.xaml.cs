@@ -15,9 +15,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Speckle.DesktopUI.Utils;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
+using Speckle.DesktopUI.Utils;
 
 namespace Speckle.DesktopUI
 {
@@ -38,9 +38,9 @@ namespace Speckle.DesktopUI
       //we can't put it in app.xml since this window can be loaded by another app
       InitializeMaterialDesign();
       Application.Current.Resources.MergedDictionaries.Add(
-      Application.LoadComponent(
-        new Uri("SpeckleDesktopUI;component/Themes/Generic.xaml", UriKind.Relative)
-        ) as ResourceDictionary);
+        Application.LoadComponent(
+          new Uri("SpeckleDesktopUI;component/Themes/Generic.xaml", UriKind.Relative)
+        )as ResourceDictionary);
 
       DataContext = new MainWindowViewModel()
       {
@@ -74,11 +74,9 @@ namespace Speckle.DesktopUI
       MenuToggleButton.IsChecked = false;
     }
 
-    private void MenuToggleButton_OnClick(object sender, RoutedEventArgs e)
-        => NavDrawerListBox.Focus();
+    private void MenuToggleButton_OnClick(object sender, RoutedEventArgs e) => NavDrawerListBox.Focus();
 
-    private void MenuDarkModeButton_Click(object sender, RoutedEventArgs e)
-        => ModifyTheme(DarkModeToggleButton.IsChecked == true);
+    private void MenuDarkModeButton_Click(object sender, RoutedEventArgs e) => ModifyTheme(DarkModeToggleButton.IsChecked == true);
     private static void ModifyTheme(bool isDarkTheme)
     {
       PaletteHelper paletteHelper = new PaletteHelper();

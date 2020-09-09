@@ -1,11 +1,4 @@
-﻿using MaterialDesignThemes.Wpf;
-using Speckle.DesktopUI.Accounts;
-using Speckle.DesktopUI.Feed;
-using Speckle.DesktopUI.Inbox;
-using Speckle.DesktopUI.Settings;
-using Speckle.DesktopUI.Streams;
-using Speckle.DesktopUI.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -15,6 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using MaterialDesignThemes.Wpf;
+using Speckle.DesktopUI.Accounts;
+using Speckle.DesktopUI.Feed;
+using Speckle.DesktopUI.Inbox;
+using Speckle.DesktopUI.Settings;
+using Speckle.DesktopUI.Streams;
+using Speckle.DesktopUI.Utils;
 
 namespace Speckle.DesktopUI
 {
@@ -91,12 +91,12 @@ namespace Speckle.DesktopUI
     private ObservableCollection<ViewItem> GetViewItems()
     {
       return new ObservableCollection<ViewItem>
-            {
-                new ViewItem("Home", new StreamsHomeViewModel()),
-                new ViewItem("Inbox", new InboxViewModel()),
-                new ViewItem("Feed", new FeedViewModel()),
-                new ViewItem("Settings", new SettingsViewModel())
-            };
+      {
+        new ViewItem("Home", new StreamsHomeViewModel()),
+        new ViewItem("Inbox", new InboxViewModel()),
+        new ViewItem("Feed", new FeedViewModel()),
+        new ViewItem("Settings", new SettingsViewModel())
+      };
     }
 
     private void OnOpenLink(string url)

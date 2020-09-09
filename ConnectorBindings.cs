@@ -61,7 +61,6 @@ namespace Speckle.DesktopUI
     public abstract string GetDocumentId();
     public abstract string GetDocumentLocation();
 
-
     /// <summary>
     /// Returns the serialised clients present in the current open host file.
     /// </summary>

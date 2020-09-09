@@ -1,12 +1,12 @@
-﻿using Speckle.Core.Api;
-using Speckle.DesktopUI.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MaterialDesignThemes.Wpf.Transitions;
+using Speckle.Core.Api;
+using Speckle.DesktopUI.Utils;
 
 namespace Speckle.DesktopUI.Streams
 {
@@ -20,7 +20,7 @@ namespace Speckle.DesktopUI.Streams
 #if DEBUG
       _allStreams = _repo.LoadTestStreams();
 #else
-            // do this properly
+      // do this properly
 #endif
       ShowStreamInfoCommand = new RelayCommand<Stream>(OnShowStreamInfo);
     }
