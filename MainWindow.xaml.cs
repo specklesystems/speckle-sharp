@@ -32,7 +32,6 @@ namespace Speckle.DesktopUI
       {
         //if the app is null, eg revit, make one
         new Application();
-        //make sure material design is loaded
       }
 
       //manually inject our main resource dic

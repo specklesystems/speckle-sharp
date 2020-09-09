@@ -37,7 +37,12 @@ namespace Speckle.DesktopUI
     public RelayCommand<string> CopyToClipboardCommand { get; set; }
     public RelayCommand<string> CopyStreamCommand { get; set; }
     public RelayCommand<bool> ToggleThemeCommand { get; set; }
-    public ConnectorBindings Bindings { get; set; }
+    private ConnectorBindings _bindings;
+    public ConnectorBindings Bindings
+    {
+      get => _bindings;
+      set => SetProperty(ref _bindings, value);
+    }
 
     private bool _darkMode;
     public bool DarkMode
