@@ -68,35 +68,36 @@ namespace Speckle.DesktopUI
     public abstract string GetFileClients();
 
     /// <summary>
-    /// Adds a sender and persits the info to the host file
+    /// Adds a new client and persits the info to the host file
     /// </summary>
-    public abstract void AddSender(string args);
+    public abstract void AddNewClient(string args);
 
     /// <summary>
-    /// Updates a sender and persits the info to the host file
+    /// Updates a client and persits the info to the host file
     /// </summary>
-    public abstract void UpdateSender(string args);
+    public abstract void UpdateClient(string args);
 
     /// <summary>
-    /// Pushes a sender's stream
+    /// Pushes a client's stream
     /// </summary>
-    public abstract void PushSender(string args);
+    public abstract void PushClient(string args);
 
     /// <summary>
     /// Adds the current selection to the provided client.
     /// </summary>
-    public abstract void AddSelectionToSender(string args);
+    public abstract void AddSelectionToClient(string args);
 
     /// <summary>
     /// Removes the current selection from the provided client.
     /// </summary>
     /// <param name="args"></param>
-    public abstract void RemoveSelectionFromSender(string args);
+    public abstract void RemoveSelectionFromClient(string args);
 
     /// <summary>
     /// Adds a receiver and persits the info to the host file
+    /// Will probably combine with AddNewClient
     /// </summary>
-    public abstract void AddReceiver(string args);
+    public abstract void AddExistingClient(string args);
 
     /// <summary>
     /// Removes a client from the file and persists the info to the host file.
@@ -108,11 +109,11 @@ namespace Speckle.DesktopUI
     /// Bakes the specified client in the host file.
     /// </summary>
     /// <param name="args"></param>
-    public abstract void BakeReceiver(string args);
+    public abstract void BakeClient(string args);
 
     // TODO: See how we go about this
-    public abstract void AddObjectsToSender(string args);
-    public abstract void RemoveObjectsFromSender(string args);
+    public abstract void AddObjectsToClient(string args);
+    public abstract void RemoveObjectsFromClient(string args);
 
     /// <summary>
     /// clients should be able to select/preview/hover one way or another their associated objects
