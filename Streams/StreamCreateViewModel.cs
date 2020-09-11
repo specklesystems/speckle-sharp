@@ -1,14 +1,15 @@
-﻿using MaterialDesignThemes.Wpf;
-using Speckle.Core.Credentials;
+﻿using System;
+using System.Windows;
+using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
-using System;
-using System.Windows;
+using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  class StreamCreateViewModel : BindableBase
+  class StreamCreateViewModel : Screen
   {
     public StreamCreateViewModel()
     {
@@ -32,33 +33,33 @@ namespace Speckle.DesktopUI.Streams
     public Stream StreamToCreate
     {
       get => _streamToCreate;
-      set => SetProperty(ref _streamToCreate, value);
+      set => SetAndNotify(ref _streamToCreate, value);
     }
     private Account _accountToSendFrom;
     public Account AccountToSendFrom
     {
       get => _accountToSendFrom;
-      set => SetProperty(ref _accountToSendFrom, value);
+      set => SetAndNotify(ref _accountToSendFrom, value);
     }
 
     private int _selectedSlide;
     public int SelectedSlide
     {
       get => _selectedSlide;
-      set => SetProperty(ref _selectedSlide, value);
+      set => SetAndNotify(ref _selectedSlide, value);
     }
     private SnackbarMessageQueue _messageQueue;
     public SnackbarMessageQueue MessageQueue
     {
       get => _messageQueue;
-      set => SetProperty(ref _messageQueue, value);
+      set => SetAndNotify(ref _messageQueue, value);
     }
 
     private bool _createButtonLoading;
     public bool CreateButtonLoading
     {
       get => _createButtonLoading;
-      set => SetProperty(ref _createButtonLoading, value);
+      set => SetAndNotify(ref _createButtonLoading, value);
     }
 
     public RelayCommand<string> ContinueStreamCreatecommand { get; set; }
