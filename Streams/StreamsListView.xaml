@@ -6,6 +6,7 @@
   xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:s="https://github.com/canton7/Stylet"
   d:DesignHeight="450"
   d:DesignWidth="600"
   mc:Ignorable="d">
@@ -13,7 +14,9 @@
     <ResourceDictionary>
 
       <DataTemplate x:Key="StreamCardTemplate">
-        <md:Card Width="Auto" Margin="8">
+        <md:Card
+          Width="Auto"
+          Margin="8">
           <Grid Margin="16">
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />
@@ -72,7 +75,7 @@
               <Button
                 Grid.Column="1"
                 Width="90"
-                Command="{Binding DataContext.ShowStreamInfoCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                Command="{s:Action ShowStreamInfo}"
                 CommandParameter="{Binding}"
                 Content="DETAILS"
                 Style="{StaticResource MaterialDesignFlatButton}" />
