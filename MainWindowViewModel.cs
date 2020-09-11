@@ -18,7 +18,7 @@ using System.Windows.Media;
 
 namespace Speckle.DesktopUI
 {
-  class MainWindowViewModel : BindableBase
+  public class MainWindowViewModel : BindableBase
   {
     public MainWindowViewModel()
     {
