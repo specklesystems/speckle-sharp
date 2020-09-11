@@ -102,6 +102,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Bootstrapper.cs" />
+    <Compile Include="ConnectorBindings.cs" />
+    <Compile Include="RootView.xaml.cs">
+      <DependentUpon>RootView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="RootViewModel.cs" />
     <Compile Include="Settings\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
@@ -136,6 +142,7 @@
     <Compile Include="Utils\BindableBase.cs" />
     <Compile Include="Utils\Link.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
+    <Compile Include="Utils\SelectionFilter.cs" />
     <Compile Include="Utils\ViewItem.cs" />
     <Page Include="Feed\FeedView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -150,8 +157,7 @@
       <SubType>Designer</SubType>
     </Page>
     <Compile Include="Accounts\AccountsRepository.cs" />
-        <Compile Include="Accounts\AccountsViewModel.cs" />
-
+    <Compile Include="Accounts\AccountsViewModel.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -168,6 +174,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="RootView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Settings\SettingsView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -256,6 +266,9 @@
     </PackageReference>
     <PackageReference Include="MaterialDesignThemes">
       <Version>3.1.3</Version>
+    </PackageReference>
+    <PackageReference Include="Stylet">
+      <Version>1.3.4</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
