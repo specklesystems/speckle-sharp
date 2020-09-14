@@ -17,7 +17,11 @@ namespace Speckle.DesktopUI
       // Bind view model factory
       builder.Bind<IViewModelFactory>().ToAbstractFactory();
 
+      // and factory for individual stream pages
       builder.Bind<IStreamViewModelFactory>().ToAbstractFactory();
+
+      // and factory for dialog modals (eg create stream)
+      builder.Bind<IDialogFactory>().ToAbstractFactory();
     }
   }
 }
