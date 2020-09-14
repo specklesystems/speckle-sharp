@@ -51,7 +51,7 @@
                 <md:Chip
                   Height="28"
                   md:ButtonAssist.CornerRadius="14"
-                  Command="{Binding DataContext.CopyStreamCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                  Command="{s:Action CopyStreamId}"
                   CommandParameter="{Binding id}"
                   Content="{Binding id}"
                   FontFamily="Consolas"
@@ -86,29 +86,28 @@
   </UserControl.Resources>
 
   <Grid>
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <Grid Margin="20">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <TextBlock
-          Padding="5,0,5,10"
-          HorizontalAlignment="Left"
-          FontSize="24"
-          Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-          Text="STREAMS" />
-        <ItemsControl
-          Grid.Row="1"
-          ItemTemplate="{StaticResource StreamCardTemplate}"
-          ItemsSource="{Binding AllStreams}"
-          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-          ScrollViewer.VerticalScrollBarVisibility="Auto" />
-      </Grid>
-    </ScrollViewer>
+    <Grid Margin="20,20,20,100">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <TextBlock
+        Padding="5,0,5,10"
+        HorizontalAlignment="Left"
+        FontSize="24"
+        Style="{StaticResource MaterialDesignHeadline3TextBlock}"
+        Text="STREAMS" />
+      <ItemsControl
+        Grid.Row="1"
+        ItemTemplate="{StaticResource StreamCardTemplate}"
+        ItemsSource="{Binding AllStreams}"
+        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+        ScrollViewer.VerticalScrollBarVisibility="Auto" />
+    </Grid>
 
 
     <!--#region Flotion Action Button-->
+    <!--  TODO absolute positioning rel to window  -->
     <md:PopupBox
       Width="45"
       Height="45"

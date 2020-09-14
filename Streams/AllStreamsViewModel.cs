@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Windows;
 using Speckle.Core.Api;
 using Speckle.DesktopUI.Utils;
 using Stylet;
@@ -9,9 +10,13 @@ namespace Speckle.DesktopUI.Streams
   public class AllStreamsViewModel : Screen
   {
     private IStreamViewModelFactory _streamViewModelFactory;
-    public AllStreamsViewModel(IStreamViewModelFactory streamViewModelFactory)
+    private IEventAggregator _events;
+    public AllStreamsViewModel(
+      IStreamViewModelFactory streamViewModelFactory,
+      IEventAggregator events)
     {
       _repo = new StreamsRepository();
+      _events = events;
       DisplayName = "Home";
       SelectedSlide = 0;
       _streamViewModelFactory = streamViewModelFactory;
@@ -61,6 +66,15 @@ namespace Speckle.DesktopUI.Streams
     {
       get => _selectedSlide;
       set => SetAndNotify(ref _selectedSlide, value);
+    }
+
+    public void CopyStreamId(string streamId)
+    {
+      Clipboard.SetText(streamId);
+      _events.Publish(new ShowNotificationEvent()
+      {
+        Notification = "Stream ID copied to clipboard!"
+      });
     }
 
     public void OpenHelpLink(string url)

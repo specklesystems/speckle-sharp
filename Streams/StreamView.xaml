@@ -9,7 +9,6 @@
   xmlns:s="https://github.com/canton7/Stylet"
   d:DesignHeight="600"
   d:DesignWidth="450"
-  Background="{DynamicResource MaterialDesignPaper}"
   mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
@@ -52,101 +51,101 @@
 
     </ResourceDictionary>
   </UserControl.Resources>
-  <Grid>
-    <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
-      <Grid Margin="20,0">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="*" />
-          <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Margin="-8,0,-8,8">
+  <Grid>
+    <Grid Margin="20,0,20,100">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <Grid Grid.Row="0" Margin="-8,10">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Button
+          Grid.Column="0"
+          Width="35"
+          Height="35"
+          Command="{s:Action RequestClose}"
+          Content="{md:PackIcon Kind=ArrowBack}"
+          Style="{StaticResource MaterialDesignIconForegroundButton}"
+          ToolTip="Back to home" />
+        <TextBlock
+          Grid.Column="1"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          FontSize="21"
+          Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+          Text="{Binding Stream.name}" />
+        <Button
+          x:Name="ShareStreamButton"
+          Grid.Column="2"
+          Command="{Binding}"
+          Content="{md:PackIcon Kind=Send}"
+          Foreground="{StaticResource MaterialDesignLightBackground}"
+          Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+          ToolTip="Share this stream!" />
+      </Grid>
+
+      <StackPanel Grid.Row="1">
+        <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
-          <Button
-            Grid.Column="0"
-            Width="35"
-            Height="35"
-            Command="{s:Action RequestClose}"
-            Content="{md:PackIcon Kind=ArrowBack}"
-            Style="{StaticResource MaterialDesignIconForegroundButton}"
-            ToolTip="Back to home" />
-          <TextBlock
+          <md:Chip
+            Height="28"
+            Margin="0,0,8,0"
+            md:ButtonAssist.CornerRadius="14"
+            Command="{s:Action CopyStreamId}"
+            CommandParameter="{Binding Stream.id}"
+            Content="{Binding Stream.id}"
+            FontFamily="Consolas"
+            FontSize="13"
+            ToolTip="Stream ID" />
+          <md:Chip
             Grid.Column="1"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            FontSize="21"
-            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-            Text="{Binding Stream.name}" />
-          <Button
-            x:Name="ShareStreamButton"
-            Grid.Column="2"
-            Command="{Binding}"
-            Content="{md:PackIcon Kind=Send}"
-            Foreground="{StaticResource MaterialDesignLightBackground}"
-            Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-            ToolTip="Share this stream!" />
+            Height="28"
+            md:ButtonAssist.CornerRadius="14"
+            Content="{Binding Branch.name}"
+            FontFamily="Consolas"
+            FontSize="13"
+            ToolTip="Current branch" />
         </Grid>
+        <TextBlock Margin="0,4" Text="{Binding Stream.description}" />
+        <TextBlock
+          Margin="0,24,0,8"
+          FontSize="18"
+          Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+          Text="Collaborators" />
 
-        <StackPanel Grid.Row="1">
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <md:Chip
-              Height="28"
-              Margin="0,0,8,0"
-              md:ButtonAssist.CornerRadius="14"
-              Command="{Binding DataContext.CopyStreamCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-              CommandParameter="{Binding Stream.id}"
-              Content="{Binding Stream.id}"
-              FontFamily="Consolas"
-              FontSize="13"
-              ToolTip="Stream ID" />
-            <md:Chip
-              Grid.Column="1"
-              Height="28"
-              md:ButtonAssist.CornerRadius="14"
-              Content="{Binding Branch.name}"
-              FontFamily="Consolas"
-              FontSize="13"
-              ToolTip="Current branch" />
-          </Grid>
-          <TextBlock Margin="0,4" Text="{Binding Stream.description}" />
-          <TextBlock
-            Margin="0,24,0,8"
-            FontSize="18"
-            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-            Text="Collaborators" />
+        <ItemsControl ItemTemplate="{StaticResource CollboratorChipTemplate}" ItemsSource="{Binding Stream.collaborators}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
 
-          <ItemsControl ItemTemplate="{StaticResource CollboratorChipTemplate}" ItemsSource="{Binding Stream.collaborators}">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <WrapPanel />
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-          </ItemsControl>
-
-          <TextBlock
-            Margin="0,24,0,8"
-            FontSize="18"
-            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-            Text="History" />
-          <TextBlock Text="what is this, a commit history?" />
-          <TextBlock Text="{Binding Branch.commits}" />
-          <TextBlock Text="{Binding Branch.commits.totalCount}" />
-        </StackPanel>
-      </Grid>
-    </ScrollViewer>
+        <TextBlock
+          Margin="0,24,0,8"
+          FontSize="18"
+          Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+          Text="History" />
+        <TextBlock Text="what is this, a commit history?" />
+        <TextBlock Text="{Binding Branch.commits}" />
+        <TextBlock Text="{Binding Branch.commits.totalCount}" />
+      </StackPanel>
+    </Grid>
 
     <!--#region Floating Action Button-->
+    <!--  TODO absolute positioning rel to window  -->
     <md:PopupBox
       Grid.Row="2"
       Width="45"
@@ -155,6 +154,7 @@
       HorizontalAlignment="Right"
       VerticalAlignment="Bottom"
       Foreground="{StaticResource MaterialDesignLightBackground}"
+      PlacementMode="TopAndAlignCentres"
       Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}">
       <StackPanel>
         <Button
