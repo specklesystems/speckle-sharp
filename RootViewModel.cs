@@ -8,16 +8,20 @@ using Stylet;
 
 namespace Speckle.DesktopUI
 {
-  public class RootViewModel : Conductor<IScreen>.Collection.OneActive
+  public class RootViewModel : Conductor<IScreen>.Collection.OneActive, IHandle<ShowNotificationEvent>
   {
     private IWindowManager _windowManager;
     private IViewModelFactory _viewModelFactory;
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
-    public RootViewModel(IWindowManager windowManager, IViewModelFactory viewModelFactory)
+    public RootViewModel(
+      IWindowManager windowManager,
+      IEventAggregator events,
+      IViewModelFactory viewModelFactory)
     {
       _windowManager = windowManager;
       _viewModelFactory = viewModelFactory;
       LoadPages();
+      events.Subscribe(this);
     }
     public ISnackbarMessageQueue Notifications
     {
@@ -45,20 +49,6 @@ namespace Speckle.DesktopUI
       Link.OpenInBrowser(url);
     }
 
-    public void CopyStreamId(string text)
-    {
-      if (text != null)
-      {
-        CopyAndNotify(text, "Stream ID copied to clipboard!");
-      }
-    }
-
-    public void CopyAndNotify(string text, string message)
-    {
-      Clipboard.SetText(text);
-      Notifications.Enqueue(message);
-    }
-
     private bool _darkMode;
     public bool DarkMode
     {
@@ -72,6 +62,11 @@ namespace Speckle.DesktopUI
       ITheme theme = paletteHelper.GetTheme();
       theme.SetBaseTheme(darkmode ? Theme.Dark : Theme.Light);
       DarkMode = darkmode;
+    }
+
+    public void Handle(ShowNotificationEvent message)
+    {
+      Notifications.Enqueue(message.Notification);
     }
   }
 }
