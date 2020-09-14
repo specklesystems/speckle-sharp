@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using Speckle.Core.Api;
+using MaterialDesignThemes.Wpf;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -9,17 +10,22 @@ namespace Speckle.DesktopUI.Streams
 {
   public class AllStreamsViewModel : Screen
   {
+    private IWindowManager _windowManager;
     private IStreamViewModelFactory _streamViewModelFactory;
+    private IDialogFactory _dialogFactory;
     private IEventAggregator _events;
     public AllStreamsViewModel(
+      IWindowManager windowManager,
       IStreamViewModelFactory streamViewModelFactory,
+      IDialogFactory dialogFactory,
       IEventAggregator events)
     {
       _repo = new StreamsRepository();
       _events = events;
       DisplayName = "Home";
-      SelectedSlide = 0;
+      _windowManager = windowManager;
       _streamViewModelFactory = streamViewModelFactory;
+      _dialogFactory = dialogFactory;
 
 #if DEBUG
       _allStreams = _repo.LoadTestStreams();
@@ -32,7 +38,6 @@ namespace Speckle.DesktopUI.Streams
     private ObservableCollection<Stream> _allStreams;
     private Stream _selectedStream;
     private Branch _selectedBranch;
-    private int _selectedSlide;
 
     public void ShowStreamInfo(Stream stream)
     {
@@ -62,10 +67,20 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _selectedBranch, value);
     }
 
-    public int SelectedSlide
+    public StreamCreateDialogViewModel StreamCreateDialog
     {
-      get => _selectedSlide;
-      set => SetAndNotify(ref _selectedSlide, value);
+      get => _dialogFactory.CreateStreamCreateDialog();
+    }
+
+    public async void ShowStreamCreateDialog()
+    {
+      var view = new StreamCreateDialogView()
+      {
+        DataContext = _dialogFactory.CreateStreamCreateDialog()
+      };
+
+      var result = await DialogHost.Show(view, dialogIdentifier: "AllStreamsDialogHost");
+      //var result = _windowManager.ShowDialog(dialogvm);
     }
 
     public void CopyStreamId(string streamId)
@@ -81,10 +96,5 @@ namespace Speckle.DesktopUI.Streams
     {
       Link.OpenInBrowser(url);
     }
-  }
-
-  public interface IStreamViewModelFactory
-  {
-    StreamViewModel CreateStreamViewModel();
   }
 }
