@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Speckle.DesktopUI;
+﻿using Speckle.DesktopUI.Streams;
+using Speckle.DesktopUI.Utils;
 using Stylet;
 using StyletIoC;
 
@@ -11,18 +7,17 @@ namespace Speckle.DesktopUI
 {
   public class Bootstrapper : Bootstrapper<RootViewModel>
   {
+    // TODO register connector bindings
     private ConnectorBindings bindings;
 
-    // public Bootstrapper(ConnectorBindings appBindings = null)
-    // {
-    //   this.bindings = appBindings;
-    // }
     protected override void ConfigureIoC(IStyletIoCBuilder builder)
     {
       base.ConfigureIoC(builder);
 
-      // if (bindings != null)
-      //   builder.Bind<ConnectorBindings>().ToInstance(bindings);
+      // Bind view model factory
+      builder.Bind<IViewModelFactory>().ToAbstractFactory();
+
+      builder.Bind<IStreamViewModelFactory>().ToAbstractFactory();
     }
   }
 }
