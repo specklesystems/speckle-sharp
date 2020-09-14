@@ -10,7 +10,7 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Settings
 {
-  class SettingsViewModel : Screen
+  public class SettingsViewModel : Screen
   {
     public SettingsViewModel()
     {
@@ -56,6 +56,11 @@ namespace Speckle.DesktopUI.Settings
     private void OnManageAccountsCommand(string arg)
     {
       //TODO open Manager app with speckle://
+    }
+
+    public void OpenHelpLink(string url)
+    {
+      Link.OpenInBrowser(url);
     }
 
     public class HelpLink
