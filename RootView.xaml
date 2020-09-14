@@ -21,7 +21,7 @@
   TextOptions.TextFormattingMode="Ideal"
   TextOptions.TextRenderingMode="Auto"
   mc:Ignorable="d">
-  <md:DialogHost DialogTheme="Inherit" SnackbarMessageQueue="{Binding Notifications}">
+  <md:DialogHost DialogTheme="Inherit" Identifier="RootDialogHost">
     <md:DrawerHost IsLeftDrawerOpen="{Binding ElementName=MenuToggleButton, Path=IsChecked}">
       <!--#region Left Navigation Drawer-->
       <md:DrawerHost.LeftDrawerContent>
