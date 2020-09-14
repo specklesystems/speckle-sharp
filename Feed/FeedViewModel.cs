@@ -8,7 +8,7 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Feed
 {
-  class FeedViewModel : Screen
+  public class FeedViewModel : Screen
   {
     public FeedViewModel()
     {

@@ -9,7 +9,7 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Inbox
 {
-  class InboxViewModel : Screen
+  public class InboxViewModel : Screen
   {
     public InboxViewModel()
     {

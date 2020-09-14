@@ -1,16 +1,12 @@
-﻿using Speckle.DesktopUI.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Collections.ObjectModel;
-using System.Windows;
 using Speckle.Core.Credentials;
+using Speckle.DesktopUI.Utils;
+using Stylet;
 
 namespace Speckle.DesktopUI.Accounts
 {
-  class AccountsViewModel : BindableBase
+  class AccountsViewModel : Screen
   {
     public AccountsViewModel()
     {
@@ -18,7 +14,7 @@ namespace Speckle.DesktopUI.Accounts
 #if DEBUG
       AllAccounts = _repo.LoadTestAccounts();
 #else
-       AllAccounts = _repo.LoadAccounts();
+      AllAccounts = _repo.LoadAccounts();
 #endif
       AccountsNonDefault = _repo.LoadNonDefaultAccounts();
       DefaultAccount = _repo.GetDefault();
@@ -34,22 +30,22 @@ namespace Speckle.DesktopUI.Accounts
     public ObservableCollection<Account> AllAccounts
     {
       get => _allAccounts;
-      set => SetProperty(ref _allAccounts, value);
+      set => SetAndNotify(ref _allAccounts, value);
     }
     public ObservableCollection<Account> AccountsNonDefault
     {
       get => _accountsNonDefault;
-      set => SetProperty(ref _accountsNonDefault, value);
+      set => SetAndNotify(ref _accountsNonDefault, value);
     }
     public Account DefaultAccount
     {
       get => _defaultAccount;
-      set => SetProperty(ref _defaultAccount, value);
+      set => SetAndNotify(ref _defaultAccount, value);
     }
     public Account SelectedAccount
     {
       get => _selectedAccount;
-      set => SetProperty(ref _selectedAccount, value);
+      set => SetAndNotify(ref _selectedAccount, value);
     }
 
     // TODO: handle when commands fail (prob with a dialogue popup)
