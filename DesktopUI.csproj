@@ -141,6 +141,7 @@
       <DependentUpon>StreamView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Streams\StreamViewModel.cs" />
+    <Compile Include="Utils\Events.cs" />
     <Compile Include="Utils\IViewModelFactory.cs" />
     <Compile Include="Utils\Link.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
