@@ -108,14 +108,9 @@
       <DependentUpon>RootView.xaml</DependentUpon>
     </Compile>
     <Compile Include="RootViewModel.cs" />
-    <Compile Include="Settings\SettingsView.xaml.cs">
-      <DependentUpon>SettingsView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Settings\SettingsViewModel.cs" />
-    <Compile Include="Streams\AllStreamsView.xaml.cs">
-      <DependentUpon>AllStreamsView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Streams\AllStreamsViewModel.cs" />
+    <Compile Include="Streams\StreamCreateDialogViewModel.cs" />
     <Compile Include="Streams\StreamCreateAdvancedView.xaml.cs">
       <DependentUpon>StreamCreateAdvancedView.xaml</DependentUpon>
     </Compile>
@@ -132,17 +127,11 @@
       <DependentUpon>StreamCreateView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Streams\StreamCreateViewModel.cs" />
-    <Compile Include="Streams\StreamsHomeView.xaml.cs">
-      <DependentUpon>StreamsHomeView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Streams\StreamsHomeViewModel.cs" />
     <Compile Include="Streams\StreamsRepository.cs" />
-    <Compile Include="Streams\StreamView.xaml.cs">
-      <DependentUpon>StreamView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Streams\StreamViewModel.cs" />
     <Compile Include="Utils\Events.cs" />
-    <Compile Include="Utils\IViewModelFactory.cs" />
+    <Compile Include="Utils\ViewModelFactories.cs" />
     <Compile Include="Utils\Link.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\SelectionFilter.cs" />
@@ -160,13 +149,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Feed\FeedView.xaml.cs">
-      <DependentUpon>FeedView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Feed\FeedViewModel.cs" />
-    <Compile Include="Inbox\InboxView.xaml.cs">
-      <DependentUpon>InboxView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Inbox\InboxViewModel.cs" />
     <Page Include="RootView.xaml">
       <SubType>Designer</SubType>
@@ -183,6 +166,10 @@
     <Page Include="Streams\StreamCreateAdvancedView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Streams\StreamCreateDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Streams\StreamCreateFinalView.xaml">
       <Generator>MSBuild:Compile</Generator>
