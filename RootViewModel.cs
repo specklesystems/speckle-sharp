@@ -18,10 +18,12 @@ namespace Speckle.DesktopUI
     public RootViewModel(
       IWindowManager windowManager,
       IEventAggregator events,
-      IViewModelFactory viewModelFactory)
+      IViewModelFactory viewModelFactory,
+      ConnectorBindings bindings)
     {
       _windowManager = windowManager;
       _viewModelFactory = viewModelFactory;
+      Bindings = bindings;
       LoadPages();
       events.Subscribe(this);
     }
