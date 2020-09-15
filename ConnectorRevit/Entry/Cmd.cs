@@ -5,8 +5,9 @@ using System.Windows;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using Speckle.DesktopUI;
 using Speckle.ConnectorRevit.UI;
+using Speckle.DesktopUI;
+using Stylet;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -24,12 +25,20 @@ namespace Speckle.ConnectorRevit.Entry
     {
       UIApplication uiapp = commandData.Application;
 
-      var win = new MainWindow(new ConnectorBindingsRevit(uiapp));
-      win.Show();
+      if (Application.Current == null)
+      {
+        //if the app is null, eg revit, make one
+        new Application();
+      }
+
+      var bootstrapper = new Bootstrapper()
+      {
+        Bindings = new ConnectorBindingsRevit(uiapp)
+      };
+      bootstrapper.Setup(Application.Current);
 
       return Result.Succeeded;
     }
   }
-
 
 }
