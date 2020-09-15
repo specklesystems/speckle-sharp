@@ -1,4 +1,5 @@
-﻿using ProtoCore.Lang;
+﻿using Autodesk.DesignScript.Runtime;
+using ProtoCore.Lang;
 using Speckle.Converter.Dynamo;
 using Speckle.Core.Models;
 using System;
@@ -8,16 +9,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Speckle.ConnectorDynamo
+namespace Speckle.ConnectorDynamo.Functions
 {
-  internal static class Utils
+  public static class Utils
   {
     /// <summary>
     /// Helper method to convert a tree-like structure (nested lists) to Speckle
     /// </summary>
     /// <param name="object"></param>
     /// <returns></returns>
-    internal static Base ConvertRecursivelyToSpeckle(object @object)
+    [IsVisibleInDynamoLibrary(false)]
+    public static Base ConvertRecursivelyToSpeckle(object @object)
     {
       var converted = RecusrseTreeToSpeckle(@object);
       var @base = new Base();
@@ -43,7 +45,8 @@ namespace Speckle.ConnectorDynamo
     /// </summary>
     /// <param name="base"></param>
     /// <returns></returns>
-    internal static object ConvertRecursivelyToNative(Base @base)
+    [IsVisibleInDynamoLibrary(false)]
+    public static object ConvertRecursivelyToNative(Base @base)
     {
       //TODO: Check all properties!
       if (@base.HasMember("@list"))

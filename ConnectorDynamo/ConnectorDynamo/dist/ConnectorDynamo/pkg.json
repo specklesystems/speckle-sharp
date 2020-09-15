@@ -15,6 +15,7 @@
   "repository_url": "https://github.com/Speckle-Next/ConnectorDynamo",
   "contains_binaries": true,
   "node_libraries": [
-    "SpeckleConnectorDynamo, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+    "SpeckleConnectorDynamo, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "SpeckleConnectorDynamoFunctions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
   ]
 }

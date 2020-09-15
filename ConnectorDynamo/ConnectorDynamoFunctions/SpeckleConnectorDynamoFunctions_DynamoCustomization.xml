@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<doc>
+  <assembly>
+    <name>SpeckleConnectorDynamoFunctions</name>
+  </assembly>
+  <namespaces>
+    <namespace name="Speckle.ConnectorDynamo.Functions">
+      <category>Speckle</category>
+    </namespace>
+  </namespaces>
+  <classes>
+    <class name="Speckle.ConnectorDynamo..Functions.SpeckleAccounts" shortname="Accounts"/>
+  </classes>
+</doc>

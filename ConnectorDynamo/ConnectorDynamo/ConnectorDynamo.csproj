@@ -64,19 +64,24 @@
       <Name>ConverterDynamo</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Core\Core\Core.csproj">
-      <Project>{119d9202-2dec-450b-96c2-3ebc13d21654}</Project>
+      <Project>{7de6bcf0-8aa2-40a6-a7a2-be696f693527}</Project>
       <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ConnectorDynamoExtension\ConnectorDynamoExtension.csproj">
+      <Project>{b494fd40-5e59-4d5e-87b0-80aac8bdcd5a}</Project>
+      <Name>ConnectorDynamoExtension</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ConnectorDynamoFunctions\ConnectorDynamoFunctions.csproj">
+      <Project>{8f4d907b-a2df-4b40-8ea6-d79f9ed6d906}</Project>
+      <Name>ConnectorDynamoFunctions</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="manifests\pkg.json" />
-    <None Include="manifests\SpeckleConnectorDynamo_DynamoCustomization.xml" />
+    <None Include="pkg.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Speckle.cs" />
+    <Compile Include="Receive.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Stream.cs" />
-    <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -95,18 +100,21 @@
     <ItemGroup>
       <Dlls Include="$(OutDir)*.dll" />
       <Pdbs Include="$(OutDir)*.pdb" />
-      <Xmls Include="$(OutDir)*.xml" />
-      <Xmls Include="$(ProjectDir)manifests\*.xml" />
-      <PackageJson Include="$(ProjectDir)manifests\pkg.json" />
+      <SourceExtension Include="$(OutDir)*Extension_ViewExtensionDefinition.xml" />
+      <DocXML Include="$(OutDir)$(TargetName).xml" />
+      <CustomizationXML Include="$(OutDir)*DynamoCustomization.xml" />
+      <PackageJson Include="$(ProjectDir)pkg.json" />
     </ItemGroup>
-    <Copy SourceFiles="@(Dlls)" DestinationFolder="$(BinFolder)" />
-    <Copy SourceFiles="@(Pdbs)" DestinationFolder="$(BinFolder)" />
-    <Copy SourceFiles="@(Xmls)" DestinationFolder="$(BinFolder)" />
-    <Copy SourceFiles="@(PackageJson)" DestinationFolder="$(PackageFolder)" />
     <MakeDir Directories="$(ExtraFolder)" Condition="!Exists($(ExtraFolder))">
     </MakeDir>
     <MakeDir Directories="$(DyfFolder)" Condition="!Exists($(DyfFolder))">
     </MakeDir>
+    <Copy SourceFiles="@(Dlls)" DestinationFolder="$(BinFolder)" />
+    <Copy SourceFiles="@(Pdbs)" DestinationFolder="$(BinFolder)" />
+    <Copy SourceFiles="@(DocXML)" DestinationFolder="$(BinFolder)" />
+    <Copy SourceFiles="@(CustomizationXML)" DestinationFolder="$(BinFolder)" />
+    <Copy SourceFiles="@(PackageJson)" DestinationFolder="$(PackageFolder)" />
+    <Copy SourceFiles="@(SourceExtension)" DestinationFolder="$(ExtraFolder)" />
     <CallTarget Condition="'$(Configuration)' == 'Debug'" Targets="PackageDeploy" />
   </Target>
   <Target Name="PackageDeploy">

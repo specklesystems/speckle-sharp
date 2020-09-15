@@ -8,7 +8,7 @@ using Dynamo.Graph.Nodes;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 
-namespace Speckle.ConnectorDynamo
+namespace Speckle.ConnectorDynamo.Functions
 {
   public static class Stream
   {
