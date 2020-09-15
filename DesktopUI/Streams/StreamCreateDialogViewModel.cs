@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,6 +55,11 @@ namespace Speckle.DesktopUI.Streams
     {
       get => _accountToSendFrom;
       set => SetAndNotify(ref _accountToSendFrom, value);
+    }
+
+    public ObservableCollection<Account> Accounts
+    {
+      get => _acctRepo.LoadAccounts();
     }
 
     private int _selectedSlide = 0;

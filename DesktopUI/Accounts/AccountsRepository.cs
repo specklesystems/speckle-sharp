@@ -1,14 +1,14 @@
-﻿using Speckle.Core.Credentials;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Speckle.Core.Credentials;
 
 namespace Speckle.DesktopUI.Accounts
 {
-  class AccountsRepository
+  public class AccountsRepository
   {
     public ObservableCollection<Account> LoadTestAccounts()
     {
@@ -16,41 +16,41 @@ namespace Speckle.DesktopUI.Accounts
       {
         new Account()
         {
-          serverInfo = new ServerInfo()
-          {
-            company = "Speckle",
-            name = "Hella Cool Test Server",
-            url = "http://localhost:3000/"
-          },
-          userInfo = new UserInfo()
-          {
-            name = Environment.UserName,
-            company = "Testing Desktop UI Inc",
-            id = "izzyui",
-            email = "izzy@speckle.systems"
-          },
-          token = Environment.GetEnvironmentVariable("speckle2_dev_token")
+        serverInfo = new ServerInfo()
+        {
+        company = "Speckle",
+        name = "Hella Cool Test Server",
+        url = "http://localhost:3000/"
+        },
+        userInfo = new UserInfo()
+        {
+        name = Environment.UserName,
+        company = "Testing Desktop UI Inc",
+        id = "izzyui",
+        email = "izzy@speckle.systems"
+        },
+        token = Environment.GetEnvironmentVariable("speckle2_dev_token")
         },
         new Account
         {
-          refreshToken = "fresh",
-          token = "cool token",
-          serverInfo = new ServerInfo { name = "cool server", url = "https://cool.speckle.com"},
-          userInfo = new UserInfo { name = "dingle", email = "me@cool.com" }
+        refreshToken = "fresh",
+        token = "cool token",
+        serverInfo = new ServerInfo { name = "cool server", url = "https://cool.speckle.com" },
+        userInfo = new UserInfo { name = "dingle", email = "me@cool.com" }
         },
         new Account
         {
-          refreshToken = "clean",
-          token = "good token",
-          serverInfo = new ServerInfo { name = "good server", url = "https://good.speckle.net"},
-          userInfo = new UserInfo { name = "dongle", email = "me@good.net" }
+        refreshToken = "clean",
+        token = "good token",
+        serverInfo = new ServerInfo { name = "good server", url = "https://good.speckle.net" },
+        userInfo = new UserInfo { name = "dongle", email = "me@good.net" }
         },
         new Account
         {
-          refreshToken = "wow",
-          token = "dope token",
-          serverInfo = new ServerInfo { name = "dope server", url = "https://dope.speckle.gov"},
-          userInfo = new UserInfo { name = "dangle", email = "me@dope.gov" }
+        refreshToken = "wow",
+        token = "dope token",
+        serverInfo = new ServerInfo { name = "dope server", url = "https://dope.speckle.gov" },
+        userInfo = new UserInfo { name = "dangle", email = "me@dope.gov" }
         }
       };
       TestAccounts.ForEach(acc => AccountManager.UpdateOrSaveAccount(acc));

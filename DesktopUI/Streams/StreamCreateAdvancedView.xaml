@@ -11,14 +11,8 @@
   d:DesignHeight="450"
   d:DesignWidth="400"
   mc:Ignorable="d">
-  <UserControl.Resources>
-    <ResourceDictionary>
-
-      <acct:AccountsViewModel x:Key="AccountsViewModel" />
-    </ResourceDictionary>
-
-  </UserControl.Resources>
-  <Grid>
+  <UserControl.Resources />
+  <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <StackPanel Margin="24,0,24,24" Orientation="Vertical">
       <TextBlock
         Margin="0,0,0,12"
@@ -30,10 +24,10 @@
       <ComboBox
         x:Name="AccountSelectionBox"
         Width="Auto"
-        Margin="0,12"
+        Margin="0,16"
         md:HintAssist.Hint="Account"
         IsEnabled="True"
-        ItemsSource="{Binding Source={StaticResource AccountsViewModel}, Path=AllAccounts}"
+        ItemsSource="{Binding Accounts}"
         SelectedItem="{Binding AccountToSendFrom}">
         <ComboBox.ItemTemplate>
           <DataTemplate>
@@ -43,12 +37,13 @@
       </ComboBox>
 
       <ComboBox
+        Margin="0,16"
         md:HintAssist.Hint="Collaborators"
         md:HintAssist.HintOpacity=".26"
         IsEditable="True"
         IsEnabled="True" />
 
-      <Grid Margin="0,16">
+      <Grid Margin="0,24">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="*" />
