@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRevit", "ConnectorRevit\ConnectorRevit.csproj", "{27A79ACA-7EA8-4406-8BB8-216578CC3AB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopUI", "..\DesktopUI\DesktopUI.csproj", "{A97C3046-2D55-4C49-AB40-A3C2194B82FA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopUI", "..\DesktopUI\DesktopUI\DesktopUI.csproj", "{A97C3046-2D55-4C49-AB40-A3C2194B82FA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\Core\Core\Core.csproj", "{521D4AEE-08CF-4913-BBE8-5511D176D126}"
 EndProject

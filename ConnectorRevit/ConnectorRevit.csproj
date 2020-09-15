@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -169,7 +169,7 @@
       <Project>{521d4aee-08cf-4913-bbe8-5511d176d126}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\DesktopUI\DesktopUI.csproj">
+    <ProjectReference Include="..\..\DesktopUI\DesktopUI\DesktopUI.csproj">
       <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
       <Name>DesktopUI</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>
