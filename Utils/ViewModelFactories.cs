@@ -11,10 +11,13 @@ namespace Speckle.DesktopUI.Utils
   // via the Bootstrapper 
   public interface IViewModelFactory
   {
+    // view models for main pages
     StreamsHomeViewModel CreateStreamsHomeViewModel();
     InboxViewModel CreateInboxViewModel();
     FeedViewModel CreateFeedViewModel();
     SettingsViewModel CreateSettingsViewModel();
+
+    // view models for main stream page
     AllStreamsViewModel CreateAllStreamsViewModel();
   }
 
