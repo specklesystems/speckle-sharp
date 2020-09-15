@@ -7,6 +7,8 @@
   xmlns:local="clr-namespace:Speckle.DesktopUI.Settings"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:root="clr-namespace:Speckle.DesktopUI"
+  xmlns:s="https://github.com/canton7/Stylet"
   d:DesignHeight="450"
   d:DesignWidth="400"
   mc:Ignorable="d">
@@ -21,7 +23,7 @@
           Grid.Column="0"
           Height="Auto"
           Margin="4,6"
-          Command="{Binding DataContext.OpenLinkCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+          Command="{s:Action OpenHelpLink}"
           CommandParameter="{Binding url}"
           Style="{StaticResource MaterialDesignFlatButton}">
           <Grid>

@@ -1,41 +1,45 @@
-﻿using Speckle.DesktopUI.Utils;
-using Speckle.DesktopUI.Accounts;
-using Speckle.Core.Credentials;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Speckle.Core.Credentials;
+using Speckle.DesktopUI.Accounts;
+using Speckle.DesktopUI.Utils;
+using Stylet;
 
 namespace Speckle.DesktopUI.Settings
 {
-  class SettingsViewModel : BindableBase
+  public class SettingsViewModel : Screen
   {
     public SettingsViewModel()
     {
+      DisplayName = "Settings";
       DefaultAccount = _repo.GetDefault();
       ManageAccountsCommand = new RelayCommand<string>(OnManageAccountsCommand);
 
-      HelpLinks = new List<HelpLink>() {
-        new HelpLink() {
-          name = "Docs",
-          description = "Browse through the Speckle documentation on our website",
-          url = "https://speckle.systems/docs/clients/revit/basics",
-          icon = "FileDocument"
+      HelpLinks = new List<HelpLink>()
+      {
+        new HelpLink()
+        {
+        name = "Docs",
+        description = "Browse through the Speckle documentation on our website",
+        url = "https://speckle.systems/docs/clients/revit/basics",
+        icon = "FileDocument"
         },
         new HelpLink()
         {
-          name = "Github",
-          description = "Take a look at the source code or submit an issue in the repository",
-          url = "https://github.com/specklesystems/DesktopUI",
-          icon = "Github"
+        name = "Github",
+        description = "Take a look at the source code or submit an issue in the repository",
+        url = "https://github.com/specklesystems/DesktopUI",
+        icon = "Github"
         },
         new HelpLink()
         {
-          name = "Forum",
-          description = "Ask questions and join the discussion on our discourse forum",
-          url = "https://discourse.speckle.works/",
-          icon = "Forum"
+        name = "Forum",
+        description = "Ask questions and join the discussion on our discourse forum",
+        url = "https://discourse.speckle.works/",
+        icon = "Forum"
         }
       };
     }
@@ -44,7 +48,7 @@ namespace Speckle.DesktopUI.Settings
     public Account DefaultAccount
     {
       get => _defaultAccount;
-      set => SetProperty(ref _defaultAccount, value);
+      set => SetAndNotify(ref _defaultAccount, value);
     }
     public List<HelpLink> HelpLinks { get; set; }
     public RelayCommand<string> ManageAccountsCommand { get; set; }
@@ -52,6 +56,11 @@ namespace Speckle.DesktopUI.Settings
     private void OnManageAccountsCommand(string arg)
     {
       //TODO open Manager app with speckle://
+    }
+
+    public void OpenHelpLink(string url)
+    {
+      Link.OpenInBrowser(url);
     }
 
     public class HelpLink
