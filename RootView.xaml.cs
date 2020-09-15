@@ -24,33 +24,10 @@ namespace Speckle.DesktopUI
   {
     public RootView()
     {
-      if (Application.Current == null)
-      {
-        //if the app is null, eg revit, make one
-        new Application();
-      }
-
-      //manually inject our main resource dic
-      //we can't put it in app.xml since this window can be loaded by another app
-      InitializeMaterialDesign();
-      Application.Current.Resources.MergedDictionaries.Add(
-        Application.LoadComponent(
-          new Uri("SpeckleDesktopUI;component/Themes/Generic.xaml", UriKind.Relative)
-        ) as ResourceDictionary);
-
       InitializeComponent();
     }
     // default bindings to null if none are passed
     //public MainWindow() : this(null) { }
-
-    private void InitializeMaterialDesign()
-    {
-      // Create dummy objects to force the MaterialDesign assemblies to be loaded
-      // from this assembly
-      // https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit/issues/1249
-      var card = new Card();
-      var hue = new Hue("Dummy", Colors.Black, Colors.White);
-    }
 
     private void UIElement_OnPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
