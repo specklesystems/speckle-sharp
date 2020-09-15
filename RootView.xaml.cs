@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -10,10 +8,8 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
@@ -22,11 +18,11 @@ using Speckle.DesktopUI.Utils;
 namespace Speckle.DesktopUI
 {
   /// <summary>
-  /// Interaction logic for MainWindow.xaml
+  /// Interaction logic for RootView.xaml
   /// </summary>
-  public partial class MainWindow : Window
+  public partial class RootView : Window
   {
-    public MainWindow(ConnectorBindings bindings)
+    public RootView()
     {
       if (Application.Current == null)
       {
@@ -40,17 +36,12 @@ namespace Speckle.DesktopUI
       Application.Current.Resources.MergedDictionaries.Add(
         Application.LoadComponent(
           new Uri("SpeckleDesktopUI;component/Themes/Generic.xaml", UriKind.Relative)
-        )as ResourceDictionary);
-
-      DataContext = new MainWindowViewModel()
-      {
-        Bindings = bindings
-      };
+        ) as ResourceDictionary);
 
       InitializeComponent();
     }
     // default bindings to null if none are passed
-    public MainWindow() : this(null) { }
+    //public MainWindow() : this(null) { }
 
     private void InitializeMaterialDesign()
     {

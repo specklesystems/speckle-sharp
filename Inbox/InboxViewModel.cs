@@ -1,18 +1,19 @@
-﻿using Speckle.DesktopUI.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Speckle.DesktopUI.Utils;
+using Stylet;
 
 namespace Speckle.DesktopUI.Inbox
 {
-  class InboxViewModel : BindableBase
+  public class InboxViewModel : Screen
   {
     public InboxViewModel()
     {
-
+      DisplayName = "Inbox";
       RefreshInboxCommand = new RelayCommand<string>(OnRefreshInbox);
     }
 
@@ -21,12 +22,12 @@ namespace Speckle.DesktopUI.Inbox
     public ObservableCollection<object> AllNotifications
     {
       get => _allNotifications;
-      set => SetProperty(ref _allNotifications, value);
+      set => SetAndNotify(ref _allNotifications, value);
     }
     public ObservableCollection<object> FilteredNotifications
     {
       get => _filteredNotifications;
-      set => SetProperty(ref _filteredNotifications, value);
+      set => SetAndNotify(ref _filteredNotifications, value);
     }
 
     public RelayCommand<string> RefreshInboxCommand;

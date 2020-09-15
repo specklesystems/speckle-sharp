@@ -1,19 +1,16 @@
 ﻿<UserControl
-  x:Class="Speckle.DesktopUI.Streams.StreamCreateView"
+  x:Class="Speckle.DesktopUI.Streams.StreamCreateDialogView"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:acct="clr-namespace:Speckle.DesktopUI.Accounts"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-  d:DesignHeight="450"
+  xmlns:s="https://github.com/canton7/Stylet"
+  d:DesignHeight="500"
   d:DesignWidth="400"
   mc:Ignorable="d">
-  <UserControl.Resources>
-    <acct:AccountsViewModel x:Key="AccountsViewModel" />
-  </UserControl.Resources>
-  <ScrollViewer VerticalScrollBarVisibility="Auto">
+  <Grid>
     <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
@@ -27,9 +24,10 @@
         HorizontalAlignment="Right"
         VerticalAlignment="Top"
         md:RippleAssist.IsDisabled="True"
-        Command="{Binding CloseDialogCommand}"
+        Command="{s:Action CloseDialog}"
         Content="{md:PackIcon Kind=Close,
                               Size=18}"
+        IsCancel="True"
         Style="{StaticResource MaterialDesignIconForegroundButton}"
         ToolTip="Cancel" />
       <Grid Grid.Row="1" Width="400">
@@ -41,15 +39,27 @@
             <local:StreamCreateStartView />
           </md:TransitionerSlide>
 
-          <local:StreamCreateSimpleView />
+          <md:TransitionerSlide>
+            <md:TransitionerSlide.ForwardWipe>
+              <md:SlideWipe Direction="Left" />
+            </md:TransitionerSlide.ForwardWipe>
+            <local:StreamCreateSimpleView />
+          </md:TransitionerSlide>
 
-          <local:StreamCreateAdvancedView />
-
-          <local:StreamCreateFinalView />
+          <md:TransitionerSlide>
+            <md:TransitionerSlide.ForwardWipe>
+              <md:SlideWipe Direction="Left" />
+            </md:TransitionerSlide.ForwardWipe>
+            <local:StreamCreateAdvancedView />
+          </md:TransitionerSlide>
+          
+          <md:TransitionerSlide OpeningEffect="{md:TransitionEffect Kind=SlideInFromRight}">
+            <local:StreamCreateFinalView />
+          </md:TransitionerSlide>
 
         </md:Transitioner>
-        <md:Snackbar MessageQueue="{Binding MessageQueue}" />
+        <md:Snackbar MessageQueue="{Binding Notifications}" />
       </Grid>
     </Grid>
-  </ScrollViewer>
+  </Grid>
 </UserControl>

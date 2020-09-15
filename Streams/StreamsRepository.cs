@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Speckle.Core;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.DesktopUI.Accounts;
@@ -67,21 +64,21 @@ namespace Speckle.DesktopUI.Streams
       {
         new Collaborator
         {
-          id = "123",
-          name = "Matteo Cominetti",
-          role = "stream:contributor"
+        id = "123",
+        name = "Matteo Cominetti",
+        role = "stream:contributor"
         },
         new Collaborator
         {
-          id = "321",
-          name = "Izzy Lyseggen",
-          role = "stream:owner"
+        id = "321",
+        name = "Izzy Lyseggen",
+        role = "stream:owner"
         },
         new Collaborator
         {
-          id = "456",
-          name = "Dimitrie Stefanescu",
-          role = "stream:contributor"
+        id = "456",
+        name = "Dimitrie Stefanescu",
+        role = "stream:contributor"
         }
       };
       var branches = new Branches()
@@ -91,17 +88,17 @@ namespace Speckle.DesktopUI.Streams
         {
         new Branch()
         {
-          id = "123",
-          name = "master",
-          commits = new Commits()
-            {
-              totalCount = 5,
-            }
+        id = "123",
+        name = "master",
+        commits = new Commits()
+        {
+        totalCount = 5,
+        }
         },
         new Branch()
         {
-          id = "321",
-          name = "dev"
+        id = "321",
+        name = "dev"
         }
         }
       };
@@ -110,30 +107,30 @@ namespace Speckle.DesktopUI.Streams
       {
         new Stream
         {
-          id = "stream123",
-          name = "Random Stream here 👋",
-          description = "this is a test stream",
-          isPublic = true,
-          collaborators = collabs.GetRange(0, 2),
-          branches = branches
+        id = "stream123",
+        name = "Random Stream here 👋",
+        description = "this is a test stream",
+        isPublic = true,
+        collaborators = collabs.GetRange(0, 2),
+        branches = branches
         },
         new Stream
         {
-          id = "stream456",
-          name = "Another Random Stream 🌵",
-          description = "we like to test things",
-          isPublic = true,
-          collaborators = collabs,
-          branches = branches
+        id = "stream456",
+        name = "Another Random Stream 🌵",
+        description = "we like to test things",
+        isPublic = true,
+        collaborators = collabs,
+        branches = branches
         },
         new Stream
         {
-          id = "stream789",
-          name = "Woop Cool Stream 🌊",
-          description = "cool and good indeed",
-          isPublic = true,
-          collaborators = collabs.GetRange(1, 2),
-          branches = branches
+        id = "stream789",
+        name = "Woop Cool Stream 🌊",
+        description = "cool and good indeed",
+        isPublic = true,
+        collaborators = collabs.GetRange(1, 2),
+        branches = branches
         },
       };
 

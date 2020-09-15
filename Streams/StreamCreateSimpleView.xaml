@@ -6,6 +6,7 @@
   xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:s="https://github.com/canton7/Stylet"
   d:DesignHeight="450"
   d:DesignWidth="400"
   mc:Ignorable="d">
@@ -27,7 +28,7 @@
           x:Name="BackButton"
           Grid.Column="0"
           HorizontalAlignment="Center"
-          Command="{Binding ChangeSlideCommand}"
+          Command="{s:Action ChangeSlide}"
           CommandParameter="0"
           Content="BACK"
           Style="{StaticResource MaterialDesignFlatButton}" />
@@ -38,8 +39,7 @@
           md:ButtonProgressAssist.IsIndeterminate="True"
           md:ButtonProgressAssist.IsIndicatorVisible="{Binding CreateButtonLoading, Mode=OneWay}"
           md:ButtonProgressAssist.Value="-1"
-          Command="{Binding CreateStreamCommand}"
-          CommandParameter=""
+          Command="{s:Action CreateStream}"
           Content="SEND"
           Foreground="{StaticResource MaterialDesignLightBackground}"
           Style="{StaticResource MaterialDesignFlatMidBgButton}" />

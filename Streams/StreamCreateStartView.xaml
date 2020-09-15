@@ -6,6 +6,7 @@
   xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:s="https://github.com/canton7/Stylet"
   d:DesignHeight="450"
   d:DesignWidth="400"
   mc:Ignorable="d">
@@ -52,7 +53,7 @@
           x:Name="SimpleStreamButton"
           Grid.Column="0"
           Margin="8"
-          Command="{Binding ContinueStreamCreatecommand}"
+          Command="{s:Action ContinueStreamCreate}"
           CommandParameter="1"
           Content="{md:PackIcon Kind=ShareAll,
                                 Size=20}"
@@ -75,7 +76,7 @@
           x:Name="AdvancedStreamButton"
           Grid.Column="0"
           Margin="8"
-          Command="{Binding ContinueStreamCreatecommand}"
+          Command="{s:Action ContinueStreamCreate}"
           CommandParameter="2"
           Content="{md:PackIcon Kind=Tools,
                                 Size=20}"

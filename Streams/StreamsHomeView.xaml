@@ -6,30 +6,17 @@
   xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:s="https://github.com/canton7/Stylet"
   d:DesignHeight="450"
   d:DesignWidth="600"
   mc:Ignorable="d">
-  <UserControl.Resources>
-    <ResourceDictionary Source="../Themes/Generic.xaml" />
-  </UserControl.Resources>
+  <UserControl.Resources />
+
   <Grid>
-    <md:Transitioner AutoApplyTransitionOrigins="True" SelectedIndex="{Binding SelectedSlide}">
-      <md:Transitioner.InputBindings>
-        <KeyBinding Key="Esc" Command="{x:Static md:Transitioner.MovePreviousCommand}" />
-      </md:Transitioner.InputBindings>
 
-      <md:TransitionerSlide OpeningEffect="{md:TransitionEffect FadeIn}">
-        <local:StreamsListView />
-      </md:TransitionerSlide>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <ContentControl s:View.Model="{Binding ActiveItem}" />
+    </ScrollViewer>
 
-      <md:TransitionerSlide
-        Margin="0,10,0,0"
-        Background="{DynamicResource MaterialDesignPaper}"
-        ClipToBounds="True"
-        Foreground="{DynamicResource MaterialDesignBody}">
-        <local:StreamInfoView />
-      </md:TransitionerSlide>
-
-    </md:Transitioner>
   </Grid>
 </UserControl>
