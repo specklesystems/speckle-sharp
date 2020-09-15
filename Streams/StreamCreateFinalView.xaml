@@ -6,6 +6,7 @@
   xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:s="https://github.com/canton7/Stylet"
   d:DesignHeight="450"
   d:DesignWidth="400"
   mc:Ignorable="d">
@@ -54,7 +55,7 @@
         Grid.Column="1"
         Margin="0,20"
         HorizontalAlignment="Center"
-        Command="{Binding CloseDialogCommand}"
+        Command="{s:Action CloseDialog}"
         Content="DONE"
         Foreground="{StaticResource MaterialDesignLightBackground}"
         Style="{StaticResource MaterialDesignFlatMidBgButton}" />

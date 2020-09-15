@@ -136,17 +136,13 @@
             Width="40"
             Height="40"
             Margin="3"
-            Command="{x:Static md:DialogHost.OpenDialogCommand}"
+            Command="{s:Action ShowStreamCreateDialog}"
             Content="{md:PackIcon Kind=Pencil,
                                   Size=20}"
             Foreground="{StaticResource MaterialDesignLightBackground}"
             Style="{StaticResource MaterialDesignFloatingActionButton}"
             ToolTip="Create a new stream"
-            ToolTipService.Placement="Left">
-            <Button.CommandParameter>
-              <ContentControl s:View.Model="{Binding StreamCreateDialog}" />
-            </Button.CommandParameter>
-          </Button>
+            ToolTipService.Placement="Left" />
 
           <Button
             x:Name="HelpButton"

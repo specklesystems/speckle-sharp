@@ -7,20 +7,47 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
   xmlns:s="https://github.com/canton7/Stylet"
-  d:DesignHeight="200"
+  d:DesignHeight="500"
   d:DesignWidth="400"
   mc:Ignorable="d">
   <Grid>
-    <StackPanel>
-      <TextBlock Text="Hello there! Let's create a stream 😎" />
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
       <Button
-        x:Name="CloseButton"
-        Margin="24"
-        HorizontalAlignment="Center"
-        Command="{x:Static md:DialogHost.CloseDialogCommand}"
-        Content="CLOSE"
-        Foreground="{StaticResource MaterialDesignLightBackground}"
-        Style="{StaticResource MaterialDesignFlatMidBgButton}" />
-    </StackPanel>
+        Grid.Row="0"
+        Width="25"
+        Height="25"
+        Margin="0,8,8,0"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Top"
+        md:RippleAssist.IsDisabled="True"
+        Command="{s:Action CloseDialog}"
+        Content="{md:PackIcon Kind=Close,
+                              Size=18}"
+        IsCancel="True"
+        Style="{StaticResource MaterialDesignIconForegroundButton}"
+        ToolTip="Cancel" />
+      <Grid Grid.Row="1" Width="400">
+        <md:Transitioner AutoApplyTransitionOrigins="True" SelectedIndex="{Binding SelectedSlide}">
+          <md:TransitionerSlide>
+            <md:TransitionerSlide.ForwardWipe>
+              <md:SlideWipe Direction="Left" />
+            </md:TransitionerSlide.ForwardWipe>
+            <local:StreamCreateStartView />
+          </md:TransitionerSlide>
+
+          <local:StreamCreateSimpleView />
+
+          <local:StreamCreateAdvancedView />
+
+          <local:StreamCreateFinalView />
+
+        </md:Transitioner>
+        <md:Snackbar MessageQueue="{Binding Notifications}" />
+      </Grid>
+    </Grid>
   </Grid>
 </UserControl>
