@@ -10,7 +10,7 @@
   Title="Speckle"
   Width="450"
   Height="800"
-  MinWidth="350"
+  MinWidth="450"
   MinHeight="300"
   Background="{DynamicResource MaterialDesignPaper}"
   FontFamily="{md:MaterialDesignFont}"
