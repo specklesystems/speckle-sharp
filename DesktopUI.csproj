@@ -140,7 +140,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Compile Include="Accounts\AccountsRepository.cs" />
-    <Compile Include="Accounts\AccountsViewModel.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
