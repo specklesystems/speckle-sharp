@@ -127,6 +127,7 @@
     <Compile Include="Streams\StreamsRepository.cs" />
     <Compile Include="Streams\StreamViewModel.cs" />
     <Compile Include="Utils\Converters.cs" />
+    <Compile Include="Utils\DummyBindings.cs" />
     <Compile Include="Utils\Events.cs" />
     <Compile Include="Utils\ViewModelFactories.cs" />
     <Compile Include="Utils\Link.cs" />

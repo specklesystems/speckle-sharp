@@ -12,8 +12,7 @@ namespace Speckle.DesktopUI
 {
   public class Bootstrapper : Bootstrapper<RootViewModel>
   {
-    // TODO register connector bindings
-    public ConnectorBindings Bindings;
+    public ConnectorBindings Bindings = new DummyBindings();
 
     protected override void OnStart()
     {
