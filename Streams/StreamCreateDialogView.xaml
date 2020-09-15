@@ -39,11 +39,23 @@
             <local:StreamCreateStartView />
           </md:TransitionerSlide>
 
-          <local:StreamCreateSimpleView />
+          <md:TransitionerSlide>
+            <md:TransitionerSlide.ForwardWipe>
+              <md:SlideWipe Direction="Left" />
+            </md:TransitionerSlide.ForwardWipe>
+            <local:StreamCreateSimpleView />
+          </md:TransitionerSlide>
 
-          <local:StreamCreateAdvancedView />
-
-          <local:StreamCreateFinalView />
+          <md:TransitionerSlide>
+            <md:TransitionerSlide.ForwardWipe>
+              <md:SlideWipe Direction="Left" />
+            </md:TransitionerSlide.ForwardWipe>
+            <local:StreamCreateAdvancedView />
+          </md:TransitionerSlide>
+          
+          <md:TransitionerSlide OpeningEffect="{md:TransitionEffect Kind=SlideInFromRight}">
+            <local:StreamCreateFinalView />
+          </md:TransitionerSlide>
 
         </md:Transitioner>
         <md:Snackbar MessageQueue="{Binding Notifications}" />
