@@ -123,10 +123,6 @@
     <Compile Include="Streams\StreamCreateStartView.xaml.cs">
       <DependentUpon>StreamCreateStartView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Streams\StreamCreateView.xaml.cs">
-      <DependentUpon>StreamCreateView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Streams\StreamCreateViewModel.cs" />
     <Compile Include="Streams\StreamsHomeViewModel.cs" />
     <Compile Include="Streams\StreamsRepository.cs" />
     <Compile Include="Streams\StreamViewModel.cs" />
@@ -180,10 +176,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Streams\StreamCreateStartView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Streams\StreamCreateView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
