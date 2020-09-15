@@ -6,7 +6,7 @@ using Speckle.Core.Credentials;
 using Newtonsoft.Json;
 using Speckle.Core.Api.SubscriptionModels;
 
-namespace ConsoleSketches
+namespace ExampleApp
 {
   public static class Subscriptions
   {
@@ -18,17 +18,17 @@ namespace ConsoleSketches
 
       Console.WriteLine("Subscribing to stream created. On first created event will subscribe to that stream's updates.");
 
-      myClient.SubscribeUserStreamCreated();
+      myClient.SubscribeUserStreamAdded();
 
       bool first = true;
 
-      myClient.OnUserStreamCreated += (sender, e) =>
+      myClient.OnUserStreamAdded += (sender, e) =>
       {
         if (first)
         {
           first = false;
           myClient.SubscribeStreamUpdated(e.id);
-          myClient.OnStreamUpdated += MyClient_OnStreamUpdated;
+          myClient.OnStreamUpdated += MyClient_OnStreamUpdated; ;
         }
 
         Console.WriteLine("UserStreamCreated Fired");
@@ -38,7 +38,7 @@ namespace ConsoleSketches
       Console.ReadLine();
     }
 
-    private static void MyClient_OnStreamUpdated(object sender, StreamUpdatedContent e)
+    private static void MyClient_OnStreamUpdated(object sender, StreamInfo e)
     {
       Console.WriteLine("StreamUpdated Fired");
       Console.WriteLine(JsonConvert.SerializeObject(e));

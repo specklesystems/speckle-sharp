@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Core.Api
 {
-  public partial class Client
+  public partial class Client : IDisposable
   {
     public string ServerUrl { get => Account.serverInfo.url; }
 
@@ -25,6 +26,11 @@ namespace Speckle.Core.Api
     HttpClient HttpClient { get; set; }
 
     public GraphQLHttpClient GQLClient { get; set; }
+
+    public object UploadValues(string v1, string v2, NameValueCollection user_1)
+    {
+      throw new NotImplementedException();
+    }
 
     public Client() { }
 
@@ -62,11 +68,6 @@ namespace Speckle.Core.Api
         new NewtonsoftJsonSerializer(),
         HttpClient);
 
-      //var ws = new ClientWebSocket(); ;
-      //ws.Options.SetRequestHeader("Authorization", $"Bearer {account.token}");
-
-      //GQLClient.Options.ConfigureWebsocketOptions(ws.Options);
-
       GQLClient.WebSocketReceiveErrors.Subscribe(e =>
       {
         if (e is WebSocketException we)
@@ -79,9 +80,19 @@ namespace Speckle.Core.Api
 
     public Task OnWebSocketConnect(GraphQLHttpClient client)
     {
-      //logger.LogInformation("Main websocket is open");
       Console.WriteLine("Websocket is open");
       return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+      UserStreamAddedSubscription.Dispose();
+      UserStreamRemovedSubscription.Dispose();
+      StreamUpdatedSubscription.Dispose();
+      BranchCreatedSubscription.Dispose();
+      BranchUpdatedSubscription.Dispose();
+      BranchDeletedSubscription.Dispose();
+      GQLClient.Dispose();
     }
 
 

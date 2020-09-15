@@ -13,7 +13,7 @@ using Tests;
 /// <summary>
 /// Quick and dirty tests/examples of Speckle usage. 
 /// </summary>
-namespace ConsoleSketches
+namespace ExampleApp
 {
   ////////////////////////////////////////////////////////////////////////////
   /// NOTE:                                                                ///
