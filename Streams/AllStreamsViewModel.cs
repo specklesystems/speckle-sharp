@@ -1,20 +1,22 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Windows;
-using Speckle.Core.Api;
 using MaterialDesignThemes.Wpf;
+using Speckle.Core.Api;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  public class AllStreamsViewModel : Screen
+  public class AllStreamsViewModel : Screen, IHandle<StreamAddedEvent>
   {
+    private readonly IViewManager _viewManager;
     private IWindowManager _windowManager;
     private IStreamViewModelFactory _streamViewModelFactory;
     private IDialogFactory _dialogFactory;
     private IEventAggregator _events;
     public AllStreamsViewModel(
+      IViewManager viewManager,
       IWindowManager windowManager,
       IStreamViewModelFactory streamViewModelFactory,
       IDialogFactory dialogFactory,
@@ -23,6 +25,7 @@ namespace Speckle.DesktopUI.Streams
       _repo = new StreamsRepository();
       _events = events;
       DisplayName = "Home";
+      _viewManager = viewManager;
       _windowManager = windowManager;
       _streamViewModelFactory = streamViewModelFactory;
       _dialogFactory = dialogFactory;
@@ -32,6 +35,7 @@ namespace Speckle.DesktopUI.Streams
 #else
       // do this properly
 #endif
+      events.Subscribe(this);
     }
 
     private StreamsRepository _repo;
@@ -67,20 +71,13 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _selectedBranch, value);
     }
 
-    public StreamCreateDialogViewModel StreamCreateDialog
-    {
-      get => _dialogFactory.CreateStreamCreateDialog();
-    }
-
     public async void ShowStreamCreateDialog()
     {
-      var view = new StreamCreateDialogView()
-      {
-        DataContext = _dialogFactory.CreateStreamCreateDialog()
-      };
+      var viewmodel = _dialogFactory.CreateStreamCreateDialog();
+      var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
       var result = await DialogHost.Show(view, dialogIdentifier: "AllStreamsDialogHost");
-      //var result = _windowManager.ShowDialog(dialogvm);
+
     }
 
     public void CopyStreamId(string streamId)
@@ -95,6 +92,11 @@ namespace Speckle.DesktopUI.Streams
     public void OpenHelpLink(string url)
     {
       Link.OpenInBrowser(url);
+    }
+
+    public void Handle(StreamAddedEvent message)
+    {
+      AllStreams.Insert(0, message.NewStream);
     }
   }
 }
