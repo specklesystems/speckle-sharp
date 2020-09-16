@@ -8,8 +8,7 @@ using Speckle.Core.Api;
 namespace Speckle.DesktopUI.Utils
 {
   public class ShowNotificationEvent : EventBase
-  {
-  }
+  { }
 
   public class StreamAddedEvent : EventBase
   {
@@ -19,6 +18,6 @@ namespace Speckle.DesktopUI.Utils
   public class EventBase
   {
     public string Notification { get; set; }
-    public dynamic dynamicInfo { get; set; }
+    public dynamic DynamicInfo { get; set; }
   }
 }
