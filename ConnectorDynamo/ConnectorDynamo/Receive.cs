@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 namespace Speckle.ConnectorDynamo
 {
   [NodeName("Receive")]
-  [NodeCategory("Speckle.IO")]
+  [NodeCategory("Speckle 2")]
   [NodeDescription("Receives data from Speckle")]
   [NodeSearchTags("receive", "speckle")]
 
@@ -51,7 +51,7 @@ namespace Speckle.ConnectorDynamo
         // If information from json does not look correct, clear the default ports and add ones with default value
         InPorts.Clear();
         InPorts.Add(new PortModel(PortType.Input, this, new PortData("streamId", "The stream to receive from")));
-        InPorts.Add(new PortModel(PortType.Input, this, new PortData("account", "Speckle account to used", defaultAccountValue)));
+        InPorts.Add(new PortModel(PortType.Input, this, new PortData("account", "Speckle account to use, if not provided the default account will be used", defaultAccountValue)));
       }
 
       if (outPorts.Count() == 0)
@@ -67,7 +67,7 @@ namespace Speckle.ConnectorDynamo
     public Receive()
     {
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("streamId","The stream to receive from")));
-      InPorts.Add(new PortModel(PortType.Input, this, new PortData("account","Speckle account to used", defaultAccountValue)));
+      InPorts.Add(new PortModel(PortType.Input, this, new PortData("account", "Speckle account to use, if not provided the default account will be used", defaultAccountValue)));
 
       OutPorts.Add(new PortModel(PortType.Output, this, new PortData("data", "Data received")));
 

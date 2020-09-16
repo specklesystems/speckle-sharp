@@ -119,8 +119,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Local.cs" />
     <Compile Include="SpeckleAccounts.cs" />
-    <Compile Include="IO.cs" />
+    <Compile Include="Functions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stream.cs" />
     <Compile Include="Utils.cs" />

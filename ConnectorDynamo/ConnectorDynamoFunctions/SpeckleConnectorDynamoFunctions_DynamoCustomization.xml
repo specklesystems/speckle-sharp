@@ -5,7 +5,7 @@
   </assembly>
   <namespaces>
     <namespace name="Speckle.ConnectorDynamo.Functions">
-      <category>Speckle</category>
+      <category>Speckle 2</category>
     </namespace>
   </namespaces>
   <classes>
