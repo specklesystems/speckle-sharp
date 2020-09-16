@@ -35,12 +35,13 @@ namespace Speckle.DesktopUI
       // and factory for dialog modals (eg create stream)
       builder.Bind<IDialogFactory>().ToAbstractFactory();
 
-      builder.Bind<ConnectorBindings>().ToInstance(Bindings);
-    }
-
-    protected override void OnLaunch()
-    {
-      base.OnLaunch();
+      // and finally the external bindings (eg from Revit, Rhino, etc)
+      builder.Bind<ConnectorBindings>().ToFactory(container =>
+      {
+        var bindings = Bindings;
+        container.BuildUp(bindings); // build with ioc to make use of injection
+        return bindings;
+      });
     }
 
     private void InitializeMaterialDesign()
@@ -57,7 +58,7 @@ namespace Speckle.DesktopUI
       Application.Current.Resources.MergedDictionaries.Add(
         Application.LoadComponent(
           new Uri("SpeckleDesktopUI;component/Themes/Generic.xaml", UriKind.Relative)
-        ) as ResourceDictionary);
+        )as ResourceDictionary);
     }
 
   }
