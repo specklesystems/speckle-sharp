@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Autodesk.DesignScript.Runtime;
 using Dynamo.Graph.Nodes;
 using Speckle.Core.Credentials;
 
 
 namespace Speckle.ConnectorDynamo.Functions
 {
-  public static class SpeckleAccounts
+  public static class Accounts
   {
     /// <summary>
     /// Your default Speckle account
@@ -16,7 +17,7 @@ namespace Speckle.ConnectorDynamo.Functions
     [NodeCategory("Query")]
     [NodeDescription("Your default Speckle account")]
     [NodeSearchTags("account", "speckle")]
-    public static Account DefaultAccount()
+    public static Account Default()
     {
       return AccountManager.GetDefaultAccount();
 
@@ -27,10 +28,10 @@ namespace Speckle.ConnectorDynamo.Functions
     /// </summary>
     /// <returns name="accounts">Your Speckle accounts</returns>
     [NodeName("Accounts BBB")]
-    [NodeCategory("Create")]
+    [NodeCategory("Query")]
     [NodeDescription("Your Speckle accounts")]
     [NodeSearchTags("accounts", "speckle")]
-    public static IEnumerable<Account> Accounts()
+    public static IEnumerable<Account> List()
     {
       return AccountManager.GetAccounts();
 

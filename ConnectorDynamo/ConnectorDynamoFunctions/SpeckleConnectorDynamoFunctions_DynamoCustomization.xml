@@ -9,6 +9,7 @@
     </namespace>
   </namespaces>
   <classes>
-    <class name="Speckle.ConnectorDynamo..Functions.SpeckleAccounts" shortname="Accounts"/>
+    <class name="Speckle.ConnectorDynamo.Functions.SpeckleAccounts" shortname="BBB">
+    </class>
   </classes>
 </doc>

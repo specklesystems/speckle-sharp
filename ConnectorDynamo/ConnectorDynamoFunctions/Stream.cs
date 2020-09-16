@@ -20,7 +20,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="description">Description of the stream (optional)</param>
     /// <returns name="streamId">ID of the created Stream</returns>
     [NodeName("Create Stream")]
-    [NodeCategory("Speckle")]
+    [NodeCategory("Create")]
     [NodeDescription("Create a new Stream")]
     [NodeSearchTags("stream", "create", "speckle")]
     public static string Create([DefaultArgument("\"Anonymous stream\"")] string name, [DefaultArgument("\"\"")] string description, [DefaultArgument("null")] Account account = null)
@@ -45,7 +45,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="streamId">ID of the stream to get</param>
     /// <returns name="stream">ID of the created Stream</returns>
     [NodeName("Get Stream")]
-    [NodeCategory("Speckle")]
+    [NodeCategory("Query")]
     [NodeDescription("Create a new Stream")]
     [NodeSearchTags("stream", "get", "speckle")]
     public static Core.Api.Stream Get(string streamId, [DefaultArgument("null")] Account account = null)

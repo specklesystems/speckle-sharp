@@ -17,29 +17,17 @@ using System.Threading.Tasks;
 
 namespace Speckle.ConnectorDynamo
 {
-  [NodeName("Receive")]
-  [NodeCategory("Speckle.IO")]
-  [NodeDescription("Receives data from Speckle")]
-  [NodeSearchTags("receive", "speckle")]
+  [NodeName("Send")]
+  [NodeCategory("Speckle")]
+  [NodeDescription("Send data to Speckle")]
+  [NodeSearchTags("send", "speckle")]
 
   [IsDesignScriptCompatible]
-  public class Receive : NodeModel
+  public class Send : NodeModel
   {
-    public event Action RequestChangeStreamId;
-    protected virtual void OnRequestChangeStreamId()
-    {
-        RequestChangeStreamId();
-    }
-    private readonly NullNode defaultAccountValue = new NullNode();
-
-    public string OldStreamId { get; set; }
-    public string StreamId { get; set; }
-
-
-    private Client _client { get; set; }
 
     [JsonConstructor]
-    private Receive(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
+    private Send(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
       if (inPorts.Count() == 2)
       {

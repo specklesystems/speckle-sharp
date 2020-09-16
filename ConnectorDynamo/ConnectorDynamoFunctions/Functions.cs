@@ -18,7 +18,8 @@ namespace Speckle.ConnectorDynamo.Functions
   /// <summary>
   /// Speckle methods
   /// </summary>
-  public static class Speckle
+  [IsVisibleInDynamoLibrary(false)]
+  public static class Functions
   {
     /// <summary>
     /// Sends data to Speckle
@@ -71,18 +72,8 @@ namespace Speckle.ConnectorDynamo.Functions
     }
 
 
-    /// <summary>
-    /// Receives data from Speckle
-    /// </summary>
-    /// <param name="streamId">Stream ID to receive data from</param>
-    /// <param name="account">Speckle account to use</param>
-    /// <returns name="data">Data received</returns>
-    //[NodeName("Receive")]
-    //[NodeCategory("Speckle")]
-    //[NodeDescription("Receives data from Speckle")]
-    //[NodeSearchTags("receive", "speckle")]
+
     [IsVisibleInDynamoLibrary(false)]
-    //[DefaultArgument("null")] Account account = null
     public static object Receive(string streamId, Account account = null)
     {
       if (account == null)
@@ -90,6 +81,9 @@ namespace Speckle.ConnectorDynamo.Functions
 
       var client = new Client(account);
       var res = client.StreamGet(streamId).Result;
+      if (res == null || !res.branches.items[0].commits.items.Any())
+        return null;
+
       var lastCommit = res.branches.items[0].commits.items[0];
 
       var transport = new ServerTransport(account, streamId);

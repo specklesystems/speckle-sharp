@@ -36,6 +36,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -52,6 +54,10 @@
     <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.7.0.9206">
       <ExcludeAssets>runtime</ExcludeAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="DynamoVisualProgramming.WpfUILibrary">
+      <ExcludeAssets>runtime</ExcludeAssets>
+      <Version>2.8.0.2471</Version>
     </PackageReference>
     <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.7.0.9206">
       <ExcludeAssets>runtime</ExcludeAssets>
@@ -82,6 +88,7 @@
   <ItemGroup>
     <Compile Include="Receive.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReceiveNodeViewCustomization.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -101,8 +108,7 @@
       <Dlls Include="$(OutDir)*.dll" />
       <Pdbs Include="$(OutDir)*.pdb" />
       <SourceExtension Include="$(OutDir)*Extension_ViewExtensionDefinition.xml" />
-      <DocXML Include="$(OutDir)$(TargetName).xml" />
-      <CustomizationXML Include="$(OutDir)*DynamoCustomization.xml" />
+      <XML Include="$(OutDir)*.xml" />
       <PackageJson Include="$(ProjectDir)pkg.json" />
     </ItemGroup>
     <MakeDir Directories="$(ExtraFolder)" Condition="!Exists($(ExtraFolder))">
@@ -111,8 +117,7 @@
     </MakeDir>
     <Copy SourceFiles="@(Dlls)" DestinationFolder="$(BinFolder)" />
     <Copy SourceFiles="@(Pdbs)" DestinationFolder="$(BinFolder)" />
-    <Copy SourceFiles="@(DocXML)" DestinationFolder="$(BinFolder)" />
-    <Copy SourceFiles="@(CustomizationXML)" DestinationFolder="$(BinFolder)" />
+    <Copy SourceFiles="@(XML)" DestinationFolder="$(BinFolder)" />
     <Copy SourceFiles="@(PackageJson)" DestinationFolder="$(PackageFolder)" />
     <Copy SourceFiles="@(SourceExtension)" DestinationFolder="$(ExtraFolder)" />
     <CallTarget Condition="'$(Configuration)' == 'Debug'" Targets="PackageDeploy" />
