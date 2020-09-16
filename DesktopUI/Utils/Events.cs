@@ -7,13 +7,18 @@ using Speckle.Core.Api;
 
 namespace Speckle.DesktopUI.Utils
 {
-  public class ShowNotificationEvent
+  public class ShowNotificationEvent : EventBase
   {
-    public string Notification { get; set; }
   }
 
-  public class StreamAddedEvent
+  public class StreamAddedEvent : EventBase
   {
     public Stream NewStream { get; set; }
+  }
+
+  public class EventBase
+  {
+    public string Notification { get; set; }
+    public dynamic dynamicInfo { get; set; }
   }
 }
