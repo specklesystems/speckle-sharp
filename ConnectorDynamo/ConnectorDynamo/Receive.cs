@@ -19,7 +19,7 @@ namespace Speckle.ConnectorDynamo
 {
   [NodeName("Receive")]
   [NodeCategory("Speckle 2")]
-  [NodeDescription("Receives data from Speckle")]
+  [NodeDescription("Receive data from a Speckle server")]
   [NodeSearchTags("receive", "speckle")]
 
   [IsDesignScriptCompatible]

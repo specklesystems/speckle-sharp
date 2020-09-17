@@ -40,6 +40,7 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -91,6 +92,15 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReceiveNodeViewCustomization.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\logo.png" />
+    <Content Include="Assets\logo128.png" />
+    <Content Include="Assets\logo16.png" />
+    <Content Include="Assets\logo32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SpeckleConnectorDynamoImages.resx" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -105,6 +115,19 @@
     <DyfFolder>$(PackageFolder)dyf\</DyfFolder>
   </PropertyGroup>
   <Target Name="AfterBuild">
+    <!-- Icons stuff -->
+    <!-- Get System.Drawing.dll -->
+    <GetReferenceAssemblyPaths TargetFrameworkMoniker=".NETFramework, Version=v4.7">
+      <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="FrameworkAssembliesPath" />
+    </GetReferenceAssemblyPaths>
+    <!-- Get assembly -->
+    <GetAssemblyIdentity AssemblyFiles="$(OutDir)$(TargetName).dll">
+      <Output TaskParameter="Assemblies" ItemName="AssemblyInfo" />
+    </GetAssemblyIdentity>
+    <!-- Generate customization dll -->
+    <GenerateResource SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" UseSourcePath="true" Sources="$(ProjectDir)\SpeckleConnectorDynamoImages.resx" OutputResources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" References="$(FrameworkAssembliesPath)System.Drawing.dll" />
+    <AL SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" TargetType="library" EmbedResources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" OutputAssembly="$(OutDir)SpeckleConnectorDynamo.customization.dll" Version="%(AssemblyInfo.Version)" />
+    <!-- Icons stuff end -->
     <ItemGroup>
       <Dlls Include="$(OutDir)*.dll" />
       <Pdbs Include="$(OutDir)*.pdb" />
