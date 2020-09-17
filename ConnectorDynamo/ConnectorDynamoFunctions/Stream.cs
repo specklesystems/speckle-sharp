@@ -18,7 +18,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
     /// <returns name="streamId">ID of the created Stream</returns>
     [NodeCategory("Create")]
-    public static string Create([DefaultArgument("null")] Account account = null)
+    public static string Create([DefaultArgument("null")] Core.Credentials.Account account = null)
     {
       if (account == null)
         account = AccountManager.GetDefaultAccount();
@@ -38,7 +38,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="isPublic">Weather the Stream is public or not</param>
     /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
     /// <returns name="streamId">ID of the updated Stream</returns>
-    public static string Update(string streamId, [DefaultArgument("null")] string name, [DefaultArgument("null")] string description, [DefaultArgument("null")] bool? isPublic, [DefaultArgument("null")] Account account = null)
+    public static string Update(string streamId, [DefaultArgument("null")] string name, [DefaultArgument("null")] string description, [DefaultArgument("null")] bool? isPublic, [DefaultArgument("null")] Core.Credentials.Account account = null)
     {
       if (name == null && description == null && isPublic == null)
         return streamId;
@@ -74,16 +74,22 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <summary>
     /// Get a Stream details
     /// </summary>
+    /// <param name="streamOrStreamId">Stream or StreamId to get details of</param>
     /// <param name="account">Speckle account to use</param>
-    /// <param name="streamId">ID of the stream to get</param>
     [NodeCategory("Query")]
     [MultiReturn(new[] { "id", "name", "description", "createdAt", "updatedAt", "isPublic", "collaborators", "branches" })]
-    public static Dictionary<string, object> Details(string streamId, [DefaultArgument("null")] Account account = null)
+    public static Dictionary<string, object> Details(object streamOrStreamId, [DefaultArgument("null")] Core.Credentials.Account account = null)
     {
       if (account == null)
         account = AccountManager.GetDefaultAccount();
       var client = new Client(account);
-      var res = client.StreamGet(streamId).Result;
+
+      Core.Api.Stream res = null;
+
+      if (streamOrStreamId is Core.Api.Stream)
+        res = (Core.Api.Stream)streamOrStreamId;
+      else
+        res = client.StreamGet(streamOrStreamId.ToString()).Result;
 
       return new Dictionary<string, object> {
         { "id", res.id },
@@ -93,8 +99,25 @@ namespace Speckle.ConnectorDynamo.Functions
         { "updatedAt", DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(res.updatedAt)).DateTime },
         { "isPublic", res.isPublic },
         { "collaborators", res.collaborators },
-        { "branches", res.branches.items }
+        { "branches", res.branches!=null ? res.branches.items : null}
       };
+    }
+
+    /// <summary>
+    /// List all your Streams
+    /// </summary>
+    /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
+    /// <returns name="streams">Your Streams</returns>
+    [NodeCategory("Query")]
+    public static List<Core.Api.Stream> List([DefaultArgument("10")] int limit = 10, [DefaultArgument("null")] Core.Credentials.Account account = null)
+    {
+      if (account == null)
+        account = AccountManager.GetDefaultAccount();
+
+      var client = new Client(account);
+      var res = client.StreamsGet(limit).Result;
+
+      return res;
     }
   }
 }

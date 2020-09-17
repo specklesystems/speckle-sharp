@@ -29,7 +29,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
     /// <returns name="log">Log</returns>
     [IsVisibleInDynamoLibrary(false)]
-    public static string Send(object data, string streamId, Account account = null)
+    public static string Send(object data, string streamId, Core.Credentials.Account account = null)
     {
       if (account == null)
         account = AccountManager.GetDefaultAccount();
@@ -58,7 +58,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
     /// <returns></returns>
     [IsVisibleInDynamoLibrary(false)]
-    public static object Receive(string streamId, Account account = null)
+    public static object Receive(string streamId, Core.Credentials.Account account = null)
     {
       if (account == null)
         account = AccountManager.GetDefaultAccount();

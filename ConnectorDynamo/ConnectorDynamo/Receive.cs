@@ -106,7 +106,7 @@ namespace Speckle.ConnectorDynamo
       }
 
       var functionCall = AstFactory.BuildFunctionCall(
-        new Func<string, Account, object>(Functions.Functions.Receive),
+        new Func<string, Core.Credentials.Account, object>(Functions.Functions.Receive),
         new List<AssociativeNode> { inputAstNodes[0], inputAstNodes[1] });
 
       return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall) };

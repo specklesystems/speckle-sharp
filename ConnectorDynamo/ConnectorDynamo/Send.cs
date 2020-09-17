@@ -1,19 +1,11 @@
-﻿using Dynamo.Engine;
-using Dynamo.Graph.Nodes;
-using Microsoft.Practices.Prism.Regions;
+﻿using Dynamo.Graph.Nodes;
 using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
-using ProtoCore.Mirror;
-using Speckle.ConnectorDynamo.Functions;
-using Speckle.Core.Api;
-using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Speckle.ConnectorDynamo
 {

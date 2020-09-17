@@ -120,7 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Local.cs" />
-    <Compile Include="SpeckleAccounts.cs" />
+    <Compile Include="Account.cs" />
     <Compile Include="Functions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stream.cs" />
