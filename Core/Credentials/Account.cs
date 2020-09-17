@@ -107,7 +107,7 @@ namespace Speckle.Core.Credentials
 
     public override string ToString() 
     {
-      return userInfo.email + " - " + serverInfo.name;
+      return $"Account ({userInfo.email} | {serverInfo.url})";
     }
 
     #endregion

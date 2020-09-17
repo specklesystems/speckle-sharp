@@ -135,16 +135,6 @@ namespace Speckle.Core.Api
         {
           Query = $@"query User {{
                       user{{
-                        id,
-                        username,
-                        email,
-                        name,
-                        bio,
-                        company,
-                        avatar,
-                        verified,
-                        profiles,
-                        role,
                         streams(limit:{limit}) {{
                           totalCount,
                           cursor,
@@ -267,7 +257,7 @@ namespace Speckle.Core.Api
 
         if (res.Errors != null)
           Log.CaptureAndThrow(new GraphQLException("Could not delete stream"), res.Errors);
-        
+
 
         return (bool)res.Data["streamDelete"];
       }

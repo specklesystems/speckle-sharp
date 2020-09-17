@@ -94,7 +94,7 @@ namespace Speckle.Core.Api
 
     public override string ToString()
     {
-      return $"{name} ({id})";
+      return $"Steam ({name} | {id})";
     }
   }
 
@@ -106,7 +106,7 @@ namespace Speckle.Core.Api
 
     public override string ToString()
     {
-      return $"{name} - {role} ({id})";
+      return $"Collaborator ({name} | {role} | {id})";
     }
   }
 
@@ -137,7 +137,7 @@ namespace Speckle.Core.Api
 
     public override string ToString()
     {
-      return $"{message} ({id})";
+      return $"Commit ({message} | {id})";
     }
 
   }
@@ -152,7 +152,7 @@ namespace Speckle.Core.Api
 
     public override string ToString()
     {
-      return $"{name} ({id})";
+      return $"Branch ({name} | {id})";
     }
 
   }
@@ -182,7 +182,7 @@ namespace Speckle.Core.Api
 
     public override string ToString()
     {
-      return $"{email} - {name} ({id})";
+      return $"User ({email} | {name} | {id})";
     }
 
   }
