@@ -11,6 +11,7 @@ namespace Speckle.DesktopUI.Utils
     string Name { get; set; }
     string Icon { get; set; }
     string Type { get; }
+    List<string> Selection { get; set; }
   }
 
   public class ElementsSelectionFilter : ISelectionFilter
@@ -18,8 +19,7 @@ namespace Speckle.DesktopUI.Utils
     public string Name { get; set; }
     public string Icon { get; set; }
     public string Type { get { return typeof(ElementsSelectionFilter).ToString(); } }
-
-    public List<string> Selection = new List<string>();
+    public List<string> Selection { get; set; } = new List<string>();
   }
 
   public class ListSelectionFilter : ISelectionFilter
@@ -29,7 +29,7 @@ namespace Speckle.DesktopUI.Utils
     public string Type { get { return typeof(ListSelectionFilter).ToString(); } }
 
     public List<string> Values { get; set; }
-    public List<string> Selection = new List<string>();
+    public List<string> Selection { get; set; } = new List<string>();
   }
 
   public class PropertySelectionFilter : ISelectionFilter
@@ -37,6 +37,7 @@ namespace Speckle.DesktopUI.Utils
     public string Name { get; set; }
     public string Icon { get; set; }
     public string Type { get { return typeof(PropertySelectionFilter).ToString(); } }
+    public List<string> Selection { get; set; } = new List<string>();
 
     public List<string> Values { get; set; }
     public List<string> Operators { get; set; }

@@ -63,7 +63,7 @@
           md:ButtonProgressAssist.IsIndeterminate="True"
           md:ButtonProgressAssist.IsIndicatorVisible="{Binding CreateButtonLoading, Mode=OneWay}"
           md:ButtonProgressAssist.Value="-1"
-          Command="{s:Action CreateStream}"
+          Command="{s:Action AddNewStream}"
           Content="SEND"
           Foreground="{StaticResource MaterialDesignLightBackground}"
           Style="{StaticResource MaterialDesignFlatMidBgButton}" />

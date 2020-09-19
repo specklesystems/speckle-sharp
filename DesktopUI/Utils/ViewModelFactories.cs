@@ -27,6 +27,7 @@ namespace Speckle.DesktopUI.Utils
     StreamViewModel CreateStreamViewModel();
   }
 
+  // TODO move this into IViewModelFactory (they're not really dialogs)
   // Factory to create dialogs for stream creation and editing 
   public interface IDialogFactory
   {

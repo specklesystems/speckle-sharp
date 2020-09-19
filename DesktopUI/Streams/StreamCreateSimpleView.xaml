@@ -3,7 +3,6 @@
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
   xmlns:s="https://github.com/canton7/Stylet"
@@ -18,6 +17,23 @@
         Style="{StaticResource MaterialDesignHeadline4TextBlock}"
         Text="{Binding StreamToCreate.name}" />
       <TextBlock Text="Send the currently selected objects to Speckle using default settings." TextWrapping="Wrap" />
+
+      <!--  TODO make this pretty and actually work  -->
+      <ListBox
+        x:Name="SelectionFilterListBox"
+        Margin="0,16"
+        ItemsSource="{Binding Filters}"
+        SelectedItem="{Binding SelectedFilter}">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Orientation="Horizontal">
+              <md:PackIcon Kind="{Binding Icon}" />
+              <TextBlock Margin="8,0" Text="{Binding Name}" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+
+      </ListBox>
 
       <Grid Margin="0,16">
         <Grid.ColumnDefinitions>
@@ -39,11 +55,17 @@
           md:ButtonProgressAssist.IsIndeterminate="True"
           md:ButtonProgressAssist.IsIndicatorVisible="{Binding CreateButtonLoading, Mode=OneWay}"
           md:ButtonProgressAssist.Value="-1"
-          Command="{s:Action CreateStream}"
+          Command="{s:Action AddNewStream}"
           Content="SEND"
           Foreground="{StaticResource MaterialDesignLightBackground}"
           Style="{StaticResource MaterialDesignFlatMidBgButton}" />
       </Grid>
+      <Button
+        Width="100"
+        Margin="24"
+        Command="{s:Action GetSelectedObjects}"
+        Content="ADD SELECTION"
+        Style="{StaticResource MaterialDesignFlatButton}" />
     </StackPanel>
   </Grid>
 </UserControl>

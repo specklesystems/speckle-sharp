@@ -11,17 +11,6 @@ namespace Speckle.DesktopUI.Streams
   class StreamsRepository
   {
     private AccountsRepository _acctRepo = new AccountsRepository();
-    private Client _remote
-    {
-      get
-      {
-        var defaultAccount = AccountManager.GetDefaultAccount();
-        if (defaultAccount != null)
-          return new Client(defaultAccount);
-        return new Client();
-      }
-
-    }
 
     public Branch GetMasterBranch(List<Branch> branches)
     {
@@ -31,11 +20,7 @@ namespace Speckle.DesktopUI.Streams
 
     public Task<string> CreateStream(Stream stream, Account account)
     {
-      var remote = _remote;
-      if (!account.isDefault)
-      {
-        remote = new Client(account);
-      }
+      var client = new Client(account);
 
       var streamInput = new StreamCreateInput()
       {
@@ -44,18 +29,13 @@ namespace Speckle.DesktopUI.Streams
         isPublic = stream.isPublic
       };
 
-      return remote.StreamCreate(streamInput);
+      return client.StreamCreate(streamInput);
     }
 
     public Task<Stream> GetStream(string streamId, Account account)
     {
-      var remote = _remote;
-      if (!account.isDefault)
-      {
-        remote = new Client(account);
-      }
-
-      return remote.StreamGet(streamId);
+      var client = new Client(account);
+      return client.StreamGet(streamId);
     }
 
     public ObservableCollection<Stream> LoadTestStreams()

@@ -11,24 +11,25 @@ namespace Speckle.DesktopUI.Streams
   public class AllStreamsViewModel : Screen, IHandle<StreamAddedEvent>
   {
     private readonly IViewManager _viewManager;
-    private IWindowManager _windowManager;
-    private IStreamViewModelFactory _streamViewModelFactory;
-    private IDialogFactory _dialogFactory;
-    private IEventAggregator _events;
+    private readonly IStreamViewModelFactory _streamViewModelFactory;
+    private readonly IDialogFactory _dialogFactory;
+    private readonly IEventAggregator _events;
+    private readonly ConnectorBindings _bindings;
+
     public AllStreamsViewModel(
       IViewManager viewManager,
-      IWindowManager windowManager,
       IStreamViewModelFactory streamViewModelFactory,
       IDialogFactory dialogFactory,
-      IEventAggregator events)
+      IEventAggregator events,
+      ConnectorBindings bindings)
     {
       _repo = new StreamsRepository();
       _events = events;
       DisplayName = "Home";
       _viewManager = viewManager;
-      _windowManager = windowManager;
       _streamViewModelFactory = streamViewModelFactory;
       _dialogFactory = dialogFactory;
+      _bindings = bindings;
 
 #if DEBUG
       _allStreams = _repo.LoadTestStreams();
@@ -76,8 +77,7 @@ namespace Speckle.DesktopUI.Streams
       var viewmodel = _dialogFactory.CreateStreamCreateDialog();
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
-      var result = await DialogHost.Show(view, dialogIdentifier: "AllStreamsDialogHost");
-
+      var result = await DialogHost.Show(view, "AllStreamsDialogHost");
     }
 
     public void CopyStreamId(string streamId)
@@ -97,6 +97,11 @@ namespace Speckle.DesktopUI.Streams
     public void Handle(StreamAddedEvent message)
     {
       AllStreams.Insert(0, message.NewStream);
+    }
+
+    public void TestBindings()
+    {
+      _bindings.TestBindings("hello from Revit bindings!");
     }
   }
 }
