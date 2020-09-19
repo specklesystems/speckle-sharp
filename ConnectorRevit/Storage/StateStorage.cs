@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Speckle.Core.Api;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Newtonsoft.Json;
-
+using Speckle.Core.Api;
 
 namespace Speckle.ConnectorRevit.Storage
 {
@@ -18,7 +16,7 @@ namespace Speckle.ConnectorRevit.Storage
     public static Schema GetSchema()
     {
       var schema = Schema.Lookup(schemaGuid);
-      if (schema != null) return schema;
+      if (schema != null)return schema;
 
       var builder = new SchemaBuilder(schemaGuid);
       builder.SetSchemaName("SpeckleLocalStateStorage");
@@ -36,7 +34,7 @@ namespace Speckle.ConnectorRevit.Storage
     {
       Schema schema = Schema.Lookup(schemaGuid);
 
-      if (schema != null) return schema;
+      if (schema != null)return schema;
 
       SchemaBuilder schemaBuilder = new SchemaBuilder(schemaGuid);
 
@@ -73,10 +71,11 @@ namespace Speckle.ConnectorRevit.Storage
       // Needs to be wrapped in a Action and sloshed in the queue. 
       try
       {
-        if (ds == null) ds = DataStorage.Create(doc);
+        if (ds == null)ds = DataStorage.Create(doc);
       }
       catch (Exception e)
       {
+        Debug.WriteLine($"Error in WriteState: {e}");
       }
       Entity speckleStateEntity = new Entity(SpeckleStateSchema.GetSchema());
 
@@ -103,11 +102,11 @@ namespace Speckle.ConnectorRevit.Storage
       {
         Entity settingIdEntity = dataStorage.GetEntity(DSUniqueSchemaLocalState.GetSchema());
 
-        if (!settingIdEntity.IsValid()) continue;
+        if (!settingIdEntity.IsValid())continue;
 
         var id = settingIdEntity.Get<Guid>("Id");
 
-        if (!id.Equals(ID)) continue;
+        if (!id.Equals(ID))continue;
 
         return dataStorage;
       }
@@ -122,7 +121,7 @@ namespace Speckle.ConnectorRevit.Storage
       foreach (DataStorage dataStorage in dataStorages)
       {
         Entity settingEntity = dataStorage.GetEntity(SpeckleStateSchema.GetSchema());
-        if (!settingEntity.IsValid()) continue;
+        if (!settingEntity.IsValid())continue;
 
         return settingEntity;
       }

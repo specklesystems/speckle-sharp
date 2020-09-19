@@ -5,71 +5,77 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
+using Speckle.DesktopUI.Utils;
 
 namespace Speckle.ConnectorRevit.Storage
 {
   /// <summary>
-  /// Manages the serialisation of speckle clients in a revit document.
+  /// Manages the serialisation of speckle streams boxes
+  /// (stream info, account info, and filter type) in a revit document.
   /// </summary>
-  public static class SpeckleClientsStorageManager
+  public static class StreamBoxStorageManager
   {
     readonly static Guid ID = new Guid("{5D453471-1F20-44CE-B1D0-BBD2BDE4616A}");
 
     /// <summary>
-    /// Returns the speckle clients present in the current document.
+    /// Returns the speckle boxes present in the current document.
     /// </summary>
     /// <param name="doc"></param>
     /// <returns></returns>
-    public static SpeckleClientsWrapper ReadClients(Document doc)
+    public static StreamBoxesWrapper ReadStreamBoxes(Document doc)
     {
-      var speckleClientsEntity = GetSpeckleEntity(doc);
-      if (speckleClientsEntity == null || !speckleClientsEntity.IsValid()) return null;
+      var streamBoxesEntity = GetSpeckleEntity(doc);
+      if (streamBoxesEntity == null || !streamBoxesEntity.IsValid())
+        return null;
 
-      var mySpeckleClients = new SpeckleClientsWrapper();
-      mySpeckleClients.SetClients(speckleClientsEntity.Get<IList<string>>("clients"));
+      var myStreamBoxes = new StreamBoxesWrapper();
+      myStreamBoxes.SetStreamBoxes(streamBoxesEntity.Get<IList<string>>("streamBoxes"));
 
-      return mySpeckleClients;
+      return myStreamBoxes;
     }
 
     /// <summary>
-    /// Writes the clients to the current document.
+    /// Writes the stream box to the current document.
     /// </summary>
     /// <param name="doc"></param>
     /// <param name="wrap"></param>
-    public static void WriteClients(Document doc, SpeckleClientsWrapper wrap)
+    public static void WriteStreamBoxes(Document doc, StreamBoxesWrapper wrap)
     {
       var ds = GetSettingsDataStorage(doc);
 
-      if (ds == null) ds = DataStorage.Create(doc);
+      if (ds == null)
+        ds = DataStorage.Create(doc);
 
-      Entity speckleClientsEntity = new Entity(SpeckleClientsSchema.GetSchema());
+      var streamBoxesEntity = new Entity(StreamBoxesSchema.GetSchema());
 
-      speckleClientsEntity.Set("clients", wrap.GetStringList() as IList<string>);
+      streamBoxesEntity.Set("streamBoxes", wrap.GetStringList()as IList<string>);
 
-      Entity idEntity = new Entity(DSUniqueSchemaClientsStorage.GetSchema());
+      var idEntity = new Entity(DSUniqueSchemaStreamBoxStorage.GetSchema());
       idEntity.Set("Id", ID);
 
       ds.SetEntity(idEntity);
-      ds.SetEntity(speckleClientsEntity);
+      ds.SetEntity(streamBoxesEntity);
     }
 
     private static DataStorage GetSettingsDataStorage(Document doc)
     {
       // Retrieve all data storages from project
-      FilteredElementCollector collector = new FilteredElementCollector(doc);
+      var collector = new FilteredElementCollector(doc);
 
       var dataStorages = collector.OfClass(typeof(DataStorage));
 
       // Find setting data storage
       foreach (DataStorage dataStorage in dataStorages)
       {
-        Entity settingIdEntity = dataStorage.GetEntity(DSUniqueSchemaClientsStorage.GetSchema());
+        var settingIdEntity = dataStorage.GetEntity(DSUniqueSchemaStreamBoxStorage.GetSchema());
 
-        if (!settingIdEntity.IsValid()) continue;
+        if (!settingIdEntity.IsValid())
+          continue;
 
         var id = settingIdEntity.Get<Guid>("Id");
 
-        if (!id.Equals(ID)) continue;
+        if (!id.Equals(ID))
+          continue;
 
         return dataStorage;
       }
@@ -83,8 +89,9 @@ namespace Speckle.ConnectorRevit.Storage
       var dataStorages = collector.OfClass(typeof(DataStorage));
       foreach (DataStorage dataStorage in dataStorages)
       {
-        Entity settingEntity = dataStorage.GetEntity(SpeckleClientsSchema.GetSchema());
-        if (!settingEntity.IsValid()) continue;
+        Entity settingEntity = dataStorage.GetEntity(StreamBoxesSchema.GetSchema());
+        if (!settingEntity.IsValid())
+          continue;
 
         return settingEntity;
       }
