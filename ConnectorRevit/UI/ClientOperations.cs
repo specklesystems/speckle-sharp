@@ -388,14 +388,14 @@ namespace Speckle.ConnectorRevit.UI
       }));
       Executor.Raise();
       var plural = objects.Count() == 1 ? "" : "s";
-      //if (objects.Count() != 0)
-      //  NotifyUi("update-client", JsonConvert.SerializeObject(new
-      //  {
-      //    userId = userId,
-      //    expired = true,
-      //    objects = myClient.objects,
-      //    //message = $"You have added {objects.Count()} object{plural} to this sender."
-      //  }));
+
+      if (objects.Count() != 0)
+        NotifyUi( new RetrievedFilteredObjectsEvent()
+        {
+          Notification = $"You have added {objects.Count()} object{plural} to this stream.",
+          UserId = userId,
+          Objects = objects
+        });
 
       return objects;
     }
