@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
+using Speckle.Core.Models;
 
 namespace Speckle.DesktopUI.Utils
 {
@@ -28,6 +29,12 @@ namespace Speckle.DesktopUI.Utils
   public class  UpdateSelectionEvent : EventBase
   {
     public List<string> ObjectIds { get; set; }
+  }
+
+  public class RetrievedFilteredObjectsEvent : EventBase
+  {
+    public string UserId { get; set; }
+    public IEnumerable<Base> Objects { get; set; }
   }
 
   public class ApplicationEvent : EventBase

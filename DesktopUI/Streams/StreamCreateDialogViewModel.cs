@@ -10,7 +10,7 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  public class StreamCreateDialogViewModel : Conductor<IScreen>.Collection.OneActive
+  public class StreamCreateDialogViewModel : Conductor<IScreen>.Collection.OneActive, IHandle<RetrievedFilteredObjectsEvent>
   {
     private IEventAggregator _events;
     private ConnectorBindings _bindings;
@@ -49,6 +49,14 @@ namespace Speckle.DesktopUI.Streams
     {
       get => _streamToCreate;
       set => SetAndNotify(ref _streamToCreate, value);
+    }
+
+    private StreamBox _streamBox = new StreamBox();
+
+    public StreamBox StreamBox
+    {
+      get => _streamBox;
+      set => SetAndNotify(ref  _streamBox, value);
     }
 
     private Account _accountToSendFrom;
@@ -106,14 +114,14 @@ namespace Speckle.DesktopUI.Streams
         var streamId = await _repo.CreateStream(StreamToCreate, AccountToSendFrom);
         // TODO do this locally first before creating on the server
         StreamToCreate = await _repo.GetStream(streamId, AccountToSendFrom);
-        var box = new StreamBox()
+        StreamBox = new StreamBox()
         {
           accountId = client.AccountId,
           client = client,
           filter = SelectedFilter,
           stream = StreamToCreate
         };
-        _bindings.AddNewStream(box);
+        _bindings.AddNewStream(StreamBox);
         var boxes = _bindings.GetFileClients();
 
         SelectedSlide = 3;
@@ -154,6 +162,12 @@ namespace Speckle.DesktopUI.Streams
       {
         Notifications.Enqueue("soz this only works for selection!");
       }
+    }
+
+    public void Handle(RetrievedFilteredObjectsEvent message)
+    {
+      StreamBox.objects = message.Objects;
+      Notifications.Enqueue(message.Notification);
     }
   }
 }
