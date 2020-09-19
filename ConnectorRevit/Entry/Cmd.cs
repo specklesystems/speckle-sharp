@@ -31,9 +31,17 @@ namespace Speckle.ConnectorRevit.Entry
         new Application();
       }
 
+      // create a new Speckle Revit bindings instance
+      var revitBindings = new ConnectorBindingsRevit(uiapp);
+
+      // create an external event handler to raise actions
+      var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(revitBindings));
+      // Give it to our bindings so we can actually do stuff with revit
+      revitBindings.SetExecutorAndInit(eventHandler);
+
       var bootstrapper = new Bootstrapper()
       {
-        Bindings = new ConnectorBindingsRevit(uiapp)
+        Bindings = revitBindings
       };
       bootstrapper.Setup(Application.Current);
 
