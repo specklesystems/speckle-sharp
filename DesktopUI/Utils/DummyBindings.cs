@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Speckle.Core.Api;
 
 namespace Speckle.DesktopUI.Utils
 {
@@ -13,7 +14,7 @@ namespace Speckle.DesktopUI.Utils
       throw new NotImplementedException();
     }
 
-    public override void AddNewClient(string args)
+    public override void AddNewStream(StreamBox streamBox)
     {
       throw new NotImplementedException();
     }
@@ -23,7 +24,7 @@ namespace Speckle.DesktopUI.Utils
       throw new NotImplementedException();
     }
 
-    public override void AddSelectionToClient(string args)
+    public override List<string> GetSelectedObjects()
     {
       throw new NotImplementedException();
     }
@@ -48,7 +49,7 @@ namespace Speckle.DesktopUI.Utils
       throw new NotImplementedException();
     }
 
-    public override string GetFileClients()
+    public override List<StreamBox> GetFileClients()
     {
       throw new NotImplementedException();
     }
@@ -60,7 +61,20 @@ namespace Speckle.DesktopUI.Utils
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
-      throw new NotImplementedException();
+      return new List<ISelectionFilter>
+      {
+        new ElementsSelectionFilter {Name = "Selection", Icon = "Mouse", Selection = new List<string>()},
+        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = new List<string>()},
+        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = new List<string>()},
+        new PropertySelectionFilter
+        {
+          Name = "Parameter",
+          Icon = "FilterList",
+          HasCustomProperty = false,
+          Values = new List<string>(),
+          Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
+        }
+      };
     }
 
     public override void PushClient(string args)

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Speckle.Core.Api;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 using StyletIoC;
@@ -19,13 +20,22 @@ namespace Speckle.DesktopUI
     public ConnectorBindings() { }
 
     /// <summary>
-    /// Sends an event to the UI, bound to the global EventBus.
+    /// Sends an event to the UI. The event types are pre-defined and inherit from EventBase.
     /// </summary>
-    /// <param name="eventName">The event's name.</param>
-    /// <param name="eventInfo">The event args, which will be serialised to a string.</param>
-    public virtual void NotifyUi(EventBase notifyEvent, dynamic eventInfo = null)
+    /// <param name="notifyEvent">The event to be published</param>
+    public virtual void NotifyUi(EventBase notifyEvent)
     {
       _events.Publish(notifyEvent);
+    }
+
+    /// <summary>
+    /// Raise a toast notification which is shown in the bottom of the main UI window.
+    /// </summary>
+    /// <param name="message">The body of the notification</param>
+    public virtual void RaiseNotification(string message)
+    {
+      var notif = new ShowNotificationEvent() {Notification = message};
+      NotifyUi(notif);
     }
 
     public virtual string GetFilters()
@@ -41,7 +51,7 @@ namespace Speckle.DesktopUI
       }
       catch (Exception e)
       {
-
+        Debug.WriteLine($"Error in StartProcess: {e}");
       }
 
     }
@@ -67,12 +77,14 @@ namespace Speckle.DesktopUI
     /// Returns the serialised clients present in the current open host file.
     /// </summary>
     /// <returns></returns>
-    public abstract string GetFileClients();
+    public abstract List<StreamBox> GetFileClients();
 
     /// <summary>
     /// Adds a new client and persits the info to the host file
     /// </summary>
-    public abstract void AddNewClient(string args);
+    // public abstract void AddNewClient(string args);
+
+    public abstract void AddNewStream(StreamBox streamBox);
 
     /// <summary>
     /// Updates a client and persits the info to the host file
@@ -87,7 +99,7 @@ namespace Speckle.DesktopUI
     /// <summary>
     /// Adds the current selection to the provided client.
     /// </summary>
-    public abstract void AddSelectionToClient(string args);
+    public abstract List<string> GetSelectedObjects();
 
     /// <summary>
     /// Removes the current selection from the provided client.
@@ -127,6 +139,7 @@ namespace Speckle.DesktopUI
 
     #endregion
 
+    // ! to remove
     // just to play by triggering notifications in the main UI window
     public void TestBindings(string message)
     {
