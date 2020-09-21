@@ -1,6 +1,7 @@
 ﻿using Dynamo.Extensions;
 using Dynamo.ViewModels;
 using Dynamo.Wpf.Extensions;
+using Speckle.ConnectorDynamo.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,8 @@ namespace Speckle.ConnectorDynamo.Extension
 
     public void Loaded(ViewLoadedParams viewLoadedParams)
     {
+      Telemetry.TrackView(Telemetry.LOADED);
+
       try
       {
         var dynamoViewModel = viewLoadedParams.DynamoWindow.DataContext as DynamoViewModel;

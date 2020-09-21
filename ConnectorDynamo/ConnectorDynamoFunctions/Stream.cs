@@ -20,6 +20,8 @@ namespace Speckle.ConnectorDynamo.Functions
     [NodeCategory("Create")]
     public static string Create([DefaultArgument("null")] Core.Credentials.Account account = null)
     {
+      Telemetry.TrackView(Telemetry.STREAM_CREATE);
+
       if (account == null)
         account = AccountManager.GetDefaultAccount();
 
@@ -40,6 +42,8 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <returns name="streamId">ID of the updated Stream</returns>
     public static string Update(string streamId, [DefaultArgument("null")] string name, [DefaultArgument("null")] string description, [DefaultArgument("null")] bool? isPublic, [DefaultArgument("null")] Core.Credentials.Account account = null)
     {
+      Telemetry.TrackView(Telemetry.STREAM_UPDATE);
+
       if (name == null && description == null && isPublic == null)
         return streamId;
 
@@ -80,6 +84,8 @@ namespace Speckle.ConnectorDynamo.Functions
     [MultiReturn(new[] { "id", "name", "description", "createdAt", "updatedAt", "isPublic", "collaborators", "branches" })]
     public static Dictionary<string, object> Details(object streamOrStreamId, [DefaultArgument("null")] Core.Credentials.Account account = null)
     {
+      Telemetry.TrackView(Telemetry.STREAM_DETAILS);
+
       if (account == null)
         account = AccountManager.GetDefaultAccount();
       var client = new Client(account);
@@ -111,6 +117,8 @@ namespace Speckle.ConnectorDynamo.Functions
     [NodeCategory("Query")]
     public static List<Core.Api.Stream> List([DefaultArgument("10")] int limit = 10, [DefaultArgument("null")] Core.Credentials.Account account = null)
     {
+      Telemetry.TrackView(Telemetry.STREAM_LIST);
+
       if (account == null)
         account = AccountManager.GetDefaultAccount();
 

@@ -41,6 +41,7 @@ namespace Speckle.ConnectorDynamo
     [JsonConstructor]
     private Receive(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
+
       if (inPorts.Count() == 2)
       {
         //blocker: https://github.com/DynamoDS/Dynamo/issues/11118
@@ -66,6 +67,8 @@ namespace Speckle.ConnectorDynamo
 
     public Receive()
     {
+      Telemetry.TrackView(Telemetry.NEW_RECEIVE);
+
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("streamId","The stream to receive from")));
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("account", "Speckle account to use, if not provided the default account will be used", defaultAccountValue)));
 
@@ -104,6 +107,8 @@ namespace Speckle.ConnectorDynamo
       {
         return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), AstFactory.BuildNullNode()) };
       }
+
+      Telemetry.TrackView(Telemetry.RECEIVE);
 
       var functionCall = AstFactory.BuildFunctionCall(
         new Func<string, Core.Credentials.Account, object>(Functions.Functions.Receive),

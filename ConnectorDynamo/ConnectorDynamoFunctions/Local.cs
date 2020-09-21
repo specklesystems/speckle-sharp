@@ -24,6 +24,8 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <returns name="localDataId">The ID of the local data sent</returns>
     public static string Send([ArbitraryDimensionArrayImport] object data)
     {
+      Telemetry.TrackView(Telemetry.SEND_LOCAL);
+
       var @base = Utils.ConvertRecursivelyToSpeckle(data);
       var objectId = Operations.Send(@base).Result;
 
@@ -38,6 +40,8 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <returns name="data">Data received</returns>
     public static object Receive(string localDataId)
     {
+      Telemetry.TrackView(Telemetry.RECEIVE_LOCAL);
+
       var converter = new ConverterDynamo();
       var @base = Operations.Receive(localDataId).Result;
       var data = Utils.ConvertRecursivelyToNative(@base);

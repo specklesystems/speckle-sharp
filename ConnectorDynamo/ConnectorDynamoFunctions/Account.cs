@@ -16,8 +16,9 @@ namespace Speckle.ConnectorDynamo.Functions
     [NodeCategory("Query")]
     public static Core.Credentials.Account Default()
     {
-      return AccountManager.GetDefaultAccount();
+      Telemetry.TrackView(Telemetry.ACCOUNT_DEFAULT);
 
+      return AccountManager.GetDefaultAccount();
     }
 
     /// <summary>
@@ -27,8 +28,9 @@ namespace Speckle.ConnectorDynamo.Functions
     [NodeCategory("Query")]
     public static IEnumerable<Core.Credentials.Account> List()
     {
-      return AccountManager.GetAccounts();
+      Telemetry.TrackView(Telemetry.ACCOUNT_LIST);
 
+      return AccountManager.GetAccounts();
     }
 
     /// <summary>
@@ -39,6 +41,8 @@ namespace Speckle.ConnectorDynamo.Functions
 
     public static Dictionary<string, object> Details(Core.Credentials.Account account)
     {
+      Telemetry.TrackView(Telemetry.ACCOUNT_DETAILS);
+
       return new Dictionary<string, object> {
         { "id", account.id },
         { "isDefault", account.isDefault },

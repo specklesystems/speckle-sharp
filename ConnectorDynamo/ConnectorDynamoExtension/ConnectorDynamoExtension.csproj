@@ -163,6 +163,10 @@
       <Project>{7de6bcf0-8aa2-40a6-a7a2-be696f693527}</Project>
       <Name>Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ConnectorDynamoFunctions\ConnectorDynamoFunctions.csproj">
+      <Project>{8f4d907b-a2df-4b40-8ea6-d79f9ed6d906}</Project>
+      <Name>ConnectorDynamoFunctions</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

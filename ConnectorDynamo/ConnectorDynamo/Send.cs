@@ -1,11 +1,12 @@
 ﻿using Dynamo.Graph.Nodes;
 using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
+using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Credentials;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Account = Speckle.Core.Credentials.Account;
 
 namespace Speckle.ConnectorDynamo
 {
@@ -40,10 +41,13 @@ namespace Speckle.ConnectorDynamo
       if (outPorts.Count() == 0)
         OutPorts.Add(new PortModel(PortType.Output, this, new PortData("log", "Log")));
 
+      ArgumentLacing = LacingStrategy.Disabled;
     }
 
     public Send()
     {
+      Telemetry.TrackView(Telemetry.NEW_SEND);
+
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("data", "The data to send")));
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("streamId", "The stream to send to")));
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("account", "Speckle account to use, if not provided the default account will be used", defaultAccountValue)));
@@ -51,6 +55,7 @@ namespace Speckle.ConnectorDynamo
       OutPorts.Add(new PortModel(PortType.Output, this, new PortData("log", "Log")));
 
       RegisterAllPorts();
+      ArgumentLacing = LacingStrategy.Disabled;
     }
 
 
@@ -62,8 +67,10 @@ namespace Speckle.ConnectorDynamo
         return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), AstFactory.BuildNullNode()) };
       }
 
+      Telemetry.TrackView(Telemetry.SEND);
+
       var functionCall = AstFactory.BuildFunctionCall(
-        new Func<object, string, Account, object>(Functions.Functions.Send),
+        new Func<object, string, Account, string>(Functions.Functions.Send),
         new List<AssociativeNode> { inputAstNodes[0], inputAstNodes[1], inputAstNodes[2] });
 
       return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall) };
