@@ -9,7 +9,7 @@ namespace Speckle.DesktopUI.Utils
 {
   public class DummyBindings : ConnectorBindings
   {
-    public override void AddExistingClient(string args)
+    public override void AddExistingStream(string args)
     {
       throw new NotImplementedException();
     }
@@ -29,7 +29,7 @@ namespace Speckle.DesktopUI.Utils
       throw new NotImplementedException();
     }
 
-    public override void BakeClient(string args)
+    public override void BakeStream(string args)
     {
       throw new NotImplementedException();
     }
@@ -49,7 +49,7 @@ namespace Speckle.DesktopUI.Utils
       throw new NotImplementedException();
     }
 
-    public override List<StreamBox> GetFileClients()
+    public override List<StreamBox> GetFileContext()
     {
       throw new NotImplementedException();
     }
@@ -77,12 +77,12 @@ namespace Speckle.DesktopUI.Utils
       };
     }
 
-    public override void PushClient(string args)
+    public override void SendStream(StreamBox box)
     {
       throw new NotImplementedException();
     }
 
-    public override void RemoveClient(string args)
+    public override void RemoveStream(string args)
     {
       throw new NotImplementedException();
     }
@@ -102,7 +102,7 @@ namespace Speckle.DesktopUI.Utils
       throw new NotImplementedException();
     }
 
-    public override void UpdateClient(string args)
+    public override void UpdateStream(StreamBox box)
     {
       throw new NotImplementedException();
     }

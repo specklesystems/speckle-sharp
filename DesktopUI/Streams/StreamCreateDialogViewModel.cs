@@ -127,7 +127,7 @@ namespace Speckle.DesktopUI.Streams
           stream = StreamToCreate
         };
         _bindings.AddNewStream(StreamBox);
-        var boxes = _bindings.GetFileClients();
+        var boxes = _bindings.GetFileContext();
 
         SelectedSlide = 3;
         _events.Publish(new StreamAddedEvent() { NewStream = StreamToCreate });

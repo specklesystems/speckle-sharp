@@ -77,24 +77,22 @@ namespace Speckle.DesktopUI
     /// Returns the serialised clients present in the current open host file.
     /// </summary>
     /// <returns></returns>
-    public abstract List<StreamBox> GetFileClients();
+    public abstract List<StreamBox> GetFileContext();
 
     /// <summary>
-    /// Adds a new client and persits the info to the host file
+    /// Adds a new client and persists the info to the host file
     /// </summary>
-    // public abstract void AddNewClient(string args);
-
     public abstract void AddNewStream(StreamBox streamBox);
 
     /// <summary>
-    /// Updates a client and persits the info to the host file
+    /// Updates a client and persists the info to the host file
     /// </summary>
-    public abstract void UpdateClient(string args);
+    public abstract void UpdateStream(StreamBox box);
 
     /// <summary>
     /// Pushes a client's stream
     /// </summary>
-    public abstract void PushClient(string args);
+    public abstract void SendStream(StreamBox box);
 
     /// <summary>
     /// Adds the current selection to the provided client.
@@ -102,28 +100,28 @@ namespace Speckle.DesktopUI
     public abstract List<string> GetSelectedObjects();
 
     /// <summary>
-    /// Removes the current selection from the provided client.
-    /// </summary>
-    /// <param name="args"></param>
-    public abstract void RemoveSelectionFromClient(string args);
-
-    /// <summary>
-    /// Adds a receiver and persits the info to the host file
+    /// Adds a receiver and persists the info to the host file
     /// Will probably combine with AddNewClient
     /// </summary>
-    public abstract void AddExistingClient(string args);
+    public abstract void AddExistingStream(string args);
 
     /// <summary>
     /// Removes a client from the file and persists the info to the host file.
     /// </summary>
     /// <param name="args"></param>
-    public abstract void RemoveClient(string args);
+    public abstract void RemoveStream(string args);
 
     /// <summary>
     /// Bakes the specified client in the host file.
     /// </summary>
     /// <param name="args"></param>
-    public abstract void BakeClient(string args);
+    public abstract void BakeStream(string args);
+
+    /// <summary>
+    /// Removes the current selection from the provided client.
+    /// </summary>
+    /// <param name="args"></param>
+    public abstract void RemoveSelectionFromClient(string args);
 
     // TODO: See how we go about this
     public abstract void AddObjectsToClient(string args);
