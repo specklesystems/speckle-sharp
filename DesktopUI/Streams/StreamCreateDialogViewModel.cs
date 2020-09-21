@@ -77,7 +77,11 @@ namespace Speckle.DesktopUI.Streams
     public ISelectionFilter SelectedFilter
     {
       get => _selectedFilter;
-      set => SetAndNotify(ref _selectedFilter, value);
+      set
+      {
+        SetAndNotify(ref _selectedFilter, value);
+        NotifyOfPropertyChange(nameof(CanGetSelectedObjects));
+      }
     }
 
     public ObservableCollection<Account> Accounts
@@ -146,6 +150,10 @@ namespace Speckle.DesktopUI.Streams
       SelectedSlide = int.Parse(slideIndex);
     }
 
+    public bool CanGetSelectedObjects
+    {
+      get => SelectedFilter != null;
+    }
     public void GetSelectedObjects()
     {
       if ( SelectedFilter == null )

@@ -61,7 +61,7 @@
           Style="{StaticResource MaterialDesignFlatMidBgButton}" />
       </Grid>
       <Button
-        Width="130"
+        Width="160"
         Margin="24"
         Command="{s:Action GetSelectedObjects}"
         Content="ADD SELECTION"

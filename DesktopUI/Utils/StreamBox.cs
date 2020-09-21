@@ -47,7 +47,7 @@ namespace Speckle.DesktopUI.Utils
 
     public void SetStreamBoxes(IList<string> stringList)
     {
-      streamBoxes = stringList.Select(stringBox => JsonConvert.DeserializeObject<StreamBox>(stringBox)).ToList();
+      streamBoxes = stringList.Select(JsonConvert.DeserializeObject<StreamBox>).ToList();
       var accounts = AccountManager.GetAccounts().ToList();
       foreach ( var streamBox in streamBoxes )
       {
