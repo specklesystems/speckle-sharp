@@ -368,12 +368,13 @@ namespace Speckle.ConnectorRevit.UI
       });
 
       var myStream = LocalState.FirstOrDefault(st => st.id == streamId);
-
+      // TODO wrapper so we can more easily add objects to the local state
 
       var myStreamBox = StreamBoxesListWrapper.streamBoxes.FirstOrDefault(
         cl => (string)cl.accountId == (string)userId
         );
-      myStreamBox.objects = JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(objects));
+      // myStreamBox.objects = JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(objects));
+      myStreamBox.objects.AddRange(objects);
 
       // Persist state and clients to revit file
       Queue.Add(new Action(() =>
