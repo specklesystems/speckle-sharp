@@ -4,6 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Models;
 
 namespace Speckle.DesktopUI.Utils
 {
@@ -22,7 +23,7 @@ namespace Speckle.DesktopUI.Utils
     public Client client { get; set; }
     public Stream stream { get; set; }
     public ISelectionFilter filter { get; set; }
-    public dynamic objects { get; set; }
+    public List<Base> objects { get; set; } = new List<Base>();
   }
 
   public class StreamBoxesWrapper

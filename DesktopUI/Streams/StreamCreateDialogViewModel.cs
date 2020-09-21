@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Models;
 using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
 using Stylet;
@@ -174,7 +175,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamBox.objects = message.Objects;
+      StreamBox.objects = message.Objects as List<Base>;
       Notifications.Enqueue(message.Notification);
     }
   }
