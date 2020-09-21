@@ -36,41 +36,13 @@ namespace Speckle.ConnectorRevit.UI
       GetSelectionFilterObjects(streamBox.filter, streamBox.accountId, streamBox.stream.id);
     }
 
-    // public override void AddNewClient(string args)
-    // {
-    //   var client = JsonConvert.DeserializeObject<dynamic>(args);
-    //   StreamBoxesListWrapper.clients.Add(client);
-    //
-    //   // TODO: Add stream to LocalState (do we actually need to??? hm...).
-    //   var myStream = new Stream() { id = (string)client.streamId };
-    //
-    //   LocalState.Add(myStream);
-    //
-    //   Queue.Add(new Action(() =>
-    //   {
-    //     using (Transaction t = new Transaction(CurrentDoc.Document, "Adding Speckle Sender"))
-    //     {
-    //       t.Start();
-    //       SpeckleStateManager.WriteState(CurrentDoc.Document, LocalState);
-    //       StreamBoxStorageManager.WriteClients(CurrentDoc.Document, StreamBoxesListWrapper);
-    //       t.Commit();
-    //     }
-    //   }));
-    //   Executor.Raise();
-    //
-    //   ISelectionFilter filter = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(client.filter), GetFilterType(client.filter.Type.ToString()));
-    //   GetSelectionFilterObjects(filter, client._id.ToString(), client.streamId.ToString());
-    //
-    // }
-
-    public override void UpdateClient(string args)
+    public override void UpdateStream(StreamBox box)
     {
-      var client = JsonConvert.DeserializeObject<dynamic>(args);
-      var index = StreamBoxesListWrapper.streamBoxes.FindIndex(cl => (string)cl.accountId == (string)client._id);
-      StreamBoxesListWrapper.streamBoxes[index] = client;
+      var index = StreamBoxesListWrapper.streamBoxes.FindIndex(b => b.stream.id == box.stream.id);
+      StreamBoxesListWrapper.streamBoxes[index] = box;
 
-      var myStream = LocalState.FirstOrDefault(st => st.id == (string)client.streamId);
-      myStream.name = (string)client.name;
+      var myStream = LocalState.FirstOrDefault(st => st.id == box.stream.id);
+      myStream.name = box.stream.name;
 
       Queue.Add(new Action(() =>
       {
@@ -84,8 +56,7 @@ namespace Speckle.ConnectorRevit.UI
       }));
       Executor.Raise();
 
-      ISelectionFilter filter = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(client.filter), GetFilterType(client.filter.Type.ToString()));
-      GetSelectionFilterObjects(filter, client._id.ToString(), client.streamId.ToString());
+      GetSelectionFilterObjects(box.filter, box.accountId, box.stream.id);
     }
 
     // NOTE: This is actually triggered when clicking "Push!"
@@ -93,7 +64,14 @@ namespace Speckle.ConnectorRevit.UI
     // Create buckets, send sequentially, notify ui re upload progress
     // NOTE: Problems with local context and cache: we seem to not sucesffuly pass through it
     // perhaps we're not storing the right sent object (localcontext.addsentobject)
-    //public override void PushClient(string args)
+    public override void SendStream(StreamBox box)
+    {
+      var objects = box.objects;
+
+      var convertedObjects = new List<Base>();
+      var placeholders = new List<Base>();
+    }
+    //public override void SendStream(string args)
     //{
     //  var client = JsonConvert.DeserializeObject<dynamic>(args);
 
@@ -261,7 +239,7 @@ namespace Speckle.ConnectorRevit.UI
     /// Given the filter in use by a stream returns the document elements that match it
     /// </summary>
     /// <returns></returns>
-    private IEnumerable<Base> GetSelectionFilterObjects(ISelectionFilter filter, string userId, string streamId)
+    private IEnumerable<Base> GetSelectionFilterObjects(ISelectionFilter filter, string accountId, string streamId)
     {
       var doc = CurrentDoc.Document;
       IEnumerable<Base> objects = new List<Base>();
@@ -371,7 +349,7 @@ namespace Speckle.ConnectorRevit.UI
       // TODO wrapper so we can more easily add objects to the local state
 
       var myStreamBox = StreamBoxesListWrapper.streamBoxes.FirstOrDefault(
-        cl => (string)cl.accountId == (string)userId
+        cl => (string)cl.accountId == (string)accountId
         );
       // myStreamBox.objects = JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(objects));
       myStreamBox.objects.AddRange(objects);
@@ -394,7 +372,7 @@ namespace Speckle.ConnectorRevit.UI
         NotifyUi( new RetrievedFilteredObjectsEvent()
         {
           Notification = $"You have added {objects.Count()} object{plural} to this stream.",
-          UserId = userId,
+          AccountId = accountId,
           Objects = objects
         });
 

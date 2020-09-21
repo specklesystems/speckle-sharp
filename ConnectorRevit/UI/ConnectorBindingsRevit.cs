@@ -95,12 +95,12 @@ namespace Speckle.ConnectorRevit.UI
       // implemented in ClientOperations
     }
 
-    public override void AddExistingClient(string args)
+    public override void AddExistingStream(string args)
     {
       throw new NotImplementedException();
     }
 
-    public override void BakeClient(string args)
+    public override void BakeStream(string args)
     {
       throw new NotImplementedException();
     }
@@ -125,7 +125,7 @@ namespace Speckle.ConnectorRevit.UI
       return CurrentDoc.Document.PathName;
     }
 
-    public override List<StreamBox> GetFileClients()
+    public override List<StreamBox> GetFileContext()
     {
       var boxes = StreamBoxStorageManager.ReadStreamBoxes(CurrentDoc.Document) ?? new StreamBoxesWrapper();
       StreamBoxesListWrapper = boxes;
@@ -189,7 +189,7 @@ namespace Speckle.ConnectorRevit.UI
       };
     }
 
-    public override void RemoveClient(string args)
+    public override void RemoveStream(string args)
     {
       throw new NotImplementedException();
     }
@@ -204,10 +204,6 @@ namespace Speckle.ConnectorRevit.UI
       throw new NotImplementedException();
     }
 
-    public override void PushClient(string args)
-    {
-    }
-
     #region app events
 
     private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
@@ -215,7 +211,7 @@ namespace Speckle.ConnectorRevit.UI
       if ( GetDocHash(e.Document) != GetDocHash(e.PreviousActiveView.Document) )
       {
         // DispatchStoreActionUi("flushClients");
-        var streamBoxes = GetFileClients();
+        var streamBoxes = GetFileContext();
         StreamBoxesListWrapper.streamBoxes = streamBoxes;
         var appEvent = new ApplicationEvent()
         {
@@ -251,7 +247,7 @@ namespace Speckle.ConnectorRevit.UI
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
     {
       // DispatchStoreActionUi("flushClients");
-      var streamBoxes = GetFileClients();
+      var streamBoxes = GetFileContext();
       StreamBoxesListWrapper.streamBoxes = streamBoxes;
       var appEvent = new ApplicationEvent()
       {
@@ -278,7 +274,7 @@ namespace Speckle.ConnectorRevit.UI
       // var appEvent = new ApplicationEvent()
       // {
       //   Type = ApplicationEvent.EventType.ApplicationIdling,
-      //   DynamicInfo = GetFileClients()
+      //   DynamicInfo = GetFileContext()
       // };
       // NotifyUi(appEvent);
     }
