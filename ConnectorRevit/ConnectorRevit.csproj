@@ -166,6 +166,10 @@
     <EmbeddedResource Include="Assets\logo32.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ConverterRevit\ConverterRevit\ConverterRevit.csproj">
+      <Project>{471bb924-8929-4d26-b7b9-2b1e55edae4c}</Project>
+      <Name>ConverterRevit</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{521d4aee-08cf-4913-bbe8-5511d176d126}</Project>
       <Name>Core</Name>
@@ -174,6 +178,10 @@
       <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
       <Name>DesktopUI</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
+      <Project>{be852be3-37b8-4b62-ac2c-0872c41a2542}</Project>
+      <Name>Objects</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -5,19 +5,22 @@ using System.Reflection;
 using Autodesk.Revit.DB;
 using Newtonsoft.Json;
 using Speckle.ConnectorRevit.Storage;
+using Speckle.Converter.Revit;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using SpeckleElement = Speckle.Objects.Element;
 using Speckle.DesktopUI.Utils;
 
 namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit
   {
-    public override void AddNewStream(StreamBox streamBox)
+    public override void AddNewStream(StreamState state)
     {
       // add stream and related data to the class
-      StreamBoxesListWrapper.streamBoxes.Add(streamBox);
-      LocalState.Add(streamBox.stream);
+      LocalStateWrapper.StreamStates.Add(state);
+      // DEP_LocalState.Add(state.stream);
 
       // do the Revit dance to write to file
       Queue.Add(new Action(() =>
@@ -25,38 +28,34 @@ namespace Speckle.ConnectorRevit.UI
         using (Transaction t = new Transaction(CurrentDoc.Document, "Adding Speckle Stream"))
         {
           t.Start();
-          SpeckleStateManager.WriteState(CurrentDoc.Document, LocalState);
-          StreamBoxStorageManager.WriteStreamBoxes(CurrentDoc.Document, StreamBoxesListWrapper);
+          // SpeckleStateManager.WriteState(CurrentDoc.Document, DEP_LocalState);
+          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
           t.Commit();
         }
       }));
       Executor.Raise();
 
       // TODO add client id
-      GetSelectionFilterObjects(streamBox.filter, streamBox.accountId, streamBox.stream.id);
+      GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
     }
 
-    public override void UpdateStream(StreamBox box)
+    public override void UpdateStream(StreamState state)
     {
-      var index = StreamBoxesListWrapper.streamBoxes.FindIndex(b => b.stream.id == box.stream.id);
-      StreamBoxesListWrapper.streamBoxes[index] = box;
-
-      var myStream = LocalState.FirstOrDefault(st => st.id == box.stream.id);
-      myStream.name = box.stream.name;
+      var index = LocalStateWrapper.StreamStates.FindIndex(b => b.stream.id == state.stream.id);
+      LocalStateWrapper.StreamStates[index] = state;
 
       Queue.Add(new Action(() =>
       {
         using (Transaction t = new Transaction(CurrentDoc.Document, "Update Speckle Sender"))
         {
           t.Start();
-          SpeckleStateManager.WriteState(CurrentDoc.Document, LocalState);
-          StreamBoxStorageManager.WriteStreamBoxes(CurrentDoc.Document, StreamBoxesListWrapper);
+          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
           t.Commit();
         }
       }));
       Executor.Raise();
 
-      GetSelectionFilterObjects(box.filter, box.accountId, box.stream.id);
+      GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
     }
 
     // NOTE: This is actually triggered when clicking "Push!"
@@ -64,12 +63,38 @@ namespace Speckle.ConnectorRevit.UI
     // Create buckets, send sequentially, notify ui re upload progress
     // NOTE: Problems with local context and cache: we seem to not sucesffuly pass through it
     // perhaps we're not storing the right sent object (localcontext.addsentobject)
-    public override void SendStream(StreamBox box)
+    public override void SendStream(StreamState state)
     {
-      var objects = box.objects;
+      var kit = new ConverterRevit(CurrentDoc.Document);
+      var objects = state.objects;
 
       var convertedObjects = new List<Base>();
       var placeholders = new List<Base>();
+
+      var units = CurrentDoc.Document.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits.ToString()
+        .ToLowerInvariant().Replace("dut_", "");
+      // InjectScaleInKits(GetScale(units)); // this is used for feet to sane units conversion.
+
+      int i = 0;
+      long currentBucketSize = 0;
+      var errorMsg = "";
+      var failedToConvert = 0;
+      var errors = new List<SpeckleException>();
+
+      foreach ( var obj in objects )
+      {
+        //NotifyUi
+        var id = 0;
+        Element revitElement = CurrentDoc.Document.GetElement(obj.applicationId);
+        if ( revitElement == null )
+        {
+          errors.Add(new SpeckleException(message: "Could not retrieve element"));
+          continue;
+        }
+
+        var conversionResult = kit.ConvertToSpeckle(revitElement) as SpeckleElement;
+
+      }
     }
     //public override void SendStream(string args)
     //{
@@ -345,10 +370,7 @@ namespace Speckle.ConnectorRevit.UI
         return temp;
       });
 
-      var myStream = LocalState.FirstOrDefault(st => st.id == streamId);
-      // TODO wrapper so we can more easily add objects to the local state
-
-      var myStreamBox = StreamBoxesListWrapper.streamBoxes.FirstOrDefault(
+      var myStreamBox = LocalStateWrapper.StreamStates.FirstOrDefault(
         cl => (string)cl.accountId == (string)accountId
         );
       // myStreamBox.objects = JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(objects));
@@ -360,8 +382,7 @@ namespace Speckle.ConnectorRevit.UI
         using (Transaction t = new Transaction(CurrentDoc.Document, "Update local storage"))
         {
           t.Start();
-          SpeckleStateManager.WriteState(CurrentDoc.Document, LocalState);
-          StreamBoxStorageManager.WriteStreamBoxes(CurrentDoc.Document, StreamBoxesListWrapper);
+          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
           t.Commit();
         }
       }));

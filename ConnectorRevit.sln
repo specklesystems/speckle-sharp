@@ -25,6 +25,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Client.Serializer.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Client.LocalExecution", "..\Core\GraphQLClient\src\GraphQL.Client.LocalExecution\GraphQL.Client.LocalExecution.csproj", "{6A3861F4-CA3E-4790-BF27-3C502E18783C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit", "..\ConverterRevit\ConverterRevit\ConverterRevit.csproj", "{471BB924-8929-4D26-B7B9-2B1E55EDAE4C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects", "..\Objects\Objects\Objects.csproj", "{BE852BE3-37B8-4B62-AC2C-0872C41A2542}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

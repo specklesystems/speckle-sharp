@@ -12,9 +12,9 @@ using Speckle.DesktopUI.Utils;
 namespace Speckle.ConnectorRevit.Storage
 {
   /// <summary>
-  /// Revit schema of the StreamBoxesWrapper class.
+  /// Revit schema of the StreamStateWrapper class.
   /// </summary>
-  public static class StreamBoxesSchema
+  public static class StreamStateSchema
   {
     static readonly Guid schemaGuid = new Guid("{F29ABD4E-C2DA-4F6A-A301-C70F1C32128D}");
 
@@ -25,8 +25,8 @@ namespace Speckle.ConnectorRevit.Storage
         return schema;
 
       var builder = new SchemaBuilder(schemaGuid);
-      builder.SetSchemaName("StreamBoxesWrapper");
-      builder.AddArrayField("streamBoxes", typeof(string));
+      builder.SetSchemaName("StreamStateWrapper");
+      builder.AddArrayField("StreamStates", typeof(string));
 
       return builder.Finish();
     }
@@ -35,7 +35,7 @@ namespace Speckle.ConnectorRevit.Storage
   /// <summary>
   /// Unique schema for... something ¯\_(ツ)_/¯
   /// </summary>
-  static class DSUniqueSchemaStreamBoxStorage
+  static class DSUniqueSchemaStreamStateStorage
   {
     static readonly Guid schemaGuid = new Guid("{174C7EEE-EC5E-4A3F-894A-C801871AEDB8}");
 

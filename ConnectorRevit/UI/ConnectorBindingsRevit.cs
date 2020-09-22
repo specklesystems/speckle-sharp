@@ -9,6 +9,7 @@ using Speckle.Core.Models;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
 using Speckle.ConnectorRevit.Storage;
+using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -28,11 +29,11 @@ namespace Speckle.ConnectorRevit.UI
     public Timer SelectionTimer;
 
     /// <summary>
-    /// Holds the current project's clients
+    /// Holds the current project's streams
     /// </summary>
-    public StreamBoxesWrapper StreamBoxesListWrapper;
+    public StreamStateWrapper LocalStateWrapper;
 
-    public List<Stream> LocalState;
+    public List<Stream> DEP_LocalState;
 
     public ConnectorBindingsRevit(UIApplication revitApp) : base()
     {
@@ -48,16 +49,17 @@ namespace Speckle.ConnectorRevit.UI
     {
       Executor = eventHandler;
 
-      StreamBoxesListWrapper = new StreamBoxesWrapper();
+      LocalStateWrapper = new StreamStateWrapper();
 
       // LOCAL STATE
-      LocalState = new List<Stream>();
+      DEP_LocalState = new List<Stream>();
       Queue.Add(new Action(() =>
       {
         using ( Transaction t = new Transaction(CurrentDoc.Document, "Switching Local Speckle State") )
         {
           t.Start();
-          LocalState = SpeckleStateManager.ReadState(CurrentDoc.Document);
+          DEP_LocalState = SpeckleStateManager.ReadState(CurrentDoc.Document);
+          LocalStateWrapper = StreamStateManager.ReadState(CurrentDoc.Document);
           //InjectStateInKits();
           t.Commit();
         }
@@ -125,12 +127,12 @@ namespace Speckle.ConnectorRevit.UI
       return CurrentDoc.Document.PathName;
     }
 
-    public override List<StreamBox> GetFileContext()
+    public override List<StreamState> GetFileContext()
     {
-      var boxes = StreamBoxStorageManager.ReadStreamBoxes(CurrentDoc.Document) ?? new StreamBoxesWrapper();
-      StreamBoxesListWrapper = boxes;
+      var states = StreamStateManager.ReadState(CurrentDoc.Document) ?? new StreamStateWrapper();
+      LocalStateWrapper = states;
 
-      return boxes.streamBoxes;
+      return states.StreamStates;
     }
 
     public override string GetFileName()
@@ -211,12 +213,12 @@ namespace Speckle.ConnectorRevit.UI
       if ( GetDocHash(e.Document) != GetDocHash(e.PreviousActiveView.Document) )
       {
         // DispatchStoreActionUi("flushClients");
-        var streamBoxes = GetFileContext();
-        StreamBoxesListWrapper.streamBoxes = streamBoxes;
+        var streamStates = GetFileContext();
+        LocalStateWrapper.StreamStates = streamStates;
         var appEvent = new ApplicationEvent()
         {
           Type = ApplicationEvent.EventType.ViewActivated,
-          DynamicInfo = streamBoxes
+          DynamicInfo = streamStates
         };
         NotifyUi(appEvent);
 
@@ -225,7 +227,7 @@ namespace Speckle.ConnectorRevit.UI
           using ( Transaction t = new Transaction(CurrentDoc.Document, "Switching Local Speckle State") )
           {
             t.Start();
-            LocalState = SpeckleStateManager.ReadState(CurrentDoc.Document);
+            DEP_LocalState = SpeckleStateManager.ReadState(CurrentDoc.Document);
             // InjectStateInKits();
             t.Commit();
           }
@@ -247,12 +249,12 @@ namespace Speckle.ConnectorRevit.UI
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
     {
       // DispatchStoreActionUi("flushClients");
-      var streamBoxes = GetFileContext();
-      StreamBoxesListWrapper.streamBoxes = streamBoxes;
+      var streamStates = GetFileContext();
+      LocalStateWrapper.StreamStates = streamStates;
       var appEvent = new ApplicationEvent()
       {
         Type = ApplicationEvent.EventType.DocumentOpened,
-        DynamicInfo = streamBoxes
+        DynamicInfo = streamStates
       };
       NotifyUi(appEvent);
 
@@ -261,7 +263,7 @@ namespace Speckle.ConnectorRevit.UI
         using ( Transaction t = new Transaction(CurrentDoc.Document, "Reading Local Speckle State") )
         {
           t.Start();
-          LocalState = SpeckleStateManager.ReadState(CurrentDoc.Document);
+          DEP_LocalState = SpeckleStateManager.ReadState(CurrentDoc.Document);
           // InjectStateInKits();
           t.Commit();
         }
