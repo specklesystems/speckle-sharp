@@ -77,22 +77,22 @@ namespace Speckle.DesktopUI
     /// Returns the serialised clients present in the current open host file.
     /// </summary>
     /// <returns></returns>
-    public abstract List<StreamBox> GetFileContext();
+    public abstract List<StreamState> GetFileContext();
 
     /// <summary>
     /// Adds a new client and persists the info to the host file
     /// </summary>
-    public abstract void AddNewStream(StreamBox streamBox);
+    public abstract void AddNewStream(StreamState state);
 
     /// <summary>
     /// Updates a client and persists the info to the host file
     /// </summary>
-    public abstract void UpdateStream(StreamBox box);
+    public abstract void UpdateStream(StreamState state);
 
     /// <summary>
     /// Pushes a client's stream
     /// </summary>
-    public abstract void SendStream(StreamBox box);
+    public abstract void SendStream(StreamState state);
 
     /// <summary>
     /// Adds the current selection to the provided client.

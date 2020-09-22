@@ -52,12 +52,12 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _streamToCreate, value);
     }
 
-    private StreamBox _streamBox = new StreamBox();
+    private StreamState _streamState = new StreamState();
 
-    public StreamBox StreamBox
+    public StreamState StreamState
     {
-      get => _streamBox;
-      set => SetAndNotify(ref  _streamBox, value);
+      get => _streamState;
+      set => SetAndNotify(ref  _streamState, value);
     }
 
     private Account _accountToSendFrom;
@@ -119,14 +119,14 @@ namespace Speckle.DesktopUI.Streams
         var streamId = await _repo.CreateStream(StreamToCreate, AccountToSendFrom);
         // TODO do this locally first before creating on the server
         StreamToCreate = await _repo.GetStream(streamId, AccountToSendFrom);
-        StreamBox = new StreamBox()
+        StreamState = new StreamState()
         {
           accountId = client.AccountId,
           client = client,
           filter = SelectedFilter,
           stream = StreamToCreate
         };
-        _bindings.AddNewStream(StreamBox);
+        _bindings.AddNewStream(StreamState);
         var boxes = _bindings.GetFileContext();
 
         SelectedSlide = 3;
@@ -175,7 +175,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamBox.objects = message.Objects as List<Base>;
+      StreamState.objects = message.Objects as List<Base>;
       Notifications.Enqueue(message.Notification);
     }
   }

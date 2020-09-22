@@ -14,7 +14,7 @@ namespace Speckle.DesktopUI.Utils
       throw new NotImplementedException();
     }
 
-    public override void AddNewStream(StreamBox streamBox)
+    public override void AddNewStream(StreamState state)
     {
       throw new NotImplementedException();
     }
@@ -49,7 +49,7 @@ namespace Speckle.DesktopUI.Utils
       throw new NotImplementedException();
     }
 
-    public override List<StreamBox> GetFileContext()
+    public override List<StreamState> GetFileContext()
     {
       throw new NotImplementedException();
     }
@@ -77,7 +77,7 @@ namespace Speckle.DesktopUI.Utils
       };
     }
 
-    public override void SendStream(StreamBox box)
+    public override void SendStream(StreamState state)
     {
       throw new NotImplementedException();
     }
@@ -102,7 +102,7 @@ namespace Speckle.DesktopUI.Utils
       throw new NotImplementedException();
     }
 
-    public override void UpdateStream(StreamBox box)
+    public override void UpdateStream(StreamState state)
     {
       throw new NotImplementedException();
     }

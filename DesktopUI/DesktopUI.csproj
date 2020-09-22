@@ -115,7 +115,7 @@
     <Compile Include="Utils\Converters.cs" />
     <Compile Include="Utils\DummyBindings.cs" />
     <Compile Include="Utils\Events.cs" />
-    <Compile Include="Utils\StreamBox.cs" />
+    <Compile Include="Utils\StreamState.cs" />
     <Compile Include="Utils\ViewModelFactories.cs" />
     <Compile Include="Utils\Link.cs" />
     <Compile Include="Utils\RelayCommand.cs" />

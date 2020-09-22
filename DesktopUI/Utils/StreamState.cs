@@ -15,7 +15,7 @@ namespace Speckle.DesktopUI.Utils
   /// This breaks C# variable name rules b/c it instead using Server naming conventions.
   /// Class name is subject to change! Just had to pick something so I could get on with my life.
   /// </summary>
-  public partial class StreamBox
+  public partial class StreamState
   {
     // TODO think of right name for this class
     public string accountId { get; set; }
@@ -26,38 +26,38 @@ namespace Speckle.DesktopUI.Utils
     public List<Base> objects { get; set; } = new List<Base>();
   }
 
-  public class StreamBoxesWrapper
+  public class StreamStateWrapper
   {
-    public List<StreamBox> streamBoxes { get; set; }
+    public List<StreamState> StreamStates { get; set; }
 
-    public StreamBoxesWrapper()
+    public StreamStateWrapper()
     {
-      streamBoxes = new List<StreamBox>();
+      StreamStates = new List<StreamState>();
     }
 
     public List<string> GetStringList()
     {
-      var boxes = new List<string>();
-      foreach ( var box in streamBoxes )
+      var states = new List<string>();
+      foreach ( var state in StreamStates )
       {
-        boxes.Add(JsonConvert.SerializeObject(box));
+        states.Add(JsonConvert.SerializeObject(state));
       }
 
-      return boxes;
+      return states;
     }
 
-    public void SetStreamBoxes(IList<string> stringList)
+    public void SetState(IList<string> stringList)
     {
-      streamBoxes = stringList.Select(JsonConvert.DeserializeObject<StreamBox>).ToList();
+      StreamStates = stringList.Select(JsonConvert.DeserializeObject<StreamState>).ToList();
       var accounts = AccountManager.GetAccounts().ToList();
-      foreach ( var streamBox in streamBoxes )
+      foreach ( var state in StreamStates )
       {
         try
         {
           var account = accounts.FirstOrDefault(
-            acct => acct.userInfo.id == streamBox.accountId
+            acct => acct.userInfo.id == state.accountId
           );
-          streamBox.client = new Client(account);
+          state.client = new Client(account);
         }
         catch ( Exception e )
         {
