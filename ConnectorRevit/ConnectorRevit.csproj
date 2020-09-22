@@ -58,6 +58,7 @@
     <StartAction>Program</StartAction>
     <StartProgram>$(ProgramW6432)\Autodesk\Revit 2020\Revit.exe</StartProgram>
     <RevitVersion>2020</RevitVersion>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release2020|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -118,7 +119,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="SpeckleRevit2.addin" />
+    <None Include="SpeckleRevit2.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <!-- SWITCH REVIT NUGETS -->
   <Choose>

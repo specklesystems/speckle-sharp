@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using Autodesk.Revit.DB;
 using RevitElement = Autodesk.Revit.DB.Element;
 using Newtonsoft.Json;
@@ -10,6 +12,7 @@ using Speckle.Converter.Revit;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Transports;
 using SpeckleElement = Speckle.Objects.Element;
 using Speckle.DesktopUI.Utils;
 
@@ -23,17 +26,6 @@ namespace Speckle.ConnectorRevit.UI
       LocalStateWrapper.StreamStates.Add(state);
       DEP_LocalState.Add(state.stream);
 
-      // do the Revit dance to write to file
-      // Queue.Add(new Action(() =>
-      // {
-      //   using (Transaction t = new Transaction(CurrentDoc.Document, "Adding Speckle Stream"))
-      //   {
-      //     t.Start();
-      //     SpeckleStateManager.WriteState(CurrentDoc.Document, DEP_LocalState);
-      //     StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
-      //     t.Commit();
-      //   }
-      // }));
       Executor.Raise();
 
       GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
@@ -66,10 +58,13 @@ namespace Speckle.ConnectorRevit.UI
     public override void SendStream(StreamState state)
     {
       var kit = new ConverterRevit(CurrentDoc.Document);
-      var objects = state.objects;
+      var objects = state.placeholders;
+      var streamId = state.stream.id;
+      var client = state.client;
+
 
       var convertedObjects = new List<Base>();
-      var placeholders = new List<Base>();
+      var failedConversions = new List<RevitElement>();
 
       var units = CurrentDoc.Document.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits.ToString()
         .ToLowerInvariant().Replace("dut_", "");
@@ -78,7 +73,6 @@ namespace Speckle.ConnectorRevit.UI
       int i = 0;
       long currentBucketSize = 0;
       var errorMsg = "";
-      var failedToConvert = 0;
       var errors = new List<SpeckleException>();
 
       foreach ( var obj in objects )
@@ -92,148 +86,64 @@ namespace Speckle.ConnectorRevit.UI
           continue;
         }
 
+        id = revitElement.Id.IntegerValue;
+
         var conversionResult = kit.ConvertToSpeckle(revitElement) as SpeckleElement;
+        if ( conversionResult == null )
+        {
+          // TODO what happens to failed conversions?
+          failedConversions.Add(revitElement);
+          continue;
+        }
 
+        // var byteCount = GetBytes(conversionResult).Length;
+        // if ( byteCount > 2e6 )
+        // {
+        //   errors.Add(new SpeckleException($"Element {id} is bigger than 2MB, it will be skipped"));
+        //   continue;
+        // }
+        // currentBucketSize += byteCount;
+        convertedObjects.Add(conversionResult);
+        //
+        // if ( currentBucketSize > 5e5 || i >= objects.Count() ) // aim for roughly 500kb uncompressed
+        // {
+        //   // LocalContext.PruneExistingObjects(convertedObjects, apiClient.BaseUrl);
+        // }
       }
+
+      if ( errors.Any() || kit.ConversionErrors.Any() )
+      {
+        errorMsg = string.Format("There {0} {1} failed conversion{2} and {3} error{4}",
+          kit.ConversionErrors.Count() == 1 ? "is" : "are",
+          kit.ConversionErrors.Count(),
+          kit.ConversionErrors.Count() == 1 ? "" : "s",
+          errors.Count(),
+          errors.Count() == 1 ? "" : "s");
+      }
+
+      var transports = new List<ITransport>() {new ServerTransport(client.Account, streamId)};
+      var commit = new Base {[ "@revitItems" ] = convertedObjects};
+      var commitId = Operations.Send(commit, transports, false).Result;
+
+      state.objects.AddRange(convertedObjects);
+      state.placeholders.Clear();
+      state.stream = client.StreamGet(streamId).Result;
+
+      var localState = LocalStateWrapper.StreamStates.FirstOrDefault(s => s.stream.id == streamId);
+      localState.objects.AddRange(convertedObjects);
+
+      // Persist state to revit file
+      Queue.Add(new Action(() =>
+      {
+        using ( Transaction t = new Transaction(CurrentDoc.Document, "Update local storage") )
+        {
+          t.Start();
+          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
+          t.Commit();
+        }
+      }));
+
     }
-    //public override void SendStream(string args)
-    //{
-    //  var client = JsonConvert.DeserializeObject<dynamic>(args);
-
-    //  //if it's a category or property filter we need to refresh the list of objects
-    //  //if it's a selection filter just use the objects that were stored previously
-    //  ISelectionFilter filter = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(client.filter), GetFilterType(client.filter.Type.ToString()));
-    //  IEnumerable<Base> objects = new List<Base>();
-
-    //  objects = GetSelectionFilterObjects(filter, client._id.ToString(), client.streamId.ToString());
-
-    //  // TODO add account to client so it can be used here
-    //  var apiClient = new Client(AccountManager.GetDefaultAccount());
-    //  var convertedObjects = new List<Base>();
-    //  var placeholders = new List<Base>();
-
-    //  var units = CurrentDoc.Document.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits.ToString().ToLowerInvariant().Replace("dut_", "");
-    //  //InjectScaleInKits(GetScale(units)); // this is used for feet to sane units conversion.
-
-    //  int i = 0;
-    //  long currentBucketSize = 0;
-    //  var errorMsg = "";
-    //  var failedToConvert = 0;
-    //  var errors = new List<SpeckleException>();
-    //  foreach (var obj in objects)
-    //  {
-    //    NotifyUi("update-client", JsonConvert.SerializeObject(new
-    //    {
-    //      _id = (string)client._id,
-    //      loading = true,
-    //      isLoadingIndeterminate = false,
-    //      loadingProgress = 1f * i++ / objects.Count() * 100,
-    //      loadingBlurb = string.Format("Converting and uploading objects: {0} / {1}", i, objects.Count())
-    //    }));
-
-    //    var id = 0;
-    //    Element revitElement = null;
-    //    try
-    //    {
-    //      revitElement = CurrentDoc.Document.GetElement((string)obj.Properties["revitUniqueId"]);
-    //      id = revitElement.Id.IntegerValue;
-    //    }
-    //    catch (Exception e)
-    //    {
-    //      errors.Add(new SpeckleException(message: "Could not retrieve element", inner: e));
-    //      continue;
-    //    }
-
-    //    try
-    //    {
-    //      var conversionResult = SpeckleCore.Converter.Serialise(new List<object>() { revitElement });
-    //      var byteCount = Converter.getBytes(conversionResult).Length;
-    //      currentBucketSize += byteCount;
-
-    //      if (byteCount > 2e6)
-    //      {
-    //        errors.Add(new SpeckleException(message: $"Element {id} is bigger than 2MB, it will be skipped"));
-    //        continue;
-    //      }
-
-    //      convertedObjects.AddRange(conversionResult);
-
-    //      if (currentBucketSize > 5e5 || i >= objects.Count()) // aim for roughly 500kb uncompressed
-    //      {
-    //        LocalContext.PruneExistingObjects(convertedObjects, apiClient.BaseUrl);
-
-    //        try
-    //        {
-    //          var chunkResponse = apiClient.ObjectCreateAsync(convertedObjects).Result.Resources;
-    //          int m = 0;
-    //          foreach (var objConverted in convertedObjects)
-    //          {
-    //            objConverted._id = chunkResponse[m++]._id;
-    //            placeholders.Add(new SpecklePlaceholder() { _id = objConverted._id });
-    //            if (objConverted.Type != "Placeholder") LocalContext.AddSentObject(objConverted, apiClient.BaseUrl);
-    //          }
-    //        }
-    //        catch (Exception e)
-    //        {
-    //          errors.Add(new SpeckleException(message: $"Failed to send {convertedObjects.Count} objects", inner: e));
-    //        }
-    //        currentBucketSize = 0;
-    //        convertedObjects = new List<Base>(); // reset the chunkness
-    //      }
-    //    }
-    //    catch (Exception e)
-    //    {
-    //      failedToConvert++;
-    //      errors.Add(new SpeckleException(message: $"Failed to convert element {revitElement.Name} of id {id}", inner: e));
-    //    }
-    //  }
-
-    //  if (errors.Any())
-    //  {
-    //    if (failedToConvert > 0)
-    //      errorMsg += string.Format("Failed to convert {0} objects ",
-    //        failedToConvert,
-    //        failedToConvert == 1 ? "" : "s");
-    //    else
-    //      errorMsg += string.Format("There {0} {1} error{2} ",
-    //        errors.Count() == 1 ? "is" : "are",
-    //        errors.Count(),
-    //        errors.Count() == 1 ? "" : "s");
-    //  }
-
-    //  var myStream = new Stream() { Objects = placeholders };
-
-    //  var ug = UnitUtils.GetUnitGroup(UnitType.UT_Length);
-    //  var baseProps = new Dictionary<string, object>();
-
-    //  baseProps["units"] = units;
-
-    //  baseProps["unitsDictionary"] = GetAndClearUnitDictionary();
-
-    //  myStream.BaseProperties = baseProps;
-    //  //myStream.BaseProperties =  JsonConvert.SerializeObject(baseProps);
-
-    //  NotifyUi("update-client", JsonConvert.SerializeObject(new
-    //  {
-    //    _id = (string)client._id,
-    //    loading = true,
-    //    isLoadingIndeterminate = true,
-    //    loadingBlurb = "Updating stream."
-    //  }));
-
-    //  var response = apiClient.StreamUpdateAsync((string)client.streamId, myStream).Result;
-
-    //  var plural = objects.Count() == 1 ? "" : "s";
-    //  NotifyUi("update-client", JsonConvert.SerializeObject(new
-    //  {
-    //    _id = (string)client._id,
-    //    loading = false,
-    //    loadingBlurb = "",
-    //    message = $"Done sending {objects.Count()} object{plural}.",
-    //    errorMsg,
-    //    errors
-    //  }));
-    //}
 
     /// <summary>
     /// Pass selected element ids to UI
@@ -366,15 +276,15 @@ namespace Speckle.ConnectorRevit.UI
       {
         var temp = new Base();
         temp.applicationId = id;
-        temp["__type"] = "Sent Object";
+        temp["__type"] = "Placeholder";
         return temp;
       });
 
       var streamState = LocalStateWrapper.StreamStates.FirstOrDefault(
-        cl => (string)cl.accountId == (string)accountId
+        cl => (string)cl.stream.id == (string)streamId
         );
-      // myStreamBox.objects = JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(objects));
-      streamState.objects.AddRange(objects);
+      // myStreamBox.placeholders = JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(placeholders));
+      streamState.placeholders.AddRange(objects);
 
       // Persist state and clients to revit file
       Queue.Add(new Action(() =>
@@ -412,6 +322,16 @@ namespace Speckle.ConnectorRevit.UI
         return p.AsValueString().ToLowerInvariant();
       else
         return p.AsString().ToLowerInvariant();
+    }
+
+    // TODO move to converter?
+    private static byte[ ] GetBytes(object obj)
+    {
+      using ( MemoryStream memoryStream = new MemoryStream() )
+      {
+        new BinaryFormatter().Serialize(memoryStream, obj);
+        return memoryStream.ToArray();
+      }
     }
     #endregion
   }

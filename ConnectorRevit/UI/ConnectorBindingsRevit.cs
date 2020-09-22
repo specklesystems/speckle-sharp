@@ -9,6 +9,7 @@ using Speckle.Core.Models;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
 using Speckle.ConnectorRevit.Storage;
+using Speckle.Converter.Revit;
 using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorRevit.UI
@@ -214,6 +215,7 @@ namespace Speckle.ConnectorRevit.UI
         // DispatchStoreActionUi("flushClients");
         var streamStates = GetFileContext();
         LocalStateWrapper.StreamStates = streamStates;
+
         var appEvent = new ApplicationEvent()
         {
           Type = ApplicationEvent.EventType.ViewActivated,
@@ -250,6 +252,7 @@ namespace Speckle.ConnectorRevit.UI
       // DispatchStoreActionUi("flushClients");
       var streamStates = GetFileContext();
       LocalStateWrapper.StreamStates = streamStates;
+
       var appEvent = new ApplicationEvent()
       {
         Type = ApplicationEvent.EventType.DocumentOpened,
