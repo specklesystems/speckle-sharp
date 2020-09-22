@@ -26,7 +26,7 @@ namespace Speckle.ConnectorRevit.Storage
     {
       var streamStatesEntity = GetSpeckleEntity(doc);
       if (streamStatesEntity == null || !streamStatesEntity.IsValid())
-        return null;
+        return new StreamStateWrapper();
 
       var myStreamStates = new StreamStateWrapper();
       myStreamStates.SetState(streamStatesEntity.Get<IList<string>>("StreamStates"));

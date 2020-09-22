@@ -69,21 +69,16 @@ namespace Speckle.ConnectorRevit.Storage
       // TODO: The problem: 
       // "Attempt to modify the model outside of transaction."
       // Needs to be wrapped in a Action and sloshed in the queue. 
-      try
-      {
-        if (ds == null)ds = DataStorage.Create(doc);
-      }
-      catch (Exception e)
-      {
-        Debug.WriteLine($"Error in WriteState: {e}");
-      }
-      Entity speckleStateEntity = new Entity(SpeckleStateSchema.GetSchema());
+      if (ds == null)
+        ds = DataStorage.Create(doc);
+
+      var speckleStateEntity = new Entity(SpeckleStateSchema.GetSchema());
 
       var ls = state.Select(stream => JsonConvert.SerializeObject(stream)).ToList();
 
       speckleStateEntity.Set("streams", ls as IList<string>);
 
-      Entity idEntity = new Entity(DSUniqueSchemaLocalState.GetSchema());
+      var idEntity = new Entity(DSUniqueSchemaLocalState.GetSchema());
       idEntity.Set("Id", ID);
 
       ds.SetEntity(idEntity);

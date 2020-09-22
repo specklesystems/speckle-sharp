@@ -49,9 +49,8 @@ namespace Speckle.ConnectorRevit.UI
     {
       Executor = eventHandler;
 
-      LocalStateWrapper = new StreamStateWrapper();
-
       // LOCAL STATE
+      LocalStateWrapper = new StreamStateWrapper();
       DEP_LocalState = new List<Stream>();
       Queue.Add(new Action(() =>
       {

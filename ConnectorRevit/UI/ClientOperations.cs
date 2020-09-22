@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autodesk.Revit.DB;
+using RevitElement = Autodesk.Revit.DB.Element;
 using Newtonsoft.Json;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Converter.Revit;
@@ -20,22 +21,21 @@ namespace Speckle.ConnectorRevit.UI
     {
       // add stream and related data to the class
       LocalStateWrapper.StreamStates.Add(state);
-      // DEP_LocalState.Add(state.stream);
+      DEP_LocalState.Add(state.stream);
 
       // do the Revit dance to write to file
-      Queue.Add(new Action(() =>
-      {
-        using (Transaction t = new Transaction(CurrentDoc.Document, "Adding Speckle Stream"))
-        {
-          t.Start();
-          // SpeckleStateManager.WriteState(CurrentDoc.Document, DEP_LocalState);
-          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
-          t.Commit();
-        }
-      }));
+      // Queue.Add(new Action(() =>
+      // {
+      //   using (Transaction t = new Transaction(CurrentDoc.Document, "Adding Speckle Stream"))
+      //   {
+      //     t.Start();
+      //     SpeckleStateManager.WriteState(CurrentDoc.Document, DEP_LocalState);
+      //     StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
+      //     t.Commit();
+      //   }
+      // }));
       Executor.Raise();
 
-      // TODO add client id
       GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
     }
 
@@ -85,7 +85,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         //NotifyUi
         var id = 0;
-        Element revitElement = CurrentDoc.Document.GetElement(obj.applicationId);
+        var revitElement = CurrentDoc.Document.GetElement(obj.applicationId);
         if ( revitElement == null )
         {
           errors.Add(new SpeckleException(message: "Could not retrieve element"));
@@ -370,11 +370,11 @@ namespace Speckle.ConnectorRevit.UI
         return temp;
       });
 
-      var myStreamBox = LocalStateWrapper.StreamStates.FirstOrDefault(
+      var streamState = LocalStateWrapper.StreamStates.FirstOrDefault(
         cl => (string)cl.accountId == (string)accountId
         );
       // myStreamBox.objects = JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(objects));
-      myStreamBox.objects.AddRange(objects);
+      streamState.objects.AddRange(objects);
 
       // Persist state and clients to revit file
       Queue.Add(new Action(() =>
@@ -382,6 +382,7 @@ namespace Speckle.ConnectorRevit.UI
         using (Transaction t = new Transaction(CurrentDoc.Document, "Update local storage"))
         {
           t.Start();
+          SpeckleStateManager.WriteState(CurrentDoc.Document, DEP_LocalState);
           StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
           t.Commit();
         }
