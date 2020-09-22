@@ -175,7 +175,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamState.objects = message.Objects as List<Base>;
+      StreamState.placeholders = message.Objects as List<Base>;
       Notifications.Enqueue(message.Notification);
     }
   }

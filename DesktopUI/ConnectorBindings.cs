@@ -25,7 +25,7 @@ namespace Speckle.DesktopUI
     /// <param name="notifyEvent">The event to be published</param>
     public virtual void NotifyUi(EventBase notifyEvent)
     {
-      _events.Publish(notifyEvent);
+      _events.PublishOnUIThread(notifyEvent);
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ namespace Speckle.DesktopUI
     /// <param name="message">The body of the notification</param>
     public virtual void RaiseNotification(string message)
     {
-      var notif = new ShowNotificationEvent() {Notification = message};
+      var notif = new ShowNotificationEvent() { Notification = message };
       NotifyUi(notif);
     }
 

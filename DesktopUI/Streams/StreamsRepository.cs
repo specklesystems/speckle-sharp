@@ -96,15 +96,6 @@ namespace Speckle.DesktopUI.Streams
         },
         new Stream
         {
-        id = "stream456",
-        name = "Another Random Stream 🌵",
-        description = "we like to test things",
-        isPublic = true,
-        collaborators = collabs,
-        branches = branches
-        },
-        new Stream
-        {
         id = "stream789",
         name = "Woop Cool Stream 🌊",
         description = "cool and good indeed",
