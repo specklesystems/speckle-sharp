@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.DesktopUI.Accounts;
+using Speckle.DesktopUI.Utils;
+using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
@@ -38,8 +40,11 @@ namespace Speckle.DesktopUI.Streams
       return client.StreamGet(streamId);
     }
 
-    public ObservableCollection<Stream> LoadTestStreams()
+    public BindableCollection<StreamState> LoadTestStreams()
     {
+      var collection = new BindableCollection<StreamState>();
+
+      #region create dummy data
       var collabs = new List<Collaborator>()
       {
         new Collaborator
@@ -83,29 +88,41 @@ namespace Speckle.DesktopUI.Streams
         }
       };
 
-      var TestStreams = new ObservableCollection<Stream>()
+      var testStreams = new List<Stream>()
       {
         new Stream
         {
-        id = "stream123",
-        name = "Random Stream here 👋",
-        description = "this is a test stream",
-        isPublic = true,
-        collaborators = collabs.GetRange(0, 2),
-        branches = branches
+          id = "stream123",
+          name = "Random Stream here 👋",
+          description = "this is a test stream",
+          isPublic = true,
+          collaborators = collabs.GetRange(0, 2),
+          branches = branches
         },
         new Stream
         {
-        id = "stream789",
-        name = "Woop Cool Stream 🌊",
-        description = "cool and good indeed",
-        isPublic = true,
-        collaborators = collabs.GetRange(1, 2),
-        branches = branches
-        },
+          id = "stream789",
+          name = "Woop Cool Stream 🌊",
+          description = "cool and good indeed",
+          isPublic = true,
+          collaborators = collabs.GetRange(1, 2),
+          branches = branches
+        }
       };
+      #endregion
 
-      return TestStreams;
+      var client = new Client(AccountManager.GetDefaultAccount());
+      foreach (var stream in testStreams)
+      {
+        collection.Add(new StreamState()
+        {
+          client = client,
+          stream = stream,
+          accountId = client.AccountId,
+        });
+      }
+
+      return collection;
     }
 
   }

@@ -40,13 +40,6 @@ namespace Speckle.DesktopUI.Accounts
         },
         new Account
         {
-        refreshToken = "clean",
-        token = "good token",
-        serverInfo = new ServerInfo { name = "good server", url = "https://good.speckle.net" },
-        userInfo = new UserInfo { name = "dongle", email = "me@good.net" }
-        },
-        new Account
-        {
         refreshToken = "wow",
         token = "dope token",
         serverInfo = new ServerInfo { name = "dope server", url = "https://dope.speckle.gov" },

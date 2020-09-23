@@ -9,6 +9,7 @@ namespace Speckle.DesktopUI.Streams
   public class StreamViewModel : Screen
   {
     private IEventAggregator _events;
+    public StreamState State { get; set; }
     public Stream Stream { get; set; }
     public Branch Branch { get; set; }
 

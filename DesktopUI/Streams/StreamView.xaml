@@ -132,6 +132,15 @@
             </ItemsPanelTemplate>
           </ItemsControl.ItemsPanel>
         </ItemsControl>
+        <TextBlock
+          Margin="0,24,0,8"
+          FontSize="18"
+          Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+          Text="Objects" />
+        <TextBlock Text="Converted Objects:" />
+        <TextBlock Text="{Binding State.objects.Count}" />
+        <TextBlock Text="Placeholder Objects:" />
+        <TextBlock Text="{Binding State.placeholders.Count}" />
 
         <TextBlock
           Margin="0,24,0,8"

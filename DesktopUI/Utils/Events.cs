@@ -18,7 +18,7 @@ namespace Speckle.DesktopUI.Utils
 
   public class StreamAddedEvent : EventBase
   {
-    public Stream NewStream { get; set; }
+    public StreamState NewStream { get; set; }
   }
 
   public class UpdateSelectionCountEvent : EventBase
