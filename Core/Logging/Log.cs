@@ -8,17 +8,16 @@ using Sentry.Protocol;
 
 namespace Speckle.Core.Logging
 {
+  /// <summary>
+  /// Anonymous logging to catch all the exceptions and to help us make a better Speckle
+  /// </summary>
   public class Log
   {
     public static Log _instance;
 
     protected Log()
     {
-      string deviceId = new DeviceIdBuilder()
-        .AddMachineName()
-        .AddProcessorId()
-        .AddMotherboardSerialNumber()
-        .ToString();
+
 
       //TODO: set DSN & env in CI/CD pipeline
       //TODO: turn Debug off
@@ -34,8 +33,9 @@ namespace Speckle.Core.Logging
       {
         scope.User = new User
         {
-          Id = deviceId,
+          Id = Setup.DeviceID,
         };
+        scope.SetTag("hostApplication", Setup.HostApplication);
       });
     }
 
@@ -57,7 +57,7 @@ namespace Speckle.Core.Logging
     /// <param name="e">Exception to capture and throw</param>
     internal static void CaptureAndThrow(Exception e, SentryLevel level = SentryLevel.Error)
     {
-      CaptureException(e, "core", level);
+      CaptureException(e, level);
       throw e;
     }
 
@@ -72,27 +72,14 @@ namespace Speckle.Core.Logging
       {
         extra.Add(new KeyValuePair<string, object>("error", error.Message));
       }
-      CaptureException(e, "core", extra: extra);
-      throw e;
-    }
-
-    /// <summary>
-    /// Captures and throws an exception
-    /// Unhandled exceptions are usually swallowed by host applications like Revit, Dynamo
-    /// So they need to be sent manually.
-    /// </summary>
-    /// <param name="e">Exception to capture and throw</param>
-    /// <param name="e">Product where error is generated eg: core, connectorDynamo etc</param>
-    public static void CaptureAndThrow(Exception e, string product, SentryLevel level = SentryLevel.Error)
-    {
-      CaptureException(e, product, level);
+      CaptureException(e, extra: extra);
       throw e;
     }
 
 
     //capture and make sure Sentry is initialized
     public static void CaptureException(
-      Exception e, string product = "core", 
+      Exception e, 
       SentryLevel level = SentryLevel.Error, 
       List<KeyValuePair<string, object>> extra = null)
     {
@@ -101,7 +88,7 @@ namespace Speckle.Core.Logging
       SentrySdk.WithScope(s =>
       {
         s.Level = level;
-        s.SetTag("product", product);
+        
         if (extra!=null)
           s.SetExtras(extra);
         SentrySdk.CaptureException(e);
