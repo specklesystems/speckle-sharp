@@ -51,7 +51,7 @@ namespace Speckle.DesktopUI.Utils
 
     public override List<StreamState> GetFileContext()
     {
-      throw new NotImplementedException();
+      return new List<StreamState>();
     }
 
     public override string GetFileName()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
@@ -31,33 +32,41 @@ namespace Speckle.DesktopUI.Streams
       _dialogFactory = dialogFactory;
       _bindings = bindings;
 
+      _streamList = new BindableCollection<StreamState>(_bindings.GetFileContext());
 #if DEBUG
-      _allStreams = _repo.LoadTestStreams();
-#else
-      // do this properly
+      if (_streamList.Count == 0)
+        _streamList = _repo.LoadTestStreams();
 #endif
       events.Subscribe(this);
     }
 
     private StreamsRepository _repo;
-    private ObservableCollection<Stream> _allStreams;
+    private BindableCollection<StreamState> _streamList;
     private Stream _selectedStream;
     private Branch _selectedBranch;
 
-    public void ShowStreamInfo(Stream stream)
+    public void ShowStreamInfo(StreamState state)
     {
       var item = _streamViewModelFactory.CreateStreamViewModel();
-      item.Stream = stream;
+      item.State = state;
+      item.Stream = state.stream;
       // get master branch for now
       // TODO allow user to select branch
-      item.Branch = _repo.GetMasterBranch(stream.branches.items);
+      item.Branch = _repo.GetMasterBranch(state.stream.branches.items);
       var parent = (StreamsHomeViewModel)Parent;
       parent.ActivateItem(item);
     }
-    public ObservableCollection<Stream> AllStreams
+
+    public void ConvertAndSendObjects(StreamState state)
     {
-      get => _allStreams;
-      set => SetAndNotify(ref _allStreams, value);
+      _bindings.SendStream(state);
+      // toast notif to notify user
+    }
+
+    public BindableCollection<StreamState> StreamList
+    {
+      get => _streamList;
+      set => SetAndNotify(ref _streamList, value);
     }
 
     public Stream SelectedStream
@@ -96,7 +105,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(StreamAddedEvent message)
     {
-      AllStreams.Insert(0, message.NewStream);
+      StreamList.Insert(0, message.NewStream);
     }
 
     public void TestBindings()

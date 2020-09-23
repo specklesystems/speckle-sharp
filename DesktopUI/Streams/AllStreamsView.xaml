@@ -32,7 +32,7 @@
                 VerticalAlignment="Center"
                 FontSize="20"
                 Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                Text="{Binding name}"
+                Text="{Binding stream.name}"
                 TextWrapping="Wrap" />
               <Button
                 Grid.Column="1"
@@ -52,8 +52,8 @@
                   Height="28"
                   md:ButtonAssist.CornerRadius="14"
                   Command="{s:Action CopyStreamId}"
-                  CommandParameter="{Binding id}"
-                  Content="{Binding id}"
+                  CommandParameter="{Binding stream.id}"
+                  Content="{Binding stream.id}"
                   FontFamily="Consolas"
                   FontSize="13"
                   ToolTip="Stream ID" />
@@ -64,14 +64,23 @@
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
-              <TextBlock
-                Grid.Column="0"
-                Margin="0,12"
-                FontSize="10"
-                Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+              <!--  <TextBlock  -->
+              <!--  Grid.Column="0"  -->
+              <!--  Margin="0,12"  -->
+              <!--  FontSize="10"  -->
+              <!--  Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />  -->
               <Button
                 Grid.Column="1"
+                Width="150"
+                Command="{s:Action ConvertAndSendObjects}"
+                CommandParameter="{Binding}"
+                Content="SEND TO SERVER"
+                Style="{StaticResource MaterialDesignFlatButton}"
+                Visibility="{Binding placeholders, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+              <Button
+                Grid.Column="2"
                 Width="90"
                 Command="{s:Action ShowStreamInfo}"
                 CommandParameter="{Binding}"
@@ -101,7 +110,7 @@
         <ItemsControl
           Grid.Row="1"
           ItemTemplate="{StaticResource StreamCardTemplate}"
-          ItemsSource="{Binding AllStreams}"
+          ItemsSource="{Binding StreamList}"
           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
           ScrollViewer.VerticalScrollBarVisibility="Auto" />
       </Grid>
