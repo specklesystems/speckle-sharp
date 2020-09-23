@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -29,6 +30,7 @@ namespace Speckle.ConnectorRevit.UI
       Executor.Raise();
 
       GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
+      RaiseNotification("Stream created! Next, send to server ☁");
     }
 
     public override void UpdateStream(StreamState state)
@@ -58,7 +60,7 @@ namespace Speckle.ConnectorRevit.UI
     public override void SendStream(StreamState state)
     {
       var kit = new ConverterRevit(CurrentDoc.Document);
-      var objects = state.placeholders;
+      var objsToConvert = state.placeholders;
       var streamId = state.stream.id;
       var client = state.client;
 
@@ -75,10 +77,9 @@ namespace Speckle.ConnectorRevit.UI
       var errorMsg = "";
       var errors = new List<SpeckleException>();
 
-      foreach ( var obj in objects )
+      foreach ( var obj in objsToConvert )
       {
         //NotifyUi
-        var id = 0;
         var revitElement = CurrentDoc.Document.GetElement(obj.applicationId);
         if ( revitElement == null )
         {
@@ -86,29 +87,14 @@ namespace Speckle.ConnectorRevit.UI
           continue;
         }
 
-        id = revitElement.Id.IntegerValue;
-
-        var conversionResult = kit.ConvertToSpeckle(revitElement) as SpeckleElement;
+        var conversionResult = kit.ConvertToSpeckle(revitElement);
         if ( conversionResult == null )
         {
           // TODO what happens to failed conversions?
           failedConversions.Add(revitElement);
           continue;
         }
-
-        // var byteCount = GetBytes(conversionResult).Length;
-        // if ( byteCount > 2e6 )
-        // {
-        //   errors.Add(new SpeckleException($"Element {id} is bigger than 2MB, it will be skipped"));
-        //   continue;
-        // }
-        // currentBucketSize += byteCount;
         convertedObjects.Add(conversionResult);
-        //
-        // if ( currentBucketSize > 5e5 || i >= objects.Count() ) // aim for roughly 500kb uncompressed
-        // {
-        //   // LocalContext.PruneExistingObjects(convertedObjects, apiClient.BaseUrl);
-        // }
       }
 
       if ( errors.Any() || kit.ConversionErrors.Any() )
@@ -122,15 +108,19 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       var transports = new List<ITransport>() {new ServerTransport(client.Account, streamId)};
-      var commit = new Base {[ "@revitItems" ] = convertedObjects};
-      var commitId = Operations.Send(commit, transports, false).Result;
+      var @base = new Base {[ "@revitItems" ] = convertedObjects};
+      var objectId = Operations.Send(@base, transports).Result;
+      var res = client.CommitCreate(new CommitCreateInput()
+      {
+        streamId = streamId,
+        objectId = objectId,
+        branchName = "master",
+        message = "Commit from Revit Connector"
+      }).Result;
 
       state.objects.AddRange(convertedObjects);
       state.placeholders.Clear();
       state.stream = client.StreamGet(streamId).Result;
-
-      var localState = LocalStateWrapper.StreamStates.FirstOrDefault(s => s.stream.id == streamId);
-      localState.objects.AddRange(convertedObjects);
 
       // Persist state to revit file
       Queue.Add(new Action(() =>
