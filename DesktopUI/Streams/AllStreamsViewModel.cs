@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
@@ -57,10 +58,19 @@ namespace Speckle.DesktopUI.Streams
       parent.ActivateItem(item);
     }
 
-    public void ConvertAndSendObjects(StreamState state)
+    public async void ConvertAndSendObjects(string streamId)
     {
-      _bindings.SendStream(state);
-      // toast notif to notify user
+      var state = StreamList.First(s => s.stream.id == streamId);
+      if ( !state.placeholders.Any() )
+      {
+        _bindings.RaiseNotification("Nothing to send to Speckle.");
+        return;
+      }
+
+      var index = StreamList.IndexOf(state);
+      StreamList[index] = await _bindings.SendStream(state);
+      // TODO figure out why this isn't updating in the UI
+      // (should take away the button after sending)
     }
 
     public BindableCollection<StreamState> StreamList

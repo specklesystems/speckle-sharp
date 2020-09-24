@@ -77,7 +77,7 @@ namespace Speckle.DesktopUI.Utils
       };
     }
 
-    public override void SendStream(StreamState state)
+    public override Task<StreamState> SendStream(StreamState state)
     {
       throw new NotImplementedException();
     }

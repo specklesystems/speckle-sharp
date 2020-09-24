@@ -92,7 +92,7 @@ namespace Speckle.DesktopUI
     /// <summary>
     /// Pushes a client's stream
     /// </summary>
-    public abstract void SendStream(StreamState state);
+    public abstract Task<StreamState> SendStream(StreamState state);
 
     /// <summary>
     /// Adds the current selection to the provided client.

@@ -75,10 +75,10 @@
                 Grid.Column="1"
                 Width="150"
                 Command="{s:Action ConvertAndSendObjects}"
-                CommandParameter="{Binding}"
+                CommandParameter="{Binding stream.id}"
                 Content="SEND TO SERVER"
                 Style="{StaticResource MaterialDesignFlatButton}"
-                Visibility="{Binding placeholders, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+                Visibility="{Binding placeholders, Converter={x:Static s:BoolToVisibilityConverter.Instance}, UpdateSourceTrigger=PropertyChanged}" />
               <Button
                 Grid.Column="2"
                 Width="90"

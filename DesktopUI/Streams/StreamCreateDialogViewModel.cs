@@ -165,7 +165,7 @@ namespace Speckle.DesktopUI.Streams
       {
         var selectedObjs = _bindings.GetSelectedObjects();
         SelectedFilter.Selection = selectedObjs;
-        Notifications.Enqueue($"Yay, you've added {selectedObjs.Count} objects!");
+        // Notifications.Enqueue($"Yay, you've added {selectedObjs.Count} objects!");
       }
       else
       {
@@ -176,7 +176,7 @@ namespace Speckle.DesktopUI.Streams
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
       StreamState.placeholders = message.Objects as List<Base>;
-      Notifications.Enqueue(message.Notification);
+      // Notifications.Enqueue(message.Notification);
     }
   }
 }
