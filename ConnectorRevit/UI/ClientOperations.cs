@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using RevitElement = Autodesk.Revit.DB.Element;
 using Newtonsoft.Json;
@@ -21,43 +22,39 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit
   {
+    /// <summary>
+    /// Adds a new stream to the file. It takes a stream state, gets the Revit elements
+    /// the user wants to add using the filter, and writes the StreamState to the file.
+    /// </summary>
+    /// <param name="state">StreamState passed by the UI</param>
     public override void AddNewStream(StreamState state)
     {
       // add stream and related data to the class
       LocalStateWrapper.StreamStates.Add(state);
       DEP_LocalState.Add(state.stream);
 
-      Executor.Raise();
-
       GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
       RaiseNotification("Stream created! Next, send to server ☁");
     }
 
+    /// <summary>
+    /// Update the stream state and adds adds the filtered objects
+    /// </summary>
+    /// <param name="state"></param>
     public override void UpdateStream(StreamState state)
     {
       var index = LocalStateWrapper.StreamStates.FindIndex(b => b.stream.id == state.stream.id);
       LocalStateWrapper.StreamStates[index] = state;
 
-      Queue.Add(new Action(() =>
-      {
-        using (Transaction t = new Transaction(CurrentDoc.Document, "Update Speckle Sender"))
-        {
-          t.Start();
-          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
-          t.Commit();
-        }
-      }));
-      Executor.Raise();
-
       GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
     }
 
-    // NOTE: This is actually triggered when clicking "Push!"
-    // TODO: Orchestration
-    // Create buckets, send sequentially, notify ui re upload progress
-    // NOTE: Problems with local context and cache: we seem to not sucesffuly pass through it
-    // perhaps we're not storing the right sent object (localcontext.addsentobject)
-    public override void SendStream(StreamState state)
+    /// <summary>
+    /// Converts the Revit elements that have been added to the stream by the user, sends them to
+    /// the Server and the local DB, and creates a commit with the objects.
+    /// </summary>
+    /// <param name="state">StreamState passed by the UI</param>
+    public override async Task<StreamState> SendStream(StreamState state)
     {
       var kit = new ConverterRevit(CurrentDoc.Document);
       var objsToConvert = state.placeholders;
@@ -108,19 +105,21 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       var transports = new List<ITransport>() {new ServerTransport(client.Account, streamId)};
+      var emptyBase = new Base();
       var @base = new Base {[ "@revitItems" ] = convertedObjects};
-      var objectId = Operations.Send(@base, transports).Result;
-      var res = client.CommitCreate(new CommitCreateInput()
+      var objectId = await Operations.Send(@base, transports);
+      var res = await client.CommitCreate(new CommitCreateInput()
       {
         streamId = streamId,
         objectId = objectId,
         branchName = "master",
         message = "Commit from Revit Connector"
-      }).Result;
+      });
 
+      // update the state
       state.objects.AddRange(convertedObjects);
       state.placeholders.Clear();
-      state.stream = client.StreamGet(streamId).Result;
+      state.stream = await client.StreamGet(streamId);
 
       // Persist state to revit file
       Queue.Add(new Action(() =>
@@ -133,6 +132,8 @@ namespace Speckle.ConnectorRevit.UI
         }
       }));
 
+      RaiseNotification($"{convertedObjects.Count()} objects sent to Speckle 🚀");
+      return state;
     }
 
     /// <summary>
@@ -163,6 +164,9 @@ namespace Speckle.ConnectorRevit.UI
     /// <summary>
     /// Given the filter in use by a stream returns the document elements that match it
     /// </summary>
+    /// <param name="filter"></param>
+    /// <param name="accountId"></param>
+    /// <param name="streamId"></param>
     /// <returns></returns>
     private IEnumerable<Base> GetSelectionFilterObjects(ISelectionFilter filter, string accountId, string streamId)
     {
@@ -273,7 +277,6 @@ namespace Speckle.ConnectorRevit.UI
       var streamState = LocalStateWrapper.StreamStates.FirstOrDefault(
         cl => (string)cl.stream.id == (string)streamId
         );
-      // myStreamBox.placeholders = JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(placeholders));
       streamState.placeholders.AddRange(objects);
 
       // Persist state and clients to revit file
@@ -282,7 +285,6 @@ namespace Speckle.ConnectorRevit.UI
         using (Transaction t = new Transaction(CurrentDoc.Document, "Update local storage"))
         {
           t.Start();
-          SpeckleStateManager.WriteState(CurrentDoc.Document, DEP_LocalState);
           StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
           t.Commit();
         }
@@ -290,13 +292,14 @@ namespace Speckle.ConnectorRevit.UI
       Executor.Raise();
       var plural = objects.Count() == 1 ? "" : "s";
 
-      if (objects.Count() != 0)
+      if (objects.Any())
         NotifyUi( new RetrievedFilteredObjectsEvent()
         {
           Notification = $"You have added {objects.Count()} object{plural} to this stream.",
           AccountId = accountId,
           Objects = objects
         });
+      RaiseNotification($"You have added {objects.Count()} object{plural} to this stream.");
 
       return objects;
     }
