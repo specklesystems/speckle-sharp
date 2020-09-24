@@ -392,6 +392,8 @@ namespace Speckle.Core.Serialisation
         var dictJo = new JObject();
         foreach (DictionaryEntry kvp in dict)
         {
+          if (kvp.Value == null) continue;
+
           JToken jToken;
           if (WriteTransports != null && WriteTransports.Count != 0 && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
           {
