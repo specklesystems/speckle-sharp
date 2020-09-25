@@ -61,7 +61,7 @@ namespace Speckle.DesktopUI.Streams
     public async void ConvertAndSendObjects(string streamId)
     {
       var state = StreamList.First(s => s.stream.id == streamId);
-      if ( !state.placeholders.Any() )
+      if (!state.placeholders.Any())
       {
         _bindings.RaiseNotification("Nothing to send to Speckle.");
         return;
@@ -97,6 +97,15 @@ namespace Speckle.DesktopUI.Streams
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
       var result = await DialogHost.Show(view, "AllStreamsDialogHost");
+    }
+
+    public async void ShowShareDialog(StreamState state)
+    {
+      var viewmodel = _dialogFactory.CreateShareStreamDialogViewModel();
+      viewmodel.StreamState = state;
+      var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
+
+      var result = await DialogHost.Show(view, "StreamDialogHost");
     }
 
     public void CopyStreamId(string streamId)

@@ -32,5 +32,7 @@ namespace Speckle.DesktopUI.Utils
   public interface IDialogFactory
   {
     StreamCreateDialogViewModel CreateStreamCreateDialog();
+    StreamUpdateDialogViewModel CreateStreamUpdateDialog();
+    ShareStreamDialogViewModel CreateShareStreamDialogViewModel();
   }
 }

@@ -96,6 +96,7 @@
     <Compile Include="RootViewModel.cs" />
     <Compile Include="Settings\SettingsViewModel.cs" />
     <Compile Include="Streams\AllStreamsViewModel.cs" />
+    <Compile Include="Streams\ShareStreamDialogViewModel.cs" />
     <Compile Include="Streams\StreamCreateDialogViewModel.cs" />
     <Compile Include="Streams\StreamCreateAdvancedView.xaml.cs">
       <DependentUpon>StreamCreateAdvancedView.xaml</DependentUpon>
@@ -111,6 +112,7 @@
     </Compile>
     <Compile Include="Streams\StreamsHomeViewModel.cs" />
     <Compile Include="Streams\StreamsRepository.cs" />
+    <Compile Include="Streams\StreamUpdateDialogViewModel.cs" />
     <Compile Include="Streams\StreamViewModel.cs" />
     <Compile Include="Utils\Converters.cs" />
     <Compile Include="Utils\DummyBindings.cs" />
@@ -147,6 +149,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Streams\ShareStreamDialogView.xaml" />
     <Page Include="Streams\StreamCreateAdvancedView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -171,6 +174,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Streams\StreamUpdateDialogView.xaml" />
     <Page Include="Streams\StreamView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
