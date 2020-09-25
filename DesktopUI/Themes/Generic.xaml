@@ -6,14 +6,14 @@
   xmlns:s="https://github.com/canton7/Stylet">
 
   <!--  primary  -->
-  <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="#26C2F2" />
+  <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="#69adff" />
   <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="#FDFDFD" />
-  <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#0080FF" />
+  <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#047EFB" />
   <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="#FDFDFD" />
-  <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="#0055cb" />
+  <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="#0053c7" />
   <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="#FDFDFD" />
   <!--  accent  -->
-  <SolidColorBrush x:Key="SecondaryAccentBrush" Color="#fb8004" />
+  <SolidColorBrush x:Key="SecondaryAccentBrush" Color="#ff9800" />
   <SolidColorBrush x:Key="SecondaryAccentForegroundBrush" Color="#FDFDFD" />
 
   <ResourceDictionary.MergedDictionaries>
