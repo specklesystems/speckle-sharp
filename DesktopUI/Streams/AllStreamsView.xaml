@@ -30,20 +30,22 @@
               <TextBlock
                 Grid.Column="0"
                 VerticalAlignment="Center"
-                FontSize="20"
+                FontSize="18"
                 Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                 Text="{Binding stream.name}"
                 TextWrapping="Wrap" />
               <Button
+                x:Name="ShareStreamButton"
                 Grid.Column="1"
-                Margin="4"
+                Margin="2"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 Command="{Binding}"
                 Content="{md:PackIcon Kind=Send,
                                       Size=20}"
                 Foreground="{StaticResource MaterialDesignLightBackground}"
-                Style="{StaticResource MaterialDesignFloatingActionMiniButton}" />
+                Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                ToolTip="Share this stream!" />
             </Grid>
 
             <Grid Grid.Row="1">
@@ -53,10 +55,19 @@
                   md:ButtonAssist.CornerRadius="14"
                   Command="{s:Action CopyStreamId}"
                   CommandParameter="{Binding stream.id}"
-                  Content="{Binding stream.id}"
                   FontFamily="Consolas"
-                  FontSize="13"
-                  ToolTip="Stream ID" />
+                  FontSize="12"
+                  ToolTip="Stream ID">
+                  <StackPanel Orientation="Horizontal">
+                    <md:PackIcon
+                      Width="12"
+                      Height="12"
+                      Margin="0,0,4,0"
+                      VerticalAlignment="Center"
+                      Kind="ContentCopy" />
+                    <TextBlock Text="{Binding stream.id}" />
+                  </StackPanel>
+                </md:Chip>
               </StackPanel>
             </Grid>
 
