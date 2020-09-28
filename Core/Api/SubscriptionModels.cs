@@ -10,6 +10,8 @@ namespace Speckle.Core.Api.SubscriptionModels
     public string id { get; set; }
     public string name { get; set; }
     public string description { get; set; }
+    public string sharedBy { get; set; }
+
   }
 
   public class UserStreamAddedResult

@@ -73,7 +73,8 @@ namespace Speckle.Core.Models
 
       try
       {
-        return (T)GetType().GetProperty(key).GetValue(this) != null;
+        if( GetType().GetProperty(key) != null)
+          return (T)GetType().GetProperty(key).GetValue(this) != null;
       }
       catch
       {
