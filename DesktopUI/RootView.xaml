@@ -21,6 +21,7 @@
   TextElement.Foreground="{DynamicResource MaterialDesignBody}"
   TextOptions.TextFormattingMode="Ideal"
   TextOptions.TextRenderingMode="Auto"
+  Topmost="{Binding IsPinned, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
   mc:Ignorable="d">
   <Window.Resources>
     <utils:StringToUpperConverter x:Key="StringToUpperConverter" />
@@ -87,25 +88,69 @@
             Orientation="Vertical">
             <Separator Margin="0,8" />
             <!--  Dark Mode 😎  -->
-            <StackPanel Margin="0,8" Orientation="Horizontal">
-              <TextBlock Margin="32,0" Text="Dark Mode" />
-              <TextBlock Margin="0,0,8,0">
-                <md:PackIcon Kind="WhiteBalanceSunny" />
-              </TextBlock>
-              <!--  TODO figure out why this isn't changing the theme  -->
-              <!--<ToggleButton
+
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+
+              <TextBlock
+                Grid.Column="0"
+                Margin="32,8,0,8"
+                Text="Dark Mode" />
+              <StackPanel
+                Grid.Column="1"
+                Margin="0,8,24,8"
+                Orientation="Horizontal">
+                <TextBlock Margin="0,0,8,0">
+                  <md:PackIcon Kind="WhiteBalanceSunny" />
+                </TextBlock>
+                <!--  TODO figure out why this isn't changing the theme  -->
+                <!--<ToggleButton
                 x:Name="DarkModeToggleButton"
                 Command="{Binding ToggleThemeCommand}"
                 CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
                 IsChecked="{Binding DarkMode, Mode=TwoWay}" />-->
-              <ToggleButton
-                x:Name="DarkModeToggleButton"
-                Click="MenuDarkModeButton_Click"
-                IsChecked="{Binding DarkMode, Mode=TwoWay}" />
-              <TextBlock Margin="8,0,0,0">
-                <md:PackIcon Kind="NightSky" />
-              </TextBlock>
-            </StackPanel>
+                <ToggleButton
+                  x:Name="DarkModeToggleButton"
+                  Click="MenuDarkModeButton_Click"
+                  IsChecked="{Binding DarkMode, Mode=TwoWay}" />
+                <TextBlock Margin="8,0,0,0">
+                  <md:PackIcon Kind="NightSky" />
+                </TextBlock>
+              </StackPanel>
+            </Grid>
+
+            <!--  pin window on top 📌  -->
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+
+              <TextBlock
+                Grid.Column="0"
+                Margin="32,8,0,8"
+                Text="Pin Window" />
+              <StackPanel
+                Grid.Column="1"
+                Margin="0,8,24,8"
+                Orientation="Horizontal">
+                <TextBlock Margin="0,0,8,0">
+                  <md:PackIcon Kind="Pin" RenderTransformOrigin=".5,.5">
+                    <md:PackIcon.RenderTransform>
+                      <RotateTransform Angle="45" />
+                    </md:PackIcon.RenderTransform>
+                  </md:PackIcon>
+                </TextBlock>
+                <ToggleButton x:Name="PinWindowToggleButton" IsChecked="{Binding IsPinned, Mode=TwoWay}" />
+                <TextBlock Margin="8,0,0,0">
+                  <md:PackIcon Kind="Pin" />
+                </TextBlock>
+              </StackPanel>
+            </Grid>
+
             <TextBlock Margin="32,8" Text="Help link" />
             <Separator Margin="0,8" />
             <TextBlock

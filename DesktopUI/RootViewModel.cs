@@ -57,6 +57,13 @@ namespace Speckle.DesktopUI
         Link.OpenInBrowser(url);
       }
 
+      private bool _isPinned = true;
+      public bool IsPinned
+      {
+        get => _isPinned;
+        set => SetAndNotify(ref _isPinned, value);
+      }
+
       private bool _darkMode;
       public bool DarkMode
       {
@@ -64,7 +71,6 @@ namespace Speckle.DesktopUI
         set => SetAndNotify(ref _darkMode, value);
       }
 
-      //
       public void ToggleTheme(bool darkmode)
       {
         PaletteHelper paletteHelper = new PaletteHelper();
