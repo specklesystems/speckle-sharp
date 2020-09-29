@@ -67,11 +67,19 @@
           Style="{StaticResource MaterialDesignHeadline3TextBlock}"
           Text="SETTINGS" />
 
-        <TextBlock
-          Margin="0,16"
-          FontSize="16"
-          Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-          Text="Account Details" />
+
+        <md:Badged
+          Badge="{Binding LocalAccounts.Count}"
+          BadgePlacementMode="Right"
+          ToolTip="total accounts"
+          ToolTipService.Placement="Mouse">
+          <TextBlock
+            Margin="0,8,16,8"
+            FontSize="16"
+            Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+            Text="Default Account" />
+        </md:Badged>
+
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />

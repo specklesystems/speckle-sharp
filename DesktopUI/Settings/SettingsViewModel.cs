@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,6 +45,7 @@ namespace Speckle.DesktopUI.Settings
       };
     }
     private AccountsRepository _repo = new AccountsRepository();
+    public ObservableCollection<Account> LocalAccounts => _repo.LoadAccounts();
     private Account _defaultAccount;
     public Account DefaultAccount
     {
