@@ -61,8 +61,6 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MaterialDesignColors, Version=1.2.7.1798, Culture=neutral, PublicKeyToken=df2a72020bd7962a, processorArchitecture=MSIL" />
-    <Reference Include="MaterialDesignThemes.Wpf, Version=3.2.0.1798, Culture=neutral, PublicKeyToken=df2a72020bd7962a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Threading.Tasks, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Threading.Tasks.Extensions, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Threading.Tasks.Extensions.Desktop, Version=1.0.168.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
@@ -98,16 +96,16 @@
     <Compile Include="Streams\AllStreamsViewModel.cs" />
     <Compile Include="Streams\ShareStreamDialogViewModel.cs" />
     <Compile Include="Streams\StreamCreateDialogViewModel.cs" />
-    <Compile Include="Streams\StreamCreateAdvancedView.xaml.cs">
+    <Compile Include="Streams\Dialogs\StreamCreateAdvancedView.xaml.cs">
       <DependentUpon>StreamCreateAdvancedView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Streams\StreamCreateFinalView.xaml.cs">
+    <Compile Include="Streams\Dialogs\StreamCreateFinalView.xaml.cs">
       <DependentUpon>StreamCreateFinalView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Streams\StreamCreateSimpleView.xaml.cs">
+    <Compile Include="Streams\Dialogs\StreamCreateSimpleView.xaml.cs">
       <DependentUpon>StreamCreateSimpleView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Streams\StreamCreateStartView.xaml.cs">
+    <Compile Include="Streams\Dialogs\StreamCreateStartView.xaml.cs">
       <DependentUpon>StreamCreateStartView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Streams\StreamsHomeViewModel.cs" />
@@ -150,7 +148,7 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Streams\ShareStreamDialogView.xaml" />
-    <Page Include="Streams\StreamCreateAdvancedView.xaml">
+    <Page Include="Streams\Dialogs\StreamCreateAdvancedView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -158,15 +156,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Streams\StreamCreateFinalView.xaml">
+    <Page Include="Streams\Dialogs\StreamCreateFinalView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Streams\StreamCreateSimpleView.xaml">
+    <Page Include="Streams\Dialogs\StreamCreateSimpleView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Streams\StreamCreateStartView.xaml">
+    <Page Include="Streams\Dialogs\StreamCreateStartView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -181,6 +179,10 @@
     </Page>
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\MaterialDesignTheme.TabControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -226,25 +228,25 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MaterialDesignColors">
-      <Version>1.2.7-ci1798</Version>
+      <Version>1.2.7</Version>
     </PackageReference>
     <PackageReference Include="MaterialDesignThemes">
-      <Version>3.2.0-ci1798</Version>
+      <Version>3.2.0</Version>
     </PackageReference>
     <PackageReference Include="Stylet">
       <Version>1.3.4</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+  <!-- <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
-    <Error Condition="!Exists('..\packages\MaterialDesignThemes.3.2.0-ci1798\build\MaterialDesignThemes.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\MaterialDesignThemes.3.2.0-ci1798\build\MaterialDesignThemes.targets'))" />
-    <Error Condition="!Exists('..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
+    <Error Condition="!Exists('..\packages\MaterialDesignThemes.3.2.0\build\MaterialDesignThemes.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MaterialDesignThemes.3.2.0\build\MaterialDesignThemes.targets'))" />
+    <Error Condition="!Exists('..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets'))" />
   </Target>
-  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
-  <Import Project="..\packages\MaterialDesignThemes.3.2.0-ci1798\build\MaterialDesignThemes.targets" Condition="Exists('packages\MaterialDesignThemes.3.2.0-ci1798\build\MaterialDesignThemes.targets')" />
-  <Import Project="..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets')" />
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <Import Project="..\packages\MaterialDesignThemes.3.2.0\build\MaterialDesignThemes.targets" Condition="Exists('..\packages\MaterialDesignThemes.3.2.0\build\MaterialDesignThemes.targets')" />
+  <Import Project="..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets')" /> -->
 </Project>
