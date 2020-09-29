@@ -23,7 +23,6 @@ namespace Speckle.Core.Api
           Query = @"query User {
                       user{
                         id,
-                        username,
                         email,
                         name,
                         bio,
@@ -136,7 +135,6 @@ namespace Speckle.Core.Api
           Query = $@"query User {{
                       user{{
                         id,
-                        username,
                         email,
                         name,
                         bio,
