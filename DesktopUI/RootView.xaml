@@ -46,26 +46,11 @@
             IsChecked="{Binding ElementName=MenuToggleButton, Path=IsChecked, Mode=TwoWay}"
             Style="{StaticResource MaterialDesignHamburgerToggleButton}" />
 
-          <TextBox
-            x:Name="DemoItemsSearchBox"
-            Grid.Row="1"
-            Width="200"
-            Margin="16,4"
-            md:HintAssist.Hint="Search"
-            md:HintAssist.IsFloating="True"
-            md:TextFieldAssist.DecorationVisibility="Collapsed"
-            md:TextFieldAssist.HasClearButton="True"
-            md:TextFieldAssist.HasOutlinedTextField="True"
-            md:TextFieldAssist.TextFieldCornerRadius="4"
-            BorderThickness="0"
-            DockPanel.Dock="Top"
-            Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" />
-
           <!--  Main Navigation  -->
           <ListBox
             x:Name="NavDrawerListBox"
             Grid.Row="2"
-            Margin="0,16,0,16"
+            Margin="0,0,0,16"
             DockPanel.Dock="Top"
             ItemsSource="{Binding Items}"
             PreviewMouseLeftButtonUp="UIElement_OnPreviewMouseLeftButtonUp"
@@ -172,7 +157,7 @@
         <!--#region Top Menu Bar-->
         <md:ColorZone
           Padding="16"
-          Panel.ZIndex="1"
+          Panel.ZIndex="5"
           md:ShadowAssist.ShadowDepth="Depth2"
           DockPanel.Dock="Top">
           <DockPanel>
