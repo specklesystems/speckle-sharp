@@ -118,6 +118,7 @@
           FontSize="24"
           Style="{StaticResource MaterialDesignHeadline3TextBlock}"
           Text="STREAMS" />
+
         <ItemsControl
           Grid.Row="1"
           ItemTemplate="{StaticResource StreamCardTemplate}"
@@ -127,59 +128,25 @@
       </Grid>
 
 
-      <!--#region Flotion Action Button-->
-      <!--  TODO absolute positioning rel to window  -->
-      <md:PopupBox
-        Width="45"
-        Height="45"
-        Margin="32"
-        HorizontalAlignment="Right"
-        VerticalAlignment="Bottom"
-        Foreground="{StaticResource MaterialDesignLightBackground}"
-        Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}">
-        <StackPanel>
-          <Button
-            x:Name="AddStreamButton"
-            Width="40"
-            Height="40"
-            Margin="3"
-            Command="{Binding}"
-            Content="{md:PackIcon Kind=GetApp,
-                                  Size=20}"
-            Foreground="{StaticResource MaterialDesignLightBackground}"
-            Style="{StaticResource MaterialDesignFloatingActionButton}"
-            ToolTip="Add an existing stream"
-            ToolTipService.Placement="Left" />
+      <DockPanel>
 
-          <Button
-            x:Name="CreateStreamButton"
-            Width="40"
-            Height="40"
-            Margin="3"
-            Command="{s:Action ShowStreamCreateDialog}"
-            Content="{md:PackIcon Kind=Pencil,
-                                  Size=20}"
-            Foreground="{StaticResource MaterialDesignLightBackground}"
-            Style="{StaticResource MaterialDesignFloatingActionButton}"
-            ToolTip="Create a new stream"
-            ToolTipService.Placement="Left" />
-
-          <Button
-            x:Name="HelpButton"
-            Width="40"
-            Height="40"
-            Margin="3"
-            Command="{s:Action OpenHelpLink}"
-            CommandParameter="https://speckle.systems/docs/essentials/start"
-            Content="{md:PackIcon Kind=QuestionMarkCircle,
-                                  Size=20}"
-            Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
-            ToolTip="Confused? Have a look at the docs!"
-            ToolTipService.Placement="Left" />
-
-        </StackPanel>
-      </md:PopupBox>
-      <!--#endregion-->
+        <!--  TODO absolute positioning rel to window  -->
+        <Button
+          x:Name="CreateStreamButton"
+          Width="45"
+          Height="45"
+          Margin="32"
+          HorizontalAlignment="Right"
+          VerticalAlignment="Bottom"
+          Command="{s:Action ShowStreamCreateDialog}"
+          Content="{md:PackIcon Kind=Plus,
+                                Size=24}"
+          DockPanel.Dock="Bottom"
+          Foreground="{StaticResource MaterialDesignLightBackground}"
+          Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
+          ToolTip="Create a new stream"
+          ToolTipService.Placement="Left" />
+      </DockPanel>
     </Grid>
   </md:DialogHost>
 
