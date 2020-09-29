@@ -16,6 +16,7 @@ namespace Speckle.DesktopUI.Accounts
       {
         new Account()
         {
+        isDefault = true,
         serverInfo = new ServerInfo()
         {
         company = "Speckle",
@@ -26,7 +27,6 @@ namespace Speckle.DesktopUI.Accounts
         {
         name = Environment.UserName,
         company = "Testing Desktop UI Inc",
-        id = "izzyui",
         email = "izzy@speckle.systems"
         },
         token = Environment.GetEnvironmentVariable("speckle2_dev_token")
@@ -47,7 +47,6 @@ namespace Speckle.DesktopUI.Accounts
         }
       };
       TestAccounts.ForEach(acc => AccountManager.UpdateOrSaveAccount(acc));
-      SetDefault(TestAccounts[0]);
 
       return LoadAccounts();
     }
