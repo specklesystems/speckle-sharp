@@ -6,14 +6,14 @@
   xmlns:s="https://github.com/canton7/Stylet">
 
   <!--  primary  -->
-  <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="#69adff" />
+  <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="#7BBCFF" />
   <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="#FDFDFD" />
   <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#047EFB" />
   <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="#FDFDFD" />
-  <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="#0053c7" />
+  <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="#313BCF" />
   <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="#FDFDFD" />
   <!--  accent  -->
-  <SolidColorBrush x:Key="SecondaryAccentBrush" Color="#ff9800" />
+  <SolidColorBrush x:Key="SecondaryAccentBrush" Color="#F18F01" />
   <SolidColorBrush x:Key="SecondaryAccentForegroundBrush" Color="#FDFDFD" />
 
   <ResourceDictionary.MergedDictionaries>
@@ -28,5 +28,7 @@
       SecondaryColor="Blue" />
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+    <!-- <ResourceDictionary Source="MaterialDesignTheme.TabControl.xaml" /> -->
+    <!-- <ResourceDictionary Source="SpeckleDesktopUI;component/Themes/MaterialDesignTheme.TabControl.xaml" /> -->
   </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
