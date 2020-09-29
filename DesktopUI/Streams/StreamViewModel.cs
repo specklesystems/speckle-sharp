@@ -12,7 +12,7 @@ namespace Speckle.DesktopUI.Streams
     private readonly IEventAggregator _events;
     private readonly ViewManager _viewManager;
     private readonly IDialogFactory _dialogFactory;
-    public StreamState State { get; set; }
+    public StreamState StreamState { get; set; }
     public Stream Stream { get; set; }
     public Branch Branch { get; set; }
 
@@ -29,7 +29,7 @@ namespace Speckle.DesktopUI.Streams
     public async void ShowStreamUpdateDialog(StreamState state)
     {
       var viewmodel = _dialogFactory.CreateStreamUpdateDialog();
-      viewmodel.StreamState = State;
+      viewmodel.StreamState = StreamState;
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
       var result = await DialogHost.Show(view, "StreamDialogHost");
@@ -38,7 +38,7 @@ namespace Speckle.DesktopUI.Streams
     public async void ShowShareDialog(StreamState state)
     {
       var viewmodel = _dialogFactory.CreateShareStreamDialogViewModel();
-      viewmodel.StreamState = State;
+      viewmodel.StreamState = StreamState;
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
       var result = await DialogHost.Show(view, "StreamDialogHost");
