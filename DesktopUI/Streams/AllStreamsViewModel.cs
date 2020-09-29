@@ -49,7 +49,7 @@ namespace Speckle.DesktopUI.Streams
     public void ShowStreamInfo(StreamState state)
     {
       var item = _streamViewModelFactory.CreateStreamViewModel();
-      item.State = state;
+      item.StreamState = state;
       item.Stream = state.stream;
       // get master branch for now
       // TODO allow user to select branch
@@ -105,7 +105,7 @@ namespace Speckle.DesktopUI.Streams
       viewmodel.StreamState = state;
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
-      var result = await DialogHost.Show(view, "StreamDialogHost");
+      var result = await DialogHost.Show(view, "AllStreamsDialogHost");
     }
 
     public void CopyStreamId(string streamId)

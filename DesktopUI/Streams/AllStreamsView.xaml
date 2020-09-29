@@ -40,7 +40,7 @@
                 Margin="2"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
-                Command="{Binding}"
+                Command="{s:Action ShowShareDialog}"
                 Content="{md:PackIcon Kind=Send,
                                       Size=20}"
                 Foreground="{StaticResource MaterialDesignLightBackground}"
@@ -89,7 +89,7 @@
                 CommandParameter="{Binding stream.id}"
                 Content="SEND TO SERVER"
                 Style="{StaticResource MaterialDesignFlatButton}"
-                Visibility="{Binding placeholders, Converter={x:Static s:BoolToVisibilityConverter.Instance}, UpdateSourceTrigger=PropertyChanged}" />
+                Visibility="{Binding placeholders, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
               <Button
                 Grid.Column="2"
                 Width="90"
