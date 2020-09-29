@@ -14,17 +14,16 @@ namespace TestsIntegration
     {
       using (var client = new WebClient())
       {
-        var seed_1 = Guid.NewGuid().ToString().ToLower();
-        var user_1 = new NameValueCollection();
-        user_1["email"] = $"{seed_1.Substring(0, 7)}@acme.com";
-        user_1["password"] = "12ABC3456789DEF0GHO";
-        user_1["name"] = $"{seed_1.Substring(0, 5)} Name";
-        user_1["username"] = $"{seed_1.Substring(0, 5)}_Name";
+        var seed = Guid.NewGuid().ToString().ToLower();
+        var user = new NameValueCollection();
+        user["email"] = $"{seed.Substring(0, 7)}@acme.com";
+        user["password"] = "12ABC3456789DEF0GHO";
+        user["name"] = $"{seed.Substring(0, 5)} Name";
 
-        var raw_1 = client.UploadValues("http://127.0.0.1:3000/auth/local/register", "POST", user_1);
-        var info_1 = JsonConvert.DeserializeObject<UserIdResponse>(Encoding.UTF8.GetString(raw_1));
+        var raw = client.UploadValues("http://127.0.0.1:3000/auth/local/register", "POST", user);
+        var info = JsonConvert.DeserializeObject<UserIdResponse>(Encoding.UTF8.GetString(raw));
 
-        return new Account { token = "Bearer " + info_1.apiToken, userInfo = new UserInfo { id = info_1.userId, email = user_1["email"] }, serverInfo = server };
+        return new Account { token = "Bearer " + info.apiToken, userInfo = new UserInfo { id = info.userId, email = user["email"] }, serverInfo = server };
       }
     }
   }
