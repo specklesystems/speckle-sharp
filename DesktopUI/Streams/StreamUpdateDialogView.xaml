@@ -3,6 +3,7 @@
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:dialogs="clr-namespace:Speckle.DesktopUI.Streams.Dialogs"
   xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
@@ -37,12 +38,12 @@
             <md:TransitionerSlide.ForwardWipe>
               <md:SlideWipe Direction="Left" />
             </md:TransitionerSlide.ForwardWipe>
-            <local:StreamCreateSimpleView />
+            <dialogs:StreamCreateSimpleView />
           </md:TransitionerSlide>
 
 
         </md:Transitioner>
-        <TextBlock Text="{Binding State.stream.id, StringFormat='yo, wazzup stream {0}? update this shit'}" />
+        <TextBlock Text="{Binding StreamState.stream.id, StringFormat='yo, wazzup stream {0}? update this shit'}" />
       </Grid>
     </Grid>
   </Grid>

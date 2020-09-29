@@ -26,7 +26,8 @@ namespace Speckle.DesktopUI.Utils
 
     public override List<string> GetSelectedObjects()
     {
-      throw new NotImplementedException();
+      RaiseNotification("it don't work, my dude");
+      return new List<string>();
     }
 
     public override void BakeStream(string args)

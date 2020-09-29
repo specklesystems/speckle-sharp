@@ -57,7 +57,7 @@ namespace Speckle.DesktopUI.Streams
     public StreamState StreamState
     {
       get => _streamState;
-      set => SetAndNotify(ref  _streamState, value);
+      set => SetAndNotify(ref _streamState, value);
     }
 
     private Account _accountToSendFrom;
@@ -157,15 +157,15 @@ namespace Speckle.DesktopUI.Streams
     }
     public void GetSelectedObjects()
     {
-      if ( SelectedFilter == null )
+      if (SelectedFilter == null)
       {
         Notifications.Enqueue("pls click one of the filter types!"); return;
       }
-      if ( SelectedFilter.Type == typeof(ElementsSelectionFilter).ToString() )
+      if (SelectedFilter.Type == typeof(ElementsSelectionFilter).ToString())
       {
         var selectedObjs = _bindings.GetSelectedObjects();
         SelectedFilter.Selection = selectedObjs;
-        // Notifications.Enqueue($"Yay, you've added {selectedObjs.Count} objects!");
+        Notifications.Enqueue($"Yay, you've added {selectedObjs.Count} objects!");
       }
       else
       {

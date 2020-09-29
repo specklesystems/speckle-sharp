@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Speckle.DesktopUI.Streams
+namespace Speckle.DesktopUI.Streams.Dialogs
 {
   /// <summary>
-  /// Interaction logic for StreamCreateAdvancedView.xaml
+  /// Interaction logic for StreamCreateSimpleView.xaml
   /// </summary>
-  public partial class StreamCreateAdvancedView : UserControl
+  public partial class StreamCreateSimpleView : UserControl
   {
-    public StreamCreateAdvancedView()
+    public StreamCreateSimpleView()
     {
       InitializeComponent();
     }
