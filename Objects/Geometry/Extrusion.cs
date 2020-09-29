@@ -15,10 +15,8 @@ namespace Speckle.Objects.Geometry
     public Base pathTangent { get; set; }
     public List<Base> profiles { get; set; }
     public double? length;
-    public Extrusion()
-    {
 
-    }
+    public Extrusion() { }
 
     public Extrusion(Base profile, double length, bool capped, string applicationId = null)
     {

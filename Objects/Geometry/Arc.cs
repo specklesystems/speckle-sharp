@@ -25,10 +25,9 @@ namespace Speckle.Objects.Geometry
     public Point midPoint { get; set; }
 
     public Point endPoint { get; set; }
-    public Arc()
-    {
 
-    }
+    public Arc() { }
+
     public Arc(Plane plane, double radius, double startAngle, double endAngle, double angleRadians, string applicationId = null)
     {
       this.plane = plane;

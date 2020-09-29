@@ -9,6 +9,7 @@ namespace Speckle.Objects.Geometry
   {
     public string description { get; set; }
     public List<Base> objects { get; set; }
+
     public Block()
     {
 

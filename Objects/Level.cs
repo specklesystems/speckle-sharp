@@ -11,8 +11,8 @@ namespace Speckle.Objects
     public double elevation { get; set; }
     public Level()
     {
-      
-  }
+
+    }
     public Level(string name, double elevation)
     {
       this.name = name;
