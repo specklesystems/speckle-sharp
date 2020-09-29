@@ -243,7 +243,7 @@
           <md:PackIcon Kind="{Binding Icon}" />
         </TabItem.Header>
         <TabItem.Content>
-          <TextBlock Text="{Binding Selection.Count, StringFormat='Selected: {0}'}" />
+          <TextBlock Text="{Binding Selection.Count, StringFormat='Selected: {0}', Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         </TabItem.Content>
       </TabItem>
     </DataTemplate>
@@ -270,67 +270,6 @@
         Text="{Binding StreamToCreate.name}" />
       <TextBlock Text="Send the currently selected objects to Speckle using default settings." TextWrapping="Wrap" />
 
-      <!--  TODO make this pretty and actually work  -->
-      <!--<ListBox
-        x:Name="SelectionFilterListBox"
-        Margin="0,16"
-        ItemsSource="{Binding Filters}"
-        SelectedItem="{Binding SelectedFilter}">
-        <ListBox.ItemTemplate>
-          <DataTemplate>
-            <StackPanel Orientation="Horizontal">
-              <md:PackIcon Kind="{Binding Icon}" />
-              <TextBlock Margin="8,0" Text="{Binding Name}" />
-            </StackPanel>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>-->
-
-      <!--<TabControl Style="{StaticResource MaterialDesignTabControl}" TabStripPlacement="Top">
-        <TabItem Header="wow" Style="{StaticResource MaterialDesignTabItemCompact}">
-          <TextBlock Text="yep, wow" />
-        </TabItem>
-        <TabItem Header="no" Style="{StaticResource MaterialDesignTabItemCompact}">
-          <TextBlock Text="no way, jose" />
-        </TabItem>
-        <TabItem Header="ooo" Style="{StaticResource MaterialDesignTabItemCompact}">
-          <TextBlock Text="interesting" />
-        </TabItem>
-      </TabControl>-->
-
-      <!--<TabControl Style="{StaticResource MaterialDesignNavigatilRailTabControl}">
-        <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
-          <TabItem.Header>
-            <md:PackIcon Kind="{Binding Filters[0].Icon}" />
-          </TabItem.Header>
-        </TabItem>
-
-        <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
-          <TabItem.Header>
-            <md:PackIcon Kind="{Binding Filters[1].Icon}" />
-          </TabItem.Header>
-        </TabItem>
-
-        <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
-          <TabItem.Header>
-            <md:PackIcon Kind="{Binding Filters[2].Icon}" />
-          </TabItem.Header>
-        </TabItem>
-
-        <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
-          <TabItem.Header>
-            <md:PackIcon Kind="{Binding Filters[3].Icon}" />
-          </TabItem.Header>
-        </TabItem>
-      </TabControl>-->
-
-      <!--<TabControl
-        ContentTemplate="{StaticResource FilterContentTemplate}"
-        ItemTemplate="{StaticResource FilterItemTemplate}"
-        ItemsSource="{Binding Filters}"
-        SelectedItem="{Binding SelectedFilter}"
-        Style="{StaticResource MaterialDesignNavigatilRailTabControl}" />-->
-
       <TabControl
         Margin="0,12"
         ItemContainerStyle="{StaticResource MaterialDesignTabItem}"
@@ -353,7 +292,7 @@
           <DataTemplate>
             <StackPanel>
               <TextBlock Text="{Binding Name}" />
-              <TextBlock Text="{Binding Selection.Count, StringFormat='Selected: {0}'}" />
+              <TextBlock Text="{Binding Selection.Count, StringFormat='Selected: {0}', UpdateSourceTrigger=PropertyChanged}" />
               <Button
                 Width="150"
                 Margin="8"

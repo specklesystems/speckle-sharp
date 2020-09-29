@@ -165,6 +165,7 @@ namespace Speckle.DesktopUI.Streams
       {
         var selectedObjs = _bindings.GetSelectedObjects();
         SelectedFilter.Selection = selectedObjs;
+        NotifyOfPropertyChange(nameof(SelectedFilter.Selection.Count));
         Notifications.Enqueue($"Yay, you've added {selectedObjs.Count} objects!");
       }
       else
