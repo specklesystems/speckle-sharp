@@ -31,8 +31,6 @@ namespace Tests
   {
     public IEnumerable<Type> Types => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
 
-    public IEnumerable<Type> Converters => throw new NotImplementedException();
-
     public string Description => "Simple object model for with some types for tests.";
 
     public string Name => nameof(TestKit);
@@ -40,6 +38,8 @@ namespace Tests
     public string Author => "Dimitrie";
 
     public string WebsiteOrEmail => "hello@Speckle.Core.works";
+
+    public IEnumerable<string> Converters { get => new List<string>(); }
 
     public TestKit() { }
 
@@ -71,6 +71,11 @@ namespace Tests
     public void SetContextDocument(object @object)
     {
       throw new NotImplementedException();
+    }
+
+    public ISpeckleConverter LoadConverter(string app)
+    {
+      return null;
     }
   }
 

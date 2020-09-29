@@ -30,9 +30,9 @@ namespace ExampleApp
       // server is running (`npm run dev:server`) as well as the frontend (`npm run dev:frontend`).
       // It will open a browser window where you can register or login.
 
-      //await Auth();
+      await Auth();
 
-      await Subscriptions.SubscriptionConnection();
+      //await Subscriptions.SubscriptionConnection();
 
       Console.Clear();
 

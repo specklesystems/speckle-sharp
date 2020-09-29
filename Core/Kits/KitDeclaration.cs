@@ -13,8 +13,6 @@ namespace Speckle.Core.Kits
   {
     public IEnumerable<Type> Types => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
 
-    public IEnumerable<Type> Converters => throw new NotImplementedException();
-
     public string Description => "Base Speckle models for revisions, streams, etc.";
 
     public string Name => nameof(CoreKit);
@@ -22,6 +20,8 @@ namespace Speckle.Core.Kits
     public string Author => "Dimitrie";
 
     public string WebsiteOrEmail => "hello@speckle.systems";
+
+    public IEnumerable<string> Converters { get => new List<string>(); }
 
     public CoreKit() { }
 
@@ -53,6 +53,11 @@ namespace Speckle.Core.Kits
     public void SetContextDocument(object @object)
     {
       throw new NotImplementedException();
+    }
+
+    public ISpeckleConverter LoadConverter(string app)
+    {
+      return null;
     }
   }
 }
