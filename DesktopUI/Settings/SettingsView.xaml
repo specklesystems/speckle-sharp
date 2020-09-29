@@ -70,6 +70,7 @@
 
         <md:Badged
           Badge="{Binding LocalAccounts.Count}"
+          BadgeForeground="{DynamicResource MaterialDesignPaper}"
           BadgePlacementMode="Right"
           ToolTip="total accounts"
           ToolTipService.Placement="Mouse">
