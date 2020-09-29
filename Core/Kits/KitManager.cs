@@ -13,29 +13,41 @@ namespace Speckle.Core.Kits
 
   public static class KitManager
   {
-    public static readonly string KitsFolder = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "Speckle", "Kits");
+    public static string KitsFolder { get; private set; } = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "Speckle", "Kits");
 
     public static readonly AssemblyName SpeckleAssemblyName = typeof(Base).GetTypeInfo().Assembly.GetName();
 
-    private static Dictionary<string,ISpeckleKit> _SpeckleKits = new Dictionary<string, ISpeckleKit>();
+    private static Dictionary<string, ISpeckleKit> _SpeckleKits = new Dictionary<string, ISpeckleKit>();
 
     private static List<Type> _AvailableTypes = new List<Type>();
 
     private static bool _initialized = false;
 
-    //TODO: get kit by path?
+    /// <summary>
+    /// Checks wether a specific kit exists.
+    /// </summary>
+    /// <param name="assemblyFullName"></param>
+    /// <returns></returns>
     public static bool HasKit(string assemblyFullName)
     {
       Initialize();
       return _SpeckleKits.ContainsKey(assemblyFullName);
-      
     }
+     
+    /// <summary>
+    /// Gets a sepcific kit.
+    /// </summary>
+    /// <param name="assemblyFullName"></param>
+    /// <returns></returns>
     public static ISpeckleKit GetKit(string assemblyFullName)
     {
       Initialize();
       return _SpeckleKits[assemblyFullName];
-
     }
+
+    /// <summary>
+    /// Returns a list of all the kits found on this users's device.
+    /// </summary>
     public static IEnumerable<ISpeckleKit> Kits
     {
       get
@@ -45,6 +57,9 @@ namespace Speckle.Core.Kits
       }
     }
 
+    /// <summary>
+    /// Returns a list of all the types found in all the kits on this user's device.
+    /// </summary>
     public static IEnumerable<Type> Types
     {
       get
@@ -53,6 +68,42 @@ namespace Speckle.Core.Kits
         return _AvailableTypes;
       }
     }
+
+    /// <summary>
+    /// Gets the default Speckle provided kit, "Objects".
+    /// </summary>
+    /// <returns></returns>
+    public static ISpeckleKit GetDefaultKit()
+    {
+      Initialize();
+      return _SpeckleKits.FirstOrDefault(kvp => kvp.Value.Name == "Objects").Value;
+    }
+
+    /// <summary>
+    /// TODO: Returns all the kits with potential converters for the software app. 
+    /// </summary>
+    /// <param name="app"></param>
+    /// <returns></returns>
+    public static IEnumerable<ISpeckleKit> GetKitsWithConvertersForApp(string app)
+    {
+      throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Tells the kit manager to initialise from a specific location.
+    /// </summary>
+    /// <param name="kitFolderLocation"></param>
+    public static void Initialize(string kitFolderLocation)
+    {
+      if (_initialized) throw new SpeckleException("The kit manager has already been initialised. Make sure you call this method earlier in your code!");
+      
+      KitsFolder = kitFolderLocation;
+      Load();
+      _initialized = true;
+    }
+
+    #region Private Methods
+
     private static void Initialize()
     {
       if (!_initialized)
@@ -61,6 +112,7 @@ namespace Speckle.Core.Kits
         _initialized = true;
       }
     }
+
     private static void Load()
     {
       Log.AddBreadcrumb("Initialize Kit Manager");
@@ -118,17 +170,25 @@ namespace Speckle.Core.Kits
 
     private static Type GetKitClass(Assembly assembly)
     {
-      var kitClass = assembly.GetTypes().FirstOrDefault(type =>
+      try
       {
-        return type
-        .GetInterfaces()
-        .FirstOrDefault(iface =>
+        var kitClass = assembly.GetTypes().FirstOrDefault(type =>
         {
-          return iface.Name == typeof(Speckle.Core.Kits.ISpeckleKit).Name;
-        }) != null;
-      });
+          return type
+          .GetInterfaces()
+          .FirstOrDefault(iface =>
+          {
+            return iface.Name == typeof(Speckle.Core.Kits.ISpeckleKit).Name;
+          }) != null;
+        });
 
-      return kitClass;
+        return kitClass;
+      }
+      catch (Exception e)
+      {
+        Log.CaptureException(e);
+        return null;
+      }
     }
 
     private static Assembly SafeLoadAssembly(AppDomain domain, AssemblyName assemblyName)
@@ -154,7 +214,8 @@ namespace Speckle.Core.Kits
         return null;
       }
     }
-
+    
+    #endregion
   }
 
   public static class AssemblyExtensions

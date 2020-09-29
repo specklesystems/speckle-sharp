@@ -33,7 +33,9 @@
     <Compile Remove="Core\User.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GraphQLClient\src\GraphQL.Client\GraphQL.Client.csproj" />
+    <ProjectReference Include="..\GraphQLClient\src\GraphQL.Client\GraphQL.Client.csproj">
+      <ReferenceSourceTarget>ProjectReference</ReferenceSourceTarget>
+    </ProjectReference>
     <ProjectReference Include="..\GraphQLClient\src\GraphQL.Client.Serializer.Newtonsoft\GraphQL.Client.Serializer.Newtonsoft.csproj">
       <ReferenceSourceTarget>ProjectReference</ReferenceSourceTarget>
     </ProjectReference>
