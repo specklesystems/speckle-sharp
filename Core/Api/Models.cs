@@ -91,6 +91,11 @@ namespace Speckle.Core.Api
 
     public List<Collaborator> collaborators { get; set; }
     public Branches branches { get; set; }
+
+    public override string ToString()
+    {
+      return $"Steam ({name} | {id})";
+    }
   }
 
   public class Collaborator
@@ -98,6 +103,11 @@ namespace Speckle.Core.Api
     public string id { get; set; }
     public string name { get; set; }
     public string role { get; set; }
+
+    public override string ToString()
+    {
+      return $"Collaborator ({name} | {role} | {id})";
+    }
   }
 
   public class Branches
@@ -105,7 +115,6 @@ namespace Speckle.Core.Api
     public int totalCount { get; set; }
     public DateTime cursor { get; set; }
     public List<Branch> items { get; set; }
-
   }
 
   public class Commits
@@ -126,6 +135,11 @@ namespace Speckle.Core.Api
 
     public string referencedObject { get; set; }
 
+    public override string ToString()
+    {
+      return $"Commit ({message} | {id})";
+    }
+
   }
 
 
@@ -135,6 +149,11 @@ namespace Speckle.Core.Api
     public string name { get; set; }
     public string description { get; set; }
     public Commits commits { get; set; }
+
+    public override string ToString()
+    {
+      return $"Branch ({name} | {id})";
+    }
 
   }
 
@@ -159,6 +178,11 @@ namespace Speckle.Core.Api
     //public object profiles { get; set; }
     public string role { get; set; }
     public Streams streams { get; set; }
+
+    public override string ToString()
+    {
+      return $"User ({email} | {name} | {id})";
+    }
 
   }
 

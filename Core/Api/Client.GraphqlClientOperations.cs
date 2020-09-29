@@ -265,7 +265,7 @@ namespace Speckle.Core.Api
 
         if (res.Errors != null)
           Log.CaptureAndThrow(new GraphQLException("Could not delete stream"), res.Errors);
-        
+
 
         return (bool)res.Data["streamDelete"];
       }
