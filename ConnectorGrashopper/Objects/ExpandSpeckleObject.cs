@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Timers;
 
 namespace ConnectorGrashopper.Objects
 {
@@ -131,8 +132,7 @@ namespace ConnectorGrashopper.Objects
 
       myParam.NickName = myParam.Name;
 
-      myParam.AttributesChanged += (sender, e) => { Debug.WriteLine($"Attributes Changes."); };
-      myParam.ObjectChanged += (sender, e) => { Debug.WriteLine($"Object Changes."); };
+      myParam.ObjectChanged += (sender, e) => { };
 
       return myParam;
     }

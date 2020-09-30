@@ -25,6 +25,8 @@ namespace ConnectorGrashopper
 
     private ISpeckleKit Kit;
 
+    private System.Timers.Timer Debouncer;
+
     public CreateSpeckleObject()
       : base("Create Speckle Object", "CSO",
           "Allows you to create a Speckle object by setting its keys and values.",
@@ -40,6 +42,16 @@ namespace ConnectorGrashopper
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
       }
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document);
+      Debouncer = new System.Timers.Timer(2000) { AutoReset = false };
+      Debouncer.Elapsed += (s, e) => Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { this.ExpireSolution(true); });
+
+      foreach (var param in Params.Input)
+        param.ObjectChanged += (s, e) => Debouncer.Start();
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -188,9 +200,7 @@ namespace ConnectorGrashopper
       };
 
       myParam.NickName = myParam.Name;
-
-      myParam.AttributesChanged += (sender, e) => { Debug.WriteLine($"Attributes Changes."); };
-      myParam.ObjectChanged += (sender, e) => { Debug.WriteLine($"Object Changes."); };
+      myParam.ObjectChanged += (sender, e) => Debouncer.Start();
 
       return myParam;
     }
@@ -205,4 +215,5 @@ namespace ConnectorGrashopper
     }
 
   }
+
 }

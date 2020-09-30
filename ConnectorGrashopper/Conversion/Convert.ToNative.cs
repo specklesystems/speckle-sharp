@@ -27,7 +27,7 @@ namespace ConnectorGrashopper.Conversion
       try
       {
         Converter = Kit.LoadConverter(Applications.Rhino);
-        Message = $"Using the {Kit.Name} Converter";
+        Message = $"Using the \n{Kit.Name}\n Kit Converter";
       }
       catch
       {
@@ -57,7 +57,7 @@ namespace ConnectorGrashopper.Conversion
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
 
-      Message = $"Using the {Kit.Name} Converter";
+      Message = $"Using the \n{Kit.Name}\n Kit Converter";
       ExpireSolution(true);
     }
 
