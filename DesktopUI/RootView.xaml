@@ -92,15 +92,10 @@
                   <md:PackIcon Kind="WhiteBalanceSunny" />
                 </TextBlock>
                 <!--  TODO figure out why this isn't changing the theme  -->
-                <!--<ToggleButton
-                x:Name="DarkModeToggleButton"
-                Command="{Binding ToggleThemeCommand}"
-                CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
-                IsChecked="{Binding DarkMode, Mode=TwoWay}" />-->
                 <ToggleButton
                   x:Name="DarkModeToggleButton"
-                  Click="MenuDarkModeButton_Click"
-                  IsChecked="{Binding DarkMode, Mode=TwoWay}" />
+                  Command="{s:Action ToggleTheme}"
+                  IsChecked="{Binding DarkMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Margin="8,0,0,0">
                   <md:PackIcon Kind="NightSky" />
                 </TextBlock>
