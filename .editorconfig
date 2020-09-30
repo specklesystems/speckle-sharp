@@ -6,6 +6,10 @@ root=true
 # Don't use tabs for indentation.
 [*]
 indent_style=space
+
+# ReSharper properties
+resharper_xml_attribute_style=on_different_lines
+resharper_xml_pi_attribute_style=on_different_lines
 # (Please don't specify an indent_size here; that has too many unintended consequences.)
 
 # Code files
