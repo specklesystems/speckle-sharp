@@ -26,6 +26,7 @@ namespace ConnectorGrashopper.Conversion
       try
       {
         Converter = Kit.LoadConverter(Applications.Rhino);
+        Message = $"Using the {Kit.Name} Converter";
       }
       catch
       {
@@ -57,6 +58,18 @@ namespace ConnectorGrashopper.Conversion
 
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
+    }
+
+    public override bool Read(GH_IReader reader)
+    {
+      // TODO: Read kit name and instantiate converter
+      return base.Read(reader);
+    }
+
+    public override bool Write(GH_IWriter writer)
+    {
+      // TODO: Write kit name to disk
+      return base.Write(writer);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -95,16 +108,5 @@ namespace ConnectorGrashopper.Conversion
       DA.SetData(0, conversionResult);
     }
 
-    public override bool Read(GH_IReader reader)
-    {
-      // TODO: Read kit name and instantiate converter
-      return base.Read(reader);
-    }
-
-    public override bool Write(GH_IWriter writer)
-    {
-      // TODO: Write kit name to disk
-      return base.Write(writer);
-    }
   }
 }
