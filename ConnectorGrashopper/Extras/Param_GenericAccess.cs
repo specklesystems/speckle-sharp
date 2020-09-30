@@ -6,7 +6,7 @@ using Grasshopper.Kernel.Parameters;
 
 namespace ConnectorGrashopper.Extras
 {
-  public class ParamGenericAccess : Param_GenericObject
+  public class Param_GenericAccess : Param_GenericObject
   {
     public override GH_Exposure Exposure => GH_Exposure.hidden;
 
