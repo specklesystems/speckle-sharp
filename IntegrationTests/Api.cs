@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Http;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,6 +92,14 @@ namespace TestsIntegration
       Assert.NotNull(res);
       Assert.AreEqual("master", res.branches.items[0].name);
       Assert.IsNotEmpty(res.collaborators);
+    }
+
+    [Test, Order(12)]
+    public async Task StreamSearch()
+    {
+      var res = await myClient.StreamSearch(streamId);
+
+      Assert.NotNull(res);
     }
 
     [Test, Order(20)]
