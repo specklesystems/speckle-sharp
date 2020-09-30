@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Collections.Generic;
 
@@ -78,7 +78,7 @@ namespace Speckle.Core.Api
 
   #endregion
 
-  public class Stream
+  public class  Stream
   {
     public string id { get; set; }
     public string name { get; set; }
@@ -190,6 +190,27 @@ namespace Speckle.Core.Api
   {
     public User user { get; set; }
 
+  }
+
+  public class UserSearchData
+  {
+    public UserSearch userSearch { get; set; }
+  }
+
+  public class UserSearch
+  {
+    public DateTime cursor { get; set; }
+    public List<UserSearchResult> items { get; set; }
+  }
+
+  public class UserSearchResult
+  {
+    public string id { get; set; }
+    public string name { get; set; }
+    public string bio { get; set; }
+    public string company { get; set; }
+    public string avatar { get; set; }
+    public bool verified { get; set; }
   }
 
   public class StreamData

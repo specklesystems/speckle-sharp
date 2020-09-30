@@ -49,6 +49,52 @@ namespace Speckle.Core.Api
       }
     }
 
+    /// <summary>
+    /// Searches for a user on the server
+    /// </summary>
+    /// <param name="query">String to search for. Must be at least 3 characters</param>
+    /// <param name="limit">Max number of users to return</param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public async Task<List<UserSearchResult>> UserSearch(string query, int limit = 10)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query UserSearch($query: String!, $limit: Int!) {
+                      userSearch(query: $query, limit: $limit) {
+                        cursor,
+                        items {
+                          id
+                          name
+                          bio
+                          company
+                          avatar
+                          verified
+                        }
+                      }
+                    }",
+          Variables = new
+          {
+            query,
+            limit 
+          }
+        };
+        var res = await GQLClient.SendMutationAsync<UserSearchData>(request);
+
+        if ( res.Errors != null )
+          Log.CaptureAndThrow(new GraphQLException("Could not search users"), res.Errors);
+
+        return res.Data.userSearch.items;
+      }
+      catch ( Exception e )
+      {
+        Log.CaptureException(e);
+        throw e;
+      }
+    }
+
     #region streams
 
     /// <summary>
