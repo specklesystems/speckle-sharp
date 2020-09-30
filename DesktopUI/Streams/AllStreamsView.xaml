@@ -12,7 +12,6 @@
   mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
-
       <DataTemplate x:Key="StreamCardTemplate">
         <md:Card Width="Auto" Margin="8">
           <Grid Margin="16">
@@ -26,6 +25,7 @@
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
               <TextBlock
                 Grid.Column="0"
@@ -35,46 +35,96 @@
                 Text="{Binding stream.name}"
                 TextWrapping="Wrap" />
               <Button
-                x:Name="ShareStreamButton"
+                x:Name="SendStreamButton"
                 Grid.Column="1"
-                Margin="2"
+                Margin="8,0"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
-                Command="{s:Action ShowShareDialog}"
-                Content="{md:PackIcon Kind=Send,
+                md:ButtonProgressAssist.IsIndicatorVisible="{Binding}"
+                Command="{s:Action ConvertAndSendObjects}"
+                CommandParameter="{Binding stream.id}"
+                Content="{md:PackIcon Kind=CloudUpload,
                                       Size=20}"
-                Foreground="{StaticResource MaterialDesignLightBackground}"
                 Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-                ToolTip="Share this stream!" />
+                ToolTip="Send objects to Speckle" />
+              <md:Badged
+                Grid.Column="1"
+                Margin="48,5,0,0"
+                Badge="{Binding placeholders.Count}"
+                BadgeColorZoneMode="Accent"
+                ToolTip="objects to send"
+                Visibility="{Binding placeholders.Count, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+              <Button
+                Grid.Column="2"
+                Margin="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                md:ButtonProgressAssist.IsIndicatorVisible="{Binding}"
+                Command="{Binding}"
+                Content="{md:PackIcon Kind=CloudDownload,
+                                      Size=20}"
+                Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
+                ToolTip="Receive changes from Speckle" />
+              <md:Badged
+                Grid.Column="2"
+                Margin="48,5,0,0"
+                Badge="{md:PackIcon Kind=ExclamationThick}"
+                BadgeColorZoneMode="Accent"
+                ToolTip="objects to send"
+                Visibility="Hidden" />
             </Grid>
 
             <Grid Grid.Row="1">
-              <StackPanel Orientation="Horizontal">
-                <md:Chip
-                  Height="28"
-                  md:ButtonAssist.CornerRadius="14"
-                  Command="{s:Action CopyStreamId}"
-                  CommandParameter="{Binding stream.id}"
-                  FontFamily="Consolas"
-                  FontSize="12"
-                  ToolTip="Stream ID">
-                  <StackPanel Orientation="Horizontal">
-                    <md:PackIcon
-                      Width="12"
-                      Height="12"
-                      Margin="0,0,4,0"
-                      VerticalAlignment="Center"
-                      Kind="ContentCopy" />
-                    <TextBlock Text="{Binding stream.id}" />
-                  </StackPanel>
-                </md:Chip>
+              <StackPanel Orientation="Vertical">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+
+                  <md:Chip
+                    Grid.Column="0"
+                    Height="28"
+                    md:ButtonAssist.CornerRadius="14"
+                    Command="{s:Action CopyStreamId}"
+                    CommandParameter="{Binding stream.id}"
+                    FontFamily="Consolas"
+                    FontSize="12"
+                    ToolTip="Stream ID">
+                    <StackPanel Orientation="Horizontal">
+                      <md:PackIcon
+                        Width="12"
+                        Height="12"
+                        Margin="0,0,4,0"
+                        VerticalAlignment="Center"
+                        Kind="ContentCopy" />
+                      <TextBlock Text="{Binding stream.id}" />
+                    </StackPanel>
+                  </md:Chip>
+
+                  <Grid
+                    Grid.Column="2"
+                    Margin="0,18,0,12"
+                    VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                      <md:PackIcon Kind="CubeOutline" />
+                      <TextBlock Margin="0,0,12,0" Text="{Binding objects.Count, StringFormat=' {0} objects'}" />
+                      <md:PackIcon Kind="History" ToolTip="commits on master branch" />
+                      <TextBlock Margin="4,0,12,0" Text="{Binding stream.branches.items[0].commits.items.Count}" />
+                      <md:PackIcon Kind="Accounts" ToolTip="collaborators" />
+                      <TextBlock Margin="4,0,12,0" Text="{Binding stream.collaborators.Count}" />
+                    </StackPanel>
+                  </Grid>
+                </Grid>
               </StackPanel>
             </Grid>
 
-            <Grid Grid.Row="2">
+            <Grid Grid.Row="2" Margin="0,10,0,0">
               <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
               <!--  <TextBlock  -->
@@ -83,20 +133,32 @@
               <!--  FontSize="10"  -->
               <!--  Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />  -->
               <Button
-                Grid.Column="1"
-                Width="150"
-                Command="{s:Action ConvertAndSendObjects}"
-                CommandParameter="{Binding stream.id}"
-                Content="SEND TO SERVER"
-                Style="{StaticResource MaterialDesignFlatButton}"
-                Visibility="{Binding placeholders, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-              <Button
-                Grid.Column="2"
-                Width="90"
+                Grid.Column="0"
+                Width="Auto"
                 Command="{s:Action ShowStreamInfo}"
                 CommandParameter="{Binding}"
                 Content="DETAILS"
                 Style="{StaticResource MaterialDesignFlatButton}" />
+              <StackPanel Grid.Column="3" Orientation="Horizontal">
+                <Button
+                  Width="28"
+                  Height="28"
+                  md:RippleAssist.ClipToBounds="True"
+                  Content="{md:PackIcon Kind=Heart,
+                                        Size=18}"
+                  Style="{StaticResource MaterialDesignIconButton}" />
+                <Button
+                  x:Name="ShareStreamButton"
+                  Width="28"
+                  Height="28"
+                  md:RippleAssist.ClipToBounds="True"
+                  Command="{s:Action ShowShareDialog}"
+                  CommandParameter="{Binding}"
+                  Content="{md:PackIcon Kind=ShareVariant,
+                                        Size=18}"
+                  Style="{StaticResource MaterialDesignIconButton}"
+                  ToolTip="Share this stream!" />
+              </StackPanel>
             </Grid>
           </Grid>
         </md:Card>
@@ -131,6 +193,7 @@
       <DockPanel>
 
         <!--  TODO absolute positioning rel to window  -->
+
         <Button
           x:Name="CreateStreamButton"
           Width="45"
@@ -142,10 +205,10 @@
           Content="{md:PackIcon Kind=Plus,
                                 Size=24}"
           DockPanel.Dock="Bottom"
-          Foreground="{StaticResource MaterialDesignLightBackground}"
           Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
           ToolTip="Create a new stream"
           ToolTipService.Placement="Left" />
+
       </DockPanel>
     </Grid>
   </md:DialogHost>
