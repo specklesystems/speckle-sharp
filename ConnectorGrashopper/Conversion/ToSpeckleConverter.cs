@@ -55,6 +55,7 @@ namespace ConnectorGrashopper.Conversion
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
 
+      Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
     }
 

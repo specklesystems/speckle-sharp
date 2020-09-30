@@ -29,7 +29,7 @@ namespace ConnectorGrashopper
 
     protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("Debug", "d", "frizzle", GH_ParamAccess.list);
+      pManager.AddGenericParameter("Debug", "d", "debug output, please ignore", GH_ParamAccess.list);
       pManager.AddGenericParameter("Object", "O", "The created object", GH_ParamAccess.item);
     }
 
