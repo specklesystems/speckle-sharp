@@ -73,17 +73,33 @@ namespace Speckle.DesktopUI.Streams
         {
         new Branch()
         {
-        id = "123",
-        name = "master",
-        commits = new Commits()
-        {
-        totalCount = 5,
-        }
+          id = "123",
+          name = "master",
+          commits = new Commits()
+          {
+            items = new List<Commit>()
+            {
+              new Commit()
+              {
+                authorName = "izzy 2.0",
+                id = "commit123",
+                message= "a totally real commit 💫",
+                createdAt = "sometime"
+              },
+              new Commit()
+              {
+                authorName = "izzy bot",
+                id = "commit321",
+                message= "look @ all these changes 👩‍🎤",
+                createdAt = "03/05/2030"
+              }
+            }
+          }
         },
         new Branch()
         {
-        id = "321",
-        name = "dev"
+          id = "321",
+          name = "dev"
         }
         }
       };
@@ -121,6 +137,8 @@ namespace Speckle.DesktopUI.Streams
           accountId = client.AccountId,
         });
       }
+
+      collection[0].placeholders.Add(new Core.Models.Base() { id = "random_obj" });
 
       return collection;
     }
