@@ -20,12 +20,11 @@ namespace Speckle.Core.Logging
 
 
       //TODO: set DSN & env in CI/CD pipeline
-      //TODO: turn Debug off
       SentrySdk.Init(o =>
         {
           o.Dsn = new Dsn("https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846");
           o.Environment = "dev";
-          o.Debug = true;
+          o.Debug = false;
           o.Release = "SpeckleCore@"+Assembly.GetExecutingAssembly().GetName().Version.ToString();  
         });
 
