@@ -1,4 +1,6 @@
-﻿using Grasshopper.Kernel;
+﻿using ConnectorGrashopper.Extras;
+using Grasshopper.Kernel;
+using Speckle.Core.Api;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,7 @@ namespace ConnectorGrashopper.Conversion
 {
   public class SerializeObject : GH_Component
   {
-    public override Guid ComponentGuid { get => new Guid("191FE5ED-3FCA-4391-858F-36DB27812167"); }
+    public override Guid ComponentGuid { get => new Guid("EDEBF1F4-3FC3-4E01-95DD-286FF8804EB0"); }
 
     protected override System.Drawing.Bitmap Icon { get => null; }
 
@@ -27,12 +29,20 @@ namespace ConnectorGrashopper.Conversion
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("S", "S", "Serialized objects.", GH_ParamAccess.item);
+      pManager.AddTextParameter("S", "S", "Serialized objects.", GH_ParamAccess.item);
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not implemented yet");
+      GH_SpeckleBase obj = null;
+      DA.GetData(0, ref obj);
+
+      if (obj == null) return;
+
+      var text = Operations.Serialize(obj.Value);
+      DA.SetData(0, text);
+
+      //AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not implemented yet");
     }
 
   }

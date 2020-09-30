@@ -13,9 +13,10 @@ using System.Windows.Forms;
 
 namespace ConnectorGrashopper.Objects
 {
+  // TODO: Convert to task capable component / async so as to not block the ffffing ui
   public class ExpandSpeckleObject : GH_Component, IGH_VariableParameterComponent
   {
-    public override Guid ComponentGuid { get => new Guid("cfa4e9b4-3ae4-4bb9-90d8-801c34e9a37e"); }
+    public override Guid ComponentGuid { get => new Guid("C3BC3130-97C9-4DDE-9D4F-7A7FB82F7F2E"); }
 
     protected override System.Drawing.Bitmap Icon { get => null; }
 
@@ -24,8 +25,8 @@ namespace ConnectorGrashopper.Objects
     private ISpeckleKit Kit;
 
     public ExpandSpeckleObject()
-      : base("Create Speckle Object", "CSO",
-          "Allows you to create a Speckle object by setting its keys and values.",
+      : base("Expand Speckle Object", "ESO",
+          "Allows you to decompose a Seckle object in its constituent parts.",
           "Speckle 2", "Object Management")
     {
       Kit = KitManager.GetDefaultKit();
@@ -90,7 +91,7 @@ namespace ConnectorGrashopper.Objects
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      // TODO
+      AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not implemented");
     }
 
     private object TryConvertItem(object value)

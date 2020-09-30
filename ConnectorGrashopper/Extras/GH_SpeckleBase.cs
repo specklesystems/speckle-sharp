@@ -19,7 +19,7 @@ namespace ConnectorGrashopper.Extras
     {
       return Value;
     }
-
+     
     public override bool CastFrom(object source)
     {
       return false;

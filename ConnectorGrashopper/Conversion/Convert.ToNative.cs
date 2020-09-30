@@ -8,6 +8,7 @@ using System.Windows.Forms;
 
 namespace ConnectorGrashopper.Conversion
 {
+  // TODO: Convert to task capable component / async so as to not block the ffffing ui
   public class ToNativeConverter : GH_Component
   {
     public override Guid ComponentGuid { get => new Guid("98027377-5A2D-4EBA-B8D4-D72872593CD8"); }

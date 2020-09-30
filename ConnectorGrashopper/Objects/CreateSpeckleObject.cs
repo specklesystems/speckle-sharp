@@ -14,6 +14,7 @@ using System.Linq;
 
 namespace ConnectorGrashopper
 {
+  // TODO: Convert to task capable component / async so as to not block the ffffing ui
   public class CreateSpeckleObject : GH_Component, IGH_VariableParameterComponent
   {
     public override Guid ComponentGuid { get => new Guid("cfa4e9b4-3ae4-4bb9-90d8-801c34e9a37e"); }

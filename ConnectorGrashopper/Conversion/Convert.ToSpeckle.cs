@@ -8,6 +8,7 @@ using System.Windows.Forms;
 
 namespace ConnectorGrashopper.Conversion
 {
+  // TODO: Convert to task capable component / async so as to not block the ffffing ui
   public class ToSpeckleConverter : GH_Component
   {
     public override Guid ComponentGuid { get => new Guid("2092AF4C-51CD-4CB3-B297-5348C51FC49F"); }

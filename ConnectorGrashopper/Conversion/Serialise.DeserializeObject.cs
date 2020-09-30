@@ -1,4 +1,6 @@
-﻿using Grasshopper.Kernel;
+﻿using ConnectorGrashopper.Extras;
+using Grasshopper.Kernel;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +24,7 @@ namespace ConnectorGrashopper.Conversion
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("O", "O", "Speckle objects you want to serialize.", GH_ParamAccess.item);
+      pManager.AddTextParameter("O", "O", "Speckle objects you want to serialize.", GH_ParamAccess.item);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -32,7 +34,15 @@ namespace ConnectorGrashopper.Conversion
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not implemented yet");
+      string text = null;
+      DA.GetData(0, ref text);
+      
+      if (text == null) return;
+
+      var obj = Speckle.Core.Api.Operations.Deserialize(text);
+      DA.SetData(0, new GH_SpeckleBase() { Value = obj });
+
+      //AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not implemented yet");
     }
 
   }
