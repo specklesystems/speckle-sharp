@@ -3,16 +3,23 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace Speckle.Objects.Geometry
 {
   public class Circle : Base, ICurve
   {
     public double? radius { get; set; }
+    
     public Plane plane { get; set; }
-    public Point center { get { return plane?.origin; } }
-    public Vector normal { get { return plane?.normal; } }
+    
     public Interval domain { get; set; }
+
+    [JsonIgnore]
+    public Point center { get { return plane?.origin; } }
+
+    [JsonIgnore]
+    public Vector normal { get { return plane?.normal; } }
 
     public Circle()
     {

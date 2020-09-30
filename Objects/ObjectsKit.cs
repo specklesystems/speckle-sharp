@@ -13,7 +13,7 @@ namespace Speckle.Objects
   public class ObjectsKit : ISpeckleKit
   {
 
-    public string Description => "Default Speckle Kit";
+    public string Description => "The default Speckle Kit.";
     public string Name => "Objects";
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
