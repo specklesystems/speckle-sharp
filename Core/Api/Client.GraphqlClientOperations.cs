@@ -56,7 +56,7 @@ namespace Speckle.Core.Api
     /// <param name="limit">Max number of users to return</param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public async Task<List<UserSearchResult>> UserSearch(string query, int limit = 10)
+    public async Task<List<User>> UserSearch(string query, int limit = 10)
     {
       try
       {
