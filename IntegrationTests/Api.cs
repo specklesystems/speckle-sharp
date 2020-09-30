@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,6 +57,14 @@ namespace TestsIntegration
     public async Task UserGet()
     {
       var res = await myClient.UserGet();
+
+      Assert.NotNull(res);
+    }
+
+    [Test]
+    public async Task UserSearch()
+    {
+      var res = await myClient.UserSearch(firstUserAccount.userInfo.email);
 
       Assert.NotNull(res);
     }
