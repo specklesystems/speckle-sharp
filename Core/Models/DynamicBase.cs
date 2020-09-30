@@ -58,7 +58,7 @@ namespace Speckle.Core.Models
     /// <returns></returns>
     public bool HasMember(string key)
     {
-      return properties.ContainsKey(key) && properties[key] !=null;
+      return properties.ContainsKey(key) && properties[key] != null;
     }
 
     /// <summary>
@@ -73,8 +73,7 @@ namespace Speckle.Core.Models
 
       try
       {
-        if( GetType().GetProperty(key) != null)
-          return (T)GetType().GetProperty(key).GetValue(this) != null;
+        return (T)GetType().GetProperty(key).GetValue(this) != null;
       }
       catch
       {
@@ -161,8 +160,6 @@ namespace Speckle.Core.Models
       }
     }
 
-
-
     /// <summary>
     /// Gets all of the property names on this class, dynamic or not.
     /// </summary>
@@ -204,20 +201,12 @@ namespace Speckle.Core.Models
     }
 
     /// <summary>
-    /// Gets & sets the dynamic properties quickly
+    /// Flashes the properties bag. Use at your own risk! 
     /// </summary>
-    /// <returns></returns>
-    [JsonIgnore]
-    public Dictionary<string, object> DynamicProperties
+    /// <param name="props"></param>
+    public void SetDynamicMembers(Dictionary<string, object> props)
     {
-      get
-      {
-        return properties;
-      }
-      set
-      {
-        this.properties = value;
-      }
+      throw new NotImplementedException();
     }
 
   }
