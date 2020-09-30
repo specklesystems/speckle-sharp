@@ -57,15 +57,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Conversion\Serialise.SerialiseObject.cs" />
     <Compile Include="Extras\Param_GenericAccess.cs" />
-    <Compile Include="Conversion\ToNativeConverter.cs" />
-    <Compile Include="Conversion\ToSpeckleConverter.cs" />
+    <Compile Include="Conversion\Convert.ToNative.cs" />
+    <Compile Include="Conversion\Convert.ToSpeckle.cs" />
     <Compile Include="Extras\GH_SpeckleBase.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
     <Compile Include="ConnectorGrashopperInfo.cs" />
+    <Compile Include="Objects\ExpandSpeckleObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Compile Include="Conversion\Serialise.DeserializeObject.cs" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{362464e5-e47b-4ff8-b563-a1066a1ec732}</Project>
