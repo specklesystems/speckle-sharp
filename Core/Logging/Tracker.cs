@@ -48,7 +48,7 @@ namespace Speckle.Core.Logging
         { 
           _tracker = new PiwikTracker(SiteId, PiwikBaseUrl);
           _tracker.SetCustomVariable(1, "hostApplication", Setup.HostApplication);
-          _tracker.SetUserId(Setup.DeviceID);
+          _tracker.SetUserId(Setup.SUUID);
         }
         return _tracker;
       }
