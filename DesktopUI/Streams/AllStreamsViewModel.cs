@@ -68,7 +68,17 @@ namespace Speckle.DesktopUI.Streams
       }
 
       var index = StreamList.IndexOf(state);
-      StreamList[index] = await _bindings.SendStream(state);
+
+      try
+      {
+        StreamList[index] = await _bindings.SendStream(state);
+      }
+      catch (Exception e)
+      {
+        _bindings.RaiseNotification($"Error: {e.Message}");
+        return;
+      }
+
       NotifyOfPropertyChange(nameof(StreamState.placeholders));
       // TODO figure out why this isn't updating in the UI
       // (should take away the button after sending)
