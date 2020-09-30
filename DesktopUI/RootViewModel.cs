@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,35 +11,38 @@ namespace Speckle.DesktopUI
   public class RootViewModel : Conductor<IScreen>.Collection.OneActive,
     IHandle<ShowNotificationEvent>,
     IHandle<ApplicationEvent>
+  {
+    private IWindowManager _windowManager;
+    private IViewModelFactory _viewModelFactory;
+    private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
+    public ConnectorBindings Bindings;
+    public string HostName => Bindings.GetApplicationHostName();
+
+    public RootViewModel(
+      IWindowManager windowManager,
+      IEventAggregator events,
+      IViewModelFactory viewModelFactory,
+      ConnectorBindings bindings)
     {
-      private IWindowManager _windowManager;
-      private IViewModelFactory _viewModelFactory;
-      private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
-      public ConnectorBindings Bindings;
-      public string HostName => Bindings.GetApplicationHostName();
+      _windowManager = windowManager;
+      _viewModelFactory = viewModelFactory;
+      Bindings = bindings;
+      LoadPages();
+      events.Subscribe(this);
 
-      public RootViewModel(
-        IWindowManager windowManager,
-        IEventAggregator events,
-        IViewModelFactory viewModelFactory,
-        ConnectorBindings bindings)
-      {
-        _windowManager = windowManager;
-        _viewModelFactory = viewModelFactory;
-        Bindings = bindings;
-        LoadPages();
-        events.Subscribe(this);
-      }
+      _darkMode = Properties.Settings.Default.Theme == BaseTheme.Dark;
+      ToggleTheme();
+    }
 
-      public ISnackbarMessageQueue Notifications
-      {
-        get => _notifications;
-        set => SetAndNotify(ref _notifications, value);
-      }
+    public ISnackbarMessageQueue Notifications
+    {
+      get => _notifications;
+      set => SetAndNotify(ref _notifications, value);
+    }
 
-      private void LoadPages()
-      {
-        var pages = new List<IScreen>
+    private void LoadPages()
+    {
+      var pages = new List<IScreen>
         {
           _viewModelFactory.CreateStreamsHomeViewModel(),
           _viewModelFactory.CreateInboxViewModel(),
@@ -47,29 +50,29 @@ namespace Speckle.DesktopUI
           _viewModelFactory.CreateSettingsViewModel()
         };
 
-        pages.ForEach(Items.Add);
+      pages.ForEach(Items.Add);
 
-        ActiveItem = pages[0];
-      }
+      ActiveItem = pages[0];
+    }
 
-      public void OpenLink(string url)
-      {
-        Link.OpenInBrowser(url);
-      }
+    public void OpenLink(string url)
+    {
+      Link.OpenInBrowser(url);
+    }
 
-      private bool _isPinned = true;
-      public bool IsPinned
-      {
-        get => _isPinned;
-        set => SetAndNotify(ref _isPinned, value);
-      }
+    private bool _isPinned = true;
+    public bool IsPinned
+    {
+      get => _isPinned;
+      set => SetAndNotify(ref _isPinned, value);
+    }
 
-      private bool _darkMode;
-      public bool DarkMode
-      {
-        get => _darkMode;
-        set => SetAndNotify(ref _darkMode, value);
-      }
+    private bool _darkMode;
+    public bool DarkMode
+    {
+      get => _darkMode;
+      set => SetAndNotify(ref _darkMode, value);
+    }
 
     public void ToggleTheme()
     {
@@ -83,14 +86,14 @@ namespace Speckle.DesktopUI
       Properties.Settings.Default.Save();
     }
 
-      public void Handle(ShowNotificationEvent message)
-      {
-        Notifications.Enqueue(message.Notification);
-      }
-
-      public void Handle(ApplicationEvent message)
-      {
-        Notifications.Enqueue($"App Event: {message.Type}");
-      }
+    public void Handle(ShowNotificationEvent message)
+    {
+      Notifications.Enqueue(message.Notification);
     }
+
+    public void Handle(ApplicationEvent message)
+    {
+      Notifications.Enqueue($"App Event: {message.Type}");
+    }
+  }
 }
