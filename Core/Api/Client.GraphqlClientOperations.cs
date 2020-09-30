@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -178,6 +178,57 @@ namespace Speckle.Core.Api
       }
     }
 
+    /// <summary>
+    /// Searches the user's streams by name, description, and ID
+    /// </summary>
+    /// <param name="query">String query to search for</param>
+    /// <param name="limit">Max number of streams to return</param>
+    /// <returns></returns>
+    public async Task<List<Stream>> StreamSearch(string query, int limit = 10)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query Streams ($query: String!, $limit: Int!) {
+                      streams(query: $query, limit: $limit) {
+                        totalCount,
+                        cursor,
+                        items {
+                          id,
+                          name,
+                          description,
+                          isPublic,
+                          createdAt,
+                          updatedAt,
+                          collaborators {
+                            id,
+                            name,
+                            role
+                          }
+                        }
+                      }     
+                    }",
+          Variables = new
+          {
+            query,
+            limit
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<StreamsData>(request);
+
+        if ( res.Errors != null )
+          Log.CaptureAndThrow(new GraphQLException("Could not search streams"), res.Errors);
+
+        return res.Data.streams.items;
+      }
+      catch ( Exception e )
+      {
+        Log.CaptureException(e);
+        throw e;
+      }
+    }
 
     /// <summary>
     /// Creates a stream.

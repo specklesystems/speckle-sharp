@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 
@@ -196,5 +196,10 @@ namespace Speckle.Core.Api
   {
     public Stream stream { get; set; }
 
+  }
+
+  public class StreamsData
+  {
+    public  Streams streams { get; set; }
   }
 }
