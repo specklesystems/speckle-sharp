@@ -33,7 +33,7 @@ namespace Speckle.Core.Logging
       {
         scope.User = new User
         {
-          Id = Setup.DeviceID,
+          Id = Setup.SUUID,
         };
         scope.SetTag("hostApplication", Setup.HostApplication);
       });
