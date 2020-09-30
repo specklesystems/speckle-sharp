@@ -4,29 +4,48 @@
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
   xmlns:root="clr-namespace:Speckle.DesktopUI"
   xmlns:s="https://github.com/canton7/Stylet">
-
-  <!--  primary  -->
-  <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="#7BBCFF" />
-  <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="#FDFDFD" />
-  <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#047EFB" />
-  <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="#FDFDFD" />
-  <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="#313BCF" />
-  <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="#FDFDFD" />
-  <!--  accent  -->
-  <SolidColorBrush x:Key="SecondaryAccentBrush" Color="#F18F01" />
-  <SolidColorBrush x:Key="SecondaryAccentForegroundBrush" Color="#FDFDFD" />
-
   <ResourceDictionary.MergedDictionaries>
+
+    <!--<md:CustomColorTheme
+      BaseTheme="Light"
+      PrimaryColor="LightBlue"
+      SecondaryColor="Orange" />-->
+    <!--  primary  -->
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.LightBlue.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+
+      <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="{StaticResource Primary400}" />
+      <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="{StaticResource Primary400Foreground}" />
+      <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#047EFB" />
+      <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="#FDFDFD" />
+      <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="#313BCF" />
+      <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="{StaticResource Primary800Foreground}" />
+    </ResourceDictionary>
+
+    <!--  secondary colour  -->
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Orange.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+
+      <!--  accent  -->
+      <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="{StaticResource Accent400}" />
+      <SolidColorBrush x:Key="SecondaryHueMidForegroundBrush" Color="#FDFDFD" />
+    </ResourceDictionary>
+
+
     <s:ApplicationLoader>
       <s:ApplicationLoader.Bootstrapper>
         <root:Bootstrapper />
       </s:ApplicationLoader.Bootstrapper>
     </s:ApplicationLoader>
-    <md:BundledTheme
-      BaseTheme="Light"
-      PrimaryColor="LightBlue"
-      SecondaryColor="Blue" />
+
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+
+    <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
+
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
     <!-- <ResourceDictionary Source="MaterialDesignTheme.TabControl.xaml" /> -->
     <!-- <ResourceDictionary Source="SpeckleDesktopUI;component/Themes/MaterialDesignTheme.TabControl.xaml" /> -->
