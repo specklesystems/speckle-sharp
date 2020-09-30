@@ -86,7 +86,11 @@ namespace Speckle.Core.Kits
     /// <returns></returns>
     public static IEnumerable<ISpeckleKit> GetKitsWithConvertersForApp(string app)
     {
-      throw new NotImplementedException();
+      foreach(var kit in Kits)
+      {
+        if (kit.Converters.Contains(app))
+          yield return kit;
+      }
     }
 
     /// <summary>

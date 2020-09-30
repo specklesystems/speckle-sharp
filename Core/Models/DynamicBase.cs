@@ -203,23 +203,6 @@ namespace Speckle.Core.Models
         yield return kvp.Key;
     }
 
-    /// <summary>
-    /// Gets & sets the dynamic properties quickly
-    /// </summary>
-    /// <returns></returns>
-    [JsonIgnore]
-    public Dictionary<string, object> DynamicProperties
-    {
-      get
-      {
-        return properties;
-      }
-      set
-      {
-        this.properties = value;
-      }
-    }
-
   }
 
 }

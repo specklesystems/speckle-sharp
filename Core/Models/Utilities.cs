@@ -1,4 +1,6 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Speckle.Core.Models
@@ -28,7 +30,7 @@ namespace Speckle.Core.Models
         case HashingFuctions.MD5:
         default:
           return Utilities.md5(input).Substring(0, HashLength);
-        
+
       }
     }
 
@@ -62,6 +64,21 @@ namespace Speckle.Core.Models
           return sb.ToString().ToLower();
         }
       }
+    }
+
+    public static bool IsSimpleType(this Type type)
+    {
+      return
+        type.IsPrimitive ||
+        new Type[] {
+        typeof(String),
+        typeof(Decimal),
+        typeof(DateTime),
+        typeof(DateTimeOffset),
+        typeof(TimeSpan),
+        typeof(Guid)
+        }.Contains(type) ||
+        Convert.GetTypeCode(type) != TypeCode.Object;
     }
   }
 }
