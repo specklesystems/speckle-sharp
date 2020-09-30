@@ -78,7 +78,7 @@ namespace Speckle.Core.Api
 
   #endregion
 
-  public class Stream
+  public class  Stream
   {
     public string id { get; set; }
     public string name { get; set; }
@@ -192,9 +192,25 @@ namespace Speckle.Core.Api
 
   }
 
+  public class UserSearchData
+  {
+    public UserSearch userSearch { get; set; }
+  }
+
+  public class UserSearch
+  {
+    public DateTime cursor { get; set; }
+    public List<User> items { get; set; }
+  }
+
   public class StreamData
   {
     public Stream stream { get; set; }
 
+  }
+
+  public class StreamsData
+  {
+    public  Streams streams { get; set; }
   }
 }

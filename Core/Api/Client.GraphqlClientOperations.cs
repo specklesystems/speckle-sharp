@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,6 +43,52 @@ namespace Speckle.Core.Api
         return res.Data.user;
       }
       catch (Exception e)
+      {
+        Log.CaptureException(e);
+        throw e;
+      }
+    }
+
+    /// <summary>
+    /// Searches for a user on the server
+    /// </summary>
+    /// <param name="query">String to search for. Must be at least 3 characters</param>
+    /// <param name="limit">Max number of users to return</param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public async Task<List<User>> UserSearch(string query, int limit = 10)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query UserSearch($query: String!, $limit: Int!) {
+                      userSearch(query: $query, limit: $limit) {
+                        cursor,
+                        items {
+                          id
+                          name
+                          bio
+                          company
+                          avatar
+                          verified
+                        }
+                      }
+                    }",
+          Variables = new
+          {
+            query,
+            limit 
+          }
+        };
+        var res = await GQLClient.SendMutationAsync<UserSearchData>(request);
+
+        if ( res.Errors != null )
+          Log.CaptureAndThrow(new GraphQLException("Could not search users"), res.Errors);
+
+        return res.Data.userSearch.items;
+      }
+      catch ( Exception e )
       {
         Log.CaptureException(e);
         throw e;
@@ -178,6 +224,57 @@ namespace Speckle.Core.Api
       }
     }
 
+    /// <summary>
+    /// Searches the user's streams by name, description, and ID
+    /// </summary>
+    /// <param name="query">String query to search for</param>
+    /// <param name="limit">Max number of streams to return</param>
+    /// <returns></returns>
+    public async Task<List<Stream>> StreamSearch(string query, int limit = 10)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query Streams ($query: String!, $limit: Int!) {
+                      streams(query: $query, limit: $limit) {
+                        totalCount,
+                        cursor,
+                        items {
+                          id,
+                          name,
+                          description,
+                          isPublic,
+                          createdAt,
+                          updatedAt,
+                          collaborators {
+                            id,
+                            name,
+                            role
+                          }
+                        }
+                      }     
+                    }",
+          Variables = new
+          {
+            query,
+            limit
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<StreamsData>(request);
+
+        if ( res.Errors != null )
+          Log.CaptureAndThrow(new GraphQLException("Could not search streams"), res.Errors);
+
+        return res.Data.streams.items;
+      }
+      catch ( Exception e )
+      {
+        Log.CaptureException(e);
+        throw e;
+      }
+    }
 
     /// <summary>
     /// Creates a stream.

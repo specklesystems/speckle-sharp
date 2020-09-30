@@ -61,6 +61,14 @@ namespace TestsIntegration
       Assert.NotNull(res);
     }
 
+    [Test]
+    public async Task UserSearch()
+    {
+      var res = await myClient.UserSearch(firstUserAccount.userInfo.email);
+
+      Assert.NotNull(res);
+    }
+
 
     [Test, Order(0)]
     public async Task StreamCreate()
@@ -92,6 +100,14 @@ namespace TestsIntegration
       Assert.NotNull(res);
       Assert.AreEqual("master", res.branches.items[0].name);
       Assert.IsNotEmpty(res.collaborators);
+    }
+
+    [Test, Order(12)]
+    public async Task StreamSearch()
+    {
+      var res = await myClient.StreamSearch(streamId);
+
+      Assert.NotNull(res);
     }
 
     [Test, Order(20)]
