@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Models;
@@ -23,9 +23,6 @@ namespace ConnectorGrashopper.Extras
     public override bool CastFrom(object source)
     {
       return false;
-      if (source == null) return false;
-      
-      return true;
     }
 
     public override bool CastTo<Q>(ref Q target)
@@ -41,9 +38,8 @@ namespace ConnectorGrashopper.Extras
 
     public override string ToString()
     {
-      return $"Speckle {(Value!= null && Value.speckle_type == "" ? "Base" : Value?.speckle_type)}";
+      return $"{(Value!= null && Value.speckle_type == "" ? "Speckle.Base" : Value?.speckle_type)}";
     } 
   }
-
 
 }

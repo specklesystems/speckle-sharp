@@ -1,19 +1,16 @@
-﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
+﻿using GH_IO.Serialization;
+using Grasshopper.Kernel;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ConnectorGrashopper.Extras
+namespace ConnectorGrashopper.Conversion
 {
-  public class Param_ToNativeConverter : GH_Param<IGH_Goo>
+  public class ToNativeConverter : GH_Component
   {
-    public override Guid ComponentGuid { get => new Guid("AA4565F5-A9B2-4A0F-B7E5-7CDBB2826B4F"); }
+    public override Guid ComponentGuid { get => new Guid("98027377-5A2D-4EBA-B8D4-D72872593CD8"); }
 
     protected override System.Drawing.Bitmap Icon { get => null; }
 
@@ -23,7 +20,7 @@ namespace ConnectorGrashopper.Extras
 
     private ISpeckleKit Kit;
 
-    public Param_ToNativeConverter() : base("To Native", "SPK ⇒", "Converts speckle objects to their Grasshopper equivalents.", "Speckle 2", "Conversion", GH_ParamAccess.item)
+    public ToNativeConverter() : base("To Native", "SPK ⇒", "Converts Speckle objects to their Grasshopper equivalents.", "Speckle 2", "Conversion")
     {
       Kit = KitManager.GetDefaultKit();
       try
@@ -45,12 +42,10 @@ namespace ConnectorGrashopper.Extras
 
       foreach (var kit in kits)
       {
-        Menu_AppendItem(menu, $"{kit.Name} (${kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
+        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
       }
 
       Menu_AppendSeparator(menu);
-      Menu_AppendFlattenParameter(menu);
-      Menu_AppendGraftParameter(menu);
     }
 
     private void SetConverterFromKit(string kitName)
@@ -63,15 +58,21 @@ namespace ConnectorGrashopper.Extras
       ExpireSolution(true);
     }
 
-    /// <summary>
-    /// This is where we actually enforce the usage of the Speckle converters. 
-    /// </summary>
-    /// <param name="data"></param>
-    /// <returns></returns>
-    /// 
-    protected override IGH_Goo PreferredCast(object data)
+    protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
+      pManager.AddGenericParameter("Objects", "O", "Objects you want to convert back to GH", GH_ParamAccess.item);
+    }
+
+    protected override void RegisterOutputParams(GH_OutputParamManager pManager)
+    {
+      pManager.AddGenericParameter("Converterd", "C", "Converted objects.", GH_ParamAccess.item);
+    }
+
+    protected override void SolveInstance(IGH_DataAccess DA)
+    {
+      object data = null;
       Base @object = null;
+      DA.GetData(0, ref data);
 
       try
       {
@@ -83,13 +84,26 @@ namespace ConnectorGrashopper.Extras
       }
 
       var canConvert = Converter.CanConvertToNative(@object);
+      object conversionResult = null;
 
       if (canConvert)
       {
-        return new GH_SpeckleBase() { Value = Converter.ConvertToSpeckle(@object) };
+        conversionResult = Converter.ConvertToNative(@object);
       }
 
-      return null;
+      DA.SetData(0, conversionResult);
+    }
+
+    public override bool Read(GH_IReader reader)
+    {
+      // TODO: Read kit name and instantiate converter
+      return base.Read(reader);
+    }
+
+    public override bool Write(GH_IWriter writer)
+    {
+      // TODO: Write kit name to disk
+      return base.Write(writer);
     }
   }
 }

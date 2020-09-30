@@ -12,6 +12,10 @@ namespace ConnectorGrashopper
 {
   public class SpeckleObject : GH_Component, IGH_VariableParameterComponent
   {
+    public override Guid ComponentGuid { get => new Guid("cfa4e9b4-3ae4-4bb9-90d8-801c34e9a37e"); }
+
+    protected override System.Drawing.Bitmap Icon { get => null; }
+
     public SpeckleObject()
       : base("Create Speckle Object", "CSO",
           "Allows you to create a Speckle object from scratch.",
@@ -36,7 +40,7 @@ namespace ConnectorGrashopper
 
       for (int i = 0; i < Params.Input.Count; i++)
       {
-        var param = Params.Input[i] as ParamGenericAccess;
+        var param = Params.Input[i] as Param_GenericAccess;
         var type = param.Access.ToString();
         var detachable = param.Detachable;
 
@@ -78,7 +82,7 @@ namespace ConnectorGrashopper
 
     public IGH_Param CreateParameter(GH_ParameterSide side, int index)
     {
-      var myParam = new ParamGenericAccess
+      var myParam = new Param_GenericAccess
       {
         Name = GH_ComponentParamServer.InventUniqueNickname("ABCDEFGHIJKLMNOPQRSTUVWXYZ", Params.Input),
         MutableNickName = true,
@@ -101,11 +105,6 @@ namespace ConnectorGrashopper
     public void VariableParameterMaintenance()
     {
     }
-
-
-    protected override System.Drawing.Bitmap Icon { get => null; }
-
-    public override Guid ComponentGuid { get => new Guid("cfa4e9b4-3ae4-4bb9-90d8-801c34e9a37e"); }
 
   }
 }

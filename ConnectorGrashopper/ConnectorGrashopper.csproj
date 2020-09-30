@@ -57,8 +57,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extras\ParamGenericAccess.cs" />
-    <Compile Include="Extras\ParamToSpeckleConverter.cs" />
+    <Compile Include="Extras\Param_GenericAccess.cs" />
+    <Compile Include="Conversion\Param_ToNativeConverter.cs" />
+    <Compile Include="Conversion\ToSpeckleConverter.cs" />
     <Compile Include="Extras\GH_SpeckleBase.cs" />
     <Compile Include="SpeckleObject.cs" />
     <Compile Include="ConnectorGrashopperInfo.cs" />
@@ -68,11 +69,6 @@
     <Folder Include="Objects\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ConverterRhinoGh\ConverterRhinoGh\ConverterRhinoGh.csproj">
-      <Project>{a987e5e1-8605-46ba-9476-1d8d28502273}</Project>
-      <Name>ConverterRhinoGh</Name>
-      <Private>False</Private>
-    </ProjectReference>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{362464e5-e47b-4ff8-b563-a1066a1ec732}</Project>
       <Name>Core</Name>
