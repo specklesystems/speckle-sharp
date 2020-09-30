@@ -50,7 +50,7 @@
           Grid.Column="2"
           Margin="8,4"
           VerticalAlignment="Center"
-          Foreground="{DynamicResource MaterialDesignBodyLight}"
+          Foreground="{DynamicResource MaterialDesignColumnHeader}"
           Text="{Binding description}"
           TextWrapping="Wrap" />
       </Grid>
@@ -120,7 +120,7 @@
                 Margin="0,0,0,4"
                 VerticalAlignment="Center"
                 FontSize="12"
-                Foreground="{DynamicResource MaterialDesignBodyLight}"
+                Foreground="{DynamicResource MaterialDesignColumnHeader}"
                 Text="{Binding DefaultAccount.userInfo.email}" />
               <md:PackIcon
                 Grid.Row="1"
@@ -134,7 +134,7 @@
                 Margin="0,0,0,4"
                 VerticalAlignment="Center"
                 FontSize="12"
-                Foreground="{DynamicResource MaterialDesignBodyLight}"
+                Foreground="{DynamicResource MaterialDesignColumnHeader}"
                 Text="{Binding DefaultAccount.serverInfo.url}" />
             </Grid>
           </StackPanel>
