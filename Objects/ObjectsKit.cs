@@ -38,14 +38,16 @@ namespace Speckle.Objects
 
     public ISpeckleConverter LoadConverter(string app)
     {
-      if(_LoadedConverters.ContainsKey(app) && _LoadedConverters[app] != null)
+      _Converters = GetAvailableConverters();
+      if (_LoadedConverters.ContainsKey(app) && _LoadedConverters[app] != null)
       {
         return Activator.CreateInstance(_LoadedConverters[app]) as ISpeckleConverter;
       }
 
       try
       {
-        var basePath = Assembly.GetExecutingAssembly().Location;
+        var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        
         var path = Path.Combine(basePath, $"Objects.Converter.{app}.dll");
         if (File.Exists(path))
         {
