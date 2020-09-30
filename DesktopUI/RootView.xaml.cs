@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
+using SpeckleSettings = Speckle.DesktopUI.Settings;
 using Speckle.DesktopUI.Utils;
 
 namespace Speckle.DesktopUI
@@ -44,15 +45,5 @@ namespace Speckle.DesktopUI
 
     private void MenuToggleButton_OnClick(object sender, RoutedEventArgs e) => NavDrawerListBox.Focus();
 
-    private void MenuDarkModeButton_Click(object sender, RoutedEventArgs e) => ModifyTheme(DarkModeToggleButton.IsChecked == true);
-    private static void ModifyTheme(bool isDarkTheme)
-    {
-      PaletteHelper paletteHelper = new PaletteHelper();
-      ITheme theme = paletteHelper.GetTheme();
-
-      theme.SetBaseTheme(isDarkTheme ? Theme.Dark : Theme.Light);
-
-      paletteHelper.SetTheme(theme);
-    }
   }
 }

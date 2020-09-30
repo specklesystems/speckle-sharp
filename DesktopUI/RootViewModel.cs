@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
@@ -71,13 +71,17 @@ namespace Speckle.DesktopUI
         set => SetAndNotify(ref _darkMode, value);
       }
 
-      public void ToggleTheme(bool darkmode)
-      {
-        PaletteHelper paletteHelper = new PaletteHelper();
-        ITheme theme = paletteHelper.GetTheme();
-        theme.SetBaseTheme(darkmode ? Theme.Dark : Theme.Light);
-        DarkMode = darkmode;
-      }
+    public void ToggleTheme()
+    {
+      var paletteHelper = new PaletteHelper();
+      ITheme theme = paletteHelper.GetTheme();
+
+      theme.SetBaseTheme(DarkMode ? Theme.Dark : Theme.Light);
+      paletteHelper.SetTheme(theme);
+
+      Properties.Settings.Default.Theme = DarkMode ? BaseTheme.Dark : BaseTheme.Light;
+      Properties.Settings.Default.Save();
+    }
 
       public void Handle(ShowNotificationEvent message)
       {
