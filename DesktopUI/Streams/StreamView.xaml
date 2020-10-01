@@ -12,6 +12,7 @@
   mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
+      <BitmapImage x:Key="DefaultProfImage" UriSource="../Resources/s2logo.png" />
 
       <DataTemplate x:Key="CommitTemplate">
         <Grid Margin="0,5">
@@ -19,12 +20,14 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-          <md:PackIcon
+          <Ellipse
             Grid.Column="0"
             Width="32"
-            Height="32"
-            Margin="4"
-            Kind="AccountCircle" />
+            Height="32">
+            <Ellipse.Fill>
+              <ImageBrush ImageSource="{Binding avatar, FallbackValue={StaticResource DefaultProfImage}, TargetNullValue={StaticResource DefaultProfImage}}" />
+            </Ellipse.Fill>
+          </Ellipse>
           <StackPanel
             Grid.Column="1"
             Margin="4"
@@ -65,13 +68,12 @@
       <DataTemplate x:Key="CollboratorChipTemplate">
         <md:Chip
           Margin="4"
-          Command=""
+          Command="{Binding}"
           Content="{Binding name}"
           IconBackground="{StaticResource PrimaryHueLightBrush}"
           ToolTip="{Binding role}">
           <md:Chip.Icon>
-            <!--<Image Source="../Resources/s2logo.png" />-->
-            <TextBlock Text="{Binding name[0]}" />
+            <Image Source="{Binding avatar, TargetNullValue={StaticResource DefaultProfImage}}" />
           </md:Chip.Icon>
         </md:Chip>
       </DataTemplate>
