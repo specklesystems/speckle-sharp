@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,13 +9,15 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using RevitElement = Autodesk.Revit.DB.Element;
 using Newtonsoft.Json;
+using Objects.Converter.Revit;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Converter.Revit;
 using Speckle.Core.Api;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using SpeckleElement = Speckle.Objects.Element;
+using SpeckleElement = Objects.Element;
 using Speckle.DesktopUI.Utils;
 
 namespace Speckle.ConnectorRevit.UI
@@ -56,7 +58,10 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state">StreamState passed by the UI</param>
     public override async Task<StreamState> SendStream(StreamState state)
     {
-      var kit = new ConverterRevit(CurrentDoc.Document);
+      var kit = KitManager.GetDefaultKit();
+      var converter = (ConverterRevit)kit.LoadConverter(Applications.Revit);
+      converter.SetContextDocument(CurrentDoc.Document);
+      
       var objsToConvert = state.placeholders;
       var streamId = state.stream.id;
       var client = state.client;
@@ -84,7 +89,7 @@ namespace Speckle.ConnectorRevit.UI
           continue;
         }
 
-        var conversionResult = kit.ConvertToSpeckle(revitElement);
+        var conversionResult = converter.ConvertToSpeckle(revitElement);
         if ( conversionResult == null )
         {
           // TODO what happens to failed conversions?
@@ -94,12 +99,12 @@ namespace Speckle.ConnectorRevit.UI
         convertedObjects.Add(conversionResult);
       }
 
-      if ( errors.Any() || kit.ConversionErrors.Any() )
+      if ( errors.Any() || converter.ConversionErrors.Any() )
       {
         errorMsg = string.Format("There {0} {1} failed conversion{2} and {3} error{4}",
-          kit.ConversionErrors.Count() == 1 ? "is" : "are",
-          kit.ConversionErrors.Count(),
-          kit.ConversionErrors.Count() == 1 ? "" : "s",
+          converter.ConversionErrors.Count() == 1 ? "is" : "are",
+          converter.ConversionErrors.Count(),
+          converter.ConversionErrors.Count() == 1 ? "" : "s",
           errors.Count(),
           errors.Count() == 1 ? "" : "s");
       }
