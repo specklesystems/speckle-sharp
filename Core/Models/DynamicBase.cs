@@ -201,12 +201,21 @@ namespace Speckle.Core.Models
     }
 
     /// <summary>
-    /// Flashes the properties bag. Use at your own risk! 
+    /// Flashes the properties bag. <b>Use at your own risk!</b>
     /// </summary>
     /// <param name="props"></param>
     public void SetDynamicMembers(Dictionary<string, object> props)
     {
-      throw new NotImplementedException();
+      properties = props;
+    }
+
+    /// <summary>
+    /// Returns the properties bag. <b>Use at your own risk!</b>
+    /// </summary>
+    /// <returns></returns>
+    public Dictionary<string, object> GetDynamicMembersDictionary()
+    {
+      return properties;
     }
 
   }

@@ -12,12 +12,20 @@ namespace Speckle.Core.Kits
     string Name { get; }
     string Author { get; }
     string WebsiteOrEmail { get; }
+    
     /// <summary>
     /// Converts a native object to a Speckle one
     /// </summary>
     /// <param name="object">Native object to convert</param>
     /// <returns></returns>
     public Base ConvertToSpeckle(object @object);
+
+    /// <summary>
+    /// Converts a list of objects to Speckle.
+    /// </summary>
+    /// <param name="objects"></param>
+    /// <returns></returns>
+    public List<Base> ConvertToSpeckle(List<object> objects);
 
     /// <summary>
     /// Checks if it can onvert a native object to a Speckle one
@@ -33,6 +41,12 @@ namespace Speckle.Core.Kits
     /// <returns></returns>
     public object ConvertToNative(Base @object);
 
+    /// <summary>
+    /// Converts a list of Speckle objects to a native ones.
+    /// </summary>
+    /// <param name="objects"></param>
+    /// <returns></returns>
+    public List<object> ConvertToNative(List<Base> objects);
 
     /// <summary>
     /// Checks if it can convert a Speckle object to a native one
