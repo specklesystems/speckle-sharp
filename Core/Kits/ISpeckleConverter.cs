@@ -1,4 +1,4 @@
-using Speckle.Core.Models;
+﻿using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -60,5 +60,11 @@ namespace Speckle.Core.Kits
     /// </summary>
     /// <returns></returns>
     public IEnumerable<string> GetServicedApplications();
+
+    /// <summary>
+    /// Sets the application document that the converter is targetting
+    /// </summary>
+    /// <param name="doc">The current application document</param>
+    public void SetContextDocument(object doc);
   }
 }
