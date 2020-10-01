@@ -35,7 +35,7 @@ namespace Speckle.Core.Kits
     }
      
     /// <summary>
-    /// Gets a sepcific kit.
+    /// Gets a specific kit.
     /// </summary>
     /// <param name="assemblyFullName"></param>
     /// <returns></returns>
@@ -46,7 +46,7 @@ namespace Speckle.Core.Kits
     }
 
     /// <summary>
-    /// Returns a list of all the kits found on this users's device.
+    /// Returns a list of all the kits found on this user's device.
     /// </summary>
     public static IEnumerable<ISpeckleKit> Kits
     {
