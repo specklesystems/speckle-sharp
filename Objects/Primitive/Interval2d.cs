@@ -1,10 +1,10 @@
-﻿using Speckle.Objects.Primitive;
+﻿using Objects.Primitive;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Speckle.Objects.Primitive
+namespace Objects.Primitive
 {
   public class Interval2d : Base
   {

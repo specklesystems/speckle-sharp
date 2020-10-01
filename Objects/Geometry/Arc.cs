@@ -1,10 +1,10 @@
-﻿using Speckle.Objects.Primitive;
+﻿using Objects.Primitive;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Speckle.Objects.Geometry
+namespace Objects.Geometry
 {
   public class Arc : Base, ICurve
   {
@@ -25,10 +25,9 @@ namespace Speckle.Objects.Geometry
     public Point midPoint { get; set; }
 
     public Point endPoint { get; set; }
-    public Arc()
-    {
 
-    }
+    public Arc() { }
+
     public Arc(Plane plane, double radius, double startAngle, double endAngle, double angleRadians, string applicationId = null)
     {
       this.plane = plane;

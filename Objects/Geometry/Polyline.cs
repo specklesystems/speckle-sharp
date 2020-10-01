@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json;
-using Speckle.Objects.Primitive;
+using Objects.Primitive;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Speckle.Objects.Geometry
+namespace Objects.Geometry
 {
   public class Polyline : Base, ICurve
   {

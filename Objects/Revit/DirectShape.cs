@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using static Speckle.Objects.Revit.RevitUtils;
+using static Objects.Revit.RevitUtils;
 
-namespace Speckle.Objects.Revit
+namespace Objects.Revit
 {
   public class DirectShape : Element
   {

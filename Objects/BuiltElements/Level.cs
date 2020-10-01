@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Speckle.Objects
+namespace Objects
 {
   public class Level : Element
   {
@@ -11,8 +11,8 @@ namespace Speckle.Objects
     public double elevation { get; set; }
     public Level()
     {
-      
-  }
+
+    }
     public Level(string name, double elevation)
     {
       this.name = name;

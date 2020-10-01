@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Speckle.Objects.Geometry
+namespace Objects.Geometry
 {
   public class Point : Base, IGeometry
   {
@@ -26,6 +26,7 @@ namespace Speckle.Objects.Geometry
         return value[0];
       }
     }
+
     [JsonIgnore]
     public double y
     {
@@ -34,6 +35,7 @@ namespace Speckle.Objects.Geometry
         return value[1];
       }
     }
+
     [JsonIgnore]
     public double z
     {
