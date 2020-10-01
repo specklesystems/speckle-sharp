@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Speckle.Objects.Primitive
+namespace Objects.Primitive
 {
   public class Boolean : Base
   {

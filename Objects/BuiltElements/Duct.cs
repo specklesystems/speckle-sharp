@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Speckle.Objects
+namespace Objects
 {
   public class Duct : Element
   {

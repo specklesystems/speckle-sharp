@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Speckle.Objects.Geometry
+namespace Objects.Geometry
 {
   public class Block : Base, IGeometry
   {

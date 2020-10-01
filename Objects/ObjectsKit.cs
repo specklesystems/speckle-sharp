@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using Speckle.Core;
 
-namespace Speckle.Objects
+namespace Objects
 {
   public class ObjectsKit : ISpeckleKit
   {
@@ -54,7 +54,7 @@ namespace Speckle.Objects
           var assembly = Assembly.LoadFrom(path);
           var converterClass = assembly.GetTypes().FirstOrDefault(type =>
           {
-            return type.GetInterfaces().FirstOrDefault(iface => iface.Name == typeof(Core.Kits.ISpeckleConverter).Name) != null;
+            return type.GetInterfaces().FirstOrDefault(iface => iface.Name == typeof(ISpeckleConverter).Name) != null;
           });
 
           _LoadedConverters[app] = converterClass;

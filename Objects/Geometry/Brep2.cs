@@ -3,7 +3,7 @@
 //using System.Collections.Generic;
 //using System.Text;
 
-//namespace Speckle.Objects.Geometry
+//namespace Objects.Geometry
 //{
 //  //TODO: to finish
 //  public class Brep2 : Base, IGeometry

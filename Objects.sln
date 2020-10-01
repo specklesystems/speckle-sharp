@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit", "..\Conver
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRhinoGh", "..\ConverterRhinoGh\ConverterRhinoGh\ConverterRhinoGh.csproj", "{A987E5E1-8605-46BA-9476-1D8D28502273}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamo", "..\ConverterDynamo\ConverterDynamo\ConverterDynamo.csproj", "{10FAA737-42DD-4B96-814B-8224E10C7D27}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{A987E5E1-8605-46BA-9476-1D8D28502273}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A987E5E1-8605-46BA-9476-1D8D28502273}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A987E5E1-8605-46BA-9476-1D8D28502273}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10FAA737-42DD-4B96-814B-8224E10C7D27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10FAA737-42DD-4B96-814B-8224E10C7D27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10FAA737-42DD-4B96-814B-8224E10C7D27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10FAA737-42DD-4B96-814B-8224E10C7D27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,6 +51,7 @@ Global
 		{7EF0C96C-1FD9-42B2-85CE-BFD9B10DAC06} = {986B7226-6A4C-4881-8481-ADAFD0EC70B0}
 		{7C0CF535-3A04-469B-AF2E-07166E1C0A9C} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 		{A987E5E1-8605-46BA-9476-1D8D28502273} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
+		{10FAA737-42DD-4B96-814B-8224E10C7D27} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}
