@@ -28,7 +28,7 @@ namespace Speckle.Core.Kits
     public List<Base> ConvertToSpeckle(List<object> objects);
 
     /// <summary>
-    /// Checks if it can onvert a native object to a Speckle one
+    /// Checks if it can convert a native object to a Speckle one
     /// </summary>
     /// <param name="object">Native object to convert</param>
     /// <returns></returns>
@@ -56,9 +56,15 @@ namespace Speckle.Core.Kits
     public bool CanConvertToNative(Base @object);
 
     /// <summary>
-    /// Returns a list of applicaitons serviced by this converter
+    /// Returns a list of applications serviced by this converter
     /// </summary>
     /// <returns></returns>
     public IEnumerable<string> GetServicedApplications();
+
+    /// <summary>
+    /// Sets the application document that the converter is targetting
+    /// </summary>
+    /// <param name="doc">The current application document</param>
+    public void SetContextDocument(object doc);
   }
 }

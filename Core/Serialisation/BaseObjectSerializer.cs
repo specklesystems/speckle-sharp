@@ -12,7 +12,7 @@ namespace Speckle.Core.Serialisation
 {
   /// <summary>
   /// Json converter that handles base speckle objects. Enables detachment &
-  /// simultaneous transport (persistance) of objects. 
+  /// simultaneous transport (persistence) of objects. 
   /// </summary>
   public class BaseObjectSerializer : Newtonsoft.Json.JsonConverter
   {
@@ -42,7 +42,7 @@ namespace Speckle.Core.Serialisation
     List<bool> DetachLineage { get; set; }
 
     /// <summary>
-    /// Keeps track of the hash chain throught the object tree.
+    /// Keeps track of the hash chain through the object tree.
     /// </summary>
     List<string> Lineage { get; set; }
 
