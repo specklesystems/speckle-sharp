@@ -62,7 +62,6 @@
     <Compile Include="Extras\GH_AsyncComponent.cs" />
     <Compile Include="Extras\Param_GenericAccess.cs" />
     <Compile Include="Conversion\Convert.ToNative.cs" />
-    <Compile Include="Conversion\Convert.ToSpeckle.cs" />
     <Compile Include="Extras\GH_SpeckleBase.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
     <Compile Include="ConnectorGrashopperInfo.cs" />

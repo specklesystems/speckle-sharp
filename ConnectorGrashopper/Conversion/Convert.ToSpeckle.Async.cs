@@ -2,6 +2,7 @@
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using Rhino;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -29,16 +30,7 @@ namespace ConnectorGrashopper.Conversion
 
     public ToSpeckleConverterAsync() : base("To Speckle Async", "⇒ SPK", "Converts objects to their Speckle equivalents.", "Speckle 2", "Conversion")
     {
-      Kit = KitManager.GetDefaultKit();
-      try
-      {
-        Converter = Kit.LoadConverter(Applications.Rhino);
-      }
-      catch
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-      }
-
+      SetDefaultKitAndConverter();
       Worker = new ToSpeckleWorker(Converter);
     }
 
@@ -57,12 +49,27 @@ namespace ConnectorGrashopper.Conversion
       Menu_AppendSeparator(menu);
     }
 
+    private void SetDefaultKitAndConverter()
+    {
+      Kit = KitManager.GetDefaultKit();
+      try
+      {
+        Converter = Kit.LoadConverter(Applications.Rhino);
+        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      }
+      catch
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+      }
+    }
+
     private void SetConverterFromKit(string kitName)
     {
       if (kitName == Kit.Name) return;
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
+      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
 
       ((ToSpeckleWorker)Worker).Converter = Converter;
 
@@ -71,13 +78,30 @@ namespace ConnectorGrashopper.Conversion
 
     public override bool Read(GH_IReader reader)
     {
-      // TODO: Read kit name and instantiate converter
+      var kitName = "";
+      reader.TryGetString("KitName", ref kitName);
+
+      if (kitName != "")
+      {
+        try
+        {
+          SetConverterFromKit(kitName);
+        } catch(Exception e)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
+          SetDefaultKitAndConverter();
+        }
+      } else
+      {
+        SetDefaultKitAndConverter();
+      }
+
       return base.Read(reader);
     }
 
     public override bool Write(GH_IWriter writer)
     {
-      // TODO: Write kit name to disk
+      writer.SetString("KitName", Kit.Name);
       return base.Write(writer);
     }
 
