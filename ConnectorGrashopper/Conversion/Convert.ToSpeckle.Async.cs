@@ -1,6 +1,7 @@
 ﻿using ConnectorGrashopper.Extras;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Rhino;
 using Speckle.Core.Kits;
@@ -86,12 +87,14 @@ namespace ConnectorGrashopper.Conversion
         try
         {
           SetConverterFromKit(kitName);
-        } catch(Exception e)
+        }
+        catch (Exception e)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
           SetDefaultKitAndConverter();
         }
-      } else
+      }
+      else
       {
         SetDefaultKitAndConverter();
       }
@@ -107,12 +110,12 @@ namespace ConnectorGrashopper.Conversion
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("Objects", "O", "Objects you want to convert to Speckle", GH_ParamAccess.list);
+      pManager.AddGenericParameter("Objects", "O", "Objects you want to convert to Speckle", GH_ParamAccess.tree);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("Converterd", "C", "Converted objects.", GH_ParamAccess.list);
+      pManager.AddGenericParameter("Converterd", "C", "Converted objects.", GH_ParamAccess.tree);
     }
 
   }
@@ -120,16 +123,16 @@ namespace ConnectorGrashopper.Conversion
   public class ToSpeckleWorker : IAsyncComponentWorker
   {
 
-    List<IGH_Goo> Objects;
-    List<object> ConvertedObjects;
+    GH_Structure<IGH_Goo> Objects;
+    GH_Structure<GH_SpeckleGoo> ConvertedObjects;
 
     public ISpeckleConverter Converter { get; set; }
 
     public ToSpeckleWorker(ISpeckleConverter _Converter)
     {
       Converter = _Converter;
-      Objects = new List<IGH_Goo>();
-      ConvertedObjects = new List<object>();
+      Objects = new GH_Structure<IGH_Goo>();
+      ConvertedObjects = new GH_Structure<GH_SpeckleGoo>();
     }
 
     public IAsyncComponentWorker GetNewInstance()
@@ -139,10 +142,19 @@ namespace ConnectorGrashopper.Conversion
 
     public void CollectData(IGH_DataAccess DA)
     {
-      var data = new List<IGH_Goo>();
-      DA.GetDataList(0, data);
-
-      Objects = data;
+      GH_Structure<IGH_Goo> _objects;
+      DA.GetDataTree(0, out _objects);
+      
+      int branchIndex = 0;
+      foreach (var list in _objects.Branches)
+      {
+        var path = _objects.Paths[branchIndex];
+        foreach (var item in list)
+        {
+          Objects.Append(item, _objects.Paths[branchIndex]);
+        }
+        branchIndex++;
+      }
     }
 
     public void DoWork(CancellationToken token, Action<string> ReportProgress, Action SetData)
@@ -153,22 +165,27 @@ namespace ConnectorGrashopper.Conversion
         return;
       }
 
-      for (int i = 0; i <= Objects.Count - 1; i++)
+      int branchIndex = 0, completed = 0;
+      foreach (var list in Objects.Branches)
       {
-        if (token.IsCancellationRequested) return;
+        var path = Objects.Paths[branchIndex];
+        foreach (var item in list)
+        {
+          if (token.IsCancellationRequested) return;
+          var converted = TryConvertItem(item);
+          ConvertedObjects.Append(new GH_SpeckleGoo() { Value = converted }, Objects.Paths[branchIndex]);
+          ReportProgress(((double)(completed++ + 1) / (double)Objects.Count()).ToString("0.00%"));
+        }
 
-        ConvertedObjects.Add(TryConvertItem(Objects[i]));
-
-        ReportProgress(((double)(i + 1) / (double)Objects.Count).ToString("0.00%"));
+        branchIndex++;
       }
 
       SetData();
-
     }
 
     public void SetData(IGH_DataAccess DA)
     {
-      DA.SetDataList(0, ConvertedObjects);
+      DA.SetDataTree(0, ConvertedObjects);
     }
 
     private object TryConvertItem(object value)
@@ -179,14 +196,15 @@ namespace ConnectorGrashopper.Conversion
       {
         value = value.GetType().GetProperty("Value").GetValue(value);
       }
-      else if (value is Base || Speckle.Core.Models.Utilities.IsSimpleType(value.GetType()))
+      
+      if (value is Base || Speckle.Core.Models.Utilities.IsSimpleType(value.GetType()))
       {
         return value;
       }
 
       if (Converter.CanConvertToSpeckle(value))
       {
-        return new GH_SpeckleBase() { Value = Converter.ConvertToSpeckle(value) };
+        return Converter.ConvertToSpeckle(value);
       }
 
       return result;
