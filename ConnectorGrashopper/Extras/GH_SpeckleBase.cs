@@ -19,7 +19,7 @@ namespace ConnectorGrashopper.Extras
     {
       return Value;
     }
-     
+
     public override bool CastFrom(object source)
     {
       return false;
@@ -38,8 +38,8 @@ namespace ConnectorGrashopper.Extras
 
     public override string ToString()
     {
-      return $"{(Value!= null && Value.speckle_type == "" ? "Speckle.Base" : Value?.speckle_type)}";
-    } 
+      return $"{(Value != null && Value.speckle_type == "" ? "Speckle.Base" : Value?.speckle_type)}";
+    }
   }
 
 }

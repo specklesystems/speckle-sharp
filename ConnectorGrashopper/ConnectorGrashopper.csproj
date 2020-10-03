@@ -57,7 +57,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Conversion\Convert.ToSpeckle.Async.cs" />
     <Compile Include="Conversion\Serialise.SerialiseObject.cs" />
+    <Compile Include="Extras\GH_AsyncComponent.cs" />
     <Compile Include="Extras\Param_GenericAccess.cs" />
     <Compile Include="Conversion\Convert.ToNative.cs" />
     <Compile Include="Conversion\Convert.ToSpeckle.cs" />

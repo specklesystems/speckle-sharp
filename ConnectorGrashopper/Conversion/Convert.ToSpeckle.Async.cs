@@ -5,16 +5,19 @@ using Grasshopper.Kernel.Types;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ConnectorGrashopper.Conversion
 {
-  public class ToSpeckleConverter : GH_TaskCapableComponent<ToSpeckleConverter.SolveResults>
+  public class ToSpeckleConverterAsync : GH_AsyncComponent
   {
-    public override Guid ComponentGuid { get => new Guid("2092AF4C-51CD-4CB3-B297-5348C51FC49F"); }
+    public override Guid ComponentGuid { get => new Guid("F1E5F78F-242D-44E3-AAD6-AB0257D69256"); }
 
     protected override System.Drawing.Bitmap Icon { get => null; }
 
@@ -24,18 +27,19 @@ namespace ConnectorGrashopper.Conversion
 
     private ISpeckleKit Kit;
 
-    public ToSpeckleConverter() : base("To Speckle", "⇒ SPK", "Converts objects to their Speckle equivalents.", "Speckle 2", "Conversion")
+    public ToSpeckleConverterAsync() : base("To Speckle Async", "⇒ SPK", "Converts objects to their Speckle equivalents.", "Speckle 2", "Conversion")
     {
       Kit = KitManager.GetDefaultKit();
       try
       {
         Converter = Kit.LoadConverter(Applications.Rhino);
-        Message = $"Using the \n{Kit.Name}\n Kit Converter";
       }
       catch
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
       }
+
+      Worker = new ToSpeckleWorker(Converter);
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -60,7 +64,8 @@ namespace ConnectorGrashopper.Conversion
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
 
-      Message = $"Using the \n{Kit.Name}\n Kit Converter";
+      ((ToSpeckleWorker)Worker).Converter = Converter;
+
       ExpireSolution(true);
     }
 
@@ -86,85 +91,60 @@ namespace ConnectorGrashopper.Conversion
       pManager.AddGenericParameter("Converterd", "C", "Converted objects.", GH_ParamAccess.list);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+  }
+
+  public class ToSpeckleWorker : IAsyncComponentWorker
+  {
+
+    List<IGH_Goo> Objects;
+    List<object> ConvertedObjects;
+
+    public ISpeckleConverter Converter { get; set; }
+
+    public ToSpeckleWorker(ISpeckleConverter _Converter)
     {
-      if (InPreSolve)
+      Converter = _Converter;
+      Objects = new List<IGH_Goo>();
+      ConvertedObjects = new List<object>();
+    }
+
+    public IAsyncComponentWorker GetNewInstance()
+    {
+      return new ToSpeckleWorker(this.Converter);
+    }
+
+    public void CollectData(IGH_DataAccess DA)
+    {
+      var data = new List<IGH_Goo>();
+      DA.GetDataList(0, data);
+
+      Objects = data;
+    }
+
+    public void DoWork(CancellationToken token, Action<string> ReportProgress, Action SetData)
+    {
+      if (token.IsCancellationRequested)
       {
-        var data = new List<IGH_Goo>();
-        DA.GetDataList(0, data);
-        if (data == null || data.Count == 0) return;
-
-        var task = Task.Run(() => { return Compute(data); }, CancelToken);
-
-        TaskList.Add(task);
+        Debug.Write("Task cancelled before it got started...");
         return;
       }
 
-      if (!GetSolveResults(DA, out SolveResults result))
+      for (int i = 0; i <= Objects.Count - 1; i++)
       {
-        var data = new List<IGH_Goo>();
-        DA.GetDataList(0, data);
-        if (data == null || data.Count == 0) return;
+        if (token.IsCancellationRequested) return;
 
-        result = Compute(data);
+        ConvertedObjects.Add(TryConvertItem(Objects[i]));
+
+        ReportProgress(((double)(i + 1) / (double)Objects.Count).ToString("0.00%"));
       }
 
-      if(result != null)
-      {
-        DA.SetDataList(0, result.ConvertedObjects);
-      }
+      SetData();
 
-
-      //List<IGH_Goo> data = new List<IGH_Goo>();
-      //DA.GetDataList(0, data);
-
-      //var myList = new List<object>();
-      //var values = new List<IGH_Goo>();
-      //var j = 0;
-      //DA.GetDataList(0, values);
-
-      //if (values == null || values.Count == 0)
-      //{
-      //  AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "List is null or empty.");
-      //  return;
-      //}
-
-      //foreach (var item in values)
-      //{
-      //  var conv = TryConvertItem(item);
-      //  myList.Add(conv);
-      //  if (conv == null)
-      //  {
-      //    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Data of type {item.GetType().Name} at index {j} could not be converted.");
-      //  }
-      //  j++;
-      //}
-
-      //DA.SetDataList(0, myList);
     }
 
-
-    public class SolveResults
+    public void SetData(IGH_DataAccess DA)
     {
-      public List<object> ConvertedObjects = new List<object>();
-    }
-
-    private SolveResults Compute(List<IGH_Goo> objects)
-    {
-      var results = new SolveResults();
-      var j = 1;
-      foreach (var item in objects)
-      {
-        var conv = TryConvertItem(item);
-        results.ConvertedObjects.Add(conv);
-        if (conv == null)
-        {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Data of type {item.GetType().Name} at index {j} could not be converted.");
-        }
-        j++;
-      }
-
-      return results;
+      DA.SetDataList(0, ConvertedObjects);
     }
 
     private object TryConvertItem(object value)
@@ -187,8 +167,6 @@ namespace ConnectorGrashopper.Conversion
 
       return result;
     }
-
   }
-
 
 }
