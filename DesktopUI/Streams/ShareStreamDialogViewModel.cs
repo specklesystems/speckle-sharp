@@ -1,4 +1,8 @@
-﻿using MaterialDesignThemes.Wpf;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using MaterialDesignThemes.Wpf;
+using Speckle.Core.Api;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -25,11 +29,53 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _streamState, value);
     }
 
+    private string _userQuery;
+    public string UserQuery
+    {
+      get => _userQuery;
+      set
+      {
+        SetAndNotify(ref _userQuery, value);
+        SearchForUsers();
+      }
+    }
+
+    private BindableCollection<User> _userSearchResults;
+    public BindableCollection<User> UserSearchResults
+    {
+      get => _userSearchResults;
+      set => SetAndNotify(ref _userSearchResults, value);
+    }
+
+    private User _selectedUser;
+    public User SelectedUser
+    {
+      get => _selectedUser;
+      set => SetAndNotify(ref _selectedUser, value);
+    }
+
     private string _shareMessage;
     public string ShareMessage
     {
       get => _shareMessage;
       set => SetAndNotify(ref _shareMessage, value);
+    }
+
+    public async void SearchForUsers()
+    {
+      if ( UserQuery.Length <= 2 )
+        return;
+
+      try
+      {
+        var users = await StreamState.client.UserSearch(UserQuery);
+        UserSearchResults = new BindableCollection<User>(users);
+      }
+      catch ( Exception e )
+      {
+        Debug.WriteLine(e);
+        return;
+      }
     }
 
     // TODO extract dialog logic into separate manager to better handle open / close

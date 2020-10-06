@@ -10,12 +10,16 @@
   d:DesignHeight="300"
   d:DesignWidth="300"
   mc:Ignorable="d">
-  <Grid Width="350">
+  <Grid
+    Width="350">
     <Grid>
       <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="*" />
-        <RowDefinition Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="*" />
+        <RowDefinition
+          Height="Auto" />
       </Grid.RowDefinitions>
       <Button
         Grid.Row="0"
@@ -26,14 +30,16 @@
         VerticalAlignment="Top"
         md:RippleAssist.IsDisabled="True"
         Command="{s:Action CloseDialog}"
-        Content="{md:PackIcon Kind=Close,
-                              Size=18}"
+        Content="{md:PackIcon Kind=Close, Size=18}"
         IsCancel="True"
         Style="{StaticResource MaterialDesignIconForegroundButton}"
         ToolTip="Cancel" />
 
-      <Grid Grid.Row="1" Margin="24,0,24,24">
-        <StackPanel Orientation="Vertical">
+      <Grid
+        Grid.Row="1"
+        Margin="24,0,24,24">
+        <StackPanel
+          Orientation="Vertical">
           <TextBlock
             FontSize="18"
             Style="{StaticResource MaterialDesignHeadline4TextBlock}"
@@ -43,7 +49,14 @@
             md:HintAssist.Hint="Add collaborators (this search doesn't work yet)"
             md:HintAssist.HintOpacity=".5"
             IsEditable="True"
-            IsEnabled="True" />
+            StaysOpenOnEdit="True"
+            IsTextSearchEnabled="True"
+            IsEnabled="True"
+            ItemsSource="{Binding UserSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectedItem="{Binding SelectedUser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            DisplayMemberPath="name"
+            Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+          </ComboBox>
           <TextBox
             Height="80"
             Margin="0,8"
@@ -56,11 +69,15 @@
             TextWrapping="Wrap"
             VerticalScrollBarVisibility="Auto" />
 
-          <Grid Margin="0,4">
+          <Grid
+            Margin="0,4">
             <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition
+                Width="Auto" />
+              <ColumnDefinition
+                Width="*" />
+              <ColumnDefinition
+                Width="Auto" />
             </Grid.ColumnDefinitions>
             <md:PackIcon
               Grid.Column="0"
@@ -73,23 +90,29 @@
               Margin="8,0"
               VerticalAlignment="Center"
               Orientation="Vertical">
-              <TextBlock FontWeight="Medium" Text="{Binding StreamState.client.Account.userInfo.name}" />
-              <TextBlock Foreground="Gray" Text="{Binding StreamState.client.Account.userInfo.email}" />
+              <TextBlock
+                FontWeight="Medium"
+                Text="{Binding StreamState.client.Account.userInfo.name}" />
+              <TextBlock
+                Foreground="Gray"
+                Text="{Binding StreamState.client.Account.userInfo.email}" />
             </StackPanel>
             <Button
-              x:Name="BackButton"
+              x:Name="SendButton"
               Grid.Column="2"
-              Command=""
               CommandParameter=""
               Content="SEND"
               Style="{StaticResource MaterialDesignFlatMidBgButton}" />
           </Grid>
 
-          <Separator Margin="0,24" />
+          <Separator
+            Margin="0,24" />
           <Grid>
             <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition
+                Width="*" />
+              <ColumnDefinition
+                Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock
               Grid.Column="0"
@@ -100,10 +123,12 @@
             <Button
               Grid.Column="1"
               Content="{md:PackIcon Kind=Link,
-                                    Size=24}"
+                                                  Size=24}"
               Style="{StaticResource MaterialDesignIconButton}" />
           </Grid>
-          <TextBlock Text="Be warned! Anyone with the link will be able to view the stream." TextWrapping="Wrap" />
+          <TextBlock
+            Text="Be warned! Anyone with the link will be able to view the stream."
+            TextWrapping="Wrap" />
         </StackPanel>
       </Grid>
 
