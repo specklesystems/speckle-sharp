@@ -53,8 +53,7 @@
           x:Name="SimpleStreamButton"
           Grid.Column="0"
           Margin="8"
-          Command="{s:Action ContinueStreamCreate}"
-          CommandParameter="1"
+          Command="{s:Action AddSimpleStream}"
           Content="{md:PackIcon Kind=ShareAll,
                                 Size=20}"
           Foreground="{StaticResource MaterialDesignLightBackground}"

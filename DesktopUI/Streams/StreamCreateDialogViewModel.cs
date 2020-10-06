@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -11,7 +13,8 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  public class StreamCreateDialogViewModel : Conductor<IScreen>.Collection.OneActive, IHandle<RetrievedFilteredObjectsEvent>
+  public class StreamCreateDialogViewModel : Conductor<IScreen>.Collection.OneActive,
+    IHandle<RetrievedFilteredObjectsEvent>
   {
     private IEventAggregator _events;
     private ConnectorBindings _bindings;
@@ -69,12 +72,15 @@ namespace Speckle.DesktopUI.Streams
     }
 
     private BindableCollection<ISelectionFilter> _filters;
+
     public BindableCollection<ISelectionFilter> Filters
     {
       get => new BindableCollection<ISelectionFilter>(_filters);
       set => SetAndNotify(ref _filters, value);
     }
+
     private ISelectionFilter _selectedFilter;
+
     public ISelectionFilter SelectedFilter
     {
       get => _selectedFilter;
@@ -98,9 +104,37 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _selectedSlide, value);
     }
 
+    private string _userQuery;
+
+    public string UserQuery
+    {
+      get => _userQuery;
+      set
+      {
+        SetAndNotify(ref _userQuery, value);
+        SearchForUsers();
+      }
+    }
+
+    private BindableCollection<User> _userSearchResults;
+
+    public BindableCollection<User> UserSearchResults
+    {
+      get => _userSearchResults;
+      set => SetAndNotify(ref _userSearchResults, value);
+    }
+
+    private User _selectedUser;
+
+    public User SelectedUser
+    {
+      get => _selectedUser;
+      set => SetAndNotify(ref _selectedUser, value);
+    }
+
     public void ContinueStreamCreate(string slideIndex)
     {
-      if (StreamToCreate.name == null || StreamToCreate.name.Length < 2)
+      if ( StreamToCreate.name == null || StreamToCreate.name.Length < 2 )
       {
         Notifications.Enqueue("Please choose a name for your stream!");
         return;
@@ -121,23 +155,46 @@ namespace Speckle.DesktopUI.Streams
         StreamToCreate = await _repo.GetStream(streamId, AccountToSendFrom);
         StreamState = new StreamState()
         {
-          accountId = client.AccountId,
-          client = client,
-          filter = SelectedFilter,
-          stream = StreamToCreate
+          accountId = client.AccountId, client = client, filter = SelectedFilter, stream = StreamToCreate
         };
         _bindings.AddNewStream(StreamState);
         var boxes = _bindings.GetFileContext();
 
         SelectedSlide = 3;
-        _events.Publish(new StreamAddedEvent() { NewStream = StreamState });
+        _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
       }
-      catch (Exception e)
+      catch ( Exception e )
       {
         Notifications.Enqueue($"Error: {e.Message}");
       }
 
       CreateButtonLoading = false;
+    }
+
+    public async void SearchForUsers()
+    {
+      if ( UserQuery.Length <= 2 )
+        return;
+
+      try
+      {
+        var client = new Client(AccountToSendFrom);
+        var users = await client.UserSearch(UserQuery);
+        UserSearchResults = new BindableCollection<User>(users);
+      }
+      catch ( Exception e )
+      {
+        Debug.WriteLine(e);
+      }
+    }
+
+    public void AddSimpleStream()
+    {
+      SelectedFilter = Filters.First(filter => filter.Type == typeof(ElementsSelectionFilter).ToString());
+      GetSelectedObjects();
+      AccountToSendFrom = _acctRepo.GetDefault();
+
+      AddNewStream();
     }
 
     // TODO extract dialog logic into separate manager to better handle open / close
@@ -155,18 +212,20 @@ namespace Speckle.DesktopUI.Streams
     {
       get => SelectedFilter != null;
     }
+
     public void GetSelectedObjects()
     {
-      if (SelectedFilter == null)
+      if ( SelectedFilter == null )
       {
-        Notifications.Enqueue("pls click one of the filter types!"); return;
+        Notifications.Enqueue("pls click one of the filter types!");
+        return;
       }
-      if (SelectedFilter.Type == typeof(ElementsSelectionFilter).ToString())
+
+      if ( SelectedFilter.Type == typeof(ElementsSelectionFilter).ToString() )
       {
         var selectedObjs = _bindings.GetSelectedObjects();
         SelectedFilter.Selection = selectedObjs;
         NotifyOfPropertyChange(nameof(SelectedFilter.Selection.Count));
-        Notifications.Enqueue($"Yay, you've added {selectedObjs.Count} objects!");
       }
       else
       {
