@@ -11,7 +11,6 @@ using RevitElement = Autodesk.Revit.DB.Element;
 using Newtonsoft.Json;
 using Objects.Converter.Revit;
 using Speckle.ConnectorRevit.Storage;
-using Speckle.Converter.Revit;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -74,8 +73,6 @@ namespace Speckle.ConnectorRevit.UI
         .ToLowerInvariant().Replace("dut_", "");
       // InjectScaleInKits(GetScale(units)); // this is used for feet to sane units conversion.
 
-      int i = 0;
-      long currentBucketSize = 0;
       var errorMsg = "";
       var errors = new List<SpeckleException>();
 
@@ -112,13 +109,18 @@ namespace Speckle.ConnectorRevit.UI
       var transports = new List<ITransport>() {new ServerTransport(client.Account, streamId)};
       var emptyBase = new Base();
       var @base = new Base {[ "@revitItems" ] = convertedObjects};
-      var objectId = await Operations.Send(@base, transports);
+      var objectId = await Operations.Send(@base, transports, onProgressAction: UpdateProgress);
+
+      var objByType = convertedObjects.GroupBy(o => o.speckle_type);
+      var convertedTypes = objByType.Select(
+        grouping => $"{grouping.Count()} {grouping.Key.Split('.').Last()}s").ToList();
+
       var res = await client.CommitCreate(new CommitCreateInput()
       {
         streamId = streamId,
         objectId = objectId,
         branchName = "master",
-        message = "Commit from Revit Connector"
+        message = $"Added {convertedObjects.Count()} elements from Revit: {string.Join(", ", convertedTypes)}"
       });
 
       // update the state
