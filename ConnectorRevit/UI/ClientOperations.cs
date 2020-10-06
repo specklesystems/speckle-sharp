@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -141,6 +142,15 @@ namespace Speckle.ConnectorRevit.UI
 
       RaiseNotification($"{convertedObjects.Count()} objects sent to Speckle 🚀");
       return state;
+    }
+
+    // TODO connect to UI
+    public void UpdateProgress(ConcurrentDictionary<string, int> obj)
+    {
+      foreach ( var kvp in obj )
+      {
+        Debug.WriteLine($"{kvp.Key}: {kvp.Value}");
+      }
     }
 
     /// <summary>
