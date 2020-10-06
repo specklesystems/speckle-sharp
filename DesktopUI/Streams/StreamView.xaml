@@ -12,37 +12,54 @@
   mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
-      <BitmapImage x:Key="DefaultProfImage" UriSource="../Resources/s2logo.png" />
+      <BitmapImage
+        x:Key="DefaultProfImage"
+        UriSource="../Resources/s2logo.png" />
 
-      <DataTemplate x:Key="CommitTemplate">
-        <Grid Margin="0,5">
+      <DataTemplate
+        x:Key="CommitTemplate">
+        <Grid
+          Margin="0,5">
           <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition
+              Width="Auto" />
+            <ColumnDefinition
+              Width="*" />
           </Grid.ColumnDefinitions>
           <Ellipse
             Grid.Column="0"
             Width="32"
             Height="32">
             <Ellipse.Fill>
-              <ImageBrush ImageSource="{Binding avatar, FallbackValue={StaticResource DefaultProfImage}, TargetNullValue={StaticResource DefaultProfImage}}" />
+              <ImageBrush
+                ImageSource="{Binding avatar, FallbackValue={StaticResource DefaultProfImage}, TargetNullValue={StaticResource DefaultProfImage}}" />
             </Ellipse.Fill>
           </Ellipse>
           <StackPanel
             Grid.Column="1"
             Margin="4"
             Orientation="Vertical">
-            <StackPanel Orientation="Horizontal">
-              <TextBlock FontWeight="Bold" Text="{Binding authorName}" />
-              <TextBlock Margin="3,0" Text="created a commit at" />
-              <TextBlock Text="{Binding createdAt}" />
+            <StackPanel
+              Orientation="Horizontal">
+              <TextBlock
+                FontWeight="Bold"
+                Text="{Binding authorName}" />
+              <TextBlock
+                Margin="3,0"
+                Text="created a commit at" />
+              <TextBlock
+                Text="{Binding createdAt}" />
             </StackPanel>
-            <TextBlock Margin="0,4" Text="{Binding message}" />
+            <TextBlock
+              Margin="0,4"
+              TextWrapping="Wrap"
+              Text="{Binding message}" />
           </StackPanel>
         </Grid>
       </DataTemplate>
 
-      <DataTemplate x:Key="CollaboratorSmallCardTemplate">
+      <DataTemplate
+        x:Key="CollaboratorSmallCardTemplate">
         <md:Card
           Width="120"
           Height="120"
@@ -50,8 +67,10 @@
           Padding="10">
           <Grid>
             <Grid.RowDefinitions>
-              <RowDefinition Height="Auto" />
-              <RowDefinition Height="Auto" />
+              <RowDefinition
+                Height="Auto" />
+              <RowDefinition
+                Height="Auto" />
             </Grid.RowDefinitions>
             <TextBlock
               Grid.Row="0"
@@ -65,7 +84,8 @@
         </md:Card>
       </DataTemplate>
 
-      <DataTemplate x:Key="CollboratorChipTemplate">
+      <DataTemplate
+        x:Key="CollboratorChipTemplate">
         <md:Chip
           Margin="4"
           Command="{Binding}"
@@ -73,7 +93,8 @@
           IconBackground="{StaticResource PrimaryHueLightBrush}"
           ToolTip="{Binding role}">
           <md:Chip.Icon>
-            <Image Source="{Binding avatar, TargetNullValue={StaticResource DefaultProfImage}}" />
+            <Image
+              Source="{Binding avatar, TargetNullValue={StaticResource DefaultProfImage}}" />
           </md:Chip.Icon>
         </md:Chip>
       </DataTemplate>
@@ -81,24 +102,38 @@
     </ResourceDictionary>
   </UserControl.Resources>
 
-  <md:DialogHost DialogTheme="Inherit" Identifier="StreamDialogHost">
+  <md:DialogHost
+    DialogTheme="Inherit"
+    Identifier="StreamDialogHost">
 
     <Grid>
-      <Grid Margin="20,0,20,100">
+      <Grid
+        Margin="20,0,20,100">
         <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
+          <RowDefinition
+            Height="Auto" />
+          <RowDefinition
+            Height="Auto" />
+          <RowDefinition
+            Height="Auto" />
+          <RowDefinition
+            Height="Auto" />
+          <RowDefinition
+            Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Margin="-8,10">
+        <Grid
+          Grid.Row="0"
+          Margin="-8,10">
           <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition
+              Width="Auto" />
+            <ColumnDefinition
+              Width="*" />
+            <ColumnDefinition
+              Width="Auto" />
+            <ColumnDefinition
+              Width="Auto" />
           </Grid.ColumnDefinitions>
           <Button
             Grid.Column="0"
@@ -127,12 +162,16 @@
             ToolTip="Share this stream!" />
         </Grid>
 
-        <StackPanel Grid.Row="1">
+        <StackPanel
+          Grid.Row="1">
           <Grid>
             <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="*" />
+              <ColumnDefinition
+                Width="Auto" />
+              <ColumnDefinition
+                Width="Auto" />
+              <ColumnDefinition
+                Width="*" />
             </Grid.ColumnDefinitions>
             <md:Chip
               Height="28"
@@ -143,14 +182,16 @@
               FontFamily="Consolas"
               FontSize="13"
               ToolTip="Stream ID">
-              <StackPanel Orientation="Horizontal">
+              <StackPanel
+                Orientation="Horizontal">
                 <md:PackIcon
                   Width="12"
                   Height="12"
                   Margin="0,0,4,0"
                   VerticalAlignment="Center"
                   Kind="ContentCopy" />
-                <TextBlock Text="{Binding Stream.id}" />
+                <TextBlock
+                  Text="{Binding Stream.id}" />
               </StackPanel>
             </md:Chip>
             <md:Chip
@@ -160,29 +201,37 @@
               FontFamily="Consolas"
               FontSize="13"
               ToolTip="Current branch">
-              <StackPanel Orientation="Horizontal">
+              <StackPanel
+                Orientation="Horizontal">
                 <md:PackIcon
                   Width="12"
                   Height="12"
                   Margin="0,0,4,0"
                   VerticalAlignment="Center"
                   Kind="SourceBranch" />
-                <TextBlock Text="{Binding Branch.name}" />
+                <TextBlock
+                  Text="{Binding Branch.name}" />
               </StackPanel>
             </md:Chip>
           </Grid>
-          <TextBlock Margin="0,16,0,0" Text="{Binding Stream.description}" />
+          <TextBlock
+            Margin="0,16,0,0"
+            Text="{Binding Stream.description}" />
         </StackPanel>
 
 
-        <StackPanel x:Name="CollaboratorsSection" Grid.Row="2">
+        <StackPanel
+          x:Name="CollaboratorsSection"
+          Grid.Row="2">
           <TextBlock
             Margin="0,24,0,8"
             FontSize="18"
             Style="{StaticResource MaterialDesignHeadline4TextBlock}"
             Text="Collaborators" />
 
-          <ItemsControl ItemTemplate="{StaticResource CollboratorChipTemplate}" ItemsSource="{Binding Stream.collaborators}">
+          <ItemsControl
+            ItemTemplate="{StaticResource CollboratorChipTemplate}"
+            ItemsSource="{Binding Stream.collaborators}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <WrapPanel />
@@ -192,18 +241,26 @@
         </StackPanel>
 
 
-        <StackPanel x:Name="ObjectsSection" Grid.Row="3">
+        <StackPanel
+          x:Name="ObjectsSection"
+          Grid.Row="3">
           <TextBlock
             Margin="0,24,0,8"
             FontSize="18"
             Style="{StaticResource MaterialDesignHeadline4TextBlock}"
             Text="Objects" />
-          <TextBlock Margin="0,4" Text="{Binding StreamState.objects.Count, StringFormat='Converted Objects: {0}'}" />
-          <TextBlock Margin="0,4" Text="{Binding StreamState.placeholders.Count, StringFormat='Placeholder Objects: {0}'}" />
+          <TextBlock
+            Margin="0,4"
+            Text="{Binding StreamState.objects.Count, StringFormat='Converted Objects: {0}'}" />
+          <TextBlock
+            Margin="0,4"
+            Text="{Binding StreamState.placeholders.Count, StringFormat='Placeholder Objects: {0}'}" />
         </StackPanel>
 
 
-        <StackPanel x:Name="HistorySection" Grid.Row="4">
+        <StackPanel
+          x:Name="HistorySection"
+          Grid.Row="4">
           <TextBlock
             Margin="0,24,0,8"
             FontSize="18"
@@ -214,7 +271,9 @@
             Text="No commit history yet! Add some objects and send them to Speckle to start this off 🚀"
             TextWrapping="Wrap"
             Visibility="{Binding Branch.commits.items, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
-          <ItemsControl ItemTemplate="{StaticResource CommitTemplate}" ItemsSource="{Binding Branch.commits.items}" />
+          <ItemsControl
+            ItemTemplate="{StaticResource CommitTemplate}"
+            ItemsSource="{Binding Branch.commits.items}" />
         </StackPanel>
       </Grid>
 
