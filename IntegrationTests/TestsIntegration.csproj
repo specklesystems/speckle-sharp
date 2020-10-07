@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\ServerTransport\ServerTransport.csproj" />
     <ProjectReference Include="..\Tests\TestsUnit.csproj" />
   </ItemGroup>
 </Project>
