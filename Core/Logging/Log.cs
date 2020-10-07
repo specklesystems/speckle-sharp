@@ -54,7 +54,7 @@ namespace Speckle.Core.Logging
     /// So they need to be sent manually.
     /// </summary>
     /// <param name="e">Exception to capture and throw</param>
-    internal static void CaptureAndThrow(Exception e, SentryLevel level = SentryLevel.Error)
+    public static void CaptureAndThrow(Exception e, SentryLevel level = SentryLevel.Error)
     {
       CaptureException(e, level);
       throw e;
@@ -64,7 +64,7 @@ namespace Speckle.Core.Logging
     /// Captures and throws a GraphQL exception
     /// </summary>
     /// <param name="e">Exception to capture and throw</param>
-    internal static void CaptureAndThrow(Exception e, GraphQLError[] errors)
+    public static void CaptureAndThrow(Exception e, GraphQLError[] errors)
     {
       var extra = new List<KeyValuePair<string, object>>();
       foreach(var error in errors)
