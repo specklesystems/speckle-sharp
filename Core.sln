@@ -32,6 +32,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Client.Serializer.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Client.LocalExecution", "GraphQLClient\src\GraphQL.Client.LocalExecution\GraphQL.Client.LocalExecution.csproj", "{6A3861F4-CA3E-4790-BF27-3C502E18783C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerTransport", "ServerTransport\ServerTransport.csproj", "{899C8BE7-C206-4698-8807-3693FDF8A3A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
