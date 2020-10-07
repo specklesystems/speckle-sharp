@@ -51,9 +51,9 @@ namespace Speckle.DesktopUI.Streams
       var item = _streamViewModelFactory.CreateStreamViewModel();
       item.StreamState = state;
       item.Stream = state.stream;
-      // get master branch for now
+      // get main branch for now
       // TODO allow user to select branch
-      item.Branch = _repo.GetMasterBranch(state.stream.branches.items);
+      item.Branch = _repo.GetMainBranch(state.stream.branches.items);
       var parent = (StreamsHomeViewModel)Parent;
       parent.ActivateItem(item);
     }
@@ -79,9 +79,8 @@ namespace Speckle.DesktopUI.Streams
         return;
       }
 
-      NotifyOfPropertyChange(nameof(StreamState.placeholders));
+      NotifyOfPropertyChange(nameof(StreamList));
       // TODO figure out why this isn't updating in the UI
-      // (should take away the button after sending)
     }
 
     public BindableCollection<StreamState> StreamList

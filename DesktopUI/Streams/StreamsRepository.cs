@@ -14,10 +14,10 @@ namespace Speckle.DesktopUI.Streams
   {
     private AccountsRepository _acctRepo = new AccountsRepository();
 
-    public Branch GetMasterBranch(List<Branch> branches)
+    public Branch GetMainBranch(List<Branch> branches)
     {
-      Branch master = branches.Find(branch => branch.name == "master");
-      return master;
+      Branch main = branches.Find(branch => branch.name == "main");
+      return main;
     }
 
     public Task<string> CreateStream(Stream stream, Account account)
@@ -77,7 +77,7 @@ namespace Speckle.DesktopUI.Streams
         new Branch()
         {
           id = "123",
-          name = "master",
+          name = "main",
           commits = new Commits()
           {
             items = new List<Commit>()
