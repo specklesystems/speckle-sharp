@@ -9,7 +9,6 @@ using Speckle.Core.Models;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
 using Speckle.ConnectorRevit.Storage;
-using Speckle.Converter.Revit;
 using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorRevit.UI
@@ -125,6 +124,11 @@ namespace Speckle.ConnectorRevit.UI
     public override string GetDocumentLocation()
     {
       return CurrentDoc.Document.PathName;
+    }
+
+    public override string GetActiveViewName()
+    {
+      return CurrentDoc.Document.ActiveView.Title;
     }
 
     public override List<StreamState> GetFileContext()

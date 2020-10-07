@@ -120,7 +120,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         streamId = streamId,
         objectId = objectId,
-        branchName = "master",
+        branchName = "main",
         message = $"Added {convertedObjects.Count()} elements from Revit: {string.Join(", ", convertedTypes)}"
       });
 
@@ -163,6 +163,15 @@ namespace Speckle.ConnectorRevit.UI
       var selectedObjects = CurrentDoc != null ? CurrentDoc.Selection.GetElementIds().Select(id => doc.GetElement(id).UniqueId).ToList() : new List<string>();
 
       return  selectedObjects;
+    }
+
+    public override List<string> GetObjectsInView()
+    {
+      var collector = new FilteredElementCollector(CurrentDoc.Document, CurrentDoc.Document.ActiveView.Id)
+        .WhereElementIsNotElementType();
+      var elementIds = collector.ToElements().Select(el => el.UniqueId);
+
+      return new List<string>(elementIds);
     }
 
     public override void RemoveSelectionFromClient(string args)
