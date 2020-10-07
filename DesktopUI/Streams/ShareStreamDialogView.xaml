@@ -55,8 +55,7 @@
             ItemsSource="{Binding UserSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
             SelectedItem="{Binding SelectedUser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             DisplayMemberPath="name"
-            Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-          </ComboBox>
+            Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
           <TextBox
             Height="80"
             Margin="0,8"

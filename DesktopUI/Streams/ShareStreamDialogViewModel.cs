@@ -23,6 +23,7 @@ namespace Speckle.DesktopUI.Streams
     }
 
     private StreamState _streamState;
+
     public StreamState StreamState
     {
       get => _streamState;
@@ -30,6 +31,7 @@ namespace Speckle.DesktopUI.Streams
     }
 
     private string _userQuery;
+
     public string UserQuery
     {
       get => _userQuery;
@@ -41,6 +43,7 @@ namespace Speckle.DesktopUI.Streams
     }
 
     private BindableCollection<User> _userSearchResults;
+
     public BindableCollection<User> UserSearchResults
     {
       get => _userSearchResults;
@@ -48,6 +51,7 @@ namespace Speckle.DesktopUI.Streams
     }
 
     private User _selectedUser;
+
     public User SelectedUser
     {
       get => _selectedUser;
@@ -55,6 +59,7 @@ namespace Speckle.DesktopUI.Streams
     }
 
     private string _shareMessage;
+
     public string ShareMessage
     {
       get => _shareMessage;

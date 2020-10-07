@@ -199,7 +199,7 @@
         <ItemsControl
           Grid.Row="1"
           ItemTemplate="{StaticResource StreamCardTemplate}"
-          ItemsSource="{Binding StreamList}"
+          ItemsSource="{Binding StreamList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
           ScrollViewer.VerticalScrollBarVisibility="Auto" />
       </Grid>
