@@ -72,6 +72,7 @@ namespace Speckle.DesktopUI
     public abstract string GetFileName();
     public abstract string GetDocumentId();
     public abstract string GetDocumentLocation();
+    public abstract string GetActiveViewName();
 
     /// <summary>
     /// Returns the serialised clients present in the current open host file.
@@ -98,6 +99,12 @@ namespace Speckle.DesktopUI
     /// Adds the current selection to the provided client.
     /// </summary>
     public abstract List<string> GetSelectedObjects();
+
+    /// <summary>
+    /// Gets a list of objects in the currently active view
+    /// </summary>
+    /// <returns></returns>
+    public abstract List<string> GetObjectsInView();
 
     /// <summary>
     /// Adds a receiver and persists the info to the host file

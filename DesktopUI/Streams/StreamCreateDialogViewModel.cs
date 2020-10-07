@@ -39,6 +39,16 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _notifications, value);
     }
 
+    public string ActiveViewName
+    {
+      get => _bindings.GetActiveViewName();
+    }
+
+    public List<string> ActiveViewObjects
+    {
+      get => _bindings.GetObjectsInView();
+    }
+
     private bool _createButtonLoading;
 
     public bool CreateButtonLoading
@@ -193,6 +203,14 @@ namespace Speckle.DesktopUI.Streams
       SelectedFilter = Filters.First(filter => filter.Type == typeof(ElementsSelectionFilter).ToString());
       GetSelectedObjects();
       AccountToSendFrom = _acctRepo.GetDefault();
+
+      AddNewStream();
+    }
+
+    public void AddStreamFromView()
+    {
+      SelectedFilter = Filters.First(filter => filter.Type == typeof(ElementsSelectionFilter).ToString());
+      SelectedFilter.Selection = ActiveViewObjects;
 
       AddNewStream();
     }

@@ -9,6 +9,11 @@ namespace Speckle.DesktopUI.Utils
 {
   public class DummyBindings : ConnectorBindings
   {
+    public override List<string> GetObjectsInView()
+    {
+      throw new NotImplementedException();
+    }
+
     public override void AddExistingStream(string args)
     {
       throw new NotImplementedException();
@@ -42,12 +47,17 @@ namespace Speckle.DesktopUI.Utils
 
     public override string GetDocumentId()
     {
-      throw new NotImplementedException();
+      return "DocumentId12345";
     }
 
     public override string GetDocumentLocation()
     {
-      throw new NotImplementedException();
+      return "C:/Wow/Some/Document/Here";
+    }
+
+    public override string GetActiveViewName()
+    {
+      return "An Active View Name";
     }
 
     public override List<StreamState> GetFileContext()
@@ -57,7 +67,7 @@ namespace Speckle.DesktopUI.Utils
 
     public override string GetFileName()
     {
-      throw new NotImplementedException();
+      return "Some Random File";
     }
 
     public override List<ISelectionFilter> GetSelectionFilters()
