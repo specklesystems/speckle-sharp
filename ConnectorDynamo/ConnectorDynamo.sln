@@ -5,13 +5,13 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorDynamo", "ConnectorDynamo\ConnectorDynamo.csproj", "{61A977EE-10DA-47F2-8BD9-3CC7BBB6904F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamo", "..\..\ConverterDynamo\ConverterDynamo\ConverterDynamo.csproj", "{BA107B06-A3D3-4F45-BA65-D2F9B9828F5F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorDynamoExtension", "ConnectorDynamoExtension\ConnectorDynamoExtension.csproj", "{B494FD40-5E59-4D5E-87B0-80AAC8BDCD5A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\..\Core\Core\Core.csproj", "{7DE6BCF0-8AA2-40A6-A7A2-BE696F693527}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorDynamoFunctions", "ConnectorDynamoFunctions\ConnectorDynamoFunctions.csproj", "{8F4D907B-A2DF-4B40-8EA6-D79F9ED6D906}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamo", "..\..\Objects\Converters\ConverterDynamo\ConverterDynamo\ConverterDynamo.csproj", "{83A2A87B-7CE1-439C-9D02-D691D897D1E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,6 @@ Global
 		{61A977EE-10DA-47F2-8BD9-3CC7BBB6904F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61A977EE-10DA-47F2-8BD9-3CC7BBB6904F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61A977EE-10DA-47F2-8BD9-3CC7BBB6904F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA107B06-A3D3-4F45-BA65-D2F9B9828F5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA107B06-A3D3-4F45-BA65-D2F9B9828F5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA107B06-A3D3-4F45-BA65-D2F9B9828F5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA107B06-A3D3-4F45-BA65-D2F9B9828F5F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B494FD40-5E59-4D5E-87B0-80AAC8BDCD5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B494FD40-5E59-4D5E-87B0-80AAC8BDCD5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B494FD40-5E59-4D5E-87B0-80AAC8BDCD5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,6 +35,10 @@ Global
 		{8F4D907B-A2DF-4B40-8EA6-D79F9ED6D906}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F4D907B-A2DF-4B40-8EA6-D79F9ED6D906}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F4D907B-A2DF-4B40-8EA6-D79F9ED6D906}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83A2A87B-7CE1-439C-9D02-D691D897D1E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83A2A87B-7CE1-439C-9D02-D691D897D1E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83A2A87B-7CE1-439C-9D02-D691D897D1E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83A2A87B-7CE1-439C-9D02-D691D897D1E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
