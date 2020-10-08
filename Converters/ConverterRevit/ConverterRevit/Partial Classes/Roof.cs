@@ -1,4 +1,4 @@
-﻿
+
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 using Roof = Objects.Roof;
@@ -140,10 +140,13 @@ namespace Objects.Converter.Revit
 
       speckleRoof.type = Doc.GetElement(revitRoof.GetTypeId()).Name;
 
-
-      speckleRoof.baseGeometry = profiles[0];
-      if (profiles.Count > 1)
-        speckleRoof.holes = profiles.Skip(1).ToList();
+      // TODO handle case if not one of our supported roofs
+      if ( profiles.Any() )
+      {
+        speckleRoof.baseGeometry = profiles[0];
+        if (profiles.Count > 1)
+          speckleRoof.holes = profiles.Skip(1).ToList();
+      }
 
 
       AddCommonRevitProps(speckleRoof, revitRoof);
