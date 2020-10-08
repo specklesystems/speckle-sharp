@@ -169,10 +169,6 @@
     <EmbeddedResource Include="Assets\logo32.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ConverterRevit\ConverterRevit\ConverterRevit.csproj">
-      <Project>{471bb924-8929-4d26-b7b9-2b1e55edae4c}</Project>
-      <Name>ConverterRevit</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{521d4aee-08cf-4913-bbe8-5511d176d126}</Project>
       <Name>Core</Name>
