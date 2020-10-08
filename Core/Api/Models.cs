@@ -9,7 +9,7 @@ namespace Speckle.Core.Api
   {
     public string name { get; set; }
     public string description { get; set; }
-    public bool isPublic { get; set; }
+    public bool isPublic { get; set; } = true;
   }
 
   public class StreamUpdateInput
@@ -17,7 +17,7 @@ namespace Speckle.Core.Api
     public string id { get; set; }
     public string name { get; set; }
     public string description { get; set; }
-    public bool isPublic { get; set; }
+    public bool isPublic { get; set; } = true;
   }
 
   public class StreamGrantPermissionInput
