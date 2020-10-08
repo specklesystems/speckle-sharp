@@ -141,6 +141,10 @@
       <Project>{7de6bcf0-8aa2-40a6-a7a2-be696f693527}</Project>
       <Name>Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Objects\Converters\ConverterDynamo\ConverterDynamo\ConverterDynamo.csproj">
+      <Project>{83a2a87b-7ce1-439c-9d02-d691d897d1e0}</Project>
+      <Name>ConverterDynamo</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
