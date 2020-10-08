@@ -180,73 +180,94 @@
           </Grid>
           <TextBlock Margin="0,16,0,0" Text="{Binding Stream.description}" />
           <Grid Margin="8,16">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <md:Badged
+
+            <Button
+              Grid.Row="0"
               Grid.Column="0"
-              Badge="{Binding StreamState.placeholders.Count}"
-              BadgeColorZoneMode="Accent"
-              ToolTip="objects to send"
-              Visibility="{Binding placeholders.Count, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+              Width="150"
+              Height="36"
+              ToolTip="Send your changes to the Speckle server">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <md:PackIcon
+                  Grid.Column="0"
+                  Width="24"
+                  Height="24"
+                  Margin="0,0,12,0"
+                  Kind="CloudUpload" />
+                <TextBlock
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  Text="SEND" />
+              </Grid>
+            </Button>
 
-              <Button
-                Grid.Column="0"
-                Width="140"
-                Height="36"
-                ToolTip="Send your changes to the Speckle server">
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                  </Grid.ColumnDefinitions>
-                  <md:PackIcon
-                    Grid.Column="0"
-                    Width="24"
-                    Height="24"
-                    Margin="0,0,12,0"
-                    Kind="CloudUpload" />
-                  <TextBlock
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Text="SEND" />
-                </Grid>
-              </Button>
-            </md:Badged>
 
-            <md:Badged
+            <Button
+              Grid.Row="0"
               Grid.Column="1"
-              Badge=""
-              BadgeColorZoneMode="Accent"
-              ToolTip="objects to send"
-              Visibility="{Binding placeholders.Count, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+              Width="150"
+              Height="36"
+              Style="{StaticResource MaterialDesignRaisedDarkButton}"
+              ToolTip="Receive your changes from the server">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <md:PackIcon
+                  Grid.Column="0"
+                  Width="24"
+                  Height="24"
+                  Margin="0,0,12,0"
+                  Kind="CloudDownload" />
+                <TextBlock
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  Text="RECEIVE" />
+              </Grid>
+            </Button>
 
+            <Border
+              Grid.Row="1"
+              Grid.Column="0"
+              Width="150"
+              Height="18"
+              Margin="4"
+              Background="{DynamicResource MaterialDesignChipBackground}"
+              CornerRadius="6">
+              <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="11"
+                Text="{Binding StreamState.placeholders.Count, StringFormat='Send {0} objects'}" />
+            </Border>
 
-              <Button
-                Grid.Column="1"
-                Width="140"
-                Height="36"
-                Style="{StaticResource MaterialDesignRaisedDarkButton}"
-                ToolTip="Receive your changes from the server">
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                  </Grid.ColumnDefinitions>
-                  <md:PackIcon
-                    Grid.Column="0"
-                    Width="24"
-                    Height="24"
-                    Margin="0,0,12,0"
-                    Kind="CloudDownload" />
-                  <TextBlock
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Text="RECEIVE" />
-                </Grid>
-              </Button>
-            </md:Badged>
+            <Border
+              Grid.Row="1"
+              Grid.Column="1"
+              Width="150"
+              Height="18"
+              Background="{DynamicResource MaterialDesignChipBackground}"
+              CornerRadius="6">
+              <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="11"
+                Text="well hello there 👋" />
+            </Border>
+
           </Grid>
         </StackPanel>
 
