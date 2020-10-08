@@ -20,17 +20,13 @@ namespace ExampleApp
   /// These tests don't run without a server running locally.              ///
   /// Check out https://github.com/specklesystems/server for               ///
   /// more info on the server.                                             ///
+  /// Also, please make sure you have a default speckle account.           ///
   ////////////////////////////////////////////////////////////////////////////
 
   class Program
   {
     static async Task Main(string[] args)
-    {
-      // Run the function below once, then comment it out. Make sure your local speckle
-      // server is running (`npm run dev:server`) as well as the frontend (`npm run dev:frontend`).
-      // It will open a browser window where you can register or login.
-
-      await Auth();
+    { 
 
       //await Subscriptions.SubscriptionConnection();
 
@@ -50,48 +46,6 @@ namespace ExampleApp
       Console.ReadLine();
 
       return;
-    }
-
-    /// <summary>
-    /// Simulates an authentication flow. 
-    /// </summary>
-    /// <returns></returns>
-    public static async Task Auth()
-    {
-      // First log in (uncomment the two lines below to simulate a login/register)
-      var myAccount = await AccountManager.AuthenticateConnectors("http://localhost:3000");
-      Console.WriteLine($"Succesfully added/updated account server: {myAccount.serverInfo.url} user email: {myAccount.userInfo.email}");
-
-      //// Second log in (make sure you use two different email addresses :D )
-      //var myAccount2 = await AccountManager.Authenticate("http://localhost:3000");
-
-      //AccountManager.SetDefaultAccount(myAccount2.id);
-
-      var accs = AccountManager.GetAccounts().ToList();
-      var deff = AccountManager.GetDefaultAccount();
-
-      //Console.WriteLine($"There are {accs.Count} accounts. The default one is {deff.id} {deff.userInfo.email}");
-
-      foreach (var acc in accs)
-      {
-        var res = await acc.Validate();
-
-        if (res != null)
-          Console.WriteLine($"Validated {acc.id}: {acc.serverInfo.url} / {res.email} / {res.name} (token: {acc.token})");
-        else
-          Console.WriteLine($"Failed to validate acc {acc.id} / {acc.serverInfo.url} / {acc.userInfo.email}");
-
-        try
-        {
-          await acc.RotateToken();
-          Console.WriteLine($"Rotated {acc.id}: {acc.serverInfo.url} / {res.email} / {res.name} (token: {acc.token})");
-        }
-        catch (Exception e)
-        {
-          Console.WriteLine($"Failed to rotate acc {acc.id} / {acc.serverInfo.url} / {acc.userInfo.email}");
-        }
-
-      }
     }
 
     /// <summary>

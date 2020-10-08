@@ -253,7 +253,7 @@ namespace Speckle.Core.Transports
     /// Deletes an object. Note: do not use for any speckle object transport, as it will corrupt the database.
     /// </summary>
     /// <param name="hash"></param>
-    internal void DeleteObject(string hash)
+    public void DeleteObject(string hash)
     {
       using (var c = new SQLiteConnection(ConnectionString))
       {

@@ -41,11 +41,11 @@ namespace TestsIntegration
     {
       testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
 
-      firstUserAccount = Utils.SeedUser(testServer);
-      secondUserAccount = Utils.SeedUser(testServer);
+      firstUserAccount = Fixtures.SeedUser(testServer);
+      secondUserAccount = Fixtures.SeedUser(testServer);
 
-      AccountManager.UpdateOrSaveAccount(firstUserAccount);
-      AccountManager.UpdateOrSaveAccount(secondUserAccount);
+      Fixtures.UpdateOrSaveAccount(firstUserAccount);
+      Fixtures.UpdateOrSaveAccount(secondUserAccount);
 
       myClient = new Client(firstUserAccount);
       myServerTransport = new ServerTransport(firstUserAccount, null);
