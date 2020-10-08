@@ -9,8 +9,6 @@ using Speckle.Core.Models;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
 using Speckle.ConnectorRevit.Storage;
-using Speckle.Converter.Revit;
-using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorRevit.UI
 {

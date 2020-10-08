@@ -9,15 +9,12 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using RevitElement = Autodesk.Revit.DB.Element;
-using Newtonsoft.Json;
-using Objects.Converter.Revit;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using SpeckleElement = Objects.Element;
 using Speckle.DesktopUI.Utils;
 
 namespace Speckle.ConnectorRevit.UI
@@ -59,7 +56,7 @@ namespace Speckle.ConnectorRevit.UI
     public override async Task<StreamState> SendStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = (ConverterRevit)kit.LoadConverter(Applications.Revit);
+      var converter = kit.LoadConverter(Applications.Revit);
       converter.SetContextDocument(CurrentDoc.Document);
       
       var objsToConvert = state.placeholders;
