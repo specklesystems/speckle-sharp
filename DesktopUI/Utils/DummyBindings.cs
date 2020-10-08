@@ -87,9 +87,13 @@ namespace Speckle.DesktopUI.Utils
       };
     }
 
-    public override Task<StreamState> SendStream(StreamState state)
+    public override async Task<StreamState> SendStream(StreamState state)
     {
-      throw new NotImplementedException();
+      var objects = state.placeholders;
+      state.placeholders.Clear();
+      state.objects.AddRange(objects);
+
+      return state;
     }
 
     public override void RemoveStream(string args)
