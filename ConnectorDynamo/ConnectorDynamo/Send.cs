@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Account = Speckle.Core.Credentials.Account;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo
 {
@@ -46,7 +47,7 @@ namespace Speckle.ConnectorDynamo
 
     public Send()
     {
-      Telemetry.TrackView(Telemetry.NEW_SEND);
+      Tracker.TrackEvent(Tracker.SEND_ADDED);
 
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("data", "The data to send")));
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("streamId", "The stream to send to")));
@@ -67,7 +68,7 @@ namespace Speckle.ConnectorDynamo
         return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), AstFactory.BuildNullNode()) };
       }
 
-      Telemetry.TrackView(Telemetry.SEND);
+      Tracker.TrackEvent(Tracker.SEND);
 
       var functionCall = AstFactory.BuildFunctionCall(
         new Func<object, string, Account, string>(Functions.Functions.Send),

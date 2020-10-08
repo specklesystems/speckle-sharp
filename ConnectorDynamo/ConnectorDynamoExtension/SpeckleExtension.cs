@@ -8,6 +8,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Speckle.Core.Logging;
+using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorDynamo.Extension
 {
@@ -19,7 +21,8 @@ namespace Speckle.ConnectorDynamo.Extension
 
     public void Loaded(ViewLoadedParams viewLoadedParams)
     {
-      Telemetry.TrackView(Telemetry.LOADED);
+      //initialize telemetry and logging
+      Setup.Init(Applications.Dynamo);
 
       try
       {
@@ -30,7 +33,7 @@ namespace Speckle.ConnectorDynamo.Extension
         //typeof(DynamoViewModel).GetProperty("WatchHandler").SetValue(dynamoViewModel, speckleWatchHandler);
 
       }
-      catch(Exception e)
+      catch (Exception e)
       {
 
       }
@@ -38,7 +41,10 @@ namespace Speckle.ConnectorDynamo.Extension
 
     public void Dispose() { }
 
-    public void Shutdown() { }
+    public void Shutdown()
+    {
+      Tracker.TrackEvent(Tracker.SESSION_END);
+    }
 
     public void Startup(ViewStartupParams p) { }
   }

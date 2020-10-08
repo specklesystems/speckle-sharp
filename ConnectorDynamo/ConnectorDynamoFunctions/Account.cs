@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Autodesk.DesignScript.Runtime;
 using Dynamo.Graph.Nodes;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 
 namespace Speckle.ConnectorDynamo.Functions
@@ -16,7 +17,7 @@ namespace Speckle.ConnectorDynamo.Functions
     [NodeCategory("Query")]
     public static Core.Credentials.Account Default()
     {
-      Telemetry.TrackView(Telemetry.ACCOUNT_DEFAULT);
+      Tracker.TrackEvent(Tracker.ACCOUNT_DEFAULT);
 
       return AccountManager.GetDefaultAccount();
     }
@@ -28,7 +29,7 @@ namespace Speckle.ConnectorDynamo.Functions
     [NodeCategory("Query")]
     public static IEnumerable<Core.Credentials.Account> List()
     {
-      Telemetry.TrackView(Telemetry.ACCOUNT_LIST);
+      Tracker.TrackEvent(Tracker.ACCOUNT_LIST);
 
       return AccountManager.GetAccounts();
     }
@@ -41,7 +42,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
     public static Dictionary<string, object> Details(Core.Credentials.Account account)
     {
-      Telemetry.TrackView(Telemetry.ACCOUNT_DETAILS);
+      Tracker.TrackEvent(Tracker.ACCOUNT_DETAILS);
 
       return new Dictionary<string, object> {
         { "id", account.id },
