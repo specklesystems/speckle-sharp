@@ -21,6 +21,7 @@
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
           <Ellipse
+            VerticalAlignment="Top"
             Grid.Column="0"
             Width="32"
             Height="32">
@@ -192,6 +193,7 @@
             <Button
               Grid.Row="0"
               Grid.Column="0"
+              Command="{s:Action ConvertAndSendObjects}"
               Width="150"
               Height="36"
               ToolTip="Send your changes to the Speckle server">
@@ -251,7 +253,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 FontSize="11"
-                Text="{Binding StreamState.placeholders.Count, StringFormat='Send {0} objects'}" />
+                Text="{Binding StreamState.placeholders.Count, StringFormat='Send {0} objects', Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
             </Border>
 
             <Border
@@ -329,31 +331,6 @@
           PlacementMode="TopAndAlignCentres"
           Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}">
           <StackPanel>
-            <Button
-              x:Name="UploadChangesButton"
-              Width="40"
-              Height="40"
-              Margin="3"
-              Command="{Binding}"
-              Content="{md:PackIcon Kind=CloudUpload,
-                                    Size=20}"
-              Foreground="{StaticResource MaterialDesignLightBackground}"
-              Style="{StaticResource MaterialDesignFloatingActionButton}"
-              ToolTip="Upload your changes to Speckle"
-              ToolTipService.Placement="Left" />
-
-            <Button
-              x:Name="DownloadChangesButton"
-              Width="40"
-              Height="40"
-              Margin="3"
-              Command="{Binding}"
-              Content="{md:PackIcon Kind=CloudDownload,
-                                    Size=20}"
-              Foreground="{StaticResource MaterialDesignLightBackground}"
-              Style="{StaticResource MaterialDesignFloatingActionButton}"
-              ToolTip="Download new changes from Speckle"
-              ToolTipService.Placement="Left" />
 
             <Button
               x:Name="AddObjectsButton"

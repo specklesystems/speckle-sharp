@@ -46,6 +46,24 @@ namespace Speckle.DesktopUI.Streams
     private Stream _selectedStream;
     private Branch _selectedBranch;
 
+    public BindableCollection<StreamState> StreamList
+    {
+      get => _streamList;
+      set => SetAndNotify(ref _streamList, value);
+    }
+
+    public Stream SelectedStream
+    {
+      get => _selectedStream;
+      set => SetAndNotify(ref _selectedStream, value);
+    }
+
+    public Branch SelectedBranch
+    {
+      get => _selectedBranch;
+      set => SetAndNotify(ref _selectedBranch, value);
+    }
+
     public void ShowStreamInfo(StreamState state)
     {
       var item = _streamViewModelFactory.CreateStreamViewModel();
@@ -79,26 +97,7 @@ namespace Speckle.DesktopUI.Streams
         return;
       }
 
-      NotifyOfPropertyChange(nameof(StreamList));
-      // TODO figure out why this isn't updating in the UI
-    }
-
-    public BindableCollection<StreamState> StreamList
-    {
-      get => _streamList;
-      set => SetAndNotify(ref _streamList, value);
-    }
-
-    public Stream SelectedStream
-    {
-      get => _selectedStream;
-      set => SetAndNotify(ref _selectedStream, value);
-    }
-
-    public Branch SelectedBranch
-    {
-      get => _selectedBranch;
-      set => SetAndNotify(ref _selectedBranch, value);
+      StreamList.Refresh();
     }
 
     public async void ShowStreamCreateDialog()

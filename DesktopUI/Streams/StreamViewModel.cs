@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
@@ -12,18 +13,68 @@ namespace Speckle.DesktopUI.Streams
     private readonly IEventAggregator _events;
     private readonly ViewManager _viewManager;
     private readonly IDialogFactory _dialogFactory;
-    public StreamState StreamState { get; set; }
-    public Stream Stream { get; set; }
-    public Branch Branch { get; set; }
+    private readonly ConnectorBindings _bindings;
 
     public StreamViewModel(
       IEventAggregator events,
       ViewManager viewManager,
-      IDialogFactory dialogFactory)
+      IDialogFactory dialogFactory,
+      ConnectorBindings bindings)
     {
       _events = events;
       _viewManager = viewManager;
       _dialogFactory = dialogFactory;
+      _bindings = bindings;
+    }
+
+    private StreamState _streamState;
+
+    public StreamState StreamState
+    {
+      get => _streamState;
+      set
+      {
+        SetAndNotify(ref _streamState, value);
+        Stream = StreamState.stream;
+        Branch = StreamState.stream.branches.items[ 0 ];
+      }
+    }
+
+    private Stream _stream;
+
+    public Stream Stream
+    {
+      get => _stream;
+      set => SetAndNotify(ref _stream, value);
+    }
+
+    private Branch _branch;
+
+    public Branch Branch
+    {
+      get => _branch;
+      set => SetAndNotify(ref _branch, value);
+    }
+
+
+    public async void ConvertAndSendObjects()
+    {
+      if ( !StreamState.placeholders.Any() )
+      {
+        _bindings.RaiseNotification("Nothing to send to Speckle.");
+        return;
+      }
+
+      try
+      {
+        StreamState = await _bindings.SendStream(StreamState);
+      }
+      catch ( Exception e )
+      {
+        _bindings.RaiseNotification($"Error: {e.Message}");
+        return;
+      }
+      NotifyOfPropertyChange(nameof(StreamState));
     }
 
     public async void ShowStreamUpdateDialog(StreamState state)
@@ -49,10 +100,7 @@ namespace Speckle.DesktopUI.Streams
     public void CopyStreamId(string streamId)
     {
       Clipboard.SetText(streamId);
-      _events.Publish(new ShowNotificationEvent()
-      {
-        Notification = "Stream ID copied to clipboard!"
-      });
+      _events.Publish(new ShowNotificationEvent() {Notification = "Stream ID copied to clipboard!"});
     }
 
     public void OpenHelpLink(string url)
