@@ -21,7 +21,6 @@
     <PackageReference Include="DeviceId" Version="5.1.1" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Models\" />
     <Folder Include="Serialisation\" />
     <Folder Include="Transports\" />
   </ItemGroup>

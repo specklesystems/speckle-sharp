@@ -12,7 +12,9 @@ namespace Speckle.Core.Kits
     string Name { get; }
     string Author { get; }
     string WebsiteOrEmail { get; }
-    
+
+    public HashSet<Error> ConversionErrors { get; }
+
     /// <summary>
     /// Converts a native object to a Speckle one
     /// </summary>
