@@ -11,7 +11,7 @@ namespace Speckle.DesktopUI.Utils
   {
     public override List<string> GetObjectsInView()
     {
-      throw new NotImplementedException();
+      return new List<string>();
     }
 
     public override void AddExistingStream(string args)
@@ -31,7 +31,6 @@ namespace Speckle.DesktopUI.Utils
 
     public override List<string> GetSelectedObjects()
     {
-      RaiseNotification("it don't work, my dude");
       return new List<string>();
     }
 
