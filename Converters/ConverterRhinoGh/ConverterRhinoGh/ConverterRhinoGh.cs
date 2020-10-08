@@ -15,6 +15,9 @@ namespace Objects.Converter.RhinoGh
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
     public IEnumerable<string> GetServicedApplications() => new string[] { Applications.Rhino, Applications.Grasshopper };
+
+    public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
+
     public RhinoDoc Doc { get; private set; }
 
     public void SetContextDocument(object doc)

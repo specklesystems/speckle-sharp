@@ -17,6 +17,8 @@ namespace Objects.Converter.Dynamo
     public string WebsiteOrEmail => "https://speckle.systems";
     public IEnumerable<string> GetServicedApplications() => new string[] { Applications.Dynamo };
 
+    public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
+
     public Base ConvertToSpeckle(object @object)
     {
       var m = ConversionMethods(@object, "ToSpeckle");
