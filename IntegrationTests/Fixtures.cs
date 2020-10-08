@@ -9,7 +9,7 @@ using Speckle.Core.Transports;
 
 namespace TestsIntegration
 {
-  public class Fixtures
+  public static class Fixtures
   {
     private static SQLiteTransport AccountStorage = new SQLiteTransport(scope: "Accounts");
 
@@ -23,10 +23,7 @@ namespace TestsIntegration
     {
       AccountStorage.DeleteObject(id);
     }
-  }
 
-  public static class Utils
-  {
     public static Account SeedUser(ServerInfo server)
     {
       using (var client = new WebClient())

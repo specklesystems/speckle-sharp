@@ -41,8 +41,8 @@ namespace TestsIntegration
     {
       testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
 
-      firstUserAccount = Utils.SeedUser(testServer);
-      secondUserAccount = Utils.SeedUser(testServer);
+      firstUserAccount = Fixtures.SeedUser(testServer);
+      secondUserAccount = Fixtures.SeedUser(testServer);
 
       Fixtures.UpdateOrSaveAccount(firstUserAccount);
       Fixtures.UpdateOrSaveAccount(secondUserAccount);
