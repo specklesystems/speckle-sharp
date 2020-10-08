@@ -2,8 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>Speckle.Converter.Dynamo</RootNamespace>
+    <RootNamespace>Objects.Converter.Dynamo</RootNamespace>
     <Version>0.0.1</Version>
+    <AssemblyName>Objects.Converter.Dynamo</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,5 +16,7 @@
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
   </ItemGroup>
-
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
+  </Target>
 </Project>

@@ -13,6 +13,7 @@ using Objects.Geometry;
 using Point = Objects.Geometry.Point;
 using Objects.Revit;
 using System.Linq;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.Revit
 {

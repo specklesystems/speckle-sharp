@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using Objects;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.Revit
 {

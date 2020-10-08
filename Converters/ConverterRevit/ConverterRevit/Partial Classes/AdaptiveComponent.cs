@@ -6,6 +6,7 @@ using System.Linq;
 using Objects.Geometry;
 using System;
 using Objects;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.Revit
 {

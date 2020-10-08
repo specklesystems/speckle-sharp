@@ -2,6 +2,7 @@
 using Objects;
 using Objects.Geometry;
 using Objects.Revit;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
