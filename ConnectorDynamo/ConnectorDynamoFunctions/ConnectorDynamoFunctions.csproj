@@ -137,10 +137,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ConverterDynamo\ConverterDynamo\ConverterDynamo.csproj">
-      <Project>{ba107b06-a3d3-4f45-ba65-d2f9b9828f5f}</Project>
-      <Name>ConverterDynamo</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\Core\Core\Core.csproj">
       <Project>{7de6bcf0-8aa2-40a6-a7a2-be696f693527}</Project>
       <Name>Core</Name>

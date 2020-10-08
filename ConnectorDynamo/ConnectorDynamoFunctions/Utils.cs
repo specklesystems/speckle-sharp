@@ -1,6 +1,6 @@
 ﻿using Autodesk.DesignScript.Runtime;
 using ProtoCore.Lang;
-using Speckle.Converter.Dynamo;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections;
@@ -87,8 +87,19 @@ namespace Speckle.ConnectorDynamo.Functions
         return dictionary.ToDictionary(key => key, value => RecusrseTreeToSpeckle(value));
       }
 
-      var converter = new ConverterDynamo();
-      return converter.ConvertToSpeckle(@object);
+      var Kit = KitManager.GetDefaultKit();
+      try
+      {
+        var converter = Kit.LoadConverter(Applications.Dynamo);
+        return converter.ConvertToSpeckle(@object);
+      }
+      catch
+      {
+        //TODO: use Capture and Throw method in Core
+        throw new Exception("No default kit found on this machine.");
+      }
+
+     
     }
 
     private static object RecusrseTreeToNative(object @object)
@@ -105,9 +116,17 @@ namespace Speckle.ConnectorDynamo.Functions
         return dictionary.ToDictionary(x => x.Key, x => RecusrseTreeToNative(x.Value));
       }
 
-
-      var converter = new ConverterDynamo();
-      return converter.ConvertToNative((Base)@object);
+      var Kit = KitManager.GetDefaultKit();
+      try
+      {
+        var converter = Kit.LoadConverter(Applications.Dynamo);
+        return converter.ConvertToNative((Base)@object);
+      }
+      catch
+      {
+        //TODO: use Capture and Throw method in Core
+        throw new Exception("No default kit found on this machine.");
+      }
     }
 
 

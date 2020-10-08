@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Autodesk.DesignScript.Runtime;
 using Dynamo.Graph.Nodes;
 using Speckle.ConnectorDynamo.Functions;
-using Speckle.Converter.Dynamo;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -42,7 +41,6 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       Tracker.TrackEvent(Tracker.RECEIVE_LOCAL);
 
-      var converter = new ConverterDynamo();
       var @base = Operations.Receive(localDataId).Result;
       var data = Utils.ConvertRecursivelyToNative(@base);
       return data;
