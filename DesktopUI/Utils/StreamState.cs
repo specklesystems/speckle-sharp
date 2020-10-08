@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
+using Stylet;
 
 namespace Speckle.DesktopUI.Utils
 {
@@ -15,16 +16,42 @@ namespace Speckle.DesktopUI.Utils
   /// This breaks C# variable name rules b/c it instead using Server naming conventions.
   /// Class name is subject to change! Just had to pick something so I could get on with my life.
   /// </summary>
-  public partial class StreamState
+  public partial class StreamState : PropertyChangedBase
   {
-    // TODO think of right name for this class
     public string accountId { get; set; }
-    [JsonIgnore]
-    public Client client { get; set; }
-    public Stream stream { get; set; }
-    public ISelectionFilter filter { get; set; }
-    public List<Base> placeholders { get; set; } = new List<Base>();
-    public List<Base> objects { get; set; } = new List<Base>();
+    [JsonIgnore] public Client client { get; set; }
+
+    private Stream _stream;
+
+    public Stream stream
+    {
+      get => _stream;
+      set => SetAndNotify(ref _stream, value);
+    }
+
+    private  ISelectionFilter _filter;
+
+    public ISelectionFilter filter
+    {
+      get => _filter;
+      set => SetAndNotify(ref _filter, value);
+    }
+
+    private List<Base> _placeholders = new List<Base>();
+
+    public List<Base> placeholders
+    {
+      get => _placeholders;
+      set => SetAndNotify(ref _placeholders, value);
+    }
+
+    private List<Base> _objects = new List<Base>();
+
+    public List<Base> objects
+    {
+      get => _objects;
+      set => SetAndNotify(ref _objects, value);
+    }
   }
 
   public class StreamStateWrapper
