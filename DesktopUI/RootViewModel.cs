@@ -45,8 +45,8 @@ namespace Speckle.DesktopUI
       var pages = new List<IScreen>
         {
           _viewModelFactory.CreateStreamsHomeViewModel(),
-          _viewModelFactory.CreateInboxViewModel(),
-          _viewModelFactory.CreateFeedViewModel(),
+          //_viewModelFactory.CreateInboxViewModel(),
+          //_viewModelFactory.CreateFeedViewModel(),
           _viewModelFactory.CreateSettingsViewModel()
         };
 
