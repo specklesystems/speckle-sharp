@@ -44,8 +44,8 @@ namespace TestsIntegration
       firstUserAccount = Utils.SeedUser(testServer);
       secondUserAccount = Utils.SeedUser(testServer);
 
-      AccountManager.UpdateOrSaveAccount(firstUserAccount);
-      AccountManager.UpdateOrSaveAccount(secondUserAccount);
+      Fixtures.UpdateOrSaveAccount(firstUserAccount);
+      Fixtures.UpdateOrSaveAccount(secondUserAccount);
 
       myClient = new Client(firstUserAccount);
       myServerTransport = new ServerTransport(firstUserAccount, null);

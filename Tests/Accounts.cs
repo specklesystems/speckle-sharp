@@ -2,6 +2,7 @@
 using System.Linq;
 using NUnit.Framework;
 using Speckle.Core.Credentials;
+using TestsUnit;
 
 namespace Tests
 {
@@ -43,15 +44,15 @@ namespace Tests
         }
       };
 
-      AccountManager.UpdateOrSaveAccount(TestAccount1);
-      AccountManager.UpdateOrSaveAccount(TestAccount2);
+      Fixtures.UpdateOrSaveAccount(TestAccount1);
+      Fixtures.UpdateOrSaveAccount(TestAccount2);
     }
 
     [TearDown]
     public void TearDown()
     {
-      AccountManager.DeleteLocalAccount(TestAccount1.id);
-      AccountManager.DeleteLocalAccount(TestAccount2.id);
+      Fixtures.DeleteLocalAccount(TestAccount1.id);
+      Fixtures.DeleteLocalAccount(TestAccount2.id);
     }
 
     [Test]
@@ -68,18 +69,8 @@ namespace Tests
 
       Assert.AreEqual(1, accs.Count);
       Assert.AreEqual("qux", accs[0].serverInfo.company);
-    }
-
-    [Test]
-    public void UpdateAccount()
-    {
-      AccountManager.SetDefaultAccount(TestAccount2.id);
-      var acc = AccountManager.GetDefaultAccount();
-      Assert.AreEqual(TestAccount2.userInfo.email, acc.userInfo.email);
-
-      AccountManager.SetDefaultAccount(TestAccount1.id);
-      var acc2 = AccountManager.GetDefaultAccount();
-      Assert.AreEqual(TestAccount1.id, acc2.id);
+      Assert.AreEqual("baz", accs[0].serverInfo.url);
+      Assert.AreEqual("foo", accs[0].refreshToken);
     }
   }
 }

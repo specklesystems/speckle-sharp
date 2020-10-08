@@ -26,7 +26,7 @@ namespace TestsIntegration.Subscriptions
       testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
 
       testUserAccount = Utils.SeedUser(testServer);
-      AccountManager.UpdateOrSaveAccount(testUserAccount);
+      Fixtures.UpdateOrSaveAccount(testUserAccount);
 
       client = new Client(testUserAccount);
     }
