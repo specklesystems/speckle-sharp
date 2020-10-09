@@ -19,36 +19,44 @@ namespace Objects.Converter.Revit
   {
     public IGeometry LocationToSpeckle(DB.Element revitElement)
     {
-      if (revitElement.Location is LocationCurve)
+      if ( revitElement is FamilyInstance familyInstance )
       {
-        var curve = (revitElement.Location as LocationCurve).Curve;
-
-        //apply revit offset as transfrom
-        if (revitElement is DB.Wall)
-        {
-          var offset = revitElement.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble();
-          XYZ vector = new XYZ(0, 0, offset);
-          Transform tf = Transform.CreateTranslation(vector);
-          curve = curve.CreateTransformed(tf);
-        }
-
-        return CurveToSpeckle(curve);
-      }
-
-      if (revitElement is DB.FamilyInstance)
-      {
-        var familyInstance = revitElement as FamilyInstance;
-        //vertical columns are point based, and the point does not reflect the actual vertical location 
-        if (Categories.columnCategories.Contains(familyInstance.Category)
-          || familyInstance.StructuralType == StructuralType.Column)
+        //vertical columns are point based, and the point does not reflect the actual vertical location
+        if ( Categories.columnCategories.Contains(familyInstance.Category)
+             || familyInstance.StructuralType == StructuralType.Column )
         {
           return TryGetLocationAsCurve(familyInstance);
         }
       }
 
-      var point = (revitElement.Location as LocationPoint).Point;
-      return PointToSpeckle(point);
+      var revitLocation = revitElement.Location;
+      switch ( revitLocation )
+      {
+        case LocationCurve locationCurve:
+        {
+          var curve = locationCurve.Curve;
 
+          //apply revit offset as transfrom
+          if (revitElement is DB.Wall)
+          {
+            var offset = revitElement.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble();
+            XYZ vector = new XYZ(0, 0, offset);
+            Transform tf = Transform.CreateTranslation(vector);
+            curve = curve.CreateTransformed(tf);
+          }
+
+          return CurveToSpeckle(curve);
+        }
+        case LocationPoint locationPoint:
+        {
+          return PointToSpeckle(locationPoint.Point);
+        }
+        // TODO what is the correct way to handle this?
+        case null:
+          return null;
+        default:
+          return null;
+      }
     }
 
     /// <summary>
