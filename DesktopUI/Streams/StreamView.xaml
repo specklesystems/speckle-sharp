@@ -22,6 +22,7 @@
           </Grid.ColumnDefinitions>
           <Ellipse
             VerticalAlignment="Top"
+            Margin="0,0,8,0"
             Grid.Column="0"
             Width="32"
             Height="32">
