@@ -6,10 +6,6 @@
   xmlns:s="https://github.com/canton7/Stylet">
   <ResourceDictionary.MergedDictionaries>
 
-    <!--<md:CustomColorTheme
-      BaseTheme="Light"
-      PrimaryColor="LightBlue"
-      SecondaryColor="Orange" />-->
     <!--  primary  -->
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -36,17 +32,18 @@
     </ResourceDictionary>
 
 
+    <!-- stylet bootstrapper -->
     <s:ApplicationLoader>
       <s:ApplicationLoader.Bootstrapper>
         <root:Bootstrapper />
       </s:ApplicationLoader.Bootstrapper>
     </s:ApplicationLoader>
 
+    <!-- more theme resources -->
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
-
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
-
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
-    <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/MaterialDesignTheme.TabControl.xaml"></ResourceDictionary>
+    <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/MaterialDesignTheme.TabControl.xaml" />
+
   </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
