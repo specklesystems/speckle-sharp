@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -166,6 +166,15 @@ namespace Speckle.ConnectorRevit.UI
     public override void RemoveSelectionFromClient(string args)
     {
       throw new NotImplementedException();
+    }
+
+    public override void RemoveStream(string streamId)
+    {
+      var streamState = LocalStateWrapper.StreamStates.FirstOrDefault(
+        cl => cl.stream.id == streamId
+      );
+      LocalStateWrapper.StreamStates.Remove(streamState);
+      WriteStateToFile();
     }
 
     #region private methods
