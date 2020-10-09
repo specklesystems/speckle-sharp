@@ -195,6 +195,30 @@ namespace Tests
       Assert.Contains("Deserialization", progress.Keys.ToArray());
     }
 
+    [Test]
+    public async Task DiskTransportTest()
+    {
+      var myObject = new Base();
+      myObject["@items"] = new List<Base>();
+      myObject["test"] = "random";
+
+      var rand = new Random();
+
+      for (int i = 0; i < 100; i++)
+      {
+        ((List<Base>)myObject["@items"]).Add(new Point(i, i, i) { applicationId = i + "-___/---" });
+      }
+
+      var dt = new DiskTransport.DiskTransport(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "SpeckleTests", "Objects");
+      var id = await Operations.Send(myObject, new List<ITransport>() { dt }, false);
+
+      Assert.IsNotNull(id);
+
+      var rebase = await Operations.Receive(id, dt);
+
+      Assert.AreEqual(rebase.GetId(true), id);
+    }
+
 
   }
 }
