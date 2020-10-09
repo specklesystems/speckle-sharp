@@ -21,11 +21,11 @@
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
           <Ellipse
-            VerticalAlignment="Top"
-            Margin="0,0,8,0"
             Grid.Column="0"
             Width="32"
-            Height="32">
+            Height="32"
+            Margin="0,0,8,0"
+            VerticalAlignment="Top">
             <Ellipse.Fill>
               <ImageBrush ImageSource="{Binding avatar, FallbackValue={StaticResource DefaultProfImage}, TargetNullValue={StaticResource DefaultProfImage}}" />
             </Ellipse.Fill>
@@ -91,6 +91,7 @@
     <Grid>
       <Grid Margin="20,0,20,100">
         <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
@@ -194,9 +195,9 @@
             <Button
               Grid.Row="0"
               Grid.Column="0"
-              Command="{s:Action ConvertAndSendObjects}"
               Width="150"
               Height="36"
+              Command="{s:Action ConvertAndSendObjects}"
               ToolTip="Send your changes to the Speckle server">
               <Grid>
                 <Grid.ColumnDefinitions>
@@ -270,7 +271,6 @@
                 FontSize="11"
                 Text="well hello there 👋" />
             </Border>
-
           </Grid>
         </StackPanel>
 
@@ -316,6 +316,69 @@
             Visibility="{Binding Branch.commits.items, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
           <ItemsControl ItemTemplate="{StaticResource CommitTemplate}" ItemsSource="{Binding Branch.commits.items}" />
         </StackPanel>
+
+        <Grid Grid.Row="5" Margin="0,16,0,12">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+
+          <Button
+            Grid.Column="0"
+            Width="150"
+            Margin="4,0"
+            md:RippleAssist.Feedback="{StaticResource PrimaryHueMidBrush}"
+            md:ShadowAssist.ShadowDepth="Depth0"
+            Background="{DynamicResource MaterialDesignPaper}"
+            BorderThickness="0"
+            Content="REMOVE"
+            Foreground="{StaticResource PrimaryHueMidBrush}"
+            ToolTip="Remove this stream from the file without deleting" />
+          <Button
+            Grid.Column="1"
+            Width="150"
+            Margin="4,0"
+            md:RippleAssist.Feedback="#ff5555"
+            md:ShadowAssist.ShadowDepth="Depth0"
+            Background="{DynamicResource MaterialDesignPaper}"
+            BorderThickness="0"
+            Command="{x:Static md:DialogHost.OpenDialogCommand}"
+            Content="DELETE"
+            Foreground="#ff5555"
+            ToolTip="Delete this stream from the server">
+            <Button.CommandParameter>
+              <StackPanel Width="260" Margin="36">
+                <TextBlock
+                  Margin="0,0,0,24"
+                  FontSize="14"
+                  Text="This is irreversible! Are you sure you want to permanently delete this stream?"
+                  TextWrapping="Wrap" />
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+                  <Button
+                    Grid.Column="0"
+                    Width="120"
+                    Command="{x:Static md:DialogHost.CloseDialogCommand}"
+                    Content="CANCEL"
+                    IsCancel="True"
+                    Style="{StaticResource MaterialDesignFlatMidBgButton}" />
+                  <Button
+                    Grid.Column="2"
+                    Width="120"
+                    Background="#ff5555"
+                    BorderThickness="0"
+                    Content="DELETE"
+                    Style="{StaticResource MaterialDesignFlatMidBgButton}" />
+                </Grid>
+              </StackPanel>
+            </Button.CommandParameter>
+          </Button>
+
+        </Grid>
       </Grid>
 
       <!--#region Floating Action Button-->
