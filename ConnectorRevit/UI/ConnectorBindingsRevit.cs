@@ -195,11 +195,6 @@ namespace Speckle.ConnectorRevit.UI
       };
     }
 
-    public override void RemoveStream(string args)
-    {
-      throw new NotImplementedException();
-    }
-
     public override void RemoveObjectsFromClient(string args)
     {
       // implemented in ClientOperations

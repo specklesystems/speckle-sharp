@@ -127,15 +127,7 @@ namespace Speckle.ConnectorRevit.UI
       state.stream = await client.StreamGet(streamId);
 
       // Persist state to revit file
-      Queue.Add(new Action(() =>
-      {
-        using ( Transaction t = new Transaction(CurrentDoc.Document, "Update local storage") )
-        {
-          t.Start();
-          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
-          t.Commit();
-        }
-      }));
+      WriteStateToFile();
 
       RaiseNotification($"{convertedObjects.Count()} objects sent to Speckle 🚀");
       return state;
@@ -174,6 +166,15 @@ namespace Speckle.ConnectorRevit.UI
     public override void RemoveSelectionFromClient(string args)
     {
       throw new NotImplementedException();
+    }
+
+    public override void RemoveStream(string streamId)
+    {
+      var streamState = LocalStateWrapper.StreamStates.FirstOrDefault(
+        cl => cl.stream.id == streamId
+      );
+      LocalStateWrapper.StreamStates.Remove(streamState);
+      WriteStateToFile();
     }
 
     #region private methods
@@ -303,16 +304,7 @@ namespace Speckle.ConnectorRevit.UI
       streamState.placeholders.AddRange(objects);
 
       // Persist state and clients to revit file
-      Queue.Add(new Action(() =>
-      {
-        using (Transaction t = new Transaction(CurrentDoc.Document, "Update local storage"))
-        {
-          t.Start();
-          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
-          t.Commit();
-        }
-      }));
-      Executor.Raise();
+      WriteStateToFile();
       var plural = objects.Count() == 1 ? "" : "s";
 
       if (objects.Any())
@@ -338,6 +330,20 @@ namespace Speckle.ConnectorRevit.UI
         return p.AsValueString().ToLowerInvariant();
       else
         return p.AsString().ToLowerInvariant();
+    }
+
+    private void WriteStateToFile()
+    {
+      Queue.Add(new Action(() =>
+      {
+        using ( Transaction t = new Transaction(CurrentDoc.Document, "Update local storage") )
+        {
+          t.Start();
+          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
+          t.Commit();
+        }
+      }));
+      Executor.Raise();
     }
 
     // TODO move to converter?
