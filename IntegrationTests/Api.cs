@@ -98,7 +98,7 @@ namespace TestsIntegration
       var res = await myClient.StreamGet(streamId);
 
       Assert.NotNull(res);
-      Assert.AreEqual("master", res.branches.items[0].name);
+      Assert.AreEqual("main", res.branches.items[0].name);
       Assert.IsNotEmpty(res.collaborators);
     }
 
