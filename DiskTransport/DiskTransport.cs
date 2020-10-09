@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Speckle.Core.Transports;
 
 namespace DiskTransport
@@ -60,10 +62,27 @@ namespace DiskTransport
     public async Task<string> CopyObjectAndChildren(string id, ITransport targetTransport)
     {
       var parent = GetObject(id);
+      
+      targetTransport.SaveObject(id, parent);
+      
+      var partial = JsonConvert.DeserializeObject<Placeholder>(parent);
 
-      // TODO
+      if (partial.__closure == null || partial.__closure.Count == 0) return parent;
+      
+      int i = 0;
+      foreach(var childId in partial.__closure)
+      {
+        var child = GetObject(childId);
+        targetTransport.SaveObject(childId, child);
+        OnProgressAction?.Invoke($"{TransportName}", i++);
+      }
 
       return parent;
+    }
+
+    class Placeholder
+    {
+      public List<string> __closure { get; set; } = new List<string>();
     }
   }
 }
