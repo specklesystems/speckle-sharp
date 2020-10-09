@@ -70,10 +70,10 @@ namespace DiskTransport
       if (partial.__closure == null || partial.__closure.Count == 0) return parent;
       
       int i = 0;
-      foreach(var childId in partial.__closure)
+      foreach(var kvp in partial.__closure)
       {
-        var child = GetObject(childId);
-        targetTransport.SaveObject(childId, child);
+        var child = GetObject(kvp.Key);
+        targetTransport.SaveObject(kvp.Key, child);
         OnProgressAction?.Invoke($"{TransportName}", i++);
       }
 
@@ -82,7 +82,7 @@ namespace DiskTransport
 
     class Placeholder
     {
-      public List<string> __closure { get; set; } = new List<string>();
+      public Dictionary<string, int> __closure { get; set; } = new Dictionary<string, int>();
     }
   }
 }
