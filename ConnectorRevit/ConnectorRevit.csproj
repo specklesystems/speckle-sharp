@@ -19,6 +19,7 @@
     </NuGetPackageImportStamp>
     <RevitFolderName>SpeckleRevit2</RevitFolderName>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <!-- MULTI VERSION CONFIGURATION START -->
   <!--2021-->
