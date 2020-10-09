@@ -14,11 +14,23 @@ namespace Speckle.DesktopUI.Utils
     public dynamic DynamicInfo { get; set; }
   }
 
-  public class ShowNotificationEvent : EventBase { }
+  public class ShowNotificationEvent : EventBase
+  {
+  }
 
   public class StreamAddedEvent : EventBase
   {
     public StreamState NewStream { get; set; }
+  }
+
+  public class StreamUpdatedEvent : EventBase
+  {
+    public string StreamId { get; set; }
+  }
+
+  public class StreamRemovedEvent : EventBase
+  {
+    public string StreamId { get; set; }
   }
 
   public class UpdateSelectionCountEvent : EventBase
@@ -47,6 +59,7 @@ namespace Speckle.DesktopUI.Utils
       DocumentModified,
       ApplicationIdling
     }
+
     public EventType Type { get; set; }
   }
 }

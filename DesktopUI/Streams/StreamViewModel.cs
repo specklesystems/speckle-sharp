@@ -74,7 +74,9 @@ namespace Speckle.DesktopUI.Streams
         _bindings.RaiseNotification($"Error: {e.Message}");
         return;
       }
+
       NotifyOfPropertyChange(nameof(StreamState));
+      _events.Publish(new StreamUpdatedEvent() {StreamId = Stream.id});
     }
 
     public async void ShowStreamUpdateDialog(StreamState state)
@@ -93,6 +95,35 @@ namespace Speckle.DesktopUI.Streams
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
       var result = await DialogHost.Show(view, "StreamDialogHost");
+    }
+
+    public void RemoveStream()
+    {
+      _bindings.RemoveStream(Stream.id);
+      _events.Publish(new StreamRemovedEvent() {StreamId = Stream.id});
+      RequestClose();
+    }
+
+    public async void DeleteStream()
+    {
+      try
+      {
+        var deleted = await StreamState.client.StreamDelete(Stream.id);
+        if ( !deleted )
+        {
+          // should we still remove the stream from client if they can't delete?
+          _events.Publish(new ShowNotificationEvent() {Notification = "Could not delete stream from server"});
+          return;
+        }
+
+        _bindings.RemoveStream(Stream.id);
+        _events.Publish(new StreamRemovedEvent() {StreamId = Stream.id});
+        RequestClose();
+      }
+      catch ( Exception e )
+      {
+        _events.Publish(new ShowNotificationEvent() {Notification = $"Error: {e}"});
+      }
     }
 
     // TODO figure out how to call this from parent instead of
