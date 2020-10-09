@@ -329,6 +329,7 @@
             Margin="4,0"
             md:RippleAssist.Feedback="{StaticResource PrimaryHueMidBrush}"
             md:ShadowAssist.ShadowDepth="Depth0"
+            Command="{s:Action RemoveStream}"
             Background="{DynamicResource MaterialDesignPaper}"
             BorderThickness="0"
             Content="REMOVE"
@@ -372,6 +373,7 @@
                     Background="#ff5555"
                     BorderThickness="0"
                     Content="DELETE"
+                    Command="{s:Action DeleteStream}"
                     Style="{StaticResource MaterialDesignFlatMidBgButton}" />
                 </Grid>
               </StackPanel>

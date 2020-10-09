@@ -10,7 +10,8 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  public class AllStreamsViewModel : Screen, IHandle<StreamAddedEvent>
+  public class AllStreamsViewModel : Screen, IHandle<StreamAddedEvent>, IHandle<StreamUpdatedEvent>, IHandle<
+    StreamRemovedEvent>
   {
     private readonly IViewManager _viewManager;
     private readonly IStreamViewModelFactory _streamViewModelFactory;
@@ -35,7 +36,7 @@ namespace Speckle.DesktopUI.Streams
 
       _streamList = new BindableCollection<StreamState>(_bindings.GetFileContext());
 #if DEBUG
-      if (_streamList.Count == 0)
+      if ( _streamList.Count == 0 )
         _streamList = _repo.LoadTestStreams();
 #endif
       events.Subscribe(this);
@@ -72,14 +73,14 @@ namespace Speckle.DesktopUI.Streams
       // get main branch for now
       // TODO allow user to select branch
       item.Branch = _repo.GetMainBranch(state.stream.branches.items);
-      var parent = (StreamsHomeViewModel)Parent;
+      var parent = ( StreamsHomeViewModel ) Parent;
       parent.ActivateItem(item);
     }
 
     public async void ConvertAndSendObjects(string streamId)
     {
       var state = StreamList.First(s => s.stream.id == streamId);
-      if (!state.placeholders.Any())
+      if ( !state.placeholders.Any() )
       {
         _bindings.RaiseNotification("Nothing to send to Speckle.");
         return;
@@ -89,9 +90,9 @@ namespace Speckle.DesktopUI.Streams
 
       try
       {
-        StreamList[index] = await _bindings.SendStream(state);
+        StreamList[ index ] = await _bindings.SendStream(state);
       }
-      catch (Exception e)
+      catch ( Exception e )
       {
         _bindings.RaiseNotification($"Error: {e.Message}");
         return;
@@ -120,10 +121,7 @@ namespace Speckle.DesktopUI.Streams
     public void CopyStreamId(string streamId)
     {
       Clipboard.SetText(streamId);
-      _events.Publish(new ShowNotificationEvent()
-      {
-        Notification = "Stream ID copied to clipboard!"
-      });
+      _events.Publish(new ShowNotificationEvent() {Notification = "Stream ID copied to clipboard!"});
     }
 
     public void OpenHelpLink(string url)
@@ -136,9 +134,15 @@ namespace Speckle.DesktopUI.Streams
       StreamList.Insert(0, message.NewStream);
     }
 
-    public void TestBindings()
+    public void Handle(StreamUpdatedEvent message)
     {
-      _bindings.TestBindings("hello from Revit bindings!");
+      StreamList.Refresh();
+    }
+
+    public void Handle(StreamRemovedEvent message)
+    {
+      var state = StreamList.First(s => s.stream.id == message.StreamId);
+      StreamList.Remove(state);
     }
   }
 }
