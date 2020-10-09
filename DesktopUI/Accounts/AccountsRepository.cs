@@ -10,47 +10,6 @@ namespace Speckle.DesktopUI.Accounts
 {
   public class AccountsRepository
   {
-    public ObservableCollection<Account> LoadTestAccounts()
-    {
-      List<Account> TestAccounts = new List<Account>()
-      {
-        new Account()
-        {
-        isDefault = true,
-        serverInfo = new ServerInfo()
-        {
-        company = "Speckle",
-        name = "Hella Cool Test Server",
-        url = "http://localhost:3000/"
-        },
-        userInfo = new UserInfo()
-        {
-        name = Environment.UserName,
-        company = "Testing Desktop UI Inc",
-        email = "izzy@speckle.systems"
-        },
-        token = Environment.GetEnvironmentVariable("speckle2_dev_token")
-        },
-        new Account
-        {
-        refreshToken = "fresh",
-        token = "cool token",
-        serverInfo = new ServerInfo { name = "cool server", url = "https://cool.speckle.com" },
-        userInfo = new UserInfo { name = "dingle", email = "me@cool.com" }
-        },
-        new Account
-        {
-        refreshToken = "wow",
-        token = "dope token",
-        serverInfo = new ServerInfo { name = "dope server", url = "https://dope.speckle.gov" },
-        userInfo = new UserInfo { name = "dangle", email = "me@dope.gov" }
-        }
-      };
-      TestAccounts.ForEach(acc => AccountManager.UpdateOrSaveAccount(acc));
-
-      return LoadAccounts();
-    }
-
     public ObservableCollection<Account> LoadAccounts()
     {
       return new ObservableCollection<Account>(AccountManager.GetAccounts());
@@ -59,34 +18,20 @@ namespace Speckle.DesktopUI.Accounts
     public ObservableCollection<Account> LoadNonDefaultAccounts()
     {
       var accounts = new ObservableCollection<Account>();
-      foreach (var acc in LoadAccounts())
+      foreach ( var acc in LoadAccounts() )
       {
-        if (!acc.isDefault)
+        if ( !acc.isDefault )
         {
           accounts.Add(acc);
         }
       }
-      return accounts;
-    }
 
-    public void RemoveAccount(string id)
-    {
-      AccountManager.DeleteLocalAccount(id);
+      return accounts;
     }
 
     public Account GetDefault()
     {
       return AccountManager.GetDefaultAccount();
-    }
-
-    public void SetDefault(Account account)
-    {
-      AccountManager.SetDefaultAccount(account.id);
-    }
-
-    public async Task<Account> AuthenticateAccount(string serverUrl)
-    {
-      return await AccountManager.AuthenticateConnectors(serverUrl);
     }
   }
 }
