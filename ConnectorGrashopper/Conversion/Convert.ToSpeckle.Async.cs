@@ -3,6 +3,7 @@ using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
+using GrasshopperAsyncComponent;
 using Rhino;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -32,7 +33,7 @@ namespace ConnectorGrashopper.Conversion
     public ToSpeckleConverterAsync() : base("To Speckle Async", "⇒ SPK", "Converts objects to their Speckle equivalents.", "Speckle 2", "Conversion")
     {
       SetDefaultKitAndConverter();
-      Worker = new ToSpeckleWorker(Converter);
+      BaseWorker = new ToSpeckleWorker(Converter);
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -57,6 +58,7 @@ namespace ConnectorGrashopper.Conversion
       {
         Converter = Kit.LoadConverter(Applications.Rhino);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        var x = Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem;
       }
       catch
       {
@@ -71,8 +73,9 @@ namespace ConnectorGrashopper.Conversion
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
       Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      var x = Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem;
 
-      ((ToSpeckleWorker)Worker).Converter = Converter;
+      ((ToSpeckleWorker)BaseWorker).Converter = Converter;
 
       ExpireSolution(true);
     }
@@ -120,7 +123,7 @@ namespace ConnectorGrashopper.Conversion
 
   }
 
-  public class ToSpeckleWorker : IAsyncComponentWorker
+  public class ToSpeckleWorker : WorkerInstance
   {
 
     GH_Structure<IGH_Goo> Objects;
@@ -135,58 +138,7 @@ namespace ConnectorGrashopper.Conversion
       ConvertedObjects = new GH_Structure<GH_SpeckleGoo>();
     }
 
-    public IAsyncComponentWorker GetNewInstance()
-    {
-      return new ToSpeckleWorker(this.Converter);
-    }
-
-    public void CollectData(IGH_DataAccess DA)
-    {
-      GH_Structure<IGH_Goo> _objects;
-      DA.GetDataTree(0, out _objects);
-      
-      int branchIndex = 0;
-      foreach (var list in _objects.Branches)
-      {
-        var path = _objects.Paths[branchIndex];
-        foreach (var item in list)
-        {
-          Objects.Append(item, _objects.Paths[branchIndex]);
-        }
-        branchIndex++;
-      }
-    }
-
-    public void DoWork(CancellationToken token, Action<string> ReportProgress, Action SetData)
-    {
-      if (token.IsCancellationRequested)
-      {
-        Debug.Write("Task cancelled before it got started...");
-        return;
-      }
-
-      int branchIndex = 0, completed = 0;
-      foreach (var list in Objects.Branches)
-      {
-        var path = Objects.Paths[branchIndex];
-        foreach (var item in list)
-        {
-          if (token.IsCancellationRequested) return;
-          var converted = TryConvertItem(item);
-          ConvertedObjects.Append(new GH_SpeckleGoo() { Value = converted }, Objects.Paths[branchIndex]);
-          ReportProgress(((double)(completed++ + 1) / (double)Objects.Count()).ToString("0.00%"));
-        }
-
-        branchIndex++;
-      }
-
-      SetData();
-    }
-
-    public void SetData(IGH_DataAccess DA)
-    {
-      DA.SetDataTree(0, ConvertedObjects);
-    }
+    public override WorkerInstance Duplicate() => new ToSpeckleWorker(Converter);
 
     private object TryConvertItem(object value)
     {
@@ -196,7 +148,7 @@ namespace ConnectorGrashopper.Conversion
       {
         value = value.GetType().GetProperty("Value").GetValue(value);
       }
-      
+
       if (value is Base || Speckle.Core.Models.Utilities.IsSimpleType(value.GetType()))
       {
         return value;
@@ -208,6 +160,54 @@ namespace ConnectorGrashopper.Conversion
       }
 
       return result;
+    }
+
+    public override void DoWork(Action<string, double> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
+    {
+      if (CancellationToken.IsCancellationRequested) return;
+
+      int branchIndex = 0, completed = 0;
+      foreach (var list in Objects.Branches)
+      {
+        var path = Objects.Paths[branchIndex];
+        foreach (var item in list)
+        {
+          if (CancellationToken.IsCancellationRequested) return;
+
+          var converted = TryConvertItem(item);
+          ConvertedObjects.Append(new GH_SpeckleGoo() { Value = converted }, Objects.Paths[branchIndex]);
+          ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
+        }
+
+        branchIndex++;
+      }
+
+      Done();
+    }
+
+    public override void SetData(IGH_DataAccess DA)
+    {
+      if (CancellationToken.IsCancellationRequested) return;
+      DA.SetDataTree(0, ConvertedObjects);
+    }
+
+    public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
+    {
+      if (CancellationToken.IsCancellationRequested) return;
+
+      GH_Structure<IGH_Goo> _objects;
+      DA.GetDataTree(0, out _objects);
+
+      int branchIndex = 0;
+      foreach (var list in _objects.Branches)
+      {
+        var path = _objects.Paths[branchIndex];
+        foreach (var item in list)
+        {
+          Objects.Append(item, _objects.Paths[branchIndex]);
+        }
+        branchIndex++;
+      }
     }
   }
 

@@ -59,7 +59,6 @@
   <ItemGroup>
     <Compile Include="Conversion\Convert.ToSpeckle.Async.cs" />
     <Compile Include="Conversion\Serialise.SerialiseObject.cs" />
-    <Compile Include="Extras\GH_AsyncComponent.cs" />
     <Compile Include="Extras\Param_GenericAccess.cs" />
     <Compile Include="Conversion\Convert.ToNative.cs" />
     <Compile Include="Extras\GH_SpeckleBase.cs" />
@@ -75,6 +74,10 @@
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{362464e5-e47b-4ff8-b563-a1066a1ec732}</Project>
       <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\GrasshopperAsyncComponent\GrasshopperAsyncComponent\GrasshopperAsyncComponent.csproj">
+      <Project>{695d2b91-ddb6-416e-8a99-dde6253da7aa}</Project>
+      <Name>GrasshopperAsyncComponent</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
