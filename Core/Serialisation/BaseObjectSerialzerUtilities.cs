@@ -66,11 +66,17 @@ namespace Speckle.Core.Serialisation
       {
         if (jsonProperty != null && jsonProperty.PropertyType.GetConstructor(Type.EmptyTypes) != null)
         {
-          var arr = jsonProperty != null ? Activator.CreateInstance(jsonProperty.PropertyType) : new List<object>();
+          var arr = Activator.CreateInstance(jsonProperty.PropertyType);
+
           var addMethod = arr.GetType().GetMethod("Add");
+          var hasGenericType = jsonProperty.PropertyType.GenericTypeArguments.Count() != 0;
+
           foreach (var val in ((JArray)value))
           {
-            addMethod.Invoke(arr, new object[] { HandleValue(val, serializer) });
+            if (hasGenericType)
+              addMethod.Invoke(arr, new object[] { Convert.ChangeType(HandleValue(val, serializer), jsonProperty.PropertyType.GenericTypeArguments[0]) });
+            else
+              addMethod.Invoke(arr, new object[] { HandleValue(val, serializer) });
           }
           return arr;
         }
