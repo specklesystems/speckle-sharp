@@ -4,16 +4,11 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
-using Rhino;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ConnectorGrashopper.Conversion
@@ -30,7 +25,7 @@ namespace ConnectorGrashopper.Conversion
 
     private ISpeckleKit Kit;
 
-    public ToSpeckleConverterAsync() : base("To Speckle Async", "⇒ SPK", "Converts objects to their Speckle equivalents.", "Speckle 2", "Conversion")
+    public ToSpeckleConverterAsync() : base("To Speckle", "To Speckle", "Converts objects to their Speckle equivalents.", "Speckle 2", "Conversion")
     {
       SetDefaultKitAndConverter();
       BaseWorker = new ToSpeckleWorker(Converter);
@@ -124,7 +119,6 @@ namespace ConnectorGrashopper.Conversion
 
   public class ToSpeckleWorker : WorkerInstance
   {
-
     GH_Structure<IGH_Goo> Objects;
     GH_Structure<GH_SpeckleGoo> ConvertedObjects;
 

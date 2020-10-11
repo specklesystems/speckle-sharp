@@ -24,7 +24,7 @@ namespace ConnectorGrashopper.Conversion
 
     private ISpeckleKit Kit;
 
-    public ToNativeConverterAsync() : base("To Native", "SPK ⇒", "Converts Speckle objects to their Grasshopper equivalents.", "Speckle 2", "Conversion")
+    public ToNativeConverterAsync() : base("To Native", "To Native", "Converts Speckle objects to their Grasshopper equivalents.", "Speckle 2", "Conversion")
     {
       SetDefaultKitAndConverter();
       BaseWorker = new ToNativeWorker(Converter);
@@ -118,7 +118,6 @@ namespace ConnectorGrashopper.Conversion
 
   public class ToNativeWorker : WorkerInstance
   {
-
     GH_Structure<IGH_Goo> Objects;
     GH_Structure<GH_SpeckleGoo> ConvertedObjects;
 

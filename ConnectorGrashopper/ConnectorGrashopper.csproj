@@ -58,17 +58,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
-    <Compile Include="Conversion\Serialise.SerialiseObject.cs" />
+    <Compile Include="Conversion\Serialisation.SerialiseObject.cs" />
     <Compile Include="Extras\Param_GenericAccess.cs" />
     <Compile Include="Conversion\Convert.ToNativeAsync.cs" />
-    <Compile Include="Extras\GH_SpeckleBase.cs" />
+    <Compile Include="Extras\Speckle.IGH_Goo.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
     <Compile Include="ConnectorGrashopperInfo.cs" />
     <Compile Include="Objects\ExpandSpeckleObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Conversion\Serialise.DeserializeObject.cs" />
+    <Compile Include="Conversion\Serialisation.DeserializeObject.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
