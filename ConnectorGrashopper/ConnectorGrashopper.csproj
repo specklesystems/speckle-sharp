@@ -57,24 +57,27 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Conversion\Convert.ToSpeckle.Async.cs" />
-    <Compile Include="Conversion\Serialise.SerialiseObject.cs" />
-    <Compile Include="Extras\GH_AsyncComponent.cs" />
+    <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
+    <Compile Include="Conversion\Serialisation.SerialiseObject.cs" />
     <Compile Include="Extras\Param_GenericAccess.cs" />
-    <Compile Include="Conversion\Convert.ToNative.cs" />
-    <Compile Include="Extras\GH_SpeckleBase.cs" />
+    <Compile Include="Conversion\Convert.ToNativeAsync.cs" />
+    <Compile Include="Extras\Speckle.IGH_Goo.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
     <Compile Include="ConnectorGrashopperInfo.cs" />
     <Compile Include="Objects\ExpandSpeckleObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Conversion\Serialise.DeserializeObject.cs" />
+    <Compile Include="Conversion\Serialisation.DeserializeObject.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{b4d98d2c-e5da-463e-bf6c-68e9b77c72f3}</Project>
       <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\GrasshopperAsyncComponent\GrasshopperAsyncComponent\GrasshopperAsyncComponent.csproj">
+      <Project>{695d2b91-ddb6-416e-8a99-dde6253da7aa}</Project>
+      <Name>GrasshopperAsyncComponent</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGh\ConverterRhinoGh.csproj">
       <Project>{a987e5e1-8605-46ba-9476-1d8d28502273}</Project>
