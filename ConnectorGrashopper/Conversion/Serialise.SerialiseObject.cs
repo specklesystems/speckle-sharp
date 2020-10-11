@@ -34,15 +34,15 @@ namespace ConnectorGrashopper.Conversion
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      GH_SpeckleBase obj = null;
+      GH_SpeckleGoo obj = null;
       DA.GetData(0, ref obj);
 
       if (obj == null) return;
-
-      var text = Operations.Serialize(obj.Value);
+      var @base = obj.Value as Speckle.Core.Models.Base;
+      
+      if (@base == null) return;
+      var text = Operations.Serialize(@base);
       DA.SetData(0, text);
-
-      //AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not implemented yet");
     }
 
   }
