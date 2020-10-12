@@ -1,14 +1,13 @@
-﻿using System.Collections.Generic;
-using Speckle.Core.Transports;
-using NUnit.Framework;
-using Speckle.Core.Models;
-using Speckle.Core.Api;
-using Newtonsoft.Json;
-using System;
-using System.Threading.Tasks;
+﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using NUnit.Framework.Constraints;
+using System.Threading.Tasks;
+using NUnit.Framework;
+using Speckle.Core.Api;
+using Speckle.Core.Models;
+using Speckle.Core.Transports;
 
 namespace Tests
 {
@@ -94,7 +93,7 @@ namespace Tests
     [Test(Description = "Pushing and pulling a commit locally"), Order(3)]
     public async Task LocalUploadDownloadListDic()
     {
-      
+
       var myList = new List<object> { 1, 2, 3, "ciao" };
       var myDic = new Dictionary<string, object> { { "a", myList }, { "b", 2 }, { "c", "ciao" } };
 
@@ -142,7 +141,7 @@ namespace Tests
       Assert.NotNull(objId_01);
       TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {objId_01}");
 
-      var objPulled = (Base)await Operations.Receive(objId_01);
+      var objPulled = await Operations.Receive(objId_01);
 
       Assert.AreEqual(objPulled.GetType(), typeof(Base));
 
@@ -209,7 +208,7 @@ namespace Tests
         ((List<Base>)myObject["@items"]).Add(new Point(i, i, i) { applicationId = i + "-___/---" });
       }
 
-      var dt = new DiskTransport.DiskTransport(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "SpeckleTests", "Objects");
+      var dt = new DiskTransport.DiskTransport(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "SpeckleTests", "Objects"));
       var id = await Operations.Send(myObject, new List<ITransport>() { dt }, false);
 
       Assert.IsNotNull(id);
