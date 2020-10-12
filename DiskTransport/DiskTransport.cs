@@ -19,12 +19,12 @@ namespace DiskTransport
 
     public string RootPath { get; set; }
 
-    public DiskTransport(string basePath, string applicationName = ".spk", string scope = "objects")
+    public DiskTransport(string basePath)
     {
       if (basePath == null)
-        basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "DiskTransportFiles");
 
-      RootPath = Path.Combine(basePath, applicationName, scope);
+      RootPath = Path.Combine(basePath);
 
       Directory.CreateDirectory(RootPath);
     }
@@ -62,15 +62,15 @@ namespace DiskTransport
     public async Task<string> CopyObjectAndChildren(string id, ITransport targetTransport)
     {
       var parent = GetObject(id);
-      
+
       targetTransport.SaveObject(id, parent);
-      
+
       var partial = JsonConvert.DeserializeObject<Placeholder>(parent);
 
       if (partial.__closure == null || partial.__closure.Count == 0) return parent;
-      
+
       int i = 0;
-      foreach(var kvp in partial.__closure)
+      foreach (var kvp in partial.__closure)
       {
         var child = GetObject(kvp.Key);
         targetTransport.SaveObject(kvp.Key, child);
@@ -78,6 +78,11 @@ namespace DiskTransport
       }
 
       return parent;
+    }
+
+    public override string ToString()
+    {
+      return $"Disk Transport @{RootPath}";
     }
 
     class Placeholder
