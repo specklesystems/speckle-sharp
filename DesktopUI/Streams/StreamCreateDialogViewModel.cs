@@ -14,7 +14,7 @@ using Stylet;
 namespace Speckle.DesktopUI.Streams
 {
   public class StreamCreateDialogViewModel : Conductor<IScreen>.Collection.OneActive,
-    IHandle<RetrievedFilteredObjectsEvent>, IHandle<UpdateSelectionCountEvent>
+    IHandle<RetrievedFilteredObjectsEvent>, IHandle<UpdateSelectionCountEvent>, IHandle<ApplicationEvent>
   {
     private IEventAggregator _events;
     private ConnectorBindings _bindings;
@@ -280,6 +280,26 @@ namespace Speckle.DesktopUI.Streams
     public void Handle(UpdateSelectionCountEvent message)
     {
       SelectionCount = message.SelectionCount;
+    }
+
+    public void Handle(ApplicationEvent message)
+    {
+      switch ( message.Type )
+      {
+        case ApplicationEvent.EventType.ViewActivated:
+        {
+          NotifyOfPropertyChange(nameof(ActiveViewName));
+          NotifyOfPropertyChange(nameof(ActiveViewObjects));
+          return;
+        }
+        case ApplicationEvent.EventType.DocumentClosed:
+        {
+          CloseDialog();
+          return;
+        }
+          default:
+            return;
+      }
     }
   }
 }

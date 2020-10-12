@@ -11,7 +11,7 @@ using Stylet;
 namespace Speckle.DesktopUI.Streams
 {
   public class AllStreamsViewModel : Screen, IHandle<StreamAddedEvent>, IHandle<StreamUpdatedEvent>, IHandle<
-    StreamRemovedEvent>
+    StreamRemovedEvent>, IHandle<ApplicationEvent>
   {
     private readonly IViewManager _viewManager;
     private readonly IStreamViewModelFactory _streamViewModelFactory;
@@ -149,6 +149,30 @@ namespace Speckle.DesktopUI.Streams
     {
       var state = StreamList.First(s => s.stream.id == message.StreamId);
       StreamList.Remove(state);
+    }
+
+    public void Handle(ApplicationEvent message)
+    {
+      switch ( message.Type )
+      {
+        case ApplicationEvent.EventType.DocumentClosed:
+        {
+          StreamList.Clear();
+          return;
+        }
+        case ApplicationEvent.EventType.DocumentOpened:
+        {
+          StreamList = new BindableCollection<StreamState>(_bindings.GetFileContext());
+          return;
+        }
+        case ApplicationEvent.EventType.DocumentModified:
+        {
+          // warn that stream data may be expired
+          return;
+        }
+        default:
+          return;
+      }
     }
   }
 }

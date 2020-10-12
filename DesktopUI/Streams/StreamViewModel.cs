@@ -8,7 +8,7 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  public class StreamViewModel : Screen
+  public class StreamViewModel : Screen, IHandle<ApplicationEvent>
   {
     private readonly IEventAggregator _events;
     private readonly ViewManager _viewManager;
@@ -138,6 +138,20 @@ namespace Speckle.DesktopUI.Streams
     public void OpenHelpLink(string url)
     {
       Link.OpenInBrowser(url);
+    }
+
+    public void Handle(ApplicationEvent message)
+    {
+      switch ( message.Type )
+      {
+        case ApplicationEvent.EventType.DocumentClosed:
+        {
+          RequestClose();
+          return;
+        }
+        default:
+          return;
+      }
     }
   }
 }
