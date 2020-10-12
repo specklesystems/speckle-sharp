@@ -96,6 +96,11 @@ namespace Speckle.DesktopUI.Utils
       return state;
     }
 
+    public override Task<StreamState> ReceiveStream(StreamState state)
+    {
+      throw new NotImplementedException();
+    }
+
     public override void RemoveStream(string args)
     {
       // ⚽ 👉 🗑
