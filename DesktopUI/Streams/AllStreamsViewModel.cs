@@ -77,12 +77,13 @@ namespace Speckle.DesktopUI.Streams
       parent.ActivateItem(item);
     }
 
-    public async void ConvertAndSendObjects(string streamId)
+    public async void ConvertAndSendObjects(StreamState state)
     {
-      var state = StreamList.First(s => s.stream.id == streamId);
+      state.IsSending = true;
       if ( !state.placeholders.Any() )
       {
         _bindings.RaiseNotification("Nothing to send to Speckle.");
+        state.IsSending = false;
         return;
       }
 
@@ -90,15 +91,20 @@ namespace Speckle.DesktopUI.Streams
 
       try
       {
-        StreamList[ index ] = await _bindings.SendStream(state);
+        StreamList[ index ] = await _bindings.SendStream(state).ConfigureAwait(false);
       }
       catch ( Exception e )
       {
         _bindings.RaiseNotification($"Error: {e.Message}");
-        return;
       }
 
+      state.IsSending = false;
       StreamList.Refresh();
+    }
+
+    public async void ReceiveStream(StreamState state)
+    {
+      //
     }
 
     public async void ShowStreamCreateDialog()
