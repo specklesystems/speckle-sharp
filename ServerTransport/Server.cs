@@ -239,6 +239,11 @@ namespace Speckle.Core.Transports
 
     #endregion
 
+    public override string ToString()
+    {
+      return $"Server Transport @{Account.serverInfo.url}";
+    }
+
     public void Dispose()
     {
       // TODO: check if it's writing first? 
