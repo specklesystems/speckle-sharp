@@ -59,6 +59,11 @@ namespace Speckle.Core.Transports
     {
       return Utilities.WaitUntil(() => true);
     }
+
+    public override string ToString()
+    {
+      return $"Memory Transport {TransportName}";
+    }
   }
 
 }

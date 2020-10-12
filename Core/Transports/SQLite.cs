@@ -41,6 +41,12 @@ namespace Speckle.Core.Transports
       if (basePath == null)
         basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
+      if (applicationName == null)
+        applicationName = "Speckle";
+
+      if (scope == null)
+        scope = "Objects";
+
       Directory.CreateDirectory(Path.Combine(basePath, applicationName)); //ensure dir is there
 
       RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
@@ -272,6 +278,11 @@ namespace Speckle.Core.Transports
       // TODO: Check if it's still writing?
       Connection.Close();
       Connection.Dispose();
+    }
+
+    public override string ToString()
+    {
+      return $"Sqlite Transport @{RootPath}";
     }
   }
 }
