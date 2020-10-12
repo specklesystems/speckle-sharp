@@ -1,10 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using DiskTransport;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConnectorGrashopper.Transports
 {
@@ -19,7 +14,7 @@ namespace ConnectorGrashopper.Transports
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddTextParameter("base path", "P", "The root folder where you want the data to be stored. Defaults to `%appdata%/Speckle/DiskTransportFiles`.", GH_ParamAccess.item);
-     
+
       Params.Input.ForEach(p => p.Optional = true);
     }
 
@@ -38,7 +33,7 @@ namespace ConnectorGrashopper.Transports
 
       string basePath = null;
       DA.GetData(0, ref basePath);
- 
+
       var myTransport = new DiskTransport.DiskTransport(basePath);
 
       DA.SetData(0, myTransport);

@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Accounts\Accounts.ListAccounts.cs" />
     <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
     <Compile Include="Conversion\Serialisation.SerialiseObject.cs" />
     <Compile Include="Extras\GenericAccessParam.cs" />
@@ -85,6 +86,7 @@
     <Compile Include="Streams\StreamUpdateComponent.cs" />
     <Compile Include="Transports\Transports.Disk.cs" />
     <Compile Include="Transports\Transports.Memory.cs" />
+    <Compile Include="Transports\Transports.Server.cs" />
     <Compile Include="Transports\Transports.Sqlite.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -98,6 +100,10 @@
     <ProjectReference Include="..\..\Core\DiskTransport\DiskTransport.csproj">
       <Project>{8f16a9a1-dc5f-4800-821c-336e6ccf8f9c}</Project>
       <Name>DiskTransport</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\ServerTransport\ServerTransport.csproj">
+      <Project>{8008f635-7ded-473c-88df-12833f599d75}</Project>
+      <Name>ServerTransport</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\GrasshopperAsyncComponent\GrasshopperAsyncComponent\GrasshopperAsyncComponent.csproj">
       <Project>{695d2b91-ddb6-416e-8a99-dde6253da7aa}</Project>

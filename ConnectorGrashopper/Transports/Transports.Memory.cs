@@ -1,10 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using Speckle.Core.Transports;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConnectorGrashopper.Transports
 {
