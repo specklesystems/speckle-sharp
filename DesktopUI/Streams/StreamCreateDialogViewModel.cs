@@ -14,7 +14,7 @@ using Stylet;
 namespace Speckle.DesktopUI.Streams
 {
   public class StreamCreateDialogViewModel : Conductor<IScreen>.Collection.OneActive,
-    IHandle<RetrievedFilteredObjectsEvent>
+    IHandle<RetrievedFilteredObjectsEvent>, IHandle<UpdateSelectionCountEvent>
   {
     private IEventAggregator _events;
     private ConnectorBindings _bindings;
@@ -28,6 +28,8 @@ namespace Speckle.DesktopUI.Streams
       _events = events;
       _bindings = bindings;
       _filters = new BindableCollection<ISelectionFilter>(_bindings.GetSelectionFilters());
+
+      _selectionCount = _bindings.GetSelectedObjects().Count;
     }
 
     private StreamsRepository _repo => new StreamsRepository();
@@ -52,6 +54,14 @@ namespace Speckle.DesktopUI.Streams
     public List<string> CurrentSelection
     {
       get => _bindings.GetSelectedObjects();
+    }
+
+    private int _selectionCount;
+
+    public int SelectionCount
+    {
+      get => _selectionCount;
+      set => SetAndNotify(ref _selectionCount, value);
     }
 
     private bool _createButtonLoading;
@@ -149,7 +159,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void ContinueStreamCreate(string slideIndex)
     {
-      if (StreamToCreate.name == null || StreamToCreate.name.Length < 2)
+      if ( StreamToCreate.name == null || StreamToCreate.name.Length < 2 )
       {
         Notifications.Enqueue("Please choose a name for your stream!");
         return;
@@ -170,18 +180,15 @@ namespace Speckle.DesktopUI.Streams
         StreamToCreate = await _repo.GetStream(streamId, AccountToSendFrom);
         StreamState = new StreamState()
         {
-          accountId = client.AccountId,
-          client = client,
-          filter = SelectedFilter,
-          stream = StreamToCreate
+          accountId = client.AccountId, client = client, filter = SelectedFilter, stream = StreamToCreate
         };
         _bindings.AddNewStream(StreamState);
         var boxes = _bindings.GetFileContext();
 
         SelectedSlide = 3;
-        _events.Publish(new StreamAddedEvent() { NewStream = StreamState });
+        _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
       }
-      catch (Exception e)
+      catch ( Exception e )
       {
         Notifications.Enqueue($"Error: {e.Message}");
       }
@@ -189,9 +196,14 @@ namespace Speckle.DesktopUI.Streams
       CreateButtonLoading = false;
     }
 
+    public async void AddExistingStream()
+    {
+      //
+    }
+
     public async void SearchForUsers()
     {
-      if (UserQuery.Length <= 2)
+      if ( UserQuery.Length <= 2 )
         return;
 
       try
@@ -200,7 +212,7 @@ namespace Speckle.DesktopUI.Streams
         var users = await client.UserSearch(UserQuery);
         UserSearchResults = new BindableCollection<User>(users);
       }
-      catch (Exception e)
+      catch ( Exception e )
       {
         Debug.WriteLine(e);
       }
@@ -241,13 +253,13 @@ namespace Speckle.DesktopUI.Streams
 
     public void GetSelectedObjects()
     {
-      if (SelectedFilter == null)
+      if ( SelectedFilter == null )
       {
         Notifications.Enqueue("pls click one of the filter types!");
         return;
       }
 
-      if (SelectedFilter.Type == typeof(ElementsSelectionFilter).ToString())
+      if ( SelectedFilter.Type == typeof(ElementsSelectionFilter).ToString() )
       {
         var selectedObjs = _bindings.GetSelectedObjects();
         SelectedFilter.Selection = selectedObjs;
@@ -263,6 +275,11 @@ namespace Speckle.DesktopUI.Streams
     {
       StreamState.placeholders = message.Objects as List<Base>;
       // Notifications.Enqueue(message.Notification);
+    }
+
+    public void Handle(UpdateSelectionCountEvent message)
+    {
+      SelectionCount = message.SelectionCount;
     }
   }
 }

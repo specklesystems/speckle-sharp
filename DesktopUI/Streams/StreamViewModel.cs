@@ -56,7 +56,6 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _branch, value);
     }
 
-
     public async void ConvertAndSendObjects()
     {
       if ( !StreamState.placeholders.Any() )
@@ -65,6 +64,7 @@ namespace Speckle.DesktopUI.Streams
         return;
       }
 
+      StreamState.IsSending = true;
       try
       {
         StreamState = await _bindings.SendStream(StreamState);
@@ -77,6 +77,7 @@ namespace Speckle.DesktopUI.Streams
 
       NotifyOfPropertyChange(nameof(StreamState));
       _events.Publish(new StreamUpdatedEvent() {StreamId = Stream.id});
+      StreamState.IsSending = false;
     }
 
     public async void ShowStreamUpdateDialog(StreamState state)

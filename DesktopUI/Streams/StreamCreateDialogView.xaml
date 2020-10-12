@@ -38,8 +38,8 @@
         Background="Transparent"
         BorderThickness="0"
         Foreground="{DynamicResource PrimaryHueLightBrush}"
-        IsIndeterminate="True"
-        Value="65" />
+        IsIndeterminate="False"
+        Value="0" />
       <Grid Grid.Row="2" Width="425">
         <md:Transitioner AutoApplyTransitionOrigins="True" SelectedIndex="{Binding SelectedSlide}">
           <md:TransitionerSlide>

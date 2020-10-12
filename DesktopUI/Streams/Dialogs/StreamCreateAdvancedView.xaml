@@ -112,7 +112,7 @@
             Text="Current Selection" />
           <TextBlock
             Grid.Column="2"
-            Text="{Binding CurrentSelection.Count, StringFormat='({0} objects)'}" />
+            Text="{Binding SelectionCount, StringFormat='({0} objects)'}" />
         </Grid>
       </Button>
 
