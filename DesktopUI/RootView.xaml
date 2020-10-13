@@ -8,6 +8,7 @@
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
   xmlns:s="https://github.com/canton7/Stylet"
   xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
+  Closing="{s:Action OnClosing}"
   Title="Speckle"
   Width="450"
   Height="800"
