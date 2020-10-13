@@ -45,6 +45,24 @@
       <TextBlock
         Text="{Binding Selection.Count, StringFormat='Selected: {0}'}" />
     </DataTemplate>
+
+    <DataTemplate
+      x:Key="CollboratorChipTemplate">
+      <md:Chip
+        Margin="4"
+        Command="{Binding}"
+        Content="{Binding name}"
+        IsDeletable="True"
+        DeleteCommand="{s:Action RemoveCollabFromCollection}"
+        DeleteCommandParameter="{Binding}"
+        Icon="{Binding name[0]}"
+        IconBackground="{StaticResource PrimaryHueLightBrush}">
+        <!-- <md:Chip.Icon> -->
+        <!--   <Image -->
+        <!--     Source="{Binding avatar, TargetNullValue={StaticResource DefaultProfImage}}" /> -->
+        <!-- </md:Chip.Icon> -->
+      </md:Chip>
+    </DataTemplate>
   </UserControl.Resources>
 
   <Grid
@@ -70,25 +88,42 @@
         DisplayMemberPath="userInfo.email"
         IsEditable="True"
         IsEnabled="True"
-        IsTextSearchEnabled="True"
-        IsTextSearchCaseSensitive="False"
         ItemsSource="{Binding Accounts}"
         SelectedItem="{Binding AccountToSendFrom}"
         StaysOpenOnEdit="True" />
 
-      <ComboBox
-        Margin="0,16"
-        md:HintAssist.Hint="Collaborators"
-        md:HintAssist.HintOpacity=".26"
-        DisplayMemberPath="name"
-        IsEditable="True"
-        IsEnabled="True"
-        IsTextSearchEnabled="True"
-        IsTextSearchCaseSensitive="False"
-        ItemsSource="{Binding UserSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-        SelectedItem="{Binding SelectedUser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-        StaysOpenOnEdit="True"
-        Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+      <Expander
+        HorizontalAlignment="Stretch"
+        md:ExpanderAssist.HorizontalHeaderPadding="16,12"
+        Header="Add Collaborators">
+        <StackPanel
+          Margin="24,16">
+
+          <ComboBox
+            Margin="0,16"
+            md:HintAssist.Hint="Collaborators"
+            md:HintAssist.HintOpacity=".26"
+            DisplayMemberPath="name"
+            IsEditable="True"
+            IsEnabled="True"
+            ItemsSource="{Binding UserSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectedItem="{Binding SelectedUser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            StaysOpenOnEdit="True"
+            Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+          <ItemsControl
+            ItemsSource="{Binding Collaborators}"
+            ItemTemplate="{StaticResource CollboratorChipTemplate}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+          </ItemsControl>
+
+        </StackPanel>
+      </Expander>
 
       <Button
         Margin="0,12,0,0"

@@ -163,8 +163,19 @@ namespace Speckle.DesktopUI.Streams
       set
       {
         SetAndNotify(ref _selectedUser, value);
-        UserQuery = SelectedUser?.name;
+        if ( SelectedUser == null )
+          return;
+        UserQuery = SelectedUser.name;
+        AddCollabToCollection(SelectedUser);
       }
+    }
+
+    private BindableCollection<User> _collaborators = new BindableCollection<User>();
+
+    public BindableCollection<User> Collaborators
+    {
+      get => _collaborators;
+      set => SetAndNotify(ref _collaborators, value);
     }
 
     public void ContinueStreamCreate(string slideIndex)
@@ -186,6 +197,16 @@ namespace Speckle.DesktopUI.Streams
       {
         var client = new Client(AccountToSendFrom);
         var streamId = await _repo.CreateStream(StreamToCreate, AccountToSendFrom);
+
+        foreach ( var user in Collaborators )
+        {
+          var res = await client.StreamGrantPermission(new StreamGrantPermissionInput()
+          {
+            streamId = streamId,
+            userId = user.id,
+            role = "stream:contributor"
+          });
+        }
         // TODO do this locally first before creating on the server
         StreamToCreate = await _repo.GetStream(streamId, AccountToSendFrom);
         StreamState = new StreamState()
@@ -255,6 +276,17 @@ namespace Speckle.DesktopUI.Streams
     public void ChangeSlide(string slideIndex)
     {
       SelectedSlide = int.Parse(slideIndex);
+    }
+
+    private void AddCollabToCollection(User user)
+    {
+      if ( Collaborators.All(c => c.id != user.id) )
+        Collaborators.Add(user);
+    }
+
+    public void RemoveCollabFromCollection(User user)
+    {
+      Collaborators.Remove(user);
     }
 
     public bool CanGetSelectedObjects
