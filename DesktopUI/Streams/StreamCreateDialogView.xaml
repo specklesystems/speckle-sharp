@@ -40,34 +40,36 @@
         Foreground="{DynamicResource PrimaryHueLightBrush}"
         IsIndeterminate="False"
         Value="0" />
-      <Grid Grid.Row="2" Width="425">
-        <md:Transitioner AutoApplyTransitionOrigins="True" SelectedIndex="{Binding SelectedSlide}">
-          <md:TransitionerSlide>
-            <md:TransitionerSlide.ForwardWipe>
-              <md:SlideWipe Direction="Left" />
-            </md:TransitionerSlide.ForwardWipe>
-            <dialogs:StreamCreateStartView />
-          </md:TransitionerSlide>
+      <Grid Grid.Row="2" Width="425" MaxHeight="500">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <md:Transitioner AutoApplyTransitionOrigins="True" SelectedIndex="{Binding SelectedSlide}">
+            <md:TransitionerSlide>
+              <md:TransitionerSlide.ForwardWipe>
+                <md:SlideWipe Direction="Left" />
+              </md:TransitionerSlide.ForwardWipe>
+              <dialogs:StreamCreateStartView />
+            </md:TransitionerSlide>
 
-          <md:TransitionerSlide>
-            <md:TransitionerSlide.ForwardWipe>
-              <md:SlideWipe Direction="Left" />
-            </md:TransitionerSlide.ForwardWipe>
-            <dialogs:StreamCreateSimpleView />
-          </md:TransitionerSlide>
+            <md:TransitionerSlide>
+              <md:TransitionerSlide.ForwardWipe>
+                <md:SlideWipe Direction="Left" />
+              </md:TransitionerSlide.ForwardWipe>
+              <dialogs:StreamCreateSimpleView />
+            </md:TransitionerSlide>
 
-          <md:TransitionerSlide>
-            <md:TransitionerSlide.ForwardWipe>
-              <md:SlideWipe Direction="Left" />
-            </md:TransitionerSlide.ForwardWipe>
-            <dialogs:StreamCreateAdvancedView />
-          </md:TransitionerSlide>
+            <md:TransitionerSlide>
+              <md:TransitionerSlide.ForwardWipe>
+                <md:SlideWipe Direction="Left" />
+              </md:TransitionerSlide.ForwardWipe>
+              <dialogs:StreamCreateAdvancedView />
+            </md:TransitionerSlide>
 
-          <md:TransitionerSlide OpeningEffect="{md:TransitionEffect Kind=SlideInFromRight}">
-            <dialogs:StreamCreateFinalView />
-          </md:TransitionerSlide>
+            <md:TransitionerSlide OpeningEffect="{md:TransitionEffect Kind=SlideInFromRight}">
+              <dialogs:StreamCreateFinalView />
+            </md:TransitionerSlide>
 
-        </md:Transitioner>
+          </md:Transitioner>
+        </ScrollViewer>
         <md:Snackbar MessageQueue="{Binding Notifications}" />
       </Grid>
     </Grid>
