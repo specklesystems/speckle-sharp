@@ -50,7 +50,7 @@ namespace ConnectorGrashopper.Transports
       else
       {
         account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
-        if(account == null)
+        if (account == null)
         {
           // Really last ditch effort - in case people delete accounts from the manager, and the selection dropdwon is still using an outdated list.
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The account with an id of {accountId} was not found.");

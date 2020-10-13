@@ -1,10 +1,8 @@
-﻿using Grasshopper.Kernel;
+﻿using GH_IO.Serialization;
 using Grasshopper.Kernel.Special;
+using Speckle.Core.Credentials;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ConnectorGrashopper.Accounts
@@ -41,13 +39,15 @@ namespace ConnectorGrashopper.Accounts
     private void SetAccountList()
     {
       ListItems.Clear();
-      var accounts = Speckle.Core.Credentials.AccountManager.GetAccounts();
-      var defaultAccount = Speckle.Core.Credentials.AccountManager.GetDefaultAccount();
+      var accounts = AccountManager.GetAccounts();
+      var defaultAccount = AccountManager.GetDefaultAccount();
       int index = 0, defaultAccountIndex = 0;
       foreach (var account in accounts)
       {
         if (defaultAccount != null && account.id == defaultAccount.id)
+        {
           defaultAccountIndex = index;
+        }
 
         ListItems.Add(new GH_ValueListItem(account.ToString(), $"\"{account.id}\""));
         index++;
@@ -56,9 +56,44 @@ namespace ConnectorGrashopper.Accounts
       SelectItem(defaultAccountIndex);
     }
 
-    protected override void ValuesChanged()
+    public override bool Read(GH_IReader reader)
     {
-      base.ValuesChanged();
+      var accounts = AccountManager.GetAccounts().ToList();
+      var selectedAccountId = reader.GetString("selectedId");
+
+      var account = accounts.FirstOrDefault(a => a.id == selectedAccountId);
+      if (account != null)
+      {
+        var index = accounts.IndexOf(account);
+        SelectItem(index);
+        return base.Read(reader);
+      }
+
+      var selectedServerUrl = reader.GetString("selectedServer");
+      account = accounts.FirstOrDefault(a => a.serverInfo.url == selectedServerUrl);
+      if (account != null)
+      {
+        var index = accounts.IndexOf(account);
+        SelectItem(index);
+        AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Remark, "Account mismatch. Using a different account for the same server.");
+        return base.Read(reader);
+      }
+
+      AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Remark, "Account mismatch. Using the default one.");
+      return base.Read(reader);
+    }
+
+    public override bool Write(GH_IWriter writer)
+    {
+      var selectedAccountId = SelectedItems[0].Expression.Trim(new char[] { '"' });
+      var selectedAccount = AccountManager.GetAccounts().FirstOrDefault(a => a.id == selectedAccountId);
+      if (selectedAccount != null)
+      {
+        writer.SetString("selectedId", selectedAccountId);
+        writer.SetString("selectedServer", selectedAccount.serverInfo.url);
+      }
+
+      return base.Write(writer);
     }
   }
 
