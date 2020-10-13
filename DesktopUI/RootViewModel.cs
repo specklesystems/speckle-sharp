@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
@@ -94,6 +95,14 @@ namespace Speckle.DesktopUI
     public void Handle(ApplicationEvent message)
     {
       Notifications.Enqueue($"App Event: {message.Type}");
+    }
+
+    public void OnClosing(Window sender, CancelEventArgs e)
+    {
+      e.Cancel = true;
+      // refocusing window with `.Show()` should be handled by individual connectors
+      // can be accessed through `Application.Current.MainWindow.Show()`
+      sender.Hide();
     }
   }
 }
