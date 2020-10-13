@@ -351,3 +351,9 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# IntellJ settings
+.idea/
+
+# Mac .DS_Store files
+*.DS_Store

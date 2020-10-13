@@ -17,9 +17,9 @@ namespace ConnectorGrashopper
   // TODO: Convert to task capable component / async so as to not block the ffffing ui
   public class CreateSpeckleObject : GH_Component, IGH_VariableParameterComponent
   {
-    public override Guid ComponentGuid { get => new Guid("cfa4e9b4-3ae4-4bb9-90d8-801c34e9a37e"); }
+    public override Guid ComponentGuid => new Guid("cfa4e9b4-3ae4-4bb9-90d8-801c34e9a37e"); 
 
-    protected override System.Drawing.Bitmap Icon { get => null; }
+    protected override System.Drawing.Bitmap Icon => null;
 
     private ISpeckleConverter Converter;
 
@@ -92,14 +92,14 @@ namespace ConnectorGrashopper
       return base.Write(writer);
     }
 
-    protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+    protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
     }
 
-    protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+    protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddGenericParameter("Debug", "d", "debug output, please ignore", GH_ParamAccess.list);
-      pManager.AddGenericParameter("Object", "O", "The created object", GH_ParamAccess.item);
+      pManager.AddGenericParameter("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item);
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)
@@ -109,7 +109,7 @@ namespace ConnectorGrashopper
 
       for (int i = 0; i < Params.Input.Count; i++)
       {
-        var param = Params.Input[i] as Param_GenericAccess;
+        var param = Params.Input[i] as GenericAccessParam;
         var type = param.Access.ToString();
         var detachable = param.Detachable;
 
@@ -173,7 +173,7 @@ namespace ConnectorGrashopper
         value = value.GetType().GetProperty("Value").GetValue(value);
       }
 
-      if (value is Base || Speckle.Core.Models.Utilities.IsSimpleType(value.GetType()))
+      if (value is Base || Utilities.IsSimpleType(value.GetType()))
       {
         return value;
       }
@@ -192,7 +192,7 @@ namespace ConnectorGrashopper
 
     public IGH_Param CreateParameter(GH_ParameterSide side, int index)
     {
-      var myParam = new Param_GenericAccess
+      var myParam = new GenericAccessParam
       {
         Name = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input),
         MutableNickName = true,

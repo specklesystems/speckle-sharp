@@ -59,13 +59,20 @@
   <ItemGroup>
     <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
     <Compile Include="Conversion\Serialisation.SerialiseObject.cs" />
+    <Compile Include="Extras\GenericAccessParam.cs" />
     <Compile Include="Extras\Param_GenericAccess.cs" />
     <Compile Include="Conversion\Convert.ToNativeAsync.cs" />
     <Compile Include="Extras\Speckle.IGH_Goo.cs" />
+    <Compile Include="Extras\SpeckleBaseParam.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
     <Compile Include="ConnectorGrashopperInfo.cs" />
     <Compile Include="Objects\ExpandSpeckleObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Conversion\Serialisation.DeserializeObject.cs" />
@@ -83,6 +90,15 @@
       <Project>{a987e5e1-8605-46ba-9476-1d8d28502273}</Project>
       <Name>ConverterRhinoGh</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\speckle-logo.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
