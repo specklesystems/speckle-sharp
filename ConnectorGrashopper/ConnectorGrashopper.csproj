@@ -57,9 +57,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Accounts\AccountDetailsComponent.cs" />
-    <Compile Include="Accounts\DefaultAccountComponent.cs" />
-    <Compile Include="Accounts\AccountListComponent.cs" />
     <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
     <Compile Include="Conversion\Serialisation.SerialiseObject.cs" />
     <Compile Include="Extras\GenericAccessParam.cs" />
