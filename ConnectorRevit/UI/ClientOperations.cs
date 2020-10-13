@@ -144,9 +144,9 @@ namespace Speckle.ConnectorRevit.UI
       var transport = new ServerTransport(state.client.Account, state.stream.id);
       var newStream = await state.client.StreamGet(state.stream.id);
 
-      var commitObjId = newStream.branches.items[ 0 ].commits.items[ 0 ].id;
+      var commitObjId = newStream.branches.items[ 0 ].commits.items[ 0 ].referencedObject;
       var commitObj = await Operations.Receive(commitObjId, transport);
-      var speckleObj = ( List<Base> )commitObj[ "@revitItems" ];
+      var speckleObj = ( List<object> )commitObj[ "@revitItems" ];
 
       var revitElements = new List<object>();
       var errors = new List<SpeckleException>();
@@ -183,7 +183,7 @@ namespace Speckle.ConnectorRevit.UI
         {
           // TODO `t.SetFailureHandlingOptions`
           t.Start();
-          revitElements = converter.ConvertToNative(speckleObj);
+          revitElements = converter.ConvertToNative(speckleObj.Select(o => ( Base ) o).ToList());
           t.Commit();
         }
       });
@@ -214,7 +214,9 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="args"></param>
     public override List<string> GetSelectedObjects()
     {
-      var selectedObjects = CurrentDoc != null ? CurrentDoc.Selection.GetElementIds().Select(id => CurrentDoc.Document.GetElement(id).UniqueId).ToList() : new List<string>();
+      var selectedObjects = CurrentDoc != null ?
+        CurrentDoc.Selection.GetElementIds().Select(
+          id => CurrentDoc.Document.GetElement(id).UniqueId).ToList() : new List<string>();
 
       return  selectedObjects;
     }
