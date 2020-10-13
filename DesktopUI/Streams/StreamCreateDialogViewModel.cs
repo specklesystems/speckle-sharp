@@ -220,6 +220,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void AddSimpleStream()
     {
+      CreateButtonLoading = true;
       SelectedFilter = Filters.First(filter => filter.Type == typeof(ElementsSelectionFilter).ToString());
       GetSelectedObjects();
       AccountToSendFrom = _acctRepo.GetDefault();

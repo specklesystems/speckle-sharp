@@ -54,6 +54,9 @@
           Grid.Column="0"
           Margin="8"
           Command="{s:Action AddSimpleStream}"
+          md:ButtonProgressAssist.IsIndeterminate="True"
+          md:ButtonProgressAssist.IsIndicatorVisible="{Binding CreateButtonLoading, Mode=OneWay}"
+          md:ButtonProgressAssist.Value="-1"
           Content="{md:PackIcon Kind=ShareAll,
                                 Size=20}"
           Foreground="{StaticResource MaterialDesignLightBackground}"

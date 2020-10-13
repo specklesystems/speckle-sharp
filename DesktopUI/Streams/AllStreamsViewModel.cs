@@ -96,6 +96,8 @@ namespace Speckle.DesktopUI.Streams
       catch ( Exception e )
       {
         _bindings.RaiseNotification($"Error: {e.Message}");
+        state.IsSending = false;
+        return;
       }
 
       state.IsSending = false;
