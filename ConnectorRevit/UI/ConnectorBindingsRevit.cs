@@ -70,7 +70,7 @@ namespace Speckle.ConnectorRevit.UI
 
       //// GLOBAL EVENT HANDLERS
       RevitApp.ViewActivated += RevitApp_ViewActivated;
-      // RevitApp.Application.DocumentChanged += Application_DocumentChanged;
+      RevitApp.Application.DocumentChanged += Application_DocumentChanged;
       RevitApp.Application.DocumentOpened += Application_DocumentOpened;
       RevitApp.Application.DocumentClosed += Application_DocumentClosed;
       RevitApp.Idling += ApplicationIdling;
@@ -84,8 +84,7 @@ namespace Speckle.ConnectorRevit.UI
 
     private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
     {
-      if ( CurrentDoc == null ) return;
-      var selectedObjectsCount = CurrentDoc != null ? CurrentDoc.Selection.GetElementIds().Count : 0;
+      var selectedObjectsCount = CurrentDoc?.Selection.GetElementIds().Count ?? 0;
 
       var updateEvent = new UpdateSelectionCountEvent() {SelectionCount = selectedObjectsCount};
       NotifyUi(updateEvent);
@@ -97,11 +96,6 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     public override void AddExistingStream(string args)
-    {
-      throw new NotImplementedException();
-    }
-
-    public override void BakeStream(string args)
     {
       throw new NotImplementedException();
     }
@@ -244,6 +238,11 @@ namespace Speckle.ConnectorRevit.UI
         Type = ApplicationEvent.EventType.DocumentClosed
       };
       NotifyUi(appEvent);
+    }
+
+    private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
+    {
+      //
     }
 
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)

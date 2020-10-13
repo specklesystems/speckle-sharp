@@ -33,7 +33,7 @@ namespace Speckle.ConnectorRevit.UI
       DEP_LocalState.Add(state.stream);
 
       GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
-      RaiseNotification("Stream created! Next, send to server ☁");
+      // RaiseNotification("Stream created! Next, send to server ☁");
     }
 
     /// <summary>
@@ -118,7 +118,9 @@ namespace Speckle.ConnectorRevit.UI
         streamId = streamId,
         objectId = objectId,
         branchName = "main",
-        message = $"Added {convertedObjects.Count()} elements from Revit: {string.Join(", ", convertedTypes)}"
+        message =
+          $"Added {convertedObjects.Count()} elements from Revit: {string.Join(", ", convertedTypes)}. " +
+          $"There were {converter.ConversionErrors.Count} failed conversions."
       });
 
       // update the state
@@ -131,6 +133,70 @@ namespace Speckle.ConnectorRevit.UI
 
       RaiseNotification($"{convertedObjects.Count()} objects sent to Speckle 🚀");
       return state;
+    }
+
+    public override async Task<StreamState> ReceiveStream(StreamState state)
+    {
+      var kit = KitManager.GetDefaultKit();
+      var converter = kit.LoadConverter(Applications.Revit);
+      converter.SetContextDocument(CurrentDoc.Document);
+
+      var transport = new ServerTransport(state.client.Account, state.stream.id);
+      var newStream = await state.client.StreamGet(state.stream.id);
+
+      var commitObjId = newStream.branches.items[ 0 ].commits.items[ 0 ].id;
+      var commitObj = await Operations.Receive(commitObjId, transport);
+      var speckleObj = ( List<Base> )commitObj[ "@revitItems" ];
+
+      var revitElements = new List<object>();
+      var errors = new List<SpeckleException>();
+
+      // TODO diff stream states
+
+      // delete
+      Queue.Add(() =>
+      {
+        using ( var t = new Transaction(CurrentDoc.Document, $"Speckle Delete: ({state.stream.id})") )
+        {
+          t.Start();
+          foreach ( var oldObj in state.objects )
+          {
+            var revitElement = CurrentDoc.Document.GetElement(oldObj.applicationId);
+            if ( revitElement == null )
+            {
+              errors.Add(new SpeckleException(message: "Could not retrieve element"));
+              continue;
+            }
+
+            CurrentDoc.Document.Delete(revitElement.Id);
+          }
+
+          t.Commit();
+        }
+      });
+      Executor.Raise();
+
+      // create
+      Queue.Add(() =>
+      {
+        using ( var t = new Transaction(CurrentDoc.Document, $"Speckle Receive: ({state.stream.id})") )
+        {
+          // TODO `t.SetFailureHandlingOptions`
+          t.Start();
+          revitElements = converter.ConvertToNative(speckleObj);
+          t.Commit();
+        }
+      });
+      Executor.Raise();
+
+      WriteStateToFile();
+
+      return state;
+    }
+
+    public override void BakeStream(string args)
+    {
+      throw new NotImplementedException();
     }
 
     // TODO connect to UI
@@ -148,8 +214,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="args"></param>
     public override List<string> GetSelectedObjects()
     {
-      var doc = CurrentDoc.Document;
-      var selectedObjects = CurrentDoc != null ? CurrentDoc.Selection.GetElementIds().Select(id => doc.GetElement(id).UniqueId).ToList() : new List<string>();
+      var selectedObjects = CurrentDoc != null ? CurrentDoc.Selection.GetElementIds().Select(id => CurrentDoc.Document.GetElement(id).UniqueId).ToList() : new List<string>();
 
       return  selectedObjects;
     }
@@ -336,7 +401,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       Queue.Add(new Action(() =>
       {
-        using ( Transaction t = new Transaction(CurrentDoc.Document, "Update local storage") )
+        using ( Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State") )
         {
           t.Start();
           StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
