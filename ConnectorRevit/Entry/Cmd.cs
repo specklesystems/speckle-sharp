@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Windows;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Speckle.ConnectorRevit.UI;
 using Speckle.DesktopUI;
-using Stylet;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -25,11 +21,14 @@ namespace Speckle.ConnectorRevit.Entry
     {
       UIApplication uiapp = commandData.Application;
 
-      if (Application.Current == null)
+      if (Application.Current != null)
       {
-        //if the app is null, eg revit, make one
-        new Application();
+        Application.Current.MainWindow.Show();
+        return Result.Succeeded;
       }
+
+      // create application instance (Revit doesn't have one already)
+      new Application();
 
       // create a new Speckle Revit bindings instance
       var revitBindings = new ConnectorBindingsRevit(uiapp);
