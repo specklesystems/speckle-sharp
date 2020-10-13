@@ -247,7 +247,7 @@
               Command="{s:Action ConvertAndSendObjects}"
               md:ButtonProgressAssist.IsIndeterminate="True"
               md:ButtonProgressAssist.Value="-1"
-              md:ButtonProgressAssist.IsIndicatorVisible="{Binding IsSending}"
+              md:ButtonProgressAssist.IsIndicatorVisible="{Binding StreamState.IsSending}"
               ToolTip="Send your changes to the Speckle server">
               <Grid>
                 <Grid.ColumnDefinitions>
@@ -278,7 +278,7 @@
               Command="{s:Action ConvertAndReceiveObjects}"
               md:ButtonProgressAssist.IsIndeterminate="True"
               md:ButtonProgressAssist.Value="-1"
-              md:ButtonProgressAssist.IsIndicatorVisible="{Binding IsReceiving}"
+              md:ButtonProgressAssist.IsIndicatorVisible="{Binding StreamState.IsReceiving}"
               Style="{StaticResource MaterialDesignRaisedDarkButton}"
               ToolTip="Receive your changes from the server">
               <Grid>
