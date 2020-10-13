@@ -58,6 +58,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void ConvertAndSendObjects()
     {
+      StreamState.IsSending = true;
       if ( !StreamState.placeholders.Any() )
       {
         _bindings.RaiseNotification("Nothing to send to Speckle.");
@@ -72,12 +73,29 @@ namespace Speckle.DesktopUI.Streams
       catch ( Exception e )
       {
         _bindings.RaiseNotification($"Error: {e.Message}");
+        StreamState.IsSending = false;
         return;
       }
 
       NotifyOfPropertyChange(nameof(StreamState));
       _events.Publish(new StreamUpdatedEvent() {StreamId = Stream.id});
       StreamState.IsSending = false;
+    }
+
+    public async void ConvertAndReceiveObjects()
+    {
+      StreamState.IsReceiving = true;
+
+      try
+      {
+        StreamState = await _bindings.ReceiveStream(StreamState);
+      }
+      catch ( Exception e )
+      {
+        _bindings.RaiseNotification($"Error: {e.Message}");
+      }
+
+      StreamState.IsReceiving = false;
     }
 
     public async void ShowStreamUpdateDialog(StreamState state)
