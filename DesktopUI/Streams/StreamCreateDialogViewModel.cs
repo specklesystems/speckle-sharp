@@ -137,7 +137,13 @@ namespace Speckle.DesktopUI.Streams
       set
       {
         SetAndNotify(ref _userQuery, value);
-        SearchForUsers();
+        if ( value == "" )
+        {
+          SelectedUser = null;
+          UserSearchResults.Clear();
+        }
+        if(SelectedUser == null)
+          SearchForUsers();
       }
     }
 
@@ -154,7 +160,11 @@ namespace Speckle.DesktopUI.Streams
     public User SelectedUser
     {
       get => _selectedUser;
-      set => SetAndNotify(ref _selectedUser, value);
+      set
+      {
+        SetAndNotify(ref _selectedUser, value);
+        UserQuery = SelectedUser?.name;
+      }
     }
 
     public void ContinueStreamCreate(string slideIndex)
@@ -203,7 +213,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void SearchForUsers()
     {
-      if ( UserQuery.Length <= 2 )
+      if ( UserQuery == null || UserQuery.Length <= 2 )
         return;
 
       try

@@ -71,6 +71,7 @@
         IsEditable="True"
         IsEnabled="True"
         IsTextSearchEnabled="True"
+        IsTextSearchCaseSensitive="False"
         ItemsSource="{Binding Accounts}"
         SelectedItem="{Binding AccountToSendFrom}"
         StaysOpenOnEdit="True" />
@@ -83,6 +84,7 @@
         IsEditable="True"
         IsEnabled="True"
         IsTextSearchEnabled="True"
+        IsTextSearchCaseSensitive="False"
         ItemsSource="{Binding UserSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
         SelectedItem="{Binding SelectedUser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         StaysOpenOnEdit="True"
