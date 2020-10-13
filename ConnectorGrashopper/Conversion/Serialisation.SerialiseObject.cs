@@ -15,7 +15,7 @@ namespace ConnectorGrashopper.Conversion
 
     protected override System.Drawing.Bitmap Icon { get => null; }
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
 
     public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle object to a JSON string", "Speckle 2", "Conversion")
     {

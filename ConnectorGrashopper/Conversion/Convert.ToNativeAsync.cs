@@ -62,7 +62,10 @@ namespace ConnectorGrashopper.Conversion
 
     private void SetConverterFromKit(string kitName)
     {
-      if (kitName == Kit.Name) return;
+      if (kitName == Kit.Name)
+      {
+        return;
+      }
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
@@ -84,7 +87,7 @@ namespace ConnectorGrashopper.Conversion
         {
           SetConverterFromKit(kitName);
         }
-        catch (Exception e)
+        catch (Exception)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
           SetDefaultKitAndConverter();
@@ -151,7 +154,10 @@ namespace ConnectorGrashopper.Conversion
 
     public override void DoWork(Action<string, double> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)
+      {
+        return;
+      }
 
       int branchIndex = 0, completed = 0;
       foreach (var list in Objects.Branches)
@@ -159,7 +165,10 @@ namespace ConnectorGrashopper.Conversion
         var path = Objects.Paths[branchIndex];
         foreach (var item in list)
         {
-          if (CancellationToken.IsCancellationRequested) return;
+          if (CancellationToken.IsCancellationRequested)
+          {
+            return;
+          }
 
           var converted = TryConvertItem(item);
           ConvertedObjects.Append(new GH_SpeckleGoo() { Value = converted }, Objects.Paths[branchIndex]);
@@ -174,13 +183,20 @@ namespace ConnectorGrashopper.Conversion
 
     public override void SetData(IGH_DataAccess DA)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)
+      {
+        return;
+      }
+
       DA.SetDataTree(0, ConvertedObjects);
     }
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)
+      {
+        return;
+      }
 
       GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);
