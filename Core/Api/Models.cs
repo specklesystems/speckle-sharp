@@ -94,7 +94,7 @@ namespace Speckle.Core.Api
 
     public override string ToString()
     {
-      return $"Steam ({name} | {id})";
+      return $"Stream ({name} | {id})";
     }
   }
 
