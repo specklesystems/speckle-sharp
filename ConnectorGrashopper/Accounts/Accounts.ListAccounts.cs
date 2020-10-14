@@ -31,6 +31,7 @@ namespace ConnectorGrashopper.Accounts
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Launch the Speckle Manager to add new accounts, or remove old ones.", (s, e) =>
       {
+        // TODO: path to actual exe
         System.Diagnostics.Process.Start("speckle://goto=accounts");
       });
       return true;

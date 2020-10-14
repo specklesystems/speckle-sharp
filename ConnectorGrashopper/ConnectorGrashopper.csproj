@@ -80,6 +80,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Ops\Operations.Send.cs" />
     <Compile Include="Streams\StreamCreateComponent.cs" />
     <Compile Include="Streams\StreamDetailsComponent.cs" />
     <Compile Include="Streams\StreamListComponent.cs" />
