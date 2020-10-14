@@ -1,11 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ConnectorGrashopper.Extras;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ConnectorGrashopper.Streams
 {
@@ -32,7 +32,7 @@ namespace ConnectorGrashopper.Streams
     public override bool Read(GH_IReader reader)
     {
       var serialisedStreamWrapper = reader.GetString("stream");
-      
+
       if (serialisedStreamWrapper != null)
       {
         var pcs = serialisedStreamWrapper.Split(' ');
@@ -45,7 +45,9 @@ namespace ConnectorGrashopper.Streams
     public override bool Write(GH_IWriter writer)
     {
       if (Stream == null)
+      {
         return base.Write(writer);
+      }
 
       var serialisedStreamWrapper = $"{Stream.StreamId} {Stream.ServerUrl} {Stream.AccountId}";
       writer.SetString("stream", serialisedStreamWrapper);
@@ -104,19 +106,6 @@ namespace ConnectorGrashopper.Streams
           ExpireSolution(true);
         });
       });
-    }
-  }
-
-
-  public class StreamWrapper
-  {
-    public string StreamId { get; set; }
-    public string AccountId { get; set; }
-    public string ServerUrl { get; set; }
-
-    public override string ToString()
-    {
-      return $"Id: {StreamId} @ {ServerUrl}";
     }
   }
 }
