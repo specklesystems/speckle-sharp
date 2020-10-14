@@ -1,4 +1,5 @@
 ﻿using Grasshopper.Kernel;
+using Speckle.Core.Credentials;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,19 @@ namespace ConnectorGrashopper.Extras
     public override string ToString()
     {
       return $"Id: {StreamId} @ {ServerUrl}";
+    }
+
+    public Account GetAccount()
+    {
+      Account account = null;
+
+      account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == AccountId);
+      if (account == null)
+      {
+        account = AccountManager.GetAccounts(ServerUrl).FirstOrDefault();
+      }
+
+      return account;
     }
   }
 }
