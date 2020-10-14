@@ -144,9 +144,15 @@ namespace Speckle.ConnectorRevit.UI
       var transport = new ServerTransport(state.client.Account, state.stream.id);
       var newStream = await state.client.StreamGet(state.stream.id);
 
-      var commitObjId = newStream.branches.items[ 0 ].commits.items[ 0 ].referencedObject;
-      var commitObj = await Operations.Receive(commitObjId, transport);
-      var speckleObj = ( List<object> )commitObj[ "@revitItems" ];
+      var commit = newStream.branches.items[ 0 ].commits.items[ 0 ];
+      var commitObject = await Operations.Receive(commit.referencedObject, transport);
+      var revitItems = ( List<object> )commitObject[ "@revitItems" ];
+
+      var newObjects = revitItems.Select(o => ( Base ) o).ToList();
+      var oldObjects = state.objects;
+
+      var toDelete = oldObjects.Except(newObjects, new ObjectComparer()).ToList();
+      var toCreate = newObjects.Except(oldObjects, new ObjectComparer()).ToList();
 
       var revitElements = new List<object>();
       var errors = new List<SpeckleException>();
@@ -159,12 +165,14 @@ namespace Speckle.ConnectorRevit.UI
         using ( var t = new Transaction(CurrentDoc.Document, $"Speckle Delete: ({state.stream.id})") )
         {
           t.Start();
-          foreach ( var oldObj in state.objects )
+          foreach ( var oldObj in toDelete )
           {
             var revitElement = CurrentDoc.Document.GetElement(oldObj.applicationId);
             if ( revitElement == null )
             {
               errors.Add(new SpeckleException(message: "Could not retrieve element"));
+              Debug.WriteLine(
+                $"Could not retrieve element (id: {oldObj.applicationId}, type: {oldObj.speckle_type})");
               continue;
             }
 
@@ -183,12 +191,14 @@ namespace Speckle.ConnectorRevit.UI
         {
           // TODO `t.SetFailureHandlingOptions`
           t.Start();
-          revitElements = converter.ConvertToNative(speckleObj.Select(o => ( Base ) o).ToList());
+          revitElements = converter.ConvertToNative(toCreate);
           t.Commit();
         }
       });
       Executor.Raise();
 
+      state.stream = newStream;
+      state.objects = newObjects;
       WriteStateToFile();
 
       return state;
@@ -266,94 +276,98 @@ namespace Speckle.ConnectorRevit.UI
 
       var selectionIds = new List<string>();
 
-      if (filter.Name == "Selection")
+      switch ( filter.Name )
       {
-        var selFilter = filter as ElementsSelectionFilter;
-        selectionIds = selFilter.Selection;
-      }
-      else if (filter.Name == "Category")
-      {
-        var catFilter = filter as ListSelectionFilter;
-        var bics = new List<BuiltInCategory>();
-        var categories = Globals.GetCategories(doc);
-        IList<ElementFilter> elementFilters = new List<ElementFilter>();
-
-        foreach (var cat in catFilter.Selection)
+        case "Selection":
         {
-          elementFilters.Add(new ElementCategoryFilter(categories[cat].Id));
+          var selFilter = filter as ElementsSelectionFilter;
+          selectionIds = selFilter.Selection;
+          break;
         }
-        LogicalOrFilter categoryFilter = new LogicalOrFilter(elementFilters);
-
-        selectionIds = new FilteredElementCollector(doc)
-          .WhereElementIsNotElementType()
-          .WhereElementIsViewIndependent()
-          .WherePasses(categoryFilter)
-          .Select(x => x.UniqueId).ToList();
-
-      }
-      else if (filter.Name == "View")
-      {
-        var viewFilter = filter as ListSelectionFilter;
-
-        var views = new FilteredElementCollector(doc)
-          .WhereElementIsNotElementType()
-          .OfClass(typeof(View))
-          .Where(x => viewFilter.Selection.Contains(x.Name));
-
-        foreach (var view in views)
+        case "Category":
         {
-          var ids = new FilteredElementCollector(doc, view.Id)
-            .WhereElementIsNotElementType()
-            .WhereElementIsViewIndependent()
-            .Where(x => x.IsPhysicalElement())
-            .Select(x => x.UniqueId).ToList();
+          var catFilter = filter as ListSelectionFilter;
+          var bics = new List<BuiltInCategory>();
+          var categories = Globals.GetCategories(doc);
+          IList<ElementFilter> elementFilters = new List<ElementFilter>();
 
-          selectionIds = selectionIds.Union(ids).ToList();
-        }
-      }
-      else if (filter.Name == "Parameter")
-      {
-        try
-        {
-          var propFilter = filter as PropertySelectionFilter;
-          var query = new FilteredElementCollector(doc)
-            .WhereElementIsNotElementType()
-            .WhereElementIsNotElementType()
-            .WhereElementIsViewIndependent()
-            .Where(x => x.IsPhysicalElement())
-            .Where(fi => fi.LookupParameter(propFilter.PropertyName) != null);
-
-          propFilter.PropertyValue = propFilter.PropertyValue.ToLowerInvariant();
-
-          switch (propFilter.PropertyOperator)
+          foreach (var cat in catFilter.Selection)
           {
-            case "equals":
-              query = query.Where(fi => GetStringValue(fi.LookupParameter(propFilter.PropertyName)) == propFilter.PropertyValue);
-              break;
-            case "contains":
-              query = query.Where(fi => GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue));
-              break;
-            case "is greater than":
-              query = query.Where(fi => UnitUtils.ConvertFromInternalUnits(
-                fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-                fi.LookupParameter(propFilter.PropertyName).DisplayUnitType) > double.Parse(propFilter.PropertyValue));
-              break;
-            case "is less than":
-              query = query.Where(fi => UnitUtils.ConvertFromInternalUnits(
-                fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-                fi.LookupParameter(propFilter.PropertyName).DisplayUnitType) < double.Parse(propFilter.PropertyValue));
-              break;
-            default:
-              break;
+            elementFilters.Add(new ElementCategoryFilter(categories[cat].Id));
+          }
+          var categoryFilter = new LogicalOrFilter(elementFilters);
+
+          selectionIds = new FilteredElementCollector(doc)
+            .WhereElementIsNotElementType()
+            .WhereElementIsViewIndependent()
+            .WherePasses(categoryFilter)
+            .Select(x => x.UniqueId).ToList();
+          break;
+        }
+        case "View":
+        {
+          var viewFilter = filter as ListSelectionFilter;
+
+          var views = new FilteredElementCollector(doc)
+            .WhereElementIsNotElementType()
+            .OfClass(typeof(View))
+            .Where(x => viewFilter.Selection.Contains(x.Name));
+
+          foreach (var view in views)
+          {
+            var ids = new FilteredElementCollector(doc, view.Id)
+              .WhereElementIsNotElementType()
+              .WhereElementIsViewIndependent()
+              .Where(x => x.IsPhysicalElement())
+              .Select(x => x.UniqueId).ToList();
+
+            selectionIds = selectionIds.Union(ids).ToList();
           }
 
-          selectionIds = query.Select(x => x.UniqueId).ToList();
+          break;
+        }
+        case "Parameter":
+          try
+          {
+            var propFilter = filter as PropertySelectionFilter;
+            var query = new FilteredElementCollector(doc)
+              .WhereElementIsNotElementType()
+              .WhereElementIsNotElementType()
+              .WhereElementIsViewIndependent()
+              .Where(x => x.IsPhysicalElement())
+              .Where(fi => fi.LookupParameter(propFilter.PropertyName) != null);
 
-        }
-        catch (Exception e)
-        {
-          Console.WriteLine(e);
-        }
+            propFilter.PropertyValue = propFilter.PropertyValue.ToLowerInvariant();
+
+            switch (propFilter.PropertyOperator)
+            {
+              case "equals":
+                query = query.Where(fi => GetStringValue(fi.LookupParameter(propFilter.PropertyName)) == propFilter.PropertyValue);
+                break;
+              case "contains":
+                query = query.Where(fi => GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue));
+                break;
+              case "is greater than":
+                query = query.Where(fi => UnitUtils.ConvertFromInternalUnits(
+                  fi.LookupParameter(propFilter.PropertyName).AsDouble(),
+                  fi.LookupParameter(propFilter.PropertyName).DisplayUnitType) > double.Parse(propFilter.PropertyValue));
+                break;
+              case "is less than":
+                query = query.Where(fi => UnitUtils.ConvertFromInternalUnits(
+                  fi.LookupParameter(propFilter.PropertyName).AsDouble(),
+                  fi.LookupParameter(propFilter.PropertyName).DisplayUnitType) < double.Parse(propFilter.PropertyValue));
+                break;
+            }
+
+            selectionIds = query.Select(x => x.UniqueId).ToList();
+
+          }
+          catch (Exception e)
+          {
+            Console.WriteLine(e);
+          }
+
+          break;
       }
 
       // LOCAL STATE management
@@ -413,13 +427,27 @@ namespace Speckle.ConnectorRevit.UI
       Executor.Raise();
     }
 
-    // TODO move to converter?
-    private static byte[ ] GetBytes(object obj)
+    private  class ObjectComparer : IEqualityComparer<Base>
     {
-      using ( MemoryStream memoryStream = new MemoryStream() )
+      /// <summary>
+      /// compares two speckle objects for equality based on both:
+      /// matching application id and matching speckle id
+      /// </summary>
+      /// <param name="obj1"></param>
+      /// <param name="obj2"></param>
+      /// <returns></returns>
+      public bool Equals(Base obj1, Base obj2)
       {
-        new BinaryFormatter().Serialize(memoryStream, obj);
-        return memoryStream.ToArray();
+        if ( ReferenceEquals(obj1, obj2) )
+          return true;
+        if ( obj1 == null || obj2 == null )
+          return false;
+        return obj1.applicationId == obj2.applicationId && obj1.id == obj2.id;
+      }
+
+      public int GetHashCode(Base obj)
+      {
+        return base.GetHashCode();
       }
     }
     #endregion
