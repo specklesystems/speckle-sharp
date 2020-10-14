@@ -46,7 +46,7 @@ namespace ConnectorGrashopper.Streams
                 
                 Task.Run(async () =>
                 {
-                    account = !DA.GetData(1, ref accountId) 
+                    Account account = streamInput.AccountId == null
                         ? AccountManager.GetDefaultAccount() 
                         : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
                 
