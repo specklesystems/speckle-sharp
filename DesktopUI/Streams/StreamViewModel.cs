@@ -85,6 +85,15 @@ namespace Speckle.DesktopUI.Streams
     public async void ConvertAndReceiveObjects()
     {
       StreamState.IsReceiving = true;
+      var newStream = await StreamState.client.StreamGet(Stream.id);
+      var newCommitId = newStream.branches.items[ 0 ].commits.items[ 0 ].id;
+      var oldCommitId = Branch.commits.items[ 0 ].id;
+
+      // if ( oldCommitId == newCommitId )
+      // {
+      //   _bindings.RaiseNotification($"Nothing to receive - stream is up to date");
+      //   return;
+      // }
 
       try
       {

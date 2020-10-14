@@ -110,6 +110,7 @@
             ItemsSource="{Binding UserSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
             SelectedItem="{Binding SelectedUser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             StaysOpenOnEdit="True"
+            TextSearch.TextPath="name"
             Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
           <ItemsControl

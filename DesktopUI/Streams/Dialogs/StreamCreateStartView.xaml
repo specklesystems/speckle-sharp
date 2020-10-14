@@ -12,7 +12,9 @@
   mc:Ignorable="d">
 
   <Grid>
-    <StackPanel Margin="24,0,24,36" Orientation="Vertical">
+    <StackPanel
+      Margin="24,0,24,36"
+      Orientation="Vertical">
       <TextBlock
         Margin="0,0,0,12"
         FontSize="20"
@@ -24,14 +26,47 @@
         Text="Send objects to Speckle by creating a new stream."
         TextWrapping="Wrap" />
 
-      <TextBox
-        x:Name="StreamNameInput"
-        Height="40"
-        Margin="0,8"
-        md:HintAssist.Hint="Give your stream a name"
-        AcceptsReturn="False"
-        Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
-        Text="{Binding StreamToCreate.name}" />
+      <!-- <TextBox -->
+      <!--   x:Name="StreamNameInput" -->
+      <!--   Height="40" -->
+      <!--   Margin="0,8" -->
+      <!--   md:HintAssist.Hint="Give your stream a name" -->
+      <!--   AcceptsReturn="False" -->
+      <!--   Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}" -->
+      <!--   Text="{Binding StreamToCreate.name}" /> -->
+
+      <ComboBox
+        Margin="0,16"
+        md:HintAssist.Hint="Name your stream (or search for an existing one)"
+        md:HintAssist.HintOpacity=".26"
+        IsEditable="True"
+        IsEnabled="True"
+        SelectedItem="{Binding SelectedStream, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+        StaysOpenOnEdit="True"
+        DisplayMemberPath="name"
+        ItemsSource="{Binding StreamSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+        Text="{Binding StreamQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+        Style="{StaticResource MaterialDesignFilledComboBox}">
+        <!-- <ComboBox.ItemTemplate> -->
+        <!--   <DataTemplate> -->
+        <!--     <StackPanel -->
+        <!--       Orientation="Horizontal"> -->
+        <!--       <TextBlock -->
+        <!--         Text="{Binding name}" -->
+        <!--         FontWeight="Medium" /> -->
+        <!--       <TextBlock -->
+        <!--         Text="{Binding id}" /> -->
+        <!--     </StackPanel> -->
+        <!--   </DataTemplate> -->
+        <!-- </ComboBox.ItemTemplate> -->
+        <!-- <ComboBox.ItemsSource> -->
+        <!--   <CompositeCollection> -->
+        <!--     <CollectionContainer -->
+        <!--       Collection="{Binding StreamSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"> -->
+        <!--     </CollectionContainer> -->
+        <!--   </CompositeCollection> -->
+        <!-- </ComboBox.ItemsSource> -->
+      </ComboBox>
 
       <TextBox
         x:Name="StreamDescriptionInput"
@@ -44,10 +79,13 @@
         TextAlignment="Left"
         TextWrapping="Wrap" />
 
-      <Grid Margin="0,8">
+      <Grid
+        Margin="0,8">
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto" />
-          <ColumnDefinition Width="*" />
+          <ColumnDefinition
+            Width="Auto" />
+          <ColumnDefinition
+            Width="*" />
         </Grid.ColumnDefinitions>
         <Button
           x:Name="SimpleStreamButton"
@@ -65,14 +103,17 @@
           Grid.Column="1"
           Margin="8,0"
           VerticalAlignment="Center"
-          Text="Send all the currently selected objects to Speckle using default settings!"
+          Text="Send all the currently selected objects to Speckle using default settings"
           TextWrapping="Wrap" />
       </Grid>
 
-      <Grid Margin="0,8">
+      <Grid
+        Margin="0,8">
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto" />
-          <ColumnDefinition Width="*" />
+          <ColumnDefinition
+            Width="Auto" />
+          <ColumnDefinition
+            Width="*" />
         </Grid.ColumnDefinitions>
         <Button
           x:Name="AdvancedStreamButton"
@@ -88,7 +129,35 @@
           Grid.Column="1"
           Margin="8,0"
           VerticalAlignment="Center"
-          Text="Customise your stream with more advanced options before creating and sending your strem."
+          Text="Customise your stream with more advanced options before creating and sending your stream."
+          TextWrapping="Wrap" />
+      </Grid>
+
+      <Grid
+        Margin="0,8">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition
+            Width="Auto" />
+          <ColumnDefinition
+            Width="*" />
+        </Grid.ColumnDefinitions>
+        <Button
+          x:Name="ExistingStreamButton"
+          Grid.Column="0"
+          Margin="8"
+          Command="{s:Action AddExistingStream}"
+          Content="{md:PackIcon Kind=PlusBoxOutline,
+                                Size=20}"
+          md:ButtonProgressAssist.IsIndeterminate="True"
+          md:ButtonProgressAssist.IsIndicatorVisible="{Binding AddExistingButtonLoading, Mode=OneWay}"
+          md:ButtonProgressAssist.Value="-1"
+          Foreground="{StaticResource MaterialDesignLightBackground}"
+          Style="{StaticResource MaterialDesignFloatingActionMiniButton}" />
+        <TextBlock
+          Grid.Column="1"
+          Margin="8,0"
+          VerticalAlignment="Center"
+          Text="Add an existing stream from the server."
           TextWrapping="Wrap" />
       </Grid>
     </StackPanel>

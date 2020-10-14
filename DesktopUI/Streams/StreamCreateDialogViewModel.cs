@@ -56,6 +56,8 @@ namespace Speckle.DesktopUI.Streams
       get => _bindings.GetSelectedObjects();
     }
 
+    public List<string> StreamIds;
+
     private int _selectionCount;
 
     public int SelectionCount
@@ -70,6 +72,14 @@ namespace Speckle.DesktopUI.Streams
     {
       get => _createButtonLoading;
       set => SetAndNotify(ref _createButtonLoading, value);
+    }
+
+    private bool _addExistingButtonLoading;
+
+    public bool AddExistingButtonLoading
+    {
+      get => _addExistingButtonLoading;
+      set => SetAndNotify(ref _addExistingButtonLoading, value);
     }
 
     private Stream _streamToCreate = new Stream();
@@ -88,7 +98,7 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _streamState, value);
     }
 
-    private Account _accountToSendFrom;
+    private Account _accountToSendFrom = AccountManager.GetDefaultAccount();
 
     public Account AccountToSendFrom
     {
@@ -129,6 +139,8 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _selectedSlide, value);
     }
 
+    #region Adding Collaborators
+
     private string _userQuery;
 
     public string UserQuery
@@ -142,7 +154,8 @@ namespace Speckle.DesktopUI.Streams
           SelectedUser = null;
           UserSearchResults.Clear();
         }
-        if(SelectedUser == null)
+
+        if ( SelectedUser == null )
           SearchForUsers();
       }
     }
@@ -178,6 +191,72 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _collaborators, value);
     }
 
+    #endregion
+
+    #region Searching Existing Streams
+
+    private string _streamQuery;
+
+    public string StreamQuery
+    {
+      get => _streamQuery;
+      set
+      {
+        SetAndNotify(ref _streamQuery, value);
+
+        if ( value == "" )
+        {
+          SelectedStream = null;
+          StreamSearchResults.Clear();
+        }
+
+        if ( SelectedStream == null || value != SelectedStream.name )
+          SearchForStreams();
+      }
+    }
+
+    private BindableCollection<Stream> _streamSearchResults;
+
+    public BindableCollection<Stream> StreamSearchResults
+    {
+      get => _streamSearchResults;
+      set => SetAndNotify(ref _streamSearchResults, value);
+    }
+
+    private Stream _selectedStream;
+
+    public Stream SelectedStream
+    {
+      get => _selectedStream;
+      set
+      {
+        SetAndNotify(ref _selectedStream, value);
+        NotifyOfPropertyChange(nameof(CanAddExistingStream));
+        if ( SelectedStream == null )
+          return;
+        StreamQuery = SelectedStream.name;
+      }
+    }
+
+    private async void SearchForStreams()
+    {
+      if ( StreamQuery == null || StreamQuery.Length <= 2 )
+        return;
+
+      try
+      {
+        var client = new Client(AccountToSendFrom);
+        var streams = await client.StreamSearch(StreamQuery);
+        StreamSearchResults = new BindableCollection<Stream>(streams);
+      }
+      catch ( Exception e )
+      {
+        Debug.WriteLine(e);
+      }
+    }
+
+    #endregion
+
     public void ContinueStreamCreate(string slideIndex)
     {
       if ( StreamToCreate.name == null || StreamToCreate.name.Length < 2 )
@@ -202,11 +281,10 @@ namespace Speckle.DesktopUI.Streams
         {
           var res = await client.StreamGrantPermission(new StreamGrantPermissionInput()
           {
-            streamId = streamId,
-            userId = user.id,
-            role = "stream:contributor"
+            streamId = streamId, userId = user.id, role = "stream:contributor"
           });
         }
+
         // TODO do this locally first before creating on the server
         StreamToCreate = await _repo.GetStream(streamId, AccountToSendFrom);
         StreamState = new StreamState()
@@ -227,9 +305,37 @@ namespace Speckle.DesktopUI.Streams
       CreateButtonLoading = false;
     }
 
+    public bool CanAddExistingStream => SelectedStream != null;
+
     public async void AddExistingStream()
     {
-      //
+      if ( StreamIds.Contains(SelectedStream.id) )
+      {
+        Notifications.Enqueue("This stream already exists in this file");
+        return;
+      }
+
+      AddExistingButtonLoading = true;
+
+      var client = new Client(AccountToSendFrom);
+      StreamToCreate = SelectedStream;
+
+      var state = new StreamState() {client = client, accountId = client.AccountId, stream = StreamToCreate};
+
+      try
+      {
+        var stream = await _bindings.ReceiveStream(state);
+        _events.Publish(new StreamAddedEvent() {NewStream = stream});
+        SelectedSlide = 3;
+      }
+      catch ( Exception e )
+      {
+        Debug.WriteLine(e);
+        Notifications.Enqueue($"Error: {e.Message}");
+      }
+
+      AddExistingButtonLoading = false;
+
     }
 
     public async void SearchForUsers()
@@ -282,6 +388,11 @@ namespace Speckle.DesktopUI.Streams
     {
       if ( Collaborators.All(c => c.id != user.id) )
         Collaborators.Add(user);
+    }
+
+    private void AddCollabToCollection(object sender, EventArgs e)
+    {
+      return;
     }
 
     public void RemoveCollabFromCollection(User user)
@@ -340,8 +451,8 @@ namespace Speckle.DesktopUI.Streams
           CloseDialog();
           return;
         }
-          default:
-            return;
+        default:
+          return;
       }
     }
   }

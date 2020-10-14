@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
@@ -112,6 +110,7 @@ namespace Speckle.DesktopUI.Streams
     public async void ShowStreamCreateDialog()
     {
       var viewmodel = _dialogFactory.CreateStreamCreateDialog();
+      viewmodel.StreamIds = StreamList.Select(s => s.stream.id).ToList();
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
       var result = await DialogHost.Show(view, "AllStreamsDialogHost");
