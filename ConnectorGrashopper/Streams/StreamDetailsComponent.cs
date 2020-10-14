@@ -17,8 +17,7 @@ namespace ConnectorGrashopper.Streams
         
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Stream/ID", "S", "A stream object or a unique ID of the stream to be updated.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Account", "A", "Account to update stream.", GH_ParamAccess.item);
+            pManager.AddParameter(new SpeckleStreamParam("Stream/ID", "S", "A stream object or a unique ID of the stream to be updated.", GH_ParamAccess.item));
         }
 
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -33,25 +32,29 @@ namespace ConnectorGrashopper.Streams
             pManager.AddGenericParameter("Branches", "B", "List of branches for this stream", GH_ParamAccess.list);
         }
 
-        private Stream stream;
+        private Stream stream = null;
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            GH_ObjectWrapper streamInput = null;
-            string accountId = null; 
+            if (DA.Iteration != 0)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot fetch multiple streams at the same time. This is an explicit guard against possibly unintended behaviour. If you want to get the details of another stream, please use a new component.");
+                return;
+            }
+
+            StreamWrapper streamInput = null;
+            
+            if (!DA.GetData(0, ref streamInput)) return;
+            
             if (stream == null)
             {
-                Account account;
-                if (!DA.GetData(0, ref streamInput)) return;
-                var streamWrapper = (StreamWrapper) streamInput.Value;
-                
                 Task.Run(async () =>
                 {
                     Account account = streamInput.AccountId == null
                         ? AccountManager.GetDefaultAccount() 
-                        : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+                        : AccountManager.GetAccounts().FirstOrDefault(a => a.id == streamInput.AccountId);
                 
                     var client = new Client(account);
-                    stream = await client.StreamGet(streamWrapper.StreamId);
+                    stream = await client.StreamGet(streamInput.StreamId);
                     Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
                     {
                         ExpireSolution(true);
