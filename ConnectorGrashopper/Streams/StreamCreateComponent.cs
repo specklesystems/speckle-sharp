@@ -6,6 +6,7 @@ using Speckle.Core.Credentials;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Grasshopper.Kernel.Data;
 
 namespace ConnectorGrashopper.Streams
 {
@@ -63,15 +64,6 @@ namespace ConnectorGrashopper.Streams
         return;
       }
 
-      if (stream != null)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using cached stream. If you want to create a new stream, create a new component.");
-        DA.SetData(0, new GH_SpeckleStream(stream));
-        NickName = $"Id: {stream.StreamId}";
-        MutableNickName = false;
-        return;
-      }
-
       string accountId = null;
       Account account = null;
       DA.GetData(0, ref accountId);
@@ -79,7 +71,7 @@ namespace ConnectorGrashopper.Streams
       if (accountId == null)
       {
         account = AccountManager.GetDefaultAccount();
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using default account {accountId}");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using default account {account}");
       }
       else
       {
@@ -91,7 +83,20 @@ namespace ConnectorGrashopper.Streams
           return;
         }
       }
+      
+      Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.id);
+      
+      if (stream != null)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using cached stream. If you want to create a new stream, create a new component.");
+        DA.SetData(0, new GH_SpeckleStream(stream));
+        NickName = $"Id: {stream.StreamId}";
+        MutableNickName = false;
+        return;
+      }
 
+
+      
       Task.Run(async () =>
       {
         var client = new Client(account);

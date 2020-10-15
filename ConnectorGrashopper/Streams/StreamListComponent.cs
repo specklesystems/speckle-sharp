@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrashopper.Extras;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -40,7 +41,14 @@ namespace ConnectorGrashopper.Streams
                 var account = !DA.GetData(0, ref accountId) 
                     ? AccountManager.GetDefaultAccount() 
                     : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
-                
+
+                if (accountId == null)
+                {
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "");
+                    return;
+                }
+                Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.id);
+
                 DA.GetData(1, ref limit); // Has default value so will never be empty.
                 
                 if (account == null)
