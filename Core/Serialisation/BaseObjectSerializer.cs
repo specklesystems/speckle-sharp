@@ -360,6 +360,7 @@ namespace Speckle.Core.Serialisation
         JArray arr = new JArray();
         foreach (var arrValue in ((IEnumerable)value))
         {
+          if (arrValue == null) continue;
           if (WriteTransports != null && WriteTransports.Count != 0 && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var what = JToken.FromObject(arrValue, serializer); // Trigger next

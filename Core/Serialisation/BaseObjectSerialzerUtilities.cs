@@ -52,7 +52,7 @@ namespace Speckle.Core.Serialisation
 
     #endregion
 
-    #region value handling
+    #region Value handling
 
     internal static object HandleValue(JToken value, Newtonsoft.Json.JsonSerializer serializer, JsonProperty jsonProperty = null, string TypeDiscriminator = "speckle_type")
     {
@@ -73,10 +73,15 @@ namespace Speckle.Core.Serialisation
 
           foreach (var val in ((JArray)value))
           {
-            if (hasGenericType)
+            if (val == null) continue;
+            if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
+            {
               addMethod.Invoke(arr, new object[] { Convert.ChangeType(HandleValue(val, serializer), jsonProperty.PropertyType.GenericTypeArguments[0]) });
+            }
             else
+            {
               addMethod.Invoke(arr, new object[] { HandleValue(val, serializer) });
+            }
           }
           return arr;
         }
@@ -87,7 +92,11 @@ namespace Speckle.Core.Serialisation
 
           foreach (var val in ((JArray)value))
           {
-            ((IList)arr).Add(Convert.ChangeType(HandleValue(val, serializer), jsonProperty.PropertyType.GetElementType()));
+            if (val == null) continue;
+            if (!jsonProperty.PropertyType.GetElementType().IsInterface)
+              ((IList)arr).Add(Convert.ChangeType(HandleValue(val, serializer), jsonProperty.PropertyType.GetElementType()));
+            else
+              ((IList)arr).Add(HandleValue(val, serializer));
           }
 
           ((IList)arr).CopyTo(actualArr, 0);
@@ -98,6 +107,7 @@ namespace Speckle.Core.Serialisation
           var arr = new List<object>();
           foreach (var val in ((JArray)value))
           {
+            if (val == null) continue;
             arr.Add(HandleValue(val, serializer));
           }
           return arr;
