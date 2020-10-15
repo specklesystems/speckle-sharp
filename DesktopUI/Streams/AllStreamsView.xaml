@@ -75,7 +75,8 @@
                 md:ButtonProgressAssist.IsIndeterminate="True"
                 md:ButtonProgressAssist.Value="-1"
                 md:ButtonProgressAssist.IsIndicatorVisible="{Binding IsReceiving}"
-                Command="{Binding}"
+                Command="{s:Action ConvertAndReceiveObjects}"
+                CommandParameter="{Binding}"
                 Content="{md:PackIcon Kind=CloudDownload,
                                       Size=20}"
                 Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
@@ -85,8 +86,8 @@
                 Margin="48,5,0,0"
                 Badge="{md:PackIcon Kind=ExclamationThick}"
                 BadgeColorZoneMode="Accent"
-                ToolTip="objects to send"
-                Visibility="Hidden" />
+                ToolTip="there are new updates on the server"
+                Visibility="{Binding ServerUpdates, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
             </Grid>
 
             <Grid

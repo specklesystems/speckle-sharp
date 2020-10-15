@@ -68,6 +68,14 @@ namespace Speckle.DesktopUI.Utils
       get => _isReceiving;
       set => SetAndNotify(ref _isReceiving, value);
     }
+
+    private bool _serverUpdates;
+
+    public bool ServerUpdates
+    {
+      get => _serverUpdates;
+      set => SetAndNotify(ref _serverUpdates, value);
+    }
   }
 
   public class StreamStateWrapper
