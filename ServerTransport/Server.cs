@@ -38,7 +38,7 @@ namespace Speckle.Core.Transports
 
     public Action<string, int> OnProgressAction { get; set; }
 
-    private Account Account { get; set; }
+    public Account Account { get; set; }
 
     public ServerTransport(Account account, string streamId, int timeoutSeconds = 60)
     {
