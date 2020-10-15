@@ -52,6 +52,109 @@ namespace Speckle.Core.Models
     }
 
     /// <summary>
+    /// Sets and gets properties using the key accessor pattern. E.g.:
+    /// <para><pre>((dynamic)myObject)["superProperty"] = 42;</pre></para>
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public object this[string key]
+    {
+      get
+      {
+        if (properties.ContainsKey(key))
+          return properties[key];
+
+        var prop = GetType().GetProperty(key);
+        if (prop == null)
+        {
+          return null;
+        }
+
+        return prop.GetValue(this);
+      }
+      set
+      {
+        if (properties.ContainsKey(key))
+        {
+          properties[key] = value;
+          return;
+        }
+        var prop = this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(p => p.Name == key);
+        if (prop == null)
+        {
+          properties[key] = value;
+          return;
+        }
+        try
+        {
+          prop.SetValue(this, value);
+        }
+        catch (Exception ex)
+        {
+          Log.CaptureAndThrow(ex);
+        }
+      }
+    }
+
+    /// <summary>
+    /// Gets all of the property names on this class, dynamic or not.
+    /// </summary>
+    /// <returns></returns>
+    public override IEnumerable<string> GetDynamicMemberNames()
+    {
+      var names = new List<string>();
+      foreach (var kvp in properties) names.Add(kvp.Key);
+
+      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+      foreach (var pinfo in pinfos) names.Add(pinfo.Name);
+
+      names.Remove("Item"); // TODO: investigate why we get Item out?
+      return names;
+    }
+
+    /// <summary>
+    /// Gets the names of the defined class properties (typed).
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<string> GetInstanceMembersNames()
+    {
+      var names = new List<string>();
+      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+      foreach (var pinfo in pinfos) names.Add(pinfo.Name);
+
+      names.Remove("Item"); // TODO: investigate why we get Item out?
+      return names;
+    }
+
+    /// <summary>
+    /// Gets the defined (typed) properties of this object.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<PropertyInfo> GetInstanceMembers()
+    {
+      var names = new List<PropertyInfo>();
+      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+      
+      foreach (var pinfo in pinfos)
+        if (pinfo.Name != "Item") names.Add(pinfo);
+
+      return names;
+    }
+
+    /// <summary>
+    /// Gets the dynamically added property names only.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<string> GetDynamicMembers()
+    {
+      foreach (var kvp in properties)
+        yield return kvp.Key;
+    }
+
+
+
+    #region Stuff Dim is not sure we really really need
+    /// <summary>
     /// Checks if a dynamic propery exists or not
     /// </summary>
     /// <param name="key"></param>
@@ -113,93 +216,6 @@ namespace Speckle.Core.Models
       return (T)this[key];
     }
 
-
-    /// <summary>
-    /// Sets and gets properties using the key accessor pattern. E.g.:
-    /// <para><pre>((dynamic)myObject)["superProperty"] = 42;</pre></para>
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public object this[string key]
-    {
-      get
-      {
-        if (properties.ContainsKey(key))
-          return properties[key];
-
-        var prop = GetType().GetProperty(key);
-        if (prop == null)
-        {
-          Log.CaptureAndThrow(new SpeckleException($"Dynamic object does not have the provided key."));
-        }
-
-        return prop.GetValue(this);
-
-      }
-      set
-      {
-        if (properties.ContainsKey(key))
-        {
-          properties[key] = value;
-          return;
-        }
-        var prop = this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(p => p.Name == key);
-        if (prop == null)
-        {
-          properties[key] = value;
-          return;
-        }
-        try
-        {
-          prop.SetValue(this, value);
-        }
-        catch (Exception ex)
-        {
-          Log.CaptureAndThrow(ex);
-        }
-      }
-    }
-
-    /// <summary>
-    /// Gets all of the property names on this class, dynamic or not.
-    /// </summary>
-    /// <returns></returns>
-    public override IEnumerable<string> GetDynamicMemberNames()
-    {
-      var names = new List<string>();
-      foreach (var kvp in properties) names.Add(kvp.Key);
-
-      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-      foreach (var pinfo in pinfos) names.Add(pinfo.Name);
-
-      names.Remove("Item"); // TODO: investigate why we get Item out?
-      return names;
-    }
-
-    /// <summary>
-    /// Gets the names of the defined class properties (typed).
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<string> GetInstanceMembers()
-    {
-      var names = new List<string>();
-      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-      foreach (var pinfo in pinfos) names.Add(pinfo.Name);
-
-      names.Remove("Item"); // TODO: investigate why we get Item out?
-      return names;
-    }
-
-    /// <summary>
-    /// Gets the dynamically added property names only.
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<string> GetDynamicMembers()
-    {
-      foreach (var kvp in properties)
-        yield return kvp.Key;
-    }
-
     /// <summary>
     /// Flashes the properties bag. <b>Use at your own risk!</b>
     /// </summary>
@@ -217,7 +233,7 @@ namespace Speckle.Core.Models
     {
       return properties;
     }
-
+    #endregion
   }
 
 }

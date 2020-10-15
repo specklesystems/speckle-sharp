@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Speckle.Core.Api;
@@ -19,7 +21,7 @@ namespace Speckle.Core.Models
   public class Base : DynamicBase
   {
     /// <summary>
-    /// A speckle object's id is an unique hash based on its properties.
+    /// A speckle object's id is an unique hash based on its properties. <b>NOTE: this field will be null unless the object was deserialised from a source. Use the <see cref="GetId(bool)"/> function to get it.</b>
     /// </summary>
     public virtual string id
     {
@@ -43,6 +45,81 @@ namespace Speckle.Core.Models
       var obj = JsonConvert.SerializeObject(this, t);
       return JObject.Parse(obj).GetValue("id").ToString();
     }
+
+    public long GetTotalChildrenCount()
+    {
+      var parsed = new HashSet<int>();
+      return 1 + CountDescendants(this, parsed);
+    }
+
+    private long CountDescendants(Base @base, HashSet<int> parsed)
+    {
+      if (parsed.Contains(@base.GetHashCode())) return 0;
+      parsed.Add(@base.GetHashCode());
+
+      long count = 0;
+      var typedProps = @base.GetInstanceMembers();
+      foreach (var prop in typedProps)
+      {
+        var detachAttribute = prop.GetCustomAttribute<DetachProperty>(true);
+        if (detachAttribute != null && detachAttribute.Detachable)
+        {
+          object value = prop.GetValue(@base);
+          count += HandleObjectCount(value, parsed);
+        }
+      }
+
+      var dynamicProps = @base.GetDynamicMembers();
+      foreach (var propName in dynamicProps)
+      {
+        if (!propName.StartsWith("@")) continue;
+        count += HandleObjectCount(@base[propName], parsed);
+      }
+
+      return count;
+    }
+
+    private long HandleObjectCount(object value, HashSet<int> parsed)
+    {
+      long count = 0;
+      if (value is Base)
+      {
+        count++;
+        count += CountDescendants(value as Base, parsed);
+        return count;
+      }
+
+      var propType = value.GetType();
+      if (typeof(IEnumerable).IsAssignableFrom(propType) && !typeof(IDictionary).IsAssignableFrom(propType) && propType != typeof(string))
+      {
+        foreach (var arrValue in ((IEnumerable)value))
+        {
+          if (arrValue is Base)
+          {
+            count++;
+            count += CountDescendants(arrValue as Base, parsed);
+          }
+        }
+
+        return count;
+      }
+
+      if (typeof(IDictionary).IsAssignableFrom(propType))
+      {
+        foreach (DictionaryEntry kvp in (IDictionary)value)
+        {
+          if (kvp.Value is Base)
+          {
+            count++;
+            count += CountDescendants(kvp.Value as Base, parsed);
+          }
+        }
+        return count;
+      }
+
+      return count;
+    }
+
 
     /// <summary>
     /// Secondary, ideally host application driven, object identifier.
@@ -69,8 +146,16 @@ namespace Speckle.Core.Models
             bases.Add(myType.FullName);
             myType = myType.BaseType;
           }
-          bases.Reverse();
-          __type = string.Join(":", bases);
+
+          if (bases.Count == 0)
+          {
+            __type = nameof(Base);
+          }
+          else
+          {
+            bases.Reverse();
+            __type = string.Join(":", bases);
+          }
         }
         return __type;
       }

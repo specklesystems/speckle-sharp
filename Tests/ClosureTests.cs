@@ -67,5 +67,57 @@ namespace Tests
       Assert.AreEqual(1, depthOf_d5_in_d2);
     }
 
+    [Test]
+    public void DescendantsCounting()
+    {
+      Base myBase = new Base();
+
+      var myList = new List<object>();
+      // These should be counted! 
+      for(int i = 0; i < 100; i++ )
+      {
+        var smolBase = new Base();
+        smolBase["test"] = i;
+        myList.Add(smolBase);
+      }
+
+      // Primitives should not be counted! 
+      for (int i = 0; i < 10; i++)
+      {
+        myList.Add(i);
+      }
+      myList.Add("Hello");
+      myList.Add(new { hai = "bai" });
+
+      myBase["@detachTheList"] = myList;
+
+      var dictionary = new Dictionary<string, object>();
+      for (int i = 0; i < 10; i++)
+      {
+        var smolBase = new Base() { applicationId = i.ToString() };
+        dictionary[$"key {i}"] = smolBase;
+      }
+
+      dictionary["string value"] = "bol";
+      dictionary["int value"] = 42;
+      dictionary["THIS IS RECURSIVE SURPRISE"] = myBase;
+
+      myBase["@detachTheDictionary"] = dictionary;
+
+      var count = myBase.GetTotalChildrenCount();
+      Assert.AreEqual(112, count);
+
+      var tableTest = new DiningTable();
+      var tableKidsCount = tableTest.GetTotalChildrenCount();
+      Assert.AreEqual(10, tableKidsCount);
+
+      // Explicitely test for recurisve references! 
+      var recursiveRef = new Base() { applicationId = "random" };
+      recursiveRef["@recursive"] = recursiveRef;
+
+      var supriseCount = recursiveRef.GetTotalChildrenCount();
+      Assert.AreEqual(2, supriseCount);
+    }
+
   }
 }
