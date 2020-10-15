@@ -52,69 +52,6 @@ namespace Speckle.Core.Models
     }
 
     /// <summary>
-    /// Checks if a dynamic propery exists or not
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public bool HasMember(string key)
-    {
-      return properties.ContainsKey(key) && properties[key] != null;
-    }
-
-    /// <summary>
-    /// Checks if a dynamic propery exists or not and has a specific type
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public bool HasMember<T>(string key)
-    {
-      if (properties.ContainsKey(key) && (T)properties[key] != null)
-        return true;
-
-      try
-      {
-        return (T)GetType().GetProperty(key).GetValue(this) != null;
-      }
-      catch
-      {
-
-      }
-
-      return false;
-    }
-
-    /// <summary>
-    /// Safely gets a dynamic property
-    /// </summary>
-    /// <typeparam name="T">Type of the property</typeparam>
-    /// <param name="key">Name of the property to get</param>
-    /// <returns></returns>
-    public T GetMemberSafe<T>(string key)
-    {
-      if (!HasMember<T>(key))
-      {
-        properties[key] = default(T);
-      }
-      return (T)this[key];
-    }
-
-    /// <summary>
-    /// Safely gets a dynamic property
-    /// </summary>
-    /// <typeparam name="T">Type of the property</typeparam>
-    /// <param name="key">Name of the property to get</param>
-    /// <returns></returns>
-    public T GetMemberSafe<T>(string key, T def)
-    {
-      if (!HasMember<T>(key))
-      {
-        properties[key] = def;
-      }
-      return (T)this[key];
-    }
-
-
-    /// <summary>
     /// Sets and gets properties using the key accessor pattern. E.g.:
     /// <para><pre>((dynamic)myObject)["superProperty"] = 42;</pre></para>
     /// </summary>
@@ -130,11 +67,10 @@ namespace Speckle.Core.Models
         var prop = GetType().GetProperty(key);
         if (prop == null)
         {
-          Log.CaptureAndThrow(new SpeckleException($"Dynamic object does not have the provided key."));
+          return null;
         }
 
         return prop.GetValue(this);
-
       }
       set
       {
@@ -200,6 +136,71 @@ namespace Speckle.Core.Models
         yield return kvp.Key;
     }
 
+
+
+    #region Stuff Dim is not sure we really really need
+    /// <summary>
+    /// Checks if a dynamic propery exists or not
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public bool HasMember(string key)
+    {
+      return properties.ContainsKey(key) && properties[key] != null;
+    }
+
+    /// <summary>
+    /// Checks if a dynamic propery exists or not and has a specific type
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public bool HasMember<T>(string key)
+    {
+      if (properties.ContainsKey(key) && (T)properties[key] != null)
+        return true;
+
+      try
+      {
+        return (T)GetType().GetProperty(key).GetValue(this) != null;
+      }
+      catch
+      {
+
+      }
+
+      return false;
+    }
+
+    /// <summary>
+    /// Safely gets a dynamic property
+    /// </summary>
+    /// <typeparam name="T">Type of the property</typeparam>
+    /// <param name="key">Name of the property to get</param>
+    /// <returns></returns>
+    public T GetMemberSafe<T>(string key)
+    {
+      if (!HasMember<T>(key))
+      {
+        properties[key] = default(T);
+      }
+      return (T)this[key];
+    }
+
+    /// <summary>
+    /// Safely gets a dynamic property
+    /// </summary>
+    /// <typeparam name="T">Type of the property</typeparam>
+    /// <param name="key">Name of the property to get</param>
+    /// <returns></returns>
+    public T GetMemberSafe<T>(string key, T def)
+    {
+      if (!HasMember<T>(key))
+      {
+        properties[key] = def;
+      }
+      return (T)this[key];
+    }
+
     /// <summary>
     /// Flashes the properties bag. <b>Use at your own risk!</b>
     /// </summary>
@@ -217,7 +218,7 @@ namespace Speckle.Core.Models
     {
       return properties;
     }
-
+    #endregion
   }
 
 }

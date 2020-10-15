@@ -19,7 +19,7 @@ namespace Speckle.Core.Models
   public class Base : DynamicBase
   {
     /// <summary>
-    /// A speckle object's id is an unique hash based on its properties.
+    /// A speckle object's id is an unique hash based on its properties. <b>NOTE: this field will be null unless the object was deserialised from a source. Use the <see cref="GetId(bool)"/> function to get it.</b>
     /// </summary>
     public virtual string id
     {
@@ -69,8 +69,16 @@ namespace Speckle.Core.Models
             bases.Add(myType.FullName);
             myType = myType.BaseType;
           }
-          bases.Reverse();
-          __type = string.Join(":", bases);
+
+          if (bases.Count == 0)
+          {
+            __type = nameof(Base);
+          }
+          else
+          {
+            bases.Reverse();
+            __type = string.Join(":", bases);
+          }
         }
         return __type;
       }

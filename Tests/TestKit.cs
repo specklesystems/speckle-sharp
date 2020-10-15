@@ -217,6 +217,7 @@ namespace Tests
 
     public Dictionary<string, ICurve> Claws { get; set; } = new Dictionary<string, ICurve>();
 
+    [DetachProperty]
     public ICurve Tail { get; set; }
 
     public ICurve[] Fur { get; set; } = new ICurve[1000];
