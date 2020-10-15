@@ -116,13 +116,28 @@ namespace Speckle.Core.Models
     /// Gets the names of the defined class properties (typed).
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<string> GetInstanceMembers()
+    public IEnumerable<string> GetInstanceMembersNames()
     {
       var names = new List<string>();
       var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
       foreach (var pinfo in pinfos) names.Add(pinfo.Name);
 
       names.Remove("Item"); // TODO: investigate why we get Item out?
+      return names;
+    }
+
+    /// <summary>
+    /// Gets the defined (typed) properties of this object.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<PropertyInfo> GetInstanceMembers()
+    {
+      var names = new List<PropertyInfo>();
+      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+      
+      foreach (var pinfo in pinfos)
+        if (pinfo.Name != "Item") names.Add(pinfo);
+
       return names;
     }
 
