@@ -148,7 +148,7 @@ namespace Speckle.Core.Transports
 
       IS_WRITING = false;
 
-      OnProgressAction?.Invoke($"POST Remote ({Client.BaseAddress.ToString()})", totalProcessedCount);
+      OnProgressAction?.Invoke(TransportName, totalProcessedCount);
 
       if (!WriteTimer.Enabled)
       {
