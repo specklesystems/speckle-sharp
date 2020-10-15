@@ -103,6 +103,7 @@ namespace Speckle.Core.Api
     public string id { get; set; }
     public string name { get; set; }
     public string role { get; set; }
+    public string avatar { get; set; }
 
     public override string ToString()
     {
@@ -131,6 +132,7 @@ namespace Speckle.Core.Api
     public string message { get; set; }
     public string authorName { get; set; }
     public string authorId { get; set; }
+    public string authorAvatar {get; set;}
     public string createdAt { get; set; }
 
     public string referencedObject { get; set; }
