@@ -62,6 +62,7 @@ namespace Speckle.DesktopUI.Streams
       if ( !StreamState.placeholders.Any() )
       {
         _bindings.RaiseNotification("Nothing to send to Speckle.");
+        StreamState.IsSending = false;
         return;
       }
 

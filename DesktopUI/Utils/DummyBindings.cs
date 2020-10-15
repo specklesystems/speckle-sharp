@@ -21,7 +21,7 @@ namespace Speckle.DesktopUI.Utils
 
     public override void AddNewStream(StreamState state)
     {
-      throw new NotImplementedException();
+      //
     }
 
     public override void AddObjectsToClient(string args)
@@ -96,9 +96,10 @@ namespace Speckle.DesktopUI.Utils
       return state;
     }
 
-    public override Task<StreamState> ReceiveStream(StreamState state)
+    public async override Task<StreamState> ReceiveStream(StreamState state)
     {
-      throw new NotImplementedException();
+      state.ServerUpdates = false;
+      return state;
     }
 
     public override void RemoveStream(string args)
