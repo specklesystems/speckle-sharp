@@ -102,9 +102,23 @@ namespace Speckle.DesktopUI.Streams
       StreamList.Refresh();
     }
 
-    public async void ReceiveStream(StreamState state)
+    public async void ConvertAndReceiveObjects(StreamState state)
     {
-      //
+      state.IsReceiving = true;
+      state.stream = await state.client.StreamGet(state.stream.id);
+
+      try
+      {
+        state = await _bindings.ReceiveStream(state);
+        state.ServerUpdates = false;
+      }
+      catch ( Exception e )
+      {
+        _bindings.RaiseNotification($"Error: {e.Message}");
+      }
+
+      state.IsReceiving = false;
+      StreamList.Refresh();
     }
 
     public async void ShowStreamCreateDialog()

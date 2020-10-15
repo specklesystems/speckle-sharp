@@ -259,13 +259,14 @@ namespace Speckle.DesktopUI.Streams
 
     public void ContinueStreamCreate(string slideIndex)
     {
-      if ( StreamToCreate.name == null || StreamToCreate.name.Length < 2 )
+      if ( StreamQuery == null || StreamQuery.Length < 2 )
       {
         Notifications.Enqueue("Please choose a name for your stream!");
         return;
       }
 
       AccountToSendFrom = _acctRepo.GetDefault();
+      StreamToCreate.name = StreamQuery;
       ChangeSlide(slideIndex);
     }
 
@@ -292,7 +293,6 @@ namespace Speckle.DesktopUI.Streams
           accountId = client.AccountId, client = client, filter = SelectedFilter, stream = StreamToCreate
         };
         _bindings.AddNewStream(StreamState);
-        var boxes = _bindings.GetFileContext();
 
         SelectedSlide = 3;
         _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
@@ -318,24 +318,17 @@ namespace Speckle.DesktopUI.Streams
       AddExistingButtonLoading = true;
 
       var client = new Client(AccountToSendFrom);
-      StreamToCreate = SelectedStream;
+      StreamToCreate = await client.StreamGet(SelectedStream.id);
 
-      var state = new StreamState() {client = client, accountId = client.AccountId, stream = StreamToCreate};
-
-      try
+      StreamState = new StreamState()
       {
-        var stream = await _bindings.ReceiveStream(state);
-        _events.Publish(new StreamAddedEvent() {NewStream = stream});
-        SelectedSlide = 3;
-      }
-      catch ( Exception e )
-      {
-        Debug.WriteLine(e);
-        Notifications.Enqueue($"Error: {e.Message}");
-      }
+        client = client, accountId = client.AccountId, stream = StreamToCreate, ServerUpdates = true
+      };
+      _bindings.AddNewStream(StreamState);
+      SelectedSlide = 3;
+      _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
 
       AddExistingButtonLoading = false;
-
     }
 
     public async void SearchForUsers()
@@ -361,6 +354,7 @@ namespace Speckle.DesktopUI.Streams
       SelectedFilter = Filters.First(filter => filter.Type == typeof(ElementsSelectionFilter).ToString());
       GetSelectedObjects();
       AccountToSendFrom = _acctRepo.GetDefault();
+      StreamToCreate.name = StreamQuery;
 
       AddNewStream();
     }

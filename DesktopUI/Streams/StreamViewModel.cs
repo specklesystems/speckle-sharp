@@ -85,9 +85,9 @@ namespace Speckle.DesktopUI.Streams
     public async void ConvertAndReceiveObjects()
     {
       StreamState.IsReceiving = true;
-      var newStream = await StreamState.client.StreamGet(Stream.id);
-      var newCommitId = newStream.branches.items[ 0 ].commits.items[ 0 ].id;
-      var oldCommitId = Branch.commits.items[ 0 ].id;
+      StreamState.stream = await StreamState.client.StreamGet(Stream.id);
+      // var newCommitId = newStream.branches.items[ 0 ].commits.items[ 0 ].id;
+      // var oldCommitId = Branch.commits.items[ 0 ].id;
 
       // if ( oldCommitId == newCommitId )
       // {
@@ -98,6 +98,7 @@ namespace Speckle.DesktopUI.Streams
       try
       {
         StreamState = await _bindings.ReceiveStream(StreamState);
+        StreamState.ServerUpdates = false;
       }
       catch ( Exception e )
       {
