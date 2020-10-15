@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
@@ -16,13 +15,35 @@ namespace Speckle.DesktopUI.Utils
   /// This breaks C# variable name rules b/c it instead using Server naming conventions.
   /// Class name is subject to change! Just had to pick something so I could get on with my life.
   /// </summary>
+  [JsonObject(MemberSerialization.OptIn)]
   public partial class StreamState : PropertyChangedBase
   {
+    [JsonProperty]
     public string accountId { get; set; }
-    [JsonIgnore] public Client client { get; set; }
+
+    public StreamState() {}
+
+    [JsonConstructor]
+    public StreamState(string accountId)
+    {
+      client = new Client(AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId));
+    }
+
+    private  Client _client;
+
+    public Client client
+    {
+      get => _client;
+      set
+      {
+        _client = value;
+        accountId = client.AccountId;
+      }
+    }
 
     private Stream _stream;
 
+    [JsonProperty]
     public Stream stream
     {
       get => _stream;
@@ -31,6 +52,7 @@ namespace Speckle.DesktopUI.Utils
 
     private  ISelectionFilter _filter;
 
+    [JsonProperty]
     public ISelectionFilter filter
     {
       get => _filter;
@@ -39,6 +61,7 @@ namespace Speckle.DesktopUI.Utils
 
     private List<Base> _placeholders = new List<Base>();
 
+    [JsonProperty]
     public List<Base> placeholders
     {
       get => _placeholders;
@@ -47,6 +70,7 @@ namespace Speckle.DesktopUI.Utils
 
     private List<Base> _objects = new List<Base>();
 
+    [JsonProperty]
     public List<Base> objects
     {
       get => _objects;
@@ -96,22 +120,6 @@ namespace Speckle.DesktopUI.Utils
     public void SetState(IList<string> stringList)
     {
       StreamStates = stringList.Select(JsonConvert.DeserializeObject<StreamState>).ToList();
-      var accounts = AccountManager.GetAccounts().ToList();
-      foreach ( var state in StreamStates )
-      {
-        try
-        {
-          var account = accounts.FirstOrDefault(
-            acct => acct.userInfo.id == state.accountId
-          );
-          state.client = new Client(account);
-        }
-        catch ( Exception e )
-        {
-          // TODO handle if the account doesn't exist in environment
-          Console.WriteLine($"Couldn't initialise client: {e}");
-        }
-      }
     }
   }
 }

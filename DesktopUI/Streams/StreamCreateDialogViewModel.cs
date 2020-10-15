@@ -290,7 +290,7 @@ namespace Speckle.DesktopUI.Streams
         StreamToCreate = await _repo.GetStream(streamId, AccountToSendFrom);
         StreamState = new StreamState()
         {
-          accountId = client.AccountId, client = client, filter = SelectedFilter, stream = StreamToCreate
+          client = client, filter = SelectedFilter, stream = StreamToCreate
         };
         _bindings.AddNewStream(StreamState);
 
@@ -322,7 +322,7 @@ namespace Speckle.DesktopUI.Streams
 
       StreamState = new StreamState()
       {
-        client = client, accountId = client.AccountId, stream = StreamToCreate, ServerUpdates = true
+        client = client, stream = StreamToCreate, ServerUpdates = true
       };
       _bindings.AddNewStream(StreamState);
       SelectedSlide = 3;
