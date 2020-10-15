@@ -32,7 +32,8 @@ namespace Speckle.ConnectorRevit.UI
       LocalStateWrapper.StreamStates.Add(state);
       DEP_LocalState.Add(state.stream);
 
-      GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
+      if (state.filter != null)
+        GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
       // RaiseNotification("Stream created! Next, send to server ☁");
     }
 
