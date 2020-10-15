@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Speckle.Core.Transports;
 using NUnit.Framework;
 using Speckle.Core.Models;
@@ -86,6 +86,43 @@ namespace Tests
 
       Assert.Null(circle);
     }
+
+    [Test]
+    public void InterfacePropHandling()
+    {
+      var cat = new PolygonalFeline();
+
+      cat.Tail = new Line()
+      {
+        Start = new Point(0, 0, 0),
+        End = new Point(42, 42, 42)
+      };
+
+      for (int i = 0; i < 10; i++)
+      {
+        cat.Claws[$"Claw number {i}"] = new Line { Start = new Point(i, i, i), End = new Point(i + 3.14, i + 3.14, i + 3.14) };
+
+        if (i % 2 == 0)
+          cat.Whiskers.Add(new Line { Start = new Point(i / 2, i / 2, i / 2), End = new Point(i + 3.14, i + 3.14, i + 3.14) });
+        else
+        {
+          var brokenWhisker = new Polyline();
+          brokenWhisker.Points.Add(new Point(-i, 0, 0));
+          brokenWhisker.Points.Add(new Point(0, 0, 0));
+          brokenWhisker.Points.Add(new Point(i, 0, 0));
+          cat.Whiskers.Add(brokenWhisker);
+        }
+
+        cat.Fur[i] = new Line { Start = new Point(i, i, i), End = new Point(i + 3.14, i + 3.14, i + 3.14) };
+      }
+
+      var result = Operations.Serialize(cat);
+
+      var deserialisedFeline = Operations.Deserialize(result);
+
+      Assert.AreEqual(cat.GetId(), deserialisedFeline.GetId()); // If we're getting the same hash... we're probably fine!
+    }
+
 
   }
 }

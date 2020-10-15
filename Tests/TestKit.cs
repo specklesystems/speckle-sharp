@@ -134,7 +134,6 @@ namespace Tests
     public TableLegFixture() { }
   }
 
-  // Speckle.Core.Elements
   public class Point : Base
   {
     public double X { get; set; }
@@ -173,10 +172,15 @@ namespace Tests
     public Mesh() { }
   }
 
+  public interface ICurve
+  {
+    // Just for fun
+  }
+
   /// <summary>
   /// Store individual points in a list structure for developer ergonomics. Nevertheless, for performance reasons (hashing, serialisation & storage) expose the same list of points as a typed array.
   /// </summary>
-  public class Polyline : Base
+  public class Polyline : Base, ICurve
   {
     [JsonIgnore]
     public List<Point> Points = new List<Point>();
@@ -194,5 +198,29 @@ namespace Tests
     }
 
     public Polyline() { }
+  }
+
+  public class Line : Base, ICurve
+  {
+    public Point Start { get; set; }
+    public Point End { get; set; }
+
+    public Line() { }
+  }
+
+  /// <summary>
+  /// This class exists to purely test some weird cases in which Intefaces might trash serialisation.
+  /// </summary>
+  public class PolygonalFeline : Base
+  {
+    public List<ICurve> Whiskers { get; set; } = new List<ICurve>();
+
+    public Dictionary<string, ICurve> Claws { get; set; } = new Dictionary<string, ICurve>();
+
+    public ICurve Tail { get; set; }
+
+    public ICurve[] Fur { get; set; } = new ICurve[1000];
+
+    public PolygonalFeline() { }
   }
 }
