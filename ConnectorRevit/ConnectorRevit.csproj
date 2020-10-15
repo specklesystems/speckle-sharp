@@ -112,8 +112,7 @@
     <Compile Include="ExternalEventHandler.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Storage\StateStorage.cs" />
-    <Compile Include="Storage\ClientsStorage.cs" />
+    <Compile Include="Storage\StreamStateManager.cs" />
     <Compile Include="Storage\HelperClasses.cs" />
     <Compile Include="UI\ConnectorBindingsRevit.cs" />
     <Compile Include="UI\ClientOperations.cs" />

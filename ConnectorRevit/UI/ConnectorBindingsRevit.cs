@@ -33,8 +33,6 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     public StreamStateWrapper LocalStateWrapper;
 
-    public List<Stream> DEP_LocalState;
-
     public ConnectorBindingsRevit(UIApplication revitApp) : base()
     {
       RevitApp = revitApp;
@@ -50,20 +48,7 @@ namespace Speckle.ConnectorRevit.UI
       Executor = eventHandler;
 
       // LOCAL STATE
-      LocalStateWrapper = new StreamStateWrapper();
-      DEP_LocalState = new List<Stream>();
-      Queue.Add(new Action(() =>
-      {
-        using ( Transaction t = new Transaction(CurrentDoc.Document, "Switching Local Speckle State") )
-        {
-          t.Start();
-          DEP_LocalState = SpeckleStateManager.ReadState(CurrentDoc.Document);
-          LocalStateWrapper = StreamStateManager.ReadState(CurrentDoc.Document);
-          //InjectStateInKits();
-          t.Commit();
-        }
-      }));
-      Executor.Raise();
+      GetFileContext();
 
       //// REVIT INJECTION
       //InjectRevitAppInKits();
@@ -127,7 +112,7 @@ namespace Speckle.ConnectorRevit.UI
 
     public override List<StreamState> GetFileContext()
     {
-      var states = StreamStateManager.ReadState(CurrentDoc.Document) ?? new StreamStateWrapper();
+      var states = StreamStateManager.ReadState(CurrentDoc.Document);
       LocalStateWrapper = states;
 
       return states.StreamStates;
@@ -207,7 +192,6 @@ namespace Speckle.ConnectorRevit.UI
       {
         // DispatchStoreActionUi("flushClients");
         var streamStates = GetFileContext();
-        LocalStateWrapper.StreamStates = streamStates;
 
         var appEvent = new ApplicationEvent()
         {
@@ -215,18 +199,6 @@ namespace Speckle.ConnectorRevit.UI
           DynamicInfo = streamStates
         };
         NotifyUi(appEvent);
-
-        Queue.Add(new Action(() =>
-        {
-          using ( Transaction t = new Transaction(CurrentDoc.Document, "Switching Local Speckle State") )
-          {
-            t.Start();
-            DEP_LocalState = SpeckleStateManager.ReadState(CurrentDoc.Document);
-            // InjectStateInKits();
-            t.Commit();
-          }
-        }));
-        Executor.Raise();
       }
     }
 
@@ -258,17 +230,8 @@ namespace Speckle.ConnectorRevit.UI
       };
       NotifyUi(appEvent);
 
-      Queue.Add(new Action(() =>
-      {
-        using ( Transaction t = new Transaction(CurrentDoc.Document, "Reading Local Speckle State") )
-        {
-          t.Start();
-          DEP_LocalState = SpeckleStateManager.ReadState(CurrentDoc.Document);
-          // InjectStateInKits();
-          t.Commit();
-        }
-      }));
-      Executor.Raise();
+      // read local state
+      GetFileContext();
     }
 
     private void ApplicationIdling(object sender, Autodesk.Revit.UI.Events.IdlingEventArgs e)
@@ -283,5 +246,19 @@ namespace Speckle.ConnectorRevit.UI
 
 
     #endregion
+
+    private void WriteStateToFile()
+    {
+      Queue.Add(new Action(() =>
+      {
+        using ( Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State") )
+        {
+          t.Start();
+          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
+          t.Commit();
+        }
+      }));
+      Executor.Raise();
+    }
   }
 }

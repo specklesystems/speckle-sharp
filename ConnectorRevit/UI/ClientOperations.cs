@@ -30,7 +30,6 @@ namespace Speckle.ConnectorRevit.UI
     {
       // add stream and related data to the class
       LocalStateWrapper.StreamStates.Add(state);
-      DEP_LocalState.Add(state.stream);
 
       if (state.filter != null)
         GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
@@ -201,6 +200,7 @@ namespace Speckle.ConnectorRevit.UI
       state.stream = newStream;
       state.objects = newObjects;
       WriteStateToFile();
+      RaiseNotification($"Deleting {toDelete.Count} elements and updating {toCreate.Count} elements...");
 
       return state;
     }
@@ -412,20 +412,6 @@ namespace Speckle.ConnectorRevit.UI
         return p.AsValueString().ToLowerInvariant();
       else
         return p.AsString().ToLowerInvariant();
-    }
-
-    private void WriteStateToFile()
-    {
-      Queue.Add(new Action(() =>
-      {
-        using ( Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State") )
-        {
-          t.Start();
-          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
-          t.Commit();
-        }
-      }));
-      Executor.Raise();
     }
 
     private  class ObjectComparer : IEqualityComparer<Base>
