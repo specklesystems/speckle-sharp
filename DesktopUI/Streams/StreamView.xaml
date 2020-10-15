@@ -4,6 +4,7 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
+  xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
   xmlns:s="https://github.com/canton7/Stylet"
@@ -12,6 +13,9 @@
   mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
+      <utils:TimeAgoConverter
+        x:Key="TimeAgoConverter" />
+
       <BitmapImage
         x:Key="DefaultProfImage"
         UriSource="../Resources/s2logo.png" />
@@ -47,10 +51,7 @@
                 FontWeight="Bold"
                 Text="{Binding authorName}" />
               <TextBlock
-                Margin="3,0"
-                Text="created a commit at" />
-              <TextBlock
-                Text="{Binding createdAt}" />
+                Text="{Binding createdAt, Converter={StaticResource TimeAgoConverter}, StringFormat=' created a commit {0}'}" />
             </StackPanel>
             <TextBlock
               Margin="0,4"

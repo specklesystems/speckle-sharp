@@ -115,9 +115,9 @@
     <Compile Include="Utils\Converters.cs" />
     <Compile Include="Utils\DummyBindings.cs" />
     <Compile Include="Utils\Events.cs" />
+    <Compile Include="Utils\Helpers.cs" />
     <Compile Include="Utils\StreamState.cs" />
     <Compile Include="Utils\ViewModelFactories.cs" />
-    <Compile Include="Utils\Link.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\SelectionFilter.cs" />
     <Page Include="Feed\FeedView.xaml">
