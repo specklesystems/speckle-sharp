@@ -98,6 +98,9 @@ namespace Speckle.Core.Models
           {
             count++;
             count += CountDescendants(arrValue as Base, parsed);
+          } else
+          {
+            count += HandleObjectCount(arrValue, parsed);
           }
         }
 
@@ -112,6 +115,10 @@ namespace Speckle.Core.Models
           {
             count++;
             count += CountDescendants(kvp.Value as Base, parsed);
+          }
+          else
+          {
+            count += HandleObjectCount(kvp.Value, parsed);
           }
         }
         return count;
