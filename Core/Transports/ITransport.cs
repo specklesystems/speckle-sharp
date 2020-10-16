@@ -17,7 +17,15 @@ namespace Speckle.Core.Transports
     /// </summary>
     public CancellationToken CancellationToken { get; set; }
 
+    /// <summary>
+    /// Used to report progress during the transport's longer operations.
+    /// </summary>
     public Action<string, int> OnProgressAction { get; set; }
+
+    /// <summary>
+    /// Used to report errors during the transport's longer operations.
+    /// </summary>
+    public Action<string, int> OnErrorAction { get; set; }
 
     /// <summary>
     /// Saves an object.

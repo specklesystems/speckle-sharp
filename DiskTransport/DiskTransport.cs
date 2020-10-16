@@ -20,6 +20,8 @@ namespace DiskTransport
 
     public Action<string, int> OnProgressAction { get; set; }
 
+    public Action<string, int> OnErrorAction { get; set; }
+
     public string RootPath { get; set; }
 
     public DiskTransport(string basePath)

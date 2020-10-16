@@ -36,6 +36,8 @@ namespace Speckle.Core.Transports
 
     public Action<string, int> OnProgressAction { get; set; }
 
+    public Action<string, int> OnErrorAction { get; set; }
+
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
     /// </summary>
