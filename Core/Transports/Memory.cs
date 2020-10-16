@@ -30,6 +30,8 @@ namespace Speckle.Core.Transports
 
     public void SaveObject(string hash, string serializedObject)
     {
+      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+
       Objects[hash] = serializedObject;
     }
 
@@ -40,6 +42,8 @@ namespace Speckle.Core.Transports
 
     public string GetObject(string hash)
     {
+      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+
       if (Objects.ContainsKey(hash)) return Objects[hash];
       else
       {

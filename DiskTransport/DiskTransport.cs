@@ -10,7 +10,7 @@ using Speckle.Core.Transports;
 namespace DiskTransport
 {
   /// <summary>
-  /// Warning! Untested.
+  /// Writes speckle objects to disk.
   /// </summary>
   public class DiskTransport : ITransport
   {
@@ -34,6 +34,8 @@ namespace DiskTransport
 
     public string GetObject(string id)
     {
+      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+
       var filePath = Path.Combine(RootPath, id);
       if (File.Exists(filePath))
       {
@@ -45,6 +47,8 @@ namespace DiskTransport
 
     public void SaveObject(string id, string serializedObject)
     {
+      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+
       var filePath = Path.Combine(RootPath, id);
       if (File.Exists(filePath)) return;
 
@@ -53,6 +57,8 @@ namespace DiskTransport
 
     public void SaveObject(string id, ITransport sourceTransport)
     {
+      if (CancellationToken.IsCancellationRequested) return ; // Check for cancellation
+
       var serializedObject = sourceTransport.GetObject(id);
       SaveObject(id, serializedObject);
     }
@@ -64,6 +70,8 @@ namespace DiskTransport
 
     public async Task<string> CopyObjectAndChildren(string id, ITransport targetTransport)
     {
+      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+
       var parent = GetObject(id);
 
       targetTransport.SaveObject(id, parent);
@@ -75,6 +83,8 @@ namespace DiskTransport
       int i = 0;
       foreach (var kvp in partial.__closure)
       {
+        if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+
         var child = GetObject(kvp.Key);
         targetTransport.SaveObject(kvp.Key, child);
         OnProgressAction?.Invoke($"{TransportName}", i++);

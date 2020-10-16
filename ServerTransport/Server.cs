@@ -91,6 +91,13 @@ namespace Speckle.Core.Transports
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
     {
       TotalElapsed += PollInterval;
+      
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return;
+      }
+
       if (TotalElapsed > 300 && IS_WRITING == false && Queue.Count != 0)
       {
         TotalElapsed = 0;
@@ -104,6 +111,12 @@ namespace Speckle.Core.Transports
     // TODO: Gzip
     private async Task ConsumeQueue()
     {
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return;
+      }
+
       if (Queue.Count == 0)
       {
         return;
@@ -123,11 +136,23 @@ namespace Speckle.Core.Transports
       totalProcessedCount = 0;
       while (contents.Count < MAX_MULTIPART_COUNT && Queue.Count != 0)
       {
+        if (CancellationToken.IsCancellationRequested)
+        {
+          Queue = new ConcurrentQueue<(string, string, int)>();
+          return;
+        }
+
         var _ct = "[";
         var payloadBufferSize = 0;
         var i = 0;
         while (Queue.TryPeek(out result) && payloadBufferSize < MAX_BUFFER_SIZE)
         {
+          if (CancellationToken.IsCancellationRequested)
+          {
+            Queue = new ConcurrentQueue<(string, string, int)>();
+            return;
+          }
+
           Queue.TryDequeue(out result);
           if (i != 0)
           {
@@ -144,9 +169,16 @@ namespace Speckle.Core.Transports
       }
 
       message.Content = multipart;
+      
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return;
+      }
+
       try
       {
-        var response = await Client.SendAsync(message);
+        var response = await Client.SendAsync(message, CancellationToken);
         response.EnsureSuccessStatusCode();
       }
       catch (Exception e)
@@ -168,6 +200,12 @@ namespace Speckle.Core.Transports
 
     public void SaveObject(string hash, string serializedObject)
     {
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return;
+      }
+
       Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 
       if (!WriteTimer.Enabled && !IS_WRITING)
@@ -179,6 +217,12 @@ namespace Speckle.Core.Transports
 
     public void SaveObject(string hash, ITransport sourceTransport)
     {
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return;
+      }
+
       var serializedObject = sourceTransport.GetObject(hash);
 
       Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
@@ -196,19 +240,29 @@ namespace Speckle.Core.Transports
 
     public string GetObject(string hash)
     {
-      // TODO: Untested
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return null;
+      }
+
       var message = new HttpRequestMessage()
       {
         RequestUri = new Uri($"/objects/{StreamId}/{hash}/single", UriKind.Relative),
         Method = HttpMethod.Get,
       };
 
-      var response = Client.SendAsync(message, HttpCompletionOption.ResponseContentRead).Result.Content;
+      var response = Client.SendAsync(message, HttpCompletionOption.ResponseContentRead, CancellationToken).Result.Content;
       return response.ReadAsStringAsync().Result;
     }
 
     public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport)
     {
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return null;
+      }
 
       var message = new HttpRequestMessage()
       {
@@ -220,7 +274,7 @@ namespace Speckle.Core.Transports
       string commitObj = null;
 
 
-      var response = await Client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
+      var response = await Client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
       response.EnsureSuccessStatusCode();
 
       var i = 0;
@@ -230,6 +284,12 @@ namespace Speckle.Core.Transports
         {
           while (reader.Peek() > 0)
           {
+            if (CancellationToken.IsCancellationRequested)
+            {
+              Queue = new ConcurrentQueue<(string, string, int)>();
+              return null;
+            }
+
             var line = reader.ReadLine();
             var pcs = line.Split(new char[] { '\t' }, count: 2);
             targetTransport.SaveObject(pcs[0], pcs[1]);

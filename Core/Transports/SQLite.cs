@@ -126,12 +126,25 @@ namespace Speckle.Core.Transports
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
     {
       WriteTimer.Enabled = false;
+      
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return;
+      }
+
       if (!IS_WRITING && Queue.Count != 0)
         ConsumeQueue();
     }
 
     private void ConsumeQueue()
     {
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return;
+      }
+
       IS_WRITING = true;
       var i = 0;
       ValueTuple<string, string, int> result;
@@ -146,6 +159,12 @@ namespace Speckle.Core.Transports
             command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
             while (i < MAX_TRANSACTION_SIZE && Queue.TryPeek(out result))
             {
+              if (CancellationToken.IsCancellationRequested)
+              {
+                Queue = new ConcurrentQueue<(string, string, int)>();
+                return;
+              }
+
               Queue.TryDequeue(out result);
               command.Parameters.AddWithValue("@hash", result.Item1);
               command.Parameters.AddWithValue("@content", result.Item2);
@@ -154,6 +173,12 @@ namespace Speckle.Core.Transports
             t.Commit();
           }
         }
+      }
+      
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return;
       }
 
       if (Queue.Count > 0)
@@ -212,6 +237,7 @@ namespace Speckle.Core.Transports
     /// <returns></returns>
     public string GetObject(string hash)
     {
+      if (CancellationToken.IsCancellationRequested) return null;
       using (var c = new SQLiteConnection(ConnectionString))
       {
         c.Open();
@@ -223,6 +249,7 @@ namespace Speckle.Core.Transports
           {
             while (reader.Read())
             {
+              if (CancellationToken.IsCancellationRequested) return null;
               return reader.GetString(1);
             }
           }
@@ -244,6 +271,8 @@ namespace Speckle.Core.Transports
     /// <returns></returns>
     internal IEnumerable<string> GetAllObjects()
     {
+      if (CancellationToken.IsCancellationRequested) yield break; // Check for cancellation
+
       using var c = new SQLiteConnection(ConnectionString);
       c.Open();
 
@@ -253,6 +282,7 @@ namespace Speckle.Core.Transports
       using var reader = command.ExecuteReader();
       while (reader.Read())
       {
+        if (CancellationToken.IsCancellationRequested) yield break; // Check for cancellation
         yield return reader.GetString(1);
       }
     }
@@ -263,7 +293,9 @@ namespace Speckle.Core.Transports
     /// <param name="hash"></param>
     public void DeleteObject(string hash)
     {
-      using (var c = new SQLiteConnection(ConnectionString))
+      if (CancellationToken.IsCancellationRequested) return;
+
+        using (var c = new SQLiteConnection(ConnectionString))
       {
         c.Open();
         using (var command = new SQLiteCommand(c))
