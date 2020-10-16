@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -13,6 +14,8 @@ namespace Speckle.Core.Transports
   public class MemoryTransport : ITransport
   {
     public Dictionary<string, string> Objects;
+
+    public CancellationToken CancellationToken { get; set; }
 
     public string TransportName { get; set; } = "Memory";
 

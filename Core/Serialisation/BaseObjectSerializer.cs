@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -22,16 +23,16 @@ namespace Speckle.Core.Serialisation
     /// </summary>
     public string TypeDiscriminator = "speckle_type";
 
-    /// <summary>
-    /// Session transport keeps track, in this serialisation pass only, of what we've serialised.
-    /// </summary>
-    //public ITransport SessionTransport { get; set; }
+    public CancellationToken CancellationToken { get; set; }
 
     /// <summary>
     /// The sync transport. This transport will be used synchronously. 
     /// </summary>
     public ITransport ReadTransport { get; set; }
-
+    
+    /// <summary>
+    /// List of transports to write to.
+    /// </summary>
     public List<ITransport> WriteTransports { get; set; } = new List<ITransport>();
 
     #region Write Json Helper Properties
@@ -84,6 +85,9 @@ namespace Speckle.Core.Serialisation
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
     {
+      
+      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+
       if (reader.TokenType == JsonToken.Null)
         return null;
 
@@ -97,11 +101,15 @@ namespace Speckle.Core.Serialisation
 
         foreach (var val in jarr)
         {
-          var whatever = SerializationUtilities.HandleValue(val, serializer);
+          if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+
+          var whatever = SerializationUtilities.HandleValue(val, serializer, CancellationToken);
           list.Add(whatever as Base);
         }
         return list;
       }
+
+      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
 
       var jObject = JObject.Load(reader);
 
@@ -117,10 +125,14 @@ namespace Speckle.Core.Serialisation
 
         foreach (var val in jObject)
         {
-          dict[val.Key] = SerializationUtilities.HandleValue(val.Value, serializer);
+          if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+
+          dict[val.Key] = SerializationUtilities.HandleValue(val.Value, serializer, CancellationToken);
         }
         return dict;
       }
+
+      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
 
       var discriminator = Extensions.Value<string>(objType);
 
@@ -142,7 +154,6 @@ namespace Speckle.Core.Serialisation
         }
         else
           Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference. The provided transport could not find it."), level: Sentry.Protocol.SentryLevel.Warning);
-
       }
 
       var type = SerializationUtilities.GetType(discriminator);
@@ -155,8 +166,11 @@ namespace Speckle.Core.Serialisation
       jObject.Remove(TypeDiscriminator);
       jObject.Remove("__closure");
 
+      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+
       foreach (var jProperty in jObject.Properties())
       {
+        if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
         if (used.Contains(jProperty.Name)) continue;
 
         used.Add(jProperty.Name);
@@ -173,16 +187,19 @@ namespace Speckle.Core.Serialisation
           }
           else
           {
-            var val = SerializationUtilities.HandleValue(jProperty.Value, serializer, property);
+            var val = SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken, property);
             property.ValueProvider.SetValue(obj, val);
           }
         }
         else
         {
           // dynamic properties
-          CallSiteCache.SetValue(jProperty.Name, obj, SerializationUtilities.HandleValue(jProperty.Value, serializer));
+          CallSiteCache.SetValue(jProperty.Name, obj, SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken));
         }
       }
+
+      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+
       TotalProcessedCount++;
       OnProgressAction?.Invoke("Deserialization", 1);
       return obj;
@@ -216,6 +233,9 @@ namespace Speckle.Core.Serialisation
     // the parent object being last. 
     public override void WriteJson(JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer)
     {
+      
+      if(CancellationToken.IsCancellationRequested) return; // Check for cancellation
+
       /////////////////////////////////////
       // Path one: nulls
       /////////////////////////////////////
@@ -239,6 +259,8 @@ namespace Speckle.Core.Serialisation
 
       if (value is Base && !(value is ObjectReference))
       {
+        if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+
         var obj = value as Base;
 
         FirstEntry = false;
@@ -255,6 +277,7 @@ namespace Speckle.Core.Serialisation
         // Iterate through the object's properties, one by one, checking for ignored ones
         foreach (var prop in propertyNames)
         {
+          if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
           // Ignore properties starting with a double underscore.
           if (prop.StartsWith("__")) continue;
 
@@ -289,6 +312,8 @@ namespace Speckle.Core.Serialisation
           // Set and store a reference, if it is marked as detachable and the transport is not null.
           if (WriteTransports != null && WriteTransports.Count != 0 && propValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
+            if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+
             var what = JToken.FromObject(propValue, serializer); // Trigger next.
             var refHash = ((JObject)what).GetValue("id").ToString();
 
@@ -305,6 +330,8 @@ namespace Speckle.Core.Serialisation
           DetachLineage.RemoveAt(DetachLineage.Count - 1);
         }
 
+        if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+
         // Check if we actually have any transports present that would warrant a 
         if ((WriteTransports != null && WriteTransports.Count != 0) && RefMinDepthTracker.ContainsKey(Lineage[Lineage.Count - 1]))
         {
@@ -317,6 +344,8 @@ namespace Speckle.Core.Serialisation
           jo.Add("id", JToken.FromObject(hash));
         }
         jo.WriteTo(writer);
+
+        if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
 
         if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && WriteTransports != null && WriteTransports.Count != 0)
         {
@@ -340,6 +369,8 @@ namespace Speckle.Core.Serialisation
       // Path four: lists/arrays & dicts
       /////////////////////////////////////
 
+      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+
       var type = value.GetType();
 
       // TODO: List handling and dictionary serialisation handling can be sped up significantly if we first check by their inner type.
@@ -349,6 +380,7 @@ namespace Speckle.Core.Serialisation
 
       if (typeof(IEnumerable).IsAssignableFrom(type) && !typeof(IDictionary).IsAssignableFrom(type) && type != typeof(string))
       {
+
         if (TotalProcessedCount == 0 && FirstEntry)
         {
           FirstEntry = false;
@@ -360,6 +392,8 @@ namespace Speckle.Core.Serialisation
         JArray arr = new JArray();
         foreach (var arrValue in ((IEnumerable)value))
         {
+          if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+
           if (arrValue == null) continue;
           if (WriteTransports != null && WriteTransports.Count != 0 && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
@@ -373,6 +407,9 @@ namespace Speckle.Core.Serialisation
           else
             arr.Add(JToken.FromObject(arrValue, serializer)); // Default route
         }
+
+        if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+
         arr.WriteTo(writer);
 
         if (DetachLineage.Count == 1 && FirstEntryWasListOrDict) // are we in a list entry point case?
@@ -380,6 +417,8 @@ namespace Speckle.Core.Serialisation
 
         return;
       }
+
+      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
 
       if (typeof(IDictionary).IsAssignableFrom(type))
       {
@@ -394,6 +433,7 @@ namespace Speckle.Core.Serialisation
         var dictJo = new JObject();
         foreach (DictionaryEntry kvp in dict)
         {
+          if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
           if (kvp.Value == null) continue;
 
           JToken jToken;
@@ -414,6 +454,8 @@ namespace Speckle.Core.Serialisation
         }
         dictJo.WriteTo(writer);
 
+        if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+
         if (DetachLineage.Count == 1 && FirstEntryWasListOrDict) // are we in a dictionary entry point case?
           DetachLineage.RemoveAt(0);
 
@@ -423,6 +465,8 @@ namespace Speckle.Core.Serialisation
       /////////////////////////////////////
       // Path five: everything else (enums?)
       /////////////////////////////////////
+
+      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
 
       FirstEntry = false;
       var lastCall = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer

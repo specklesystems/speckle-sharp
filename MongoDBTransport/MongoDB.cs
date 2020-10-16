@@ -11,6 +11,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
 using Speckle.Core.Logging;
+using System.Threading;
 
 namespace Speckle.Core.Transports
 {
@@ -22,6 +23,8 @@ namespace Speckle.Core.Transports
   public class MongoDBTransport : IDisposable, ITransport
   {
     public string TransportName { get; set; } = "MongoTransport";
+
+    public CancellationToken CancellationToken { get; set; }
 
     public string ConnectionString { get; set; }
 
@@ -55,7 +58,7 @@ namespace Speckle.Core.Transports
 
       Initialize();
 
-      WriteTimer = new Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
+      WriteTimer = new System.Timers.Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
       WriteTimer.Elapsed += WriteTimerElapsed;
     }
 

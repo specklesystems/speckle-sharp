@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Speckle.Core.Transports
 {
   /// <summary>
   /// Interface defining the contract for transport implementations.
-  /// TODO: This is not its final form yet. We need to clean it up and "regularise" it a bit. Add some best practices too. Defs in the implementations.
   /// </summary>
   public interface ITransport
   {
     public string TransportName { get; set; }
 
+    /// <summary>
+    /// Should be checked often and gracefully stop all in progress sending if requested.
+    /// </summary>
+    public CancellationToken CancellationToken { get; set; }
 
     public Action<string, int> OnProgressAction { get; set; }
 

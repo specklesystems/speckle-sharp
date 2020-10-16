@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -24,8 +25,28 @@ namespace Speckle.Core.Api
     /// <param name="transports">Where you want to send them.</param>
     /// <param name="useDefaultCache">Toggle for the default cache. If set to false, it will only send to the provided transports.</param>
     /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
-    /// <returns></returns>
+    /// <returns>The id (hash) of the object.</returns>
     public static async Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    {
+      return await Send(
+        @object: @object,
+        cancellationToken: CancellationToken.None,
+        transports: transports,
+        useDefaultCache: useDefaultCache,
+        onProgressAction: onProgressAction
+        );
+    }
+
+    /// <summary>
+    /// Sends an object via the provided transports. Defaults to the local cache. 
+    /// </summary>
+    /// <param name="object">The object you want to send.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to send notice of cancellation.</param>
+    /// <param name="transports">Where you want to send them.</param>
+    /// <param name="useDefaultCache">Toggle for the default cache. If set to false, it will only send to the provided transports.</param>
+    /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
+    /// <returns>The id (hash) of the object.</returns>
+    public static async Task<string> Send(Base @object, CancellationToken cancellationToken, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
     {
       Log.AddBreadcrumb("Send");
 
@@ -50,10 +71,12 @@ namespace Speckle.Core.Api
       var internalProgressAction = Operations.GetInternalProgressAction(localProgressDict, onProgressAction);
 
       serializer.OnProgressAction = internalProgressAction;
+      serializer.CancellationToken = cancellationToken;
 
-      foreach(var t in transports)
+      foreach (var t in transports)
       {
         t.OnProgressAction = internalProgressAction;
+        t.CancellationToken = cancellationToken;
         serializer.WriteTransports.Add(t);
       }
 
@@ -73,9 +96,6 @@ namespace Speckle.Core.Api
     /// <para>Note: If you're aiming to create a revision/commit afterwards, wrap your object list in a separate base object and use the other method.</para>
     /// </summary>
     /// <param name="objects">Base objects to send</param>
-    /// <param name="streamIds">List of StreamIds to send the objects to</param>
-    /// <param name="clients">List of Clients to use</param>
-    /// <param name="localTransport"></param>
     /// <param name="onProgressAction">An action that is invoked with a dictionary argument containing key value pairs of (process name, processed items).</param>
     /// <returns>The object's id (hash).</returns>
     public static async Task<List<string>> Send(IEnumerable<Base> objects, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null)

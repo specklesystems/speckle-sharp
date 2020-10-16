@@ -15,6 +15,8 @@ namespace Speckle.Core.Transports
   {
     public string TransportName { get; set; } = "LocalTransport";
 
+    public CancellationToken CancellationToken { get; set; }
+
     public string RootPath { get; set; }
 
     public string ConnectionString { get; set; }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Speckle.Core.Transports;
@@ -14,6 +15,8 @@ namespace DiskTransport
   public class DiskTransport : ITransport
   {
     public string TransportName { get; set; } = "Disk";
+
+    public CancellationToken CancellationToken { get; set; }
 
     public Action<string, int> OnProgressAction { get; set; }
 

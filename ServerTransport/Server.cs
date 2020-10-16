@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Speckle.Core.Credentials;
@@ -16,6 +16,8 @@ namespace Speckle.Core.Transports
   {
     public string TransportName { get; set; } = "RemoteTransport";
 
+    public CancellationToken CancellationToken { get; set; }
+
     public string BaseUri { get; private set; }
 
     public string StreamId { get; set; }
@@ -24,7 +26,7 @@ namespace Speckle.Core.Transports
 
     private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
 
-    private Timer WriteTimer;
+    private System.Timers.Timer WriteTimer;
 
     private int TotalElapsed = 0, PollInterval = 50;
 
@@ -102,7 +104,10 @@ namespace Speckle.Core.Transports
     // TODO: Gzip
     private async Task ConsumeQueue()
     {
-      if (Queue.Count == 0) return;
+      if (Queue.Count == 0)
+      {
+        return;
+      }
 
       IS_WRITING = true;
       var message = new HttpRequestMessage()
@@ -124,7 +129,11 @@ namespace Speckle.Core.Transports
         while (Queue.TryPeek(out result) && payloadBufferSize < MAX_BUFFER_SIZE)
         {
           Queue.TryDequeue(out result);
-          if (i != 0) _ct += ",";
+          if (i != 0)
+          {
+            _ct += ",";
+          }
+
           _ct += result.Item2;
           payloadBufferSize += result.Item3;
           i++;
@@ -209,7 +218,7 @@ namespace Speckle.Core.Transports
 
       message.Headers.Add("Accept", "text/plain");
       string commitObj = null;
-      
+
 
       var response = await Client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
       response.EnsureSuccessStatusCode();
