@@ -1,4 +1,5 @@
-﻿using Grasshopper.Kernel;
+﻿using ConnectorGrashopper.Extras;
+using Grasshopper.Kernel;
 using Speckle.Core.Credentials;
 using Speckle.Core.Transports;
 using System;
@@ -16,12 +17,7 @@ namespace ConnectorGrashopper.Transports
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      //pManager.AddTextParameter("base path", "P", "The root folder where you want the data to be stored. Defaults to `%appdata%/Speckle/DiskTransportFiles`.", GH_ParamAccess.item);
-
-      pManager.AddGenericParameter("account", "A", "The Speckle Account you want this transport to send to. If not provided, will fallback on your default account.", GH_ParamAccess.item);
-      pManager.AddGenericParameter("stream id", "S", "The Id of the Stream you want to send data to.", GH_ParamAccess.item);
-
-      Params.Input.ForEach(p => p.Optional = true);
+      pManager.AddGenericParameter("stream", "S", "The stream you want to send data to.", GH_ParamAccess.item);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -31,43 +27,38 @@ namespace ConnectorGrashopper.Transports
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      var test = Params.Input[0].Attributes.Pivot;
       if (DA.Iteration != 0)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple transports at the same time. This is an explicit guard against possibly uninteded behaviour. If you want to create another transport, please use a new component.");
         return;
       }
 
-      string accountId = null;
+      StreamWrapper streamWrapper = null;
+      DA.GetData(0, ref streamWrapper);
+
+      if (streamWrapper == null)
+      {
+        return;
+      }
+
+      string accountId = streamWrapper.AccountId;
       Account account = null;
-      DA.GetData(0, ref accountId);
 
-      if (accountId == null)
+      account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+      if (account == null)
       {
-        account = AccountManager.GetDefaultAccount();
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using default account {accountId}");
+        account = AccountManager.GetAccounts(streamWrapper.ServerUrl).FirstOrDefault();
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Original account not found. Please make sure you have permissions to access this stream!");
       }
-      else
+      if (account == null)
       {
-        account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
-        if (account == null)
-        {
-          // Really last ditch effort - in case people delete accounts from the manager, and the selection dropdwon is still using an outdated list.
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The account with an id of {accountId} was not found.");
-          return;
-        }
+        ClearRuntimeMessages();
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"No account found for {streamWrapper.ServerUrl}.");
+        return;
       }
 
-      string streamId = null;
-      DA.GetData(1, ref streamId);
+      var myTransport = new ServerTransport(account, streamWrapper.StreamId);
 
-      // TODO: Note, the behaviour described below still needs to be implemented across the server, core and gh/dyn clients.
-      if (streamId == null)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Because no streamid is provided, this transport will use the default stream for your account.");
-      }
-
-      var myTransport = new ServerTransport(account, streamId);
       DA.SetData(0, myTransport);
     }
   }

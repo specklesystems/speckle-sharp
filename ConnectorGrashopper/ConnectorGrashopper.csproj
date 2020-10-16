@@ -67,10 +67,11 @@
     <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
     <Compile Include="Conversion\Serialisation.SerialiseObject.cs" />
     <Compile Include="Extras\GenericAccessParam.cs" />
-    <Compile Include="Extras\Param_GenericAccess.cs" />
     <Compile Include="Conversion\Convert.ToNativeAsync.cs" />
     <Compile Include="Extras\Speckle.IGH_Goo.cs" />
     <Compile Include="Extras\SpeckleBaseParam.cs" />
+    <Compile Include="Extras\SpeckleStreamParam.cs" />
+    <Compile Include="Extras\StreamWrapper.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
     <Compile Include="ConnectorGrashopperInfo.cs" />
     <Compile Include="Objects\ExpandSpeckleObject.cs" />
@@ -80,8 +81,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Ops\Operations.Send.cs" />
     <Compile Include="Streams\StreamCreateComponent.cs" />
     <Compile Include="Streams\StreamDetailsComponent.cs" />
+    <Compile Include="Streams\StreamGetComponent.cs" />
     <Compile Include="Streams\StreamListComponent.cs" />
     <Compile Include="Streams\StreamUpdateComponent.cs" />
     <Compile Include="Transports\Transports.Disk.cs" />
