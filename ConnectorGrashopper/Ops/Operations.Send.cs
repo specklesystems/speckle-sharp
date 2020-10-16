@@ -11,6 +11,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace ConnectorGrashopper.Ops
 {
@@ -22,15 +23,15 @@ namespace ConnectorGrashopper.Ops
 
     public SendComponent() : base("Send", "Send", "Sends data to a stream and creates a commit.", "Speckle 2", "Send/Receive")
     {
-      BaseWorker = new SendComponentWorker();
+      BaseWorker = new SendComponentWorker(this);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddGenericParameter("Data", "D", "A Speckle object containing the data you want to send.", GH_ParamAccess.tree);
       pManager.AddGenericParameter("Stream", "S", "Stream(s) to send to.", GH_ParamAccess.tree);
-      pManager.AddTextParameter("Branch", "B", "The branch you want your commit associated with.", GH_ParamAccess.tree);
-      pManager.AddTextParameter("Message", "M", "Commit message.", GH_ParamAccess.tree);
+      pManager.AddTextParameter("Branch", "B", "The branch you want your commit associated with.", GH_ParamAccess.tree, "main");
+      pManager.AddTextParameter("Message", "M", "Commit message.", GH_ParamAccess.tree, "");
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -44,37 +45,59 @@ namespace ConnectorGrashopper.Ops
       base.SolveInstance(DA);
     }
 
+    public override void DisplayProgress(object sender, ElapsedEventArgs e)
+    {
+      if (Workers.Count == 0) return;
+      Message = "";
+      foreach (var kvp in ProgressReports)
+      {
+        Message += $"{kvp.Key}: {kvp.Value:0.00%}\n";
+      }
+
+      Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
+      {
+        OnDisplayExpired(true);
+      });
+    }
 
   }
 
   public class SendComponentWorker : WorkerInstance
   {
     GH_Structure<IGH_Goo> DataInput;
-    GH_Structure<IGH_Goo> _StreamsWrapperInput;
+    GH_Structure<IGH_Goo> _TransportsInput;
     GH_Structure<GH_String> _BranchNameInput;
     GH_Structure<GH_String> _MessageInput;
 
     string InputState;
 
-    List<ITransport> ServerTransports;
+    List<ITransport> Transports;
 
     Base ObjectToSend;
+    long TotalObjectCount;
 
     Action<ConcurrentDictionary<string, int>> InternalProgressAction;
 
-    public SendComponentWorker()
+    public SendComponentWorker(GH_Component p) : base(p)
     {
 
     }
 
-    public override WorkerInstance Duplicate() => new SendComponentWorker();
+    public override WorkerInstance Duplicate() => new SendComponentWorker(Parent);
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
       DA.GetDataTree(0, out DataInput);
-      DA.GetDataTree(1, out _StreamsWrapperInput);
+      DA.GetDataTree(1, out _TransportsInput);
       DA.GetDataTree(2, out _BranchNameInput);
       DA.GetDataTree(3, out _MessageInput);
+    }
+
+    public override void DoWork(Action<string, double> ReportProgress, Action Done)
+    {
+      if (CancellationToken.IsCancellationRequested) return;
+
+      // Part 1: handle input data
 
       // Check wether it's a tree, or a list, or actually an item.
       // It's quite imporatant that this component only runs once! 
@@ -117,56 +140,75 @@ namespace ConnectorGrashopper.Ops
           break;
       }
 
-      ServerTransports = new List<ITransport>();
-      foreach (var data in _StreamsWrapperInput)
-      {
-        var sw = data.GetType().GetProperty("Value").GetValue(data) as StreamWrapper;
-        var acc = sw.GetAccount();
-        if (acc == null)
-        {
-          // TODO: report error! fail all, or continue?
-          continue;
-        }
-        ServerTransports.Add(new ServerTransport(acc, sw.StreamId));
-      }
-    }
+      TotalObjectCount = ObjectToSend.GetTotalChildrenCount();
 
-    public override void DoWork(Action<string, double> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
-    {
       if (CancellationToken.IsCancellationRequested) return;
+
+      // Part 2: create transports
+
+      Transports = new List<ITransport>();
+
+      int t = 0;
+      foreach (var data in _TransportsInput)
+      {
+        var transport = data.GetType().GetProperty("Value").GetValue(data);
+        if (transport is StreamWrapper sw)
+        {
+          var acc = sw.GetAccount();
+          if (acc == null)
+          {
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Could not get an account for {sw}");
+            continue;
+          }
+          Transports.Add(new ServerTransport(acc, sw.StreamId) { TransportName = $"{sw.StreamId}@{new Uri(acc.serverInfo.url).Host}" }); ;
+        } else if(transport is ITransport otherTransport)
+        {
+          otherTransport.TransportName = otherTransport.GetType().Name;
+          Transports.Add(otherTransport);
+        }
+        t++;
+      }
 
       InternalProgressAction = (dict) =>
       {
-        // TODO
-        var test = ReportProgress;
-        var best = dict;
+        foreach (var kvp in dict)
+        {
+          ReportProgress(kvp.Key, (double)kvp.Value/TotalObjectCount);
+        }
       };
+
+      if (CancellationToken.IsCancellationRequested) return;
+
+      // Part 3: actually send stuff!
 
       Task.Run(async () =>
       {
         if (CancellationToken.IsCancellationRequested) return;
-        
+
         // TODO: pass the cancellation token to the send ops, and downstream from there.
-        var baseId = await Operations.Send(ObjectToSend, ServerTransports, onProgressAction: InternalProgressAction);
+        var baseId = await Operations.Send(ObjectToSend, Transports, onProgressAction: InternalProgressAction);
 
         if (CancellationToken.IsCancellationRequested) return;
-        
-        // Create Commits
-        foreach (var t in ServerTransports)
-        {
-          if (!(t is ServerTransport)) continue;
 
-          var client = new Client(((ServerTransport)t).Account);
+        // Create Commits
+        foreach (var transport in Transports)
+        {
+          if (CancellationToken.IsCancellationRequested) return;
+          if (!(transport is ServerTransport)) continue;
+
+          var client = new Client(((ServerTransport)transport).Account);
           var commitId = await client.CommitCreate(new CommitCreateInput
           {
             branchName = _BranchNameInput.get_FirstItem(true).Value,
             message = _MessageInput.get_FirstItem(true).Value,
             objectId = baseId,
-            streamId = ((ServerTransport)t).StreamId
+            streamId = ((ServerTransport)transport).StreamId
           });
         }
-        
+
         if (CancellationToken.IsCancellationRequested) return;
+
+
         Done();
       });
 
@@ -176,6 +218,7 @@ namespace ConnectorGrashopper.Ops
     {
       if (CancellationToken.IsCancellationRequested) return;
       // TODO
+      Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Succesfully pushed {TotalObjectCount} objects.");
       DA.SetData(0, InputState);
       DA.SetData(1, new GH_SpeckleBase { Value = ObjectToSend });
 
