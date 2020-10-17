@@ -29,9 +29,12 @@ namespace ConnectorGrashopper.Ops
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddGenericParameter("Data", "D", "A Speckle object containing the data you want to send.", GH_ParamAccess.tree);
-      pManager.AddGenericParameter("Stream", "S", "Stream(s) to send to.", GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Stream", "S", "Stream(s) and/or transports to send to.", GH_ParamAccess.tree);
       pManager.AddTextParameter("Branch", "B", "The branch you want your commit associated with.", GH_ParamAccess.tree, "main");
-      pManager.AddTextParameter("Message", "M", "Commit message.", GH_ParamAccess.tree, "");
+      pManager.AddTextParameter("Message", "M", "Commit message. If left blank, one will be generated for you.", GH_ParamAccess.tree, "");
+
+      Params.Input[2].Optional = true;
+      Params.Input[3].Optional = true;
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -42,6 +45,7 @@ namespace ConnectorGrashopper.Ops
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+      // TODO: Setup some state guards, do not send instantly
       base.SolveInstance(DA);
     }
 
@@ -59,7 +63,6 @@ namespace ConnectorGrashopper.Ops
         OnDisplayExpired(true);
       });
     }
-
   }
 
   public class SendComponentWorker : WorkerInstance
@@ -78,10 +81,9 @@ namespace ConnectorGrashopper.Ops
 
     Action<ConcurrentDictionary<string, int>> InternalProgressAction;
 
-    public SendComponentWorker(GH_Component p) : base(p)
-    {
+    Action<string, Exception> ErrorAction;
 
-    }
+    public SendComponentWorker(GH_Component p) : base(p) { }
 
     public override WorkerInstance Duplicate() => new SendComponentWorker(Parent);
 
@@ -132,6 +134,7 @@ namespace ConnectorGrashopper.Ops
           int branchIndex = 0;
           foreach (var list in DataInput.Branches)
           {
+            if (CancellationToken.IsCancellationRequested) return;
             var path = DataInput.Paths[branchIndex];
             dict[path.ToString()] = list.Select(goo => ((GH_SpeckleBase)goo).Value).ToList();
             branchIndex++;
@@ -149,6 +152,12 @@ namespace ConnectorGrashopper.Ops
       Transports = new List<ITransport>();
 
       int t = 0;
+
+      if (_TransportsInput.DataCount == 0)
+      {
+        // TODO: Set default account + "default" user stream
+      }
+
       foreach (var data in _TransportsInput)
       {
         var transport = data.GetType().GetProperty("Value").GetValue(data);
@@ -160,8 +169,9 @@ namespace ConnectorGrashopper.Ops
             Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Could not get an account for {sw}");
             continue;
           }
-          Transports.Add(new ServerTransport(acc, sw.StreamId) { TransportName = $"{sw.StreamId}@{new Uri(acc.serverInfo.url).Host}" }); ;
-        } else if(transport is ITransport otherTransport)
+          Transports.Add(new ServerTransport(acc, sw.StreamId) { TransportName = $"Remote {sw.StreamId}" }); ;
+        }
+        else if (transport is ITransport otherTransport)
         {
           otherTransport.TransportName = otherTransport.GetType().Name;
           Transports.Add(otherTransport);
@@ -173,9 +183,15 @@ namespace ConnectorGrashopper.Ops
       {
         foreach (var kvp in dict)
         {
-          ReportProgress(kvp.Key, (double)kvp.Value/TotalObjectCount);
+          ReportProgress(kvp.Key, (double)kvp.Value / TotalObjectCount);
         }
       };
+
+      ErrorAction = (transportName, exception) =>
+      {
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}");
+      };
+
 
       if (CancellationToken.IsCancellationRequested) return;
 
@@ -185,29 +201,35 @@ namespace ConnectorGrashopper.Ops
       {
         if (CancellationToken.IsCancellationRequested) return;
 
-        // TODO: pass the cancellation token to the send ops, and downstream from there.
-        var baseId = await Operations.Send(ObjectToSend, Transports, onProgressAction: InternalProgressAction);
+        // Part 3.1: persist the objects
+        var baseId = await Operations.Send(ObjectToSend, CancellationToken, Transports, onProgressAction: InternalProgressAction, onErrorAction: ErrorAction);
 
-        if (CancellationToken.IsCancellationRequested) return;
+        // 3.2 Create commits for any server transport present
 
-        // Create Commits
+        var message = _MessageInput.get_FirstItem(true).Value;
+        if (message == "")
+        {
+          message = $"Grasshopper push.";
+        }
+
         foreach (var transport in Transports)
         {
           if (CancellationToken.IsCancellationRequested) return;
           if (!(transport is ServerTransport)) continue;
 
           var client = new Client(((ServerTransport)transport).Account);
-          var commitId = await client.CommitCreate(new CommitCreateInput
-          {
-            branchName = _BranchNameInput.get_FirstItem(true).Value,
-            message = _MessageInput.get_FirstItem(true).Value,
-            objectId = baseId,
-            streamId = ((ServerTransport)transport).StreamId
-          });
+          var commitId = await client.CommitCreate(
+            CancellationToken,
+            new CommitCreateInput
+            {
+              branchName = _BranchNameInput.get_FirstItem(true).Value,
+              message = message,
+              objectId = baseId,
+              streamId = ((ServerTransport)transport).StreamId
+            });
         }
 
         if (CancellationToken.IsCancellationRequested) return;
-
 
         Done();
       });
@@ -217,8 +239,9 @@ namespace ConnectorGrashopper.Ops
     public override void SetData(IGH_DataAccess DA)
     {
       if (CancellationToken.IsCancellationRequested) return;
+
       // TODO
-      Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Succesfully pushed {TotalObjectCount} objects.");
+      Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Succesfully pushed {TotalObjectCount} objects to {String.Join(", ", Transports.Select(t => t.TransportName).ToArray())}.");
       DA.SetData(0, InputState);
       DA.SetData(1, new GH_SpeckleBase { Value = ObjectToSend });
 
