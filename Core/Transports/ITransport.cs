@@ -28,6 +28,16 @@ namespace Speckle.Core.Transports
     public Action<string, Exception> OnErrorAction { get; set; }
 
     /// <summary>
+    /// Optional: signals to the transport that writes are about to begin.
+    /// </summary>
+    public void BeginWrite();
+
+    /// <summary>
+    /// Optional: signals to the transport that no more items will need to be written.
+    /// </summary>
+    public void EndWrite();
+
+    /// <summary>
     /// Saves an object.
     /// </summary>
     /// <param name="id">The hash of the object.</param>

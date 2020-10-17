@@ -17,7 +17,7 @@ namespace Speckle.Core.Transports
 {
   // If data storage accessed by transports will always use the hash and content field names, move this enum to ITransport instead.
   public enum Field { hash, content }
-  
+
   // Question: the benefit of noSQL is the use of unstructured collections of variable documents.
   // Explore storing partially serialized Speckle objects with dynamically generated fields instead of just a content string?
   public class MongoDBTransport : IDisposable, ITransport
@@ -37,6 +37,7 @@ namespace Speckle.Core.Transports
     public Action<string, int> OnProgressAction { get; set; }
 
     public Action<string, Exception> OnErrorAction { get; set; }
+    public int SavedObjectCount { get; private set; }
 
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
@@ -73,9 +74,16 @@ namespace Speckle.Core.Transports
       bool isMongoLive = Database.RunCommandAsync((Command<BsonDocument>)"{ping:1}").Wait(1000);
       if (!isMongoLive)
       {
-        Console.WriteLine("Could not connect to Mongo database");
+        OnErrorAction(TransportName, new Exception("The Mongo database could not be reached."));
       }
     }
+
+    public void BeginWrite()
+    {
+      SavedObjectCount = 0;
+    }
+
+    public void EndWrite() { }
 
     #region Writes
 

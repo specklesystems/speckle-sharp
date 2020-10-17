@@ -36,7 +36,7 @@ namespace Speckle.Core.Transports
 
     private int MAX_MULTIPART_COUNT = 4;
 
-    private int totalProcessedCount = 0;
+    public int SavedObjectCount { get; private set; } = 0;
 
     public Action<string, int> OnProgressAction { get; set; }
 
@@ -77,6 +77,18 @@ namespace Speckle.Core.Transports
       WriteTimer = new System.Timers.Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
       WriteTimer.Elapsed += WriteTimerElapsed;
     }
+
+    public void BeginWrite()
+    {
+      if (!GetWriteCompletionStatus())
+      {
+        throw new Exception("Transport is still writing.");
+      }
+
+      SavedObjectCount = 0;
+    }
+
+    public void EndWrite() { }
 
     #region Writing objects
 
@@ -135,7 +147,7 @@ namespace Speckle.Core.Transports
       var contents = new List<string>();
 
       ValueTuple<string, string, int> result;
-      totalProcessedCount = 0;
+      SavedObjectCount = 0;
       while (contents.Count < MAX_MULTIPART_COUNT && Queue.Count != 0)
       {
         if (CancellationToken.IsCancellationRequested)
@@ -167,7 +179,7 @@ namespace Speckle.Core.Transports
         }
         _ct += "]";
         multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{i}", $"batch-{i}");
-        totalProcessedCount += i;
+        SavedObjectCount += i;
       }
 
       message.Content = multipart;
@@ -194,7 +206,7 @@ namespace Speckle.Core.Transports
 
       IS_WRITING = false;
 
-      OnProgressAction?.Invoke(TransportName, totalProcessedCount);
+      OnProgressAction?.Invoke(TransportName, SavedObjectCount);
 
       if (!WriteTimer.Enabled)
       {

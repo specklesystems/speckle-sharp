@@ -28,6 +28,7 @@ namespace Speckle.Core.Transports
     public Action<string, int> OnProgressAction { get; set; }
 
     public Action<string, Exception> OnErrorAction { get; set; }
+    public int SavedObjectCount { get; private set; }
 
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
@@ -111,6 +112,18 @@ namespace Speckle.Core.Transports
       }
     }
 
+    public void BeginWrite()
+    {
+      if (GetWriteCompletionStatus())
+      {
+        throw new Exception("Transport is still writing.");
+      }
+
+      SavedObjectCount = 0;
+    }
+
+    public void EndWrite() { }
+
     #region Writes
 
     /// <summary>
@@ -180,9 +193,12 @@ namespace Speckle.Core.Transports
               command.ExecuteNonQuery();
             }
             t.Commit();
+            SavedObjectCount++;
           }
         }
       }
+
+      OnProgressAction(TransportName, SavedObjectCount);
 
       if (CancellationToken.IsCancellationRequested)
       {

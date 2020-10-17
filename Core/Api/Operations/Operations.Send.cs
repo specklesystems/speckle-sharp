@@ -82,6 +82,8 @@ namespace Speckle.Core.Api
         t.OnProgressAction = internalProgressAction;
         t.CancellationToken = cancellationToken;
         t.OnErrorAction = onErrorAction;
+        t.BeginWrite();
+
         serializer.WriteTransports.Add(t);
       }
 
@@ -91,6 +93,11 @@ namespace Speckle.Core.Api
       var transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
 
       await Task.WhenAll(transportAwaits);
+
+      foreach (var t in transports)
+      {
+        t.EndWrite();
+      }
 
       return hash;
     }

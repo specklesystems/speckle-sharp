@@ -24,7 +24,7 @@ namespace DiskTransport
 
     public string RootPath { get; set; }
 
-    public int SavedObjectCount { get; set; } = 0;
+    public int SavedObjectCount { get; private set; } = 0;
 
     public DiskTransport(string basePath)
     {
@@ -35,6 +35,13 @@ namespace DiskTransport
 
       Directory.CreateDirectory(RootPath);
     }
+
+    public void BeginWrite()
+    {
+      SavedObjectCount = 0;
+    }
+
+    public void EndWrite() { }
 
     public string GetObject(string id)
     {

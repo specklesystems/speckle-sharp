@@ -23,6 +23,8 @@ namespace Speckle.Core.Transports
 
     public Action<string, Exception> OnErrorAction { get; set; }
 
+    public int SavedObjectCount { get; set; } = 0;
+
     public MemoryTransport()
     {
       Log.AddBreadcrumb("New Memory Transport");
@@ -30,11 +32,21 @@ namespace Speckle.Core.Transports
       Objects = new Dictionary<string, string>();
     }
 
+    public void BeginWrite()
+    {
+      SavedObjectCount = 0;
+    }
+
+    public void EndWrite() { }
+
     public void SaveObject(string hash, string serializedObject)
     {
       if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
 
       Objects[hash] = serializedObject;
+      
+      SavedObjectCount++;
+      OnProgressAction?.Invoke(TransportName, SavedObjectCount);
     }
 
     public void SaveObject(string id, ITransport sourceTransport)
