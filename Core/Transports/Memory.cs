@@ -21,7 +21,7 @@ namespace Speckle.Core.Transports
 
     public Action<string, int> OnProgressAction { get; set; }
 
-    public Action<string, int> OnErrorAction { get; set; }
+    public Action<string, Exception> OnErrorAction { get; set; }
 
     public MemoryTransport()
     {

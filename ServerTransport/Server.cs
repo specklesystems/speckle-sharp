@@ -40,7 +40,7 @@ namespace Speckle.Core.Transports
 
     public Action<string, int> OnProgressAction { get; set; }
 
-    public Action<string, int> OnErrorAction { get; set; }
+    public Action<string, Exception> OnErrorAction { get; set; }
 
     public Account Account { get; set; }
 
@@ -93,7 +93,7 @@ namespace Speckle.Core.Transports
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
     {
       TotalElapsed += PollInterval;
-      
+
       if (CancellationToken.IsCancellationRequested)
       {
         Queue = new ConcurrentQueue<(string, string, int)>();
@@ -171,7 +171,7 @@ namespace Speckle.Core.Transports
       }
 
       message.Content = multipart;
-      
+
       if (CancellationToken.IsCancellationRequested)
       {
         Queue = new ConcurrentQueue<(string, string, int)>();
@@ -186,7 +186,10 @@ namespace Speckle.Core.Transports
       catch (Exception e)
       {
         IS_WRITING = false;
-        Log.CaptureAndThrow(new SpeckleException("Remote unreachable.", e));
+        OnErrorAction?.Invoke(TransportName, new Exception($"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}", e));
+
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return;
       }
 
       IS_WRITING = false;
@@ -275,9 +278,17 @@ namespace Speckle.Core.Transports
       message.Headers.Add("Accept", "text/plain");
       string commitObj = null;
 
+      HttpResponseMessage response = null;
+      try
+      {
+        response = await Client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
+        response.EnsureSuccessStatusCode();
+      }
+      catch (Exception e)
+      {
+        OnErrorAction?.Invoke(TransportName, e);
+      }
 
-      var response = await Client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
-      response.EnsureSuccessStatusCode();
 
       var i = 0;
       using (var stream = await response.Content.ReadAsStreamAsync())

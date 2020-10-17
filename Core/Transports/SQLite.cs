@@ -13,7 +13,7 @@ namespace Speckle.Core.Transports
 {
   public class SQLiteTransport : IDisposable, ITransport
   {
-    public string TransportName { get; set; } = "LocalTransport";
+    public string TransportName { get; set; } = "SQLite";
 
     public CancellationToken CancellationToken { get; set; }
 
@@ -27,7 +27,7 @@ namespace Speckle.Core.Transports
 
     public Action<string, int> OnProgressAction { get; set; }
 
-    public Action<string, int> OnErrorAction { get; set; }
+    public Action<string, Exception> OnErrorAction { get; set; }
 
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
@@ -56,10 +56,17 @@ namespace Speckle.Core.Transports
       RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
       ConnectionString = $@"URI=file:{RootPath};";
 
-      Initialize();
+      try
+      {
+        Initialize();
 
-      WriteTimer = new System.Timers.Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
-      WriteTimer.Elapsed += WriteTimerElapsed;
+        WriteTimer = new System.Timers.Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
+        WriteTimer.Elapsed += WriteTimerElapsed;
+      }
+      catch (Exception e)
+      {
+        OnErrorAction?.Invoke(TransportName, e);
+      }
     }
 
     private void Initialize()
@@ -128,7 +135,7 @@ namespace Speckle.Core.Transports
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
     {
       WriteTimer.Enabled = false;
-      
+
       if (CancellationToken.IsCancellationRequested)
       {
         Queue = new ConcurrentQueue<(string, string, int)>();
@@ -176,7 +183,7 @@ namespace Speckle.Core.Transports
           }
         }
       }
-      
+
       if (CancellationToken.IsCancellationRequested)
       {
         Queue = new ConcurrentQueue<(string, string, int)>();
@@ -215,16 +222,23 @@ namespace Speckle.Core.Transports
     /// <param name="serializedObject"></param>
     public void SaveObjectSync(string hash, string serializedObject)
     {
-      using (var c = new SQLiteConnection(ConnectionString))
+      try
       {
-        c.Open();
-        using (var command = new SQLiteCommand(c))
+        using (var c = new SQLiteConnection(ConnectionString))
         {
-          command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
-          command.Parameters.AddWithValue("@hash", hash);
-          command.Parameters.AddWithValue("@content", serializedObject);
-          command.ExecuteNonQuery();
+          c.Open();
+          using (var command = new SQLiteCommand(c))
+          {
+            command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+            command.Parameters.AddWithValue("@hash", hash);
+            command.Parameters.AddWithValue("@content", serializedObject);
+            command.ExecuteNonQuery();
+          }
         }
+      }
+      catch (Exception e)
+      {
+        OnErrorAction?.Invoke(TransportName, e);
       }
     }
 
@@ -297,7 +311,7 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested) return;
 
-        using (var c = new SQLiteConnection(ConnectionString))
+      using (var c = new SQLiteConnection(ConnectionString))
       {
         c.Open();
         using (var command = new SQLiteCommand(c))

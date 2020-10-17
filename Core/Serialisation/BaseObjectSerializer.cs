@@ -61,6 +61,9 @@ namespace Speckle.Core.Serialisation
 
     public Action<string, int> OnProgressAction { get; set; }
 
+    public Action<string, Exception> OnErrorAction { get; set; }
+
+
     public BaseObjectSerializer()
     {
       ResetAndInitialize();

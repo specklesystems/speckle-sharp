@@ -50,5 +50,4 @@ namespace Speckle.Core.Api
       });
     }
   }
-
 }

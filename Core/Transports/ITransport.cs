@@ -25,7 +25,7 @@ namespace Speckle.Core.Transports
     /// <summary>
     /// Used to report errors during the transport's longer operations.
     /// </summary>
-    public Action<string, int> OnErrorAction { get; set; }
+    public Action<string, Exception> OnErrorAction { get; set; }
 
     /// <summary>
     /// Saves an object.
