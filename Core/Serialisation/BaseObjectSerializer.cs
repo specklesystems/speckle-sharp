@@ -315,9 +315,10 @@ namespace Speckle.Core.Serialisation
           // Set and store a reference, if it is marked as detachable and the transport is not null.
           if (WriteTransports != null && WriteTransports.Count != 0 && propValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
+            var what = JToken.FromObject(propValue, serializer); // Trigger next.
+
             if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
 
-            var what = JToken.FromObject(propValue, serializer); // Trigger next.
             var refHash = ((JObject)what).GetValue("id").ToString();
 
             var reference = new ObjectReference() { referencedId = refHash };
@@ -401,6 +402,7 @@ namespace Speckle.Core.Serialisation
           if (WriteTransports != null && WriteTransports.Count != 0 && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var what = JToken.FromObject(arrValue, serializer); // Trigger next
+            if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
             var refHash = ((JObject)what).GetValue("id").ToString();
 
             var reference = new ObjectReference() { referencedId = refHash };

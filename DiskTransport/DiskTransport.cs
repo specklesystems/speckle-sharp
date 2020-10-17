@@ -24,6 +24,8 @@ namespace DiskTransport
 
     public string RootPath { get; set; }
 
+    public int SavedObjectCount { get; set; } = 0;
+
     public DiskTransport(string basePath)
     {
       if (basePath == null)
@@ -55,6 +57,7 @@ namespace DiskTransport
       if (File.Exists(filePath)) return;
 
       File.WriteAllText(filePath, serializedObject, Encoding.UTF8);
+      OnProgressAction?.Invoke(TransportName, SavedObjectCount++);
     }
 
     public void SaveObject(string id, ITransport sourceTransport)
