@@ -109,6 +109,7 @@ namespace Speckle.Core.Transports
       if (CancellationToken.IsCancellationRequested)
       {
         Queue = new ConcurrentQueue<(string, string, int)>();
+        IS_WRITING = false;
         return;
       }
 
@@ -128,6 +129,7 @@ namespace Speckle.Core.Transports
       if (CancellationToken.IsCancellationRequested)
       {
         Queue = new ConcurrentQueue<(string, string, int)>();
+        IS_WRITING = false;
         return;
       }
 
@@ -153,6 +155,7 @@ namespace Speckle.Core.Transports
         if (CancellationToken.IsCancellationRequested)
         {
           Queue = new ConcurrentQueue<(string, string, int)>();
+          IS_WRITING = false;
           return;
         }
 
@@ -187,6 +190,7 @@ namespace Speckle.Core.Transports
       if (CancellationToken.IsCancellationRequested)
       {
         Queue = new ConcurrentQueue<(string, string, int)>();
+        IS_WRITING = false;
         return;
       }
 
@@ -220,6 +224,7 @@ namespace Speckle.Core.Transports
       if (CancellationToken.IsCancellationRequested)
       {
         Queue = new ConcurrentQueue<(string, string, int)>();
+        IS_WRITING = false;
         return;
       }
 
@@ -237,6 +242,7 @@ namespace Speckle.Core.Transports
       if (CancellationToken.IsCancellationRequested)
       {
         Queue = new ConcurrentQueue<(string, string, int)>();
+        IS_WRITING = false;
         return;
       }
 

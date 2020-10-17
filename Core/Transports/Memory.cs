@@ -46,7 +46,7 @@ namespace Speckle.Core.Transports
       Objects[hash] = serializedObject;
       
       SavedObjectCount++;
-      OnProgressAction?.Invoke(TransportName, SavedObjectCount);
+      OnProgressAction?.Invoke(TransportName, 1);
     }
 
     public void SaveObject(string id, ITransport sourceTransport)

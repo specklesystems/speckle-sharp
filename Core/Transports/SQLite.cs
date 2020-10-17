@@ -171,6 +171,8 @@ namespace Speckle.Core.Transports
       var i = 0;
       ValueTuple<string, string, int> result;
 
+      var saved = 0;
+
       using (var c = new SQLiteConnection(ConnectionString))
       {
         c.Open();
@@ -181,28 +183,29 @@ namespace Speckle.Core.Transports
             command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
             while (i < MAX_TRANSACTION_SIZE && Queue.TryPeek(out result))
             {
-              if (CancellationToken.IsCancellationRequested)
-              {
-                Queue = new ConcurrentQueue<(string, string, int)>();
-                return;
-              }
-
               Queue.TryDequeue(out result);
               command.Parameters.AddWithValue("@hash", result.Item1);
               command.Parameters.AddWithValue("@content", result.Item2);
               command.ExecuteNonQuery();
+              saved++;
             }
             t.Commit();
-            SavedObjectCount++;
+            if (CancellationToken.IsCancellationRequested)
+            {
+              Queue = new ConcurrentQueue<(string, string, int)>();
+              IS_WRITING = false;
+              return;
+            }
           }
         }
       }
 
-      OnProgressAction(TransportName, SavedObjectCount);
+      OnProgressAction(TransportName, saved);
 
       if (CancellationToken.IsCancellationRequested)
       {
         Queue = new ConcurrentQueue<(string, string, int)>();
+        IS_WRITING = false;
         return;
       }
 

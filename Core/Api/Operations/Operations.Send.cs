@@ -65,7 +65,7 @@ namespace Speckle.Core.Api
 
       if (useDefaultCache)
       {
-        transports.Insert(0, new SQLiteTransport());
+        transports.Insert(0, new SQLiteTransport() { TransportName = "Local Cache" });
       }
 
       var (serializer, settings) = GetSerializerInstance();
