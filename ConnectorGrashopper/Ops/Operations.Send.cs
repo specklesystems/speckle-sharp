@@ -1,4 +1,5 @@
 ﻿using ConnectorGrashopper.Extras;
+using GH_IO.Serialization;
 using Grasshopper.GUI;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
@@ -34,10 +35,58 @@ namespace ConnectorGrashopper.Ops
 
     public double OverallProgress { get; set; } = 0;
 
+    public bool JustPastedIn { get; set; }
+
+    public List<CommitOutputWrapper> OutputWrappers = new List<CommitOutputWrapper>();
+
+    public string BaseId { get; set; }
+
     public SendComponent() : base("Send", "Send", "Sends data to the provided transports/streams.", "Speckle 2", "   Send/Receive")
     {
       BaseWorker = new SendComponentWorker(this);
       Attributes = new SendComponentAttributes(this);
+    }
+
+    public override bool Write(GH_IWriter writer)
+    {
+      writer.SetBoolean("UseDefaultCache", UseDefaultCache);
+      writer.SetBoolean("AutoSend", AutoSend);
+      writer.SetString("CurrentComponentState", CurrentComponentState);
+      writer.SetString("BaseId", BaseId);
+
+      var owSer = string.Join("\n", OutputWrappers.Select(ow => $"{ow.url}\t{ow.id}\t{ow.branch}\t{ow.streamId}"));
+      writer.SetString("OutputWrappers", owSer);
+
+      return base.Write(writer);
+    }
+
+    public override bool Read(GH_IReader reader)
+    {
+      UseDefaultCache = reader.GetBoolean("UseDefaultCache");
+      AutoSend = reader.GetBoolean("AutoSend");
+      CurrentComponentState = reader.GetString("CurrentComponentState");
+      BaseId = reader.GetString("BaseId");
+
+      var wrappersRaw = reader.GetString("OutputWrappers");
+      var wrapperLines = wrappersRaw.Split('\n');
+      if (wrapperLines != null && wrapperLines.Length != 0 && wrappersRaw != "")
+      {
+        foreach (var line in wrapperLines)
+        {
+          var pieces = line.Split('\t');
+          OutputWrappers.Add(new CommitOutputWrapper
+          {
+            url = pieces[0],
+            id = pieces[1],
+            branch = pieces[2],
+            streamId = pieces[3]
+          });
+        }
+
+        if (OutputWrappers.Count != 0) JustPastedIn = true;
+      }
+
+      return base.Read(reader);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -66,7 +115,7 @@ namespace ConnectorGrashopper.Ops
       var autoSendMi = Menu_AppendItem(menu, $"Send automatically", (s, e) =>
       {
         AutoSend = !AutoSend;
-        
+
         Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
         {
           OnDisplayExpired(true);
@@ -79,18 +128,28 @@ namespace ConnectorGrashopper.Ops
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      if (AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending")
+      var test = JustPastedIn;
+      if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") && !JustPastedIn)
       {
+        JustPastedIn = false;
         CurrentComponentState = "sending";
         base.SolveInstance(DA);
         return;
       }
-      else
+      else if(!JustPastedIn)
       {
         CurrentComponentState = "expired";
         Message = "Expired";
         OnDisplayExpired(true);
       }
+
+      if(JustPastedIn)
+      {
+        DA.SetDataList(0, OutputWrappers);
+        DA.SetData(1, BaseId);
+      }
+
+      JustPastedIn = false;
     }
 
     public override void DisplayProgress(object sender, ElapsedEventArgs e)
@@ -227,7 +286,7 @@ namespace ConnectorGrashopper.Ops
         }
         else if (transport is ITransport otherTransport)
         {
-          otherTransport.TransportName = otherTransport.TransportName + $" {t}";
+          otherTransport.TransportName = $"T{t}";
           Transports.Add(otherTransport);
         }
         t++;
@@ -272,21 +331,31 @@ namespace ConnectorGrashopper.Ops
           message = $"Grasshopper push.";
         }
 
+        var prevCommits = ((SendComponent)Parent).OutputWrappers;
+
         foreach (var transport in Transports)
         {
           if (CancellationToken.IsCancellationRequested) return;
           if (!(transport is ServerTransport)) continue; // skip non-server transports (for now)
 
           var client = new Client(((ServerTransport)transport).Account);
-          var commitId = await client.CommitCreate(
-            CancellationToken,
-            new CommitCreateInput
-            {
-              branchName = _BranchNameInput.get_FirstItem(true).Value,
-              message = message,
-              objectId = BaseId,
-              streamId = ((ServerTransport)transport).StreamId
-            });
+
+          var commitCreateInput = new CommitCreateInput
+          {
+            branchName = _BranchNameInput.get_FirstItem(true).Value,
+            message = message,
+            objectId = BaseId,
+            streamId = ((ServerTransport)transport).StreamId,
+          };
+
+          // Check to see if we have a previous commit; if so set it.
+          var prevCommit = prevCommits.FirstOrDefault(c => c.url == client.ServerUrl && c.streamId == ((ServerTransport)transport).StreamId);
+          if (prevCommit != null)
+          {
+            commitCreateInput.previousCommitIds = new List<string>() { prevCommit.id };
+          }
+
+          var commitId = await client.CommitCreate(CancellationToken, commitCreateInput);
 
           OutputWrappers.Add(new CommitOutputWrapper
           {
@@ -314,6 +383,8 @@ namespace ConnectorGrashopper.Ops
       DA.SetData(2, new GH_SpeckleBase { Value = ObjectToSend });
 
       ((SendComponent)Parent).CurrentComponentState = "up_to_date";
+      ((SendComponent)Parent).OutputWrappers = OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
+      ((SendComponent)Parent).BaseId = BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
       ((SendComponent)Parent).OverallProgress = 0;
     }
   }
