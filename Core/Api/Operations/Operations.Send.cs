@@ -92,7 +92,7 @@ namespace Speckle.Core.Api
 
       var transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
 
-      await Task.WhenAll(transportAwaits);
+      await Task.WhenAll(transportAwaits).ConfigureAwait(false);
 
       foreach (var t in transports)
       {

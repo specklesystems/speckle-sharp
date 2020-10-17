@@ -114,7 +114,7 @@ namespace Speckle.Core.Transports
 
     public void BeginWrite()
     {
-      if (GetWriteCompletionStatus())
+      if (!GetWriteCompletionStatus())
       {
         throw new Exception("Transport is still writing.");
       }
