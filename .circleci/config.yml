@@ -7,7 +7,7 @@ jobs:
     working_directory: /temp
     
     docker: 
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+      - image: mcr.microsoft.com/dotnet/core/sdk:2.1
     
     environment:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
