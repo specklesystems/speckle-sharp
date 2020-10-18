@@ -115,11 +115,9 @@ namespace ConnectorGrashopper.Ops
       var cacheMi = Menu_AppendItem(menu, $"Use default cache", (s, e) => UseDefaultCache = !UseDefaultCache, true, UseDefaultCache);
       cacheMi.ToolTipText = "It's advised you always use the default cache, unless you are providing a list of custom transports and you understand the consequences.";
 
-      //NOTE: currently disabled because it's buggy.
       var autoSendMi = Menu_AppendItem(menu, $"Send automatically", (s, e) =>
       {
         AutoSend = !AutoSend;
-
         Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
         {
           OnDisplayExpired(true);
@@ -141,11 +139,11 @@ namespace ConnectorGrashopper.Ops
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      var test = JustPastedIn;
       if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") && !JustPastedIn)
       {
         JustPastedIn = false;
         CurrentComponentState = "sending";
+        // Delegate control to parent async component.
         base.SolveInstance(DA);
         return;
       }
@@ -300,13 +298,12 @@ namespace ConnectorGrashopper.Ops
 
       Transports = new List<ITransport>();
 
-      int t = 0;
-
       if (_TransportsInput.DataCount == 0)
       {
         // TODO: Set default account + "default" user stream
       }
 
+      int t = 0;
       foreach (var data in _TransportsInput)
       {
         var transport = data.GetType().GetProperty("Value").GetValue(data);
@@ -469,7 +466,7 @@ namespace ConnectorGrashopper.Ops
 
     public override string ToString()
     {
-      return $"{url}/streams/{streamId}/commits/{id} (on branch {branch}).";
+      return $"{url}/streams/{streamId}/commits/{id}\tbranch {branch}";
     }
   }
 
