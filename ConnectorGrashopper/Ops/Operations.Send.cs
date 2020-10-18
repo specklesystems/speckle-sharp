@@ -83,7 +83,10 @@ namespace ConnectorGrashopper.Ops
           });
         }
 
-        if (OutputWrappers.Count != 0) JustPastedIn = true;
+        if (OutputWrappers.Count != 0)
+        {
+          JustPastedIn = true;
+        }
       }
 
       return base.Read(reader);
@@ -112,6 +115,7 @@ namespace ConnectorGrashopper.Ops
       var cacheMi = Menu_AppendItem(menu, $"Use default cache", (s, e) => UseDefaultCache = !UseDefaultCache, true, UseDefaultCache);
       cacheMi.ToolTipText = "It's advised you always use the default cache, unless you are providing a list of custom transports and you understand the consequences.";
 
+      //NOTE: currently disabled because it's buggy.
       var autoSendMi = Menu_AppendItem(menu, $"Send automatically", (s, e) =>
       {
         AutoSend = !AutoSend;
@@ -136,14 +140,14 @@ namespace ConnectorGrashopper.Ops
         base.SolveInstance(DA);
         return;
       }
-      else if(!JustPastedIn)
+      else if (!JustPastedIn)
       {
         CurrentComponentState = "expired";
         Message = "Expired";
         OnDisplayExpired(true);
       }
 
-      if(JustPastedIn)
+      if (JustPastedIn)
       {
         DA.SetDataList(0, OutputWrappers);
         DA.SetData(1, BaseId);
@@ -154,7 +158,11 @@ namespace ConnectorGrashopper.Ops
 
     public override void DisplayProgress(object sender, ElapsedEventArgs e)
     {
-      if (Workers.Count == 0) return;
+      if (Workers.Count == 0)
+      {
+        return;
+      }
+
       Message = "";
       var total = 0.0;
       foreach (var kvp in ProgressReports)
@@ -190,11 +198,16 @@ namespace ConnectorGrashopper.Ops
 
     Action<string, Exception> ErrorAction;
 
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
+
     List<CommitOutputWrapper> OutputWrappers = new List<CommitOutputWrapper>();
 
     public string BaseId { get; set; }
 
-    public SendComponentWorker(GH_Component p) : base(p) { }
+    public SendComponentWorker(GH_Component p) : base(p)
+    {
+      RuntimeMessages = new List<(GH_RuntimeMessageLevel, string)>();
+    }
 
     public override WorkerInstance Duplicate() => new SendComponentWorker(Parent);
 
@@ -210,7 +223,11 @@ namespace ConnectorGrashopper.Ops
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)
+      {
+        ((SendComponent)Parent).CurrentComponentState = "expired";
+        return;
+      }
 
       // Part 1: handle input data
 
@@ -247,7 +264,12 @@ namespace ConnectorGrashopper.Ops
           int branchIndex = 0;
           foreach (var list in DataInput.Branches)
           {
-            if (CancellationToken.IsCancellationRequested) return;
+            if (CancellationToken.IsCancellationRequested)
+            {
+              ((SendComponent)Parent).CurrentComponentState = "expired";
+              return;
+            }
+
             var path = DataInput.Paths[branchIndex];
             dict[path.ToString()] = list.Select(goo => ((GH_SpeckleBase)goo).Value).ToList();
             branchIndex++;
@@ -258,7 +280,11 @@ namespace ConnectorGrashopper.Ops
 
       TotalObjectCount = ObjectToSend.GetTotalChildrenCount();
 
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)
+      {
+        ((SendComponent)Parent).CurrentComponentState = "expired";
+        return;
+      }
 
       // Part 2: create transports
 
@@ -303,16 +329,24 @@ namespace ConnectorGrashopper.Ops
 
       ErrorAction = (transportName, exception) =>
       {
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}");
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
       };
 
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)
+      {
+        ((SendComponent)Parent).CurrentComponentState = "expired";
+        return;
+      }
 
       // Part 3: actually send stuff!
 
       Task.Run(async () =>
       {
-        if (CancellationToken.IsCancellationRequested) return;
+        if (CancellationToken.IsCancellationRequested)
+        {
+          ((SendComponent)Parent).CurrentComponentState = "expired";
+          return;
+        }
 
         // Part 3.1: persist the objects
         BaseId = await Operations.Send(
@@ -335,46 +369,73 @@ namespace ConnectorGrashopper.Ops
 
         foreach (var transport in Transports)
         {
-          if (CancellationToken.IsCancellationRequested) return;
-          if (!(transport is ServerTransport)) continue; // skip non-server transports (for now)
-
-          var client = new Client(((ServerTransport)transport).Account);
-
-          var commitCreateInput = new CommitCreateInput
+          if (CancellationToken.IsCancellationRequested)
           {
-            branchName = _BranchNameInput.get_FirstItem(true).Value,
-            message = message,
-            objectId = BaseId,
-            streamId = ((ServerTransport)transport).StreamId,
-          };
-
-          // Check to see if we have a previous commit; if so set it.
-          var prevCommit = prevCommits.FirstOrDefault(c => c.url == client.ServerUrl && c.streamId == ((ServerTransport)transport).StreamId);
-          if (prevCommit != null)
-          {
-            commitCreateInput.previousCommitIds = new List<string>() { prevCommit.id };
+            ((SendComponent)Parent).CurrentComponentState = "expired";
+            return;
           }
 
-          var commitId = await client.CommitCreate(CancellationToken, commitCreateInput);
-
-          OutputWrappers.Add(new CommitOutputWrapper
+          if (!(transport is ServerTransport))
           {
-            streamId = ((ServerTransport)transport).StreamId,
-            branch = _BranchNameInput.get_FirstItem(true).Value,
-            url = client.ServerUrl,
-            id = commitId
-          });
+            continue; // skip non-server transports (for now)
+          }
+
+          try
+          {
+            var client = new Client(((ServerTransport)transport).Account);
+            var commitCreateInput = new CommitCreateInput
+            {
+              branchName = _BranchNameInput.get_FirstItem(true).Value,
+              message = message,
+              objectId = BaseId,
+              streamId = ((ServerTransport)transport).StreamId,
+            };
+
+            // Check to see if we have a previous commit; if so set it.
+            var prevCommit = prevCommits.FirstOrDefault(c => c.url == client.ServerUrl && c.streamId == ((ServerTransport)transport).StreamId);
+            if (prevCommit != null)
+            {
+              commitCreateInput.previousCommitIds = new List<string>() { prevCommit.id };
+            }
+
+            var commitId = await client.CommitCreate(CancellationToken, commitCreateInput);
+
+            OutputWrappers.Add(new CommitOutputWrapper
+            {
+              streamId = ((ServerTransport)transport).StreamId,
+              branch = _BranchNameInput.get_FirstItem(true).Value,
+              url = client.ServerUrl,
+              id = commitId
+            });
+          }
+          catch (Exception e)
+          {
+            ErrorAction.Invoke("Commits", e);
+          }
         }
 
-        if (CancellationToken.IsCancellationRequested) return;
+        if (CancellationToken.IsCancellationRequested)
+        {
+          ((SendComponent)Parent).CurrentComponentState = "expired";
+          return;
+        }
 
         Done();
-      });
+      }, CancellationToken);
     }
 
     public override void SetData(IGH_DataAccess DA)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)
+      {
+        ((SendComponent)Parent).CurrentComponentState = "expired";
+        return;
+      }
+
+      foreach (var (level, message) in RuntimeMessages)
+      {
+        Parent.AddRuntimeMessage(level, message);
+      }
 
       Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Succesfully pushed {TotalObjectCount} objects to {(((SendComponent)Parent).UseDefaultCache ? Transports.Count - 1 : Transports.Count)} transports.");
 
@@ -434,7 +495,8 @@ namespace ConnectorGrashopper.Ops
       {
         if (((SendComponent)Owner).AutoSend)
         {
-          var autoSendButton = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, GH_Palette.Transparent, "Auto Send", 2, 1);
+          var autoSendButton = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, GH_Palette.Blue, "Auto Send", 2, 0);
+
           autoSendButton.Render(graphics, Selected, Owner.Locked, false);
           autoSendButton.Dispose();
         }
@@ -442,8 +504,8 @@ namespace ConnectorGrashopper.Ops
         {
           var palette = state == "expired" ? GH_Palette.Black : GH_Palette.Transparent;
           var text = state == "sending" ? $"{((SendComponent)Owner).OverallProgress:0.00%}" : "Send";
-
-          var button = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, palette, text, 2, 0);
+          
+          var button = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, palette, text, 2, state == "expired" ? 10 : 0);
           button.Render(graphics, Selected, Owner.Locked, false);
           button.Dispose();
         }
@@ -457,8 +519,9 @@ namespace ConnectorGrashopper.Ops
         if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
         {
           if (((SendComponent)Owner).AutoSend || ((SendComponent)Owner).CurrentComponentState != "expired")
+          {
             return GH_ObjectResponse.Handled;
-
+          }
           ((SendComponent)Owner).CurrentComponentState = "primed_to_send";
           Owner.ExpireSolution(true);
           return GH_ObjectResponse.Handled;
@@ -474,8 +537,17 @@ namespace ConnectorGrashopper.Ops
       {
         if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
         {
-          if (((SendComponent)Owner).AutoSend || ((SendComponent)Owner).CurrentComponentState == "sending")
+          if (((SendComponent)Owner).CurrentComponentState == "sending")
+          {
             return GH_ObjectResponse.Handled;
+          }
+
+          if (((SendComponent)Owner).AutoSend)
+          {
+            ((SendComponent)Owner).AutoSend = false;
+            Owner.OnDisplayExpired(true);
+            return GH_ObjectResponse.Handled;
+          }
 
           ((SendComponent)Owner).CurrentComponentState = "primed_to_send";
           Owner.ExpireSolution(true);
