@@ -179,7 +179,7 @@ namespace Tests
       });
 
       Assert.NotNull(progress);
-      Assert.Contains("Serialization", progress.Keys.ToArray());
+      Assert.GreaterOrEqual(progress.Keys.Count, 1);
     }
 
     [Test(Description = "Should show progress!"), Order(5)]
@@ -191,7 +191,7 @@ namespace Tests
         progress = dict;
       });
       Assert.NotNull(progress);
-      Assert.Contains("Deserialization", progress.Keys.ToArray());
+      Assert.GreaterOrEqual(progress.Keys.Count, 1);
     }
 
     [Test]
