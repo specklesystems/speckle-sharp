@@ -2,25 +2,25 @@ version: 2.1
 
 jobs:
 
-  # # The unit tests. 
+  # The unit tests. 
 
-  # unittest:
-  #   executor:
-  #     name: win/default
+  unit-tests:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
     
-  #   steps:
-  #     - checkout
-  #     - run: 
-  #         name: "Pull core submodules"
-  #         command: |
-  #           git submodule init
-  #           git submodule update --remote
-  #     - run: dotnet restore
-  #     - run: dotnet test Tests/TestsUnit.csproj
+    steps:
+      - checkout
+      - run: 
+          name: "Pull core submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
+      - run: dotnet restore
+      - run: dotnet test Tests/TestsUnit.csproj < /dev/null
   
   # The integration tests. Spins up a full blown speckle server. 
 
-  integrationtest:
+  integration-tests:
     working_directory: /temp
     
     docker:
@@ -77,12 +77,10 @@ jobs:
           command: dotnet build --configuration Release
       - run: 
           working_directory: core
-          command: dotnet test IntegrationTests/TestsIntegration.csproj --logger:Console;noprogress=true
-      - run: 
-          working_directory: core
-          command: dotnet test Tests/TestsUnit.csproj --logger:Console;noprogress=true
+          command: dotnet test IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true"
 
 workflows: 
-  test-all:
+  test:
     jobs: 
-      - integrationtest
+      - integration-tests
+      - unit-tests
