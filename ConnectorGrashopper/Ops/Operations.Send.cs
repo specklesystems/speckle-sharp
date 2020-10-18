@@ -127,6 +127,15 @@ namespace ConnectorGrashopper.Ops
       }, true, AutoSend);
       autoSendMi.ToolTipText = "Toggle automatic data sending. If set, any change in any of the input parameters of this component will start sending.\n Please be aware that if a new send starts before an old one is finished, the previous operation is cancelled.";
 
+      if(OutputWrappers.Count != 0)
+      {
+        Menu_AppendSeparator(menu);
+        foreach (var ow in OutputWrappers)
+        {
+          Menu_AppendItem(menu, $"View commit {ow.id} @ {ow.url} online ↗", (s, e) => System.Diagnostics.Process.Start($"{ow.url}/streams/{ow.streamId}/commits/{ow.id}"));
+        }
+      }
+
       base.AppendAdditionalComponentMenuItems(menu);
     }
 
@@ -147,6 +156,7 @@ namespace ConnectorGrashopper.Ops
         OnDisplayExpired(true);
       }
 
+      // Set output data in a "first run" event. Note: we are not persisting the actual "sent" object as it can be very big.
       if (JustPastedIn)
       {
         DA.SetDataList(0, OutputWrappers);
