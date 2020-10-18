@@ -22,6 +22,7 @@ namespace Tests
     [Ignore("Not going to work unless you have a kit installed.")]
     public void LoadConverter()
     {
+      return;
       var kits = KitManager.Kits;
       var cp = kits;
       var objsk = kits.ElementAt(2);

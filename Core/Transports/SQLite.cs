@@ -79,6 +79,7 @@ namespace Speckle.Core.Transports
       //foreach (var str in HexChars)
       //  foreach (var str2 in HexChars)
       //    cart.Add(str + str2);
+      if (CancellationToken.IsCancellationRequested) return;
 
       using (var c = new SQLiteConnection(ConnectionString))
       {
@@ -110,15 +111,13 @@ namespace Speckle.Core.Transports
         cmd = new SQLiteCommand("PRAGMA temp_store=MEMORY;", c);
         cmd.ExecuteNonQuery();
       }
+
+      if (CancellationToken.IsCancellationRequested) return;
     }
 
     public void BeginWrite()
     {
-      if (!GetWriteCompletionStatus())
-      {
-        throw new Exception("Transport is still writing.");
-      }
-
+      Queue = new ConcurrentQueue<(string, string, int)>();
       SavedObjectCount = 0;
     }
 

@@ -104,7 +104,7 @@ namespace Speckle.Core.Credentials
       if (defaultAccount == null)
       {
         var firstAccount = GetAccounts().FirstOrDefault();
-        if(firstAccount == null)
+        if (firstAccount == null)
         {
           Log.CaptureAndThrow(new SpeckleException("No Speckle accounts found. Visit the Speckle web app to create one."), level: Sentry.Protocol.SentryLevel.Info);
         }
@@ -121,7 +121,9 @@ namespace Speckle.Core.Credentials
     {
       var _accs = AccountStorage.GetAllObjects();
       foreach (var _acc in _accs)
+      {
         yield return JsonConvert.DeserializeObject<Account>(_acc);
+      }
     }
 
   }

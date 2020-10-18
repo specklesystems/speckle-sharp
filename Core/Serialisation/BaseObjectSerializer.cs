@@ -204,7 +204,7 @@ namespace Speckle.Core.Serialisation
       if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
 
       TotalProcessedCount++;
-      OnProgressAction?.Invoke("Deserialization", 1);
+      OnProgressAction?.Invoke("DS", 1);
       return obj;
     }
 
@@ -334,8 +334,6 @@ namespace Speckle.Core.Serialisation
           DetachLineage.RemoveAt(DetachLineage.Count - 1);
         }
 
-        if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
-
         // Check if we actually have any transports present that would warrant a 
         if ((WriteTransports != null && WriteTransports.Count != 0) && RefMinDepthTracker.ContainsKey(Lineage[Lineage.Count - 1]))
         {
@@ -349,17 +347,16 @@ namespace Speckle.Core.Serialisation
         }
         jo.WriteTo(writer);
 
-        if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
-
         if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && WriteTransports != null && WriteTransports.Count != 0)
         {
           var objString = jo.ToString();
           var objId = jo["id"].Value<string>();
 
-          OnProgressAction?.Invoke("Serialization", 1);
+          OnProgressAction?.Invoke("S", 1);
 
           foreach (var transport in WriteTransports)
           {
+            if (CancellationToken.IsCancellationRequested) continue; // Check for cancellation
             transport.SaveObject(objId, objString);
           }
         }
@@ -402,6 +399,7 @@ namespace Speckle.Core.Serialisation
           if (WriteTransports != null && WriteTransports.Count != 0 && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
           {
             var what = JToken.FromObject(arrValue, serializer); // Trigger next
+
             if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
             var refHash = ((JObject)what).GetValue("id").ToString();
 

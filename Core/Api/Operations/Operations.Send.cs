@@ -65,7 +65,7 @@ namespace Speckle.Core.Api
 
       if (useDefaultCache)
       {
-        transports.Insert(0, new SQLiteTransport() { TransportName = "Local Cache" });
+        transports.Insert(0, new SQLiteTransport() { TransportName = "LC" });
       }
 
       var (serializer, settings) = GetSerializerInstance();
@@ -88,9 +88,10 @@ namespace Speckle.Core.Api
       }
 
       var obj = JsonConvert.SerializeObject(@object, settings);
-      var hash = JObject.Parse(obj).GetValue("id").ToString();
 
       var transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
+
+      if (cancellationToken.IsCancellationRequested) return null;
 
       await Task.WhenAll(transportAwaits).ConfigureAwait(false);
 
@@ -99,6 +100,9 @@ namespace Speckle.Core.Api
         t.EndWrite();
       }
 
+      if (cancellationToken.IsCancellationRequested) return null;
+
+      var hash = JObject.Parse(obj).GetValue("id").ToString();
       return hash;
     }
 
