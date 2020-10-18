@@ -26,7 +26,7 @@ namespace DiskTransport
 
     public int SavedObjectCount { get; private set; } = 0;
 
-    public DiskTransport(string basePath)
+    public DiskTransport(string basePath = null)
     {
       if (basePath == null)
         basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "DiskTransportFiles");
@@ -70,7 +70,7 @@ namespace DiskTransport
 
     public void SaveObject(string id, ITransport sourceTransport)
     {
-      if (CancellationToken.IsCancellationRequested) return ; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
 
       var serializedObject = sourceTransport.GetObject(id);
       SaveObject(id, serializedObject);

@@ -208,7 +208,7 @@ namespace Tests
         ((List<Base>)myObject["@items"]).Add(new Point(i, i, i) { applicationId = i + "-___/---" });
       }
 
-      var dt = new DiskTransport.DiskTransport(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SpeckleTests", "Objects"));
+      var dt = new DiskTransport.DiskTransport();
       var id = await Operations.Send(myObject, new List<ITransport>() { dt }, false);
 
       Assert.IsNotNull(id);
