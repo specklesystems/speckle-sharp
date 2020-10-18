@@ -1,17 +1,15 @@
 version: 2.1
+
+orbs:
+  win: circleci/windows@2.2.0
+
 jobs:
 
   # The unit tests. 
 
   unittest:
-    working_directory: /temp
-    
-    docker: 
-      - image: mcr.microsoft.com/dotnet/core/sdk:2.1
-    
-    environment:
-      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+    executor:
+      name: win/default
     
     steps:
       - checkout
@@ -22,7 +20,7 @@ jobs:
             git submodule update --remote
       - run: dotnet restore
       - run: dotnet build --configuration Release
-      - run: dotnet test Tests/TestsUnit.csproj --logger:Console;noprogress=true
+      - run: dotnet test Tests/TestsUnit.csproj
   
   # The integration tests. Spins up a full blown speckle server. 
 
