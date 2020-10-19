@@ -119,6 +119,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extras\StreamWrapper.cs" />
     <Compile Include="Local.cs" />
     <Compile Include="Account.cs" />
     <Compile Include="Functions.cs" />

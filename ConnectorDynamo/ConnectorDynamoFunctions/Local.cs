@@ -20,22 +20,22 @@ namespace Speckle.ConnectorDynamo.Functions
     /// Sends data locally, without the need of a Speckle Server
     /// </summary>
     /// <param name="data">Data to send</param>
-    /// <returns name="localDataId">The ID of the local data sent</returns>
+    /// <returns name="localDataId">ID of the local data sent</returns>
     public static string Send([ArbitraryDimensionArrayImport] object data)
     {
       Tracker.TrackEvent(Tracker.SEND_LOCAL);
 
-      var @base = Utils.ConvertRecursivelyToSpeckle(data);
-      var objectId = Operations.Send(@base).Result;
+      var conversionResult = Utils.ConvertRecursivelyToSpeckle(data);
+      var objectId = Operations.Send(conversionResult.Object).Result;
 
       return objectId;
     }
 
     /// <summary>
-    /// Receives data locally, without the need of a Speckle Server. 
+    /// Receives data locally, without the need of a Speckle Server
     /// NOTE: updates will not be automatically received.
     /// </summary>
-    /// <param name="localDataId">The ID of the local data to receive</param>
+    /// <param name="localDataId">ID of the local data to receive</param>
     /// <returns name="data">Data received</returns>
     public static object Receive(string localDataId)
     {

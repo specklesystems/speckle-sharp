@@ -36,6 +36,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json-8.0.3">
+      <HintPath>..\Newtonsoft.Json-8.0.3.dll</HintPath>
+      <Aliases>DynamoNewtonsoft</Aliases>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />

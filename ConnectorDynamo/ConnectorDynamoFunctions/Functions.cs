@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Autodesk.DesignScript.Runtime;
 using Dynamo.Graph.Nodes;
 using Speckle.ConnectorDynamo.Functions;
+using Speckle.ConnectorDynamo.Functions.Extras;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -15,31 +16,34 @@ using Speckle.Core.Transports;
 namespace Speckle.ConnectorDynamo.Functions
 {
   /// <summary>
-  /// Speckle methods
+  /// Functions that are to be called by NodeModel nodes
   /// </summary>
-  
+
   public static class Functions
   {
     /// <summary>
     /// Sends data to a Speckle Server by creating a commit on the master branch of a Stream
     /// </summary>
     /// <param name="data">Data to send</param>
-    /// <param name="streamId">Stream ID to send the data to</param>
-    /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
+    /// <param name="stream">Stream to send the data to</param>
     /// <returns name="log">Log</returns>
     [IsVisibleInDynamoLibrary(false)]
-    public static string Send([ArbitraryDimensionArrayImport] object data, string streamId, string branchName= "main", string message = "Automatic commit from Dynamo", Core.Credentials.Account account = null)
+    public static string Send([ArbitraryDimensionArrayImport] object data, StreamWrapper stream, string branchName, string message)
     {
-      if (account == null)
-        account = AccountManager.GetDefaultAccount();
+      Core.Credentials.Account account = stream.GetAccount();
+
       var client = new Client(account);
-      var @base = Utils.ConvertRecursivelyToSpeckle(data);
-      var transport = new ServerTransport(account, streamId);
-      var objectId = Operations.Send(@base, new List<ITransport>() { transport }).Result;
+      var conversionResult = Utils.ConvertRecursivelyToSpeckle(data);
+      var transport = new ServerTransport(account, stream.StreamId);
+      var objectId = Operations.Send(conversionResult.Object, new List<ITransport>() { transport }).Result;
+
+      branchName = null ?? "main";
+      var plural = (conversionResult.TotalObjects == 1) ? "" : "s";
+      message = null ?? $"Sent {conversionResult.TotalObjects} object{plural} from Dynamo";
 
       var res = client.CommitCreate(new CommitCreateInput
       {
-        streamId = streamId,
+        streamId = stream.StreamId,
         branchName = branchName,
         objectId = objectId,
         message = message
@@ -53,23 +57,21 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <summary>
     /// Receives data from a Speckle Server by getting the last commit on the master branch of a Stream
     /// </summary>
-    /// <param name="streamId">Stream ID to receive the last commit from</param>
-    /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
+    /// <param name="stream">Stream to receive from</param>
     /// <returns></returns>
     [IsVisibleInDynamoLibrary(false)]
-    public static object Receive(string streamId, Core.Credentials.Account account = null)
+    public static object Receive(StreamWrapper stream)
     {
-      if (account == null)
-        account = AccountManager.GetDefaultAccount();
+      Core.Credentials.Account account = stream.GetAccount();
 
       var client = new Client(account);
-      var res = client.StreamGet(streamId).Result;
+      var res = client.StreamGet(stream.StreamId).Result;
       if (res == null || !res.branches.items[0].commits.items.Any())
         return null;
 
       var lastCommit = res.branches.items[0].commits.items[0];
 
-      var transport = new ServerTransport(account, streamId);
+      var transport = new ServerTransport(account, stream.StreamId);
       var @base = Operations.Receive(lastCommit.referencedObject, remoteTransport: transport).Result;
       var data = Utils.ConvertRecursivelyToNative(@base);
 
