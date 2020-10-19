@@ -92,6 +92,11 @@ namespace Speckle.Core.Api
     public List<Collaborator> collaborators { get; set; }
     public Branches branches { get; set; }
 
+    /// <summary>
+    /// Set only in the case that you've requested this through <see cref="Client.CommitGet(System.Threading.CancellationToken, string, string)"/>.
+    /// </summary>
+    public Commit commit { get; set; }
+
     public override string ToString()
     {
       return $"Stream ({name} | {id})";
@@ -208,7 +213,6 @@ namespace Speckle.Core.Api
   public class StreamData
   {
     public Stream stream { get; set; }
-
   }
 
   public class StreamsData

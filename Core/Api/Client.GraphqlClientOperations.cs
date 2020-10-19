@@ -687,6 +687,61 @@ namespace Speckle.Core.Api
     #region commits
 
     /// <summary>
+    /// Gets a given commit from a stream.
+    /// </summary>
+    /// <param name="streamId"></param>
+    /// <param name="commitId"></param>
+    /// <returns></returns>
+    public Task<Commit> CommitGet(string streamId, string commitId)
+    {
+      return CommitGet(CancellationToken.None, streamId, commitId);
+    }
+
+    /// <summary>
+    /// Gets a given commit from a stream.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="streamId"></param>
+    /// <param name="commitId"></param>
+    /// <returns></returns>
+    public async Task<Commit> CommitGet(CancellationToken cancellationToken, string streamId, string commitId)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = $@"query Stream($streamId: String!, $commitId: String!) {{
+                      stream(id: $streamId) {{
+                        commit(id: $commitId){{
+                          message,
+                          referencedObject,
+                          createdAt,
+                          authorName
+                        }}                       
+                      }}
+                    }}",
+          Variables = new
+          {
+            streamId, commitId
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
+
+        if (res.Errors != null)
+          Log.CaptureAndThrow(new GraphQLException("Could not get stream"), res.Errors);
+
+        return res.Data.stream.commit;
+      }
+      catch (Exception e)
+      {
+        Log.CaptureException(e);
+        throw e;
+      }
+    }
+
+
+    /// <summary>
     /// Creates a commit on a branch.
     /// </summary>
     /// <param name="commitInput"></param>
