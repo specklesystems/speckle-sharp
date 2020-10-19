@@ -332,7 +332,7 @@ namespace Speckle.Core.Transports
               if (partial.__closure != null)
                 onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
             }
-            OnProgressAction?.Invoke($"GET Remote ({Client.BaseAddress.ToString()})", i++); // possibly make this more friendly
+            OnProgressAction?.Invoke($"GET Remote ({Client.BaseAddress})", i++); // possibly make this more friendly
           }
         }
       }

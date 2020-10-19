@@ -20,7 +20,9 @@ namespace Speckle.Core.Api
     /// <param name="objectId"></param>
     /// <param name="remoteTransport">The transport to receive from.</param>
     /// <param name="localTransport">Leave null to use the default cache.</param>
-    /// <param name="onProgressAction"></param>
+    /// <param name="onProgressAction">Action invoked on progress iterations.</param>
+    /// <param name="onErrorAction">Action invoked on internal errors.</param>
+    /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known.</param>
     /// <returns></returns>
     public static Task<Base> Receive(string objectId, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null)
     {
@@ -42,7 +44,9 @@ namespace Speckle.Core.Api
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to send notice of cancellation.</param>
     /// <param name="remoteTransport">The transport to receive from.</param>
     /// <param name="localTransport">Leave null to use the default cache.</param>
-    /// <param name="onProgressAction"></param>
+    /// <param name="onProgressAction">Action invoked on progress iterations.</param>
+    /// <param name="onErrorAction">Action invoked on internal errors.</param>
+    /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known.</param>
     /// <returns></returns>
     public static async Task<Base> Receive(string objectId, CancellationToken cancellationToken, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null)
     {
