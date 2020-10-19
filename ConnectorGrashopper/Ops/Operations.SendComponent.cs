@@ -466,7 +466,7 @@ namespace ConnectorGrashopper.Ops
 
     public override string ToString()
     {
-      return $"{url}/streams/{streamId}/commits/{id}\tbranch {branch}";
+      return $"{url}/streams/{streamId}/commits/{id}";
     }
   }
 

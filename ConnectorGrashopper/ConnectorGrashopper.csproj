@@ -74,13 +74,14 @@
     <Compile Include="Objects\CreateSpeckleObject.cs" />
     <Compile Include="ConnectorGrashopperInfo.cs" />
     <Compile Include="Objects\ExpandSpeckleObject.cs" />
+    <Compile Include="Ops\Operations.ReceiveComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Ops\Operations.Send.cs" />
+    <Compile Include="Ops\Operations.SendComponent.cs" />
     <Compile Include="Streams\StreamCreateComponent.cs" />
     <Compile Include="Streams\StreamDetailsComponent.cs" />
     <Compile Include="Streams\StreamListComponent.cs" />
