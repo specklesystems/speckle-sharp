@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Newtonsoft.Json;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 
@@ -279,7 +280,7 @@ namespace Speckle.Core.Transports
       return response.ReadAsStringAsync().Result;
     }
 
-    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport)
+    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport, Action<int> onTotalChildrenCountKnown)
     {
       if (CancellationToken.IsCancellationRequested)
       {
@@ -327,6 +328,9 @@ namespace Speckle.Core.Transports
             if (i == 0)
             {
               commitObj = pcs[1];
+              var partial = JsonConvert.DeserializeObject<Placeholder>(commitObj);
+              if (partial.__closure != null)
+                onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
             }
             OnProgressAction?.Invoke($"GET Remote ({Client.BaseAddress.ToString()})", i++); // possibly make this more friendly
           }
@@ -348,6 +352,11 @@ namespace Speckle.Core.Transports
     {
       // TODO: check if it's writing first? 
       Client.Dispose();
+    }
+
+    internal class Placeholder
+    {
+      public Dictionary<string, int> __closure { get; set; } = new Dictionary<string, int>();
     }
   }
 }

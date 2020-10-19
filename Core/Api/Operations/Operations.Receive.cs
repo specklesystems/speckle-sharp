@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using Speckle.Core.Logging;
 using Sentry.Protocol;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace Speckle.Core.Api
 {
@@ -21,7 +22,7 @@ namespace Speckle.Core.Api
     /// <param name="localTransport">Leave null to use the default cache.</param>
     /// <param name="onProgressAction"></param>
     /// <returns></returns>
-    public static Task<Base> Receive(string objectId, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
+    public static Task<Base> Receive(string objectId, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null)
     {
       return Receive(
         objectId,
@@ -29,7 +30,8 @@ namespace Speckle.Core.Api
         remoteTransport,
         localTransport,
         onProgressAction,
-        onErrorAction
+        onErrorAction,
+        onTotalChildrenCountKnown
         );
     }
 
@@ -42,7 +44,7 @@ namespace Speckle.Core.Api
     /// <param name="localTransport">Leave null to use the default cache.</param>
     /// <param name="onProgressAction"></param>
     /// <returns></returns>
-    public static async Task<Base> Receive(string objectId, CancellationToken cancellationToken, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
+    public static async Task<Base> Receive(string objectId, CancellationToken cancellationToken, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null)
     {
       Log.AddBreadcrumb("Receive");
 
@@ -67,6 +69,11 @@ namespace Speckle.Core.Api
 
       if (objString != null)
       {
+        // Shoot out the total children count
+        var partial = JsonConvert.DeserializeObject<Placeholder>(objString);
+        if (partial.__closure != null)
+          onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
+
         return JsonConvert.DeserializeObject<Base>(objString, settings);
       }
       else if (remoteTransport == null)
@@ -81,7 +88,7 @@ namespace Speckle.Core.Api
       remoteTransport.CancellationToken = cancellationToken;
 
       Log.AddBreadcrumb("RemoteHit");
-      objString = await remoteTransport.CopyObjectAndChildren(objectId, localTransport);
+      objString = await remoteTransport.CopyObjectAndChildren(objectId, localTransport, onTotalChildrenCountKnown);
       
       // Wait for the local transport to finish "writing" - in this case, it signifies that the remote transport has done pushing copying objects into it. (TODO: I can see some scenarios where latency can screw things up, and we should rather wait on the remote transport).
       await localTransport.WriteComplete();
@@ -94,6 +101,11 @@ namespace Speckle.Core.Api
       // The fast transport ("localTransport") is used syncronously inside the deserialisation routine to get the value of nested references and set them. The slow transport ("remoteTransport") is used to get the raw data and populate the local transport with all necessary data for a successful deserialisation of the object. 
       // Note: if properly implemented, there is no hard distinction between what is a local or remote transport; it's still just a transport. So, for example, if you want to receive an object without actually writing it first to a local transport, you can just pass a Server/S3 transport as a local transport. 
       // This is not reccommended, but shows what you can do. Another tidbit: the local transport does not need to be disk-bound; it can easily be an in memory transport. In memory transports are the fastest ones, but they're of limited use for more 
+    }
+
+    internal class Placeholder
+    {
+      public Dictionary<string, int> __closure { get; set; } = new Dictionary<string, int>();
     }
 
   }

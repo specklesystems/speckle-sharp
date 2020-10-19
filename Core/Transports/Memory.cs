@@ -66,7 +66,7 @@ namespace Speckle.Core.Transports
       }
     }
 
-    public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport)
+    public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
     {
       throw new NotImplementedException();
     }

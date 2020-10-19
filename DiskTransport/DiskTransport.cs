@@ -81,7 +81,7 @@ namespace DiskTransport
       return;
     }
 
-    public async Task<string> CopyObjectAndChildren(string id, ITransport targetTransport)
+    public async Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
     {
       if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
 

@@ -189,7 +189,7 @@ namespace Speckle.Core.Transports
       return null;
     }
 
-    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport)
+    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
     {
       throw new NotImplementedException();
     }

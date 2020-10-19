@@ -67,8 +67,10 @@ namespace Speckle.Core.Transports
     /// <summary>
     /// Copies the parent object and all its children to the provided transport.
     /// </summary>
-    /// <param name="hash"></param>
+    /// <param name="id">The id of the object you want to copy.</param>
+    /// <param name="targetTransport">The transport you want to copy the object to.</param>
+    /// <param name="onTotalChildrenCountKnown">(Optional) an action that will be invoked once, when the amount of object children to be copied over is known.</param>
     /// <returns>The string representation of the root object.</returns>
-    public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport);
+    public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null);
   }
 }
