@@ -28,7 +28,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
     /// <returns name="log">Log</returns>
     [IsVisibleInDynamoLibrary(false)]
-    public static string Send([ArbitraryDimensionArrayImport] object data, string streamId, Core.Credentials.Account account = null)
+    public static string Send([ArbitraryDimensionArrayImport] object data, string streamId, string branchName= "main", string message = "Automatic commit from Dynamo", Core.Credentials.Account account = null)
     {
       if (account == null)
         account = AccountManager.GetDefaultAccount();
@@ -40,9 +40,9 @@ namespace Speckle.ConnectorDynamo.Functions
       var res = client.CommitCreate(new CommitCreateInput
       {
         streamId = streamId,
-        branchName = "master",
+        branchName = branchName,
         objectId = objectId,
-        message = "Automatic commit from Dynamo"
+        message = message
       }).Result;
 
       if (!string.IsNullOrEmpty(res))
