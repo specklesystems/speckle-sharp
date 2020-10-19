@@ -713,6 +713,7 @@ namespace Speckle.Core.Api
           Query = $@"query Stream($streamId: String!, $commitId: String!) {{
                       stream(id: $streamId) {{
                         commit(id: $commitId){{
+                          id,
                           message,
                           referencedObject,
                           createdAt,
