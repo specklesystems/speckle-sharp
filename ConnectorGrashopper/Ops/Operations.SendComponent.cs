@@ -37,7 +37,7 @@ namespace ConnectorGrashopper.Ops
 
     public bool JustPastedIn { get; set; }
 
-    public List<CommitOutputWrapper> OutputWrappers = new List<CommitOutputWrapper>();
+    public List<StreamWrapper> OutputWrappers = new List<StreamWrapper>();
 
     public string BaseId { get; set; }
 
@@ -54,7 +54,7 @@ namespace ConnectorGrashopper.Ops
       writer.SetString("CurrentComponentState", CurrentComponentState);
       writer.SetString("BaseId", BaseId);
 
-      var owSer = string.Join("\n", OutputWrappers.Select(ow => $"{ow.url}\t{ow.id}\t{ow.branch}\t{ow.streamId}"));
+      var owSer = string.Join("\n", OutputWrappers.Select(ow => $"{ow.ServerUrl}\t{ow.StreamId}\t{ow.CommitId}"));
       writer.SetString("OutputWrappers", owSer);
 
       return base.Write(writer);
@@ -74,12 +74,11 @@ namespace ConnectorGrashopper.Ops
         foreach (var line in wrapperLines)
         {
           var pieces = line.Split('\t');
-          OutputWrappers.Add(new CommitOutputWrapper
+          OutputWrappers.Add(new StreamWrapper
           {
-            url = pieces[0],
-            id = pieces[1],
-            branch = pieces[2],
-            streamId = pieces[3]
+            ServerUrl = pieces[0],
+            StreamId = pieces[1],
+            CommitId = pieces[2]
           });
         }
 
@@ -130,7 +129,7 @@ namespace ConnectorGrashopper.Ops
         Menu_AppendSeparator(menu);
         foreach (var ow in OutputWrappers)
         {
-          Menu_AppendItem(menu, $"View commit {ow.id} @ {ow.url} online ↗", (s, e) => System.Diagnostics.Process.Start($"{ow.url}/streams/{ow.streamId}/commits/{ow.id}"));
+          Menu_AppendItem(menu, $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗", (s, e) => System.Diagnostics.Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}"));
         }
       }
 
@@ -208,7 +207,7 @@ namespace ConnectorGrashopper.Ops
 
     List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
-    List<CommitOutputWrapper> OutputWrappers = new List<CommitOutputWrapper>();
+    List<StreamWrapper> OutputWrappers = new List<StreamWrapper>();
 
     public string BaseId { get; set; }
 
@@ -226,7 +225,7 @@ namespace ConnectorGrashopper.Ops
       DA.GetDataTree(2, out _BranchNameInput);
       DA.GetDataTree(3, out _MessageInput);
 
-      OutputWrappers = new List<CommitOutputWrapper>();
+      OutputWrappers = new List<StreamWrapper>();
     }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
@@ -399,20 +398,19 @@ namespace ConnectorGrashopper.Ops
             };
 
             // Check to see if we have a previous commit; if so set it.
-            var prevCommit = prevCommits.FirstOrDefault(c => c.url == client.ServerUrl && c.streamId == ((ServerTransport)transport).StreamId);
+            var prevCommit = prevCommits.FirstOrDefault(c => c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId);
             if (prevCommit != null)
             {
-              commitCreateInput.previousCommitIds = new List<string>() { prevCommit.id };
+              commitCreateInput.previousCommitIds = new List<string>() { prevCommit.CommitId };
             }
 
             var commitId = await client.CommitCreate(CancellationToken, commitCreateInput);
 
-            OutputWrappers.Add(new CommitOutputWrapper
+            OutputWrappers.Add(new StreamWrapper
             {
-              streamId = ((ServerTransport)transport).StreamId,
-              branch = _BranchNameInput.get_FirstItem(true).Value,
-              url = client.ServerUrl,
-              id = commitId
+              StreamId = ((ServerTransport)transport).StreamId,
+              ServerUrl = client.ServerUrl,
+              CommitId = commitId
             });
           }
           catch (Exception e)

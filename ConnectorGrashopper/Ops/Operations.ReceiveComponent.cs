@@ -1,9 +1,13 @@
-﻿using GH_IO.Serialization;
+﻿using ConnectorGrashopper.Extras;
+using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -122,8 +126,15 @@ namespace ConnectorGrashopper.Ops
 
   public class ReceiveComponentWorker : WorkerInstance
   {
-
     GH_Structure<IGH_Goo> DataInput;
+
+    StreamWrapper InputWrapper { get; set; }
+
+    Action<ConcurrentDictionary<string, int>> InternalProgressAction;
+
+    Action<string, Exception> ErrorAction;
+
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public ReceiveComponentWorker(GH_Component p) : base(p) { }
 
@@ -134,12 +145,46 @@ namespace ConnectorGrashopper.Ops
       DA.GetDataTree(0, out DataInput);
       var input = DataInput.get_DataItem(0).GetType().GetProperty("Value").GetValue(DataInput.get_DataItem(0));
 
-      var xxx = input;
+      string inputType = "Stream";
+     
+      if (input is StreamWrapper)
+      {
+        InputWrapper = input as StreamWrapper;
+      }
+      else if (input is string)
+      {
+        InputWrapper = new StreamWrapper(input as string);
+      }
+
+      if (InputWrapper.CommitId != null)
+        inputType = "Commit";
+
+      Parent.Message = inputType;
     }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      throw new NotImplementedException();
+      
+      InternalProgressAction = (dict) =>
+      {
+        foreach (var kvp in dict)
+        {
+          ReportProgress(kvp.Key, (double)kvp.Value / 8000);
+        }
+      };
+
+      ErrorAction = (transportName, exception) =>
+      {
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
+      };
+
+      Task.Run(async () =>
+      {
+        var client = new Client(InputWrapper.GetAccount());
+        client.StreamGet(InputWrapper.StreamId);
+        
+        //var obj = await Operations.Receive()
+      });
     }
 
     public override void SetData(IGH_DataAccess DA)
