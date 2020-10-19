@@ -6,6 +6,7 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using System;
 using System.Collections.Concurrent;
@@ -58,6 +59,7 @@ namespace ConnectorGrashopper.Ops
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddGenericParameter("Data", "D", "The data.", GH_ParamAccess.tree);
+      pManager.AddTextParameter("Info", "I", "Commit information.", GH_ParamAccess.item);
     }
 
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
@@ -95,7 +97,7 @@ namespace ConnectorGrashopper.Ops
       // Set output data in a "first run" event. Note: we are not persisting the actual "sent" object as it can be very big.
       if (JustPastedIn)
       {
-        DA.SetData(1, BaseId);
+        //
       }
 
       JustPastedIn = false;
@@ -128,14 +130,18 @@ namespace ConnectorGrashopper.Ops
   public class ReceiveComponentWorker : WorkerInstance
   {
     GH_Structure<IGH_Goo> DataInput;
-
     StreamWrapper InputWrapper { get; set; }
 
     Action<ConcurrentDictionary<string, int>> InternalProgressAction;
-
     Action<string, Exception> ErrorAction;
 
     List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
+
+    public int TotalObjectCount { get; set; } = 1;
+
+    public Base ReceivedObject { get; set; }
+
+    public Commit ReceivedCommit { get; set; }
 
     public ReceiveComponentWorker(GH_Component p) : base(p) { }
 
@@ -158,19 +164,23 @@ namespace ConnectorGrashopper.Ops
       }
 
       if (InputWrapper.CommitId != null)
+      {
         inputType = "Commit";
+      }
 
       Parent.Message = inputType;
+      // TODO: inform the parent on what it should do:
+      // - commit: DO NOT subscribe to events; be chill
+      // - stream: subscribe to events & figure out updating.
     }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-
       InternalProgressAction = (dict) =>
       {
         foreach (var kvp in dict)
         {
-          ReportProgress(kvp.Key, (double)kvp.Value / 8000);
+          ReportProgress(kvp.Key, (double)kvp.Value / TotalObjectCount);
         }
       };
 
@@ -183,9 +193,7 @@ namespace ConnectorGrashopper.Ops
       {
         var client = new Client(InputWrapper.GetAccount());
 
-        string referencedObject = null;
         Commit myCommit = null;
-
         if (InputWrapper.CommitId != null)
         {
           try
@@ -194,35 +202,65 @@ namespace ConnectorGrashopper.Ops
           }
           catch (Exception e)
           {
-            var eee = e;
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+            return;
           }
         }
         else
         {
-          var stream = await client.StreamGet(InputWrapper.StreamId);
-          myCommit = stream.branches.items[0].commits.items[0];
+          try
+          {
+            var stream = await client.StreamGet(InputWrapper.StreamId);
+            var mainBranch = stream.branches.items.FirstOrDefault(b => b.name == "main");
+            myCommit = mainBranch.commits.items[0];
+          } catch(Exception e)
+          {
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+            return;
+          }
         }
 
-        var testssss = myCommit;
+        ReceivedCommit = myCommit;
+
+        if (CancellationToken.IsCancellationRequested)
+        {
+          return;
+        }
 
         var remoteTransport = new ServerTransport(InputWrapper.GetAccount(), InputWrapper.StreamId);
 
-        var obj = await Operations.Receive(
+        ReceivedObject = await Operations.Receive(
           objectId: myCommit.referencedObject,
           cancellationToken: CancellationToken,
           remoteTransport: remoteTransport,
           onProgressAction: InternalProgressAction,
-          onErrorAction: ErrorAction
+          onErrorAction: ErrorAction,
+          onTotalChildrenCountKnown: (count) => TotalObjectCount = count
           );
 
-        var lol = obj;
+        if (CancellationToken.IsCancellationRequested)
+        {
+          return;
+        }
+
         Done();
       });
     }
 
     public override void SetData(IGH_DataAccess DA)
     {
-      throw new NotImplementedException();
+      if (CancellationToken.IsCancellationRequested)
+      {
+        return;
+      }
+
+      foreach (var (level, message) in RuntimeMessages)
+      {
+        Parent.AddRuntimeMessage(level, message);
+      }
+
+      DA.SetData(0, ReceivedObject); // TODO: unpack this object for the usual cases (@list, @dictionary, or otherwise it's just an item). 
+      DA.SetData(1, $"{ReceivedCommit.authorName} @ {ReceivedCommit.createdAt}: { ReceivedCommit.message} (id:{ReceivedCommit.id})");
     }
   }
 
