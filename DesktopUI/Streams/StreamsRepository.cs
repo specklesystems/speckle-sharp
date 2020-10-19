@@ -10,9 +10,16 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  class StreamsRepository
+  public class StreamsRepository
   {
-    private AccountsRepository _acctRepo = new AccountsRepository();
+    private AccountsRepository _acctsRepo;
+    private readonly ConnectorBindings _bindings;
+
+    public StreamsRepository(AccountsRepository acctsRepo, ConnectorBindings bindings)
+    {
+      _acctsRepo = acctsRepo;
+      _bindings = bindings;
+    }
 
     public Branch GetMainBranch(List<Branch> branches)
     {
@@ -26,9 +33,7 @@ namespace Speckle.DesktopUI.Streams
 
       var streamInput = new StreamCreateInput()
       {
-        name = stream.name,
-        description = stream.description,
-        isPublic = stream.isPublic
+        name = stream.name, description = stream.description, isPublic = stream.isPublic
       };
 
       return client.StreamCreate(streamInput);
@@ -45,28 +50,31 @@ namespace Speckle.DesktopUI.Streams
       var collection = new BindableCollection<StreamState>();
 
       #region create dummy data
+
       var collabs = new List<Collaborator>()
       {
         new Collaborator
         {
-        id = "123",
-        name = "Matteo Cominetti",
-        role = "stream:contributor",
-        avatar = "https://avatars0.githubusercontent.com/u/2679513?s=88&v=4"
+          id = "123",
+          name = "Matteo Cominetti",
+          role = "stream:contributor",
+          avatar = "https://avatars0.githubusercontent.com/u/2679513?s=88&v=4"
         },
         new Collaborator
         {
-        id = "321",
-        name = "Izzy Lyseggen",
-        role = "stream:owner",
-        avatar = "https://avatars2.githubusercontent.com/u/7717434?s=88&u=08db51f5799f6b21580485d915054b3582d519e6&v=4"
+          id = "321",
+          name = "Izzy Lyseggen",
+          role = "stream:owner",
+          avatar =
+            "https://avatars2.githubusercontent.com/u/7717434?s=88&u=08db51f5799f6b21580485d915054b3582d519e6&v=4"
         },
         new Collaborator
         {
-        id = "456",
-        name = "Dimitrie Stefanescu",
-        role = "stream:contributor",
-        avatar = "https://avatars3.githubusercontent.com/u/7696515?s=88&u=fa253b5228d512e1ce79357c63925b7258e69f4c&v=4"
+          id = "456",
+          name = "Dimitrie Stefanescu",
+          role = "stream:contributor",
+          avatar =
+            "https://avatars3.githubusercontent.com/u/7696515?s=88&u=fa253b5228d512e1ce79357c63925b7258e69f4c&v=4"
         }
       };
       var branches = new Branches()
@@ -74,36 +82,32 @@ namespace Speckle.DesktopUI.Streams
         totalCount = 2,
         items = new List<Branch>()
         {
-        new Branch()
-        {
-          id = "123",
-          name = "main",
-          commits = new Commits()
+          new Branch()
           {
-            items = new List<Commit>()
+            id = "123",
+            name = "main",
+            commits = new Commits()
             {
-              new Commit()
+              items = new List<Commit>()
               {
-                authorName = "izzy 2.0",
-                id = "commit123",
-                message= "a totally real commit 💫",
-                createdAt = "sometime"
-              },
-              new Commit()
-              {
-                authorName = "izzy bot",
-                id = "commit321",
-                message= "look @ all these changes 👩‍🎤",
-                createdAt = "03/05/2030"
+                new Commit()
+                {
+                  authorName = "izzy 2.0",
+                  id = "commit123",
+                  message = "a totally real commit 💫",
+                  createdAt = "sometime"
+                },
+                new Commit()
+                {
+                  authorName = "izzy bot",
+                  id = "commit321",
+                  message = "look @ all these changes 👩‍🎤",
+                  createdAt = "03/05/2030"
+                }
               }
             }
-          }
-        },
-        new Branch()
-        {
-          id = "321",
-          name = "dev"
-        }
+          },
+          new Branch() {id = "321", name = "dev"}
         }
       };
 
@@ -128,20 +132,16 @@ namespace Speckle.DesktopUI.Streams
           branches = branches
         }
       };
+
       #endregion
 
       var client = new Client(AccountManager.GetDefaultAccount());
-      foreach (var stream in testStreams)
+      foreach ( var stream in testStreams )
       {
-        collection.Add(new StreamState()
-        {
-          client = client,
-          stream = stream,
-          accountId = client.AccountId,
-        });
+        collection.Add(new StreamState() {client = client, stream = stream, accountId = client.AccountId,});
       }
 
-      collection[0].placeholders.Add(new Core.Models.Base() { id = "random_obj" });
+      collection[ 0 ].placeholders.Add(new Core.Models.Base() {id = "random_obj"});
 
       return collection;
     }

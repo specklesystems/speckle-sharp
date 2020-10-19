@@ -22,18 +22,22 @@ namespace Speckle.DesktopUI.Streams
 
     public StreamCreateDialogViewModel(
       IEventAggregator events,
+      StreamsRepository streamsRepo,
+      AccountsRepository acctsRepo,
       ConnectorBindings bindings)
     {
       DisplayName = "Create Stream";
       _events = events;
       _bindings = bindings;
       _filters = new BindableCollection<ISelectionFilter>(_bindings.GetSelectionFilters());
+      _streamsRepo = streamsRepo;
+      _acctRepo = acctsRepo;
 
       _selectionCount = _bindings.GetSelectedObjects().Count;
     }
 
-    private StreamsRepository _repo => new StreamsRepository();
-    private AccountsRepository _acctRepo => new AccountsRepository();
+    private readonly StreamsRepository _streamsRepo;
+    private readonly AccountsRepository _acctRepo;
 
     public ISnackbarMessageQueue Notifications
     {
@@ -276,7 +280,7 @@ namespace Speckle.DesktopUI.Streams
       try
       {
         var client = new Client(AccountToSendFrom);
-        var streamId = await _repo.CreateStream(StreamToCreate, AccountToSendFrom);
+        var streamId = await _streamsRepo.CreateStream(StreamToCreate, AccountToSendFrom);
 
         foreach ( var user in Collaborators )
         {
@@ -287,7 +291,7 @@ namespace Speckle.DesktopUI.Streams
         }
 
         // TODO do this locally first before creating on the server
-        StreamToCreate = await _repo.GetStream(streamId, AccountToSendFrom);
+        StreamToCreate = await _streamsRepo.GetStream(streamId, AccountToSendFrom);
         StreamState = new StreamState()
         {
           client = client, filter = SelectedFilter, stream = StreamToCreate
