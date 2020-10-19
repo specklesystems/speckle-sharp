@@ -8,7 +8,7 @@ namespace Speckle.DesktopUI.Utils
 {
   public class ProgressReport : PropertyChangedBase
   {
-    public int Current => Maximum / Value * 100;
+    public int CurrentPercentage => Value / Maximum * 100;
     private int _value;
 
     public int Value
@@ -17,7 +17,7 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _value, value);
-        NotifyOfPropertyChange(nameof(Current));
+        NotifyOfPropertyChange(nameof(CurrentPercentage));
       }
     }
 
@@ -70,6 +70,7 @@ namespace Speckle.DesktopUI.Utils
         Debug.WriteLine("Could not parse the string to a DateTime");
         return "";
       }
+
       if ( timeAgo.TotalSeconds < 60 )
         return "less than a minute ago";
       if ( timeAgo.TotalMinutes < 60 )
