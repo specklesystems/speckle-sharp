@@ -1,4 +1,7 @@
-﻿using Dynamo.Graph.Nodes;
+﻿extern alias DynamoNewtonsoft;
+using DNJ = DynamoNewtonsoft::Newtonsoft.Json;
+
+using Dynamo.Graph.Nodes;
 using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
 using Speckle.ConnectorDynamo.Functions;
@@ -8,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Account = Speckle.Core.Credentials.Account;
 using Speckle.Core.Logging;
+using Speckle.ConnectorDynamo.Functions.Extras;
 
 namespace Speckle.ConnectorDynamo
 {
@@ -19,34 +23,44 @@ namespace Speckle.ConnectorDynamo
   [IsDesignScriptCompatible]
   public class Send : NodeModel
   {
-    private readonly NullNode defaultAccountValue = new NullNode();
-    private readonly StringNode defaultBranchValue = new StringNode();
-    private readonly StringNode defaultMessageValue = new StringNode();
 
 
-    [JsonConstructor]
+    private void AddInputs()
+    {
+      StringNode defaultBranchValue = new StringNode();
+      StringNode defaultMessageValue = new StringNode();
+
+      defaultBranchValue.Value = "main";
+      defaultMessageValue.Value = "Automatic commit from Dynamo";
+
+      InPorts.Add(new PortModel(PortType.Input, this, new PortData("data", "The data to send")));
+      InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream", "The stream to send to")));
+      InPorts.Add(new PortModel(PortType.Input, this, new PortData("branchName", "The branch to use to", defaultBranchValue)));
+      InPorts.Add(new PortModel(PortType.Input, this, new PortData("message", "The commit message", defaultMessageValue)));
+    }
+    private void AddOutputs()
+    {
+      OutPorts.Add(new PortModel(PortType.Output, this, new PortData("log", "Log")));
+    }
+
+
+    [DNJ.JsonConstructor]
     private Send(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
-      if (inPorts.Count() == 2)
+      if (inPorts.Count() == 4)
       {
         //blocker: https://github.com/DynamoDS/Dynamo/issues/11118
         //inPorts.ElementAt(1).DefaultValue = endPortDefaultValue;
       }
       else
       {
-        defaultBranchValue.Value = "main";
-        defaultMessageValue.Value = "Automatic commit from Dynamo";
         // If information from json does not look correct, clear the default ports and add ones with default value
         InPorts.Clear();
-        InPorts.Add(new PortModel(PortType.Input, this, new PortData("data", "The data to send")));
-        InPorts.Add(new PortModel(PortType.Input, this, new PortData("streamId", "The stream to send to")));
-        InPorts.Add(new PortModel(PortType.Input, this, new PortData("branchName", "The branch to use to", defaultBranchValue)));
-        InPorts.Add(new PortModel(PortType.Input, this, new PortData("message", "The commit message", defaultMessageValue)));
-        InPorts.Add(new PortModel(PortType.Input, this, new PortData("account", "Speckle account to use, if not provided the default account will be used", defaultAccountValue)));
+        AddInputs();
       }
 
       if (outPorts.Count() == 0)
-        OutPorts.Add(new PortModel(PortType.Output, this, new PortData("log", "Log")));
+        AddOutputs();
 
       ArgumentLacing = LacingStrategy.Disabled;
     }
@@ -55,16 +69,8 @@ namespace Speckle.ConnectorDynamo
     {
       Tracker.TrackEvent(Tracker.SEND_ADDED);
 
-      defaultBranchValue.Value = "main";
-      defaultMessageValue.Value = "Automatic commit from Dynamo";
-
-      InPorts.Add(new PortModel(PortType.Input, this, new PortData("data", "The data to send")));
-      InPorts.Add(new PortModel(PortType.Input, this, new PortData("streamId", "The stream to send to")));
-      InPorts.Add(new PortModel(PortType.Input, this, new PortData("branchName", "The branch to use to", defaultBranchValue)));
-      InPorts.Add(new PortModel(PortType.Input, this, new PortData("message", "The commit message", defaultMessageValue)));
-      InPorts.Add(new PortModel(PortType.Input, this, new PortData("account", "Speckle account to use, if not provided the default account will be used", defaultAccountValue)));
-
-      OutPorts.Add(new PortModel(PortType.Output, this, new PortData("log", "Log")));
+      AddInputs();
+      AddOutputs();
 
       RegisterAllPorts();
       ArgumentLacing = LacingStrategy.Disabled;
@@ -82,8 +88,8 @@ namespace Speckle.ConnectorDynamo
       Tracker.TrackEvent(Tracker.SEND);
 
       var functionCall = AstFactory.BuildFunctionCall(
-        new Func<object, string, string, string, Account, string>(Functions.Functions.Send),
-        new List<AssociativeNode> { inputAstNodes[0], inputAstNodes[1], inputAstNodes[2], inputAstNodes[3], inputAstNodes[4] });
+        new Func<object, StreamWrapper, string, string, string>(Functions.Functions.Send),
+        new List<AssociativeNode> { inputAstNodes[0], inputAstNodes[1], inputAstNodes[2], inputAstNodes[3] });
 
       return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall) };
     }

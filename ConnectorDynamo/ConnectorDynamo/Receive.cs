@@ -1,6 +1,8 @@
-﻿using Dynamo.Engine;
+﻿extern alias DynamoNewtonsoft;
+using DNJ = DynamoNewtonsoft::Newtonsoft.Json;
+
+using Dynamo.Engine;
 using Dynamo.Graph.Nodes;
-using Microsoft.Practices.Prism.Regions;
 using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
 using ProtoCore.Mirror;
@@ -15,6 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
+using Speckle.ConnectorDynamo.Functions.Extras;
 
 namespace Speckle.ConnectorDynamo
 {
@@ -29,21 +32,30 @@ namespace Speckle.ConnectorDynamo
     public event Action RequestChangeStreamId;
     protected virtual void OnRequestChangeStreamId()
     {
-        RequestChangeStreamId();
+      RequestChangeStreamId();
     }
     private readonly NullNode defaultAccountValue = new NullNode();
 
     public string OldStreamId { get; set; }
     public string StreamId { get; set; }
 
-
     private Client _client { get; set; }
 
-    [JsonConstructor]
+    private void AddInputs()
+    {
+      InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream", "The stream to receive from")));
+    }
+    private void AddOutputs()
+    {
+      OutPorts.Add(new PortModel(PortType.Output, this, new PortData("data", "Data received")));
+    }
+
+
+    [DNJ.JsonConstructor]
     private Receive(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
 
-      if (inPorts.Count() == 2)
+      if (inPorts.Count() == 1)
       {
         //blocker: https://github.com/DynamoDS/Dynamo/issues/11118
         //inPorts.ElementAt(1).DefaultValue = endPortDefaultValue;
@@ -52,12 +64,11 @@ namespace Speckle.ConnectorDynamo
       {
         // If information from json does not look correct, clear the default ports and add ones with default value
         InPorts.Clear();
-        InPorts.Add(new PortModel(PortType.Input, this, new PortData("streamId", "The stream to receive from")));
-        InPorts.Add(new PortModel(PortType.Input, this, new PortData("account", "Speckle account to use, if not provided the default account will be used", defaultAccountValue)));
+        AddInputs();
       }
 
       if (outPorts.Count() == 0)
-        OutPorts.Add(new PortModel(PortType.Output, this, new PortData("data", "Data received")));
+        AddOutputs();
 
       this.PropertyChanged += StreamId_PropertyChanged;
       foreach (var port in InPorts)
@@ -70,10 +81,8 @@ namespace Speckle.ConnectorDynamo
     {
       Tracker.TrackEvent(Tracker.RECEIVE_ADDED);
 
-      InPorts.Add(new PortModel(PortType.Input, this, new PortData("streamId","The stream to receive from")));
-      InPorts.Add(new PortModel(PortType.Input, this, new PortData("account", "Speckle account to use, if not provided the default account will be used", defaultAccountValue)));
-
-      OutPorts.Add(new PortModel(PortType.Output, this, new PortData("data", "Data received")));
+      AddInputs();
+      AddOutputs();
 
       RegisterAllPorts();
 
@@ -112,8 +121,8 @@ namespace Speckle.ConnectorDynamo
       Tracker.TrackEvent(Tracker.RECEIVE);
 
       var functionCall = AstFactory.BuildFunctionCall(
-        new Func<string, Core.Credentials.Account, object>(Functions.Functions.Receive),
-        new List<AssociativeNode> { inputAstNodes[0], inputAstNodes[1] });
+        new Func<StreamWrapper, object>(Functions.Functions.Receive),
+        new List<AssociativeNode> { inputAstNodes[0] });
 
       return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall) };
     }
