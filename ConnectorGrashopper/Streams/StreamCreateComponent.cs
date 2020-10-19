@@ -6,6 +6,7 @@ using Speckle.Core.Credentials;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Grasshopper.Kernel.Data;
 
 namespace ConnectorGrashopper.Streams
 {
@@ -13,7 +14,7 @@ namespace ConnectorGrashopper.Streams
   {
     public override Guid ComponentGuid => new Guid("722690DE-218D-45E1-9183-98B13C7F411D");
 
-    public StreamWrapper Stream { get; set; } = null;
+    public StreamWrapper stream { get; set; } = null;
 
     public StreamCreateComponent() : base("Create Stream", "Create", "Create a new speckle stream", "Speckle 2",
         "Streams")
@@ -21,12 +22,13 @@ namespace ConnectorGrashopper.Streams
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddTextParameter("Account", "A", "Account to be used when creating the stream.", GH_ParamAccess.item);
+      var account = pManager.AddTextParameter("Account", "A", "Account to be used when creating the stream. If no account is provided, the default will be used.", GH_ParamAccess.item);
+      Params.Input[account].Optional = true;
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("Stream", "S", "The created stream.", GH_ParamAccess.item);
+      pManager.AddParameter(new SpeckleStreamParam("Stream", "S", "The created stream.", GH_ParamAccess.item));
     }
 
     public override bool Read(GH_IReader reader)
@@ -36,7 +38,7 @@ namespace ConnectorGrashopper.Streams
       if (serialisedStreamWrapper != null)
       {
         var pcs = serialisedStreamWrapper.Split(' ');
-        Stream = new StreamWrapper { StreamId = pcs[0], ServerUrl = pcs[1], AccountId = pcs[2] };
+        stream = new StreamWrapper(pcs[0],pcs[2],pcs[1]);
       }
 
       return base.Read(reader);
@@ -44,12 +46,12 @@ namespace ConnectorGrashopper.Streams
 
     public override bool Write(GH_IWriter writer)
     {
-      if (Stream == null)
+      if (stream == null)
       {
         return base.Write(writer);
       }
 
-      var serialisedStreamWrapper = $"{Stream.StreamId} {Stream.ServerUrl} {Stream.AccountId}";
+      var serialisedStreamWrapper = $"{stream.StreamId} {stream.ServerUrl} {stream.AccountId}";
       writer.SetString("stream", serialisedStreamWrapper);
       return base.Write(writer);
     }
@@ -62,15 +64,6 @@ namespace ConnectorGrashopper.Streams
         return;
       }
 
-      if (Stream != null)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using cached stream. If you want to create a new stream, create a new component.");
-        DA.SetData(0, Stream);
-        NickName = $"Id: {Stream.StreamId}";
-        MutableNickName = false;
-        return;
-      }
-
       string accountId = null;
       Account account = null;
       DA.GetData(0, ref accountId);
@@ -78,7 +71,7 @@ namespace ConnectorGrashopper.Streams
       if (accountId == null)
       {
         account = AccountManager.GetDefaultAccount();
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using default account {accountId}");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using default account {account}");
       }
       else
       {
@@ -90,17 +83,28 @@ namespace ConnectorGrashopper.Streams
           return;
         }
       }
+      
+      Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.id);
+      
+      if (stream != null)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using cached stream. If you want to create a new stream, create a new component.");
+        DA.SetData(0, new GH_SpeckleStream(stream));
+        NickName = $"Id: {stream.StreamId}";
+        MutableNickName = false;
+        return;
+      }
 
       Task.Run(async () =>
       {
         var client = new Client(account);
         var streamId = await client.StreamCreate(new StreamCreateInput());
-        Stream = new StreamWrapper
-        {
-          AccountId = account.id,
-          ServerUrl = account.serverInfo.url,
-          StreamId = streamId
-        };
+        stream = new StreamWrapper
+        (
+          streamId,
+          account.id,
+          account.serverInfo.url
+        );
         Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
         {
           ExpireSolution(true);
