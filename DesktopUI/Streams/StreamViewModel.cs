@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
@@ -8,7 +9,7 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  public class StreamViewModel : Screen, IHandle<ApplicationEvent>
+  public class StreamViewModel : Screen, IHandle<ApplicationEvent>, IHandle<StreamUpdatedEvent>
   {
     private readonly IEventAggregator _events;
     private readonly ViewManager _viewManager;
@@ -25,7 +26,11 @@ namespace Speckle.DesktopUI.Streams
       _viewManager = viewManager;
       _dialogFactory = dialogFactory;
       _bindings = bindings;
+
+      events.Subscribe(this);
     }
+
+    public ProgressReport Progress { get; set; } = new ProgressReport();
 
     private StreamState _streamState;
 
@@ -46,6 +51,7 @@ namespace Speckle.DesktopUI.Streams
     {
       get => _stream;
       set => SetAndNotify(ref _stream, value);
+
     }
 
     private Branch _branch;
@@ -62,24 +68,20 @@ namespace Speckle.DesktopUI.Streams
       if ( !StreamState.placeholders.Any() )
       {
         _bindings.RaiseNotification("Nothing to send to Speckle.");
-        StreamState.IsSending = false;
-        return;
       }
 
-      StreamState.IsSending = true;
       try
       {
-        StreamState = await _bindings.SendStream(StreamState);
+        StreamState = await Task.Run(() => _bindings.SendStream(StreamState, Progress));
+        NotifyOfPropertyChange(nameof(StreamState));
+        _events.Publish(new StreamUpdatedEvent() {StreamId = Stream.id});
+        await Progress.ResetProgress();
       }
       catch ( Exception e )
       {
         _bindings.RaiseNotification($"Error: {e.Message}");
-        StreamState.IsSending = false;
-        return;
       }
 
-      NotifyOfPropertyChange(nameof(StreamState));
-      _events.Publish(new StreamUpdatedEvent() {StreamId = Stream.id});
       StreamState.IsSending = false;
     }
 
@@ -87,19 +89,12 @@ namespace Speckle.DesktopUI.Streams
     {
       StreamState.IsReceiving = true;
       StreamState.stream = await StreamState.client.StreamGet(Stream.id);
-      // var newCommitId = newStream.branches.items[ 0 ].commits.items[ 0 ].id;
-      // var oldCommitId = Branch.commits.items[ 0 ].id;
-
-      // if ( oldCommitId == newCommitId )
-      // {
-      //   _bindings.RaiseNotification($"Nothing to receive - stream is up to date");
-      //   return;
-      // }
 
       try
       {
-        StreamState = await _bindings.ReceiveStream(StreamState);
+        StreamState = await Task.Run(() => _bindings.ReceiveStream(StreamState, Progress));
         StreamState.ServerUpdates = false;
+        await Progress.ResetProgress();
       }
       catch ( Exception e )
       {
@@ -181,6 +176,13 @@ namespace Speckle.DesktopUI.Streams
         default:
           return;
       }
+    }
+
+    public async void Handle(StreamUpdatedEvent message)
+    {
+      if (message.StreamId != StreamState.stream.id) return;
+      StreamState.stream = await StreamState.client.StreamGet(StreamState.stream.id);
+      Stream = StreamState.stream;
     }
   }
 }

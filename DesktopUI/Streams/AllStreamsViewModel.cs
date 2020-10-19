@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
@@ -22,9 +23,10 @@ namespace Speckle.DesktopUI.Streams
       IStreamViewModelFactory streamViewModelFactory,
       IDialogFactory dialogFactory,
       IEventAggregator events,
+      StreamsRepository streamsRepo,
       ConnectorBindings bindings)
     {
-      _repo = new StreamsRepository();
+      _repo = streamsRepo;
       _events = events;
       DisplayName = "Home";
       _viewManager = viewManager;
@@ -44,6 +46,8 @@ namespace Speckle.DesktopUI.Streams
     private BindableCollection<StreamState> _streamList;
     private Stream _selectedStream;
     private Branch _selectedBranch;
+
+    public ProgressReport Progress { get; set; } = new ProgressReport();
 
     public BindableCollection<StreamState> StreamList
     {
@@ -75,31 +79,28 @@ namespace Speckle.DesktopUI.Streams
       parent.ActivateItem(item);
     }
 
-    public async void ConvertAndSendObjects(StreamState state)
+    public async Task ConvertAndSendObjects(StreamState state)
     {
       state.IsSending = true;
       if ( !state.placeholders.Any() )
       {
         _bindings.RaiseNotification("Nothing to send to Speckle.");
-        state.IsSending = false;
-        return;
       }
 
-      var index = StreamList.IndexOf(state);
 
       try
       {
-        StreamList[ index ] = await _bindings.SendStream(state).ConfigureAwait(false);
+        var index = StreamList.IndexOf(state);
+        StreamList[ index ] = await Task.Run(() => _bindings.SendStream(state, Progress));
+        StreamList.Refresh();
+        await Progress.ResetProgress();
       }
       catch ( Exception e )
       {
         _bindings.RaiseNotification($"Error: {e.Message}");
-        state.IsSending = false;
-        return;
       }
 
       state.IsSending = false;
-      StreamList.Refresh();
     }
 
     public async void ConvertAndReceiveObjects(StreamState state)
@@ -109,8 +110,9 @@ namespace Speckle.DesktopUI.Streams
 
       try
       {
-        state = await _bindings.ReceiveStream(state);
+        state = await Task.Run(() => _bindings.ReceiveStream(state));
         state.ServerUpdates = false;
+        StreamList.Refresh();
       }
       catch ( Exception e )
       {
@@ -118,7 +120,6 @@ namespace Speckle.DesktopUI.Streams
       }
 
       state.IsReceiving = false;
-      StreamList.Refresh();
     }
 
     public async void ShowStreamCreateDialog()

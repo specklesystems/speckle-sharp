@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
+using Speckle.DesktopUI.Streams;
 
 namespace Speckle.DesktopUI.Utils
 {
@@ -87,7 +88,7 @@ namespace Speckle.DesktopUI.Utils
       };
     }
 
-    public override async Task<StreamState> SendStream(StreamState state)
+    public override async Task<StreamState> SendStream(StreamState state, ProgressReport progress = null)
     {
       var objects = state.placeholders;
       state.placeholders.Clear();
@@ -96,7 +97,7 @@ namespace Speckle.DesktopUI.Utils
       return state;
     }
 
-    public async override Task<StreamState> ReceiveStream(StreamState state)
+    public async override Task<StreamState> ReceiveStream(StreamState state, ProgressReport progress = null)
     {
       state.ServerUpdates = false;
       return state;

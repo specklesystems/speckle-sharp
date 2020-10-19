@@ -1,9 +1,50 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Stylet;
 
 namespace Speckle.DesktopUI.Utils
 {
+  public class ProgressReport : PropertyChangedBase
+  {
+    public int Current => Maximum / Value * 100;
+    private int _value;
+
+    public int Value
+    {
+      get => _value;
+      set
+      {
+        SetAndNotify(ref _value, value);
+        NotifyOfPropertyChange(nameof(Current));
+      }
+    }
+
+    private int _maximum = 100;
+
+    public int Maximum
+    {
+      get => _maximum;
+      set => SetAndNotify(ref _maximum, value);
+    }
+
+    private int _progressDict;
+
+    public int ProgressDict
+    {
+      get => _progressDict;
+      set => SetAndNotify(ref _progressDict, value);
+    }
+
+    public async Task ResetProgress(int millisec = 4000)
+    {
+      await Task.Delay(millisec);
+      Maximum = 100;
+      Value = 0;
+    }
+  }
+
   public static class Link
   {
     public static void OpenInBrowser(string url)

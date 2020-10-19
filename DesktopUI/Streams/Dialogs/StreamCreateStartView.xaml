@@ -26,15 +26,6 @@
         Text="Send objects to Speckle by creating a new stream."
         TextWrapping="Wrap" />
 
-      <!-- <TextBox -->
-      <!--   x:Name="StreamNameInput" -->
-      <!--   Height="40" -->
-      <!--   Margin="0,8" -->
-      <!--   md:HintAssist.Hint="Give your stream a name" -->
-      <!--   AcceptsReturn="False" -->
-      <!--   Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}" -->
-      <!--   Text="{Binding StreamToCreate.name}" /> -->
-
       <ComboBox
         Margin="0,16"
         md:HintAssist.Hint="Name your stream (or search for an existing one)"
