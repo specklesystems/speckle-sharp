@@ -39,7 +39,7 @@ namespace Speckle.DesktopUI.Streams
       if ( _streamList.Count == 0 )
         _streamList = _repo.LoadTestStreams();
 #endif
-      events.Subscribe(this);
+      _events.Subscribe(this);
     }
 
     private StreamsRepository _repo;

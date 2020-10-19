@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -34,6 +35,7 @@ namespace Speckle.DesktopUI.Streams
       _acctRepo = acctsRepo;
 
       _selectionCount = _bindings.GetSelectedObjects().Count;
+      _events.Subscribe(this);
     }
 
     private readonly StreamsRepository _streamsRepo;
@@ -252,6 +254,7 @@ namespace Speckle.DesktopUI.Streams
         var client = new Client(AccountToSendFrom);
         var streams = await client.StreamSearch(StreamQuery);
         StreamSearchResults = new BindableCollection<Stream>(streams);
+        await Task.Delay(300);
       }
       catch ( Exception e )
       {
@@ -345,6 +348,7 @@ namespace Speckle.DesktopUI.Streams
         var client = new Client(AccountToSendFrom);
         var users = await client.UserSearch(UserQuery);
         UserSearchResults = new BindableCollection<User>(users);
+        await Task.Delay(300);
       }
       catch ( Exception e )
       {

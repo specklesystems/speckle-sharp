@@ -27,7 +27,7 @@ namespace Speckle.DesktopUI.Streams
       _dialogFactory = dialogFactory;
       _bindings = bindings;
 
-      events.Subscribe(this);
+      _events.Subscribe(this);
     }
 
     public ProgressReport Progress { get; set; } = new ProgressReport();
