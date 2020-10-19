@@ -64,7 +64,7 @@ namespace ConnectorGrashopper.Ops
 
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
-      var autoSendMi = Menu_AppendItem(menu, $"Send automatically", (s, e) =>
+      var autoSendMi = Menu_AppendItem(menu, $"Receive automatically", (s, e) =>
       {
         AutoReceive = !AutoReceive;
         Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
@@ -72,7 +72,7 @@ namespace ConnectorGrashopper.Ops
           OnDisplayExpired(true);
         });
       }, true, AutoReceive);
-      autoSendMi.ToolTipText = "Toggle automatic data sending. If set, any change in any of the input parameters of this component will start sending.\n Please be aware that if a new send starts before an old one is finished, the previous operation is cancelled.";
+      autoSendMi.ToolTipText = "Toggle automatic receiving. If set, any upstream change will be pulled instantly. This only is applicable when receiving a stream or a branch..";
 
       base.AppendAdditionalComponentMenuItems(menu);
     }
