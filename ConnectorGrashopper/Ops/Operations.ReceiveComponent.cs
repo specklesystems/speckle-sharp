@@ -6,6 +6,7 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Transports;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -146,7 +147,7 @@ namespace ConnectorGrashopper.Ops
       var input = DataInput.get_DataItem(0).GetType().GetProperty("Value").GetValue(DataInput.get_DataItem(0));
 
       string inputType = "Stream";
-     
+
       if (input is StreamWrapper)
       {
         InputWrapper = input as StreamWrapper;
@@ -164,7 +165,7 @@ namespace ConnectorGrashopper.Ops
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      
+
       InternalProgressAction = (dict) =>
       {
         foreach (var kvp in dict)
@@ -181,9 +182,41 @@ namespace ConnectorGrashopper.Ops
       Task.Run(async () =>
       {
         var client = new Client(InputWrapper.GetAccount());
-        client.StreamGet(InputWrapper.StreamId);
-        
-        //var obj = await Operations.Receive()
+
+        string referencedObject = null;
+        Commit myCommit = null;
+
+        if (InputWrapper.CommitId != null)
+        {
+          try
+          {
+            myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
+          }
+          catch (Exception e)
+          {
+            var eee = e;
+          }
+        }
+        else
+        {
+          var stream = await client.StreamGet(InputWrapper.StreamId);
+          myCommit = stream.branches.items[0].commits.items[0];
+        }
+
+        var testssss = myCommit;
+
+        var remoteTransport = new ServerTransport(InputWrapper.GetAccount(), InputWrapper.StreamId);
+
+        var obj = await Operations.Receive(
+          objectId: myCommit.referencedObject,
+          cancellationToken: CancellationToken,
+          remoteTransport: remoteTransport,
+          onProgressAction: InternalProgressAction,
+          onErrorAction: ErrorAction
+          );
+
+        var lol = obj;
+        Done();
       });
     }
 

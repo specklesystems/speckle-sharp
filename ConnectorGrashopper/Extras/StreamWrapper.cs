@@ -54,7 +54,7 @@ namespace ConnectorGrashopper.Extras
         case 3: // ie http://speckle.server/streams/8fecc9aa6d
           if (uri.Segments[1].ToLowerInvariant() == "streams/")
           {
-            StreamId = uri.Segments[2];
+            StreamId = uri.Segments[2].Replace("/", "");
           }
           else
           {
@@ -64,11 +64,13 @@ namespace ConnectorGrashopper.Extras
         case 5: // ie http://speckle.server/streams/8fecc9aa6d/commits/76a23d7179
           if (uri.Segments[3].ToLowerInvariant() == "commits/")
           {
-            CommitId = uri.Segments[4];
+            StreamId = uri.Segments[2].Replace("/","");
+            CommitId = uri.Segments[4].Replace("/", "");
           }
           else if (uri.Segments[3].ToLowerInvariant() == "branches/")
           {
-            BranchId = uri.Segments[4];
+            StreamId = uri.Segments[2].Replace("/", "");
+            BranchId = uri.Segments[4].Replace("/", "");
           }
           else
           {
