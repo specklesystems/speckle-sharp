@@ -20,7 +20,7 @@ namespace ConnectorGrashopper.Extras
 
     public override string ToString()
     {
-      return $"Id: {StreamId} @ {ServerUrl}";
+      return $"{ServerUrl}/streams/{StreamId}@{AccountId}";
     }
 
     public Account GetAccount()
@@ -31,6 +31,11 @@ namespace ConnectorGrashopper.Extras
       if (account == null)
       {
         account = AccountManager.GetAccounts(ServerUrl).FirstOrDefault();
+      }
+
+      if (account != null)
+      {
+        AccountId = account.id;
       }
 
       return account;
