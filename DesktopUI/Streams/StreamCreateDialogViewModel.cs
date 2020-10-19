@@ -274,6 +274,7 @@ namespace Speckle.DesktopUI.Streams
 
       AccountToSendFrom = _acctRepo.GetDefault();
       StreamToCreate.name = StreamQuery;
+      SelectedStream = null;
       ChangeSlide(slideIndex);
     }
 
@@ -303,6 +304,7 @@ namespace Speckle.DesktopUI.Streams
 
         SelectedSlide = 3;
         _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
+        StreamState = new StreamState();
       }
       catch ( Exception e )
       {
@@ -363,6 +365,7 @@ namespace Speckle.DesktopUI.Streams
       GetSelectedObjects();
       AccountToSendFrom = _acctRepo.GetDefault();
       StreamToCreate.name = StreamQuery;
+      SelectedStream = null;
 
       AddNewStream();
     }
@@ -390,11 +393,6 @@ namespace Speckle.DesktopUI.Streams
     {
       if ( Collaborators.All(c => c.id != user.id) )
         Collaborators.Add(user);
-    }
-
-    private void AddCollabToCollection(object sender, EventArgs e)
-    {
-      return;
     }
 
     public void RemoveCollabFromCollection(User user)
@@ -429,8 +427,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamState.Placeholders = message.Objects as List<Base>;
-      // Notifications.Enqueue(message.Notification);
+      StreamState.Placeholders = message.Objects.ToList();
     }
 
     public void Handle(UpdateSelectionCountEvent message)
