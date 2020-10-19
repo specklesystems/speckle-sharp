@@ -2,20 +2,18 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using RevitElement = Autodesk.Revit.DB.Element;
-using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.DesktopUI.Utils;
+using Stylet;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -33,7 +31,6 @@ namespace Speckle.ConnectorRevit.UI
 
       if (state.filter != null)
         GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
-      // RaiseNotification("Stream created! Next, send to server ☁");
     }
 
     /// <summary>
@@ -53,7 +50,7 @@ namespace Speckle.ConnectorRevit.UI
     /// the Server and the local DB, and creates a commit with the objects.
     /// </summary>
     /// <param name="state">StreamState passed by the UI</param>
-    public override async Task<StreamState> SendStream(StreamState state)
+    public override async Task<StreamState> SendStream(StreamState state, ProgressReport progress = null)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Revit);
@@ -107,7 +104,14 @@ namespace Speckle.ConnectorRevit.UI
       var transports = new List<ITransport>() {new ServerTransport(client.Account, streamId)};
       var emptyBase = new Base();
       var @base = new Base {[ "@revitItems" ] = convertedObjects};
-      var objectId = await Operations.Send(@base, transports, onProgressAction: UpdateProgress);
+      var objectId = "";
+      if ( progress != null )
+      {
+        Execute.PostToUIThread(() => progress.Maximum = ( int ) @base.GetTotalChildrenCount());
+        objectId = await Operations.Send(@base, transports, onProgressAction: dict => UpdateProgress(dict, progress));
+      }
+      else objectId = await Operations.Send(@base, transports);
+
 
       var objByType = convertedObjects.GroupBy(o => o.speckle_type);
       var convertedTypes = objByType.Select(
@@ -135,7 +139,7 @@ namespace Speckle.ConnectorRevit.UI
       return state;
     }
 
-    public override async Task<StreamState> ReceiveStream(StreamState state)
+    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressReport progress = null)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Revit);
@@ -145,7 +149,14 @@ namespace Speckle.ConnectorRevit.UI
       var newStream = await state.client.StreamGet(state.stream.id);
 
       var commit = newStream.branches.items[ 0 ].commits.items[ 0 ];
-      var commitObject = await Operations.Receive(commit.referencedObject, transport);
+      Base commitObject;
+      if ( progress != null )
+      {
+        commitObject = await Operations.Receive(commit.referencedObject, transport,
+          onProgressAction: dict => UpdateProgress(dict, progress));
+      }
+      else commitObject = await Operations.Receive(commit.referencedObject, transport);
+
       var revitItems = ( List<object> )commitObject[ "@revitItems" ];
 
       var newObjects = revitItems.Select(o => ( Base ) o).ToList();
@@ -210,13 +221,10 @@ namespace Speckle.ConnectorRevit.UI
       throw new NotImplementedException();
     }
 
-    // TODO connect to UI
-    public void UpdateProgress(ConcurrentDictionary<string, int> obj)
+    public void UpdateProgress(ConcurrentDictionary<string, int> obj, ProgressReport progress)
     {
-      foreach ( var kvp in obj )
-      {
-        Debug.WriteLine($"{kvp.Key}: {kvp.Value}");
-      }
+      if (progress != null)
+        Execute.PostToUIThread(() => progress.Value = obj.Values.Last());
     }
 
     /// <summary>

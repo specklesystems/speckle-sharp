@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Timers;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using Speckle.Core.Api;
 using Speckle.Core.Models;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
 using Speckle.ConnectorRevit.Storage;
-using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorRevit.UI
 {
