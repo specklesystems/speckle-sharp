@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MaterialDesignThemes.Wpf;
+using Speckle.Core.Api;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -13,6 +10,7 @@ namespace Speckle.DesktopUI.Streams
   {
     private readonly IEventAggregator _events;
     private readonly ConnectorBindings _bindings;
+    private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
 
     public StreamUpdateDialogViewModel(
       IEventAggregator events,
@@ -24,11 +22,38 @@ namespace Speckle.DesktopUI.Streams
       _filters = new BindableCollection<ISelectionFilter>(_bindings.GetSelectionFilters());
     }
 
+    public ISnackbarMessageQueue Notifications
+    {
+      get => _notifications;
+      set => SetAndNotify(ref _notifications, value);
+    }
+
     private StreamState _streamState;
     public StreamState StreamState
     {
       get => _streamState;
-      set => SetAndNotify(ref _streamState, value);
+      set
+      {
+        SetAndNotify(ref _streamState, value);
+        NewName = StreamState.stream.name;
+        NewDescription = StreamState.stream.description;
+      }
+    }
+
+    private string _newName;
+
+    public string NewName
+    {
+      get => _newName;
+      set => SetAndNotify(ref _newName, value);
+    }
+
+    private string _newDescription;
+
+    public string NewDescription
+    {
+      get => _newDescription;
+      set => SetAndNotify(ref _newDescription, value);
     }
 
     private int _selectedSlide = 0;
@@ -55,6 +80,30 @@ namespace Speckle.DesktopUI.Streams
       {
         SetAndNotify(ref _selectedFilter, value);
         NotifyOfPropertyChange(nameof(CanGetSelectedObjects));
+      }
+    }
+
+    public async void UpdateStream()
+    {
+      if ( NewName == StreamState.stream.name && NewDescription == StreamState.stream.description ) CloseDialog();
+      try
+      {
+        var res = await StreamState.client.StreamUpdate(new StreamUpdateInput()
+        {
+          id = StreamState.stream.id,
+          name = NewName,
+          description = NewDescription,
+          isPublic = StreamState.stream.isPublic
+        });
+        _events.Publish(new StreamUpdatedEvent()
+        {
+          StreamId = StreamState.stream.id
+        });
+        CloseDialog();
+      }
+      catch ( Exception e )
+      {
+        Notifications.Enqueue($"Error: {e}");
       }
     }
 

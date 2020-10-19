@@ -94,6 +94,9 @@
     <Compile Include="RootViewModel.cs" />
     <Compile Include="Settings\SettingsViewModel.cs" />
     <Compile Include="Streams\AllStreamsViewModel.cs" />
+    <Compile Include="Streams\Dialogs\StreamUpdateStartView.xaml.cs">
+      <DependentUpon>StreamUpdateStartView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Streams\ShareStreamDialogViewModel.cs" />
     <Compile Include="Streams\StreamCreateDialogViewModel.cs" />
     <Compile Include="Streams\Dialogs\StreamCreateAdvancedView.xaml.cs">
@@ -144,6 +147,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Streams\AllStreamsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Streams\Dialogs\StreamUpdateStartView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

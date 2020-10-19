@@ -11,13 +11,14 @@
   d:DesignHeight="300"
   d:DesignWidth="300"
   mc:Ignorable="d">
-  <Grid>
     <Grid>
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="*" />
-      </Grid.RowDefinitions>
-      <Button
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Button
         Grid.Row="0"
         Width="25"
         Height="25"
@@ -31,20 +32,32 @@
         IsCancel="True"
         Style="{StaticResource MaterialDesignIconForegroundButton}"
         ToolTip="Cancel" />
-      <Grid Grid.Row="1" Width="400">
-        <md:Transitioner AutoApplyTransitionOrigins="True" SelectedIndex="{Binding SelectedSlide}">
+            <ProgressBar
+        Grid.Row="1"
+        Margin="0,4"
+        Background="Transparent"
+        BorderThickness="0"
+        Foreground="{DynamicResource PrimaryHueLightBrush}"
+        IsIndeterminate="False"
+        Value="0" />
+            <Grid
+        Grid.Row="2"
+        Width="400"
+        MaxHeight="500">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <md:Transitioner AutoApplyTransitionOrigins="True" SelectedIndex="{Binding SelectedSlide}">
 
-          <md:TransitionerSlide>
-            <md:TransitionerSlide.ForwardWipe>
-              <md:SlideWipe Direction="Left" />
-            </md:TransitionerSlide.ForwardWipe>
-            <dialogs:StreamCreateSimpleView />
-          </md:TransitionerSlide>
+                        <md:TransitionerSlide>
+                            <md:TransitionerSlide.ForwardWipe>
+                                <md:SlideWipe Direction="Left" />
+                            </md:TransitionerSlide.ForwardWipe>
+                            <dialogs:StreamUpdateStartView />
+                        </md:TransitionerSlide>
 
-
-        </md:Transitioner>
-        <TextBlock Text="{Binding StreamState.stream.id, StringFormat='yo, wazzup stream {0}? update this shit'}" />
-      </Grid>
+                    </md:Transitioner>
+                </ScrollViewer>
+                <md:Snackbar MessageQueue="{Binding Notifications}" />
+            </Grid>
+        </Grid>
     </Grid>
-  </Grid>
 </UserControl>
