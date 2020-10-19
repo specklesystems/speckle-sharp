@@ -27,15 +27,15 @@ namespace Speckle.Core.Api
     /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
     /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
     /// <returns>The id (hash) of the object.</returns>
-    public static async Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
+    public static Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
     {
-      return await Send(
-        @object: @object,
-        cancellationToken: CancellationToken.None,
-        transports: transports,
-        useDefaultCache: useDefaultCache,
-        onProgressAction: onProgressAction,
-        onErrorAction: onErrorAction
+      return Send(
+        @object,
+        CancellationToken.None,
+        transports,
+        useDefaultCache,
+        onProgressAction,
+        onErrorAction
         );
     }
 
