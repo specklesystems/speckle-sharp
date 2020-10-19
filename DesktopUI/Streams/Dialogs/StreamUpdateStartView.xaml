@@ -34,11 +34,10 @@
                TextAlignment="Left"
                TextWrapping="Wrap" />
 
-      <Grid>
+      <Grid Margin="0 18 0 8">
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
-          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Button Grid.Column="0"
                 Width="120"
@@ -46,7 +45,7 @@
                 Content="CANCEL"
                 IsCancel="True"
                 Style="{StaticResource MaterialDesignFlatMidBgButton}" />
-        <Button Grid.Column="2"
+        <Button Grid.Column="1"
                 Width="120"
                 BorderThickness="0"
                 Content="SAVE"
