@@ -116,7 +116,6 @@ namespace Speckle.DesktopUI
 
     /// <summary>
     /// Adds a receiver and persists the info to the host file
-    /// Will probably combine with AddNewClient
     /// </summary>
     public abstract void AddExistingStream(string args);
 

@@ -20,6 +20,7 @@ namespace Speckle.DesktopUI.Streams
       _events = events;
       _bindings = bindings;
       _filters = new BindableCollection<ISelectionFilter>(_bindings.GetSelectionFilters());
+
     }
 
     public ISnackbarMessageQueue Notifications

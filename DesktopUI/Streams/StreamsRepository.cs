@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -146,5 +147,44 @@ namespace Speckle.DesktopUI.Streams
       return collection;
     }
 
+    public async Task<StreamState> ConvertAndSend(StreamState state, ProgressReport progress = null)
+    {
+      if ( !state.Placeholders.Any() )
+      {
+        _bindings.RaiseNotification("Nothing to send to Speckle.");
+        return null;
+      }
+
+      try
+      {
+        state = await Task.Run(() => _bindings.SendStream(state, progress));
+        if ( progress != null ) Execute.OnUIThreadAsync(() => progress.ResetProgress());
+      }
+      catch ( Exception e )
+      {
+        _bindings.RaiseNotification($"Error: {e.Message}");
+        return null;
+      }
+
+      return state;
+    }
+
+    public async Task<StreamState> ConvertAndReceive(StreamState state, ProgressReport progress = null)
+    {
+      state.Stream = await state.Client.StreamGet(state.Stream.id);
+      try
+      {
+        state = await Task.Run(() => _bindings.ReceiveStream(state, progress));
+        state.ServerUpdates = false;
+        if ( progress != null ) Execute.OnUIThreadAsync(() => progress.ResetProgress());
+      }
+      catch ( Exception e )
+      {
+        _bindings.RaiseNotification($"Error: {e.Message}");
+        return null;
+      }
+
+      return state;
+    }
   }
 }

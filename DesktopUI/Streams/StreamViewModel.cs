@@ -15,16 +15,19 @@ namespace Speckle.DesktopUI.Streams
     private readonly ViewManager _viewManager;
     private readonly IDialogFactory _dialogFactory;
     private readonly ConnectorBindings _bindings;
+    private StreamsRepository _repo;
 
     public StreamViewModel(
       IEventAggregator events,
       ViewManager viewManager,
       IDialogFactory dialogFactory,
+      StreamsRepository streamsRepo,
       ConnectorBindings bindings)
     {
       _events = events;
       _viewManager = viewManager;
       _dialogFactory = dialogFactory;
+      _repo = streamsRepo;
       _bindings = bindings;
 
       _events.Subscribe(this);
@@ -51,7 +54,6 @@ namespace Speckle.DesktopUI.Streams
     {
       get => _stream;
       set => SetAndNotify(ref _stream, value);
-
     }
 
     private Branch _branch;
@@ -65,21 +67,12 @@ namespace Speckle.DesktopUI.Streams
     public async void ConvertAndSendObjects()
     {
       StreamState.IsSending = true;
-      if ( !StreamState.Placeholders.Any() )
-      {
-        _bindings.RaiseNotification("Nothing to send to Speckle.");
-      }
 
-      try
+      var res = await _repo.ConvertAndSend(StreamState, Progress);
+      if ( res != null )
       {
-        StreamState = await Task.Run(() => _bindings.SendStream(StreamState, Progress));
-        NotifyOfPropertyChange(nameof(StreamState));
+        StreamState = res;
         _events.Publish(new StreamUpdatedEvent() {StreamId = Stream.id});
-        await Progress.ResetProgress();
-      }
-      catch ( Exception e )
-      {
-        _bindings.RaiseNotification($"Error: {e.Message}");
       }
 
       StreamState.IsSending = false;
@@ -88,19 +81,11 @@ namespace Speckle.DesktopUI.Streams
     public async void ConvertAndReceiveObjects()
     {
       StreamState.IsReceiving = true;
-      StreamState.Stream = await StreamState.Client.StreamGet(Stream.id);
 
-      try
-      {
-        StreamState = await Task.Run(() => _bindings.ReceiveStream(StreamState, Progress));
-        StreamState.ServerUpdates = false;
-        await Progress.ResetProgress();
-      }
-      catch ( Exception e )
-      {
-        _bindings.RaiseNotification($"Error: {e.Message}");
-      }
+      var res = await _repo.ConvertAndReceive(StreamState, Progress);
+      if ( res == null ) return;
 
+      StreamState = res;
       StreamState.IsReceiving = false;
     }
 
@@ -180,7 +165,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void Handle(StreamUpdatedEvent message)
     {
-      if (message.StreamId != StreamState.Stream.id) return;
+      if ( message.StreamId != StreamState.Stream.id ) return;
       StreamState.Stream = await StreamState.Client.StreamGet(StreamState.Stream.id);
       Stream = StreamState.Stream;
     }

@@ -79,25 +79,16 @@ namespace Speckle.DesktopUI.Streams
       parent.ActivateItem(item);
     }
 
-    public async Task ConvertAndSendObjects(StreamState state)
+    public async void ConvertAndSendObjects(StreamState state)
     {
       state.IsSending = true;
-      if ( !state.Placeholders.Any() )
-      {
-        _bindings.RaiseNotification("Nothing to send to Speckle.");
-      }
 
-
-      try
+      var res = await _repo.ConvertAndSend(state, Progress);
+      if ( res != null )
       {
         var index = StreamList.IndexOf(state);
-        StreamList[ index ] = await Task.Run(() => _bindings.SendStream(state, Progress));
+        StreamList[ index ] = res;
         StreamList.Refresh();
-        await Progress.ResetProgress();
-      }
-      catch ( Exception e )
-      {
-        _bindings.RaiseNotification($"Error: {e.Message}");
       }
 
       state.IsSending = false;
@@ -108,16 +99,11 @@ namespace Speckle.DesktopUI.Streams
       state.IsReceiving = true;
       state.Stream = await state.Client.StreamGet(state.Stream.id);
 
-      try
-      {
-        state = await Task.Run(() => _bindings.ReceiveStream(state));
-        state.ServerUpdates = false;
-        StreamList.Refresh();
-      }
-      catch ( Exception e )
-      {
-        _bindings.RaiseNotification($"Error: {e.Message}");
-      }
+      var res = await _repo.ConvertAndReceive(state);
+      if ( res == null ) return;
+
+      state = res;
+      StreamList.Refresh();
 
       state.IsReceiving = false;
     }
