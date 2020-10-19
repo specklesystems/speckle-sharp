@@ -7,12 +7,21 @@ root = true
 [*]
 indent_style = space
 indent_size = 2
-# (Please don't specify an indent_size here; that has too many unintended consequences.)
 
 # Code files
 [*.{cs, csx, vb, vbx}]
 insert_final_newline = true
 charset = utf-8-bom
+
+# ReSharper properties
+resharper_csharp_extra_spaces = leave_multiple
+resharper_csharp_naming_rule.private_constants = AaBb, AA_BB
+resharper_csharp_space_within_array_access_brackets = true
+resharper_space_around_arrow_op = true
+resharper_space_within_array_rank_brackets = true
+resharper_use_indent_from_vs = false
+resharper_xml_attribute_style = first_attribute_on_single_line
+resharper_xml_pi_attribute_style = first_attribute_on_single_line
 
 # Dotnet code style settings:
 [*.{cs, vb}]
