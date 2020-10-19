@@ -29,8 +29,8 @@ namespace Speckle.ConnectorRevit.UI
       // add stream and related data to the class
       LocalStateWrapper.StreamStates.Add(state);
 
-      if (state.filter != null)
-        GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
+      if (state.Filter != null)
+        GetSelectionFilterObjects(state.Filter, state.AccountId, state.Stream.id);
     }
 
     /// <summary>
@@ -39,10 +39,10 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state"></param>
     public override void UpdateStream(StreamState state)
     {
-      var index = LocalStateWrapper.StreamStates.FindIndex(b => b.stream.id == state.stream.id);
+      var index = LocalStateWrapper.StreamStates.FindIndex(b => b.Stream.id == state.Stream.id);
       LocalStateWrapper.StreamStates[index] = state;
 
-      GetSelectionFilterObjects(state.filter, state.accountId, state.stream.id);
+      GetSelectionFilterObjects(state.Filter, state.AccountId, state.Stream.id);
     }
 
     /// <summary>
@@ -56,9 +56,9 @@ namespace Speckle.ConnectorRevit.UI
       var converter = kit.LoadConverter(Applications.Revit);
       converter.SetContextDocument(CurrentDoc.Document);
       
-      var objsToConvert = state.placeholders;
-      var streamId = state.stream.id;
-      var client = state.client;
+      var objsToConvert = state.Placeholders;
+      var streamId = state.Stream.id;
+      var client = state.Client;
 
 
       var convertedObjects = new List<Base>();
@@ -128,9 +128,9 @@ namespace Speckle.ConnectorRevit.UI
       });
 
       // update the state
-      state.objects.AddRange(convertedObjects);
-      state.placeholders.Clear();
-      state.stream = await client.StreamGet(streamId);
+      state.Objects.AddRange(convertedObjects);
+      state.Placeholders.Clear();
+      state.Stream = await client.StreamGet(streamId);
 
       // Persist state to revit file
       WriteStateToFile();
@@ -145,8 +145,8 @@ namespace Speckle.ConnectorRevit.UI
       var converter = kit.LoadConverter(Applications.Revit);
       converter.SetContextDocument(CurrentDoc.Document);
 
-      var transport = new ServerTransport(state.client.Account, state.stream.id);
-      var newStream = await state.client.StreamGet(state.stream.id);
+      var transport = new ServerTransport(state.Client.Account, state.Stream.id);
+      var newStream = await state.Client.StreamGet(state.Stream.id);
 
       var commit = newStream.branches.items[ 0 ].commits.items[ 0 ];
       Base commitObject;
@@ -160,7 +160,7 @@ namespace Speckle.ConnectorRevit.UI
       var revitItems = ( List<object> )commitObject[ "@revitItems" ];
 
       var newObjects = revitItems.Select(o => ( Base ) o).ToList();
-      var oldObjects = state.objects;
+      var oldObjects = state.Objects;
 
       var toDelete = oldObjects.Except(newObjects, new ObjectComparer()).ToList();
       var toCreate = newObjects.Except(oldObjects, new ObjectComparer()).ToList();
@@ -173,7 +173,7 @@ namespace Speckle.ConnectorRevit.UI
       // delete
       Queue.Add(() =>
       {
-        using ( var t = new Transaction(CurrentDoc.Document, $"Speckle Delete: ({state.stream.id})") )
+        using ( var t = new Transaction(CurrentDoc.Document, $"Speckle Delete: ({state.Stream.id})") )
         {
           t.Start();
           foreach ( var oldObj in toDelete )
@@ -198,7 +198,7 @@ namespace Speckle.ConnectorRevit.UI
       // create
       Queue.Add(() =>
       {
-        using ( var t = new Transaction(CurrentDoc.Document, $"Speckle Receive: ({state.stream.id})") )
+        using ( var t = new Transaction(CurrentDoc.Document, $"Speckle Receive: ({state.Stream.id})") )
         {
           // TODO `t.SetFailureHandlingOptions`
           t.Start();
@@ -208,8 +208,8 @@ namespace Speckle.ConnectorRevit.UI
       });
       Executor.Raise();
 
-      state.stream = newStream;
-      state.objects = newObjects;
+      state.Stream = newStream;
+      state.Objects = newObjects;
       WriteStateToFile();
       RaiseNotification($"Deleting {toDelete.Count} elements and updating {toCreate.Count} elements...");
 
@@ -257,7 +257,7 @@ namespace Speckle.ConnectorRevit.UI
     public override void RemoveStream(string streamId)
     {
       var streamState = LocalStateWrapper.StreamStates.FirstOrDefault(
-        cl => cl.stream.id == streamId
+        cl => cl.Stream.id == streamId
       );
       LocalStateWrapper.StreamStates.Remove(streamState);
       WriteStateToFile();
@@ -389,9 +389,9 @@ namespace Speckle.ConnectorRevit.UI
       });
 
       var streamState = LocalStateWrapper.StreamStates.FirstOrDefault(
-        cl => (string)cl.stream.id == (string)streamId
+        cl => (string)cl.Stream.id == (string)streamId
         );
-      streamState.placeholders.AddRange(objects);
+      streamState.Placeholders.AddRange(objects);
 
       // Persist state and clients to revit file
       WriteStateToFile();
