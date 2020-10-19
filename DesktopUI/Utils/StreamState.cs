@@ -12,39 +12,37 @@ namespace Speckle.DesktopUI.Utils
   /// This is the representation of each individual stream "card" that gets saved to the
   /// project file. It includes the stream itself, the object filter method, and basic
   /// account information so a `Client` can be recreated.
-  /// This breaks C# variable name rules b/c it instead using Server naming conventions.
-  /// Class name is subject to change! Just had to pick something so I could get on with my life.
   /// </summary>
   [JsonObject(MemberSerialization.OptIn)]
   public partial class StreamState : PropertyChangedBase
   {
-    [JsonProperty]
-    public string accountId { get; set; }
-
     public StreamState() {}
 
     [JsonConstructor]
     public StreamState(string accountId)
     {
-      client = new Client(AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId));
+      Client = new Client(AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId));
     }
 
     private  Client _client;
 
-    public Client client
+    public Client Client
     {
       get => _client;
       set
       {
         _client = value;
-        accountId = client.AccountId;
+        AccountId = Client.AccountId;
       }
     }
+
+    [JsonProperty]
+    public string AccountId { get; set; }
 
     private Stream _stream;
 
     [JsonProperty]
-    public Stream stream
+    public Stream Stream
     {
       get => _stream;
       set => SetAndNotify(ref _stream, value);
@@ -53,7 +51,7 @@ namespace Speckle.DesktopUI.Utils
     private  ISelectionFilter _filter;
 
     [JsonProperty]
-    public ISelectionFilter filter
+    public ISelectionFilter Filter
     {
       get => _filter;
       set => SetAndNotify(ref _filter, value);
@@ -62,7 +60,7 @@ namespace Speckle.DesktopUI.Utils
     private List<Base> _placeholders = new List<Base>();
 
     [JsonProperty]
-    public List<Base> placeholders
+    public List<Base> Placeholders
     {
       get => _placeholders;
       set => SetAndNotify(ref _placeholders, value);
@@ -71,7 +69,7 @@ namespace Speckle.DesktopUI.Utils
     private List<Base> _objects = new List<Base>();
 
     [JsonProperty]
-    public List<Base> objects
+    public List<Base> Objects
     {
       get => _objects;
       set => SetAndNotify(ref _objects, value);

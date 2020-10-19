@@ -297,7 +297,7 @@ namespace Speckle.DesktopUI.Streams
         StreamToCreate = await _streamsRepo.GetStream(streamId, AccountToSendFrom);
         StreamState = new StreamState()
         {
-          client = client, filter = SelectedFilter, stream = StreamToCreate
+          Client = client, Filter = SelectedFilter, Stream = StreamToCreate
         };
         _bindings.AddNewStream(StreamState);
 
@@ -329,7 +329,7 @@ namespace Speckle.DesktopUI.Streams
 
       StreamState = new StreamState()
       {
-        client = client, stream = StreamToCreate, ServerUpdates = true
+        Client = client, Stream = StreamToCreate, ServerUpdates = true
       };
       _bindings.AddNewStream(StreamState);
       SelectedSlide = 3;
@@ -429,7 +429,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamState.placeholders = message.Objects as List<Base>;
+      StreamState.Placeholders = message.Objects as List<Base>;
       // Notifications.Enqueue(message.Notification);
     }
 

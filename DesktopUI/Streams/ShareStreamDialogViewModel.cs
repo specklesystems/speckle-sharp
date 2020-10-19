@@ -73,7 +73,7 @@ namespace Speckle.DesktopUI.Streams
 
       try
       {
-        var users = await StreamState.client.UserSearch(UserQuery);
+        var users = await StreamState.Client.UserSearch(UserQuery);
         UserSearchResults = new BindableCollection<User>(users);
       }
       catch ( Exception e )

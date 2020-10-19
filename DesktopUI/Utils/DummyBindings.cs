@@ -90,9 +90,9 @@ namespace Speckle.DesktopUI.Utils
 
     public override async Task<StreamState> SendStream(StreamState state, ProgressReport progress = null)
     {
-      var objects = state.placeholders;
-      state.placeholders.Clear();
-      state.objects.AddRange(objects);
+      var objects = state.Placeholders;
+      state.Placeholders.Clear();
+      state.Objects.AddRange(objects);
 
       return state;
     }

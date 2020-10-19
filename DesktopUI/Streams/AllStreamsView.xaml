@@ -33,7 +33,7 @@
                          VerticalAlignment="Center"
                          FontSize="18"
                          Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                         Text="{Binding stream.name}"
+                         Text="{Binding Stream.name}"
                          TextWrapping="Wrap" />
               <Button x:Name="SendStreamButton"
                       Grid.Column="1"
@@ -51,10 +51,10 @@
                       ToolTip="Send objects to Speckle" />
               <md:Badged Grid.Column="1"
                          Margin="48,5,0,0"
-                         Badge="{Binding placeholders.Count}"
+                         Badge="{Binding Placeholders.Count}"
                          BadgeColorZoneMode="Accent"
                          ToolTip="objects to send"
-                         Visibility="{Binding placeholders.Count, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                         Visibility="{Binding Placeholders.Count, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
               <Button Grid.Column="2"
                       Margin="0"
                       HorizontalAlignment="Right"
@@ -89,7 +89,7 @@
                            Height="28"
                            md:ButtonAssist.CornerRadius="14"
                            Command="{s:Action CopyStreamId}"
-                           CommandParameter="{Binding stream.id}"
+                           CommandParameter="{Binding Stream.id}"
                            FontFamily="Consolas"
                            FontSize="12"
                            ToolTip="Stream ID">
@@ -99,7 +99,7 @@
                                    Margin="0,0,4,0"
                                    VerticalAlignment="Center"
                                    Kind="ContentCopy" />
-                      <TextBlock Text="{Binding stream.id}" />
+                      <TextBlock Text="{Binding Stream.id}" />
                     </StackPanel>
                   </md:Chip>
 
@@ -111,19 +111,19 @@
                                    Kind="CubeOutline" />
                       <TextBlock Margin="0,0,12,0"
                                  Foreground="{DynamicResource MaterialDesignColumnHeader}"
-                                 Text="{Binding objects.Count, StringFormat=' {0} objects'}" />
+                                 Text="{Binding Objects.Count, StringFormat=' {0} objects'}" />
                       <md:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}"
                                    Kind="History"
                                    ToolTip="commits on master branch" />
                       <TextBlock Margin="4,0,12,0"
                                  Foreground="{DynamicResource MaterialDesignColumnHeader}"
-                                 Text="{Binding stream.branches.items[0].commits.items.Count}" />
+                                 Text="{Binding Stream.branches.items[0].commits.items.Count}" />
                       <md:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}"
                                    Kind="Accounts"
                                    ToolTip="collaborators" />
                       <TextBlock Margin="4,0,6,0"
                                  Foreground="{DynamicResource MaterialDesignColumnHeader}"
-                                 Text="{Binding stream.collaborators.Count}" />
+                                 Text="{Binding Stream.collaborators.Count}" />
                     </StackPanel>
                   </Grid>
                 </Grid>

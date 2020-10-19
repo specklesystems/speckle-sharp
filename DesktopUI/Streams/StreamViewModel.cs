@@ -40,8 +40,8 @@ namespace Speckle.DesktopUI.Streams
       set
       {
         SetAndNotify(ref _streamState, value);
-        Stream = StreamState.stream;
-        Branch = StreamState.stream.branches.items[ 0 ];
+        Stream = StreamState.Stream;
+        Branch = StreamState.Stream.branches.items[ 0 ];
       }
     }
 
@@ -65,7 +65,7 @@ namespace Speckle.DesktopUI.Streams
     public async void ConvertAndSendObjects()
     {
       StreamState.IsSending = true;
-      if ( !StreamState.placeholders.Any() )
+      if ( !StreamState.Placeholders.Any() )
       {
         _bindings.RaiseNotification("Nothing to send to Speckle.");
       }
@@ -88,7 +88,7 @@ namespace Speckle.DesktopUI.Streams
     public async void ConvertAndReceiveObjects()
     {
       StreamState.IsReceiving = true;
-      StreamState.stream = await StreamState.client.StreamGet(Stream.id);
+      StreamState.Stream = await StreamState.Client.StreamGet(Stream.id);
 
       try
       {
@@ -133,10 +133,10 @@ namespace Speckle.DesktopUI.Streams
     {
       try
       {
-        var deleted = await StreamState.client.StreamDelete(Stream.id);
+        var deleted = await StreamState.Client.StreamDelete(Stream.id);
         if ( !deleted )
         {
-          // should we still remove the stream from client if they can't delete?
+          // should we still remove the stream from Client if they can't delete?
           _events.Publish(new ShowNotificationEvent() {Notification = "Could not delete stream from server"});
           return;
         }
@@ -180,9 +180,9 @@ namespace Speckle.DesktopUI.Streams
 
     public async void Handle(StreamUpdatedEvent message)
     {
-      if (message.StreamId != StreamState.stream.id) return;
-      StreamState.stream = await StreamState.client.StreamGet(StreamState.stream.id);
-      Stream = StreamState.stream;
+      if (message.StreamId != StreamState.Stream.id) return;
+      StreamState.Stream = await StreamState.Client.StreamGet(StreamState.Stream.id);
+      Stream = StreamState.Stream;
     }
   }
 }

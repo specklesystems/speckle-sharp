@@ -71,10 +71,10 @@ namespace Speckle.DesktopUI.Streams
     {
       var item = _streamViewModelFactory.CreateStreamViewModel();
       item.StreamState = state;
-      item.Stream = state.stream;
+      item.Stream = state.Stream;
       // get main branch for now
       // TODO allow user to select branch
-      item.Branch = _repo.GetMainBranch(state.stream.branches.items);
+      item.Branch = _repo.GetMainBranch(state.Stream.branches.items);
       var parent = ( StreamsHomeViewModel ) Parent;
       parent.ActivateItem(item);
     }
@@ -82,7 +82,7 @@ namespace Speckle.DesktopUI.Streams
     public async Task ConvertAndSendObjects(StreamState state)
     {
       state.IsSending = true;
-      if ( !state.placeholders.Any() )
+      if ( !state.Placeholders.Any() )
       {
         _bindings.RaiseNotification("Nothing to send to Speckle.");
       }
@@ -106,7 +106,7 @@ namespace Speckle.DesktopUI.Streams
     public async void ConvertAndReceiveObjects(StreamState state)
     {
       state.IsReceiving = true;
-      state.stream = await state.client.StreamGet(state.stream.id);
+      state.Stream = await state.Client.StreamGet(state.Stream.id);
 
       try
       {
@@ -125,7 +125,7 @@ namespace Speckle.DesktopUI.Streams
     public async void ShowStreamCreateDialog()
     {
       var viewmodel = _dialogFactory.CreateStreamCreateDialog();
-      viewmodel.StreamIds = StreamList.Select(s => s.stream.id).ToList();
+      viewmodel.StreamIds = StreamList.Select(s => s.Stream.id).ToList();
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
       var result = await DialogHost.Show(view, "AllStreamsDialogHost");
@@ -163,7 +163,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(StreamRemovedEvent message)
     {
-      var state = StreamList.First(s => s.stream.id == message.StreamId);
+      var state = StreamList.First(s => s.Stream.id == message.StreamId);
       StreamList.Remove(state);
     }
 

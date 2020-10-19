@@ -251,7 +251,7 @@
               <TextBlock HorizontalAlignment="Center"
                          VerticalAlignment="Center"
                          FontSize="11"
-                         Text="{Binding StreamState.placeholders.Count, StringFormat='Send {0} objects', Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                         Text="{Binding StreamState.Placeholders.Count, StringFormat='Send {0} objects', Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
             </Border>
 
             <Border Grid.Row="1"
@@ -286,9 +286,9 @@
                      Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                      Text="Objects" />
           <TextBlock Margin="0,4"
-                     Text="{Binding StreamState.objects.Count, StringFormat='Converted Objects: {0}'}" />
+                     Text="{Binding StreamState.Objects.Count, StringFormat='Converted Objects: {0}'}" />
           <TextBlock Margin="0,4"
-                     Text="{Binding StreamState.placeholders.Count, StringFormat='Placeholder Objects: {0}'}" />
+                     Text="{Binding StreamState.Placeholders.Count, StringFormat='Placeholder Objects: {0}'}" />
 
           <TextBlock Margin="0,24,0,8"
                      FontSize="18"

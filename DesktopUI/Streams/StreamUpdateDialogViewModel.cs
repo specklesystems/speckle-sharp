@@ -35,8 +35,8 @@ namespace Speckle.DesktopUI.Streams
       set
       {
         SetAndNotify(ref _streamState, value);
-        NewName = StreamState.stream.name;
-        NewDescription = StreamState.stream.description;
+        NewName = StreamState.Stream.name;
+        NewDescription = StreamState.Stream.description;
       }
     }
 
@@ -85,19 +85,19 @@ namespace Speckle.DesktopUI.Streams
 
     public async void UpdateStream()
     {
-      if ( NewName == StreamState.stream.name && NewDescription == StreamState.stream.description ) CloseDialog();
+      if ( NewName == StreamState.Stream.name && NewDescription == StreamState.Stream.description ) CloseDialog();
       try
       {
-        var res = await StreamState.client.StreamUpdate(new StreamUpdateInput()
+        var res = await StreamState.Client.StreamUpdate(new StreamUpdateInput()
         {
-          id = StreamState.stream.id,
+          id = StreamState.Stream.id,
           name = NewName,
           description = NewDescription,
-          isPublic = StreamState.stream.isPublic
+          isPublic = StreamState.Stream.isPublic
         });
         _events.Publish(new StreamUpdatedEvent()
         {
-          StreamId = StreamState.stream.id
+          StreamId = StreamState.Stream.id
         });
         CloseDialog();
       }
