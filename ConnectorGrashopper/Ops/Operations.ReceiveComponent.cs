@@ -37,7 +37,9 @@ namespace ConnectorGrashopper.Ops
 
     public bool JustPastedIn { get; set; }
 
-    public string BaseId { get; set; }
+    public string LastInfoMessage { get; set; }
+
+    public string ReceivedObjectId { get; set; }
 
     public ReceiveComponent() : base("Receive", "Receive", "Receives Speckle data.", "Speckle 2", "   Send/Receive")
     {
@@ -47,11 +49,37 @@ namespace ConnectorGrashopper.Ops
 
     public override bool Write(GH_IWriter writer)
     {
+      writer.SetBoolean("AutoReceive", AutoReceive);
+      writer.SetString("CurrentComponentState", CurrentComponentState);
+      writer.SetString("LastInfoMessage", LastInfoMessage);
+      writer.SetString("ReceivedObjectId", ReceivedObjectId);
+
       return base.Write(writer);
     }
 
     public override bool Read(GH_IReader reader)
     {
+      AutoReceive = reader.GetBoolean("AutoReceive");
+      CurrentComponentState = reader.GetString("CurrentComponentState");
+      LastInfoMessage = reader.GetString("LastInfoMessage");
+      ReceivedObjectId = reader.GetString("ReceivedObjectId");
+
+      if (ReceivedObjectId != null)
+      {
+        Task.Run(async () =>
+        {
+          try
+          {
+            var lc = new SQLiteTransport();
+            var objString = lc.GetObject(ReceivedObjectId);
+          }
+          catch
+          {
+            // TODO: display a warning please. 
+          }
+        });
+      }
+
       return base.Read(reader);
     }
 
@@ -102,7 +130,7 @@ namespace ConnectorGrashopper.Ops
       // Set output data in a "first run" event. Note: we are not persisting the actual "sent" object as it can be very big.
       if (JustPastedIn)
       {
-        //
+        DA.SetData(1, LastInfoMessage);
       }
 
       JustPastedIn = false;
@@ -264,7 +292,7 @@ namespace ConnectorGrashopper.Ops
       {
         Parent.AddRuntimeMessage(level, message);
       }
-      
+
       ((ReceiveComponent)Parent).CurrentComponentState = "up_to_date";
 
       DA.SetData(0, ReceivedObject); // TODO: unpack this object for the usual cases (@list, @dictionary, or otherwise it's just an item). 
@@ -341,7 +369,7 @@ namespace ConnectorGrashopper.Ops
 
     public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
     {
-      // Double clicking the send button, even if the state is up to date, will do a "force send"
+      // Double clicking the send button, even if the state is up to date, will do a "force receive"
       if (e.Button == MouseButtons.Left)
       {
         if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
