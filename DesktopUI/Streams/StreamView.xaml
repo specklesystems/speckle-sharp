@@ -85,9 +85,6 @@
     </ResourceDictionary>
   </UserControl.Resources>
 
-  <md:DialogHost DialogTheme="Inherit"
-                 Identifier="StreamDialogHost">
-
     <Grid>
       <Grid Margin="20,0,20,100">
         <Grid.RowDefinitions>
@@ -368,24 +365,21 @@
 
       <!--#region Floating Action Button-->
       <!--  TODO absolute positioning rel to window  -->
-      <DockPanel>
-        <Button x:Name="AddObjectsButton"
-                Width="45"
-                Height="45"
-                Margin="32"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Command="{s:Action ShowStreamUpdateDialog}"
-                CommandParameter="{StaticResource StreamUpdateSlide}"
-                Content="{md:PackIcon Kind=Plus,
-                                    Size=24}"
-                DockPanel.Dock="Bottom"
-                Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
-                ToolTip="Add more objects to this stream"
-                ToolTipService.Placement="Left" />
-      </DockPanel>
       <!--#endregion-->
+      <Button x:Name="AddObjectsButton"
+              Width="45"
+              Height="45"
+              Margin="32"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Bottom"
+              Command="{s:Action ShowStreamUpdateDialog}"
+              CommandParameter="{StaticResource StreamUpdateSlide}"
+              Content="{md:PackIcon Kind=Plus,
+                                    Size=24}"
+              DockPanel.Dock="Bottom"
+              Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
+              ToolTip="Add more objects to this stream"
+              ToolTipService.Placement="Left" />
     </Grid>
-  </md:DialogHost>
 
 </UserControl>

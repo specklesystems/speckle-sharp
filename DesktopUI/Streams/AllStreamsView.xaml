@@ -185,8 +185,6 @@
     </ResourceDictionary>
   </UserControl.Resources>
 
-  <md:DialogHost DialogTheme="Inherit"
-                 Identifier="AllStreamsDialogHost">
     <Grid>
       <Grid Margin="20,0,20,100">
         <Grid.RowDefinitions>
@@ -235,6 +233,5 @@
 
       </DockPanel>
     </Grid>
-  </md:DialogHost>
 
 </UserControl>

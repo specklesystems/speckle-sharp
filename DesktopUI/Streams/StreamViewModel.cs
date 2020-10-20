@@ -96,7 +96,7 @@ namespace Speckle.DesktopUI.Streams
       viewmodel.SelectedSlide = slide;
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
-      var result = await DialogHost.Show(view, "StreamDialogHost");
+      var result = await DialogHost.Show(view, "RootDialogHost");
     }
 
     public async void ShowShareDialog(StreamState state)
@@ -105,7 +105,7 @@ namespace Speckle.DesktopUI.Streams
       viewmodel.StreamState = StreamState;
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
-      var result = await DialogHost.Show(view, "StreamDialogHost");
+      var result = await DialogHost.Show(view, "RootDialogHost");
     }
 
     public void RemoveStream()

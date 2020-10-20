@@ -66,7 +66,7 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _newDescription, value);
     }
 
-    private int _selectedSlide = 0;
+    private int _selectedSlide;
 
     public int SelectedSlide
     {

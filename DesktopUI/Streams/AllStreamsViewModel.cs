@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -114,7 +114,7 @@ namespace Speckle.DesktopUI.Streams
       viewmodel.StreamIds = StreamList.Select(s => s.Stream.id).ToList();
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
-      var result = await DialogHost.Show(view, "AllStreamsDialogHost");
+      var result = await DialogHost.Show(view, "RootDialogHost");
     }
 
     public async void ShowShareDialog(StreamState state)
@@ -123,7 +123,7 @@ namespace Speckle.DesktopUI.Streams
       viewmodel.StreamState = state;
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
-      var result = await DialogHost.Show(view, "AllStreamsDialogHost");
+      var result = await DialogHost.Show(view, "RootDialogHost");
     }
 
     public void CopyStreamId(string streamId)
