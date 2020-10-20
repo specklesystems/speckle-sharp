@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -152,7 +152,8 @@ namespace Speckle.ConnectorRevit.UI
       if ( progress != null )
       {
         commitObject = await Operations.Receive(commit.referencedObject, transport,
-          onProgressAction: dict => UpdateProgress(dict, progress));
+          onProgressAction: dict => UpdateProgress(dict, progress),
+          onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => progress.Maximum = count));
       }
       else commitObject = await Operations.Receive(commit.referencedObject, transport);
 
@@ -197,7 +198,7 @@ namespace Speckle.ConnectorRevit.UI
       });
       Executor.Raise();
 
-      // create
+      // update or create
       Queue.Add(() =>
       {
         using ( var t = new Transaction(CurrentDoc.Document, $"Speckle Receive: ({state.Stream.id})") )
