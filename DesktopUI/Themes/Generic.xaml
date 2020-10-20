@@ -45,5 +45,7 @@
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
     <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/MaterialDesignTheme.TabControl.xaml" />
 
+    <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/DataTemplates.xaml" />
+
   </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
