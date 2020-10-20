@@ -18,12 +18,12 @@ namespace ConnectorGrashopper.Extras
     {
       Account account = null;
       Uri uri = null;
-      if (myString.Contains("@"))
+      if (myString.Contains("?u="))
       {
-        uri = new Uri(myString.Split('@')[0]);
+        uri = new Uri(myString.Split(new string[] { "?u=" }, StringSplitOptions.None)[0]);
         ServerUrl = uri.GetLeftPart(UriPartial.Authority);
 
-        AccountId = myString.Split('@')[1];
+        AccountId = myString.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
         account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == AccountId);
 
         if (account == null)
@@ -89,7 +89,7 @@ namespace ConnectorGrashopper.Extras
 
     public override string ToString()
     {
-      return $"{ServerUrl}/streams/{StreamId}{(CommitId != null ? "/commits/" + CommitId : "")}{(AccountId != null ? "@" + AccountId : "")}";
+      return $"{ServerUrl}/streams/{StreamId}{(CommitId != null ? "/commits/" + CommitId : "")}{(AccountId != null ? "?u=" + AccountId : "")}";
     }
 
     public Account GetAccount()

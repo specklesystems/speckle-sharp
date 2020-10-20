@@ -41,6 +41,8 @@ namespace ConnectorGrashopper.Ops
 
     public string ReceivedObjectId { get; set; }
 
+    public string InputType { get; set; }
+
     public ReceiveComponent() : base("Receive", "Receive", "Receives Speckle data.", "Speckle 2", "   Send/Receive")
     {
       BaseWorker = new ReceiveComponentWorker(this);
@@ -81,15 +83,18 @@ namespace ConnectorGrashopper.Ops
 
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
-      var autoReceiveMi = Menu_AppendItem(menu, $"Receive automatically", (s, e) =>
+      if (InputType == "Stream" || InputType == "Branch")
       {
-        AutoReceive = !AutoReceive;
-        Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
+        var autoReceiveMi = Menu_AppendItem(menu, $"Receive automatically", (s, e) =>
         {
-          OnDisplayExpired(true);
-        });
-      }, true, AutoReceive);
-      autoReceiveMi.ToolTipText = "Toggle automatic receiving. If set, any upstream change will be pulled instantly. This only is applicable when receiving a stream or a branch.";
+          AutoReceive = !AutoReceive;
+          Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
+          {
+            OnDisplayExpired(true);
+          });
+        }, true, AutoReceive);
+        autoReceiveMi.ToolTipText = "Toggle automatic receiving. If set, any upstream change will be pulled instantly. This only is applicable when receiving a stream or a branch.";
+      }
 
       base.AppendAdditionalComponentMenuItems(menu);
     }
@@ -115,7 +120,7 @@ namespace ConnectorGrashopper.Ops
       if (JustPastedIn)
       {
         DA.SetData(1, LastInfoMessage);
-
+        // This ensures that we actually do a run. The worker will check and determine if it needs to pull an existing object or not.
         base.SolveInstance(DA);
       }
     }
@@ -143,9 +148,16 @@ namespace ConnectorGrashopper.Ops
       });
     }
 
-    public void SubscribeToStreamUpdates(StreamWrapper wrapper)
+    public void HandleInputType(string inputType, StreamWrapper wrapper)
     {
-      // TODO
+      bool needsExpiration = false;
+      if (inputType != InputType) needsExpiration = true;
+
+      InputType = inputType;
+
+      if (inputType == "Commit") return;
+
+      // TODO: set
     }
 
   }
@@ -197,7 +209,7 @@ namespace ConnectorGrashopper.Ops
       // Inform the parent if stream: subscribe to events & figure out updating.
       if (inputType == "Stream")
       {
-        ((ReceiveComponent)Parent).SubscribeToStreamUpdates(InputWrapper);
+        ((ReceiveComponent)Parent).HandleInputType(inputType, InputWrapper);
       }
     }
 
@@ -228,6 +240,7 @@ namespace ConnectorGrashopper.Ops
           objectId: ((ReceiveComponent)Parent).ReceivedObjectId,
           cancellationToken: CancellationToken,
           remoteTransport: remoteTransport,
+          localTransport: new SQLiteTransport() { TransportName = "LC" }, // Local cache!
           onProgressAction: InternalProgressAction,
           onErrorAction: ErrorAction,
           onTotalChildrenCountKnown: (count) => TotalObjectCount = count
@@ -238,7 +251,7 @@ namespace ConnectorGrashopper.Ops
         return;
       }
 
-      // Means it's a copy paste of an emtpy non-init component
+      // Means it's a copy paste of an emtpy non-init component; set the record and exit fast.
       if (((ReceiveComponent)Parent).JustPastedIn)
       {
         ((ReceiveComponent)Parent).JustPastedIn = false;
@@ -286,6 +299,7 @@ namespace ConnectorGrashopper.Ops
           objectId: myCommit.referencedObject,
           cancellationToken: CancellationToken,
           remoteTransport: remoteTransport,
+          localTransport: new SQLiteTransport() { TransportName = "LC" }, // Local cache!
           onProgressAction: InternalProgressAction,
           onErrorAction: ErrorAction,
           onTotalChildrenCountKnown: (count) => TotalObjectCount = count
@@ -319,7 +333,7 @@ namespace ConnectorGrashopper.Ops
       {
         ((ReceiveComponent)Parent).LastInfoMessage = $"{ReceivedCommit.authorName} @ {ReceivedCommit.createdAt}: { ReceivedCommit.message} (id:{ReceivedCommit.id})";
       }
-      
+
       ((ReceiveComponent)Parent).JustPastedIn = false;
       DA.SetData(0, ReceivedObject); // TODO: unpack this object for the usual cases (@list, @dictionary, or otherwise it's just an item). 
       DA.SetData(1, ((ReceiveComponent)Parent).LastInfoMessage);
