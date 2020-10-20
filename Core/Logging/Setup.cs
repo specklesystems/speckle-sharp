@@ -9,6 +9,7 @@ namespace Speckle.Core.Logging
   public static class Setup
   {
     private readonly static string _suuidPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "suuid");
+    
     public static void Init(string hostApplication)
     {
       HostApplication = hostApplication;

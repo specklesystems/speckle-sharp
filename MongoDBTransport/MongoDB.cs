@@ -11,17 +11,20 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
 using Speckle.Core.Logging;
+using System.Threading;
 
 namespace Speckle.Core.Transports
 {
   // If data storage accessed by transports will always use the hash and content field names, move this enum to ITransport instead.
   public enum Field { hash, content }
-  
+
   // Question: the benefit of noSQL is the use of unstructured collections of variable documents.
   // Explore storing partially serialized Speckle objects with dynamically generated fields instead of just a content string?
   public class MongoDBTransport : IDisposable, ITransport
   {
     public string TransportName { get; set; } = "MongoTransport";
+
+    public CancellationToken CancellationToken { get; set; }
 
     public string ConnectionString { get; set; }
 
@@ -32,6 +35,9 @@ namespace Speckle.Core.Transports
     private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
 
     public Action<string, int> OnProgressAction { get; set; }
+
+    public Action<string, Exception> OnErrorAction { get; set; }
+    public int SavedObjectCount { get; private set; }
 
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
@@ -55,7 +61,7 @@ namespace Speckle.Core.Transports
 
       Initialize();
 
-      WriteTimer = new Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
+      WriteTimer = new System.Timers.Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
       WriteTimer.Elapsed += WriteTimerElapsed;
     }
 
@@ -68,9 +74,16 @@ namespace Speckle.Core.Transports
       bool isMongoLive = Database.RunCommandAsync((Command<BsonDocument>)"{ping:1}").Wait(1000);
       if (!isMongoLive)
       {
-        Console.WriteLine("Could not connect to Mongo database");
+        OnErrorAction(TransportName, new Exception("The Mongo database could not be reached."));
       }
     }
+
+    public void BeginWrite()
+    {
+      SavedObjectCount = 0;
+    }
+
+    public void EndWrite() { }
 
     #region Writes
 
@@ -176,7 +189,7 @@ namespace Speckle.Core.Transports
       return null;
     }
 
-    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport)
+    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
     {
       throw new NotImplementedException();
     }

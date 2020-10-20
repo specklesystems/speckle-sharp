@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -24,8 +25,31 @@ namespace Speckle.Core.Api
     /// <param name="transports">Where you want to send them.</param>
     /// <param name="useDefaultCache">Toggle for the default cache. If set to false, it will only send to the provided transports.</param>
     /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
-    /// <returns></returns>
-    public static async Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
+    /// <returns>The id (hash) of the object.</returns>
+    public static Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
+    {
+      return Send(
+        @object,
+        CancellationToken.None,
+        transports,
+        useDefaultCache,
+        onProgressAction,
+        onErrorAction
+        );
+    }
+
+    /// <summary>
+    /// Sends an object via the provided transports. Defaults to the local cache. 
+    /// </summary>
+    /// <param name="object">The object you want to send.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to send notice of cancellation.</param>
+    /// <param name="transports">Where you want to send them.</param>
+    /// <param name="useDefaultCache">Toggle for the default cache. If set to false, it will only send to the provided transports.</param>
+    /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
+    /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
+    /// <returns>The id (hash) of the object.</returns>
+    public static async Task<string> Send(Base @object, CancellationToken cancellationToken, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
     {
       Log.AddBreadcrumb("Send");
 
@@ -41,7 +65,7 @@ namespace Speckle.Core.Api
 
       if (useDefaultCache)
       {
-        transports.Insert(0, new SQLiteTransport());
+        transports.Insert(0, new SQLiteTransport() { TransportName = "LC" });
       }
 
       var (serializer, settings) = GetSerializerInstance();
@@ -50,76 +74,37 @@ namespace Speckle.Core.Api
       var internalProgressAction = Operations.GetInternalProgressAction(localProgressDict, onProgressAction);
 
       serializer.OnProgressAction = internalProgressAction;
-
-      foreach(var t in transports)
-      {
-        t.OnProgressAction = internalProgressAction;
-        serializer.WriteTransports.Add(t);
-      }
-
-      var obj = JsonConvert.SerializeObject(@object, settings);
-      var hash = JObject.Parse(obj).GetValue("id").ToString();
-
-      var transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
-
-      await Task.WhenAll(transportAwaits);
-
-      return hash;
-    }
-
-
-    /// <summary>
-    /// Sends a list of objects via the provided transports. Defaults to the local cache.
-    /// <para>Note: If you're aiming to create a revision/commit afterwards, wrap your object list in a separate base object and use the other method.</para>
-    /// </summary>
-    /// <param name="objects">Base objects to send</param>
-    /// <param name="streamIds">List of StreamIds to send the objects to</param>
-    /// <param name="clients">List of Clients to use</param>
-    /// <param name="localTransport"></param>
-    /// <param name="onProgressAction">An action that is invoked with a dictionary argument containing key value pairs of (process name, processed items).</param>
-    /// <returns>The object's id (hash).</returns>
-    public static async Task<List<string>> Send(IEnumerable<Base> objects, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
-    {
-      Log.AddBreadcrumb("Send Multiple");
-
-      if (transports == null)
-      {
-        transports = new List<ITransport>();
-      }
-
-      if (transports.Count == 0 && useDefaultCache == false)
-      {
-        Log.CaptureAndThrow(new SpeckleException($"You need to provide at least one transport: cannot send with an empty transport list and no default cache."), SentryLevel.Error);
-      }
-
-      if (useDefaultCache)
-      {
-        transports.Insert(0, new SQLiteTransport());
-      }
-
-      var (serializer, settings) = GetSerializerInstance();
-
-      var localProgressDict = new ConcurrentDictionary<string, int>();
-      var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
-
-      serializer.OnProgressAction = internalProgressAction;
+      serializer.CancellationToken = cancellationToken;
+      serializer.OnErrorAction = onErrorAction;
 
       foreach (var t in transports)
       {
         t.OnProgressAction = internalProgressAction;
+        t.CancellationToken = cancellationToken;
+        t.OnErrorAction = onErrorAction;
+        t.BeginWrite();
+
         serializer.WriteTransports.Add(t);
       }
 
-      var obj = JsonConvert.SerializeObject(objects, settings);
-      var res = JsonConvert.DeserializeObject<List<ObjectReference>>(obj);
+      var obj = JsonConvert.SerializeObject(@object, settings);
 
       var transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
 
-      await Task.WhenAll(transportAwaits);
+      if (cancellationToken.IsCancellationRequested) return null;
 
-      return res.Select(o => o.referencedId).ToList();
+      await Task.WhenAll(transportAwaits).ConfigureAwait(false);
+
+      foreach (var t in transports)
+      {
+        t.EndWrite();
+      }
+
+      if (cancellationToken.IsCancellationRequested) return null;
+
+      var hash = JObject.Parse(obj).GetValue("id").ToString();
+      return hash;
     }
-
 
     #endregion
 

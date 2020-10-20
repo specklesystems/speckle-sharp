@@ -2,11 +2,12 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Newtonsoft.Json;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 
@@ -16,6 +17,8 @@ namespace Speckle.Core.Transports
   {
     public string TransportName { get; set; } = "RemoteTransport";
 
+    public CancellationToken CancellationToken { get; set; }
+
     public string BaseUri { get; private set; }
 
     public string StreamId { get; set; }
@@ -24,7 +27,7 @@ namespace Speckle.Core.Transports
 
     private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
 
-    private Timer WriteTimer;
+    private System.Timers.Timer WriteTimer;
 
     private int TotalElapsed = 0, PollInterval = 50;
 
@@ -34,9 +37,11 @@ namespace Speckle.Core.Transports
 
     private int MAX_MULTIPART_COUNT = 4;
 
-    private int totalProcessedCount = 0;
+    public int SavedObjectCount { get; private set; } = 0;
 
     public Action<string, int> OnProgressAction { get; set; }
+
+    public Action<string, Exception> OnErrorAction { get; set; }
 
     public Account Account { get; set; }
 
@@ -74,6 +79,18 @@ namespace Speckle.Core.Transports
       WriteTimer.Elapsed += WriteTimerElapsed;
     }
 
+    public void BeginWrite()
+    {
+      if (!GetWriteCompletionStatus())
+      {
+        throw new Exception("Transport is still writing.");
+      }
+
+      SavedObjectCount = 0;
+    }
+
+    public void EndWrite() { }
+
     #region Writing objects
 
     public async Task WriteComplete()
@@ -89,6 +106,14 @@ namespace Speckle.Core.Transports
     private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
     {
       TotalElapsed += PollInterval;
+
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        IS_WRITING = false;
+        return;
+      }
+
       if (TotalElapsed > 300 && IS_WRITING == false && Queue.Count != 0)
       {
         TotalElapsed = 0;
@@ -102,7 +127,17 @@ namespace Speckle.Core.Transports
     // TODO: Gzip
     private async Task ConsumeQueue()
     {
-      if (Queue.Count == 0) return;
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        IS_WRITING = false;
+        return;
+      }
+
+      if (Queue.Count == 0)
+      {
+        return;
+      }
 
       IS_WRITING = true;
       var message = new HttpRequestMessage()
@@ -115,40 +150,68 @@ namespace Speckle.Core.Transports
       var contents = new List<string>();
 
       ValueTuple<string, string, int> result;
-      totalProcessedCount = 0;
+      SavedObjectCount = 0;
       while (contents.Count < MAX_MULTIPART_COUNT && Queue.Count != 0)
       {
+        if (CancellationToken.IsCancellationRequested)
+        {
+          Queue = new ConcurrentQueue<(string, string, int)>();
+          IS_WRITING = false;
+          return;
+        }
+
         var _ct = "[";
         var payloadBufferSize = 0;
         var i = 0;
         while (Queue.TryPeek(out result) && payloadBufferSize < MAX_BUFFER_SIZE)
         {
+          if (CancellationToken.IsCancellationRequested)
+          {
+            Queue = new ConcurrentQueue<(string, string, int)>();
+            return;
+          }
+
           Queue.TryDequeue(out result);
-          if (i != 0) _ct += ",";
+          if (i != 0)
+          {
+            _ct += ",";
+          }
+
           _ct += result.Item2;
           payloadBufferSize += result.Item3;
           i++;
         }
         _ct += "]";
         multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{i}", $"batch-{i}");
-        totalProcessedCount += i;
+        SavedObjectCount += i;
       }
 
       message.Content = multipart;
+
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        IS_WRITING = false;
+        return;
+      }
+
       try
       {
-        var response = await Client.SendAsync(message);
+        var response = await Client.SendAsync(message, CancellationToken);
         response.EnsureSuccessStatusCode();
       }
       catch (Exception e)
       {
         IS_WRITING = false;
-        Log.CaptureAndThrow(new SpeckleException("Remote unreachable.", e));
+        OnErrorAction?.Invoke(TransportName, new Exception($"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}", e));
+
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return;
       }
 
       IS_WRITING = false;
 
-      OnProgressAction?.Invoke(TransportName, totalProcessedCount);
+      OnProgressAction?.Invoke(TransportName, SavedObjectCount);
 
       if (!WriteTimer.Enabled)
       {
@@ -159,6 +222,13 @@ namespace Speckle.Core.Transports
 
     public void SaveObject(string hash, string serializedObject)
     {
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        IS_WRITING = false;
+        return;
+      }
+
       Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 
       if (!WriteTimer.Enabled && !IS_WRITING)
@@ -170,6 +240,13 @@ namespace Speckle.Core.Transports
 
     public void SaveObject(string hash, ITransport sourceTransport)
     {
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        IS_WRITING = false;
+        return;
+      }
+
       var serializedObject = sourceTransport.GetObject(hash);
 
       Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
@@ -187,19 +264,29 @@ namespace Speckle.Core.Transports
 
     public string GetObject(string hash)
     {
-      // TODO: Untested
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return null;
+      }
+
       var message = new HttpRequestMessage()
       {
         RequestUri = new Uri($"/objects/{StreamId}/{hash}/single", UriKind.Relative),
         Method = HttpMethod.Get,
       };
 
-      var response = Client.SendAsync(message, HttpCompletionOption.ResponseContentRead).Result.Content;
+      var response = Client.SendAsync(message, HttpCompletionOption.ResponseContentRead, CancellationToken).Result.Content;
       return response.ReadAsStringAsync().Result;
     }
 
-    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport)
+    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport, Action<int> onTotalChildrenCountKnown)
     {
+      if (CancellationToken.IsCancellationRequested)
+      {
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return null;
+      }
 
       var message = new HttpRequestMessage()
       {
@@ -209,10 +296,18 @@ namespace Speckle.Core.Transports
 
       message.Headers.Add("Accept", "text/plain");
       string commitObj = null;
-      
 
-      var response = await Client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
-      response.EnsureSuccessStatusCode();
+      HttpResponseMessage response = null;
+      try
+      {
+        response = await Client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
+        response.EnsureSuccessStatusCode();
+      }
+      catch (Exception e)
+      {
+        OnErrorAction?.Invoke(TransportName, e);
+      }
+
 
       var i = 0;
       using (var stream = await response.Content.ReadAsStreamAsync())
@@ -221,14 +316,24 @@ namespace Speckle.Core.Transports
         {
           while (reader.Peek() > 0)
           {
+            if (CancellationToken.IsCancellationRequested)
+            {
+              Queue = new ConcurrentQueue<(string, string, int)>();
+              return null;
+            }
+
             var line = reader.ReadLine();
             var pcs = line.Split(new char[] { '\t' }, count: 2);
             targetTransport.SaveObject(pcs[0], pcs[1]);
             if (i == 0)
             {
               commitObj = pcs[1];
+              var partial = JsonConvert.DeserializeObject<Placeholder>(commitObj);
+              if (partial.__closure != null)
+                onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
             }
-            OnProgressAction?.Invoke($"GET Remote ({Client.BaseAddress.ToString()})", i++); // possibly make this more friendly
+            OnProgressAction?.Invoke(TransportName, 1); // possibly make this more friendly
+            i++;
           }
         }
       }
@@ -248,6 +353,11 @@ namespace Speckle.Core.Transports
     {
       // TODO: check if it's writing first? 
       Client.Dispose();
+    }
+
+    internal class Placeholder
+    {
+      public Dictionary<string, int> __closure { get; set; } = new Dictionary<string, int>();
     }
   }
 }

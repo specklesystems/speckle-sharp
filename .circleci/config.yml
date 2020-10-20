@@ -1,12 +1,13 @@
 version: 2.1
+
 jobs:
-  unittest:
-    working_directory: /temp
-    docker: 
+
+  # The unit tests. 
+
+  unit-tests:
+    docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
-    environment:
-      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+    
     steps:
       - checkout
       - run: 
@@ -15,10 +16,13 @@ jobs:
             git submodule init
             git submodule update --remote
       - run: dotnet restore
-      - run: dotnet build --configuration Release
-      - run: dotnet test Tests/TestsUnit.csproj
-  integrationtest:
+      - run: dotnet test Tests/TestsUnit.csproj < /dev/null
+  
+  # The integration tests. Spins up a full blown speckle server. 
+
+  integration-tests:
     working_directory: /temp
+    
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
       - image: 'circleci/redis:6'
@@ -27,6 +31,7 @@ jobs:
           POSTGRES_DB: speckle2_dev
           POSTGRES_PASSWORD: speckle
           POSTGRES_USER: speckle
+    
     environment:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -37,6 +42,7 @@ jobs:
       SESSION_SECRET: 'keyboard cat'
       STRATEGY_LOCAL: true
       CANONICAL_URL: 'http://localhost:3000'
+    
     steps:
       - run:
           name: "Install node"
@@ -71,9 +77,10 @@ jobs:
           command: dotnet build --configuration Release
       - run: 
           working_directory: core
-          command: dotnet test IntegrationTests/TestsIntegration.csproj
+          command: dotnet test IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true"
+
 workflows: 
-  test-all:
+  test:
     jobs: 
-      - integrationtest
-      - unittest
+      - integration-tests
+      - unit-tests

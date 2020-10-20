@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -54,8 +55,10 @@ namespace Speckle.Core.Serialisation
 
     #region Value handling
 
-    internal static object HandleValue(JToken value, Newtonsoft.Json.JsonSerializer serializer, JsonProperty jsonProperty = null, string TypeDiscriminator = "speckle_type")
+    internal static object HandleValue(JToken value, Newtonsoft.Json.JsonSerializer serializer, CancellationToken CancellationToken, JsonProperty jsonProperty = null, string TypeDiscriminator = "speckle_type")
     {
+      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+
       if (value is JValue)
       {
         if (jsonProperty != null) return value.ToObject(jsonProperty.PropertyType);
@@ -64,6 +67,8 @@ namespace Speckle.Core.Serialisation
 
       if (value is JArray)
       {
+        if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+
         if (jsonProperty != null && jsonProperty.PropertyType.GetConstructor(Type.EmptyTypes) != null)
         {
           var arr = Activator.CreateInstance(jsonProperty.PropertyType);
@@ -73,30 +78,35 @@ namespace Speckle.Core.Serialisation
 
           foreach (var val in ((JArray)value))
           {
+            if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
             if (val == null) continue;
             if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
             {
-              addMethod.Invoke(arr, new object[] { Convert.ChangeType(HandleValue(val, serializer), jsonProperty.PropertyType.GenericTypeArguments[0]) });
+              addMethod.Invoke(arr, new object[] { Convert.ChangeType(HandleValue(val, serializer, CancellationToken), jsonProperty.PropertyType.GenericTypeArguments[0]) });
             }
             else
             {
-              addMethod.Invoke(arr, new object[] { HandleValue(val, serializer) });
+              addMethod.Invoke(arr, new object[] { HandleValue(val, serializer, CancellationToken) });
             }
           }
           return arr;
         }
         else if (jsonProperty != null)
         {
+
+          if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+
           var arr = Activator.CreateInstance(typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType()));
           var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType(), ((JArray)value).Count);
 
           foreach (var val in ((JArray)value))
           {
+            if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
             if (val == null) continue;
             if (!jsonProperty.PropertyType.GetElementType().IsInterface)
-              ((IList)arr).Add(Convert.ChangeType(HandleValue(val, serializer), jsonProperty.PropertyType.GetElementType()));
+              ((IList)arr).Add(Convert.ChangeType(HandleValue(val, serializer, CancellationToken), jsonProperty.PropertyType.GetElementType()));
             else
-              ((IList)arr).Add(HandleValue(val, serializer));
+              ((IList)arr).Add(HandleValue(val, serializer, CancellationToken));
           }
 
           ((IList)arr).CopyTo(actualArr, 0);
@@ -104,15 +114,19 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
+          if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
           var arr = new List<object>();
           foreach (var val in ((JArray)value))
           {
+            if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
             if (val == null) continue;
-            arr.Add(HandleValue(val, serializer));
+            arr.Add(HandleValue(val, serializer, CancellationToken));
           }
           return arr;
         }
       }
+
+      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
 
       if (value is JObject)
       {
@@ -124,10 +138,11 @@ namespace Speckle.Core.Serialisation
         var dict = jsonProperty != null ? Activator.CreateInstance(jsonProperty.PropertyType) : new Dictionary<string, object>();
         foreach (var prop in ((JObject)value))
         {
+          if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
           object key = prop.Key;
           if (jsonProperty != null)
             key = Convert.ChangeType(prop.Key, jsonProperty.PropertyType.GetGenericArguments()[0]);
-          ((IDictionary)dict)[key] = HandleValue(prop.Value, serializer);
+          ((IDictionary)dict)[key] = HandleValue(prop.Value, serializer, CancellationToken);
         }
         return dict;
       }
