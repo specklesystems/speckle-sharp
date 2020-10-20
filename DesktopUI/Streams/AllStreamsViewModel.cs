@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -99,7 +99,7 @@ namespace Speckle.DesktopUI.Streams
       state.IsReceiving = true;
       state.Stream = await state.Client.StreamGet(state.Stream.id);
 
-      var res = await _repo.ConvertAndReceive(state);
+      var res = await _repo.ConvertAndReceive(state, Progress);
       if ( res == null ) return;
 
       state = res;
