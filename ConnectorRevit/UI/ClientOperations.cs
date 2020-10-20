@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -73,11 +73,14 @@ namespace Speckle.ConnectorRevit.UI
 
       foreach ( var obj in objsToConvert )
       {
-        //NotifyUi
-        var revitElement = CurrentDoc.Document.GetElement(obj.applicationId);
+        // TODO: why is this one fkin model curve losing its application id???
+        RevitElement revitElement = null;
+        if ( obj.applicationId != null )
+          revitElement = CurrentDoc.Document.GetElement(obj.applicationId);
+
         if ( revitElement == null )
         {
-          errors.Add(new SpeckleException(message: "Could not retrieve element"));
+          errors.Add(new SpeckleException(message: $"Could not retrieve element: {obj.speckle_type}"));
           continue;
         }
 
