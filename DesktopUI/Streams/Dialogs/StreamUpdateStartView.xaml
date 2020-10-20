@@ -49,7 +49,7 @@
                 Width="120"
                 BorderThickness="0"
                 Content="SAVE"
-                Command="{s:Action UpdateStream}"
+                Command="{s:Action UpdateStreamDetails}"
                 Style="{StaticResource MaterialDesignFlatMidBgButton}" />
       </Grid>
 

@@ -89,10 +89,11 @@ namespace Speckle.DesktopUI.Streams
       StreamState.IsReceiving = false;
     }
 
-    public async void ShowStreamUpdateDialog(StreamState state)
+    public async void ShowStreamUpdateDialog(int slide = 0)
     {
       var viewmodel = _dialogFactory.CreateStreamUpdateDialog();
       viewmodel.StreamState = StreamState;
+      viewmodel.SelectedSlide = slide;
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
       var result = await DialogHost.Show(view, "StreamDialogHost");
@@ -142,11 +143,6 @@ namespace Speckle.DesktopUI.Streams
     {
       Clipboard.SetText(streamId);
       _events.Publish(new ShowNotificationEvent() {Notification = "Stream ID copied to clipboard!"});
-    }
-
-    public void OpenHelpLink(string url)
-    {
-      Link.OpenInBrowser(url);
     }
 
     public void Handle(ApplicationEvent message)

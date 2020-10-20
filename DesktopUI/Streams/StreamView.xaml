@@ -7,13 +7,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:s="https://github.com/canton7/Stylet"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
              d:DesignHeight="600"
              d:DesignWidth="450"
              mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
       <utils:TimeAgoConverter x:Key="TimeAgoConverter" />
-
+      <system:Int32 x:Key="StreamUpdateSlide">1</system:Int32>
       <BitmapImage x:Key="DefaultProfImage"
                    UriSource="../Resources/s2logo.png" />
 
@@ -368,43 +369,20 @@
       <!--#region Floating Action Button-->
       <!--  TODO absolute positioning rel to window  -->
       <DockPanel>
-        <md:PopupBox Width="45"
-                     Height="45"
-                     Margin="32"
-                     HorizontalAlignment="Right"
-                     VerticalAlignment="Bottom"
-                     DockPanel.Dock="Bottom"
-                     Foreground="{StaticResource MaterialDesignLightBackground}"
-                     PlacementMode="TopAndAlignCentres"
-                     Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}">
-          <StackPanel>
-
-            <Button x:Name="AddObjectsButton"
-                    Width="40"
-                    Height="40"
-                    Margin="3"
-                    Command="{s:Action ShowStreamUpdateDialog}"
-                    CommandParameter="{Binding StreamState}"
-                    Content="{md:PackIcon Kind=Category,
-                                    Size=20}"
-                    Foreground="{StaticResource MaterialDesignLightBackground}"
-                    Style="{StaticResource MaterialDesignFloatingActionButton}"
-                    ToolTip="Add more objects to this stream"
-                    ToolTipService.Placement="Left" />
-
-            <Button x:Name="HelpButton"
-                    Width="40"
-                    Height="40"
-                    Margin="3"
-                    Command="{s:Action OpenHelpLink}"
-                    CommandParameter="https://speckle.systems/docs/essentials/introduction/streams"
-                    Content="{md:PackIcon Kind=QuestionMarkCircle,
-                                    Size=20}"
-                    Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
-                    ToolTip="Confused? Have a look at the docs!"
-                    ToolTipService.Placement="Left" />
-          </StackPanel>
-        </md:PopupBox>
+        <Button x:Name="AddObjectsButton"
+                Width="45"
+                Height="45"
+                Margin="32"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Command="{s:Action ShowStreamUpdateDialog}"
+                CommandParameter="{StaticResource StreamUpdateSlide}"
+                Content="{md:PackIcon Kind=Plus,
+                                    Size=24}"
+                DockPanel.Dock="Bottom"
+                Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
+                ToolTip="Add more objects to this stream"
+                ToolTipService.Placement="Left" />
       </DockPanel>
       <!--#endregion-->
     </Grid>
