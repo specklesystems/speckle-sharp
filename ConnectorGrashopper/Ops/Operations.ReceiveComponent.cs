@@ -43,6 +43,8 @@ namespace ConnectorGrashopper.Ops
 
     public string InputType { get; set; }
 
+    public StreamWrapper StreamWrapper { get; set; }
+
     public ReceiveComponent() : base("Receive", "Receive", "Receives Speckle data.", "Speckle 2", "   Send/Receive")
     {
       BaseWorker = new ReceiveComponentWorker(this);
@@ -148,6 +150,8 @@ namespace ConnectorGrashopper.Ops
       });
     }
 
+    private Client ApiClient { get; set; }
+
     public void HandleInputType(string inputType, StreamWrapper wrapper)
     {
       bool needsExpiration = false;
@@ -157,9 +161,36 @@ namespace ConnectorGrashopper.Ops
 
       if (inputType == "Commit") return;
 
+      if (StreamWrapper != null && wrapper.StreamId == StreamWrapper.StreamId) return;
+
+      StreamWrapper = wrapper;
+
+      ApiClient = new Client(wrapper.GetAccount());
+      ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
+
+      ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
+
+
       // TODO: Set up event handlers IFFFFFF wraper.streamId != oldWrapper.streamId yo (otherwise we're good)
     }
 
+    private void ApiClient_OnCommitCreated(object sender, Speckle.Core.Api.SubscriptionModels.CommitInfo e)
+    {
+      Message = "Expired";
+      CurrentComponentState = "expired";
+      AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"There is a newer commit available for this {InputType}");
+      
+      Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
+      {
+        if(AutoReceive)
+        {
+          ExpireSolution(true);
+        } else
+        {
+          OnDisplayExpired(true);
+        }
+      });
+    }
   }
 
   public class ReceiveComponentWorker : WorkerInstance
