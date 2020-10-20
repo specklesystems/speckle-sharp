@@ -40,7 +40,7 @@ namespace Speckle.ConnectorRevit.UI
     public override void UpdateStream(StreamState state)
     {
       var index = LocalStateWrapper.StreamStates.FindIndex(b => b.Stream.id == state.Stream.id);
-      LocalStateWrapper.StreamStates[index] = state;
+      LocalStateWrapper.StreamStates[ index ] = state;
 
       GetSelectionFilterObjects(state.Filter, state.AccountId, state.Stream.id);
     }
@@ -55,8 +55,8 @@ namespace Speckle.ConnectorRevit.UI
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Revit);
       converter.SetContextDocument(CurrentDoc.Document);
-      
-      var objsToConvert = state.Placeholders;
+
+      var objsToConvert = state.Placeholders.Union(state.Objects, comparer: new ApplicationObjectComparer());
       var streamId = state.Stream.id;
       var client = state.Client;
 
@@ -128,7 +128,7 @@ namespace Speckle.ConnectorRevit.UI
       });
 
       // update the state
-      state.Objects.AddRange(convertedObjects);
+      state.Objects = convertedObjects;
       state.Placeholders.Clear();
       state.Stream = await client.StreamGet(streamId);
 
@@ -147,7 +147,6 @@ namespace Speckle.ConnectorRevit.UI
 
       var transport = new ServerTransport(state.Client.Account, state.Stream.id);
       var newStream = await state.Client.StreamGet(state.Stream.id);
-
       var commit = newStream.branches.items[ 0 ].commits.items[ 0 ];
       Base commitObject;
       if ( progress != null )
@@ -157,13 +156,16 @@ namespace Speckle.ConnectorRevit.UI
       }
       else commitObject = await Operations.Receive(commit.referencedObject, transport);
 
-      var revitItems = ( List<object> )commitObject[ "@revitItems" ];
+      var revitItems = ( List<object> ) commitObject[ "@revitItems" ];
 
       var newObjects = revitItems.Select(o => ( Base ) o).ToList();
       var oldObjects = state.Objects;
 
-      var toDelete = oldObjects.Except(newObjects, new ObjectComparer()).ToList();
-      var toCreate = newObjects.Except(oldObjects, new ObjectComparer()).ToList();
+      // TODO: edit objects from connector so we don't need to delete and recreate everything
+      // var toDelete = oldObjects.Except(newObjects, new BaseObjectComparer()).ToList();
+      // var toCreate = newObjects;
+      var toDelete = oldObjects;
+      var toUpdate = newObjects;
 
       var revitElements = new List<object>();
       var errors = new List<SpeckleException>();
@@ -202,7 +204,7 @@ namespace Speckle.ConnectorRevit.UI
         {
           // TODO `t.SetFailureHandlingOptions`
           t.Start();
-          revitElements = converter.ConvertToNative(toCreate);
+          revitElements = converter.ConvertToNative(toUpdate);
           t.Commit();
         }
       });
@@ -211,7 +213,7 @@ namespace Speckle.ConnectorRevit.UI
       state.Stream = newStream;
       state.Objects = newObjects;
       WriteStateToFile();
-      RaiseNotification($"Deleting {toDelete.Count} elements and updating {toCreate.Count} elements...");
+      RaiseNotification($"Deleting {toDelete.Count} elements and updating {toUpdate.Count} elements...");
 
       return state;
     }
@@ -223,7 +225,7 @@ namespace Speckle.ConnectorRevit.UI
 
     public void UpdateProgress(ConcurrentDictionary<string, int> obj, ProgressReport progress)
     {
-      if (progress != null)
+      if ( progress != null )
         Execute.PostToUIThread(() => progress.Value = obj.Values.Last());
     }
 
@@ -233,9 +235,10 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="args"></param>
     public override List<string> GetSelectedObjects()
     {
-      var selectedObjects = CurrentDoc != null ?
-        CurrentDoc.Selection.GetElementIds().Select(
-          id => CurrentDoc.Document.GetElement(id).UniqueId).ToList() : new List<string>();
+      var selectedObjects = CurrentDoc != null
+        ? CurrentDoc.Selection.GetElementIds().Select(
+          id => CurrentDoc.Document.GetElement(id).UniqueId).ToList()
+        : new List<string>();
 
       return  selectedObjects;
     }
@@ -300,10 +303,11 @@ namespace Speckle.ConnectorRevit.UI
           var categories = Globals.GetCategories(doc);
           IList<ElementFilter> elementFilters = new List<ElementFilter>();
 
-          foreach (var cat in catFilter.Selection)
+          foreach ( var cat in catFilter.Selection )
           {
-            elementFilters.Add(new ElementCategoryFilter(categories[cat].Id));
+            elementFilters.Add(new ElementCategoryFilter(categories[ cat ].Id));
           }
+
           var categoryFilter = new LogicalOrFilter(elementFilters);
 
           selectionIds = new FilteredElementCollector(doc)
@@ -322,7 +326,7 @@ namespace Speckle.ConnectorRevit.UI
             .OfClass(typeof(View))
             .Where(x => viewFilter.Selection.Contains(x.Name));
 
-          foreach (var view in views)
+          foreach ( var view in views )
           {
             var ids = new FilteredElementCollector(doc, view.Id)
               .WhereElementIsNotElementType()
@@ -348,30 +352,33 @@ namespace Speckle.ConnectorRevit.UI
 
             propFilter.PropertyValue = propFilter.PropertyValue.ToLowerInvariant();
 
-            switch (propFilter.PropertyOperator)
+            switch ( propFilter.PropertyOperator )
             {
               case "equals":
-                query = query.Where(fi => GetStringValue(fi.LookupParameter(propFilter.PropertyName)) == propFilter.PropertyValue);
+                query = query.Where(fi =>
+                  GetStringValue(fi.LookupParameter(propFilter.PropertyName)) == propFilter.PropertyValue);
                 break;
               case "contains":
-                query = query.Where(fi => GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue));
+                query = query.Where(fi =>
+                  GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue));
                 break;
               case "is greater than":
                 query = query.Where(fi => UnitUtils.ConvertFromInternalUnits(
-                  fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-                  fi.LookupParameter(propFilter.PropertyName).DisplayUnitType) > double.Parse(propFilter.PropertyValue));
+                                            fi.LookupParameter(propFilter.PropertyName).AsDouble(),
+                                            fi.LookupParameter(propFilter.PropertyName).DisplayUnitType) >
+                                          double.Parse(propFilter.PropertyValue));
                 break;
               case "is less than":
                 query = query.Where(fi => UnitUtils.ConvertFromInternalUnits(
-                  fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-                  fi.LookupParameter(propFilter.PropertyName).DisplayUnitType) < double.Parse(propFilter.PropertyValue));
+                                            fi.LookupParameter(propFilter.PropertyName).AsDouble(),
+                                            fi.LookupParameter(propFilter.PropertyName).DisplayUnitType) <
+                                          double.Parse(propFilter.PropertyValue));
                 break;
             }
 
             selectionIds = query.Select(x => x.UniqueId).ToList();
-
           }
-          catch (Exception e)
+          catch ( Exception e )
           {
             Console.WriteLine(e);
           }
@@ -384,21 +391,21 @@ namespace Speckle.ConnectorRevit.UI
       {
         var temp = new Base();
         temp.applicationId = id;
-        temp["__type"] = "Placeholder";
+        temp[ "__type" ] = "Placeholder";
         return temp;
       });
 
       var streamState = LocalStateWrapper.StreamStates.FirstOrDefault(
-        cl => (string)cl.Stream.id == (string)streamId
-        );
+        cl => ( string ) cl.Stream.id == ( string ) streamId
+      );
       streamState.Placeholders.AddRange(objects);
 
       // Persist state and clients to revit file
       WriteStateToFile();
       var plural = objects.Count() == 1 ? "" : "s";
 
-      if (objects.Any())
-        NotifyUi( new RetrievedFilteredObjectsEvent()
+      if ( objects.Any() )
+        NotifyUi(new RetrievedFilteredObjectsEvent()
         {
           Notification = $"You have added {objects.Count()} object{plural} to this stream.",
           AccountId = accountId,
@@ -412,17 +419,17 @@ namespace Speckle.ConnectorRevit.UI
     private string GetStringValue(Parameter p)
     {
       string value = "";
-      if (!p.HasValue)
+      if ( !p.HasValue )
         return value;
-      if (string.IsNullOrEmpty(p.AsValueString()) && string.IsNullOrEmpty(p.AsString()))
+      if ( string.IsNullOrEmpty(p.AsValueString()) && string.IsNullOrEmpty(p.AsString()) )
         return value;
-      if (!string.IsNullOrEmpty(p.AsValueString()))
+      if ( !string.IsNullOrEmpty(p.AsValueString()) )
         return p.AsValueString().ToLowerInvariant();
       else
         return p.AsString().ToLowerInvariant();
     }
 
-    private  class ObjectComparer : IEqualityComparer<Base>
+    private class BaseObjectComparer : IEqualityComparer<Base>
     {
       /// <summary>
       /// compares two speckle objects for equality based on both:
@@ -445,6 +452,32 @@ namespace Speckle.ConnectorRevit.UI
         return base.GetHashCode();
       }
     }
+
+    private class ApplicationObjectComparer : IEqualityComparer<Base>
+    {
+      /// <summary>
+      /// compares two speckle objects for equality based on matching applications id.
+      /// mainly for comparing objects from the StreamState.Placeholders list (no speckle id)
+      /// and the StreamState.Objects list (does have speckle id)
+      /// </summary>
+      /// <param name="obj1"></param>
+      /// <param name="obj2"></param>
+      /// <returns></returns>
+      public bool Equals(Base obj1, Base obj2)
+      {
+        if ( ReferenceEquals(obj1, obj2) )
+          return true;
+        if ( obj1 == null || obj2 == null )
+          return false;
+        return obj1.applicationId == obj2.applicationId;
+      }
+
+      public int GetHashCode(Base obj)
+      {
+        return base.GetHashCode();
+      }
+    }
+
     #endregion
   }
 }
