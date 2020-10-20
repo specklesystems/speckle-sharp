@@ -29,15 +29,15 @@ namespace Speckle.ConnectorDynamo
   [IsDesignScriptCompatible]
   public class Receive : NodeModel
   {
-    public event Action RequestChangeStreamId;
+    public event Action RequestChangeStream;
     protected virtual void OnRequestChangeStreamId()
     {
-      RequestChangeStreamId();
+      RequestChangeStream?.Invoke();
     }
     private readonly NullNode defaultAccountValue = new NullNode();
 
     public string OldStreamId { get; set; }
-    public string StreamId { get; set; }
+    public StreamWrapper Stream { get; set; }
 
     private Client _client { get; set; }
 
@@ -137,6 +137,11 @@ namespace Speckle.ConnectorDynamo
 
     #endregion
 
+    /// <summary>
+    /// Triggered when the Stream input is set for the first time or changes
+    /// It registers subscriptions for various events
+    /// </summary>
+    /// <param name="engine"></param>
     internal void ChangeStreams(EngineController engine)
     {
       if (!InPorts[0].IsConnected)
@@ -147,22 +152,23 @@ namespace Speckle.ConnectorDynamo
       var valuesNode = InPorts[0].Connectors[0].Start.Owner;
       var valuesIndex = InPorts[0].Connectors[0].Start.Index;
       var astId = valuesNode.GetAstIdentifierForOutputIndex(valuesIndex).Name;
-      StreamId = GetInputAsString(engine.GetMirror(astId));
-
-
-      if (string.IsNullOrEmpty(StreamId) && _client != null)
+      Stream = GetInputAsStream(engine.GetMirror(astId));
+      
+      if (Stream == null)
+        return;
+      else if (Stream == null && _client != null)
         _client.Dispose();
-      else if (StreamId == OldStreamId)
+      else if (Stream.StreamId == OldStreamId)
         return;
       else
       {
-        var account = AccountManager.GetDefaultAccount();
+        var account = Stream.GetAccount();
 
         _client = new Client(account);
 
-        _client.SubscribeCommitCreated(StreamId);
-        _client.SubscribeCommitDeleted(StreamId);
-        _client.SubscribeCommitUpdated(StreamId);
+        _client.SubscribeCommitCreated(Stream.StreamId);
+        _client.SubscribeCommitDeleted(Stream.StreamId);
+        _client.SubscribeCommitUpdated(Stream.StreamId);
 
         _client.OnCommitCreated += OnCommitChange;
         _client.OnCommitDeleted += OnCommitChange;
@@ -170,9 +176,9 @@ namespace Speckle.ConnectorDynamo
       }
     }
 
-    private static string GetInputAsString(RuntimeMirror inputMirror)
+    private static StreamWrapper GetInputAsStream(RuntimeMirror inputMirror)
     {
-      var input = "";
+      StreamWrapper input = null;
 
       if (inputMirror == null || inputMirror.GetData() == null) return input;
 
@@ -180,13 +186,13 @@ namespace Speckle.ConnectorDynamo
       if (data.IsCollection)
       {
         var elements = data.GetElements().Select(e => e.Data);
-        return elements.FirstOrDefault().ToString();
+        return elements.FirstOrDefault() as StreamWrapper;
         //foreach (var element in elements)
         //}
       }
       else
       {
-        return data.Data.ToString();
+        return data.Data as StreamWrapper;
       }
     }
 

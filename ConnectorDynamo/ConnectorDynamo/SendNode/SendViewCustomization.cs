@@ -4,39 +4,45 @@ using Dynamo.Models;
 using Dynamo.Scheduler;
 using Dynamo.ViewModels;
 using Dynamo.Wpf;
+using Speckle.ConnectorDynamo.UI;
+using System.Windows;
 using System.Windows.Threading;
 
-namespace Speckle.ConnectorDynamo
+namespace Speckle.ConnectorDynamo.SendNode
 {
-  public class ReceiveNodeViewCustomization : INodeViewCustomization<Receive>
+  public class SendViewCustomization : INodeViewCustomization<Send>
   {
 
     private DynamoViewModel dynamoViewModel;
     private DispatcherSynchronizationContext syncContext;
-    private Receive receiveNode;
+    private Send sendNode;
     private DynamoModel dynamoModel;
 
-    public void CustomizeView(Receive model, NodeView nodeView)
+    public void CustomizeView(Send model, NodeView nodeView)
     {
       dynamoModel = nodeView.ViewModel.DynamoViewModel.Model;
       dynamoViewModel = nodeView.ViewModel.DynamoViewModel;
       syncContext = new DispatcherSynchronizationContext(nodeView.Dispatcher);
-      receiveNode = model;
+      sendNode = model;
 
-      receiveNode.RequestChangeStreamId += UpdateStreamId;
+      var ui = new SendUi();
+      nodeView.inputGrid.Children.Add(ui);
 
-      UpdateStreamId();
+      //bindings
+      ui.DataContext = model;
+      //ui.Loaded += model.AddedToDocument;
+      ui.SendStreamButton.Click += SendStreamButtonClick;
+
     }
 
-
-    private void UpdateStreamId()
+    private void SendStreamButtonClick(object sender, RoutedEventArgs e)
     {
       var s = dynamoViewModel.Model.Scheduler;
 
       // prevent data race by running on scheduler
       var t = new DelegateBasedAsyncTask(s, () =>
       {
-        receiveNode.ChangeStreams(dynamoModel.EngineController);
+        sendNode.DoSend(dynamoModel.EngineController);
       });
 
       // then update on the ui thread
@@ -48,6 +54,9 @@ namespace Speckle.ConnectorDynamo
 
       s.ScheduleForExecution(t);
     }
+
+
+
 
     public void Dispose() { }
 

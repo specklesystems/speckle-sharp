@@ -28,7 +28,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="stream">Stream to send the data to</param>
     /// <returns name="log">Log</returns>
     [IsVisibleInDynamoLibrary(false)]
-    public static string Send([ArbitraryDimensionArrayImport] object data, StreamWrapper stream, string branchName, string message)
+    public static string Send([ArbitraryDimensionArrayImport] object data, StreamWrapper stream, string branchName = null, string message = null)
     {
       Core.Credentials.Account account = stream.GetAccount();
 
@@ -60,7 +60,8 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="stream">Stream to receive from</param>
     /// <returns></returns>
     [IsVisibleInDynamoLibrary(false)]
-    public static object Receive(StreamWrapper stream)
+    [MultiReturn(new[] { "data", "info" })]
+    public static Dictionary<string, object> Receive(StreamWrapper stream)
     {
       Core.Credentials.Account account = stream.GetAccount();
 
@@ -75,7 +76,7 @@ namespace Speckle.ConnectorDynamo.Functions
       var @base = Operations.Receive(lastCommit.referencedObject, remoteTransport: transport).Result;
       var data = Utils.ConvertRecursivelyToNative(@base);
 
-      return data;
+      return new Dictionary<string, object> { { "data", data }, { "info", $"{lastCommit.authorName} @ {lastCommit.createdAt}: { lastCommit.message} (id:{lastCommit.id})" } };
     }
 
 
