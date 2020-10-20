@@ -57,6 +57,10 @@ namespace ConnectorGrashopper.Ops
       writer.SetString("CurrentComponentState", CurrentComponentState);
       writer.SetString("LastInfoMessage", LastInfoMessage);
       writer.SetString("ReceivedObjectId", ReceivedObjectId);
+      if (StreamWrapper != null)
+      {
+        writer.SetString("StreamWrapper", StreamWrapper.ToString());
+      }
 
       return base.Write(writer);
     }
@@ -67,6 +71,12 @@ namespace ConnectorGrashopper.Ops
       CurrentComponentState = reader.GetString("CurrentComponentState");
       LastInfoMessage = reader.GetString("LastInfoMessage");
       ReceivedObjectId = reader.GetString("ReceivedObjectId");
+
+      var swString = reader.GetString("StreamWrapper");
+      if (swString != null)
+      {
+        StreamWrapper = new StreamWrapper(swString);
+      }
 
       JustPastedIn = true;
       return base.Read(reader);
@@ -97,12 +107,20 @@ namespace ConnectorGrashopper.Ops
         }, true, AutoReceive);
         autoReceiveMi.ToolTipText = "Toggle automatic receiving. If set, any upstream change will be pulled instantly. This only is applicable when receiving a stream or a branch.";
       }
+      else
+      {
+        var autoReceiveMi = Menu_AppendItem(menu, "Automatic receiving is disabled because you have specified a direct commit.");
+        autoReceiveMi.ToolTipText = "To enable automatic receiving, you need to input a stream rather than a specific commit.";
+      }
 
       base.AppendAdditionalComponentMenuItems(menu);
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+      // We need to call this always in here to be able to react and set events :/
+      HandleInput(DA);
+
       if ((AutoReceive || CurrentComponentState == "primed_to_receive" || CurrentComponentState == "receiving") && !JustPastedIn)
       {
         CurrentComponentState = "receiving";
@@ -152,16 +170,49 @@ namespace ConnectorGrashopper.Ops
 
     private Client ApiClient { get; set; }
 
+    public void HandleInput(IGH_DataAccess DA)
+    {
+      GH_Structure<IGH_Goo> DataInput;
+      DA.GetDataTree(0, out DataInput);
+
+      var input = DataInput.get_DataItem(0).GetType().GetProperty("Value").GetValue(DataInput.get_DataItem(0));
+
+      string inputType = "Stream";
+      StreamWrapper newWrapper = null;
+
+      if (input is StreamWrapper)
+      {
+        newWrapper = input as StreamWrapper;
+      }
+      else if (input is string)
+      {
+        newWrapper = new StreamWrapper(input as string);
+      }
+
+      if (newWrapper.CommitId != null)
+      {
+        inputType = "Commit";
+      }
+
+      Message = inputType;
+      HandleInputType(inputType, newWrapper);
+    }
+
     public void HandleInputType(string inputType, StreamWrapper wrapper)
     {
-      bool needsExpiration = false;
-      if (inputType != InputType) needsExpiration = true;
+      bool needsDisplayExpiration = false;
+      if (inputType != InputType) needsDisplayExpiration = true;
 
       InputType = inputType;
 
-      if (inputType == "Commit") return;
+      if (inputType == "Commit")
+      {
+        AutoReceive = false;
+        StreamWrapper = wrapper;
+        return;
+      }
 
-      if (StreamWrapper != null && wrapper.StreamId == StreamWrapper.StreamId) return;
+      if (StreamWrapper != null && wrapper.StreamId == StreamWrapper.StreamId && !JustPastedIn) return;
 
       StreamWrapper = wrapper;
 
@@ -169,9 +220,6 @@ namespace ConnectorGrashopper.Ops
       ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
 
       ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
-
-
-      // TODO: Set up event handlers IFFFFFF wraper.streamId != oldWrapper.streamId yo (otherwise we're good)
     }
 
     private void ApiClient_OnCommitCreated(object sender, Speckle.Core.Api.SubscriptionModels.CommitInfo e)
@@ -179,13 +227,14 @@ namespace ConnectorGrashopper.Ops
       Message = "Expired";
       CurrentComponentState = "expired";
       AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"There is a newer commit available for this {InputType}");
-      
+
       Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
       {
-        if(AutoReceive)
+        if (AutoReceive)
         {
           ExpireSolution(true);
-        } else
+        }
+        else
         {
           OnDisplayExpired(true);
         }
@@ -215,33 +264,7 @@ namespace ConnectorGrashopper.Ops
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-
-      DA.GetDataTree(0, out DataInput);
-      var input = DataInput.get_DataItem(0).GetType().GetProperty("Value").GetValue(DataInput.get_DataItem(0));
-
-      string inputType = "Stream";
-
-      if (input is StreamWrapper)
-      {
-        InputWrapper = input as StreamWrapper;
-      }
-      else if (input is string)
-      {
-        InputWrapper = new StreamWrapper(input as string);
-      }
-
-      if (InputWrapper.CommitId != null)
-      {
-        inputType = "Commit";
-      }
-
-      Parent.Message = inputType;
-
-      // Inform the parent if stream: subscribe to events & figure out updating.
-      if (inputType == "Stream")
-      {
-        ((ReceiveComponent)Parent).HandleInputType(inputType, InputWrapper);
-      }
+      InputWrapper = ((ReceiveComponent)Parent).StreamWrapper;
     }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
@@ -259,8 +282,8 @@ namespace ConnectorGrashopper.Ops
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
       };
 
-      var client = new Client(InputWrapper.GetAccount());
-      var remoteTransport = new ServerTransport(InputWrapper.GetAccount(), InputWrapper.StreamId);
+      var client = new Client(InputWrapper?.GetAccount());
+      var remoteTransport = new ServerTransport(InputWrapper?.GetAccount(), InputWrapper?.StreamId);
       remoteTransport.TransportName = "R";
 
       if (((ReceiveComponent)Parent).JustPastedIn && ((ReceiveComponent)Parent).ReceivedObjectId != null)
@@ -452,7 +475,7 @@ namespace ConnectorGrashopper.Ops
 
           if (((ReceiveComponent)Owner).AutoReceive)
           {
-            ((SendComponent)Owner).AutoSend = false;
+            ((ReceiveComponent)Owner).AutoReceive = false;
             Owner.OnDisplayExpired(true);
             return GH_ObjectResponse.Handled;
           }
