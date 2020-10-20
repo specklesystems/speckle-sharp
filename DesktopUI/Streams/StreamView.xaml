@@ -329,7 +329,8 @@
                     ToolTip="Delete this stream from the server">
               <Button.CommandParameter>
                 <StackPanel Width="260"
-                            Margin="36">
+                            Margin="36"
+                            s:View.ActionTarget="{Binding}">
                   <TextBlock Margin="0,0,0,24"
                              FontSize="14"
                              Text="This is irreversible! Are you sure you want to permanently delete this stream?"

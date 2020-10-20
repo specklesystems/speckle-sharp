@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -117,24 +117,15 @@ namespace Speckle.DesktopUI.Streams
 
     public async void DeleteStream()
     {
-      try
+      var deleted = await _repo.DeleteStream(StreamState);
+      if ( !deleted )
       {
-        var deleted = await StreamState.Client.StreamDelete(Stream.id);
-        if ( !deleted )
-        {
-          // should we still remove the stream from Client if they can't delete?
-          _events.Publish(new ShowNotificationEvent() {Notification = "Could not delete stream from server"});
-          return;
-        }
-
-        _bindings.RemoveStream(Stream.id);
-        _events.Publish(new StreamRemovedEvent() {StreamId = Stream.id});
-        RequestClose();
+        DialogHost.CloseDialogCommand.Execute(null, null);
+        return;
       }
-      catch ( Exception e )
-      {
-        _events.Publish(new ShowNotificationEvent() {Notification = $"Error: {e}"});
-      }
+      _events.Publish(new StreamRemovedEvent() {StreamId = Stream.id});
+      DialogHost.CloseDialogCommand.Execute(null, null);
+      RequestClose();
     }
 
     // TODO figure out how to call this from parent instead of

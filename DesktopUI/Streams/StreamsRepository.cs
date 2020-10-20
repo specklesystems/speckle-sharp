@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
@@ -192,6 +191,23 @@ namespace Speckle.DesktopUI.Streams
       }
 
       return state;
+    }
+
+    public async Task<bool> DeleteStream(StreamState state)
+    {
+      try
+      {
+        var deleted = await state.Client.StreamDelete(state.Stream.id);
+        if ( !deleted ) return false;
+        _bindings.RemoveStream(state.Stream.id);
+      }
+      catch ( Exception e )
+      {
+        _bindings.RaiseNotification($"Error: {e}");
+        return false;
+      }
+
+      return true;
     }
   }
 }
