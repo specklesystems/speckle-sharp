@@ -64,22 +64,7 @@ namespace ConnectorGrashopper.Ops
       LastInfoMessage = reader.GetString("LastInfoMessage");
       ReceivedObjectId = reader.GetString("ReceivedObjectId");
 
-      if (ReceivedObjectId != null)
-      {
-        Task.Run(async () =>
-        {
-          try
-          {
-            var lc = new SQLiteTransport();
-            var objString = lc.GetObject(ReceivedObjectId);
-          }
-          catch
-          {
-            // TODO: display a warning please. 
-          }
-        });
-      }
-
+      JustPastedIn = true;
       return base.Read(reader);
     }
 
@@ -113,7 +98,6 @@ namespace ConnectorGrashopper.Ops
     {
       if ((AutoReceive || CurrentComponentState == "primed_to_receive" || CurrentComponentState == "receiving") && !JustPastedIn)
       {
-        JustPastedIn = false;
         CurrentComponentState = "receiving";
 
         // Delegate control to parent async component.
@@ -131,9 +115,9 @@ namespace ConnectorGrashopper.Ops
       if (JustPastedIn)
       {
         DA.SetData(1, LastInfoMessage);
-      }
 
-      JustPastedIn = false;
+        base.SolveInstance(DA);
+      }
     }
 
     public override void DisplayProgress(object sender, ElapsedEventArgs e)
@@ -158,6 +142,12 @@ namespace ConnectorGrashopper.Ops
         OnDisplayExpired(true);
       });
     }
+
+    public void SubscribeToStreamUpdates(StreamWrapper wrapper)
+    {
+      // TODO
+    }
+
   }
 
   public class ReceiveComponentWorker : WorkerInstance
@@ -182,6 +172,7 @@ namespace ConnectorGrashopper.Ops
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
+
       DA.GetDataTree(0, out DataInput);
       var input = DataInput.get_DataItem(0).GetType().GetProperty("Value").GetValue(DataInput.get_DataItem(0));
 
@@ -202,9 +193,12 @@ namespace ConnectorGrashopper.Ops
       }
 
       Parent.Message = inputType;
-      // TODO: inform the parent on what it should do:
-      // - commit: DO NOT subscribe to events; be chill
-      // - stream: subscribe to events & figure out updating.
+
+      // Inform the parent if stream: subscribe to events & figure out updating.
+      if (inputType == "Stream")
+      {
+        ((ReceiveComponent)Parent).SubscribeToStreamUpdates(InputWrapper);
+      }
     }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
@@ -222,10 +216,36 @@ namespace ConnectorGrashopper.Ops
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
       };
 
+      var client = new Client(InputWrapper.GetAccount());
+      var remoteTransport = new ServerTransport(InputWrapper.GetAccount(), InputWrapper.StreamId);
+
+      if (((ReceiveComponent)Parent).JustPastedIn && ((ReceiveComponent)Parent).ReceivedObjectId != null)
+      {
+        Task.Run(async () =>
+        {
+          ReceivedObject = await Operations.Receive(
+          objectId: ((ReceiveComponent)Parent).ReceivedObjectId,
+          cancellationToken: CancellationToken,
+          remoteTransport: remoteTransport,
+          onProgressAction: InternalProgressAction,
+          onErrorAction: ErrorAction,
+          onTotalChildrenCountKnown: (count) => TotalObjectCount = count
+          );
+
+          Done();
+        });
+        return;
+      }
+
+      // Means it's a copy paste of an emtpy non-init component
+      if (((ReceiveComponent)Parent).JustPastedIn)
+      {
+        ((ReceiveComponent)Parent).JustPastedIn = false;
+        return;
+      }
+
       Task.Run(async () =>
       {
-        var client = new Client(InputWrapper.GetAccount());
-
         Commit myCommit = null;
         if (InputWrapper.CommitId != null)
         {
@@ -261,8 +281,6 @@ namespace ConnectorGrashopper.Ops
           return;
         }
 
-        var remoteTransport = new ServerTransport(InputWrapper.GetAccount(), InputWrapper.StreamId);
-
         ReceivedObject = await Operations.Receive(
           objectId: myCommit.referencedObject,
           cancellationToken: CancellationToken,
@@ -294,9 +312,16 @@ namespace ConnectorGrashopper.Ops
       }
 
       ((ReceiveComponent)Parent).CurrentComponentState = "up_to_date";
+      ((ReceiveComponent)Parent).ReceivedObjectId = ReceivedObject.id;
 
+      if (ReceivedCommit != null)
+      {
+        ((ReceiveComponent)Parent).LastInfoMessage = $"{ReceivedCommit.authorName} @ {ReceivedCommit.createdAt}: { ReceivedCommit.message} (id:{ReceivedCommit.id})";
+      }
+      
+      ((ReceiveComponent)Parent).JustPastedIn = false;
       DA.SetData(0, ReceivedObject); // TODO: unpack this object for the usual cases (@list, @dictionary, or otherwise it's just an item). 
-      DA.SetData(1, $"{ReceivedCommit.authorName} @ {ReceivedCommit.createdAt}: { ReceivedCommit.message} (id:{ReceivedCommit.id})");
+      DA.SetData(1, ((ReceiveComponent)Parent).LastInfoMessage);
     }
   }
 
@@ -394,7 +419,4 @@ namespace ConnectorGrashopper.Ops
       return base.RespondToMouseDown(sender, e);
     }
   }
-
-
-
 }
