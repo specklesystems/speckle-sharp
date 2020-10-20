@@ -255,14 +255,14 @@ namespace ConnectorGrashopper.Ops
       {
         // Items: Easiest case: just send the base object! 
         case "item":
-          ObjectToSend = ((GH_SpeckleBase)DataInput.get_DataItem(0)).Value;
+          ObjectToSend = DataInput.get_DataItem(0).GetType().GetProperty("Value").GetValue(DataInput.get_DataItem(0)) as Base;
           break;
 
         // Lists: Current convention is to wrap the list of bases in a new object, and set it as a
         // detachable subproperty called "list". See the dynamo implementation.
         case "list":
           ObjectToSend = new Base();
-          ObjectToSend["@list"] = DataInput.ToList().Select(goo => ((GH_SpeckleBase)goo).Value).ToList();
+          ObjectToSend["@list"] = DataInput.ToList().Select(goo => goo.GetType().GetProperty("Value").GetValue(goo) as Base).ToList();
           break;
 
         // Trees: values for each path get stored in a dictionary, where the key is the path, and the value is a list of the values inside that path. 
@@ -279,7 +279,7 @@ namespace ConnectorGrashopper.Ops
             }
 
             var path = DataInput.Paths[branchIndex];
-            dict[path.ToString()] = list.Select(goo => ((GH_SpeckleBase)goo).Value).ToList();
+            dict[path.ToString()] = list.Select(goo => goo.GetType().GetProperty("Value").GetValue(goo) as Base).ToList();
             branchIndex++;
           }
           ObjectToSend["@dictionary"] = dict;

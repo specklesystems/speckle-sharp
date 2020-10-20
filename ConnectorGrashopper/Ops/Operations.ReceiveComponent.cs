@@ -157,7 +157,7 @@ namespace ConnectorGrashopper.Ops
 
       if (inputType == "Commit") return;
 
-      // TODO: set
+      // TODO: Set up event handlers IFFFFFF wraper.streamId != oldWrapper.streamId yo (otherwise we're good)
     }
 
   }
