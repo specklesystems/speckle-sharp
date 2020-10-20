@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -157,7 +157,7 @@ namespace Speckle.DesktopUI.Streams
 
       try
       {
-        state = await Task.Run(() => _bindings.SendStream(state, progress));
+        state = await _bindings.SendStream(state, progress);
         if ( progress != null ) Execute.OnUIThreadAsync(() => progress.ResetProgress());
       }
       catch ( Exception e )
@@ -177,10 +177,11 @@ namespace Speckle.DesktopUI.Streams
       {
         _bindings.RaiseNotification($"Stream {state.Stream.id} is up to date");
         return state;
-      };
+      }
+
       try
       {
-        state = await Task.Run(() => _bindings.ReceiveStream(state, progress));
+        state = await _bindings.ReceiveStream(state, progress);
         state.ServerUpdates = false;
         if ( progress != null ) Execute.OnUIThreadAsync(() => progress.ResetProgress());
       }

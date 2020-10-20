@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -68,7 +68,7 @@ namespace Speckle.DesktopUI.Streams
     {
       StreamState.IsSending = true;
 
-      var res = await _repo.ConvertAndSend(StreamState, Progress);
+      var res = await Task.Run(() => _repo.ConvertAndSend(StreamState, Progress));
       if ( res != null )
       {
         StreamState = res;
@@ -82,7 +82,7 @@ namespace Speckle.DesktopUI.Streams
     {
       StreamState.IsReceiving = true;
 
-      var res = await _repo.ConvertAndReceive(StreamState, Progress);
+      var res = await Task.Run(() => _repo.ConvertAndReceive(StreamState, Progress));
       if ( res == null ) return;
 
       StreamState = res;
