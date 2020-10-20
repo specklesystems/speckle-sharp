@@ -389,7 +389,31 @@ namespace ConnectorGrashopper.Ops
       }
 
       ((ReceiveComponent)Parent).JustPastedIn = false;
-      DA.SetData(0, ReceivedObject); // TODO: unpack this object for the usual cases (@list, @dictionary, or otherwise it's just an item). 
+
+      var dataList = ReceivedObject["@data"] as List<object>;
+      var dataDictionary = ReceivedObject["@data"] as Dictionary<string, List<object>>;
+
+      if (dataList != null)
+      {
+        DA.SetDataList(0, dataList);
+      }
+      else if (dataDictionary != null)
+      {
+        // TODO: assemble tree
+        var tree = new GH_Structure<IGH_Goo>();
+        foreach(var kvp in dataDictionary)
+        {
+          var pathPieces = kvp.Key.Trim(new char[] { '{', '}' }).Split(';').Select(x => Int32.Parse(x)).ToArray();
+          var path = new GH_Path(pathPieces);
+          tree.AppendRange(kvp.Value.Select(o => new GH_SpeckleGoo { Value = o }), path);
+        }
+        DA.SetDataTree(0, tree);
+      }
+      else
+      {
+        DA.SetData(0, ReceivedObject); 
+      }
+
       DA.SetData(1, ((ReceiveComponent)Parent).LastInfoMessage);
     }
   }

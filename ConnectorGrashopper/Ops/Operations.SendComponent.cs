@@ -262,7 +262,7 @@ namespace ConnectorGrashopper.Ops
         // detachable subproperty called "list". See the dynamo implementation.
         case "list":
           ObjectToSend = new Base();
-          ObjectToSend["@list"] = DataInput.ToList().Select(goo => goo.GetType().GetProperty("Value").GetValue(goo) as Base).ToList();
+          ObjectToSend["@data"] = DataInput.ToList().Select(goo => goo.GetType().GetProperty("Value").GetValue(goo) as Base).ToList();
           break;
 
         // Trees: values for each path get stored in a dictionary, where the key is the path, and the value is a list of the values inside that path. 
@@ -282,7 +282,7 @@ namespace ConnectorGrashopper.Ops
             dict[path.ToString()] = list.Select(goo => goo.GetType().GetProperty("Value").GetValue(goo) as Base).ToList();
             branchIndex++;
           }
-          ObjectToSend["@dictionary"] = dict;
+          ObjectToSend["@data"] = dict;
           break;
       }
 
