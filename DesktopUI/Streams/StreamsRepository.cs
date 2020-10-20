@@ -173,7 +173,11 @@ namespace Speckle.DesktopUI.Streams
     {
       var latestCommitId = state.LatestCommit().id;
       state.Stream = await state.Client.StreamGet(state.Stream.id);
-      if ( !state.ServerUpdates && latestCommitId == state.LatestCommit().id ) return state;
+      if ( !state.ServerUpdates && latestCommitId == state.LatestCommit().id )
+      {
+        _bindings.RaiseNotification($"Stream {state.Stream.id} is up to date");
+        return state;
+      };
       try
       {
         state = await Task.Run(() => _bindings.ReceiveStream(state, progress));
