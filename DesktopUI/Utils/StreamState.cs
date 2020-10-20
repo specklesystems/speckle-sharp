@@ -17,7 +17,9 @@ namespace Speckle.DesktopUI.Utils
   [JsonObject(MemberSerialization.OptIn)]
   public partial class StreamState : PropertyChangedBase
   {
-    public StreamState() {}
+    public StreamState()
+    {
+    }
 
     public StreamState(Client client, Stream stream)
     {
@@ -25,10 +27,18 @@ namespace Speckle.DesktopUI.Utils
       Stream = stream;
     }
 
+    /// <summary>
+    /// Recreates the client when the state is deserialised.
+    /// If the account doesn't exist, it tries to find another account on the same server.
+    /// </summary>
+    /// <param name="accountId"></param>
     [JsonConstructor]
     public StreamState(string accountId)
     {
-      Client = new Client(AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId));
+      var account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId) ??
+                    AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == ServerUrl);
+      if ( account != null )
+        Client = new Client(account);
     }
 
     private  Client _client;
@@ -44,11 +54,9 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
-    [JsonProperty]
-    public string AccountId { get; private set; }
+    [JsonProperty] public string AccountId { get; private set; }
 
-    [JsonProperty]
-    public string ServerUrl { get; private set; }
+    [JsonProperty] public string ServerUrl { get; private set; }
 
     private Stream _stream;
 
@@ -133,7 +141,7 @@ namespace Speckle.DesktopUI.Utils
       return states;
     }
 
-    public void SetState(IList<string> stringList)
+    public void SetState(IEnumerable<string> stringList)
     {
       StreamStates = stringList.Select(JsonConvert.DeserializeObject<StreamState>).ToList();
     }
