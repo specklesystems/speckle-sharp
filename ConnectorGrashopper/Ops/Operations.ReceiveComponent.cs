@@ -391,7 +391,7 @@ namespace ConnectorGrashopper.Ops
       ((ReceiveComponent)Parent).JustPastedIn = false;
 
       var dataList = ReceivedObject["@data"] as List<object>;
-      var dataDictionary = ReceivedObject["@data"] as Dictionary<string, List<object>>;
+      var dataDictionary = ReceivedObject["@data"] as Dictionary<string, object>;
 
       if (dataList != null)
       {
@@ -403,9 +403,13 @@ namespace ConnectorGrashopper.Ops
         var tree = new GH_Structure<IGH_Goo>();
         foreach(var kvp in dataDictionary)
         {
-          var pathPieces = kvp.Key.Trim(new char[] { '{', '}' }).Split(';').Select(x => Int32.Parse(x)).ToArray();
-          var path = new GH_Path(pathPieces);
-          tree.AppendRange(kvp.Value.Select(o => new GH_SpeckleGoo { Value = o }), path);
+          if (kvp.Value is List<object>)
+          {
+            var pathObjects = kvp.Value as List<object>;
+            var pathPieces = kvp.Key.Trim(new char[] { '{', '}' }).Split(';').Select(x => Int32.Parse(x)).ToArray();
+            var path = new GH_Path(pathPieces);
+            tree.AppendRange(pathObjects.Select(o => new GH_SpeckleGoo { Value = o }), path);
+          }
         }
         DA.SetDataTree(0, tree);
       }
