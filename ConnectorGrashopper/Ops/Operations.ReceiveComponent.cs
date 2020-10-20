@@ -1,6 +1,9 @@
 ﻿using ConnectorGrashopper.Extras;
 using GH_IO.Serialization;
+using Grasshopper.GUI;
+using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Attributes;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
@@ -11,6 +14,7 @@ using Speckle.Core.Transports;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,7 +42,7 @@ namespace ConnectorGrashopper.Ops
     public ReceiveComponent() : base("Receive", "Receive", "Receives Speckle data.", "Speckle 2", "   Send/Receive")
     {
       BaseWorker = new ReceiveComponentWorker(this);
-      //Attributes = new SendComponentAttributes(this);
+      Attributes = new ReceiveComponentAttributes(this);
     }
 
     public override bool Write(GH_IWriter writer)
@@ -64,7 +68,7 @@ namespace ConnectorGrashopper.Ops
 
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
-      var autoSendMi = Menu_AppendItem(menu, $"Receive automatically", (s, e) =>
+      var autoReceiveMi = Menu_AppendItem(menu, $"Receive automatically", (s, e) =>
       {
         AutoReceive = !AutoReceive;
         Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
@@ -72,17 +76,18 @@ namespace ConnectorGrashopper.Ops
           OnDisplayExpired(true);
         });
       }, true, AutoReceive);
-      autoSendMi.ToolTipText = "Toggle automatic receiving. If set, any upstream change will be pulled instantly. This only is applicable when receiving a stream or a branch..";
+      autoReceiveMi.ToolTipText = "Toggle automatic receiving. If set, any upstream change will be pulled instantly. This only is applicable when receiving a stream or a branch.";
 
       base.AppendAdditionalComponentMenuItems(menu);
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      if ((AutoReceive || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") && !JustPastedIn)
+      if ((AutoReceive || CurrentComponentState == "primed_to_receive" || CurrentComponentState == "receiving") && !JustPastedIn)
       {
         JustPastedIn = false;
-        CurrentComponentState = "sending";
+        CurrentComponentState = "receiving";
+
         // Delegate control to parent async component.
         base.SolveInstance(DA);
         return;
@@ -213,7 +218,8 @@ namespace ConnectorGrashopper.Ops
             var stream = await client.StreamGet(InputWrapper.StreamId);
             var mainBranch = stream.branches.items.FirstOrDefault(b => b.name == "main");
             myCommit = mainBranch.commits.items[0];
-          } catch(Exception e)
+          }
+          catch (Exception e)
           {
             RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
             return;
@@ -258,11 +264,109 @@ namespace ConnectorGrashopper.Ops
       {
         Parent.AddRuntimeMessage(level, message);
       }
+      
+      ((ReceiveComponent)Parent).CurrentComponentState = "up_to_date";
 
       DA.SetData(0, ReceivedObject); // TODO: unpack this object for the usual cases (@list, @dictionary, or otherwise it's just an item). 
       DA.SetData(1, $"{ReceivedCommit.authorName} @ {ReceivedCommit.createdAt}: { ReceivedCommit.message} (id:{ReceivedCommit.id})");
     }
   }
+
+  public class ReceiveComponentAttributes : GH_ComponentAttributes
+  {
+    Rectangle ButtonBounds { get; set; }
+
+    public ReceiveComponentAttributes(GH_Component owner) : base(owner) { }
+
+    protected override void Layout()
+    {
+      base.Layout();
+
+      var baseRec = GH_Convert.ToRectangle(Bounds);
+      baseRec.Height += 26;
+
+      var btnRec = baseRec;
+      btnRec.Y = btnRec.Bottom - 26;
+      btnRec.Height = 26;
+      btnRec.Inflate(-2, -2);
+
+      Bounds = baseRec;
+      ButtonBounds = btnRec;
+    }
+
+    protected override void Render(GH_Canvas canvas, Graphics graphics, GH_CanvasChannel channel)
+    {
+      base.Render(canvas, graphics, channel);
+
+      var state = ((ReceiveComponent)Owner).CurrentComponentState;
+
+      if (channel == GH_CanvasChannel.Objects)
+      {
+        if (((ReceiveComponent)Owner).AutoReceive)
+        {
+          var autoSendButton = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, GH_Palette.Blue, "Auto Receive", 2, 0);
+
+          autoSendButton.Render(graphics, Selected, Owner.Locked, false);
+          autoSendButton.Dispose();
+        }
+        else
+        {
+          var palette = state == "expired" ? GH_Palette.Black : GH_Palette.Transparent;
+          var text = state == "receiving" ? $"{((ReceiveComponent)Owner).OverallProgress:0.00%}" : "Receive";
+
+          var button = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, palette, text, 2, state == "expired" ? 10 : 0);
+          button.Render(graphics, Selected, Owner.Locked, false);
+          button.Dispose();
+        }
+      }
+    }
+
+    public override GH_ObjectResponse RespondToMouseDown(GH_Canvas sender, GH_CanvasMouseEvent e)
+    {
+      if (e.Button == MouseButtons.Left)
+      {
+        if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
+        {
+          if (((ReceiveComponent)Owner).AutoReceive || ((ReceiveComponent)Owner).CurrentComponentState != "expired")
+          {
+            return GH_ObjectResponse.Handled;
+          }
+          ((ReceiveComponent)Owner).CurrentComponentState = "primed_to_receive";
+          Owner.ExpireSolution(true);
+          return GH_ObjectResponse.Handled;
+        }
+      }
+      return base.RespondToMouseDown(sender, e);
+    }
+
+    public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
+    {
+      // Double clicking the send button, even if the state is up to date, will do a "force send"
+      if (e.Button == MouseButtons.Left)
+      {
+        if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
+        {
+          if (((ReceiveComponent)Owner).CurrentComponentState == "receiving")
+          {
+            return GH_ObjectResponse.Handled;
+          }
+
+          if (((ReceiveComponent)Owner).AutoReceive)
+          {
+            ((SendComponent)Owner).AutoSend = false;
+            Owner.OnDisplayExpired(true);
+            return GH_ObjectResponse.Handled;
+          }
+
+          ((ReceiveComponent)Owner).CurrentComponentState = "primed_to_receive";
+          Owner.ExpireSolution(true);
+          return GH_ObjectResponse.Handled;
+        }
+      }
+      return base.RespondToMouseDown(sender, e);
+    }
+  }
+
 
 
 }

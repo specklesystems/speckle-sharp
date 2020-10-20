@@ -141,6 +141,7 @@ namespace ConnectorGrashopper.Ops
       if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") && !JustPastedIn)
       {
         CurrentComponentState = "sending";
+
         // Delegate control to parent async component.
         base.SolveInstance(DA);
         return;
