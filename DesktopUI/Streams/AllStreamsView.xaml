@@ -151,12 +151,12 @@
                       Style="{StaticResource MaterialDesignFlatButton}" />
               <StackPanel Grid.Column="3"
                           Orientation="Horizontal">
-                <Button Width="28"
-                        Height="28"
-                        md:RippleAssist.ClipToBounds="True"
-                        Content="{md:PackIcon Kind=Heart,
-                                        Size=18}"
-                        Style="{StaticResource MaterialDesignIconButton}" />
+                <!-- <Button Width="28" -->
+                <!--         Height="28" -->
+                <!--         md:RippleAssist.ClipToBounds="True" -->
+                <!--         Content="{md:PackIcon Kind=Heart, -->
+                <!--                         Size=18}" -->
+                <!--         Style="{StaticResource MaterialDesignIconButton}" /> -->
                 <Button x:Name="ShareStreamButton"
                         Width="28"
                         Height="28"
@@ -167,6 +167,15 @@
                                         Size=18}"
                         Style="{StaticResource MaterialDesignIconButton}"
                         ToolTip="Share this stream!" />
+                <Button Width="28"
+                        Height="28"
+                        md:RippleAssist.ClipToBounds="True"
+                        Content="{md:PackIcon Kind=OpenInNew,
+                                        Size=18}"
+                        Command="{s:Action OpenStreamInWeb}"
+                        CommandParameter="{Binding}"
+                        ToolTip="Open this stream in the browser"
+                        Style="{StaticResource MaterialDesignIconButton}" />
               </StackPanel>
             </Grid>
           </Grid>
