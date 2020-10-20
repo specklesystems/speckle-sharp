@@ -139,7 +139,7 @@ namespace Speckle.DesktopUI.Streams
       var client = new Client(AccountManager.GetDefaultAccount());
       foreach ( var stream in testStreams )
       {
-        collection.Add(new StreamState() {Client = client, Stream = stream, AccountId = client.AccountId,});
+        collection.Add(new StreamState(client, stream));
       }
 
       collection[ 0 ].Placeholders.Add(new Core.Models.Base() {id = "random_obj"});

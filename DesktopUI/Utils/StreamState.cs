@@ -18,6 +18,12 @@ namespace Speckle.DesktopUI.Utils
   {
     public StreamState() {}
 
+    public StreamState(Client client, Stream stream)
+    {
+      Client = client;
+      Stream = stream;
+    }
+
     [JsonConstructor]
     public StreamState(string accountId)
     {
@@ -33,11 +39,15 @@ namespace Speckle.DesktopUI.Utils
       {
         _client = value;
         AccountId = Client.AccountId;
+        ServerUrl = Client.ServerUrl;
       }
     }
 
     [JsonProperty]
-    public string AccountId { get; set; }
+    public string AccountId { get; private set; }
+
+    [JsonProperty]
+    public string ServerUrl { get; private set; }
 
     private Stream _stream;
 

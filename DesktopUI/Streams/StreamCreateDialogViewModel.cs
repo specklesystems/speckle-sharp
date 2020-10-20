@@ -296,10 +296,7 @@ namespace Speckle.DesktopUI.Streams
 
         // TODO do this locally first before creating on the server
         StreamToCreate = await _streamsRepo.GetStream(streamId, AccountToSendFrom);
-        StreamState = new StreamState()
-        {
-          Client = client, Filter = SelectedFilter, Stream = StreamToCreate
-        };
+        StreamState = new StreamState(client, StreamToCreate) { Filter = SelectedFilter };
         _bindings.AddNewStream(StreamState);
 
         SelectedSlide = 3;
@@ -329,10 +326,7 @@ namespace Speckle.DesktopUI.Streams
       var client = new Client(AccountToSendFrom);
       StreamToCreate = await client.StreamGet(SelectedStream.id);
 
-      StreamState = new StreamState()
-      {
-        Client = client, Stream = StreamToCreate, ServerUpdates = true
-      };
+      StreamState = new StreamState(client, StreamToCreate) { ServerUpdates = true };
       _bindings.AddNewStream(StreamState);
       SelectedSlide = 3;
       _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
