@@ -218,6 +218,7 @@ namespace ConnectorGrashopper.Ops
 
       var client = new Client(InputWrapper.GetAccount());
       var remoteTransport = new ServerTransport(InputWrapper.GetAccount(), InputWrapper.StreamId);
+      remoteTransport.TransportName = "R";
 
       if (((ReceiveComponent)Parent).JustPastedIn && ((ReceiveComponent)Parent).ReceivedObjectId != null)
       {
