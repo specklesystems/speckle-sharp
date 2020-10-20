@@ -171,7 +171,9 @@ namespace Speckle.DesktopUI.Streams
 
     public async Task<StreamState> ConvertAndReceive(StreamState state, ProgressReport progress = null)
     {
+      var latestCommitId = state.LatestCommit().id;
       state.Stream = await state.Client.StreamGet(state.Stream.id);
+      if ( !state.ServerUpdates && latestCommitId == state.LatestCommit().id ) return state;
       try
       {
         state = await Task.Run(() => _bindings.ReceiveStream(state, progress));

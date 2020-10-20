@@ -3,6 +3,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Stylet;
 
@@ -107,6 +108,13 @@ namespace Speckle.DesktopUI.Utils
     {
       get => _serverUpdates;
       set => SetAndNotify(ref _serverUpdates, value);
+    }
+
+    public Commit LatestCommit(string branchName = "main")
+    {
+      var branch = Stream.branches.items.Find(b => b.name == branchName);
+      if ( branch == null ) throw new SpeckleException($"Could not find branch {branchName}");
+      return branch.commits.items[ 0 ];
     }
   }
 
