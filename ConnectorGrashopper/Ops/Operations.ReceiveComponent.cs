@@ -16,7 +16,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
@@ -39,6 +38,8 @@ namespace ConnectorGrashopper.Ops
 
     public string LastInfoMessage { get; set; }
 
+    public string LastCommitDate { get; set; }
+
     public string ReceivedObjectId { get; set; }
 
     public string InputType { get; set; }
@@ -56,7 +57,9 @@ namespace ConnectorGrashopper.Ops
       writer.SetBoolean("AutoReceive", AutoReceive);
       writer.SetString("CurrentComponentState", CurrentComponentState);
       writer.SetString("LastInfoMessage", LastInfoMessage);
+      writer.SetString("LastCommitDate", LastCommitDate);
       writer.SetString("ReceivedObjectId", ReceivedObjectId);
+
       if (StreamWrapper != null)
       {
         writer.SetString("StreamWrapper", StreamWrapper.ToString());
@@ -70,6 +73,7 @@ namespace ConnectorGrashopper.Ops
       AutoReceive = reader.GetBoolean("AutoReceive");
       CurrentComponentState = reader.GetString("CurrentComponentState");
       LastInfoMessage = reader.GetString("LastInfoMessage");
+      LastCommitDate = reader.GetString("LastCommitDate");
       ReceivedObjectId = reader.GetString("ReceivedObjectId");
 
       var swString = reader.GetString("StreamWrapper");
@@ -119,7 +123,7 @@ namespace ConnectorGrashopper.Ops
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       // We need to call this always in here to be able to react and set events :/
-      HandleInput(DA);
+      ParseInput(DA);
 
       if ((AutoReceive || CurrentComponentState == "primed_to_receive" || CurrentComponentState == "receiving") && !JustPastedIn)
       {
@@ -170,7 +174,7 @@ namespace ConnectorGrashopper.Ops
 
     private Client ApiClient { get; set; }
 
-    public void HandleInput(IGH_DataAccess DA)
+    public void ParseInput(IGH_DataAccess DA)
     {
       GH_Structure<IGH_Goo> DataInput;
       DA.GetDataTree(0, out DataInput);
@@ -200,8 +204,9 @@ namespace ConnectorGrashopper.Ops
 
     public void HandleInputType(string inputType, StreamWrapper wrapper)
     {
-      bool needsDisplayExpiration = false;
-      if (inputType != InputType) needsDisplayExpiration = true;
+      if (inputType != InputType)
+      {
+      }
 
       InputType = inputType;
 
@@ -212,7 +217,10 @@ namespace ConnectorGrashopper.Ops
         return;
       }
 
-      if (StreamWrapper != null && wrapper.StreamId == StreamWrapper.StreamId && !JustPastedIn) return;
+      if (StreamWrapper != null && wrapper.StreamId == StreamWrapper.StreamId && !JustPastedIn)
+      {
+        return;
+      }
 
       StreamWrapper = wrapper;
 
@@ -324,6 +332,7 @@ namespace ConnectorGrashopper.Ops
           catch (Exception e)
           {
             RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+            Done();
             return;
           }
         }
@@ -337,7 +346,8 @@ namespace ConnectorGrashopper.Ops
           }
           catch (Exception e)
           {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"Could not get any commits from the stream's \"main\" branch. \n ({e.Message})"));
+            Done();
             return;
           }
         }
@@ -381,7 +391,6 @@ namespace ConnectorGrashopper.Ops
       }
 
       ((ReceiveComponent)Parent).CurrentComponentState = "up_to_date";
-      ((ReceiveComponent)Parent).ReceivedObjectId = ReceivedObject.id;
 
       if (ReceivedCommit != null)
       {
@@ -390,6 +399,15 @@ namespace ConnectorGrashopper.Ops
 
       ((ReceiveComponent)Parent).JustPastedIn = false;
 
+      DA.SetData(1, ((ReceiveComponent)Parent).LastInfoMessage);
+
+      if(ReceivedObject == null)
+      {
+        return;
+      }
+
+      ((ReceiveComponent)Parent).ReceivedObjectId = ReceivedObject.id;
+
       var dataList = ReceivedObject["@data"] as List<object>;
       var dataDictionary = ReceivedObject["@data"] as Dictionary<string, object>;
 
@@ -397,11 +415,11 @@ namespace ConnectorGrashopper.Ops
       {
         DA.SetDataList(0, dataList);
       }
-      else if (dataDictionary != null)
+      else if (dataDictionary != null && dataDictionary.Values.First() is List<object>)
       {
-        // TODO: assemble tree
         var tree = new GH_Structure<IGH_Goo>();
-        foreach(var kvp in dataDictionary)
+        var borkage = false;
+        foreach (var kvp in dataDictionary)
         {
           if (kvp.Value is List<object>)
           {
@@ -410,15 +428,20 @@ namespace ConnectorGrashopper.Ops
             var path = new GH_Path(pathPieces);
             tree.AppendRange(pathObjects.Select(o => new GH_SpeckleGoo { Value = o }), path);
           }
+          else
+          {
+            borkage = true;
+          }
         }
-        DA.SetDataTree(0, tree);
-      }
-      else
-      {
-        DA.SetData(0, ReceivedObject); 
+        if (!borkage)
+        {
+          DA.SetDataTree(0, tree);
+          return;
+        }
       }
 
-      DA.SetData(1, ((ReceiveComponent)Parent).LastInfoMessage);
+      // Last attempt: just set the object out as receieved, and the user can unpack it via the other components.
+      DA.SetData(0, ReceivedObject);
     }
   }
 
@@ -516,4 +539,5 @@ namespace ConnectorGrashopper.Ops
       return base.RespondToMouseDown(sender, e);
     }
   }
+
 }
