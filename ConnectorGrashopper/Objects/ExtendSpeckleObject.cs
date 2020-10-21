@@ -15,7 +15,7 @@ namespace ConnectorGrashopper.Objects
         
         protected override Bitmap Icon => Properties.Resources.ExtendSpeckleObject;
 
-        public override GH_Exposure Exposure => GH_Exposure.secondary;
+        public override GH_Exposure Exposure => GH_Exposure.tertiary;
 
         public ExtendSpeckleObject() : base("Extend Speckle Object", "ESO", "Extend a current object with key/value pairs", "Speckle 2", "Object Management")
         {

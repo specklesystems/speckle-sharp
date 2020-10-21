@@ -2,6 +2,7 @@
 using Grasshopper.Kernel.Special;
 using Speckle.Core.Credentials;
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -9,6 +10,8 @@ namespace ConnectorGrashopper.Accounts
 {
   public class AccountListComponent : GH_ValueList
   {
+    protected override Bitmap Icon => Properties.Resources.Accounts;
+    
     public override Guid ComponentGuid => new Guid("734C6CB6-2430-40B3-BE2F-255B27302131");
 
     public override string Category { get => "Speckle 2"; }
@@ -19,6 +22,7 @@ namespace ConnectorGrashopper.Accounts
 
     public override string Name { get => "Accounts"; }
 
+    
     public AccountListComponent() : base()
     {
       MutableNickName = false;
