@@ -1,0 +1,117 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Forms;
+using ConnectorGrashopper.Extras;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+
+namespace ConnectorGrashopper.Objects
+{
+    public class SelectKitComponentBase: GH_Component
+    {
+        public ISpeckleConverter Converter;
+
+        public ISpeckleKit Kit;
+
+        public SelectKitComponentBase(string name, string nickname, string description, string category, string subCategory) : base(name, nickname, description, category, subCategory)
+        {
+            Kit = KitManager.GetDefaultKit();
+            try
+            {
+                Converter = Kit.LoadConverter(Applications.Rhino);
+                Message = $"{Kit.Name} Kit";
+            }
+            catch
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+            }
+        }
+        
+        public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+        {
+            Menu_AppendSeparator(menu);
+            var  menuItem =Menu_AppendItem(menu, "Select the converter you want to use:");
+            menuItem.Enabled = false;
+            var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+
+            foreach (var kit in kits)
+            {
+                Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
+            }
+
+            Menu_AppendSeparator(menu);
+        }
+        
+        public object TryConvertItem(object value)
+        {
+            if (value is IGH_Goo)
+            {
+                value = value.GetType().GetProperty("Value")?.GetValue(value);
+            }
+            if (value is Base @base && Converter.CanConvertToNative(@base))
+            {
+                return Converter.ConvertToNative(@base);
+            }
+            if (value.GetType().IsSimpleType())
+            {
+                return value;
+            }
+            return null;
+        }
+        
+        public void SetConverterFromKit(string kitName)
+        {
+            if (kitName == Kit.Name) return;
+
+            Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
+            Converter = Kit.LoadConverter(Applications.Rhino);
+
+            Message = $"Using the {Kit.Name} Converter";
+            ExpireSolution(true);
+        }
+
+        public override Guid ComponentGuid => new Guid("18E665F6-29D2-4DCF-96E1-124960AD46A7");
+        
+        protected override void RegisterInputParams(GH_InputParamManager pManager)
+        {
+            throw new Exception("Please inherit from this class, don't use SelectKitComponentBase directly");
+        }
+
+        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
+        {
+            throw new Exception("Please inherit from this class, don't use SelectKitComponentBase directly");
+        }
+
+        protected override void SolveInstance(IGH_DataAccess DA)
+        {
+            throw new Exception("Please inherit from this class, don't use SelectKitComponentBase directly");
+
+        }
+
+        public static GH_Structure<IGH_Goo> GetSubTree(GH_Structure<IGH_Goo> valueTree, GH_Path searchPath)
+        {
+            var subTree = new GH_Structure<IGH_Goo>();
+            var gen = 0;
+            foreach (var path in valueTree.Paths)
+            {
+                var branch = valueTree.get_Branch(path) as IEnumerable<IGH_Goo>;
+                if (path.IsAncestor(searchPath, ref gen))
+                {
+                    subTree.AppendRange(branch, path);
+                }
+                else if (path.IsCoincident(searchPath))
+                {
+                    subTree.AppendRange(branch,path);
+                    break;
+                }
+            }
+            subTree.Simplify(GH_SimplificationMode.CollapseLeadingOverlaps);
+            return subTree;
+        }
+    }
+}
