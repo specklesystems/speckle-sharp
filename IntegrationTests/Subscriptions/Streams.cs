@@ -36,7 +36,7 @@ namespace TestsIntegration.Subscriptions
       client.SubscribeUserStreamAdded();
       client.OnUserStreamAdded += Client_OnUserStreamAdded;
 
-      Thread.Sleep(400); //let server catch-up
+      Thread.Sleep(1000); //let server catch-up
 
       var streamInput = new StreamCreateInput
       {
