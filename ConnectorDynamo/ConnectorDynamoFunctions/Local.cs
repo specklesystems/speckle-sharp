@@ -25,8 +25,9 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       Tracker.TrackEvent(Tracker.SEND_LOCAL);
 
-      var conversionResult = Utils.ConvertRecursivelyToSpeckle(data);
-      var objectId = Operations.Send(conversionResult.Object).Result;
+      var converter = new BatchConverter();
+      var @base = converter.ConvertRecursivelyToSpeckle(data);
+      var objectId = Operations.Send(@base).Result;
 
       return objectId;
     }
@@ -42,7 +43,8 @@ namespace Speckle.ConnectorDynamo.Functions
       Tracker.TrackEvent(Tracker.RECEIVE_LOCAL);
 
       var @base = Operations.Receive(localDataId).Result;
-      var data = Utils.ConvertRecursivelyToNative(@base);
+      var converter = new BatchConverter();
+      var data = converter.ConvertRecursivelyToNative(@base);
       return data;
     }
   }

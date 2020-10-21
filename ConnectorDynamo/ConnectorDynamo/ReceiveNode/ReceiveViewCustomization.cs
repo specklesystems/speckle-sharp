@@ -4,9 +4,11 @@ using Dynamo.Models;
 using Dynamo.Scheduler;
 using Dynamo.ViewModels;
 using Dynamo.Wpf;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Threading;
 
-namespace Speckle.ConnectorDynamo
+namespace Speckle.ConnectorDynamo.ReceiveNode
 {
   public class ReceiveViewCustomization : INodeViewCustomization<Receive>
   {
@@ -24,29 +26,44 @@ namespace Speckle.ConnectorDynamo
       receiveNode = model;
 
       receiveNode.RequestChangeStream += UpdateStream;
+      receiveNode.RequestReceive += RequestReceive;
 
       UpdateStream();
+
+      var ui = new ReceiveUi();
+      nodeView.inputGrid.Children.Add(ui);
+
+      //bindings
+      ui.DataContext = model;
+      //ui.Loaded += model.AddedToDocument;
+      ui.ReceiveStreamButton.Click += ReceiveStreamButtonClick;
+      ui.CancelReceiveStreamButton.Click += CancelReceiveStreamButtonClick;
     }
 
+    private void CancelReceiveStreamButtonClick(object sender, RoutedEventArgs e)
+    {
+      receiveNode.CancelReceive();
+    }
 
     private void UpdateStream()
     {
-      var s = dynamoViewModel.Model.Scheduler;
-
-      // prevent data race by running on scheduler
-      var t = new DelegateBasedAsyncTask(s, () =>
+      Task.Run(() =>
       {
         receiveNode.ChangeStreams(dynamoModel.EngineController);
       });
+    }
 
-      // then update on the ui thread
-      //t.ThenSend((_) =>
-      //{
-      //  var bmp = CreateColorRangeBitmap(colorRange);
-      //  gradientImage.Source = bmp;
-      //}, syncContext);
+    private void ReceiveStreamButtonClick(object sender, RoutedEventArgs e)
+    {
+      RequestReceive();
+    }
 
-      s.ScheduleForExecution(t);
+    private void RequestReceive()
+    {
+      Task.Run(() =>
+      {
+        receiveNode.DoReceive(dynamoModel.EngineController);
+      });
     }
 
     public void Dispose() { }

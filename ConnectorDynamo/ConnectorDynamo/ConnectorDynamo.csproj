@@ -95,12 +95,15 @@
     <None Include="pkg.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ReceiveNode\ReceiveUi.xaml.cs">
+      <DependentUpon>ReceiveUi.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SendNode\SendViewCustomization.cs" />
     <Compile Include="SendNode\Send.cs" />
-    <Compile Include="Receive.cs" />
+    <Compile Include="ReceiveNode\Receive.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReceiveViewCustomization.cs" />
-    <Compile Include="UI\SendUi.xaml.cs">
+    <Compile Include="ReceiveNode\ReceiveViewCustomization.cs" />
+    <Compile Include="SendNode\SendUi.xaml.cs">
       <DependentUpon>SendUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="ValueConverters\BoolVisibConverter.cs" />
@@ -115,11 +118,15 @@
     <EmbeddedResource Include="SpeckleConnectorDynamoImages.resx" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="ReceiveNode\ReceiveUi.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Themes\Generic.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\SendUi.xaml">
+    <Page Include="SendNode\SendUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

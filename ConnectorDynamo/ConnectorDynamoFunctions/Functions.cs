@@ -1,12 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using Autodesk.DesignScript.Runtime;
-using Dynamo.Graph.Nodes;
-using Speckle.ConnectorDynamo.Functions;
-using Speckle.ConnectorDynamo.Functions.Extras;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -18,7 +15,7 @@ namespace Speckle.ConnectorDynamo.Functions
   /// <summary>
   /// Functions that are to be called by NodeModel nodes
   /// </summary>
-
+  [IsVisibleInDynamoLibrary(false)]
   public static class Functions
   {
     /// <summary>
@@ -27,19 +24,15 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="data">Data to send</param>
     /// <param name="stream">Stream to send the data to</param>
     /// <returns name="log">Log</returns>
-    [IsVisibleInDynamoLibrary(false)]
-    public static string Send([ArbitraryDimensionArrayImport] object data, StreamWrapper stream, string branchName = null, string message = null)
+    public static string Send(Base data, StreamWrapper stream, string branchName = "main", string message = "", Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
     {
       Core.Credentials.Account account = stream.GetAccount();
 
       var client = new Client(account);
-      var conversionResult = Utils.ConvertRecursivelyToSpeckle(data);
       var transport = new ServerTransport(account, stream.StreamId);
-      var objectId = Operations.Send(conversionResult.Object, new List<ITransport>() { transport }).Result;
+      var objectId = Operations.Send(data, new List<ITransport>() { transport }, true, onProgressAction, onErrorAction).Result;
 
-      branchName = null ?? "main";
-      var plural = (conversionResult.TotalObjects == 1) ? "" : "s";
-      message = null ?? $"Sent {conversionResult.TotalObjects} object{plural} from Dynamo";
+      branchName = string.IsNullOrEmpty(branchName) ? "main" : branchName;
 
       var res = client.CommitCreate(new CommitCreateInput
       {
@@ -49,9 +42,7 @@ namespace Speckle.ConnectorDynamo.Functions
         message = message
       }).Result;
 
-      if (!string.IsNullOrEmpty(res))
-        return "Sent successfully @ " + DateTime.Now.ToShortTimeString();
-      return null;
+      return res;
     }
 
     /// <summary>
@@ -59,27 +50,54 @@ namespace Speckle.ConnectorDynamo.Functions
     /// </summary>
     /// <param name="stream">Stream to receive from</param>
     /// <returns></returns>
-    [IsVisibleInDynamoLibrary(false)]
-    [MultiReturn(new[] { "data", "info" })]
-    public static Dictionary<string, object> Receive(StreamWrapper stream)
+    [MultiReturn(new[] { "data", "commit" })]
+    public static Dictionary<string, object> Receive(StreamWrapper stream, string branchName, CancellationToken cancellationToken, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null)
     {
       Core.Credentials.Account account = stream.GetAccount();
+      branchName = string.IsNullOrEmpty(branchName) ? "main" : branchName;
 
       var client = new Client(account);
       var res = client.StreamGet(stream.StreamId).Result;
-      if (res == null || !res.branches.items[0].commits.items.Any())
+      var mainBranch = res.branches.items.FirstOrDefault(b => b.name == branchName);
+
+      if (mainBranch == null)
+      {
+        Log.CaptureAndThrow(new Exception("No branch found with name " + branchName));
+      }
+
+      if (res == null || !mainBranch.commits.items.Any())
         return null;
 
-      var lastCommit = res.branches.items[0].commits.items[0];
+      var lastCommit = mainBranch.commits.items[0];
 
       var transport = new ServerTransport(account, stream.StreamId);
-      var @base = Operations.Receive(lastCommit.referencedObject, remoteTransport: transport).Result;
-      var data = Utils.ConvertRecursivelyToNative(@base);
+      var @base = Operations.Receive(
+        lastCommit.referencedObject,
+        cancellationToken,
+        remoteTransport: transport,
+        onProgressAction: onProgressAction,
+        onErrorAction: onErrorAction,
+        onTotalChildrenCountKnown: onTotalChildrenCountKnown
 
-      return new Dictionary<string, object> { { "data", data }, { "info", $"{lastCommit.authorName} @ {lastCommit.createdAt}: { lastCommit.message} (id:{lastCommit.id})" } };
+        ).Result;
+      var converter = new BatchConverter();
+      var data = converter.ConvertRecursivelyToNative(@base);
+
+      return new Dictionary<string, object> { { "data", data }, { "commit", lastCommit } };
     }
 
 
+    public static object ReceiveData(string inMemoryDataId)
+    {
+      return InMemoryCache.Get(inMemoryDataId)["data"];
+    }
+
+    public static string ReceiveInfo(string inMemoryDataId)
+    {
+      var commit = InMemoryCache.Get(inMemoryDataId)["commit"] as Commit;
+      return $"{commit.authorName} @ {commit.createdAt}: { commit.message} (id:{commit.id})";
+
+    }
 
 
   }

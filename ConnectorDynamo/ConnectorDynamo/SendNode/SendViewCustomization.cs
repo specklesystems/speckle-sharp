@@ -4,7 +4,7 @@ using Dynamo.Models;
 using Dynamo.Scheduler;
 using Dynamo.ViewModels;
 using Dynamo.Wpf;
-using Speckle.ConnectorDynamo.UI;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -25,6 +25,8 @@ namespace Speckle.ConnectorDynamo.SendNode
       syncContext = new DispatcherSynchronizationContext(nodeView.Dispatcher);
       sendNode = model;
 
+      sendNode.RequestChanges += UpdateNode;
+
       var ui = new SendUi();
       nodeView.inputGrid.Children.Add(ui);
 
@@ -35,28 +37,21 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     }
 
+    private void UpdateNode()
+    {
+      Task.Run(() =>
+      {
+        sendNode.UpdateNodeUi(dynamoModel.EngineController);
+      });
+    }
+
     private void SendStreamButtonClick(object sender, RoutedEventArgs e)
     {
-      var s = dynamoViewModel.Model.Scheduler;
-
-      // prevent data race by running on scheduler
-      var t = new DelegateBasedAsyncTask(s, () =>
+      Task.Run(() =>
       {
         sendNode.DoSend(dynamoModel.EngineController);
       });
-
-      // then update on the ui thread
-      //t.ThenSend((_) =>
-      //{
-      //  var bmp = CreateColorRangeBitmap(colorRange);
-      //  gradientImage.Source = bmp;
-      //}, syncContext);
-
-      s.ScheduleForExecution(t);
     }
-
-
-
 
     public void Dispose() { }
 

@@ -2,19 +2,18 @@
 using DNJ = DynamoNewtonsoft::Newtonsoft.Json;
 
 using Dynamo.Graph.Nodes;
-using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
 using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Credentials;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Account = Speckle.Core.Credentials.Account;
 using Speckle.Core.Logging;
-using Speckle.ConnectorDynamo.Functions.Extras;
-using System.Windows;
 using Dynamo.Engine;
 using Dynamo.Utilities;
+using ProtoCore.Mirror;
+using System.Collections.Concurrent;
+using System.ComponentModel;
 
 namespace Speckle.ConnectorDynamo.SendNode
 {
@@ -26,20 +25,36 @@ namespace Speckle.ConnectorDynamo.SendNode
   [IsDesignScriptCompatible]
   public class Send : NodeModel
   {
+    //detect changes (eg connectors plugged/unplugged)
+    public event Action RequestChanges;
+    protected virtual void OnRequestChanges()
+    {
+      RequestChanges?.Invoke();
+    }
+
     private bool _transmitting = false;
     private string _message = "";
-    private bool _expired = false;
+    private double _progress = 0;
+    private string _expiredCount = "";
     private bool _sendEnabled = false;
+    private int _objectCount = 0;
+    private bool _hasOutput = false;
+    private string _outputInfo = "";
 
+    //ignored properties
+    //NOT to be saved with the file
     [DNJ.JsonIgnore]
     public bool Transmitting { get => _transmitting; set { _transmitting = value; RaisePropertyChanged("Transmitting"); } }
 
     [DNJ.JsonIgnore]
     public string Message { get => _message; set { _message = value; RaisePropertyChanged("Message"); } }
     [DNJ.JsonIgnore]
-    public bool Expired { get => _expired; set { _expired = value; RaisePropertyChanged("Expired"); } }
+    public double Progress { get => _progress; set { _progress = value; RaisePropertyChanged("Progress"); } }
     [DNJ.JsonIgnore]
     public bool SendEnabled { get => _sendEnabled; set { _sendEnabled = value; RaisePropertyChanged("SendEnabled"); } }
+
+    //properties TO SAVE
+    public string ExpiredCount { get => _expiredCount; set { _expiredCount = value; RaisePropertyChanged("ExpiredCount"); } }
 
     [DNJ.JsonConstructor]
     private Send(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
@@ -60,6 +75,8 @@ namespace Speckle.ConnectorDynamo.SendNode
         AddOutputs();
 
       ArgumentLacing = LacingStrategy.Disabled;
+
+      this.PropertyChanged += HandlePropertyChanged;
     }
 
     public Send()
@@ -71,6 +88,26 @@ namespace Speckle.ConnectorDynamo.SendNode
 
       RegisterAllPorts();
       ArgumentLacing = LacingStrategy.Disabled;
+
+      this.PropertyChanged += HandlePropertyChanged;
+    }
+
+    void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+      if (e.PropertyName != "CachedValue")
+        return;
+
+      if ((!InPorts[0].IsConnected || !InPorts[1].IsConnected))
+        return;
+
+      //the node was expired manually just to output the commit info, no need to do anything!
+      if (_hasOutput)
+      {
+        _hasOutput = false;
+        return;
+      }
+
+      OnRequestChanges();
     }
 
     private void AddInputs()
@@ -88,7 +125,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     }
     private void AddOutputs()
     {
-      //OutPorts.Add(new PortModel(PortType.Output, this, new PortData("log", "Log")));
+      OutPorts.Add(new PortModel(PortType.Output, this, new PortData("info", "Commit information")));
     }
 
     internal void DoSend(EngineController engine)
@@ -101,72 +138,117 @@ namespace Speckle.ConnectorDynamo.SendNode
       Tracker.TrackEvent(Tracker.SEND);
 
       Transmitting = true;
-      // _sendClicked = true;
-      Message = "Sending...";
-      //ExpireNode();
+      Message = "Converting...";
 
       try
       {
         var data = GetInputAs<object>(engine, 0);
         var stream = GetInputAs<StreamWrapper>(engine, 1);
+        var branchName = InPorts[2].Connectors.Any() ? GetInputAs<string>(engine, 2) : ""; //IsConnected not working because has default value
+        var message = InPorts[3].Connectors.Any() ? GetInputAs<string>(engine, 3) : ""; //IsConnected not working because has default value
 
-        Functions.Functions.Send(data, stream);
+        if (stream == null)
+          Core.Logging.Log.CaptureAndThrow(new Exception("The stream provided is invalid"));
+
+        var converter = new BatchConverter();
+        var @base = converter.ConvertRecursivelyToSpeckle(data);
+        var totalCount = @base.GetTotalChildrenCount();
+        Message = "Sending...";
+        Action<ConcurrentDictionary<string, int>> onProgressAction = (dict) =>
+        {
+
+          var val = (double)dict.Values.Last() / totalCount;
+          Message = val.ToString("0%");
+          Progress = val * 100;
+
+        };
+
+        Action<string, Exception> onErroAction = (transportName, exception) =>
+        {
+          Core.Logging.Log.CaptureAndThrow(exception);
+        };
+
+
+
+        var plural = (totalCount == 1) ? "" : "s";
+        message = string.IsNullOrEmpty(message) ? $"Sent {totalCount} object{plural} from Dynamo" : message;
+
+        var commitId = Functions.Functions.Send(@base, stream, branchName, message, onProgressAction, onErroAction);
+        stream.CommitId = commitId;
+        _outputInfo = stream.ToString();
       }
-      catch (Exception)
+      catch (Exception e)
       {
+        _outputInfo = e.Message;
+        Core.Logging.Log.CaptureAndThrow(e);
 
       }
+      finally
+      {
+        Transmitting = false;
+        ExpiredCount = "";
+        Message = "";
+        Progress = 0;
+        _hasOutput = true;
+        ExpireNode();
+      }
 
-      Transmitting = false;
-      Expired = false;
-      Message = "";
+
 
     }
 
-    private T GetInputAs<T>(EngineController engine, int port)
+
+    internal void UpdateNodeUi(EngineController engine)
+    {
+      if (!InPorts[0].IsConnected || !InPorts[1].IsConnected)
+      {
+        ExpiredCount = "";
+        return;
+      }
+
+      _objectCount = 0;
+      var data = GetInputAs<object>(engine, 0, true);
+
+      ExpiredCount = _objectCount.ToString();
+    }
+
+
+    private T GetInputAs<T>(EngineController engine, int port, bool count = false)
     {
       var valuesNode = InPorts[port].Connectors[0].Start.Owner;
       var valuesIndex = InPorts[port].Connectors[0].Start.Index;
       var astId = valuesNode.GetAstIdentifierForOutputIndex(valuesIndex).Name;
       var inputMirror = engine.GetMirror(astId);
 
+
+
       if (inputMirror == null || inputMirror.GetData() == null) return default(T);
 
       var data = inputMirror.GetData();
+      var value = RecurseInput(data, count);
+
+      return (T)value;
+    }
+
+    private object RecurseInput(MirrorData data, bool count)
+    {
+      object @object;
       if (data.IsCollection)
       {
+        var list = new List<object>();
         var elements = data.GetElements();
-        foreach (var element in elements)
-        {
-          if (element.IsCollection)
-          {
-            var elements2 = element.GetElements();
-            foreach (var element2 in elements2)
-            {
-              if (element2.IsCollection)
-              {
-                var elements3 = element2.GetElements();
-                foreach (var element3 in elements3)
-                {
-                  if (element3.IsCollection)
-                  {
-                    var elements4 = element3.GetElements();
-                  }
-
-                }
-              }
-
-            }
-          }
-        }
-        return (T)elements.FirstOrDefault().Data;
-
+        list.AddRange(elements.Select(x => RecurseInput(x, count)));
+        @object = list;
       }
       else
       {
-        return (T)data.Data;
+        @object = data.Data;
+        if (count)
+          _objectCount++;
       }
+      return @object;
     }
+
 
     public void ExpireNode()
     {
@@ -185,14 +267,15 @@ namespace Speckle.ConnectorDynamo.SendNode
       if (!InPorts[0].IsConnected || !InPorts[1].IsConnected)
       {
         SendEnabled = false;
-        return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), AstFactory.BuildNullNode()) };
+        ExpiredCount = "";
+        _outputInfo = "";
       }
 
       SendEnabled = true;
-      Expired = true;
 
+      return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), AstFactory.BuildStringNode(_outputInfo)) };
 
-      return OutPorts.Enumerate().Select(output => AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
+      //return OutPorts.Enumerate().Select(output => AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
     }
 
     public override void Dispose()

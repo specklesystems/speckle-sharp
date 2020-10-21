@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.DesignScript.Runtime;
 using Dynamo.Graph.Nodes;
-using Speckle.ConnectorDynamo.Functions.Extras;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;

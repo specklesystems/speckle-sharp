@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Speckle.ConnectorDynamo.UI
+namespace Speckle.ConnectorDynamo.SendNode
 {
   /// <summary>
   /// Interaction logic for SendUi.xaml
