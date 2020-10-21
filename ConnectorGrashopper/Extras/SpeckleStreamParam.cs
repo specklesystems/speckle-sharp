@@ -2,6 +2,7 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 
 namespace ConnectorGrashopper.Extras
 {

@@ -127,7 +127,7 @@ namespace ConnectorGrashopper.Conversion
 
     public ISpeckleConverter Converter { get; set; }
 
-    public ToNativeWorker(ISpeckleConverter _Converter)
+    public ToNativeWorker(ISpeckleConverter _Converter) : base(null)
     {
       Converter = _Converter;
       Objects = new GH_Structure<IGH_Goo>();
@@ -153,7 +153,7 @@ namespace ConnectorGrashopper.Conversion
       return result;
     }
 
-    public override void DoWork(Action<string, double> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
+    public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
       if (CancellationToken.IsCancellationRequested)
       {

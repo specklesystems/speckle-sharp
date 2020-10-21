@@ -19,7 +19,7 @@ namespace ConnectorGrashopper.Transports
     {
       pManager.AddTextParameter("base path", "P", "The root folder where you want the sqlite db to be stored. Defaults to `%appdata%`.", GH_ParamAccess.item);
       pManager.AddTextParameter("application name", "N", "The subfolder you want the sqlite db to be stored. Defaults to `Speckle`.", GH_ParamAccess.item);
-      pManager.AddTextParameter("database name", "D", "The name of the actual databse file. Defaults to `Objects`.", GH_ParamAccess.item);
+      pManager.AddTextParameter("database name", "D", "The name of the actual databse file. Defaults to `Custom Speckle Sqlite Db`.", GH_ParamAccess.item, "Custom Speckle Sqlite Db");
 
       Params.Input.ForEach(p => p.Optional = true);
     }
@@ -40,8 +40,8 @@ namespace ConnectorGrashopper.Transports
       string basePath = null, applicationName = null, scope = null;
 
       DA.GetData(0, ref basePath);
-      DA.GetData(0, ref applicationName);
-      DA.GetData(0, ref scope);
+      DA.GetData(1, ref applicationName);
+      DA.GetData(2, ref scope);
 
       var myTransport = new SQLiteTransport(basePath, applicationName, scope);
 

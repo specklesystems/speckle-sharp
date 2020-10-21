@@ -19,7 +19,7 @@ namespace ConnectorGrashopper.Conversion
 
     public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle object to a JSON string", "Speckle 2", "Conversion")
     {
-      BaseWorker = new SerialzeWorker();
+      BaseWorker = new SerialzeWorker(this);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -38,13 +38,13 @@ namespace ConnectorGrashopper.Conversion
     GH_Structure<IGH_Goo> Objects;
     GH_Structure<GH_String> ConvertedObjects;
 
-    public SerialzeWorker()
+    public SerialzeWorker(GH_Component parent) : base(parent)
     {
       Objects = new GH_Structure<IGH_Goo>();
       ConvertedObjects = new GH_Structure<GH_String>();
     }
 
-    public override void DoWork(Action<string, double> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
+    public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
       if (CancellationToken.IsCancellationRequested) return;
 
@@ -71,7 +71,7 @@ namespace ConnectorGrashopper.Conversion
           else
           {
             ConvertedObjects.Append(new GH_String() { Value = null }, Objects.Paths[branchIndex]);
-            ReportError($"Object at {Objects.Paths[branchIndex]} is not a Speckle object.", GH_RuntimeMessageLevel.Warning);
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Object at {Objects.Paths[branchIndex]} is not a Speckle object.");
           }
 
           ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
@@ -83,7 +83,7 @@ namespace ConnectorGrashopper.Conversion
       Done();
     }
 
-    public override WorkerInstance Duplicate() => new SerialzeWorker();
+    public override WorkerInstance Duplicate() => new SerialzeWorker(Parent);
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {

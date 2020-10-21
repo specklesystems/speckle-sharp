@@ -99,8 +99,6 @@ namespace ConnectorGrashopper.Streams
         return;
       }
 
-
-      
       Task.Run(async () =>
       {
         var client = new Client(account);
