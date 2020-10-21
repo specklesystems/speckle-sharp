@@ -100,10 +100,11 @@ namespace Speckle.DesktopUI.Streams
       state.Stream = await state.Client.StreamGet(state.Stream.id);
 
       var res = await Task.Run(() => _repo.ConvertAndReceive(state, Progress));
-      if ( res == null ) return;
-
-      state = res;
-      StreamList.Refresh();
+      if ( res != null )
+      {
+        state = res;
+        StreamList.Refresh();
+      }
 
       state.IsReceiving = false;
     }
@@ -161,18 +162,22 @@ namespace Speckle.DesktopUI.Streams
         case ApplicationEvent.EventType.DocumentClosed:
         {
           StreamList.Clear();
-          return;
+          break;
         }
         case ApplicationEvent.EventType.DocumentOpened:
         {
           StreamList = new BindableCollection<StreamState>(_bindings.GetFileContext());
-          return;
+          break;
         }
         case ApplicationEvent.EventType.DocumentModified:
         {
           // warn that stream data may be expired
-          return;
+          break;
         }
+        case ApplicationEvent.EventType.ViewActivated:
+          break;
+        case ApplicationEvent.EventType.ApplicationIdling:
+          break;
         default:
           return;
       }

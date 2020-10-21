@@ -14,7 +14,7 @@ namespace Speckle.DesktopUI.Accounts
     {
       return new ObservableCollection<Account>(AccountManager.GetAccounts());
     }
-    
+
     public Account GetDefault()
     {
       return AccountManager.GetDefaultAccount();
