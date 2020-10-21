@@ -25,7 +25,7 @@ namespace Speckle.Core.Logging
           o.Dsn = new Dsn("https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846");
           o.Environment = "dev";
           o.Debug = false;
-          o.Release = "SpeckleCore@"+Assembly.GetExecutingAssembly().GetName().Version.ToString();  
+          o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
         });
 
       SentrySdk.ConfigureScope(scope =>
@@ -54,7 +54,19 @@ namespace Speckle.Core.Logging
     /// So they need to be sent manually.
     /// </summary>
     /// <param name="e">Exception to capture and throw</param>
-    public static void CaptureAndThrow(Exception e, SentryLevel level = SentryLevel.Error)
+    public static void CaptureAndThrow(Exception e)
+    {
+      CaptureException(e, SentryLevel.Error);
+      throw e;
+    }
+
+    /// <summary>
+    /// Captures and throws an exception
+    /// Unhandled exceptions are usually swallowed by host applications like Revit, Dynamo
+    /// So they need to be sent manually.
+    /// </summary>
+    /// <param name="e">Exception to capture and throw</param>
+    public static void CaptureAndThrow(Exception e, SentryLevel level)
     {
       CaptureException(e, level);
       throw e;
@@ -67,7 +79,7 @@ namespace Speckle.Core.Logging
     public static void CaptureAndThrow(Exception e, GraphQLError[] errors)
     {
       var extra = new List<KeyValuePair<string, object>>();
-      foreach(var error in errors)
+      foreach (var error in errors)
       {
         extra.Add(new KeyValuePair<string, object>("error", error.Message));
       }
@@ -78,8 +90,8 @@ namespace Speckle.Core.Logging
 
     //capture and make sure Sentry is initialized
     public static void CaptureException(
-      Exception e, 
-      SentryLevel level = SentryLevel.Error, 
+      Exception e,
+      SentryLevel level = SentryLevel.Error,
       List<KeyValuePair<string, object>> extra = null)
     {
       Instance();
@@ -87,8 +99,8 @@ namespace Speckle.Core.Logging
       SentrySdk.WithScope(s =>
       {
         s.Level = level;
-        
-        if (extra!=null)
+
+        if (extra != null)
           s.SetExtras(extra);
         SentrySdk.CaptureException(e);
       });
