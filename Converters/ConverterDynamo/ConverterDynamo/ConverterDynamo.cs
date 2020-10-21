@@ -21,6 +21,9 @@ namespace Objects.Converter.Dynamo
 
     public Base ConvertToSpeckle(object @object)
     {
+      if (@object is Base)
+        return @object as Base;
+
       var m = ConversionMethods(@object, "ToSpeckle");
       if (m == null)
         throw new NotSupportedException();
