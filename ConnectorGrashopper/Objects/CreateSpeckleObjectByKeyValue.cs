@@ -12,69 +12,13 @@ using Speckle.Core.Models;
 
 namespace ConnectorGrashopper.Objects
 {
-    public class CreateSpeckleObjectByKeyValue: GH_Component
+    public class CreateSpeckleObjectByKeyValue: SelectKitComponentBase
     {
-        private ISpeckleConverter Converter;
-
-        private ISpeckleKit Kit;
-
-        public CreateSpeckleObjectByKeyValue() : base("Create object by key/value", "K/V", "Create an Speckle object by key/value pairs", "Speckle 2", "Objects")
+        public CreateSpeckleObjectByKeyValue() : base("Create object by key/value", "K/V", "Create an Speckle object by key/value pairs", "Speckle 2", "Object Management")
         {
-            Kit = KitManager.GetDefaultKit();
-            try
-            {
-                Converter = Kit.LoadConverter(Applications.Rhino);
-                Message = $"Using the \n{Kit.Name}\n Kit Converter";
-            }
-            catch
-            {
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-            }
         }
         
-        public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
-        {
-            Menu_AppendSeparator(menu);
-            Menu_AppendItem(menu, "Select the converter you want to use:");
-
-            var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-
-            foreach (var kit in kits)
-            {
-                Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
-            }
-
-            Menu_AppendSeparator(menu);
-        }
-        
-        private object TryConvertItem(object value)
-        {
-            if (value is IGH_Goo)
-            {
-                value = value.GetType().GetProperty("Value")?.GetValue(value);
-            }
-            if (value is Base @base && Converter.CanConvertToNative(@base))
-            {
-                return Converter.ConvertToNative(@base);
-            }
-            if (value.GetType().IsSimpleType())
-            {
-                return value;
-            }
-            return null;
-        }
-        
-        private void SetConverterFromKit(string kitName)
-        {
-            if (kitName == Kit.Name) return;
-
-            Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-            Converter = Kit.LoadConverter(Applications.Rhino);
-
-            Message = $"Using the {Kit.Name} Converter";
-            ExpireSolution(true);
-        }
-        public override Guid ComponentGuid => new Guid("2AF52F83-7269-410D-B0BD-9CCA8C556B9F");
+        public override Guid ComponentGuid => new Guid("75B07031-0180-4A1F-9AC9-3AAA81E11E05");
         
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
@@ -107,7 +51,7 @@ namespace ConnectorGrashopper.Objects
             // Find the list or subtree belonging to that path
             if (valueTree.PathExists(searchPath) || valueTree.Paths.Count == 1)
             {
-                IList list = valueTree.Paths.Count == 1 ? valueTree.Branches[0] : valueTree.get_Branch(searchPath);
+                var list = valueTree.Paths.Count == 1 ? valueTree.Branches[0] : valueTree.get_Branch(searchPath);
                 // We got a list of values
                 var ind = 0;
                 keys.ForEach(key =>
@@ -129,7 +73,15 @@ namespace ConnectorGrashopper.Objects
                     //TODO: Grab conversion methods and implement branch handling.
                     var branch = subTree.get_Branch(itemPath);
                     if(branch != null)
-                        speckleObj[key] = branch;
+                    {
+                        
+                        List<object> objs = new List<object>();
+                        foreach (var goo in branch)
+                        {
+                            objs.Add(TryConvertItem(goo));
+                        }
+                        speckleObj[key] = objs;
+                    }
                     index++;
                 });
             }
@@ -138,28 +90,6 @@ namespace ConnectorGrashopper.Objects
             // Set output
             DA.SetData(0,new GH_SpeckleBase{Value = speckleObj});
             DA.SetDataTree(1, subTree);
-        }
-
-        private static GH_Structure<IGH_Goo> GetSubTree(GH_Structure<IGH_Goo> valueTree, GH_Path searchPath)
-        {
-            var subTree = new GH_Structure<IGH_Goo>();
-            var gen = 0;
-            foreach (var path in valueTree.Paths)
-            {
-                var branch = valueTree.get_Branch(path) as IEnumerable<IGH_Goo>;
-                if (path.IsAncestor(searchPath, ref gen))
-                {
-                    subTree.AppendRange(branch, path);
-                }
-                else if (path.IsCoincident(searchPath))
-                {
-                    subTree.AppendRange(branch,path);
-                    break;
-                }
-            }
-
-            subTree.Simplify(GH_SimplificationMode.CollapseLeadingOverlaps);
-            return subTree;
         }
     }
 }
