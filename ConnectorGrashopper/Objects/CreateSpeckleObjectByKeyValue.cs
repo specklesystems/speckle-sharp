@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using ConnectorGrashopper.Extras;
@@ -20,6 +21,10 @@ namespace ConnectorGrashopper.Objects
         
         public override Guid ComponentGuid => new Guid("75B07031-0180-4A1F-9AC9-3AAA81E11E05");
         
+        public override GH_Exposure Exposure => GH_Exposure.primary;
+
+        protected override Bitmap Icon => Properties.Resources.CreateSpeckleObjectByKeyValue;
+
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddTextParameter("Keys", "K", "List of keys", GH_ParamAccess.list);

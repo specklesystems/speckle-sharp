@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using ConnectorGrashopper.Extras;
@@ -17,7 +18,10 @@ namespace ConnectorGrashopper.Objects
         public GetObjectValueByKey() : base("Speckle Object Value by Key", "Object K/V", "Gets the value of a specific key in a Speckle object.", "Speckle 2", "Object Management")
         {
         }
-
+        protected override Bitmap Icon => Properties.Resources.GetObjectValueByKey;
+        
+        public override GH_Exposure Exposure => GH_Exposure.secondary;
+        
         public override Guid ComponentGuid => new Guid("5750B5B2-FB1E-4A1C-9DBE-025D6615D64E");
         
         protected override void RegisterInputParams(GH_InputParamManager pManager)

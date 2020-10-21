@@ -19,9 +19,9 @@ namespace ConnectorGrashopper.Objects
   // TODO: Convert to task capable component / async so as to not block the ffffing ui
   public class ExpandSpeckleObject : SelectKitComponentBase
   {
-    public override Guid ComponentGuid => new Guid("C3BC3130-97C9-4DDE-9D4F-7A7FB82F7F2E");
+    protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
 
-    protected override Bitmap Icon  => null;
+    public override Guid ComponentGuid => new Guid("C3BC3130-97C9-4DDE-9D4F-7A7FB82F7F2E");
 
     public ExpandSpeckleObject()
       : base("Expand Speckle Object", "ESO",

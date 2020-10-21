@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using ConnectorGrashopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -11,6 +12,10 @@ namespace ConnectorGrashopper.Objects
     public class ExtendSpeckleObject: SelectKitComponentBase
     {
         public override Guid ComponentGuid => new Guid("F208013C-AF46-4643-AF89-62B1A2435493");
+        
+        protected override Bitmap Icon => Properties.Resources.ExtendSpeckleObject;
+
+        public override GH_Exposure Exposure => GH_Exposure.secondary;
 
         public ExtendSpeckleObject() : base("Extend Speckle Object", "ESO", "Extend a current object with key/value pairs", "Speckle 2", "Object Management")
         {

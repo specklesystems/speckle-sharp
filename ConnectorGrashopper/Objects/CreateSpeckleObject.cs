@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Collections.Generic;
-
+using System.Drawing;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 
@@ -19,8 +19,9 @@ namespace ConnectorGrashopper
   public class CreateSpeckleObject : SelectKitComponentBase, IGH_VariableParameterComponent
   {
     public override Guid ComponentGuid => new Guid("cfa4e9b4-3ae4-4bb9-90d8-801c34e9a37e"); 
-
-    protected override System.Drawing.Bitmap Icon => null;
+    protected override Bitmap Icon => Properties.Resources.CreateSpeckleObject;
+    
+    public override GH_Exposure Exposure => GH_Exposure.primary;
 
     private ISpeckleConverter Converter;
 
