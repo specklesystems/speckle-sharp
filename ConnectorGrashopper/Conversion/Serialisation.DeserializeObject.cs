@@ -19,7 +19,7 @@ namespace ConnectorGrashopper.Conversion
 
     public DeserializeObject() : base("Deserialize", "Deserialize", "Deserializes a JSON string to a Speckle object.", "Speckle 2", "Conversion")
     {
-      BaseWorker = new DeserialzeWorker();
+      BaseWorker = new DeserialzeWorker(this);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -38,13 +38,13 @@ namespace ConnectorGrashopper.Conversion
     GH_Structure<GH_String> Objects;
     GH_Structure<GH_SpeckleBase> ConvertedObjects;
 
-    public DeserialzeWorker()
+    public DeserialzeWorker(GH_Component parent) : base(parent)
     {
       Objects = new GH_Structure<GH_String>();
       ConvertedObjects = new GH_Structure<GH_SpeckleBase>();
     }
 
-    public override void DoWork(Action<string, double> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
+    public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
       if (CancellationToken.IsCancellationRequested) return;
 
@@ -64,7 +64,7 @@ namespace ConnectorGrashopper.Conversion
           catch (Exception e)
           {
             ConvertedObjects.Append(new GH_SpeckleBase() { Value = null }, Objects.Paths[branchIndex]);
-            ReportError($"Object at {Objects.Paths[branchIndex]} is not a Speckle object. Exception: {e.Message}.", GH_RuntimeMessageLevel.Warning);
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Object at {Objects.Paths[branchIndex]} is not a Speckle object. Exception: {e.Message}.");
           }
 
           ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
@@ -76,7 +76,7 @@ namespace ConnectorGrashopper.Conversion
       Done();
     }
 
-    public override WorkerInstance Duplicate() => new DeserialzeWorker();
+    public override WorkerInstance Duplicate() => new DeserialzeWorker(Parent);
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
