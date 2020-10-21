@@ -53,12 +53,8 @@ namespace ConnectorGrashopper.Objects
             var tmp = ghBase.Value;
             b.id = tmp.id;
             b.applicationId = tmp.applicationId;
+            tmp.GetDynamicMembers().ToList().ForEach(prop => b[prop] = tmp[prop]);
             
-            tmp.GetDynamicMembers().ToList().ForEach(prop =>
-            {
-                if(tmp[prop] != null)
-                    b[prop] = tmp[prop];
-            });
             CleanDeletedKeys(tmp,keys);
             // Search for the path coinciding with the current iteration.
             var path = new GH_Path(DA.Iteration);
