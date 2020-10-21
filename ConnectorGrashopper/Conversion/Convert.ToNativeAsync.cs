@@ -7,6 +7,7 @@ using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -16,7 +17,7 @@ namespace ConnectorGrashopper.Conversion
   {
     public override Guid ComponentGuid { get => new Guid("98027377-5A2D-4EBA-B8D4-D72872593CD8"); }
 
-    protected override System.Drawing.Bitmap Icon { get => null; }
+    protected override Bitmap Icon => Properties.Resources.ToNative;
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 

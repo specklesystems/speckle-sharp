@@ -1,12 +1,15 @@
 ﻿using Grasshopper.Kernel;
 using Speckle.Core.Transports;
 using System;
+using System.Drawing;
 
 namespace ConnectorGrashopper.Transports
 {
   public class MemoryTransportComponent : GH_Component
   {
     public override Guid ComponentGuid { get => new Guid("B3E7A1E0-FB96-45AE-9F47-54D1B495AAC9"); }
+
+    protected override Bitmap Icon => Properties.Resources.MemoryTransport;
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 

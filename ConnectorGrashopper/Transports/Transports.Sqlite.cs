@@ -1,12 +1,15 @@
 ﻿using Grasshopper.Kernel;
 using Speckle.Core.Transports;
 using System;
+using System.Drawing;
 
 namespace ConnectorGrashopper.Transports
 {
   public class SqliteTransportComponent : GH_Component
   {
     public override Guid ComponentGuid { get => new Guid("DFFAF45E-06A8-4458-85D8-74FDA8DF3268"); }
+
+    protected override Bitmap Icon => Properties.Resources.SQLiteTransport;
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 

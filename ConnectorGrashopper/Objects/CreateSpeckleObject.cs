@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Collections.Generic;
-
+using System.Drawing;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 
@@ -11,15 +11,17 @@ using GH_IO.Serialization;
 using Speckle.Core.Kits;
 using System.Windows.Forms;
 using System.Linq;
+using ConnectorGrashopper.Objects;
 
 namespace ConnectorGrashopper
 {
   // TODO: Convert to task capable component / async so as to not block the ffffing ui
-  public class CreateSpeckleObject : GH_Component, IGH_VariableParameterComponent
+  public class CreateSpeckleObject : SelectKitComponentBase, IGH_VariableParameterComponent
   {
     public override Guid ComponentGuid => new Guid("cfa4e9b4-3ae4-4bb9-90d8-801c34e9a37e"); 
-
-    protected override System.Drawing.Bitmap Icon => null;
+    protected override Bitmap Icon => Properties.Resources.CreateSpeckleObject;
+    
+    public override GH_Exposure Exposure => GH_Exposure.primary;
 
     private ISpeckleConverter Converter;
 
@@ -36,7 +38,7 @@ namespace ConnectorGrashopper
       try
       {
         Converter = Kit.LoadConverter(Applications.Rhino);
-        Message = $"Using the \n{Kit.Name}\n Kit Converter";
+        Message = $"{Kit.Name} Kit";
       }
       catch
       {
@@ -53,33 +55,7 @@ namespace ConnectorGrashopper
       foreach (var param in Params.Input)
         param.ObjectChanged += (s, e) => Debouncer.Start();
     }
-
-    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
-    {
-      Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Select the converter you want to use:");
-
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-
-      foreach (var kit in kits)
-      {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
-      }
-
-      Menu_AppendSeparator(menu);
-    }
-
-    private void SetConverterFromKit(string kitName)
-    {
-      if (kitName == Kit.Name) return;
-
-      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino);
-
-      Message = $"Using the {Kit.Name} Converter";
-      ExpireSolution(true);
-    }
-
+    
     public override bool Read(GH_IReader reader)
     {
       // TODO: Read kit name and instantiate converter
@@ -162,28 +138,6 @@ namespace ConnectorGrashopper
 
       DA.SetDataList(0, res);
       DA.SetData(1, new GH_SpeckleBase() { Value = @base });
-    }
-
-    private object TryConvertItem(object value)
-    {
-      object result = null;
-
-      if (value is Grasshopper.Kernel.Types.IGH_Goo)
-      {
-        value = value.GetType().GetProperty("Value").GetValue(value);
-      }
-
-      if (value is Base || Utilities.IsSimpleType(value.GetType()))
-      {
-        return value;
-      }
-
-      if (Converter.CanConvertToSpeckle(value))
-      {
-        return Converter.ConvertToSpeckle(value);
-      }
-
-      return result;
     }
 
     public bool CanInsertParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;

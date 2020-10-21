@@ -3,6 +3,7 @@ using Grasshopper.Kernel;
 using Speckle.Core.Credentials;
 using Speckle.Core.Transports;
 using System;
+using System.Drawing;
 using System.Linq;
 
 namespace ConnectorGrashopper.Transports
@@ -10,6 +11,8 @@ namespace ConnectorGrashopper.Transports
   public class ServerTransportComponent : GH_Component
   {
     public override Guid ComponentGuid { get => new Guid("2BF256D0-3638-4278-964C-0666A97A9F0E"); }
+
+    protected override Bitmap Icon => Properties.Resources.ServerTransport;
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 

@@ -73,7 +73,11 @@
     <Compile Include="Extras\SpeckleStreamParam.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
     <Compile Include="ConnectorGrashopperInfo.cs" />
+    <Compile Include="Objects\CreateSpeckleObjectByKeyValue.cs" />
     <Compile Include="Objects\ExpandSpeckleObject.cs" />
+    <Compile Include="Objects\ExtendSpeckleObject.cs" />
+    <Compile Include="Objects\GetObjectValueByKey.cs" />
+    <Compile Include="Objects\SelectKitComponentBase.cs" />
     <Compile Include="Ops\Operations.ReceiveComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -128,6 +132,69 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\speckle-logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CreateSpeckleObject.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CreateSpeckleObjectByKeyValue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CreateStream.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Deserialize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DiskTransport.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ExpandSpeckleObject.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ExtendSpeckleObject.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\GetObjectValueByKey.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\MemoryTransport.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Serialize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ServerTransport.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SQLiteTransport.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StreamDetails.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StreamGet.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StreamList.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StreamUpdate.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ToNative.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ToSpeckle.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Accounts.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Receiver.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Sender.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

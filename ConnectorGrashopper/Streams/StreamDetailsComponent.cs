@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrashopper.Extras;
@@ -19,6 +20,10 @@ namespace ConnectorGrashopper.Streams
     {
       pManager.AddParameter(new SpeckleStreamParam("Stream/ID", "S", "A stream object or a unique ID of the stream to be updated.", GH_ParamAccess.item));
     }
+    
+    protected override Bitmap Icon => Properties.Resources.StreamDetails;
+    
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {

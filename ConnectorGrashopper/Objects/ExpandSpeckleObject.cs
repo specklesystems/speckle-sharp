@@ -17,57 +17,18 @@ using Speckle.Core.Models;
 namespace ConnectorGrashopper.Objects
 {
   // TODO: Convert to task capable component / async so as to not block the ffffing ui
-  public class ExpandSpeckleObject : GH_Component, IGH_VariableParameterComponent
+  public class ExpandSpeckleObject : SelectKitComponentBase
   {
+    protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
+
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
     public override Guid ComponentGuid => new Guid("C3BC3130-97C9-4DDE-9D4F-7A7FB82F7F2E");
-
-    protected override Bitmap Icon  => null; 
-
-    private ISpeckleConverter Converter;
-
-    private ISpeckleKit Kit;
 
     public ExpandSpeckleObject()
       : base("Expand Speckle Object", "ESO",
           "Allows you to decompose a Speckle object in its constituent parts.",
           "Speckle 2", "Object Management")
     {
-      Kit = KitManager.GetDefaultKit();
-      try
-      {
-        Converter = Kit.LoadConverter(Applications.Rhino);
-        Message = $"Using the \n{Kit.Name}\n Kit Converter";
-      }
-      catch
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-      }
-    }
-
-    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
-    {
-      Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Select the converter you want to use:");
-
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-
-      foreach (var kit in kits)
-      {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
-      }
-
-      Menu_AppendSeparator(menu);
-    }
-
-    private void SetConverterFromKit(string kitName)
-    {
-      if (kitName == Kit.Name) return;
-
-      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino);
-
-      Message = $"Using the {Kit.Name} Converter";
-      ExpireSolution(true);
     }
 
     public override bool Read(GH_IReader reader)
@@ -112,7 +73,8 @@ namespace ConnectorGrashopper.Objects
         var props = b.GetDynamicMembers().ToList();
         props.ForEach(prop =>
         {
-          if(!fullProps.Contains(prop)) fullProps.Add(prop);
+          if(!fullProps.Contains(prop) && b[prop] != null) fullProps.Add(prop);
+          if(fullProps.Contains(prop) && b[prop] == null) fullProps.Remove(prop);
         });
       }
       return fullProps;
@@ -168,35 +130,25 @@ namespace ConnectorGrashopper.Objects
         {
           // Convert and add to corresponding output structure
           var value = obj[prop];
-          if (value is List<object> list)
-            outputDict[prop].AppendRange(list.Select(
-                item => new GH_ObjectWrapper(TryConvertItem(item))),
-              path);
-          else
-            outputDict[prop].Append(
-              new GH_ObjectWrapper(TryConvertItem(obj[prop])),
-              path);
+          switch (value)
+          {
+            case null:
+              continue;
+            case List<object> list:
+              outputDict[prop].AppendRange(list.Select(
+                  item => new GH_ObjectWrapper(TryConvertItem(item))),
+                path);
+              break;
+            default:
+              outputDict[prop].Append(
+                new GH_ObjectWrapper(TryConvertItem(obj[prop])),
+                path);
+              break;
+          }
         }
       }
 
       return outputDict;
-    }
-
-    private object TryConvertItem(object value)
-    {
-      if (value is IGH_Goo)
-      {
-        value = value.GetType().GetProperty("Value")?.GetValue(value);
-      }
-      if (value is Base @base && Converter.CanConvertToNative(@base))
-      {
-        return Converter.ConvertToNative(@base);
-      }
-      if (value.GetType().IsSimpleType())
-      {
-        return value;
-      }
-      return null;
     }
 
     public bool CanInsertParameter(GH_ParameterSide side, int index) => false;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrashopper.Extras;
@@ -27,6 +28,10 @@ namespace ConnectorGrashopper.Streams
       Params.Input[desc].Optional = true;
       Params.Input[isPublic].Optional = true;
     }
+    
+    protected override Bitmap Icon => Properties.Resources.StreamUpdate;
+    
+    public override GH_Exposure Exposure => GH_Exposure.tertiary;
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {

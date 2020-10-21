@@ -118,7 +118,70 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Accounts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Accounts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateSpeckleObject" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateSpeckleObject.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateSpeckleObjectByKeyValue" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateSpeckleObjectByKeyValue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateStream" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateStream.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Deserialize" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Deserialize.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DiskTransport" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DiskTransport.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ExpandSpeckleObject" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ExpandSpeckleObject.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ExtendSpeckleObject" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ExtendSpeckleObject.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetObjectValueByKey" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetObjectValueByKey.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MemoryTransport" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MemoryTransport.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Receiver" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Receiver.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Sender" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Sender.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Serialize" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Serialize.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ServerTransport" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ServerTransport.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="speckle_logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\speckle-logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SQLiteTransport" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SQLiteTransport.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="StreamDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StreamDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="StreamGet" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StreamGet.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="StreamList" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StreamList.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="StreamUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StreamUpdate.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ToNative" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ToNative.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ToSpeckle" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ToSpeckle.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

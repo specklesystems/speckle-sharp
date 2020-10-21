@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrashopper.Extras;
@@ -15,10 +16,15 @@ namespace ConnectorGrashopper.Streams
   {
     public StreamListComponent() : base("Stream List", "sList", "Lists all the streams for this account", "Speckle 2", "Streams") { }
     public override Guid ComponentGuid => new Guid("BE790AF4-1834-495B-BE68-922B42FD53C7");
+    protected override Bitmap Icon => Properties.Resources.StreamList;
+    
+    public override GH_Exposure Exposure => GH_Exposure.primary;
+    
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       var acc = pManager.AddTextParameter("Account", "A", "Account to get streams from", GH_ParamAccess.item);
       pManager.AddIntegerParameter("Limit", "L", "Max number of streams to fetch", GH_ParamAccess.item, 10);
+
 
       Params.Input[acc].Optional = true;
     }
