@@ -4,6 +4,7 @@ using Grasshopper.Kernel;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Grasshopper.Kernel.Data;
@@ -13,6 +14,9 @@ namespace ConnectorGrashopper.Streams
   public class StreamCreateComponent : GH_Component
   {
     public override Guid ComponentGuid => new Guid("722690DE-218D-45E1-9183-98B13C7F411D");
+
+    protected override Bitmap Icon => Properties.Resources.CreateStream;
+    public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public StreamWrapper stream { get; set; } = null;
 
