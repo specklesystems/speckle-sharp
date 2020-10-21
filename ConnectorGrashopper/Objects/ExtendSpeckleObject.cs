@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using ConnectorGrashopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -37,26 +38,78 @@ namespace ConnectorGrashopper.Objects
         {
             // Init local variables
             GH_SpeckleBase ghBase = null;
-            List<string> keys = new List<string>();
-            GH_Structure<IGH_Goo> valueTree = null;
-            
+            var keys = new List<string>();
+
             // Grab data from input
             if (!DA.GetData(0, ref ghBase)) return;
             if (!DA.GetDataList(1, keys)) return;
-            if (!DA.GetDataTree(2, out valueTree)) return;
+            if (!DA.GetDataTree(2, out GH_Structure<IGH_Goo> valueTree)) return;
             
             // TODO: Handle data validation
             
             // Assign keys and values to the base object
             // TODO: Must check if it should override
             Base b = ghBase.Value;
+            
+            // Search for the path coinciding with the current iteration.
+            var path = new GH_Path(DA.Iteration);
+            if (valueTree.PathExists(path))
+            {
+                var values = valueTree.get_Branch(path) as List<IGH_Goo>;
+                // Input is a list of values. Assign them directly
+                if(keys.Count != values?.Count)
+                {
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Key and Value lists are not the same length.");
+                    return;
+                }
+                AssignToObject(b, keys,values);
+            }
+            else if (valueTree.Branches.Count == 1)
+            {
+                var values = valueTree.Branches[0];
+                if(keys.Count != values.Count)
+                {
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Key and Value lists are not the same length.");
+                    return;
+                }
+                // Input is just one list, so use it.
+                AssignToObject(b, keys, values);
+            }
+            else
+            {
+                // Input is a tree, meaning it's values are either lists or trees.
+                var subTree = GetSubTree(valueTree,path);
+                int index = 0;
+                keys.ForEach(key =>
+                {
+                    var subPath = new GH_Path(index);
+                    if (subTree.PathExists(subPath))
+                    {
+                        // Value is a list, convert and assign.
+                        var list = subTree.get_Branch(subPath) as List<IGH_Goo>;
+                        var converted = list.Select(goo => TryConvertItem(goo)).ToList();
+                        b[key] = converted;
+                    }
+                    else
+                    {
+                        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"Cannot handle trees yet");
+                    }
+                    index++;
+                });
+            }
+
+            DA.SetData(0, new GH_SpeckleBase{Value = b});
+        }
+
+        private void AssignToObject(Base b, List<string> keys, List<IGH_Goo> values)
+        {
+            int index = 0;
             keys.ForEach(key =>
             {
-                // TODO: Assign real value
-                b[key] = "This is a test value!";
+                if (b.HasMember(key))
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Object {b.id} - Property {key} has been overwritten");
+                b[key] = values[index++];
             });
-
-            DA.SetData(0, b);
         }
     }
 }

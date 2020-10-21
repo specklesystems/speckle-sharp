@@ -53,23 +53,24 @@ namespace ConnectorGrashopper.Objects
                 return;
             }
             // Get the value and output.
-            var value = b[key];
-            if (value == null) value = b["@" + key];
+            var value = b[key] ?? b["@" + key];
 
-            if (value == null)
+            switch (value)
             {
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"Key not found in object: " + key);
-                return;
+                case null:
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"Key not found in object: " + key);
+                    return;
+                case List<object> list:
+                {
+                    var converted = list.Select(
+                        item => new GH_ObjectWrapper(TryConvertItem(item)));
+                    DA.SetDataList(0, converted);
+                    break;
+                }
+                default:
+                    DA.SetData(0, new GH_ObjectWrapper(TryConvertItem(value)));
+                    break;
             }
-            // Convert and add to corresponding output structure
-            if (value is List<object> list)
-            {
-                var converted = list.Select(
-                    item => new GH_ObjectWrapper(TryConvertItem(item)));
-                DA.SetDataList(0, converted);
-            }
-            else
-                DA.SetData(0, new GH_ObjectWrapper(TryConvertItem(value)));
         }
     }
 }
