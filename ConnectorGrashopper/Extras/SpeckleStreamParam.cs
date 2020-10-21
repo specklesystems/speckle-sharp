@@ -44,7 +44,6 @@ namespace ConnectorGrashopper.Extras
         {
             Value = null;
         }
-
         public GH_SpeckleStream(GH_Goo<StreamWrapper> other) : base(other)
         {
             Value = other.Value;
