@@ -7,8 +7,6 @@ using Speckle.Core.Models;
 using System.Runtime.CompilerServices;
 using DS = Autodesk.DesignScript.Geometry;
 using Objects.Primitive;
-using String = Objects.Primitive.String;
-using Boolean = Objects.Primitive.Boolean;
 using Point = Objects.Geometry.Point;
 using Vector = Objects.Geometry.Vector;
 using Line = Objects.Geometry.Line;
@@ -31,60 +29,6 @@ namespace Objects.Converter.Dynamo
 
     private const double EPS = 1e-6;
     private const string speckleKey = "speckle";
-
-
-    #region Numbers
-    public static Number ToSpeckle(this float num)
-    {
-      return new Number(num);
-    }
-
-    public static Number ToSpeckle(this long num)
-    {
-      return new Number(num);
-    }
-
-    public static Number ToSpeckle(this int num)
-    {
-      return new Number(num);
-    }
-
-    public static Number ToSpeckle(this double num)
-    {
-      return new Number(num);
-    }
-
-    public static double? ToNative(this Number num)
-    {
-      return num.value;
-    }
-    #endregion
-
-
-    #region Booleans
-    public static Boolean ToSpeckle(this bool b)
-    {
-      return new Boolean(b);
-    }
-
-    public static bool? ToNative(this Boolean b)
-    {
-      return b.value;
-    }
-    #endregion
-
-
-    #region Strings
-    public static String ToSpeckle(this string b)
-    {
-      return new String(b);
-    }
-
-    public static string ToNative(this String b)
-    {
-      return b.value;
-    }
-    #endregion
 
     #region Points
     /// <summary>
