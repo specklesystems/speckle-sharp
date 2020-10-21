@@ -36,7 +36,7 @@ namespace TestsIntegration.Subscriptions
       client.SubscribeUserStreamAdded();
       client.OnUserStreamAdded += Client_OnUserStreamAdded;
 
-      Thread.Sleep(100); //let server catch-up
+      Thread.Sleep(400); //let server catch-up
 
       var streamInput = new StreamCreateInput
       {
@@ -49,7 +49,7 @@ namespace TestsIntegration.Subscriptions
       Assert.NotNull(res);
 
       await Task.Run(() => {
-        Thread.Sleep(100); //let client catch-up
+        Thread.Sleep(1000); //let client catch-up
         Assert.NotNull(StreamAddedInfo);
         Assert.AreEqual(streamInput.name, StreamAddedInfo.name);
       });

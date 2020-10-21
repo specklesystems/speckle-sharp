@@ -58,12 +58,8 @@ namespace Speckle.Core.Api
         {
           EndPoint = new Uri(new Uri(account.serverInfo.url), "/graphql"),
           UseWebSocketForQueriesAndMutations = false,
+          ConfigureWebSocketConnectionInitPayload = (opts) => { return new { Authorization = $"Bearer {account.token}" }; },
           OnWebsocketConnected = OnWebSocketConnect,
-          ConfigureWebsocketOptions = (opts) =>
-          {
-            opts.SetRequestHeader("Authorization", $"Bearer {account.token}");
-          },
-
         },
         new NewtonsoftJsonSerializer(),
         HttpClient);

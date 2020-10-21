@@ -26,9 +26,9 @@ namespace ExampleApp
   class Program
   {
     static async Task Main(string[] args)
-    { 
+    {
 
-      //await Subscriptions.SubscriptionConnection();
+      await Subscriptions.SubscriptionConnection();
 
       Console.Clear();
 
