@@ -73,7 +73,8 @@ namespace ConnectorGrashopper.Objects
         var props = b.GetDynamicMembers().ToList();
         props.ForEach(prop =>
         {
-          if(!fullProps.Contains(prop)) fullProps.Add(prop);
+          if(!fullProps.Contains(prop) && b[prop] != null) fullProps.Add(prop);
+          if(fullProps.Contains(prop) && b[prop] == null) fullProps.Remove(prop);
         });
       }
       return fullProps;
@@ -129,14 +130,21 @@ namespace ConnectorGrashopper.Objects
         {
           // Convert and add to corresponding output structure
           var value = obj[prop];
-          if (value is List<object> list)
-            outputDict[prop].AppendRange(list.Select(
-                item => new GH_ObjectWrapper(TryConvertItem(item))),
-              path);
-          else
-            outputDict[prop].Append(
-              new GH_ObjectWrapper(TryConvertItem(obj[prop])),
-              path);
+          switch (value)
+          {
+            case null:
+              continue;
+            case List<object> list:
+              outputDict[prop].AppendRange(list.Select(
+                  item => new GH_ObjectWrapper(TryConvertItem(item))),
+                path);
+              break;
+            default:
+              outputDict[prop].Append(
+                new GH_ObjectWrapper(TryConvertItem(obj[prop])),
+                path);
+              break;
+          }
         }
       }
 

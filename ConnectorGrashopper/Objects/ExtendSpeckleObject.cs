@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -34,6 +35,8 @@ namespace ConnectorGrashopper.Objects
             pManager.AddGenericParameter("Values", "V", "List of values", GH_ParamAccess.tree);
         }
 
+        private List<string> lastSolutionKeys = null;
+        
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             // Init local variables
@@ -47,10 +50,8 @@ namespace ConnectorGrashopper.Objects
             
             // TODO: Handle data validation
             
-            // Assign keys and values to the base object
-            // TODO: Must check if it should override
             Base b = ghBase.Value;
-            
+            CleanDeletedKeys(b,keys);
             // Search for the path coinciding with the current iteration.
             var path = new GH_Path(DA.Iteration);
             if (valueTree.PathExists(path))
@@ -98,9 +99,23 @@ namespace ConnectorGrashopper.Objects
                 });
             }
 
+            lastSolutionKeys = keys;
             DA.SetData(0, new GH_SpeckleBase{Value = b});
         }
 
+        private void CleanDeletedKeys(Base @base, List<string> keys)
+        {
+            lastSolutionKeys?.ForEach(key =>
+            {
+                var contains = keys.Contains(key);
+                if (!contains)
+                {
+                    // Key has been deleted
+                    @base[key] = null;
+                }
+            });
+        }
+        
         private void AssignToObject(Base b, List<string> keys, List<IGH_Goo> values)
         {
             int index = 0;
