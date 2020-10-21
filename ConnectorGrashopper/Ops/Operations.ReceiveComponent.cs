@@ -27,6 +27,8 @@ namespace ConnectorGrashopper.Ops
   {
     public override Guid ComponentGuid => new Guid("{3D07C1AC-2D05-42DF-A297-F861CCEEFBC7}");
 
+    protected override Bitmap Icon => Properties.Resources.Receiver;
+    
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public bool AutoReceive { get; set; } = false;

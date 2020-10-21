@@ -17,7 +17,7 @@ namespace ConnectorGrashopper.Streams
 
     protected override Bitmap Icon => Properties.Resources.CreateStream;
     public override GH_Exposure Exposure => GH_Exposure.primary;
-
+    
     public StreamWrapper stream { get; set; } = null;
 
     public StreamCreateComponent() : base("Create Stream", "Create", "Create a new speckle stream", "Speckle 2",

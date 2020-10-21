@@ -163,6 +163,26 @@ namespace ConnectorGrashopper.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Receiver {
+            get {
+                object obj = ResourceManager.GetObject("Receiver", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Sender {
+            get {
+                object obj = ResourceManager.GetObject("Sender", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Serialize {
             get {
                 object obj = ResourceManager.GetObject("Serialize", resourceCulture);

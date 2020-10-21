@@ -148,6 +148,12 @@
   <data name="MemoryTransport" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\MemoryTransport.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Receiver" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Receiver.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Sender" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Sender.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Serialize" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Serialize.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
