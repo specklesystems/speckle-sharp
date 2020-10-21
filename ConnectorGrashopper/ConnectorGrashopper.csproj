@@ -133,6 +133,60 @@
   <ItemGroup>
     <None Include="Resources\speckle-logo.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CreateSpeckleObject.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CreateSpeckleObjectByKeyValue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CreateStream.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Deserialize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DiskTransport.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ExpandSpeckleObject.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ExtendSpeckleObject.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\GetObjectValueByKey.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\MemoryTransport.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Serialize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ServerTransport.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SQLiteTransport.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StreamDetails.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StreamGet.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StreamList.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StreamUpdate.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ToNative.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ToSpeckle.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
