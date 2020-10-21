@@ -13,7 +13,7 @@ namespace ConnectorGrashopper.Conversion
   {
     public override Guid ComponentGuid { get => new Guid("EDEBF1F4-3FC3-4E01-95DD-286FF8804EB0"); }
 
-    protected override System.Drawing.Bitmap Icon { get => null; }
+    protected override System.Drawing.Bitmap Icon => Properties.Resources.Serialize;
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
