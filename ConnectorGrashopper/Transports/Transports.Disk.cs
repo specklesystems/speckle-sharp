@@ -1,11 +1,14 @@
 ﻿using Grasshopper.Kernel;
 using System;
+using System.Drawing;
 
 namespace ConnectorGrashopper.Transports
 {
   public class DiskTransportComponent : GH_Component
   {
     public override Guid ComponentGuid { get => new Guid("BA068B11-2BC0-4669-BC73-09CF16820659"); }
+
+    protected override Bitmap Icon => Properties.Resources.DiskTransport;
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
