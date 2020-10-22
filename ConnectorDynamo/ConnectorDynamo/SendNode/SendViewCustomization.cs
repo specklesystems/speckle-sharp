@@ -25,7 +25,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       syncContext = new DispatcherSynchronizationContext(nodeView.Dispatcher);
       sendNode = model;
 
-      sendNode.RequestChanges += UpdateNode;
+      sendNode.OnRequestUpdates += UpdateNode;
 
       var ui = new SendUi();
       nodeView.inputGrid.Children.Add(ui);
@@ -34,14 +34,22 @@ namespace Speckle.ConnectorDynamo.SendNode
       ui.DataContext = model;
       //ui.Loaded += model.AddedToDocument;
       ui.SendStreamButton.Click += SendStreamButtonClick;
+      ui.CancelSendStreamButton.Click += CancelSendStreamButtonClick;
+
 
     }
+
+    private void CancelSendStreamButtonClick(object sender, RoutedEventArgs e)
+    {
+      sendNode.CancelSend();
+    }
+
 
     private void UpdateNode()
     {
       Task.Run(() =>
       {
-        sendNode.UpdateNodeUi(dynamoModel.EngineController);
+        sendNode.UpdateExpiredCount(dynamoModel.EngineController);
       });
     }
 

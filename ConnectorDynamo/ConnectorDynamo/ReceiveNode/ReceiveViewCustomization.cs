@@ -25,10 +25,10 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       syncContext = new DispatcherSynchronizationContext(nodeView.Dispatcher);
       receiveNode = model;
 
-      receiveNode.RequestChangeStream += UpdateStream;
-      receiveNode.RequestReceive += RequestReceive;
+      receiveNode.OnRequestUpdates += UpdateNode;
+      receiveNode.OnReceiveRequested += ReceiveRequested;
 
-      UpdateStream();
+      UpdateNode();
 
       var ui = new ReceiveUi();
       nodeView.inputGrid.Children.Add(ui);
@@ -45,24 +45,24 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       receiveNode.CancelReceive();
     }
 
-    private void UpdateStream()
+    private void UpdateNode()
     {
       Task.Run(() =>
       {
-        receiveNode.ChangeStreams(dynamoModel.EngineController);
+        receiveNode.LoadInputs(dynamoModel.EngineController);
       });
     }
 
     private void ReceiveStreamButtonClick(object sender, RoutedEventArgs e)
     {
-      RequestReceive();
+      ReceiveRequested();
     }
 
-    private void RequestReceive()
+    private void ReceiveRequested()
     {
       Task.Run(() =>
       {
-        receiveNode.DoReceive(dynamoModel.EngineController);
+        receiveNode.DoReceive();
       });
     }
 

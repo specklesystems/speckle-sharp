@@ -24,14 +24,16 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="data">Data to send</param>
     /// <param name="stream">Stream to send the data to</param>
     /// <returns name="log">Log</returns>
-    public static string Send(Base data, StreamWrapper stream, string branchName = "main", string message = "", Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
+    public static string Send(Base data, StreamWrapper stream, CancellationToken cancellationToken, string branchName = "main", string message = "", Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
     {
       Core.Credentials.Account account = stream.GetAccount();
 
       var client = new Client(account);
       var transport = new ServerTransport(account, stream.StreamId);
-      var objectId = Operations.Send(data, new List<ITransport>() { transport }, true, onProgressAction, onErrorAction).Result;
+      var objectId = Operations.Send(data, cancellationToken, new List<ITransport>() { transport }, true, onProgressAction, onErrorAction).Result;
 
+      if (cancellationToken.IsCancellationRequested)
+        return null;
       branchName = string.IsNullOrEmpty(branchName) ? "main" : branchName;
 
       var res = client.CommitCreate(new CommitCreateInput
@@ -60,6 +62,7 @@ namespace Speckle.ConnectorDynamo.Functions
       var res = client.StreamGet(stream.StreamId).Result;
       var mainBranch = res.branches.items.FirstOrDefault(b => b.name == branchName);
 
+
       if (mainBranch == null)
       {
         Log.CaptureAndThrow(new Exception("No branch found with name " + branchName));
@@ -69,6 +72,10 @@ namespace Speckle.ConnectorDynamo.Functions
         return null;
 
       var lastCommit = mainBranch.commits.items[0];
+
+
+      if (cancellationToken.IsCancellationRequested)
+        return null;
 
       var transport = new ServerTransport(account, stream.StreamId);
       var @base = Operations.Receive(
@@ -80,6 +87,10 @@ namespace Speckle.ConnectorDynamo.Functions
         onTotalChildrenCountKnown: onTotalChildrenCountKnown
 
         ).Result;
+
+      if (cancellationToken.IsCancellationRequested)
+        return null;
+
       var converter = new BatchConverter();
       var data = converter.ConvertRecursivelyToNative(@base);
 

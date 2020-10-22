@@ -15,13 +15,6 @@
         <ResourceDictionary Source="pack://application:,,,/SpeckleConnectorDynamo;component/Themes/Generic.xaml" />
       </ResourceDictionary.MergedDictionaries>
       <src:BoolVisibConverter x:Key="BoolVisibConverter" />
-      <!--<src:InverseBooleanConverter x:Key="InverseBooleanConverter" />-->
-      <!--<Style BasedOn="{StaticResource MaterialDesignRaisedButton}" TargetType="{x:Type Button}">
-        <Setter Property="Margin" Value="0,8,0,8" />
-      </Style>
-      <Style BasedOn="{StaticResource MaterialDesignTextBox}" TargetType="{x:Type TextBox}">
-        <Setter Property="Margin" Value="0,8,0,8" />
-      </Style>-->
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
@@ -42,7 +35,6 @@
       Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
       ToolTip="Send objects to Speckle"
       Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}, ConverterParameter='opposite'}" />
-
     <Button
       x:Name="CancelReceiveStreamButton"
       Margin="10,32,15,0"
