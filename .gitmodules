@@ -1,6 +1,3 @@
 [submodule "graphql-client"]
 	path = GraphQLClient
 	url = https://github.com/specklesystems/graphql-client.git
-[submodule "GraphQLClient"]
-	path = GraphQLClient
-	url = https://github.com/specklesystems/graphql-client.git
