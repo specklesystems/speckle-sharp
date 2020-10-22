@@ -17,7 +17,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// Create a new Stream
     /// </summary>
     /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
-    /// <returns name="streamId">ID of the created Stream</returns>
+    /// <returns name="stream">A new Stream</returns>
     [NodeCategory("Create")]
     public static string Create([DefaultArgument("null")] Core.Credentials.Account account = null)
     {
@@ -33,29 +33,59 @@ namespace Speckle.ConnectorDynamo.Functions
     }
 
     /// <summary>
+    /// Create a new Stream
+    /// </summary>
+    /// <param name="streamId">Id of the Stream to get</param>
+    /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
+    /// <returns name="stream">A new Stream</returns>
+    [NodeCategory("Create")]
+    public static StreamWrapper Get(string streamId, [DefaultArgument("null")] Core.Credentials.Account account = null)
+    {
+      Tracker.TrackEvent(Tracker.STREAM_CREATE);
+
+      try
+      {
+
+
+        if (account == null)
+          account = AccountManager.GetDefaultAccount();
+
+        var client = new Client(account);
+
+        //Exists?
+        Core.Api.Stream res = client.StreamGet(streamId).Result;
+        return new StreamWrapper(res.id, account.id, account.serverInfo.url);
+
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
+
+
+    /// <summary>
     /// Update a Stream details
     /// </summary>
-    /// <param name="streamId">ID of the Stream to update</param>
+    /// <param name="stream">Stream object to update</param>
     /// <param name="name">Name of the Stream</param>
     /// <param name="description">Description of the Stream</param>
-    /// <param name="isPublic">Weather the Stream is public or not</param>
-    /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
-    /// <returns name="streamId">ID of the updated Stream</returns>
-    public static string Update(string streamId, [DefaultArgument("null")] string name, [DefaultArgument("null")] string description, [DefaultArgument("null")] bool? isPublic, [DefaultArgument("null")] Core.Credentials.Account account = null)
+    /// <param name="isPublic">True if the stream is to be publicly availables</param>
+    /// <returns name="stream">Updated Stream object</returns>
+    public static StreamWrapper Update(StreamWrapper stream, [DefaultArgument("null")] string name, [DefaultArgument("null")] string description, [DefaultArgument("null")] bool? isPublic)
     {
       Tracker.TrackEvent(Tracker.STREAM_UPDATE);
 
       if (name == null && description == null && isPublic == null)
-        return streamId;
+        return stream;
 
-      if (account == null)
-        account = AccountManager.GetDefaultAccount();
+      Core.Credentials.Account account = stream.GetAccount();
 
       var client = new Client(account);
 
       var input = new StreamUpdateInput
       {
-        id = streamId
+        id = stream.StreamId
       };
 
       if (name != null)
@@ -71,32 +101,26 @@ namespace Speckle.ConnectorDynamo.Functions
       var res = client.StreamUpdate(input).Result;
 
       if (res)
-        return streamId;
+        return stream;
 
-      return "Something went wrong...";
+      return null;
     }
 
     /// <summary>
-    /// Get a Stream details
+    /// Extracts the details of a given stream
     /// </summary>
-    /// <param name="streamOrStreamId">Stream or StreamId to get details of</param>
-    /// <param name="account">Speckle account to use</param>
+    /// <param name="stream">Stream object</param>
     [NodeCategory("Query")]
     [MultiReturn(new[] { "id", "name", "description", "createdAt", "updatedAt", "isPublic", "collaborators", "branches" })]
-    public static Dictionary<string, object> Details(object streamOrStreamId, [DefaultArgument("null")] Core.Credentials.Account account = null)
+    public static Dictionary<string, object> Details(StreamWrapper stream)
     {
       Tracker.TrackEvent(Tracker.STREAM_DETAILS);
 
-      if (account == null)
-        account = AccountManager.GetDefaultAccount();
+      Core.Credentials.Account account = stream.GetAccount();
+
       var client = new Client(account);
 
-      Core.Api.Stream res = null;
-
-      if (streamOrStreamId is Core.Api.Stream)
-        res = (Core.Api.Stream)streamOrStreamId;
-      else
-        res = client.StreamGet(streamOrStreamId.ToString()).Result;
+      Core.Api.Stream res = client.StreamGet(stream.StreamId).Result;
 
       return new Dictionary<string, object> {
         { "id", res.id },
@@ -114,9 +138,10 @@ namespace Speckle.ConnectorDynamo.Functions
     /// List all your Streams
     /// </summary>
     /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
+    /// <param name="limit">Max number of streams to get</param>
     /// <returns name="streams">Your Streams</returns>
     [NodeCategory("Query")]
-    public static List<Core.Api.Stream> List([DefaultArgument("10")] int limit = 10, [DefaultArgument("null")] Core.Credentials.Account account = null)
+    public static List<StreamWrapper> List([DefaultArgument("null")] Core.Credentials.Account account = null, [DefaultArgument("10")] int limit = 10)
     {
       Tracker.TrackEvent(Tracker.STREAM_LIST);
 
@@ -126,7 +151,13 @@ namespace Speckle.ConnectorDynamo.Functions
       var client = new Client(account);
       var res = client.StreamsGet(limit).Result;
 
-      return res;
+      var streamWrappers = new List<StreamWrapper>();
+      res.ForEach(x =>
+      {
+        streamWrappers.Add(new StreamWrapper(x.id, account.id, account.serverInfo.url));
+      });
+
+      return streamWrappers;
     }
   }
 }

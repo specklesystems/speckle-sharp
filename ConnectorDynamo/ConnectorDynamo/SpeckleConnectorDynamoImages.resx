@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="Speckle.ConnectorDynamo.Receive.Large" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="Speckle.ConnectorDynamo.ReceiveNode.Receive.Large" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAABgGlDQ1BzUkdCIElFQzYxOTY2LTIuMQAA
         KM+Vkc8rRFEUxz8G+TGEWFhYvDSsZjSoiY0y0lCTNEb5tZl55oeaH6/3ZpJsla2ixMavBX8BW2WtFJGS
@@ -151,7 +151,7 @@
         aHZk8Q+H6SYAAAAASUVORK5CYII=
 </value>
   </data>
-  <data name="Speckle.ConnectorDynamo.Receive.Small" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="Speckle.ConnectorDynamo.ReceiveNode.Receive.Small" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABgWlDQ1BzUkdCIElFQzYxOTY2LTIuMQAA
         KM+VkbtLA0EQh78kSuILBS0sLIJEqygxQtBGMEGiECTECEZtkstLyOO4S5BgK9gGFEQbX4X+BdoK1oKg
@@ -168,7 +168,7 @@
         lxRHdrGFJBKYxTgG0IdOtKIO1SjXJyRJ+iXD+ACkLKpFnQJnVAAAAABJRU5ErkJggg==
 </value>
   </data>
-  <data name="Speckle.ConnectorDynamo.Send.Large" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="Speckle.ConnectorDynamo.SendNode.Send.Large" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAABgGlDQ1BzUkdCIElFQzYxOTY2LTIuMQAA
         KM+Vkc8rRFEUxz8G+TGEWFhYvDSsZjSoiY0y0lCTNEb5tZl55oeaH6/3ZpJsla2ixMavBX8BW2WtFJGS
@@ -201,7 +201,7 @@
         aHZk8Q+H6SYAAAAASUVORK5CYII=
 </value>
   </data>
-  <data name="Speckle.ConnectorDynamo.Send.Small" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="Speckle.ConnectorDynamo.SendNode.Send.Small" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABgWlDQ1BzUkdCIElFQzYxOTY2LTIuMQAA
         KM+VkbtLA0EQh78kSuILBS0sLIJEqygxQtBGMEGiECTECEZtkstLyOO4S5BgK9gGFEQbX4X+BdoK1oKg

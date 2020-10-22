@@ -1,11 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using Autodesk.DesignScript.Runtime;
-using Dynamo.Graph.Nodes;
-using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -15,68 +13,102 @@ using Speckle.Core.Transports;
 namespace Speckle.ConnectorDynamo.Functions
 {
   /// <summary>
-  /// Speckle methods
+  /// Functions that are to be called by NodeModel nodes
   /// </summary>
-  
+  [IsVisibleInDynamoLibrary(false)]
   public static class Functions
   {
     /// <summary>
     /// Sends data to a Speckle Server by creating a commit on the master branch of a Stream
     /// </summary>
     /// <param name="data">Data to send</param>
-    /// <param name="streamId">Stream ID to send the data to</param>
-    /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
+    /// <param name="stream">Stream to send the data to</param>
     /// <returns name="log">Log</returns>
-    [IsVisibleInDynamoLibrary(false)]
-    public static string Send([ArbitraryDimensionArrayImport] object data, string streamId, Core.Credentials.Account account = null)
+    public static string Send(Base data, StreamWrapper stream, CancellationToken cancellationToken, string branchName = "main", string message = "", Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
     {
-      if (account == null)
-        account = AccountManager.GetDefaultAccount();
+      Core.Credentials.Account account = stream.GetAccount();
+
       var client = new Client(account);
-      var @base = Utils.ConvertRecursivelyToSpeckle(data);
-      var transport = new ServerTransport(account, streamId);
-      var objectId = Operations.Send(@base, new List<ITransport>() { transport }).Result;
+      var transport = new ServerTransport(account, stream.StreamId);
+      var objectId = Operations.Send(data, cancellationToken, new List<ITransport>() { transport }, true, onProgressAction, onErrorAction).Result;
+
+      if (cancellationToken.IsCancellationRequested)
+        return null;
+      branchName = string.IsNullOrEmpty(branchName) ? "main" : branchName;
 
       var res = client.CommitCreate(new CommitCreateInput
       {
-        streamId = streamId,
-        branchName = "master",
+        streamId = stream.StreamId,
+        branchName = branchName,
         objectId = objectId,
-        message = "Automatic commit from Dynamo"
+        message = message
       }).Result;
 
-      if (!string.IsNullOrEmpty(res))
-        return "Sent successfully @ " + DateTime.Now.ToShortTimeString();
-      return null;
+      return res;
     }
 
     /// <summary>
     /// Receives data from a Speckle Server by getting the last commit on the master branch of a Stream
     /// </summary>
-    /// <param name="streamId">Stream ID to receive the last commit from</param>
-    /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
+    /// <param name="stream">Stream to receive from</param>
     /// <returns></returns>
-    [IsVisibleInDynamoLibrary(false)]
-    public static object Receive(string streamId, Core.Credentials.Account account = null)
+    [MultiReturn(new[] { "data", "commit" })]
+    public static Dictionary<string, object> Receive(StreamWrapper stream, string branchName, CancellationToken cancellationToken, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null)
     {
-      if (account == null)
-        account = AccountManager.GetDefaultAccount();
+      Core.Credentials.Account account = stream.GetAccount();
+      branchName = string.IsNullOrEmpty(branchName) ? "main" : branchName;
 
       var client = new Client(account);
-      var res = client.StreamGet(streamId).Result;
-      if (res == null || !res.branches.items[0].commits.items.Any())
+      var res = client.StreamGet(stream.StreamId).Result;
+      var mainBranch = res.branches.items.FirstOrDefault(b => b.name == branchName);
+
+
+      if (mainBranch == null)
+      {
+        Log.CaptureAndThrow(new Exception("No branch found with name " + branchName));
+      }
+
+      if (res == null || !mainBranch.commits.items.Any())
         return null;
 
-      var lastCommit = res.branches.items[0].commits.items[0];
+      var lastCommit = mainBranch.commits.items[0];
 
-      var transport = new ServerTransport(account, streamId);
-      var @base = Operations.Receive(lastCommit.referencedObject, remoteTransport: transport).Result;
-      var data = Utils.ConvertRecursivelyToNative(@base);
 
-      return data;
+      if (cancellationToken.IsCancellationRequested)
+        return null;
+
+      var transport = new ServerTransport(account, stream.StreamId);
+      var @base = Operations.Receive(
+        lastCommit.referencedObject,
+        cancellationToken,
+        remoteTransport: transport,
+        onProgressAction: onProgressAction,
+        onErrorAction: onErrorAction,
+        onTotalChildrenCountKnown: onTotalChildrenCountKnown
+
+        ).Result;
+
+      if (cancellationToken.IsCancellationRequested)
+        return null;
+
+      var converter = new BatchConverter();
+      var data = converter.ConvertRecursivelyToNative(@base);
+
+      return new Dictionary<string, object> { { "data", data }, { "commit", lastCommit } };
     }
 
 
+    public static object ReceiveData(string inMemoryDataId)
+    {
+      return InMemoryCache.Get(inMemoryDataId)["data"];
+    }
+
+    public static string ReceiveInfo(string inMemoryDataId)
+    {
+      var commit = InMemoryCache.Get(inMemoryDataId)["commit"] as Commit;
+      return $"{commit.authorName} @ {commit.createdAt}: { commit.message} (id:{commit.id})";
+
+    }
 
 
   }
