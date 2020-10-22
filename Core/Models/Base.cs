@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -127,7 +128,21 @@ namespace Speckle.Core.Models
       return count;
     }
 
+    /// <summary>
+    /// Creates a shallow copy of the current base object.
+    /// This operation does NOT copy/duplicate the data inside each prop.
+    /// The new object's property values will be pointers to the original object's property value.
+    /// </summary>
+    /// <returns>A shallow copy of the original object.</returns>
+    public Base ShallowCopy()
+    {
+      var @base = new Base {id = id, applicationId = applicationId};
 
+      GetDynamicMembers().ToList().ForEach(prop => @base[prop] = this[prop]);
+
+      return @base;
+    }
+    
     /// <summary>
     /// Secondary, ideally host application driven, object identifier.
     /// </summary>
