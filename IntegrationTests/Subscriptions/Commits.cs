@@ -12,7 +12,7 @@ using Tests;
 
 namespace TestsIntegration.Subscriptions
 {
-  public class Committs
+  public class Commits
   {
     public Client client;
     public ServerInfo testServer;
