@@ -10,6 +10,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Utilities = ConnectorGrashopper.Extras.Utilities;
 
 namespace ConnectorGrashopper.Objects
 {
@@ -83,7 +84,7 @@ namespace ConnectorGrashopper.Objects
                         List<object> objs = new List<object>();
                         foreach (var goo in branch)
                         {
-                            objs.Add(TryConvertItem(goo));
+                            objs.Add(Utilities.TryConvertItemToSpeckle(goo, Converter));
                         }
                         speckleObj[key] = objs;
                     }

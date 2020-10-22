@@ -13,6 +13,7 @@ using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Utilities = ConnectorGrashopper.Extras.Utilities;
 
 namespace ConnectorGrashopper.Objects
 {
@@ -51,17 +52,18 @@ namespace ConnectorGrashopper.Objects
     {
       // All output params are dynamically generated!
     }
-    
-    protected override void BeforeSolveInstance() {
+
+    protected override void BeforeSolveInstance()
+    {
       if (speckleObjects != null && hasSetData)
         AutoCreateOutputs();
       base.BeforeSolveInstance();
     }
-    
+
     private bool hasSetData;
     private GH_Structure<IGH_Goo> speckleObjects;
     private List<string> outputList = new List<string>();
-    
+
     private List<string> GetOutputList()
     {
       // Get the full list of output parameters
@@ -73,43 +75,43 @@ namespace ConnectorGrashopper.Objects
         var props = b.GetDynamicMembers().ToList();
         props.ForEach(prop =>
         {
-          if(!fullProps.Contains(prop) && b[prop] != null) fullProps.Add(prop);
-          if(fullProps.Contains(prop) && b[prop] == null) fullProps.Remove(prop);
+          if (!fullProps.Contains(prop) && b[prop] != null) fullProps.Add(prop);
+          if (fullProps.Contains(prop) && b[prop] == null) fullProps.Remove(prop);
         });
       }
       return fullProps;
     }
-    
+
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       if (!hasSetData)
-      { 
+      {
         // First run: Save the tree and expire solution to force an update in the output params.
-        
+
         // Get the data or abort.
-        if(!DA.GetDataTree(0, out speckleObjects)) return;
-        
+        if (!DA.GetDataTree(0, out speckleObjects)) return;
+
         // Ensure only one object per path.
-        speckleObjects.Graft(GH_GraftMode.GraftAll); 
-        
+        speckleObjects.Graft(GH_GraftMode.GraftAll);
+
         // Update the output list
         outputList = GetOutputList();
-        
+
         // Once data has been set, expire solution to update output params.
         hasSetData = true;
         ExpireSolution(true);
       }
       else
-      { 
+      {
         // Second run: Parameter output should have been updated in `beforeSolveInstance` with latest state.
-        
+
         // Build the output dictionary
         var outputDict = CreateOutputDictionary();
-        
+
         // Assign outputs.
         foreach (var key in outputDict.Keys)
           DA.SetDataTree(Params.IndexOfOutputParam(key), outputDict[key]);
-        
+
         // Reset state
         hasSetData = false;
         speckleObjects = null;
@@ -120,7 +122,7 @@ namespace ConnectorGrashopper.Objects
     {
       // Create empty data tree placeholders for output.
       var outputDict = outputList.ToDictionary(outParam => outParam, _ => new GH_Structure<GH_ObjectWrapper>());
-      
+
       // Assign all values to it's corresponding dictionary entry and branch path.
       foreach (var path in speckleObjects.Paths)
       {
@@ -136,12 +138,12 @@ namespace ConnectorGrashopper.Objects
               continue;
             case List<object> list:
               outputDict[prop].AppendRange(list.Select(
-                  item => new GH_ObjectWrapper(TryConvertItem(item))),
+                  item => new GH_ObjectWrapper(Utilities.TryConvertItemToNative(item, Converter))),
                 path);
               break;
             default:
               outputDict[prop].Append(
-                new GH_ObjectWrapper(TryConvertItem(obj[prop])),
+                new GH_ObjectWrapper(Utilities.TryConvertItemToNative(obj[prop], Converter)),
                 path);
               break;
           }
@@ -159,8 +161,8 @@ namespace ConnectorGrashopper.Objects
     {
       var myParam = new GenericAccessParam
       {
-          Name = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input),
-          MutableNickName = true,
+        Name = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input),
+        MutableNickName = true,
         Optional = true
       };
 
@@ -176,13 +178,13 @@ namespace ConnectorGrashopper.Objects
     }
 
     public void VariableParameterMaintenance()
-    { 
+    {
       if (outputList.Count == 0) return;
 
       for (var i = 0; i < Params.Output.Count; i++)
       {
         if (i > outputList.Count - 1) return;
-        
+
         var name = outputList[i];
         Params.Output[i].Name = $"{name}";
         Params.Output[i].NickName = $"{name}";
@@ -195,9 +197,9 @@ namespace ConnectorGrashopper.Objects
     private bool OutputMismatch()
     {
       bool countMatch = outputList.Count == Params.Output.Count;
-      if (!countMatch) 
+      if (!countMatch)
         return true;
-        
+
       for (var i = 0; i < outputList.Count; i++)
         if (Params.Output[i].NickName != outputList[i])
           return true;
@@ -208,10 +210,10 @@ namespace ConnectorGrashopper.Objects
     private void AutoCreateOutputs()
     {
       int tokenCount = outputList.Count;
-      
+
       if (tokenCount == 0 || !OutputMismatch()) return;
       RecordUndoEvent("Creating Outputs");
-      
+
       if (Params.Output.Count < tokenCount)
         while (Params.Output.Count < tokenCount)
         {
@@ -223,7 +225,7 @@ namespace ConnectorGrashopper.Objects
         {
           Params.UnregisterOutputParameter(Params.Output[Params.Output.Count - 1]);
         }
-      
+
       Params.OnParametersChanged();
       VariableParameterMaintenance();
     }

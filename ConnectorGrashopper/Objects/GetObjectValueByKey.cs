@@ -10,6 +10,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Utilities = ConnectorGrashopper.Extras.Utilities;
 
 namespace ConnectorGrashopper.Objects
 {
@@ -63,12 +64,12 @@ namespace ConnectorGrashopper.Objects
                 case List<object> list:
                 {
                     var converted = list.Select(
-                        item => new GH_ObjectWrapper(TryConvertItem(item)));
+                        item => new GH_ObjectWrapper(Utilities.TryConvertItemToNative(item, Converter)));
                     DA.SetDataList(0, converted);
                     break;
                 }
                 default:
-                    DA.SetData(0, new GH_ObjectWrapper(TryConvertItem(value)));
+                    DA.SetData(0, new GH_ObjectWrapper(Utilities.TryConvertItemToNative(value, Converter)));
                     break;
             }
         }

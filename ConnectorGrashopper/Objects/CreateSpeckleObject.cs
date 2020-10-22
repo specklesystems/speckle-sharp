@@ -12,6 +12,7 @@ using Speckle.Core.Kits;
 using System.Windows.Forms;
 using System.Linq;
 using ConnectorGrashopper.Objects;
+using Utilities = ConnectorGrashopper.Extras.Utilities;
 
 namespace ConnectorGrashopper
 {
@@ -101,7 +102,7 @@ namespace ConnectorGrashopper
 
             if (value == null) break;
 
-            result = TryConvertItem(value);
+            result = Utilities.TryConvertItemToSpeckle(value, Converter);
 
             if (result == null)
               AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Data of type {value.GetType().Name} in {param.NickName} could not be converted.");
@@ -117,7 +118,7 @@ namespace ConnectorGrashopper
 
             foreach (var item in values)
             {
-              var conv = TryConvertItem(item);
+              var conv = Utilities.TryConvertItemToSpeckle(item, Converter);
               myList.Add(conv);
               if (conv == null)
               {

@@ -8,6 +8,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Models;
+using Utilities = ConnectorGrashopper.Extras.Utilities;
 
 namespace ConnectorGrashopper.Objects
 {
@@ -92,7 +93,7 @@ namespace ConnectorGrashopper.Objects
                     {
                         // Value is a list, convert and assign.
                         var list = subTree.get_Branch(subPath) as List<IGH_Goo>;
-                        var converted = list.Select(goo => TryConvertItem(goo)).ToList();
+                        var converted = list.Select(goo => Utilities.TryConvertItemToNative(goo, Converter)).ToList();
                         b[key] = converted;
                     }
                     else
