@@ -1,10 +1,10 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Speckle.Core.Api
 {
   #region inputs
+
   public class StreamCreateInput
   {
     public string name { get; set; }
@@ -78,7 +78,7 @@ namespace Speckle.Core.Api
 
   #endregion
 
-  public class  Stream
+  public class Stream
   {
     public string id { get; set; }
     public string name { get; set; }
@@ -96,6 +96,8 @@ namespace Speckle.Core.Api
     /// Set only in the case that you've requested this through <see cref="Client.CommitGet(System.Threading.CancellationToken, string, string)"/>.
     /// </summary>
     public Commit commit { get; set; }
+
+    public Object @object { get; set; }
 
     public override string ToString()
     {
@@ -128,7 +130,6 @@ namespace Speckle.Core.Api
     public int totalCount { get; set; }
     public object cursor { get; set; }
     public List<Commit> items { get; set; }
-
   }
 
   public class Commit
@@ -137,7 +138,7 @@ namespace Speckle.Core.Api
     public string message { get; set; }
     public string authorName { get; set; }
     public string authorId { get; set; }
-    public string authorAvatar {get; set;}
+    public string authorAvatar { get; set; }
     public string createdAt { get; set; }
 
     public string referencedObject { get; set; }
@@ -146,7 +147,15 @@ namespace Speckle.Core.Api
     {
       return $"Commit ({message} | {id})";
     }
+  }
 
+  public class Object
+  {
+    public string id { get; set; }
+    public string speckleType { get; set; }
+    public string applicationId { get; set; }
+    public int totalChildrenCount { get; set; }
+    public string createdAt { get; set; }
   }
 
 
@@ -161,7 +170,6 @@ namespace Speckle.Core.Api
     {
       return $"Branch ({name} | {id})";
     }
-
   }
 
 
@@ -170,7 +178,6 @@ namespace Speckle.Core.Api
     public int totalCount { get; set; }
     public DateTime cursor { get; set; }
     public List<Stream> items { get; set; }
-
   }
 
   public class User
@@ -181,7 +188,9 @@ namespace Speckle.Core.Api
     public string bio { get; set; }
     public string company { get; set; }
     public string avatar { get; set; }
+
     public bool verified { get; set; }
+
     //public object profiles { get; set; }
     public string role { get; set; }
     public Streams streams { get; set; }
@@ -190,13 +199,11 @@ namespace Speckle.Core.Api
     {
       return $"User ({email} | {name} | {id})";
     }
-
   }
 
   public class UserData
   {
     public User user { get; set; }
-
   }
 
   public class UserSearchData
@@ -217,6 +224,6 @@ namespace Speckle.Core.Api
 
   public class StreamsData
   {
-    public  Streams streams { get; set; }
+    public Streams streams { get; set; }
   }
 }

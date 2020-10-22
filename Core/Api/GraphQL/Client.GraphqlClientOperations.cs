@@ -838,5 +838,107 @@ namespace Speckle.Core.Api
 
     #endregion
 
+    #region objects
+
+    /// <summary>
+    /// Gets a given object from a stream.
+    /// </summary>
+    /// <param name="streamId"></param> 
+    /// <param name="objectId"></param>
+    /// <returns></returns>
+    public Task<Object> ObjectGet(string streamId, string objectId)
+    {
+      return ObjectGet(CancellationToken.None, streamId, objectId);
+    }
+
+    /// <summary>
+    /// Gets a given object from a stream.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="streamId"></param>
+    /// <param name="objectId"></param>
+    /// <returns></returns>
+    public async Task<Object> ObjectGet(CancellationToken cancellationToken, string streamId, string objectId)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = $@"query Stream($streamId: String!, $objectId: String!) {{
+                      stream(id: $streamId) {{
+                        object(id: $objectId){{
+                          id
+                          applicationId
+                          createdAt
+                          totalChildrenCount
+                        }}                       
+                      }}
+                    }}",
+          Variables = new {streamId, objectId}
+        };
+
+        var res = await GQLClient.SendQueryAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
+
+        if (res.Errors != null)
+          Log.CaptureAndThrow(new GraphQLException("Could not get stream"), res.Errors);
+
+        return res.Data.stream.@object;
+      }
+      catch (Exception e)
+      {
+        Log.CaptureException(e);
+        throw e;
+      }
+    }
+
+    /// <summary>
+    /// Gets a given object from a stream.
+    /// </summary>
+    /// <param name="streamId"></param>
+    /// <param name="objectId"></param>
+    /// <returns></returns>
+    public Task<Object> ObjectCountGet(string streamId, string objectId)
+    {
+      return ObjectCountGet(CancellationToken.None, streamId, objectId);
+    }
+
+    /// <summary>
+    /// Gets a given object from a stream.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="streamId"></param>
+    /// <param name="objectId"></param>
+    /// <returns></returns>
+    public async Task<Object> ObjectCountGet(CancellationToken cancellationToken, string streamId, string objectId)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = $@"query Stream($streamId: String!, $objectId: String!) {{
+                      stream(id: $streamId) {{
+                        object(id: $objectId){{
+                          totalChildrenCount
+                        }}                       
+                      }}
+                    }}",
+          Variables = new {streamId, objectId}
+        };
+
+        var res = await GQLClient.SendQueryAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
+
+        if (res.Errors != null)
+          Log.CaptureAndThrow(new GraphQLException("Could not get stream"), res.Errors);
+
+        return res.Data.stream.@object;
+      }
+      catch (Exception e)
+      {
+        Log.CaptureException(e);
+        throw e;
+      }
+    }
+
+    #endregion
   }
 }
