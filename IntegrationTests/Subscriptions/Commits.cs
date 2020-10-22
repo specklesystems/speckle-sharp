@@ -29,10 +29,7 @@ namespace TestsIntegration.Subscriptions
     public void Setup()
     {
       testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
-
       testUserAccount = Fixtures.SeedUser(testServer);
-      Fixtures.UpdateOrSaveAccount(testUserAccount);
-
       client = new Client(testUserAccount);
       myServerTransport = new ServerTransport(testUserAccount, null);
     }

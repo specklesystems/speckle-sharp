@@ -44,9 +44,6 @@ namespace TestsIntegration
       firstUserAccount = Fixtures.SeedUser(testServer);
       secondUserAccount = Fixtures.SeedUser(testServer);
 
-      Fixtures.UpdateOrSaveAccount(firstUserAccount);
-      Fixtures.UpdateOrSaveAccount(secondUserAccount);
-
       myClient = new Client(firstUserAccount);
       myServerTransport = new ServerTransport(firstUserAccount, null);
     }
