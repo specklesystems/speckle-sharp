@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -46,6 +47,8 @@ namespace TestsIntegration.Subscriptions
       streamId = await client.StreamCreate(streamInput);
       Assert.NotNull(streamId);
 
+      myServerTransport.StreamId = streamId; // FML
+
       var branchInput = new BranchCreateInput
       {
         description = "Just testing branch create...",
@@ -68,7 +71,11 @@ namespace TestsIntegration.Subscriptions
 
       myObject["Points"] = ptsList;
 
-      var objectId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport }, false);
+      var objectId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport }, false, onErrorAction: (name, err) =>
+      {
+        Debug.WriteLine("Err in transport");
+        Debug.WriteLine(err.Message);
+      });
 
       var commitInput = new CommitCreateInput
       {
@@ -78,10 +85,11 @@ namespace TestsIntegration.Subscriptions
         message = "sending some test points"
       };
 
-      commitId  = await client.CommitCreate(commitInput);
+      commitId = await client.CommitCreate(commitInput);
       Assert.NotNull(commitId);
 
-      await Task.Run(() => {
+      await Task.Run(() =>
+      {
         Thread.Sleep(100); //let client catch-up
         Assert.NotNull(CommitCreatedInfo);
         Assert.AreEqual(commitInput.message, CommitCreatedInfo.message);
@@ -111,7 +119,8 @@ namespace TestsIntegration.Subscriptions
       var res = await client.CommitUpdate(commitInput);
       Assert.True(res);
 
-      await Task.Run(() => {
+      await Task.Run(() =>
+      {
         Thread.Sleep(100); //let client catch-up
         Assert.NotNull(CommitUpdatedInfo);
         Assert.AreEqual(commitInput.message, CommitUpdatedInfo.message);
@@ -140,7 +149,8 @@ namespace TestsIntegration.Subscriptions
       var res = await client.CommitDelete(commitInput);
       Assert.True(res);
 
-      await Task.Run(() => {
+      await Task.Run(() =>
+      {
         Thread.Sleep(100); //let client catch-up
         Assert.NotNull(CommitDeletedInfo);
         Assert.AreEqual(commitId, CommitDeletedInfo.id);
