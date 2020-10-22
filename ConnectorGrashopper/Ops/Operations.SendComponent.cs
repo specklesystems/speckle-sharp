@@ -127,7 +127,7 @@ namespace ConnectorGrashopper.Ops
       }, true, AutoSend);
       autoSendMi.ToolTipText = "Toggle automatic data sending. If set, any change in any of the input parameters of this component will start sending.\n Please be aware that if a new send starts before an old one is finished, the previous operation is cancelled.";
 
-      if(OutputWrappers.Count != 0)
+      if (OutputWrappers.Count != 0)
       {
         Menu_AppendSeparator(menu);
         foreach (var ow in OutputWrappers)
@@ -309,6 +309,16 @@ namespace ConnectorGrashopper.Ops
       foreach (var data in _TransportsInput)
       {
         var transport = data.GetType().GetProperty("Value").GetValue(data);
+        
+        if(transport is string)
+        {
+          try
+          {
+            transport = new StreamWrapper(transport as string);
+          }
+          catch { /*we should not do this */ }
+        }
+
         if (transport is StreamWrapper sw)
         {
           var acc = sw.GetAccount();
@@ -325,7 +335,13 @@ namespace ConnectorGrashopper.Ops
           Transports.Add(otherTransport);
         }
         t++;
+      }
 
+      if(Transports.Count == 0)
+      {
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Could not identify any valid transports to send to."));
+        Done();
+        return;
       }
 
       InternalProgressAction = (dict) =>
@@ -512,7 +528,7 @@ namespace ConnectorGrashopper.Ops
         {
           var palette = state == "expired" ? GH_Palette.Black : GH_Palette.Transparent;
           var text = state == "sending" ? $"{((SendComponent)Owner).OverallProgress:0.00%}" : "Send";
-          
+
           var button = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, palette, text, 2, state == "expired" ? 10 : 0);
           button.Render(graphics, Selected, Owner.Locked, false);
           button.Dispose();

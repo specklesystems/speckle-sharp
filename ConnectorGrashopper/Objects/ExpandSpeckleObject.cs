@@ -69,7 +69,7 @@ namespace ConnectorGrashopper.Objects
       foreach (var path in speckleObjects.Paths)
       {
         var obj = speckleObjects.get_DataItem(path, 0);
-        var b = (obj as GH_SpeckleBase).Value;
+        var b = new Base();// (obj as GH_SpeckleBase).Value;
         var props = b.GetDynamicMembers().ToList();
         props.ForEach(prop =>
         {
