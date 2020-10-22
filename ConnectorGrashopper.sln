@@ -7,10 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGrashopper", "Conn
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local Dependencies", "{CCD06981-ACB2-4B1C-9953-00976F1E535D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Client", "..\Core\GraphQLClient\src\GraphQL.Client\GraphQL.Client.csproj", "{43DBB04B-2267-443B-BB2A-757139252A39}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Client.Serializer.Newtonsoft", "..\Core\GraphQLClient\src\GraphQL.Client.Serializer.Newtonsoft\GraphQL.Client.Serializer.Newtonsoft.csproj", "{75C11B5A-4B5B-4907-A2DA-E085D2DE9760}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrasshopperAsyncComponent", "..\GrasshopperAsyncComponent\GrasshopperAsyncComponent\GrasshopperAsyncComponent.csproj", "{695D2B91-DDB6-416E-8A99-DDE6253DA7AA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRhinoGh", "..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGh\ConverterRhinoGh.csproj", "{A987E5E1-8605-46BA-9476-1D8D28502273}"
@@ -33,14 +29,6 @@ Global
 		{BDEC781D-F322-49B0-8001-2CA66C182174}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDEC781D-F322-49B0-8001-2CA66C182174}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDEC781D-F322-49B0-8001-2CA66C182174}.Release|Any CPU.Build.0 = Release|Any CPU
-		{43DBB04B-2267-443B-BB2A-757139252A39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{43DBB04B-2267-443B-BB2A-757139252A39}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{43DBB04B-2267-443B-BB2A-757139252A39}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{43DBB04B-2267-443B-BB2A-757139252A39}.Release|Any CPU.Build.0 = Release|Any CPU
-		{75C11B5A-4B5B-4907-A2DA-E085D2DE9760}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{75C11B5A-4B5B-4907-A2DA-E085D2DE9760}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{75C11B5A-4B5B-4907-A2DA-E085D2DE9760}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{75C11B5A-4B5B-4907-A2DA-E085D2DE9760}.Release|Any CPU.Build.0 = Release|Any CPU
 		{695D2B91-DDB6-416E-8A99-DDE6253DA7AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{695D2B91-DDB6-416E-8A99-DDE6253DA7AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{695D2B91-DDB6-416E-8A99-DDE6253DA7AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -70,8 +58,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{43DBB04B-2267-443B-BB2A-757139252A39} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
-		{75C11B5A-4B5B-4907-A2DA-E085D2DE9760} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
 		{695D2B91-DDB6-416E-8A99-DDE6253DA7AA} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
 		{A987E5E1-8605-46BA-9476-1D8D28502273} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
 		{B4D98D2C-E5DA-463E-BF6C-68E9B77C72F3} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
