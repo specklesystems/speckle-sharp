@@ -119,7 +119,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Convert.cs" />
+    <Compile Include="Advanced\Conversion.cs" />
+    <Compile Include="Advanced\Serialization.cs" />
     <Compile Include="InMemoryCache.cs" />
     <Compile Include="Local.cs" />
     <Compile Include="Account.cs" />

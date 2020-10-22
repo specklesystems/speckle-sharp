@@ -13,6 +13,7 @@ using ProtoCore.Mirror;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Threading;
+using Speckle.Core.Models;
 
 namespace Speckle.ConnectorDynamo.SendNode
 {
@@ -292,8 +293,16 @@ namespace Speckle.ConnectorDynamo.SendNode
       }
 
       //this value is update when the RecurseInput function loops through the data, not ideal but it works
+      //if we're dealing with a single Base (preconverted obj) use GetTotalChildrenCount to count its children
       _objectCount = 0;
-      GetInputAs<object>(engine, 0, true);
+      var data = GetInputAs<object>(engine, 0, true);
+      if (data is Base @base)
+      {
+        _objectCount = (int) @base.GetTotalChildrenCount();
+        //exclude wrapper obj.... this is a bit of a hack...
+        if (_objectCount > 1) _objectCount--;
+      }
+
       ExpiredCount = _objectCount.ToString();
     }
 
