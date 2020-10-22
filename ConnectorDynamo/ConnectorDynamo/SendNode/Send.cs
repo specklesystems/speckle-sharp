@@ -13,6 +13,7 @@ using ProtoCore.Mirror;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Threading;
+using Speckle.Core.Api;
 using Speckle.Core.Models;
 
 namespace Speckle.ConnectorDynamo.SendNode
@@ -396,11 +397,6 @@ namespace Speckle.ConnectorDynamo.SendNode
       };
 
       //return OutPorts.Enumerate().Select(output => AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
-    }
-
-    public override void Dispose()
-    {
-      base.Dispose();
     }
 
     #endregion

@@ -95,6 +95,9 @@
     <None Include="pkg.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccountsNode\Accounts.cs" />
+    <Compile Include="AccountsNode\AccountsUi.xaml.cs" />
+    <Compile Include="AccountsNode\AccountsViewCustomization.cs" />
     <Compile Include="ReceiveNode\ReceiveUi.xaml.cs">
       <DependentUpon>ReceiveUi.xaml</DependentUpon>
     </Compile>
@@ -118,6 +121,10 @@
     <EmbeddedResource Include="SpeckleConnectorDynamoImages.resx" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="AccountsNode\AccountsUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ReceiveNode\ReceiveUi.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
