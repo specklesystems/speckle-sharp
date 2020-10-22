@@ -23,10 +23,7 @@ namespace TestsIntegration.Subscriptions
     public void Setup()
     {
       testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
-
       testUserAccount = Fixtures.SeedUser(testServer);
-      Fixtures.UpdateOrSaveAccount(testUserAccount);
-
       client = new Client(testUserAccount);
     }
 
@@ -36,7 +33,7 @@ namespace TestsIntegration.Subscriptions
       client.SubscribeUserStreamAdded();
       client.OnUserStreamAdded += Client_OnUserStreamAdded;
 
-      Thread.Sleep(100); //let server catch-up
+      Thread.Sleep(1000); //let server catch-up
 
       var streamInput = new StreamCreateInput
       {
@@ -44,12 +41,12 @@ namespace TestsIntegration.Subscriptions
         name = "Super Stream 01"
       };
 
-      var res = await client.StreamCreate(streamInput);
+      var res = await client.StreamCreate(streamInput).ConfigureAwait(true);
       streamId = res;
       Assert.NotNull(res);
 
       await Task.Run(() => {
-        Thread.Sleep(100); //let client catch-up
+        Thread.Sleep(1000); //let client catch-up
         Assert.NotNull(StreamAddedInfo);
         Assert.AreEqual(streamInput.name, StreamAddedInfo.name);
       });
