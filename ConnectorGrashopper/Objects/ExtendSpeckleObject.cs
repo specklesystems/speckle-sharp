@@ -118,12 +118,12 @@ namespace ConnectorGrashopper.Objects
         
         private void AssignToObject(Base b, List<string> keys, List<IGH_Goo> values)
         {
-            int index = 0;
+            var index = 0;
             keys.ForEach(key =>
             {
                 if (b.HasMember(key))
                     AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Object {b.id} - Property {key} has been overwritten");
-                b[key] = values[index++];
+                b[key] = Utilities.TryConvertItemToSpeckle(values[index++],Converter);
             });
         }
     }

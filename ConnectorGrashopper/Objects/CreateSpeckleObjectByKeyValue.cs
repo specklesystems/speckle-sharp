@@ -63,7 +63,7 @@ namespace ConnectorGrashopper.Objects
                 keys.ForEach(key =>
                 {
                     if(ind < list.Count)
-                        speckleObj[key] = list[ind];
+                        speckleObj[key] = Utilities.TryConvertItemToSpeckle(list[ind], Converter);
                     ind++;
                 });
             }
