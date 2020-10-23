@@ -33,9 +33,9 @@ namespace Speckle.Core.Transports
 
     private bool IS_WRITING = false;
 
-    private int MAX_BUFFER_SIZE = 250_000;
+    private int MAX_BUFFER_SIZE = 500_000;
 
-    private int MAX_MULTIPART_COUNT = 4;
+    private int MAX_MULTIPART_COUNT = 10;
 
     public int SavedObjectCount { get; private set; } = 0;
 
@@ -147,11 +147,12 @@ namespace Speckle.Core.Transports
       };
 
       var multipart = new MultipartFormDataContent("--obj--");
-      var contents = new List<string>();
 
       ValueTuple<string, string, int> result;
       SavedObjectCount = 0;
-      while (contents.Count < MAX_MULTIPART_COUNT && Queue.Count != 0)
+      var addedMpCount = 0;
+
+      while (addedMpCount < MAX_MULTIPART_COUNT && Queue.Count != 0)
       {
         if (CancellationToken.IsCancellationRequested)
         {
@@ -183,6 +184,7 @@ namespace Speckle.Core.Transports
         }
         _ct += "]";
         multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{i}", $"batch-{i}");
+        addedMpCount++;
         SavedObjectCount += i;
       }
 
