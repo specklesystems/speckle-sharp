@@ -26,12 +26,12 @@ namespace ConnectorGrashopper.Objects
         
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Speckle Object", "O", "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item);
+            pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item));
         }
 
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Speckle Object", "O", "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item);
+            pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item));
             pManager.AddTextParameter("Keys", "K", "List of keys", GH_ParamAccess.list);
             pManager.AddGenericParameter("Values", "V", "List of values", GH_ParamAccess.tree);
         }

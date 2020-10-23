@@ -46,7 +46,7 @@ namespace ConnectorGrashopper.Objects
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("Speckle Object", "O", "Speckle object to deconstruct into it's properties.", GH_ParamAccess.tree);
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Speckle object to deconstruct into it's properties.", GH_ParamAccess.tree));
     }
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
@@ -61,7 +61,7 @@ namespace ConnectorGrashopper.Objects
     }
 
     private bool hasSetData;
-    private GH_Structure<IGH_Goo> speckleObjects;
+    private GH_Structure<GH_SpeckleBase> speckleObjects;
     private List<string> outputList = new List<string>();
 
     private List<string> GetOutputList()
@@ -132,7 +132,6 @@ namespace ConnectorGrashopper.Objects
         var baseGoo = speckleObjects.get_DataItem(path, 0) as GH_SpeckleBase;
         if (baseGoo == null)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Can only convert Speckle.Base objects for now, ignoring input.");
           continue;
         }
         var obj = baseGoo.Value;
