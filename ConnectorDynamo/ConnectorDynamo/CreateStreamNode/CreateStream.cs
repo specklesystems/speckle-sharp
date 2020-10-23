@@ -15,25 +15,35 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
+using Dynamo.Utilities;
+using Speckle.Core.Api;
 using Speckle.Core.Models;
 using Account = Speckle.Core.Credentials.Account;
 
-namespace Speckle.ConnectorDynamo.AccountsNode
+namespace Speckle.ConnectorDynamo.CreateStreamNode
 {
   /// <summary>
-  /// List Accounts
+  /// Create Stream
   /// </summary>
-  [NodeName("Select Account")]
-  [NodeCategory("Speckle 2.Account")]
-  [NodeDescription("Select a Speckle account")]
-  [NodeSearchTags("accounts", "speckle")]
+  [NodeName("Create")]
+  [NodeCategory("Speckle 2.Stream.Create")]
+  [NodeDescription("Create a new Speckle Stream")]
+  [NodeSearchTags("stream", "create", "speckle")]
   [IsDesignScriptCompatible]
-  public class Accounts : NodeModel
+  public class CreateStream : NodeModel
   {
-    public string SelectedAccountId = "";
+    private bool _createEnabled = true;
+
     private ObservableCollection<Core.Credentials.Account> _accountList = new ObservableCollection<Account>();
+    
+    /// <summary>
+    /// Current Stream
+    /// </summary>
+    public StreamWrapper Stream { get; set; }
+
+    public string SelectedAccountId = "";
+
 
     /// <summary>
     /// UI Binding
@@ -64,6 +74,19 @@ namespace Speckle.ConnectorDynamo.AccountsNode
         RaisePropertyChanged("SelectedAccount");
       }
     }
+    
+     /// <summary>
+    /// UI Binding
+    /// </summary>
+     public bool CreateEnabled
+    {
+      get => _createEnabled;
+      set
+      {
+        _createEnabled = value;
+        RaisePropertyChanged("CreateEnabled");
+      }
+    }
 
 
     /// <summary>
@@ -72,7 +95,7 @@ namespace Speckle.ConnectorDynamo.AccountsNode
     /// <param name="inPorts"></param>
     /// <param name="outPorts"></param>
     [DNJ.JsonConstructor]
-    private Accounts(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
+    private CreateStream(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
       if (outPorts.Count() == 0)
         AddOutputs();
@@ -83,56 +106,72 @@ namespace Speckle.ConnectorDynamo.AccountsNode
     /// <summary>
     /// Normal constructor, called when adding node to canvas
     /// </summary>
-    public Accounts()
+    public CreateStream()
     {
       Tracker.TrackEvent(Tracker.ACCOUNT_LIST);
-
       AddOutputs();
 
       RegisterAllPorts();
       ArgumentLacing = LacingStrategy.Disabled;
     }
-
+    
     private void AddOutputs()
     {
-      OutPorts.Add(new PortModel(PortType.Output, this, new PortData("account", "Selected account")));
+      OutPorts.Add(new PortModel(PortType.Output, this, new PortData("stream", "The new Stream")));
     }
 
     internal void RestoreSelection()
     {
       AccountList = new ObservableCollection<Account>(AccountManager.GetAccounts());
 
-        if (!string.IsNullOrEmpty(SelectedAccountId))
-        {
-          SelectedAccount = AccountList.FirstOrDefault(x => x.id == SelectedAccountId);
-        }
-        else
-        {
-          SelectedAccount = AccountList.FirstOrDefault(x => x.isDefault);
-        }
+      if (!string.IsNullOrEmpty(SelectedAccountId))
+      {
+        SelectedAccount = AccountList.FirstOrDefault(x => x.id == SelectedAccountId);
+      }
+      else
+      {
+        SelectedAccount = AccountList.FirstOrDefault(x => x.isDefault);
+      }
     }
 
-    internal void SelectionChanged(Account account)
+    internal void DoCreateStream()
     {
-      SelectedAccountId = account.id;
+       Tracker.TrackEvent(Tracker.STREAM_CREATE);
+
+      if (SelectedAccount == null)
+        throw new Exception("An account must be selected.");
+
+
+      var client = new Client(SelectedAccount);
+      var res = client.StreamCreate(new StreamCreateInput()).Result;
+
+      Stream = new StreamWrapper(res,SelectedAccount.id,SelectedAccount.serverInfo.url);
+      CreateEnabled = false;
+      SelectedAccountId = SelectedAccount.id;
+
+      this.Name = "Stream Created";
       OnNodeModified(true);
     }
+
+    
 
     #region overrides
 
     /// <summary>
-    /// Returns the selected account if found
-    /// NOTE: if an account is deleted via the account manager after being selected in this node and saved
-    /// upon open it will return null
+    /// Returns the StreamWrapper saved in this node
+    /// To create a new stream, a new node has to be placed
     /// </summary>
     /// <param name="inputAstNodes"></param>
     /// <returns></returns>
     public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
     {
-      var id = SelectedAccountId ?? "";
+      if(Stream==null)
+        return OutPorts.Enumerate().Select(output =>
+          AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
+      
       var functionCall = AstFactory.BuildFunctionCall(
-        new Func<string, Account>(Functions.Account.GetById),
-        new List<AssociativeNode> {AstFactory.BuildStringNode(id)});
+        new Func<string, string, StreamWrapper>(Functions.Stream.GetByStreamAndAccountId),
+        new List<AssociativeNode> {AstFactory.BuildStringNode(Stream.StreamId), AstFactory.BuildStringNode(Stream.AccountId)});
 
       return new[] {AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall)};
     }

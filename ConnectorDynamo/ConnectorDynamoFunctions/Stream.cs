@@ -16,25 +16,6 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <summary>
     /// Create a new Stream
     /// </summary>
-    /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
-    /// <returns name="stream">A new Stream</returns>
-    [NodeCategory("Create")]
-    public static string Create([DefaultArgument("null")] Core.Credentials.Account account = null)
-    {
-      Tracker.TrackEvent(Tracker.STREAM_CREATE);
-
-      if (account == null)
-        account = AccountManager.GetDefaultAccount();
-
-      var client = new Client(account);
-      var res = client.StreamCreate(new StreamCreateInput()).Result;
-
-      return res;
-    }
-
-    /// <summary>
-    /// Create a new Stream
-    /// </summary>
     /// <param name="streamId">Id of the Stream to get</param>
     /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
     /// <returns name="stream">A new Stream</returns>
@@ -45,8 +26,6 @@ namespace Speckle.ConnectorDynamo.Functions
 
       try
       {
-
-
         if (account == null)
           account = AccountManager.GetDefaultAccount();
 
@@ -55,7 +34,28 @@ namespace Speckle.ConnectorDynamo.Functions
         //Exists?
         Core.Api.Stream res = client.StreamGet(streamId).Result;
         return new StreamWrapper(res.id, account.id, account.serverInfo.url);
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+    }
 
+    [IsVisibleInDynamoLibrary(false)]
+    public static StreamWrapper GetByStreamAndAccountId(string streamId,
+      string accountId)
+    {
+      Tracker.TrackEvent(Tracker.STREAM_CREATE);
+
+      try
+      {
+        var account = AccountManager.GetAccounts().FirstOrDefault(x => x.id == accountId);
+
+        var client = new Client(account);
+
+        //Exists?
+        Core.Api.Stream res = client.StreamGet(streamId).Result;
+        return new StreamWrapper(res.id, account.id, account.serverInfo.url);
       }
       catch (Exception e)
       {
@@ -72,7 +72,8 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="description">Description of the Stream</param>
     /// <param name="isPublic">True if the stream is to be publicly availables</param>
     /// <returns name="stream">Updated Stream object</returns>
-    public static StreamWrapper Update(StreamWrapper stream, [DefaultArgument("null")] string name, [DefaultArgument("null")] string description, [DefaultArgument("null")] bool? isPublic)
+    public static StreamWrapper Update(StreamWrapper stream, [DefaultArgument("null")] string name,
+      [DefaultArgument("null")] string description, [DefaultArgument("null")] bool? isPublic)
     {
       Tracker.TrackEvent(Tracker.STREAM_UPDATE);
 
@@ -83,10 +84,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
       var client = new Client(account);
 
-      var input = new StreamUpdateInput
-      {
-        id = stream.StreamId
-      };
+      var input = new StreamUpdateInput {id = stream.StreamId};
 
       if (name != null)
         input.name = name;
@@ -95,7 +93,7 @@ namespace Speckle.ConnectorDynamo.Functions
         input.description = description;
 
       if (isPublic != null)
-        input.isPublic = (bool)isPublic;
+        input.isPublic = (bool) isPublic;
 
 
       var res = client.StreamUpdate(input).Result;
@@ -111,7 +109,10 @@ namespace Speckle.ConnectorDynamo.Functions
     /// </summary>
     /// <param name="stream">Stream object</param>
     [NodeCategory("Query")]
-    [MultiReturn(new[] { "id", "name", "description", "createdAt", "updatedAt", "isPublic", "collaborators", "branches" })]
+    [MultiReturn(new[]
+    {
+      "id", "name", "description", "createdAt", "updatedAt", "isPublic", "collaborators", "branches"
+    })]
     public static Dictionary<string, object> Details(StreamWrapper stream)
     {
       Tracker.TrackEvent(Tracker.STREAM_DETAILS);
@@ -122,15 +123,16 @@ namespace Speckle.ConnectorDynamo.Functions
 
       Core.Api.Stream res = client.StreamGet(stream.StreamId).Result;
 
-      return new Dictionary<string, object> {
-        { "id", res.id },
-        { "name", res.name },
-        { "description", res.description },
-        { "createdAt", DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(res.createdAt)).DateTime },
-        { "updatedAt", DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(res.updatedAt)).DateTime },
-        { "isPublic", res.isPublic },
-        { "collaborators", res.collaborators },
-        { "branches", res.branches!=null ? res.branches.items : null}
+      return new Dictionary<string, object>
+      {
+        {"id", res.id},
+        {"name", res.name},
+        {"description", res.description},
+        {"createdAt", DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(res.createdAt)).DateTime},
+        {"updatedAt", DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(res.updatedAt)).DateTime},
+        {"isPublic", res.isPublic},
+        {"collaborators", res.collaborators},
+        {"branches", res.branches != null ? res.branches.items : null}
       };
     }
 
@@ -141,7 +143,8 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="limit">Max number of streams to get</param>
     /// <returns name="streams">Your Streams</returns>
     [NodeCategory("Query")]
-    public static List<StreamWrapper> List([DefaultArgument("null")] Core.Credentials.Account account = null, [DefaultArgument("10")] int limit = 10)
+    public static List<StreamWrapper> List([DefaultArgument("null")] Core.Credentials.Account account = null,
+      [DefaultArgument("10")] int limit = 10)
     {
       Tracker.TrackEvent(Tracker.STREAM_LIST);
 
@@ -152,10 +155,7 @@ namespace Speckle.ConnectorDynamo.Functions
       var res = client.StreamsGet(limit).Result;
 
       var streamWrappers = new List<StreamWrapper>();
-      res.ForEach(x =>
-      {
-        streamWrappers.Add(new StreamWrapper(x.id, account.id, account.serverInfo.url));
-      });
+      res.ForEach(x => { streamWrappers.Add(new StreamWrapper(x.id, account.id, account.serverInfo.url)); });
 
       return streamWrappers;
     }

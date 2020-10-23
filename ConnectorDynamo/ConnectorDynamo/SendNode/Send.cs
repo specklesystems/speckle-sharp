@@ -28,12 +28,7 @@ namespace Speckle.ConnectorDynamo.SendNode
   [IsDesignScriptCompatible]
   public class Send : NodeModel
   {
-    internal event Action OnRequestUpdates;
-
-    protected virtual void RequestUpdates()
-    {
-      OnRequestUpdates?.Invoke();
-    }
+    #region private fields
 
     private bool _transmitting = false;
     private string _message = "";
@@ -45,6 +40,8 @@ namespace Speckle.ConnectorDynamo.SendNode
     private string _outputInfo = "";
     private bool _firstRun = true;
     private CancellationTokenSource _cancellationToken;
+
+    #endregion
 
     #region ui bindings
 
@@ -148,7 +145,6 @@ namespace Speckle.ConnectorDynamo.SendNode
         AddOutputs();
 
       ArgumentLacing = LacingStrategy.Disabled;
-
       this.PropertyChanged += HandlePropertyChanged;
     }
 
@@ -164,7 +160,6 @@ namespace Speckle.ConnectorDynamo.SendNode
 
       RegisterAllPorts();
       ArgumentLacing = LacingStrategy.Disabled;
-
       this.PropertyChanged += HandlePropertyChanged;
     }
 
@@ -353,13 +348,19 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     #region events
 
+    internal event Action OnRequestUpdates;
+
+    protected virtual void RequestUpdates()
+    {
+      OnRequestUpdates?.Invoke();
+    }
+
     void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
     {
-     
       if (e.PropertyName != "CachedValue")
         return;
 
-      if ((!InPorts[0].IsConnected || !InPorts[1].IsConnected))
+      if (!InPorts[0].IsConnected || !InPorts[1].IsConnected)
         return;
 
       //prevent running when opening a saved file

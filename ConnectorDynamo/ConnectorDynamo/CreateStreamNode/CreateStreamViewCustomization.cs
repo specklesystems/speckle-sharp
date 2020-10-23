@@ -10,30 +10,29 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using Speckle.Core.Credentials;
 
-namespace Speckle.ConnectorDynamo.AccountsNode
+namespace Speckle.ConnectorDynamo.CreateStreamNode
 {
-  public class AccountsViewCustomization : INodeViewCustomization<Accounts>
+  public class CreateStreamViewCustomization : INodeViewCustomization<CreateStream>
   {
-
     private DynamoViewModel dynamoViewModel;
     private DispatcherSynchronizationContext syncContext;
-    private Accounts accountsNode;
+    private CreateStream accountsNode;
     private DynamoModel dynamoModel;
 
-    public void CustomizeView(Accounts model, NodeView nodeView)
+    public void CustomizeView(CreateStream model, NodeView nodeView)
     {
       dynamoModel = nodeView.ViewModel.DynamoViewModel.Model;
       dynamoViewModel = nodeView.ViewModel.DynamoViewModel;
       syncContext = new DispatcherSynchronizationContext(nodeView.Dispatcher);
       accountsNode = model;
 
-      var ui = new AccountsUi();
+      var ui = new CreateStreamUi();
       nodeView.inputGrid.Children.Add(ui);
 
       //bindings
       ui.DataContext = model;
       ui.Loaded += Loaded;
-      ui.AccountsComboBox.SelectionChanged += SelectionChanged;
+      ui.CreateStreamButton.Click += CreateStreamButtonClick;
     }
 
     private void Loaded(object o, RoutedEventArgs a)
@@ -41,16 +40,14 @@ namespace Speckle.ConnectorDynamo.AccountsNode
       Task.Run(() => { accountsNode.RestoreSelection(); });
     }
 
-    private void SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void CreateStreamButtonClick(object sender, RoutedEventArgs e)
     {
-      if(e.AddedItems.Count ==0)
-        return;
-      var account = e.AddedItems[0] as Account;
-      accountsNode.SelectionChanged(account);
+      Task.Run(() => { accountsNode.DoCreateStream(); });
     }
-    
 
-    public void Dispose() { }
 
+    public void Dispose()
+    {
+    }
   }
 }

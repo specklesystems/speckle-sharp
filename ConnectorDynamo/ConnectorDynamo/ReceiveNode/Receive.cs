@@ -29,14 +29,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
   [IsDesignScriptCompatible]
   public class Receive : NodeModel
   {
-    internal event Action OnRequestUpdates;
-
-    protected virtual void RequestUpdates()
-    {
-      OnRequestUpdates?.Invoke();
-    }
-
-    internal event Action OnReceiveRequested;
+    #region private fields & props
 
     private bool _transmitting = false;
     private string _message = "";
@@ -64,8 +57,9 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       set { _client = value; }
     }
 
+    #endregion
 
-    //PUBLIC PROPERTIES - TO SAVE
+    #region public properties
 
     /// <summary>
     /// Current Stream
@@ -81,6 +75,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// Latest Commit received
     /// </summary>
     public string CommitId { get; set; }
+
+    #endregion
 
     #region ui bindings
 
@@ -348,7 +344,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     {
       if (Stream == null)
         return;
-      
+
       var account = Stream.GetAccount();
       Client = new Client(account);
 
@@ -434,6 +430,14 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     }
 
     #region events
+
+    internal event Action OnReceiveRequested;
+    internal event Action OnRequestUpdates;
+
+    protected virtual void RequestUpdates()
+    {
+      OnRequestUpdates?.Invoke();
+    }
 
     private void OnCommitChange(object sender, CommitInfo e)
     {

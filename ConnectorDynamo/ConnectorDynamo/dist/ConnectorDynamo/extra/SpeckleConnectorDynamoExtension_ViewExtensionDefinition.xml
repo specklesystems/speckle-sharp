@@ -1,4 +1,0 @@
-﻿<ViewExtensionDefinition>
-  <AssemblyPath>..\bin\SpeckleConnectorDynamoExtension.dll</AssemblyPath>
-  <TypeName>Speckle.ConnectorDynamo.Extension.SpeckleExtension</TypeName>
-</ViewExtensionDefinition>
