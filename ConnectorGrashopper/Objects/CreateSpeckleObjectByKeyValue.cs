@@ -35,7 +35,6 @@ namespace ConnectorGrashopper.Objects
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("Object", "O", "Speckle object", GH_ParamAccess.item);
-            pManager.AddGenericParameter("debug", "d", "debug Speckle object", GH_ParamAccess.tree);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
@@ -86,16 +85,15 @@ namespace ConnectorGrashopper.Objects
                         {
                             objs.Add(Utilities.TryConvertItemToSpeckle(goo, Converter));
                         }
-                        speckleObj[key] = objs;
+                        if(objs.Count > 0)
+                            speckleObj[key] = objs;
                     }
                     index++;
                 });
             }
             
-            
             // Set output
             DA.SetData(0,new GH_SpeckleBase{Value = speckleObj});
-            DA.SetDataTree(1, subTree);
         }
     }
 }
