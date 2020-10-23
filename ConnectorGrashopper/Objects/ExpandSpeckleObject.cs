@@ -71,12 +71,14 @@ namespace ConnectorGrashopper.Objects
       foreach (var path in speckleObjects.Paths)
       {
         var obj = speckleObjects.get_DataItem(path, 0);
-        var b = new Base();// (obj as GH_SpeckleBase).Value;
-        var props = b.GetDynamicMembers().ToList();
-        props.ForEach(prop =>
+        var b =  (obj as GH_SpeckleBase)?.Value;
+        var props = b?.GetDynamicMembers().ToList();
+        props?.ForEach(prop =>
         {
-          if (!fullProps.Contains(prop) && b[prop] != null) fullProps.Add(prop);
-          if (fullProps.Contains(prop) && b[prop] == null) fullProps.Remove(prop);
+          if (!fullProps.Contains(prop) && b[prop] != null) 
+            fullProps.Add(prop);
+          else if (fullProps.Contains(prop) && b[prop] == null) 
+            fullProps.Remove(prop);
         });
       }
       return fullProps;
@@ -132,6 +134,8 @@ namespace ConnectorGrashopper.Objects
         {
           // Convert and add to corresponding output structure
           var value = obj[prop];
+          
+          if (!outputDict.ContainsKey(prop)) continue;
           switch (value)
           {
             case null:
