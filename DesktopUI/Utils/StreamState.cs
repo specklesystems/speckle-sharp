@@ -122,7 +122,8 @@ namespace Speckle.DesktopUI.Utils
     {
       var branch = Stream.branches.items.Find(b => b.name == branchName);
       if ( branch == null ) throw new SpeckleException($"Could not find branch {branchName}");
-      return branch.commits.items[ 0 ];
+      var commits = branch.commits.items;
+      return commits != null ? commits[ 0 ] : null;
     }
   }
 
