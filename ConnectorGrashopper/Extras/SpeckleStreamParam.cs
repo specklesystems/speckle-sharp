@@ -8,6 +8,11 @@ namespace ConnectorGrashopper.Extras
 {
     public class SpeckleStreamParam: GH_Param<GH_SpeckleStream>
     {
+        public SpeckleStreamParam() : base("Speckle Stream", "SS", "A speckle data stream object.", "Speckle 2", "Params",
+            GH_ParamAccess.item)
+        {
+            
+        }
         public SpeckleStreamParam(IGH_InstanceDescription tag) : base(tag)
         {
         }
@@ -23,11 +28,6 @@ namespace ConnectorGrashopper.Extras
         public SpeckleStreamParam(string name, string nickname, string description, GH_ParamAccess access) : base(name, nickname, description, "Speckle 2", "Params", access)
         {
         }
-        protected override GH_SpeckleStream PreferredCast(object data)
-        {
-            if(data is StreamWrapper wrapper) return new GH_SpeckleStream(wrapper);
-            return base.PreferredCast(data);
-        }
 
         public override Guid ComponentGuid => new Guid("FB436A31-1CE9-413C-B524-8A574C0F842D");
         
@@ -37,7 +37,6 @@ namespace ConnectorGrashopper.Extras
     {
         
         public static implicit operator StreamWrapper(GH_SpeckleStream d) => d.Value;
-        
 
         public override StreamWrapper Value { get; set; }
 
