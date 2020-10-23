@@ -88,7 +88,7 @@ namespace ConnectorGrashopper.Objects
                     {
                         // Value is a list, convert and assign.
                         var list = subTree.get_Branch(subPath) as List<IGH_Goo>;
-                        var converted = list.Select(goo => Utilities.TryConvertItemToNative(goo, Converter)).ToList();
+                        var converted = list.Select(goo => Utilities.TryConvertItemToSpeckle(goo, Converter)).ToList();
                         b[key] = converted;
                     }
                     else
