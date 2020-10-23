@@ -105,11 +105,11 @@
       <Project>{b4d98d2c-e5da-463e-bf6c-68e9b77c72f3}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\DiskTransport\DiskTransport.csproj">
+    <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj">
       <Project>{8f16a9a1-dc5f-4800-821c-336e6ccf8f9c}</Project>
       <Name>DiskTransport</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\ServerTransport\ServerTransport.csproj">
+    <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
       <Project>{8008f635-7ded-473c-88df-12833f599d75}</Project>
       <Name>ServerTransport</Name>
     </ProjectReference>
