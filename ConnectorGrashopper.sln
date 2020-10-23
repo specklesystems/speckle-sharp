@@ -15,9 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\Core\Core\Core.c
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects", "..\Objects\Objects\Objects.csproj", "{8CCAB579-403F-4521-8146-5E35C0BFEEAB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiskTransport", "..\Core\DiskTransport\DiskTransport.csproj", "{8F16A9A1-DC5F-4800-821C-336E6CCF8F9C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiskTransport", "..\Core\Transports\DiskTransport\DiskTransport.csproj", "{8F16A9A1-DC5F-4800-821C-336E6CCF8F9C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerTransport", "..\Core\ServerTransport\ServerTransport.csproj", "{8008F635-7DED-473C-88DF-12833F599D75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerTransport", "..\Core\Transports\ServerTransport\ServerTransport.csproj", "{8008F635-7DED-473C-88DF-12833F599D75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
