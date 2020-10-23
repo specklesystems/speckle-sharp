@@ -64,10 +64,6 @@
               <dialogs:StreamCreateAdvancedView />
             </md:TransitionerSlide>
 
-            <md:TransitionerSlide OpeningEffect="{md:TransitionEffect Kind=SlideInFromRight}">
-              <dialogs:StreamCreateFinalView />
-            </md:TransitionerSlide>
-
           </md:Transitioner>
         </ScrollViewer>
         <md:Snackbar MessageQueue="{Binding Notifications}" />

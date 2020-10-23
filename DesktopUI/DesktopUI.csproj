@@ -117,9 +117,6 @@
     <Compile Include="Streams\Dialogs\StreamCreateAdvancedView.xaml.cs">
       <DependentUpon>StreamCreateAdvancedView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Streams\Dialogs\StreamCreateFinalView.xaml.cs">
-      <DependentUpon>StreamCreateFinalView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Streams\Dialogs\StreamCreateSimpleView.xaml.cs">
       <DependentUpon>StreamCreateSimpleView.xaml</DependentUpon>
     </Compile>
@@ -182,10 +179,6 @@
     <Page Include="Streams\StreamCreateDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Streams\Dialogs\StreamCreateFinalView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Streams\Dialogs\StreamCreateSimpleView.xaml">
       <Generator>MSBuild:Compile</Generator>

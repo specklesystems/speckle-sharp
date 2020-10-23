@@ -312,6 +312,8 @@ namespace Speckle.DesktopUI.Streams
 
       AccountToSendFrom = _acctRepo.GetDefault();
       StreamToCreate.name = StreamQuery;
+      NotifyOfPropertyChange(nameof(StreamToCreate.name));
+
       SelectedStream = null;
       ChangeSlide(slideIndex);
     }
@@ -319,9 +321,9 @@ namespace Speckle.DesktopUI.Streams
     public async void AddNewStream()
     {
       CreateButtonLoading = true;
+      var client = new Client(AccountToSendFrom);
       try
       {
-        var client = new Client(AccountToSendFrom);
         var streamId = await _streamsRepo.CreateStream(StreamToCreate, AccountToSendFrom);
 
         foreach ( var user in Collaborators )
@@ -347,12 +349,13 @@ namespace Speckle.DesktopUI.Streams
         StreamState = new StreamState(client, StreamToCreate) {Filter = filter};
         _bindings.AddNewStream(StreamState);
 
-        SelectedSlide = 3;
         _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
         StreamState = new StreamState();
+        CloseDialog();
       }
       catch ( Exception e )
       {
+        await client.StreamDelete(StreamToCreate.id);
         Notifications.Enqueue($"Error: {e.Message}");
       }
 
@@ -376,10 +379,10 @@ namespace Speckle.DesktopUI.Streams
 
       StreamState = new StreamState(client, StreamToCreate) {ServerUpdates = true};
       _bindings.AddNewStream(StreamState);
-      SelectedSlide = 3;
       _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
 
       AddExistingButtonLoading = false;
+      CloseDialog();
     }
 
     public async void SearchForUsers()
