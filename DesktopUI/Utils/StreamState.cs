@@ -94,6 +94,14 @@ namespace Speckle.DesktopUI.Utils
       set => SetAndNotify(ref _objects, value);
     }
 
+    private ProgressReport _progress = new ProgressReport();
+
+    public ProgressReport Progress
+    {
+      get => _progress;
+      set => SetAndNotify(ref _progress, value);
+    }
+
     private bool _isSending;
 
     public bool IsSending
