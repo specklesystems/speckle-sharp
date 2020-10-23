@@ -60,7 +60,7 @@
         Margin="0,0,0,12"
         FontSize="20"
         Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-        Text="{Binding StreamToCreate.name}" />
+        Text="{Binding StreamToCreate.name, Mode=TwoWay}" />
       <TextBlock Margin="0,8" Text="Customise your settings" />
 
       <ComboBox
@@ -200,7 +200,7 @@
           md:ButtonProgressAssist.IsIndicatorVisible="{Binding CreateButtonLoading, Mode=OneWay}"
           md:ButtonProgressAssist.Value="-1"
           Command="{s:Action AddNewStream}"
-          Content="SEND"
+          Content="ADD OBJECTS"
           Foreground="{StaticResource MaterialDesignLightBackground}"
           Style="{StaticResource MaterialDesignFlatMidBgButton}" />
       </Grid>
