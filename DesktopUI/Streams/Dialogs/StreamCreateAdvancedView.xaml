@@ -13,72 +13,55 @@
   mc:Ignorable="d">
   <UserControl.Resources>
 
-    <DataTemplate
-      x:Key="FilterSelectionTemplate">
-      <TabItem
-        Background="Transparent"
-        Style="{StaticResource MaterialDesignNavigationRailTabItem}">
+    <DataTemplate x:Key="FilterSelectionTemplate">
+      <TabItem Background="Transparent" Style="{StaticResource MaterialDesignNavigationRailTabItem}">
         <TabItem.Header>
-          <md:PackIcon
-            Kind="{Binding Icon}" />
+          <md:PackIcon Kind="{Binding Icon}" />
         </TabItem.Header>
         <TabItem.Content>
-          <TextBlock
-            Text="{Binding Selection.Count, StringFormat='Selected: {0}', Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+          <TextBlock Text="{Binding Filter.Selection.Count, StringFormat='Selected: {0}', Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         </TabItem.Content>
       </TabItem>
     </DataTemplate>
 
-    <DataTemplate
-      x:Key="FilterItemTemplate">
-      <TabItem
-        Style="{StaticResource MaterialDesignNavigationRailTabItem}">
+    <DataTemplate x:Key="FilterItemTemplate">
+      <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
         <TabItem.Header>
-          <md:PackIcon
-            Kind="{Binding Icon}" />
+          <md:PackIcon Kind="{Binding Filter.Icon}" />
         </TabItem.Header>
       </TabItem>
     </DataTemplate>
 
-    <DataTemplate
-      x:Key="FilterContentTemplate">
-      <TextBlock
-        Text="{Binding Selection.Count, StringFormat='Selected: {0}'}" />
+    <DataTemplate x:Key="FilterContentTemplate">
+      <TextBlock Text="{Binding Filter.Selection.Count, StringFormat='Selected: {0}'}" />
     </DataTemplate>
 
-    <DataTemplate
-      x:Key="CollboratorChipTemplate">
+    <DataTemplate x:Key="CollboratorChipTemplate">
       <md:Chip
         Margin="4"
         Command="{Binding}"
         Content="{Binding name}"
-        IsDeletable="True"
         DeleteCommand="{s:Action RemoveCollabFromCollection}"
         DeleteCommandParameter="{Binding}"
         Icon="{Binding name[0]}"
-        IconBackground="{StaticResource PrimaryHueLightBrush}">
+        IconBackground="{StaticResource PrimaryHueLightBrush}"
+        IsDeletable="True">
         <!-- <md:Chip.Icon> -->
-        <!--   <Image -->
-        <!--     Source="{Binding avatar, TargetNullValue={StaticResource DefaultProfImage}}" /> -->
+        <!--  <Image  -->
+        <!--  Source="{Binding avatar, TargetNullValue={StaticResource DefaultProfImage}}" />  -->
         <!-- </md:Chip.Icon> -->
       </md:Chip>
     </DataTemplate>
   </UserControl.Resources>
 
-  <Grid
-    HorizontalAlignment="Stretch"
-    VerticalAlignment="Stretch">
-    <StackPanel
-      Margin="24,0,24,24"
-      Orientation="Vertical">
+  <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <StackPanel Margin="24,0,24,24" Orientation="Vertical">
       <TextBlock
         Margin="0,0,0,12"
         FontSize="20"
         Style="{StaticResource MaterialDesignHeadline4TextBlock}"
         Text="{Binding StreamToCreate.name}" />
-      <TextBlock
-        Margin="0,8"
-        Text="Customise your settings" />
+      <TextBlock Margin="0,8" Text="Customise your settings" />
 
       <ComboBox
         x:Name="AccountSelectionBox"
@@ -97,8 +80,7 @@
         HorizontalAlignment="Stretch"
         md:ExpanderAssist.HorizontalHeaderPadding="16,12"
         Header="Add Collaborators">
-        <StackPanel
-          Margin="24,16">
+        <StackPanel Margin="24,16">
 
           <ComboBox
             Margin="0,16"
@@ -110,12 +92,10 @@
             ItemsSource="{Binding UserSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
             SelectedItem="{Binding SelectedUser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             StaysOpenOnEdit="True"
-            TextSearch.TextPath="name"
-            Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            TextSearch.TextPath="name" />
 
-          <ItemsControl
-            ItemsSource="{Binding Collaborators}"
-            ItemTemplate="{StaticResource CollboratorChipTemplate}">
+          <ItemsControl ItemTemplate="{StaticResource CollboratorChipTemplate}" ItemsSource="{Binding Collaborators}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <WrapPanel />
@@ -133,24 +113,17 @@
         ToolTip="Send all currently selected objects">
         <Grid>
           <Grid.ColumnDefinitions>
-            <ColumnDefinition
-              Width="Auto" />
-            <ColumnDefinition
-              Width="*" />
-            <ColumnDefinition
-              Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
-          <md:PackIcon
-            Grid.Column="0"
-            Kind="CubeOutline" />
+          <md:PackIcon Grid.Column="0" Kind="CubeOutline" />
           <TextBlock
             Grid.Column="1"
             Margin="12,0"
             HorizontalAlignment="Center"
             Text="Current Selection" />
-          <TextBlock
-            Grid.Column="2"
-            Text="{Binding SelectionCount, StringFormat='({0} objects)'}" />
+          <TextBlock Grid.Column="2" Text="{Binding SelectionCount, StringFormat='({0} objects)'}" />
         </Grid>
       </Button>
 
@@ -161,24 +134,17 @@
         ToolTip="Send all objects in the active view">
         <Grid>
           <Grid.ColumnDefinitions>
-            <ColumnDefinition
-              Width="Auto" />
-            <ColumnDefinition
-              Width="*" />
-            <ColumnDefinition
-              Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
-          <md:PackIcon
-            Grid.Column="0"
-            Kind="CubeOutline" />
+          <md:PackIcon Grid.Column="0" Kind="CubeOutline" />
           <TextBlock
             Grid.Column="1"
             Margin="12,0"
             HorizontalAlignment="Center"
             Text="{Binding ActiveViewName, StringFormat='View: {0}'}" />
-          <TextBlock
-            Grid.Column="2"
-            Text="{Binding ActiveViewObjects.Count, StringFormat='({0} objects)'}" />
+          <TextBlock Grid.Column="2" Text="{Binding ActiveViewObjects.Count, StringFormat='({0} objects)'}" />
         </Grid>
       </Button>
 
@@ -189,8 +155,8 @@
         <TabControl
           Margin="0,12"
           ItemContainerStyle="{StaticResource MaterialDesignTabItem}"
-          ItemsSource="{Binding Filters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-          SelectedItem="{Binding SelectedFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+          ItemsSource="{Binding FilterTabs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+          SelectedItem="{Binding SelectedFilterTab, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
           Style="{StaticResource MaterialDesignTabControl}">
           <TabControl.ItemTemplate>
             <DataTemplate>
@@ -199,41 +165,24 @@
                   Width="18"
                   Height="18"
                   HorizontalAlignment="Center"
-                  Kind="{Binding Icon}" />
-                <TextBlock
-                  FontSize="12"
-                  Text="{Binding Name}" />
+                  Kind="{Binding Filter.Icon}" />
+                <TextBlock FontSize="12" Text="{Binding Filter.Name}" />
               </StackPanel>
             </DataTemplate>
           </TabControl.ItemTemplate>
           <TabControl.ContentTemplate>
             <DataTemplate>
-              <StackPanel
-                Margin="24,16">
-                <TextBlock
-                  Text="{Binding Name}" />
-                <TextBlock
-                  Text="{Binding Selection.Count, StringFormat='Selected: {0}', UpdateSourceTrigger=PropertyChanged}" />
-                <Button
-                  Width="150"
-                  Margin="8"
-                  Command="{s:Action GetSelectedObjects}"
-                  Content="ADD SELECTION"
-                  Style="{StaticResource MaterialDesignFlatButton}" />
-              </StackPanel>
+              <ContentControl Margin="16" Content="{Binding FilterView}" />
             </DataTemplate>
           </TabControl.ContentTemplate>
         </TabControl>
       </Expander>
 
 
-      <Grid
-        Margin="0,12">
+      <Grid Margin="0,12">
         <Grid.ColumnDefinitions>
-          <ColumnDefinition
-            Width="*" />
-          <ColumnDefinition
-            Width="*" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Button
           x:Name="BackButton"

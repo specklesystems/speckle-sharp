@@ -15,7 +15,7 @@ using Stylet;
 namespace Speckle.DesktopUI.Streams
 {
   public class StreamCreateDialogViewModel : Conductor<IScreen>.Collection.OneActive,
-    IHandle<RetrievedFilteredObjectsEvent>, IHandle<UpdateSelectionCountEvent>, IHandle<ApplicationEvent>
+    IHandle<RetrievedFilteredObjectsEvent>, IHandle<UpdateSelectionEvent>, IHandle<ApplicationEvent>
   {
     private IEventAggregator _events;
     private ConnectorBindings _bindings;
@@ -30,7 +30,7 @@ namespace Speckle.DesktopUI.Streams
       DisplayName = "Create Stream";
       _events = events;
       _bindings = bindings;
-      _filters = new BindableCollection<ISelectionFilter>(_bindings.GetSelectionFilters());
+      _filterTabs = new BindableCollection<FilterTab>(_bindings.GetSelectionFilters().Select(f => new FilterTab(f)));
       _streamsRepo = streamsRepo;
       _acctRepo = acctsRepo;
 
@@ -112,24 +112,62 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _accountToSendFrom, value);
     }
 
-    private BindableCollection<ISelectionFilter> _filters;
+    private BindableCollection<FilterTab> _filterTabs;
 
-    public BindableCollection<ISelectionFilter> Filters
+    public BindableCollection<FilterTab> FilterTabs
     {
-      get => new BindableCollection<ISelectionFilter>(_filters);
-      set => SetAndNotify(ref _filters, value);
+      get => _filterTabs;
+      set => SetAndNotify(ref _filterTabs, value);
     }
 
-    private ISelectionFilter _selectedFilter;
+    private FilterTab _selectedFilterTab;
 
-    public ISelectionFilter SelectedFilter
+    public FilterTab SelectedFilterTab
     {
-      get => _selectedFilter;
+      get => _selectedFilterTab;
+      set { SetAndNotify(ref _selectedFilterTab, value); }
+    }
+
+    private string _catFilter;
+
+    public string CatFilter
+    {
+      get => _catFilter;
       set
       {
-        SetAndNotify(ref _selectedFilter, value);
-        NotifyOfPropertyChange(nameof(CanGetSelectedObjects));
+        SetAndNotify(ref _catFilter, value);
+        if ( CatFilters.Contains(CatFilter) ) return;
+        CatFilters.Add(CatFilter);
       }
+    }
+
+    private BindableCollection<string> _catFilters = new BindableCollection<string>();
+
+    public BindableCollection<string> CatFilters
+    {
+      get => _catFilters;
+      set => SetAndNotify(ref _catFilters, value);
+    }
+
+    private string _viewFilter;
+
+    public string ViewFilter
+    {
+      get => _viewFilter;
+      set
+      {
+        SetAndNotify(ref _viewFilter, value);
+        if ( ViewFilters.Contains(ViewFilter) ) return;
+        ViewFilters.Add(ViewFilter);
+      }
+    }
+
+    private BindableCollection<string> _viewFilters = new BindableCollection<string>();
+
+    public BindableCollection<string> ViewFilters
+    {
+      get => _viewFilters;
+      set => SetAndNotify(ref _viewFilters, value);
     }
 
     public ObservableCollection<Account> Accounts
@@ -294,9 +332,19 @@ namespace Speckle.DesktopUI.Streams
           });
         }
 
-        // TODO do this locally first before creating on the server
+        var filter = SelectedFilterTab.Filter;
+        switch ( filter.Name )
+        {
+          case "View":
+            filter.Selection = ViewFilters.ToList();
+            break;
+          case "Category":
+            filter.Selection = CatFilters.ToList();
+            break;
+        }
+
         StreamToCreate = await _streamsRepo.GetStream(streamId, AccountToSendFrom);
-        StreamState = new StreamState(client, StreamToCreate) { Filter = SelectedFilter };
+        StreamState = new StreamState(client, StreamToCreate) {Filter = filter};
         _bindings.AddNewStream(StreamState);
 
         SelectedSlide = 3;
@@ -326,7 +374,7 @@ namespace Speckle.DesktopUI.Streams
       var client = new Client(AccountToSendFrom);
       StreamToCreate = await client.StreamGet(SelectedStream.id);
 
-      StreamState = new StreamState(client, StreamToCreate) { ServerUpdates = true };
+      StreamState = new StreamState(client, StreamToCreate) {ServerUpdates = true};
       _bindings.AddNewStream(StreamState);
       SelectedSlide = 3;
       _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
@@ -355,8 +403,8 @@ namespace Speckle.DesktopUI.Streams
     public void AddSimpleStream()
     {
       CreateButtonLoading = true;
-      SelectedFilter = Filters.First(filter => filter.Type == typeof(ElementsSelectionFilter).ToString());
-      GetSelectedObjects();
+      SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
+      SelectedFilterTab.Filter.Selection = _bindings.GetSelectedObjects();
       AccountToSendFrom = _acctRepo.GetDefault();
       StreamToCreate.name = StreamQuery;
       SelectedStream = null;
@@ -366,8 +414,8 @@ namespace Speckle.DesktopUI.Streams
 
     public void AddStreamFromView()
     {
-      SelectedFilter = Filters.First(filter => filter.Type == typeof(ElementsSelectionFilter).ToString());
-      SelectedFilter.Selection = ActiveViewObjects;
+      SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
+      SelectedFilterTab.Filter.Selection = ActiveViewObjects;
 
       AddNewStream();
     }
@@ -394,29 +442,14 @@ namespace Speckle.DesktopUI.Streams
       Collaborators.Remove(user);
     }
 
-    public bool CanGetSelectedObjects
+    public void RemoveCatFilter(string name)
     {
-      get => SelectedFilter != null;
+      CatFilters.Remove(name);
     }
 
-    public void GetSelectedObjects()
+    public void RemoveViewFilter(string name)
     {
-      if ( SelectedFilter == null )
-      {
-        Notifications.Enqueue("pls click one of the filter types!");
-        return;
-      }
-
-      if ( SelectedFilter.Type == typeof(ElementsSelectionFilter).ToString() )
-      {
-        var selectedObjs = _bindings.GetSelectedObjects();
-        SelectedFilter.Selection = selectedObjs;
-        NotifyOfPropertyChange(nameof(SelectedFilter.Selection.Count));
-      }
-      else
-      {
-        Notifications.Enqueue("soz this only works for selection!");
-      }
+      ViewFilters.Remove(name);
     }
 
     public void Handle(RetrievedFilteredObjectsEvent message)
@@ -424,9 +457,12 @@ namespace Speckle.DesktopUI.Streams
       StreamState.Placeholders = message.Objects.ToList();
     }
 
-    public void Handle(UpdateSelectionCountEvent message)
+    public void Handle(UpdateSelectionEvent message)
     {
-      SelectionCount = message.SelectionCount;
+      var selectionFilter = FilterTabs.First(tab => tab.Filter.Name == "Selection");
+      selectionFilter.Filter.Selection = message.ObjectIds;
+
+      SelectionCount = message.ObjectIds.Count;
     }
 
     public void Handle(ApplicationEvent message)

@@ -12,9 +12,7 @@
   mc:Ignorable="d">
 
   <Grid>
-    <StackPanel
-      Margin="24,0,24,36"
-      Orientation="Vertical">
+    <StackPanel Margin="24,0,24,36" Orientation="Vertical">
       <TextBlock
         Margin="0,0,0,12"
         FontSize="20"
@@ -30,30 +28,29 @@
         Margin="0,16"
         md:HintAssist.Hint="Name your stream (or search for an existing one)"
         md:HintAssist.HintOpacity=".26"
+        DisplayMemberPath="name"
         IsEditable="True"
         IsEnabled="True"
+        ItemsSource="{Binding StreamSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
         SelectedItem="{Binding SelectedStream, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         StaysOpenOnEdit="True"
-        DisplayMemberPath="name"
-        ItemsSource="{Binding StreamSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-        Text="{Binding StreamQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-        Style="{StaticResource MaterialDesignFilledComboBox}">
+        Text="{Binding StreamQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
         <!-- <ComboBox.ItemTemplate> -->
         <!--   <DataTemplate> -->
-        <!--     <StackPanel -->
-        <!--       Orientation="Horizontal"> -->
-        <!--       <TextBlock -->
-        <!--         Text="{Binding name}" -->
-        <!--         FontWeight="Medium" /> -->
-        <!--       <TextBlock -->
-        <!--         Text="{Binding id}" /> -->
+        <!--  <StackPanel  -->
+        <!--  Orientation="Horizontal">  -->
+        <!--  <TextBlock  -->
+        <!--  Text="{Binding name}"  -->
+        <!--  FontWeight="Medium" />  -->
+        <!--  <TextBlock  -->
+        <!--  Text="{Binding id}" />  -->
         <!--     </StackPanel> -->
         <!--   </DataTemplate> -->
         <!-- </ComboBox.ItemTemplate> -->
         <!-- <ComboBox.ItemsSource> -->
         <!--   <CompositeCollection> -->
-        <!--     <CollectionContainer -->
-        <!--       Collection="{Binding StreamSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"> -->
+        <!--  <CollectionContainer  -->
+        <!--  Collection="{Binding StreamSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">  -->
         <!--     </CollectionContainer> -->
         <!--   </CompositeCollection> -->
         <!-- </ComboBox.ItemsSource> -->
@@ -70,22 +67,19 @@
         TextAlignment="Left"
         TextWrapping="Wrap" />
 
-      <Grid
-        Margin="0,8">
+      <Grid Margin="0,8">
         <Grid.ColumnDefinitions>
-          <ColumnDefinition
-            Width="Auto" />
-          <ColumnDefinition
-            Width="*" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Button
           x:Name="SimpleStreamButton"
           Grid.Column="0"
           Margin="8"
-          Command="{s:Action AddSimpleStream}"
           md:ButtonProgressAssist.IsIndeterminate="True"
           md:ButtonProgressAssist.IsIndicatorVisible="{Binding CreateButtonLoading, Mode=OneWay}"
           md:ButtonProgressAssist.Value="-1"
+          Command="{s:Action AddSimpleStream}"
           Content="{md:PackIcon Kind=ShareAll,
                                 Size=20}"
           Foreground="{StaticResource MaterialDesignLightBackground}"
@@ -98,13 +92,10 @@
           TextWrapping="Wrap" />
       </Grid>
 
-      <Grid
-        Margin="0,8">
+      <Grid Margin="0,8">
         <Grid.ColumnDefinitions>
-          <ColumnDefinition
-            Width="Auto" />
-          <ColumnDefinition
-            Width="*" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Button
           x:Name="AdvancedStreamButton"
@@ -124,24 +115,21 @@
           TextWrapping="Wrap" />
       </Grid>
 
-      <Grid
-        Margin="0,8">
+      <Grid Margin="0,8">
         <Grid.ColumnDefinitions>
-          <ColumnDefinition
-            Width="Auto" />
-          <ColumnDefinition
-            Width="*" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Button
           x:Name="ExistingStreamButton"
           Grid.Column="0"
           Margin="8"
-          Command="{s:Action AddExistingStream}"
-          Content="{md:PackIcon Kind=PlusBoxOutline,
-                                Size=20}"
           md:ButtonProgressAssist.IsIndeterminate="True"
           md:ButtonProgressAssist.IsIndicatorVisible="{Binding AddExistingButtonLoading, Mode=OneWay}"
           md:ButtonProgressAssist.Value="-1"
+          Command="{s:Action AddExistingStream}"
+          Content="{md:PackIcon Kind=PlusBoxOutline,
+                                Size=20}"
           Foreground="{StaticResource MaterialDesignLightBackground}"
           Style="{StaticResource MaterialDesignFloatingActionMiniButton}" />
         <TextBlock
