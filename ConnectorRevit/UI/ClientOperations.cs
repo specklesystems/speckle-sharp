@@ -29,7 +29,7 @@ namespace Speckle.ConnectorRevit.UI
       // add stream and related data to the class
       LocalStateWrapper.StreamStates.Add(state);
 
-      if (state.Filter != null)
+      if ( state.Filter != null )
         GetSelectionFilterObjects(state.Filter, state.AccountId, state.Stream.id);
     }
 
@@ -50,7 +50,7 @@ namespace Speckle.ConnectorRevit.UI
     /// the Server and the local DB, and creates a commit with the objects.
     /// </summary>
     /// <param name="state">StreamState passed by the UI</param>
-    public override async Task<StreamState> SendStream(StreamState state, ProgressReport progress = null)
+    public override async Task<StreamState> SendStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Revit);
@@ -91,6 +91,7 @@ namespace Speckle.ConnectorRevit.UI
           failedConversions.Add(revitElement);
           continue;
         }
+
         convertedObjects.Add(conversionResult);
       }
 
@@ -108,13 +109,9 @@ namespace Speckle.ConnectorRevit.UI
       var emptyBase = new Base();
       var @base = new Base {[ "@revitItems" ] = convertedObjects};
       var objectId = "";
-      if ( progress != null )
-      {
-        Execute.PostToUIThread(() => progress.Maximum = ( int ) @base.GetTotalChildrenCount());
-        objectId = await Operations.Send(@base, transports, onProgressAction: dict => UpdateProgress(dict, progress));
-      }
-      else objectId = await Operations.Send(@base, transports);
-
+      Execute.PostToUIThread(() => state.Progress.Maximum = ( int ) @base.GetTotalChildrenCount());
+      objectId = await Operations.Send(@base, transports,
+        onProgressAction: dict => UpdateProgress(dict, state.Progress));
 
       var objByType = convertedObjects.GroupBy(o => o.speckle_type);
       var convertedTypes = objByType.Select(
@@ -142,7 +139,7 @@ namespace Speckle.ConnectorRevit.UI
       return state;
     }
 
-    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressReport progress = null)
+    public override async Task<StreamState> ReceiveStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Revit);
@@ -152,13 +149,9 @@ namespace Speckle.ConnectorRevit.UI
       var newStream = await state.Client.StreamGet(state.Stream.id);
       var commit = newStream.branches.items[ 0 ].commits.items[ 0 ];
       Base commitObject;
-      if ( progress != null )
-      {
-        commitObject = await Operations.Receive(commit.referencedObject, transport,
-          onProgressAction: dict => UpdateProgress(dict, progress),
-          onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => progress.Maximum = count));
-      }
-      else commitObject = await Operations.Receive(commit.referencedObject, transport);
+      commitObject = await Operations.Receive(commit.referencedObject, transport,
+        onProgressAction: dict => UpdateProgress(dict, state.Progress),
+        onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count));
 
       var revitItems = ( List<object> ) commitObject[ "@revitItems" ];
 
