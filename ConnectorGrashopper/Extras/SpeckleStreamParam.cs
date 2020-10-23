@@ -64,19 +64,20 @@ namespace ConnectorGrashopper.Extras
             return Value != null? Value.ToString()  : "Empty speckle stream";
         }
 
-        public override bool CastTo<Q>(ref Q target)
+        public override bool CastFrom(object source)
         {
-            if (typeof(Q) != typeof(StreamWrapper)) return base.CastTo(ref target);
-
-            target = (Q)(object)Value;
+            var stream = (source as GH_SpeckleStream)?.Value;
+            if (stream == null) return false;
+            Value = stream;
             return true;
         }
 
-        public override bool CastFrom(object source)
+        public override bool CastTo<Q>(ref Q target)
         {
-            var wrapper = (StreamWrapper) source;
-            if (wrapper == null) return base.CastFrom(source);
-            Value = wrapper;
+            if (!(target is GH_SpeckleStream))
+                return false;
+
+            target = (Q) (object) new GH_SpeckleStream {Value = Value};
             return true;
         }
 

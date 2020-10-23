@@ -89,7 +89,7 @@ namespace ConnectorGrashopper.Streams
       }
       else
       {
-        DA.SetData(0, stream);
+        DA.SetData(0, new GH_SpeckleStream(stream));
         stream = null;
       }
     }
