@@ -227,10 +227,10 @@ namespace Speckle.ConnectorRevit.UI
       throw new NotImplementedException();
     }
 
-    public void UpdateProgress(ConcurrentDictionary<string, int> obj, ProgressReport progress)
+    private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
     {
-      if ( progress != null )
-        Execute.PostToUIThread(() => progress.Value = obj.Values.Last());
+      if ( progress == null ) return;
+      Execute.PostToUIThread(() => progress.Value = dict.Values.Last());
     }
 
     /// <summary>

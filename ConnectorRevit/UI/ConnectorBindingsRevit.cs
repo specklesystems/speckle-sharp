@@ -66,10 +66,10 @@ namespace Speckle.ConnectorRevit.UI
 
     private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
     {
-      var selectedObjectsCount = CurrentDoc?.Selection.GetElementIds().Count ?? 0;
+      var selectedObjects = GetSelectedObjects();
 
-      var updateEvent = new UpdateSelectionCountEvent() {SelectionCount = selectedObjectsCount};
-      NotifyUi(updateEvent);
+      NotifyUi(new UpdateSelectionCountEvent() {SelectionCount = selectedObjects.Count});
+      NotifyUi(new UpdateSelectionEvent() {ObjectIds = selectedObjects});
     }
 
     public override void AddObjectsToClient(string args)
@@ -136,37 +136,16 @@ namespace Speckle.ConnectorRevit.UI
 
       return new List<ISelectionFilter>
       {
-        new ElementsSelectionFilter
-        {
-          Name = "Selection",
-          Icon = "Mouse",
-          Selection = new List<string>()
-        },
-        new ListSelectionFilter
-        {
-          Name = "Category",
-          Icon = "Category",
-          Values = categories
-        },
-        new ListSelectionFilter
-        {
-          Name = "View",
-          Icon = "RemoveRedEye",
-          Values = views
-        },
+        new ElementsSelectionFilter {Name = "Selection", Icon = "Mouse", Selection = new List<string>()},
+        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = categories},
+        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = views},
         new PropertySelectionFilter
         {
           Name = "Parameter",
           Icon = "FilterList",
           HasCustomProperty = false,
           Values = parameters,
-          Operators = new List<string>
-          {
-            "equals",
-            "contains",
-            "is greater than",
-            "is less than"
-          }
+          Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
         }
       };
     }
@@ -192,8 +171,7 @@ namespace Speckle.ConnectorRevit.UI
 
         var appEvent = new ApplicationEvent()
         {
-          Type = ApplicationEvent.EventType.ViewActivated,
-          DynamicInfo = streamStates
+          Type = ApplicationEvent.EventType.ViewActivated, DynamicInfo = streamStates
         };
         NotifyUi(appEvent);
       }
@@ -202,10 +180,7 @@ namespace Speckle.ConnectorRevit.UI
     private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
     {
       // DispatchStoreActionUi("flushClients");
-      var appEvent = new ApplicationEvent()
-      {
-        Type = ApplicationEvent.EventType.DocumentClosed
-      };
+      var appEvent = new ApplicationEvent() {Type = ApplicationEvent.EventType.DocumentClosed};
       NotifyUi(appEvent);
     }
 
@@ -222,8 +197,7 @@ namespace Speckle.ConnectorRevit.UI
 
       var appEvent = new ApplicationEvent()
       {
-        Type = ApplicationEvent.EventType.DocumentOpened,
-        DynamicInfo = streamStates
+        Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = streamStates
       };
       NotifyUi(appEvent);
 
@@ -240,7 +214,6 @@ namespace Speckle.ConnectorRevit.UI
       // };
       // NotifyUi(appEvent);
     }
-
 
     #endregion
 
