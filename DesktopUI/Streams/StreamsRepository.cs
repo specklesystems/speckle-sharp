@@ -148,6 +148,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async Task<StreamState> ConvertAndSend(StreamState state, ProgressReport progress = null)
     {
+      state.IsSending = true;
       if ( !state.Placeholders.Any() )
       {
         _bindings.RaiseNotification("Nothing to send to Speckle.");
@@ -157,13 +158,15 @@ namespace Speckle.DesktopUI.Streams
       try
       {
         state = await _bindings.SendStream(state, progress);
-        if ( progress != null ) Execute.OnUIThreadAsync(() => progress.ResetProgress());
+        if ( progress != null ) Execute.OnUIThread(() => progress.ResetProgress());
       }
       catch ( Exception e )
       {
         _bindings.RaiseNotification($"Error: {e.Message}");
+        state.IsSending = false;
         return null;
       }
+      state.IsSending = false;
 
       return state;
     }
@@ -182,7 +185,6 @@ namespace Speckle.DesktopUI.Streams
       {
         state = await _bindings.ReceiveStream(state, progress);
         state.ServerUpdates = false;
-        if ( progress != null ) Execute.OnUIThreadAsync(() => progress.ResetProgress());
       }
       catch ( Exception e )
       {
@@ -190,6 +192,7 @@ namespace Speckle.DesktopUI.Streams
         return null;
       }
 
+      if ( progress != null ) Execute.OnUIThread(() => progress.ResetProgress());
       return state;
     }
 

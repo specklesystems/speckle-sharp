@@ -66,16 +66,11 @@ namespace Speckle.DesktopUI.Streams
 
     public async void ConvertAndSendObjects()
     {
-      StreamState.IsSending = true;
-
       var res = await Task.Run(() => _repo.ConvertAndSend(StreamState, Progress));
-      if ( res != null )
-      {
-        StreamState = res;
-        _events.Publish(new StreamUpdatedEvent() {StreamId = Stream.id});
-      }
+      if ( res == null ) return;
 
-      StreamState.IsSending = false;
+      StreamState = res;
+      _events.Publish(new StreamUpdatedEvent() {StreamId = Stream.id});
     }
 
     public async void ConvertAndReceiveObjects()
@@ -83,9 +78,8 @@ namespace Speckle.DesktopUI.Streams
       StreamState.IsReceiving = true;
 
       var res = await Task.Run(() => _repo.ConvertAndReceive(StreamState, Progress));
-      if ( res == null ) return;
+      if ( res != null ) StreamState = res;
 
-      StreamState = res;
       StreamState.IsReceiving = false;
     }
 
@@ -154,7 +148,6 @@ namespace Speckle.DesktopUI.Streams
     {
       if ( message.StreamId != StreamState.Stream.id ) return;
       StreamState.Stream = await StreamState.Client.StreamGet(StreamState.Stream.id);
-      Stream = StreamState.Stream;
     }
   }
 }
