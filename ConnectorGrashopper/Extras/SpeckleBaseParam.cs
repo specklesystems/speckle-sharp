@@ -8,7 +8,7 @@ namespace ConnectorGrashopper.Extras
     {
         public override Guid ComponentGuid => new Guid("55F13720-45C1-4B43-892A-25AE4D95EFF2");
         protected override Bitmap Icon => Properties.Resources.speckle_logo;
-        public override GH_Exposure Exposure => GH_Exposure.primary;
+        public override GH_Exposure Exposure => GH_Exposure.hidden;
         
         public SpeckleBaseParam(string name, string nickname, string description, GH_ParamAccess access): 
             this(name,nickname,description,"Speckle 2", "Params",access){}
