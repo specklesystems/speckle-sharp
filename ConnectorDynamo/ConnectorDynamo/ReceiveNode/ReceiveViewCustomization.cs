@@ -35,9 +35,15 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
       //bindings
       ui.DataContext = model;
-      //ui.Loaded += model.AddedToDocument;
+      
+      ui.Loaded += Loaded;
       ui.ReceiveStreamButton.Click += ReceiveStreamButtonClick;
       ui.CancelReceiveStreamButton.Click += CancelReceiveStreamButtonClick;
+    }
+    
+    private void Loaded(object o, RoutedEventArgs a)
+    {
+      Task.Run(() => { receiveNode.InitializeReceiver(); });
     }
 
     private void CancelReceiveStreamButtonClick(object sender, RoutedEventArgs e)

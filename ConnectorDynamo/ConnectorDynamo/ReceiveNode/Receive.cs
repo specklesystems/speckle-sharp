@@ -341,8 +341,15 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
       Client?.Dispose();
 
-      var account = Stream.GetAccount();
+      InitializeReceiver();
+    }
 
+    internal void InitializeReceiver()
+    {
+      if (Stream == null)
+        return;
+      
+      var account = Stream.GetAccount();
       Client = new Client(account);
 
       Client.SubscribeCommitCreated(Stream.StreamId);
@@ -353,7 +360,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       Client.OnCommitDeleted += OnCommitChange;
       Client.OnCommitUpdated += OnCommitChange;
 
-      Task.Run(() => CheckIfBehind());
+      CheckIfBehind();
     }
 
     private T GetInputAs<T>(EngineController engine, int port)
@@ -371,7 +378,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     }
 
 
-    private void CheckIfBehind()
+    internal void CheckIfBehind()
     {
       if (Stream == null)
         return;

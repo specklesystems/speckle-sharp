@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using Speckle.Core.Models;
 using Account = Speckle.Core.Credentials.Account;
@@ -31,8 +32,6 @@ namespace Speckle.ConnectorDynamo.AccountsNode
   [IsDesignScriptCompatible]
   public class Accounts : NodeModel
   {
-
-
     public string SelectedAccountId = "";
     private ObservableCollection<Core.Credentials.Account> _accounts = new ObservableCollection<Account>();
 
@@ -49,7 +48,7 @@ namespace Speckle.ConnectorDynamo.AccountsNode
         RaisePropertyChanged("AccountList");
       }
     }
-    
+
     private Account _selectedAccount;
 
     /// <summary>
@@ -99,20 +98,20 @@ namespace Speckle.ConnectorDynamo.AccountsNode
       OutPorts.Add(new PortModel(PortType.Output, this, new PortData("account", "Selected account")));
     }
 
-    internal void RestoreSelection(object o, RoutedEventArgs a)
+    internal void RestoreSelection()
     {
       AccountList = new ObservableCollection<Account>(AccountManager.GetAccounts());
-      
-      if (!string.IsNullOrEmpty(SelectedAccountId))
-      {
-        SelectedAccount = AccountList.FirstOrDefault(x => x.id == SelectedAccountId);
-      }
-      else
-      {
-        SelectedAccount = AccountList.FirstOrDefault(x => x.isDefault);
-      }
 
+        if (!string.IsNullOrEmpty(SelectedAccountId))
+        {
+          SelectedAccount = AccountList.FirstOrDefault(x => x.id == SelectedAccountId);
+        }
+        else
+        {
+          SelectedAccount = AccountList.FirstOrDefault(x => x.isDefault);
+        }
     }
+
     internal void SelectionChanged(Account account)
     {
       SelectedAccountId = account.id;

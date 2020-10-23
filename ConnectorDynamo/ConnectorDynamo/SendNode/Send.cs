@@ -43,6 +43,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     private int _objectCount = 0;
     private bool _hasOutput = false;
     private string _outputInfo = "";
+    private bool _firstRun = true;
     private CancellationTokenSource _cancellationToken;
 
     #region ui bindings
@@ -354,11 +355,19 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
     {
+     
       if (e.PropertyName != "CachedValue")
         return;
 
       if ((!InPorts[0].IsConnected || !InPorts[1].IsConnected))
         return;
+
+      //prevent running when opening a saved file
+      if (_firstRun)
+      {
+        _firstRun = false;
+        return;
+      }
 
       //the node was expired manually just to output the commit info, no need to do anything!
       if (_hasOutput)

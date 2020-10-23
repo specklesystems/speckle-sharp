@@ -32,8 +32,8 @@
       Content="{md:PackIcon Kind=CloudDownload,
                             Size=20}"
       IsEnabled="{Binding ReceiveEnabled}"
-      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-      ToolTip="Send objects to Speckle"
+      Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
+      ToolTip="Receive objects from Speckle"
       Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}, ConverterParameter='opposite'}" />
     <Button
       x:Name="CancelReceiveStreamButton"
@@ -45,7 +45,7 @@
       md:ButtonProgressAssist.Value="{Binding Progress}"
       Content="{md:PackIcon Kind=Stop,
                             Size=20}"
-      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+      Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
       ToolTip="Cancel"
       Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}}" />
     <md:Badged
@@ -58,7 +58,7 @@
       Margin="0,5"
       HorizontalAlignment="Center"
       IsChecked="{Binding AutoUpdate}"
-      Style="{StaticResource MaterialDesignSwitchToggleButton}"
+      Style="{StaticResource MaterialDesignSwitchDarkToggleButton}"
       ToolTip="Toggle auto receiving" />
     <Label
       Grid.Row="2"
