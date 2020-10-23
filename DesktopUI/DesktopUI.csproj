@@ -94,6 +94,18 @@
     <Compile Include="RootViewModel.cs" />
     <Compile Include="Settings\SettingsViewModel.cs" />
     <Compile Include="Streams\AllStreamsViewModel.cs" />
+    <Compile Include="Streams\Dialogs\FilterViews\CategoryFilterView.xaml.cs">
+      <DependentUpon>CategoryFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Streams\Dialogs\FilterViews\ParameterFilterView.xaml.cs">
+      <DependentUpon>ParameterFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Streams\Dialogs\FilterViews\SelectionFilterView.xaml.cs">
+      <DependentUpon>SelectionFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Streams\Dialogs\FilterViews\ViewFilterView.xaml.cs">
+      <DependentUpon>ViewFilterView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Streams\Dialogs\StreamUpdate01View.xaml.cs">
       <DependentUpon>StreamUpdate01View.xaml</DependentUpon>
     </Compile>
@@ -153,6 +165,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Streams\Dialogs\FilterViews\CategoryFilterView.xaml" />
+    <Page Include="Streams\Dialogs\FilterViews\ParameterFilterView.xaml" />
+    <Page Include="Streams\Dialogs\FilterViews\SelectionFilterView.xaml" />
+    <Page Include="Streams\Dialogs\FilterViews\ViewFilterView.xaml" />
     <Page Include="Streams\Dialogs\StreamUpdate01View.xaml" />
     <Page Include="Streams\Dialogs\StreamUpdateStartView.xaml">
       <SubType>Designer</SubType>
