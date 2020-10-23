@@ -129,7 +129,13 @@ namespace ConnectorGrashopper.Objects
       foreach (var path in speckleObjects.Paths)
       {
         // Loop through all dynamic properties
-        var obj = ((GH_SpeckleBase)speckleObjects.get_DataItem(path, 0)).Value;
+        var baseGoo = speckleObjects.get_DataItem(path, 0) as GH_SpeckleBase;
+        if (baseGoo == null)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Can only convert Speckle.Base objects for now, ignoring input.");
+          continue;
+        }
+        var obj = baseGoo.Value;
         foreach (var prop in obj.GetDynamicMembers())
         {
           // Convert and add to corresponding output structure
