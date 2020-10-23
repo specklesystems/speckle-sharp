@@ -93,7 +93,7 @@ namespace Speckle.DesktopUI
     /// </summary>
     /// <param name="state"></param>
     /// <param name="progress"></param>
-    public abstract Task<StreamState> SendStream(StreamState state, ProgressReport progress = null);
+    public abstract Task<StreamState> SendStream(StreamState state);
 
     /// <summary>
     /// Receives stream data from the server
@@ -101,7 +101,7 @@ namespace Speckle.DesktopUI
     /// <param name="state"></param>
     /// <param name="progress"></param>
     /// <returns></returns>
-    public abstract Task<StreamState> ReceiveStream(StreamState state, ProgressReport progress = null);
+    public abstract Task<StreamState> ReceiveStream(StreamState state);
 
     /// <summary>
     /// Adds the current selection to the provided client.

@@ -55,26 +55,26 @@ namespace Speckle.DesktopUI.Streams
       {
         new Collaborator
         {
-          id = "123",
-          name = "Matteo Cominetti",
-          role = "stream:contributor",
-          avatar = "https://avatars0.githubusercontent.com/u/2679513?s=88&v=4"
+        id = "123",
+        name = "Matteo Cominetti",
+        role = "stream:contributor",
+        avatar = "https://avatars0.githubusercontent.com/u/2679513?s=88&v=4"
         },
         new Collaborator
         {
-          id = "321",
-          name = "Izzy Lyseggen",
-          role = "stream:owner",
-          avatar =
-            "https://avatars2.githubusercontent.com/u/7717434?s=88&u=08db51f5799f6b21580485d915054b3582d519e6&v=4"
+        id = "321",
+        name = "Izzy Lyseggen",
+        role = "stream:owner",
+        avatar =
+        "https://avatars2.githubusercontent.com/u/7717434?s=88&u=08db51f5799f6b21580485d915054b3582d519e6&v=4"
         },
         new Collaborator
         {
-          id = "456",
-          name = "Dimitrie Stefanescu",
-          role = "stream:contributor",
-          avatar =
-            "https://avatars3.githubusercontent.com/u/7696515?s=88&u=fa253b5228d512e1ce79357c63925b7258e69f4c&v=4"
+        id = "456",
+        name = "Dimitrie Stefanescu",
+        role = "stream:contributor",
+        avatar =
+        "https://avatars3.githubusercontent.com/u/7696515?s=88&u=fa253b5228d512e1ce79357c63925b7258e69f4c&v=4"
         }
       };
       var branches = new Branches()
@@ -82,32 +82,32 @@ namespace Speckle.DesktopUI.Streams
         totalCount = 2,
         items = new List<Branch>()
         {
-          new Branch()
-          {
-            id = "123",
-            name = "main",
-            commits = new Commits()
-            {
-              items = new List<Commit>()
-              {
-                new Commit()
-                {
-                  authorName = "izzy 2.0",
-                  id = "commit123",
-                  message = "a totally real commit 💫",
-                  createdAt = "sometime"
-                },
-                new Commit()
-                {
-                  authorName = "izzy bot",
-                  id = "commit321",
-                  message = "look @ all these changes 👩‍🎤",
-                  createdAt = "03/05/2030"
-                }
-              }
-            }
-          },
-          new Branch() {id = "321", name = "dev"}
+        new Branch()
+        {
+        id = "123",
+        name = "main",
+        commits = new Commits()
+        {
+        items = new List<Commit>()
+        {
+        new Commit()
+        {
+        authorName = "izzy 2.0",
+        id = "commit123",
+        message = "a totally real commit 💫",
+        createdAt = "sometime"
+        },
+        new Commit()
+        {
+        authorName = "izzy bot",
+        id = "commit321",
+        message = "look @ all these changes 👩‍🎤",
+        createdAt = "03/05/2030"
+        }
+        }
+        }
+        },
+        new Branch() { id = "321", name = "dev" }
         }
       };
 
@@ -115,62 +115,63 @@ namespace Speckle.DesktopUI.Streams
       {
         new Stream
         {
-          id = "stream123",
-          name = "Random Stream here 👋",
-          description = "this is a test stream",
-          isPublic = true,
-          collaborators = collabs.GetRange(0, 2),
-          branches = branches
+        id = "stream123",
+        name = "Random Stream here 👋",
+        description = "this is a test stream",
+        isPublic = true,
+        collaborators = collabs.GetRange(0, 2),
+        branches = branches
         },
         new Stream
         {
-          id = "stream789",
-          name = "Woop Cool Stream 🌊",
-          description = "cool and good indeed",
-          isPublic = true,
-          collaborators = collabs.GetRange(1, 2),
-          branches = branches
+        id = "stream789",
+        name = "Woop Cool Stream 🌊",
+        description = "cool and good indeed",
+        isPublic = true,
+        collaborators = collabs.GetRange(1, 2),
+        branches = branches
         }
       };
 
       #endregion
 
       var client = new Client(AccountManager.GetDefaultAccount());
-      foreach ( var stream in testStreams )
+      foreach (var stream in testStreams)
       {
         collection.Add(new StreamState(client, stream));
       }
 
-      collection[ 0 ].Placeholders.Add(new Core.Models.Base() {id = "random_obj"});
+      collection[0].Placeholders.Add(new Core.Models.Base() { id = "random_obj" });
 
       return collection;
     }
 
-    public async Task<StreamState> ConvertAndSend(StreamState state, ProgressReport progress = null)
+    public async Task<StreamState> ConvertAndSend(StreamState state)
     {
       state.IsSending = true;
 
       try
       {
-        state = await _bindings.SendStream(state, progress);
-        if ( progress != null ) Execute.OnUIThread(() => progress.ResetProgress());
+        state = await _bindings.SendStream(state);
+        Execute.OnUIThread(() => state.Progress.ResetProgress());
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         _bindings.RaiseNotification($"Error: {e.Message}");
         state.IsSending = false;
         return null;
       }
+
       state.IsSending = false;
 
       return state;
     }
 
-    public async Task<StreamState> ConvertAndReceive(StreamState state, ProgressReport progress = null)
+    public async Task<StreamState> ConvertAndReceive(StreamState state)
     {
       var latestCommitId = state.LatestCommit().id;
       state.Stream = await state.Client.StreamGet(state.Stream.id);
-      if ( !state.ServerUpdates && latestCommitId == state.LatestCommit().id )
+      if (!state.ServerUpdates && latestCommitId == state.LatestCommit().id)
       {
         _bindings.RaiseNotification($"Stream {state.Stream.id} is up to date");
         return state;
@@ -178,16 +179,16 @@ namespace Speckle.DesktopUI.Streams
 
       try
       {
-        state = await _bindings.ReceiveStream(state, progress);
+        state = await _bindings.ReceiveStream(state);
         state.ServerUpdates = false;
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         _bindings.RaiseNotification($"Error: {e.Message}");
         return null;
       }
 
-      if ( progress != null ) Execute.OnUIThread(() => progress.ResetProgress());
+      Execute.OnUIThread(() => state.Progress.ResetProgress());
       return state;
     }
 
@@ -196,10 +197,10 @@ namespace Speckle.DesktopUI.Streams
       try
       {
         var deleted = await state.Client.StreamDelete(state.Stream.id);
-        if ( !deleted ) return false;
+        if (!deleted)return false;
         _bindings.RemoveStream(state.Stream.id);
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         _bindings.RaiseNotification($"Error: {e}");
         return false;

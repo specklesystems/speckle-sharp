@@ -88,7 +88,7 @@ namespace Speckle.DesktopUI.Utils
       };
     }
 
-    public override async Task<StreamState> SendStream(StreamState state, ProgressReport progress = null)
+    public override async Task<StreamState> SendStream(StreamState state)
     {
       var objects = state.Placeholders;
       state.Placeholders.Clear();
@@ -97,7 +97,7 @@ namespace Speckle.DesktopUI.Utils
       return state;
     }
 
-    public async override Task<StreamState> ReceiveStream(StreamState state, ProgressReport progress = null)
+    public override async Task<StreamState> ReceiveStream(StreamState state)
     {
       state.ServerUpdates = false;
       return state;

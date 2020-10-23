@@ -191,9 +191,10 @@
                     Grid.Column="0"
                     Width="150"
                     Height="36"
-                    Command="{s:Action ConvertAndSendObjects}"
-                    md:ButtonProgressAssist.IsIndeterminate="True"
-                    md:ButtonProgressAssist.Value="-1"
+                    Command="{s:Action Send}"
+                    md:ButtonProgressAssist.IsIndeterminate="False"
+                    md:ButtonProgressAssist.Maximum="{Binding StreamState.Progress.Maximum, Mode=OneWay}"
+                    md:ButtonProgressAssist.Value="{Binding StreamState.Progress.Value, Mode=OneWay}"
                     md:ButtonProgressAssist.IsIndicatorVisible="{Binding StreamState.IsSending}"
                     ToolTip="Send your changes to the Speckle server">
               <Grid>
@@ -217,9 +218,10 @@
                     Grid.Column="1"
                     Width="150"
                     Height="36"
-                    Command="{s:Action ConvertAndReceiveObjects}"
-                    md:ButtonProgressAssist.IsIndeterminate="True"
-                    md:ButtonProgressAssist.Value="-1"
+                    Command="{s:Action Receive}"
+                    md:ButtonProgressAssist.IsIndeterminate="False"
+                    md:ButtonProgressAssist.Maximum="{Binding StreamState.Progress.Maximum, Mode=OneWay}"
+                    md:ButtonProgressAssist.Value="{Binding StreamState.Progress.Value, Mode=OneWay}"
                     md:ButtonProgressAssist.IsIndicatorVisible="{Binding StreamState.IsReceiving}"
                     Style="{StaticResource MaterialDesignRaisedDarkButton}"
                     ToolTip="Receive your changes from the server">

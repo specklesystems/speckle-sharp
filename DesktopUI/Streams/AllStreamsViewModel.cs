@@ -79,20 +79,20 @@ namespace Speckle.DesktopUI.Streams
       parent.ActivateItem(item);
     }
 
-    public async void ConvertAndSendObjects(StreamState state)
+    public async void Send(StreamState state)
     {
-      var res = await Task.Run(() => _repo.ConvertAndSend(state, Progress));
+      var res = await Task.Run(() => _repo.ConvertAndSend(state));
       if ( res == null ) return;
       var index = StreamList.IndexOf(state);
       StreamList[ index ] = res;
       StreamList.Refresh();
     }
 
-    public async void ConvertAndReceiveObjects(StreamState state)
+    public async void Receive(StreamState state)
     {
       state.IsReceiving = true;
 
-      var res = await Task.Run(() => _repo.ConvertAndReceive(state, Progress));
+      var res = await Task.Run(() => _repo.ConvertAndReceive(state));
       if ( res != null )
       {
         state = res;
