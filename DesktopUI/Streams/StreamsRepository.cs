@@ -149,11 +149,6 @@ namespace Speckle.DesktopUI.Streams
     public async Task<StreamState> ConvertAndSend(StreamState state, ProgressReport progress = null)
     {
       state.IsSending = true;
-      if ( !state.Placeholders.Any() )
-      {
-        _bindings.RaiseNotification("Nothing to send to Speckle.");
-        return null;
-      }
 
       try
       {
