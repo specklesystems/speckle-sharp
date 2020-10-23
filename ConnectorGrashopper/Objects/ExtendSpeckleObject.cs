@@ -50,13 +50,8 @@ namespace ConnectorGrashopper.Objects
             if (!DA.GetDataTree(2, out GH_Structure<IGH_Goo> valueTree)) return;
             
             // TODO: Handle data validation
-            Base b = new Base();
-            var tmp = ghBase.Value;
-            b.id = tmp.id;
-            b.applicationId = tmp.applicationId;
-            tmp.GetDynamicMembers().ToList().ForEach(prop => b[prop] = tmp[prop]);
-            
-            CleanDeletedKeys(tmp,keys);
+            var b = ghBase.Value.ShallowCopy();
+            CleanDeletedKeys(b,keys);
             // Search for the path coinciding with the current iteration.
             var path = new GH_Path(DA.Iteration);
             if (valueTree.PathExists(path))
