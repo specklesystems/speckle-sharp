@@ -126,7 +126,7 @@ namespace ConnectorGrashopper.Ops
     {
       // We need to call this always in here to be able to react and set events :/
       ParseInput(DA);
-
+      
       if ((AutoReceive || CurrentComponentState == "primed_to_receive" || CurrentComponentState == "receiving") && !JustPastedIn)
       {
         CurrentComponentState = "receiving";
@@ -180,7 +180,12 @@ namespace ConnectorGrashopper.Ops
     {
       DA.GetDataTree(0, out GH_Structure<IGH_Goo> DataInput);
 
-      var input = DataInput.get_DataItem(0).GetType().GetProperty("Value")?.GetValue(DataInput.get_DataItem(0));
+      var ghGoo = DataInput.get_DataItem(0);
+      if (ghGoo == null)
+      {
+        return;
+      }
+      var input = ghGoo.GetType().GetProperty("Value")?.GetValue(ghGoo);
 
       var inputType = "Stream";
       StreamWrapper newWrapper = null;
