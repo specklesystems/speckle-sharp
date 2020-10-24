@@ -2,6 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -13,6 +15,13 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
 {
+  /// <summary>
+  /// Sends data to a speckle server. 
+  /// TODOs:
+  /// - gzip
+  /// - preflight deltas on sending data
+  /// - preflight deltas on receving/copying data to an existing transport? 
+  /// </summary>
   public class ServerTransport : IDisposable, ITransport
   {
     public string TransportName { get; set; } = "RemoteTransport";
@@ -33,11 +42,13 @@ namespace Speckle.Core.Transports
 
     private bool IS_WRITING = false;
 
-    private int MAX_BUFFER_SIZE = 500_000;
+    private int MAX_BUFFER_SIZE = 100_000;
 
-    private int MAX_MULTIPART_COUNT = 10;
+    private int MAX_MULTIPART_COUNT = 500;
 
     public int SavedObjectCount { get; private set; } = 0;
+
+    public int TotalSentBytes { get; set; } = 0;
 
     public Action<string, int> OnProgressAction { get; set; }
 
@@ -85,7 +96,7 @@ namespace Speckle.Core.Transports
       {
         throw new Exception("Transport is still writing.");
       }
-
+      TotalSentBytes = 0;
       SavedObjectCount = 0;
     }
 
@@ -124,7 +135,6 @@ namespace Speckle.Core.Transports
       }
     }
 
-    // TODO: Gzip
     private async Task ConsumeQueue()
     {
       if (CancellationToken.IsCancellationRequested)
@@ -180,10 +190,12 @@ namespace Speckle.Core.Transports
 
           _ct += result.Item2;
           payloadBufferSize += result.Item3;
+          TotalSentBytes += result.Item3;
           i++;
         }
         _ct += "]";
-        multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{i}", $"batch-{i}");
+        
+        multipart.Add(new GzipContent(new StringContent(_ct, Encoding.UTF8)), $"batch-{i}", $"batch-{i}");
         addedMpCount++;
         SavedObjectCount += i;
       }
@@ -210,6 +222,8 @@ namespace Speckle.Core.Transports
         Queue = new ConcurrentQueue<(string, string, int)>();
         return;
       }
+
+      //message.Headers.
 
       IS_WRITING = false;
 
@@ -360,6 +374,53 @@ namespace Speckle.Core.Transports
     internal class Placeholder
     {
       public Dictionary<string, int> __closure { get; set; } = new Dictionary<string, int>();
+    }
+  }
+
+  /// <summary>
+  /// https://cymbeline.ch/2014/03/16/gzip-encoding-an-http-post-request-body/
+  /// </summary>
+  internal sealed class GzipContent : HttpContent
+  {
+    private readonly HttpContent content;
+
+    public GzipContent(HttpContent content)
+    {
+      if (content == null)
+      {
+        return;
+      }
+
+      this.content = content;
+
+      // Keep the original content's headers ...
+      if (content != null)
+        foreach (KeyValuePair<string, IEnumerable<string>> header in content.Headers)
+        {
+          Headers.TryAddWithoutValidation(header.Key, header.Value);
+        }
+
+      // ... and let the server know we've Gzip-compressed the body of this request.
+      Headers.ContentEncoding.Add("gzip");
+    }
+
+    protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
+    {
+      // Open a GZipStream that writes to the specified output stream.
+      using (GZipStream gzip = new GZipStream(stream, CompressionMode.Compress, true))
+      {
+        // Copy all the input content to the GZip stream.
+        if (content != null)
+          await content.CopyToAsync(gzip);
+        else
+          await (new System.Net.Http.StringContent(string.Empty)).CopyToAsync(gzip);
+      }
+    }
+
+    protected override bool TryComputeLength(out long length)
+    {
+      length = -1;
+      return false;
     }
   }
 }
