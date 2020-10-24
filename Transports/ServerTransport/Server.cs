@@ -38,13 +38,15 @@ namespace Speckle.Core.Transports
 
     private System.Timers.Timer WriteTimer;
 
-    private int TotalElapsed = 0, PollInterval = 50;
+    private int TotalElapsed = 0, PollInterval = 100;
 
     private bool IS_WRITING = false;
 
     private int MAX_BUFFER_SIZE = 100_000;
 
     private int MAX_MULTIPART_COUNT = 500;
+
+    public bool CompressPayloads { get; set; } = true;
 
     public int SavedObjectCount { get; private set; } = 0;
 
@@ -194,8 +196,18 @@ namespace Speckle.Core.Transports
           i++;
         }
         _ct += "]";
-        
-        multipart.Add(new GzipContent(new StringContent(_ct, Encoding.UTF8)), $"batch-{i}", $"batch-{i}");
+
+        if (CompressPayloads)
+        {
+          var content = new GzipContent(new StringContent(_ct, Encoding.UTF8));
+          content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/gzip");
+          multipart.Add(content, $"batch-{i}", $"batch-{i}");
+        }
+        else
+        {
+          multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{i}", $"batch-{i}");
+        }
+
         addedMpCount++;
         SavedObjectCount += i;
       }
