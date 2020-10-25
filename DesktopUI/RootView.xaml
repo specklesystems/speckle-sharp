@@ -56,7 +56,6 @@
             DockPanel.Dock="Top"
             ItemsSource="{Binding Items}"
             PreviewMouseLeftButtonUp="UIElement_OnPreviewMouseLeftButtonUp"
-            SelectedIndex="{Binding SelectedIndex}"
             SelectedItem="{Binding ActiveItem}">
             <ListBox.Resources>
               <Style BasedOn="{StaticResource MaterialDesignScrollBarMinimal}" TargetType="ScrollBar" />
