@@ -133,8 +133,7 @@ namespace ConnectorGrashopper
           @base[key] = result;
       }
 
-      DA.SetDataList(0, res);
-      DA.SetData(1, new GH_SpeckleBase() { Value = @base });
+      DA.SetData(0, new GH_SpeckleBase() { Value = @base });
     }
 
     public bool CanInsertParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;
