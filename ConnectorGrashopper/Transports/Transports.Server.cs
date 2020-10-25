@@ -20,7 +20,7 @@ namespace ConnectorGrashopper.Transports
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("stream", "S", "The stream you want to send data to.", GH_ParamAccess.item);
+      pManager.AddParameter(new SpeckleStreamParam("Stream", "S", "The stream you want to send data to.", GH_ParamAccess.item));
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -36,13 +36,16 @@ namespace ConnectorGrashopper.Transports
         return;
       }
 
+      GH_SpeckleStream speckleStream = null;
       StreamWrapper streamWrapper = null;
-      DA.GetData(0, ref streamWrapper);
+      DA.GetData(0, ref speckleStream);
 
-      if (streamWrapper == null)
+      if (speckleStream == null)
       {
         return;
       }
+
+      streamWrapper = speckleStream.Value;
 
       string accountId = streamWrapper.AccountId;
       Account account = null;
