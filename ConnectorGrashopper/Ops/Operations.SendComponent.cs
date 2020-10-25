@@ -151,6 +151,8 @@ namespace ConnectorGrashopper.Ops
       }
       else if (!JustPastedIn)
       {
+        DA.SetDataList(0, OutputWrappers);
+        DA.SetData(1, BaseId);
         CurrentComponentState = "expired";
         Message = "Expired";
         OnDisplayExpired(true);

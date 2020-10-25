@@ -126,7 +126,7 @@ namespace ConnectorGrashopper.Ops
     {
       // We need to call this always in here to be able to react and set events :/
       ParseInput(DA);
-
+      
       if ((AutoReceive || CurrentComponentState == "primed_to_receive" || CurrentComponentState == "receiving") && !JustPastedIn)
       {
         CurrentComponentState = "receiving";
@@ -178,24 +178,28 @@ namespace ConnectorGrashopper.Ops
 
     public void ParseInput(IGH_DataAccess DA)
     {
-      GH_Structure<IGH_Goo> DataInput;
-      DA.GetDataTree(0, out DataInput);
+      DA.GetDataTree(0, out GH_Structure<IGH_Goo> DataInput);
 
-      var input = DataInput.get_DataItem(0).GetType().GetProperty("Value").GetValue(DataInput.get_DataItem(0));
+      var ghGoo = DataInput.get_DataItem(0);
+      if (ghGoo == null)
+      {
+        return;
+      }
+      var input = ghGoo.GetType().GetProperty("Value")?.GetValue(ghGoo);
 
-      string inputType = "Stream";
+      var inputType = "Stream";
       StreamWrapper newWrapper = null;
 
       if (input is StreamWrapper)
       {
         newWrapper = input as StreamWrapper;
       }
-      else if (input is string)
+      else if (input is string s)
       {
-        newWrapper = new StreamWrapper(input as string);
+        newWrapper = new StreamWrapper(s);
       }
 
-      if (newWrapper.CommitId != null)
+      if (newWrapper?.CommitId != null)
       {
         inputType = "Commit";
       }
@@ -415,11 +419,11 @@ namespace ConnectorGrashopper.Ops
 
       if (dataList != null)
       {
-        DA.SetDataList(0, dataList);
+        DA.SetDataList(0, dataList.Select(item => new GH_SpeckleBase{Value = item as Base}));
       }
       else if (dataDictionary != null && dataDictionary.Values.First() is List<object>)
       {
-        var tree = new GH_Structure<IGH_Goo>();
+        var tree = new GH_Structure<GH_SpeckleBase>();
         var borkage = false;
         foreach (var kvp in dataDictionary)
         {
@@ -428,7 +432,7 @@ namespace ConnectorGrashopper.Ops
             var pathObjects = kvp.Value as List<object>;
             var pathPieces = kvp.Key.Trim(new char[] { '{', '}' }).Split(';').Select(x => Int32.Parse(x)).ToArray();
             var path = new GH_Path(pathPieces);
-            tree.AppendRange(pathObjects.Select(o => new GH_SpeckleGoo { Value = o }), path);
+            tree.AppendRange(pathObjects.Select(o => new GH_SpeckleBase { Value = o as Base }), path);
           }
           else
           {
@@ -443,7 +447,7 @@ namespace ConnectorGrashopper.Ops
       }
 
       // Last attempt: just set the object out as receieved, and the user can unpack it via the other components.
-      DA.SetData(0, ReceivedObject);
+      DA.SetData(0, new GH_SpeckleBase(){Value = ReceivedObject});
     }
   }
 

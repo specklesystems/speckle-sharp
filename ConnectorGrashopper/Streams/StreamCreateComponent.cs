@@ -26,8 +26,8 @@ namespace ConnectorGrashopper.Streams
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      var account = pManager.AddTextParameter("Account", "A", "Account to be used when creating the stream. If no account is provided, the default will be used.", GH_ParamAccess.item);
-      Params.Input[account].Optional = true;
+      var account = pManager.AddTextParameter("Account", "A", "Account to be used when creating the stream.", GH_ParamAccess.item);
+      //Params.Input[account].Optional = true;
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -74,7 +74,7 @@ namespace ConnectorGrashopper.Streams
 
       if (accountId == null)
       {
-        account = AccountManager.GetDefaultAccount();
+        //account = AccountManager.GetDefaultAccount();
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using default account {account}");
       }
       else

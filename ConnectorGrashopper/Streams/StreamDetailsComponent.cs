@@ -46,12 +46,12 @@ namespace ConnectorGrashopper.Streams
         return;
       }
 
-      StreamWrapper streamInput = null;
-
-      if (!DA.GetData(0, ref streamInput)) return;
-
       if (stream == null)
       {
+        GH_SpeckleStream ghStream = null;
+        if (!DA.GetData(0, ref ghStream)) return;
+        var streamInput = ghStream.Value;
+        
         Task.Run(async () =>
         {
           Account account = streamInput.AccountId == null

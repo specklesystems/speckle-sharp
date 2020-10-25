@@ -71,8 +71,8 @@ namespace ConnectorGrashopper
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("Debug", "d", "debug output, please ignore", GH_ParamAccess.list);
-      pManager.AddGenericParameter("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item);
+      //pManager.AddGenericParameter("Debug", "d", "debug output, please ignore", GH_ParamAccess.list);
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item));
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)

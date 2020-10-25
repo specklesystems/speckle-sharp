@@ -28,7 +28,22 @@ namespace ConnectorGrashopper.Extras
 
   public class GH_SpeckleBase : GH_Goo<Base>
   {
-    public override bool IsValid => true;
+    public GH_SpeckleBase()
+    {
+      Value = null;
+    }
+
+    public GH_SpeckleBase(Base internal_data) : base(internal_data)
+    {
+      Value = internal_data;
+    }
+
+    public GH_SpeckleBase(GH_Goo<Base> other) : base(other)
+    {
+      Value = other.Value;
+    }
+
+    public override bool IsValid => Value != null;
 
     public override string TypeName => "Speckle" + (Value != null && Value.speckle_type == "" ? " Base" : " " + Value?.speckle_type);
 
@@ -41,18 +56,25 @@ namespace ConnectorGrashopper.Extras
 
     public override bool CastFrom(object source)
     {
-      return false;
+      var @base = (source as GH_SpeckleBase)?.Value;
+      if (@base == null)
+        return false;
+      Value = @base;
+      return true;
     }
 
     public override bool CastTo<Q>(ref Q target)
     {
-      var x = typeof(Q);
-      return base.CastTo(ref target);
+      if (!(target is GH_SpeckleBase))
+        return false;
+
+      target = (Q) (object) new GH_SpeckleBase {Value = Value};
+      return true;
     }
 
     public override IGH_Goo Duplicate()
     {
-      throw new NotImplementedException();
+      return new GH_SpeckleBase {Value = Value.ShallowCopy()};
     }
 
     public override string ToString()

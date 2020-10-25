@@ -39,19 +39,21 @@ namespace ConnectorGrashopper.Streams
     }
 
     private Stream stream;
+    Exception error = null;
+
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      StreamWrapper streamWrapper = null;
+      GH_SpeckleStream ghSpeckleStream = null;
       string name = null;
       string description = null;
       bool isPublic = false;
 
-      if (!DA.GetData(0, ref streamWrapper)) return;
+      if (!DA.GetData(0, ref ghSpeckleStream)) return;
       DA.GetData(1, ref name);
       DA.GetData(2, ref description);
       DA.GetData(3, ref isPublic);
-
-
+      
+      var streamWrapper = ghSpeckleStream.Value;
       if (stream == null)
       {
         if (streamWrapper == null)
@@ -66,29 +68,32 @@ namespace ConnectorGrashopper.Streams
                       ? AccountManager.GetDefaultAccount()
                       : AccountManager.GetAccounts().FirstOrDefault(a => a.id == streamWrapper.AccountId);
 
+          
           var client = new Client(account);
           var input = new StreamUpdateInput();
+          
           stream = await client.StreamGet(streamWrapper.StreamId);
           input.id = streamWrapper.StreamId;
-          if (name != null && stream.name != name) input.name = name;
-          if (description != null && stream.description != description) input.description = description;
+          
+          if (name != null) input.name = name;
+          else input.name = stream.name;
+          
+          if (description != null) input.description = description;
+          else input.description = stream.description;
+          
           if (stream.isPublic != isPublic) input.isPublic = isPublic;
 
           try
           {
-            var result = await client.StreamUpdate(input);
-            Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
-                   {
-                  ExpireSolution(true);
-                });
-
+            await client.StreamUpdate(input);
           }
           catch (Exception e)
           {
-            Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
-                   {
-                  AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
-                });
+            error = e;
+          }
+          finally
+          {
+            Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { ExpireSolution(true); });
           }
 
         });
@@ -96,8 +101,15 @@ namespace ConnectorGrashopper.Streams
       else
       {
         stream = null;
+        if (error != null)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error,error.Message);
+          error = null;
+          return;
+        }
         DA.SetData(0, streamWrapper.StreamId);
       }
     }
+    
   }
 }
