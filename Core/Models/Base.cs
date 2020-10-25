@@ -136,11 +136,23 @@ namespace Speckle.Core.Models
     /// <returns>A shallow copy of the original object.</returns>
     public Base ShallowCopy()
     {
-      var @base = new Base {id = id, applicationId = applicationId};
+      var myDuplicate = (Base) Activator.CreateInstance(GetType());
+      myDuplicate.id = id;
+      myDuplicate.applicationId = applicationId;
 
-      GetDynamicMembers().ToList().ForEach(prop => @base[prop] = this[prop]);
+      foreach(var prop in GetDynamicMemberNames())
+      {
+        try
+        {
+          myDuplicate[prop] = this[prop];
+        }
+        catch
+        {
+          // avoids unsettable props
+        }
+      }
 
-      return @base;
+      return myDuplicate;
     }
     
     /// <summary>
