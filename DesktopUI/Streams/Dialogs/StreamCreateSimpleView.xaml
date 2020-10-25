@@ -12,60 +12,43 @@
   mc:Ignorable="d">
   <UserControl.Resources>
 
-    <DataTemplate
-      x:Key="FilterSelectionTemplate">
-      <TabItem
-        Background="Transparent"
-        Style="{StaticResource MaterialDesignNavigationRailTabItem}">
+    <DataTemplate x:Key="FilterSelectionTemplate">
+      <TabItem Background="Transparent" Style="{StaticResource MaterialDesignNavigationRailTabItem}">
         <TabItem.Header>
-          <md:PackIcon
-            Kind="{Binding Icon}" />
+          <md:PackIcon Kind="{Binding Icon}" />
         </TabItem.Header>
         <TabItem.Content>
-          <TextBlock
-            Text="{Binding Selection.Count, StringFormat='Selected: {0}', Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+          <TextBlock Text="{Binding Selection.Count, StringFormat='Selected: {0}', Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         </TabItem.Content>
       </TabItem>
     </DataTemplate>
 
-    <DataTemplate
-      x:Key="FilterItemTemplate">
-      <TabItem
-        Style="{StaticResource MaterialDesignNavigationRailTabItem}">
+    <DataTemplate x:Key="FilterItemTemplate">
+      <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
         <TabItem.Header>
-          <md:PackIcon
-            Kind="{Binding Icon}" />
+          <md:PackIcon Kind="{Binding Icon}" />
         </TabItem.Header>
       </TabItem>
     </DataTemplate>
 
-    <DataTemplate
-      x:Key="FilterContentTemplate">
-      <TextBlock
-        Text="{Binding Selection.Count, StringFormat='Selected: {0}'}" />
+    <DataTemplate x:Key="FilterContentTemplate">
+      <TextBlock Text="{Binding Selection.Count, StringFormat='Selected: {0}'}" />
     </DataTemplate>
   </UserControl.Resources>
 
   <Grid>
-    <StackPanel
-      Margin="24,0,24,24"
-      Orientation="Vertical">
+    <StackPanel Margin="24,0,24,24" Orientation="Vertical">
       <TextBlock
         Margin="0,0,0,12"
         FontSize="20"
         Style="{StaticResource MaterialDesignHeadline4TextBlock}"
         Text="{Binding StreamToCreate.name}" />
-      <TextBlock
-        Text="Send the currently selected objects to Speckle using default settings."
-        TextWrapping="Wrap" />
+      <TextBlock Text="Send the currently selected objects to Speckle using default settings." TextWrapping="Wrap" />
 
-      <Grid
-        Margin="0,16">
+      <Grid Margin="0,16">
         <Grid.ColumnDefinitions>
-          <ColumnDefinition
-            Width="*" />
-          <ColumnDefinition
-            Width="*" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Button
           x:Name="BackButton"
