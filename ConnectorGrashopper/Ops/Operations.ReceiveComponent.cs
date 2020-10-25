@@ -27,7 +27,7 @@ namespace ConnectorGrashopper.Ops
     public override Guid ComponentGuid => new Guid("{3D07C1AC-2D05-42DF-A297-F861CCEEFBC7}");
 
     protected override Bitmap Icon => Properties.Resources.Receiver;
-    
+
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public bool AutoReceive { get; set; } = false;
@@ -126,7 +126,7 @@ namespace ConnectorGrashopper.Ops
     {
       // We need to call this always in here to be able to react and set events :/
       ParseInput(DA);
-      
+
       if ((AutoReceive || CurrentComponentState == "primed_to_receive" || CurrentComponentState == "receiving") && !JustPastedIn)
       {
         CurrentComponentState = "receiving";
@@ -407,7 +407,7 @@ namespace ConnectorGrashopper.Ops
 
       DA.SetData(1, ((ReceiveComponent)Parent).LastInfoMessage);
 
-      if(ReceivedObject == null)
+      if (ReceivedObject == null)
       {
         return;
       }
@@ -419,7 +419,8 @@ namespace ConnectorGrashopper.Ops
 
       if (dataList != null)
       {
-        DA.SetDataList(0, dataList.Select(item => new GH_SpeckleBase{Value = item as Base}));
+        DA.SetDataList(0, dataList.Select(item => new GH_SpeckleBase { Value = item as Base }));
+        return;
       }
       else if (dataDictionary != null && dataDictionary.Values.First() is List<object>)
       {
@@ -447,7 +448,7 @@ namespace ConnectorGrashopper.Ops
       }
 
       // Last attempt: just set the object out as receieved, and the user can unpack it via the other components.
-      DA.SetData(0, new GH_SpeckleBase(){Value = ReceivedObject});
+      DA.SetData(0, new GH_SpeckleBase() { Value = ReceivedObject });
     }
   }
 

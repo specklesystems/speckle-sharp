@@ -141,14 +141,32 @@ namespace ConnectorGrashopper.Objects
           var value = obj[prop];
           
           if (!outputDict.ContainsKey(prop)) continue;
+          var t = value.GetType();
           switch (value)
           {
             case null:
               continue;
-            case List<object> list:
-              outputDict[prop].AppendRange(list.Select(
-                  item => new GH_ObjectWrapper(Utilities.TryConvertItemToNative(item, Converter))),
-                path);
+            case System.Collections.IList list:
+              foreach(var x in list)
+              {
+                var wrapper = new GH_ObjectWrapper();
+                wrapper.Value = Utilities.TryConvertItemToNative(x, Converter);
+                outputDict[prop].Append(wrapper);
+              }
+              break;
+            // TODO: Not clear how we handle "tree" inner props. They can only be set by sender components,
+            // so perhaps this is not an issue. Below a simple stopgap so we can actually see what data is
+            // inside a sender-created object.
+            case Dictionary<string, List<Base>> dict:
+              foreach(var kvp in dict)
+              {
+                var wrapper = new GH_ObjectWrapper();
+                foreach(var b in kvp.Value)
+                {
+                  wrapper.Value = Utilities.TryConvertItemToNative(b, Converter);
+                }
+                outputDict[prop].Append(wrapper);
+              }
               break;
             default:
               outputDict[prop].Append(
