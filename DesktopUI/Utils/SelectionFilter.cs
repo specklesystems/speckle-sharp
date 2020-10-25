@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Stylet;
 
 namespace Speckle.DesktopUI.Utils
@@ -63,7 +60,7 @@ namespace Speckle.DesktopUI.Utils
     public bool HasCustomProperty { get; set; }
   }
 
-  public class FilterTab
+  public class FilterTab : PropertyChangedBase
   {
     public string Name
     {
@@ -78,6 +75,26 @@ namespace Speckle.DesktopUI.Utils
     {
       Filter = filter;
       LocateFilterView();
+    }
+
+    private string _listItem;
+
+    public string ListItem
+    {
+      get => _listItem;
+      set
+      {
+        SetAndNotify(ref _listItem, value);
+        if ( ListItems.Contains(ListItem) ) return;
+        ListItems.Add(ListItem);
+      }
+    }
+
+    public BindableCollection<string> ListItems { get; } = new BindableCollection<string>();
+
+    public void RemoveListItem(string name)
+    {
+      ListItems.Remove(name);
     }
 
     private void LocateFilterView()

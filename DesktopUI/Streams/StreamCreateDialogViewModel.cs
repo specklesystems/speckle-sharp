@@ -17,8 +17,8 @@ namespace Speckle.DesktopUI.Streams
   public class StreamCreateDialogViewModel : Conductor<IScreen>.Collection.OneActive,
     IHandle<RetrievedFilteredObjectsEvent>, IHandle<UpdateSelectionEvent>, IHandle<ApplicationEvent>
   {
-    private IEventAggregator _events;
-    private ConnectorBindings _bindings;
+    private readonly IEventAggregator _events;
+    private readonly ConnectorBindings _bindings;
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
 
     public StreamCreateDialogViewModel(
@@ -126,48 +126,6 @@ namespace Speckle.DesktopUI.Streams
     {
       get => _selectedFilterTab;
       set { SetAndNotify(ref _selectedFilterTab, value); }
-    }
-
-    private string _catFilter;
-
-    public string CatFilter
-    {
-      get => _catFilter;
-      set
-      {
-        SetAndNotify(ref _catFilter, value);
-        if ( CatFilters.Contains(CatFilter) ) return;
-        CatFilters.Add(CatFilter);
-      }
-    }
-
-    private BindableCollection<string> _catFilters = new BindableCollection<string>();
-
-    public BindableCollection<string> CatFilters
-    {
-      get => _catFilters;
-      set => SetAndNotify(ref _catFilters, value);
-    }
-
-    private string _viewFilter;
-
-    public string ViewFilter
-    {
-      get => _viewFilter;
-      set
-      {
-        SetAndNotify(ref _viewFilter, value);
-        if ( ViewFilters.Contains(ViewFilter) ) return;
-        ViewFilters.Add(ViewFilter);
-      }
-    }
-
-    private BindableCollection<string> _viewFilters = new BindableCollection<string>();
-
-    public BindableCollection<string> ViewFilters
-    {
-      get => _viewFilters;
-      set => SetAndNotify(ref _viewFilters, value);
     }
 
     public ObservableCollection<Account> Accounts
@@ -335,15 +293,8 @@ namespace Speckle.DesktopUI.Streams
         }
 
         var filter = SelectedFilterTab.Filter;
-        switch ( filter.Name )
-        {
-          case "View":
-            filter.Selection = ViewFilters.ToList();
-            break;
-          case "Category":
-            filter.Selection = CatFilters.ToList();
-            break;
-        }
+        if ( filter.Name == "View" || filter.Name == "Category" )
+          filter.Selection = SelectedFilterTab.ListItems.ToList();
 
         StreamToCreate = await _streamsRepo.GetStream(streamId, AccountToSendFrom);
         StreamState = new StreamState(client, StreamToCreate) {Filter = filter};
@@ -447,12 +398,14 @@ namespace Speckle.DesktopUI.Streams
 
     public void RemoveCatFilter(string name)
     {
-      CatFilters.Remove(name);
+      var catFilter = FilterTabs.First(tab => tab.Filter.Name == "Category");
+      catFilter.RemoveListItem(name);
     }
 
     public void RemoveViewFilter(string name)
     {
-      ViewFilters.Remove(name);
+      var viewFilter = FilterTabs.First(tab => tab.Filter.Name == "View");
+      viewFilter.RemoveListItem(name);
     }
 
     public void Handle(RetrievedFilteredObjectsEvent message)
