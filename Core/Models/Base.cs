@@ -139,16 +139,18 @@ namespace Speckle.Core.Models
       var myDuplicate = (Base) Activator.CreateInstance(GetType());
       myDuplicate.id = id;
       myDuplicate.applicationId = applicationId;
-
+      
       foreach(var prop in GetDynamicMemberNames())
       {
+        var p = GetType().GetProperty(prop);
+        if (!p.CanWrite) continue;
         try
         {
           myDuplicate[prop] = this[prop];
         }
         catch
         {
-          // avoids unsettable props
+          // avoids any last ditch unsettable or strange props.
         }
       }
 
