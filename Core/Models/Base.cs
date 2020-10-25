@@ -99,7 +99,8 @@ namespace Speckle.Core.Models
           {
             count++;
             count += CountDescendants(arrValue as Base, parsed);
-          } else
+          }
+          else
           {
             count += HandleObjectCount(arrValue, parsed);
           }
@@ -136,14 +137,14 @@ namespace Speckle.Core.Models
     /// <returns>A shallow copy of the original object.</returns>
     public Base ShallowCopy()
     {
-      var myDuplicate = (Base) Activator.CreateInstance(GetType());
+      var myDuplicate = (Base)Activator.CreateInstance(GetType());
       myDuplicate.id = id;
       myDuplicate.applicationId = applicationId;
-      
-      foreach(var prop in GetDynamicMemberNames())
+
+      foreach (var prop in GetDynamicMemberNames())
       {
         var p = GetType().GetProperty(prop);
-        if (!p.CanWrite) continue;
+        if (p != null && !p.CanWrite) continue;
         try
         {
           myDuplicate[prop] = this[prop];
@@ -156,7 +157,7 @@ namespace Speckle.Core.Models
 
       return myDuplicate;
     }
-    
+
     /// <summary>
     /// Secondary, ideally host application driven, object identifier.
     /// </summary>
