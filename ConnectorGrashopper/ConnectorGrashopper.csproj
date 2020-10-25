@@ -105,12 +105,12 @@
       <Project>{b4d98d2c-e5da-463e-bf6c-68e9b77c72f3}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\DiskTransport\DiskTransport.csproj">
-      <Project>{8f16a9a1-dc5f-4800-821c-336e6ccf8f9c}</Project>
+    <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj">
+      <Project>{ead6b775-5fa1-42d5-b1d7-1d489509fc2a}</Project>
       <Name>DiskTransport</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\ServerTransport\ServerTransport.csproj">
-      <Project>{8008f635-7ded-473c-88df-12833f599d75}</Project>
+    <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
+      <Project>{1f582616-6e38-41ca-bc2f-1d4f0e3100c3}</Project>
       <Name>ServerTransport</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\GrasshopperAsyncComponent\GrasshopperAsyncComponent\GrasshopperAsyncComponent.csproj">

@@ -48,6 +48,7 @@ namespace ConnectorGrashopper.Objects
     {
       pManager.AddGenericParameter("Speckle Object", "O", "Speckle object to deconstruct into it's properties.", GH_ParamAccess.tree);
     }
+
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       // All output params are dynamically generated!
@@ -71,7 +72,12 @@ namespace ConnectorGrashopper.Objects
       foreach (var path in speckleObjects.Paths)
       {
         var obj = speckleObjects.get_DataItem(path, 0);
-        var b = new Base();// (obj as GH_SpeckleBase).Value;
+        var b = obj.GetType().GetProperty("Value").GetValue(obj) as Base;
+        if (b == null)
+        {
+          throw new Exception("Input property was not a Base object.");
+        }
+
         var props = b.GetDynamicMembers().ToList();
         props.ForEach(prop =>
         {
@@ -103,6 +109,8 @@ namespace ConnectorGrashopper.Objects
       }
       else
       {
+        hasSetData = false;
+
         // Second run: Parameter output should have been updated in `beforeSolveInstance` with latest state.
 
         // Build the output dictionary
@@ -113,7 +121,6 @@ namespace ConnectorGrashopper.Objects
           DA.SetDataTree(Params.IndexOfOutputParam(key), outputDict[key]);
 
         // Reset state
-        hasSetData = false;
         speckleObjects = null;
       }
     }
@@ -132,11 +139,12 @@ namespace ConnectorGrashopper.Objects
         {
           // Convert and add to corresponding output structure
           var value = obj[prop];
+          var ty = value.GetType();
           switch (value)
           {
             case null:
               continue;
-            case List<object> list:
+            case List<Base> list:
               outputDict[prop].AppendRange(list.Select(
                   item => new GH_ObjectWrapper(Utilities.TryConvertItemToNative(item, Converter))),
                 path);

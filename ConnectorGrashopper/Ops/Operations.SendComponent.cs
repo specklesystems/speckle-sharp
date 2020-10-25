@@ -221,6 +221,8 @@ namespace ConnectorGrashopper.Ops
 
     public override WorkerInstance Duplicate() => new SendComponentWorker(Parent);
 
+    private System.Diagnostics.Stopwatch stopwatch;
+
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
       DA.GetDataTree(0, out DataInput);
@@ -229,6 +231,9 @@ namespace ConnectorGrashopper.Ops
       DA.GetDataTree(3, out _MessageInput);
 
       OutputWrappers = new List<StreamWrapper>();
+
+      stopwatch = new System.Diagnostics.Stopwatch();
+      stopwatch.Start();
     }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
@@ -450,6 +455,8 @@ namespace ConnectorGrashopper.Ops
 
     public override void SetData(IGH_DataAccess DA)
     {
+      stopwatch.Stop();
+
       if (CancellationToken.IsCancellationRequested)
       {
         ((SendComponent)Parent).CurrentComponentState = "expired";
@@ -471,7 +478,18 @@ namespace ConnectorGrashopper.Ops
       ((SendComponent)Parent).OutputWrappers = OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
       ((SendComponent)Parent).BaseId = BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
       ((SendComponent)Parent).OverallProgress = 0;
+
+      Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Send duration: {stopwatch.ElapsedMilliseconds/1000f}s");
+      foreach(var t in Transports)
+      {
+        if(t is ServerTransport st)
+        {
+          var mb = st.TotalSentBytes / 1e6;
+          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"{t.TransportName} avg {(mb / (stopwatch.ElapsedMilliseconds / 1000f)):0.00} MB/s");
+        }
+      }
     }
+
   }
 
   public class CommitOutputWrapper
