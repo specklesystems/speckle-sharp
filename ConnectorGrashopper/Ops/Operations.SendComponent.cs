@@ -27,9 +27,9 @@ namespace ConnectorGrashopper.Ops
     public override Guid ComponentGuid => new Guid("{5E6A5A78-9E6F-4893-8DED-7EEAB63738A5}");
 
     protected override Bitmap Icon => Properties.Resources.Sender;
-    
+
     public override GH_Exposure Exposure => GH_Exposure.primary;
-    
+
     public bool AutoSend { get; set; } = false;
 
     public string CurrentComponentState { get; set; } = "needs_input";
@@ -141,6 +141,13 @@ namespace ConnectorGrashopper.Ops
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+      // Set output data in a "first run" event. Note: we are not persisting the actual "sent" object as it can be very big.
+      if (JustPastedIn)
+      {
+        base.SolveInstance(DA);
+        return;
+      }
+
       if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") && !JustPastedIn)
       {
         CurrentComponentState = "sending";
@@ -157,15 +164,6 @@ namespace ConnectorGrashopper.Ops
         Message = "Expired";
         OnDisplayExpired(true);
       }
-
-      // Set output data in a "first run" event. Note: we are not persisting the actual "sent" object as it can be very big.
-      if (JustPastedIn)
-      {
-        DA.SetDataList(0, OutputWrappers);
-        DA.SetData(1, BaseId);
-      }
-
-      JustPastedIn = false;
     }
 
     public override void DisplayProgress(object sender, ElapsedEventArgs e)
@@ -240,6 +238,13 @@ namespace ConnectorGrashopper.Ops
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
+
+      if (((SendComponent)Parent).JustPastedIn)
+      {
+        Done();
+        return;
+      }
+
       if (CancellationToken.IsCancellationRequested)
       {
         ((SendComponent)Parent).CurrentComponentState = "expired";
@@ -316,8 +321,8 @@ namespace ConnectorGrashopper.Ops
       foreach (var data in _TransportsInput)
       {
         var transport = data.GetType().GetProperty("Value").GetValue(data);
-        
-        if(transport is string)
+
+        if (transport is string)
         {
           try
           {
@@ -344,7 +349,7 @@ namespace ConnectorGrashopper.Ops
         t++;
       }
 
-      if(Transports.Count == 0)
+      if (Transports.Count == 0)
       {
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Could not identify any valid transports to send to."));
         Done();
@@ -459,6 +464,14 @@ namespace ConnectorGrashopper.Ops
     {
       stopwatch.Stop();
 
+      if(((SendComponent)Parent).JustPastedIn)
+      {
+        ((SendComponent)Parent).JustPastedIn = false;
+        DA.SetDataList(0, ((SendComponent)Parent).OutputWrappers);
+        DA.SetData(1, ((SendComponent)Parent).BaseId);
+        return;
+      }
+
       if (CancellationToken.IsCancellationRequested)
       {
         ((SendComponent)Parent).CurrentComponentState = "expired";
@@ -481,10 +494,10 @@ namespace ConnectorGrashopper.Ops
       ((SendComponent)Parent).BaseId = BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
       ((SendComponent)Parent).OverallProgress = 0;
 
-      Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Send duration: {stopwatch.ElapsedMilliseconds/1000f}s");
-      foreach(var t in Transports)
+      Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Send duration: {stopwatch.ElapsedMilliseconds / 1000f}s");
+      foreach (var t in Transports)
       {
-        if(t is ServerTransport st)
+        if (t is ServerTransport st)
         {
           var mb = st.TotalSentBytes / 1e6;
           Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"{t.TransportName} avg {(mb / (stopwatch.ElapsedMilliseconds / 1000f)):0.00} MB/s");
