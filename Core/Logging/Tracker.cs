@@ -30,6 +30,7 @@ namespace Speckle.Core.Logging
     public const string SEND_LOCAL = "send-local";
 
     public const string STREAM_CREATE = "stream-create";
+    public const string STREAM_GET = "stream-get";
     public const string STREAM_UPDATE = "stream-update";
     public const string STREAM_DETAILS = "stream-details";
     public const string STREAM_LIST = "stream-list";
