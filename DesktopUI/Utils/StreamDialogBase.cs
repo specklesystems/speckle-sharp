@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,14 +10,47 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Utils
 {
-  public class StreamDialogBase : Conductor<IScreen>.Collection.OneActive
+  public abstract class StreamDialogBase : Conductor<IScreen>.Collection.OneActive
   {
+    protected ConnectorBindings Bindings;
+
+    private int _selectedSlide;
+
+    public int SelectedSlide
+    {
+      get => _selectedSlide;
+      set => SetAndNotify(ref _selectedSlide, value);
+    }
+
     private Account _accountToSendFrom = AccountManager.GetDefaultAccount();
 
     public Account AccountToSendFrom
     {
       get => _accountToSendFrom;
       set => SetAndNotify(ref _accountToSendFrom, value);
+    }
+
+    private int _selectionCount;
+
+    public int SelectionCount
+    {
+      get => _selectionCount;
+      set => SetAndNotify(ref _selectionCount, value);
+    }
+
+    public string ActiveViewName
+    {
+      get => Bindings.GetActiveViewName();
+    }
+
+    public List<string> ActiveViewObjects
+    {
+      get => Bindings.GetObjectsInView();
+    }
+
+    public List<string> CurrentSelection
+    {
+      get => Bindings.GetSelectedObjects();
     }
 
     private BindableCollection<FilterTab> _filterTabs;
@@ -33,6 +67,12 @@ namespace Speckle.DesktopUI.Utils
     {
       get => _selectedFilterTab;
       set { SetAndNotify(ref _selectedFilterTab, value); }
+    }
+
+    public void AddToSelection()
+    {
+      var newIds = Bindings.GetSelectedObjects().Except(SelectedFilterTab.ListItems);
+      SelectedFilterTab.ListItems.AddRange(newIds);
     }
 
     public void ClearSelection()

@@ -17,7 +17,6 @@ namespace Speckle.DesktopUI.Streams
     IHandle<RetrievedFilteredObjectsEvent>, IHandle<UpdateSelectionEvent>, IHandle<ApplicationEvent>
   {
     private readonly IEventAggregator _events;
-    private readonly ConnectorBindings _bindings;
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
 
     public StreamCreateDialogViewModel(
@@ -28,12 +27,12 @@ namespace Speckle.DesktopUI.Streams
     {
       DisplayName = "Create Stream";
       _events = events;
-      _bindings = bindings;
-      FilterTabs = new BindableCollection<FilterTab>(_bindings.GetSelectionFilters().Select(f => new FilterTab(f)));
+      Bindings = bindings;
+      FilterTabs = new BindableCollection<FilterTab>(Bindings.GetSelectionFilters().Select(f => new FilterTab(f)));
       _streamsRepo = streamsRepo;
       _acctRepo = acctsRepo;
 
-      _selectionCount = _bindings.GetSelectedObjects().Count;
+      SelectionCount = Bindings.GetSelectedObjects().Count;
       _events.Subscribe(this);
     }
 
@@ -46,30 +45,7 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _notifications, value);
     }
 
-    public string ActiveViewName
-    {
-      get => _bindings.GetActiveViewName();
-    }
-
-    public List<string> ActiveViewObjects
-    {
-      get => _bindings.GetObjectsInView();
-    }
-
-    public List<string> CurrentSelection
-    {
-      get => _bindings.GetSelectedObjects();
-    }
-
     public List<string> StreamIds;
-
-    private int _selectionCount;
-
-    public int SelectionCount
-    {
-      get => _selectionCount;
-      set => SetAndNotify(ref _selectionCount, value);
-    }
 
     private bool _createButtonLoading;
 
@@ -106,14 +82,6 @@ namespace Speckle.DesktopUI.Streams
     public ObservableCollection<Account> Accounts
     {
       get => _acctRepo.LoadAccounts();
-    }
-
-    private int _selectedSlide = 0;
-
-    public int SelectedSlide
-    {
-      get => _selectedSlide;
-      set => SetAndNotify(ref _selectedSlide, value);
     }
 
     #region Searching Existing Streams
@@ -196,12 +164,6 @@ namespace Speckle.DesktopUI.Streams
       ChangeSlide(slideIndex);
     }
 
-    public void AddToSelection()
-    {
-      var newIds = _bindings.GetSelectedObjects().Except(SelectedFilterTab.ListItems);
-      SelectedFilterTab.ListItems.AddRange(newIds);
-    }
-
     public async void AddNewStream()
     {
       CreateButtonLoading = true;
@@ -230,7 +192,7 @@ namespace Speckle.DesktopUI.Streams
 
         StreamToCreate = await _streamsRepo.GetStream(streamId, AccountToSendFrom);
         StreamState = new StreamState(client, StreamToCreate) {Filter = filter};
-        _bindings.AddNewStream(StreamState);
+        Bindings.AddNewStream(StreamState);
 
         _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
         StreamState = new StreamState();
@@ -261,7 +223,7 @@ namespace Speckle.DesktopUI.Streams
       StreamToCreate = await client.StreamGet(SelectedStream.id);
 
       StreamState = new StreamState(client, StreamToCreate) {ServerUpdates = true};
-      _bindings.AddNewStream(StreamState);
+      Bindings.AddNewStream(StreamState);
       _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
 
       AddExistingButtonLoading = false;
@@ -273,7 +235,7 @@ namespace Speckle.DesktopUI.Streams
       CreateButtonLoading = true;
       SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
       SelectedFilterTab.ListItems.Clear();
-      SelectedFilterTab.Filter.Selection = _bindings.GetSelectedObjects();
+      SelectedFilterTab.Filter.Selection = Bindings.GetSelectedObjects();
       StreamToCreate.name = StreamQuery;
       SelectedStream = null;
 
