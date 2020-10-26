@@ -9,7 +9,7 @@ namespace Speckle.Core.Credentials
     public string ServerUrl { get; set; }
     public string StreamId { get; set; }
     public string CommitId { get; set; }
-    public string BranchId { get; set; } // To be used later! 
+    public string BranchName { get; set; } // To be used later! 
 
     public StreamWrapper() { }
 
@@ -74,7 +74,7 @@ namespace Speckle.Core.Credentials
           else if (uri.Segments[3].ToLowerInvariant() == "branches/")
           {
             StreamId = uri.Segments[2].Replace("/", "");
-            BranchId = uri.Segments[4].Replace("/", "");
+            BranchName = uri.Segments[4].Replace("/", "");
           }
           else
           {
