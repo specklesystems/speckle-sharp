@@ -266,10 +266,29 @@
         </ItemsControl.ItemsPanel>
       </ItemsControl>
 
-      <TextBlock Margin="0,24,0,8"
-                 FontSize="18"
-                 Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                 Text="Objects" />
+      <Grid Margin="0,24,0,8">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0"
+                   VerticalAlignment="Center"
+                   FontSize="18"
+                   Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                   Text="Objects" />
+        <Button Grid.Column="1"
+                VerticalAlignment="Center"
+                Width="32"
+                Height="32"
+                Margin="12,0,0,0"
+                Command="{s:Action ShowStreamUpdateDialog}"
+                CommandParameter="{StaticResource StreamUpdateSlide}"
+                md:RippleAssist.ClipToBounds="True"
+                Content="{md:PackIcon PencilOutline,
+                                  Size=22}"
+                Style="{StaticResource MaterialDesignIconButton}"
+                ToolTip="edit stream objects" />
+      </Grid>
       <TextBlock Margin="0,4"
                  Text="{Binding StreamState.Objects.Count, StringFormat='Converted Objects: {0}'}" />
       <TextBlock Margin="0,4"
@@ -348,25 +367,6 @@
 
       </Grid>
     </StackPanel>
-
-
-    <!--#region Floating Action Button-->
-    <!--  TODO absolute positioning rel to window  -->
-    <!--#endregion-->
-    <Button x:Name="AddObjectsButton"
-            Width="45"
-            Height="45"
-            Margin="32"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            Command="{s:Action ShowStreamUpdateDialog}"
-            CommandParameter="{StaticResource StreamUpdateSlide}"
-            Content="{md:PackIcon Kind=Plus,
-                                    Size=24}"
-            DockPanel.Dock="Bottom"
-            Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
-            ToolTip="Add more objects to this stream"
-            ToolTipService.Placement="Left" />
   </Grid>
 
 </UserControl>

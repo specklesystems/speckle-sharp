@@ -233,7 +233,7 @@
                               Size=24}"
               DockPanel.Dock="Bottom"
               Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
-              ToolTip="Create a new stream"
+              ToolTip="Add a stream"
               ToolTipService.Placement="Left" />
 
     </DockPanel>

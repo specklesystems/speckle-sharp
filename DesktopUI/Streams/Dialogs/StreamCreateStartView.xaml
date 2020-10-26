@@ -19,7 +19,7 @@
                  Text="Add a new stream" />
 
       <TextBlock Margin="0,0,0,8"
-                 Text="Send objects to Speckle by creating a new stream."
+                 Text="Send objects to Speckle by creating a new stream or adding an existing one from the server."
                  TextWrapping="Wrap" />
 
       <ComboBox Margin="0,16"
