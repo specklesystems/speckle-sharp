@@ -412,12 +412,7 @@ namespace Speckle.DesktopUI.Streams
       Collaborators.Remove(user);
     }
 
-    public void RemoveCatFilter(string name)
-    {
-      SelectedFilterTab.RemoveListItem(name);
-    }
-
-    public void RemoveViewFilter(string name)
+    public void RemoveFilterItem(string name)
     {
       SelectedFilterTab.RemoveListItem(name);
     }

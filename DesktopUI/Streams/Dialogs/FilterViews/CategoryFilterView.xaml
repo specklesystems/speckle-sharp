@@ -13,7 +13,7 @@
     <DataTemplate x:Key="CategoryChipTemplate">
       <md:Chip Margin="4"
                Content="{Binding}"
-               DeleteCommand="{s:Action RemoveCatFilter}"
+               DeleteCommand="{s:Action RemoveFilterItem}"
                DeleteCommandParameter="{Binding}"
                IsDeletable="True" />
     </DataTemplate>
