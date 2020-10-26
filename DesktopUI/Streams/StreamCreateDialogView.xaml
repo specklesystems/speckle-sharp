@@ -14,7 +14,6 @@
     <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
         <RowDefinition Height="*" />
       </Grid.RowDefinitions>
       <Button Grid.Row="0"
@@ -30,14 +29,7 @@
               IsCancel="True"
               Style="{StaticResource MaterialDesignIconForegroundButton}"
               ToolTip="Cancel" />
-      <ProgressBar Grid.Row="1"
-                   Margin="0,4"
-                   Background="Transparent"
-                   BorderThickness="0"
-                   Foreground="{DynamicResource PrimaryHueLightBrush}"
-                   IsIndeterminate="False"
-                   Value="0" />
-      <Grid Grid.Row="2"
+      <Grid Grid.Row="1"
             Width="425"
             MaxHeight="500">
         <ScrollViewer VerticalScrollBarVisibility="Auto">

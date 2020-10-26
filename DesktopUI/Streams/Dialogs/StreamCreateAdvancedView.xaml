@@ -178,7 +178,6 @@
         </TabControl>
       </Expander>
 
-
       <Grid Margin="0,12">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />

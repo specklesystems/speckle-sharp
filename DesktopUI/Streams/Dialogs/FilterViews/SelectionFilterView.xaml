@@ -30,6 +30,7 @@
                      Text="Clear selection" />
         </md:Chip>
       </StackPanel>
+
     </StackPanel>
   </Grid>
 </UserControl>
