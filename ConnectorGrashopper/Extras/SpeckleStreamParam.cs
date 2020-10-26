@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
@@ -29,6 +30,7 @@ namespace ConnectorGrashopper.Extras
     {
     }
 
+    protected override Bitmap Icon => Properties.Resources.StreamParam;
     public override GH_Exposure Exposure => GH_Exposure.hidden;
     public override Guid ComponentGuid => new Guid("FB436A31-1CE9-413C-B524-8A574C0F842D");
 
