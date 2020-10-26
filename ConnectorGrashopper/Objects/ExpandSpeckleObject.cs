@@ -70,6 +70,7 @@ namespace ConnectorGrashopper.Objects
       var fullProps = new List<string>();
       foreach (var path in speckleObjects.Paths)
       {
+        if (speckleObjects.get_Branch(path).Count == 0) continue;
         var obj = speckleObjects.get_DataItem(path, 0);
         var b =  (obj as GH_SpeckleBase)?.Value;
         var props = b?.GetDynamicMembers().ToList();
@@ -93,9 +94,14 @@ namespace ConnectorGrashopper.Objects
         // Get the data or abort.
         if (!DA.GetDataTree(0, out speckleObjects)) return;
 
+        if (!speckleObjects.Any())
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"The provided input has no data.");
+          return;
+        }
         // Ensure only one object per path.
         speckleObjects.Graft(GH_GraftMode.GraftAll);
-
+        
         // Update the output list
         outputList = GetOutputList();
 
@@ -128,6 +134,7 @@ namespace ConnectorGrashopper.Objects
       // Assign all values to it's corresponding dictionary entry and branch path.
       foreach (var path in speckleObjects.Paths)
       {
+        if (speckleObjects.get_Branch(path).Count == 0) continue;
         // Loop through all dynamic properties
         var baseGoo = speckleObjects.get_DataItem(path, 0) as GH_SpeckleBase;
         if (baseGoo == null)
