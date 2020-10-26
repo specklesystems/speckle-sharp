@@ -14,12 +14,16 @@ namespace ConnectorGrashopper.Streams
 {
   public class StreamListComponent : GH_Component
   {
-    public StreamListComponent() : base("Stream List", "sList", "Lists all the streams for this account", "Speckle 2", "Streams") { }
+    public StreamListComponent() : base("Stream List", "sList", "Lists all the streams for this account", "Speckle 2",
+      "Streams")
+    {
+    }
+
     public override Guid ComponentGuid => new Guid("BE790AF4-1834-495B-BE68-922B42FD53C7");
     protected override Bitmap Icon => Properties.Resources.StreamList;
-    
+
     public override GH_Exposure Exposure => GH_Exposure.primary;
-    
+
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       var acc = pManager.AddTextParameter("Account", "A", "Account to get streams from", GH_ParamAccess.item);
@@ -32,54 +36,69 @@ namespace ConnectorGrashopper.Streams
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddParameter(new SpeckleStreamParam("Streams", "S", "List of streams for the provided account.",
-          GH_ParamAccess.list));
+        GH_ParamAccess.list));
     }
 
     private List<StreamWrapper> streams;
+    private Exception error;
+
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-
-      if (streams == null)
+      if (error != null)
       {
+        Message = null;
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, error.Message);
+        error = null;
+        streams = null;
+      }
+      else if (streams == null)
+      {
+        Message = "Fetching";
         string accountId = null;
         var limit = 10;
 
+        DA.GetData(1, ref limit); // Has default value so will never be empty.
+
         var account = !DA.GetData(0, ref accountId)
-            ? AccountManager.GetDefaultAccount()
-            : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+          ? AccountManager.GetDefaultAccount()
+          : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
 
         if (accountId == null)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "");
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No account ID was provided");
           return;
         }
+
         Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.id);
-
-        DA.GetData(1, ref limit); // Has default value so will never be empty.
-
-        if (account == null)
-        {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No account was found.");
-          return;
-        }
 
         Task.Run(async () =>
         {
           Tracker.TrackEvent(Tracker.STREAM_LIST);
-          var client = new Client(account);
 
-                  // Save the result
-                  var result = await client.StreamsGet(limit);
-          streams = result.Select(stream => new StreamWrapper(stream.id, account.id, account.serverInfo.url)).ToList();
-          Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
-                  {
-              ExpireSolution(true);
-            });
+          try
+          {
+            var client = new Client(account);
+            // Save the result
+            var result = await client.StreamsGet(limit);
+            streams = result
+              .Select(stream => new StreamWrapper(stream.id, account.id, account.serverInfo.url))
+              .ToList();
+          }
+          catch (Exception e)
+          {
+            error = e;
+          }
+          finally
+          {
+            Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { ExpireSolution(true); });
+          }
         });
       }
       else
       {
-        DA.SetDataList(0, streams.Select(item => new GH_SpeckleStream(item)));
+        Message = "Done";
+        if (streams != null)
+          DA.SetDataList(0, streams.Select(item => new GH_SpeckleStream(item)));
         streams = null;
       }
     }

@@ -43,6 +43,7 @@ namespace ConnectorGrashopper.Streams
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+      DA.DisableGapLogic();
       GH_SpeckleStream ghSpeckleStream = null;
       string name = null;
       string description = null;
@@ -54,14 +55,21 @@ namespace ConnectorGrashopper.Streams
       DA.GetData(3, ref isPublic);
       
       var streamWrapper = ghSpeckleStream.Value;
-      if (stream == null)
+      if (error != null)
+      {
+        Message = null;
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error,error.Message);
+        error = null;
+      }
+      else if (stream == null)
       {
         if (streamWrapper == null)
         {
+          Message = "";
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Not a stream wrapper!");
           return;
         }
-
+        Message = "Fetching";
         Task.Run(async () =>
         {
           var account = streamWrapper.AccountId == null
@@ -71,20 +79,19 @@ namespace ConnectorGrashopper.Streams
           
           var client = new Client(account);
           var input = new StreamUpdateInput();
-          
-          stream = await client.StreamGet(streamWrapper.StreamId);
-          input.id = streamWrapper.StreamId;
-          
-          if (name != null) input.name = name;
-          else input.name = stream.name;
-          
-          if (description != null) input.description = description;
-          else input.description = stream.description;
-          
-          if (stream.isPublic != isPublic) input.isPublic = isPublic;
-
           try
           {
+            stream = await client.StreamGet(streamWrapper.StreamId);
+            input.id = streamWrapper.StreamId;
+            
+            if (name != null) input.name = name;
+            else input.name = stream.name;
+            
+            if (description != null) input.description = description;
+            else input.description = stream.description;
+            
+            if (stream.isPublic != isPublic) input.isPublic = isPublic;
+            
             await client.StreamUpdate(input);
           }
           catch (Exception e)
@@ -101,12 +108,7 @@ namespace ConnectorGrashopper.Streams
       else
       {
         stream = null;
-        if (error != null)
-        {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error,error.Message);
-          error = null;
-          return;
-        }
+        Message = "Done";
         DA.SetData(0, streamWrapper.StreamId);
       }
     }
