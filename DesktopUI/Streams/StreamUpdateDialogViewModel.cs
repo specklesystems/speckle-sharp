@@ -8,7 +8,7 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  public class StreamUpdateDialogViewModel : Conductor<IScreen>.Collection.OneActive,
+  public class StreamUpdateDialogViewModel : StreamDialogBase,
     IHandle<RetrievedFilteredObjectsEvent>, IHandle<UpdateSelectionCountEvent>
   {
     private readonly IEventAggregator _events;
@@ -24,7 +24,8 @@ namespace Speckle.DesktopUI.Streams
       _events = events;
       _streamsRepo = streamsRepo;
       _bindings = bindings;
-      _filters = new BindableCollection<ISelectionFilter>(_bindings.GetSelectionFilters());
+
+      FilterTabs = new BindableCollection<FilterTab>(_bindings.GetSelectionFilters().Select(f => new FilterTab(f)));
 
       _events.Subscribe(this);
     }

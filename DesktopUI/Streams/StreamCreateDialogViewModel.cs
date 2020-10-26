@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Models;
 using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  public class StreamCreateDialogViewModel : Conductor<IScreen>.Collection.OneActive,
+  public class StreamCreateDialogViewModel : StreamDialogBase,
     IHandle<RetrievedFilteredObjectsEvent>, IHandle<UpdateSelectionEvent>, IHandle<ApplicationEvent>
   {
     private readonly IEventAggregator _events;
@@ -30,7 +29,7 @@ namespace Speckle.DesktopUI.Streams
       DisplayName = "Create Stream";
       _events = events;
       _bindings = bindings;
-      _filterTabs = new BindableCollection<FilterTab>(_bindings.GetSelectionFilters().Select(f => new FilterTab(f)));
+      FilterTabs = new BindableCollection<FilterTab>(_bindings.GetSelectionFilters().Select(f => new FilterTab(f)));
       _streamsRepo = streamsRepo;
       _acctRepo = acctsRepo;
 
@@ -104,30 +103,6 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _streamState, value);
     }
 
-    private Account _accountToSendFrom = AccountManager.GetDefaultAccount();
-
-    public Account AccountToSendFrom
-    {
-      get => _accountToSendFrom;
-      set => SetAndNotify(ref _accountToSendFrom, value);
-    }
-
-    private BindableCollection<FilterTab> _filterTabs;
-
-    public BindableCollection<FilterTab> FilterTabs
-    {
-      get => _filterTabs;
-      set => SetAndNotify(ref _filterTabs, value);
-    }
-
-    private FilterTab _selectedFilterTab;
-
-    public FilterTab SelectedFilterTab
-    {
-      get => _selectedFilterTab;
-      set { SetAndNotify(ref _selectedFilterTab, value); }
-    }
-
     public ObservableCollection<Account> Accounts
     {
       get => _acctRepo.LoadAccounts();
@@ -140,60 +115,6 @@ namespace Speckle.DesktopUI.Streams
       get => _selectedSlide;
       set => SetAndNotify(ref _selectedSlide, value);
     }
-
-    #region Adding Collaborators
-
-    private string _userQuery;
-
-    public string UserQuery
-    {
-      get => _userQuery;
-      set
-      {
-        SetAndNotify(ref _userQuery, value);
-        if ( value == "" )
-        {
-          SelectedUser = null;
-          UserSearchResults.Clear();
-        }
-
-        if ( SelectedUser == null )
-          SearchForUsers();
-      }
-    }
-
-    private BindableCollection<User> _userSearchResults;
-
-    public BindableCollection<User> UserSearchResults
-    {
-      get => _userSearchResults;
-      set => SetAndNotify(ref _userSearchResults, value);
-    }
-
-    private User _selectedUser;
-
-    public User SelectedUser
-    {
-      get => _selectedUser;
-      set
-      {
-        SetAndNotify(ref _selectedUser, value);
-        if ( SelectedUser == null )
-          return;
-        UserQuery = SelectedUser.name;
-        AddCollabToCollection(SelectedUser);
-      }
-    }
-
-    private BindableCollection<User> _collaborators = new BindableCollection<User>();
-
-    public BindableCollection<User> Collaborators
-    {
-      get => _collaborators;
-      set => SetAndNotify(ref _collaborators, value);
-    }
-
-    #endregion
 
     #region Searching Existing Streams
 
@@ -281,11 +202,6 @@ namespace Speckle.DesktopUI.Streams
       SelectedFilterTab.ListItems.AddRange(newIds);
     }
 
-    public void ClearSelection()
-    {
-      SelectedFilterTab.ListItems.Clear();
-    }
-
     public async void AddNewStream()
     {
       CreateButtonLoading = true;
@@ -352,24 +268,6 @@ namespace Speckle.DesktopUI.Streams
       CloseDialog();
     }
 
-    public async void SearchForUsers()
-    {
-      if ( UserQuery == null || UserQuery.Length <= 2 )
-        return;
-
-      try
-      {
-        var client = new Client(AccountToSendFrom);
-        var users = await client.UserSearch(UserQuery);
-        UserSearchResults = new BindableCollection<User>(users);
-        await Task.Delay(300);
-      }
-      catch ( Exception e )
-      {
-        Debug.WriteLine(e);
-      }
-    }
-
     public void AddSimpleStream()
     {
       CreateButtonLoading = true;
@@ -390,31 +288,9 @@ namespace Speckle.DesktopUI.Streams
       AddNewStream();
     }
 
-    // TODO extract dialog logic into separate manager to better handle open / close
-    public void CloseDialog()
-    {
-      DialogHost.CloseDialogCommand.Execute(null, null);
-    }
-
     public void ChangeSlide(string slideIndex)
     {
       SelectedSlide = int.Parse(slideIndex);
-    }
-
-    private void AddCollabToCollection(User user)
-    {
-      if ( Collaborators.All(c => c.id != user.id) )
-        Collaborators.Add(user);
-    }
-
-    public void RemoveCollabFromCollection(User user)
-    {
-      Collaborators.Remove(user);
-    }
-
-    public void RemoveFilterItem(string name)
-    {
-      SelectedFilterTab.RemoveListItem(name);
     }
 
     public void Handle(RetrievedFilteredObjectsEvent message)
