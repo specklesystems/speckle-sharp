@@ -45,6 +45,7 @@ namespace Speckle.DesktopUI.Streams
         SetAndNotify(ref _streamState, value);
         Stream = StreamState.Stream;
         Branch = StreamState.Stream.branches.items[ 0 ];
+        NotifyOfPropertyChange(nameof(LatestCommit));
       }
     }
 
@@ -62,6 +63,11 @@ namespace Speckle.DesktopUI.Streams
     {
       get => _branch;
       set => SetAndNotify(ref _branch, value);
+    }
+
+    public Commit LatestCommit
+    {
+      get => StreamState.LatestCommit(Branch.name);
     }
 
     public async void Send()
