@@ -268,12 +268,22 @@ namespace Speckle.DesktopUI.Streams
         return;
       }
 
-      AccountToSendFrom = _acctRepo.GetDefault();
       StreamToCreate.name = StreamQuery;
       NotifyOfPropertyChange(nameof(StreamToCreate.name));
 
       SelectedStream = null;
       ChangeSlide(slideIndex);
+    }
+
+    public void AddToSelection()
+    {
+      var newIds = _bindings.GetSelectedObjects().Except(SelectedFilterTab.ListItems);
+      SelectedFilterTab.ListItems.AddRange(newIds);
+    }
+
+    public void ClearSelection()
+    {
+      SelectedFilterTab.ListItems.Clear();
     }
 
     public async void AddNewStream()
@@ -293,8 +303,14 @@ namespace Speckle.DesktopUI.Streams
         }
 
         var filter = SelectedFilterTab.Filter;
-        if ( filter.Name == "View" || filter.Name == "Category" )
-          filter.Selection = SelectedFilterTab.ListItems.ToList();
+        switch ( filter.Name )
+        {
+          case "View":
+          case "Category":
+          case "Selection" when SelectedFilterTab.ListItems.Any():
+            filter.Selection = SelectedFilterTab.ListItems.ToList();
+            break;
+        }
 
         StreamToCreate = await _streamsRepo.GetStream(streamId, AccountToSendFrom);
         StreamState = new StreamState(client, StreamToCreate) {Filter = filter};
@@ -358,8 +374,8 @@ namespace Speckle.DesktopUI.Streams
     {
       CreateButtonLoading = true;
       SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
+      SelectedFilterTab.ListItems.Clear();
       SelectedFilterTab.Filter.Selection = _bindings.GetSelectedObjects();
-      AccountToSendFrom = _acctRepo.GetDefault();
       StreamToCreate.name = StreamQuery;
       SelectedStream = null;
 
@@ -398,14 +414,12 @@ namespace Speckle.DesktopUI.Streams
 
     public void RemoveCatFilter(string name)
     {
-      var catFilter = FilterTabs.First(tab => tab.Filter.Name == "Category");
-      catFilter.RemoveListItem(name);
+      SelectedFilterTab.RemoveListItem(name);
     }
 
     public void RemoveViewFilter(string name)
     {
-      var viewFilter = FilterTabs.First(tab => tab.Filter.Name == "View");
-      viewFilter.RemoveListItem(name);
+      SelectedFilterTab.RemoveListItem(name);
     }
 
     public void Handle(RetrievedFilteredObjectsEvent message)
