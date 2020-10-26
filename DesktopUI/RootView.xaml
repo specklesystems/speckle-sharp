@@ -183,19 +183,6 @@
 
           <!--  Page Content  -->
           <ContentControl s:View.Model="{Binding ActiveItem}" />
-          <!-- <Button x:Name="FloatingPlusButton"
-                  Width="45"
-                  Height="45"
-                  Margin="32"
-                  HorizontalAlignment="Right"
-                  VerticalAlignment="Bottom"
-                  Command="{s:Action PlusButtonAction}"
-                  Content="{md:PackIcon Kind=Plus,
-                                      Size=24}"
-                  DockPanel.Dock="Bottom"
-                  Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
-                  ToolTip="Add more objects to this stream"
-                  ToolTipService.Placement="Left" /> -->
           <md:Snackbar x:Name="MainWindowSnackbar" MessageQueue="{Binding Notifications}" />
         </Grid>
       </DockPanel>

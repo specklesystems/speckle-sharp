@@ -34,7 +34,7 @@
                TextAlignment="Left"
                TextWrapping="Wrap" />
 
-      <Grid Margin="0 18 0 8">
+      <Grid Margin="0 24 0 8">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="*" />

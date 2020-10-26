@@ -11,8 +11,6 @@
              mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
-      <s:DebugConverter x:Key="debugConverter"
-                        Name="Progress Values" />
       <DataTemplate x:Key="StreamCardTemplate">
         <md:Card Width="Auto"
                  Margin="8">
@@ -159,7 +157,7 @@
                   Content="{md:PackIcon Kind=Heart,
                   Size=18}"
                   Style="{StaticResource MaterialDesignIconButton}" />  -->
-                <Button x:Name="ShareStreamButton"
+                <!--<Button x:Name="ShareStreamButton"
                         Width="28"
                         Height="28"
                         md:RippleAssist.ClipToBounds="True"
@@ -168,7 +166,7 @@
                         Content="{md:PackIcon Kind=ShareVariant,
                                         Size=18}"
                         Style="{StaticResource MaterialDesignIconButton}"
-                        ToolTip="Share this stream!" />
+                        ToolTip="Share this stream!" />-->
                 <Button Width="28"
                         Height="28"
                         md:RippleAssist.ClipToBounds="True"
@@ -210,33 +208,29 @@
                  Style="{StaticResource MaterialDesignHeadline3TextBlock}"
                  Text="STREAMS" />
 
-      <ItemsControl Grid.Row="2"
-                    ItemTemplate="{StaticResource StreamCardTemplate}"
-                    ItemsSource="{Binding StreamList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                    ScrollViewer.VerticalScrollBarVisibility="Auto" />
+      <ScrollViewer Grid.Row="2"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemTemplate="{StaticResource StreamCardTemplate}"
+                      ItemsSource="{Binding StreamList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+      </ScrollViewer>
     </Grid>
 
+    <!--  TODO absolute positioning rel to window  -->
 
-    <DockPanel>
-
-      <!--  TODO absolute positioning rel to window  -->
-
-      <Button x:Name="CreateStreamButton"
-              Width="45"
-              Height="45"
-              Margin="32"
-              HorizontalAlignment="Right"
-              VerticalAlignment="Bottom"
-              Command="{s:Action ShowStreamCreateDialog}"
-              Content="{md:PackIcon Kind=Plus,
+    <Button x:Name="CreateStreamButton"
+            Width="45"
+            Height="45"
+            Margin="32"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Command="{s:Action ShowStreamCreateDialog}"
+            Content="{md:PackIcon Kind=Plus,
                               Size=24}"
-              DockPanel.Dock="Bottom"
-              Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
-              ToolTip="Add a stream"
-              ToolTipService.Placement="Left" />
-
-    </DockPanel>
+            DockPanel.Dock="Bottom"
+            Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
+            ToolTip="Add a stream"
+            ToolTipService.Placement="Left" />
   </Grid>
 
 </UserControl>
