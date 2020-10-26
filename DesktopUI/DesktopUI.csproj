@@ -106,8 +106,8 @@
     <Compile Include="Streams\Dialogs\FilterViews\ViewFilterView.xaml.cs">
       <DependentUpon>ViewFilterView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Streams\Dialogs\StreamUpdate01View.xaml.cs">
-      <DependentUpon>StreamUpdate01View.xaml</DependentUpon>
+    <Compile Include="Streams\Dialogs\StreamUpdateObjectsView.xaml.cs">
+      <DependentUpon>StreamUpdateObjectsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Streams\Dialogs\StreamUpdateStartView.xaml.cs">
       <DependentUpon>StreamUpdateStartView.xaml</DependentUpon>
@@ -167,7 +167,7 @@
     <Page Include="Streams\Dialogs\FilterViews\ParameterFilterView.xaml" />
     <Page Include="Streams\Dialogs\FilterViews\SelectionFilterView.xaml" />
     <Page Include="Streams\Dialogs\FilterViews\ViewFilterView.xaml" />
-    <Page Include="Streams\Dialogs\StreamUpdate01View.xaml" />
+    <Page Include="Streams\Dialogs\StreamUpdateObjectsView.xaml" />
     <Page Include="Streams\Dialogs\StreamUpdateStartView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

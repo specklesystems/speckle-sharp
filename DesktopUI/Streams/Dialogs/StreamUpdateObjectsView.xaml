@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Speckle.DesktopUI.Streams.Dialogs.StreamUpdate01View"
+﻿<UserControl x:Class="Speckle.DesktopUI.Streams.Dialogs.StreamUpdateObjectsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -67,8 +67,8 @@
                 Header="Additional Filter Options">
         <TabControl Margin="0,12"
                     ItemContainerStyle="{StaticResource MaterialDesignTabItem}"
-                    ItemsSource="{Binding Filters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    SelectedItem="{Binding SelectedFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    ItemsSource="{Binding FilterTabs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    SelectedItem="{Binding SelectedFilterTab, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     Style="{StaticResource MaterialDesignTabControl}">
           <TabControl.ItemTemplate>
             <DataTemplate>
@@ -76,29 +76,44 @@
                 <md:PackIcon Width="18"
                              Height="18"
                              HorizontalAlignment="Center"
-                             Kind="{Binding Icon}" />
+                             Kind="{Binding Filter.Icon}" />
                 <TextBlock FontSize="12"
-                           Text="{Binding Name}" />
+                           Text="{Binding Filter.Name}" />
               </StackPanel>
             </DataTemplate>
           </TabControl.ItemTemplate>
           <TabControl.ContentTemplate>
             <DataTemplate>
-              <StackPanel Margin="24,16">
-                <TextBlock Text="{Binding Name}" />
-                <TextBlock
-                  Text="{Binding Selection.Count, StringFormat='Selected: {0}', UpdateSourceTrigger=PropertyChanged}" />
-                <Button Width="150"
-                        Margin="8"
-                        Command="{s:Action GetSelectedObjects}"
-                        Content="ADD SELECTION"
-                        Style="{StaticResource MaterialDesignFlatButton}" />
-              </StackPanel>
+              <ContentControl Margin="16"
+                              Content="{Binding FilterView}" />
             </DataTemplate>
           </TabControl.ContentTemplate>
         </TabControl>
       </Expander>
 
+      <Grid Margin="0,12">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Button x:Name="CancelButton"
+                Grid.Column="0"
+                HorizontalAlignment="Center"
+                Command="{s:Action CloseDialog}"
+                Content="CANCEL"
+                IsCancel="True"
+                Style="{StaticResource MaterialDesignFlatButton}" />
+        <Button x:Name="AddObjectsButton"
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                md:ButtonProgressAssist.IsIndeterminate="True"
+                md:ButtonProgressAssist.IsIndicatorVisible="{Binding UpdateButtonLoading, Mode=OneWay}"
+                md:ButtonProgressAssist.Value="-1"
+                Command="{s:Action UpdateStreamObjects}"
+                Content="ADD OBJECTS"
+                Foreground="{StaticResource MaterialDesignLightBackground}"
+                Style="{StaticResource MaterialDesignFlatMidBgButton}" />
+      </Grid>
     </StackPanel>
   </Grid>
 </UserControl>

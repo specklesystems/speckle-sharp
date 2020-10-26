@@ -55,7 +55,7 @@
               <md:TransitionerSlide.ForwardWipe>
                 <md:SlideWipe Direction="Left" />
               </md:TransitionerSlide.ForwardWipe>
-              <dialogs:StreamUpdate01View />
+              <dialogs:StreamUpdateObjectsView/>
             </md:TransitionerSlide>
 
           </md:Transitioner>

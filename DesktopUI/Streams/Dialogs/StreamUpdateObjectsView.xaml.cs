@@ -2,9 +2,9 @@
 
 namespace Speckle.DesktopUI.Streams.Dialogs
 {
-  public partial class StreamUpdate01View : UserControl
+  public partial class StreamUpdateObjectsView : UserControl
   {
-    public StreamUpdate01View()
+    public StreamUpdateObjectsView()
     {
       InitializeComponent();
     }
