@@ -215,7 +215,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       {
         //get input values via data mirror
         var data = GetInputAs<object>(engine, 0);
-        var stream = GetInputAs<StreamWrapper>(engine, 1);
+        var inputStream = GetInputAs<StreamWrapper>(engine, 1);
         var branchName =
           InPorts[2].Connectors.Any()
             ? GetInputAs<string>(engine, 2)
@@ -225,8 +225,11 @@ namespace Speckle.ConnectorDynamo.SendNode
             ? GetInputAs<string>(engine, 3)
             : ""; //IsConnected not working because has default value
 
-        if (stream == null)
+        if (inputStream == null)
           Core.Logging.Log.CaptureAndThrow(new Exception("The stream provided is invalid"));
+        
+        //avoid editing upstream stream!
+        var stream = new StreamWrapper(inputStream.StreamId,inputStream.AccountId, inputStream.ServerUrl);
 
         var converter = new BatchConverter();
         var @base = converter.ConvertRecursivelyToSpeckle(data);

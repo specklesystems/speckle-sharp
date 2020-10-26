@@ -59,13 +59,15 @@
       HorizontalAlignment="Center"
       IsChecked="{Binding AutoUpdate}"
       Style="{StaticResource MaterialDesignSwitchDarkToggleButton}"
-      ToolTip="Toggle auto receiving" />
+      ToolTip="Toggle auto receiving" 
+      IsEnabled="{Binding AutoUpdateEnabled}"/>
     <Label
       Grid.Row="2"
       HorizontalAlignment="Center"
       HorizontalContentAlignment="Center"
       Content="{Binding Message}"
       FontSize="10"
-      Foreground="OrangeRed" />
+      Foreground="OrangeRed"
+      Width="200"/>
   </Grid>
 </UserControl>

@@ -65,6 +65,7 @@
       HorizontalContentAlignment="Center"
       Content="{Binding Message}"
       FontSize="10"
-      Foreground="OrangeRed" />
+      Foreground="OrangeRed" 
+      Width="200"/>
   </Grid>
 </UserControl>

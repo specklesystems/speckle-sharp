@@ -29,7 +29,7 @@
       Content="{md:PackIcon Kind=OpenInNew,
                             Size=20}"
       IsEnabled="{Binding ViewEnabled}"
-      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+      Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
       ToolTip="Open in Web Browser" />
     <!-- -->
     <!-- <Label -->
