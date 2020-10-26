@@ -1,18 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Autodesk.DesignScript.Runtime;
-using Dynamo.Graph.Nodes;
-using Speckle.ConnectorDynamo.Functions;
+﻿using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Api;
-using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
-using Speckle.Core.Transports;
 
-namespace Speckle.ConnectorDynamo.Functions
+namespace Speckle.ConnectorDynamo.Functions.Advanced
 {
   public static class Local
   {

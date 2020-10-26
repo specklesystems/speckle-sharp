@@ -280,10 +280,10 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
           Core.Logging.Log.CaptureAndThrow(exception);
         }
 
-        void TotalChildrenCountKnown(int count) => _objectCount = count;
+        // void TotalChildrenCountKnown(int count) => _objectCount = count;
         _cancellationToken = new CancellationTokenSource();
         var data = Functions.Functions.Receive(Stream, BranchName, _cancellationToken.Token, ProgressAction,
-          ErrorAction, TotalChildrenCountKnown);
+          ErrorAction);
 
         if (data == null) return;
 

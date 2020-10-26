@@ -8,7 +8,7 @@
             <category>Speckle 2</category>
         </namespace>
         <namespace name="Speckle.ConnectorDynamo.Functions.Advanced">
-            <category>Speckle 2.Advanced</category>
+            <category>Speckle 2 Dev Tools</category>
         </namespace>
     </namespaces>
 </doc>

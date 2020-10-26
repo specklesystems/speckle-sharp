@@ -25,8 +25,8 @@ namespace Speckle.ConnectorDynamo.AccountsNode
   /// <summary>
   /// List Accounts
   /// </summary>
-  [NodeName("Select Account")]
-  [NodeCategory("Speckle 2.Account")]
+  [NodeName("Select")]
+  [NodeCategory("Speckle 2.Account.Create")]
   [NodeDescription("Select a Speckle account")]
   [NodeSearchTags("accounts", "speckle")]
   [IsDesignScriptCompatible]
