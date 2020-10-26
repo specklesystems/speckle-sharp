@@ -19,14 +19,10 @@ namespace ConnectorGrashopper
   // TODO: Convert to task capable component / async so as to not block the ffffing ui
   public class CreateSpeckleObject : SelectKitComponentBase, IGH_VariableParameterComponent
   {
-    public override Guid ComponentGuid => new Guid("cfa4e9b4-3ae4-4bb9-90d8-801c34e9a37e"); 
+    public override Guid ComponentGuid => new Guid("cfa4e9b4-3ae4-4bb9-90d8-801c34e9a37e");
     protected override Bitmap Icon => Properties.Resources.CreateSpeckleObject;
-    
+
     public override GH_Exposure Exposure => GH_Exposure.primary;
-
-    private ISpeckleConverter Converter;
-
-    private ISpeckleKit Kit;
 
     private System.Timers.Timer Debouncer;
 
@@ -56,7 +52,7 @@ namespace ConnectorGrashopper
       foreach (var param in Params.Input)
         param.ObjectChanged += (s, e) => Debouncer.Start();
     }
-    
+
     public override bool Read(GH_IReader reader)
     {
       // TODO: Read kit name and instantiate converter
@@ -137,8 +133,7 @@ namespace ConnectorGrashopper
           @base[key] = result;
       }
 
-      DA.SetDataList(0, res);
-      DA.SetData(1, new GH_SpeckleBase() { Value = @base });
+      DA.SetData(0, new GH_SpeckleBase() { Value = @base });
     }
 
     public bool CanInsertParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;

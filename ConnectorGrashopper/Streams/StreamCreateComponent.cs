@@ -17,7 +17,7 @@ namespace ConnectorGrashopper.Streams
 
     protected override Bitmap Icon => Properties.Resources.CreateStream;
     public override GH_Exposure Exposure => GH_Exposure.primary;
-    
+
     public StreamWrapper stream { get; set; } = null;
 
     public StreamCreateComponent() : base("Create Stream", "Create", "Create a new speckle stream", "Speckle 2",
@@ -37,12 +37,13 @@ namespace ConnectorGrashopper.Streams
 
     public override bool Read(GH_IReader reader)
     {
-      var serialisedStreamWrapper = reader.GetString("stream");
+      string serialisedStreamWrapper = null;
+      reader.TryGetString("stream", ref serialisedStreamWrapper);
 
       if (serialisedStreamWrapper != null)
       {
         var pcs = serialisedStreamWrapper.Split(' ');
-        stream = new StreamWrapper(pcs[0],pcs[2],pcs[1]);
+        stream = new StreamWrapper(pcs[0], pcs[2], pcs[1]);
       }
 
       return base.Read(reader);
@@ -87,9 +88,9 @@ namespace ConnectorGrashopper.Streams
           return;
         }
       }
-      
+
       Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.id);
-      
+
       if (stream != null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using cached stream. If you want to create a new stream, create a new component.");
@@ -102,17 +103,29 @@ namespace ConnectorGrashopper.Streams
       Task.Run(async () =>
       {
         var client = new Client(account);
-        var streamId = await client.StreamCreate(new StreamCreateInput());
-        stream = new StreamWrapper
-        (
-          streamId,
-          account.id,
-          account.serverInfo.url
-        );
-        Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
+        try
         {
-          ExpireSolution(true);
-        });
+          var streamId = await client.StreamCreate(new StreamCreateInput());
+          stream = new StreamWrapper
+          (
+            streamId,
+            account.id,
+            account.serverInfo.url
+          );
+
+          Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
+          {
+            ExpireSolution(true);
+          });
+        }
+        catch (Exception e)
+        {
+          Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
+          {
+            ExpireSolution(false);
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Could not create stream at {account.serverInfo.url}:\n{e.Message}");
+          });
+        }
       });
     }
   }

@@ -120,7 +120,7 @@ namespace ConnectorGrashopper.Conversion
   public class ToSpeckleWorker : WorkerInstance
   {
     GH_Structure<IGH_Goo> Objects;
-    GH_Structure<GH_SpeckleGoo> ConvertedObjects;
+    GH_Structure<GH_SpeckleBase> ConvertedObjects;
 
     public ISpeckleConverter Converter { get; set; }
 
@@ -128,32 +128,10 @@ namespace ConnectorGrashopper.Conversion
     {
       Converter = _Converter;
       Objects = new GH_Structure<IGH_Goo>();
-      ConvertedObjects = new GH_Structure<GH_SpeckleGoo>();
+      ConvertedObjects = new GH_Structure<GH_SpeckleBase>();
     }
 
     public override WorkerInstance Duplicate() => new ToSpeckleWorker(Converter);
-
-    private object TryConvertItem(object value)
-    {
-      object result = null;
-
-      if (value is Grasshopper.Kernel.Types.IGH_Goo)
-      {
-        value = value.GetType().GetProperty("Value").GetValue(value);
-      }
-
-      if (value is Base || Speckle.Core.Models.Utilities.IsSimpleType(value.GetType()))
-      {
-        return value;
-      }
-
-      if (Converter.CanConvertToSpeckle(value))
-      {
-        return Converter.ConvertToSpeckle(value);
-      }
-
-      return result;
-    }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
@@ -167,8 +145,8 @@ namespace ConnectorGrashopper.Conversion
         {
           if (CancellationToken.IsCancellationRequested) return;
 
-          var converted = TryConvertItem(item);
-          ConvertedObjects.Append(new GH_SpeckleGoo() { Value = converted }, Objects.Paths[branchIndex]);
+          var converted = Extras.Utilities.TryConvertItemToSpeckle(item, Converter) as Base;
+          ConvertedObjects.Append(new GH_SpeckleBase() { Value = converted }, Objects.Paths[branchIndex]);
           ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
         }
 
