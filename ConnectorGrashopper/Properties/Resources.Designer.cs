@@ -73,6 +73,16 @@ namespace ConnectorGrashopper.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap BaseParam {
+            get {
+                object obj = ResourceManager.GetObject("BaseParam", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap CreateSpeckleObject {
             get {
                 object obj = ResourceManager.GetObject("CreateSpeckleObject", resourceCulture);
@@ -246,6 +256,16 @@ namespace ConnectorGrashopper.Properties {
         internal static System.Drawing.Bitmap StreamList {
             get {
                 object obj = ResourceManager.GetObject("StreamList", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap StreamParam {
+            get {
+                object obj = ResourceManager.GetObject("StreamParam", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
