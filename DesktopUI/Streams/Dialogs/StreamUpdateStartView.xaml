@@ -44,12 +44,14 @@
                 Command="{x:Static md:DialogHost.CloseDialogCommand}"
                 Content="CANCEL"
                 IsCancel="True"
+                md:ButtonAssist.CornerRadius="4"
                 Style="{StaticResource MaterialDesignFlatMidBgButton}" />
         <Button Grid.Column="1"
                 Width="120"
                 BorderThickness="0"
                 Content="SAVE"
                 Command="{s:Action UpdateStreamDetails}"
+                md:ButtonAssist.CornerRadius="4"
                 Style="{StaticResource MaterialDesignFlatMidBgButton}" />
       </Grid>
 

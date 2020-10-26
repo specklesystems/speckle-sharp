@@ -23,6 +23,8 @@
       <Button Margin="0,12,0,0"
               HorizontalContentAlignment="Stretch"
               Command="{s:Action UpdateFromSelection}"
+              md:ButtonAssist.CornerRadius="4"
+              Style="{StaticResource MaterialDesignFlatMidBgButton}"
               ToolTip="Send all currently selected objects">
         <Grid>
           <Grid.ColumnDefinitions>
@@ -44,6 +46,8 @@
       <Button Margin="0,12"
               HorizontalContentAlignment="Stretch"
               Command="{s:Action UpdateFromView}"
+              md:ButtonAssist.CornerRadius="4"
+              Style="{StaticResource MaterialDesignFlatMidBgButton}"
               ToolTip="Send all objects in the active view">
         <Grid>
           <Grid.ColumnDefinitions>
@@ -102,6 +106,7 @@
                 Command="{s:Action CloseDialog}"
                 Content="CANCEL"
                 IsCancel="True"
+                md:ButtonAssist.CornerRadius="4"
                 Style="{StaticResource MaterialDesignFlatButton}" />
         <Button x:Name="AddObjectsButton"
                 Grid.Column="1"
@@ -111,6 +116,7 @@
                 md:ButtonProgressAssist.Value="-1"
                 Command="{s:Action UpdateStreamObjects}"
                 Content="ADD OBJECTS"
+                md:ButtonAssist.CornerRadius="4"
                 Foreground="{StaticResource MaterialDesignLightBackground}"
                 Style="{StaticResource MaterialDesignFlatMidBgButton}" />
       </Grid>

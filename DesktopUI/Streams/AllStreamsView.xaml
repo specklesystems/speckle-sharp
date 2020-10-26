@@ -13,7 +13,9 @@
     <ResourceDictionary>
       <DataTemplate x:Key="StreamCardTemplate">
         <md:Card Width="Auto"
-                 Margin="8">
+                 Margin="8"
+                 UniformCornerRadius="8"
+                 md:ShadowAssist.ShadowDepth="Depth0">
           <Grid Margin="16">
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />
@@ -47,6 +49,7 @@
                       Content="{md:PackIcon Kind=CloudUpload,
                                       Size=20}"
                       Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                      md:ShadowAssist.ShadowDepth="Depth0"
                       ToolTip="Send objects to Speckle" />
               <md:Badged Grid.Column="1"
                          Margin="48,5,0,0"
@@ -67,6 +70,7 @@
                       Content="{md:PackIcon Kind=CloudDownload,
                                       Size=20}"
                       Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
+                      md:ShadowAssist.ShadowDepth="Depth0"
                       ToolTip="Receive changes from Speckle" />
               <md:Badged Grid.Column="2"
                          Margin="48,5,0,0"
@@ -148,6 +152,7 @@
                       Command="{s:Action ShowStreamInfo}"
                       CommandParameter="{Binding}"
                       Content="DETAILS"
+                      md:ButtonAssist.CornerRadius="4"
                       Style="{StaticResource MaterialDesignFlatButton}" />
               <StackPanel Grid.Column="3"
                           Orientation="Horizontal">
@@ -229,6 +234,7 @@
                               Size=24}"
             DockPanel.Dock="Bottom"
             Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
+            md:ShadowAssist.ShadowDepth="Depth0"
             ToolTip="Add a stream"
             ToolTipService.Placement="Left" />
   </Grid>
