@@ -74,6 +74,7 @@
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
     <Compile Include="ConnectorGrashopperInfo.cs" />
+    <Compile Include="Objects\CreateSpeckleObjectAsync.cs" />
     <Compile Include="Objects\CreateSpeckleObjectByKeyValue.cs" />
     <Compile Include="Objects\ExpandSpeckleObject.cs" />
     <Compile Include="Objects\ExtendSpeckleObject.cs" />
