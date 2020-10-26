@@ -169,9 +169,9 @@ namespace Speckle.DesktopUI.Streams
 
     public async Task<StreamState> ConvertAndReceive(StreamState state)
     {
-      var latestCommitId = state.LatestCommit().id;
+      var latestCommitId = state.LatestCommit()?.id;
       state.Stream = await state.Client.StreamGet(state.Stream.id);
-      if (!state.ServerUpdates && latestCommitId == state.LatestCommit().id)
+      if (!state.ServerUpdates && latestCommitId == state.LatestCommit()?.id)
       {
         _bindings.RaiseNotification($"Stream {state.Stream.id} is up to date");
         return state;
