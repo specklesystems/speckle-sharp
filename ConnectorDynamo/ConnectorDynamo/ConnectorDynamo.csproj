@@ -119,6 +119,11 @@
       <DependentUpon>SendUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="ValueConverters\BoolVisibConverter.cs" />
+    <Compile Include="ViewNode\View.cs" />
+    <Compile Include="ViewNode\ViewUi.xaml.cs">
+      <DependentUpon>SendUi.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewNode\ViewViewCustomization.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\logo.png" />
@@ -148,6 +153,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="SendNode\SendUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ViewNode\ViewUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
