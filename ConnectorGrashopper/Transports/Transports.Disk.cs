@@ -12,7 +12,7 @@ namespace ConnectorGrashopper.Transports
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public DiskTransportComponent() : base("Disk Transport", "Disk", "Creates a Disk Transport.", "Speckle 2", "Transports") { }
+    public DiskTransportComponent() : base("Disk Transport", "Disk", "Creates a Disk Transport.", "Speckle 2 Dev", "Transports") { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -30,7 +30,7 @@ namespace ConnectorGrashopper.Transports
     {
       if (DA.Iteration != 0)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple transports at the same time. This is an explicit guard against possibly uninteded behaviour. If you want to create another transport, please use a new component.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple transports at the same time. This is an explicit guard against possibly unintended behaviour. If you want to create another transport, please use a new component.");
         return;
       }
 

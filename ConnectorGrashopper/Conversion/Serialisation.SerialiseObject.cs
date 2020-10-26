@@ -17,7 +17,7 @@ namespace ConnectorGrashopper.Conversion
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle object to a JSON string", "Speckle 2", "Conversion")
+    public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle object to a JSON string", "Speckle 2 Dev", "Conversion")
     {
       BaseWorker = new SerialzeWorker(this);
     }

@@ -13,7 +13,7 @@ namespace ConnectorGrashopper.Transports
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    public SqliteTransportComponent() : base("Sqlite Transport", "Sqlite", "Creates a Sqlite Transport.", "Speckle 2", "Transports") { }
+    public SqliteTransportComponent() : base("Sqlite Transport", "Sqlite", "Creates a Sqlite Transport.", "Speckle 2 Dev", "Transports") { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {

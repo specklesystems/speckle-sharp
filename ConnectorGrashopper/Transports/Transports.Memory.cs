@@ -13,7 +13,7 @@ namespace ConnectorGrashopper.Transports
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public MemoryTransportComponent() : base("Memory Transport", "Memory", "Creates an Memory Transport.", "Speckle 2", "Transports") { }
+    public MemoryTransportComponent() : base("Memory Transport", "Memory", "Creates an Memory Transport.", "Speckle 2 Dev", "Transports") { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {

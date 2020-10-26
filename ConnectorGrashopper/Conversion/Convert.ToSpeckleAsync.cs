@@ -25,7 +25,7 @@ namespace ConnectorGrashopper.Conversion
 
     private ISpeckleKit Kit;
 
-    public ToSpeckleConverterAsync() : base("To Speckle", "To Speckle", "Converts objects to their Speckle equivalents.", "Speckle 2", "Conversion")
+    public ToSpeckleConverterAsync() : base("To Speckle", "To Speckle", "Converts objects to their Speckle equivalents.", "Speckle 2 Dev", "Conversion")
     {
       SetDefaultKitAndConverter();
       BaseWorker = new ToSpeckleWorker(Converter);

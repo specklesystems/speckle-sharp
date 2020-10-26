@@ -16,7 +16,7 @@ namespace ConnectorGrashopper.Transports
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    public ServerTransportComponent() : base("Server Transport", "Server", "Creates a Server Transport.", "Speckle 2", "Transports") { }
+    public ServerTransportComponent() : base("Server Transport", "Server", "Creates a Server Transport.", "Speckle 2 Dev", "Transports") { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
