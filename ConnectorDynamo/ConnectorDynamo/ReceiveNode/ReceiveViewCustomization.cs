@@ -12,7 +12,6 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 {
   public class ReceiveViewCustomization : INodeViewCustomization<Receive>
   {
-
     private DynamoViewModel dynamoViewModel;
     private DispatcherSynchronizationContext syncContext;
     private Receive receiveNode;
@@ -25,25 +24,40 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       syncContext = new DispatcherSynchronizationContext(nodeView.Dispatcher);
       receiveNode = model;
 
-      receiveNode.OnRequestUpdates += UpdateNode;
-      receiveNode.OnReceiveRequested += ReceiveRequested;
-
-      UpdateNode();
+      receiveNode.OnInputsChanged += InputsChanged;
+      receiveNode.OnNewDataAvail += NewDataAvail;
 
       var ui = new ReceiveUi();
       nodeView.inputGrid.Children.Add(ui);
 
       //bindings
       ui.DataContext = model;
-      
+
       ui.Loaded += Loaded;
       ui.ReceiveStreamButton.Click += ReceiveStreamButtonClick;
       ui.CancelReceiveStreamButton.Click += CancelReceiveStreamButtonClick;
     }
-    
+
     private void Loaded(object o, RoutedEventArgs a)
     {
-      Task.Run(() => { receiveNode.InitializeReceiver(); });
+      Task.Run(async () => { receiveNode.InitializeReceiver(); });
+    }
+
+
+    private void InputsChanged()
+    {
+      Task.Run(async () => { receiveNode.LoadInputs(dynamoModel.EngineController); });
+    }
+
+
+    private void NewDataAvail()
+    {
+      Task.Run(async () => { receiveNode.DoReceive(); });
+    }
+
+    private void ReceiveStreamButtonClick(object sender, RoutedEventArgs e)
+    {
+      NewDataAvail();
     }
 
     private void CancelReceiveStreamButtonClick(object sender, RoutedEventArgs e)
@@ -51,28 +65,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       receiveNode.CancelReceive();
     }
 
-    private void UpdateNode()
+    public void Dispose()
     {
-      Task.Run(() =>
-      {
-        receiveNode.LoadInputs(dynamoModel.EngineController);
-      });
     }
-
-    private void ReceiveStreamButtonClick(object sender, RoutedEventArgs e)
-    {
-      ReceiveRequested();
-    }
-
-    private void ReceiveRequested()
-    {
-      Task.Run(() =>
-      {
-        receiveNode.DoReceive();
-      });
-    }
-
-    public void Dispose() { }
-
   }
 }

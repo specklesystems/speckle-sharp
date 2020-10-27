@@ -13,6 +13,7 @@ using ProtoCore.Mirror;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Threading;
+using Dynamo.Utilities;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
 
@@ -28,6 +29,8 @@ namespace Speckle.ConnectorDynamo.SendNode
   [IsDesignScriptCompatible]
   public class Send : NodeModel
   {
+    #region fields & props
+
     #region private fields
 
     private bool _transmitting = false;
@@ -40,6 +43,12 @@ namespace Speckle.ConnectorDynamo.SendNode
     private string _outputInfo = "";
     private bool _firstRun = true;
     private CancellationTokenSource _cancellationToken;
+
+    //cached inputs
+    private object _data { get; set; }
+    private StreamWrapper _stream { get; set; }
+    private string _branchName { get; set; }
+    private string _commitMessage { get; set; }
 
     #endregion
 
@@ -120,6 +129,7 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     #endregion
 
+    #endregion
 
     /// <summary>
     /// JSON constructor, called on file open
@@ -188,7 +198,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     internal void CancelSend()
     {
       _cancellationToken.Cancel();
-      ResetUI();
+      ResetNode();
     }
 
     /// <summary>
@@ -197,8 +207,10 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// <param name="engine"></param>
     internal void DoSend(EngineController engine)
     {
+      //double check, but can probably remove it
       if (!InPorts[0].IsConnected || !InPorts[1].IsConnected)
       {
+        ResetNode(true);
         return;
       }
 
@@ -210,29 +222,18 @@ namespace Speckle.ConnectorDynamo.SendNode
 
       Transmitting = true;
       Message = "Converting...";
+      _cancellationToken = new CancellationTokenSource();
 
       try
       {
-        //get input values via data mirror
-        var data = GetInputAs<object>(engine, 0);
-        var inputStream = GetInputAs<StreamWrapper>(engine, 1);
-        var branchName =
-          InPorts[2].Connectors.Any()
-            ? GetInputAs<string>(engine, 2)
-            : ""; //IsConnected not working because has default value
-        var message =
-          InPorts[3].Connectors.Any()
-            ? GetInputAs<string>(engine, 3)
-            : ""; //IsConnected not working because has default value
-
-        if (inputStream == null)
+        if (_stream == null)
           Core.Logging.Log.CaptureAndThrow(new Exception("The stream provided is invalid"));
-        
-        //avoid editing upstream stream!
-        var stream = new StreamWrapper(inputStream.StreamId,inputStream.AccountId, inputStream.ServerUrl);
+        if (_data == null)
+          Core.Logging.Log.CaptureAndThrow(new Exception("The data provided is invalid"));
+
 
         var converter = new BatchConverter();
-        var @base = converter.ConvertRecursivelyToSpeckle(data);
+        var @base = converter.ConvertRecursivelyToSpeckle(_data);
         var totalCount = @base.GetTotalChildrenCount();
         Message = "Sending...";
 
@@ -243,30 +244,34 @@ namespace Speckle.ConnectorDynamo.SendNode
           Progress = val * 100;
         }
 
-        void ErrorAction(string transportName, Exception exception)
+        void ErrorAction(string transportName, Exception e)
         {
-          Core.Logging.Log.CaptureAndThrow(exception);
+          throw e;
         }
 
-        _cancellationToken = new CancellationTokenSource();
-
         var plural = (totalCount == 1) ? "" : "s";
-        message = string.IsNullOrEmpty(message) ? $"Sent {totalCount} object{plural} from Dynamo" : message;
+        _commitMessage = string.IsNullOrEmpty(_commitMessage)
+          ? $"Sent {totalCount} object{plural} from Dynamo"
+          : _commitMessage;
 
-        var commitId = Functions.Functions.Send(@base, stream, _cancellationToken.Token, branchName, message,
+        var commitId = Functions.Functions.Send(@base, _stream, _cancellationToken.Token, _branchName, _commitMessage,
           ProgressAction, ErrorAction);
-        stream.CommitId = commitId;
-        _outputInfo = stream.ToString();
+        _stream.CommitId = commitId;
+        _outputInfo = _stream.ToString();
+        Message = "";
       }
       catch (Exception e)
       {
-        _outputInfo = e.Message;
-        Core.Logging.Log.CaptureAndThrow(e);
+        _cancellationToken.Cancel();
+        Message = e.InnerException != null ? e.InnerException.Message : e.Message;
+        //temp exclusion of core bug
+        if (!(e.InnerException != null && e.InnerException.Message ==
+          "Cannot resolve reference. The provided transport could not find it."))
+          Core.Logging.Log.CaptureAndThrow(e);
       }
       finally
       {
-        ResetUI();
-
+        ResetNode();
         if (!_cancellationToken.IsCancellationRequested)
         {
           _hasOutput = true;
@@ -275,35 +280,103 @@ namespace Speckle.ConnectorDynamo.SendNode
       }
     }
 
-    private void ResetUI()
+    /// <summary>
+    /// Reset the node UI
+    /// </summary>
+    /// <param name="hardReset">If true, resets enabled status too</param>
+    private void ResetNode(bool hardReset = false)
     {
       Transmitting = false;
       ExpiredCount = "";
-      Message = "";
       Progress = 0;
       _hasOutput = false;
+      if (hardReset)
+      {
+        _stream = null;
+        _data = null;
+        _objectCount = 0;
+        SendEnabled = false;
+        Message = "";
+      }
     }
 
-    internal void UpdateExpiredCount(EngineController engine)
+    /// <summary>
+    /// Triggered when the node inputs change
+    /// Caches a copy of the inputs
+    /// </summary>
+    /// <param name="engine"></param>
+    internal void LoadInputs(EngineController engine)
     {
-      if (!InPorts[0].IsConnected || !InPorts[1].IsConnected)
+      ResetNode(true);
+
+      try
       {
-        ExpiredCount = "";
+        _data = GetInputAs<object>(engine, 0, true);
+      }
+      catch
+      {
+        ResetNode(true);
+        Message = "Data input is invalid";
         return;
       }
 
-      //this value is update when the RecurseInput function loops through the data, not ideal but it works
-      //if we're dealing with a single Base (preconverted obj) use GetTotalChildrenCount to count its children
-      _objectCount = 0;
-      var data = GetInputAs<object>(engine, 0, true);
-      if (data is Base @base)
+      try
       {
+        var stream = GetInputAs<StreamWrapper>(engine, 1);
+        //avoid editing upstream stream!
+        _stream = new StreamWrapper(stream.StreamId, stream.AccountId, stream.ServerUrl);
+      }
+      catch
+      {
+        ResetNode(true);
+        Message = "Stream is invalid";
+        return;
+      }
+
+      try
+      {
+        _branchName =
+          InPorts[2].Connectors.Any()
+            ? GetInputAs<string>(engine, 2)
+            : ""; //IsConnected not working because has default value
+      }
+      catch
+      {
+        Message = "Branch name is invalid, will use `main`";
+      }
+
+      try
+      {
+        _commitMessage =
+          InPorts[3].Connectors.Any()
+            ? GetInputAs<string>(engine, 3)
+            : ""; //IsConnected not working because has default value
+      }
+      catch
+      {
+        Message = "Message is invalid, will skip it";
+      }
+
+
+      InitializeSender();
+    }
+
+    private void InitializeSender()
+    {
+      SendEnabled = true;
+
+      if (_data is Base @base)
+      {
+        //_objectCount is updated when the RecurseInput function loops through the data, not ideal but it works
+        //if we're dealing with a single Base (preconverted obj) use GetTotalChildrenCount to count its children
         _objectCount = (int) @base.GetTotalChildrenCount();
         //exclude wrapper obj.... this is a bit of a hack...
         if (_objectCount > 1) _objectCount--;
       }
 
       ExpiredCount = _objectCount.ToString();
+      if (string.IsNullOrEmpty(Message))
+        Message = "Updates ready";
     }
 
 
@@ -351,11 +424,14 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     #region events
 
-    internal event Action OnRequestUpdates;
+    internal event Action OnInputsChanged;
 
-    protected virtual void RequestUpdates()
+    /// <summary>
+    /// Node inputs have changed, trigger load of new inputs
+    /// </summary>
+    protected virtual void RequestNewInputs()
     {
-      OnRequestUpdates?.Invoke();
+      OnInputsChanged?.Invoke();
     }
 
     void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -364,14 +440,17 @@ namespace Speckle.ConnectorDynamo.SendNode
         return;
 
       if (!InPorts[0].IsConnected || !InPorts[1].IsConnected)
-        return;
-
-      //prevent running when opening a saved file
-      if (_firstRun)
       {
-        _firstRun = false;
+        ResetNode(true);
         return;
       }
+
+      //prevent running when opening a saved file
+      // if (_firstRun)
+      // {
+      //   _firstRun = false;
+      //   return;
+      // }
 
       //the node was expired manually just to output the commit info, no need to do anything!
       if (_hasOutput)
@@ -380,7 +459,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         return;
       }
 
-      RequestUpdates();
+      RequestNewInputs();
     }
 
     #endregion
@@ -397,19 +476,14 @@ namespace Speckle.ConnectorDynamo.SendNode
     {
       if (!InPorts[0].IsConnected || !InPorts[1].IsConnected)
       {
-        SendEnabled = false;
-        ExpiredCount = "";
-        _outputInfo = "";
+        return OutPorts.Enumerate().Select(output =>
+          AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
       }
-
-      SendEnabled = true;
 
       return new[]
       {
         AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), AstFactory.BuildStringNode(_outputInfo))
       };
-
-      //return OutPorts.Enumerate().Select(output => AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
     }
 
     #endregion

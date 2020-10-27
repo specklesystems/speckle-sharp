@@ -25,6 +25,7 @@
       x:Name="ViewStreamButton"
       Margin="10"
       HorizontalAlignment="Center"
+      md:ShadowAssist.ShadowDepth="Depth0"
       HorizontalContentAlignment="Center"
       Content="{md:PackIcon Kind=OpenInNew,
                             Size=20}"

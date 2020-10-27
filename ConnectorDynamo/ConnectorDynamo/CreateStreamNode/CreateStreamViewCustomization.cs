@@ -37,12 +37,12 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
 
     private void Loaded(object o, RoutedEventArgs a)
     {
-      Task.Run(() => { accountsNode.RestoreSelection(); });
+      Task.Run(async () => { accountsNode.RestoreSelection(); });
     }
 
     private void CreateStreamButtonClick(object sender, RoutedEventArgs e)
     {
-      Task.Run(() => { accountsNode.DoCreateStream(); });
+      Task.Run(async () => { accountsNode.DoCreateStream(); });
     }
 
 

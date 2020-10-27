@@ -24,22 +24,23 @@
     </Grid.RowDefinitions>
     <Button
       x:Name="CreateStreamButton"
-      Margin="5"
-      Style="{StaticResource MaterialDesignRaisedAccentButton}"
+      Margin="10,10,10,0"
       HorizontalAlignment="Center"
       HorizontalContentAlignment="Center"
-      Width="200"
+      md:ShadowAssist.ShadowDepth="Depth0"
+      Content="{md:PackIcon Kind=Plus,
+                            Size=20}"
       IsEnabled="{Binding CreateEnabled}"
-      ToolTip="Create a new Stream">
-      Create new stream
-    </Button>
+      Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+      ToolTip="Create a new stream (this is a one time operation)" />
+
     <ComboBox
-      Grid.Row="1"
       Name="AccountsComboBox"
+      Grid.Row="1"
       MinWidth="200"
       Margin="10"
-      IsEnabled="{Binding CreateEnabled}"
       md:HintAssist.Hint="Account"
+      IsEnabled="{Binding CreateEnabled}"
       ItemsSource="{Binding AccountList}"
       SelectedItem="{Binding SelectedAccount}">
       <ComboBox.ItemTemplate>

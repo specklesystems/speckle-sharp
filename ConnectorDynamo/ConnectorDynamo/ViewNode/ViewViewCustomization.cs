@@ -12,7 +12,6 @@ namespace Speckle.ConnectorDynamo.ViewNode
 {
   public class ViewViewCustomization : INodeViewCustomization<View>
   {
-
     private DynamoViewModel dynamoViewModel;
     private DispatcherSynchronizationContext syncContext;
     private View viewNode;
@@ -39,21 +38,16 @@ namespace Speckle.ConnectorDynamo.ViewNode
 
     private void UpdateNode()
     {
-      Task.Run(() =>
-      {
-        viewNode.UpdateNode(dynamoModel.EngineController);
-      });
+      Task.Run(async () => { viewNode.UpdateNode(dynamoModel.EngineController); });
     }
 
     private void ViewStreamButtonClick(object sender, RoutedEventArgs e)
     {
-      Task.Run(() =>
-      {
-        viewNode.ViewStream();
-      });
+      Task.Run(async () => { viewNode.ViewStream(); });
     }
 
-    public void Dispose() { }
-
+    public void Dispose()
+    {
+    }
   }
 }

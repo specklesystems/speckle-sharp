@@ -32,9 +32,10 @@
 
     <Button
       x:Name="SendStreamButton"
-      Margin="10,32,15,0"
+      Margin="10,22,10,0"
       HorizontalAlignment="Center"
       HorizontalContentAlignment="Center"
+      md:ShadowAssist.ShadowDepth="Depth0"
       Content="{md:PackIcon Kind=CloudUpload,
                             Size=20}"
       IsEnabled="{Binding SendEnabled}"
@@ -43,29 +44,30 @@
       Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}, ConverterParameter='opposite'}" />
     <Button
       x:Name="CancelSendStreamButton"
-      Margin="10,32,15,0"
+      Margin="10,22,10,0"
       HorizontalAlignment="Center"
       HorizontalContentAlignment="Center"
       md:ButtonProgressAssist.IsIndeterminate="False"
       md:ButtonProgressAssist.IsIndicatorVisible="{Binding Transmitting}"
       md:ButtonProgressAssist.Value="{Binding Progress}"
+      md:ShadowAssist.ShadowDepth="Depth0"
       Content="{md:PackIcon Kind=Stop,
                             Size=20}"
       Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
       ToolTip="Cancel"
       Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}}" />
     <md:Badged
-      Margin="45,32,15,0"
+      Margin="77,32,10,0"
       Badge="{Binding ExpiredCount}"
       BadgeColorZoneMode="Accent"
       ToolTip="Has new data to send" />
-    <Label
-      Grid.Row="1"
+    <TextBlock
+      Grid.Row="2"
+      Width="130"
       HorizontalAlignment="Center"
-      HorizontalContentAlignment="Center"
-      Content="{Binding Message}"
       FontSize="10"
-      Foreground="OrangeRed" 
-      Width="200"/>
+      Foreground="OrangeRed"
+      Text="{Binding Message}"
+      TextWrapping="Wrap" />
   </Grid>
 </UserControl>

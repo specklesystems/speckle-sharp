@@ -38,7 +38,7 @@ namespace Speckle.ConnectorDynamo.AccountsNode
 
     private void Loaded(object o, RoutedEventArgs a)
     {
-      Task.Run(() => { accountsNode.RestoreSelection(); });
+      Task.Run(async () => { accountsNode.RestoreSelection(); });
     }
 
     private void SelectionChanged(object sender, SelectionChangedEventArgs e)
