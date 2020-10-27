@@ -14,8 +14,8 @@
       <DataTemplate x:Key="StreamCardTemplate">
         <md:Card Width="Auto"
                  Margin="8"
-                 UniformCornerRadius="8"
-                 md:ShadowAssist.ShadowDepth="Depth0">
+                 md:ShadowAssist.ShadowDepth="Depth0"
+                 UniformCornerRadius="8">
           <Grid Margin="16">
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />
@@ -26,8 +26,8 @@
             <Grid Grid.Row="0">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="56" />
+                <ColumnDefinition Width="40" />
               </Grid.ColumnDefinitions>
               <TextBlock Grid.Column="0"
                          VerticalAlignment="Center"
@@ -40,40 +40,67 @@
                       Margin="8,0"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Top"
-                      md:ButtonProgressAssist.IsIndicatorVisible="{Binding IsSending}"
-                      md:ButtonProgressAssist.IsIndeterminate="False"
-                      md:ButtonProgressAssist.Maximum="{Binding Progress.Maximum, Mode=OneWay}"
-                      md:ButtonProgressAssist.Value="{Binding Progress.Value, Mode=OneWay}"
+                      md:ShadowAssist.ShadowDepth="Depth0"
                       Command="{s:Action Send}"
                       CommandParameter="{Binding}"
                       Content="{md:PackIcon Kind=CloudUpload,
                                       Size=20}"
                       Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-                      md:ShadowAssist.ShadowDepth="Depth0"
+                      Visibility="{Binding IsSending, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                       ToolTip="Send objects to Speckle" />
+              <Button x:Name="StopSendButton"
+                      Grid.Column="1"
+                      Margin="8,0"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Top"
+                      md:ButtonProgressAssist.IsIndeterminate="False"
+                      md:ButtonProgressAssist.IsIndicatorVisible="True"
+                      md:ButtonProgressAssist.Maximum="{Binding Progress.Maximum, Mode=OneWay}"
+                      md:ButtonProgressAssist.Value="{Binding Progress.Value, Mode=OneWay}"
+                      md:ShadowAssist.ShadowDepth="Depth0"
+                      Command="{s:Action CancelToken}"
+                      Content="{md:PackIcon Kind=Stop,
+                                      Size=20}"
+                      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                      Visibility="{Binding IsSending, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"
+                      ToolTip="Cancel the send operation" />
               <md:Badged Grid.Column="1"
                          Margin="48,5,0,0"
                          Badge="{Binding Placeholders.Count}"
                          BadgeColorZoneMode="Accent"
                          ToolTip="objects to send"
                          Visibility="{Binding Placeholders.Count, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
-              <Button Grid.Column="2"
+              <Button x:Name="ReceiveButton"
+                      Grid.Column="2"
                       Margin="0"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Top"
-                      md:ButtonProgressAssist.IsIndicatorVisible="{Binding IsReceiving}"
-                      md:ButtonProgressAssist.IsIndeterminate="False"
-                      md:ButtonProgressAssist.Maximum="{Binding Progress.Maximum, Mode=OneWay}"
-                      md:ButtonProgressAssist.Value="{Binding Progress.Value, Mode=OneWay}"
+                      md:ShadowAssist.ShadowDepth="Depth0"
                       Command="{s:Action Receive}"
                       CommandParameter="{Binding}"
                       Content="{md:PackIcon Kind=CloudDownload,
                                       Size=20}"
                       Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
-                      md:ShadowAssist.ShadowDepth="Depth0"
+                      Visibility="{Binding IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                       ToolTip="Receive changes from Speckle" />
+              <Button x:Name="StopReceiveButton"
+                      Grid.Column="2"
+                      Margin="0"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Top"
+                      md:ButtonProgressAssist.IsIndeterminate="False"
+                      md:ButtonProgressAssist.IsIndicatorVisible="True"
+                      md:ButtonProgressAssist.Maximum="{Binding Progress.Maximum, Mode=OneWay}"
+                      md:ButtonProgressAssist.Value="{Binding Progress.Value, Mode=OneWay}"
+                      md:ShadowAssist.ShadowDepth="Depth0"
+                      Command="{s:Action CancelToken}"
+                      Content="{md:PackIcon Kind=Stop,
+                                      Size=20}"
+                      Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
+                      Visibility="{Binding IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"
+                      ToolTip="Cancel the receive operation" />
               <md:Badged Grid.Column="2"
-                         Margin="48,5,0,0"
+                         Margin="40,5,0,0"
                          Badge="{md:PackIcon Kind=ExclamationThick}"
                          BadgeColorZoneMode="Accent"
                          ToolTip="there are new updates on the server"
@@ -149,10 +176,10 @@
               <!--  Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />  -->
               <Button Grid.Column="0"
                       Width="Auto"
+                      md:ButtonAssist.CornerRadius="4"
                       Command="{s:Action ShowStreamInfo}"
                       CommandParameter="{Binding}"
                       Content="DETAILS"
-                      md:ButtonAssist.CornerRadius="4"
                       Style="{StaticResource MaterialDesignFlatButton}" />
               <StackPanel Grid.Column="3"
                           Orientation="Horizontal">
@@ -161,7 +188,7 @@
                   md:RippleAssist.ClipToBounds="True"
                   Content="{md:PackIcon Kind=Heart,
                   Size=18}"
-                  Style="{StaticResource MaterialDesignIconButton}" />  -->
+                  Style="{StaticResource MaterialDesignIconButton}" />-->
                 <!--<Button x:Name="ShareStreamButton"
                         Width="28"
                         Height="28"
@@ -229,12 +256,12 @@
             Margin="32"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
+            md:ShadowAssist.ShadowDepth="Depth0"
             Command="{s:Action ShowStreamCreateDialog}"
             Content="{md:PackIcon Kind=Plus,
-                              Size=24}"
+                            Size=24}"
             DockPanel.Dock="Bottom"
             Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
-            md:ShadowAssist.ShadowDepth="Depth0"
             ToolTip="Add a stream"
             ToolTipService.Placement="Left" />
   </Grid>

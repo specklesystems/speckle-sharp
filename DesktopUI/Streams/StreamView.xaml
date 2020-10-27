@@ -174,17 +174,15 @@
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
 
-          <Button Grid.Row="0"
+          <Button x:Name="SendStreamButton"
+                  Grid.Row="0"
                   Grid.Column="0"
                   Width="150"
                   Height="36"
                   Command="{s:Action Send}"
                   md:ShadowAssist.ShadowDepth="Depth0"
                   md:ButtonAssist.CornerRadius="4"
-                  md:ButtonProgressAssist.IsIndeterminate="False"
-                  md:ButtonProgressAssist.Maximum="{Binding StreamState.Progress.Maximum, Mode=OneWay}"
-                  md:ButtonProgressAssist.Value="{Binding StreamState.Progress.Value, Mode=OneWay}"
-                  md:ButtonProgressAssist.IsIndicatorVisible="{Binding StreamState.IsSending}"
+                  Visibility="{Binding StreamState.IsSending, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                   ToolTip="Send your changes to the Speckle server">
             <Grid>
               <Grid.ColumnDefinitions>
@@ -201,20 +199,47 @@
                          Text="SEND" />
             </Grid>
           </Button>
+          <Button x:Name="StopSendButton"
+                  Grid.Row="0"
+                  Grid.Column="0"
+                  Width="150"
+                  Height="36"
+                  Command="{s:Action CancelToken}"
+                  md:ShadowAssist.ShadowDepth="Depth0"
+                  md:ButtonAssist.CornerRadius="4"
+                  md:ButtonProgressAssist.IsIndeterminate="False"
+                  md:ButtonProgressAssist.Maximum="{Binding StreamState.Progress.Maximum, Mode=OneWay}"
+                  md:ButtonProgressAssist.Value="{Binding StreamState.Progress.Value, Mode=OneWay}"
+                  md:ButtonProgressAssist.IsIndicatorVisible="True"
+                  Visibility="{Binding StreamState.IsSending, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"
+                  ToolTip="Cancel the send operation">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <md:PackIcon Grid.Column="0"
+                           Width="24"
+                           Height="24"
+                           Margin="0,0,12,0"
+                           Kind="Stop" />
+              <TextBlock Grid.Column="1"
+                         VerticalAlignment="Center"
+                         Text="CANCEL" />
+            </Grid>
+          </Button>
 
 
-          <Button Grid.Row="0"
+          <Button x:Name="ReceiveStreamButton"
+                  Grid.Row="0"
                   Grid.Column="1"
                   Width="150"
                   Height="36"
                   Command="{s:Action Receive}"
                   md:ShadowAssist.ShadowDepth="Depth0"
                   md:ButtonAssist.CornerRadius="4"
-                  md:ButtonProgressAssist.IsIndeterminate="False"
-                  md:ButtonProgressAssist.Maximum="{Binding StreamState.Progress.Maximum, Mode=OneWay}"
-                  md:ButtonProgressAssist.Value="{Binding StreamState.Progress.Value, Mode=OneWay}"
-                  md:ButtonProgressAssist.IsIndicatorVisible="{Binding StreamState.IsReceiving}"
                   Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                  Visibility="{Binding StreamState.IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                   ToolTip="Receive your changes from the server">
             <Grid>
               <Grid.ColumnDefinitions>
@@ -229,6 +254,36 @@
               <TextBlock Grid.Column="1"
                          VerticalAlignment="Center"
                          Text="RECEIVE" />
+            </Grid>
+          </Button>
+          <Button x:Name="StopReceiveButton"
+                  Grid.Row="0"
+                  Grid.Column="1"
+                  Width="150"
+                  Height="36"
+                  Command="{s:Action Receive}"
+                  md:ShadowAssist.ShadowDepth="Depth0"
+                  md:ButtonAssist.CornerRadius="4"
+                  md:ButtonProgressAssist.IsIndeterminate="False"
+                  md:ButtonProgressAssist.Maximum="{Binding StreamState.Progress.Maximum, Mode=OneWay}"
+                  md:ButtonProgressAssist.Value="{Binding StreamState.Progress.Value, Mode=OneWay}"
+                  md:ButtonProgressAssist.IsIndicatorVisible="True"
+                  Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                  Visibility="{Binding StreamState.IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"
+                  ToolTip="Cancel the receive operation">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <md:PackIcon Grid.Column="0"
+                           Width="24"
+                           Height="24"
+                           Margin="0,0,12,0"
+                           Kind="Stop" />
+              <TextBlock Grid.Column="1"
+                         VerticalAlignment="Center"
+                         Text="CANCEL" />
             </Grid>
           </Button>
 
