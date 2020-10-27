@@ -58,7 +58,7 @@ namespace Speckle.Core.Logging
     public static void TrackEvent(string eventName)
     {
       var eventData = eventName.Split('-');
-      Task.Run(() => PiwikTracker.DoTrackEvent(eventData[0], eventData[1]));
+      Task.Run(async () => PiwikTracker.DoTrackEvent(eventData[0], eventData[1]));
     }
 
   }
