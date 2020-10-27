@@ -141,7 +141,7 @@ namespace ConnectorGrashopper.Objects
         if (value is List<object> list)
         {
           // Value is a list of items, iterate and convert.
-          var converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter));
+          var converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
           @base[key] = converted;
         }
         else

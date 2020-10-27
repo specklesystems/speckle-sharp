@@ -78,6 +78,7 @@
     <Compile Include="Objects\CreateSpeckleObjectByKeyValueAsync.cs" />
     <Compile Include="Objects\CreateSpeckleObjectByKeyValue.cs" />
     <Compile Include="Objects\ExpandSpeckleObject.cs" />
+    <Compile Include="Objects\ExpandSpeckleObjectAsync.cs" />
     <Compile Include="Objects\ExtendSpeckleObject.cs" />
     <Compile Include="Objects\GetObjectValueByKey.cs" />
     <Compile Include="Objects\SelectKitComponentBase.cs" />

@@ -146,9 +146,7 @@ namespace ConnectorGrashopper.Objects
         {
           // Convert and add to corresponding output structure
           var value = obj[prop];
-          
           if (!outputDict.ContainsKey(prop)) continue;
-          var t = value.GetType();
           switch (value)
           {
             case null:
@@ -251,7 +249,7 @@ namespace ConnectorGrashopper.Objects
       if (Params.Output.Count < tokenCount)
         while (Params.Output.Count < tokenCount)
         {
-          IGH_Param newParam = CreateParameter(GH_ParameterSide.Output, Params.Output.Count);
+          var newParam = CreateParameter(GH_ParameterSide.Output, Params.Output.Count);
           Params.RegisterOutputParam(newParam);
         }
       else if (Params.Output.Count > tokenCount)
