@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
@@ -33,7 +34,7 @@ namespace Speckle.DesktopUI.Streams
       _events.Subscribe(this);
     }
 
-    public ProgressReport Progress { get; set; } = new ProgressReport();
+    private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
 
     private StreamState _streamState;
 
@@ -72,21 +73,37 @@ namespace Speckle.DesktopUI.Streams
 
     public async void Send()
     {
-      var res = await Task.Run(() => _repo.ConvertAndSend(StreamState));
-      if ( res == null ) return;
+      StreamState.IsSending = true;
+      _cancellationToken = new CancellationTokenSource();
+      StreamState.CancellationToken = _cancellationToken.Token;
 
-      StreamState = res;
-      _events.Publish(new StreamUpdatedEvent() {StreamId = Stream.id});
+      var res = await Task.Run(() => _repo.ConvertAndSend(StreamState));
+      if ( res != null )
+      {
+        StreamState = res;
+        _events.Publish(new StreamUpdatedEvent() {StreamId = Stream.id});
+      }
+
+      StreamState.Progress.ResetProgress();
+      StreamState.IsSending = false;
     }
 
     public async void Receive()
     {
       StreamState.IsReceiving = true;
+      _cancellationToken = new CancellationTokenSource();
+      StreamState.CancellationToken = _cancellationToken.Token;
 
       var res = await Task.Run(() => _repo.ConvertAndReceive(StreamState));
       if ( res != null ) StreamState = res;
 
+      StreamState.Progress.ResetProgress();
       StreamState.IsReceiving = false;
+    }
+
+    public void CancelToken()
+    {
+      _cancellationToken.Cancel();
     }
 
     public async void ShowStreamUpdateDialog(int slide = 0)
