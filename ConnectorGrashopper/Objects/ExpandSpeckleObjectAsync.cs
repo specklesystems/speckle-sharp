@@ -212,6 +212,7 @@ namespace ConnectorGrashopper.Objects
       {
         if (speckleObjects.get_Branch(path).Count == 0) continue;
         var obj = speckleObjects.get_DataItem(path, 0);
+        if (obj == null) continue;
         var b =  obj.Value;
         var props = b.GetDynamicMembers().ToList();
         props.ForEach(prop =>

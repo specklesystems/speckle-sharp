@@ -80,7 +80,9 @@
     <Compile Include="Objects\ExpandSpeckleObject.cs" />
     <Compile Include="Objects\ExpandSpeckleObjectAsync.cs" />
     <Compile Include="Objects\ExtendSpeckleObject.cs" />
+    <Compile Include="Objects\ExtendSpeckleObjectAsync.cs" />
     <Compile Include="Objects\GetObjectValueByKey.cs" />
+    <Compile Include="Objects\GetObjectValueByKeyAsync.cs" />
     <Compile Include="Objects\SelectKitComponentBase.cs" />
     <Compile Include="Ops\Operations.ReceiveComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

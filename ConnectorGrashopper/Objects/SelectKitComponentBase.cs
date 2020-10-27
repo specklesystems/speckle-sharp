@@ -75,26 +75,5 @@ namespace ConnectorGrashopper.Objects
       throw new Exception("Please inherit from this class, don't use SelectKitComponentBase directly");
 
     }
-
-    public static GH_Structure<IGH_Goo> GetSubTree(GH_Structure<IGH_Goo> valueTree, GH_Path searchPath)
-    {
-      var subTree = new GH_Structure<IGH_Goo>();
-      var gen = 0;
-      foreach (var path in valueTree.Paths)
-      {
-        var branch = valueTree.get_Branch(path) as IEnumerable<IGH_Goo>;
-        if (path.IsAncestor(searchPath, ref gen))
-        {
-          subTree.AppendRange(branch, path);
-        }
-        else if (path.IsCoincident(searchPath))
-        {
-          subTree.AppendRange(branch, path);
-          break;
-        }
-      }
-      subTree.Simplify(GH_SimplificationMode.CollapseLeadingOverlaps);
-      return subTree;
-    }
   }
 }
