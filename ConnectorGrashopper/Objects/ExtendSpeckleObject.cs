@@ -79,7 +79,7 @@ namespace ConnectorGrashopper.Objects
             else
             {
                 // Input is a tree, meaning it's values are either lists or trees.
-                var subTree = GetSubTree(valueTree,path);
+                var subTree = Utilities.GetSubTree(valueTree,path);
                 int index = 0;
                 keys.ForEach(key =>
                 {

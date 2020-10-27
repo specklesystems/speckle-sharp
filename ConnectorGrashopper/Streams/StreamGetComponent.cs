@@ -44,6 +44,14 @@ namespace ConnectorGrashopper.Streams
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+      DA.DisableGapLogic();
+      if (DA.Iteration != 0)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
+          "Cannot fetch multiple streams at the same time. This is an explicit guard against possibly unintended behaviour. If you want to get the details of another stream, please use a new component.");
+        return;
+      }
+      
       string accountId = null;
       string id = null;
       DA.DisableGapLogic();

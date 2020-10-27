@@ -52,7 +52,7 @@ namespace ConnectorGrashopper.Objects
       var searchPath = new GH_Path(DA.Iteration);
 
       // Grab the corresponding subtree from the value input tree.
-      var subTree = GetSubTree(valueTree, searchPath);
+      var subTree = Utilities.GetSubTree(valueTree, searchPath);
       Base speckleObj = new Base();
       // Find the list or subtree belonging to that path
       if (valueTree.PathExists(searchPath) || valueTree.Paths.Count == 1)
