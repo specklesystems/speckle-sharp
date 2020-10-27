@@ -55,15 +55,7 @@ namespace ConnectorGrashopper.Ops
       BaseWorker = new SendComponentWorker(this);
       Attributes = new SendComponentAttributes(this);
 
-      Kit = KitManager.GetDefaultKit();
-      try
-      {
-        Converter = Kit.LoadConverter(Applications.Rhino);
-      }
-      catch
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-      }
+      SetDefaultKitAndConverter();
     }
 
     public override bool Write(GH_IWriter writer)
@@ -72,6 +64,7 @@ namespace ConnectorGrashopper.Ops
       writer.SetBoolean("AutoSend", AutoSend);
       writer.SetString("CurrentComponentState", CurrentComponentState);
       writer.SetString("BaseId", BaseId);
+      writer.SetString("KitName", Kit.Name);
 
       var owSer = string.Join("\n", OutputWrappers.Select(ow => $"{ow.ServerUrl}\t{ow.StreamId}\t{ow.CommitId}"));
       writer.SetString("OutputWrappers", owSer);
@@ -105,6 +98,26 @@ namespace ConnectorGrashopper.Ops
         {
           JustPastedIn = true;
         }
+      }
+
+      var kitName = "";
+      reader.TryGetString("KitName", ref kitName);
+
+      if (kitName != "")
+      {
+        try
+        {
+          SetConverterFromKit(kitName);
+        }
+        catch (Exception e)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
+          SetDefaultKitAndConverter();
+        }
+      }
+      else
+      {
+        SetDefaultKitAndConverter();
       }
 
       return base.Read(reader);
@@ -176,6 +189,21 @@ namespace ConnectorGrashopper.Ops
 
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
+    }
+
+    private void SetDefaultKitAndConverter()
+    {
+      Kit = KitManager.GetDefaultKit();
+      try
+      {
+        Converter = Kit.LoadConverter(Applications.Rhino);
+        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        var x = Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem;
+      }
+      catch
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+      }
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)

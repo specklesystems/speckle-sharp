@@ -9,6 +9,7 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using System;
@@ -48,10 +49,15 @@ namespace ConnectorGrashopper.Ops
 
     public StreamWrapper StreamWrapper { get; set; }
 
+    public ISpeckleConverter Converter;
+
+    public ISpeckleKit Kit;
+
     public ReceiveComponent() : base("Receive", "Receive", "Receives Speckle data.", "Speckle 2", "   Send/Receive")
     {
       BaseWorker = new ReceiveComponentWorker(this);
       Attributes = new ReceiveComponentAttributes(this);
+      SetDefaultKitAndConverter();
     }
 
     public override bool Write(GH_IWriter writer)
@@ -61,6 +67,7 @@ namespace ConnectorGrashopper.Ops
       writer.SetString("LastInfoMessage", LastInfoMessage);
       writer.SetString("LastCommitDate", LastCommitDate);
       writer.SetString("ReceivedObjectId", ReceivedObjectId);
+      writer.SetString("KitName", Kit.Name);
 
       if (StreamWrapper != null)
       {
@@ -85,6 +92,27 @@ namespace ConnectorGrashopper.Ops
       }
 
       JustPastedIn = true;
+
+      var kitName = "";
+      reader.TryGetString("KitName", ref kitName);
+
+      if (kitName != "")
+      {
+        try
+        {
+          SetConverterFromKit(kitName);
+        }
+        catch (Exception e)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
+          SetDefaultKitAndConverter();
+        }
+      }
+      else
+      {
+        SetDefaultKitAndConverter();
+      }
+
       return base.Read(reader);
     }
 
@@ -101,6 +129,16 @@ namespace ConnectorGrashopper.Ops
 
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
+      Menu_AppendSeparator(menu);
+      Menu_AppendItem(menu, "Select the converter you want to use:");
+      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+
+      foreach (var kit in kits)
+      {
+        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
+      }
+      Menu_AppendSeparator(menu);
+
       if (InputType == "Stream" || InputType == "Branch")
       {
         var autoReceiveMi = Menu_AppendItem(menu, $"Receive automatically", (s, e) =>
@@ -120,6 +158,32 @@ namespace ConnectorGrashopper.Ops
       }
 
       base.AppendAdditionalComponentMenuItems(menu);
+    }
+
+    public void SetConverterFromKit(string kitName)
+    {
+      if (kitName == Kit.Name) return;
+
+      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
+      Converter = Kit.LoadConverter(Applications.Rhino);
+
+      Message = $"Using the {Kit.Name} Converter";
+      ExpireSolution(true);
+    }
+
+    private void SetDefaultKitAndConverter()
+    {
+      Kit = KitManager.GetDefaultKit();
+      try
+      {
+        Converter = Kit.LoadConverter(Applications.Rhino);
+        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        var x = Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem;
+      }
+      catch
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+      }
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)
@@ -419,12 +483,15 @@ namespace ConnectorGrashopper.Ops
 
       if (dataList != null)
       {
-        DA.SetDataList(0, dataList.Select(item => new GH_SpeckleBase { Value = item as Base }));
+        //DA.SetDataList(0, dataList.Select(item => new GH_SpeckleBase { Value = item as Base }));
+
+        var list = dataList.Select(item => new GH_ObjectWrapper() { Value = Extras.Utilities.TryConvertItemToNative(item, ((ReceiveComponent)Parent).Converter) });
+        DA.SetDataList(0, list);
         return;
       }
       else if (dataDictionary != null && dataDictionary.Values.First() is List<object>)
       {
-        var tree = new GH_Structure<GH_SpeckleBase>();
+        var tree = new GH_Structure<GH_ObjectWrapper>();
         var borkage = false;
         foreach (var kvp in dataDictionary)
         {
@@ -433,7 +500,7 @@ namespace ConnectorGrashopper.Ops
             var pathObjects = kvp.Value as List<object>;
             var pathPieces = kvp.Key.Trim(new char[] { '{', '}' }).Split(';').Select(x => Int32.Parse(x)).ToArray();
             var path = new GH_Path(pathPieces);
-            tree.AppendRange(pathObjects.Select(o => new GH_SpeckleBase { Value = o as Base }), path);
+            tree.AppendRange(pathObjects.Select(o => new GH_ObjectWrapper() { Value = Extras.Utilities.TryConvertItemToNative(o, ((ReceiveComponent)Parent).Converter) }), path);
           }
           else
           {
