@@ -148,38 +148,45 @@ namespace Speckle.DesktopUI.Streams
 
     public async Task<StreamState> ConvertAndSend(StreamState state)
     {
-      state.IsSending = true;
-
       try
       {
-        state = await _bindings.SendStream(state);
-        Execute.OnUIThread(() => state.Progress.ResetProgress());
+        var res = await _bindings.SendStream(state);
+        if ( res == null )
+        {
+          _bindings.RaiseNotification("Send cancelled");
+          return null;
+        }
+        state = res;
       }
       catch (Exception e)
       {
         _bindings.RaiseNotification($"Error: {e.Message}");
-        state.IsSending = false;
         return null;
       }
-
-      state.IsSending = false;
 
       return state;
     }
 
     public async Task<StreamState> ConvertAndReceive(StreamState state)
     {
-      var latestCommitId = state.LatestCommit()?.id;
+      // var latestCommitId = state.LatestCommit()?.id;
       state.Stream = await state.Client.StreamGet(state.Stream.id);
-      if (!state.ServerUpdates && latestCommitId == state.LatestCommit()?.id)
+      /*if (!state.ServerUpdates && latestCommitId == state.LatestCommit()?.id)
       {
         _bindings.RaiseNotification($"Stream {state.Stream.id} is up to date");
         return state;
-      }
+      }*/
 
       try
       {
-        state = await _bindings.ReceiveStream(state);
+        var res = await _bindings.ReceiveStream(state);
+        if ( res == null )
+        {
+          _bindings.RaiseNotification("Receive cancelled");
+          return null;
+        }
+
+        state = res;
         state.ServerUpdates = false;
       }
       catch (Exception e)
@@ -188,7 +195,6 @@ namespace Speckle.DesktopUI.Streams
         return null;
       }
 
-      Execute.OnUIThread(() => state.Progress.ResetProgress());
       return state;
     }
 
