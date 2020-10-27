@@ -1,11 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Speckle.Core.Api;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 using StyletIoC;
@@ -93,7 +91,17 @@ namespace Speckle.DesktopUI
     /// <summary>
     /// Pushes a client's stream
     /// </summary>
+    /// <param name="state"></param>
+    /// <param name="progress"></param>
     public abstract Task<StreamState> SendStream(StreamState state);
+
+    /// <summary>
+    /// Receives stream data from the server
+    /// </summary>
+    /// <param name="state"></param>
+    /// <param name="progress"></param>
+    /// <returns></returns>
+    public abstract Task<StreamState> ReceiveStream(StreamState state);
 
     /// <summary>
     /// Adds the current selection to the provided client.
@@ -108,7 +116,6 @@ namespace Speckle.DesktopUI
 
     /// <summary>
     /// Adds a receiver and persists the info to the host file
-    /// Will probably combine with AddNewClient
     /// </summary>
     public abstract void AddExistingStream(string args);
 

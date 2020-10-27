@@ -1,69 +1,95 @@
-﻿<UserControl
-  x:Class="Speckle.DesktopUI.Streams.Dialogs.StreamCreateStartView"
-  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
-  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-  xmlns:s="https://github.com/canton7/Stylet"
-  d:DesignHeight="450"
-  d:DesignWidth="400"
-  mc:Ignorable="d">
+﻿<UserControl x:Class="Speckle.DesktopUI.Streams.Dialogs.StreamCreateStartView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:s="https://github.com/canton7/Stylet"
+             d:DesignHeight="450"
+             d:DesignWidth="400"
+             mc:Ignorable="d">
 
   <Grid>
-    <StackPanel Margin="24,0,24,36" Orientation="Vertical">
-      <TextBlock
-        Margin="0,0,0,12"
-        FontSize="20"
-        Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-        Text="Create a new stream" />
+    <StackPanel Margin="24,0,24,36"
+                Orientation="Vertical">
+      <TextBlock Margin="0,0,0,12"
+                 FontSize="20"
+                 Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                 Text="Add a new stream" />
 
-      <TextBlock
-        Margin="0,0,0,8"
-        Text="Send objects to Speckle by creating a new stream."
-        TextWrapping="Wrap" />
+      <TextBlock Margin="0,0,0,8"
+                 Text="Send objects to Speckle by creating a new stream or adding an existing one from the server."
+                 TextWrapping="Wrap" />
 
-      <TextBox
-        x:Name="StreamNameInput"
-        Height="40"
-        Margin="0,8"
-        md:HintAssist.Hint="Give your stream a name"
-        AcceptsReturn="False"
-        Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
-        Text="{Binding StreamToCreate.name}" />
+      <ComboBox Margin="0,16"
+                md:HintAssist.Hint="Name your stream (or search for an existing one)"
+                md:HintAssist.HintOpacity=".26"
+                DisplayMemberPath="name"
+                IsEditable="True"
+                IsEnabled="True"
+                ItemsSource="{Binding StreamSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                SelectedItem="{Binding SelectedStream, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                StaysOpenOnEdit="True"
+                Text="{Binding StreamQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+        <!-- <ComboBox.ItemTemplate> -->
+        <!--   <DataTemplate> -->
+        <!--  <StackPanel  -->
+        <!--  Orientation="Horizontal">  -->
+        <!--  <TextBlock  -->
+        <!--  Text="{Binding name}"  -->
+        <!--  FontWeight="Medium" />  -->
+        <!--  <TextBlock  -->
+        <!--  Text="{Binding id}" />  -->
+        <!--     </StackPanel> -->
+        <!--   </DataTemplate> -->
+        <!-- </ComboBox.ItemTemplate> -->
+        <!-- <ComboBox.ItemsSource> -->
+        <!--   <CompositeCollection> -->
+        <!--  <CollectionContainer  -->
+        <!--  Collection="{Binding StreamSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">  -->
+        <!--     </CollectionContainer> -->
+        <!--   </CompositeCollection> -->
+        <!-- </ComboBox.ItemsSource> -->
+      </ComboBox>
 
-      <TextBox
-        x:Name="StreamDescriptionInput"
-        Height="65"
-        Margin="0,8"
-        md:HintAssist.Hint="Write a short description"
-        AcceptsReturn="False"
-        Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
-        Text="{Binding StreamToCreate.description}"
-        TextAlignment="Left"
-        TextWrapping="Wrap" />
+      <TextBox x:Name="StreamDescriptionInput"
+               Height="65"
+               Margin="0,8"
+               md:HintAssist.Hint="Write a short description"
+               AcceptsReturn="False"
+               Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+               Text="{Binding StreamToCreate.description}"
+               TextAlignment="Left"
+               TextWrapping="Wrap" />
 
       <Grid Margin="0,8">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Button
-          x:Name="SimpleStreamButton"
-          Grid.Column="0"
-          Margin="8"
-          Command="{s:Action AddSimpleStream}"
-          Content="{md:PackIcon Kind=ShareAll,
+        <Button x:Name="AdvancedStreamButton"
+                Grid.Column="0"
+                Margin="8"
+                Command="{s:Action ContinueStreamCreate}"
+                CommandParameter="2"
+                Content="{md:PackIcon Kind=Plus,
                                 Size=20}"
-          Foreground="{StaticResource MaterialDesignLightBackground}"
-          Style="{StaticResource MaterialDesignFloatingActionMiniButton}" />
-        <TextBlock
-          Grid.Column="1"
-          Margin="8,0"
-          VerticalAlignment="Center"
-          Text="Send all the currently selected objects to Speckle using default settings!"
-          TextWrapping="Wrap" />
+                md:ShadowAssist.ShadowDepth="Depth0"
+                Foreground="{StaticResource MaterialDesignLightBackground}"
+                Style="{StaticResource MaterialDesignFloatingActionMiniButton}" />
+        <TextBlock Grid.Column="1"
+                   Margin="8,0"
+                   VerticalAlignment="Center"
+                   Text="{Binding StreamQuery, StringFormat='Add a new stream called {0}'}"
+                   TextWrapping="Wrap"
+                   Visibility="{Binding StreamQuery, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+        <TextBlock Grid.Column="1"
+                   Margin="8,0"
+                   VerticalAlignment="Center"
+                   Text="Add a new stream"
+                   TextWrapping="Wrap"
+                   Visibility="{Binding StreamQuery, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
       </Grid>
 
       <Grid Margin="0,8">
@@ -71,22 +97,30 @@
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Button
-          x:Name="AdvancedStreamButton"
-          Grid.Column="0"
-          Margin="8"
-          Command="{s:Action ContinueStreamCreate}"
-          CommandParameter="2"
-          Content="{md:PackIcon Kind=Tools,
+        <Button x:Name="ExistingStreamButton"
+                Grid.Column="0"
+                Margin="8"
+                md:ShadowAssist.ShadowDepth="Depth0"
+                md:ButtonProgressAssist.IsIndeterminate="True"
+                md:ButtonProgressAssist.IsIndicatorVisible="{Binding AddExistingButtonLoading, Mode=OneWay}"
+                md:ButtonProgressAssist.Value="-1"
+                Command="{s:Action AddExistingStream}"
+                Content="{md:PackIcon Kind=DownloadOutline,
                                 Size=20}"
-          Foreground="{StaticResource MaterialDesignLightBackground}"
-          Style="{StaticResource MaterialDesignFloatingActionMiniButton}" />
-        <TextBlock
-          Grid.Column="1"
-          Margin="8,0"
-          VerticalAlignment="Center"
-          Text="Customise your stream with more advanced options before creating and sending your strem."
-          TextWrapping="Wrap" />
+                Foreground="{StaticResource MaterialDesignLightBackground}"
+                Style="{StaticResource MaterialDesignFloatingActionMiniButton}" />
+        <TextBlock Grid.Column="1"
+                   Margin="8,0"
+                   VerticalAlignment="Center"
+                   Text="{Binding StreamQuery, StringFormat='Add existing stream {0} from the server'}"
+                   TextWrapping="Wrap"
+                   Visibility="{Binding StreamQuery, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+        <TextBlock Grid.Column="1"
+                   Margin="8,0"
+                   VerticalAlignment="Center"
+                   Text="Add an existing stream from the server"
+                   TextWrapping="Wrap"
+                   Visibility="{Binding StreamQuery, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
       </Grid>
     </StackPanel>
   </Grid>

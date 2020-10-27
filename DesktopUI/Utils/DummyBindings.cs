@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
+using Speckle.DesktopUI.Streams;
 
 namespace Speckle.DesktopUI.Utils
 {
@@ -21,7 +22,7 @@ namespace Speckle.DesktopUI.Utils
 
     public override void AddNewStream(StreamState state)
     {
-      throw new NotImplementedException();
+      //
     }
 
     public override void AddObjectsToClient(string args)
@@ -89,10 +90,16 @@ namespace Speckle.DesktopUI.Utils
 
     public override async Task<StreamState> SendStream(StreamState state)
     {
-      var objects = state.placeholders;
-      state.placeholders.Clear();
-      state.objects.AddRange(objects);
+      var objects = state.Placeholders;
+      state.Placeholders.Clear();
+      state.Objects.AddRange(objects);
 
+      return state;
+    }
+
+    public override async Task<StreamState> ReceiveStream(StreamState state)
+    {
+      state.ServerUpdates = false;
       return state;
     }
 

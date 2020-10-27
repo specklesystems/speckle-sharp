@@ -12,9 +12,9 @@ namespace Speckle.DesktopUI.Utils
   {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-      if (value != null && value is string)
+      if ( value != null && value is string )
       {
-        return ((string)value).ToUpper();
+        return ( ( string ) value ).ToUpper();
       }
 
       return value;
@@ -23,6 +23,43 @@ namespace Speckle.DesktopUI.Utils
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
       return null;
+    }
+  }
+
+  public class TimeAgoConverter : IValueConverter
+  {
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+      if ( value != null )
+      {
+        return Formatting.TimeAgo(( string ) value);
+      }
+
+      return value;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+      return null;
+    }
+  }
+
+  [ValueConversion(typeof(bool), typeof(bool))]
+  public class InverseBooleanConverter : IValueConverter
+  {
+    public object Convert(object value, Type targetType, object parameter,
+      System.Globalization.CultureInfo culture)
+    {
+      if ( targetType != typeof(bool) )
+        throw new InvalidOperationException("The target must be a boolean");
+
+      return !( bool ) value;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter,
+      System.Globalization.CultureInfo culture)
+    {
+      throw new NotSupportedException();
     }
   }
 }

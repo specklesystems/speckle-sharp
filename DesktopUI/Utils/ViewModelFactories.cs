@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Feed;
 using Speckle.DesktopUI.Inbox;
 using Speckle.DesktopUI.Settings;
@@ -34,5 +35,11 @@ namespace Speckle.DesktopUI.Utils
     StreamCreateDialogViewModel CreateStreamCreateDialog();
     StreamUpdateDialogViewModel CreateStreamUpdateDialog();
     ShareStreamDialogViewModel CreateShareStreamDialogViewModel();
+  }
+
+  public interface IRepoFactory
+  {
+    StreamsRepository CreateStreamsRepository();
+    AccountsRepository CreateAccountsRepository();
   }
 }

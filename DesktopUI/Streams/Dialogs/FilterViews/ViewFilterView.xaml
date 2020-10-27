@@ -1,0 +1,44 @@
+﻿<UserControl x:Class="Speckle.DesktopUI.Streams.Dialogs.FilterViews.ViewFilterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Speckle.DesktopUI.Streams.Dialogs.FilterViews"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:s="https://github.com/canton7/Stylet"
+             d:DesignHeight="300"
+             d:DesignWidth="300"
+             mc:Ignorable="d">
+  <UserControl.Resources>
+    <DataTemplate x:Key="ViewChipTemplate">
+      <md:Chip Margin="4"
+               Content="{Binding}"
+               DeleteCommand="{s:Action RemoveFilterItem}"
+               DeleteCommandParameter="{Binding}"
+               IsDeletable="True" />
+    </DataTemplate>
+  </UserControl.Resources>
+  <Grid>
+    <StackPanel>
+      <TextBlock Text="Add objects to this stream by view" />
+      <ComboBox Width="Auto"
+                Margin="0,16"
+                md:HintAssist.Hint="View Name"
+                IsEditable="True"
+                IsEnabled="True"
+                ItemsSource="{Binding Filter.Values, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                SelectedItem="{Binding ListItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                StaysOpenOnEdit="True" />
+
+      <ItemsControl ItemTemplate="{StaticResource ViewChipTemplate}"
+                    ItemsSource="{Binding ListItems}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+      </ItemsControl>
+
+    </StackPanel>
+  </Grid>
+</UserControl>

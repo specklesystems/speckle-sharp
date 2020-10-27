@@ -15,20 +15,6 @@ namespace Speckle.DesktopUI.Accounts
       return new ObservableCollection<Account>(AccountManager.GetAccounts());
     }
 
-    public ObservableCollection<Account> LoadNonDefaultAccounts()
-    {
-      var accounts = new ObservableCollection<Account>();
-      foreach ( var acc in LoadAccounts() )
-      {
-        if ( !acc.isDefault )
-        {
-          accounts.Add(acc);
-        }
-      }
-
-      return accounts;
-    }
-
     public Account GetDefault()
     {
       return AccountManager.GetDefaultAccount();

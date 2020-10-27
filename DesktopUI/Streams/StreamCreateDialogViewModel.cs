@@ -3,35 +3,41 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Models;
 using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  public class StreamCreateDialogViewModel : Conductor<IScreen>.Collection.OneActive,
-    IHandle<RetrievedFilteredObjectsEvent>
+  public class StreamCreateDialogViewModel : StreamDialogBase,
+    IHandle<RetrievedFilteredObjectsEvent>, IHandle<UpdateSelectionEvent>, IHandle<ApplicationEvent>
   {
-    private IEventAggregator _events;
-    private ConnectorBindings _bindings;
+    private readonly IEventAggregator _events;
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
 
     public StreamCreateDialogViewModel(
       IEventAggregator events,
+      StreamsRepository streamsRepo,
+      AccountsRepository acctsRepo,
       ConnectorBindings bindings)
     {
       DisplayName = "Create Stream";
       _events = events;
-      _bindings = bindings;
-      _filters = new BindableCollection<ISelectionFilter>(_bindings.GetSelectionFilters());
+      Bindings = bindings;
+      FilterTabs = new BindableCollection<FilterTab>(Bindings.GetSelectionFilters().Select(f => new FilterTab(f)));
+      _streamsRepo = streamsRepo;
+      _acctRepo = acctsRepo;
+
+      SelectionCount = Bindings.GetSelectedObjects().Count;
+      _events.Subscribe(this);
     }
 
-    private StreamsRepository _repo => new StreamsRepository();
-    private AccountsRepository _acctRepo => new AccountsRepository();
+    private readonly StreamsRepository _streamsRepo;
+    private readonly AccountsRepository _acctRepo;
 
     public ISnackbarMessageQueue Notifications
     {
@@ -39,20 +45,7 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _notifications, value);
     }
 
-    public string ActiveViewName
-    {
-      get => _bindings.GetActiveViewName();
-    }
-
-    public List<string> ActiveViewObjects
-    {
-      get => _bindings.GetObjectsInView();
-    }
-
-    public List<string> CurrentSelection
-    {
-      get => _bindings.GetSelectedObjects();
-    }
+    public List<string> StreamIds;
 
     private bool _createButtonLoading;
 
@@ -60,6 +53,14 @@ namespace Speckle.DesktopUI.Streams
     {
       get => _createButtonLoading;
       set => SetAndNotify(ref _createButtonLoading, value);
+    }
+
+    private bool _addExistingButtonLoading;
+
+    public bool AddExistingButtonLoading
+    {
+      get => _addExistingButtonLoading;
+      set => SetAndNotify(ref _addExistingButtonLoading, value);
     }
 
     private Stream _streamToCreate = new Stream();
@@ -78,155 +79,175 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _streamState, value);
     }
 
-    private Account _accountToSendFrom;
-
-    public Account AccountToSendFrom
-    {
-      get => _accountToSendFrom;
-      set => SetAndNotify(ref _accountToSendFrom, value);
-    }
-
-    private BindableCollection<ISelectionFilter> _filters;
-
-    public BindableCollection<ISelectionFilter> Filters
-    {
-      get => new BindableCollection<ISelectionFilter>(_filters);
-      set => SetAndNotify(ref _filters, value);
-    }
-
-    private ISelectionFilter _selectedFilter;
-
-    public ISelectionFilter SelectedFilter
-    {
-      get => _selectedFilter;
-      set
-      {
-        SetAndNotify(ref _selectedFilter, value);
-        NotifyOfPropertyChange(nameof(CanGetSelectedObjects));
-      }
-    }
-
     public ObservableCollection<Account> Accounts
     {
       get => _acctRepo.LoadAccounts();
     }
 
-    private int _selectedSlide = 0;
+    #region Searching Existing Streams
 
-    public int SelectedSlide
+    private string _streamQuery;
+
+    public string StreamQuery
     {
-      get => _selectedSlide;
-      set => SetAndNotify(ref _selectedSlide, value);
-    }
-
-    private string _userQuery;
-
-    public string UserQuery
-    {
-      get => _userQuery;
+      get => _streamQuery;
       set
       {
-        SetAndNotify(ref _userQuery, value);
-        SearchForUsers();
+        SetAndNotify(ref _streamQuery, value);
+
+        if ( value == "" )
+        {
+          SelectedStream = null;
+          StreamSearchResults.Clear();
+        }
+
+        if ( SelectedStream == null || value != SelectedStream.name )
+          SearchForStreams();
       }
     }
 
-    private BindableCollection<User> _userSearchResults;
+    private BindableCollection<Stream> _streamSearchResults;
 
-    public BindableCollection<User> UserSearchResults
+    public BindableCollection<Stream> StreamSearchResults
     {
-      get => _userSearchResults;
-      set => SetAndNotify(ref _userSearchResults, value);
+      get => _streamSearchResults;
+      set => SetAndNotify(ref _streamSearchResults, value);
     }
 
-    private User _selectedUser;
+    private Stream _selectedStream;
 
-    public User SelectedUser
+    public Stream SelectedStream
     {
-      get => _selectedUser;
-      set => SetAndNotify(ref _selectedUser, value);
+      get => _selectedStream;
+      set
+      {
+        SetAndNotify(ref _selectedStream, value);
+        NotifyOfPropertyChange(nameof(CanAddExistingStream));
+        if ( SelectedStream == null )
+          return;
+        StreamQuery = SelectedStream.name;
+      }
     }
+
+    private async void SearchForStreams()
+    {
+      if ( StreamQuery == null || StreamQuery.Length <= 2 )
+        return;
+
+      try
+      {
+        var client = new Client(AccountToSendFrom);
+        var streams = await client.StreamSearch(StreamQuery);
+        StreamSearchResults = new BindableCollection<Stream>(streams);
+        await Task.Delay(300);
+      }
+      catch ( Exception e )
+      {
+        Debug.WriteLine(e);
+      }
+    }
+
+    #endregion
 
     public void ContinueStreamCreate(string slideIndex)
     {
-      if (StreamToCreate.name == null || StreamToCreate.name.Length < 2)
+      if ( StreamQuery == null || StreamQuery.Length < 2 )
       {
         Notifications.Enqueue("Please choose a name for your stream!");
         return;
       }
 
-      AccountToSendFrom = _acctRepo.GetDefault();
+      StreamToCreate.name = StreamQuery;
+      NotifyOfPropertyChange(nameof(StreamToCreate.name));
+
+      SelectedStream = null;
       ChangeSlide(slideIndex);
     }
 
     public async void AddNewStream()
     {
       CreateButtonLoading = true;
+      var client = new Client(AccountToSendFrom);
       try
       {
-        var client = new Client(AccountToSendFrom);
-        var streamId = await _repo.CreateStream(StreamToCreate, AccountToSendFrom);
-        // TODO do this locally first before creating on the server
-        StreamToCreate = await _repo.GetStream(streamId, AccountToSendFrom);
-        StreamState = new StreamState()
-        {
-          accountId = client.AccountId,
-          client = client,
-          filter = SelectedFilter,
-          stream = StreamToCreate
-        };
-        _bindings.AddNewStream(StreamState);
-        var boxes = _bindings.GetFileContext();
+        var streamId = await _streamsRepo.CreateStream(StreamToCreate, AccountToSendFrom);
 
-        SelectedSlide = 3;
-        _events.Publish(new StreamAddedEvent() { NewStream = StreamState });
+        foreach ( var user in Collaborators )
+        {
+          var res = await client.StreamGrantPermission(new StreamGrantPermissionInput()
+          {
+            streamId = streamId, userId = user.id, role = "stream:contributor"
+          });
+        }
+
+        var filter = SelectedFilterTab.Filter;
+        switch ( filter.Name )
+        {
+          case "View":
+          case "Category":
+          case "Selection" when SelectedFilterTab.ListItems.Any():
+            filter.Selection = SelectedFilterTab.ListItems.ToList();
+            break;
+        }
+
+        StreamToCreate = await _streamsRepo.GetStream(streamId, AccountToSendFrom);
+        StreamState = new StreamState(client, StreamToCreate) {Filter = filter};
+        Bindings.AddNewStream(StreamState);
+
+        _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
+        StreamState = new StreamState();
+        CloseDialog();
       }
-      catch (Exception e)
+      catch ( Exception e )
       {
+        await client.StreamDelete(StreamToCreate.id);
         Notifications.Enqueue($"Error: {e.Message}");
       }
 
       CreateButtonLoading = false;
     }
 
-    public async void SearchForUsers()
-    {
-      if (UserQuery.Length <= 2)
-        return;
+    public bool CanAddExistingStream => SelectedStream != null;
 
-      try
+    public async void AddExistingStream()
+    {
+      if ( StreamIds.Contains(SelectedStream.id) )
       {
-        var client = new Client(AccountToSendFrom);
-        var users = await client.UserSearch(UserQuery);
-        UserSearchResults = new BindableCollection<User>(users);
+        Notifications.Enqueue("This stream already exists in this file");
+        return;
       }
-      catch (Exception e)
-      {
-        Debug.WriteLine(e);
-      }
+
+      AddExistingButtonLoading = true;
+
+      var client = new Client(AccountToSendFrom);
+      StreamToCreate = await client.StreamGet(SelectedStream.id);
+
+      StreamState = new StreamState(client, StreamToCreate) {ServerUpdates = true};
+      Bindings.AddNewStream(StreamState);
+      _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
+
+      AddExistingButtonLoading = false;
+      CloseDialog();
     }
 
     public void AddSimpleStream()
     {
-      SelectedFilter = Filters.First(filter => filter.Type == typeof(ElementsSelectionFilter).ToString());
-      GetSelectedObjects();
-      AccountToSendFrom = _acctRepo.GetDefault();
+      CreateButtonLoading = true;
+      SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
+      SelectedFilterTab.ListItems.Clear();
+      SelectedFilterTab.Filter.Selection = Bindings.GetSelectedObjects();
+      StreamToCreate.name = StreamQuery;
+      SelectedStream = null;
 
       AddNewStream();
     }
 
     public void AddStreamFromView()
     {
-      SelectedFilter = Filters.First(filter => filter.Type == typeof(ElementsSelectionFilter).ToString());
-      SelectedFilter.Selection = ActiveViewObjects;
+      SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
+      SelectedFilterTab.Filter.Selection = ActiveViewObjects;
 
       AddNewStream();
-    }
-
-    // TODO extract dialog logic into separate manager to better handle open / close
-    public void CloseDialog()
-    {
-      DialogHost.CloseDialogCommand.Execute(null, null);
     }
 
     public void ChangeSlide(string slideIndex)
@@ -234,35 +255,37 @@ namespace Speckle.DesktopUI.Streams
       SelectedSlide = int.Parse(slideIndex);
     }
 
-    public bool CanGetSelectedObjects
-    {
-      get => SelectedFilter != null;
-    }
-
-    public void GetSelectedObjects()
-    {
-      if (SelectedFilter == null)
-      {
-        Notifications.Enqueue("pls click one of the filter types!");
-        return;
-      }
-
-      if (SelectedFilter.Type == typeof(ElementsSelectionFilter).ToString())
-      {
-        var selectedObjs = _bindings.GetSelectedObjects();
-        SelectedFilter.Selection = selectedObjs;
-        NotifyOfPropertyChange(nameof(SelectedFilter.Selection.Count));
-      }
-      else
-      {
-        Notifications.Enqueue("soz this only works for selection!");
-      }
-    }
-
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamState.placeholders = message.Objects as List<Base>;
-      // Notifications.Enqueue(message.Notification);
+      StreamState.Placeholders = message.Objects.ToList();
+    }
+
+    public void Handle(UpdateSelectionEvent message)
+    {
+      var selectionFilter = FilterTabs.First(tab => tab.Filter.Name == "Selection");
+      selectionFilter.Filter.Selection = message.ObjectIds;
+
+      SelectionCount = message.ObjectIds.Count;
+    }
+
+    public void Handle(ApplicationEvent message)
+    {
+      switch ( message.Type )
+      {
+        case ApplicationEvent.EventType.ViewActivated:
+        {
+          NotifyOfPropertyChange(nameof(ActiveViewName));
+          NotifyOfPropertyChange(nameof(ActiveViewObjects));
+          return;
+        }
+        case ApplicationEvent.EventType.DocumentClosed:
+        {
+          CloseDialog();
+          return;
+        }
+        default:
+          return;
+      }
     }
   }
 }

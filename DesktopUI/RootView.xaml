@@ -8,6 +8,7 @@
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
   xmlns:s="https://github.com/canton7/Stylet"
   xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
+  xmlns:stylet="clr-namespace:Stylet;assembly=Stylet"
   Closing="{s:Action OnClosing}"
   Title="Speckle"
   Width="450"
@@ -55,13 +56,12 @@
             DockPanel.Dock="Top"
             ItemsSource="{Binding Items}"
             PreviewMouseLeftButtonUp="UIElement_OnPreviewMouseLeftButtonUp"
-            SelectedIndex="{Binding SelectedIndex}"
             SelectedItem="{Binding ActiveItem}">
             <ListBox.Resources>
               <Style BasedOn="{StaticResource MaterialDesignScrollBarMinimal}" TargetType="ScrollBar" />
             </ListBox.Resources>
             <ListBox.ItemTemplate>
-              <DataTemplate DataType="s:IScreen">
+              <DataTemplate DataType="stylet:IScreen">
                 <TextBlock Margin="32,0,32,0" Text="{Binding DisplayName}" />
               </DataTemplate>
             </ListBox.ItemTemplate>
@@ -148,14 +148,15 @@
       </md:DrawerHost.LeftDrawerContent>
       <!--#endregion-->
 
-      <DockPanel>
+      <DockPanel x:Name="TopLevelDockPanel">
 
         <!--#region Top Menu Bar-->
         <md:ColorZone
           Padding="16"
           Panel.ZIndex="5"
+          Background="{DynamicResource MaterialDesignCardBackground}"
           md:ShadowAssist.ShadowDepth="Depth2"
-          DockPanel.Dock="Top">
+          DockPanel.Dock="Top" >
           <DockPanel>
             <ToggleButton
               x:Name="MenuToggleButton"
@@ -179,7 +180,7 @@
         </md:ColorZone>
         <!--#endregion-->
 
-        <Grid x:Name="MainContent">
+        <Grid x:Name="MainContent" Margin="0 12">
 
           <!--  Page Content  -->
           <ContentControl s:View.Model="{Binding ActiveItem}" />

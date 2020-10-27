@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
@@ -11,7 +11,7 @@ using Stylet;
 namespace Speckle.DesktopUI.Streams
 {
   public class AllStreamsViewModel : Screen, IHandle<StreamAddedEvent>, IHandle<StreamUpdatedEvent>, IHandle<
-    StreamRemovedEvent>
+    StreamRemovedEvent>, IHandle<ApplicationEvent>
   {
     private readonly IViewManager _viewManager;
     private readonly IStreamViewModelFactory _streamViewModelFactory;
@@ -24,9 +24,10 @@ namespace Speckle.DesktopUI.Streams
       IStreamViewModelFactory streamViewModelFactory,
       IDialogFactory dialogFactory,
       IEventAggregator events,
+      StreamsRepository streamsRepo,
       ConnectorBindings bindings)
     {
-      _repo = new StreamsRepository();
+      _repo = streamsRepo;
       _events = events;
       DisplayName = "Home";
       _viewManager = viewManager;
@@ -39,13 +40,15 @@ namespace Speckle.DesktopUI.Streams
       if ( _streamList.Count == 0 )
         _streamList = _repo.LoadTestStreams();
 #endif
-      events.Subscribe(this);
+      _events.Subscribe(this);
     }
 
     private StreamsRepository _repo;
     private BindableCollection<StreamState> _streamList;
     private Stream _selectedStream;
     private Branch _selectedBranch;
+
+    private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
 
     public BindableCollection<StreamState> StreamList
     {
@@ -69,44 +72,61 @@ namespace Speckle.DesktopUI.Streams
     {
       var item = _streamViewModelFactory.CreateStreamViewModel();
       item.StreamState = state;
-      item.Stream = state.stream;
+      item.Stream = state.Stream;
       // get main branch for now
       // TODO allow user to select branch
-      item.Branch = _repo.GetMainBranch(state.stream.branches.items);
+      item.Branch = _repo.GetMainBranch(state.Stream.branches.items);
       var parent = ( StreamsHomeViewModel ) Parent;
       parent.ActivateItem(item);
     }
 
-    public async void ConvertAndSendObjects(string streamId)
+    public async void Send(StreamState state)
     {
-      var state = StreamList.First(s => s.stream.id == streamId);
-      if ( !state.placeholders.Any() )
+      state.IsSending = true;
+      _cancellationToken = new CancellationTokenSource();
+      state.CancellationToken = _cancellationToken.Token;
+
+      var res = await Task.Run(() => _repo.ConvertAndSend(state));
+      if ( res != null )
       {
-        _bindings.RaiseNotification("Nothing to send to Speckle.");
-        return;
+        var index = StreamList.IndexOf(state);
+        StreamList[ index ] = res;
+        StreamList.Refresh();
       }
 
-      var index = StreamList.IndexOf(state);
+      state.Progress.ResetProgress();
+      state.IsSending = false;
+    }
 
-      try
+    public async void Receive(StreamState state)
+    {
+      state.IsReceiving = true;
+      _cancellationToken = new CancellationTokenSource();
+      state.CancellationToken = _cancellationToken.Token;
+
+      var res = await Task.Run(() => _repo.ConvertAndReceive(state));
+      if ( res != null )
       {
-        StreamList[ index ] = await _bindings.SendStream(state);
-      }
-      catch ( Exception e )
-      {
-        _bindings.RaiseNotification($"Error: {e.Message}");
-        return;
+        state = res;
+        StreamList.Refresh();
       }
 
-      StreamList.Refresh();
+      state.Progress.ResetProgress();
+      state.IsReceiving = false;
+    }
+
+    public void CancelToken()
+    {
+      _cancellationToken.Cancel();
     }
 
     public async void ShowStreamCreateDialog()
     {
       var viewmodel = _dialogFactory.CreateStreamCreateDialog();
+      viewmodel.StreamIds = StreamList.Select(s => s.Stream.id).ToList();
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
-      var result = await DialogHost.Show(view, "AllStreamsDialogHost");
+      var result = await DialogHost.Show(view, "RootDialogHost");
     }
 
     public async void ShowShareDialog(StreamState state)
@@ -115,7 +135,7 @@ namespace Speckle.DesktopUI.Streams
       viewmodel.StreamState = state;
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
-      var result = await DialogHost.Show(view, "AllStreamsDialogHost");
+      var result = await DialogHost.Show(view, "RootDialogHost");
     }
 
     public void CopyStreamId(string streamId)
@@ -124,9 +144,10 @@ namespace Speckle.DesktopUI.Streams
       _events.Publish(new ShowNotificationEvent() {Notification = "Stream ID copied to clipboard!"});
     }
 
-    public void OpenHelpLink(string url)
+
+    public void OpenStreamInWeb(StreamState state)
     {
-      Link.OpenInBrowser(url);
+      Link.OpenInBrowser($"{state.ServerUrl}/streams/{state.Stream.id}");
     }
 
     public void Handle(StreamAddedEvent message)
@@ -141,8 +162,36 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(StreamRemovedEvent message)
     {
-      var state = StreamList.First(s => s.stream.id == message.StreamId);
+      var state = StreamList.First(s => s.Stream.id == message.StreamId);
       StreamList.Remove(state);
+    }
+
+    public void Handle(ApplicationEvent message)
+    {
+      switch ( message.Type )
+      {
+        case ApplicationEvent.EventType.DocumentClosed:
+        {
+          StreamList.Clear();
+          break;
+        }
+        case ApplicationEvent.EventType.DocumentOpened:
+        {
+          StreamList = new BindableCollection<StreamState>(_bindings.GetFileContext());
+          break;
+        }
+        case ApplicationEvent.EventType.DocumentModified:
+        {
+          // warn that stream data may be expired
+          break;
+        }
+        case ApplicationEvent.EventType.ViewActivated:
+          break;
+        case ApplicationEvent.EventType.ApplicationIdling:
+          break;
+        default:
+          return;
+      }
     }
   }
 }

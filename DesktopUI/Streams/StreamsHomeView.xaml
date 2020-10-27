@@ -13,10 +13,6 @@
   <UserControl.Resources />
 
   <Grid>
-
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <ContentControl s:View.Model="{Binding ActiveItem}" />
-    </ScrollViewer>
-
+    <ContentControl s:View.Model="{Binding ActiveItem}" />
   </Grid>
 </UserControl>

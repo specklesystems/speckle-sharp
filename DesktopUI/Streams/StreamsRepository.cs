@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -10,9 +10,16 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  class StreamsRepository
+  public class StreamsRepository
   {
-    private AccountsRepository _acctRepo = new AccountsRepository();
+    private AccountsRepository _acctsRepo;
+    private readonly ConnectorBindings _bindings;
+
+    public StreamsRepository(AccountsRepository acctsRepo, ConnectorBindings bindings)
+    {
+      _acctsRepo = acctsRepo;
+      _bindings = bindings;
+    }
 
     public Branch GetMainBranch(List<Branch> branches)
     {
@@ -26,9 +33,7 @@ namespace Speckle.DesktopUI.Streams
 
       var streamInput = new StreamCreateInput()
       {
-        name = stream.name,
-        description = stream.description,
-        isPublic = stream.isPublic
+        name = stream.name, description = stream.description, isPublic = stream.isPublic
       };
 
       return client.StreamCreate(streamInput);
@@ -45,6 +50,7 @@ namespace Speckle.DesktopUI.Streams
       var collection = new BindableCollection<StreamState>();
 
       #region create dummy data
+
       var collabs = new List<Collaborator>()
       {
         new Collaborator
@@ -59,14 +65,16 @@ namespace Speckle.DesktopUI.Streams
         id = "321",
         name = "Izzy Lyseggen",
         role = "stream:owner",
-        avatar = "https://avatars2.githubusercontent.com/u/7717434?s=88&u=08db51f5799f6b21580485d915054b3582d519e6&v=4"
+        avatar =
+        "https://avatars2.githubusercontent.com/u/7717434?s=88&u=08db51f5799f6b21580485d915054b3582d519e6&v=4"
         },
         new Collaborator
         {
         id = "456",
         name = "Dimitrie Stefanescu",
         role = "stream:contributor",
-        avatar = "https://avatars3.githubusercontent.com/u/7696515?s=88&u=fa253b5228d512e1ce79357c63925b7258e69f4c&v=4"
+        avatar =
+        "https://avatars3.githubusercontent.com/u/7696515?s=88&u=fa253b5228d512e1ce79357c63925b7258e69f4c&v=4"
         }
       };
       var branches = new Branches()
@@ -76,34 +84,30 @@ namespace Speckle.DesktopUI.Streams
         {
         new Branch()
         {
-          id = "123",
-          name = "main",
-          commits = new Commits()
-          {
-            items = new List<Commit>()
-            {
-              new Commit()
-              {
-                authorName = "izzy 2.0",
-                id = "commit123",
-                message= "a totally real commit 💫",
-                createdAt = "sometime"
-              },
-              new Commit()
-              {
-                authorName = "izzy bot",
-                id = "commit321",
-                message= "look @ all these changes 👩‍🎤",
-                createdAt = "03/05/2030"
-              }
-            }
-          }
-        },
-        new Branch()
+        id = "123",
+        name = "main",
+        commits = new Commits()
         {
-          id = "321",
-          name = "dev"
+        items = new List<Commit>()
+        {
+        new Commit()
+        {
+        authorName = "izzy 2.0",
+        id = "commit123",
+        message = "a totally real commit 💫",
+        createdAt = "sometime"
+        },
+        new Commit()
+        {
+        authorName = "izzy bot",
+        id = "commit321",
+        message = "look @ all these changes 👩‍🎤",
+        createdAt = "03/05/2030"
         }
+        }
+        }
+        },
+        new Branch() { id = "321", name = "dev" }
         }
       };
 
@@ -111,40 +115,104 @@ namespace Speckle.DesktopUI.Streams
       {
         new Stream
         {
-          id = "stream123",
-          name = "Random Stream here 👋",
-          description = "this is a test stream",
-          isPublic = true,
-          collaborators = collabs.GetRange(0, 2),
-          branches = branches
+        id = "stream123",
+        name = "Random Stream here 👋",
+        description = "this is a test stream",
+        isPublic = true,
+        collaborators = collabs.GetRange(0, 2),
+        branches = branches
         },
         new Stream
         {
-          id = "stream789",
-          name = "Woop Cool Stream 🌊",
-          description = "cool and good indeed",
-          isPublic = true,
-          collaborators = collabs.GetRange(1, 2),
-          branches = branches
+        id = "stream789",
+        name = "Woop Cool Stream 🌊",
+        description = "cool and good indeed",
+        isPublic = true,
+        collaborators = collabs.GetRange(1, 2),
+        branches = branches
         }
       };
+
       #endregion
 
       var client = new Client(AccountManager.GetDefaultAccount());
       foreach (var stream in testStreams)
       {
-        collection.Add(new StreamState()
-        {
-          client = client,
-          stream = stream,
-          accountId = client.AccountId,
-        });
+        collection.Add(new StreamState(client, stream));
       }
 
-      collection[0].placeholders.Add(new Core.Models.Base() { id = "random_obj" });
+      collection[0].Placeholders.Add(new Core.Models.Base() { id = "random_obj" });
 
       return collection;
     }
 
+    public async Task<StreamState> ConvertAndSend(StreamState state)
+    {
+      try
+      {
+        var res = await _bindings.SendStream(state);
+        if ( res == null )
+        {
+          _bindings.RaiseNotification("Send cancelled");
+          return null;
+        }
+        state = res;
+      }
+      catch (Exception e)
+      {
+        _bindings.RaiseNotification($"Error: {e.Message}");
+        return null;
+      }
+
+      return state;
+    }
+
+    public async Task<StreamState> ConvertAndReceive(StreamState state)
+    {
+      // var latestCommitId = state.LatestCommit()?.id;
+      state.Stream = await state.Client.StreamGet(state.Stream.id);
+      /*if (!state.ServerUpdates && latestCommitId == state.LatestCommit()?.id)
+      {
+        _bindings.RaiseNotification($"Stream {state.Stream.id} is up to date");
+        return state;
+      }*/
+
+      try
+      {
+        var res = await _bindings.ReceiveStream(state);
+        if ( res == null )
+        {
+          _bindings.RaiseNotification("Receive cancelled");
+          return null;
+        }
+
+        state = res;
+        state.ServerUpdates = false;
+      }
+      catch (Exception e)
+      {
+        _bindings.RaiseNotification($"Error: {e.Message}");
+        return null;
+      }
+
+      return state;
+    }
+
+    public async Task<bool> DeleteStream(StreamState state)
+    {
+      try
+      {
+        var deleted = await state.Client.StreamDelete(state.Stream.id);
+        if (!deleted)return false;
+        _bindings.RemoveStream(state.Stream.id);
+      }
+      catch (Exception e)
+      {
+        _bindings.RaiseNotification($"Error: {e}");
+        return false;
+      }
+
+      return true;
+    }
   }
 }

@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="Speckle.DesktopUI.Streams.Dialogs.FilterViews.SelectionFilterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Speckle.DesktopUI.Streams.Dialogs.FilterViews"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:s="https://github.com/canton7/Stylet"
+             d:DesignHeight="300"
+             d:DesignWidth="300"
+             mc:Ignorable="d">
+  <Grid>
+    <StackPanel>
+      <TextBlock Text="{Binding ListItems.Count, StringFormat='Add {0} selected objects to this stream', Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+      <StackPanel Orientation="Horizontal">
+        <md:Chip Margin="4,16,4,0"
+                 Icon="{md:PackIcon Kind=Plus}"
+                 IconBackground="Transparent"
+                 Command="{s:Action AddToSelection}"
+                 CommandParameter="{Binding}">
+          <TextBlock Margin="-4,0,0,0"
+                     Text="{Binding DataContext.SelectionCount, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl, AncestorLevel=3}, StringFormat='Add {0} objects'}" />
+        </md:Chip>
+        <md:Chip Margin="4,16,4,0"
+                 Icon="{md:PackIcon Kind=DeleteOutline}"
+                 Command="{s:Action ClearSelection}"
+                 CommandParameter="{Binding}"
+                 IconBackground="Transparent">
+          <TextBlock Margin="-4,0,0,0"
+                     Text="Clear selection" />
+        </md:Chip>
+      </StackPanel>
+
+    </StackPanel>
+  </Grid>
+</UserControl>

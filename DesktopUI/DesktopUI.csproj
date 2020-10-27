@@ -44,7 +44,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
@@ -55,7 +55,7 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
@@ -94,13 +94,28 @@
     <Compile Include="RootViewModel.cs" />
     <Compile Include="Settings\SettingsViewModel.cs" />
     <Compile Include="Streams\AllStreamsViewModel.cs" />
+    <Compile Include="Streams\Dialogs\FilterViews\CategoryFilterView.xaml.cs">
+      <DependentUpon>CategoryFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Streams\Dialogs\FilterViews\ParameterFilterView.xaml.cs">
+      <DependentUpon>ParameterFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Streams\Dialogs\FilterViews\SelectionFilterView.xaml.cs">
+      <DependentUpon>SelectionFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Streams\Dialogs\FilterViews\ViewFilterView.xaml.cs">
+      <DependentUpon>ViewFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Streams\Dialogs\StreamUpdateObjectsView.xaml.cs">
+      <DependentUpon>StreamUpdateObjectsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Streams\Dialogs\StreamUpdateStartView.xaml.cs">
+      <DependentUpon>StreamUpdateStartView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Streams\ShareStreamDialogViewModel.cs" />
     <Compile Include="Streams\StreamCreateDialogViewModel.cs" />
     <Compile Include="Streams\Dialogs\StreamCreateAdvancedView.xaml.cs">
       <DependentUpon>StreamCreateAdvancedView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Streams\Dialogs\StreamCreateFinalView.xaml.cs">
-      <DependentUpon>StreamCreateFinalView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Streams\Dialogs\StreamCreateSimpleView.xaml.cs">
       <DependentUpon>StreamCreateSimpleView.xaml</DependentUpon>
@@ -115,9 +130,10 @@
     <Compile Include="Utils\Converters.cs" />
     <Compile Include="Utils\DummyBindings.cs" />
     <Compile Include="Utils\Events.cs" />
+    <Compile Include="Utils\Helpers.cs" />
+    <Compile Include="Utils\StreamDialogBase.cs" />
     <Compile Include="Utils\StreamState.cs" />
     <Compile Include="Utils\ViewModelFactories.cs" />
-    <Compile Include="Utils\Link.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\SelectionFilter.cs" />
     <Page Include="Feed\FeedView.xaml">
@@ -147,6 +163,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Streams\Dialogs\FilterViews\CategoryFilterView.xaml" />
+    <Page Include="Streams\Dialogs\FilterViews\ParameterFilterView.xaml" />
+    <Page Include="Streams\Dialogs\FilterViews\SelectionFilterView.xaml" />
+    <Page Include="Streams\Dialogs\FilterViews\ViewFilterView.xaml" />
+    <Page Include="Streams\Dialogs\StreamUpdateObjectsView.xaml" />
+    <Page Include="Streams\Dialogs\StreamUpdateStartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Streams\ShareStreamDialogView.xaml" />
     <Page Include="Streams\Dialogs\StreamCreateAdvancedView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -155,10 +180,6 @@
     <Page Include="Streams\StreamCreateDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Streams\Dialogs\StreamCreateFinalView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Streams\Dialogs\StreamCreateSimpleView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -177,6 +198,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Themes\DataTemplates.xaml" />
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
