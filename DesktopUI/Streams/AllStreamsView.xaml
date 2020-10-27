@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
+             xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:s="https://github.com/canton7/Stylet"
@@ -11,6 +12,7 @@
              mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
+      <utils:InverseBooleanConverter x:Key="InverseBooleanConverter" />
       <DataTemplate x:Key="StreamCardTemplate">
         <md:Card Width="Auto"
                  Margin="8"
@@ -46,6 +48,7 @@
                       Content="{md:PackIcon Kind=CloudUpload,
                                       Size=20}"
                       Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                      IsEnabled="{Binding IsReceiving, Converter={StaticResource InverseBooleanConverter}}"
                       Visibility="{Binding IsSending, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                       ToolTip="Send objects to Speckle" />
               <Button x:Name="StopSendButton"
@@ -80,6 +83,7 @@
                       CommandParameter="{Binding}"
                       Content="{md:PackIcon Kind=CloudDownload,
                                       Size=20}"
+                      IsEnabled="{Binding IsSending, Converter={StaticResource InverseBooleanConverter}}"
                       Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
                       Visibility="{Binding IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                       ToolTip="Receive changes from Speckle" />

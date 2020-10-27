@@ -14,6 +14,7 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <utils:TimeAgoConverter x:Key="TimeAgoConverter" />
+      <utils:InverseBooleanConverter x:Key="InverseBooleanConverter" />
       <system:Int32 x:Key="StreamUpdateSlide">1</system:Int32>
       <BitmapImage x:Key="DefaultProfImage"
                    UriSource="../Resources/s2logo.png" />
@@ -182,6 +183,7 @@
                   Command="{s:Action Send}"
                   md:ShadowAssist.ShadowDepth="Depth0"
                   md:ButtonAssist.CornerRadius="4"
+                  IsEnabled="{Binding StreamState.IsReceiving, Converter={StaticResource InverseBooleanConverter}}"
                   Visibility="{Binding StreamState.IsSending, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                   ToolTip="Send your changes to the Speckle server">
             <Grid>
@@ -239,6 +241,7 @@
                   md:ShadowAssist.ShadowDepth="Depth0"
                   md:ButtonAssist.CornerRadius="4"
                   Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                  IsEnabled="{Binding StreamState.IsSending, Converter={StaticResource InverseBooleanConverter}}"
                   Visibility="{Binding StreamState.IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                   ToolTip="Receive your changes from the server">
             <Grid>
