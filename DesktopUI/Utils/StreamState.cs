@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -125,6 +126,8 @@ namespace Speckle.DesktopUI.Utils
       get => _serverUpdates;
       set => SetAndNotify(ref _serverUpdates, value);
     }
+
+    public CancellationToken CancellationToken { get; set; }
 
     public Commit LatestCommit(string branchName = "main")
     {
