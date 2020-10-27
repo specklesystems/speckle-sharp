@@ -81,8 +81,15 @@
         <TextBlock Grid.Column="1"
                    Margin="8,0"
                    VerticalAlignment="Center"
+                   Text="{Binding StreamQuery, StringFormat='Add a new stream called {0}'}"
+                   TextWrapping="Wrap"
+                   Visibility="{Binding StreamQuery, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+        <TextBlock Grid.Column="1"
+                   Margin="8,0"
+                   VerticalAlignment="Center"
                    Text="Add a new stream"
-                   TextWrapping="Wrap" />
+                   TextWrapping="Wrap"
+                   Visibility="{Binding StreamQuery, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
       </Grid>
 
       <Grid Margin="0,8">
@@ -105,8 +112,15 @@
         <TextBlock Grid.Column="1"
                    Margin="8,0"
                    VerticalAlignment="Center"
+                   Text="{Binding StreamQuery, StringFormat='Add existing stream {0} from the server'}"
+                   TextWrapping="Wrap"
+                   Visibility="{Binding StreamQuery, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+        <TextBlock Grid.Column="1"
+                   Margin="8,0"
+                   VerticalAlignment="Center"
                    Text="Add an existing stream from the server"
-                   TextWrapping="Wrap" />
+                   TextWrapping="Wrap"
+                   Visibility="{Binding StreamQuery, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
       </Grid>
     </StackPanel>
   </Grid>
