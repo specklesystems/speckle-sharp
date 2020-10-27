@@ -1,14 +1,10 @@
-﻿using Grasshopper.Kernel;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using ConnectorGrashopper.Extras;
-using Grasshopper.Kernel.Data;
-using Grasshopper.Kernel.Types;
+using Grasshopper.Kernel;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -16,38 +12,55 @@ using Utilities = ConnectorGrashopper.Extras.Utilities;
 
 namespace ConnectorGrashopper.Objects
 {
-  public class CreateSpeckleObjectByKeyValueAsync : GH_AsyncComponent
+  public class CreateSpeckleObjectAsync : GH_AsyncComponent, IGH_VariableParameterComponent
   {
+    private System.Timers.Timer Debouncer;
+
     public ISpeckleConverter Converter;
 
     public ISpeckleKit Kit;
 
-    public override Guid ComponentGuid
-    {
-      get => new Guid("C8D4DBEB-7CC5-45C0-AF5D-F374FA5DBFBB");
-    }
-
-    protected override System.Drawing.Bitmap Icon
-    {
-      get => null;
-    }
+    protected override Bitmap Icon => Properties.Resources.CreateSpeckleObject;
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    public CreateSpeckleObjectByKeyValueAsync() : base("Create Speckle Object by Key/Value Async", "K/V Async",
-      "Creates a speckle object from key value pairs", "Speckle 2", "Object Management")
+    public override Guid ComponentGuid => new Guid("FC2EF86F-2C12-4DC2-B216-33BFA409A0FC");
+
+
+    public CreateSpeckleObjectAsync() : base("Create Speckle Object Async", "CSOA",
+      "Allows you to create a Speckle object by setting its keys and values.",
+      "Speckle 2", "Async Object Management")
     {
       Kit = KitManager.GetDefaultKit();
       try
       {
         Converter = Kit.LoadConverter(Applications.Rhino);
-        BaseWorker = new CreateSpeckleObjectByKeyValueWorker(Converter);
+        BaseWorker = new CreateSpeckleObjectWorker(this,Converter);
         Message = $"{Kit.Name} Kit";
       }
       catch
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
       }
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document);
+      Debouncer = new System.Timers.Timer(2000) {AutoReset = false};
+      Debouncer.Elapsed += (s, e) => Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { this.ExpireSolution(true); });
+
+      foreach (var param in Params.Input)
+        param.ObjectChanged += (s, e) => Debouncer.Start();
+    }
+
+    protected override void RegisterInputParams(GH_InputParamManager pManager)
+    {
+    }
+
+    protected override void RegisterOutputParams(GH_OutputParamManager pManager)
+    {
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item));
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -59,7 +72,8 @@ namespace ConnectorGrashopper.Objects
 
       foreach (var kit in kits)
       {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
+        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
+          kit.Name == Kit.Name);
       }
 
       Menu_AppendSeparator(menu);
@@ -71,139 +85,108 @@ namespace ConnectorGrashopper.Objects
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
-      BaseWorker = new CreateSpeckleObjectByKeyValueWorker(Converter);
+      BaseWorker = new CreateSpeckleObjectWorker(this, Converter);
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
     }
-    
-    protected override void RegisterInputParams(GH_InputParamManager pManager)
+
+    public bool CanInsertParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;
+
+    public bool CanRemoveParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;
+
+    public IGH_Param CreateParameter(GH_ParameterSide side, int index)
     {
-      pManager.AddTextParameter("Keys", "K", "List of keys", GH_ParamAccess.list);
-      pManager.AddGenericParameter("Values", "V", "List of values", GH_ParamAccess.tree);
+      var myParam = new GenericAccessParam
+      {
+        Name = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input),
+        MutableNickName = true,
+        Optional = true
+      };
+
+      myParam.NickName = myParam.Name;
+      myParam.ObjectChanged += (sender, e) => Debouncer.Start();
+
+      return myParam;
     }
 
-    protected override void RegisterOutputParams(GH_OutputParamManager pManager)
+    public bool DestroyParameter(GH_ParameterSide side, int index)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Object", "O", "Speckle object", GH_ParamAccess.item));
+      return true;
+    }
+
+    public void VariableParameterMaintenance()
+    {
     }
   }
 
-  public class CreateSpeckleObjectByKeyValueWorker : WorkerInstance
+  public class CreateSpeckleObjectWorker : WorkerInstance
   {
-    private GH_Structure<IGH_Goo> valueTree = new GH_Structure<IGH_Goo>();
-    private List<string> keys = new List<string>();
-    private Base speckleObj;
-    private int iteration;
+    public Base @base;
     public ISpeckleConverter Converter;
-
-    public CreateSpeckleObjectByKeyValueWorker(ISpeckleConverter converter) : base(null)
+    private Dictionary<string, object> inputData;
+    public CreateSpeckleObjectWorker(GH_Component parent, ISpeckleConverter converter) : base(parent)
     {
       Converter = converter;
+      inputData = new Dictionary<string, object>();
     }
+
+    public override WorkerInstance Duplicate() => new CreateSpeckleObjectWorker(Parent, Converter);
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      // 👉 Checking for cancellation!
-      if (CancellationToken.IsCancellationRequested) return;
-
-
-      // Do something here!
-
-      // Create a path from the current iteration
-      var searchPath = new GH_Path(iteration);
-
-      // Grab the corresponding subtree from the value input tree.
-      var subTree = GetSubTree(valueTree, searchPath);
-      speckleObj = new Base();
-      // Find the list or subtree belonging to that path
-      if (valueTree.PathExists(searchPath) || valueTree.Paths.Count == 1)
+      @base = new Base();
+      inputData.Keys.ToList().ForEach(key =>
       {
-        var list = valueTree.Paths.Count == 1 ? valueTree.Branches[0] : valueTree.get_Branch(searchPath);
-        // We got a list of values
-        var ind = 0;
-        keys.ForEach(key =>
+        var value = inputData[key];
+        if (value is List<object> list)
         {
-          if (ind < list.Count)
-            speckleObj[key] = Utilities.TryConvertItemToSpeckle(list[ind], Converter);
-          ind++;
-        });
-      }
-      else
-      {
-        // We got a tree of values
-
-        // Create the speckle object with the specified keys
-        var index = 0;
-        keys.ForEach(key =>
+          // Value is a list of items, iterate and convert.
+          var converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter));
+          @base[key] = converted;
+        }
+        else
         {
-          var itemPath = new GH_Path(index);
-          
-          var branch = subTree.get_Branch(itemPath);
-          if (branch != null)
-          {
-            var objs = new List<object>();
-            foreach (var goo in branch)
-            {
-              objs.Add(Utilities.TryConvertItemToSpeckle(goo, Converter));
-            }
+          // If value is not list, it is a single item.
+          var obj = Utilities.TryConvertItemToSpeckle(value, Converter);
+          @base[key] = obj;
+        }
+      });
 
-            if (objs.Count > 0)
-              speckleObj[key] = objs;
-          }
-
-          index++;
-        });
-      }
-      // --> Report progress if necessary
-      // ReportProgress(Id, percentage);
-
-
-      // Set the data in the worker props before finishing.
-
-
-      // Call Done() to signal it's finished.
       Done();
-    }
-
-    public override WorkerInstance Duplicate() => new CreateSpeckleObjectByKeyValueWorker(Converter);
-
-    public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
-    {
-      DA.DisableGapLogic();
-      // Use DA.GetData as usual...
-      DA.GetDataList(0, keys);
-      DA.GetDataTree(1, out valueTree);
-      iteration = DA.Iteration;
     }
 
     public override void SetData(IGH_DataAccess DA)
     {
-      // 👉 Checking for cancellation!
-      if (CancellationToken.IsCancellationRequested) return;
-
-      // Use DA.SetData as usual...
-      DA.SetData(0, new GH_SpeckleBase {Value = speckleObj});
+      DA.SetData(0, new GH_SpeckleBase{ Value = @base });
     }
-    
-    private static GH_Structure<IGH_Goo> GetSubTree(GH_Structure<IGH_Goo> valueTree, GH_Path searchPath)
+
+    public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      var subTree = new GH_Structure<IGH_Goo>();
-      var gen = 0;
-      foreach (var path in valueTree.Paths)
+      Params.Input.ForEach(ighParam =>
       {
-        var branch = valueTree.get_Branch(path) as IEnumerable<IGH_Goo>;
-        if (path.IsAncestor(searchPath, ref gen))
+        var param = ighParam as GenericAccessParam;
+        var index = Params.IndexOfInputParam(param.Name);
+        var detachable = param.Detachable;
+        var key = detachable ? "@" + param.NickName : param.NickName;
+
+        switch (param.Access)
         {
-          subTree.AppendRange(branch, path);
+          case GH_ParamAccess.item:
+            object value = null;
+            DA.GetData(index, ref value);
+            inputData[key] = value;
+            break;
+          case GH_ParamAccess.list:
+            var values = new List<object>();
+            DA.GetDataList(index, values);
+            inputData[key] = values;
+            break;
+          case GH_ParamAccess.tree:
+            break;
+          default:
+            throw new ArgumentOutOfRangeException();
         }
-        else if (path.IsCoincident(searchPath))
-        {
-          subTree.AppendRange(branch, path);
-          break;
-        }
-      }
-      subTree.Simplify(GH_SimplificationMode.CollapseLeadingOverlaps);
-      return subTree;
+      });
     }
   }
 }
