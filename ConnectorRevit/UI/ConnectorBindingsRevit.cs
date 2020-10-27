@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Timers;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using Speckle.Core.Api;
 using Speckle.Core.Models;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
 using Speckle.ConnectorRevit.Storage;
-using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -33,8 +30,6 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     public StreamStateWrapper LocalStateWrapper;
 
-    public List<Stream> DEP_LocalState;
-
     public ConnectorBindingsRevit(UIApplication revitApp) : base()
     {
       RevitApp = revitApp;
@@ -50,27 +45,14 @@ namespace Speckle.ConnectorRevit.UI
       Executor = eventHandler;
 
       // LOCAL STATE
-      LocalStateWrapper = new StreamStateWrapper();
-      DEP_LocalState = new List<Stream>();
-      Queue.Add(new Action(() =>
-      {
-        using ( Transaction t = new Transaction(CurrentDoc.Document, "Switching Local Speckle State") )
-        {
-          t.Start();
-          DEP_LocalState = SpeckleStateManager.ReadState(CurrentDoc.Document);
-          LocalStateWrapper = StreamStateManager.ReadState(CurrentDoc.Document);
-          //InjectStateInKits();
-          t.Commit();
-        }
-      }));
-      Executor.Raise();
+      GetFileContext();
 
       //// REVIT INJECTION
       //InjectRevitAppInKits();
 
       //// GLOBAL EVENT HANDLERS
       RevitApp.ViewActivated += RevitApp_ViewActivated;
-      // RevitApp.Application.DocumentChanged += Application_DocumentChanged;
+      RevitApp.Application.DocumentChanged += Application_DocumentChanged;
       RevitApp.Application.DocumentOpened += Application_DocumentOpened;
       RevitApp.Application.DocumentClosed += Application_DocumentClosed;
       RevitApp.Idling += ApplicationIdling;
@@ -84,11 +66,10 @@ namespace Speckle.ConnectorRevit.UI
 
     private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
     {
-      if ( CurrentDoc == null ) return;
-      var selectedObjectsCount = CurrentDoc != null ? CurrentDoc.Selection.GetElementIds().Count : 0;
+      var selectedObjects = GetSelectedObjects();
 
-      var updateEvent = new UpdateSelectionCountEvent() {SelectionCount = selectedObjectsCount};
-      NotifyUi(updateEvent);
+      NotifyUi(new UpdateSelectionCountEvent() {SelectionCount = selectedObjects.Count});
+      NotifyUi(new UpdateSelectionEvent() {ObjectIds = selectedObjects});
     }
 
     public override void AddObjectsToClient(string args)
@@ -97,11 +78,6 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     public override void AddExistingStream(string args)
-    {
-      throw new NotImplementedException();
-    }
-
-    public override void BakeStream(string args)
     {
       throw new NotImplementedException();
     }
@@ -133,7 +109,7 @@ namespace Speckle.ConnectorRevit.UI
 
     public override List<StreamState> GetFileContext()
     {
-      var states = StreamStateManager.ReadState(CurrentDoc.Document) ?? new StreamStateWrapper();
+      var states = StreamStateManager.ReadState(CurrentDoc.Document);
       LocalStateWrapper = states;
 
       return states.StreamStates;
@@ -160,37 +136,16 @@ namespace Speckle.ConnectorRevit.UI
 
       return new List<ISelectionFilter>
       {
-        new ElementsSelectionFilter
-        {
-          Name = "Selection",
-          Icon = "Mouse",
-          Selection = new List<string>()
-        },
-        new ListSelectionFilter
-        {
-          Name = "Category",
-          Icon = "Category",
-          Values = categories
-        },
-        new ListSelectionFilter
-        {
-          Name = "View",
-          Icon = "RemoveRedEye",
-          Values = views
-        },
+        new ElementsSelectionFilter {Name = "Selection", Icon = "Mouse", Selection = new List<string>()},
+        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = categories},
+        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = views},
         new PropertySelectionFilter
         {
           Name = "Parameter",
           Icon = "FilterList",
           HasCustomProperty = false,
           Values = parameters,
-          Operators = new List<string>
-          {
-            "equals",
-            "contains",
-            "is greater than",
-            "is less than"
-          }
+          Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
         }
       };
     }
@@ -213,37 +168,25 @@ namespace Speckle.ConnectorRevit.UI
       {
         // DispatchStoreActionUi("flushClients");
         var streamStates = GetFileContext();
-        LocalStateWrapper.StreamStates = streamStates;
 
         var appEvent = new ApplicationEvent()
         {
-          Type = ApplicationEvent.EventType.ViewActivated,
-          DynamicInfo = streamStates
+          Type = ApplicationEvent.EventType.ViewActivated, DynamicInfo = streamStates
         };
         NotifyUi(appEvent);
-
-        Queue.Add(new Action(() =>
-        {
-          using ( Transaction t = new Transaction(CurrentDoc.Document, "Switching Local Speckle State") )
-          {
-            t.Start();
-            DEP_LocalState = SpeckleStateManager.ReadState(CurrentDoc.Document);
-            // InjectStateInKits();
-            t.Commit();
-          }
-        }));
-        Executor.Raise();
       }
     }
 
     private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
     {
       // DispatchStoreActionUi("flushClients");
-      var appEvent = new ApplicationEvent()
-      {
-        Type = ApplicationEvent.EventType.DocumentClosed
-      };
+      var appEvent = new ApplicationEvent() {Type = ApplicationEvent.EventType.DocumentClosed};
       NotifyUi(appEvent);
+    }
+
+    private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
+    {
+      //
     }
 
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
@@ -254,22 +197,12 @@ namespace Speckle.ConnectorRevit.UI
 
       var appEvent = new ApplicationEvent()
       {
-        Type = ApplicationEvent.EventType.DocumentOpened,
-        DynamicInfo = streamStates
+        Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = streamStates
       };
       NotifyUi(appEvent);
 
-      Queue.Add(new Action(() =>
-      {
-        using ( Transaction t = new Transaction(CurrentDoc.Document, "Reading Local Speckle State") )
-        {
-          t.Start();
-          DEP_LocalState = SpeckleStateManager.ReadState(CurrentDoc.Document);
-          // InjectStateInKits();
-          t.Commit();
-        }
-      }));
-      Executor.Raise();
+      // read local state
+      GetFileContext();
     }
 
     private void ApplicationIdling(object sender, Autodesk.Revit.UI.Events.IdlingEventArgs e)
@@ -282,7 +215,20 @@ namespace Speckle.ConnectorRevit.UI
       // NotifyUi(appEvent);
     }
 
-
     #endregion
+
+    private void WriteStateToFile()
+    {
+      Queue.Add(new Action(() =>
+      {
+        using ( Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State") )
+        {
+          t.Start();
+          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
+          t.Commit();
+        }
+      }));
+      Executor.Raise();
+    }
   }
 }
