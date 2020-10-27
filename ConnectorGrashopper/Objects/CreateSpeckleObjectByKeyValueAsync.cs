@@ -27,15 +27,12 @@ namespace ConnectorGrashopper.Objects
       get => new Guid("C8D4DBEB-7CC5-45C0-AF5D-F374FA5DBFBB");
     }
 
-    protected override System.Drawing.Bitmap Icon
-    {
-      get => null;
-    }
-
+    protected override System.Drawing.Bitmap Icon => Properties.Resources.CreateSpeckleObjectByKeyValue;
+    
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public CreateSpeckleObjectByKeyValueAsync() : base("Create Speckle Object by Key/Value Async", "K/V Async",
-      "Creates a speckle object from key value pairs", "Speckle 2", "Object Management")
+      "Creates a speckle object from key value pairs", "Speckle 2", "Async Object Management")
     {
       Kit = KitManager.GetDefaultKit();
       try
@@ -169,7 +166,6 @@ namespace ConnectorGrashopper.Objects
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      DA.DisableGapLogic();
       // Use DA.GetData as usual...
       DA.GetDataList(0, keys);
       DA.GetDataTree(1, out valueTree);

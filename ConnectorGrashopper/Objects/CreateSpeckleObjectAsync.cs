@@ -75,10 +75,10 @@ namespace ConnectorGrashopper.Objects
         Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
           kit.Name == Kit.Name);
       }
-
+      
       Menu_AppendSeparator(menu);
     }
-
+    
     public void SetConverterFromKit(string kitName)
     {
       if (kitName == Kit.Name) return;

@@ -17,7 +17,7 @@ namespace ConnectorGrashopper.Objects
     public ISpeckleKit Kit;
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
-    protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
+    protected override Bitmap Icon => Properties.Resources.GetObjectValueByKey;
 
     public override Guid ComponentGuid => new Guid("050B24D3-CCEA-466A-B52C-25CB4DA39981");
 
@@ -35,12 +35,6 @@ namespace ConnectorGrashopper.Objects
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
       }
-    }
-
-    protected override void SolveInstance(IGH_DataAccess DA)
-    {
-      DA.DisableGapLogic();
-      base.SolveInstance(DA);
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
