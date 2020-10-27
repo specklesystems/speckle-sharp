@@ -110,8 +110,13 @@ namespace Speckle.ConnectorRevit.UI
       var @base = new Base {[ "@revitItems" ] = convertedObjects};
       var objectId = "";
       Execute.PostToUIThread(() => state.Progress.Maximum = ( int ) @base.GetTotalChildrenCount());
-      objectId = await Operations.Send(@base, transports,
+
+      if ( state.CancellationToken.IsCancellationRequested ) return null;
+
+      objectId = await Operations.Send(@base, state.CancellationToken, transports,
         onProgressAction: dict => UpdateProgress(dict, state.Progress));
+
+      if ( state.CancellationToken.IsCancellationRequested ) return null;
 
       var objByType = convertedObjects.GroupBy(o => o.speckle_type);
       var convertedTypes = objByType.Select(
@@ -149,9 +154,14 @@ namespace Speckle.ConnectorRevit.UI
       var newStream = await state.Client.StreamGet(state.Stream.id);
       var commit = newStream.branches.items[ 0 ].commits.items[ 0 ];
       Base commitObject;
-      commitObject = await Operations.Receive(commit.referencedObject, transport,
+
+      if ( state.CancellationToken.IsCancellationRequested ) return null;
+
+      commitObject = await Operations.Receive(commit.referencedObject, state.CancellationToken, transport,
         onProgressAction: dict => UpdateProgress(dict, state.Progress),
         onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count));
+
+      if ( state.CancellationToken.IsCancellationRequested ) return null;
 
       var revitItems = ( List<object> ) commitObject[ "@revitItems" ];
 
