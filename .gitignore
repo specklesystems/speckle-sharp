@@ -350,3 +350,4 @@ MigrationBackup/
 .ionide/
 ConnectorDynamo/.idea/
 ConnectorDynamo/ConnectorDynamo/GPUCache/
+ConnectorDynamo/ConnectorDynamo/dist/

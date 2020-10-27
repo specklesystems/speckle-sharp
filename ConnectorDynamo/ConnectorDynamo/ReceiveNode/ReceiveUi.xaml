@@ -26,30 +26,32 @@
 
     <Button
       x:Name="ReceiveStreamButton"
-      Margin="10,32,15,0"
+      Margin="10,22,10,0"
       HorizontalAlignment="Center"
       HorizontalContentAlignment="Center"
+      md:ShadowAssist.ShadowDepth="Depth0"
       Content="{md:PackIcon Kind=CloudDownload,
                             Size=20}"
       IsEnabled="{Binding ReceiveEnabled}"
-      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-      ToolTip="Send objects to Speckle"
+      Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
+      ToolTip="Receive objects from Speckle"
       Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}, ConverterParameter='opposite'}" />
     <Button
       x:Name="CancelReceiveStreamButton"
-      Margin="10,32,15,0"
+      Margin="10,22,10,0"
       HorizontalAlignment="Center"
       HorizontalContentAlignment="Center"
       md:ButtonProgressAssist.IsIndeterminate="False"
       md:ButtonProgressAssist.IsIndicatorVisible="{Binding Transmitting}"
       md:ButtonProgressAssist.Value="{Binding Progress}"
+      md:ShadowAssist.ShadowDepth="Depth0"
       Content="{md:PackIcon Kind=Stop,
                             Size=20}"
-      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+      Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
       ToolTip="Cancel"
       Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}}" />
     <md:Badged
-      Margin="45,32,15,0"
+      Margin="77,22,10,0"
       Badge="{Binding ExpiredCount}"
       BadgeColorZoneMode="Accent"
       ToolTip="Has new data to send" />
@@ -58,14 +60,16 @@
       Margin="0,5"
       HorizontalAlignment="Center"
       IsChecked="{Binding AutoUpdate}"
-      Style="{StaticResource MaterialDesignSwitchToggleButton}"
+      IsEnabled="{Binding AutoUpdateEnabled}"
+      Style="{StaticResource MaterialDesignSwitchDarkToggleButton}"
       ToolTip="Toggle auto receiving" />
-    <Label
+    <TextBlock
       Grid.Row="2"
+      Width="130"
       HorizontalAlignment="Center"
-      HorizontalContentAlignment="Center"
-      Content="{Binding Message}"
       FontSize="10"
-      Foreground="OrangeRed" />
+      Foreground="OrangeRed"
+      Text="{Binding Message}"
+      TextWrapping="Wrap" />
   </Grid>
 </UserControl>

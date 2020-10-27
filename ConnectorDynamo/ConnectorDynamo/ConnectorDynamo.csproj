@@ -95,6 +95,18 @@
     <None Include="pkg.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccountsNode\Accounts.cs" />
+    <Compile Include="AccountsNode\AccountsUi.xaml.cs">
+      <DependentUpon>AccountsUi.xaml</DependentUpon>
+    </Compile>
+
+    <Compile Include="AccountsNode\AccountsViewCustomization.cs" />
+
+    <Compile Include="CreateStreamNode\CreateStreamUi.xaml.cs">
+      <DependentUpon>CreateStreamUi.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CreateStreamNode\CreateStream.cs" />
+    <Compile Include="CreateStreamNode\CreateStreamViewCustomization.cs" />
     <Compile Include="ReceiveNode\ReceiveUi.xaml.cs">
       <DependentUpon>ReceiveUi.xaml</DependentUpon>
     </Compile>
@@ -107,17 +119,31 @@
       <DependentUpon>SendUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="ValueConverters\BoolVisibConverter.cs" />
+    <Compile Include="ViewNode\View.cs" />
+    <Compile Include="ViewNode\ViewUi.xaml.cs">
+      <DependentUpon>SendUi.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewNode\ViewViewCustomization.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\logo.png" />
     <Content Include="Assets\logo128.png" />
     <Content Include="Assets\logo16.png" />
     <Content Include="Assets\logo32.png" />
+    
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SpeckleConnectorDynamoImages.resx" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="AccountsNode\AccountsUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CreateStreamNode\CreateStreamUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ReceiveNode\ReceiveUi.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -127,6 +153,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="SendNode\SendUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ViewNode\ViewUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

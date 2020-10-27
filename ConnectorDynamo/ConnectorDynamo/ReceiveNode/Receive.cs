@@ -29,14 +29,9 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
   [IsDesignScriptCompatible]
   public class Receive : NodeModel
   {
-    internal event Action OnRequestUpdates;
+    #region fields & props
 
-    protected virtual void RequestUpdates()
-    {
-      OnRequestUpdates?.Invoke();
-    }
-
-    internal event Action OnReceiveRequested;
+    #region private fields & props
 
     private bool _transmitting = false;
     private string _message = "";
@@ -46,6 +41,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     private int _objectCount = 1;
     private bool _hasOutput = false;
     private bool _autoUpdate = false;
+    private bool _autoUpdateEnabled = true;
     private CancellationTokenSource _cancellationToken;
     private Client _client;
 
@@ -64,23 +60,22 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       set { _client = value; }
     }
 
+    #endregion
 
-    //PUBLIC PROPERTIES - TO SAVE
+    #region public properties
 
     /// <summary>
     /// Current Stream
     /// </summary>
     public StreamWrapper Stream { get; set; }
 
-    /// <summary>
-    /// Current Branch
-    /// </summary>
-    public string BranchName { get; set; }
 
     /// <summary>
     /// Latest Commit received
     /// </summary>
-    public string CommitId { get; set; }
+    public string LastCommitId { get; set; }
+
+    #endregion
 
     #region ui bindings
 
@@ -129,7 +124,6 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
     public bool ReceiveEnabled
     {
       get => _receiveEnabled;
@@ -168,6 +162,21 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       }
     }
 
+    /// <summary>
+    /// UI Binding
+    /// </summary>
+    public bool AutoUpdateEnabled
+    {
+      get => _autoUpdateEnabled;
+      set
+      {
+        _autoUpdateEnabled = value;
+        RaisePropertyChanged("AutoUpdateEnabled");
+      }
+    }
+
+    #endregion
+
     #endregion
 
     /// <summary>
@@ -196,10 +205,6 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       ArgumentLacing = LacingStrategy.Disabled;
 
       this.PropertyChanged += HandlePropertyChanged;
-      foreach (var port in InPorts)
-      {
-        port.Connectors.CollectionChanged += Connectors_CollectionChanged;
-      }
     }
 
     /// <summary>
@@ -216,18 +221,12 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       ArgumentLacing = LacingStrategy.Disabled;
 
       this.PropertyChanged += HandlePropertyChanged;
-      foreach (var port in InPorts)
-      {
-        port.Connectors.CollectionChanged += Connectors_CollectionChanged;
-      }
     }
 
 
     private void AddInputs()
     {
-      StringNode defaultBranchValue = new StringNode();
-
-      defaultBranchValue.Value = "main";
+      var defaultBranchValue = new StringNode {Value = "main"};
 
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream", "The stream to receive from")));
       InPorts.Add(new PortModel(PortType.Input, this,
@@ -243,7 +242,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     internal void CancelReceive()
     {
       _cancellationToken.Cancel();
-      ResetUI();
+      ResetNode();
     }
 
     /// <summary>
@@ -253,8 +252,10 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// </summary>
     internal void DoReceive()
     {
+      //double check, but can probably remove it
       if (!InPorts[0].IsConnected)
       {
+        ResetNode(true);
         return;
       }
 
@@ -266,6 +267,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
       Transmitting = true;
       Message = "Receiving...";
+      _cancellationToken = new CancellationTokenSource();
 
       try
       {
@@ -281,29 +283,34 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
         void ErrorAction(string transportName, Exception exception)
         {
-          Core.Logging.Log.CaptureAndThrow(exception);
+          throw exception;
         }
 
-        void TotalChildrenCountKnown(int count) => _objectCount = count;
-        _cancellationToken = new CancellationTokenSource();
-        var data = Functions.Functions.Receive(Stream, BranchName, _cancellationToken.Token, ProgressAction,
-          ErrorAction, TotalChildrenCountKnown);
+        var data = Functions.Functions.Receive(Stream, _cancellationToken.Token, ProgressAction,
+          ErrorAction);
 
-        if (data == null) return;
+        if (data == null)
+        {
+          throw new Exception("This stream has no commits.");
+        }
 
-        CommitId = ((Commit) data["commit"]).id;
+        LastCommitId = ((Commit) data["commit"]).id;
 
-        InMemoryCache.Set(CommitId, data);
+        InMemoryCache.Set(LastCommitId, data);
+        Message = "";
       }
       catch (Exception e)
       {
+        _cancellationToken.Cancel();
+        Message = e.InnerException != null ? e.InnerException.Message : e.Message;
+        //temp exclusion of core bug
         if (!(e.InnerException != null && e.InnerException.Message ==
           "Cannot resolve reference. The provided transport could not find it."))
           Core.Logging.Log.CaptureAndThrow(e);
       }
       finally
       {
-        ResetUI();
+        ResetNode();
         if (!_cancellationToken.IsCancellationRequested)
         {
           _hasOutput = true;
@@ -314,35 +321,99 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
 
     /// <summary>
-    /// Triggered when the node inputs are set for the first time or change
-    /// It registers subscriptions for various events
-    /// It also stores in this node a copy of the inputs (Stream and BranchName)
+    /// Triggered when the node inputs change
+    /// Caches a copy of the inputs (Stream and BranchName)
     /// </summary>
     /// <param name="engine"></param>
     internal void LoadInputs(EngineController engine)
-    {
-      if (!InPorts[0].IsConnected)
+    { 
+      var oldStream = Stream;
+      StreamWrapper newStream = null;
+
+      //update inputs stored locally
+      //try parse as streamWrapper
+      try
       {
+        var inputStream = GetInputAs<StreamWrapper>(engine, 0);
+        //avoid editing upstream stream!
+        newStream = new StreamWrapper(inputStream.StreamId, inputStream.AccountId, inputStream.ServerUrl)
+        {
+          BranchName = inputStream.BranchName, CommitId = inputStream.CommitId
+        };
+      }
+      catch
+      {
+        // ignored
+      }
+
+      //try parse as Url
+      if (newStream == null)
+      {
+        try
+        {
+          var url = GetInputAs<string>(engine, 0);
+          newStream = new StreamWrapper(url);
+        }
+        catch
+        {
+          // ignored
+        }
+      }
+
+      //invalid input
+      if (newStream == null)
+      {
+        ResetNode(true);
+        Message = "Stream is invalid";
         return;
       }
 
-      var oldStream = Stream;
-      //update inputs stored locally
-      Stream = GetInputAs<StreamWrapper>(engine, 0);
-      BranchName =
-        InPorts[1].Connectors.Any()
-          ? GetInputAs<string>(engine, 1)
-          : "main"; //IsConnected not working because has default value
+      if (string.IsNullOrEmpty(newStream.BranchName))
+      {
+        newStream.BranchName = "main";
+        try
+        {
+          newStream.BranchName = InPorts[1].Connectors.Any()
+            ? GetInputAs<string>(engine, 1)
+            : "main"; //IsConnected not working because has default value
+        }
+        catch
+        {
+          Message = "Branch name is invalid, will use `main`";
+        }
+      }
 
+
+      //no need to re-subscribe. it's the same stream
+      if (oldStream != null && newStream.ToString() == oldStream.ToString())
+        return;
+
+      ResetNode(true);
+      Stream = newStream;
+      ReceiveEnabled = true;
+
+      //StreamWrapper points to a Stream
+      if (string.IsNullOrEmpty(Stream.CommitId))
+      {
+        this.Name = "Receive";
+        AutoUpdateEnabled = true;
+        InitializeReceiver();
+      }
+      //StreamWrapper points to a Commit, disable AutoUpdate
+      else
+      {
+        this.Name = "Receive Commit";
+        AutoUpdate = false;
+        AutoUpdateEnabled = false;
+      }
+    }
+
+    internal void InitializeReceiver()
+    {
       if (Stream == null)
         return;
-      if (oldStream != null && Stream.StreamId == oldStream.StreamId)
-        return;
-
-      Client?.Dispose();
 
       var account = Stream.GetAccount();
-
       Client = new Client(account);
 
       Client.SubscribeCommitCreated(Stream.StreamId);
@@ -353,7 +424,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       Client.OnCommitDeleted += OnCommitChange;
       Client.OnCommitUpdated += OnCommitChange;
 
-      Task.Run(() => CheckIfBehind());
+      CheckIfBehind();
     }
 
     private T GetInputAs<T>(EngineController engine, int port)
@@ -378,16 +449,26 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       try
       {
         var res = Client.StreamGet(Stream.StreamId).Result;
-        var mainBranch = res.branches.items.FirstOrDefault(b => b.name == BranchName);
-        if (!mainBranch.commits.items.Any())
+        var branchName = string.IsNullOrEmpty(Stream.BranchName) ? "main" : Stream.BranchName;
+        var mainBranch = res.branches.items.FirstOrDefault(b => b.name == branchName);
+        if (mainBranch == null || !mainBranch.commits.items.Any())
+        {
+          Message = "Empty Stream";
           return;
+        }
+
 
         var lastCommit = mainBranch.commits.items[0];
 
         //it's behind! Get objects count from last commit
-        if (lastCommit.id != CommitId)
+        if (lastCommit.id != LastCommitId)
         {
+          Message = "Updates available";
           GetExpiredObjectCount(lastCommit.referencedObject);
+        }
+        else
+        {
+          Message = "Up to date";
         }
       }
       catch (Exception e)
@@ -403,8 +484,11 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       try
       {
         var @object = Client.ObjectGet(Stream.StreamId, objectId).Result;
-        ExpiredCount = @object.totalChildrenCount.ToString();
-        _objectCount = @object.totalChildrenCount;
+        //quick fix for the scenario in which a single base is sent, we don't want to show 0!
+        var count = @object.totalChildrenCount == 0 ? @object.totalChildrenCount + 1 : @object.totalChildrenCount;
+        ExpiredCount = count.ToString();
+        Message = "Updates available";
+        _objectCount = count;
       }
       catch (Exception e)
       {
@@ -417,28 +501,44 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       OnNodeModified(true);
     }
 
-    private void ResetUI()
+    /// <summary>
+    /// Reset the node UI
+    /// </summary>
+    /// <param name="hardReset">If true, resets enabled status and subscriptions too</param>
+    private void ResetNode(bool hardReset = false)
     {
       Transmitting = false;
       ExpiredCount = "";
-      Message = "";
       Progress = 0;
       _hasOutput = false;
+      if (hardReset)
+      {
+        this.Name = "Receive";
+        Stream = null;
+        ReceiveEnabled = false;
+        Message = "";
+        Client?.Dispose();
+      }
     }
 
     #region events
 
-    private void OnCommitChange(object sender, CommitInfo e)
+    internal event Action OnNewDataAvail;
+    internal event Action OnInputsChanged;
+
+    /// <summary>
+    /// Node inputs have changed, trigger load of new inputs
+    /// </summary>
+    protected virtual void RequestNewInputs()
     {
-      Task.Run(() => GetExpiredObjectCount(e.objectId));
-      if (AutoUpdate)
-        OnReceiveRequested?.Invoke();
+      OnInputsChanged?.Invoke();
     }
 
-    void Connectors_CollectionChanged(object sender,
-      System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    private void OnCommitChange(object sender, CommitInfo e)
     {
-      RequestUpdates();
+      Task.Run(async () => GetExpiredObjectCount(e.objectId));
+      if (AutoUpdate)
+        OnNewDataAvail?.Invoke();
     }
 
     void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -446,10 +546,13 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       if (e.PropertyName != "CachedValue")
         return;
 
-      if (InPorts[0].Connectors.Count == 0)
+      if (!InPorts[0].IsConnected)
+      {
+        ResetNode(true);
         return;
+      }
 
-      RequestUpdates();
+      RequestNewInputs();
     }
 
     #endregion
@@ -463,42 +566,30 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// <returns></returns>
     public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
     {
-      if (!InPorts[0].IsConnected)
+      if (!InPorts[0].IsConnected || !_hasOutput || string.IsNullOrEmpty(LastCommitId))
       {
-        ReceiveEnabled = false;
-        ExpiredCount = "";
         return OutPorts.Enumerate().Select(output =>
           AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
       }
 
-      if (!_hasOutput)
-      {
-        ReceiveEnabled = true;
-      }
-      else
-      {
-        _hasOutput = false;
-        var associativeNodes = new List<AssociativeNode>();
-        var primitiveNode = AstFactory.BuildStringNode(CommitId);
-        var dataFunctionCall = AstFactory.BuildFunctionCall(
-          new Func<string, object>(Functions.Functions.ReceiveData),
-          new List<AssociativeNode> {primitiveNode});
+      _hasOutput = false;
+      var associativeNodes = new List<AssociativeNode>();
+      var primitiveNode = AstFactory.BuildStringNode(LastCommitId);
+      var dataFunctionCall = AstFactory.BuildFunctionCall(
+        new Func<string, object>(Functions.Functions.ReceiveData),
+        new List<AssociativeNode> {primitiveNode});
 
-        var infoFunctionCall = AstFactory.BuildFunctionCall(
-          new Func<string, string>(Functions.Functions.ReceiveInfo),
-          new List<AssociativeNode> {primitiveNode});
+      var infoFunctionCall = AstFactory.BuildFunctionCall(
+        new Func<string, string>(Functions.Functions.ReceiveInfo),
+        new List<AssociativeNode> {primitiveNode});
 
-        associativeNodes.Add(AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), dataFunctionCall));
-        associativeNodes.Add(AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(1), infoFunctionCall));
-        return associativeNodes;
-      }
-
-      return OutPorts.Enumerate().Select(output =>
-        AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
+      associativeNodes.Add(AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), dataFunctionCall));
+      associativeNodes.Add(AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(1), infoFunctionCall));
+      return associativeNodes;
     }
 
     /// <summary>
-    /// 
+    /// Dispose node and Client
     /// </summary>
     public override void Dispose()
     {

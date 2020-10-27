@@ -25,7 +25,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       syncContext = new DispatcherSynchronizationContext(nodeView.Dispatcher);
       sendNode = model;
 
-      sendNode.OnRequestUpdates += UpdateNode;
+      sendNode.OnInputsChanged += InputsChanged;
 
       var ui = new SendUi();
       nodeView.inputGrid.Children.Add(ui);
@@ -45,17 +45,17 @@ namespace Speckle.ConnectorDynamo.SendNode
     }
 
 
-    private void UpdateNode()
+    private void InputsChanged()
     {
-      Task.Run(() =>
+      Task.Run(async() =>
       {
-        sendNode.UpdateExpiredCount(dynamoModel.EngineController);
+        sendNode.LoadInputs(dynamoModel.EngineController);
       });
     }
 
     private void SendStreamButtonClick(object sender, RoutedEventArgs e)
     {
-      Task.Run(() =>
+      Task.Run(async() =>
       {
         sendNode.DoSend(dynamoModel.EngineController);
       });
