@@ -154,6 +154,7 @@
         <md:ColorZone
           Padding="16"
           Panel.ZIndex="5"
+          Background="{DynamicResource MaterialDesignCardBackground}"
           md:ShadowAssist.ShadowDepth="Depth2"
           DockPanel.Dock="Top" >
           <DockPanel>
@@ -179,7 +180,7 @@
         </md:ColorZone>
         <!--#endregion-->
 
-        <Grid x:Name="MainContent">
+        <Grid x:Name="MainContent" Margin="0 12">
 
           <!--  Page Content  -->
           <ContentControl s:View.Model="{Binding ActiveItem}" />
