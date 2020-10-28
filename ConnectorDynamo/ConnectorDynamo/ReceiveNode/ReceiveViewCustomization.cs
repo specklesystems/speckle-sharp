@@ -43,10 +43,12 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       Task.Run(async () => { receiveNode.InitializeReceiver(); });
     }
 
+    private DebounceTimer debounceTimer = new DebounceTimer();
 
     private void InputsChanged()
     {
-      Task.Run(async () => { receiveNode.LoadInputs(dynamoModel.EngineController); });
+      debounceTimer.Debounce(300,
+        () => { Task.Run(async () => { receiveNode.LoadInputs(dynamoModel.EngineController); }); });
     }
 
 

@@ -12,7 +12,6 @@ namespace Speckle.ConnectorDynamo.SendNode
 {
   public class SendViewCustomization : INodeViewCustomization<Send>
   {
-
     private DynamoViewModel dynamoViewModel;
     private DispatcherSynchronizationContext syncContext;
     private Send sendNode;
@@ -35,8 +34,6 @@ namespace Speckle.ConnectorDynamo.SendNode
       //ui.Loaded += model.AddedToDocument;
       ui.SendStreamButton.Click += SendStreamButtonClick;
       ui.CancelSendStreamButton.Click += CancelSendStreamButtonClick;
-
-
     }
 
     private void CancelSendStreamButtonClick(object sender, RoutedEventArgs e)
@@ -44,24 +41,21 @@ namespace Speckle.ConnectorDynamo.SendNode
       sendNode.CancelSend();
     }
 
+    private DebounceTimer debounceTimer = new DebounceTimer();
 
     private void InputsChanged()
     {
-      Task.Run(async() =>
-      {
-        sendNode.LoadInputs(dynamoModel.EngineController);
-      });
+      debounceTimer.Debounce(300, 
+        () => { Task.Run(async () => { sendNode.LoadInputs(dynamoModel.EngineController); }); });
     }
 
     private void SendStreamButtonClick(object sender, RoutedEventArgs e)
     {
-      Task.Run(async() =>
-      {
-        sendNode.DoSend(dynamoModel.EngineController);
-      });
+      Task.Run(async () => { sendNode.DoSend(dynamoModel.EngineController); });
     }
 
-    public void Dispose() { }
-
+    public void Dispose()
+    {
+    }
   }
 }
