@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using ConnectorGrashopper.Extras;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -22,7 +25,7 @@ namespace ConnectorGrashopper.Streams
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddParameter(new SpeckleStreamParam("Stream/ID", "S",
-        "A stream object or a unique ID of the stream to be updated.", GH_ParamAccess.item));
+        "A stream object or a unique ID of the stream to be updated.", GH_ParamAccess.tree));
     }
 
     protected override Bitmap Icon => Properties.Resources.StreamDetails;
@@ -31,30 +34,24 @@ namespace ConnectorGrashopper.Streams
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddTextParameter("Stream ID", "ID", "Unique ID of the stream to be updated.", GH_ParamAccess.item);
-      pManager.AddTextParameter("Name", "N", "Name of the stream.", GH_ParamAccess.item);
-      pManager.AddTextParameter("Description", "D", "Description of the stream", GH_ParamAccess.item);
-      pManager.AddTextParameter("Created At", "C", "Date of creation", GH_ParamAccess.item);
-      pManager.AddTextParameter("Updated At", "U", "Date when it was last modified", GH_ParamAccess.item);
+      pManager.AddTextParameter("Stream ID", "ID", "Unique ID of the stream to be updated.", GH_ParamAccess.tree);
+      pManager.AddTextParameter("Name", "N", "Name of the stream.", GH_ParamAccess.tree);
+      pManager.AddTextParameter("Description", "D", "Description of the stream", GH_ParamAccess.tree);
+      pManager.AddTextParameter("Created At", "C", "Date of creation", GH_ParamAccess.tree);
+      pManager.AddTextParameter("Updated At", "U", "Date when it was last modified", GH_ParamAccess.tree);
       pManager.AddBooleanParameter("Public", "P", "True if the stream is to be publicly available.",
-        GH_ParamAccess.item);
+        GH_ParamAccess.tree);
       pManager.AddGenericParameter("Collaborators", "Cs", "Users that have collaborated in this stream",
-        GH_ParamAccess.list);
-      pManager.AddGenericParameter("Branches", "B", "List of branches for this stream", GH_ParamAccess.list);
+        GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Branches", "B", "List of branches for this stream", GH_ParamAccess.tree);
     }
 
     private Stream stream;
     private Exception error;
-    
+    private Dictionary<GH_Path, Stream> streams;
+    private bool tooManyItems = false;
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      DA.DisableGapLogic();
-      if (DA.Iteration != 0)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
-          "Cannot fetch multiple streams at the same time. This is an explicit guard against possibly unintended behaviour. If you want to get the details of another stream, please use a new component.");
-        return;
-      }
       if (error != null)
       {
         Message = null;
@@ -62,34 +59,69 @@ namespace ConnectorGrashopper.Streams
         error = null;
         stream = null;
       }
-      else if (stream == null)
+      else if (streams == null)
       {
-        GH_SpeckleStream ghStream = null;
-        if (!DA.GetData(0, ref ghStream))
+        if (!DA.GetDataTree(0, out GH_Structure<GH_SpeckleStream> ghStreamTree))
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"Could not object convert to Stream.");
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"Could not convert object to Stream.");
           Message = null;
           return;
         }
         Message = "Fetching";
-        var streamInput = ghStream.Value;
-
-        if (!ghStream.IsValid)
+        if (ghStreamTree.DataCount == 0)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"Stream is not valid");
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Input S failed to collect data.");
           return;
+        }
+        
+        if (ghStreamTree.DataCount >= 20)
+        {
+          tooManyItems = true;
         }
         
         Task.Run(async () =>
         {
           try
           {
-            var account = streamInput.AccountId == null
-              ? AccountManager.GetDefaultAccount()
-              : AccountManager.GetAccounts().FirstOrDefault(a => a.id == streamInput.AccountId);
+            int count = 0;
+            var tasks = new Dictionary<GH_Path,Task<Stream>>();
+            
+            ghStreamTree.Paths.ToList().ForEach(path =>
+            {
+              if (count >= 20) return;
+              var branch = ghStreamTree[path];
+              var itemCount = 0;
+              branch.ForEach(item =>
+              {
+                if (item == null || count >= 20)
+                {
+                  itemCount++;
+                  return;
+                }
+                var account = item.Value.AccountId == null
+                  ? AccountManager.GetDefaultAccount()
+                  : AccountManager.GetAccounts().FirstOrDefault(a => a.id == item.Value.AccountId);
 
-            var client = new Client(account);
-            stream = await client.StreamGet(streamInput.StreamId);
+                var client = new Client(account);
+                
+                var task = client.StreamGet(item.Value?.StreamId);
+                tasks[path.AppendElement(itemCount)] = task;
+                count++;
+                itemCount++;
+              });
+            });
+
+            var values = await Task.WhenAll(tasks.Values);
+            var fetchedStreams = new Dictionary<GH_Path,Stream>();
+            
+            for (int i = 0; i < tasks.Keys.ToList().Count; i++)
+            {
+              var key = tasks.Keys.ToList()[i];
+              fetchedStreams[key] = values[i];
+            }
+
+            streams = fetchedStreams;
+            
           }
           catch (Exception e)
           {
@@ -103,16 +135,43 @@ namespace ConnectorGrashopper.Streams
       }
       else
       {
+        if(tooManyItems)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
+            "Input data has too many items. Only the first 20 streams will be fetched.");
+          tooManyItems = false;
+        }
+        var id = new GH_Structure<GH_ObjectWrapper>();
+        var name = new GH_Structure<IGH_Goo>();
+        var description = new GH_Structure<IGH_Goo>();
+        var createdAt = new GH_Structure<IGH_Goo>();
+        var updatedAt = new GH_Structure<IGH_Goo>();
+        var isPublic = new GH_Structure<GH_Boolean>();
+        var collaborators = new GH_Structure<IGH_Goo>();
+        var branches = new GH_Structure<IGH_Goo>();
+        
+        streams.AsEnumerable()?.ToList().ForEach(pair =>
+        {
+          id.Append(new GH_ObjectWrapper(pair.Value.id), pair.Key);
+          name.Append(new GH_ObjectWrapper(pair.Value.name), pair.Key);
+          description.Append(new GH_ObjectWrapper(pair.Value.description), pair.Key);
+          createdAt.Append(new GH_ObjectWrapper(pair.Value.createdAt), pair.Key);
+          updatedAt.Append(new GH_ObjectWrapper(pair.Value.updatedAt), pair.Key);
+          isPublic.Append(new GH_Boolean(pair.Value.isPublic), pair.Key);
+          collaborators.AppendRange(pair.Value.collaborators.Select(item => new GH_ObjectWrapper(item)).ToList(), pair.Key);
+          branches.AppendRange(pair.Value.branches.items.Select(item => new GH_ObjectWrapper(item)), pair.Key);
+        });
+        
         Message = "Done";
-        DA.SetData(0, stream.id);
-        DA.SetData(1, stream.name);
-        DA.SetData(2, stream.description);
-        DA.SetData(3, stream.createdAt);
-        DA.SetData(4, stream.updatedAt);
-        DA.SetData(5, stream.isPublic);
-        DA.SetDataList(6, stream.collaborators);
-        DA.SetDataList(7, stream.branches.items);
-        stream = null;
+        DA.SetDataTree(0, id);
+        DA.SetDataTree(1, name);
+        DA.SetDataTree(2, description);
+        DA.SetDataTree(3, createdAt);
+        DA.SetDataTree(4, updatedAt);
+        DA.SetDataTree(5, isPublic);
+        DA.SetDataTree(6, collaborators);
+        DA.SetDataTree(7, branches);
+        streams = null;
       }
     }
   }
