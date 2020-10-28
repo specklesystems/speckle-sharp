@@ -66,10 +66,12 @@
     <TextBlock
       Grid.Row="2"
       Width="130"
+      Margin="10"
       HorizontalAlignment="Center"
       FontSize="10"
       Foreground="OrangeRed"
       Text="{Binding Message}"
+      TextAlignment="Center"
       TextWrapping="Wrap" />
   </Grid>
 </UserControl>
