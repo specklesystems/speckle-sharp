@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Timers;
 using System.Threading.Tasks;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
@@ -87,6 +88,8 @@ namespace Speckle.DesktopUI.Utils
 
     #region Adding Collaborators
 
+    private Timer userSearchTimer;
+
     private string _userQuery;
 
     public string UserQuery
@@ -101,8 +104,10 @@ namespace Speckle.DesktopUI.Utils
           UserSearchResults.Clear();
         }
 
-        if ( SelectedUser == null )
-          SearchForUsers();
+        if ( SelectedUser != null ) return;
+
+        userSearchTimer = new Timer(500) {AutoReset = false, Enabled = true};
+        userSearchTimer.Elapsed += userSearchTimer_Elapsed;
       }
     }
 
@@ -129,6 +134,11 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
+    private void userSearchTimer_Elapsed(object sender, ElapsedEventArgs e)
+    {
+      SearchForUsers();
+    }
+
     public async void SearchForUsers()
     {
       if ( UserQuery == null || UserQuery.Length <= 2 )
@@ -139,7 +149,6 @@ namespace Speckle.DesktopUI.Utils
         var client = new Client(AccountToSendFrom);
         var users = await client.UserSearch(UserQuery);
         UserSearchResults = new BindableCollection<User>(users);
-        await Task.Delay(300);
       }
       catch ( Exception e )
       {
