@@ -78,7 +78,7 @@
             CommandParameter="{Binding}"
             Content="{md:PackIcon Kind=CloudUpload,
                                   Size=20}"
-            Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+            Style="{StaticResource FlatFloatingActionMiniButton}"
             ToolTip="Send objects to Speckle" />
           <md:Badged
             Grid.Column="1"
@@ -99,7 +99,7 @@
             CommandParameter="{Binding}"
             Content="{md:PackIcon Kind=CloudDownload,
                                   Size=20}"
-            Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
+            Style="{StaticResource FlatFloatingActionMiniButton}"
             ToolTip="Receive changes from Speckle" />
           <md:Badged
             Grid.Column="2"
@@ -189,7 +189,7 @@
             Command="{s:Action ShowStreamInfo}"
             CommandParameter="{Binding}"
             Content="DETAILS"
-            Style="{StaticResource MaterialDesignFlatButton}" />
+            Style="{StaticResource SoftFlatButton}" />
           <StackPanel Grid.Column="3" Orientation="Horizontal">
             <!--  <Button Width="28"  -->
             <!--  Height="28"  -->

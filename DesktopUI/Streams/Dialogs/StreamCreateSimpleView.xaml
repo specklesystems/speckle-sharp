@@ -57,7 +57,7 @@
           Command="{s:Action ChangeSlide}"
           CommandParameter="0"
           Content="BACK"
-          Style="{StaticResource MaterialDesignFlatButton}" />
+          Style="{StaticResource SoftFlatButton}" />
         <Button
           x:Name="SendSimpleStreamButton"
           Grid.Column="1"
@@ -68,7 +68,7 @@
           Command="{s:Action AddNewStream}"
           Content="SEND"
           Foreground="{StaticResource MaterialDesignLightBackground}"
-          Style="{StaticResource MaterialDesignFlatMidBgButton}" />
+          Style="{StaticResource SoftFlatMidBgButton}" />
       </Grid>
     </StackPanel>
   </Grid>

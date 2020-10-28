@@ -75,9 +75,8 @@
                 CommandParameter="2"
                 Content="{md:PackIcon Kind=Plus,
                                 Size=20}"
-                md:ShadowAssist.ShadowDepth="Depth0"
                 Foreground="{StaticResource MaterialDesignLightBackground}"
-                Style="{StaticResource MaterialDesignFloatingActionMiniButton}" />
+                Style="{StaticResource FlatFloatingActionMiniButton}" />
         <TextBlock Grid.Column="1"
                    Margin="8,0"
                    VerticalAlignment="Center"
@@ -100,7 +99,6 @@
         <Button x:Name="ExistingStreamButton"
                 Grid.Column="0"
                 Margin="8"
-                md:ShadowAssist.ShadowDepth="Depth0"
                 md:ButtonProgressAssist.IsIndeterminate="True"
                 md:ButtonProgressAssist.IsIndicatorVisible="{Binding AddExistingButtonLoading, Mode=OneWay}"
                 md:ButtonProgressAssist.Value="-1"
@@ -108,7 +106,7 @@
                 Content="{md:PackIcon Kind=DownloadOutline,
                                 Size=20}"
                 Foreground="{StaticResource MaterialDesignLightBackground}"
-                Style="{StaticResource MaterialDesignFloatingActionMiniButton}" />
+                Style="{StaticResource FlatFloatingActionMiniButton}" />
         <TextBlock Grid.Column="1"
                    Margin="8,0"
                    VerticalAlignment="Center"

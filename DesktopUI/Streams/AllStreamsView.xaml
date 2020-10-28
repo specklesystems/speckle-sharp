@@ -42,12 +42,11 @@
                       Margin="8,0"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Top"
-                      md:ShadowAssist.ShadowDepth="Depth0"
                       Command="{s:Action Send}"
                       CommandParameter="{Binding}"
                       Content="{md:PackIcon Kind=CloudUpload,
                                       Size=20}"
-                      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                      Style="{StaticResource FlatFloatingActionMiniButton}"
                       IsEnabled="{Binding IsReceiving, Converter={StaticResource InverseBooleanConverter}}"
                       Visibility="{Binding IsSending, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                       ToolTip="Send objects to Speckle" />
@@ -60,11 +59,10 @@
                       md:ButtonProgressAssist.IsIndicatorVisible="True"
                       md:ButtonProgressAssist.Maximum="{Binding Progress.Maximum, Mode=OneWay}"
                       md:ButtonProgressAssist.Value="{Binding Progress.Value, Mode=OneWay}"
-                      md:ShadowAssist.ShadowDepth="Depth0"
                       Command="{s:Action CancelToken}"
                       Content="{md:PackIcon Kind=Stop,
                                       Size=20}"
-                      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                      Style="{StaticResource FlatFloatingActionMiniButton}"
                       Visibility="{Binding IsSending, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"
                       ToolTip="Cancel the send operation" />
               <md:Badged Grid.Column="1"
@@ -78,13 +76,12 @@
                       Margin="0"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Top"
-                      md:ShadowAssist.ShadowDepth="Depth0"
                       Command="{s:Action Receive}"
                       CommandParameter="{Binding}"
                       Content="{md:PackIcon Kind=CloudDownload,
                                       Size=20}"
                       IsEnabled="{Binding IsSending, Converter={StaticResource InverseBooleanConverter}}"
-                      Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
+                      Style="{StaticResource FlatFloatingActionMiniDarkButton}"
                       Visibility="{Binding IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                       ToolTip="Receive changes from Speckle" />
               <Button x:Name="StopReceiveButton"
@@ -96,11 +93,10 @@
                       md:ButtonProgressAssist.IsIndicatorVisible="True"
                       md:ButtonProgressAssist.Maximum="{Binding Progress.Maximum, Mode=OneWay}"
                       md:ButtonProgressAssist.Value="{Binding Progress.Value, Mode=OneWay}"
-                      md:ShadowAssist.ShadowDepth="Depth0"
                       Command="{s:Action CancelToken}"
                       Content="{md:PackIcon Kind=Stop,
                                       Size=20}"
-                      Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
+                      Style="{StaticResource FlatFloatingActionMiniDarkButton}"
                       Visibility="{Binding IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"
                       ToolTip="Cancel the receive operation" />
               <md:Badged Grid.Column="2"
@@ -184,7 +180,7 @@
                       Command="{s:Action ShowStreamInfo}"
                       CommandParameter="{Binding}"
                       Content="DETAILS"
-                      Style="{StaticResource MaterialDesignFlatButton}" />
+                      Style="{StaticResource SoftFlatButton}" />
               <StackPanel Grid.Column="3"
                           Orientation="Horizontal">
                 <!--<Button Width="28"
@@ -260,12 +256,11 @@
             Margin="32"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
-            md:ShadowAssist.ShadowDepth="Depth0"
             Command="{s:Action ShowStreamCreateDialog}"
             Content="{md:PackIcon Kind=Plus,
                             Size=24}"
             DockPanel.Dock="Bottom"
-            Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
+            Style="{StaticResource FlatFloatingActionAccentButton}"
             ToolTip="Add a stream"
             ToolTipService.Placement="Left" />
   </Grid>

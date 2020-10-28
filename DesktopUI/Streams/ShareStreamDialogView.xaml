@@ -101,7 +101,7 @@
               Grid.Column="2"
               CommandParameter=""
               Content="SEND"
-              Style="{StaticResource MaterialDesignFlatMidBgButton}" />
+              Style="{StaticResource SoftFlatMidBgButton}" />
           </Grid>
 
           <Separator

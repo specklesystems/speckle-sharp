@@ -203,10 +203,9 @@
                   Width="150"
                   Height="36"
                   Command="{s:Action Send}"
-                  md:ShadowAssist.ShadowDepth="Depth0"
-                  md:ButtonAssist.CornerRadius="4"
                   IsEnabled="{Binding StreamState.IsReceiving, Converter={StaticResource InverseBooleanConverter}}"
                   Visibility="{Binding StreamState.IsSending, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
+                  Style="{StaticResource SoftFlatMidBgButton}"
                   ToolTip="Send your changes to the Speckle server">
             <Grid>
               <Grid.ColumnDefinitions>
@@ -229,12 +228,11 @@
                   Width="150"
                   Height="36"
                   Command="{s:Action CancelToken}"
-                  md:ShadowAssist.ShadowDepth="Depth0"
-                  md:ButtonAssist.CornerRadius="4"
                   md:ButtonProgressAssist.IsIndeterminate="False"
                   md:ButtonProgressAssist.Maximum="{Binding StreamState.Progress.Maximum, Mode=OneWay}"
                   md:ButtonProgressAssist.Value="{Binding StreamState.Progress.Value, Mode=OneWay}"
                   md:ButtonProgressAssist.IsIndicatorVisible="True"
+                  Style="{StaticResource SoftFlatMidBgButton}"
                   Visibility="{Binding StreamState.IsSending, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"
                   ToolTip="Cancel the send operation">
             <Grid>
@@ -260,9 +258,7 @@
                   Width="150"
                   Height="36"
                   Command="{s:Action Receive}"
-                  md:ShadowAssist.ShadowDepth="Depth0"
-                  md:ButtonAssist.CornerRadius="4"
-                  Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                  Style="{StaticResource SoftFlatDarkBgButton}"
                   IsEnabled="{Binding StreamState.IsSending, Converter={StaticResource InverseBooleanConverter}}"
                   Visibility="{Binding StreamState.IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                   ToolTip="Receive your changes from the server">
@@ -287,13 +283,11 @@
                   Width="150"
                   Height="36"
                   Command="{s:Action Receive}"
-                  md:ShadowAssist.ShadowDepth="Depth0"
-                  md:ButtonAssist.CornerRadius="4"
                   md:ButtonProgressAssist.IsIndeterminate="False"
                   md:ButtonProgressAssist.Maximum="{Binding StreamState.Progress.Maximum, Mode=OneWay}"
                   md:ButtonProgressAssist.Value="{Binding StreamState.Progress.Value, Mode=OneWay}"
                   md:ButtonProgressAssist.IsIndicatorVisible="True"
-                  Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                  Style="{StaticResource SoftFlatDarkBgButton}"
                   Visibility="{Binding StreamState.IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"
                   ToolTip="Cancel the receive operation">
             <Grid>
@@ -403,24 +397,24 @@
                   Width="150"
                   Margin="4,0"
                   md:RippleAssist.Feedback="{StaticResource PrimaryHueMidBrush}"
-                  md:ShadowAssist.ShadowDepth="Depth0"
                   Command="{s:Action RemoveStream}"
                   Background="{DynamicResource MaterialDesignPaper}"
                   BorderThickness="0"
                   Content="REMOVE"
                   Foreground="{StaticResource PrimaryHueMidBrush}"
-                  ToolTip="Remove this stream from the file without deleting" />
+                  ToolTip="Remove this stream from the file without deleting"
+                  Style="{StaticResource SoftFlatMidBgButton}" />
           <Button Grid.Column="1"
                   Width="150"
                   Margin="4,0"
                   md:RippleAssist.Feedback="#ff5555"
-                  md:ShadowAssist.ShadowDepth="Depth0"
                   Background="{DynamicResource MaterialDesignPaper}"
                   BorderThickness="0"
                   Command="{x:Static md:DialogHost.OpenDialogCommand}"
                   Content="DELETE"
                   Foreground="#ff5555"
-                  ToolTip="Delete this stream from the server">
+                  ToolTip="Delete this stream from the server"
+                  Style="{StaticResource SoftFlatMidBgButton}">
             <Button.CommandParameter>
               <StackPanel Width="260"
                           Margin="36"
@@ -440,16 +434,14 @@
                           Command="{x:Static md:DialogHost.CloseDialogCommand}"
                           Content="CANCEL"
                           IsCancel="True"
-                          md:ButtonAssist.CornerRadius="4"
-                          Style="{StaticResource MaterialDesignFlatMidBgButton}" />
+                          Style="{StaticResource SoftFlatButton}" />
                   <Button Grid.Column="2"
                           Width="120"
                           Background="#ff5555"
                           BorderThickness="0"
                           Content="DELETE"
                           Command="{s:Action DeleteStream}"
-                          md:ButtonAssist.CornerRadius="4"
-                          Style="{StaticResource MaterialDesignFlatMidBgButton}" />
+                          Style="{StaticResource SoftFlatMidBgButton}" />
                 </Grid>
               </StackPanel>
             </Button.CommandParameter>

@@ -25,8 +25,7 @@
           Margin="4,6"
           Command="{s:Action OpenHelpLink}"
           CommandParameter="{Binding url}"
-          md:ButtonAssist.CornerRadius="4"
-          Style="{StaticResource MaterialDesignFlatButton}">
+          Style="{StaticResource SoftFlatButton}">
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" />
@@ -145,11 +144,10 @@
           Height="40"
           Margin="0,16,0,8"
           HorizontalAlignment="Stretch"
-          md:ButtonAssist.CornerRadius="4"
           Command="{x:Static md:DialogHost.OpenDialogCommand}"
           Content="Manage Accounts"
           Foreground="#FFfafafa"
-          Style="{StaticResource MaterialDesignFlatMidBgButton}">
+          Style="{StaticResource SoftFlatMidBgButton}">
           <Button.CommandParameter>
             <StackPanel Margin="24">
               <TextBlock Margin="0,8" Text="👻 this doesn't work yet..." />
@@ -159,7 +157,7 @@
                 Command="{x:Static md:DialogHost.CloseDialogCommand}"
                 Content="CANCEL"
                 IsCancel="True"
-                Style="{StaticResource MaterialDesignFlatButton}" />
+                Style="{StaticResource SoftFlatButton}" />
             </StackPanel>
           </Button.CommandParameter>
         </Button>

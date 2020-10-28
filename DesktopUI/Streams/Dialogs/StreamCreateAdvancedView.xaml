@@ -110,8 +110,7 @@
         Margin="0,12,0,0"
         HorizontalContentAlignment="Stretch"
         Command="{s:Action AddSimpleStream}"
-        md:ButtonAssist.CornerRadius="4"
-        Style="{StaticResource MaterialDesignFlatMidBgButton}"
+        Style="{StaticResource SoftFlatMidBgButton}"
         ToolTip="Send all currently selected objects">
         <Grid>
           <Grid.ColumnDefinitions>
@@ -133,8 +132,7 @@
         Margin="0,12"
         HorizontalContentAlignment="Stretch"
         Command="{s:Action AddStreamFromView}"
-        md:ButtonAssist.CornerRadius="4"
-        Style="{StaticResource MaterialDesignFlatMidBgButton}"
+        Style="{StaticResource SoftFlatMidBgButton}"
         ToolTip="Send all objects in the active view">
         <Grid>
           <Grid.ColumnDefinitions>
@@ -195,8 +193,7 @@
           Command="{s:Action ChangeSlide}"
           CommandParameter="0"
           Content="BACK"
-          md:ButtonAssist.CornerRadius="4"
-          Style="{StaticResource MaterialDesignFlatButton}" />
+          Style="{StaticResource SoftFlatButton}" />
         <Button
           x:Name="SendAdvancedStreamButton"
           Grid.Column="1"
@@ -207,9 +204,8 @@
           md:ButtonProgressAssist.Value="-1"
           Command="{s:Action AddNewStream}"
           Content="ADD OBJECTS"
-          md:ButtonAssist.CornerRadius="4"
           Foreground="{StaticResource MaterialDesignLightBackground}"
-          Style="{StaticResource MaterialDesignFlatMidBgButton}" />
+          Style="{StaticResource SoftFlatMidBgButton}" />
       </Grid>
     </StackPanel>
   </Grid>
