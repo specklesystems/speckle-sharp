@@ -40,11 +40,11 @@
     </s:ApplicationLoader>
 
     <!-- more theme resources -->
+    <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/MaterialDesignTheme.Light.xaml" />
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
-    <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
-    <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
     <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/MaterialDesignTheme.TabControl.xaml" />
 
+    <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/MaterialDesignTheme.Overrides.xaml" />
     <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/DataTemplates.xaml" />
 
   </ResourceDictionary.MergedDictionaries>
