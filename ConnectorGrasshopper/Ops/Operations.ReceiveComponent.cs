@@ -411,12 +411,12 @@ namespace ConnectorGrasshopper.Ops
           try
           {
             var stream = await client.StreamGet(InputWrapper.StreamId);
-            var mainBranch = stream.branches.items.FirstOrDefault(b => b.name == "main");
+            var mainBranch = stream.branches.items.FirstOrDefault(b => b.name == (InputWrapper.BranchId ?? "main"));
             myCommit = mainBranch.commits.items[0];
           }
           catch (Exception e)
           {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"Could not get any commits from the stream's \"main\" branch. \n ({e.Message})"));
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Could not get any commits from the stream's \"main\" branch."));
             Done();
             return;
           }
