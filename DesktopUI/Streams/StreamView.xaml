@@ -127,53 +127,63 @@
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
-          <md:Chip Height="28"
-                   Margin="0,0,8,0"
-                   md:ButtonAssist.CornerRadius="14"
-                   Command="{s:Action CopyStreamId}"
-                   CommandParameter="{Binding Stream.id}"
-                   FontFamily="Consolas"
-                   FontSize="13"
-                   ToolTip="click to copy stream ID">
-            <StackPanel Orientation="Horizontal">
-              <md:PackIcon Width="12"
-                           Height="12"
-                           Margin="0,0,4,0"
-                           VerticalAlignment="Center"
-                           Kind="ContentCopy" />
-              <TextBlock Text="{Binding Stream.id}" />
-            </StackPanel>
-          </md:Chip>
-          <md:Chip Grid.Column="1"
-                   Height="28"
-                   Margin="0,0,8,0"
-                   md:ButtonAssist.CornerRadius="14"
-                   FontFamily="Consolas"
-                   FontSize="13"
-                   ToolTip="current branch">
-            <StackPanel Orientation="Horizontal">
-              <md:PackIcon Width="12"
-                           Height="12"
-                           Margin="0,0,4,0"
-                           VerticalAlignment="Center"
-                           Kind="SourceBranch" />
-              <TextBlock Text="{Binding Branch.name}" />
-            </StackPanel>
-          </md:Chip>
-          <Button Grid.Column="3"
-                  Width="32"
-                  Height="32"
-                  md:RippleAssist.ClipToBounds="True"
-                  Command="{s:Action OpenStreamInWeb}"
-                  CommandParameter="{Binding StreamState}"
-                  Content="{md:PackIcon Kind=OpenInNew,
-                                        Size=18}"
-                  Style="{StaticResource MaterialDesignIconButton}"
-                  ToolTip="open this stream in the browser" />
+          <StackPanel Grid.Column="0"
+                      Orientation="Horizontal">
+            <md:Chip Height="28"
+                     Margin="0,0,8,0"
+                     md:ButtonAssist.CornerRadius="14"
+                     Command="{s:Action CopyStreamId}"
+                     CommandParameter="{Binding Stream.id}"
+                     FontFamily="Consolas"
+                     FontSize="13"
+                     ToolTip="click to copy stream ID">
+              <StackPanel Orientation="Horizontal">
+                <md:PackIcon Width="12"
+                             Height="12"
+                             Margin="0,0,4,0"
+                             VerticalAlignment="Center"
+                             Kind="ContentCopy" />
+                <TextBlock Text="{Binding Stream.id}" />
+              </StackPanel>
+            </md:Chip>
+
+            <md:Chip Height="28"
+                     Margin="0,0,8,0"
+                     md:ButtonAssist.CornerRadius="14"
+                     FontFamily="Consolas"
+                     FontSize="13"
+                     ToolTip="current branch">
+              <StackPanel Orientation="Horizontal">
+                <md:PackIcon Width="12"
+                             Height="12"
+                             Margin="0,0,4,0"
+                             VerticalAlignment="Center"
+                             Kind="SourceBranch" />
+                <TextBlock Text="{Binding Branch.name}" />
+              </StackPanel>
+            </md:Chip>
+
+            <md:Chip Height="28"
+                     Margin="0,0,8,0"
+                     md:ButtonAssist.CornerRadius="14"
+                     Command="{s:Action OpenStreamInWeb}"
+                     CommandParameter="{Binding StreamState}"
+                     FontFamily="Consolas"
+                     FontSize="13"
+                     ToolTip="open this stream in the browser">
+              <StackPanel Orientation="Horizontal">
+                <md:PackIcon Width="12"
+                             Height="12"
+                             Margin="0,0,4,0"
+                             VerticalAlignment="Center"
+                             Kind="OpenInNew" />
+                <TextBlock Text="{Binding StreamState.Client.Account.serverInfo.name}" />
+              </StackPanel>
+            </md:Chip>
+          </StackPanel>
         </Grid>
         <TextBlock Margin="0,16,0,0"
                    Text="{Binding Stream.description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
