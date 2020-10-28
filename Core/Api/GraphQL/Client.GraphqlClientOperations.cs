@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
@@ -47,8 +48,8 @@ namespace Speckle.Core.Api
 
         var res = await GQLClient.SendMutationAsync<UserData>(request, cancellationToken).ConfigureAwait(false);
 
-        if (res.Errors != null)
-          Log.CaptureAndThrow(new GraphQLException("Could not get user"), res.Errors);
+        if (res.Errors != null && res.Errors.Any())
+          Log.CaptureAndThrow(new GraphQLException(res.Errors[0].Message), res.Errors);
 
         return res.Data.user;
       }
@@ -104,8 +105,8 @@ namespace Speckle.Core.Api
         };
         var res = await GQLClient.SendMutationAsync<UserSearchData>(request, cancellationToken).ConfigureAwait(false);
 
-        if (res.Errors != null)
-          Log.CaptureAndThrow(new GraphQLException("Could not search users"), res.Errors);
+        if (res.Errors != null && res.Errors.Any())
+          Log.CaptureAndThrow(new GraphQLException(res.Errors[0].Message), res.Errors);
 
         return res.Data.userSearch.items;
       }
@@ -729,8 +730,8 @@ namespace Speckle.Core.Api
 
         var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
 
-        if (res.Errors != null)
-          Log.CaptureAndThrow(new GraphQLException("Could not get stream"), res.Errors);
+        if (res.Errors != null && res.Errors.Any())
+          Log.CaptureAndThrow(new GraphQLException(res.Errors[0].Message), res.Errors);
 
         return res.Data.stream.commit;
       }
@@ -772,8 +773,8 @@ namespace Speckle.Core.Api
 
         var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
 
-        if (res.Errors != null)
-          Log.CaptureAndThrow(new GraphQLException("Could not create commit"), res.Errors);
+        if (res.Errors != null && res.Errors.Any())
+          Log.CaptureAndThrow(new GraphQLException(res.Errors[0].Message), res.Errors);
 
         return (string)res.Data["commitCreate"];
       }
@@ -814,8 +815,8 @@ namespace Speckle.Core.Api
 
         var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
 
-        if (res.Errors != null)
-          Log.CaptureAndThrow(new GraphQLException("Could not update commit"), res.Errors);
+        if (res.Errors != null && res.Errors.Any())
+          Log.CaptureAndThrow(new GraphQLException(res.Errors[0].Message), res.Errors);
 
         return (bool)res.Data["commitUpdate"];
       }
@@ -856,8 +857,8 @@ namespace Speckle.Core.Api
 
         var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
 
-        if (res.Errors != null)
-          Log.CaptureAndThrow(new GraphQLException("Could not delete commit"), res.Errors);
+        if (res.Errors != null && res.Errors.Any())
+          Log.CaptureAndThrow(new GraphQLException(res.Errors[0].Message), res.Errors);
 
         return (bool)res.Data["commitDelete"];
       }
@@ -911,8 +912,8 @@ namespace Speckle.Core.Api
 
         var res = await GQLClient.SendQueryAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
 
-        if (res.Errors != null)
-          Log.CaptureAndThrow(new GraphQLException("Could not get stream"), res.Errors);
+        if (res.Errors != null && res.Errors.Any())
+          Log.CaptureAndThrow(new GraphQLException(res.Errors[0].Message), res.Errors);
 
         return res.Data.stream.@object;
       }
@@ -959,8 +960,8 @@ namespace Speckle.Core.Api
 
         var res = await GQLClient.SendQueryAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
 
-        if (res.Errors != null)
-          Log.CaptureAndThrow(new GraphQLException("Could not get stream"), res.Errors);
+        if (res.Errors != null && res.Errors.Any())
+          Log.CaptureAndThrow(new GraphQLException(res.Errors[0].Message), res.Errors);
 
         return res.Data.stream.@object;
       }

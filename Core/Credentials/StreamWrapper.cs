@@ -9,20 +9,25 @@ namespace Speckle.Core.Credentials
     public string ServerUrl { get; set; }
     public string StreamId { get; set; }
     public string CommitId { get; set; }
-    public string BranchId { get; set; } // To be used later! 
+    public string BranchName { get; set; } // To be used later! 
 
     public StreamWrapper() { }
 
-    public StreamWrapper(string myString)
+    /// <summary>
+    /// Creates a StreamWrapper from a stream url
+    /// </summary>
+    /// <param name="streamUrl">Stream Url eg: http://speckle.server/streams/8fecc9aa6d/commits/76a23d7179</param>
+    /// <exception cref="Exception"></exception>
+    public StreamWrapper(string streamUrl)
     {
       Account account = null;
       Uri uri = null;
-      if (myString.Contains("?u="))
+      if (streamUrl.Contains("?u="))
       {
-        uri = new Uri(myString.Split(new string[] { "?u=" }, StringSplitOptions.None)[0]);
+        uri = new Uri(streamUrl.Split(new string[] { "?u=" }, StringSplitOptions.None)[0]);
         ServerUrl = uri.GetLeftPart(UriPartial.Authority);
 
-        AccountId = myString.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
+        AccountId = streamUrl.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
         account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == AccountId);
 
         if (account == null)
@@ -33,7 +38,7 @@ namespace Speckle.Core.Credentials
       }
       else
       {
-        uri = new Uri(myString);
+        uri = new Uri(streamUrl);
         ServerUrl = uri.GetLeftPart(UriPartial.Authority);
         account = AccountManager.GetAccounts(ServerUrl).FirstOrDefault();
       }
@@ -69,7 +74,7 @@ namespace Speckle.Core.Credentials
           else if (uri.Segments[3].ToLowerInvariant() == "branches/")
           {
             StreamId = uri.Segments[2].Replace("/", "");
-            BranchId = uri.Segments[4].Replace("/", "");
+            BranchName = uri.Segments[4].Replace("/", "");
           }
           else
           {
@@ -79,6 +84,12 @@ namespace Speckle.Core.Credentials
       }
     }
 
+    /// <summary>
+    /// Creates a StreamWrapper by streamId, accountId and serverUrl
+    /// </summary>
+    /// <param name="streamId"></param>
+    /// <param name="accountId"></param>
+    /// <param name="serverUrl"></param>
     public StreamWrapper(string streamId, string accountId, string serverUrl)
     {
       AccountId = accountId;
