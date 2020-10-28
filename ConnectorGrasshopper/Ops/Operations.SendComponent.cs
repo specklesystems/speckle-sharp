@@ -558,8 +558,6 @@ namespace ConnectorGrasshopper.Ops
         Parent.AddRuntimeMessage(level, message);
       }
 
-      Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Succesfully pushed {TotalObjectCount} objects to {(((SendComponent)Parent).UseDefaultCache ? Transports.Count - 1 : Transports.Count)} transports.");
-
       DA.SetDataList(0, OutputWrappers);
       DA.SetData(1, BaseId);
       DA.SetData(2, new GH_SpeckleBase { Value = ObjectToSend });
@@ -568,12 +566,15 @@ namespace ConnectorGrasshopper.Ops
       ((SendComponent)Parent).OutputWrappers = OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
       ((SendComponent)Parent).BaseId = BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
       ((SendComponent)Parent).OverallProgress = 0;
-
-      Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Send duration: {stopwatch.ElapsedMilliseconds / 1000f}s");
-      foreach (var t in Transports)
+      
+      var hasWarnings = RuntimeMessages.Count > 0;
+      if (!hasWarnings)
       {
-        if (t is ServerTransport st)
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Successfully pushed {TotalObjectCount} objects to {(((SendComponent)Parent).UseDefaultCache ? Transports.Count - 1 : Transports.Count)} transports.");
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Send duration: {stopwatch.ElapsedMilliseconds / 1000f}s");
+        foreach (var t in Transports)
         {
+          if (!(t is ServerTransport st)) continue;
           var mb = st.TotalSentBytes / 1e6;
           Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"{t.TransportName} avg {(mb / (stopwatch.ElapsedMilliseconds / 1000f)):0.00} MB/s");
         }
