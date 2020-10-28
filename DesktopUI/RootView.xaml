@@ -28,7 +28,7 @@
   <Window.Resources>
     <utils:StringToUpperConverter x:Key="StringToUpperConverter" />
   </Window.Resources>
-  <md:DialogHost DialogTheme="Inherit" Identifier="RootDialogHost">
+  <md:DialogHost DialogTheme="Inherit" CloseOnClickAway="True" Identifier="RootDialogHost" Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
     <md:DrawerHost IsLeftDrawerOpen="{Binding ElementName=MenuToggleButton, Path=IsChecked}">
       <!--#region Left Navigation Drawer-->
       <md:DrawerHost.LeftDrawerContent>

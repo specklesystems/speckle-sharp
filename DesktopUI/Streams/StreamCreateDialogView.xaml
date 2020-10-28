@@ -29,9 +29,7 @@
               IsCancel="True"
               Style="{StaticResource MaterialDesignIconForegroundButton}"
               ToolTip="Cancel" />
-      <Grid Grid.Row="1"
-            Width="425"
-            MaxHeight="500">
+      <Grid Grid.Row="1" >
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <md:Transitioner AutoApplyTransitionOrigins="True"
                            SelectedIndex="{Binding SelectedSlide}">
