@@ -30,12 +30,22 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <returns></returns>
     public Base ConvertRecursivelyToSpeckle(object @object)
     {
+      if (@object is ProtoCore.DSASM.StackValue)
+        throw new Exception("Invalid input");
+
       var converted = RecurseTreeToSpeckle(@object);
       var @base = new Base();
 
-      if (IsList(converted) || IsDictionary(converted) || Utilities.IsSimpleType(converted.GetType()))
+      if (IsList(converted) || Utilities.IsSimpleType(converted.GetType()))
       {
         @base["@data"] = converted;
+      }
+      else if (converted is Dictionary<string, object> dic)
+      {
+        foreach (var key in dic.Keys)
+        {
+          @base[key] = dic[key];
+        }
       }
       else
       {
