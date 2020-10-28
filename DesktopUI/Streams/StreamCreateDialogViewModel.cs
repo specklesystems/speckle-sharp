@@ -148,7 +148,6 @@ namespace Speckle.DesktopUI.Streams
         var client = new Client(AccountToSendFrom);
         var streams = await client.StreamSearch(StreamQuery);
         StreamSearchResults = new BindableCollection<Stream>(streams);
-        await Task.Delay(300);
       }
       catch ( Exception e )
       {
