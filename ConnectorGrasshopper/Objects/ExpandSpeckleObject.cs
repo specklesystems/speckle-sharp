@@ -18,7 +18,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 namespace ConnectorGrasshopper.Objects
 {
   // TODO: Convert to task capable component / async so as to not block the ffffing ui
-  public class ExpandSpeckleObject : SelectKitComponentBase
+  public class ExpandSpeckleObject : SelectKitComponentBase, IGH_VariableParameterComponent
   {
     protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
 

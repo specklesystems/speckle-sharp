@@ -25,9 +25,9 @@ namespace ConnectorGrasshopper.Objects
     public override GH_Exposure Exposure => GH_Exposure.secondary;
     protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
 
-    public ExpandSpeckleObjectAsync() : base("Expand Speckle Object", "ESO",
+    public ExpandSpeckleObjectAsync() : base("Expand Speckle Object Async", "ESOA",
       "Allows you to decompose a Speckle object in its constituent parts.",
-      "Speckle 2", "Async Object Management")
+      "Speckle 2 Dev", "Async Object Management")
     {
       Kit = KitManager.GetDefaultKit();
       try

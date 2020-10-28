@@ -32,7 +32,7 @@ namespace ConnectorGrasshopper.Objects
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public CreateSpeckleObjectByKeyValueAsync() : base("Create Speckle Object by Key/Value Async", "K/V Async",
-      "Creates a speckle object from key value pairs", "Speckle 2", "Async Object Management")
+      "Creates a speckle object from key value pairs", "Speckle 2 Dev", "Async Object Management")
     {
       Kit = KitManager.GetDefaultKit();
       try

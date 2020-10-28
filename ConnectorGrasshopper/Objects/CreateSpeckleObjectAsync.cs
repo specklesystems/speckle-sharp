@@ -29,7 +29,7 @@ namespace ConnectorGrasshopper.Objects
 
     public CreateSpeckleObjectAsync() : base("Create Speckle Object Async", "CSOA",
       "Allows you to create a Speckle object by setting its keys and values.",
-      "Speckle 2", "Async Object Management")
+      "Speckle 2 Dev", "Async Object Management")
     {
       Kit = KitManager.GetDefaultKit();
       try
