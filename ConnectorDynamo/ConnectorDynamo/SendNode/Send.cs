@@ -5,6 +5,7 @@ using ProtoCore.AST.AssociativeAST;
 using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Credentials;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Logging;
@@ -46,8 +47,8 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     //cached inputs
     private object _data { get; set; }
-    private StreamWrapper _stream { get; set; }
-    private string _branchName { get; set; }
+    private List<StreamWrapper> _streams { get; set; }
+    private List<string> _branchNames { get; set; }
     private string _commitMessage { get; set; }
 
     #endregion
@@ -182,7 +183,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       defaultMessageValue.Value = "Automatic commit from Dynamo";
 
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("data", "The data to send")));
-      InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream", "The stream to send to")));
+      InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream", "The stream or streams to send to")));
       InPorts.Add(new PortModel(PortType.Input, this,
         new PortData("branchName", "The branch to use to", defaultBranchValue)));
       InPorts.Add(new PortModel(PortType.Input, this,
@@ -226,7 +227,7 @@ namespace Speckle.ConnectorDynamo.SendNode
 
       try
       {
-        if (_stream == null)
+        if (_streams == null)
           Core.Logging.Log.CaptureAndThrow(new Exception("The stream provided is invalid"));
         if (_data == null)
           Core.Logging.Log.CaptureAndThrow(new Exception("The data provided is invalid"));
@@ -254,10 +255,15 @@ namespace Speckle.ConnectorDynamo.SendNode
           ? $"Sent {totalCount} object{plural} from Dynamo"
           : _commitMessage;
 
-        var commitId = Functions.Functions.Send(@base, _stream, _cancellationToken.Token, _branchName, _commitMessage,
+        var commitIds = Functions.Functions.Send(@base, _streams, _cancellationToken.Token, _branchNames,
+          _commitMessage,
           ProgressAction, ErrorAction);
-        _stream.CommitId = commitId;
-        _outputInfo = _stream.ToString();
+        for (int i = 0; i < _streams.Count; i++)
+        {
+          _streams[i].CommitId = commitIds[i];
+        }
+
+        _outputInfo = string.Join("|", _streams.Select(x => x.ToString()));
         Message = "";
       }
       catch (Exception e)
@@ -292,7 +298,8 @@ namespace Speckle.ConnectorDynamo.SendNode
       _hasOutput = false;
       if (hardReset)
       {
-        _stream = null;
+        _streams = null;
+        _branchNames = null;
         _data = null;
         _objectCount = 0;
         SendEnabled = false;
@@ -320,29 +327,84 @@ namespace Speckle.ConnectorDynamo.SendNode
         return;
       }
 
+      //this port accepts:
+      //a stream wrapper, a url, a list of stream wrappers or a list of urls
       try
       {
-        var stream = GetInputAs<StreamWrapper>(engine, 1);
-        //avoid editing upstream stream!
-        _stream = new StreamWrapper(stream.StreamId, stream.AccountId, stream.ServerUrl);
+        _streams = new List<StreamWrapper>();
+        var inputStream = GetInputAs<object>(engine, 1);
+        switch (inputStream)
+        {
+          case StreamWrapper s:
+            _streams.Add(new StreamWrapper(s.StreamId, s.AccountId, s.ServerUrl));
+            break;
+          case string s:
+            _streams.Add(new StreamWrapper(s));
+            break;
+          case List<object> s:
+            try
+            {
+              var ss = s.Cast<StreamWrapper>();
+              _streams.AddRange(ss.Select(x => new StreamWrapper(x.StreamId, x.AccountId, x.ServerUrl)));
+              break;
+            }
+            catch
+            {
+              //ignored
+            }
+            try
+            {
+              var ss = s.Cast<string>();
+              _streams.AddRange(ss.Select(x => new StreamWrapper(x)));
+              break;
+            }
+            catch
+            {
+              //ignored
+            }
+            break;
+        }
       }
       catch
+      {
+        //ignored
+      }
+
+      if (_streams == null || !_streams.Any())
       {
         ResetNode(true);
         Message = "Stream is invalid";
         return;
       }
 
-      try
+      //get branch name/s
+      if (InPorts[2].Connectors.Any())
       {
-        _branchName =
-          InPorts[2].Connectors.Any()
-            ? GetInputAs<string>(engine, 2)
-            : ""; //IsConnected not working because has default value
-      }
-      catch
-      {
-        Message = "Branch name is invalid, will use `main`";
+        try
+        {
+          _branchNames = new List<string>();
+          var branch = GetInputAs<object>(engine, 2);
+          switch (branch)
+          {
+            case string b:
+              _branchNames.Add(b);
+              break;
+            case List<string> b:
+              _branchNames.AddRange(b);
+              break;
+          }
+
+          if (_streams.Count != _branchNames.Count)
+          {
+            Message = "Branch count is invalid, will use `main`";
+            _branchNames = null;
+          }
+        }
+        catch
+        {
+          Message = "Branch name is invalid, will use `main`";
+          _branchNames = null;
+        }
       }
 
       try
@@ -474,16 +536,17 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// <returns></returns>
     public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
     {
-      if (!InPorts[0].IsConnected || !InPorts[1].IsConnected)
+      if (!InPorts[0].IsConnected || !InPorts[1].IsConnected || !_hasOutput)
       {
         return OutPorts.Enumerate().Select(output =>
           AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
       }
 
-      return new[]
-      {
-        AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), AstFactory.BuildStringNode(_outputInfo))
-      };
+      var dataFunctionCall = AstFactory.BuildFunctionCall(
+        new Func<string, object>(Functions.Functions.SendData),
+        new List<AssociativeNode> {AstFactory.BuildStringNode(_outputInfo)});
+
+      return new[] {AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), dataFunctionCall)};
     }
 
     #endregion

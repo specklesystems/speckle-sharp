@@ -51,7 +51,7 @@
       ToolTip="Cancel"
       Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}}" />
     <md:Badged
-      Margin="77,22,10,0"
+      Margin="87,22,10,0"
       Badge="{Binding ExpiredCount}"
       BadgeColorZoneMode="Accent"
       ToolTip="Has new data to send" />

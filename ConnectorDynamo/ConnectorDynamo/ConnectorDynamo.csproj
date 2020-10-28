@@ -107,6 +107,7 @@
     </Compile>
     <Compile Include="CreateStreamNode\CreateStream.cs" />
     <Compile Include="CreateStreamNode\CreateStreamViewCustomization.cs" />
+    <Compile Include="DebounceTimer.cs" />
     <Compile Include="ReceiveNode\ReceiveUi.xaml.cs">
       <DependentUpon>ReceiveUi.xaml</DependentUpon>
     </Compile>

@@ -24,27 +24,48 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="data">Data to send</param>
     /// <param name="stream">Stream to send the data to</param>
     /// <returns name="log">Log</returns>
-    public static string Send(Base data, StreamWrapper stream, CancellationToken cancellationToken,
-      string branchName = "main", string message = "",
+    public static List<string> Send(Base data, List<StreamWrapper> streams, CancellationToken cancellationToken,
+      List<string> branchNames = null, string message = "",
       Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
     {
-      Core.Credentials.Account account = stream.GetAccount();
+      var responses = new List<string>();
+      var transports = new List<ITransport>();
+      var accounts = new List<Core.Credentials.Account>();
+      foreach (var stream in streams)
+      {
+        var account = stream.GetAccount();
+        accounts.Add(account); //cached here
+        transports.Add(new ServerTransport(account, stream.StreamId));
+      }
 
-      var client = new Client(account);
-      var transport = new ServerTransport(account, stream.StreamId);
-      var objectId = Operations.Send(data, cancellationToken, new List<ITransport>() {transport}, true,
+      var objectId = Operations.Send(data, cancellationToken, transports, true,
         onProgressAction, onErrorAction).Result;
 
       if (cancellationToken.IsCancellationRequested)
         return null;
-      branchName = string.IsNullOrEmpty(branchName) ? "main" : branchName;
 
-      var res = client.CommitCreate(new CommitCreateInput
+      for (int i = 0; i < streams.Count; i++)
       {
-        streamId = stream.StreamId, branchName = branchName, objectId = objectId, message = message
-      }).Result;
+        var branchName = branchNames == null ? "main" : branchNames[i];
+        var client = new Client(accounts[i]);
+        var res = client.CommitCreate(new CommitCreateInput
+        {
+          streamId = streams[i].StreamId, branchName = branchName, objectId = objectId, message = message
+        }).Result;
+        
+        responses.Add(res);
+      }
 
-      return res;
+      return responses;
+    }
+
+    public static object SendData(string output)
+    {
+      var commits = output.Split('|').Select(x=>new StreamWrapper(x)).ToList();
+      if (commits.Count() == 1)
+        return commits[0];
+      else
+        return commits;
     }
 
     /// <summary>

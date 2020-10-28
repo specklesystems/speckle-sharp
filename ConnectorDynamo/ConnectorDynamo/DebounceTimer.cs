@@ -8,8 +8,8 @@ namespace Speckle.ConnectorDynamo
   {
     private Timer timer;
 
-
     /// <summary>
+    /// Adapted from: https://weblog.west-wind.com/posts/2017/jul/02/debouncing-and-throttling-dispatcher-events
     /// Debounce an event by resetting the event timeout every time the event is 
     /// fired. The behavior is that the Action passed is fired only after events
     /// stop firing for the given timeout period.
@@ -23,9 +23,6 @@ namespace Speckle.ConnectorDynamo
     /// </summary>
     /// <param name="interval">Timeout in Milliseconds</param>
     /// <param name="action">Action<object> to fire when debounced event fires</object></param>
-    /// <param name="param">optional parameter</param>
-    /// <param name="priority">optional priorty for the dispatcher</param>
-    /// <param name="disp">optional dispatcher. If not passed or null CurrentDispatcher is used.</param>        
     public void Debounce(int interval, Action action)
     {
       // kill pending timer and pending ticks
