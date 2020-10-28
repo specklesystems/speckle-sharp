@@ -9,6 +9,7 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using System;
@@ -19,6 +20,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using Utilities = ConnectorGrashopper.Extras.Utilities;
 
 namespace ConnectorGrashopper.Ops
 {
@@ -44,10 +46,16 @@ namespace ConnectorGrashopper.Ops
 
     public string BaseId { get; set; }
 
+    public ISpeckleConverter Converter;
+
+    public ISpeckleKit Kit;
+
     public SendComponent() : base("Send", "Send", "Sends data to the provided transports/streams.", "Speckle 2", "   Send/Receive")
     {
       BaseWorker = new SendComponentWorker(this);
       Attributes = new SendComponentAttributes(this);
+
+      SetDefaultKitAndConverter();
     }
 
     public override bool Write(GH_IWriter writer)
@@ -56,6 +64,7 @@ namespace ConnectorGrashopper.Ops
       writer.SetBoolean("AutoSend", AutoSend);
       writer.SetString("CurrentComponentState", CurrentComponentState);
       writer.SetString("BaseId", BaseId);
+      writer.SetString("KitName", Kit.Name);
 
       var owSer = string.Join("\n", OutputWrappers.Select(ow => $"{ow.ServerUrl}\t{ow.StreamId}\t{ow.CommitId}"));
       writer.SetString("OutputWrappers", owSer);
@@ -91,6 +100,26 @@ namespace ConnectorGrashopper.Ops
         }
       }
 
+      var kitName = "";
+      reader.TryGetString("KitName", ref kitName);
+
+      if (kitName != "")
+      {
+        try
+        {
+          SetConverterFromKit(kitName);
+        }
+        catch (Exception e)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
+          SetDefaultKitAndConverter();
+        }
+      }
+      else
+      {
+        SetDefaultKitAndConverter();
+      }
+
       return base.Read(reader);
     }
 
@@ -114,6 +143,18 @@ namespace ConnectorGrashopper.Ops
 
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
+      Menu_AppendSeparator(menu);
+      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:");
+      menuItem.Enabled = false;
+      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+
+      foreach (var kit in kits)
+      {
+        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
+      }
+
+      Menu_AppendSeparator(menu);
+
       var cacheMi = Menu_AppendItem(menu, $"Use default cache", (s, e) => UseDefaultCache = !UseDefaultCache, true, UseDefaultCache);
       cacheMi.ToolTipText = "It's advised you always use the default cache, unless you are providing a list of custom transports and you understand the consequences.";
 
@@ -137,6 +178,32 @@ namespace ConnectorGrashopper.Ops
       }
 
       base.AppendAdditionalComponentMenuItems(menu);
+    }
+
+    public void SetConverterFromKit(string kitName)
+    {
+      if (kitName == Kit.Name) return;
+
+      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
+      Converter = Kit.LoadConverter(Applications.Rhino);
+
+      Message = $"Using the {Kit.Name} Converter";
+      ExpireSolution(true);
+    }
+
+    private void SetDefaultKitAndConverter()
+    {
+      Kit = KitManager.GetDefaultKit();
+      try
+      {
+        Converter = Kit.LoadConverter(Applications.Rhino);
+        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        var x = Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem;
+      }
+      catch
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+      }
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)
@@ -269,20 +336,28 @@ namespace ConnectorGrashopper.Ops
       {
         // Items: Easiest case: just send the base object! 
         case "item":
-          ObjectToSend = DataInput.get_DataItem(0).GetType().GetProperty("Value").GetValue(DataInput.get_DataItem(0)) as Base;
-          break;
+          var _obj = DataInput.get_DataItem(0).GetType().GetProperty("Value").GetValue(DataInput.get_DataItem(0));
+          var _objConv = Utilities.TryConvertItemToSpeckle(_obj, ((SendComponent)Parent).Converter);
 
+          if (_objConv is Base myBase)
+          {
+            ObjectToSend = myBase;
+            break;
+          }
+          ObjectToSend = new Base();
+          ObjectToSend["@data"] = new List<object>() { _objConv };
+          break;
         // Lists: Current convention is to wrap the list of bases in a new object, and set it as a
         // detachable subproperty called "list". See the dynamo implementation.
         case "list":
           ObjectToSend = new Base();
-          ObjectToSend["@data"] = DataInput.ToList().Select(goo => goo.GetType().GetProperty("Value").GetValue(goo) as Base).ToList();
+          ObjectToSend["@data"] = DataInput.ToList().Select(goo => Utilities.TryConvertItemToSpeckle(goo, ((SendComponent)Parent).Converter)).ToList();
           break;
 
         // Trees: values for each path get stored in a dictionary, where the key is the path, and the value is a list of the values inside that path. 
         case "tree":
           ObjectToSend = new Speckle.Core.Models.Base();
-          var dict = new Dictionary<string, List<Base>>();
+          var dict = new Dictionary<string, List<object>>();
           int branchIndex = 0;
           foreach (var list in DataInput.Branches)
           {
@@ -293,7 +368,7 @@ namespace ConnectorGrashopper.Ops
             }
 
             var path = DataInput.Paths[branchIndex];
-            dict[path.ToString()] = list.Select(goo => goo.GetType().GetProperty("Value").GetValue(goo) as Base).ToList();
+            dict[path.ToString()] = list.Select(goo => Utilities.TryConvertItemToSpeckle(goo, ((SendComponent)Parent).Converter)).ToList();
             branchIndex++;
           }
           ObjectToSend["@data"] = dict;
@@ -464,7 +539,7 @@ namespace ConnectorGrashopper.Ops
     {
       stopwatch.Stop();
 
-      if(((SendComponent)Parent).JustPastedIn)
+      if (((SendComponent)Parent).JustPastedIn)
       {
         ((SendComponent)Parent).JustPastedIn = false;
         DA.SetDataList(0, ((SendComponent)Parent).OutputWrappers);
@@ -505,19 +580,6 @@ namespace ConnectorGrashopper.Ops
       }
     }
 
-  }
-
-  public class CommitOutputWrapper
-  {
-    public string branch { get; set; }
-    public string id { get; set; }
-    public string streamId { get; set; }
-    public string url { get; set; }
-
-    public override string ToString()
-    {
-      return $"{url}/streams/{streamId}/commits/{id}";
-    }
   }
 
   public class SendComponentAttributes : GH_ComponentAttributes
