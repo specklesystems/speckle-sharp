@@ -138,7 +138,10 @@ namespace ConnectorGrashopper.Objects
       inputData.Keys.ToList().ForEach(key =>
       {
         var value = inputData[key];
-        if (value is List<object> list)
+        if (value == null)
+        {
+        }
+        else if (value is List<object> list)
         {
           // Value is a list of items, iterate and convert.
           var converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();

@@ -66,6 +66,7 @@ namespace ConnectorGrashopper.Streams
         if (accountId == null)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No account ID was provided");
+          Message = null;
           return;
         }
 
