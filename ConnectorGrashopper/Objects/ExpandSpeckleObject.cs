@@ -152,11 +152,13 @@ namespace ConnectorGrashopper.Objects
             case null:
               continue;
             case System.Collections.IList list:
+              var index = 0;
               foreach(var x in list)
               {
                 var wrapper = new GH_ObjectWrapper();
                 wrapper.Value = Utilities.TryConvertItemToNative(x, Converter);
-                outputDict[prop].Append(wrapper);
+                outputDict[prop].Append(wrapper,path);
+                index++;
               }
               break;
             // TODO: Not clear how we handle "tree" inner props. They can only be set by sender components,
@@ -170,7 +172,7 @@ namespace ConnectorGrashopper.Objects
                 {
                   wrapper.Value = Utilities.TryConvertItemToNative(b, Converter);
                 }
-                outputDict[prop].Append(wrapper);
+                outputDict[prop].Append(wrapper, path);
               }
               break;
             default:
