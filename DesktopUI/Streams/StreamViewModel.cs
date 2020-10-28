@@ -153,6 +153,11 @@ namespace Speckle.DesktopUI.Streams
       _events.Publish(new ShowNotificationEvent() {Notification = "Stream ID copied to clipboard!"});
     }
 
+    public void OpenStreamInWeb(StreamState state)
+    {
+      Link.OpenInBrowser($"{state.ServerUrl}/streams/{state.Stream.id}");
+    }
+
     public void Handle(ApplicationEvent message)
     {
       switch ( message.Type )
