@@ -44,18 +44,9 @@ namespace Speckle.DesktopUI.Streams
       set
       {
         SetAndNotify(ref _streamState, value);
-        Stream = StreamState.Stream;
         Branch = StreamState.Stream.branches.items[ 0 ];
         NotifyOfPropertyChange(nameof(LatestCommit));
       }
-    }
-
-    private Stream _stream;
-
-    public Stream Stream
-    {
-      get => _stream;
-      set => SetAndNotify(ref _stream, value);
     }
 
     private Branch _branch;
@@ -81,11 +72,11 @@ namespace Speckle.DesktopUI.Streams
       if ( res != null )
       {
         StreamState = res;
-        _events.Publish(new StreamUpdatedEvent() {StreamId = Stream.id});
+        _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
       }
 
-      StreamState.Progress.ResetProgress();
       StreamState.IsSending = false;
+      await StreamState.Progress.ResetProgress();
     }
 
     public async void Receive()
@@ -97,8 +88,8 @@ namespace Speckle.DesktopUI.Streams
       var res = await Task.Run(() => _repo.ConvertAndReceive(StreamState));
       if ( res != null ) StreamState = res;
 
-      StreamState.Progress.ResetProgress();
       StreamState.IsReceiving = false;
+      await StreamState.Progress.ResetProgress();
     }
 
     public void CancelToken()
@@ -127,8 +118,8 @@ namespace Speckle.DesktopUI.Streams
 
     public void RemoveStream()
     {
-      _bindings.RemoveStream(Stream.id);
-      _events.Publish(new StreamRemovedEvent() {StreamId = Stream.id});
+      _bindings.RemoveStream(StreamState.Stream.id);
+      _events.Publish(new StreamRemovedEvent() {StreamId = StreamState.Stream.id});
       RequestClose();
     }
 
@@ -140,7 +131,7 @@ namespace Speckle.DesktopUI.Streams
         DialogHost.CloseDialogCommand.Execute(null, null);
         return;
       }
-      _events.Publish(new StreamRemovedEvent() {StreamId = Stream.id});
+      _events.Publish(new StreamRemovedEvent() {StreamId = StreamState.Stream.id});
       DialogHost.CloseDialogCommand.Execute(null, null);
       RequestClose();
     }
@@ -172,10 +163,10 @@ namespace Speckle.DesktopUI.Streams
       }
     }
 
-    public async void Handle(StreamUpdatedEvent message)
+    public void Handle(StreamUpdatedEvent message)
     {
       if ( message.StreamId != StreamState.Stream.id ) return;
-      StreamState.Stream = Stream = await StreamState.Client.StreamGet(StreamState.Stream.id);
+      StreamState.Stream = message.Stream;
     }
   }
 }

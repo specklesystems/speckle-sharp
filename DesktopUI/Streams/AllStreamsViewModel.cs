@@ -72,7 +72,6 @@ namespace Speckle.DesktopUI.Streams
     {
       var item = _streamViewModelFactory.CreateStreamViewModel();
       item.StreamState = state;
-      item.Stream = state.Stream;
       // get main branch for now
       // TODO allow user to select branch
       item.Branch = _repo.GetMainBranch(state.Stream.branches.items);
