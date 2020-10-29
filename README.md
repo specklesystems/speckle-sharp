@@ -61,8 +61,14 @@ After installing it, you can use it to add/create an account on the Server.
 After setting up dependencies, server and accounts you're good to go. Just make sure of the following:
 
 - the Solution builds fine in your IDE
+
 - you IDE is set to start the correct version of Rhino on Debug
-    TODO Add image of config here
+
+    <img width="500" alt="Screenshot 2020-10-29 at 11 32 51" src="https://user-images.githubusercontent.com/2316535/97557069-94815180-19da-11eb-8e84-05022af3e944.png">
+
+- your Post-Build event is set up correctly to rename the project `.dll` to `.gha`.
+
+    <img width="500" alt="Screenshot 2020-10-29 at 11 32 45" src="https://user-images.githubusercontent.com/2316535/97557434-0f4a6c80-19db-11eb-90c8-2b5c92369b9b.png">
   
 
 The first time you run Rhino after having built the project, you need to add the `bin\` folder in the `GrasshopperConnector` project to the _Library Folders_ in the _Grasshopper Developer Settings_. To do that, follow these steps.
@@ -87,10 +93,11 @@ The first time you run Rhino after having built the project, you need to add the
 
   <img width="589" alt="Screenshot 2020-10-29 at 11 04 06" src="https://user-images.githubusercontent.com/2316535/97555643-a661f500-19d8-11eb-87fd-9044acea138e.png">
 
-And voila', the `Speckle 2` tab should now appear along any other Grasshopper plugins you may have installed:
+And voila', once you start Grasshopper, the `Speckle 2` tab should now appear along any other Grasshopper plugins you may have installed.
 
 <img width="1028" alt="Screenshot 2020-10-29 at 11 08 03" src="https://user-images.githubusercontent.com/2316535/97555645-a661f500-19d8-11eb-8436-1e60d1133e28.png">
 
+> If Grasshopper was already running, you may need to restart Rhino for the Speckle plugin to load.
 
 ## Contributing
 
