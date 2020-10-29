@@ -98,7 +98,7 @@ namespace Speckle.DesktopUI.Utils
         if ( value == "" )
         {
           SelectedUser = null;
-          UserSearchResults.Clear();
+          UserSearchResults?.Clear();
         }
 
         if ( SelectedUser != null ) return;
@@ -142,6 +142,8 @@ namespace Speckle.DesktopUI.Utils
       }
       catch ( Exception e )
       {
+        // search prob returned no results
+        UserSearchResults?.Clear();
         Debug.WriteLine(e);
       }
     }

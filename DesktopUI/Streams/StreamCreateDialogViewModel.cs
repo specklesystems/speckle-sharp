@@ -97,7 +97,7 @@ namespace Speckle.DesktopUI.Streams
         if ( value == "" )
         {
           SelectedStream = null;
-          StreamSearchResults.Clear();
+          StreamSearchResults?.Clear();
         }
 
         if ( SelectedStream != null && value == SelectedStream.name ) return;
@@ -141,6 +141,8 @@ namespace Speckle.DesktopUI.Streams
       }
       catch ( Exception e )
       {
+        // search prob returned no results
+        StreamSearchResults?.Clear();
         Debug.WriteLine(e);
       }
     }
