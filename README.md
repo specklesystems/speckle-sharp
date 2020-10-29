@@ -1,4 +1,4 @@
-# Connector Dynamo
+# Connector Grasshopper
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works)
 [![Slack Invite](https://img.shields.io/badge/-slack-grey?style=flat-square&logo=slack)](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
@@ -68,13 +68,29 @@ After setting up dependencies, server and accounts you're good to go. Just make 
 The first time you run Rhino after having built the project, you need to add the `bin\` folder in the `GrasshopperConnector` project to the _Library Folders_ in the _Grasshopper Developer Settings_. To do that, follow these steps.
 
 - Execute the command `GrasshopperDeveloperSettings` in Rhino.
+
+  <img width="500" alt="Screenshot 2020-10-29 at 11 03 15" src="https://user-images.githubusercontent.com/2316535/97555637-a5c95e80-19d8-11eb-9079-46d44a19f565.png">
+
 - Click on the `Add folder` button.
+
+  <img width="500" alt="Screenshot 2020-10-29 at 11 03 29" src="https://user-images.githubusercontent.com/2316535/97555638-a5c95e80-19d8-11eb-86a8-b938c0033763.png">
+  
 - Click on the `...` button on the new empty line that appeared below.
+
+  <img width="500" alt="Screenshot 2020-10-29 at 11 03 41" src="https://user-images.githubusercontent.com/2316535/97555640-a661f500-19d8-11eb-9140-e8363b50ecd8.png">
+  
 - Select the `bin\` folder in your project and click ok.
 
-In order to hit breakpoints in your code, it's important to **deactivate** the option `Memory load assemblies using COFF byte arrays`.
+  <img width="432" alt="Screenshot 2020-10-29 at 11 02 43" src="https://user-images.githubusercontent.com/2316535/97555636-a530c800-19d8-11eb-8b33-f80702da3cbe.png">
+  
+- In order to hit breakpoints in your code, it's important to **deactivate** the option `Memory load assemblies using COFF byte arrays`.
 
-And voila', the Speckle tab should now appear along any other Grasshopper plugins you may have installed:
+  <img width="589" alt="Screenshot 2020-10-29 at 11 04 06" src="https://user-images.githubusercontent.com/2316535/97555643-a661f500-19d8-11eb-87fd-9044acea138e.png">
+
+And voila', the `Speckle 2` tab should now appear along any other Grasshopper plugins you may have installed:
+
+<img width="1028" alt="Screenshot 2020-10-29 at 11 08 03" src="https://user-images.githubusercontent.com/2316535/97555645-a661f500-19d8-11eb-8436-1e60d1133e28.png">
+
 
 ## Contributing
 
