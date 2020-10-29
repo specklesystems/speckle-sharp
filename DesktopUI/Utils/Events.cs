@@ -25,6 +25,12 @@ namespace Speckle.DesktopUI.Utils
 
   public class StreamUpdatedEvent : EventBase
   {
+    public StreamUpdatedEvent(Stream stream)
+    {
+      Stream = stream;
+      StreamId = stream.id;
+    }
+    public Stream Stream { get; set; }
     public string StreamId { get; set; }
   }
 
