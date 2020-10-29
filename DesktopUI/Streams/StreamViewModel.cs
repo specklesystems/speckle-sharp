@@ -153,10 +153,11 @@ namespace Speckle.DesktopUI.Streams
     {
       switch ( message.Type )
       {
+        case ApplicationEvent.EventType.DocumentOpened:
         case ApplicationEvent.EventType.DocumentClosed:
         {
           RequestClose();
-          return;
+          break;
         }
         default:
           return;

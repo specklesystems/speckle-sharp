@@ -174,17 +174,15 @@ namespace Speckle.DesktopUI.Streams
           StreamList.Clear();
           break;
         }
-        case ApplicationEvent.EventType.DocumentOpened:
-        {
-          StreamList = new BindableCollection<StreamState>(_bindings.GetFileContext());
-          break;
-        }
         case ApplicationEvent.EventType.DocumentModified:
         {
           // warn that stream data may be expired
           break;
         }
+        case ApplicationEvent.EventType.DocumentOpened:
         case ApplicationEvent.EventType.ViewActivated:
+          StreamList.Clear();
+          StreamList = new BindableCollection<StreamState>(message.DynamicInfo);
           break;
         case ApplicationEvent.EventType.ApplicationIdling:
           break;
