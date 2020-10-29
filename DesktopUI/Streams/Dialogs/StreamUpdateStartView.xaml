@@ -34,13 +34,14 @@
                TextAlignment="Left"
                TextWrapping="Wrap" />
 
-      <Grid Margin="0 24 0 8">
+      <Grid Margin="0 24 0 0">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Button Grid.Column="0"
                 Width="120"
+                Margin="0 0 12 0"
                 Command="{x:Static md:DialogHost.CloseDialogCommand}"
                 Content="CANCEL"
                 IsCancel="True"

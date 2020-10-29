@@ -16,6 +16,7 @@
       <utils:TimeAgoConverter x:Key="TimeAgoConverter" />
       <utils:InverseBooleanConverter x:Key="InverseBooleanConverter" />
       <system:Int32 x:Key="StreamUpdateSlide">1</system:Int32>
+      <system:Int32 x:Key="StreamCollabsSlide">2</system:Int32>
       <BitmapImage x:Key="DefaultProfImage"
                    UriSource="../Resources/s2logo.png" />
 
@@ -111,7 +112,7 @@
                      FontSize="18"
                      TextWrapping="Wrap"
                      Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                     Text="{Binding Stream.name}" />
+                     Text="{Binding StreamState.Stream.name}" />
           <Button Grid.Column="2"
                   Width="32"
                   Height="32"
@@ -136,7 +137,7 @@
                      Margin="0,0,8,0"
                      md:ButtonAssist.CornerRadius="14"
                      Command="{s:Action CopyStreamId}"
-                     CommandParameter="{Binding Stream.id}"
+                     CommandParameter="{Binding StreamState.Stream.id}"
                      FontFamily="Consolas"
                      FontSize="13"
                      ToolTip="click to copy stream ID">
@@ -146,7 +147,7 @@
                              Margin="0,0,4,0"
                              VerticalAlignment="Center"
                              Kind="ContentCopy" />
-                <TextBlock Text="{Binding Stream.id}" />
+                <TextBlock Text="{Binding StreamState.Stream.id}" />
               </StackPanel>
             </md:Chip>
 
@@ -186,7 +187,7 @@
           </StackPanel>
         </Grid>
         <TextBlock Margin="0,16,0,0"
-                   Text="{Binding Stream.description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                   Text="{Binding StreamState.Stream.description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         <Grid Margin="8,16">
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -333,13 +334,31 @@
           </Border>
         </Grid>
 
-        <TextBlock Margin="0,24,0,8"
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0" Margin="0,24,0,8"
                    FontSize="18"
                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                    Text="Collaborators" />
+        <Button Grid.Column="1"
+                Width="32"
+                Height="32"
+                Margin="0,0,0,8"
+                Command="{s:Action ShowStreamUpdateDialog}"
+                CommandParameter="{StaticResource StreamCollabsSlide}"
+                md:RippleAssist.ClipToBounds="True"
+                Content="{md:PackIcon PencilOutline,
+                                  Size=22}"
+                Style="{StaticResource MaterialDesignIconButton}"
+                ToolTip="edit stream collaborators" />
+        </Grid>
 
         <ItemsControl ItemTemplate="{StaticResource CollboratorChipTemplate}"
-                      ItemsSource="{Binding Stream.collaborators}">
+                      ItemsSource="{Binding StreamState.Stream.collaborators}">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
               <WrapPanel />

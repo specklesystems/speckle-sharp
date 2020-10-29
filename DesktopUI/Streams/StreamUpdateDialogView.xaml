@@ -14,7 +14,6 @@
     <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
         <RowDefinition Height="*" />
       </Grid.RowDefinitions>
       <Button Grid.Row="0"
@@ -30,36 +29,16 @@
               IsCancel="True"
               Style="{StaticResource MaterialDesignIconForegroundButton}"
               ToolTip="Cancel" />
-      <ProgressBar Grid.Row="1"
-                   Margin="0,4"
-                   Background="Transparent"
-                   BorderThickness="0"
-                   Foreground="{DynamicResource PrimaryHueLightBrush}"
-                   IsIndeterminate="False"
-                   Value="0" />
-      <Grid Grid.Row="2">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <md:Transitioner AutoApplyTransitionOrigins="True"
-                           SelectedIndex="{Binding SelectedSlide}">
+      <ScrollViewer Grid.Row="1"
+                    VerticalScrollBarVisibility="Auto">
+        <Grid>
+          <dialogs:StreamUpdateStartView Visibility="{Binding EditingDetails, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+          <dialogs:StreamUpdateObjectsView Visibility="{Binding EditingObjects, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+          <dialogs:StreamUpdateCollabsView Visibility="{Binding EditingCollabs, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+          <md:Snackbar MessageQueue="{Binding Notifications}" />
+        </Grid>
 
-            <md:TransitionerSlide>
-              <md:TransitionerSlide.ForwardWipe>
-                <md:SlideWipe Direction="Left" />
-              </md:TransitionerSlide.ForwardWipe>
-              <dialogs:StreamUpdateStartView />
-            </md:TransitionerSlide>
-
-            <md:TransitionerSlide>
-              <md:TransitionerSlide.ForwardWipe>
-                <md:SlideWipe Direction="Left" />
-              </md:TransitionerSlide.ForwardWipe>
-              <dialogs:StreamUpdateObjectsView/>
-            </md:TransitionerSlide>
-
-          </md:Transitioner>
-        </ScrollViewer>
-        <md:Snackbar MessageQueue="{Binding Notifications}" />
-      </Grid>
+      </ScrollViewer>
     </Grid>
   </Grid>
 </UserControl>

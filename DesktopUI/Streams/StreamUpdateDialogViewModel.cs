@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
@@ -23,10 +22,25 @@ namespace Speckle.DesktopUI.Streams
       _events = events;
       _streamsRepo = streamsRepo;
       Bindings = bindings;
-
+      Roles = new BindableCollection<StreamRole>(_streamsRepo.GetRoles());
       FilterTabs = new BindableCollection<FilterTab>(Bindings.GetSelectionFilters().Select(f => new FilterTab(f)));
 
       _events.Subscribe(this);
+    }
+
+    public bool EditingDetails
+    {
+      get => SelectedSlide == 0;
+    }
+
+    public bool EditingObjects
+    {
+      get => SelectedSlide == 1;
+    }
+
+    public bool EditingCollabs
+    {
+      get => SelectedSlide == 2;
     }
 
     private readonly StreamsRepository _streamsRepo;
@@ -86,7 +100,8 @@ namespace Speckle.DesktopUI.Streams
           description = NewDescription,
           isPublic = StreamState.Stream.isPublic
         });
-        _events.Publish(new StreamUpdatedEvent() {StreamId = StreamState.Stream.id});
+        var update = await StreamState.Client.StreamGet(StreamState.Stream.id);
+        _events.Publish(new StreamUpdatedEvent(update));
         CloseDialog();
       }
       catch ( Exception e )
@@ -110,7 +125,7 @@ namespace Speckle.DesktopUI.Streams
 
       StreamState.Filter = filter;
       Bindings.UpdateStream(StreamState);
-      _events.Publish(new StreamUpdatedEvent());
+      _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
       UpdateButtonLoading = false;
       CloseDialog();
     }
@@ -131,6 +146,69 @@ namespace Speckle.DesktopUI.Streams
       SelectedFilterTab.Filter.Selection = ActiveViewObjects;
 
       UpdateStreamObjects();
+    }
+
+    public async void AddCollaboratorsToStream()
+    {
+      if ( Role == null )
+      {
+        Notifications.Enqueue("Please select a role");
+        return;
+      }
+      if ( !Collaborators.Any() ) return;
+      var success = 0;
+      foreach ( var collaborator in Collaborators )
+      {
+        try
+        {
+          var res = await StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput()
+          {
+            role = Role.Role, streamId = StreamState.Stream.id, userId = collaborator.id
+          });
+          if ( res ) success++;
+        }
+        catch ( Exception e )
+        {
+          Notifications.Enqueue($"Failed to add collaborators: {e}");
+          return;
+        }
+      }
+
+      if ( success == 0 )
+      {
+        Notifications.Enqueue("Could not add collaborators to this stream");
+        return;
+      }
+
+      StreamState.Stream = await StreamState.Client.StreamGet(StreamState.Stream.id);
+      Collaborators.Clear();
+      _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
+      Notifications.Enqueue($"Added {success} collaborators to this stream");
+    }
+
+    public async void RemoveCollaborator(Collaborator collaborator)
+    {
+      try
+      {
+        var res = await StreamState.Client.StreamRevokePermission(new StreamRevokePermissionInput()
+        {
+          streamId = StreamState.Stream.id, userId = collaborator.id
+        });
+        if ( !res )
+        {
+          Notifications.Enqueue($"Could not revoke {collaborator.name}'s permissions");
+          return;
+        }
+      }
+      catch ( Exception e )
+      {
+        Notifications.Enqueue($"Could not revoke {collaborator.name}'s permissions: {e}");
+        return;
+      }
+
+      StreamState.Stream = await StreamState.Client.StreamGet(StreamState.Stream.id);
+      _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
+      Notifications.Enqueue($"Revoked {collaborator.name}'s permissions");
     }
 
     public void Handle(RetrievedFilteredObjectsEvent message)
