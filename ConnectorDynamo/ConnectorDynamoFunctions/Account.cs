@@ -11,29 +11,6 @@ namespace Speckle.ConnectorDynamo.Functions
 {
   public static class Account
   {
-    // /// <summary>
-    // /// Your default Speckle account
-    // /// </summary>
-    // /// <returns name="account">Your default Speckle account</returns>
-    // [NodeCategory("Query")]
-    // public static Core.Credentials.Account Default()
-    // {
-    //   Tracker.TrackEvent(Tracker.ACCOUNT_DEFAULT);
-    //
-    //   return AccountManager.GetDefaultAccount();
-    // }
-
-    // /// <summary>
-    // /// Your Speckle accounts
-    // /// </summary>
-    // /// <returns name="accounts">Your Speckle accounts</returns>
-    // [NodeCategory("Query")]
-    // public static IEnumerable<Core.Credentials.Account> List()
-    // {
-    //   Tracker.TrackEvent(Tracker.ACCOUNT_LIST);
-    //
-    //   return AccountManager.GetAccounts();
-    // }
 
     [IsVisibleInDynamoLibrary(false)]
     public static Core.Credentials.Account GetById(string id)

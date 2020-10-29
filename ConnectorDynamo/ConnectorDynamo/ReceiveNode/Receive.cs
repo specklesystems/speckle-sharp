@@ -281,23 +281,25 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
           Progress = val * 100;
         }
 
-        void ErrorAction(string transportName, Exception exception)
+        var hasErrors = false;
+
+        void ErrorAction(string transportName, Exception e)
         {
-          throw exception;
+          hasErrors = true;
+          Message = e.InnerException != null ? e.InnerException.Message : e.Message;
+          _cancellationToken.Cancel();
         }
 
         var data = Functions.Functions.Receive(Stream, _cancellationToken.Token, ProgressAction,
           ErrorAction);
 
-        if (data == null)
+        if (!hasErrors && data != null)
         {
-          throw new Exception("This stream has no commits.");
+          LastCommitId = ((Commit) data["commit"]).id;
+
+          InMemoryCache.Set(LastCommitId, data);
+          Message = "";
         }
-
-        LastCommitId = ((Commit) data["commit"]).id;
-
-        InMemoryCache.Set(LastCommitId, data);
-        Message = "";
       }
       catch (Exception e)
       {
@@ -326,7 +328,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// </summary>
     /// <param name="engine"></param>
     internal void LoadInputs(EngineController engine)
-    { 
+    {
       var oldStream = Stream;
       StreamWrapper newStream = null;
 

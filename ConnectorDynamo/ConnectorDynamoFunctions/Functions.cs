@@ -48,11 +48,12 @@ namespace Speckle.ConnectorDynamo.Functions
       {
         var branchName = branchNames == null ? "main" : branchNames[i];
         var client = new Client(accounts[i]);
-        var res = client.CommitCreate(new CommitCreateInput
-        {
-          streamId = streams[i].StreamId, branchName = branchName, objectId = objectId, message = message
-        }).Result;
-        
+        var res = client.CommitCreate(cancellationToken,
+          new CommitCreateInput
+          {
+            streamId = streams[i].StreamId, branchName = branchName, objectId = objectId, message = message
+          }).Result;
+
         responses.Add(res);
       }
 
@@ -61,7 +62,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
     public static object SendData(string output)
     {
-      var commits = output.Split('|').Select(x=>new StreamWrapper(x)).ToList();
+      var commits = output.Split('|').Select(x => new StreamWrapper(x)).ToList();
       if (commits.Count() == 1)
         return commits[0];
       else
@@ -92,8 +93,9 @@ namespace Speckle.ConnectorDynamo.Functions
           Log.CaptureAndThrow(new Exception("No branch found with name " + stream.BranchName));
         }
 
-        if (res == null || !mainBranch.commits.items.Any())
-          return null;
+        if (!mainBranch.commits.items.Any())
+          throw new Exception("No commits found.");
+        
         commit = mainBranch.commits.items[0];
       }
       else
@@ -105,7 +107,6 @@ namespace Speckle.ConnectorDynamo.Functions
       {
         throw new Exception("Could not get commit.");
       }
-
 
       if (cancellationToken.IsCancellationRequested)
         return null;

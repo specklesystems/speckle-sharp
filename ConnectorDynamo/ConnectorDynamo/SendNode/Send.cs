@@ -192,7 +192,7 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     private void AddOutputs()
     {
-      OutPorts.Add(new PortModel(PortType.Output, this, new PortData("info", "Commit information")));
+      OutPorts.Add(new PortModel(PortType.Output, this, new PortData("stream", "Stream or streams pointing to the created commit")));
     }
 
 
@@ -245,9 +245,14 @@ namespace Speckle.ConnectorDynamo.SendNode
           Progress = val * 100;
         }
 
+        var hasErrors = false;
+
         void ErrorAction(string transportName, Exception e)
         {
-          throw e;
+          hasErrors = true;
+          Message = e.InnerException != null ? e.InnerException.Message : e.Message;
+          Message = Message.Contains("401") ? "Not enough permissions" : Message;
+          _cancellationToken.Cancel();
         }
 
         var plural = (totalCount == 1) ? "" : "s";
@@ -258,13 +263,17 @@ namespace Speckle.ConnectorDynamo.SendNode
         var commitIds = Functions.Functions.Send(@base, _streams, _cancellationToken.Token, _branchNames,
           _commitMessage,
           ProgressAction, ErrorAction);
-        for (int i = 0; i < _streams.Count; i++)
-        {
-          _streams[i].CommitId = commitIds[i];
-        }
 
-        _outputInfo = string.Join("|", _streams.Select(x => x.ToString()));
-        Message = "";
+        if (!hasErrors && commitIds != null)
+        {
+          for (int i = 0; i < _streams.Count; i++)
+          {
+            _streams[i].CommitId = commitIds[i];
+          }
+
+          _outputInfo = string.Join("|", _streams.Select(x => x.ToString()));
+          Message = "";
+        }
       }
       catch (Exception e)
       {
@@ -352,6 +361,7 @@ namespace Speckle.ConnectorDynamo.SendNode
             {
               //ignored
             }
+
             try
             {
               var ss = s.Cast<string>();
@@ -362,6 +372,7 @@ namespace Speckle.ConnectorDynamo.SendNode
             {
               //ignored
             }
+
             break;
         }
       }
