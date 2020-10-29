@@ -147,6 +147,16 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
+    private StreamRole _role;
+
+    public StreamRole Role
+    {
+      get => _role;
+      set => SetAndNotify(ref _role, value);
+    }
+
+    public BindableCollection<StreamRole> Roles { get; internal set; }
+
     private BindableCollection<User> _collaborators = new BindableCollection<User>();
 
     public BindableCollection<User> Collaborators
@@ -172,5 +182,19 @@ namespace Speckle.DesktopUI.Utils
     {
       DialogHost.CloseDialogCommand.Execute(null, null);
     }
+  }
+
+  public class StreamRole
+  {
+    public StreamRole(string name,  string description)
+    {
+      Name = name;
+      Role = $"stream:{name}";
+      Description = description;
+    }
+
+    public string Name { get; }
+    public string Role { get; }
+    public string Description { get; }
   }
 }
