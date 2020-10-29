@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Timers;
-using System.Threading.Tasks;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -87,8 +85,6 @@ namespace Speckle.DesktopUI.Streams
 
     #region Searching Existing Streams
 
-    private Timer streamSearchTimer;
-
     private string _streamQuery;
 
     public string StreamQuery
@@ -97,7 +93,6 @@ namespace Speckle.DesktopUI.Streams
       set
       {
         SetAndNotify(ref _streamQuery, value);
-        streamSearchTimer?.Stop();
 
         if ( value == "" )
         {
@@ -106,8 +101,7 @@ namespace Speckle.DesktopUI.Streams
         }
 
         if ( SelectedStream != null && value == SelectedStream.name ) return;
-        streamSearchTimer = new Timer(500) {AutoReset = false, Enabled = true};
-        streamSearchTimer.Elapsed += streamSearchTimer_Elapsed;
+        SearchForStreams();
       }
     }
 
@@ -134,13 +128,8 @@ namespace Speckle.DesktopUI.Streams
       }
     }
 
-    private void streamSearchTimer_Elapsed(object sender, ElapsedEventArgs e)
-    {
-      SearchForStreams();
-    }
-
     private async void SearchForStreams()
-    {
+   {
       if ( StreamQuery == null || StreamQuery.Length <= 2 )
         return;
 

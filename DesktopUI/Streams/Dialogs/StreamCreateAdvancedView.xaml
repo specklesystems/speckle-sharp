@@ -92,7 +92,7 @@
             ItemsSource="{Binding UserSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
             SelectedItem="{Binding SelectedUser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             StaysOpenOnEdit="True"
-            Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=300}"
             TextSearch.TextPath="name" />
 
           <ItemsControl ItemTemplate="{StaticResource CollboratorChipTemplate}" ItemsSource="{Binding Collaborators}">

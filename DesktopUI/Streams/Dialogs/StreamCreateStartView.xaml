@@ -31,7 +31,7 @@
                 ItemsSource="{Binding StreamSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                 SelectedItem="{Binding SelectedStream, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 StaysOpenOnEdit="True"
-                Text="{Binding StreamQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                Text="{Binding StreamQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=300}">
         <!-- <ComboBox.ItemTemplate> -->
         <!--   <DataTemplate> -->
         <!--  <StackPanel  -->

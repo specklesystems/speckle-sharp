@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Timers;
-using System.Threading.Tasks;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -88,8 +86,6 @@ namespace Speckle.DesktopUI.Utils
 
     #region Adding Collaborators
 
-    private Timer userSearchTimer;
-
     private string _userQuery;
 
     public string UserQuery
@@ -98,7 +94,6 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _userQuery, value);
-        userSearchTimer?.Stop();
 
         if ( value == "" )
         {
@@ -107,8 +102,7 @@ namespace Speckle.DesktopUI.Utils
         }
 
         if ( SelectedUser != null ) return;
-        userSearchTimer = new Timer(500) {AutoReset = false, Enabled = true};
-        userSearchTimer.Elapsed += userSearchTimer_Elapsed;
+        SearchForUsers();
       }
     }
 
@@ -133,11 +127,6 @@ namespace Speckle.DesktopUI.Utils
         UserQuery = SelectedUser.name;
         AddCollabToCollection(SelectedUser);
       }
-    }
-
-    private void userSearchTimer_Elapsed(object sender, ElapsedEventArgs e)
-    {
-      SearchForUsers();
     }
 
     public async void SearchForUsers()
