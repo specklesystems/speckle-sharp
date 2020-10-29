@@ -97,6 +97,7 @@ namespace Speckle.DesktopUI.Streams
       set
       {
         SetAndNotify(ref _streamQuery, value);
+        streamSearchTimer?.Stop();
 
         if ( value == "" )
         {

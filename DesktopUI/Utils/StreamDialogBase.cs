@@ -98,6 +98,8 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _userQuery, value);
+        userSearchTimer?.Stop();
+
         if ( value == "" )
         {
           SelectedUser = null;
@@ -105,7 +107,6 @@ namespace Speckle.DesktopUI.Utils
         }
 
         if ( SelectedUser != null ) return;
-
         userSearchTimer = new Timer(500) {AutoReset = false, Enabled = true};
         userSearchTimer.Elapsed += userSearchTimer_Elapsed;
       }
