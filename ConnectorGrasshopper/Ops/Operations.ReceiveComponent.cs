@@ -411,7 +411,7 @@ namespace ConnectorGrasshopper.Ops
           try
           {
             var stream = await client.StreamGet(InputWrapper.StreamId);
-            var mainBranch = stream.branches.items.FirstOrDefault(b => b.name == (InputWrapper.BranchId ?? "main"));
+            var mainBranch = stream.branches.items.FirstOrDefault(b => b.name == (InputWrapper.BranchName ?? "main"));
             myCommit = mainBranch.commits.items[0];
           }
           catch (Exception e)
