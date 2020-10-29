@@ -36,7 +36,7 @@ The c# projects have local dependencies, in the future these will be referenced 
 - https://github.com/specklesystems/Objects
     - This includes other dependencies included in the `Objects` repo:
         - ConverterRhinoGH
-- https://githug.com/specklesystems/GH_AsyncComponent
+- https://github.com/specklesystems/GrasshopperAsyncComponent
 
 It'd be a good solution to just clone all the Speckle repos you're working on in one folder.
 
