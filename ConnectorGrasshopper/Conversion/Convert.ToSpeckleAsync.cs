@@ -5,6 +5,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Linq;
@@ -29,6 +30,13 @@ namespace ConnectorGrasshopper.Conversion
     {
       SetDefaultKitAndConverter();
       BaseWorker = new ToSpeckleWorker(Converter);
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      Tracker.TrackPageview("convertToSpeckle", "added");
+      Tracker.TrackEvent("convertToSpeckle-added");
+      base.AddedToDocument(document);
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)

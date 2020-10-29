@@ -1,6 +1,8 @@
 ﻿using GH_IO.Serialization;
+using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using System;
 using System.Drawing;
 using System.Linq;
@@ -99,6 +101,13 @@ namespace ConnectorGrasshopper.Accounts
       }
 
       return base.Write(writer);
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      Tracker.TrackPageview("accounts", "added");
+      Tracker.TrackEvent(Tracker.ACCOUNT_LIST);
+      base.AddedToDocument(document);
     }
   }
 
