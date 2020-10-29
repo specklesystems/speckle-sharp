@@ -23,8 +23,6 @@ namespace ConnectorGrasshopper
 
   public class Loader : GH_AssemblyPriority
   {
-    System.Timers.Timer loadTimer;
-    static bool MenuHasBeenAdded = false;
 
     public Loader() { }
 

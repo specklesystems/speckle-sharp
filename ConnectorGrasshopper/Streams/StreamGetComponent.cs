@@ -141,5 +141,11 @@ namespace ConnectorGrasshopper.Streams
       // TODO: Add validation!
       return true;
     }
+
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("stream", "getdetails");
+      base.BeforeSolveInstance();
+    }
   }
 }

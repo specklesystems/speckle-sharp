@@ -13,7 +13,7 @@ namespace ConnectorGrasshopper.Accounts
   public class AccountListComponent : GH_ValueList
   {
     protected override Bitmap Icon => Properties.Resources.Accounts;
-    
+
     public override Guid ComponentGuid => new Guid("734C6CB6-2430-40B3-BE2F-255B27302131");
 
     public override string Category { get => "Speckle 2"; }
@@ -24,7 +24,6 @@ namespace ConnectorGrasshopper.Accounts
 
     public override string Name { get => "Accounts"; }
 
-    
     public AccountListComponent() : base()
     {
       MutableNickName = false;

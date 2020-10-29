@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Grasshopper.Kernel.Data;
+using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
@@ -128,5 +129,12 @@ namespace ConnectorGrasshopper.Streams
         }
       });
     }
+
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("stream", "create");
+      base.BeforeSolveInstance();
+    }
+
   }
 }

@@ -9,6 +9,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -96,6 +97,12 @@ namespace ConnectorGrasshopper.Objects
 
       // Set output
       DA.SetData(0, new GH_SpeckleBase {Value = speckleObj});
+    }
+
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("objects", "create", "keyvalue");
+      base.BeforeSolveInstance();
     }
   }
 }

@@ -4,6 +4,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using System;
 using System.Linq;
 
@@ -30,6 +31,12 @@ namespace ConnectorGrasshopper.Conversion
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddGenericParameter("S", "S", "Serialized objects.", GH_ParamAccess.tree);
+    }
+
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("serialization", "deserialize");
+      base.BeforeSolveInstance();
     }
   }
 

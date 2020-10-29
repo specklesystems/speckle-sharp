@@ -123,6 +123,12 @@ namespace ConnectorGrasshopper.Conversion
       pManager.AddGenericParameter("Converterd", "C", "Converted objects.", GH_ParamAccess.tree);
     }
 
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("convert", "speckle");
+      base.BeforeSolveInstance();
+    }
+
   }
 
   public class ToSpeckleWorker : WorkerInstance

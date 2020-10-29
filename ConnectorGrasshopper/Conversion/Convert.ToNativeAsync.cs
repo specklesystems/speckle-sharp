@@ -33,13 +33,6 @@ namespace ConnectorGrasshopper.Conversion
       BaseWorker = new ToNativeWorker(Converter);
     }
 
-    public override void AddedToDocument(GH_Document document)
-    {
-      Tracker.TrackPageview("convertToNative", "added");
-      Tracker.TrackEvent("convertToNative-added");
-      base.AddedToDocument(document);
-    }
-
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
@@ -127,6 +120,11 @@ namespace ConnectorGrasshopper.Conversion
       pManager.AddGenericParameter("Converterd", "C", "Converted objects.", GH_ParamAccess.tree);
     }
 
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("convert", "native");
+      base.BeforeSolveInstance();
+    }
   }
 
   public class ToNativeWorker : WorkerInstance
@@ -163,7 +161,7 @@ namespace ConnectorGrasshopper.Conversion
             return;
           }
 
-          var converted = Utilities.TryConvertItemToNative(item);
+          var converted = Utilities.TryConvertItemToNative(item, Converter);
           ConvertedObjects.Append(new GH_SpeckleGoo() { Value = converted }, Objects.Paths[branchIndex]);
           ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
         }

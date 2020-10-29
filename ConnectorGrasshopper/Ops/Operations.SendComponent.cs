@@ -10,6 +10,7 @@ using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using System;
@@ -254,6 +255,12 @@ namespace ConnectorGrasshopper.Ops
       {
         OnDisplayExpired(true);
       });
+    }
+
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("send", AutoSend ? "auto" : "manual");
+      base.BeforeSolveInstance();
     }
   }
 
