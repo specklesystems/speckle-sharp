@@ -1,2 +1,70 @@
 # ConnectorRevit
-The Speckle Connector for Revit
+
+[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works)
+[![Slack Invite](https://img.shields.io/badge/-slack-grey?style=flat-square&logo=slack)](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
+
+## Introduction
+
+This repo holds the Speckle 2.0 Revit Connector. It is currently in ⚠ALPHA⚠ and is a bit rough around the edges -- please use at your own risk! And of course, we'd really appreciate any feedback, comments, suggestions, etc ✨
+
+## Developing & Debugging
+
+### Requirements
+
+### Getting Started
+
+#### Dependencies
+
+The C# projects have local dependencies. In the future, these will be referenced as NuGet packages, but for the time being make sure also to clone the following repos in a folder adjacent to the one of this repo:
+
+- [Core](https://github.com/specklesystems/Core)
+- [Objects](https://github.com/specklesystems/Objects)
+- [DesktopUI](https://github.com/specklesystems/DesktopUI)
+
+It'd be a good idea to clone all the Speckle repos you're working on in one folder.
+
+#### Server
+
+In order to test Speckle in all its glory you'll need a server running, you can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server)
+
+If you're facing any errors make sure Postgress and Redis are up and running.
+
+#### Accounts
+
+The connector itself doesn't have features to manage your Speckle accounts, this functionality has been delegated to the Speckle Manager desktop app.
+
+You can install an alpha version of it from: TODO LINK HERE 
+
+After installing it, you can use it to add/create an account on the Server.
+
+### Debugging
+
+In your IDE, you can select which Revit version you want to run. If you're having SQLite issues when building, make doubly sure that you're on x64.
+
+![select debug version in IDE](https://user-images.githubusercontent.com/7717434/97556712-b9bd9200-19d1-11eb-9b4b-8c25832547bd.png)
+
+The button to launch the connector should now appear in the Add-Ins ribbon. You're ready to go!
+
+![speckle buttin on ribbon menu](https://user-images.githubusercontent.com/7717434/97557082-381a3400-19d2-11eb-8d10-13039d5ee7be.png)
+
+Fire it up 🔥
+
+![quick-revit-demo](https://user-images.githubusercontent.com/7717434/97557677-fe95f880-19d2-11eb-8ad3-439f7ad63015.gif)
+
+
+## Contributing
+
+Please make sure you read the [contribution guidelines](.github/CONTRIBUTING.md) for an overview of the best practices we try to follow.
+
+## Community
+
+The Speckle Community hangs out in two main places, usually:
+
+- on [the forum](https://discourse.speckle.works)
+- on [the chat](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI)
+
+Do join and introduce yourself!
+
+## License
+
+Unless otherwise described, the code in this repository is licensed under the Apache-2.0 License. Please note that some modules, extensions or code herein might be otherwise licensed. This is indicated either in the root of the containing folder under a different license file, or in the respective file's header. If you have any questions, don't hesitate to get in touch with us via [email](mailto:hello@speckle.systems).
