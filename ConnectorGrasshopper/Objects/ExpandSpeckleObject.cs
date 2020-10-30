@@ -85,6 +85,7 @@ namespace ConnectorGrasshopper.Objects
             fullProps.Remove(prop);
         });
       }
+      fullProps.Sort();
       return fullProps;
     }
 
@@ -220,12 +221,22 @@ namespace ConnectorGrasshopper.Objects
 
       for (var i = 0; i < Params.Output.Count; i++)
       {
-        if (i > outputList.Count - 1) return;
-
-        var name = outputList[i];
-        Params.Output[i].Name = $"{name}";
-        Params.Output[i].NickName = $"{name}";
-        Params.Output[i].Description = $"Data from property: {name}";
+        string name;
+        string description;
+        if (i < outputList.Count)
+        {
+          name = outputList[i];
+          description = $"Data from property: {name}";
+        }
+        else
+        {
+          name = "-";
+          description = "Data output no longer exists";
+        }
+        
+        Params.Output[i].Name = name;
+        Params.Output[i].NickName = name;
+        Params.Output[i].Description = description;
         Params.Output[i].MutableNickName = false;
         Params.Output[i].Access = GH_ParamAccess.tree;
       }
@@ -247,7 +258,6 @@ namespace ConnectorGrasshopper.Objects
     private void AutoCreateOutputs()
     {
       int tokenCount = outputList.Count;
-
       if (tokenCount == 0 || !OutputMismatch()) return;
       RecordUndoEvent("Creating Outputs");
 
@@ -260,7 +270,17 @@ namespace ConnectorGrasshopper.Objects
       else if (Params.Output.Count > tokenCount)
         while (Params.Output.Count > tokenCount)
         {
-          Params.UnregisterOutputParameter(Params.Output[Params.Output.Count - 1]);
+          var ghParam = Params.Output[Params.Output.Count - 1];
+          if (ghParam.Recipients.Count == 0)
+          {
+            // No output recipients, param is safe to delete.
+            Params.UnregisterOutputParameter(ghParam);
+          }
+          else
+          {
+            // Param has recipients so it should be kept.
+            tokenCount++; // Add +1 to the tokenCount to account for non-deleted param.
+          }
         }
 
       Params.OnParametersChanged();
