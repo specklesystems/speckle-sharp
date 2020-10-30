@@ -5,6 +5,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Linq;
@@ -113,6 +114,12 @@ namespace ConnectorGrasshopper.Conversion
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddGenericParameter("Converterd", "C", "Converted objects.", GH_ParamAccess.tree);
+    }
+
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("convert", "speckle");
+      base.BeforeSolveInstance();
     }
 
   }

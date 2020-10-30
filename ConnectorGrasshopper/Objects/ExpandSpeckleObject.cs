@@ -12,6 +12,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -55,6 +56,8 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void BeforeSolveInstance()
     {
+      Tracker.TrackPageview("objects", "expand", "variableoutput");
+
       if (speckleObjects != null && hasSetData)
         AutoCreateOutputs();
       base.BeforeSolveInstance();

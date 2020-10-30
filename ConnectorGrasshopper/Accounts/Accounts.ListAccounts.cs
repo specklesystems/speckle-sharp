@@ -1,6 +1,8 @@
 ﻿using GH_IO.Serialization;
+using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using System;
 using System.Drawing;
 using System.Linq;
@@ -11,7 +13,7 @@ namespace ConnectorGrasshopper.Accounts
   public class AccountListComponent : GH_ValueList
   {
     protected override Bitmap Icon => Properties.Resources.Accounts;
-    
+
     public override Guid ComponentGuid => new Guid("734C6CB6-2430-40B3-BE2F-255B27302131");
 
     public override string Category { get => "Speckle 2"; }
@@ -22,7 +24,6 @@ namespace ConnectorGrasshopper.Accounts
 
     public override string Name { get => "Accounts"; }
 
-    
     public AccountListComponent() : base()
     {
       MutableNickName = false;
@@ -99,6 +100,12 @@ namespace ConnectorGrasshopper.Accounts
       }
 
       return base.Write(writer);
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      Tracker.TrackPageview("accounts", "added");
+      base.AddedToDocument(document);
     }
   }
 

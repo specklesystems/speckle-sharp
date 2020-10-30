@@ -10,6 +10,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
@@ -173,6 +174,12 @@ namespace ConnectorGrasshopper.Streams
         DA.SetDataTree(7, branches);
         streams = null;
       }
+    }
+
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("stream", "details");
+      base.BeforeSolveInstance();
     }
   }
 }

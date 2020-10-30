@@ -10,6 +10,7 @@ using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using System;
@@ -52,6 +53,8 @@ namespace ConnectorGrasshopper.Ops
     public ISpeckleConverter Converter;
 
     public ISpeckleKit Kit;
+
+    private Client ApiClient { get; set; }
 
     public ReceiveComponent() : base("Receive", "Receive", "Receives Speckle data.", "Speckle 2", "   Send/Receive")
     {
@@ -238,8 +241,6 @@ namespace ConnectorGrasshopper.Ops
       });
     }
 
-    private Client ApiClient { get; set; }
-
     public void ParseInput(IGH_DataAccess DA)
     {
       DA.GetDataTree(0, out GH_Structure<IGH_Goo> DataInput);
@@ -317,6 +318,12 @@ namespace ConnectorGrasshopper.Ops
           OnDisplayExpired(true);
         }
       });
+    }
+
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("receive", AutoReceive ? "auto" : "manual");
+      base.BeforeSolveInstance();
     }
   }
 
@@ -515,7 +522,14 @@ namespace ConnectorGrasshopper.Ops
       }
 
       // Last attempt: just set the object out as receieved, and the user can unpack it via the other components.
-      DA.SetData(0, new GH_SpeckleBase() { Value = ReceivedObject });
+      if (((ReceiveComponent)Parent).Converter.CanConvertToNative(ReceivedObject))
+      {
+        DA.SetData(0, new GH_ObjectWrapper() { Value = Extras.Utilities.TryConvertItemToNative(ReceivedObject, ((ReceiveComponent)Parent).Converter) });
+      }
+      else
+      {
+        DA.SetData(0, new GH_SpeckleBase() { Value = ReceivedObject });
+      }
     }
   }
 

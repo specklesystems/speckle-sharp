@@ -5,11 +5,13 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Conversion
 {
@@ -118,6 +120,11 @@ namespace ConnectorGrasshopper.Conversion
       pManager.AddGenericParameter("Converterd", "C", "Converted objects.", GH_ParamAccess.tree);
     }
 
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("convert", "native");
+      base.BeforeSolveInstance();
+    }
   }
 
   public class ToNativeWorker : WorkerInstance
@@ -135,23 +142,6 @@ namespace ConnectorGrasshopper.Conversion
     }
 
     public override WorkerInstance Duplicate() => new ToNativeWorker(Converter);
-
-    private object TryConvertItem(object value)
-    {
-      object result = null;
-
-      if (value is Grasshopper.Kernel.Types.IGH_Goo)
-      {
-        value = value.GetType().GetProperty("Value").GetValue(value);
-      }
-
-      if (Converter.CanConvertToNative(value as Base))
-      {
-        return Converter.ConvertToNative(value as Base);
-      }
-
-      return result;
-    }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
@@ -171,7 +161,7 @@ namespace ConnectorGrasshopper.Conversion
             return;
           }
 
-          var converted = TryConvertItem(item);
+          var converted = Utilities.TryConvertItemToNative(item, Converter);
           ConvertedObjects.Append(new GH_SpeckleGoo() { Value = converted }, Objects.Paths[branchIndex]);
           ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
         }

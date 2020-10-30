@@ -74,8 +74,6 @@ namespace ConnectorGrasshopper.Streams
 
         Task.Run(async () =>
         {
-          Tracker.TrackEvent(Tracker.STREAM_LIST);
-
           try
           {
             var client = new Client(account);
@@ -91,7 +89,7 @@ namespace ConnectorGrasshopper.Streams
           }
           finally
           {
-            Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { ExpireSolution(true); });
+            Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
           }
         });
       }
@@ -102,6 +100,12 @@ namespace ConnectorGrasshopper.Streams
           DA.SetDataList(0, streams.Select(item => new GH_SpeckleStream(item)));
         streams = null;
       }
+    }
+
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("stream", "list");
+      base.BeforeSolveInstance();
     }
   }
 }

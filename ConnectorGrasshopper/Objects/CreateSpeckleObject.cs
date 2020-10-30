@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using System.Linq;
 using ConnectorGrasshopper.Objects;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
+using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper
 {
@@ -162,6 +163,12 @@ namespace ConnectorGrasshopper
 
     public void VariableParameterMaintenance()
     {
+    }
+
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("objects", "create", "variableinput");
+      base.BeforeSolveInstance();
     }
 
   }

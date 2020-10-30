@@ -1,6 +1,7 @@
 ﻿using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 using System;
 using System.Drawing;
@@ -67,5 +68,12 @@ namespace ConnectorGrasshopper.Transports
 
       DA.SetData(0, myTransport);
     }
+
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview("transports", "server");
+      base.BeforeSolveInstance();
+    }
+
   }
 }
