@@ -41,19 +41,6 @@ namespace Speckle.DesktopUI
       return JsonConvert.SerializeObject(GetSelectionFilters());
     }
 
-    public virtual void StartProcess(string args)
-    {
-      try
-      {
-        Process.Start(args);
-      }
-      catch (Exception e)
-      {
-        Debug.WriteLine($"Error in StartProcess: {e}");
-      }
-
-    }
-
     public virtual bool CanSelectObjects()
     {
       return false;

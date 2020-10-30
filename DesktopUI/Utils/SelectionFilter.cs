@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Speckle.Core.Logging;
 using Stylet;
 
 namespace Speckle.DesktopUI.Utils
@@ -85,7 +86,7 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _listItem, value);
-        if ( ListItems.Contains(ListItem) ) return;
+        if (ListItems.Contains(ListItem))return;
         ListItems.Add(ListItem);
       }
     }
@@ -105,9 +106,9 @@ namespace Speckle.DesktopUI.Utils
       {
         FilterView = Activator.CreateInstance(type);
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
-        Debug.WriteLine(e);
+        Log.CaptureException(e);
       }
     }
   }

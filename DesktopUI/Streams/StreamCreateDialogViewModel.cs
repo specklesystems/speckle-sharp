@@ -144,7 +144,6 @@ namespace Speckle.DesktopUI.Streams
       {
         // search prob returned no results
         StreamSearchResults?.Clear();
-        Debug.WriteLine(e);
       }
     }
 
@@ -204,6 +203,7 @@ namespace Speckle.DesktopUI.Streams
       catch ( Exception e )
       {
         await client.StreamDelete(StreamToCreate.id);
+        Log.CaptureException(e);
         Notifications.Enqueue($"Error: {e.Message}");
       }
 

@@ -144,7 +144,6 @@ namespace Speckle.DesktopUI.Utils
       {
         // search prob returned no results
         UserSearchResults?.Clear();
-        Debug.WriteLine(e);
       }
     }
 

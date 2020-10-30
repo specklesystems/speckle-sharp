@@ -68,7 +68,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void SearchForUsers()
     {
-      if ( UserQuery.Length <= 2 )
+      if (UserQuery.Length <= 2)
         return;
 
       try
@@ -76,10 +76,10 @@ namespace Speckle.DesktopUI.Streams
         var users = await StreamState.Client.UserSearch(UserQuery);
         UserSearchResults = new BindableCollection<User>(users);
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
-        Debug.WriteLine(e);
-        return;
+        // search prob returned no results
+        UserSearchResults?.Clear();
       }
     }
 

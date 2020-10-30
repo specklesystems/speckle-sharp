@@ -131,7 +131,7 @@ namespace Speckle.DesktopUI.Utils
     public Commit LatestCommit(string branchName = "main")
     {
       var branch = Stream.branches.items.Find(b => b.name == branchName);
-      if ( branch == null ) throw new SpeckleException($"Could not find branch {branchName}");
+      if ( branch == null ) Log.CaptureException(new SpeckleException($"Could not find branch {branchName} on stream {Stream.id}"));
       var commits = branch.commits.items;
       return commits.Any() ? commits[ 0 ] : null;
     }

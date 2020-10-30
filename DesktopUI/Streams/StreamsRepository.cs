@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
 using Stylet;
@@ -161,6 +162,7 @@ namespace Speckle.DesktopUI.Streams
       }
       catch ( Exception e )
       {
+        Log.CaptureException(e);
         _bindings.RaiseNotification($"Error: {e.Message}");
         return null;
       }
@@ -192,6 +194,7 @@ namespace Speckle.DesktopUI.Streams
       }
       catch ( Exception e )
       {
+        Log.CaptureException(e);
         _bindings.RaiseNotification($"Error: {e.Message}");
         return null;
       }
@@ -209,6 +212,7 @@ namespace Speckle.DesktopUI.Streams
       }
       catch ( Exception e )
       {
+        Log.CaptureException(e);
         _bindings.RaiseNotification($"Error: {e}");
         return false;
       }
@@ -222,7 +226,7 @@ namespace Speckle.DesktopUI.Streams
       {
         new StreamRole("reviewer", "Can only view."),
         new StreamRole("contributor", "Can edit, push and pull."),
-        new StreamRole("owner",  "Has full access, including deletion rights & access control.")
+        new StreamRole("owner", "Has full access, including deletion rights & access control.")
       };
       return roles;
     }

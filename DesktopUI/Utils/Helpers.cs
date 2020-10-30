@@ -89,7 +89,7 @@ namespace Speckle.DesktopUI.Utils
 
     public static string PluralS(int num)
     {
-      return num > 1 ? "s" : "";
+      return num != 1 ? "s" : "";
     }
   }
 }

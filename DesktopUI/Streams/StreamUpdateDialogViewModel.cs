@@ -108,6 +108,7 @@ namespace Speckle.DesktopUI.Streams
       }
       catch ( Exception e )
       {
+        Log.CaptureException(e);
         Notifications.Enqueue($"Error: {e}");
       }
     }
@@ -121,7 +122,8 @@ namespace Speckle.DesktopUI.Streams
       {
         case "View":
         case "Category":
-        case "Selection" when SelectedFilterTab.ListItems.Any():
+        case "Selection"
+          when SelectedFilterTab.ListItems.Any():
           filter.Selection = SelectedFilterTab.ListItems.ToList();
           break;
       }
@@ -176,6 +178,7 @@ namespace Speckle.DesktopUI.Streams
         }
         catch ( Exception e )
         {
+          Log.CaptureException(e);
           Notifications.Enqueue($"Failed to add collaborators: {e}");
           return;
         }
@@ -210,6 +213,7 @@ namespace Speckle.DesktopUI.Streams
       }
       catch ( Exception e )
       {
+        Log.CaptureException(e);
         Notifications.Enqueue($"Could not revoke {collaborator.name}'s permissions: {e}");
         return;
       }

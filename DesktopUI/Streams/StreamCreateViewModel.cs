@@ -99,6 +99,7 @@ namespace Speckle.DesktopUI.Streams
       }
       catch (Exception e)
       {
+        Log.CaptureException(e);
         MessageQueue.Enqueue($"Error: {e.Message}");
       }
       CreateButtonLoading = false;
