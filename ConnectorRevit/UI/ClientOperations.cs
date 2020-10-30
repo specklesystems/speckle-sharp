@@ -104,6 +104,7 @@ namespace Speckle.ConnectorRevit.UI
           converter.ConversionErrors.Count() == 1 ? "" : "s",
           errors.Count(),
           errors.Count() == 1 ? "" : "s");
+        Log.CaptureException(new SpeckleException(errorMsg));
       }
 
       var transports = new List<ITransport>() {new ServerTransport(client.Account, streamId)};
@@ -174,6 +175,7 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch ( Exception e )
       {
+        Log.CaptureException(e);
         state.Stream = newStream;
         state.Objects = new List<Base>() {commitObject};
         WriteStateToFile();
@@ -229,6 +231,14 @@ namespace Speckle.ConnectorRevit.UI
         }
       });
       Executor.Raise();
+
+      if ( errors.Any() || converter.ConversionErrors.Any() )
+      {
+        var convErrors = converter.ConversionErrors.Count;
+        var err = errors.Count;
+        Log.CaptureException(new SpeckleException(
+          $"{convErrors} conversion error{Formatting.PluralS(convErrors)} and {err} error{Formatting.PluralS(err)}"));
+      }
 
       state.Stream = newStream;
       state.Objects = newObjects;
@@ -400,7 +410,7 @@ namespace Speckle.ConnectorRevit.UI
           }
           catch ( Exception e )
           {
-            Console.WriteLine(e);
+            Log.CaptureException(e);
           }
 
           break;
