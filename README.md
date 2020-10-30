@@ -36,7 +36,7 @@ It'd be a good idea to clone all the Speckle repos you're working on in one fold
 
 In order to test Speckle in all its glory. you'll need a server running. You can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server)
 
-If you're facing any errors, make sure Postgress and Redis are up and running.
+If you're facing any errors, make sure Postgres and Redis are up and running.
 
 #### Accounts
 
