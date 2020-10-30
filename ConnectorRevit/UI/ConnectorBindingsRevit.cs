@@ -171,12 +171,10 @@ namespace Speckle.ConnectorRevit.UI
         Type = ApplicationEvent.EventType.ViewActivated, DynamicInfo = GetFileContext()
       };
       NotifyUi(appEvent);
-      RaiseNotification("App Event: View Activated");
     }
 
     private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
     {
-      // DispatchStoreActionUi("flushClients");
       var appEvent = new ApplicationEvent() {Type = ApplicationEvent.EventType.DocumentClosed};
       NotifyUi(appEvent);
     }
@@ -190,7 +188,6 @@ namespace Speckle.ConnectorRevit.UI
         Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = streamStates
       };
       NotifyUi(appEvent);
-      RaiseNotification("App Event: Document Changed");
     }
 
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
@@ -200,7 +197,6 @@ namespace Speckle.ConnectorRevit.UI
         Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = GetFileContext()
       };
       NotifyUi(appEvent);
-      RaiseNotification("App Event: Document Opened");
     }
 
     private void ApplicationIdling(object sender, Autodesk.Revit.UI.Events.IdlingEventArgs e)
