@@ -257,7 +257,17 @@ namespace ConnectorGrasshopper.Objects
       else if (Params.Output.Count > tokenCount)
         while (Params.Output.Count > tokenCount)
         {
-          Params.UnregisterOutputParameter(Params.Output[Params.Output.Count - 1]);
+          var ghParam = Params.Output[Params.Output.Count - 1];
+          if (ghParam.Recipients.Count == 0)
+          {
+            // No output recipients, param is safe to delete.
+            Params.UnregisterOutputParameter(ghParam);
+          }
+          else
+          {
+            // Param has recipients so it should be kept.
+            tokenCount++; // Add +1 to the tokenCount to account for non-deleted param.
+          }
         }
 
       Params.OnParametersChanged();
