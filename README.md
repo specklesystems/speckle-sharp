@@ -34,19 +34,20 @@ It'd be a good idea to clone all the Speckle repos you're working on in one fold
 
 #### Server
 
-In order to test Speckle in all its glory you'll need a server running, you can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server)
+In order to test Speckle in all its glory. you'll need a server running. You can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server)
 
-If you're facing any errors make sure Postgress and Redis are up and running.
+If you're facing any errors, make sure Postgress and Redis are up and running.
 
 #### Accounts
 
-The connector itself doesn't have features to manage your Speckle accounts, this functionality has been delegated to the Speckle Manager desktop app.
+The connector itself doesn't have features to manage your Speckle accounts. This functionality has been delegated to the Speckle Manager desktop app.
 
 You can install an alpha version of it from: TODO LINK HERE 
 
 After installing it, you can use it to add/create an account on the Server.
 
 ## Implementing your own connector
+
 You'll need to implement the `ConnectorBindings` for your application to allow the UI to interact with it. The [Revit Connector](https://github.com/specklesystems/ConnectorRevit) is a good place to look for reference.
 
 To start the UI from within your appliation, you'll need to create an instance of the UI `Bootstrapper` and give it an instance of your bindings. You then just need to call `Setup` on the `Bootstrapper` and you're on your way 🚀
