@@ -9,7 +9,8 @@ using Sentry.Protocol;
 namespace Speckle.Core.Logging
 {
   /// <summary>
-  /// Anonymous logging to catch all the exceptions and to help us make a better Speckle
+  ///  Anonymous telemetry to help us understand how to make a better Speckle.
+  ///  This really helps us to deliver a better open source project and product!
   /// </summary>
   public class Log
   {
