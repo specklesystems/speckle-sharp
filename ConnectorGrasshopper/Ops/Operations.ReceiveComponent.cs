@@ -522,7 +522,14 @@ namespace ConnectorGrasshopper.Ops
       }
 
       // Last attempt: just set the object out as receieved, and the user can unpack it via the other components.
-      DA.SetData(0, new GH_SpeckleBase() { Value = ReceivedObject });
+      if (((ReceiveComponent)Parent).Converter.CanConvertToNative(ReceivedObject))
+      {
+        DA.SetData(0, new GH_ObjectWrapper() { Value = Extras.Utilities.TryConvertItemToNative(ReceivedObject, ((ReceiveComponent)Parent).Converter) });
+      }
+      else
+      {
+        DA.SetData(0, new GH_SpeckleBase() { Value = ReceivedObject });
+      }
     }
   }
 
