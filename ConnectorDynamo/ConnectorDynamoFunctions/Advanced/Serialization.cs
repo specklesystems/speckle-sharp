@@ -1,5 +1,6 @@
 ﻿using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace Speckle.ConnectorDynamo.Functions.Advanced
@@ -13,7 +14,8 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
     /// <returns name="json">JSON text</returns>
     public static string Serialize(Base @base)
     {
-       return Operations.Serialize(@base);
+      Tracker.TrackPageview(Tracker.SERIALIZE);
+      return Operations.Serialize(@base);
     }
 
     /// <summary>
@@ -23,7 +25,8 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
     /// <returns name="base">Base object</returns>
     public static object Deserialize(string json)
     {
-     return Operations.Deserialize(json);
+      Tracker.TrackPageview(Tracker.DESERIALIZE);
+      return Operations.Deserialize(json);
     }
   }
 }

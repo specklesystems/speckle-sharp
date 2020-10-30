@@ -26,7 +26,7 @@ namespace Speckle.ConnectorDynamo.Functions
     public static object Get([ArbitraryDimensionArrayImport] object streamId,
       [DefaultArgument("null")] Core.Credentials.Account account = null)
     {
-      Tracker.TrackEvent(Tracker.STREAM_GET);
+      Tracker.TrackPageview(Tracker.STREAM_GET);
 
       var streamIds = Utils.MultiDimensionalInputToList<string>(streamId);
       if (!streamIds.Any())
@@ -94,7 +94,7 @@ namespace Speckle.ConnectorDynamo.Functions
       [DefaultArgument("null")] string name,
       [DefaultArgument("null")] string description, [DefaultArgument("null")] bool? isPublic)
     {
-      Tracker.TrackEvent(Tracker.STREAM_UPDATE);
+      Tracker.TrackPageview(Tracker.STREAM_UPDATE);
 
       var streamWrapper = stream as StreamWrapper;
 
@@ -141,7 +141,7 @@ namespace Speckle.ConnectorDynamo.Functions
     })]
     public static object Details([ArbitraryDimensionArrayImport] object stream)
     {
-      Tracker.TrackEvent(Tracker.STREAM_DETAILS);
+      Tracker.TrackPageview(Tracker.STREAM_DETAILS);
 
       var streams = Utils.MultiDimensionalInputToList<StreamWrapper>(stream);
 
@@ -193,7 +193,7 @@ namespace Speckle.ConnectorDynamo.Functions
     public static List<StreamWrapper> List([DefaultArgument("null")] Core.Credentials.Account account = null,
       [DefaultArgument("10")] int limit = 10)
     {
-      Tracker.TrackEvent(Tracker.STREAM_LIST);
+      Tracker.TrackPageview(Tracker.STREAM_LIST);
 
       if (account == null)
         account = AccountManager.GetDefaultAccount();

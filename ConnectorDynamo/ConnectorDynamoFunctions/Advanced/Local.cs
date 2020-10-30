@@ -13,7 +13,7 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
     /// <returns name="localDataId">ID of the local data sent</returns>
     public static string Send([ArbitraryDimensionArrayImport] object data)
     {
-      Tracker.TrackEvent(Tracker.SEND_LOCAL);
+      Tracker.TrackPageview(Tracker.SEND_LOCAL);
 
       var converter = new BatchConverter();
       var @base = converter.ConvertRecursivelyToSpeckle(data);
@@ -30,7 +30,7 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
     /// <returns name="data">Data received</returns>
     public static object Receive(string localDataId)
     {
-      Tracker.TrackEvent(Tracker.RECEIVE_LOCAL);
+      Tracker.TrackPageview(Tracker.RECEIVE_LOCAL);
 
       var @base = Operations.Receive(localDataId).Result;
       var converter = new BatchConverter();

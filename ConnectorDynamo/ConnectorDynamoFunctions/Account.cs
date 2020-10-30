@@ -25,7 +25,7 @@ namespace Speckle.ConnectorDynamo.Functions
     [MultiReturn(new[] {"id", "isDefault", "serverInfo", "userInfo"})]
     public static Dictionary<string, object> Details(Core.Credentials.Account account)
     {
-      Tracker.TrackEvent(Tracker.ACCOUNT_DETAILS);
+      Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
 
       return new Dictionary<string, object>
       {

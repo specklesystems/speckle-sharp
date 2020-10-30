@@ -43,7 +43,7 @@ namespace Speckle.ConnectorDynamo.Extension
 
     public void Shutdown()
     {
-      Tracker.TrackEvent(Tracker.SESSION_END);
+      Tracker.TrackPageview(Tracker.SESSION_END);
     }
 
     public void Startup(ViewStartupParams p) { }

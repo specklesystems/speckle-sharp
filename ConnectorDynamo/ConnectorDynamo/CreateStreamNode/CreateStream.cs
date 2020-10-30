@@ -36,7 +36,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
     private bool _createEnabled = true;
 
     private ObservableCollection<Core.Credentials.Account> _accountList = new ObservableCollection<Account>();
-    
+
     /// <summary>
     /// Current Stream
     /// </summary>
@@ -74,11 +74,11 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
         RaisePropertyChanged("SelectedAccount");
       }
     }
-    
-     /// <summary>
+
+    /// <summary>
     /// UI Binding
     /// </summary>
-     public bool CreateEnabled
+    public bool CreateEnabled
     {
       get => _createEnabled;
       set
@@ -108,13 +108,12 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
     /// </summary>
     public CreateStream()
     {
-      Tracker.TrackEvent(Tracker.ACCOUNT_LIST);
       AddOutputs();
 
       RegisterAllPorts();
       ArgumentLacing = LacingStrategy.Disabled;
     }
-    
+
     private void AddOutputs()
     {
       OutPorts.Add(new PortModel(PortType.Output, this, new PortData("stream", "The new Stream")));
@@ -136,16 +135,15 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
 
     internal void DoCreateStream()
     {
-       Tracker.TrackEvent(Tracker.STREAM_CREATE);
-
       if (SelectedAccount == null)
         throw new Exception("An account must be selected.");
 
+      Tracker.TrackPageview(Tracker.STREAM_CREATE);
 
       var client = new Client(SelectedAccount);
       var res = client.StreamCreate(new StreamCreateInput()).Result;
 
-      Stream = new StreamWrapper(res,SelectedAccount.id,SelectedAccount.serverInfo.url);
+      Stream = new StreamWrapper(res, SelectedAccount.id, SelectedAccount.serverInfo.url);
       CreateEnabled = false;
       SelectedAccountId = SelectedAccount.id;
 
@@ -153,7 +151,6 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
       OnNodeModified(true);
     }
 
-    
 
     #region overrides
 
@@ -165,13 +162,16 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
     /// <returns></returns>
     public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
     {
-      if(Stream==null)
+      if (Stream == null)
         return OutPorts.Enumerate().Select(output =>
           AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
-      
+
       var functionCall = AstFactory.BuildFunctionCall(
         new Func<string, string, StreamWrapper>(Functions.Stream.GetByStreamAndAccountId),
-        new List<AssociativeNode> {AstFactory.BuildStringNode(Stream.StreamId), AstFactory.BuildStringNode(Stream.AccountId)});
+        new List<AssociativeNode>
+        {
+          AstFactory.BuildStringNode(Stream.StreamId), AstFactory.BuildStringNode(Stream.AccountId)
+        });
 
       return new[] {AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall)};
     }

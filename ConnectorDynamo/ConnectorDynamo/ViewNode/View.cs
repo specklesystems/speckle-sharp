@@ -82,7 +82,7 @@ namespace Speckle.ConnectorDynamo.ViewNode
     /// </summary>
     public View()
     {
-      Tracker.TrackEvent(Tracker.SEND_ADDED);
+      Tracker.TrackPageview(Tracker.STREAM_VIEW);
 
       AddInputs();
 

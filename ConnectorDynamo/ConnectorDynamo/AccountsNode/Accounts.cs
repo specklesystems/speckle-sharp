@@ -85,7 +85,7 @@ namespace Speckle.ConnectorDynamo.AccountsNode
     /// </summary>
     public Accounts()
     {
-      Tracker.TrackEvent(Tracker.ACCOUNT_LIST);
+      Tracker.TrackPageview(Tracker.ACCOUNT_LIST);
 
       AddOutputs();
 
