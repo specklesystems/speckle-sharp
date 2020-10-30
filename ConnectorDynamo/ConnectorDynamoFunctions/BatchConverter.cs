@@ -17,6 +17,7 @@ namespace Speckle.ConnectorDynamo.Functions
   public class BatchConverter
   {
     private ISpeckleConverter _converter { get; set; }
+
     public BatchConverter()
     {
       var kit = KitManager.GetDefaultKit();
@@ -36,20 +37,15 @@ namespace Speckle.ConnectorDynamo.Functions
       var converted = RecurseTreeToSpeckle(@object);
       var @base = new Base();
 
-      if (IsList(converted) || Utilities.IsSimpleType(converted.GetType()))
+      //case 1: lists and basic types => add them to a wrapper Base object in a `data` prop
+      //case 2: Base => just use it as it is
+      if (IsList(converted) || converted.GetType().IsSimpleType())
       {
         @base["@data"] = converted;
       }
-      else if (converted is Dictionary<string, object> dic)
+      else if (converted is Base convertedBase)
       {
-        foreach (var key in dic.Keys)
-        {
-          @base[key] = dic[key];
-        }
-      }
-      else
-      {
-        @base = (Base)converted;
+        @base = convertedBase;
       }
 
 
@@ -60,38 +56,51 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       if (IsList(@object))
       {
-        var list = ((IEnumerable)@object).Cast<object>().ToList();
+        var list = ((IEnumerable) @object).Cast<object>().ToList();
         return list.Select(x => RecurseTreeToSpeckle(x)).ToList();
       }
 
-      if (@object is DesignScript.Builtin.Dictionary)
+      if (@object is DesignScript.Builtin.Dictionary dsDic)
       {
-        var dynamoDic = ((DesignScript.Builtin.Dictionary)@object);
-        var dictionary = new Dictionary<string, object>();
-        foreach (var key in dynamoDic.Keys)
-        {
-          dictionary[key] = RecurseTreeToSpeckle(dynamoDic.ValueAtKey(key));
-        }
-        return dictionary;
+        return DictionaryToBase(dsDic);
       }
 
-      if (IsDictionary(@object))
+      if (@object is Dictionary<string, object> dic)
       {
-        var dictionary = @object as Dictionary<string, object>;
-        return dictionary.ToDictionary(key => key, value => RecurseTreeToSpeckle(value));
+        return DictionaryToBase(dic);
       }
 
       //is item
       return TryConvertItemToSpeckle(@object);
+    }
 
+    private Base DictionaryToBase(DesignScript.Builtin.Dictionary dsDic)
+    {
+      var @base = new Base();
+      foreach (var key in dsDic.Keys)
+      {
+        @base[key] = RecurseTreeToSpeckle(dsDic.ValueAtKey(key));
+      }
 
+      return @base;
+    }
+
+    private Base DictionaryToBase(Dictionary<string, object> dic)
+    {
+      var @base = new Base();
+      foreach (var key in dic.Keys)
+      {
+        @base[key] = RecurseTreeToSpeckle(dic[key]);
+      }
+
+      return @base;
     }
 
     private object TryConvertItemToSpeckle(object value)
     {
       object result = null;
 
-      if (value is Base || Utilities.IsSimpleType(value.GetType()))
+      if (value is Base || value.GetType().IsSimpleType())
       {
         return value;
       }
@@ -108,6 +117,7 @@ namespace Speckle.ConnectorDynamo.Functions
       return result;
     }
 
+
     /// <summary>
     /// Helper method to convert a tree-like structure (nested lists) to Native
     /// </summary>
@@ -115,26 +125,22 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <returns></returns>
     public object ConvertRecursivelyToNative(Base @base)
     {
-      // first check if it's a single item, eg a point
+      // case 1: it's an item that has a direct conversion method, eg a point
       if (_converter.CanConvertToNative(@base))
         return RecusrseTreeToNative(@base);
 
-      // otherwise it's probably just a wrapper Base
-      // - if there's only one member unpack it
-      // - otherwise return dictionary of unpacked members
+      // case 2: it's a wrapper Base
+      //       2a: if there's only one member unpack it
+      //       2b: otherwise return dictionary of unpacked members
       var members = @base.GetDynamicMembers();
 
       if (members.Count() == 1)
       {
         return RecusrseTreeToNative(@base[members.ElementAt(0)]);
       }
-      else
-      {
-        return members.ToDictionary(x => x, x => RecusrseTreeToNative(@base[x]));
-      }
+
+      return members.ToDictionary(x => x, x => RecusrseTreeToNative(@base[x]));
     }
-
-
 
 
     private object RecusrseTreeToNative(object @object)
@@ -145,43 +151,44 @@ namespace Speckle.ConnectorDynamo.Functions
         return list.Select(x => RecusrseTreeToNative(x));
       }
 
-      if (IsDictionary(@object))
-      {
-        var dictionary = @object as Dictionary<string, object>;
-        return dictionary.ToDictionary(x => x.Key, x => RecusrseTreeToNative(x.Value));
-      }
-
       return TryConvertItemToNative(@object);
-
     }
 
     private object TryConvertItemToNative(object value)
     {
-      object result = null;
-
-      if (Utilities.IsSimpleType(value.GetType()) || !(value is Base) || !_converter.CanConvertToNative((Base)value))
+      //it's a simple type or not a Base
+      if (value.GetType().IsSimpleType() || !(value is Base))
       {
         return value;
       }
 
+      var @base = (Base) value;
+      
+      //it's an unsupported Base, return a dictionary
+      if (!_converter.CanConvertToNative(@base))
+      {
+        var members = @base.GetDynamicMembers();
+        return members.ToDictionary(x => x, x => RecusrseTreeToNative(@base[x]));
+      }
+
       try
       {
-        return _converter.ConvertToNative((Base)value);
+        return _converter.ConvertToNative(@base);
       }
       catch (Exception ex)
       {
         Core.Logging.Log.CaptureAndThrow(ex);
       }
 
-      return result;
+      return null;
     }
-
 
 
     public static bool IsList(object @object)
     {
       var type = @object.GetType();
-      return (typeof(IEnumerable).IsAssignableFrom(type) && !typeof(IDictionary).IsAssignableFrom(type) && type != typeof(string));
+      return (typeof(IEnumerable).IsAssignableFrom(type) && !typeof(IDictionary).IsAssignableFrom(type) &&
+              type != typeof(string));
     }
 
     public static bool IsDictionary(object @object)
@@ -189,18 +196,5 @@ namespace Speckle.ConnectorDynamo.Functions
       Type type = @object.GetType();
       return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
     }
-
-
-
-
   }
-
-  /// <summary>
-  /// This class helps implement a local counter to get the total number of objects converted
-  /// </summary>
-
-
-
-
-
 }
