@@ -159,6 +159,11 @@ namespace Speckle.Core.Models
     }
 
     /// <summary>
+    /// This property will only be populated if the object is retreieved from storage. Use <see cref="GetTotalChildrenCount"/> otherwise. 
+    /// </summary>
+    public long totalChildrenCount { get; set; }
+    
+    /// <summary>
     /// Secondary, ideally host application driven, object identifier.
     /// </summary>
     public string applicationId { get; set; }

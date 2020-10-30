@@ -46,7 +46,7 @@ namespace Speckle.Core.Logging
       get
       {
         if (_tracker == null)
-        { 
+        {
           _tracker = new PiwikTracker(SiteId, PiwikBaseUrl);
           _tracker.SetCustomVariable(1, "hostApplication", Setup.HostApplication);
           _tracker.SetUserId(Setup.SUUID);
@@ -55,10 +55,26 @@ namespace Speckle.Core.Logging
       }
     }
 
+    [Obsolete("Pageview tracking seems a bit better?")]
     public static void TrackEvent(string eventName)
     {
-      var eventData = eventName.Split('-');
-      Task.Run(async () => PiwikTracker.DoTrackEvent(eventData[0], eventData[1]));
+      var eventData = eventName.Split('-'); 
+      //Task.Run(async () => PiwikTracker.DoTrackEvent(eventData[0], eventData[1]));
+      
+      TrackPageview(eventData[0], eventData[1]);
+    }
+
+    public static void TrackPageview(params string[] segments)
+    {
+      var builder = new StringBuilder();
+      builder.Append($"http://connectors/{Setup.HostApplication}/");
+      foreach (var segment in segments)
+      {
+        builder.Append(segment + "/");
+      }
+      
+      PiwikTracker.SetUrl(builder.ToString());
+      PiwikTracker.DoTrackPageView(String.Join("/", segments));
     }
 
   }
