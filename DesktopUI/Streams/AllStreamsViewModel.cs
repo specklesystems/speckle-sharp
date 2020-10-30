@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -70,6 +71,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void ShowStreamInfo(StreamState state)
     {
+      Tracker.TrackPageview(Tracker.STREAM_DETAILS);
       var item = _streamViewModelFactory.CreateStreamViewModel();
       item.StreamState = state;
       // get main branch for now
@@ -82,6 +84,7 @@ namespace Speckle.DesktopUI.Streams
     public async void Send(StreamState state)
     {
       state.IsSending = true;
+      Tracker.TrackPageview(Tracker.SEND);
       _cancellationToken = new CancellationTokenSource();
       state.CancellationToken = _cancellationToken.Token;
 
@@ -100,6 +103,7 @@ namespace Speckle.DesktopUI.Streams
     public async void Receive(StreamState state)
     {
       state.IsReceiving = true;
+      Tracker.TrackPageview(Tracker.RECEIVE);
       _cancellationToken = new CancellationTokenSource();
       state.CancellationToken = _cancellationToken.Token;
 
@@ -121,6 +125,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void ShowStreamCreateDialog()
     {
+      Tracker.TrackPageview("stream", "dialog-add");
       var viewmodel = _dialogFactory.CreateStreamCreateDialog();
       viewmodel.StreamIds = StreamList.Select(s => s.Stream.id).ToList();
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
@@ -130,6 +135,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void ShowShareDialog(StreamState state)
     {
+      Tracker.TrackPageview("stream", "dialog-share");
       var viewmodel = _dialogFactory.CreateShareStreamDialogViewModel();
       viewmodel.StreamState = state;
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
@@ -146,6 +152,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void OpenStreamInWeb(StreamState state)
     {
+      Tracker.TrackPageview("stream", "web");
       Link.OpenInBrowser($"{state.ServerUrl}/streams/{state.Stream.id}");
     }
 

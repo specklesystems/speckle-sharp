@@ -2,6 +2,7 @@
 using System.Linq;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -93,6 +94,7 @@ namespace Speckle.DesktopUI.Streams
       if ( NewName == StreamState.Stream.name && NewDescription == StreamState.Stream.description ) CloseDialog();
       try
       {
+        Tracker.TrackPageview(Tracker.STREAM_UPDATE);
         var res = await StreamState.Client.StreamUpdate(new StreamUpdateInput()
         {
           id = StreamState.Stream.id,
@@ -113,6 +115,7 @@ namespace Speckle.DesktopUI.Streams
     public async void UpdateStreamObjects()
     {
       UpdateButtonLoading = true;
+      Tracker.TrackPageview(Tracker.STREAM_UPDATE);
       var filter = SelectedFilterTab.Filter;
       switch ( filter.Name )
       {
@@ -155,7 +158,9 @@ namespace Speckle.DesktopUI.Streams
         Notifications.Enqueue("Please select a role");
         return;
       }
+
       if ( !Collaborators.Any() ) return;
+      Tracker.TrackPageview("stream", "collaborators");
       var success = 0;
       foreach ( var collaborator in Collaborators )
       {
@@ -188,6 +193,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void RemoveCollaborator(Collaborator collaborator)
     {
+      Tracker.TrackPageview("stream", "collaborators");
       try
       {
         var res = await StreamState.Client.StreamRevokePermission(new StreamRevokePermissionInput()

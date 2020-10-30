@@ -6,6 +6,7 @@ using System.Linq;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
 using Stylet;
@@ -129,7 +130,7 @@ namespace Speckle.DesktopUI.Streams
     }
 
     private async void SearchForStreams()
-   {
+    {
       if ( StreamQuery == null || StreamQuery.Length <= 2 )
         return;
 
@@ -167,11 +168,13 @@ namespace Speckle.DesktopUI.Streams
     public async void AddNewStream()
     {
       CreateButtonLoading = true;
+      Tracker.TrackPageview(Tracker.STREAM_CREATE);
       var client = new Client(AccountToSendFrom);
       try
       {
         var streamId = await _streamsRepo.CreateStream(StreamToCreate, AccountToSendFrom);
 
+        if ( Collaborators.Any() ) Tracker.TrackPageview("stream", "collaborators");
         foreach ( var user in Collaborators )
         {
           var res = await client.StreamGrantPermission(new StreamGrantPermissionInput()
@@ -218,6 +221,7 @@ namespace Speckle.DesktopUI.Streams
       }
 
       AddExistingButtonLoading = true;
+      Tracker.TrackPageview(Tracker.STREAM_GET);
 
       var client = new Client(AccountToSendFrom);
       StreamToCreate = await client.StreamGet(SelectedStream.id);

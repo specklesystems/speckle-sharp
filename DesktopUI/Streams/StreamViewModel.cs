@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -65,6 +66,7 @@ namespace Speckle.DesktopUI.Streams
     public async void Send()
     {
       StreamState.IsSending = true;
+      Tracker.TrackPageview(Tracker.SEND);
       _cancellationToken = new CancellationTokenSource();
       StreamState.CancellationToken = _cancellationToken.Token;
 
@@ -82,6 +84,7 @@ namespace Speckle.DesktopUI.Streams
     public async void Receive()
     {
       StreamState.IsReceiving = true;
+      Tracker.TrackPageview(Tracker.RECEIVE);
       _cancellationToken = new CancellationTokenSource();
       StreamState.CancellationToken = _cancellationToken.Token;
 
@@ -99,6 +102,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void ShowStreamUpdateDialog(int slide = 0)
     {
+      Tracker.TrackPageview("stream", "dialog-update");
       var viewmodel = _dialogFactory.CreateStreamUpdateDialog();
       viewmodel.StreamState = StreamState;
       viewmodel.SelectedSlide = slide;
@@ -109,6 +113,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void ShowShareDialog(StreamState state)
     {
+      Tracker.TrackPageview("stream", "dialog-share");
       var viewmodel = _dialogFactory.CreateShareStreamDialogViewModel();
       viewmodel.StreamState = StreamState;
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
@@ -118,6 +123,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void RemoveStream()
     {
+      Tracker.TrackPageview("stream", "remove");
       _bindings.RemoveStream(StreamState.Stream.id);
       _events.Publish(new StreamRemovedEvent() {StreamId = StreamState.Stream.id});
       RequestClose();
@@ -125,12 +131,14 @@ namespace Speckle.DesktopUI.Streams
 
     public async void DeleteStream()
     {
+      Tracker.TrackPageview("stream", "delete");
       var deleted = await _repo.DeleteStream(StreamState);
       if ( !deleted )
       {
         DialogHost.CloseDialogCommand.Execute(null, null);
         return;
       }
+
       _events.Publish(new StreamRemovedEvent() {StreamId = StreamState.Stream.id});
       DialogHost.CloseDialogCommand.Execute(null, null);
       RequestClose();
@@ -146,6 +154,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void OpenStreamInWeb(StreamState state)
     {
+      Tracker.TrackPageview("stream", "web");
       Link.OpenInBrowser($"{state.ServerUrl}/streams/{state.Stream.id}");
     }
 
