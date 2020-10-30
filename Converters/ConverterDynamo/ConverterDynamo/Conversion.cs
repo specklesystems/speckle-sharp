@@ -780,7 +780,7 @@ namespace Objects.Converter.Dynamo
       return ((max - min) * 0.5) + min;
     }
 
-    /// SpeckleCore does not currently support dictionaries, therofere avoiding the canonical ToSpeckle
+    /// SpeckleCore does not currently support dictionaries, therefore avoiding the canonical ToSpeckle
     public static Dictionary<string, object> ToSpeckleX(this DesignScript.Builtin.Dictionary dict)
     {
       if (dict == null) { return null; }
