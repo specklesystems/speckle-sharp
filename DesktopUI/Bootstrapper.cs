@@ -3,6 +3,8 @@ using System.Windows;
 using System.Windows.Media;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Streams;
 using Speckle.DesktopUI.Utils;
@@ -18,9 +20,16 @@ namespace Speckle.DesktopUI
     protected override void OnStart()
     {
       base.OnStart();
-
+      Core.Logging.Setup.Init(Bindings.GetApplicationHostName());
+      Tracker.TrackPageview(Tracker.SESSION_START);
       InitializeMaterialDesign();
       LoadThemeResources();
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+      base.OnExit(e);
+      Tracker.TrackPageview(Tracker.SESSION_END);
     }
 
     protected override void ConfigureIoC(IStyletIoCBuilder builder)
