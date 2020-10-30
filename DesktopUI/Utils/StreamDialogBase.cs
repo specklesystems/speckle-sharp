@@ -29,7 +29,7 @@ namespace Speckle.DesktopUI.Utils
       set => SetAndNotify(ref _accountToSendFrom, value);
     }
 
-    private int _selectionCount;
+    private int _selectionCount = 0;
 
     public int SelectionCount
     {
