@@ -741,10 +741,9 @@ namespace Objects.Converter.Dynamo
       }
 
       var dsMesh = DS.Mesh.ByPointsFaceIndices(points, faces);
-      if (mesh.GetDynamicMembersDictionary() != null)
-      {
-        dsMesh.SetDynamoProperties<Mesh>(mesh.GetDynamicMembersDictionary());
-      }
+      
+      dsMesh.SetDynamoProperties<DS.Mesh>(mesh.GetDynamicMembersDictionary());
+      
       return dsMesh;
     }
     #endregion
