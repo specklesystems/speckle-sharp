@@ -74,8 +74,6 @@ namespace ConnectorGrasshopper.Streams
 
         Task.Run(async () =>
         {
-          Tracker.TrackEvent(Tracker.STREAM_LIST);
-
           try
           {
             var client = new Client(account);

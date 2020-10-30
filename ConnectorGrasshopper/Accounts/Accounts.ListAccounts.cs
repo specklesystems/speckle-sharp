@@ -105,7 +105,6 @@ namespace ConnectorGrasshopper.Accounts
     public override void AddedToDocument(GH_Document document)
     {
       Tracker.TrackPageview("accounts", "added");
-      Tracker.TrackEvent(Tracker.ACCOUNT_LIST);
       base.AddedToDocument(document);
     }
   }

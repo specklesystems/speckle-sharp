@@ -32,13 +32,6 @@ namespace ConnectorGrasshopper.Conversion
       BaseWorker = new ToSpeckleWorker(Converter);
     }
 
-    public override void AddedToDocument(GH_Document document)
-    {
-      Tracker.TrackPageview("convertToSpeckle", "added");
-      Tracker.TrackEvent("convertToSpeckle-added");
-      base.AddedToDocument(document);
-    }
-
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);

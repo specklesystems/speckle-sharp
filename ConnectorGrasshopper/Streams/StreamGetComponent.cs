@@ -51,7 +51,7 @@ namespace ConnectorGrasshopper.Streams
           "Cannot fetch multiple streams at the same time. This is an explicit guard against possibly unintended behaviour. If you want to get the details of another stream, please use a new component.");
         return;
       }
-      
+
       string accountId = null;
       string id = null;
       DA.DisableGapLogic();
@@ -85,8 +85,6 @@ namespace ConnectorGrasshopper.Streams
         {
           try
           {
-            Tracker.TrackEvent(Tracker.STREAM_LIST);
-
             //Exists?
             var client = new Client(account);
             var result = await client.StreamGet(id);
@@ -99,7 +97,7 @@ namespace ConnectorGrasshopper.Streams
           }
           finally
           {
-            Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { ExpireSolution(true); });
+            Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
           }
         });
       }
@@ -144,7 +142,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("stream", "getdetails");
+      Tracker.TrackPageview("stream", "details");
       base.BeforeSolveInstance();
     }
   }
