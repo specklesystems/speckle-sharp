@@ -11,6 +11,10 @@ This repo holds the Speckle 2.0 Revit Connector. It is currently in ⚠ALPHA⚠ 
 
 ### Requirements
 
+- Revit 2019, 2020, or 2021
+- A Speckle Server running (more on this below)
+- Speckle Manager (more on this below)
+
 ### Getting Started
 
 #### Dependencies
@@ -25,13 +29,13 @@ It'd be a good idea to clone all the Speckle repos you're working on in one fold
 
 #### Server
 
-In order to test Speckle in all its glory you'll need a server running, you can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server)
+In order to test Speckle in all its glory. you'll need a server running. You can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server)
 
-If you're facing any errors make sure Postgress and Redis are up and running.
+If you're facing any errors, make sure Postgres and Redis are up and running.
 
 #### Accounts
 
-The connector itself doesn't have features to manage your Speckle accounts, this functionality has been delegated to the Speckle Manager desktop app.
+The connector itself doesn't have features to manage your Speckle accounts. This functionality has been delegated to the Speckle Manager desktop app.
 
 You can install an alpha version of it from: TODO LINK HERE 
 
@@ -50,6 +54,24 @@ The button to launch the connector should now appear in the Add-Ins ribbon. You'
 Fire it up 🔥
 
 ![quick-revit-demo](https://user-images.githubusercontent.com/7717434/97557677-fe95f880-19d2-11eb-8ad3-439f7ad63015.gif)
+
+### Features
+
+Add a new stream:
+
+![add-stream](https://user-images.githubusercontent.com/7717434/97726487-2bc3d300-1ac7-11eb-849e-7aed2d21ec76.gif)
+
+Get fancy with some filters:
+
+![add-with-filters](https://user-images.githubusercontent.com/7717434/97726494-2e262d00-1ac7-11eb-8a55-8a7939c8f378.gif)
+
+Search for and add an existing stream from the server:
+
+![receive-stream](https://user-images.githubusercontent.com/7717434/97726530-3716fe80-1ac7-11eb-9732-19117b5cef27.gif)
+
+Update a stream and edit collaborators:
+
+![update-stream](https://user-images.githubusercontent.com/7717434/97726509-31211d80-1ac7-11eb-945e-67d1ca29c16d.gif)
 
 
 ## Contributing
