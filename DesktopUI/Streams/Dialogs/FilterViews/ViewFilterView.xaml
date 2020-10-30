@@ -27,7 +27,7 @@
                 IsEditable="True"
                 IsEnabled="True"
                 ItemsSource="{Binding Filter.Values, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                SelectedItem="{Binding ListItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                SelectedItem="{Binding ListItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                 StaysOpenOnEdit="True" />
 
       <ItemsControl ItemTemplate="{StaticResource ViewChipTemplate}"
