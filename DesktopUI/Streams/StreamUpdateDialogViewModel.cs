@@ -115,7 +115,7 @@ namespace Speckle.DesktopUI.Streams
     public async void UpdateStreamObjects()
     {
       UpdateButtonLoading = true;
-      Tracker.TrackPageview(Tracker.STREAM_UPDATE);
+      Tracker.TrackPageview("stream", "objects-changed");
       var filter = SelectedFilterTab.Filter;
       switch ( filter.Name )
       {
@@ -136,6 +136,7 @@ namespace Speckle.DesktopUI.Streams
     public void UpdateFromSelection()
     {
       UpdateButtonLoading = true;
+      Tracker.TrackPageview("stream", "from-selection");
       SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
       SelectedFilterTab.ListItems.Clear();
       SelectedFilterTab.Filter.Selection = Bindings.GetSelectedObjects();
@@ -145,6 +146,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void UpdateFromView()
     {
+      Tracker.TrackPageview("stream", "from-view");
       SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
       SelectedFilterTab.Filter.Selection = ActiveViewObjects;
 

@@ -237,6 +237,7 @@ namespace Speckle.DesktopUI.Streams
     public void AddSimpleStream()
     {
       CreateButtonLoading = true;
+      Tracker.TrackPageview("stream", "from-selection");
       SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
       SelectedFilterTab.ListItems.Clear();
       SelectedFilterTab.Filter.Selection = Bindings.GetSelectedObjects();
@@ -248,6 +249,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void AddStreamFromView()
     {
+      Tracker.TrackPageview("stream", "from-view");
       SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
       SelectedFilterTab.Filter.Selection = ActiveViewObjects;
 
