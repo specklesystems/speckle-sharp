@@ -18,7 +18,7 @@ namespace ConnectorGrasshopper.Objects
   public class CreateSpeckleObjectByKeyValue : SelectKitComponentBase
   {
     public CreateSpeckleObjectByKeyValue() : base("Create object by key/value", "K/V",
-      "Create an Speckle object by key/value pairs", "Speckle 2", "Object Management")
+      "Create an Speckle object by key/value pairs.\nALPHA: Currently supports passing items as lists of keys (1 branch = 1 object), and values as a list of items or as a tree where each branch will be a list of values for each key.", "Speckle 2", "Object Management")
     {
     }
 
@@ -36,7 +36,7 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Object", "O", "Speckle object", GH_ParamAccess.item));
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Speckle object", GH_ParamAccess.item));
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)

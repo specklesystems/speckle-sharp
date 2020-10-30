@@ -390,7 +390,7 @@ namespace ConnectorGrasshopper.Ops
         return;
       }
 
-      // Means it's a copy paste of an emtpy non-init component; set the record and exit fast.
+      // Means it's a copy paste of an empty non-init component; set the record and exit fast.
       if (((ReceiveComponent)Parent).JustPastedIn)
       {
         ((ReceiveComponent)Parent).JustPastedIn = false;
@@ -521,7 +521,7 @@ namespace ConnectorGrasshopper.Ops
         }
       }
 
-      // Last attempt: just set the object out as receieved, and the user can unpack it via the other components.
+      // Last attempt: just set the object out as received, and the user can unpack it via the other components.
       if (((ReceiveComponent)Parent).Converter.CanConvertToNative(ReceivedObject))
       {
         DA.SetData(0, new GH_ObjectWrapper() { Value = Extras.Utilities.TryConvertItemToNative(ReceivedObject, ((ReceiveComponent)Parent).Converter) });

@@ -20,7 +20,7 @@ namespace ConnectorGrasshopper.Conversion
 
     public DeserializeObject() : base("Deserialize", "Deserialize", "Deserializes a JSON string to a Speckle object.", "Speckle 2 Dev", "Conversion")
     {
-      BaseWorker = new DeserialzeWorker(this);
+      BaseWorker = new DeserializeWorker(this);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -40,12 +40,12 @@ namespace ConnectorGrasshopper.Conversion
     }
   }
 
-  public class DeserialzeWorker : WorkerInstance
+  public class DeserializeWorker : WorkerInstance
   {
     GH_Structure<GH_String> Objects;
     GH_Structure<GH_SpeckleBase> ConvertedObjects;
 
-    public DeserialzeWorker(GH_Component parent) : base(parent)
+    public DeserializeWorker(GH_Component parent) : base(parent)
     {
       Objects = new GH_Structure<GH_String>();
       ConvertedObjects = new GH_Structure<GH_SpeckleBase>();
@@ -83,7 +83,7 @@ namespace ConnectorGrasshopper.Conversion
       Done();
     }
 
-    public override WorkerInstance Duplicate() => new DeserialzeWorker(Parent);
+    public override WorkerInstance Duplicate() => new DeserializeWorker(Parent);
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {

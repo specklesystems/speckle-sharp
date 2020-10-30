@@ -85,11 +85,8 @@ namespace ConnectorGrasshopper.Streams
             stream = await client.StreamGet(streamWrapper.StreamId);
             input.id = streamWrapper.StreamId;
             
-            if (name != null) input.name = name;
-            else input.name = stream.name;
-            
-            if (description != null) input.description = description;
-            else input.description = stream.description;
+            input.name = name ?? stream.name;
+            input.description = description ?? stream.description;
             
             if (stream.isPublic != isPublic) input.isPublic = isPublic;
             

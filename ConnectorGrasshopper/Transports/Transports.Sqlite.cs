@@ -20,7 +20,7 @@ namespace ConnectorGrasshopper.Transports
     {
       pManager.AddTextParameter("base path", "P", "The root folder where you want the sqlite db to be stored. Defaults to `%appdata%`.", GH_ParamAccess.item);
       pManager.AddTextParameter("application name", "N", "The subfolder you want the sqlite db to be stored. Defaults to `Speckle`.", GH_ParamAccess.item);
-      pManager.AddTextParameter("database name", "D", "The name of the actual databse file. Defaults to `Custom Speckle Sqlite Db`.", GH_ParamAccess.item, "Custom Speckle Sqlite Db");
+      pManager.AddTextParameter("database name", "D", "The name of the actual database file. Defaults to `Custom Speckle Sqlite Db`.", GH_ParamAccess.item, "Custom Speckle Sqlite Db");
 
       Params.Input.ForEach(p => p.Optional = true);
     }
@@ -34,7 +34,7 @@ namespace ConnectorGrasshopper.Transports
     {
       if (DA.Iteration != 0)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple transports at the same time. This is an explicit guard against possibly uninteded behaviour. If you want to create another transport, please use a new component.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple transports at the same time. This is an explicit guard against possibly unintended behaviour. If you want to create another transport, please use a new component.");
         return;
       }
 

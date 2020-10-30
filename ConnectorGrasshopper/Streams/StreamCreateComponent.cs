@@ -66,7 +66,7 @@ namespace ConnectorGrasshopper.Streams
     {
       if (DA.Iteration != 0)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple streams at the same time. This is an explicit guard against possibly uninteded behaviour. If you want to create another stream, please use a new component.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple streams at the same time. This is an explicit guard against possibly unintended behaviour. If you want to create another stream, please use a new component.");
         return;
       }
 
@@ -84,7 +84,7 @@ namespace ConnectorGrasshopper.Streams
         account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
         if (account == null)
         {
-          // Really last ditch effort - in case people delete accounts from the manager, and the selection dropdwon is still using an outdated list.
+          // Really last ditch effort - in case people delete accounts from the manager, and the selection dropdown is still using an outdated list.
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The account with an id of {accountId} was not found.");
           return;
         }
@@ -94,7 +94,7 @@ namespace ConnectorGrasshopper.Streams
 
       if (stream != null)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using cached stream. If you want to create a new stream, create a new component.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Using cached stream. If you want to create a new stream, create a new component.");
         DA.SetData(0, new GH_SpeckleStream(stream));
         NickName = $"Id: {stream.StreamId}";
         MutableNickName = false;
