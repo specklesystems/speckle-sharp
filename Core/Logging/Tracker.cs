@@ -8,37 +8,43 @@ using Piwik.Tracker;
 namespace Speckle.Core.Logging
 {
   /// <summary>
-  ///  Anonymous telemetry to help us understand how to make a better Speckle
-  ///  PLEASE DO NOT REMOVE
-  ///  This really helps us to deliver a good natured open source project!
+  ///  Anonymous telemetry to help us understand how to make a better Speckle.
+  ///  This really helps us to deliver a better open source project and product!
   /// </summary>
   public static class Tracker
   {
     private static readonly string PiwikBaseUrl = "https://speckle.matomo.cloud/";
     private static readonly int SiteId = 2;
 
-    public const string SESSION_START = "session-start";
-    public const string SESSION_END = "session-end";
+    #region String constants helpers
 
-    public const string RECEIVE = "receive-run";
-    public const string SEND = "send-run";
+    public const string SESSION_START = "session/start";
+    public const string SESSION_END = "session/end";
 
-    public const string RECEIVE_ADDED = "receive-added";
-    public const string SEND_ADDED = "send-added";
+    public const string RECEIVE = "receive";
+    public const string RECEIVE_MANUAL = "receive/manual";
+    public const string RECEIVE_AUTO = "receive/auto";
+    public const string RECEIVE_ADDED = "receive/added";
+    public const string RECEIVE_LOCAL = "receive/local";
 
-    public const string RECEIVE_LOCAL = "receive-local";
-    public const string SEND_LOCAL = "send-local";
 
-    public const string STREAM_CREATE = "stream-create";
-    public const string STREAM_GET = "stream-get";
-    public const string STREAM_UPDATE = "stream-update";
-    public const string STREAM_DETAILS = "stream-details";
-    public const string STREAM_LIST = "stream-list";
+    public const string SEND = "send";
+    public const string SEND_MANUAL = "send/manual";
+    public const string SEND_AUTO = "send/auto";
+    public const string SEND_ADDED = "send/added";
+    public const string SEND_LOCAL = "send/local";
 
-    public const string ACCOUNT_DEFAULT = "account-default";
-    public const string ACCOUNT_DETAILS = "account-details";
-    public const string ACCOUNT_LIST = "account-list";
+    public const string STREAM_CREATE = "stream/create";
+    public const string STREAM_GET = "stream/get";
+    public const string STREAM_UPDATE = "stream/update";
+    public const string STREAM_DETAILS = "stream/details";
+    public const string STREAM_LIST = "stream/list";
 
+    public const string ACCOUNT_DEFAULT = "account/default";
+    public const string ACCOUNT_DETAILS = "account/details";
+    public const string ACCOUNT_LIST = "account/list";
+    
+    #endregion
 
     private static PiwikTracker _tracker;
     private static PiwikTracker PiwikTracker
@@ -55,26 +61,18 @@ namespace Speckle.Core.Logging
       }
     }
 
-    [Obsolete("Pageview tracking seems a bit better?")]
-    public static void TrackEvent(string eventName)
-    {
-      var eventData = eventName.Split('-'); 
-      //Task.Run(async () => PiwikTracker.DoTrackEvent(eventData[0], eventData[1]));
-      
-      TrackPageview(eventData[0], eventData[1]);
-    }
-
     public static void TrackPageview(params string[] segments)
     {
       var builder = new StringBuilder();
       builder.Append($"http://connectors/{Setup.HostApplication}/");
+      
       foreach (var segment in segments)
       {
         builder.Append(segment + "/");
       }
       
       PiwikTracker.SetUrl(builder.ToString());
-      PiwikTracker.DoTrackPageView(String.Join("/", segments));
+      PiwikTracker.DoTrackPageView(string.Join("/", segments));
     }
 
   }

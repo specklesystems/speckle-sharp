@@ -6,6 +6,10 @@ using DeviceId;
 
 namespace Speckle.Core.Logging
 {
+  /// <summary>
+  ///  Anonymous telemetry to help us understand how to make a better Speckle.
+  ///  This really helps us to deliver a better open source project and product!
+  /// </summary>
   public static class Setup
   {
     private readonly static string _suuidPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "suuid");
@@ -15,10 +19,12 @@ namespace Speckle.Core.Logging
       HostApplication = hostApplication;
 
       Log.Instance();
-      Tracker.TrackEvent(Tracker.SESSION_START);
+      Tracker.TrackPageview(Tracker.SESSION_START);
     }
 
-    //Dynamo / Grasshopper etc....
+    /// <summary>
+    /// Set from the connectors, defines which current host application we're running on.
+    /// </summary>
     internal static string HostApplication { get; private set; } = "unknown";
 
     private static string _suuid { get; set; }
