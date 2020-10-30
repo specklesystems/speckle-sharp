@@ -82,6 +82,7 @@ namespace ConnectorGrasshopper.Objects
             fullProps.Remove(prop);
         });
       }
+      fullProps.Sort();
       return fullProps;
     }
 
@@ -244,7 +245,6 @@ namespace ConnectorGrasshopper.Objects
     private void AutoCreateOutputs()
     {
       int tokenCount = outputList.Count;
-
       if (tokenCount == 0 || !OutputMismatch()) return;
       RecordUndoEvent("Creating Outputs");
 
