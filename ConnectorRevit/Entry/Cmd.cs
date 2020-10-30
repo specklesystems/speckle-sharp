@@ -21,14 +21,17 @@ namespace Speckle.ConnectorRevit.Entry
     {
       UIApplication uiapp = commandData.Application;
 
-      if (Application.Current != null)
+      // create application instance (Revit doesn't have one already)
+      if ( Application.Current == null ) new Application();
+
+      // refocuses window if it already exists
+      var window = Application.Current?.MainWindow;
+      if (window != null)
       {
-        Application.Current.MainWindow.Show();
+        window.Show();
+        window.Focus();
         return Result.Succeeded;
       }
-
-      // create application instance (Revit doesn't have one already)
-      new Application();
 
       // create a new Speckle Revit bindings instance
       var revitBindings = new ConnectorBindingsRevit(uiapp);

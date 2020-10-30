@@ -164,45 +164,39 @@ namespace Speckle.ConnectorRevit.UI
 
     private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
     {
-      if ( GetDocHash(e.Document) != GetDocHash(e.PreviousActiveView.Document) )
-      {
-        // DispatchStoreActionUi("flushClients");
-        var streamStates = GetFileContext();
+      if ( GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView?.Document) ) return;
 
-        var appEvent = new ApplicationEvent()
-        {
-          Type = ApplicationEvent.EventType.ViewActivated, DynamicInfo = streamStates
-        };
-        NotifyUi(appEvent);
-      }
+      var appEvent = new ApplicationEvent()
+      {
+        Type = ApplicationEvent.EventType.ViewActivated, DynamicInfo = GetFileContext()
+      };
+      NotifyUi(appEvent);
     }
 
     private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
     {
-      // DispatchStoreActionUi("flushClients");
       var appEvent = new ApplicationEvent() {Type = ApplicationEvent.EventType.DocumentClosed};
       NotifyUi(appEvent);
     }
 
     private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
     {
-      //
-    }
-
-    private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
-    {
-      // DispatchStoreActionUi("flushClients");
       var streamStates = GetFileContext();
-      LocalStateWrapper.StreamStates = streamStates;
-
+      if ( streamStates == LocalStateWrapper.StreamStates ) return;
       var appEvent = new ApplicationEvent()
       {
         Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = streamStates
       };
       NotifyUi(appEvent);
+    }
 
-      // read local state
-      GetFileContext();
+    private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
+    {
+      var appEvent = new ApplicationEvent()
+      {
+        Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = GetFileContext()
+      };
+      NotifyUi(appEvent);
     }
 
     private void ApplicationIdling(object sender, Autodesk.Revit.UI.Events.IdlingEventArgs e)

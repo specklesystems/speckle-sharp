@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -107,7 +108,7 @@ namespace Speckle.ConnectorRevit.UI
 
       var transports = new List<ITransport>() {new ServerTransport(client.Account, streamId)};
       var emptyBase = new Base();
-      var @base = new Base {[ "@revitItems" ] = convertedObjects};
+      var @base = new Base {[ "@data" ] = convertedObjects};
       var objectId = "";
       Execute.PostToUIThread(() => state.Progress.Maximum = ( int ) @base.GetTotalChildrenCount());
 
@@ -134,7 +135,7 @@ namespace Speckle.ConnectorRevit.UI
 
       // update the state
       state.Objects = convertedObjects;
-      state.Placeholders.Clear();
+      state.Placeholders = new List<Base>(); // just clearing doesn't raise prop changed notif
       state.Stream = await client.StreamGet(streamId);
 
       // Persist state to revit file
@@ -163,10 +164,22 @@ namespace Speckle.ConnectorRevit.UI
 
       if ( state.CancellationToken.IsCancellationRequested ) return null;
 
-      var revitItems = ( List<object> ) commitObject[ "@revitItems" ];
-
-      var newObjects = revitItems.Select(o => ( Base ) o).ToList();
+      var newObjects = new List<Base>();
       var oldObjects = state.Objects;
+
+      var data = ( List<object> ) commitObject[ "@data" ];
+      try
+      {
+        newObjects = data.Select(o => ( Base ) o)?.ToList();
+      }
+      catch ( Exception e )
+      {
+        state.Stream = newStream;
+        state.Objects = new List<Base>() {commitObject};
+        WriteStateToFile();
+        RaiseNotification($"Received stream, but could not convert objects to Revit");
+        return state;
+      }
 
       // TODO: edit objects from connector so we don't need to delete and recreate everything
       // var toDelete = oldObjects.Except(newObjects, new BaseObjectComparer()).ToList();
