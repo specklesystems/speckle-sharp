@@ -218,12 +218,22 @@ namespace ConnectorGrasshopper.Objects
 
       for (var i = 0; i < Params.Output.Count; i++)
       {
-        if (i > outputList.Count - 1) return;
-
-        var name = outputList[i];
-        Params.Output[i].Name = $"{name}";
-        Params.Output[i].NickName = $"{name}";
-        Params.Output[i].Description = $"Data from property: {name}";
+        string name;
+        string description;
+        if (i < outputList.Count)
+        {
+          name = outputList[i];
+          description = $"Data from property: {name}";
+        }
+        else
+        {
+          name = "-";
+          description = "Data output no longer exists";
+        }
+        
+        Params.Output[i].Name = name;
+        Params.Output[i].NickName = name;
+        Params.Output[i].Description = description;
         Params.Output[i].MutableNickName = false;
         Params.Output[i].Access = GH_ParamAccess.tree;
       }
