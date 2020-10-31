@@ -3,6 +3,8 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works)
 [![Slack Invite](https://img.shields.io/badge/-slack-grey?style=flat-square&logo=slack)](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
 
+
+
 ## Introduction
 
 This repo holds Speckle's Dynamo Connector and it is currently released as ⚠ **ALPHA** ⚠, please use at your own risk!
@@ -13,9 +15,13 @@ The connector is structured in 3 c# projects:
 - ConnectorDynamoExtension: contains a Dynamo extension, currently doesn't do much but it's scaffolded
 - ConnectorDynamoFunctions: contains the ZeroTouch nodes and functions invoked by the NodeModel nodes
 
+
+
 ## Developing & Debugging
 
 We encourage everyone interested to debug / hack /contribute / give feedback to this project.
+
+
 
 ### Requirements
 
@@ -23,7 +29,9 @@ We encourage everyone interested to debug / hack /contribute / give feedback to 
 - A Speckle Server running (more on this below)
 - Speckle Manager (more on this below)
 
-### Getting Started
+
+
+### Getting Started 🏁
 
 Following instructions on how to get started debugging and contributing to this connector.
 
@@ -52,6 +60,8 @@ You can install an alpha version of it from: TODO LINK HERE
 
 After installing it, you can use it to add/create an account on the Server.
 
+
+
 ### Debugging
 
 After setting up dependencies, server and accounts you're good to go. Just make sure of the following:
@@ -79,9 +89,103 @@ And voila', the Speckle packages should now show in the library:
 
 You don't need to run Revit to debug Dynamo, you can just use the [Sandbox version](https://dynamobim.org/download/).
 
+
+
+## How to use
+
+Using this connector is pretty much similar to using the 1.x one, but there are a few key differences. Below a visual guide of the main features.
+
+
+
+### Accounts
+
+#### Selection
+
+Use the "Account.Select" node to switch accounts.
+
+![account-selection](https://user-images.githubusercontent.com/2679513/97777914-38016c00-1b6b-11eb-8988-85d5a166fe5a.gif)
+
+#### Default account
+
+If you only add one account in the Manager, **that will also be your default account**. If you have multiple accounts, you can **switch default account using the Manager**.
+
+![image](https://user-images.githubusercontent.com/2679513/97778543-c4159280-1b6f-11eb-924e-04b3fb1ed3e0.png)
+
+
+
+Some nodes accept an optional "account" input, **if not provided the default account will be used.**
+
+![image-20201031111912748](https://user-images.githubusercontent.com/2679513/97778555-da235300-1b6f-11eb-9c24-aa50908fcacf.png)
+
+
+
+### Streams
+
+#### **Creating a stream** 🌊
+
+Can be done with the "Create" node or from the web.
+
+NOTE: the "Create" node is one use only, it disables itself after clicking the button.
+
+![stream-create](https://user-images.githubusercontent.com/2679513/97777062-61b79480-1b65-11eb-8035-dbc1dcf6053e.gif)
+
+![stream-create-web](https://user-images.githubusercontent.com/2679513/97777103-c4a92b80-1b65-11eb-91e7-6ded86b59eb8.gif)
+
+#### Using an existing stream
+
+You can retrieve a previously created stream or streams in 2 ways.
+
+**By URL**
+
+![image](https://user-images.githubusercontent.com/2679513/97777656-9af20380-1b69-11eb-91c8-b543d8837e6a.png)
+
+
+
+**Using Stream.List** 
+
+![image-20201031111912748](https://user-images.githubusercontent.com/2679513/97778555-da235300-1b6f-11eb-9c24-aa50908fcacf.png)
+
+
+
+#### Sending & Receiving 📩
+
+Sending and receiving is pretty straightforward. 
+
+- each time you send something, a new "Commit" is created with the data sent
+- sending is manual only (need to click on the button)
+- receiving is manual by default and can be toggle to automatic
+- if passing a stream url **containing a commit Id** to the receiver, it will be pulling only that commit and no other updates to that stream
+- most geometry and data types are supported a part from surfaces and polysurfaces
+- an optional "branchName" can be passed on to send to / receive from a specific branch on the stream
+  - the branch has to exist
+  - if receiving a specific commit the branch input is ignored
+- an optional "message" can be passed to the sender, this is the commit message
+
+![stream-send](https://user-images.githubusercontent.com/2679513/97778157-2c16a980-1b6d-11eb-8bee-805db5f54258.gif)
+
+#### Viewing Streams 🕶
+
+The Dynamo UI, doesn't let us copy text (c'mon Dynamo team), so we have made a node to let you open and view streams online.
+
+- if using a stream pointing to a specific commit, the commit page will be opened
+
+  
+
+![view-stream](https://user-images.githubusercontent.com/2679513/97778366-a136ae80-1b6e-11eb-8123-b7701ab6678c.gif)
+
+
+
+### Questions and Feedback 💬
+
+Hey, this is an alpha release, I'm sure you'll have plenty of feedback, and we want to hear all about it! Get in touch with us on [the forum](https://discourse.speckle.works)! 
+
+
+
 ## Contributing
 
 Please make sure you read the [contribution guidelines](.github/CONTRIBUTING.md) for an overview of the best practices we try to follow.
+
+
 
 ## Community
 
@@ -91,6 +195,8 @@ The Speckle Community hangs out in two main places, usually:
 - on [the chat](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI)
 
 Do join and introduce yourself!
+
+
 
 ## License
 
