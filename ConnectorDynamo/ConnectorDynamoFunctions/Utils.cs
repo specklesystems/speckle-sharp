@@ -7,35 +7,59 @@ namespace Speckle.ConnectorDynamo.Functions
 {
   internal static class Utils
   {
-    internal static List<T> MultiDimensionalInputToList<T>(object input)
+    internal static List<StreamWrapper> InputToStream(object input)
     {
-      var items = new List<T>();
-      var isList = true;
-
-      //it's a flat list?
       try
       {
-        items = (input as ArrayList).ToArray().Cast<T>().ToList();
-      }
-      catch
-      {
-        isList = false;
-      }
+        //it's a list
+        var array = (input as ArrayList).ToArray();
 
-      //it's a single item?
-      if (!isList)
-      {
         try
         {
-          var s = (T)input;
-          items.Add(s);
+          //list of stream wrappers
+          return array.Cast<StreamWrapper>().ToList();
         }
         catch
         {
+          //ignored
+        }
+
+        try
+        {
+          //list of urls
+          return array.Cast<string>().Select(x => new StreamWrapper(x)).ToList();
+        }
+        catch
+        {
+          //ignored
         }
       }
+      catch
+      {
+        // ignored
+      }
 
-      return items;
+      try
+      {
+        //single stream wrapper
+        return new List<StreamWrapper>{ input as StreamWrapper};
+      }
+      catch
+      {
+        //ignored
+      }
+
+      try
+      {
+        //single url
+        return new List<StreamWrapper>{ new StreamWrapper(input as string)};
+      }
+      catch
+      {
+        //ignored
+      }
+
+      return null;
     }
   }
 }
