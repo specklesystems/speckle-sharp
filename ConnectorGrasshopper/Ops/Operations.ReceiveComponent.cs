@@ -490,63 +490,37 @@ namespace ConnectorGrasshopper.Ops
 
       ((ReceiveComponent) Parent).ReceivedObjectId = ReceivedObject.id;
 
-      var dataList = ReceivedObject["@data"] as List<object>;
-      var dataDictionary = ReceivedObject["@data"] as Dictionary<string, object>;
 
-      if (dataList != null)
-      {
-        //DA.SetDataList(0, dataList.Select(item => new GH_SpeckleBase { Value = item as Base }));
-
-        var list = dataList.Select(item => new GH_ObjectWrapper()
-        {
-          Value = Extras.Utilities.TryConvertItemToNative(item, ((ReceiveComponent) Parent).Converter)
-        });
-        DA.SetDataList(0, list);
-        return;
-      }
-      else if (dataDictionary != null && dataDictionary.Values.First() is List<object>)
-      {
-        var tree = new GH_Structure<GH_ObjectWrapper>();
-        var borkage = false;
-        foreach (var kvp in dataDictionary)
-        {
-          if (kvp.Value is List<object>)
-          {
-            var pathObjects = kvp.Value as List<object>;
-            var pathPieces = kvp.Key.Trim(new char[] {'{', '}'}).Split(';').Select(x => Int32.Parse(x)).ToArray();
-            var path = new GH_Path(pathPieces);
-            tree.AppendRange(
-              pathObjects.Select(o => new GH_ObjectWrapper()
-              {
-                Value = Extras.Utilities.TryConvertItemToNative(o, ((ReceiveComponent) Parent).Converter)
-              }), path);
-          }
-          else
-          {
-            borkage = true;
-          }
-        }
-
-        if (!borkage)
-        {
-          DA.SetDataTree(0, tree);
-          return;
-        }
-      }
-
-      // Last attempt: just set the object out as received, and the user can unpack it via the other components.
+      // case 1: it's an item that has a direct conversion method, eg a point
       if (((ReceiveComponent) Parent).Converter.CanConvertToNative(ReceivedObject))
       {
-        DA.SetData(0,
-          new GH_ObjectWrapper()
-          {
-            Value = Extras.Utilities.TryConvertItemToNative(ReceivedObject, ((ReceiveComponent) Parent).Converter)
-          });
+        DA.SetData(0, Extras.Utilities.TryConvertItemToNative(ReceivedObject, ((ReceiveComponent) Parent).Converter));
+        return;
       }
-      else
+
+      // case 2: it's a wrapper Base
+      //       2a: if there's only one member unpack it
+      //       2b: otherwise return dictionary of unpacked members
+
+      var members = ReceivedObject.GetDynamicMembers();
+
+      if (members.Count() == 1)
       {
-        DA.SetData(0, new GH_SpeckleBase() {Value = ReceivedObject});
+        var treeBuilder = new TreeBuilder(((ReceiveComponent) Parent).Converter);
+        var tree = treeBuilder.Build(@ReceivedObject[members.ElementAt(0)]);
+
+        DA.SetDataTree(0, tree);
+        return;
       }
+
+      // TODO: the base object has multiple members,
+      // therefore create a matching structure via the output ports, similar to 
+      // running the expando object
+      // then run the treebuilder for each port
+
+
+      DA.SetData(0, new GH_SpeckleBase() {Value = ReceivedObject});
+      return;
     }
   }
 

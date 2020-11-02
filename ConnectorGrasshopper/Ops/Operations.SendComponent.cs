@@ -325,66 +325,10 @@ namespace ConnectorGrasshopper.Ops
         return;
       }
 
-      // Part 1: handle input data
+      var converted = Utilities.DataTreeToNestedLists(DataInput, ((SendComponent) Parent).Converter);
+      ObjectToSend = new Base();
+      ObjectToSend["@data"] = converted;
 
-      // Check whether it's a tree, or a list, or actually an item.
-      // It's quite important that this component only runs once! 
-      InputState = "tree";
-      if (DataInput.DataCount == 1)
-      {
-        InputState = "item";
-      }
-      else if (DataInput.PathCount == 1)
-      {
-        InputState = "list";
-      }
-
-      switch (InputState)
-      {
-        // Items: Easiest case: just send the base object! 
-        case "item":
-          var _obj = DataInput.get_DataItem(0).GetType().GetProperty("Value").GetValue(DataInput.get_DataItem(0));
-          var _objConv = Utilities.TryConvertItemToSpeckle(_obj, ((SendComponent) Parent).Converter);
-
-          if (_objConv is Base myBase)
-          {
-            ObjectToSend = myBase;
-            break;
-          }
-
-          ObjectToSend = new Base();
-          ObjectToSend["@data"] = new List<object>() {_objConv};
-          break;
-        // Lists: Current convention is to wrap the list of bases in a new object, and set it as a
-        // detachable sub-property called "list". See the dynamo implementation.
-        case "list":
-          ObjectToSend = new Base();
-          ObjectToSend["@data"] = DataInput.ToList()
-            .Select(goo => Utilities.TryConvertItemToSpeckle(goo, ((SendComponent) Parent).Converter)).ToList();
-          break;
-
-        // Trees: values for each path get stored in a dictionary, where the key is the path, and the value is a list of the values inside that path. 
-        case "tree":
-          ObjectToSend = new Speckle.Core.Models.Base();
-          var dict = new Dictionary<string, List<object>>();
-          int branchIndex = 0;
-          foreach (var list in DataInput.Branches)
-          {
-            if (CancellationToken.IsCancellationRequested)
-            {
-              ((SendComponent) Parent).CurrentComponentState = "expired";
-              return;
-            }
-
-            var path = DataInput.Paths[branchIndex];
-            dict[path.ToString()] =
-              list.Select(goo => Utilities.TryConvertItemToSpeckle(goo, ((SendComponent) Parent).Converter)).ToList();
-            branchIndex++;
-          }
-
-          ObjectToSend["@data"] = dict;
-          break;
-      }
 
       TotalObjectCount = ObjectToSend.GetTotalChildrenCount();
 
