@@ -9,7 +9,7 @@
     <Authors>Speckle</Authors>
     <Company>SpeckleSpeckle</Company>
     <Product>SpeckleCore</Product>
-    <AssemblyName>SpeckleCore</AssemblyName>
+    <AssemblyName>SpeckleCore2</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
