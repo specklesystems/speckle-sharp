@@ -28,8 +28,7 @@ namespace ConnectorGrasshopper.Streams
     {
       var acc = pManager.AddTextParameter("Account", "A", "Account to get streams from", GH_ParamAccess.item);
       pManager.AddIntegerParameter("Limit", "L", "Max number of streams to fetch", GH_ParamAccess.item, 10);
-
-
+      
       Params.Input[acc].Optional = true;
     }
 

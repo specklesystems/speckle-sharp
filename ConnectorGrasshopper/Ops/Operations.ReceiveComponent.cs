@@ -118,7 +118,7 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("ID", "ID", "The Id of the data you want to receive.", GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Stream", "S", "The Speckle Stream you want to receive data from. You can also input the Stream ID or it's URL as text.", GH_ParamAccess.tree);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -387,7 +387,7 @@ namespace ConnectorGrasshopper.Ops
         return;
       }
 
-      // Means it's a copy paste of an emtpy non-init component; set the record and exit fast.
+      // Means it's a copy paste of an empty non-init component; set the record and exit fast.
       if (((ReceiveComponent)Parent).JustPastedIn)
       {
         ((ReceiveComponent)Parent).JustPastedIn = false;
@@ -518,7 +518,7 @@ namespace ConnectorGrasshopper.Ops
         }
       }
 
-      // Last attempt: just set the object out as receieved, and the user can unpack it via the other components.
+      // Last attempt: just set the object out as received, and the user can unpack it via the other components.
       if (((ReceiveComponent)Parent).Converter.CanConvertToNative(ReceivedObject))
       {
         DA.SetData(0, new GH_ObjectWrapper() { Value = Extras.Utilities.TryConvertItemToNative(ReceivedObject, ((ReceiveComponent)Parent).Converter) });

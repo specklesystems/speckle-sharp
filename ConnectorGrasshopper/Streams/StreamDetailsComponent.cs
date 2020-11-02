@@ -25,8 +25,8 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleStreamParam("Stream/ID", "S",
-        "A stream object or a unique ID of the stream to be updated.", GH_ParamAccess.tree));
+      pManager.AddParameter(new SpeckleStreamParam("Stream", "S",
+        "A stream object of the stream to be updated.", GH_ParamAccess.tree));
     }
 
     protected override Bitmap Icon => Properties.Resources.StreamDetails;

@@ -28,7 +28,7 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Object", "O", "Object to get values from.", GH_ParamAccess.item));
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Object to get values from.", GH_ParamAccess.item));
       pManager.AddGenericParameter("Key", "K", "List of keys", GH_ParamAccess.item);
     }
 

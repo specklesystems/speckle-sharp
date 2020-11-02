@@ -114,7 +114,7 @@ namespace ConnectorGrasshopper.Extras
     }
 
     public override bool IsValid => Value != null;
-    public override string TypeName => "StreamParam";
+    public override string TypeName => "Stream";
     public override string TypeDescription => "A speckle data stream";
   }
 }

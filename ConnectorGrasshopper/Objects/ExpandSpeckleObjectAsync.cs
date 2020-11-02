@@ -133,15 +133,11 @@ namespace ConnectorGrasshopper.Objects
 
     private bool OutputMismatch()
     {
-      bool countMatch = outputList.Count == Params.Output.Count;
+      var countMatch = outputList.Count == Params.Output.Count;
       if (!countMatch)
         return true;
 
-      for (var i = 0; i < outputList.Count; i++)
-        if (Params.Output[i].NickName != outputList[i])
-          return true;
-
-      return false;
+      return outputList.Where((t, i) => Params.Output[i].NickName != t).Any();
     }
 
     private void AutoCreateOutputs()

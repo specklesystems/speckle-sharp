@@ -113,7 +113,7 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("Converterd", "C", "Converted objects.", GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Converted", "C", "Converted objects.", GH_ParamAccess.tree);
     }
 
     protected override void BeforeSolveInstance()

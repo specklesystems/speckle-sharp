@@ -156,10 +156,10 @@ namespace ConnectorGrasshopper.Ops
 
       Menu_AppendSeparator(menu);
 
-      var cacheMi = Menu_AppendItem(menu, $"Use default cache", (s, e) => UseDefaultCache = !UseDefaultCache, true, UseDefaultCache);
+      var cacheMi = Menu_AppendItem(menu, "Use default cache", (s, e) => UseDefaultCache = !UseDefaultCache, true, UseDefaultCache);
       cacheMi.ToolTipText = "It's advised you always use the default cache, unless you are providing a list of custom transports and you understand the consequences.";
 
-      var autoSendMi = Menu_AppendItem(menu, $"Send automatically", (s, e) =>
+      var autoSendMi = Menu_AppendItem(menu, "Send automatically", (s, e) =>
       {
         AutoSend = !AutoSend;
         Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
@@ -327,8 +327,8 @@ namespace ConnectorGrasshopper.Ops
 
       // Part 1: handle input data
 
-      // Check wether it's a tree, or a list, or actually an item.
-      // It's quite imporatant that this component only runs once! 
+      // Check whether it's a tree, or a list, or actually an item.
+      // It's quite important that this component only runs once! 
       InputState = "tree";
       if (DataInput.DataCount == 1)
       {
@@ -355,7 +355,7 @@ namespace ConnectorGrasshopper.Ops
           ObjectToSend["@data"] = new List<object>() { _objConv };
           break;
         // Lists: Current convention is to wrap the list of bases in a new object, and set it as a
-        // detachable subproperty called "list". See the dynamo implementation.
+        // detachable sub-property called "list". See the dynamo implementation.
         case "list":
           ObjectToSend = new Base();
           ObjectToSend["@data"] = DataInput.ToList().Select(goo => Utilities.TryConvertItemToSpeckle(goo, ((SendComponent)Parent).Converter)).ToList();
@@ -481,7 +481,7 @@ namespace ConnectorGrasshopper.Ops
         var message = _MessageInput.get_FirstItem(true).Value;
         if (message == "")
         {
-          message = $"Grasshopper push.";
+          message = "Grasshopper push.";
         }
 
         var prevCommits = ((SendComponent)Parent).OutputWrappers;

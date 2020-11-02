@@ -33,7 +33,7 @@ namespace ConnectorGrasshopper.Transports
     {
       if (DA.Iteration != 0)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple transports at the same time. This is an explicit guard against possibly uninteded behaviour. If you want to create another transport, please use a new component.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple transports at the same time. This is an explicit guard against possibly unintended behaviour. If you want to create another transport, please use a new component.");
         return;
       }
 
@@ -48,14 +48,14 @@ namespace ConnectorGrasshopper.Transports
 
       streamWrapper = speckleStream.Value;
 
-      string accountId = streamWrapper.AccountId;
+      var accountId = streamWrapper.AccountId;
       Account account = null;
 
       account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
       if (account == null)
       {
         account = AccountManager.GetAccounts(streamWrapper.ServerUrl).FirstOrDefault();
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Original account not found. Please make sure you have permissions to access this stream!");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Original account not found. Please make sure you have permissions to access this stream!");
       }
       if (account == null)
       {
