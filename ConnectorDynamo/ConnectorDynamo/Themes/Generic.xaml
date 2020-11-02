@@ -37,8 +37,8 @@
       </ResourceDictionary.MergedDictionaries>
 
       <!--  accent  -->
-      <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="{StaticResource Accent400}" />
-      <SolidColorBrush x:Key="SecondaryHueMidForegroundBrush" Color="#FDFDFD" />
+      <SolidColorBrush x:Key="SecondaryAccentBrush" Color="{StaticResource Accent400}" />
+      <SolidColorBrush x:Key="SecondaryAccentForegroundBrush" Color="#FDFDFD" />
     </ResourceDictionary>
 
 
