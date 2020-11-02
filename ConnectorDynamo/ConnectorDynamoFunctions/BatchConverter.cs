@@ -127,7 +127,7 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       // case 1: it's an item that has a direct conversion method, eg a point
       if (_converter.CanConvertToNative(@base))
-        return RecusrseTreeToNative(@base);
+        return TryConvertItemToNative(@base);
 
       // case 2: it's a wrapper Base
       //       2a: if there's only one member unpack it
@@ -136,19 +136,20 @@ namespace Speckle.ConnectorDynamo.Functions
 
       if (members.Count() == 1)
       {
-        return RecusrseTreeToNative(@base[members.ElementAt(0)]);
+        var converted = RecurseTreeToNative(@base[members.ElementAt(0)]);
+        return converted;
       }
 
-      return members.ToDictionary(x => x, x => RecusrseTreeToNative(@base[x]));
+      return members.ToDictionary(x => x, x => RecurseTreeToNative(@base[x]));
     }
 
 
-    private object RecusrseTreeToNative(object @object)
+    private object RecurseTreeToNative(object @object)
     {
       if (IsList(@object))
       {
         var list = @object as List<object>;
-        return list.Select(x => RecusrseTreeToNative(x));
+        return list.Select(x => RecurseTreeToNative(x)).ToList();
       }
 
       return TryConvertItemToNative(@object);
@@ -168,7 +169,7 @@ namespace Speckle.ConnectorDynamo.Functions
       if (!_converter.CanConvertToNative(@base))
       {
         var members = @base.GetDynamicMembers();
-        return members.ToDictionary(x => x, x => RecusrseTreeToNative(@base[x]));
+        return members.ToDictionary(x => x, x => RecurseTreeToNative(@base[x]));
       }
 
       try
