@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Timers;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Speckle.Core.Models;
@@ -109,10 +110,9 @@ namespace Speckle.ConnectorRevit.UI
 
     public override List<StreamState> GetFileContext()
     {
-      var states = StreamStateManager.ReadState(CurrentDoc.Document);
-      LocalStateWrapper = states;
+      LocalStateWrapper = StreamStateManager.ReadState(CurrentDoc.Document);
 
-      return states.StreamStates;
+      return LocalStateWrapper.StreamStates;
     }
 
     public override string GetFileName()
