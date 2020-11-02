@@ -71,12 +71,9 @@ namespace ConnectorGrasshopper.Ops
       writer.SetString("LastCommitDate", LastCommitDate);
       writer.SetString("ReceivedObjectId", ReceivedObjectId);
       writer.SetString("KitName", Kit.Name);
-
-      if (StreamWrapper != null)
-      {
-        writer.SetString("StreamWrapper", StreamWrapper.ToString());
-      }
-
+      var streamUrl = StreamWrapper != null ? StreamWrapper.ToString() : "";
+      writer.SetString("StreamWrapper", streamUrl);
+      
       return base.Write(writer);
     }
 
@@ -89,7 +86,7 @@ namespace ConnectorGrasshopper.Ops
       ReceivedObjectId = reader.GetString("ReceivedObjectId");
 
       var swString = reader.GetString("StreamWrapper");
-      if (swString != null)
+      if (!string.IsNullOrEmpty(swString))
       {
         StreamWrapper = new StreamWrapper(swString);
       }
