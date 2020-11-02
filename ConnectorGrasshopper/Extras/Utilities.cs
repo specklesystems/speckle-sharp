@@ -87,9 +87,14 @@ namespace ConnectorGrasshopper.Extras
       if (value is Base @base && converter.CanConvertToNative(@base))
       {
         var converted = converter.ConvertToNative(@base);
-        var goo = converter as IGH_Goo;
-        var goo2 = new GH_ObjectWrapper {Value = converted};
-        return  goo2;
+        var goo = new GH_ObjectWrapper {Value = converted};
+        return  goo;
+      }
+
+      if (value is Base @base2)
+      {
+        var goo = new GH_SpeckleBase { Value = @base2 };
+        return goo;
       }
 
       if (value.GetType().IsSimpleType())

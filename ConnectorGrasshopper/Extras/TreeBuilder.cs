@@ -36,15 +36,22 @@ namespace ConnectorGrasshopper.Extras
         for (var i = 0; i < list.Count; i++)
         {
           var item = list[i];
-          if (item is List<object>)
+          if (item is List<object> subList)
           {
             //add list index to path
             _path.Add(i);
-            RecurseNestedLists(item, tree);
-
-            //last sublist, remove its index from the path
+            if (subList.Any())
+            {
+              RecurseNestedLists(item, tree);
+            }
+            else
+            {
+              tree.EnsurePath(_path.ToArray());
+            }
+            //reached the bottom of a sublist, step back one level
             if (_path.Any())
               _path.RemoveAt(_path.Count - 1);
+
           }
           else
           {
