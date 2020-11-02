@@ -257,7 +257,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{511b8e0f-4368-4bf9-a91c-f4a30c07d6c0}</Project>
-      <Name>Core</Name>
+      <Name>SpeckleCore2</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
