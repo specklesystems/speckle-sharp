@@ -30,12 +30,15 @@ namespace Speckle.DesktopUI.Utils
   {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-      if ( value != null )
+      try
       {
-        return Formatting.TimeAgo(( string ) value);
+        var timeAgo = Formatting.TimeAgo(( string ) value);
+        return timeAgo;
       }
-
-      return value;
+      catch ( Exception e )
+      {
+        return value;
+      }
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -44,11 +47,24 @@ namespace Speckle.DesktopUI.Utils
     }
   }
 
+  public class NotNullToBooleanConverter : IValueConverter
+  {
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+      return value != null;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+      throw new NotImplementedException();
+    }
+  }
+
   [ValueConversion(typeof(bool), typeof(bool))]
   public class InverseBooleanConverter : IValueConverter
   {
     public object Convert(object value, Type targetType, object parameter,
-      System.Globalization.CultureInfo culture)
+      CultureInfo culture)
     {
       if ( targetType != typeof(bool) )
         throw new InvalidOperationException("The target must be a boolean");

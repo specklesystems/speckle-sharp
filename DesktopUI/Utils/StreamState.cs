@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Newtonsoft.Json;
@@ -38,8 +39,9 @@ namespace Speckle.DesktopUI.Utils
     {
       var account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId) ??
                     AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == ServerUrl);
-      if ( account != null )
-        Client = new Client(account);
+      if ( account == null ) return;
+
+      Client = new Client(account);
     }
 
     private  Client _client;
