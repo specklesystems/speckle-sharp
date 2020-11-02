@@ -121,7 +121,7 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("ID", "ID", "The Id of the data you want to receive.", GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Stream", "S", "The Speckle Stream you want to receive data from. You can also input the Stream ID or it's URL as text.", GH_ParamAccess.tree);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
