@@ -36,10 +36,4 @@ namespace Speckle.DesktopUI.Utils
     StreamUpdateDialogViewModel CreateStreamUpdateDialog();
     ShareStreamDialogViewModel CreateShareStreamDialogViewModel();
   }
-
-  public interface IRepoFactory
-  {
-    StreamsRepository CreateStreamsRepository();
-    AccountsRepository CreateAccountsRepository();
-  }
 }
