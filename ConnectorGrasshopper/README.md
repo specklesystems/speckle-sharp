@@ -52,7 +52,7 @@ If you're facing any errors make sure Postgress and Redis are up and running.
 
 The connector itself doesn't have features to manage your Speckle accounts, this functionality has been delegated to the Speckle Manager desktop app.
 
-You can install an alpha version of it from: TODO LINK HERE 
+You can install an alpha version of it from: https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe
 
 After installing it, you can use it to add/create an account on the Server.
 
