@@ -83,6 +83,9 @@ namespace Speckle.Core.Models
     private long HandleObjectCount(object value, HashSet<int> parsed)
     {
       long count = 0;
+      if (value == null)
+        return count;
+
       if (value is Base)
       {
         count++;
