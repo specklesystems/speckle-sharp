@@ -159,6 +159,7 @@ namespace Speckle.DesktopUI.Utils
 
     private void HandleCommitCreated(object sender, CommitInfo info)
     {
+      if (LatestCommit().id == info.id) return;
       ServerUpdates = true;
     }
 
