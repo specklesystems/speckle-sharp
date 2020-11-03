@@ -11,6 +11,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
-    <ProjectReference Include="..\DiskTransport\DiskTransport.csproj" />
+    <ProjectReference Include="..\Transports\DiskTransport\DiskTransport.csproj" />
   </ItemGroup>
 </Project>

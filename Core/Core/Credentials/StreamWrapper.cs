@@ -11,9 +11,7 @@ namespace Speckle.Core.Credentials
     public string CommitId { get; set; }
     public string BranchName { get; set; } // To be used later! 
 
-    public StreamWrapper()
-    {
-    }
+    public StreamWrapper() { }
 
     /// <summary>
     /// Creates a StreamWrapper from a stream url
@@ -26,23 +24,28 @@ namespace Speckle.Core.Credentials
       Uri uri = null;
       if (streamUrl.Contains("?u="))
       {
-        uri = new Uri(streamUrl.Split(new string[] {"?u="}, StringSplitOptions.None)[0]);
+        uri = new Uri(streamUrl.Split(new string[] { "?u=" }, StringSplitOptions.None)[0]);
         ServerUrl = uri.GetLeftPart(UriPartial.Authority);
 
-        AccountId = streamUrl.Split(new string[] {"?u="}, StringSplitOptions.None)[1];
-        account = GetAccountForServer(AccountId);
+        AccountId = streamUrl.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
+        account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == AccountId);
+
+        if (account == null)
+        {
+          account = AccountManager.GetAccounts(ServerUrl).FirstOrDefault();
+          AccountId = account.id;
+        }
       }
       else
       {
         uri = new Uri(streamUrl);
         ServerUrl = uri.GetLeftPart(UriPartial.Authority);
-        account = GetAccountForServer();
+        account = AccountManager.GetAccounts(ServerUrl).FirstOrDefault();
       }
 
       if (account == null)
       {
-        throw new Exception(
-          $"You do not have an account for {ServerUrl}. Please create one or add it to the Speckle Manager.");
+        throw new Exception($"You do not have an account for {ServerUrl}. Please create one or add it to the Speckle Manager.");
       }
 
       if (uri.Segments.Length < 3)
@@ -61,7 +64,6 @@ namespace Speckle.Core.Credentials
           {
             throw new Exception($"Cannot parse {uri} into a stream wrapper class.");
           }
-
           break;
         case 5: // ie http://speckle.server/streams/8fecc9aa6d/commits/76a23d7179
           if (uri.Segments[3].ToLowerInvariant() == "commits/")
@@ -78,45 +80,8 @@ namespace Speckle.Core.Credentials
           {
             throw new Exception($"Cannot parse {uri} into a stream wrapper class.");
           }
-
           break;
       }
-    }
-
-    /// <summary>
-    /// Tries to find the best matching account for a stream url
-    /// If the default account is on that server returns that, otherwise it picks the first account on that server it finds
-    /// </summary>
-    /// <returns></returns>
-    private Account GetAccountForServer(string accountId = null)
-    {
-      var accounts = AccountManager.GetAccounts(ServerUrl);
-
-      //get by id
-      if (!string.IsNullOrEmpty(accountId))
-      {
-        var matchingAccount = accounts.FirstOrDefault(x => x.id == accountId);
-        if (matchingAccount != null)
-          return matchingAccount;
-      }
-
-      //get default account, if on this server
-      var defaultAccount = accounts.FirstOrDefault(x => x.isDefault);
-      var account = defaultAccount;
-
-      //get first account on this server
-      if (account == null)
-      {
-        account = accounts.FirstOrDefault();
-      }
-
-      //store Id to avoid further guessing
-      if (account != null)
-      {
-        AccountId = account.id;
-      }
-
-      return account;
     }
 
     /// <summary>
@@ -134,13 +99,25 @@ namespace Speckle.Core.Credentials
 
     public override string ToString()
     {
-      return
-        $"{ServerUrl}/streams/{StreamId}{(CommitId != null ? "/commits/" + CommitId : "")}{(AccountId != null ? "?u=" + AccountId : "")}";
+      return $"{ServerUrl}/streams/{StreamId}{(CommitId != null ? "/commits/" + CommitId : "")}{(AccountId != null ? "?u=" + AccountId : "")}";
     }
 
     public Account GetAccount()
     {
-      return GetAccountForServer(AccountId);
+      Account account = null;
+
+      account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == AccountId);
+      if (account == null)
+      {
+        account = AccountManager.GetAccounts(ServerUrl).FirstOrDefault();
+      }
+
+      if (account != null)
+      {
+        AccountId = account.id;
+      }
+
+      return account;
     }
   }
 }

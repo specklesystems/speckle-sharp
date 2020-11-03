@@ -39,17 +39,10 @@ namespace Speckle.Core.Logging
     public const string STREAM_UPDATE = "stream/update";
     public const string STREAM_DETAILS = "stream/details";
     public const string STREAM_LIST = "stream/list";
-    public const string STREAM_VIEW = "stream/view";
 
     public const string ACCOUNT_DEFAULT = "account/default";
     public const string ACCOUNT_DETAILS = "account/details";
     public const string ACCOUNT_LIST = "account/list";
-    
-    public const string CONVERT_TONATIVE = "convert/tonative";
-    public const string CONVERT_TOSPECKLE = "convert/tospeckle";
-    
-    public const string SERIALIZE = "serialization/serialize";
-    public const string DESERIALIZE = "serialization/deserialize";
     
     #endregion
 
