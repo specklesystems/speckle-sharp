@@ -89,7 +89,7 @@
 
   <ScrollViewer VerticalScrollBarVisibility="Auto">
     <Grid Margin="20 0 20 20">
-      <StackPanel>
+      <StackPanel x:Name="StreamViewStackPanel">
         <Grid Margin="0 0 0 10">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -131,10 +131,11 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
-          <StackPanel Grid.Column="0"
-                      Orientation="Horizontal">
+
+          <WrapPanel Grid.Column="0"
+                     MaxWidth="{Binding ActualWidth, ElementName=StreamViewStackPanel}">
             <md:Chip Height="28"
-                     Margin="0,0,8,0"
+                     Margin="0,0,8,8"
                      md:ButtonAssist.CornerRadius="14"
                      Command="{s:Action CopyStreamId}"
                      CommandParameter="{Binding StreamState.Stream.id}"
@@ -152,7 +153,7 @@
             </md:Chip>
 
             <md:Chip Height="28"
-                     Margin="0,0,8,0"
+                     Margin="0,0,8,8"
                      md:ButtonAssist.CornerRadius="14"
                      FontFamily="Consolas"
                      FontSize="13"
@@ -168,7 +169,41 @@
             </md:Chip>
 
             <md:Chip Height="28"
-                     Margin="0,0,8,0"
+                     Margin="0,0,8,8"
+                     md:ButtonAssist.CornerRadius="14"
+                     FontFamily="Consolas"
+                     FontSize="13"
+                     ToolTip="anyone with the link can view"
+                     Visibility="{Binding StreamState.Stream.isPublic, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+              <StackPanel Orientation="Horizontal">
+                <md:PackIcon Width="12"
+                             Height="12"
+                             Margin="0,0,4,0"
+                             VerticalAlignment="Center"
+                             Kind="Link" />
+                <TextBlock Text="Public" />
+              </StackPanel>
+            </md:Chip>
+
+            <md:Chip Height="28"
+                     Margin="0,0,8,8"
+                     md:ButtonAssist.CornerRadius="14"
+                     FontFamily="Consolas"
+                     FontSize="13"
+                     ToolTip="only specified collaborators can access"
+                     Visibility="{Binding StreamState.Stream.isPublic, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}">
+              <StackPanel Orientation="Horizontal">
+                <md:PackIcon Width="12"
+                             Height="12"
+                             Margin="0,0,4,0"
+                             VerticalAlignment="Center"
+                             Kind="LinkLock" />
+                <TextBlock Text="Private" />
+              </StackPanel>
+            </md:Chip>
+
+            <md:Chip Height="28"
+                     Margin="0,0,8,8"
                      md:ButtonAssist.CornerRadius="14"
                      Command="{s:Action OpenStreamInWeb}"
                      CommandParameter="{Binding StreamState}"
@@ -184,7 +219,8 @@
                 <TextBlock Text="{Binding StreamState.Client.Account.serverInfo.name}" />
               </StackPanel>
             </md:Chip>
-          </StackPanel>
+          </WrapPanel>
+
         </Grid>
         <TextBlock Margin="0,16,0,0"
                    Text="{Binding StreamState.Stream.description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -340,21 +376,22 @@
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
 
-        <TextBlock Grid.Column="0" Margin="0,24,0,8"
-                   FontSize="18"
-                   Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                   Text="Collaborators" />
-        <Button Grid.Column="1"
-                Width="32"
-                Height="32"
-                Margin="0,0,0,8"
-                Command="{s:Action ShowStreamUpdateDialog}"
-                CommandParameter="{StaticResource StreamCollabsSlide}"
-                md:RippleAssist.ClipToBounds="True"
-                Content="{md:PackIcon PencilOutline,
+          <TextBlock Grid.Column="0"
+                     Margin="0,24,0,8"
+                     FontSize="18"
+                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                     Text="Collaborators" />
+          <Button Grid.Column="1"
+                  Width="32"
+                  Height="32"
+                  Margin="0,0,0,8"
+                  Command="{s:Action ShowStreamUpdateDialog}"
+                  CommandParameter="{StaticResource StreamCollabsSlide}"
+                  md:RippleAssist.ClipToBounds="True"
+                  Content="{md:PackIcon PencilOutline,
                                   Size=22}"
-                Style="{StaticResource MaterialDesignIconButton}"
-                ToolTip="edit stream collaborators" />
+                  Style="{StaticResource MaterialDesignIconButton}"
+                  ToolTip="edit stream collaborators" />
         </Grid>
 
         <ItemsControl ItemTemplate="{StaticResource CollboratorChipTemplate}"
