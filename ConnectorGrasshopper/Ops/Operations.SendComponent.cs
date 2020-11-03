@@ -51,7 +51,8 @@ namespace ConnectorGrasshopper.Ops
 
     public ISpeckleKit Kit;
 
-    public SendComponent() : base("Send", "Send", "Sends data to the provided transports/streams.", "Speckle 2", "   Send/Receive")
+    public SendComponent() : base("Send", "Send", "Sends data to the provided transports/streams.", "Speckle 2",
+      "   Send/Receive")
     {
       BaseWorker = new SendComponentWorker(this);
       Attributes = new SendComponentAttributes(this);
@@ -87,12 +88,7 @@ namespace ConnectorGrasshopper.Ops
         foreach (var line in wrapperLines)
         {
           var pieces = line.Split('\t');
-          OutputWrappers.Add(new StreamWrapper
-          {
-            ServerUrl = pieces[0],
-            StreamId = pieces[1],
-            CommitId = pieces[2]
-          });
+          OutputWrappers.Add(new StreamWrapper {ServerUrl = pieces[0], StreamId = pieces[1], CommitId = pieces[2]});
         }
 
         if (OutputWrappers.Count != 0)
@@ -112,7 +108,8 @@ namespace ConnectorGrasshopper.Ops
         }
         catch (Exception e)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
+            $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
           SetDefaultKitAndConverter();
         }
       }
@@ -126,10 +123,13 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("Data", "D", "A Speckle object containing the data you want to send.", GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Data", "D", "A Speckle object containing the data you want to send.",
+        GH_ParamAccess.tree);
       pManager.AddGenericParameter("Stream", "S", "Stream(s) and/or transports to send to.", GH_ParamAccess.tree);
-      pManager.AddTextParameter("Branch", "B", "The branch you want your commit associated with.", GH_ParamAccess.tree, "main");
-      pManager.AddTextParameter("Message", "M", "Commit message. If left blank, one will be generated for you.", GH_ParamAccess.tree, "");
+      pManager.AddTextParameter("Branch", "B", "The branch you want your commit associated with.", GH_ParamAccess.tree,
+        "main");
+      pManager.AddTextParameter("Message", "M", "Commit message. If left blank, one will be generated for you.",
+        GH_ParamAccess.tree, "");
 
       Params.Input[2].Optional = true;
       Params.Input[3].Optional = true;
@@ -137,7 +137,8 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("Commits", "C", "The created commits. Commits are created automatically for any streams.", GH_ParamAccess.list);
+      pManager.AddGenericParameter("Commits", "C",
+        "The created commits. Commits are created automatically for any streams.", GH_ParamAccess.list);
       pManager.AddTextParameter("Object Id", "O", "The object id (hash) of the sent data.", GH_ParamAccess.list);
       pManager.AddGenericParameter("Data", "D", "The actual sent object.", GH_ParamAccess.list);
     }
@@ -151,30 +152,32 @@ namespace ConnectorGrasshopper.Ops
 
       foreach (var kit in kits)
       {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
+        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
+          kit.Name == Kit.Name);
       }
 
       Menu_AppendSeparator(menu);
 
-      var cacheMi = Menu_AppendItem(menu, "Use default cache", (s, e) => UseDefaultCache = !UseDefaultCache, true, UseDefaultCache);
-      cacheMi.ToolTipText = "It's advised you always use the default cache, unless you are providing a list of custom transports and you understand the consequences.";
+      var cacheMi = Menu_AppendItem(menu, "Use default cache", (s, e) => UseDefaultCache = !UseDefaultCache, true,
+        UseDefaultCache);
+      cacheMi.ToolTipText =
+        "It's advised you always use the default cache, unless you are providing a list of custom transports and you understand the consequences.";
 
       var autoSendMi = Menu_AppendItem(menu, "Send automatically", (s, e) =>
       {
         AutoSend = !AutoSend;
-        Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
-        {
-          OnDisplayExpired(true);
-        });
+        Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { OnDisplayExpired(true); });
       }, true, AutoSend);
-      autoSendMi.ToolTipText = "Toggle automatic data sending. If set, any change in any of the input parameters of this component will start sending.\n Please be aware that if a new send starts before an old one is finished, the previous operation is cancelled.";
+      autoSendMi.ToolTipText =
+        "Toggle automatic data sending. If set, any change in any of the input parameters of this component will start sending.\n Please be aware that if a new send starts before an old one is finished, the previous operation is cancelled.";
 
       if (OutputWrappers.Count != 0)
       {
         Menu_AppendSeparator(menu);
         foreach (var ow in OutputWrappers)
         {
-          Menu_AppendItem(menu, $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗", (s, e) => System.Diagnostics.Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}"));
+          Menu_AppendItem(menu, $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗",
+            (s, e) => System.Diagnostics.Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}"));
         }
       }
 
@@ -216,7 +219,8 @@ namespace ConnectorGrasshopper.Ops
         return;
       }
 
-      if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") && !JustPastedIn)
+      if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") &&
+          !JustPastedIn)
       {
         CurrentComponentState = "sending";
 
@@ -251,10 +255,7 @@ namespace ConnectorGrasshopper.Ops
 
       OverallProgress = total / ProgressReports.Keys.Count();
 
-      Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
-      {
-        OnDisplayExpired(true);
-      });
+      Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { OnDisplayExpired(true); });
     }
 
     protected override void BeforeSolveInstance()
@@ -312,8 +313,7 @@ namespace ConnectorGrasshopper.Ops
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-
-      if (((SendComponent)Parent).JustPastedIn)
+      if (((SendComponent) Parent).JustPastedIn)
       {
         Done();
         return;
@@ -321,72 +321,20 @@ namespace ConnectorGrasshopper.Ops
 
       if (CancellationToken.IsCancellationRequested)
       {
-        ((SendComponent)Parent).CurrentComponentState = "expired";
+        ((SendComponent) Parent).CurrentComponentState = "expired";
         return;
       }
 
-      // Part 1: handle input data
+      var converted = Utilities.DataTreeToNestedLists(DataInput, ((SendComponent) Parent).Converter);
+      ObjectToSend = new Base();
+      ObjectToSend["@data"] = converted;
 
-      // Check whether it's a tree, or a list, or actually an item.
-      // It's quite important that this component only runs once! 
-      InputState = "tree";
-      if (DataInput.DataCount == 1)
-      {
-        InputState = "item";
-      }
-      else if (DataInput.PathCount == 1)
-      {
-        InputState = "list";
-      }
-
-      switch (InputState)
-      {
-        // Items: Easiest case: just send the base object! 
-        case "item":
-          var _obj = DataInput.get_DataItem(0).GetType().GetProperty("Value").GetValue(DataInput.get_DataItem(0));
-          var _objConv = Utilities.TryConvertItemToSpeckle(_obj, ((SendComponent)Parent).Converter);
-
-          if (_objConv is Base myBase)
-          {
-            ObjectToSend = myBase;
-            break;
-          }
-          ObjectToSend = new Base();
-          ObjectToSend["@data"] = new List<object>() { _objConv };
-          break;
-        // Lists: Current convention is to wrap the list of bases in a new object, and set it as a
-        // detachable sub-property called "list". See the dynamo implementation.
-        case "list":
-          ObjectToSend = new Base();
-          ObjectToSend["@data"] = DataInput.ToList().Select(goo => Utilities.TryConvertItemToSpeckle(goo, ((SendComponent)Parent).Converter)).ToList();
-          break;
-
-        // Trees: values for each path get stored in a dictionary, where the key is the path, and the value is a list of the values inside that path. 
-        case "tree":
-          ObjectToSend = new Speckle.Core.Models.Base();
-          var dict = new Dictionary<string, List<object>>();
-          int branchIndex = 0;
-          foreach (var list in DataInput.Branches)
-          {
-            if (CancellationToken.IsCancellationRequested)
-            {
-              ((SendComponent)Parent).CurrentComponentState = "expired";
-              return;
-            }
-
-            var path = DataInput.Paths[branchIndex];
-            dict[path.ToString()] = list.Select(goo => Utilities.TryConvertItemToSpeckle(goo, ((SendComponent)Parent).Converter)).ToList();
-            branchIndex++;
-          }
-          ObjectToSend["@data"] = dict;
-          break;
-      }
 
       TotalObjectCount = ObjectToSend.GetTotalChildrenCount();
 
       if (CancellationToken.IsCancellationRequested)
       {
-        ((SendComponent)Parent).CurrentComponentState = "expired";
+        ((SendComponent) Parent).CurrentComponentState = "expired";
         return;
       }
 
@@ -410,7 +358,10 @@ namespace ConnectorGrasshopper.Ops
           {
             transport = new StreamWrapper(transport as string);
           }
-          catch { /*we should not do this */ }
+          catch
+          {
+            /*we should not do this */
+          }
         }
 
         if (transport is StreamWrapper sw)
@@ -421,13 +372,16 @@ namespace ConnectorGrasshopper.Ops
             Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Could not get an account for {sw}");
             continue;
           }
-          Transports.Add(new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" }); ;
+
+          Transports.Add(new ServerTransport(acc, sw.StreamId) {TransportName = $"T{t}"});
+          ;
         }
         else if (transport is ITransport otherTransport)
         {
           otherTransport.TransportName = $"T{t}";
           Transports.Add(otherTransport);
         }
+
         t++;
       }
 
@@ -442,7 +396,7 @@ namespace ConnectorGrasshopper.Ops
       {
         foreach (var kvp in dict)
         {
-          ReportProgress(kvp.Key, (double)kvp.Value / TotalObjectCount);
+          ReportProgress(kvp.Key, (double) kvp.Value / TotalObjectCount);
         }
       };
 
@@ -453,7 +407,7 @@ namespace ConnectorGrasshopper.Ops
 
       if (CancellationToken.IsCancellationRequested)
       {
-        ((SendComponent)Parent).CurrentComponentState = "expired";
+        ((SendComponent) Parent).CurrentComponentState = "expired";
         return;
       }
 
@@ -463,7 +417,7 @@ namespace ConnectorGrasshopper.Ops
       {
         if (CancellationToken.IsCancellationRequested)
         {
-          ((SendComponent)Parent).CurrentComponentState = "expired";
+          ((SendComponent) Parent).CurrentComponentState = "expired";
           return;
         }
 
@@ -472,7 +426,7 @@ namespace ConnectorGrasshopper.Ops
           ObjectToSend,
           CancellationToken,
           Transports,
-          useDefaultCache: ((SendComponent)Parent).UseDefaultCache,
+          useDefaultCache: ((SendComponent) Parent).UseDefaultCache,
           onProgressAction: InternalProgressAction,
           onErrorAction: ErrorAction);
 
@@ -484,13 +438,13 @@ namespace ConnectorGrasshopper.Ops
           message = "Grasshopper push.";
         }
 
-        var prevCommits = ((SendComponent)Parent).OutputWrappers;
+        var prevCommits = ((SendComponent) Parent).OutputWrappers;
 
         foreach (var transport in Transports)
         {
           if (CancellationToken.IsCancellationRequested)
           {
-            ((SendComponent)Parent).CurrentComponentState = "expired";
+            ((SendComponent) Parent).CurrentComponentState = "expired";
             return;
           }
 
@@ -501,29 +455,28 @@ namespace ConnectorGrasshopper.Ops
 
           try
           {
-            var client = new Client(((ServerTransport)transport).Account);
+            var client = new Client(((ServerTransport) transport).Account);
             var commitCreateInput = new CommitCreateInput
             {
               branchName = _BranchNameInput.get_FirstItem(true).Value,
               message = message,
               objectId = BaseId,
-              streamId = ((ServerTransport)transport).StreamId,
+              streamId = ((ServerTransport) transport).StreamId,
             };
 
             // Check to see if we have a previous commit; if so set it.
-            var prevCommit = prevCommits.FirstOrDefault(c => c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId);
+            var prevCommit = prevCommits.FirstOrDefault(c =>
+              c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport) transport).StreamId);
             if (prevCommit != null)
             {
-              commitCreateInput.previousCommitIds = new List<string>() { prevCommit.CommitId };
+              commitCreateInput.previousCommitIds = new List<string>() {prevCommit.CommitId};
             }
 
             var commitId = await client.CommitCreate(CancellationToken, commitCreateInput);
 
             OutputWrappers.Add(new StreamWrapper
             {
-              StreamId = ((ServerTransport)transport).StreamId,
-              ServerUrl = client.ServerUrl,
-              CommitId = commitId
+              StreamId = ((ServerTransport) transport).StreamId, ServerUrl = client.ServerUrl, CommitId = commitId
             });
           }
           catch (Exception e)
@@ -534,7 +487,7 @@ namespace ConnectorGrasshopper.Ops
 
         if (CancellationToken.IsCancellationRequested)
         {
-          ((SendComponent)Parent).CurrentComponentState = "expired";
+          ((SendComponent) Parent).CurrentComponentState = "expired";
           return;
         }
 
@@ -546,17 +499,17 @@ namespace ConnectorGrasshopper.Ops
     {
       stopwatch.Stop();
 
-      if (((SendComponent)Parent).JustPastedIn)
+      if (((SendComponent) Parent).JustPastedIn)
       {
-        ((SendComponent)Parent).JustPastedIn = false;
-        DA.SetDataList(0, ((SendComponent)Parent).OutputWrappers);
-        DA.SetData(1, ((SendComponent)Parent).BaseId);
+        ((SendComponent) Parent).JustPastedIn = false;
+        DA.SetDataList(0, ((SendComponent) Parent).OutputWrappers);
+        DA.SetData(1, ((SendComponent) Parent).BaseId);
         return;
       }
 
       if (CancellationToken.IsCancellationRequested)
       {
-        ((SendComponent)Parent).CurrentComponentState = "expired";
+        ((SendComponent) Parent).CurrentComponentState = "expired";
         return;
       }
 
@@ -567,34 +520,40 @@ namespace ConnectorGrasshopper.Ops
 
       DA.SetDataList(0, OutputWrappers);
       DA.SetData(1, BaseId);
-      DA.SetData(2, new GH_SpeckleBase { Value = ObjectToSend });
+      DA.SetData(2, new GH_SpeckleBase {Value = ObjectToSend});
 
-      ((SendComponent)Parent).CurrentComponentState = "up_to_date";
-      ((SendComponent)Parent).OutputWrappers = OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
-      ((SendComponent)Parent).BaseId = BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
-      ((SendComponent)Parent).OverallProgress = 0;
-      
+      ((SendComponent) Parent).CurrentComponentState = "up_to_date";
+      ((SendComponent) Parent).OutputWrappers =
+        OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
+      ((SendComponent) Parent).BaseId =
+        BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
+      ((SendComponent) Parent).OverallProgress = 0;
+
       var hasWarnings = RuntimeMessages.Count > 0;
       if (!hasWarnings)
       {
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Successfully pushed {TotalObjectCount} objects to {(((SendComponent)Parent).UseDefaultCache ? Transports.Count - 1 : Transports.Count)} transports.");
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Send duration: {stopwatch.ElapsedMilliseconds / 1000f}s");
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
+          $"Successfully pushed {TotalObjectCount} objects to {(((SendComponent) Parent).UseDefaultCache ? Transports.Count - 1 : Transports.Count)} transports.");
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
+          $"Send duration: {stopwatch.ElapsedMilliseconds / 1000f}s");
         foreach (var t in Transports)
         {
           if (!(t is ServerTransport st)) continue;
           var mb = st.TotalSentBytes / 1e6;
-          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"{t.TransportName} avg {(mb / (stopwatch.ElapsedMilliseconds / 1000f)):0.00} MB/s");
+          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
+            $"{t.TransportName} avg {(mb / (stopwatch.ElapsedMilliseconds / 1000f)):0.00} MB/s");
         }
       }
     }
-
   }
 
   public class SendComponentAttributes : GH_ComponentAttributes
   {
     Rectangle ButtonBounds { get; set; }
 
-    public SendComponentAttributes(GH_Component owner) : base(owner) { }
+    public SendComponentAttributes(GH_Component owner) : base(owner)
+    {
+    }
 
     protected override void Layout()
     {
@@ -616,13 +575,14 @@ namespace ConnectorGrasshopper.Ops
     {
       base.Render(canvas, graphics, channel);
 
-      var state = ((SendComponent)Owner).CurrentComponentState;
+      var state = ((SendComponent) Owner).CurrentComponentState;
 
       if (channel == GH_CanvasChannel.Objects)
       {
-        if (((SendComponent)Owner).AutoSend)
+        if (((SendComponent) Owner).AutoSend)
         {
-          var autoSendButton = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, GH_Palette.Blue, "Auto Send", 2, 0);
+          var autoSendButton =
+            GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, GH_Palette.Blue, "Auto Send", 2, 0);
 
           autoSendButton.Render(graphics, Selected, Owner.Locked, false);
           autoSendButton.Dispose();
@@ -630,9 +590,10 @@ namespace ConnectorGrasshopper.Ops
         else
         {
           var palette = state == "expired" ? GH_Palette.Black : GH_Palette.Transparent;
-          var text = state == "sending" ? $"{((SendComponent)Owner).OverallProgress:0.00%}" : "Send";
+          var text = state == "sending" ? $"{((SendComponent) Owner).OverallProgress:0.00%}" : "Send";
 
-          var button = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, palette, text, 2, state == "expired" ? 10 : 0);
+          var button = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, palette, text, 2,
+            state == "expired" ? 10 : 0);
           button.Render(graphics, Selected, Owner.Locked, false);
           button.Dispose();
         }
@@ -643,17 +604,19 @@ namespace ConnectorGrasshopper.Ops
     {
       if (e.Button == MouseButtons.Left)
       {
-        if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
+        if (((RectangleF) ButtonBounds).Contains(e.CanvasLocation))
         {
-          if (((SendComponent)Owner).AutoSend || ((SendComponent)Owner).CurrentComponentState != "expired")
+          if (((SendComponent) Owner).AutoSend || ((SendComponent) Owner).CurrentComponentState != "expired")
           {
             return GH_ObjectResponse.Handled;
           }
-          ((SendComponent)Owner).CurrentComponentState = "primed_to_send";
+
+          ((SendComponent) Owner).CurrentComponentState = "primed_to_send";
           Owner.ExpireSolution(true);
           return GH_ObjectResponse.Handled;
         }
       }
+
       return base.RespondToMouseDown(sender, e);
     }
 
@@ -662,27 +625,27 @@ namespace ConnectorGrasshopper.Ops
       // Double clicking the send button, even if the state is up to date, will do a "force send"
       if (e.Button == MouseButtons.Left)
       {
-        if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
+        if (((RectangleF) ButtonBounds).Contains(e.CanvasLocation))
         {
-          if (((SendComponent)Owner).CurrentComponentState == "sending")
+          if (((SendComponent) Owner).CurrentComponentState == "sending")
           {
             return GH_ObjectResponse.Handled;
           }
 
-          if (((SendComponent)Owner).AutoSend)
+          if (((SendComponent) Owner).AutoSend)
           {
-            ((SendComponent)Owner).AutoSend = false;
+            ((SendComponent) Owner).AutoSend = false;
             Owner.OnDisplayExpired(true);
             return GH_ObjectResponse.Handled;
           }
 
-          ((SendComponent)Owner).CurrentComponentState = "primed_to_send";
+          ((SendComponent) Owner).CurrentComponentState = "primed_to_send";
           Owner.ExpireSolution(true);
           return GH_ObjectResponse.Handled;
         }
       }
+
       return base.RespondToMouseDown(sender, e);
     }
   }
-
 }
