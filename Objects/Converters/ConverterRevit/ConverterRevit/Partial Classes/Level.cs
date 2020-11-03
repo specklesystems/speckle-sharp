@@ -11,7 +11,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Level LevelToNative( Level speckleLevel)
+    public DB.Level LevelToNative(Level speckleLevel)
     {
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleLevel.applicationId, speckleLevel.speckle_type);
 
@@ -46,8 +46,13 @@ namespace Objects.Converter.Revit
       {
         revitLevel = DB.Level.Create(Doc, elevation);
 
-        if (speckleLevel.HasMember<bool>("createView") && (bool)speckleLevel["createView"])
+        var createView = speckleLevel["createView"] as bool?;
+
+        if (createView != null && createView == true)
           CreateViewPlan(speckleLevel.name, revitLevel.Id);
+
+        //if (speckleLevel.HasMember<bool>("createView") && (bool)speckleLevel["createView"])
+        //  CreateViewPlan(speckleLevel.name, revitLevel.Id);
       }
 
       //not sure why it would fail?
@@ -63,7 +68,7 @@ namespace Objects.Converter.Revit
       return revitLevel;
     }
 
-    public Level LevelToSpeckle( DB.Level revitLevel)
+    public Level LevelToSpeckle(DB.Level revitLevel)
     {
       var speckleLevel = new Level();
       //TODO: check why using Scale?
@@ -74,7 +79,7 @@ namespace Objects.Converter.Revit
       return speckleLevel;
     }
 
-    private  void CreateViewPlan(string name, ElementId levelId)
+    private void CreateViewPlan(string name, ElementId levelId)
     {
       var vt = new FilteredElementCollector(Doc).OfClass(typeof(ViewFamilyType)).Where(el => ((ViewFamilyType)el).ViewFamily == ViewFamily.FloorPlan).First();
 
@@ -86,7 +91,7 @@ namespace Objects.Converter.Revit
       catch { }
     }
 
-    private  DB.Level TryMatchExistingLevel(Level level)
+    private DB.Level TryMatchExistingLevel(Level level)
     {
       var collector = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
 
@@ -102,7 +107,7 @@ namespace Objects.Converter.Revit
       return revitLevel;
     }
 
-    private  Level EnsureLevelExists(Level level, XYZ point)
+    private Level EnsureLevelExists(Level level, XYZ point)
     {
       if (level != null)
         return level;
@@ -110,7 +115,7 @@ namespace Objects.Converter.Revit
       return new Level() { elevation = point.Z / Scale, name = "Speckle Level " + point.Z / Scale };
     }
 
-    private  Level EnsureLevelExists(Level level, DB.Curve curve)
+    private Level EnsureLevelExists(Level level, DB.Curve curve)
     {
       if (level != null)
         return level;
@@ -119,7 +124,7 @@ namespace Objects.Converter.Revit
       return EnsureLevelExists(level, point);
     }
 
-    private  Level EnsureLevelExists(Level level, object location)
+    private Level EnsureLevelExists(Level level, object location)
     {
       if (level != null)
         return level;
@@ -135,7 +140,7 @@ namespace Objects.Converter.Revit
         default:
           throw new NotSupportedException();
       }
-      
+
 
     }
 
