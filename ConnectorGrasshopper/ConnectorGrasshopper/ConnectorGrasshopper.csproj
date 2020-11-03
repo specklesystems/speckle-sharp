@@ -107,6 +107,10 @@
     <Compile Include="Conversion\Serialisation.DeserializeObject.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\GrasshopperAsyncComponent\GrasshopperAsyncComponent\GrasshopperAsyncComponent.csproj">
+      <Project>{695d2b91-ddb6-416e-8a99-dde6253da7aa}</Project>
+      <Name>GrasshopperAsyncComponent</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{b4d98d2c-e5da-463e-bf6c-68e9b77c72f3}</Project>
       <Name>Core</Name>
@@ -118,10 +122,6 @@
     <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
       <Project>{8008f635-7ded-473c-88df-12833f599d75}</Project>
       <Name>ServerTransport</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\GrasshopperAsyncComponent\GrasshopperAsyncComponent\GrasshopperAsyncComponent.csproj">
-      <Project>{695d2b91-ddb6-416e-8a99-dde6253da7aa}</Project>
-      <Name>GrasshopperAsyncComponent</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGh\ConverterRhinoGh.csproj">
       <Project>{a987e5e1-8605-46ba-9476-1d8d28502273}</Project>
