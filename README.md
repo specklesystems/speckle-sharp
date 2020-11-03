@@ -34,7 +34,7 @@ It'd be a good idea to clone all the Speckle repos you're working on in one fold
 
 #### Server
 
-In order to test Speckle in all its glory. you'll need a server running. You can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server)
+In order to test Speckle in all its glory, you'll need a server running. You can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server)
 
 If you're facing any errors, make sure Postgres and Redis are up and running.
 
@@ -42,7 +42,7 @@ If you're facing any errors, make sure Postgres and Redis are up and running.
 
 The connector itself doesn't have features to manage your Speckle accounts. This functionality has been delegated to the Speckle Manager desktop app.
 
-You can install an alpha version of it from: TODO LINK HERE 
+You can install an alpha version of it from: [here](https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe)
 
 After installing it, you can use it to add/create an account on the Server.
 
