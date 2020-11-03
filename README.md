@@ -29,7 +29,7 @@ It'd be a good idea to clone all the Speckle repos you're working on in one fold
 
 #### Server
 
-In order to test Speckle in all its glory. you'll need a server running. You can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server)
+In order to test Speckle in all its glory, you'll need a server running. You can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server)
 
 If you're facing any errors, make sure Postgres and Redis are up and running.
 
@@ -37,7 +37,7 @@ If you're facing any errors, make sure Postgres and Redis are up and running.
 
 The connector itself doesn't have features to manage your Speckle accounts. This functionality has been delegated to the Speckle Manager desktop app.
 
-You can install an alpha version of it from: TODO LINK HERE 
+You can install an alpha version of it from: [here](https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe)
 
 After installing it, you can use it to add/create an account on the Server.
 
@@ -49,7 +49,7 @@ In your IDE, you can select which Revit version you want to run. If you're havin
 
 The button to launch the connector should now appear in the Add-Ins ribbon. You're ready to go!
 
-![speckle buttin on ribbon menu](https://user-images.githubusercontent.com/7717434/97557082-381a3400-19d2-11eb-8d10-13039d5ee7be.png)
+![speckle button on ribbon menu](https://user-images.githubusercontent.com/7717434/97557082-381a3400-19d2-11eb-8d10-13039d5ee7be.png)
 
 Fire it up 🔥
 
