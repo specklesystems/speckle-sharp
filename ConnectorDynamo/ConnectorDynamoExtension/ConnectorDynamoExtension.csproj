@@ -159,8 +159,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Core\Core\Core.csproj">
-      <Project>{7de6bcf0-8aa2-40a6-a7a2-be696f693527}</Project>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj">
+      <Project>{3f02e475-e777-4dfd-8ae9-8065edd092dc}</Project>
       <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\ConnectorDynamoFunctions\ConnectorDynamoFunctions.csproj">

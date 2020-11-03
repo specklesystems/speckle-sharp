@@ -78,9 +78,13 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Core\Core\Core.csproj">
-      <Project>{7de6bcf0-8aa2-40a6-a7a2-be696f693527}</Project>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj">
+      <Project>{3f02e475-e777-4dfd-8ae9-8065edd092dc}</Project>
       <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
+      <Project>{1e11c8cc-f56d-4474-883c-f55e9614c417}</Project>
+      <Name>Objects</Name>
     </ProjectReference>
     <ProjectReference Include="..\ConnectorDynamoExtension\ConnectorDynamoExtension.csproj">
       <Project>{b494fd40-5e59-4d5e-87b0-80aac8bdcd5a}</Project>
@@ -99,9 +103,7 @@
     <Compile Include="AccountsNode\AccountsUi.xaml.cs">
       <DependentUpon>AccountsUi.xaml</DependentUpon>
     </Compile>
-
     <Compile Include="AccountsNode\AccountsViewCustomization.cs" />
-
     <Compile Include="CreateStreamNode\CreateStreamUi.xaml.cs">
       <DependentUpon>CreateStreamUi.xaml</DependentUpon>
     </Compile>
@@ -131,7 +133,6 @@
     <Content Include="Assets\logo128.png" />
     <Content Include="Assets\logo16.png" />
     <Content Include="Assets\logo32.png" />
-
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SpeckleConnectorDynamoImages.resx" />
