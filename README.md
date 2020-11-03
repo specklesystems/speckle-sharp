@@ -4,12 +4,9 @@
 [![Slack Invite](https://img.shields.io/badge/-slack-grey?style=flat-square&logo=slack)](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
 
 
+> Speckle is the Open Source data platform for AEC.
 
-Speckle is the Open Source data platform for AEC.
-
-Since you're here, you might be interested also in:
-
-- [Speckle Server](https://github.com/specklesystems/Server), the Speckle Server 2.0
+Since you're here, you might be interested also in the [Speckle Server](https://github.com/specklesystems/Server).
 
 ## Introduction
 
@@ -17,10 +14,11 @@ Speckle Sharp is home to our Speckle 2.0 C# projects, more specifically:
 
 - [Core](Core), the .NET SDK
 - [Objects](Objects), the default .NET Speckle Kit
-- all our .NET Connectors
+- .NET Connectors:
   - [Grasshopper](ConnectorGrasshopper)
   - [Dynamo](ConnectorDynamo)
   - [Revit](ConnectorRevit)
+- [DesktopUI](DesktopUI), the reusable ui for connectors.
 
 Speckle Sharp is currently released as ⚠ **ALPHA** ⚠, please use at your own risk. 
 
