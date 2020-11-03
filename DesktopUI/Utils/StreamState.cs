@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
+using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -67,7 +68,11 @@ namespace Speckle.DesktopUI.Utils
     public Stream Stream
     {
       get => _stream;
-      set => SetAndNotify(ref _stream, value);
+      set
+      {
+        SetAndNotify(ref _stream, value);
+        Initialise();
+      }
     }
 
     private  ISelectionFilter _filter;
@@ -130,10 +135,56 @@ namespace Speckle.DesktopUI.Utils
 
     public CancellationToken CancellationToken { get; set; }
 
+    internal void Initialise()
+    {
+      if (Stream == null) return;
+
+      Client.SubscribeStreamUpdated(Stream.id);
+      Client.SubscribeCommitCreated(Stream.id);
+      Client.SubscribeCommitUpdated(Stream.id);
+      Client.SubscribeCommitDeleted(Stream.id);
+
+      Client.OnStreamUpdated += HandleStreamUpdated;
+      Client.OnCommitCreated += HandleCommitCreated;
+      Client.OnCommitDeleted += HandleCommitCreated;
+      Client.OnCommitUpdated += HandleCommitChanged;
+    }
+
+    private void HandleStreamUpdated(object sender, StreamInfo info)
+    {
+      Stream.name = info.name;
+      Stream.description = info.description;
+      NotifyOfPropertyChange(nameof(Stream));
+    }
+
+    private void HandleCommitCreated(object sender, CommitInfo info)
+    {
+      ServerUpdates = true;
+    }
+
+    private void HandleCommitChanged(object sender, CommitInfo info)
+    {
+      var branch = Stream.branches.items.FirstOrDefault(b => b.name == info.branchName);
+      var commit = branch?.commits.items.FirstOrDefault(c => c.id == info.id);
+      if ( commit == null )
+      {
+        // something went wrong, but notify the user there were changes anyway
+        // ((look like this sub isn't returning a branch name?))
+        ServerUpdates = true;
+        return;
+      }
+      commit.message = info.message;
+      NotifyOfPropertyChange(nameof(Stream));
+    }
+
     public Commit LatestCommit(string branchName = "main")
     {
       var branch = Stream.branches.items.Find(b => b.name == branchName);
-      if ( branch == null ) Log.CaptureException(new SpeckleException($"Could not find branch {branchName} on stream {Stream.id}"));
+      if ( branch == null )
+      {
+        Log.CaptureException(new SpeckleException($"Could not find branch {branchName} on stream {Stream.id}"));
+        return null;
+      }
       var commits = branch.commits.items;
       return commits.Any() ? commits[ 0 ] : null;
     }
