@@ -13,15 +13,15 @@ This monorepo is the home to our Speckle 2.0 C# projects. The [Speckle Server](h
 
 Specifically, this repo holds:
 
-### [Core](Core), the .NET SDK.
+### ➡️ [Core](Core), the .NET SDK.
 
 [Speckle Core](Core) is the canconical SDK for Speckle. It supports multiple [data transports](https://discourse.speckle.works/t/core-2-0-transports/919), and advanced [decomposition API](https://discourse.speckle.works/t/core-2-0-decomposition-api/911) for design data, and offers a [dynamic base](https://discourse.speckle.works/t/core-2-0-the-base-object/782) for object definition. 
 
-### [Objects](Objects)
+### ➡️ [Objects](Objects)
 
 The Objects Kit is our default interoperability kit. Read more about kits and their role in the Speckle ecosystem [here](https://discourse.speckle.works/t/introducing-kits-2-0/710).
 
-### Speckle Connectors:
+### ➡️ Speckle Connectors:
 
 The Speckle Connectors are plugins that embed with an application and provide the interface between its API and Speckle. Currently we have: 
 
@@ -29,7 +29,7 @@ The Speckle Connectors are plugins that embed with an application and provide th
 - [Dynamo](ConnectorDynamo)
 - [Revit](ConnectorRevit)
 
-### [DesktopUI](DesktopUI)
+### ➡️ [DesktopUI](DesktopUI)
 
 The DesktopUI project contains the reusable ui for all non-visual programming connectors. If you're embarking on developing a new connector, we recommend starting from here.
 
