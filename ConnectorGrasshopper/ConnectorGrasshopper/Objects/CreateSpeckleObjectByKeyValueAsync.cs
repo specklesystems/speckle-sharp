@@ -29,7 +29,7 @@ namespace ConnectorGrasshopper.Objects
 
     protected override System.Drawing.Bitmap Icon => Properties.Resources.CreateSpeckleObjectByKeyValue;
     
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     public CreateSpeckleObjectByKeyValueAsync() : base("Create Speckle Object by Key/Value Async", "K/V Async",
       "Creates a speckle object from key value pairs", "Speckle 2 Dev", "Async Object Management")
