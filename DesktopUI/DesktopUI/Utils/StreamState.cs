@@ -52,6 +52,7 @@ namespace Speckle.DesktopUI.Utils
       get => _client;
       set
       {
+        if (value.AccountId == null) return;
         _client = value;
         AccountId = Client.AccountId;
         ServerUrl = Client.ServerUrl;
@@ -138,6 +139,7 @@ namespace Speckle.DesktopUI.Utils
     internal void Initialise()
     {
       if (Stream == null) return;
+      if (Client?.AccountId == null) return;
 
       Client.SubscribeStreamUpdated(Stream.id);
       Client.SubscribeCommitCreated(Stream.id);
