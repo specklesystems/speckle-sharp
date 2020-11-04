@@ -29,13 +29,6 @@ Following instructions on how to get started debugging and contributing to this 
 
 The c# projects have local dependencies, in the future these will be referenced as NuGet packages, but for the time being **make sure also to clone the following repos** in a folder adjacent to the one of this repo:
 
-- https://github.com/specklesystems/Core
-    - This includes other dependencies included in the `Core` repo:
-        - DiskTransport
-        - ServerTransport
-- https://github.com/specklesystems/Objects
-    - This includes other dependencies included in the `Objects` repo:
-        - ConverterRhinoGH
 - https://github.com/specklesystems/GrasshopperAsyncComponent
 
 It'd be a good solution to just clone all the Speckle repos you're working on in one folder.
