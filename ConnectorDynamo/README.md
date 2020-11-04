@@ -35,14 +35,6 @@ We encourage everyone interested to debug / hack /contribute / give feedback to 
 
 Following instructions on how to get started debugging and contributing to this connector.
 
-#### Dependencies
-
-The c# projects have local dependencies, in the future these will be referenced as NuGet packages, but for the time being **make sure also to clone the following repos** in a folder adjacent to the one of this repo:
-
-- https://github.com/specklesystems/Core
-- https://github.com/specklesystems/Objects
-
-It'd be a good solution to just clone all the Speckle repos you're working on in one folder.
 
 #### Server
 
