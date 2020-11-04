@@ -25,7 +25,7 @@ namespace Speckle.Core.Logging
         {
           o.Dsn = new Dsn("https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846");
           o.Environment = "dev";
-          o.Debug = false;
+          o.Debug = true;
           o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
         });
 
