@@ -27,6 +27,7 @@
       MinWidth="200"
       Margin="10"
       md:HintAssist.Hint="Account"
+      Background="#CBC6BE"
       ItemsSource="{Binding AccountList}"
       SelectedItem="{Binding SelectedAccount}">
       <ComboBox.ItemTemplate>

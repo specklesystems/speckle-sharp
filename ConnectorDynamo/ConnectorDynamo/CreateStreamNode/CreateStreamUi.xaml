@@ -40,6 +40,7 @@
       MinWidth="200"
       Margin="10"
       md:HintAssist.Hint="Account"
+      Background="#CBC6BE"
       IsEnabled="{Binding CreateEnabled}"
       ItemsSource="{Binding AccountList}"
       SelectedItem="{Binding SelectedAccount}">
