@@ -1,86 +1,62 @@
-# Speckle Sharp
+# Speckle Sharp: The Speckle 2.0 .NET SDK, Connectors, and Interoperability Kit
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works)
 [![Slack Invite](https://img.shields.io/badge/-slack-grey?style=flat-square&logo=slack)](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
 
+<details>
+  <summary>What is Speckle?</summary>
+  
+  
+  Speckle is the Open Source Data Platform for AEC. Speckle allows you to say goodbye to files: we give you object-level control of what you share, infinite versioning history & changelogs. Read more on [our website](https://speckle.systems).
 
-> Speckle is the Open Source data platform for AEC.
-
-Since you're here, you might be interested also in the [Speckle Server](https://github.com/specklesystems/Server).
+  
+</details>
 
 ## Introduction
 
-Speckle Sharp is home to our Speckle 2.0 C# projects, more specifically:
+This monorepo is the home to our Speckle 2.0 C# projects. The [Speckle Server](https://github.com/specklesystems/Server) is providing all the web-facing functionality and can be found [here](https://github.com/specklesystems/Server). 
 
-- [Core](Core), the .NET SDK
-- [Objects](Objects), the default .NET Speckle Kit
-- .NET Connectors:
-  - [Grasshopper](ConnectorGrasshopper)
-  - [Dynamo](ConnectorDynamo)
-  - [Revit](ConnectorRevit)
-- [DesktopUI](DesktopUI), the reusable ui for connectors.
+Specifically, this repo holds:
 
-Speckle Sharp is currently released as ⚠ **ALPHA** ⚠, please use at your own risk. 
+### ➡️ [Core](Core), the .NET SDK.
 
-## Developing & Debugging
+[Speckle Core](Core) is the canconical SDK for Speckle. It supports multiple [data transports](https://discourse.speckle.works/t/core-2-0-transports/919), and advanced [decomposition API](https://discourse.speckle.works/t/core-2-0-decomposition-api/911) for design data, and offers a [dynamic base](https://discourse.speckle.works/t/core-2-0-the-base-object/782) for object definition. 
 
-Below are some general instruction on how to get started developing and debugging Speckle Sharp, **please check each subfolder for instructions on how to set up each individual project**. 
+### ➡️ [Objects](Objects)
 
-We encourage everyone interested to debug / hack /contribute / give feedback to this project.
+The Objects Kit is our default interoperability kit. Read more about kits and their role in the Speckle ecosystem [here](https://discourse.speckle.works/t/introducing-kits-2-0/710).
 
-### Requirements
+### ➡️ Speckle Connectors:
 
-- A Speckle Server running (more on this below)
-- Speckle Manager (more on this below)
+The Speckle Connectors are plugins that embed with an application and provide the interface between its API and Speckle. Currently we have: 
 
-### Getting Started 🏁
+- [Grasshopper](ConnectorGrasshopper)
+- [Dynamo](ConnectorDynamo)
+- [Revit](ConnectorRevit)
 
-Following instructions on how to get started debugging and contributing.
+### ➡️ [DesktopUI](DesktopUI)
 
-#### First Step
+The DesktopUI project contains the reusable ui for all non-visual programming connectors. If you're embarking on developing a new connector, we recommend starting from here.
 
-Clone this monorepo and check the readme of you project you're interested in.
+## Developing & Debugging: First Step
 
-#### Server
+Clone this monorepo and check the readme of you project you're interested in! We encourage everyone interested to debug / hack /contribute / give feedback to this project.
 
-In order to test Speckle in all its glory you'll need a server running, you can run a local one by simply following these instructions:
-
-- https://github.com/specklesystems/Server
-
-If you're facing any errors make sure Postgress and Redis are up and running. 
-
-#### Accounts
-
-The connectors themselves doesn't have features to manage your Speckle accounts, this functionality has been delegated to the Speckle Manager desktop app.
-
-You can install an alpha version of it from: https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe
-
-After installing it, you can use it to add/create an account on the Server.
-
-
-
-### Questions and Feedback 💬
-
-Hey, this is an alpha release, I'm sure you'll have plenty of feedback, and we want to hear all about it! Get in touch with us on [the forum](https://discourse.speckle.works)! 
-
-
+> **A note on Accounts:**
+> The connectors themselves doesn't have features to manage your Speckle accounts, this functionality has been delegated to the Speckle Manager desktop app. You can install [an  alpha version of it from here](https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe). After installing it, you can use it to add/create an account on the Server.
 
 ## Contributing
 
 Please make sure you read the [contribution guidelines](.github/CONTRIBUTING.md) for an overview of the best practices we try to follow.
 
-
-
-## Community
+## Community, Questions and Feeback:
 
 The Speckle Community hangs out in two main places, usually:
 
 - on [the forum](https://discourse.speckle.works)
 - on [the chat](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI)
 
-Do join and introduce yourself!
-
-
+Do join and introduce yourself & feel free to ask us questions!
 
 ## License
 
