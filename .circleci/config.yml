@@ -1,48 +1,47 @@
 version: 2.1
 
 jobs:
-
-  # The unit tests. 
+  # The unit tests.
 
   unit-tests:
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
-    
+
     steps:
       - checkout
-      - run: 
+      - run:
           name: "Pull core submodules"
           command: |
             git submodule init
             git submodule update --remote
-      - run: dotnet restore
-      - run: dotnet test Tests/TestsUnit.csproj < /dev/null
-  
-  # The integration tests. Spins up a full blown speckle server. 
+      - run: dotnet restore Core/Core.sln
+      - run: dotnet test Core/Tests/TestsUnit.csproj < /dev/null
+
+  # The integration tests. Spins up a full blown speckle server.
 
   integration-tests:
     working_directory: /temp
-    
+
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
-      - image: 'circleci/redis:6'
-      - image: 'circleci/postgres:12'
+      - image: "circleci/redis:6"
+      - image: "circleci/postgres:12"
         environment:
           POSTGRES_DB: speckle2_dev
           POSTGRES_PASSWORD: speckle
           POSTGRES_USER: speckle
-    
+
     environment:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       NODE_ENV: test
-      DATABASE_URL: 'postgres://speckle:speckle@localhost:5432/speckle2_dev'
+      DATABASE_URL: "postgres://speckle:speckle@localhost:5432/speckle2_dev"
       PGDATABASE: speckle2_dev
       PGUSER: speckle
-      SESSION_SECRET: 'keyboard cat'
+      SESSION_SECRET: "keyboard cat"
       STRATEGY_LOCAL: true
-      CANONICAL_URL: 'http://localhost:3000'
-    
+      CANONICAL_URL: "http://localhost:3000"
+
     steps:
       - run:
           name: "Install node"
@@ -56,31 +55,31 @@ jobs:
           working_directory: server
           name: "Install deps"
           command: "npm install"
-      - run: 
+      - run:
           name: "Start server"
           working_directory: server
           command: "npm run dev:server"
           background: true
       - checkout:
           path: core
-      - run: 
+      - run:
           working_directory: core
           name: "Pull core submodules"
           command: |
             git submodule init
             git submodule update --remote
-      - run: 
+      - run:
           working_directory: core
-          command: dotnet restore
-      - run:  
+          command: dotnet restore Core/Core.sln
+      - run:
           working_directory: core
-          command: dotnet build --configuration Release
-      - run: 
+          command: dotnet build --configuration Release Core/Core.sln
+      - run:
           working_directory: core
-          command: dotnet test IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true"
+          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true"
 
-workflows: 
+workflows:
   test:
-    jobs: 
+    jobs:
       - integration-tests
       - unit-tests
