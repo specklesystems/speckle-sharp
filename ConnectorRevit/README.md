@@ -17,16 +17,6 @@ This repo holds the Speckle 2.0 Revit Connector. It is currently in ⚠ALPHA⚠ 
 
 ### Getting Started
 
-#### Dependencies
-
-The C# projects have local dependencies. In the future, these will be referenced as NuGet packages, but for the time being make sure also to clone the following repos in a folder adjacent to the one of this repo:
-
-- [Core](https://github.com/specklesystems/Core)
-- [Objects](https://github.com/specklesystems/Objects)
-- [DesktopUI](https://github.com/specklesystems/DesktopUI)
-
-It'd be a good idea to clone all the Speckle repos you're working on in one folder.
-
 #### Server
 
 In order to test Speckle in all its glory, you'll need a server running. You can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server)
