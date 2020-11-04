@@ -48,7 +48,6 @@ namespace Speckle.DesktopUI.Streams
     private BindableCollection<StreamState> _streamList;
     private Stream _selectedStream;
     private Branch _selectedBranch;
-
     private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
 
     public BindableCollection<StreamState> StreamList

@@ -5,14 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Speckle.Core.Credentials;
+using Stylet;
 
 namespace Speckle.DesktopUI.Accounts
 {
   public class AccountsRepository
   {
-    public ObservableCollection<Account> LoadAccounts()
+    public BindableCollection<Account> LoadAccounts()
     {
-      return new ObservableCollection<Account>(AccountManager.GetAccounts());
+      return new BindableCollection<Account>(AccountManager.GetAccounts());
     }
 
     public Account GetDefault()

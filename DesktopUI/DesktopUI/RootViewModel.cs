@@ -102,6 +102,7 @@ namespace Speckle.DesktopUI
       e.Cancel = true;
       // refocusing window with `.Show()` should be handled by individual connectors
       // can be accessed through `Application.Current.MainWindow.Show()`
+      // TODO maybe change this to be a notify icon? http://www.hardcodet.net/wpf-notifyicon
       sender.Hide();
     }
   }
