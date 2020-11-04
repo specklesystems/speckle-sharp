@@ -1,4 +1,4 @@
-﻿using Grasshopper.Kernel.Types;
+using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Rhino.Geometry;
 using Speckle.Core.Models;
@@ -12,6 +12,7 @@ using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
+using ControlPoint = Objects.Geometry.ControlPoint;
 using Curve = Objects.Geometry.Curve;
 using Ellipse = Objects.Geometry.Ellipse;
 using Extrusion = Objects.Geometry.Extrusion;
@@ -719,6 +720,72 @@ namespace Objects.Converter.RhinoGh
       if (L.Count == LN) { L.Add(nurbs); }
 
       return true;
+    }
+    public static NurbsSurface ToNative(this Geometry.Surface surface)
+    { 
+      // Create rhino surface
+      var result = NurbsSurface.Create(3, surface.rational, surface.degreeU + 1, surface.degreeV + 1,
+        surface.points.Count, surface.points[0].Count);
+      
+      // Set knot vectors
+      for (int i = 0; i < surface.knotsU.Count; i++)
+      {
+        result.KnotsU[i] = surface.knotsU[i];
+      }
+      for (int i = 0; i < surface.knotsV.Count; i++)
+      {
+        result.KnotsV[i] = surface.knotsV[i];
+      }
+      
+      // Set control points
+      for (var i = 0; i < surface.points.Count; i++)
+      {
+        for (var j = 0; j < surface.points[i].Count; j++)
+        {
+          var pt = surface.points[i][j];
+          result.Points.SetPoint(i, j, pt.x, pt.y, pt.z);
+          result.Points.SetWeight(i, j, pt.weight);
+        }
+      }
+      
+      // Return surface
+      return result;
+    }
+    
+    public static Geometry.Surface ToSpeckle(this NurbsSurface surface)
+    {
+      var result = new Geometry.Surface(RH.Mesh.CreateFromSurface(surface).ToSpeckle());
+      result.degreeU = surface.OrderU - 1;
+      result.degreeV = surface.OrderV - 1;
+      
+      // TODO: Unsure if we need this three properties
+      result.rational = surface.IsRational;
+      result.closedU = surface.IsClosed(0);
+      result.closedV = surface.IsClosed(1);
+      
+      // Set domains
+      result.domainU = surface.Domain(0).ToSpeckle();
+      result.domainV = surface.Domain(1).ToSpeckle();
+      
+      // Set control points
+      result.points = new List<List<ControlPoint>>();
+      for (var i = 0; i < surface.Points.CountU; i++)
+      {
+        var row = new List<ControlPoint>();
+        for (var j = 0; j < surface.Points.CountV; j++)
+        {
+          var pt = surface.Points.GetControlPoint(i,j);
+          var pos = pt.Location;
+          row.Add(new ControlPoint(pos.X,pos.Y,pos.Z,pt.Weight));
+        }
+        result.points.Add(row);
+      }
+      
+      // Set knot vectors
+      result.knotsU = surface.KnotsU.ToList();
+      result.knotsV = surface.KnotsV.ToList();
+
+      return result;
     }
   }
 }
