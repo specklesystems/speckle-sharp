@@ -144,22 +144,12 @@
           Height="40"
           Margin="0,16,0,8"
           HorizontalAlignment="Stretch"
-          Command="{x:Static md:DialogHost.OpenDialogCommand}"
+          Command="{s:Action OpenHelpLink}"
+          CommandParameter="speckle://account"
           Content="Manage Accounts"
+          ToolTip="Open the Speckle Manager"
           Foreground="#FFfafafa"
           Style="{StaticResource SoftFlatMidBgButton}">
-          <Button.CommandParameter>
-            <StackPanel Margin="24">
-              <TextBlock Margin="0,8" Text="👻 this doesn't work yet..." />
-              <Button
-                Margin="0,12,0,0"
-                HorizontalAlignment="Center"
-                Command="{x:Static md:DialogHost.CloseDialogCommand}"
-                Content="CANCEL"
-                IsCancel="True"
-                Style="{StaticResource SoftFlatButton}" />
-            </StackPanel>
-          </Button.CommandParameter>
         </Button>
 
         <Separator Margin="0,8" />

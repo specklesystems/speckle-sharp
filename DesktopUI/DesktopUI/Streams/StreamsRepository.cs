@@ -136,8 +136,9 @@ namespace Speckle.DesktopUI.Streams
       };
 
       #endregion
-
-      var client = new Client(AccountManager.GetDefaultAccount());
+      var client = AccountManager.GetDefaultAccount() != null
+        ? new Client(AccountManager.GetDefaultAccount())
+        : new Client();
       foreach ( var stream in testStreams )
       {
         collection.Add(new StreamState(client, stream));
@@ -180,8 +181,9 @@ namespace Speckle.DesktopUI.Streams
       }
       catch ( Exception e )
       {
-        if (e is HttpRequestException)
-          _bindings.RaiseNotification($"Sorry, we could not connect to the server: {state.Client.ServerUrl}. Please ensure the server is online.");
+        if ( e is HttpRequestException )
+          _bindings.RaiseNotification(
+            $"Sorry, we could not connect to the server: {state.Client.ServerUrl}. Please ensure the server is online.");
         Log.CaptureException(e);
         return null;
       }
