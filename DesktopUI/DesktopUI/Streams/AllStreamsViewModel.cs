@@ -12,7 +12,7 @@ using Stylet;
 namespace Speckle.DesktopUI.Streams
 {
   public class AllStreamsViewModel : Screen, IHandle<StreamAddedEvent>, IHandle<StreamUpdatedEvent>, IHandle<
-    StreamRemovedEvent>, IHandle<ApplicationEvent>
+    StreamRemovedEvent>, IHandle<ApplicationEvent>, IHandle<ReloadRequestedEvent>
   {
     private readonly IViewManager _viewManager;
     private readonly IStreamViewModelFactory _streamViewModelFactory;
@@ -36,11 +36,8 @@ namespace Speckle.DesktopUI.Streams
       _dialogFactory = dialogFactory;
       _bindings = bindings;
 
-      _streamList = new BindableCollection<StreamState>(_bindings.GetFileContext());
-#if DEBUG
-      if ( _streamList.Count == 0 )
-        _streamList = _repo.LoadTestStreams();
-#endif
+      StreamList = LoadStreams();
+
       _events.Subscribe(this);
     }
 
@@ -66,6 +63,15 @@ namespace Speckle.DesktopUI.Streams
     {
       get => _selectedBranch;
       set => SetAndNotify(ref _selectedBranch, value);
+    }
+
+    private BindableCollection<StreamState> LoadStreams()
+    {
+      var streams = new BindableCollection<StreamState>(_bindings.GetFileContext());
+      if ( streams.Count == 0 )
+        streams = _repo.LoadTestStreams();
+
+      return streams;
     }
 
     public void ShowStreamInfo(StreamState state)
@@ -195,6 +201,11 @@ namespace Speckle.DesktopUI.Streams
         default:
           return;
       }
+    }
+
+    public void Handle(ReloadRequestedEvent message)
+    {
+      StreamList = LoadStreams();
     }
   }
 }

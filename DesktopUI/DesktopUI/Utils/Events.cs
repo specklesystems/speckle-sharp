@@ -18,6 +18,10 @@ namespace Speckle.DesktopUI.Utils
   {
   }
 
+  public class ReloadRequestedEvent : EventBase
+  {
+  }
+
   public class StreamAddedEvent : EventBase
   {
     public StreamState NewStream { get; set; }
