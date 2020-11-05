@@ -7,7 +7,6 @@
     <AssemblyName>Objects</AssemblyName>
     <Company>Speckle</Company>
     <Authors>AEC Systems</Authors>
-    
   </PropertyGroup>
   
   <ItemGroup>

@@ -13,19 +13,21 @@ namespace Objects.Geometry
   {
     public int degreeU { get; set; }
     public int degreeV { get; set; }
-    public bool rational { get; set; } 
+    public bool rational { get; set; }
+    
+    // TODO: Rewrite this to be store as a list<double>
     public List<List<ControlPoint>> points { get; set; }
     public List<double> knotsU { get; set; }
     public List<double> knotsV { get; set; }
     public Interval domainU { get; set; }
     public Interval domainV { get; set; }
-    public Mesh displayValue { get; set; }
+    //public Mesh displayValue { get; set; }
     public bool closedU { get; set; }
     public bool closedV { get; set; }
 
     public Surface(Mesh poly, string applicationId = null)
     {
-      this.displayValue = poly;
+      //this.displayValue = poly;
       this.applicationId = applicationId;
     }
   }

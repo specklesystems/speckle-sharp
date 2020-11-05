@@ -348,6 +348,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
-ConnectorDynamo/.idea/
-ConnectorDynamo/ConnectorDynamo/GPUCache/
-ConnectorDynamo/ConnectorDynamo/dist/
+
+**/GPUCache/
+**/dist/

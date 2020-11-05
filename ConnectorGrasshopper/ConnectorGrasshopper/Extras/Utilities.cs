@@ -119,14 +119,7 @@ namespace ConnectorGrasshopper.Extras
       {
         return value;
       }
-      // TODO: Possible hack... check with Dimitrie!
-      if (value is Brep brep && brep.IsSurface)
-      {
-        // If a brep 'isSurface' means it only has one face and the trim is the boundary.
-        // Basically... it's a nurbs surface! Flip the brep for the nurbs in `value` before trying to convert.
-        var list = brep.Surfaces.ToList();
-        value = list[0];
-      }
+
       if (converter.CanConvertToSpeckle(value))
       {
         return converter.ConvertToSpeckle(value);

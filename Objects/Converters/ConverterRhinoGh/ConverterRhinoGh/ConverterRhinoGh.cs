@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Rhino;
+using Rhino.Geometry;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -27,6 +28,14 @@ namespace Objects.Converter.RhinoGh
 
     public Base ConvertToSpeckle(object @object)
     {
+      // TODO: Possible hack... check with Dimitrie!
+      if (@object is Brep brep && brep.IsSurface)
+      {
+        // If a brep 'isSurface' means it only has one face and the trim is the boundary.
+        // Basically... it's a nurbs surface! Flip the brep for the nurbs in `value` before trying to convert.
+        var list = brep.Surfaces.ToList();
+        @object = list[0];
+      }
       var m = ConversionMethods(@object, "ToSpeckle");
       
       if (m == null)
