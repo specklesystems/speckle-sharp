@@ -836,7 +836,7 @@ namespace Objects.Converter.Dynamo
 
     public static Surface ToSpeckle(this DS.NurbsSurface surface)
     {
-      var result = new Surface(null,null);
+      var result = new Surface();
       // Set control points
       var dsPoints = surface.ControlPoints();
       var dsWeights = surface.Weights();
@@ -852,7 +852,7 @@ namespace Objects.Converter.Dynamo
         }
         points.Add(row);
       }
-      result.points = points;
+      result.SetControlPoints(points);
       
       // Set degree
       result.degreeU = surface.DegreeU;
