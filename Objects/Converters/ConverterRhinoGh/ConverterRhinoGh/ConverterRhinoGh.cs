@@ -32,7 +32,7 @@ namespace Objects.Converter.RhinoGh
       if (@object is Brep brep && brep.IsSurface)
       {
         // If a brep 'isSurface' means it only has one face and the trim is the boundary.
-        // Basically... it's a nurbs surface! Flip the brep for the nurbs in `value` before trying to convert.
+        // Basically... it's a nurbs surface! Flip the brep for the nurbs in `@object` before trying to convert.
         var list = brep.Surfaces.ToList();
         @object = list[0];
       }

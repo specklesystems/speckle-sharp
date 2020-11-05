@@ -724,8 +724,9 @@ namespace Objects.Converter.RhinoGh
     public static NurbsSurface ToNative(this Geometry.Surface surface)
     { 
       // Create rhino surface
+      var points = surface.GetControlPoints();
       var result = NurbsSurface.Create(3, surface.rational, surface.degreeU + 1, surface.degreeV + 1,
-        surface.points.Count, surface.points[0].Count);
+        points.Count, points[0].Count);
       
       // Set knot vectors
       for (int i = 0; i < surface.knotsU.Count; i++)
@@ -738,11 +739,11 @@ namespace Objects.Converter.RhinoGh
       }
       
       // Set control points
-      for (var i = 0; i < surface.points.Count; i++)
+      for (var i = 0; i < points.Count; i++)
       {
-        for (var j = 0; j < surface.points[i].Count; j++)
+        for (var j = 0; j < points[i].Count; j++)
         {
-          var pt = surface.points[i][j];
+          var pt = points[i][j];
           result.Points.SetPoint(i, j, pt.x, pt.y, pt.z);
           result.Points.SetWeight(i, j, pt.weight);
         }
@@ -754,7 +755,7 @@ namespace Objects.Converter.RhinoGh
     
     public static Geometry.Surface ToSpeckle(this NurbsSurface surface)
     {
-      var result = new Geometry.Surface(RH.Mesh.CreateFromSurface(surface).ToSpeckle());
+      var result = new Geometry.Surface();
       result.degreeU = surface.OrderU - 1;
       result.degreeV = surface.OrderV - 1;
       
@@ -767,8 +768,8 @@ namespace Objects.Converter.RhinoGh
       result.domainU = surface.Domain(0).ToSpeckle();
       result.domainV = surface.Domain(1).ToSpeckle();
       
-      // Set control points
-      result.points = new List<List<ControlPoint>>();
+      // Set control point data
+      var points = new List<List<ControlPoint>>();
       for (var i = 0; i < surface.Points.CountU; i++)
       {
         var row = new List<ControlPoint>();
@@ -778,9 +779,11 @@ namespace Objects.Converter.RhinoGh
           var pos = pt.Location;
           row.Add(new ControlPoint(pos.X,pos.Y,pos.Z,pt.Weight));
         }
-        result.points.Add(row);
+
+        points.Add(row);
       }
-      
+
+      result.SetControlPoints(points);
       // Set knot vectors
       result.knotsU = surface.KnotsU.ToList();
       result.knotsV = surface.KnotsV.ToList();
