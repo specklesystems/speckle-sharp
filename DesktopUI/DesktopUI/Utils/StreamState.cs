@@ -45,14 +45,14 @@ namespace Speckle.DesktopUI.Utils
       Client = new Client(account);
     }
 
-    private  Client _client;
+    private Client _client;
 
     public Client Client
     {
       get => _client;
       set
       {
-        if (value.AccountId == null) return;
+        if ( value.AccountId == null ) return;
         _client = value;
         AccountId = Client.AccountId;
         ServerUrl = Client.ServerUrl;
@@ -76,7 +76,7 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
-    private  ISelectionFilter _filter;
+    private ISelectionFilter _filter;
 
     public ISelectionFilter Filter
     {
@@ -138,8 +138,7 @@ namespace Speckle.DesktopUI.Utils
 
     internal void Initialise()
     {
-      if (Stream == null) return;
-      if (Client?.AccountId == null) return;
+      if ( Stream == null || Client?.AccountId == null ) return;
 
       Client.SubscribeStreamUpdated(Stream.id);
       Client.SubscribeCommitCreated(Stream.id);
@@ -161,7 +160,7 @@ namespace Speckle.DesktopUI.Utils
 
     private void HandleCommitCreated(object sender, CommitInfo info)
     {
-      if (LatestCommit().id == info.id) return;
+      if ( LatestCommit().id == info.id ) return;
       ServerUpdates = true;
     }
 
@@ -176,6 +175,7 @@ namespace Speckle.DesktopUI.Utils
         ServerUpdates = true;
         return;
       }
+
       commit.message = info.message;
       NotifyOfPropertyChange(nameof(Stream));
     }
@@ -188,6 +188,7 @@ namespace Speckle.DesktopUI.Utils
         Log.CaptureException(new SpeckleException($"Could not find branch {branchName} on stream {Stream.id}"));
         return null;
       }
+
       var commits = branch.commits.items;
       return commits.Any() ? commits[ 0 ] : null;
     }
