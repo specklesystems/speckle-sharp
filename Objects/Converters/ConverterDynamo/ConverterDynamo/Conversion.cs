@@ -824,17 +824,31 @@ namespace Objects.Converter.Dynamo
 
     #endregion
 
-    public static DS.NurbsSurface ToNative(this Surface surface)
+    public static NurbsSurface ToNative(this Surface surface)
     {
       var points = new DS.Point[][] { };
       var weights = new double[][] { };
 
-      var result = DS.NurbsSurface.ByControlPointsWeightsKnots(points, weights, surface.knotsU.ToArray(), surface.knotsV.ToArray(),
+      var controlPoints = surface.GetControlPoints();
+
+      points = controlPoints.Select(row => row.Select(pt => DS.Point.ByCoordinates(pt.x, pt.y, pt.z)).ToArray())
+        .ToArray();
+      weights = controlPoints.Select(row => row.Select(pt => pt.weight).ToArray()).ToArray();
+      
+      var knotsU = surface.knotsU;
+      knotsU.Insert(0, knotsU[0]);
+      knotsU.Add(knotsU[knotsU.Count - 1]);
+      
+      var knotsV = surface.knotsV;
+      knotsV.Insert(0, knotsV[0]);
+      knotsV.Add(knotsV[knotsV.Count - 1]);
+      
+      var result = DS.NurbsSurface.ByControlPointsWeightsKnots(points, weights, knotsU.ToArray(), surface.knotsV.ToArray(),
         surface.degreeU, surface.degreeV);
       return result;
     }
 
-    public static Surface ToSpeckle(this DS.NurbsSurface surface)
+    public static Surface ToSpeckle(this NurbsSurface surface)
     {
       var result = new Surface();
       // Set control points
@@ -848,20 +862,22 @@ namespace Objects.Converter.Dynamo
         {
           var dsPoint = dsPoints[i][j];
           var dsWeight = dsWeights[i][j];
-          row.Add(new ControlPoint(dsPoint.X,dsPoint.Y,dsPoint.Z,dsWeight,null));
+          row.Add(new ControlPoint(dsPoint.X, dsPoint.Y, dsPoint.Z, dsWeight, null));
         }
+
         points.Add(row);
       }
+
       result.SetControlPoints(points);
-      
+
       // Set degree
       result.degreeU = surface.DegreeU;
       result.degreeV = surface.DegreeV;
-      
+
       // Set knot vectors
       result.knotsU = surface.UKnots().ToList();
       result.knotsV = surface.VKnots().ToList();
-      
+
       // Set other
       result.rational = surface.IsRational;
       result.closedU = surface.ClosedInU;
@@ -869,7 +885,7 @@ namespace Objects.Converter.Dynamo
 
       return result;
     }
-    
+
     #region Helper Methods
 
     public static double[] ToArray(this DS.Point pt)
