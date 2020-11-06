@@ -290,6 +290,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         {
           hasErrors = true;
           Message = e.InnerException != null ? e.InnerException.Message : e.Message;
+          Message = Message.Contains("401") ? "Not authorized" : Message;
           _cancellationToken.Cancel();
         }
 
@@ -306,12 +307,15 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       }
       catch (Exception e)
       {
-        _cancellationToken.Cancel();
-        Message = e.InnerException != null ? e.InnerException.Message : e.Message;
-        //temp exclusion of core bug
-        if (!(e.InnerException != null && e.InnerException.Message ==
-          "Cannot resolve reference. The provided transport could not find it."))
-          Core.Logging.Log.CaptureAndThrow(e);
+        if (!_cancellationToken.IsCancellationRequested)
+        {
+          _cancellationToken.Cancel();
+          Message = e.InnerException != null ? e.InnerException.Message : e.Message;
+          //temp exclusion of core bug
+          if (!(e.InnerException != null && e.InnerException.Message ==
+            "Cannot resolve reference. The provided transport could not find it."))
+            Core.Logging.Log.CaptureAndThrow(e);
+        }
       }
       finally
       {

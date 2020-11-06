@@ -240,7 +240,7 @@ namespace Speckle.ConnectorDynamo.SendNode
 
         void ProgressAction(ConcurrentDictionary<string, int> dict)
         {
-          var val = (double) dict.Values.Average() / totalCount;
+          var val = (double)dict.Values.Average() / totalCount;
           Message = val.ToString("0%");
           Progress = val * 100;
         }
@@ -251,7 +251,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         {
           hasErrors = true;
           Message = e.InnerException != null ? e.InnerException.Message : e.Message;
-          Message = Message.Contains("401") ? "Not enough permissions" : Message;
+          Message = Message.Contains("401") ? "Not authorized" : Message;
           _cancellationToken.Cancel();
         }
 
@@ -442,7 +442,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       {
         //_objectCount is updated when the RecurseInput function loops through the data, not ideal but it works
         //if we're dealing with a single Base (preconverted obj) use GetTotalChildrenCount to count its children
-        _objectCount = (int) @base.GetTotalChildrenCount();
+        _objectCount = (int)@base.GetTotalChildrenCount();
         //exclude wrapper obj.... this is a bit of a hack...
         if (_objectCount > 1) _objectCount--;
       }
@@ -466,7 +466,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       var data = inputMirror.GetData();
       var value = RecurseInput(data, count);
 
-      return (T) value;
+      return (T)value;
     }
 
     private object RecurseInput(MirrorData data, bool count)
@@ -555,9 +555,9 @@ namespace Speckle.ConnectorDynamo.SendNode
 
       var dataFunctionCall = AstFactory.BuildFunctionCall(
         new Func<string, object>(Functions.Functions.SendData),
-        new List<AssociativeNode> {AstFactory.BuildStringNode(_outputInfo)});
+        new List<AssociativeNode> { AstFactory.BuildStringNode(_outputInfo) });
 
-      return new[] {AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), dataFunctionCall)};
+      return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), dataFunctionCall) };
     }
 
     #endregion
