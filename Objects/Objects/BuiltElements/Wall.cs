@@ -6,13 +6,14 @@ using System.Text;
 
 namespace Objects
 {
-  public class Wall :Element
+  
+  public class Wall : Element
   {
     public double height { get; set; }
-    public Wall()
-    {
-      
-    }
+
+    public ICurve baseLine { get; set; }
+
+    public Wall() { }
 
   }
 }

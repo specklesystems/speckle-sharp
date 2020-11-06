@@ -8,6 +8,7 @@ namespace Objects
 {
   public class Floor : Element
   {
+    public Poly outline ;
     public List<ICurve> holes { get; set; } = new List<ICurve>();
     public Floor()
     {
