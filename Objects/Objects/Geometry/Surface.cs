@@ -30,7 +30,7 @@ namespace Objects.Geometry
 
         for (var i = 0; i < pointData.Count; i += 4)
         {
-          var uIndex = i / 4 % countU;
+          var uIndex = i  / (countV * 4);
           matrix[uIndex]
             .Add(new ControlPoint(pointData[i], pointData[i + 1], pointData[i + 2], pointData[i + 3]));
         }
