@@ -268,7 +268,7 @@
   </UserControl.Resources>
 
   <Grid>
-    <Grid Margin="20,0,20,100">
+    <Grid Margin="0,0,0,100">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
@@ -283,12 +283,12 @@
         IsIndeterminate="False"
         Maximum="{Binding Progress.Maximum, Mode=OneWay}"
         Value="{Binding Progress.Value, Mode=OneWay}" />-->
-      <TextBlock Grid.Row="1"
+      <!--<TextBlock Grid.Row="1"
                  Padding="5,0,5,10"
                  HorizontalAlignment="Left"
                  FontSize="24"
                  Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-                 Text="STREAMS" />
+                 Text="STREAMS" />-->
 
       <ScrollViewer Grid.Row="2"
                     HorizontalScrollBarVisibility="Disabled"

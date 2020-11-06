@@ -44,7 +44,7 @@
           </Grid.RowDefinitions>
 
           <ToggleButton Grid.Row="0"
-                        Margin="16"
+                        Margin="2"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         IsChecked="{Binding ElementName=MenuToggleButton, Path=IsChecked, Mode=TwoWay}"
