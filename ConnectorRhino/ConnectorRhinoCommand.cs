@@ -22,29 +22,44 @@ namespace SpeckleRhino
 
     public override string EnglishName => "Speckle";
 
+    public static Bootstrapper Bootstrapper { get; set; }
+
     public SpeckleCommand()
     {
     }
 
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
-      var bootstrapper = new Bootstrapper()
+      StartOrShowPanel(doc);
+      return Result.Success;
+    }
+
+    private void StartOrShowPanel(RhinoDoc doc)
+    {
+      if (Bootstrapper != null)
       {
-        Bindings = new ConnectorBindingsRhino(doc)
+        Bootstrapper.Application.MainWindow.Show();
+        return;
+      }
+
+      Bootstrapper = new Bootstrapper()
+      {
+        Bindings = new ConnectorBindingsRhino()
       };
 
       if (Application.Current == null) new Application();
 
-      var app = Application.Current;
+      Bootstrapper.Setup(Application.Current);
+      Bootstrapper.Start(new string[] { });
 
-      var rhApp = Rhino.RhinoApp.MainWindowHandle();
-      bootstrapper.Setup(Application.Current);
-      bootstrapper.Start(new string[] { });
+      Bootstrapper.Application.MainWindow.Closing += (object sender, System.ComponentModel.CancelEventArgs e) =>
+      {
+        Bootstrapper.Application.MainWindow.Hide();
+        e.Cancel = true;
+      };
 
-      var helper = new System.Windows.Interop.WindowInteropHelper(bootstrapper.Application.MainWindow);
-      helper.Owner = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
-
-      return Result.Success;
+      var helper = new System.Windows.Interop.WindowInteropHelper(Bootstrapper.Application.MainWindow);
+      helper.Owner = RhinoApp.MainWindowHandle();
     }
   }
 

@@ -1,24 +1,68 @@
-﻿using Rhino;
+﻿using Newtonsoft.Json;
+using Rhino;
 using Speckle.Core.Models;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace SpeckleRhino
 {
   class ConnectorBindingsRhino : ConnectorBindings
   {
 
-    public RhinoDoc RhinoDoc { get; set; }
+    public RhinoDoc Doc { get => Rhino.RhinoDoc.ActiveDoc; }
 
-    public ConnectorBindingsRhino(RhinoDoc rhinoDoc)
+    public Timer SelectionTimer;
+
+    public ConnectorBindingsRhino()
     {
-      RhinoDoc = rhinoDoc;
+      Rhino.RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+
+      SelectionTimer = new Timer(500) { AutoReset = true, Enabled = true };
+      SelectionTimer.Elapsed += SelectionTimer_Elapsed;
+      SelectionTimer.Start();
+
+      var streamStates = GetFileContext();
+
+      var appEvent = new ApplicationEvent()
+      {
+        Type = ApplicationEvent.EventType.DocumentOpened,
+        DynamicInfo = streamStates
+      };
+
+      NotifyUi(appEvent);
     }
 
+    private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
+    {
+      if (Doc == null) return;
+
+      var selection = GetSelectedObjects();
+
+      NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selection.Count });
+      NotifyUi(new UpdateSelectionEvent() { ObjectIds = selection });
+    }
+
+    private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
+    {
+      if (e.Document == null) return;
+
+      var streamStates = GetFileContext();
+
+      var appEvent = new ApplicationEvent()
+      {
+        Type = ApplicationEvent.EventType.DocumentOpened,
+        DynamicInfo = streamStates
+      };
+
+      NotifyUi(appEvent);
+    }
+
+    // TODO: ask izzy when this is called/used?
     public override void AddExistingStream(string args)
     {
       //throw new NotImplementedException();
@@ -26,7 +70,8 @@ namespace SpeckleRhino
 
     public override void AddNewStream(StreamState state)
     {
-      //throw new NotImplementedException();
+      var stateee = JsonConvert.SerializeObject(state);
+      Doc.Strings.SetString("speckle", state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
     public override void AddObjectsToClient(string args)
@@ -41,7 +86,7 @@ namespace SpeckleRhino
 
     public override string GetActiveViewName()
     {
-      return RhinoDoc.Views.ActiveView.ActiveViewport.Name;
+      return Doc.Views.ActiveView.ActiveViewport.Name;
     }
 
     public override string GetApplicationHostName()
@@ -51,43 +96,53 @@ namespace SpeckleRhino
 
     public override string GetDocumentId()
     {
-      return Utilities.hashString("X" + RhinoDoc?.Path + RhinoDoc?.Name, Utilities.HashingFuctions.MD5);
+      return Utilities.hashString("X" + Doc?.Path + Doc?.Name, Utilities.HashingFuctions.MD5);
     }
 
     public override string GetDocumentLocation()
     {
-      return RhinoDoc?.Path;
+      return Doc?.Path;
     }
 
     public override List<StreamState> GetFileContext()
     {
-      return new List<StreamState>();
+      var strings = Doc.Strings.GetEntryNames("speckle");
+
+      return strings.Select(s => JsonConvert.DeserializeObject<StreamState>(Doc.Strings.GetValue("speckle", s))).ToList();
     }
 
     public override string GetFileName()
     {
-      return RhinoDoc?.Name;
+      return Doc?.Name;
     }
 
     public override List<string> GetObjectsInView()
     {
-      return new List<string>();
+      var objs = Doc.Objects.GetSelectedObjects(true, false).Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
+
+      return objs;
     }
 
     public override List<string> GetSelectedObjects()
     {
-      return new List<string>();
+      var objs = Doc.Objects.GetSelectedObjects(true, false).Select(obj => obj.Id.ToString()).ToList();
+      return objs;
     }
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
-      return new List<ISelectionFilter>();
-      //throw new NotImplementedException();
+      var layers = Doc.Layers.ToList().Select(layer => layer.Name).ToList();
+      return new List<ISelectionFilter>()
+      {
+         new ElementsSelectionFilter { Name = "Selection", Icon = "Mouse", Selection = GetSelectedObjects()},
+         new ListSelectionFilter { Name = "Layers", Icon = "FilterList", Values = layers }
+      };
     }
 
     public override Task<StreamState> ReceiveStream(StreamState state)
     {
-      throw new NotImplementedException();
+      // TODO: implement
+      return Task.Run(() => new StreamState());
     }
 
     public override void RemoveObjectsFromClient(string args)
@@ -100,9 +155,10 @@ namespace SpeckleRhino
       throw new NotImplementedException();
     }
 
-    public override void RemoveStream(string args)
+    // TODO: remark: never hit as gql errors. @izzylys: ui should not delete streams from the server, rather just from the file?
+    public override void RemoveStream(string streamId)
     {
-      throw new NotImplementedException();
+      Doc.Strings.Delete("speckle", streamId);
     }
 
     public override void SelectClientObjects(string args)
@@ -117,7 +173,7 @@ namespace SpeckleRhino
 
     public override void UpdateStream(StreamState state)
     {
-      throw new NotImplementedException();
+      Doc.Strings.SetString("speckle", state.Stream.id, JsonConvert.SerializeObject(state));
     }
   }
 }
