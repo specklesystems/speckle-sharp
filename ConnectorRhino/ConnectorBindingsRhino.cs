@@ -25,8 +25,6 @@ namespace SpeckleRhino
       SelectionTimer = new Timer(500) { AutoReset = true, Enabled = true };
       SelectionTimer.Elapsed += SelectionTimer_Elapsed;
       SelectionTimer.Start();
-
-      GetFileContextAndNotifyUI();
     }
 
     private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -44,6 +42,7 @@ namespace SpeckleRhino
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
     {
+      if (e.Merge) return; // copy pastes, imports, etc.
       if (e.Document == null)
       {
         return;
@@ -52,7 +51,7 @@ namespace SpeckleRhino
       GetFileContextAndNotifyUI();
     }
 
-    private void GetFileContextAndNotifyUI()
+    public void GetFileContextAndNotifyUI()
     {
       var streamStates = GetFileContext();
 
@@ -89,7 +88,14 @@ namespace SpeckleRhino
 
     public override string GetActiveViewName()
     {
-      return Doc.Views.ActiveView.ActiveViewport.Name;
+      return "Entire Document";
+    }
+
+    public override List<string> GetObjectsInView()
+    {
+      var objs = Doc.Objects.GetSelectedObjects(true, false).Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
+
+      return objs;
     }
 
     public override string GetApplicationHostName()
@@ -119,12 +125,7 @@ namespace SpeckleRhino
       return Doc?.Name;
     }
 
-    public override List<string> GetObjectsInView()
-    {
-      var objs = Doc.Objects.GetSelectedObjects(true, false).Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
 
-      return objs;
-    }
 
     public override List<string> GetSelectedObjects()
     {
@@ -138,6 +139,7 @@ namespace SpeckleRhino
       return new List<ISelectionFilter>()
       {
          new ElementsSelectionFilter { Name = "Selection", Icon = "Mouse", Selection = GetSelectedObjects()},
+         new ListSelectionFilter { Name = "Layers", Icon = "FilterList", Values = layers, Selection = new List<string>(){ } },
          new ListSelectionFilter { Name = "Layers", Icon = "FilterList", Values = layers }
       };
     }
@@ -145,7 +147,7 @@ namespace SpeckleRhino
     public override Task<StreamState> ReceiveStream(StreamState state)
     {
       // TODO: implement
-      return Task.Run(() => new StreamState());
+      return Task.Run(() => state);
     }
 
     public override void RemoveObjectsFromClient(string args)
@@ -171,11 +173,23 @@ namespace SpeckleRhino
 
     public override Task<StreamState> SendStream(StreamState state)
     {
-      throw new NotImplementedException();
+      return Task.Run(() => state);
     }
 
     public override void UpdateStream(StreamState state)
     {
+      var filter = state.Filter;
+      var objects = new List<Base>();
+
+      switch(state.Filter)
+      {
+        case ElementsSelectionFilter selFilter:
+          objects = selFilter.Selection.Select(id => new Base { applicationId = id }).ToList();
+          break;
+        case ListSelectionFilter selFilter:
+          break;
+      }
+      state.Placeholders = objects;
       Doc.Strings.SetString("speckle", state.Stream.id, JsonConvert.SerializeObject(state));
     }
   }

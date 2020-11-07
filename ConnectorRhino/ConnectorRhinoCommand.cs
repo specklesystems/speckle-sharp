@@ -1,24 +1,34 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using Rhino;
+﻿using Rhino;
 using Rhino.Commands;
-using RhinoWindows;
-using Rhino.Input.Custom;
 using Rhino.PlugIns;
-using Rhino.UI;
 using Speckle.DesktopUI;
-using System.Drawing;
 using System.Windows;
 
 namespace SpeckleRhino
 {
-  public class RhinoConnector : PlugIn
+  public class SpeckleRhinoConnectorPlugin : PlugIn
   {
+    public static SpeckleRhinoConnectorPlugin Instance { get; private set; }
+
+    public SpeckleRhinoConnectorPlugin()
+    {
+      Instance = this;
+      RhinoApp.Idle += RhinoApp_Idle;
+    }
+
+    // Makes speckle start on rhino startup. Perhaps this should be customisable? 
+    private void RhinoApp_Idle(object sender, System.EventArgs e)
+    {
+      RhinoApp.Idle -= RhinoApp_Idle;
+      RhinoApp.RunScript("_Speckle", false);
+    }
+
+    public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
   }
 
   public class SpeckleCommand : Command
   {
-    public static SpeckleCommand Instance { get; set; }
+    public static SpeckleCommand Instance { get; private set; }
 
     public override string EnglishName => "Speckle";
 
@@ -26,15 +36,16 @@ namespace SpeckleRhino
 
     public SpeckleCommand()
     {
+      Instance = this;
     }
 
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
-      StartOrShowPanel(doc);
+      StartOrShowPanel();
       return Result.Success;
     }
 
-    private void StartOrShowPanel(RhinoDoc doc)
+    private void StartOrShowPanel()
     {
       if (Bootstrapper != null)
       {
@@ -47,10 +58,18 @@ namespace SpeckleRhino
         Bindings = new ConnectorBindingsRhino()
       };
 
-      if (Application.Current == null) new Application();
+      if (Application.Current == null)
+      {
+        new Application();
+      }
 
       Bootstrapper.Setup(Application.Current);
       Bootstrapper.Start(new string[] { });
+
+      Bootstrapper.Application.MainWindow.Initialized += (o, e) =>
+      {
+        ((ConnectorBindingsRhino)Bootstrapper.Bindings).GetFileContextAndNotifyUI();
+      };
 
       Bootstrapper.Application.MainWindow.Closing += (object sender, System.ComponentModel.CancelEventArgs e) =>
       {
