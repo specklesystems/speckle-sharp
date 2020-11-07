@@ -11,30 +11,30 @@ namespace Objects
   /// </summary>
   public interface IGeometry
   {
-    string linearUnits { get; set; } // all
+    string linearUnits { get; set; }
   }
 
   public interface I3DGeometry : IGeometry
   {
-    Box boundingBox { get; set; } // 2d & 3d stuff
+    Box boundingBox { get; set; }
 
-    Point center { get; set; } // 2d & 3d stuff
+    Point center { get; set; }
 
-    double volume { get; set; } // 3d-ish stuff
+    double volume { get; set; }
 
-    double area { get; set; } // 2d & 3d stuff
+    double area { get; set; }
 
   }
 
   public interface I2DGeometry : IGeometry
   {
-    Box boundingBox { get; set; } // 2d & 3d stuff
+    Box boundingBox { get; set; }
 
-    Point center { get; set; } // 2d & 3d stuff
+    Point center { get; set; }
 
-    double area { get; set; } // 2d & 3d stuff
+    double area { get; set; }
 
-    double length { get; set; } // 2d stuff (linear)
+    double length { get; set; }
   }
 
 
