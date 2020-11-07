@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Objects.BuiltElements;
 
 namespace Objects.Revit
 {
@@ -49,7 +50,7 @@ namespace Objects.Revit
 
     public static RevitCategory GetCategory(string builtInCategory)
     {
-      
+
       return (RevitCategory)List.IndexOf(builtInCategory);
     }
 

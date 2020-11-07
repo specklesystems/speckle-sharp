@@ -1,12 +1,14 @@
-﻿using System;
+﻿using Objects.BuiltElements;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Objects.Revit
 {
-  public class RevitDuct : Duct
+  public class AdaptiveComponent : Element
   {
     public string family { get; set; }
+    public bool flipped { get; set; }
     public Dictionary<string, object> parameters { get; set; }
   }
 }

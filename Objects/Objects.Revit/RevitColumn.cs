@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Objects.BuiltElements;
 
 namespace Objects.Revit
 {
@@ -10,6 +11,6 @@ namespace Objects.Revit
     public Level topLevel { get; set; }
     public double baseOffset { get; set; }
     public double topOffset { get; set; }
-    public Dictionary<string,object> parameters { get; set; }
+    public Dictionary<string, object> parameters { get; set; }
   }
 }
