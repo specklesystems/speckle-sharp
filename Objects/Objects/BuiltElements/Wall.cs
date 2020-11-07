@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Objects
+namespace Objects.BuiltElements
 {
-  
+
   public class Wall : Element
   {
     public double height { get; set; }

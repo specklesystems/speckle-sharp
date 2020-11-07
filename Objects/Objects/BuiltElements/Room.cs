@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Objects
+namespace Objects.BuiltElements
 {
   public class Room : Element
   {
-   // public ICurve baseGeometry { get; set; }
+    // public ICurve baseGeometry { get; set; }
     //public string name { get; set; }
     public string number { get; set; }
     public double area { get; set; }
@@ -18,7 +18,7 @@ namespace Objects
     // public Mesh displayMesh { get; set; } = new Mesh();
     public Room()
     {
-      
+
     }
 
   }

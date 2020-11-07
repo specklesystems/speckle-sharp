@@ -4,12 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Objects
+namespace Objects.BuiltElements
 {
   public class Floor : Element
   {
-    public Poly outline ;
-    public List<ICurve> holes { get; set; } = new List<ICurve>();
+    public List<ICurve> voids { get; set; } = new List<ICurve>();
     public Floor()
     {
 
