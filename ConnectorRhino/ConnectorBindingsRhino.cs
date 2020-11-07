@@ -14,7 +14,7 @@ namespace SpeckleRhino
   class ConnectorBindingsRhino : ConnectorBindings
   {
 
-    public RhinoDoc Doc { get => Rhino.RhinoDoc.ActiveDoc; }
+    public RhinoDoc Doc { get => RhinoDoc.ActiveDoc; }
 
     public Timer SelectionTimer;
 
@@ -26,20 +26,15 @@ namespace SpeckleRhino
       SelectionTimer.Elapsed += SelectionTimer_Elapsed;
       SelectionTimer.Start();
 
-      var streamStates = GetFileContext();
-
-      var appEvent = new ApplicationEvent()
-      {
-        Type = ApplicationEvent.EventType.DocumentOpened,
-        DynamicInfo = streamStates
-      };
-
-      NotifyUi(appEvent);
+      GetFileContextAndNotifyUI();
     }
 
     private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
     {
-      if (Doc == null) return;
+      if (Doc == null)
+      {
+        return;
+      }
 
       var selection = GetSelectedObjects();
 
@@ -49,8 +44,16 @@ namespace SpeckleRhino
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
     {
-      if (e.Document == null) return;
+      if (e.Document == null)
+      {
+        return;
+      }
 
+      GetFileContextAndNotifyUI();
+    }
+
+    private void GetFileContextAndNotifyUI()
+    {
       var streamStates = GetFileContext();
 
       var appEvent = new ApplicationEvent()
