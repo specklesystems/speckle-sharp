@@ -42,7 +42,9 @@ namespace Speckle.ConnectorDynamo.Functions
       try
       {
         //single stream wrapper
-        return new List<StreamWrapper>{ input as StreamWrapper};
+        var sw = input as StreamWrapper;
+        if (sw != null)
+          return new List<StreamWrapper> {sw};
       }
       catch
       {
@@ -52,7 +54,9 @@ namespace Speckle.ConnectorDynamo.Functions
       try
       {
         //single url
-        return new List<StreamWrapper>{ new StreamWrapper(input as string)};
+        var s = input as string;
+        if (!string.IsNullOrEmpty(s))
+          return new List<StreamWrapper> {new StreamWrapper(s)};
       }
       catch
       {
