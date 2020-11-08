@@ -70,6 +70,10 @@
       <Project>{6321ca2d-5275-42a3-a034-170a0040e19e}</Project>
       <Name>Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Core\Transports\ServerTransport\ServerTransport.csproj">
+      <Project>{04eb3c95-1fc4-4f96-88b0-2e5a5f412636}</Project>
+      <Name>ServerTransport</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DesktopUI\DesktopUI\DesktopUI.csproj">
       <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
       <Name>DesktopUI</Name>
