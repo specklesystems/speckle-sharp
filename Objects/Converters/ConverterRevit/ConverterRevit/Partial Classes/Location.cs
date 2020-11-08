@@ -1,17 +1,14 @@
 ﻿using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using Objects.Geometry;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Line = Objects.Geometry.Line;
-using Element = Objects.Element;
-using System.Linq;
-using Objects;
-using Point = Objects.Geometry.Point;
-using Curve = Objects.Geometry.Curve;
 using Autodesk.Revit.DB.Structure;
-using Wall = Objects.Wall;
+using Objects.BuiltElements;
+using System;
+
+using DB = Autodesk.Revit.DB;
+
+using Element = Objects.BuiltElements.Element;
+using Line = Objects.Geometry.Line;
+using Point = Objects.Geometry.Point;
+using Wall = Objects.BuiltElements.Wall;
 
 namespace Objects.Converter.Revit
 {
@@ -19,41 +16,42 @@ namespace Objects.Converter.Revit
   {
     public IGeometry LocationToSpeckle(DB.Element revitElement)
     {
-      if ( revitElement is FamilyInstance familyInstance )
+      if (revitElement is FamilyInstance familyInstance)
       {
         //vertical columns are point based, and the point does not reflect the actual vertical location
-        if ( Categories.columnCategories.Contains(familyInstance.Category)
-             || familyInstance.StructuralType == StructuralType.Column )
+        if (Categories.columnCategories.Contains(familyInstance.Category)
+             || familyInstance.StructuralType == StructuralType.Column)
         {
           return TryGetLocationAsCurve(familyInstance);
         }
       }
 
       var revitLocation = revitElement.Location;
-      switch ( revitLocation )
+      switch (revitLocation)
       {
         case LocationCurve locationCurve:
-        {
-          var curve = locationCurve.Curve;
-
-          //apply revit offset as transfrom
-          if (revitElement is DB.Wall)
           {
-            var offset = revitElement.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble();
-            XYZ vector = new XYZ(0, 0, offset);
-            Transform tf = Transform.CreateTranslation(vector);
-            curve = curve.CreateTransformed(tf);
-          }
+            var curve = locationCurve.Curve;
 
-          return CurveToSpeckle(curve);
-        }
+            //apply revit offset as transfrom
+            if (revitElement is DB.Wall)
+            {
+              var offset = revitElement.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble();
+              XYZ vector = new XYZ(0, 0, offset);
+              Transform tf = Transform.CreateTranslation(vector);
+              curve = curve.CreateTransformed(tf);
+            }
+
+            return CurveToSpeckle(curve);
+          }
         case LocationPoint locationPoint:
-        {
-          return PointToSpeckle(locationPoint.Point);
-        }
+          {
+            return PointToSpeckle(locationPoint.Point);
+          }
         // TODO what is the correct way to handle this?
         case null:
           return null;
+
         default:
           return null;
       }
@@ -88,36 +86,36 @@ namespace Objects.Converter.Revit
       catch { }
       //everything else failed, just retun the base point without moving it
       return PointToSpeckle(point);
-
-
     }
 
-
+    //TODO: revise and improve
     private object LocationToNative(Element elem)
     {
-      if (elem.baseGeometry == null)
-        throw new Exception("Location is null.");
 
       //no transforms are appliend on points
 
-      if (elem.baseGeometry is Point)
+      if (elem.HasMember<Point>("basePoint"))
       {
-        return PointToNative(elem.baseGeometry as Point);
+        return PointToNative(elem.GetMemberSafe<Point>("basePoint"));
+      }
+
+      if (!elem.HasMember<ICurve>("baseLine"))
+      {
+        throw new Exception("Location is null.");
       }
 
       //must be a curve!?
-      var converted = GeometryToNative(elem.baseGeometry);
+      var converted = GeometryToNative(elem.GetMemberSafe<ICurve>("baseLine"));
       var curve = (converted as CurveArray).get_Item(0);
       //reapply revit's offset
       var offset = elem.GetMemberSafe<double>("baseOffset");
-      
-      
+
       if (elem is Column)
       {
         //revit verical columns can only be POINT based
         if (!elem.GetMemberSafe<bool>("isSlanted") || IsVertical(curve))
         {
-          var baseLine = elem.baseGeometry as Line;
+          var baseLine = elem.GetMemberSafe<Line>("baseLine");
           var point = new Point(baseLine.value[0], baseLine.value[1], baseLine.value[3] - offset);
 
           return PointToNative(point);
@@ -130,11 +128,9 @@ namespace Objects.Converter.Revit
         XYZ vector = new XYZ(0, 0, -revitOffset);
         Transform tf = Transform.CreateTranslation(vector);
         curve = curve.CreateTransformed(tf);
-
       }
 
       return curve;
-
     }
 
     /// <summary>

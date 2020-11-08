@@ -8,6 +8,7 @@ namespace Objects.BuiltElements
 {
   public class Opening : Element
   {
+    public ICurve outline { get; set; }
     public Opening()
     {
 

@@ -8,6 +8,7 @@ namespace Objects.BuiltElements
 {
   public class Beam : Element
   {
+    public ICurve baseLine { get; set; }
     public Beam()
     {
 

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Objects.Converter.Revit
 {
@@ -13,7 +12,7 @@ namespace Objects.Converter.Revit
 
     public static bool Contains(this IEnumerable<BuiltInCategory> categories, Category category)
     {
-      return categories.Select(x=>(int)x).Contains(category.Id.IntegerValue);
+      return categories.Select(x => (int)x).Contains(category.Id.IntegerValue);
     }
   }
 }

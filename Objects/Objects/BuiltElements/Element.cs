@@ -13,10 +13,4 @@ namespace Objects.BuiltElements
     public string linearUnits { get; set; }
   }
 
-  public interface IRevitElement
-  {
-    string family { get; set; }
-    string type { get; set; }
-  }
-
 }

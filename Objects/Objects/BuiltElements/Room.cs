@@ -2,6 +2,7 @@
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 
 namespace Objects.BuiltElements
@@ -14,7 +15,8 @@ namespace Objects.BuiltElements
     public double area { get; set; }
     public double volume { get; set; }
 
-    public List<ICurve> holes { get; set; } = new List<ICurve>();
+    public List<ICurve> voids { get; set; } = new List<ICurve>();
+    public ICurve outline { get; set; }
     // public Mesh displayMesh { get; set; } = new Mesh();
     public Room()
     {

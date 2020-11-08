@@ -1,37 +1,30 @@
 ﻿using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using Objects;
-using Objects.Geometry;
+using Objects.BuiltElements;
+using Objects.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Arc = Objects.Geometry.Arc;
-using Curve = Objects.Geometry.Curve;
-using Line = Objects.Geometry.Line;
-using Point = Objects.Geometry.Point;
-using Element = Objects.Element;
-using Level = Objects.Level;
-using Ellipse = Objects.Geometry.Ellipse;
+using DB = Autodesk.Revit.DB;
+using Element = Objects.BuiltElements.Element;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
 
-    private void AddCommonRevitProps(Base speckleElement, DB.Element revitElement)
+    private void AddCommonRevitProps(IRevit speckleElement, DB.Element revitElement)
     {
-      if (revitElement is FamilyInstance)
+      if (revitElement is DB.FamilyInstance && speckleElement is IRevitElement)
       {
-        speckleElement["family"] = (revitElement as FamilyInstance).Symbol.FamilyName;
+        ((IRevitElement)speckleElement).family = (revitElement as DB.FamilyInstance).Symbol.FamilyName;
       }
-      speckleElement["parameters"] = GetElementParams(revitElement);
+      speckleElement.parameters = GetElementParams(revitElement);
 
       if (CanGetElementTypeParams(revitElement))
-        speckleElement["typeParameters"] = GetElementTypeParams(revitElement);
+        ((IRevitElement)speckleElement).typeParameters = GetElementTypeParams(revitElement);
 
-      speckleElement["elementId"] = revitElement.Id.ToString();
+      speckleElement.elementId = revitElement.Id.ToString();
       speckleElement.applicationId = revitElement.UniqueId;
     }
     //TODO: CLEAN THE BELOW 
@@ -193,18 +186,15 @@ namespace Objects.Converter.Revit
       return myParamDict;
     }
 
-    public void SetElementParams(DB.Element myElement, Element spkElement, List<string> exclusions = null)
+    public void SetElementParams(DB.Element myElement, IRevit spkElement, List<string> exclusions = null)
     {
-      if (!spkElement.HasMember<Dictionary<string, object>>("parameters"))
-        return;
 
-      var parameters = spkElement["parameters"] as Dictionary<string, object>;
       if (myElement == null) return;
-      if (parameters == null) return;
+      if (spkElement.parameters == null) return;
 
       //var questForTheBest = UnitDictionary;
 
-      foreach (var kvp in parameters)
+      foreach (var kvp in spkElement.parameters)
       {
         if (kvp.Key.Contains("__unitType::")) continue; // skip unit types please
         if (exclusions != null && exclusions.Contains(kvp.Key)) continue;
@@ -220,11 +210,11 @@ namespace Objects.Converter.Revit
           switch (myParam.StorageType)
           {
             case StorageType.Double:
-              var hasUnitKey = parameters.ContainsKey("__unitType::" + myParam.Definition.Name);
+              var hasUnitKey = spkElement.parameters.ContainsKey("__unitType::" + myParam.Definition.Name);
               if (hasUnitKey)
               {
-                var unitType = (string)parameters["__unitType::" + kvp.Key];
-                var unit = (string)parameters["__unit::" + kvp.Key];
+                var unitType = (string)spkElement.parameters["__unitType::" + kvp.Key];
+                var unit = (string)spkElement.parameters["__unit::" + kvp.Key];
                 DisplayUnitType sourceUnit;
                 Enum.TryParse(unit, out sourceUnit);
                 var convertedValue = UnitUtils.ConvertToInternalUnits(Convert.ToDouble(kvp.Value), sourceUnit);
@@ -350,7 +340,7 @@ namespace Objects.Converter.Revit
 
 
 
-    private FamilySymbol GetFamilySymbol(Element element)
+    private FamilySymbol GetFamilySymbol(IRevitElement element)
     {
       List<FamilySymbol> symbols = new List<FamilySymbol>();
       ElementMulticategoryFilter filter = null;
@@ -373,7 +363,7 @@ namespace Objects.Converter.Revit
         symbols = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(FamilySymbol)).ToElements().Cast<FamilySymbol>().ToList();
       }
 
-      var familyName = element.GetMemberSafe("family", "");
+      var familyName = element.family ?? "";
 
       //match family and type
       var match = symbols.FirstOrDefault(x => x.FamilyName == familyName && x.Name == element.type);

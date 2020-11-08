@@ -8,7 +8,8 @@ namespace Objects.BuiltElements
 {
   public class Roof : Element
   {
-    public List<ICurve> holes { get; set; } = new List<ICurve>();
+    public ICurve outline { get; set; }
+    public List<ICurve> voids { get; set; } = new List<ICurve>();
     public Roof()
     {
 

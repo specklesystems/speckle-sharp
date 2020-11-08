@@ -129,6 +129,10 @@
       <Project>{7ef0c96c-1fd9-42b2-85ce-bfd9b10dac06}</Project>
       <Name>Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Objects.Revit\Objects.Revit.csproj">
+      <Project>{51162368-2d07-4aeb-ab2d-984b86a4506c}</Project>
+      <Name>Objects.Revit</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Objects\Objects.csproj">
       <Project>{95c2153a-642e-4779-90c0-bff56fc561a9}</Project>
       <Name>Objects</Name>

@@ -5,8 +5,15 @@ using Objects.BuiltElements;
 
 namespace Objects.Revit
 {
-  public class RevitFloor : Floor
+  public class RevitFloor : Floor, IRevitElement
   {
+    public string family { get; set; }
+    public string type { get; set; }
     public Dictionary<string, object> parameters { get; set; }
+    public Dictionary<string, object> typeParameters { get; set; }
+    public string elementId { get; set; }
+
+    public RevitLevel level { get; set; }
+    public bool structural { get; set; }
   }
 }

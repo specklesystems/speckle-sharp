@@ -10,6 +10,8 @@ namespace Objects.BuiltElements
   {
     public double height { get; set; }
 
+    public ICurve baseLine { get; set; }
+
     public Column()
     {
 

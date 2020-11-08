@@ -9,14 +9,15 @@ namespace Objects.Revit
   // Specialised class 
   public class RevitWall : Wall, IRevitElement
   {
-    public Level topLevel { get; set; }
-    public Level bottomLevel { get; set; }
+    public RevitLevel topLevel { get; set; }
+    public RevitLevel level { get; set; }
     public new ICurve baseLine { get; set; }
-
-    public Dictionary<string, object> parameters { get; set; } // contains the base offset, etc. that we don't care about; 
 
     public string family { get; set; }
     public string type { get; set; }
+    public Dictionary<string, object> parameters { get; set; }
+    public Dictionary<string, object> typeParameters { get; set; }
+    public string elementId { get; set; }
   }
 
   //[ExposeInheritedMembersInSchemaBuilder(true)]
@@ -25,23 +26,25 @@ namespace Objects.Revit
     public new double height { get; set; }
     public new ICurve baseLine { get; set; }
 
-    public Level bottomLevel { get; set; }
-
-    public Dictionary<string, object> parameters { get; set; } // contains the base offset, etc. that we don't care about; 
+    public RevitLevel level { get; set; }
 
     public string family { get; set; }
     public string type { get; set; }
+    public Dictionary<string, object> parameters { get; set; }
+    public Dictionary<string, object> typeParameters { get; set; }
+    public string elementId { get; set; }
   }
 
   public class RevitWallByPoint : Element, IRevitElement
   {
-    public Level bottomLevel { get; set; }
+    public RevitLevel level { get; set; }
     public Point basePoint { get; set; }
-
-    public Dictionary<string, object> parameters { get; set; } // contains the base offset, etc. that we don't care about; 
 
     public string family { get; set; }
     public string type { get; set; }
+    public Dictionary<string, object> parameters { get; set; }
+    public Dictionary<string, object> typeParameters { get; set; }
+    public string elementId { get; set; }
   }
 
 }

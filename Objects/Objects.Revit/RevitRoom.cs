@@ -6,8 +6,14 @@ using Objects.BuiltElements;
 
 namespace Objects.Revit
 {
-  public class RevitRoom : Room
+  public class RevitRoom : Room, IRevit
   {
     public Point basePoint { get; set; }
+    public Dictionary<string, object> parameters { get; set; }
+    public string elementId { get; set; }
+    public string type { get; set; }
+    public RevitLevel level { get; set; }
+
+    public new ICurve outline { get; set; }
   }
 }

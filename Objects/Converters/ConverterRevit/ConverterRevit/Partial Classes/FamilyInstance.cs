@@ -1,14 +1,13 @@
 ﻿using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Objects;
+using Objects.Revit;
+using Objects.Geometry;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Element = Objects.Element;
-using FamilyInstance = Objects.Revit.FamilyInstance;
-using Level = Objects.Level;
-using Mesh = Objects.Geometry.Mesh;
+using DB = Autodesk.Revit.DB;
+using Element = Objects.BuiltElements.Element;
+using Level = Objects.BuiltElements.Level;
+using Point = Objects.Geometry.Point;
 
 namespace Objects.Converter.Revit
 {
@@ -19,7 +18,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="myElement"></param>
     /// <returns></returns>
-    public Element FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
+    public IRevitElement FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
     {
       //adaptive components
       if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(revitFi))
@@ -41,18 +40,25 @@ namespace Objects.Converter.Revit
         return ColumnToSpeckle(revitFi);
       }
 
+      var baseGeometry = LocationToSpeckle(revitFi);
+      var basePoint = baseGeometry as Point;
+      if (basePoint == null)
+      {
+        throw new Exception("Only point based Family Instances are currently supported.");
+      }
+
 
       //anything else
       var baseLevelParam = revitFi.get_Parameter(BuiltInParameter.FAMILY_LEVEL_PARAM);
       var subElements = GetFamSubElements(revitFi);
 
-      var speckleFi = new FamilyInstance();
-      speckleFi.baseGeometry = LocationToSpeckle(revitFi);
+      var speckleFi = new RevitFamilyInstance();
+      speckleFi.basePoint = basePoint;
       speckleFi.type = Doc.GetElement(revitFi.GetTypeId()).Name;
       speckleFi["facingFlipped"] = revitFi.FacingFlipped;
       speckleFi["handFlipped"] = revitFi.HandFlipped;
       if (baseLevelParam != null)
-        speckleFi.level = (Level)ParameterToSpeckle(baseLevelParam);
+        speckleFi.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
 
       if (revitFi.Location is LocationPoint)
       {
@@ -83,13 +89,14 @@ namespace Objects.Converter.Revit
       return subElements;
     }
 
-    public DB.FamilyInstance FamilyInstanceToNative(Element speckleElement, StructuralType structuralType = StructuralType.NonStructural)
+    //TODO: might need to clean this up and split the logic by beam, FI, etc...
+    public DB.FamilyInstance FamilyInstanceToNative(IRevitElement speckleElement, StructuralType structuralType = StructuralType.NonStructural)
     {
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleElement.applicationId, speckleElement.type);
 
-      string familyName = speckleElement.GetMemberSafe("family", "");
+      string familyName = speckleElement.family ?? "";
       DB.FamilySymbol familySymbol = GetFamilySymbol(speckleElement);
-      object location = LocationToNative(speckleElement);
+      object location = LocationToNative(speckleElement as Element);
       DB.Level level = LevelToNative(EnsureLevelExists(speckleElement.level, location));
       DB.FamilyInstance familyInstance = null;
 
@@ -133,9 +140,9 @@ namespace Objects.Converter.Revit
       if (familyInstance == null)
       {
         //hosted family instance
-        if (speckleElement.HasMember<int>("revitHostId"))
+        if (speckleElement is RevitFamilyInstance rfi && rfi.revitHostId != 0)
         {
-          var host = Doc.GetElement(new ElementId((int)speckleElement["revitHostId"]));
+          var host = Doc.GetElement(new ElementId(rfi.revitHostId));
           familyInstance = Doc.Create.NewFamilyInstance(location as DB.XYZ, familySymbol, host, level, structuralType);
         }
         else if (location is DB.Curve)
@@ -144,33 +151,34 @@ namespace Objects.Converter.Revit
           familyInstance = Doc.Create.NewFamilyInstance(location as XYZ, familySymbol, level, structuralType);
       }
 
+      var elem = speckleElement as Element;
 
       //top level, not all family instances have it
-      DB.Level topLevel = speckleElement.HasMember<Level>("topLevel") ? LevelToNative(((Level)speckleElement["topLevel"])) : null;
+      DB.Level topLevel = elem.HasMember<RevitLevel>("topLevel") ? LevelToNative(((RevitLevel)elem["topLevel"])) : null;
       TrySetParam(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM, topLevel);
 
       //reference level, only for beams
       TrySetParam(familyInstance, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
 
 
-      var handFlip = speckleElement.GetMemberSafe<bool>("handFlipped");
+      var handFlip = elem.GetMemberSafe<bool>("handFlipped");
       if (handFlip != familyInstance.HandFlipped)
         familyInstance.flipHand();
 
-      var facingFlipped = speckleElement.GetMemberSafe<bool>("facingFlipped");
+      var facingFlipped = elem.GetMemberSafe<bool>("facingFlipped");
       if (facingFlipped != familyInstance.FacingFlipped)
         familyInstance.flipFacing();
 
       if (location is XYZ)
       {
         var point = location as XYZ;
-        var rotation = speckleElement.GetMemberSafe<double>("rotation");
-        var axis = Line.CreateBound(new XYZ(point.X, point.Y, 0), new XYZ(point.X, point.Y, 1000));
+        var rotation = elem.GetMemberSafe<double>("rotation");
+        var axis = DB.Line.CreateBound(new XYZ(point.X, point.Y, 0), new XYZ(point.X, point.Y, 1000));
         (familyInstance.Location as LocationPoint).Rotate(axis, rotation - (familyInstance.Location as LocationPoint).Rotation);
       }
 
 
-      SetOffsets(familyInstance, speckleElement);
+      SetOffsets(familyInstance, elem);
       var exclusions = new List<string> { "Base Offset", "Top Offset" };
       SetElementParams(familyInstance, speckleElement, exclusions);
 

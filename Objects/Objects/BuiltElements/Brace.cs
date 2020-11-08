@@ -8,7 +8,7 @@ namespace Objects.BuiltElements
 {
   public class Brace : Element
   {
-
+    public ICurve baseLine { get; set; }
     public Brace()
     {
 

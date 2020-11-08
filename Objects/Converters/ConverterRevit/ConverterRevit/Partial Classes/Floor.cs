@@ -1,32 +1,29 @@
 ﻿
 using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using Floor = Objects.Floor;
-using Element = Objects.Element;
-using Level = Objects.Level;
-using Autodesk.Revit.DB.Structure;
-using Mesh = Objects.Geometry.Mesh;
 using Objects.Geometry;
-using System.Collections.Generic;
-using System;
-using System.Linq;
-using Objects;
+using Objects.Revit;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using DB = Autodesk.Revit.DB;
+using Element = Objects.BuiltElements.Element;
+using Floor = Objects.BuiltElements.Floor;
+using Level = Objects.BuiltElements.Level;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element FloorToNative(Floor speckleFloor)
+    public DB.Element FloorToNative(RevitFloor speckleFloor)
     {
       DB.Floor revitFloor = null;
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleFloor.applicationId, speckleFloor.type);
 
 
       var floorType = GetElementByName(typeof(FloorType), speckleFloor.type) as FloorType;
-      var outline = CurveToNative(speckleFloor.baseGeometry as ICurve);
+      var outline = CurveToNative(speckleFloor.outline);
       var level = LevelToNative(EnsureLevelExists(speckleFloor.level, outline));
-      var structural = speckleFloor.GetMemberSafe<bool>("structural");
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
       if (docObj != null)
@@ -35,18 +32,18 @@ namespace Objects.Converter.Revit
       if (floorType == null)
       {
         //create floor without a type
-        revitFloor = Doc.Create.NewFloor(outline, structural);
+        revitFloor = Doc.Create.NewFloor(outline, speckleFloor.structural);
       }
       else
       {
-        revitFloor = Doc.Create.NewFloor(outline, floorType, level, structural);
+        revitFloor = Doc.Create.NewFloor(outline, floorType, level, speckleFloor.structural);
       }
 
       Doc.Regenerate();
 
       try
       {
-        MakeOpeningsInFloor(revitFloor, speckleFloor.holes.ToList());
+        MakeOpeningsInFloor(revitFloor, speckleFloor.voids.ToList());
       }
       catch (Exception ex)
       {
@@ -67,19 +64,19 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private Element FloorToSpeckle(DB.Floor revitFloor)
+    private IRevitElement FloorToSpeckle(DB.Floor revitFloor)
     {
       var baseLevelParam = revitFloor.get_Parameter(BuiltInParameter.LEVEL_PARAM);
       var structuralParam = revitFloor.get_Parameter(BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);
       var profiles = GetProfiles(revitFloor);
 
-      var speckleFloor = new Floor();
+      var speckleFloor = new RevitFloor();
       speckleFloor.type = Doc.GetElement(revitFloor.GetTypeId()).Name;
-      speckleFloor.baseGeometry = profiles[0];
+      speckleFloor.outline = profiles[0];
       if (profiles.Count > 1)
-        speckleFloor.holes = profiles.Skip(1).ToList();
-      speckleFloor.level = (Level)ParameterToSpeckle(baseLevelParam);
-      speckleFloor["structural"] = ParameterToSpeckle(structuralParam);
+        speckleFloor.voids = profiles.Skip(1).ToList();
+      speckleFloor.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
+      speckleFloor.structural = (bool)ParameterToSpeckle(structuralParam);
 
       AddCommonRevitProps(speckleFloor, revitFloor);
 
