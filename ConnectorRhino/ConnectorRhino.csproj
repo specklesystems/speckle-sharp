@@ -59,7 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectorRhinoCommand.cs" />
-    <Compile Include="ConnectorBindingsRhino.cs" />
+    <Compile Include="UI\ConnectorBindingsRhino.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
