@@ -145,7 +145,6 @@ namespace SpeckleRhino
       return new List<ISelectionFilter>()
       {
          new ElementsSelectionFilter { Name = "Selection", Icon = "Mouse", Selection = GetSelectedObjects()},
-         //new ListSelectionFilter { Name = "Category", Icon = "FilterList", Values = layers, Selection = layers },
       };
     }
 
@@ -422,8 +421,6 @@ namespace SpeckleRhino
       {
         case ElementsSelectionFilter selFilter:
           objects = selFilter.Selection.Select(id => new Base { applicationId = id }).ToList();
-          break;
-        case ListSelectionFilter selFilter:
           break;
       }
       state.Placeholders = objects;
