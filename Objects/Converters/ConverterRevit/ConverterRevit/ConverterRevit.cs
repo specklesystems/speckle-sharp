@@ -85,7 +85,7 @@ namespace Objects.Converter.Revit
           return TopographyToSpeckle(o);
 
         case DB.Wall o:
-          return WallToSpeckle(o);
+          return WallToSpeckle(o) as Base;
 
         case DB.Mechanical.Duct o:
           return DuctToSpeckle(o);
@@ -110,7 +110,7 @@ namespace Objects.Converter.Revit
           return AdaptiveComponentToNative(o);
 
         case Beam o:
-          return BeamToNative(o as RevitBeam);
+          return BeamToNative(o);
 
         case Brace o:
           return BraceToNative(o as RevitBrace);
@@ -149,7 +149,7 @@ namespace Objects.Converter.Revit
           return TopographyToNative(o as RevitTopography);
 
         case Wall o:
-          return WallToNative(o as RevitWall);
+          return WallToNative(o);
 
         case Duct o:
           return DuctToNative(o as RevitDuct);

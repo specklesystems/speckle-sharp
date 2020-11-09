@@ -1,17 +1,8 @@
-﻿using System;
-using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using Objects;
+﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
-using Wall = Objects.Wall;
-using Element = Objects.Element;
-using xUnitRevitUtils;
-using Autodesk.Revit.UI;
+
+using DB = Autodesk.Revit.DB;
 
 namespace ConverterRevitTests
 {
@@ -20,7 +11,8 @@ namespace ConverterRevitTests
     public override string TestFile => Globals.GetTestModel("Floor.rvt");
     public override string NewFile => Globals.GetTestModel("Floor_ToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Floors };
-    public FloorFixture() : base ()
+
+    public FloorFixture() : base()
     {
     }
   }
@@ -66,8 +58,6 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLOOR_ATTR_THICKNESS_PARAM);
     }
 
-
-    #endregion
-
+    #endregion ToNative
   }
 }

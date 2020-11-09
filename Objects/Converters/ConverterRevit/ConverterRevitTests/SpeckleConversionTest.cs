@@ -1,33 +1,31 @@
-﻿using System;
-using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using Objects;
+﻿using Autodesk.Revit.DB;
+using Objects.Converter.Revit;
+using Objects.Revit;
+using Speckle.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using Element = Objects.Element;
 using xUnitRevitUtils;
-using System.CodeDom;
-using Objects.Converter.Revit;
-using Speckle.Core.Models;
+
+using DB = Autodesk.Revit.DB;
+
+using Element = Objects.BuiltElements.Element;
 
 namespace ConverterRevitTests
 {
   public class SpeckleConversionTest
   {
-
     internal SpeckleConversionFixture fixture;
-
 
     internal void NativeToSpeckle()
     {
       ConverterRevit kit = new ConverterRevit();
+      kit.SetContextDocument(fixture.Doc);
 
       foreach (var elem in fixture.RevitElements)
       {
-        var spkElem = kit.ConvertToSpeckle(elem) as Element;
+        var spkElem = kit.ConvertToSpeckle(elem) as IRevit;
         AssertValidSpeckleElement(elem, spkElem);
       }
       Assert.Empty(kit.ConversionErrors);
@@ -36,6 +34,7 @@ namespace ConverterRevitTests
     internal void NativeToSpeckleBase()
     {
       ConverterRevit kit = new ConverterRevit();
+      kit.SetContextDocument(fixture.Doc);
 
       foreach (var elem in fixture.RevitElements)
       {
@@ -48,9 +47,11 @@ namespace ConverterRevitTests
     internal void SpeckleToNative<T>(Action<T, T> assert)
     {
       ConverterRevit kit = new ConverterRevit();
+      kit.SetContextDocument(fixture.Doc);
       var spkElems = fixture.RevitElements.Select(x => kit.ConvertToSpeckle(x) as Base).ToList();
 
       kit = new ConverterRevit();
+      kit.SetContextDocument(fixture.NewDoc);
       var revitEls = new List<T>();
 
       xru.RunInTransaction(() =>
@@ -71,9 +72,11 @@ namespace ConverterRevitTests
     internal void SelectionToNative<T>(Action<T, T> assert)
     {
       ConverterRevit kit = new ConverterRevit();
+      kit.SetContextDocument(fixture.Doc);
       var spkElems = fixture.Selection.Select(x => kit.ConvertToSpeckle(x) as Base).ToList();
 
       kit = new ConverterRevit();
+      kit.SetContextDocument(fixture.NewDoc);
       var revitEls = new List<T>();
 
       xru.RunInTransaction(() =>
@@ -91,18 +94,24 @@ namespace ConverterRevitTests
       }
     }
 
-    internal void AssertValidSpeckleElement(DB.Element elem, Element spkElem)
+    internal void AssertValidSpeckleElement(DB.Element elem, IRevit spkElem)
     {
       Assert.NotNull(elem);
       Assert.NotNull(spkElem);
-      if (!(elem is DB.Architecture.Room || elem is DB.Mechanical.Duct))
-        Assert.Equal(elem.Name, spkElem.type);
-      Assert.NotNull(spkElem["parameters"]);
-      Assert.NotNull(spkElem.baseGeometry);
-      //Assert.NotNull(spkElem.level);
-      Assert.NotNull(spkElem.displayMesh);
-    }
+      Assert.NotNull(spkElem.parameters);
+      Assert.NotNull(spkElem.elementId);
 
+      if (spkElem is IRevitElement spkRevit)
+      {
+        if (!(elem is DB.Architecture.Room || elem is DB.Mechanical.Duct))
+          Assert.Equal(elem.Name, spkRevit.type);
+
+        //Assert.NotNull(spkElem.baseGeometry);
+        Assert.NotNull(spkRevit.level);
+        //Assert.NotNull(spkRevit.displayMesh);
+      }
+
+    }
 
     internal void AssertFamilyInstanceEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
     {
@@ -124,8 +133,8 @@ namespace ConverterRevitTests
       //rotation
       if (sourceElem.Location is LocationPoint)
         Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation);
-
     }
+
     internal void AssertEqualParam(DB.Element expected, DB.Element actual, BuiltInParameter param)
     {
       var expecedParam = expected.get_Parameter(param);
@@ -152,7 +161,5 @@ namespace ConverterRevitTests
           Assert.Equal(e1.Name, e2.Name);
       }
     }
-
-
   }
 }

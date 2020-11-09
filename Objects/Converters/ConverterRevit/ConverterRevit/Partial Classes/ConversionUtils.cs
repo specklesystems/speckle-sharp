@@ -15,15 +15,19 @@ namespace Objects.Converter.Revit
 
     private void AddCommonRevitProps(IRevit speckleElement, DB.Element revitElement)
     {
-      if (revitElement is DB.FamilyInstance && speckleElement is IRevitElement)
+
+      if(speckleElement is IRevitElement speckleRevitElement)
       {
-        ((IRevitElement)speckleElement).family = (revitElement as DB.FamilyInstance).Symbol.FamilyName;
+        if (revitElement is DB.FamilyInstance)
+        {
+          speckleRevitElement.family = (revitElement as DB.FamilyInstance).Symbol.FamilyName;
+        }
+
+        if (CanGetElementTypeParams(revitElement))
+          speckleRevitElement.typeParameters = GetElementTypeParams(revitElement);
       }
+    
       speckleElement.parameters = GetElementParams(revitElement);
-
-      if (CanGetElementTypeParams(revitElement))
-        ((IRevitElement)speckleElement).typeParameters = GetElementTypeParams(revitElement);
-
       speckleElement.elementId = revitElement.Id.ToString();
       speckleElement.applicationId = revitElement.UniqueId;
     }

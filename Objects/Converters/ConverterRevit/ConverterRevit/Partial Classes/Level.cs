@@ -103,6 +103,19 @@ namespace Objects.Converter.Revit
       return revitLevel;
     }
 
+    private RevitLevel LevelFromPoint(XYZ point)
+    {
+      return new RevitLevel() { elevation = point.Z / Scale, name = "Speckle Level " + point.Z / Scale };
+    }
+
+    private RevitLevel LevelFromCurve(DB.Curve curve)
+    {
+      var start = curve.GetEndPoint(0);
+      var end = curve.GetEndPoint(1);
+      var point = start.Z < end.Z ? start : end; // pick the lowest
+      return LevelFromPoint(point);
+    }
+
     private RevitLevel EnsureLevelExists(RevitLevel level, XYZ point)
     {
       if (level != null)

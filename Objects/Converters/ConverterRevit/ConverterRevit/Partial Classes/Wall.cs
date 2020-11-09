@@ -17,22 +17,34 @@ namespace Objects.Converter.Revit
   {
     // TODO: (OLD)  A polycurve spawning multiple walls is not yet handled properly with diffing, etc.
     // TODO: (OLD)  Most probably, just get rid of the polyline wall handling stuff. It's rather annyoing and confusing...
-    public DB.Wall WallToNative(RevitWall speckleWall)
+    public DB.Wall WallToNative(Wall speckleWall)
     {
+
+      if (speckleWall.baseLine == null)
+      {
+        throw new Exception("Only line based Walls are currently supported.");
+      }
+
       DB.Wall revitWall = null;
-
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleWall.applicationId, speckleWall.speckle_type);
-
-      var wallType = GetElementByName(typeof(WallType), speckleWall.type) as WallType;
+      WallType wallType = null;
+      DB.Level level = null;
+      var structural = false;
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0); //TODO: support poliline/polycurve walls
-      var structural = speckleWall.GetMemberSafe<bool>("structural");
-      var level = LevelToNative(EnsureLevelExists(speckleWall.level, baseCurve));
-      DB.Level topLevel = null;
-      if (speckleWall.HasMember<RevitLevel>("topLevel"))
-        topLevel = LevelToNative(speckleWall["topLevel"] as RevitLevel);
-      var flipped = speckleWall.GetMemberSafe<bool>("flipped");
+
+      //comes from revit or schema builder, has these props
+      if (speckleWall is RevitWall rw)
+      {
+        wallType = GetElementByName(typeof(WallType), rw.type) as WallType;
+        level = LevelToNative(rw.level);
+        structural = rw.structural;
+      }
+      else
+      {
+        level = LevelToNative(LevelFromCurve(baseCurve));
+      }
 
       //try update existing wall
+      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleWall.applicationId, speckleWall.speckle_type);
       if (docObj != null)
       {
         try
@@ -40,7 +52,7 @@ namespace Objects.Converter.Revit
           revitWall = (DB.Wall)docObj;
           TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
           ((LocationCurve)revitWall.Location).Curve = baseCurve;
-          if (revitWall.WallType.Name != wallType.Name)
+          if (wallType != null && revitWall.WallType.Name != wallType.Name)
             revitWall.ChangeTypeId(wallType.Id);
         }
         catch (Exception e)
@@ -55,19 +67,29 @@ namespace Objects.Converter.Revit
         revitWall = DB.Wall.Create(Doc, baseCurve, level.Id, structural);
       }
 
-      TrySetParam(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE, topLevel);
+      if (speckleWall is RevitWallByLine rwbl)
+      {
+        DB.Level topLevel = LevelToNative(rwbl.topLevel);
+        TrySetParam(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE, topLevel);
+      }
 
-      revitWall.WallType = wallType as WallType;
+      if (wallType != null)
+      {
+        revitWall.WallType = wallType;
+      }
 
-      if (flipped != revitWall.Flipped)
+      if (speckleWall is RevitWall rw2 && rw2.flipped != revitWall.Flipped)
+      {
         revitWall.Flip();
+      }
 
-      SetElementParams(revitWall, speckleWall);
+      if (speckleWall is IRevit item)
+        SetElementParams(revitWall, item);
 
       return revitWall;
     }
 
-    public Element WallToSpeckle(DB.Wall revitWall)
+    public IRevitElement WallToSpeckle(DB.Wall revitWall)
     {
       //REVIT PARAMS > SPECKLE PROPS
       var heightParam = revitWall.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM);
@@ -83,40 +105,43 @@ namespace Objects.Converter.Revit
       var level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
       var topLevel = (RevitLevel)ParameterToSpeckle(topLevelParam); //TODO: check if it works
 
+      IRevitElement speckleWall = null;
+
       if (baseGeometry is Geometry.Point)
       {
-        var wall = new RevitWallByPoint()
+        speckleWall = new RevitWallByPoint()
         {
-          basePoint = baseGeometry as Geometry.Point
+          type = revitWall.WallType.Name,
+          basePoint = baseGeometry as Geometry.Point,
+          level = level,
         };
-        wall.level = level;
-        wall.type = revitWall.WallType.Name;
-
-        // TODO units etc
-
-        return wall;
       }
 
-      if (topLevel == null)
+      else if (topLevel == null)
       {
-        var speckleUWall = new RevitWallUnconnected();
-        speckleUWall.type = revitWall.WallType.Name;
-        speckleUWall.baseLine = baseGeometry as ICurve;
-        speckleUWall.level = level;
-        speckleUWall.height = height;
-
-        // TODO units etc
-
-        return speckleUWall;
+        speckleWall = new RevitWallUnconnected()
+        {
+          type = revitWall.WallType.Name,
+          baseLine = baseGeometry as ICurve,
+          level = level,
+          height = height,
+        };
+      }
+      else
+      {
+        speckleWall = new RevitWallByLine()
+        {
+          type = revitWall.WallType.Name,
+          baseLine = baseGeometry as ICurve,
+          level = level,
+          topLevel = topLevel,
+          height = height,
+        };
       }
 
-      // Last scenario: classic wall
-      // TODO
-      var speckleWall = new RevitWall();
-      speckleWall["flipped"] = revitWall.Flipped;
-      speckleWall["structural"] = (bool)ParameterToSpeckle(structural);
-
-      speckleWall.displayMesh = GetWallDisplayMesh(revitWall);
+      ((Wall)speckleWall)["flipped"] = revitWall.Flipped;
+      ((Wall)speckleWall)["structural"] = (bool)ParameterToSpeckle(structural);
+      ((Wall)speckleWall).displayMesh = GetWallDisplayMesh(revitWall);
 
       AddCommonRevitProps(speckleWall, revitWall);
 

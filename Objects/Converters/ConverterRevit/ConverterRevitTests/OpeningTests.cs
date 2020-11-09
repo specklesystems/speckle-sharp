@@ -1,17 +1,8 @@
-﻿using System;
-using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using Objects;
+﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
-using Wall = Objects.Wall;
-using Element = Objects.Element;
-using xUnitRevitUtils;
-using Autodesk.Revit.UI;
+
+using DB = Autodesk.Revit.DB;
 
 namespace ConverterRevitTests
 {
@@ -19,6 +10,7 @@ namespace ConverterRevitTests
   {
     public override string TestFile => Globals.GetTestModel("Opening.rvt");
     public override string NewFile => Globals.GetTestModel("Opening_ToNative.rvt");
+
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {
       BuiltInCategory.OST_CeilingOpening,
       BuiltInCategory.OST_ColumnOpening,
@@ -32,6 +24,7 @@ namespace ConverterRevitTests
       BuiltInCategory.OST_Ceilings,
       BuiltInCategory.OST_RoofOpening,
       BuiltInCategory.OST_Roofs};
+
     public OpeningFixture() : base()
     {
     }
@@ -77,8 +70,6 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
     }
 
-
-    #endregion
-
+    #endregion ToNative
   }
 }
