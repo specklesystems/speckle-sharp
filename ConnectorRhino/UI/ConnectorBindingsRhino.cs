@@ -9,9 +9,11 @@ using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -120,7 +122,7 @@ namespace SpeckleRhino
     public override List<StreamState> GetFileContext()
     {
       var strings = Doc?.Strings.GetEntryNames("speckle");
-      if(strings == null)
+      if (strings == null)
       {
         return new List<StreamState>();
       }
@@ -149,11 +151,190 @@ namespace SpeckleRhino
 
     public override async Task<StreamState> ReceiveStream(StreamState state)
     {
-      // TODO: implement
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Rhino);
-      
+
+      var myStream = await state.Client.StreamGet(state.Stream.id);
+      var commit = myStream.branches.items[0].commits.items[0];
+
+      if (state.CancellationToken.IsCancellationRequested)
+      {
+        return null;
+      }
+
+      var commitObject = await Operations.Receive(
+        commit.referencedObject,
+        state.CancellationToken,
+        new ServerTransport(state.Client.Account, state.Stream.id),
+        onProgressAction: d => UpdateProgress(d, state.Progress),
+        onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => state.Progress.Maximum = num)
+        );
+
+      var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {myStream.name}");
+
+      var layerName = $"{myStream.name} @ {commit.id}";
+      layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty); // Rhino doesn't like emojis in layer names :( 
+      var layerIndex = Doc.Layers.Add(layerName, System.Drawing.Color.White);
+
+      if (layerIndex == -1)
+      {
+        // TODO: clear up old stuff
+        // Delete all sublayers and their objects
+      }
+
+      var layer = Doc.Layers[layerIndex];
+
+      HandleItem(commitObject, converter, layer);
+
+      Doc.Views.Redraw();
+
+      Doc.EndUndoRecord(undoRecord);
+
       return state;
+    }
+
+    public void ParseAndConvert(Base obj, ISpeckleConverter converter, Layer layer)
+    {
+      if (converter.CanConvertToNative(obj))
+      {
+        var converted = converter.ConvertToNative(obj) as Rhino.Geometry.GeometryBase;
+        if (converted != null)
+        {
+          if (!layer.HasIndex)
+          {
+            layer.Index = Doc.Layers.Add(layer);
+          }
+          Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = layer.Index });
+        }
+
+        return;
+      }
+
+      var dynamicProps = obj.GetDynamicMembers();
+      var typedProps = obj.GetInstanceMembersNames(); // should these become a group? 
+
+      foreach (var prop in dynamicProps)
+      {
+        var value = obj[prop];
+        var layerName = "";
+
+        if (prop.StartsWith("@"))
+        {
+          layerName = prop.Remove(0, 1);
+        }
+        else
+        {
+          layerName = prop;
+        }
+
+        var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = layerName };
+
+        if (value is Base baseItem)
+        {
+          ParseAndConvert(baseItem, converter, subLayer);
+          continue;
+        }
+
+        if (value is List<object> list)
+        {
+          foreach (var subObj in list)
+          {
+            if (subObj is Base subObjBase)
+            {
+              ParseAndConvert(subObjBase, converter, subLayer);
+            }
+          }
+          continue;
+        }
+
+        if (value is IDictionary dict)
+        {
+          foreach (DictionaryEntry kvp in dict)
+          {
+            if (kvp.Value is Base subObjBase)
+            {
+              ParseAndConvert(subObjBase, converter, subLayer);
+            }
+          }
+        }
+        // TODO: handle prop.value
+        // If prop.value is a collection of sorts, "prop" becomes a key?
+      }
+
+    }
+
+    private void HandleItem(object obj, ISpeckleConverter converter, Layer layer)
+    {
+      if (!layer.HasIndex)
+      {
+        layer.Index = Doc.Layers.Add(layer);
+      }
+      layer.Id = Doc.Layers.FindName(layer.Name).Id;
+
+      if (obj is Base baseItem)
+      {
+        if (converter.CanConvertToNative(baseItem))
+        {
+          var converted = converter.ConvertToNative(baseItem) as Rhino.Geometry.GeometryBase;
+          if (converted != null)
+          {
+
+
+            Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = layer.Index });
+          }
+
+          return;
+        }
+        else
+        {
+
+          foreach (var prop in baseItem.GetDynamicMembers())
+          {
+            var value = baseItem[prop];
+            var layerName = "";
+
+            if (prop.StartsWith("@"))
+            {
+              layerName = prop.Remove(0, 1);
+            }
+            else
+            {
+              layerName = prop;
+            }
+
+            if (!layer.HasIndex)
+            {
+              layer.Index = Doc.Layers.Add(layer);
+            }
+
+            layer.Id = Doc.Layers.FindName(layer.Name).Id;
+
+            var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = layerName };
+            subLayer.Index = Doc.Layers.Add(subLayer);
+            HandleItem(value, converter, subLayer);
+          }
+
+          return;
+        }
+      }
+
+      if (obj is List<object> list)
+      {
+        foreach (var listObj in list)
+        {
+          HandleItem(listObj, converter, layer);
+        }
+        return;
+      }
+
+      if (obj is IDictionary dict)
+      {
+        foreach (DictionaryEntry kvp in dict)
+        {
+          HandleItem(kvp.Value, converter, layer);
+        }
+        return;
+      }
     }
 
     public override void RemoveObjectsFromClient(string args)
@@ -243,12 +424,16 @@ namespace SpeckleRhino
       var hasErrors = false;
       var commitObjId = await Operations.Send(
         commitObj,
+        state.CancellationToken,
         transports,
         onProgressAction: dict => UpdateProgress(dict, state.Progress),
         onErrorAction: (err, exception) => { hasErrors = true; /* TODO: a wee bit nicer handling here; plus request cancellation! */ }
         );
 
-      if (hasErrors) return null;
+      if (hasErrors)
+      {
+        return null;
+      }
 
       var res = await client.CommitCreate(new CommitCreateInput()
       {
@@ -263,7 +448,7 @@ namespace SpeckleRhino
       // ask izzy: confused re the demarcation between state.objects, state.placeholders, etc. seems like
       // the above clears the set selection of a stream. 
       UpdateStream(state);
-      
+
       RaiseNotification($"{objCount} objects sent to Speckle 🦏 + 🚀");
 
       return state;
