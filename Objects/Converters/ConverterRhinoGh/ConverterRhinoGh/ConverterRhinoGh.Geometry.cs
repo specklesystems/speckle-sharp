@@ -11,6 +11,12 @@ using System.Linq;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
+using BrepEdge = Objects.Geometry.BrepEdge;
+using BrepFace = Objects.Geometry.BrepFace;
+using BrepLoop = Objects.Geometry.BrepLoop;
+using BrepLoopType = Objects.Geometry.BrepLoopType;
+using BrepTrim = Objects.Geometry.BrepTrim;
+using BrepVertex = Objects.Geometry.BrepVertex;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
 using Curve = Objects.Geometry.Curve;
@@ -32,17 +38,17 @@ namespace Objects.Converter.RhinoGh
     // Convenience methods point:
     public static double[] ToArray(this Point3d pt)
     {
-      return new double[] { pt.X, pt.Y, pt.Z };
+      return new double[] {pt.X, pt.Y, pt.Z};
     }
 
     public static double[] ToArray(this Point2d pt)
     {
-      return new double[] { pt.X, pt.Y };
+      return new double[] {pt.X, pt.Y};
     }
 
     public static double[] ToArray(this Point2f pt)
     {
-      return new double[] { pt.X, pt.Y };
+      return new double[] {pt.X, pt.Y};
     }
 
     public static Point3d ToPoint(this double[] arr)
@@ -77,7 +83,7 @@ namespace Objects.Converter.RhinoGh
     // Convenience methods vector:
     public static double[] ToArray(this Vector3d vc)
     {
-      return new double[] { vc.X, vc.Y, vc.Z };
+      return new double[] {vc.X, vc.Y, vc.Z};
     }
 
     public static Vector3d ToVector(this double[] arr)
@@ -91,6 +97,7 @@ namespace Objects.Converter.RhinoGh
     {
       return new Point(pt.X, pt.Y, pt.Z);
     }
+
     // Rh Capture?
     public static Rhino.Geometry.Point ToNative(this Point pt)
     {
@@ -124,7 +131,7 @@ namespace Objects.Converter.RhinoGh
 
     public static RH.Interval ToNative(this Interval interval)
     {
-      return new RH.Interval((double)interval.start, (double)interval.end);
+      return new RH.Interval((double) interval.start, (double) interval.end);
     }
 
     // Interval2d
@@ -141,7 +148,8 @@ namespace Objects.Converter.RhinoGh
     // Plane
     public static Plane ToSpeckle(this RH.Plane plane)
     {
-      return new Plane(plane.Origin.ToSpeckle(), plane.Normal.ToSpeckle(), plane.XAxis.ToSpeckle(), plane.YAxis.ToSpeckle());
+      return new Plane(plane.Origin.ToSpeckle(), plane.Normal.ToSpeckle(), plane.XAxis.ToSpeckle(),
+        plane.YAxis.ToSpeckle());
     }
 
     public static RH.Plane ToNative(this Plane plane)
@@ -156,13 +164,13 @@ namespace Objects.Converter.RhinoGh
     // Gh Line capture
     public static Line ToSpeckle(this RH.Line line)
     {
-      return new Line((new Point3d[] { line.From, line.To }).ToFlatArray());
+      return new Line((new Point3d[] {line.From, line.To}).ToFlatArray());
     }
 
     // Rh Line capture
     public static Line ToSpeckle(this LineCurve line)
     {
-      return new Line((new Point3d[] { line.PointAtStart, line.PointAtEnd }).ToFlatArray())
+      return new Line((new Point3d[] {line.PointAtStart, line.PointAtEnd}).ToFlatArray())
       {
         domain = line.Domain.ToSpeckle()
       };
@@ -175,14 +183,15 @@ namespace Objects.Converter.RhinoGh
       var myLine = new LineCurve(pts[0], pts[1]);
       if (line.domain != null)
         myLine.Domain = line.domain.ToNative();
-      
+
       return myLine;
     }
 
     // Rectangles now and forever forward will become polylines
     public static Polyline ToSpeckle(this Rectangle3d rect)
     {
-      return new Polyline((new Point3d[] { rect.Corner(0), rect.Corner(1), rect.Corner(2), rect.Corner(3) }).ToFlatArray()) { closed = true };
+      return new Polyline(
+        (new Point3d[] {rect.Corner(0), rect.Corner(1), rect.Corner(2), rect.Corner(3)}).ToFlatArray()) {closed = true};
     }
 
     // Circle
@@ -195,7 +204,7 @@ namespace Objects.Converter.RhinoGh
 
     public static ArcCurve ToNative(this Circle circ)
     {
-      RH.Circle circle = new RH.Circle(circ.plane.ToNative(), (double)circ.radius);
+      RH.Circle circle = new RH.Circle(circ.plane.ToNative(), (double) circ.radius);
 
       var myCircle = new ArcCurve(circle);
       if (circ.domain != null)
@@ -214,7 +223,7 @@ namespace Objects.Converter.RhinoGh
         a.TryGetCircle(out preCircle);
         Circle myCircle = preCircle.ToSpeckle();
         myCircle.domain = a.Domain.ToSpeckle();
-        
+
         return myCircle;
       }
       else
@@ -223,7 +232,7 @@ namespace Objects.Converter.RhinoGh
         a.TryGetArc(out preArc);
         Arc myArc = preArc.ToSpeckle();
         myArc.domain = a.Domain.ToSpeckle();
-        
+
         return myArc;
       }
     }
@@ -240,9 +249,9 @@ namespace Objects.Converter.RhinoGh
 
     public static ArcCurve ToNative(this Arc a)
     {
-      RH.Arc arc = new RH.Arc(a.plane.ToNative(), (double)a.radius, (double)a.angleRadians);
-      arc.StartAngle = (double)a.startAngle;
-      arc.EndAngle = (double)a.endAngle;
+      RH.Arc arc = new RH.Arc(a.plane.ToNative(), (double) a.radius, (double) a.angleRadians);
+      arc.StartAngle = (double) a.startAngle;
+      arc.EndAngle = (double) a.endAngle;
       var myArc = new ArcCurve(arc);
 
       if (a.domain != null)
@@ -261,7 +270,7 @@ namespace Objects.Converter.RhinoGh
 
     public static NurbsCurve ToNative(this Ellipse e)
     {
-      RH.Ellipse elp = new RH.Ellipse(e.plane.ToNative(), (double)e.firstRadius, (double)e.secondRadius);
+      RH.Ellipse elp = new RH.Ellipse(e.plane.ToNative(), (double) e.firstRadius, (double) e.secondRadius);
 
 
       var myEllp = NurbsCurve.CreateFromEllipse(elp);
@@ -275,7 +284,7 @@ namespace Objects.Converter.RhinoGh
 
     // Polyline
     // Gh Capture
-    public static Base ToSpeckle(this RH.Polyline poly)
+    public static ICurve ToSpeckle(this RH.Polyline poly)
     {
       if (poly.Count == 2)
         return new Line(poly.ToFlatArray());
@@ -309,6 +318,7 @@ namespace Objects.Converter.RhinoGh
 
         return myPoly;
       }
+
       return null;
     }
 
@@ -329,7 +339,7 @@ namespace Objects.Converter.RhinoGh
     // Rh Capture/Gh Capture
     public static Polycurve ToSpeckle(this PolyCurve p)
     {
-      Polycurve myPoly = new Polycurve();
+      var myPoly = new Polycurve();
       myPoly.closed = p.IsClosed;
       myPoly.domain = p.Domain.ToSpeckle();
 
@@ -338,7 +348,7 @@ namespace Objects.Converter.RhinoGh
 
       //let the converter pick the best type of curve
       var c = new ConverterRhinoGh();
-      myPoly.segments = segments.Select(s => { return (ICurve)c.ConvertToSpeckle(s); }).ToList();
+      myPoly.segments = segments.Select(s => (ICurve) c.ConvertToSpeckle(s)).ToList();
 
       return myPoly;
     }
@@ -352,9 +362,11 @@ namespace Objects.Converter.RhinoGh
         {
           //let the converter pick the best type of curve
           var c = new ConverterRhinoGh();
-          myPolyc.AppendSegment((RH.Curve)c.ConvertToNative((Base)segment));
+          myPolyc.AppendSegment((RH.Curve) c.ConvertToNative((Base) segment));
         }
-        catch { }
+        catch
+        {
+        }
       }
 
       if (p.domain != null)
@@ -364,64 +376,73 @@ namespace Objects.Converter.RhinoGh
     }
 
     // Curve
-    public static Base ToSpeckle(this NurbsCurve curve)
+    public static RH.Curve ToNative(this ICurve curve)
     {
-      if (curve.IsArc(Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance))
+      switch (curve)
       {
-        RH.Arc getObj;
-        curve.TryGetArc(out getObj);
-        Arc myObject = getObj.ToSpeckle();
+        case Circle circle:
+          return circle.ToNative();
+        case Arc arc:
+          return arc.ToNative();
+        case Ellipse ellipse:
+          return ellipse.ToNative();
+        case Curve crv:
+          return crv.ToNative();
+        case Polyline polyline:
+          return polyline.ToNative();
+        case Line line:
+          return line.ToNative();
+        default:
+          return null;
+      }
+    }
 
-        return myObject;
+    public static ICurve ToSpeckle(this NurbsCurve curve)
+    {
+      var tolerance = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+      if (curve.IsArc(tolerance))
+      {
+        curve.TryGetArc(out var getObj);
+        return getObj.ToSpeckle();
       }
 
-      if (curve.IsCircle(Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance) && curve.IsClosed)
+      if (curve.IsCircle(tolerance) && curve.IsClosed)
       {
-        RH.Circle getObj;
-        curve.TryGetCircle(out getObj);
-        Circle myObject = getObj.ToSpeckle();
-
-        return myObject;
+        curve.TryGetCircle(out var getObj);
+        return getObj.ToSpeckle();
       }
 
-      if (curve.IsEllipse(Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance) && curve.IsClosed)
+      if (curve.IsEllipse(tolerance) && curve.IsClosed)
       {
-        RH.Ellipse getObj;
-        curve.TryGetEllipse(out getObj);
-        Ellipse myObject = getObj.ToSpeckle();
-
-        return myObject;
+        curve.TryGetEllipse(out var getObj);
+        return getObj.ToSpeckle();
       }
 
-      if (curve.IsLinear(Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance) || curve.IsPolyline()) // defaults to polyline
+      if (curve.IsLinear(tolerance) || curve.IsPolyline()) // defaults to polyline
       {
-        RH.Polyline getObj;
-        curve.TryGetPolyline(out getObj);
+        curve.TryGetPolyline(out var getObj);
         if (null != getObj)
         {
-          Base myObject = getObj.ToSpeckle();
-
-          return myObject;
+          return getObj.ToSpeckle();
         }
       }
 
-      RH.Polyline poly;
-      curve.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out poly);
+      curve.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
 
       Polyline displayValue;
 
       if (poly.Count == 2)
       {
         displayValue = new Polyline();
-        displayValue.value = new List<double> { poly[0].X, poly[0].Y, poly[0].Z, poly[1].X, poly[1].Y, poly[1].Z };
+        displayValue.value = new List<double> {poly[0].X, poly[0].Y, poly[0].Z, poly[1].X, poly[1].Y, poly[1].Z};
       }
       else
       {
         displayValue = poly.ToSpeckle() as Polyline;
       }
 
-      Curve myCurve = new Curve(displayValue);
-      NurbsCurve nurbsCurve = curve.ToNurbsCurve();
+      var myCurve = new Curve(displayValue);
+      var nurbsCurve = curve.ToNurbsCurve();
 
       myCurve.weights = nurbsCurve.Points.Select(ctp => ctp.Weight).ToList();
       myCurve.points = nurbsCurve.Points.Select(ctp => ctp.Location).ToFlatArray().ToList();
@@ -474,8 +495,8 @@ namespace Objects.Converter.RhinoGh
 
       var Faces = mesh.Faces.SelectMany(face =>
       {
-        if (face.IsQuad) return new int[] { 1, face.A, face.B, face.C, face.D };
-        return new int[] { 0, face.A, face.B, face.C };
+        if (face.IsQuad) return new int[] {1, face.A, face.B, face.C, face.D};
+        return new int[] {0, face.A, face.B, face.C};
       }).ToArray();
 
       var Colors = mesh.VertexColors.Select(cl => cl.ToArgb()).ToArray();
@@ -493,21 +514,26 @@ namespace Objects.Converter.RhinoGh
       while (i < mesh.faces.Count)
       {
         if (mesh.faces[i] == 0)
-        { // triangle
+        {
+          // triangle
           m.Faces.AddFace(new MeshFace(mesh.faces[i + 1], mesh.faces[i + 2], mesh.faces[i + 3]));
           i += 4;
         }
         else
-        { // quad
+        {
+          // quad
           m.Faces.AddFace(new MeshFace(mesh.faces[i + 1], mesh.faces[i + 2], mesh.faces[i + 3], mesh.faces[i + 4]));
           i += 5;
         }
       }
+
       try
       {
-        m.VertexColors.AppendColors(mesh.colors.Select(c => System.Drawing.Color.FromArgb((int)c)).ToArray());
+        m.VertexColors.AppendColors(mesh.colors.Select(c => System.Drawing.Color.FromArgb((int) c)).ToArray());
       }
-      catch { }
+      catch
+      {
+      }
 
       if (mesh.textureCoordinates != null)
         for (int j = 0; j < mesh.textureCoordinates.Count; j += 2)
@@ -526,10 +552,69 @@ namespace Objects.Converter.RhinoGh
       MeshingParameters mySettings;
       mySettings = new MeshingParameters(0);
 
-      RH.Mesh.CreateFromBrep(brep, mySettings).All(meshPart => { joinedMesh.Append(meshPart); return true; });
+      RH.Mesh.CreateFromBrep(brep, mySettings).All(meshPart =>
+      {
+        joinedMesh.Append(meshPart);
+        return true;
+      });
 
 
-      return new Brep(displayValue: joinedMesh.ToSpeckle(), rawData: JsonConvert.SerializeObject(brep), provenance: Speckle.Core.Kits.Applications.Rhino);
+      var spcklBrep = new Brep(displayValue: joinedMesh.ToSpeckle(), rawData: JsonConvert.SerializeObject(brep),
+        provenance: Speckle.Core.Kits.Applications.Rhino);
+
+      // Add brep stuff
+
+      // Vertices, uv curves, 3d curves and surfaces
+      spcklBrep.Vertices = brep.Vertices.Select(vertex => new BrepVertex(vertex.Location.ToSpeckle())).ToList();
+      spcklBrep.Curve2D = brep.Curves2D.Select(crv => crv.ToNurbsCurve().ToSpeckle()).ToList();
+      spcklBrep.Curve3D = brep.Curves3D.Select(crv => crv.ToNurbsCurve().ToSpeckle()).ToList();
+      spcklBrep.Surfaces = brep.Surfaces.Select(srf => srf.ToNurbsSurface().ToSpeckle()).ToList();
+
+
+      // Faces
+      spcklBrep.Faces = brep.Faces
+        .Select(f => new BrepFace(
+          spcklBrep,
+          f.SurfaceIndex,
+          f.Loops.Select(l => l.LoopIndex).ToList(),
+          f.OuterLoop.LoopIndex,
+          f.OrientationIsReversed
+        )).ToList();
+
+      // Edges
+      spcklBrep.Edges = brep.Edges
+        .Select(edge => new BrepEdge(
+          spcklBrep,
+          edge.EdgeCurveIndex,
+          edge.TrimIndices(),
+          edge.EndVertex.VertexIndex,
+          edge.StartVertex.VertexIndex
+        )).ToList();
+
+      // Loops
+      spcklBrep.Loops = brep.Loops
+        .Select(loop => new BrepLoop(
+          spcklBrep,
+          loop.LoopIndex,
+          loop.Face.FaceIndex,
+          loop.Trims.Select(t => t.TrimIndex).ToList(),
+          (BrepLoopType) loop.LoopType
+        )).ToList();
+
+      // Trims
+      spcklBrep.Trims = brep.Trims
+        .Select(trim => new BrepTrim(
+          spcklBrep,
+          trim.Edge.EdgeIndex,
+          trim.Face.FaceIndex,
+          trim.Loop.LoopIndex,
+          trim.TrimCurveIndex,
+          (int) trim.IsoStatus,
+          (int) trim.TrimType
+        ))
+        .ToList();
+
+      return spcklBrep;
     }
 
     public static RH.Brep ToNative(this Brep brep)
@@ -538,14 +623,42 @@ namespace Objects.Converter.RhinoGh
       {
         if (brep.provenance == Speckle.Core.Kits.Applications.Rhino)
         {
-          var myBrep = JsonConvert.DeserializeObject<RH.Brep>((string)brep.rawData);
-          return myBrep;
+          var newBrep = new RH.Brep();
+          brep.Vertices.ForEach(vert => newBrep.Vertices.Add(vert.Location.ToNative().Location, 0));
+          brep.Curve3D.ForEach(crv => newBrep.AddEdgeCurve(crv.ToNative()));
+          brep.Edges.ForEach(edge => newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, 0));
+          brep.Surfaces.ForEach(surf => newBrep.AddSurface(surf.ToNative()));
+          brep.Faces.ForEach(face =>
+          {
+            var f = newBrep.Faces.Add(face.SurfaceIndex);
+            f.OrientationIsReversed = face.OrientationReversed;
+          });
+
+          brep.Loops.ForEach(loop =>
+          {
+            var f = newBrep.Faces[loop.FaceIndex];
+            var l = newBrep.Loops.Add((RH.BrepLoopType) loop.Type, f);
+          });
+
+          brep.Curve2D.ForEach(crv => newBrep.AddTrimCurve(crv.ToNative()));
+
+          brep.Trims.ForEach(trim =>
+          {
+            var rhTrim = newBrep.Trims.Add(newBrep.Edges[trim.EdgeIndex], false, newBrep.Loops[trim.LoopIndex], trim.CurveIndex);
+            rhTrim.IsoStatus = (IsoStatus)trim.IsoStatus;
+            rhTrim.TrimType = (BrepTrimType) trim.TrimType;
+          });
+
+          var myBrep = JsonConvert.DeserializeObject<RH.Brep>((string) brep.rawData);
+          return newBrep;
         }
-        throw new Exception("Unknown brep provenance: " + brep.provenance + ". Don't know how to convert from one to the other.");
+
+        throw new Exception("Unknown brep provenance: " + brep.provenance +
+                            ". Don't know how to convert from one to the other.");
       }
       catch
       {
-        System.Diagnostics.Debug.WriteLine("Failed to deserialise brep");
+        System.Diagnostics.Debug.WriteLine("Failed to deserialize brep");
         return null;
       }
     }
@@ -575,9 +688,9 @@ namespace Objects.Converter.RhinoGh
     // TODO: See above. We're no longer creating new extrusions. This is here just for backwards compatibility.
     public static RH.Extrusion ToNative(this Extrusion extrusion)
     {
-      RH.Curve outerProfile = ((Curve)extrusion.profile).ToNative();
+      RH.Curve outerProfile = ((Curve) extrusion.profile).ToNative();
       RH.Curve innerProfile = null;
-      if (extrusion.profiles.Count == 2) innerProfile = ((Curve)extrusion.profiles[1]).ToNative();
+      if (extrusion.profiles.Count == 2) innerProfile = ((Curve) extrusion.profiles[1]).ToNative();
 
       try
       {
@@ -585,9 +698,12 @@ namespace Objects.Converter.RhinoGh
         if (IsClosed != true)
           outerProfile.Reverse();
       }
-      catch { }
+      catch
+      {
+      }
 
-      var myExtrusion = RH.Extrusion.Create(outerProfile.ToNurbsCurve(), (double)extrusion.length, (bool)extrusion.capped);
+      var myExtrusion =
+        RH.Extrusion.Create(outerProfile.ToNurbsCurve(), (double) extrusion.length, (bool) extrusion.capped);
       if (innerProfile != null)
         myExtrusion.AddInnerProfile(innerProfile);
 
@@ -658,18 +774,31 @@ namespace Objects.Converter.RhinoGh
     // (C) The Rutten David https://www.grasshopper3d.com/forum/topics/explode-closed-planar-curve-using-rhinocommon 
     public static bool CurveSegments(List<RH.Curve> L, RH.Curve crv, bool recursive)
     {
-      if (crv == null) { return false; }
+      if (crv == null)
+      {
+        return false;
+      }
 
       PolyCurve polycurve = crv as PolyCurve;
 
       if (polycurve != null)
       {
-        if (recursive) { polycurve.RemoveNesting(); }
+        if (recursive)
+        {
+          polycurve.RemoveNesting();
+        }
 
         RH.Curve[] segments = polycurve.Explode();
 
-        if (segments == null) { return false; }
-        if (segments.Length == 0) { return false; }
+        if (segments == null)
+        {
+          return false;
+        }
+
+        if (segments.Length == 0)
+        {
+          return false;
+        }
 
         if (recursive)
         {
@@ -691,7 +820,10 @@ namespace Objects.Converter.RhinoGh
 
       //Nothing else worked, lets assume it's a nurbs curve and go from there...
       NurbsCurve nurbs = crv.ToNurbsCurve();
-      if (nurbs == null) { return false; }
+      if (nurbs == null)
+      {
+        return false;
+      }
 
       double t0 = nurbs.Domain.Min;
       double t1 = nurbs.Domain.Max;
@@ -701,7 +833,10 @@ namespace Objects.Converter.RhinoGh
 
       do
       {
-        if (!nurbs.GetNextDiscontinuity(Continuity.C1_locus_continuous, t0, t1, out t)) { break; }
+        if (!nurbs.GetNextDiscontinuity(Continuity.C1_locus_continuous, t0, t1, out t))
+        {
+          break;
+        }
 
         RH.Interval trim = new RH.Interval(t0, t);
         if (trim.Length < 1e-10)
@@ -712,32 +847,40 @@ namespace Objects.Converter.RhinoGh
 
         RH.Curve M = nurbs.DuplicateCurve();
         M = M.Trim(trim);
-        if (M.IsValid) { L.Add(M); }
+        if (M.IsValid)
+        {
+          L.Add(M);
+        }
 
         t0 = t;
       } while (true);
 
-      if (L.Count == LN) { L.Add(nurbs); }
+      if (L.Count == LN)
+      {
+        L.Add(nurbs);
+      }
 
       return true;
     }
+
     public static NurbsSurface ToNative(this Geometry.Surface surface)
-    { 
+    {
       // Create rhino surface
       var points = surface.GetControlPoints();
       var result = NurbsSurface.Create(3, surface.rational, surface.degreeU + 1, surface.degreeV + 1,
         points.Count, points[0].Count);
-      
+
       // Set knot vectors
       for (int i = 0; i < surface.knotsU.Count; i++)
       {
         result.KnotsU[i] = surface.knotsU[i];
       }
+
       for (int i = 0; i < surface.knotsV.Count; i++)
       {
         result.KnotsV[i] = surface.knotsV[i];
       }
-      
+
       // Set control points
       for (var i = 0; i < points.Count; i++)
       {
@@ -748,26 +891,26 @@ namespace Objects.Converter.RhinoGh
           result.Points.SetWeight(i, j, pt.weight);
         }
       }
-      
+
       // Return surface
       return result;
     }
-    
+
     public static Geometry.Surface ToSpeckle(this NurbsSurface surface)
     {
       var result = new Geometry.Surface();
       result.degreeU = surface.OrderU - 1;
       result.degreeV = surface.OrderV - 1;
-      
+
       // TODO: Unsure if we need this three properties
       result.rational = surface.IsRational;
       result.closedU = surface.IsClosed(0);
       result.closedV = surface.IsClosed(1);
-      
+
       // Set domains
       result.domainU = surface.Domain(0).ToSpeckle();
       result.domainV = surface.Domain(1).ToSpeckle();
-      
+
       // Set control point data
       var points = new List<List<ControlPoint>>();
       for (var i = 0; i < surface.Points.CountU; i++)
@@ -775,9 +918,9 @@ namespace Objects.Converter.RhinoGh
         var row = new List<ControlPoint>();
         for (var j = 0; j < surface.Points.CountV; j++)
         {
-          var pt = surface.Points.GetControlPoint(i,j);
+          var pt = surface.Points.GetControlPoint(i, j);
           var pos = pt.Location;
-          row.Add(new ControlPoint(pos.X,pos.Y,pos.Z,pt.Weight));
+          row.Add(new ControlPoint(pos.X, pos.Y, pos.Z, pt.Weight));
         }
 
         points.Add(row);
