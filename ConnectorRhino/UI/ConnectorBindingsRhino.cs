@@ -174,17 +174,22 @@ namespace SpeckleRhino
 
       var layerName = $"{myStream.name} @ {commit.id}";
       layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty); // Rhino doesn't like emojis in layer names :( 
-      var layerIndex = Doc.Layers.Add(layerName, System.Drawing.Color.White);
 
-      if (layerIndex == -1)
+      var existingLayer = Doc.Layers.FindName(layerName);
+
+      if (existingLayer != null)
       {
-        // TODO: clear up old stuff
-        // Delete all sublayers and their objects
+        Doc.Layers.Purge(existingLayer.Id, false);
+      }
+      var layerIndex = Doc.Layers.Add(layerName, System.Drawing.Color.Blue);
+
+      if(layerIndex == -1)
+      {
+        RaiseNotification($"Coould not create layer {layerName} to bake objects into.");
+        return state;
       }
 
-      var layer = Doc.Layers[layerIndex];
-
-      HandleItem(commitObject, converter, layer);
+      HandleItem(commitObject, converter, Doc.Layers.FindIndex(layerIndex));
 
       Doc.Views.Redraw();
 
@@ -219,8 +224,7 @@ namespace SpeckleRhino
           foreach (var prop in baseItem.GetDynamicMembers())
           {
             var value = baseItem[prop];
-            var layerName = "";
-
+            string layerName;
             if (prop.StartsWith("@"))
             {
               layerName = prop.Remove(0, 1);
