@@ -105,7 +105,7 @@ namespace SpeckleRhino
 
     public override List<string> GetObjectsInView()
     {
-      var objs = Doc.Objects.GetSelectedObjects(true, false).Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList(); // Note: this returns all the doc objects.
+      var objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList(); // Note: this returns all the doc objects.
 
       return objs;
     }
@@ -145,7 +145,7 @@ namespace SpeckleRhino
       return new List<ISelectionFilter>()
       {
          new ElementsSelectionFilter { Name = "Selection", Icon = "Mouse", Selection = GetSelectedObjects()},
-         new ListSelectionFilter { Name = "Category", Icon = "FilterList", Values = layers, Selection = layers },
+         //new ListSelectionFilter { Name = "Category", Icon = "FilterList", Values = layers, Selection = layers },
       };
     }
 
