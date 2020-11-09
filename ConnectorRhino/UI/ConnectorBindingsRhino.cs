@@ -199,7 +199,7 @@ namespace SpeckleRhino
       {
         layer.Index = Doc.Layers.Add(layer);
       }
-      layer.Id = Doc.Layers.FindName(layer.Name).Id;
+      layer = Doc.Layers.FindName(layer.Name);
 
       if (obj is Base baseItem)
       {
@@ -230,13 +230,6 @@ namespace SpeckleRhino
               layerName = prop;
             }
 
-            if (!layer.HasIndex)
-            {
-              layer.Index = Doc.Layers.Add(layer);
-            }
-
-            layer.Id = Doc.Layers.FindName(layer.Name).Id;
-
             var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = layerName };
             subLayer.Index = Doc.Layers.Add(subLayer);
             HandleItem(value, converter, subLayer);
@@ -248,6 +241,7 @@ namespace SpeckleRhino
 
       if (obj is List<object> list)
       {
+
         foreach (var listObj in list)
         {
           HandleItem(listObj, converter, layer);
