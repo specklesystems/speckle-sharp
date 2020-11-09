@@ -28,9 +28,12 @@ In order to test Speckle in all its glory you'll need a server running, you can 
 ### Debugging
 
 After setting up dependencies, server and accounts you're good to go - almost there! After the first build, make sure to:
+
 - Open the bin folder (e.g., `C:\Users\Admin\Code\sharp\ConnectorRhino\bin\Debug`),
 - Drag and drop the `ConnectorRhino.rhp` inside an already running instance of Rhino,
 - Open the Speckle plugin by typing `Speckle` in the Rhino command line.
+
+You can now close Rhino, and start a Visual Studio's debug session. This will launch Rhino for you, and the Speckle plugin should load!
 
 ## Contributing
 
