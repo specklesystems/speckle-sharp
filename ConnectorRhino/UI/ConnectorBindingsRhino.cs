@@ -183,13 +183,13 @@ namespace SpeckleRhino
       }
       var layerIndex = Doc.Layers.Add(layerName, System.Drawing.Color.Blue);
 
-      if(layerIndex == -1)
+      if (layerIndex == -1)
       {
         RaiseNotification($"Coould not create layer {layerName} to bake objects into.");
         return state;
       }
-
-      HandleItem(commitObject, converter, Doc.Layers.FindIndex(layerIndex));
+      currentRootLayerName = layerName;
+      HandleAndConvert(commitObject, converter, Doc.Layers.FindIndex(layerIndex));
 
       Doc.Views.Redraw();
 
@@ -198,12 +198,49 @@ namespace SpeckleRhino
       return state;
     }
 
-    private void HandleItem(object obj, ISpeckleConverter converter, Layer layer)
+    private string currentRootLayerName;
+
+    private void HandleAndConvert(object obj, ISpeckleConverter converter, Layer layer)
     {
       if (!layer.HasIndex)
       {
-        layer.Index = Doc.Layers.Add(layer);
+        // Try and recreate layer structure if coming from Rhino.
+        if (layer.Name.Contains("::"))
+        {
+          var layers = layer.Name.Split(new string[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
+          var ancestors = new List<Layer>();
+          var currentPath = currentRootLayerName;
+          foreach (var linkName in layers)
+          {
+            currentPath += $"::{linkName}";
+            var existingIndex = Doc.Layers.FindByFullPath(currentPath, -1);
+            if (existingIndex != -1)
+            {
+              ancestors.Add(Doc.Layers[existingIndex]);
+            }
+            else
+            {
+              var newLayer = new Layer() { Color = System.Drawing.Color.Gray, Name = linkName };
+              if (ancestors.Count != 0)
+              {
+                newLayer.ParentLayerId = ancestors.Last().Id;
+              } else
+              {
+                newLayer.ParentLayerId = layer.ParentLayerId;
+              }
+              var newIndex = Doc.Layers.Add(newLayer);
+              ancestors.Add(Doc.Layers[newIndex]);
+            }
+
+            layer = ancestors.Last();
+          }
+        }
+        else
+        {
+          Doc.Layers.Add(layer);
+        }
       }
+
       layer = Doc.Layers.FindName(layer.Name);
 
       if (obj is Base baseItem)
@@ -235,8 +272,7 @@ namespace SpeckleRhino
             }
 
             var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = layerName };
-            subLayer.Index = Doc.Layers.Add(subLayer);
-            HandleItem(value, converter, subLayer);
+            HandleAndConvert(value, converter, subLayer);
           }
 
           return;
@@ -248,7 +284,7 @@ namespace SpeckleRhino
 
         foreach (var listObj in list)
         {
-          HandleItem(listObj, converter, layer);
+          HandleAndConvert(listObj, converter, layer);
         }
         return;
       }
@@ -257,7 +293,7 @@ namespace SpeckleRhino
       {
         foreach (DictionaryEntry kvp in dict)
         {
-          HandleItem(kvp.Value, converter, layer);
+          HandleAndConvert(kvp.Value, converter, layer);
         }
         return;
       }
@@ -288,10 +324,6 @@ namespace SpeckleRhino
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Rhino);
-
-      var rhObjects = new List<RhinoObject>();
-      var baseObjects = new List<Base>();
-      var layerNames = new HashSet<string>();
 
       var commitObj = new Base();
 
@@ -324,7 +356,7 @@ namespace SpeckleRhino
           converted[key] = obj.Attributes.GetUserString(key);
         }
 
-        var layerName = Doc.Layers[obj.Attributes.LayerIndex].Name;
+        var layerName = Doc.Layers[obj.Attributes.LayerIndex].FullPath; // sep is ::
 
         if (commitObj[$"@{layerName}"] == null)
         {
@@ -332,6 +364,7 @@ namespace SpeckleRhino
         }
 
         ((List<Base>)commitObj[$"@{layerName}"]).Add(converted);
+
         objCount++;
       }
 
@@ -370,7 +403,7 @@ namespace SpeckleRhino
       });
 
       state.Stream = await client.StreamGet(streamId);
-      //state.Placeholders = new List<Base>(); 
+      // state.Placeholders = new List<Base>(); 
       // ask izzy: confused re the demarcation between state.objects, state.placeholders, etc. seems like
       // the above clears the set selection of a stream. 
       UpdateStream(state);
