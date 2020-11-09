@@ -193,76 +193,6 @@ namespace SpeckleRhino
       return state;
     }
 
-    public void ParseAndConvert(Base obj, ISpeckleConverter converter, Layer layer)
-    {
-      if (converter.CanConvertToNative(obj))
-      {
-        var converted = converter.ConvertToNative(obj) as Rhino.Geometry.GeometryBase;
-        if (converted != null)
-        {
-          if (!layer.HasIndex)
-          {
-            layer.Index = Doc.Layers.Add(layer);
-          }
-          Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = layer.Index });
-        }
-
-        return;
-      }
-
-      var dynamicProps = obj.GetDynamicMembers();
-      var typedProps = obj.GetInstanceMembersNames(); // should these become a group? 
-
-      foreach (var prop in dynamicProps)
-      {
-        var value = obj[prop];
-        var layerName = "";
-
-        if (prop.StartsWith("@"))
-        {
-          layerName = prop.Remove(0, 1);
-        }
-        else
-        {
-          layerName = prop;
-        }
-
-        var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = layerName };
-
-        if (value is Base baseItem)
-        {
-          ParseAndConvert(baseItem, converter, subLayer);
-          continue;
-        }
-
-        if (value is List<object> list)
-        {
-          foreach (var subObj in list)
-          {
-            if (subObj is Base subObjBase)
-            {
-              ParseAndConvert(subObjBase, converter, subLayer);
-            }
-          }
-          continue;
-        }
-
-        if (value is IDictionary dict)
-        {
-          foreach (DictionaryEntry kvp in dict)
-          {
-            if (kvp.Value is Base subObjBase)
-            {
-              ParseAndConvert(subObjBase, converter, subLayer);
-            }
-          }
-        }
-        // TODO: handle prop.value
-        // If prop.value is a collection of sorts, "prop" becomes a key?
-      }
-
-    }
-
     private void HandleItem(object obj, ISpeckleConverter converter, Layer layer)
     {
       if (!layer.HasIndex)
@@ -278,8 +208,6 @@ namespace SpeckleRhino
           var converted = converter.ConvertToNative(baseItem) as Rhino.Geometry.GeometryBase;
           if (converted != null)
           {
-
-
             Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = layer.Index });
           }
 
