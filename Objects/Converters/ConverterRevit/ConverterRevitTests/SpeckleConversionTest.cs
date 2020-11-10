@@ -9,7 +9,7 @@ using Xunit;
 using xUnitRevitUtils;
 
 using DB = Autodesk.Revit.DB;
-
+using DirectShape = Objects.Revit.DirectShape;
 using Element = Objects.BuiltElements.Element;
 
 namespace ConverterRevitTests
@@ -107,7 +107,8 @@ namespace ConverterRevitTests
           Assert.Equal(elem.Name, spkRevit.type);
 
         //Assert.NotNull(spkElem.baseGeometry);
-        Assert.NotNull(spkRevit.level);
+        if(!(spkElem is AdaptiveComponent) && !(spkElem is DirectShape))
+          Assert.NotNull(spkRevit.level);
         //Assert.NotNull(spkRevit.displayMesh);
       }
 

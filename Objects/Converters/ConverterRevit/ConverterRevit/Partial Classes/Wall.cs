@@ -34,7 +34,7 @@ namespace Objects.Converter.Revit
       //comes from revit or schema builder, has these props
       if (speckleWall is RevitWall rw)
       {
-        wallType = GetElementByName(typeof(WallType), rw.type) as WallType;
+        wallType = GetElementByTypeAndName<WallType>(rw.type);
         level = LevelToNative(rw.level);
         structural = rw.structural;
       }

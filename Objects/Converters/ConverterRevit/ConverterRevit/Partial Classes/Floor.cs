@@ -15,28 +15,47 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element FloorToNative(RevitFloor speckleFloor)
+    public DB.Element FloorToNative(Floor speckleFloor)
     {
+      if (speckleFloor.outline == null)
+      {
+        throw new Exception("Only outline based Floor are currently supported.");
+      }
+
+      DB.Level level = null;
       DB.Floor revitFloor = null;
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleFloor.applicationId, speckleFloor.type);
-
-
-      var floorType = GetElementByName(typeof(FloorType), speckleFloor.type) as FloorType;
+      bool structural = false;
       var outline = CurveToNative(speckleFloor.outline);
-      var level = LevelToNative(EnsureLevelExists(speckleFloor.level, outline));
+      var type = "";
+
+
+      var speckleRevitFloor = speckleFloor as RevitFloor;
+      if (speckleRevitFloor != null)
+      {
+        level = LevelToNative(speckleRevitFloor.level);
+        structural = speckleRevitFloor.structural;
+        type = speckleRevitFloor.type;
+      }
+      else
+      {
+        level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
+      }
+
+      var floorType = GetElementByTypeAndName<FloorType>(type);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
+      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleFloor.applicationId, speckleFloor.speckle_type);
       if (docObj != null)
         Doc.Delete(docObj.Id);
 
       if (floorType == null)
       {
         //create floor without a type
-        revitFloor = Doc.Create.NewFloor(outline, speckleFloor.structural);
+        revitFloor = Doc.Create.NewFloor(outline, structural);
       }
       else
       {
-        revitFloor = Doc.Create.NewFloor(outline, floorType, level, speckleFloor.structural);
+        revitFloor = Doc.Create.NewFloor(outline, floorType, level, structural);
       }
 
       Doc.Regenerate();
@@ -49,7 +68,10 @@ namespace Objects.Converter.Revit
       {
         ConversionErrors.Add(new Error("Could not create holes in floor", ex.Message));
       }
-      SetElementParams(revitFloor, speckleFloor);
+      if (speckleRevitFloor != null)
+      {
+        SetElementParams(revitFloor, speckleRevitFloor);
+      }
       return revitFloor;
 
 

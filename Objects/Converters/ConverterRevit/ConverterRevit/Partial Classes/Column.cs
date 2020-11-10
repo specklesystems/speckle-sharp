@@ -115,8 +115,6 @@ namespace Objects.Converter.Revit
         SetElementParams(revitColumn, speckleRevitColumn, exclusions);
       }
 
-
-
       return revitColumn;
     }
 

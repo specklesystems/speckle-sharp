@@ -17,29 +17,43 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element RoofToNative(RevitRoof speckleRoof)
+    public DB.Element RoofToNative(Roof speckleRoof)
     {
-      DB.RoofBase revitRoof = null;
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleRoof.applicationId, speckleRoof.type);
+      if (speckleRoof.outline == null)
+      {
+        throw new Exception("Only outline based Floor are currently supported.");
+      }
 
-      var roofType = GetElementByName(typeof(RoofType), speckleRoof.type) as RoofType;
+      DB.RoofBase revitRoof = null;
+      DB.Level level = null;
       var outline = CurveToNative(speckleRoof.outline);
-      var level = LevelToNative(EnsureLevelExists(speckleRoof.level, outline));
+      var type = "";
+
+      var speckleRevitRoof = speckleRoof as RevitRoof;
+      if (speckleRevitRoof != null)
+      {
+        level = LevelToNative(speckleRevitRoof.level);
+        type = speckleRevitRoof.type;
+      }
+      else
+      {
+        level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
+      }
+
+      var roofType = GetElementByTypeAndName<RoofType>(type);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
+      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleRoof.applicationId, speckleRoof.speckle_type);
       if (docObj != null)
         Doc.Delete(docObj.Id);
 
+
       switch (speckleRoof)
       {
-        case RevitExtrusionRoof extrusionRoof:
+        case RevitExtrusionRoof speckleExtrusionRoof:
           {
-            var speckleExtrusionRoof = extrusionRoof;
-
             var referenceLine = LineToNative(speckleExtrusionRoof.referenceLine);
-
             var norm = GetPerpendicular(referenceLine.GetEndPoint(0) - referenceLine.GetEndPoint(1)).Negate();
-
             ReferencePlane plane = Doc.Create.NewReferencePlane(referenceLine.GetEndPoint(0),
               referenceLine.GetEndPoint(1),
               norm,
@@ -48,15 +62,14 @@ namespace Objects.Converter.Revit
             revitRoof = Doc.Create.NewExtrusionRoof(outline, plane, level, roofType, speckleExtrusionRoof.start, speckleExtrusionRoof.end);
             break;
           }
-        case RevitFootprintRoof footprintRoof:
-          {
-            var speckleFootprintRoof = footprintRoof;
 
+        case RevitFootprintRoof speckleFootprintRoof:
+          {
             ModelCurveArray curveArray = new ModelCurveArray();
             var revitFootprintRoof = Doc.Create.NewFootPrintRoof(outline, level, roofType, out curveArray);
             for (var i = 0; i < curveArray.Size; i++)
             {
-              var poly = footprintRoof.outline;
+              var poly = speckleFootprintRoof.outline as Polycurve;
               revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), ((Base)poly.segments[i]).GetMemberSafe<bool>("isSloped"));
               try
               {
@@ -74,6 +87,10 @@ namespace Objects.Converter.Revit
             revitRoof = revitFootprintRoof;
             break;
           }
+        default:
+          ConversionErrors.Add(new Error("Cannot create Roof", "Roof type not supported"));
+          throw new Exception("Roof type not supported");
+
       }
 
       Doc.Regenerate();
@@ -86,7 +103,8 @@ namespace Objects.Converter.Revit
       {
         ConversionErrors.Add(new Error("Could not create holes in roof", ex.Message));
       }
-      SetElementParams(revitRoof, speckleRoof);
+      if (speckleRoof is IRevitElement ire)
+        SetElementParams(revitRoof, ire);
       return revitRoof;
     }
 

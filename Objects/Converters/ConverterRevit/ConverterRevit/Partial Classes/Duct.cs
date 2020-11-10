@@ -15,6 +15,43 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    public DB.Duct DuctToNative(Duct speckleDuct)
+    {
+      DB.Duct duct = null;
+      var baseLine = LineToNative(speckleDuct.baseLine);
+      XYZ startPoint = baseLine.GetEndPoint(0);
+      XYZ endPoint = baseLine.GetEndPoint(1);
+
+      Autodesk.Revit.DB.Level level = null;
+      var type = "";
+
+      var speckleRevitDuct = speckleDuct as RevitDuct;
+      if (speckleRevitDuct != null)
+      {
+        type = speckleRevitDuct.type;
+        level = LevelToNative(speckleRevitDuct.level);
+      }
+      else
+      {
+        level = LevelToNative(LevelFromCurve(baseLine));
+      }
+
+      var ductType = GetElementByTypeAndName<DB.DuctType>(type);
+      var system = GetElementByTypeAndName<MechanicalSystemType>(speckleDuct.system);
+
+      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleDuct.applicationId, speckleDuct.speckle_type);
+
+      // deleting instead of updating for now!
+      if (docObj != null)
+        Doc.Delete(docObj.Id);
+
+      duct = DB.Duct.Create(Doc, system.Id, ductType.Id, level.Id, startPoint, endPoint);
+
+      if (speckleRevitDuct != null)
+        SetElementParams(duct, speckleRevitDuct);
+
+      return duct;
+    }
     public Duct DuctToSpeckle(DB.Duct revitDuct)
     {
       var baseGeometry = LocationToSpeckle(revitDuct);
@@ -56,27 +93,6 @@ namespace Objects.Converter.Revit
       return speckleDuct;
     }
 
-    public DB.Duct DuctToNative(RevitDuct speckleDuct)
-    {
-      DB.Duct duct = null;
-      var revitLine = LineToNative(speckleDuct.baseLine);
-      XYZ startPoint = revitLine.GetEndPoint(0);
-      XYZ endPoint = revitLine.GetEndPoint(1);
-      var level = LevelToNative(speckleDuct.level);
-      var ductType = GetElementByName(typeof(DB.DuctType), speckleDuct.type);
 
-      var system = GetElementByName(typeof(MechanicalSystemType), speckleDuct.system);
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleDuct.applicationId, speckleDuct.speckle_type);
-
-      // deleting instead of updating for now!
-      if (docObj != null)
-        Doc.Delete(docObj.Id);
-
-      duct = DB.Duct.Create(Doc, system.Id, ductType.Id, level.Id, startPoint, endPoint);
-
-      SetElementParams(duct, speckleDuct);
-
-      return duct;
-    }
   }
 }

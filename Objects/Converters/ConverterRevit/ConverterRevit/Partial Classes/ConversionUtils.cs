@@ -262,30 +262,29 @@ namespace Objects.Converter.Revit
     }
 
     /// <summary>
-    /// Gets an element by its type and name. If nothing found, returns the first one.
+    /// Gets an element by its type and name. If nothing found, returns the first one of that type.
     /// </summary>
-    /// <param name="type"></param>
     /// <param name="name"></param>
     /// <returns></returns>
-    public DB.Element GetElementByName(Type type, string name)
+    public T GetElementByTypeAndName<T>(string name)
     {
-      var collector = new FilteredElementCollector(Doc).OfClass(type);
+      var collector = new FilteredElementCollector(Doc).OfClass(typeof(T));
 
-      if (name == null) return collector.FirstElement();
+      if (string.IsNullOrEmpty(name)) return (T)(object)collector.FirstElement();
 
       if (name.ToLower().Contains("duct"))
       { // DuctType.Name is just 'Default'
         foreach (DB.Mechanical.DuctType myElement in collector.ToElements())
-          if (myElement.FamilyName == name) return myElement;
+          if (myElement.FamilyName == name) return (T)(object)myElement;
       }
 
       foreach (var myElement in collector.ToElements())
-        if (myElement.Name == name) return myElement;
+        if (myElement.Name == name) return (T)(object)myElement;
 
 
       // now returning the first type, which means we didn't find the type we were actually looking for.
-      ConversionErrors.Add(new Error($"Missing wall type: {name}", $"{collector.FirstElement().Name} has been used instead."));
-      return collector.FirstElement();
+      ConversionErrors.Add(new Error($"Missing type: {name}", $"{collector.FirstElement().Name} has been used instead."));
+      return (T)(object)collector.FirstElement();
     }
 
     /// <summary>

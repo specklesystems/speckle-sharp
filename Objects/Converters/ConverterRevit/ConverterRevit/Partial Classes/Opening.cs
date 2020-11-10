@@ -16,44 +16,48 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Opening OpeningToNative(RevitOpening speckleOpening)
+    public DB.Opening OpeningToNative(Opening speckleOpening)
     {
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleOpening.applicationId, speckleOpening.type);
-
       var baseCurves = CurveToNative(speckleOpening.outline);
 
+      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleOpening.applicationId, speckleOpening.speckle_type);
       if (docObj != null)
         Doc.Delete(docObj.Id);
 
       DB.Opening revitOpeneing = null;
 
-      //wall opening (could also check if the host is a wall)
-      if (speckleOpening is RevitWallOpening rwo)
+      switch (speckleOpening)
       {
-        var points = rwo.outline.points.Select(x => PointToNative(x)).ToList();
-        var host = Doc.GetElement(new ElementId(rwo.revitHostId));
-        revitOpeneing = Doc.Create.NewOpening(host as DB.Wall, points[0], points[2]);
-      }
-      //vertical opening
-      else if (speckleOpening is RevitVerticalOpening rvo)
-      {
-        var host = Doc.GetElement(new ElementId(rvo.revitHostId));
-        revitOpeneing = Doc.Create.NewOpening(host, baseCurves, true);
-      }
-      //shaft opening
-      else if (speckleOpening is RevitShaft rs)
-      {
-        var bottomLevel = LevelToNative(rs.level);
-        var topLevel = rs.level != null ? LevelToNative(rs.topLevel) : null;
-        revitOpeneing = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
-      }
-      else
-      {
-        ConversionErrors.Add(new Error("Cannot create Opening", "Does not satisfy requrements to create a Revit Opening"));
-        throw new Exception("Cannot create Opening");
+        case RevitWallOpening rwo:
+          {
+            var points = (rwo.outline as Polyline).points.Select(x => PointToNative(x)).ToList();
+            var host = Doc.GetElement(new ElementId(rwo.revitHostId));
+            revitOpeneing = Doc.Create.NewOpening(host as Wall, points[0], points[2]);
+            break;
+          }
+
+        case RevitVerticalOpening rvo:
+          {
+            var host = Doc.GetElement(new ElementId(rvo.revitHostId));
+            revitOpeneing = Doc.Create.NewOpening(host, baseCurves, true);
+            break;
+          }
+
+        case RevitShaft rs:
+          {
+            var bottomLevel = LevelToNative(rs.level);
+            var topLevel = rs.level != null ? LevelToNative(rs.topLevel) : null;
+            revitOpeneing = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
+            break;
+          }
+
+        default:
+          ConversionErrors.Add(new Error("Cannot create Opening", "Opening type not supported"));
+          throw new Exception("Opening type not supported");
       }
 
-      SetElementParams(revitOpeneing, speckleOpening);
+      if (revitOpeneing is IRevitElement ire)
+        SetElementParams(revitOpeneing, ire);
 
       return revitOpeneing;
     }
@@ -84,7 +88,8 @@ namespace Objects.Converter.Revit
         speckleOpening.outline = poly;
       }
       else
-      {//TODO: check it works!!!
+      {
+        //TODO: check it works!!!
         if (revitOpening.Host != null)
           speckleOpening = new RevitVerticalOpening();
         else

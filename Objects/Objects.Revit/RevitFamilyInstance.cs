@@ -6,7 +6,6 @@ namespace Objects.Revit
 {
   public class RevitFamilyInstance : Element, IRevitElement
   {
-    public bool flipped { get; set; }
     public Element host { get; set; }
     public string family { get; set; }
     public string type { get; set; }
@@ -16,5 +15,8 @@ namespace Objects.Revit
     public Point basePoint { get; set; }
     public RevitLevel level { get; set; }
     public int revitHostId { get; set; }
+    public bool facingFlipped { get; set; }
+    public bool handFlipped { get; set; }
+    public double rotation { get; set; }
   }
 }

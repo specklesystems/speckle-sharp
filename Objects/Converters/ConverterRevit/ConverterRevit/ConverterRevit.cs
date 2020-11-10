@@ -128,31 +128,31 @@ namespace Objects.Converter.Revit
           return FamilyInstanceToNative(o);
 
         case Floor o:
-          return FloorToNative(o as RevitFloor);
+          return FloorToNative(o);
 
         case Level o:
-          return LevelToNative(o as RevitLevel);
+          return LevelToNative(o);
 
         case ModelCurve o:
           return ModelCurveToNative(o);
 
         case Opening o:
-          return OpeningToNative(o as RevitOpening);
+          return OpeningToNative(o);
 
         case RoomBoundaryLine o:
           return RoomBoundaryLineToNative(o);
 
         case Roof o:
-          return RoofToNative(o as RevitRoof);
+          return RoofToNative(o);
 
         case Topography o:
-          return TopographyToNative(o as RevitTopography);
+          return TopographyToNative(o);
 
         case Wall o:
           return WallToNative(o);
 
         case Duct o:
-          return DuctToNative(o as RevitDuct);
+          return DuctToNative(o);
 
         default:
           ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Revit"));

@@ -11,8 +11,9 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Level LevelToNative(RevitLevel speckleLevel)
+    public DB.Level LevelToNative(Level speckleLevel)
     {
+
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleLevel.applicationId, speckleLevel.speckle_type);
 
       //TODO: should check hashes on all conversions?
@@ -40,26 +41,27 @@ namespace Objects.Converter.Revit
         }
       }
 
+      var speckleRevitLevel = speckleLevel as RevitLevel;
+
       // create new element
       if (revitLevel == null)
       {
         revitLevel = DB.Level.Create(Doc, elevation);
 
-        if (speckleLevel.createView)
+        if (speckleRevitLevel != null && speckleRevitLevel.createView)
           CreateViewPlan(speckleLevel.name, revitLevel.Id);
-
-        //if (speckleLevel.HasMember<bool>("createView") && (bool)speckleLevel["createView"])
-        //  CreateViewPlan(speckleLevel.name, revitLevel.Id);
       }
 
-      //not sure why it would fail?
+      //might fail if there's another level with the same name
       try
       {
         revitLevel.Name = speckleLevel.name;
       }
       catch { }
 
-      SetElementParams(revitLevel, speckleLevel);
+      if (speckleRevitLevel != null)
+        SetElementParams(revitLevel, speckleRevitLevel);
+
       //revitLevel.Maximize3DExtents();
       return revitLevel;
     }
@@ -87,7 +89,7 @@ namespace Objects.Converter.Revit
       catch { }
     }
 
-    private DB.Level TryMatchExistingLevel(RevitLevel level)
+    private DB.Level TryMatchExistingLevel(Level level)
     {
       var collector = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
 
