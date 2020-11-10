@@ -205,6 +205,10 @@ namespace Speckle.Core.Serialisation
 
       TotalProcessedCount++;
       OnProgressAction?.Invoke("DS", 1);
+
+      foreach (var callback in contract.OnDeserializedCallbacks)
+        callback(obj, serializer.Context);
+
       return obj;
     }
 
@@ -236,7 +240,7 @@ namespace Speckle.Core.Serialisation
     // the parent object being last. 
     public override void WriteJson(JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer)
     {
-      
+      var xxxx = serializer.ReferenceLoopHandling;
       if(CancellationToken.IsCancellationRequested) return; // Check for cancellation
 
       /////////////////////////////////////
@@ -249,11 +253,12 @@ namespace Speckle.Core.Serialisation
       // Path two: primitives (string, bool, int, etc)
       /////////////////////////////////////
 
-      if (value.GetType().IsPrimitive)
+      if (value.GetType().IsPrimitive || value is string)
       {
         FirstEntry = false;
         var t = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer
         t.WriteTo(writer);
+        return;
       }
 
       /////////////////////////////////////
