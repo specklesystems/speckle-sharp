@@ -113,10 +113,10 @@ namespace Objects.Converter.Revit
           return BeamToNative(o);
 
         case Brace o:
-          return BraceToNative(o as RevitBrace);
+          return BraceToNative(o);
 
         case Column o:
-          return ColumnToNative(o as RevitColumn);
+          return ColumnToNative(o);
 
         case DetailCurve o:
           return DetailCurveToNative(o);

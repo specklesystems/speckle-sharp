@@ -13,10 +13,10 @@ namespace Objects.Converter.Revit
   public partial class ConverterRevit
   {
 
-    private void AddCommonRevitProps(IRevit speckleElement, DB.Element revitElement)
+    private void AddCommonRevitProps(IRevitElement speckleElement, DB.Element revitElement)
     {
 
-      if(speckleElement is IRevitElement speckleRevitElement)
+      if (speckleElement is IRevitElement speckleRevitElement)
       {
         if (revitElement is DB.FamilyInstance)
         {
@@ -26,7 +26,7 @@ namespace Objects.Converter.Revit
         if (CanGetElementTypeParams(revitElement))
           speckleRevitElement.typeParameters = GetElementTypeParams(revitElement);
       }
-    
+
       speckleElement.parameters = GetElementParams(revitElement);
       speckleElement.elementId = revitElement.Id.ToString();
       speckleElement.applicationId = revitElement.UniqueId;
@@ -190,7 +190,7 @@ namespace Objects.Converter.Revit
       return myParamDict;
     }
 
-    public void SetElementParams(DB.Element myElement, IRevit spkElement, List<string> exclusions = null)
+    public void SetElementParams(DB.Element myElement, IRevitElement spkElement, List<string> exclusions = null)
     {
 
       if (myElement == null) return;
@@ -344,7 +344,7 @@ namespace Objects.Converter.Revit
 
 
 
-    private FamilySymbol GetFamilySymbol(IRevitElement element)
+    private FamilySymbol GetFamilySymbol(Element element)
     {
       List<FamilySymbol> symbols = new List<FamilySymbol>();
       ElementMulticategoryFilter filter = null;
@@ -367,30 +367,32 @@ namespace Objects.Converter.Revit
         symbols = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(FamilySymbol)).ToElements().Cast<FamilySymbol>().ToList();
       }
 
-      var familyName = element.family ?? "";
 
-      //match family and type
-      var match = symbols.FirstOrDefault(x => x.FamilyName == familyName && x.Name == element.type);
-      if (match != null)
+      if (element is IRevitElement ire)
       {
-        if (!match.IsActive) match.Activate();
-        return match;
+        //match family and type
+        var match = symbols.FirstOrDefault(x => x.FamilyName == ire.family && x.Name == ire.type);
+        if (match != null)
+        {
+          if (!match.IsActive) match.Activate();
+          return match;
+        }
+
+        //match type
+        match = symbols.FirstOrDefault(x => x.FamilyName == ire.family);
+        if (match != null)
+        {
+          ConversionErrors.Add(new Error($"Missing type: {ire.family} {ire.type}", $"Type was replace with: {match.FamilyName} - {match.Name}"));
+          if (!match.IsActive) match.Activate();
+          return match;
+        }
       }
 
-      //match type
-      match = symbols.FirstOrDefault(x => x.FamilyName == familyName);
-      if (match != null)
-      {
-        ConversionErrors.Add(new Error($"Missing type: {familyName} {element.type}", $"Type was replace with: {match.FamilyName} - {match.Name}"));
-        if (!match.IsActive) match.Activate();
-        return match;
-      }
-
-      // get whatever we got, could be a different category!
+      // get whatever we found, could be a different category!
       if (symbols.Any())
       {
-        match = symbols.FirstOrDefault();
-        ConversionErrors.Add(new Error($"Missing family and type: {familyName} {element.type}", $"Family and type were replaced with: {match.FamilyName} - {match.Name}"));
+        var match = symbols.FirstOrDefault();
+        ConversionErrors.Add(new Error($"Missing family and type", $"The following family and type were used: {match.FamilyName} - {match.Name}"));
         if (!match.IsActive) match.Activate();
         return match;
       }

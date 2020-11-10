@@ -20,7 +20,7 @@ namespace Objects.Revit
     public bool facingFlipped { get; set; }
     public bool handFlipped { get; set; }
     public bool isSlanted { get; set; }
-    public string structuralType { get; set; }
+    public bool structural { get; set; }
     public double rotation { get; set; }
   }
 }

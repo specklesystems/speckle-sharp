@@ -25,7 +25,7 @@ namespace ConverterRevitTests
 
       foreach (var elem in fixture.RevitElements)
       {
-        var spkElem = kit.ConvertToSpeckle(elem) as IRevit;
+        var spkElem = kit.ConvertToSpeckle(elem) as IRevitElement;
         AssertValidSpeckleElement(elem, spkElem);
       }
       Assert.Empty(kit.ConversionErrors);
@@ -94,7 +94,7 @@ namespace ConverterRevitTests
       }
     }
 
-    internal void AssertValidSpeckleElement(DB.Element elem, IRevit spkElem)
+    internal void AssertValidSpeckleElement(DB.Element elem, IRevitElement spkElem)
     {
       Assert.NotNull(elem);
       Assert.NotNull(spkElem);

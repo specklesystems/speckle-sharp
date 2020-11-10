@@ -95,7 +95,7 @@ namespace Objects.Converter.Revit
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleElement.applicationId, speckleElement.type);
 
       string familyName = speckleElement.family ?? "";
-      DB.FamilySymbol familySymbol = GetFamilySymbol(speckleElement);
+      DB.FamilySymbol familySymbol = GetFamilySymbol(speckleElement as Element);
       object location = LocationToNative(speckleElement as Element);
       DB.Level level = LevelToNative(EnsureLevelExists(speckleElement.level, location));
       DB.FamilyInstance familyInstance = null;
@@ -178,7 +178,6 @@ namespace Objects.Converter.Revit
       }
 
 
-      SetOffsets(familyInstance, elem);
       var exclusions = new List<string> { "Base Offset", "Top Offset" };
       SetElementParams(familyInstance, speckleElement, exclusions);
 
@@ -187,42 +186,7 @@ namespace Objects.Converter.Revit
     }
 
 
-    /// <summary>
-    /// Some families eg columns, need offsets to be set in a specific way
-    /// </summary>
-    /// <param name="speckleElement"></param>
-    /// <param name="familyInstance"></param>
-    private void SetOffsets(DB.FamilyInstance familyInstance, Element speckleElement)
-    {
-      var topOffsetParam = familyInstance.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
-      var baseOffsetParam = familyInstance.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
-      var baseLevelParam = familyInstance.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
-      var topLevelParam = familyInstance.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
 
-      if (topLevelParam == null || baseLevelParam == null || baseOffsetParam == null || topOffsetParam == null)
-        return;
-
-
-      var baseOffset = UnitUtils.ConvertToInternalUnits(speckleElement.GetMemberSafe<double>("baseOffset"), baseOffsetParam.DisplayUnitType);
-      var topOffset = UnitUtils.ConvertToInternalUnits(speckleElement.GetMemberSafe<double>("topOffset"), baseOffsetParam.DisplayUnitType);
-
-      //these have been set previously
-      DB.Level level = Doc.GetElement(baseLevelParam.AsElementId()) as DB.Level;
-      DB.Level topLevel = Doc.GetElement(topLevelParam.AsElementId()) as DB.Level;
-
-      //checking if BASE offset needs to be set before or after TOP offset
-      if (topLevel != null && topLevel.Elevation + baseOffset <= level.Elevation)
-      {
-        baseOffsetParam.Set(baseOffset);
-        topOffsetParam.Set(topOffset);
-      }
-      else
-      {
-        topOffsetParam.Set(topOffset);
-        baseOffsetParam.Set(baseOffset);
-      }
-
-    }
 
 
 

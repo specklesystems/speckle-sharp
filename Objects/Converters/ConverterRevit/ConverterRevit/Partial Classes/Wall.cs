@@ -83,7 +83,7 @@ namespace Objects.Converter.Revit
         revitWall.Flip();
       }
 
-      if (speckleWall is IRevit item)
+      if (speckleWall is IRevitElement item)
         SetElementParams(revitWall, item);
 
       return revitWall;

@@ -10,7 +10,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element BeamToNative(Beam speckleBeam)
+    public DB.Element BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
       if (speckleBeam.baseLine == null)
       {
@@ -18,7 +18,7 @@ namespace Objects.Converter.Revit
       }
 
       string familyName = "";
-      DB.FamilySymbol familySymbol = null;
+      DB.FamilySymbol familySymbol = GetFamilySymbol(speckleBeam);
       var baseLine = CurveToNative(speckleBeam.baseLine).get_Item(0);
       DB.Level level = null;
       DB.FamilyInstance revitBeam = null;
@@ -27,7 +27,6 @@ namespace Objects.Converter.Revit
       if (speckleBeam is RevitBeam rb)
       {
         familyName = rb.family;
-        familySymbol = GetFamilySymbol(rb);
         level = LevelToNative(rb.level);
       }
       else
@@ -51,11 +50,7 @@ namespace Objects.Converter.Revit
           else
           {
             revitBeam = (DB.FamilyInstance)docObj;
-
-
             (revitBeam.Location as LocationCurve).Curve = baseLine;
-            //else
-            //(revitBeam.Location as LocationPoint).Point = location as XYZ;
 
             // check for a type change
             if (!string.IsNullOrEmpty(familyName) && familyName != revitType.Name)
@@ -71,16 +66,13 @@ namespace Objects.Converter.Revit
       //create family instance
       if (revitBeam == null)
       {
-        revitBeam = Doc.Create.NewFamilyInstance(baseLine, familySymbol, level, StructuralType.Beam);
-        //else
-        //  revitBeam = Doc.Create.NewFamilyInstance(location as XYZ, familySymbol, level, structuralType);
+        revitBeam = Doc.Create.NewFamilyInstance(baseLine, familySymbol, level, structuralType);
       }
 
       //reference level, only for beams
       TrySetParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
 
-
-      if (speckleBeam is IRevit item)
+      if (speckleBeam is IRevitElement item)
         SetElementParams(revitBeam, item);
 
       return revitBeam;
