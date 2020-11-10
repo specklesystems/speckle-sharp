@@ -549,7 +549,7 @@ namespace Objects.Converter.RhinoGh
     {
       var joinedMesh = new RH.Mesh();
       var copy = brep.DuplicateBrep();
-      copy.MakeValidForV2(); // TODO: This converts everything to nurbs form. May be a more elegant solution.
+      // TODO: This converts everything to nurbs form. May be a more elegant solution.
       
       MeshingParameters mySettings;
       mySettings = new MeshingParameters(0);
@@ -567,7 +567,7 @@ namespace Objects.Converter.RhinoGh
       // Add brep stuff
 
       // Vertices, uv curves, 3d curves and surfaces
-      spcklBrep.Vertices = copy.Vertices.Select(vertex => new BrepVertex(vertex.Location.ToSpeckle())).ToList();
+      spcklBrep.Vertices = copy.Vertices.Select(vertex => new BrepVertex(vertex.ToSpeckle())).ToList();
       spcklBrep.Curve2D = copy.Curves2D.Select(crv => crv.ToNurbsCurve().ToSpeckle()).ToList();
       spcklBrep.Curve3D = copy.Curves3D.Select(crv => crv.ToNurbsCurve().ToSpeckle()).ToList();
       spcklBrep.Surfaces = copy.Surfaces.Select(srf => srf.ToNurbsSurface().ToSpeckle()).ToList();
@@ -621,42 +621,38 @@ namespace Objects.Converter.RhinoGh
 
     public static RH.Brep ToNative(this Brep brep)
     {
-      var tol = 0.00000001; // TODO: Check tolerance.
+      var tol = 0.0; // TODO: Check tolerance.
       try
       {
         if (brep.provenance == Speckle.Core.Kits.Applications.Rhino)
         {
           var newBrep = new RH.Brep();
-          brep.Vertices.ForEach(vert => newBrep.Vertices.Add(vert.Location.ToNative().Location, tol));
           brep.Curve3D.ForEach(crv => newBrep.AddEdgeCurve(crv.ToNative()));
           brep.Curve2D.ForEach(crv => newBrep.AddTrimCurve(crv.ToNative()));
-          brep.Edges.ForEach(edge => newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, tol));
           brep.Surfaces.ForEach(surf => newBrep.AddSurface(surf.ToNative()));
+          
+          brep.Vertices.ForEach(vert => newBrep.Vertices.Add(vert.Location.ToNative().Location, tol));
+          brep.Edges.ForEach(edge => newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, tol));
           brep.Faces.ForEach(face =>
           {
             var f = newBrep.Faces.Add(face.SurfaceIndex);
             f.OrientationIsReversed = face.OrientationReversed;
-            f.IsValidWithLog(out string flog);
           });
           
           brep.Loops.ForEach(loop =>
           {
             var f = newBrep.Faces[loop.FaceIndex];
             var l = newBrep.Loops.Add((RH.BrepLoopType) loop.Type, f);
-            l.IsValidWithLog(out string llog);
             loop.Trims.ToList().ForEach(trim =>
             {
               var rhTrim = newBrep.Trims.Add(newBrep.Edges[trim.EdgeIndex], trim.IsReversed, newBrep.Loops[trim.LoopIndex], trim.CurveIndex);
               rhTrim.IsoStatus = (IsoStatus)trim.IsoStatus;
               rhTrim.TrimType = (BrepTrimType) trim.TrimType;
               rhTrim.SetTolerances(tol,tol);
-
             });
           });
-          
-          var s = newBrep.IsValidWithLog(out string log);
-          var myBrep = JsonConvert.DeserializeObject<RH.Brep>((string) brep.rawData);
-          //newBrep.Repair(tol);
+          //var myBrep = JsonConvert.DeserializeObject<RH.Brep>((string) brep.rawData);
+          newBrep.Repair(tol);
           return newBrep;
         }
 
@@ -894,7 +890,7 @@ namespace Objects.Converter.RhinoGh
         for (var j = 0; j < points[i].Count; j++)
         {
           var pt = points[i][j];
-          result.Points.SetPoint(i, j, pt.x, pt.y, pt.z);
+          result.Points.SetPoint(i, j, pt.x*pt.weight, pt.y*pt.weight, pt.z*pt.weight);
           result.Points.SetWeight(i, j, pt.weight);
         }
       }
