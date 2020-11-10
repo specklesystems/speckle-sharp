@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace Objects.Geometry
 {
@@ -42,12 +43,21 @@ namespace Objects.Geometry
       this.displayValue = displayValue;
       this.applicationId = applicationId;
     }
+    
+    [OnDeserialized]
+    internal void onDeserialized(StreamingContext context)
+    {
+      Edges.ForEach(e => e.Brep = this);
+      Loops.ForEach(l => l.Brep = this);
+      Trims.ForEach(t => t.Brep = this);
+      Faces.ForEach(f => f.Brep = this);
+    }
   }
   
   /// <summary>
   /// Represents a face on a <see cref="Brep"/>
   /// </summary>
-  public class BrepFace
+  public class BrepFace : Base
   {
     public Brep Brep { get; set; }
     public int SurfaceIndex { get; set; }
@@ -55,8 +65,8 @@ namespace Objects.Geometry
     public int OuterLoopIndex { get; set; }
     public bool OrientationReversed { get; set; }
 
+    public BrepFace() { }
 
-    [JsonConstructor]
     public BrepFace(Brep brep, int surfaceIndex, List<int> loopIndices, int outerLoopIndex, bool orientationReversed)
     {
       Brep = brep;
@@ -74,12 +84,14 @@ namespace Objects.Geometry
   /// <summary>
   /// Represents a UV Trim Closed Loop on one of the <see cref="Brep"/>'s surfaces.
   /// </summary>
-  public class BrepLoop
+  public class BrepLoop : Base
   {
     public Brep Brep { get; set; }
     public int FaceIndex { get; set; }
     public List<int> TrimIndices { get; set; }
     public BrepLoopType Type { get; set; }
+
+    public BrepLoop() { }
 
     public BrepLoop(Brep brep , int faceIndex, List<int> trimIndices, BrepLoopType type)
     {
@@ -93,7 +105,7 @@ namespace Objects.Geometry
     public List<BrepTrim> Trims => TrimIndices.Select(i => Brep.Trims[i]).ToList();
   }
 
-  public class BrepTrim
+  public class BrepTrim : Base
   {
     public Brep Brep { get; set; }
     public int EdgeIndex { get; set; }
@@ -104,6 +116,8 @@ namespace Objects.Geometry
     public int TrimType { get; set; }
     public bool IsReversed { get; set; }
     
+    public BrepTrim() { }
+
     public BrepTrim(Brep brep, int edgeIndex, int faceIndex, int loopIndex, int curveIndex, int isoStatus, int trimType, bool reversed)
     {
       Brep = brep;
@@ -120,13 +134,15 @@ namespace Objects.Geometry
     public BrepLoop Loop => Brep.Loops[LoopIndex];
   }
 
-  public class BrepEdge
+  public class BrepEdge : Base
   {
     public Brep Brep { get; set; }
     public int Curve3dIndex { get; set; }
     public int[] TrimIndices { get; set; }
     public int StartIndex { get; set; }
     public int EndIndex { get; set; }
+
+    public BrepEdge() { }
 
     public BrepEdge(Brep brep, int curve3dIndex, int[] trimIndices, int startIndex, int endIndex)
     {
@@ -143,8 +159,10 @@ namespace Objects.Geometry
     public ICurve Curve => Brep.Curve3D[Curve3dIndex];
   }
 
-  public class BrepVertex
+  public class BrepVertex : Base
   {
+    public BrepVertex() { }
+
     public BrepVertex(Point location)
     {
       Location = location;
