@@ -14,8 +14,8 @@ namespace Objects.Geometry
     public Mesh displayValue { get; set; }
 
     public List<Surface> Surfaces { get; set; }
-    public List<ICurve> Curve3D { get; set; }
-    public List<ICurve> Curve2D { get; set; }
+    public List<Curve> Curve3D { get; set; }
+    public List<Curve> Curve2D { get; set; }
     public List<BrepVertex> Vertices { get; set; }
     public List<BrepEdge> Edges { get; set; }
     public List<BrepLoop> Loops { get; set; }
@@ -25,8 +25,8 @@ namespace Objects.Geometry
     public Brep()
     {
       Surfaces = new List<Surface>();
-      Curve2D = new List<ICurve>();
-      Curve3D = new List<ICurve>();
+      Curve2D = new List<Curve>();
+      Curve3D = new List<Curve>();
 
       Vertices = new List<BrepVertex>();
       Edges = new List<BrepEdge>();
@@ -77,15 +77,13 @@ namespace Objects.Geometry
   public class BrepLoop
   {
     public Brep Brep { get; set; }
-    public int LoopIndex { get; set; }
     public int FaceIndex { get; set; }
     public List<int> TrimIndices { get; set; }
     public BrepLoopType Type { get; set; }
 
-    public BrepLoop(Brep brep, int loopIndex, int faceIndex, List<int> trimIndices, BrepLoopType type)
+    public BrepLoop(Brep brep , int faceIndex, List<int> trimIndices, BrepLoopType type)
     {
       Brep = brep;
-      LoopIndex = loopIndex;
       FaceIndex = faceIndex;
       TrimIndices = trimIndices;
       Type = type;
@@ -104,8 +102,9 @@ namespace Objects.Geometry
     public int CurveIndex { get; set; }    
     public int IsoStatus { get; set; }
     public int TrimType { get; set; }
+    public bool IsReversed { get; set; }
     
-    public BrepTrim(Brep brep, int edgeIndex, int faceIndex, int loopIndex, int curveIndex, int isoStatus, int trimType)
+    public BrepTrim(Brep brep, int edgeIndex, int faceIndex, int loopIndex, int curveIndex, int isoStatus, int trimType, bool reversed)
     {
       Brep = brep;
       EdgeIndex = edgeIndex;
@@ -114,6 +113,7 @@ namespace Objects.Geometry
       CurveIndex = curveIndex;
       IsoStatus = isoStatus;
       TrimType = trimType;
+      IsReversed = reversed;
     }
 
     public BrepFace Face => Brep.Faces[FaceIndex];
@@ -156,7 +156,7 @@ namespace Objects.Geometry
   public enum BrepLoopType
   {
     Unknown = 0,
-    Inner = 1,
-    Outer = 2,
+    Inner = 2,
+    Outer = 1,
   }
 }

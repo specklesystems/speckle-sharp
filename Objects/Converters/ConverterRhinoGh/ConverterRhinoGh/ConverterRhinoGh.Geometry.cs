@@ -397,10 +397,10 @@ namespace Objects.Converter.RhinoGh
       }
     }
 
-    public static ICurve ToSpeckle(this NurbsCurve curve)
+    public static Curve ToSpeckle(this NurbsCurve curve)
     {
       var tolerance = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
-      if (curve.IsArc(tolerance))
+      /*if (curve.IsArc(tolerance))
       {
         curve.TryGetArc(out var getObj);
         return getObj.ToSpeckle();
@@ -425,7 +425,7 @@ namespace Objects.Converter.RhinoGh
         {
           return getObj.ToSpeckle();
         }
-      }
+      }*/
 
       curve.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
 
@@ -548,31 +548,33 @@ namespace Objects.Converter.RhinoGh
     public static Brep ToSpeckle(this RH.Brep brep)
     {
       var joinedMesh = new RH.Mesh();
-
+      var copy = brep.DuplicateBrep();
+      copy.MakeValidForV2(); // TODO: This converts everything to nurbs form. May be a more elegant solution.
+      
       MeshingParameters mySettings;
       mySettings = new MeshingParameters(0);
 
-      RH.Mesh.CreateFromBrep(brep, mySettings).All(meshPart =>
+      RH.Mesh.CreateFromBrep(copy, mySettings).All(meshPart =>
       {
         joinedMesh.Append(meshPart);
         return true;
       });
 
 
-      var spcklBrep = new Brep(displayValue: joinedMesh.ToSpeckle(), rawData: JsonConvert.SerializeObject(brep),
+      var spcklBrep = new Brep(displayValue: joinedMesh.ToSpeckle(), rawData: JsonConvert.SerializeObject(copy),
         provenance: Speckle.Core.Kits.Applications.Rhino);
 
       // Add brep stuff
 
       // Vertices, uv curves, 3d curves and surfaces
-      spcklBrep.Vertices = brep.Vertices.Select(vertex => new BrepVertex(vertex.Location.ToSpeckle())).ToList();
-      spcklBrep.Curve2D = brep.Curves2D.Select(crv => crv.ToNurbsCurve().ToSpeckle()).ToList();
-      spcklBrep.Curve3D = brep.Curves3D.Select(crv => crv.ToNurbsCurve().ToSpeckle()).ToList();
-      spcklBrep.Surfaces = brep.Surfaces.Select(srf => srf.ToNurbsSurface().ToSpeckle()).ToList();
+      spcklBrep.Vertices = copy.Vertices.Select(vertex => new BrepVertex(vertex.Location.ToSpeckle())).ToList();
+      spcklBrep.Curve2D = copy.Curves2D.Select(crv => crv.ToNurbsCurve().ToSpeckle()).ToList();
+      spcklBrep.Curve3D = copy.Curves3D.Select(crv => crv.ToNurbsCurve().ToSpeckle()).ToList();
+      spcklBrep.Surfaces = copy.Surfaces.Select(srf => srf.ToNurbsSurface().ToSpeckle()).ToList();
 
 
       // Faces
-      spcklBrep.Faces = brep.Faces
+      spcklBrep.Faces = copy.Faces
         .Select(f => new BrepFace(
           spcklBrep,
           f.SurfaceIndex,
@@ -582,27 +584,26 @@ namespace Objects.Converter.RhinoGh
         )).ToList();
 
       // Edges
-      spcklBrep.Edges = brep.Edges
+      spcklBrep.Edges = copy.Edges
         .Select(edge => new BrepEdge(
           spcklBrep,
           edge.EdgeCurveIndex,
           edge.TrimIndices(),
-          edge.EndVertex.VertexIndex,
-          edge.StartVertex.VertexIndex
+          edge.StartVertex.VertexIndex,
+          edge.EndVertex.VertexIndex
         )).ToList();
 
       // Loops
-      spcklBrep.Loops = brep.Loops
+      spcklBrep.Loops = copy.Loops
         .Select(loop => new BrepLoop(
           spcklBrep,
-          loop.LoopIndex,
           loop.Face.FaceIndex,
           loop.Trims.Select(t => t.TrimIndex).ToList(),
           (BrepLoopType) loop.LoopType
         )).ToList();
 
       // Trims
-      spcklBrep.Trims = brep.Trims
+      spcklBrep.Trims = copy.Trims
         .Select(trim => new BrepTrim(
           spcklBrep,
           trim.Edge.EdgeIndex,
@@ -610,7 +611,8 @@ namespace Objects.Converter.RhinoGh
           trim.Loop.LoopIndex,
           trim.TrimCurveIndex,
           (int) trim.IsoStatus,
-          (int) trim.TrimType
+          (int) trim.TrimType,
+          trim.IsReversed()
         ))
         .ToList();
 
@@ -619,37 +621,49 @@ namespace Objects.Converter.RhinoGh
 
     public static RH.Brep ToNative(this Brep brep)
     {
+      var tol = 0.01;
       try
       {
         if (brep.provenance == Speckle.Core.Kits.Applications.Rhino)
         {
           var newBrep = new RH.Brep();
-          brep.Vertices.ForEach(vert => newBrep.Vertices.Add(vert.Location.ToNative().Location, 0));
+          brep.Vertices.ForEach(vert => newBrep.Vertices.Add(vert.Location.ToNative().Location, tol));
           brep.Curve3D.ForEach(crv => newBrep.AddEdgeCurve(crv.ToNative()));
-          brep.Edges.ForEach(edge => newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, 0));
+          brep.Curve2D.ForEach(crv => newBrep.AddTrimCurve(crv.ToNative()));
+          brep.Edges.ForEach(edge =>
+          {
+            
+            var nEdge = newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, tol);
+          });
           brep.Surfaces.ForEach(surf => newBrep.AddSurface(surf.ToNative()));
+
           brep.Faces.ForEach(face =>
           {
             var f = newBrep.Faces.Add(face.SurfaceIndex);
             f.OrientationIsReversed = face.OrientationReversed;
+            f.IsValidWithLog(out string flog);
           });
-
+          
           brep.Loops.ForEach(loop =>
           {
             var f = newBrep.Faces[loop.FaceIndex];
             var l = newBrep.Loops.Add((RH.BrepLoopType) loop.Type, f);
+            l.IsValidWithLog(out string llog);
           });
-
-          brep.Curve2D.ForEach(crv => newBrep.AddTrimCurve(crv.ToNative()));
-
+          
           brep.Trims.ForEach(trim =>
           {
-            var rhTrim = newBrep.Trims.Add(newBrep.Edges[trim.EdgeIndex], false, newBrep.Loops[trim.LoopIndex], trim.CurveIndex);
+            var rhTrim = newBrep.Trims.Add(newBrep.Edges[trim.EdgeIndex], trim.IsReversed, newBrep.Loops[trim.LoopIndex], trim.CurveIndex);
             rhTrim.IsoStatus = (IsoStatus)trim.IsoStatus;
             rhTrim.TrimType = (BrepTrimType) trim.TrimType;
+            rhTrim.SetTolerances(tol,tol);
+            rhTrim.IsValidWithLog(out string tlog);
           });
-
+          
+          
+          var s = newBrep.IsValidWithLog(out string log);
           var myBrep = JsonConvert.DeserializeObject<RH.Brep>((string) brep.rawData);
+          //newBrep.Repair(0.00001);
           return newBrep;
         }
 
