@@ -621,7 +621,7 @@ namespace Objects.Converter.RhinoGh
 
     public static RH.Brep ToNative(this Brep brep)
     {
-      var tol = 0.01;
+      var tol = 0.00000001; // TODO: Check tolerance.
       try
       {
         if (brep.provenance == Speckle.Core.Kits.Applications.Rhino)
@@ -630,13 +630,8 @@ namespace Objects.Converter.RhinoGh
           brep.Vertices.ForEach(vert => newBrep.Vertices.Add(vert.Location.ToNative().Location, tol));
           brep.Curve3D.ForEach(crv => newBrep.AddEdgeCurve(crv.ToNative()));
           brep.Curve2D.ForEach(crv => newBrep.AddTrimCurve(crv.ToNative()));
-          brep.Edges.ForEach(edge =>
-          {
-            
-            var nEdge = newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, tol);
-          });
+          brep.Edges.ForEach(edge => newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, tol));
           brep.Surfaces.ForEach(surf => newBrep.AddSurface(surf.ToNative()));
-
           brep.Faces.ForEach(face =>
           {
             var f = newBrep.Faces.Add(face.SurfaceIndex);
@@ -649,21 +644,19 @@ namespace Objects.Converter.RhinoGh
             var f = newBrep.Faces[loop.FaceIndex];
             var l = newBrep.Loops.Add((RH.BrepLoopType) loop.Type, f);
             l.IsValidWithLog(out string llog);
+            loop.Trims.ToList().ForEach(trim =>
+            {
+              var rhTrim = newBrep.Trims.Add(newBrep.Edges[trim.EdgeIndex], trim.IsReversed, newBrep.Loops[trim.LoopIndex], trim.CurveIndex);
+              rhTrim.IsoStatus = (IsoStatus)trim.IsoStatus;
+              rhTrim.TrimType = (BrepTrimType) trim.TrimType;
+              rhTrim.SetTolerances(tol,tol);
+
+            });
           });
-          
-          brep.Trims.ForEach(trim =>
-          {
-            var rhTrim = newBrep.Trims.Add(newBrep.Edges[trim.EdgeIndex], trim.IsReversed, newBrep.Loops[trim.LoopIndex], trim.CurveIndex);
-            rhTrim.IsoStatus = (IsoStatus)trim.IsoStatus;
-            rhTrim.TrimType = (BrepTrimType) trim.TrimType;
-            rhTrim.SetTolerances(tol,tol);
-            rhTrim.IsValidWithLog(out string tlog);
-          });
-          
           
           var s = newBrep.IsValidWithLog(out string log);
           var myBrep = JsonConvert.DeserializeObject<RH.Brep>((string) brep.rawData);
-          //newBrep.Repair(0.00001);
+          //newBrep.Repair(tol);
           return newBrep;
         }
 
