@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:Speckle.DesktopUI"
+        xmlns:settings ="clr-namespace:Speckle.DesktopUI.Settings"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:s="https://github.com/canton7/Stylet"
@@ -11,6 +12,7 @@
         x:Name="RootWindow"
         Title="Speckle"
         Width="450"
+        MaxWidth="500"
         Height="800"
         MinWidth="400"
         MinHeight="300"
@@ -25,154 +27,41 @@
         TextOptions.TextRenderingMode="Auto"
         Topmost="{Binding IsPinned, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
         mc:Ignorable="d">
+  
   <Window.Resources>
     <utils:StringToUpperConverter x:Key="StringToUpperConverter" />
   </Window.Resources>
+
   <md:DialogHost CloseOnClickAway="True"
                  DialogTheme="Inherit"
                  Identifier="RootDialogHost"
                  Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
-    <md:DrawerHost IsLeftDrawerOpen="{Binding ElementName=MenuToggleButton, Path=IsChecked}">
-      <!--#region Left Navigation Drawer-->
-      <md:DrawerHost.LeftDrawerContent>
-        <Grid MinWidth="220">
-          <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-          </Grid.RowDefinitions>
 
-          <ToggleButton Grid.Row="0"
-                        Margin="2"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        IsChecked="{Binding ElementName=MenuToggleButton, Path=IsChecked, Mode=TwoWay}"
-                        Style="{StaticResource MaterialDesignHamburgerToggleButton}" />
-
-          <!--  Main Navigation  -->
-          <ListBox x:Name="NavDrawerListBox"
-                   Grid.Row="2"
-                   Margin="0,0,0,16"
-                   DockPanel.Dock="Top"
-                   ItemsSource="{Binding Items}"
-                   PreviewMouseLeftButtonUp="UIElement_OnPreviewMouseLeftButtonUp"
-                   SelectedItem="{Binding ActiveItem}">
-            <ListBox.Resources>
-              <Style BasedOn="{StaticResource MaterialDesignScrollBarMinimal}"
-                     TargetType="ScrollBar" />
-            </ListBox.Resources>
-            <ListBox.ItemTemplate>
-              <DataTemplate DataType="stylet:IScreen">
-                <TextBlock Margin="32,0,32,0"
-                           Text="{Binding DisplayName}" />
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
-
-          <!--  Bottom Section  -->
-          <StackPanel Grid.Row="3"
-                      VerticalAlignment="Bottom"
-                      Orientation="Vertical">
-            <Separator Margin="0,8" />
-            <!--  Dark Mode 😎  -->
-
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-              </Grid.ColumnDefinitions>
-
-              <TextBlock Grid.Column="0"
-                         Margin="32,8,0,8"
-                         Text="Dark Mode" />
-              <StackPanel Grid.Column="1"
-                          Margin="0,8,24,8"
-                          Orientation="Horizontal">
-                <TextBlock Margin="0,0,8,0">
-                  <md:PackIcon Kind="WhiteBalanceSunny" />
-                </TextBlock>
-                <!--  TODO figure out why this isn't changing the theme  -->
-                <ToggleButton x:Name="DarkModeToggleButton"
-                              Command="{s:Action ToggleTheme}"
-                              IsChecked="{Binding DarkMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Margin="8,0,0,0">
-                  <md:PackIcon Kind="NightSky" />
-                </TextBlock>
-              </StackPanel>
-            </Grid>
-
-            <!--  pin window on top 📌  -->
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-              </Grid.ColumnDefinitions>
-
-              <TextBlock Grid.Column="0"
-                         Margin="32,8,0,8"
-                         Text="Pin Window" />
-              <StackPanel Grid.Column="1"
-                          Margin="0,8,24,8"
-                          Orientation="Horizontal">
-                <TextBlock Margin="0,0,8,0">
-                  <md:PackIcon Kind="Pin"
-                               RenderTransformOrigin=".5,.5">
-                    <md:PackIcon.RenderTransform>
-                      <RotateTransform Angle="45" />
-                    </md:PackIcon.RenderTransform>
-                  </md:PackIcon>
-                </TextBlock>
-                <ToggleButton x:Name="PinWindowToggleButton"
-                              IsChecked="{Binding IsPinned, Mode=TwoWay}" />
-                <TextBlock Margin="8,0,0,0">
-                  <md:PackIcon Kind="Pin" />
-                </TextBlock>
-              </StackPanel>
-            </Grid>
-
-            <TextBlock Margin="32,8"
-                       Text="Help link" />
-            <Separator Margin="0,8" />
-            <TextBlock Margin="0,16,0,24"
-                       HorizontalAlignment="Center"
-                       FontSize="12"
-                       Foreground="Gray"
-                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                       Text="Speckle version 2.😮"
-                       TextWrapping="Wrap" />
-          </StackPanel>
-
-        </Grid>
-      </md:DrawerHost.LeftDrawerContent>
-      <!--#endregion-->
-
-      <DockPanel x:Name="TopLevelDockPanel">
+    <DockPanel x:Name="TopLevelDockPanel">
 
         <!--#region Top Menu Bar-->
-        <md:ColorZone Padding="16"
+        <md:ColorZone Padding="0,12,10,12"
                       Panel.ZIndex="2"
                       md:ShadowAssist.ShadowDepth="Depth0"
                       Background="{DynamicResource MaterialDesignCardBackground}"
                       DockPanel.Dock="Top">
-          <DockPanel>
-            <ToggleButton x:Name="MenuToggleButton"
-                          Click="MenuToggleButton_OnClick"
-                          IsChecked="False"
-                          Style="{StaticResource MaterialDesignHamburgerToggleButton}" />
-
-            <StackPanel Margin="16,0,0,0"
-                        Orientation="Horizontal">
-              <TextBlock VerticalAlignment="Center"
-                         FontSize="26"
+        <DockPanel>
+          <TextBlock VerticalAlignment="Center"
+                     Margin="10,0,0,0"
+                         FontSize="20"
                          Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-                         Text="SPECKLE" />
-              <TextBlock VerticalAlignment="Center"
-                         FontSize="26"
-                         Style="{StaticResource MaterialDesignHeadline2TextBlock}"
-                         Text="{Binding HostName, Converter={StaticResource StringToUpperConverter}}" />
-            </StackPanel>
-          </DockPanel>
+                         Text="{Binding ViewName, Converter={StaticResource StringToUpperConverter}}" />
+
+          <ToggleButton x:Name="MenuToggleButton"
+                          Command="{s:Action GoToSettings}"
+                          HorizontalAlignment="Right"
+                          Width="30"
+                          Height="30"
+                          Content="{md:PackIcon Kind=Settings, Size=22}"
+                          Style="{StaticResource MaterialDesignHamburgerToggleButton}">
+          </ToggleButton>
+
+        </DockPanel>
         </md:ColorZone>
         <!--#endregion-->
 
@@ -181,11 +70,13 @@
 
           <!--  Page Content  -->
           <ContentControl s:View.Model="{Binding ActiveItem}" />
+          
+          <!--Snacks-->
           <md:Snackbar x:Name="MainWindowSnackbar"
                        MessageQueue="{Binding Notifications}" />
         </Grid>
       </DockPanel>
 
-    </md:DrawerHost>
+    <!--</md:DrawerHost>-->
   </md:DialogHost>
 </Window>

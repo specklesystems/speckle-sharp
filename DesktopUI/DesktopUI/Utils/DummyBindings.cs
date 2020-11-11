@@ -42,7 +42,7 @@ namespace Speckle.DesktopUI.Utils
 
     public override string GetApplicationHostName()
     {
-      return "DesktopDemo";
+      return "Desktop";
     }
 
     public override string GetDocumentId()

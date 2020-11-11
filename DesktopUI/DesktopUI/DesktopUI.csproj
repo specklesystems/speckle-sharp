@@ -202,20 +202,20 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Themes\DataTemplates.xaml"> 
+    <Page Include="Themes\DataTemplates.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Themes\MaterialDesignTheme.Light.xaml"> 
+    <Page Include="Themes\MaterialDesignTheme.Light.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\MaterialDesignTheme.TabControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Themes\MaterialDesignTheme.Overrides.xaml"> 
+    <Page Include="Themes\MaterialDesignTheme.Overrides.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

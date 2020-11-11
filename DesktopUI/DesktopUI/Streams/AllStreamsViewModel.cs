@@ -30,7 +30,7 @@ namespace Speckle.DesktopUI.Streams
     {
       _repo = streamsRepo;
       _events = events;
-      DisplayName = "Home";
+      DisplayName = bindings.GetApplicationHostName() + " streams";
       _viewManager = viewManager;
       _streamViewModelFactory = streamViewModelFactory;
       _dialogFactory = dialogFactory;

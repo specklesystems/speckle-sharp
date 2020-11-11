@@ -1,6 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using Speckle.DesktopUI.Settings;
+using Stylet;
 using SpeckleSettings = Speckle.DesktopUI.Settings;
 
 namespace Speckle.DesktopUI
@@ -14,6 +16,7 @@ namespace Speckle.DesktopUI
     {
       InitializeComponent();
     }
+
     // default bindings to null if none are passed
     //public MainWindow() : this(null) { }
 
@@ -29,7 +32,5 @@ namespace Speckle.DesktopUI
 
       MenuToggleButton.IsChecked = false;
     }
-
-    private void MenuToggleButton_OnClick(object sender, RoutedEventArgs e) => NavDrawerListBox.Focus();
   }
 }

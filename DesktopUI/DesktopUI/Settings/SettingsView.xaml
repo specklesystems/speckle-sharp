@@ -8,11 +8,14 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
   xmlns:root="clr-namespace:Speckle.DesktopUI"
+  xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
   xmlns:s="https://github.com/canton7/Stylet"
   d:DesignHeight="450"
   d:DesignWidth="400"
-  mc:Ignorable="d">
+  mc:Ignorable="d"
+  >
   <UserControl.Resources>
+    <utils:StringToUpperConverter x:Key="StringToUpperConverter" />
     <DataTemplate x:Key="LinkItemTemplate">
       <Grid>
         <Grid.ColumnDefinitions>
@@ -58,63 +61,58 @@
   </UserControl.Resources>
 
   <ScrollViewer VerticalScrollBarVisibility="Auto">
-    <Grid Margin="20">
-      <StackPanel>
-        <TextBlock
-          Margin="0,0,0,12"
-          HorizontalAlignment="Left"
-          FontSize="24"
-          Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-          Text="SETTINGS" />
 
+    <Grid Margin="0">
+      <Grid Margin="20">
+        <StackPanel>
 
-        <md:Badged
+          <md:Badged
           Badge="{Binding LocalAccounts.Count}"
           BadgeForeground="{DynamicResource MaterialDesignPaper}"
           BadgePlacementMode="Right"
           ToolTip="total accounts"
           ToolTipService.Placement="Mouse">
-          <TextBlock
+            <TextBlock
             Margin="0,8,16,8"
             FontSize="16"
             Style="{StaticResource MaterialDesignHeadline6TextBlock}"
             Text="Default Account" />
-        </md:Badged>
+          </md:Badged>
 
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
-          <md:PackIcon
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <md:PackIcon
             Grid.Column="0"
             Width="48"
             Height="48"
             Margin="16,8"
             Foreground="{DynamicResource MaterialDesignBodyLight}"
             Kind="AccountCircle" />
-          <StackPanel Grid.Column="1" VerticalAlignment="Center">
-            <TextBlock
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock
               Margin="0,0,0,4"
               FontSize="14"
               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
               Text="{Binding DefaultAccount.userInfo.name}" />
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-              </Grid.RowDefinitions>
-              <md:PackIcon
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <md:PackIcon
                 Grid.Row="0"
                 Grid.Column="0"
                 Margin="2,4,8,4"
                 Foreground="{DynamicResource MaterialDesignBodyLight}"
                 Kind="Email" />
-              <TextBlock
+                <TextBlock
                 Grid.Row="0"
                 Grid.Column="1"
                 Margin="0,0,0,4"
@@ -122,13 +120,13 @@
                 FontSize="12"
                 Foreground="{DynamicResource MaterialDesignColumnHeader}"
                 Text="{Binding DefaultAccount.userInfo.email}" />
-              <md:PackIcon
+                <md:PackIcon
                 Grid.Row="1"
                 Grid.Column="0"
                 Margin="2,4,8,4"
                 Foreground="{DynamicResource MaterialDesignBodyLight}"
                 Kind="Building" />
-              <TextBlock
+                <TextBlock
                 Grid.Row="1"
                 Grid.Column="1"
                 Margin="0,0,0,4"
@@ -136,10 +134,10 @@
                 FontSize="12"
                 Foreground="{DynamicResource MaterialDesignColumnHeader}"
                 Text="{Binding DefaultAccount.serverInfo.url}" />
-            </Grid>
-          </StackPanel>
-        </Grid>
-        <Button
+              </Grid>
+            </StackPanel>
+          </Grid>
+          <Button
           x:Name="ManageAccountsButton"
           Height="40"
           Margin="0,16,0,8"
@@ -150,28 +148,53 @@
           ToolTip="Open the Speckle Manager"
           Foreground="#FFfafafa"
           Style="{StaticResource SoftFlatMidBgButton}">
-        </Button>
+          </Button>
 
-        <Separator Margin="0,8" />
+          <Separator Margin="0,8" />
 
-        <TextBlock
+          <!--<TextBlock
           Margin="0,8"
           FontSize="16"
           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-          Text="Other Stuff" />
-        <TextBlock Margin="0,8" Text="TODO: error log export, etc" />
+          Text="Other Stuff" />-->
 
-        <Separator Margin="0,8" />
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-        <TextBlock
+            <TextBlock Grid.Column="0"
+                         Margin="0,8,0,8"
+                         Text="Dark Mode" />
+            <StackPanel Grid.Column="1"
+                          Margin="0,8,24,8"
+                          Orientation="Horizontal">
+              <TextBlock Margin="0,0,8,0">
+                  <md:PackIcon Kind="WhiteBalanceSunny" />
+              </TextBlock>
+              <!--  TODO figure out why this isn't changing the theme  -->
+              <ToggleButton x:Name="DarkModeToggleButton"
+                              Command="{s:Action ToggleTheme}"
+                              IsChecked="{Binding DarkMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+              <TextBlock Margin="8,0,0,0">
+                  <md:PackIcon Kind="NightSky" />
+              </TextBlock>
+            </StackPanel>
+          </Grid>
+
+          <Separator Margin="0,8" />
+
+          <TextBlock
           Margin="0,8"
           FontSize="16"
           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
           Text="Help" />
 
-        <ItemsControl ItemTemplate="{StaticResource LinkItemTemplate}" ItemsSource="{Binding HelpLinks}" />
+          <ItemsControl ItemTemplate="{StaticResource LinkItemTemplate}" ItemsSource="{Binding HelpLinks}" />
 
-      </StackPanel>
+        </StackPanel>
+      </Grid>
     </Grid>
   </ScrollViewer>
 </UserControl>

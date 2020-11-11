@@ -19,7 +19,7 @@ namespace Speckle.DesktopUI.Streams
     public StreamsHomeViewModel(IViewModelFactory viewModelFactory, IEventAggregator events,
       AccountsRepository accountsRepo, ConnectorBindings bindings)
     {
-      DisplayName = "Home";
+      DisplayName = bindings.GetApplicationHostName() + " streams";
       _viewModelFactory = viewModelFactory;
       _events = events;
       _accountsRepo = accountsRepo;

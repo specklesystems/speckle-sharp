@@ -32,6 +32,8 @@ namespace Speckle.DesktopUI.Streams
       _repo = streamsRepo;
       _bindings = bindings;
 
+      DisplayName = "Stream XXX";
+
       _events.Subscribe(this);
     }
 
