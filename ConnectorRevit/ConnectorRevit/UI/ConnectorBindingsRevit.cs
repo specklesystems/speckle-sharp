@@ -69,7 +69,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       var selectedObjects = GetSelectedObjects();
 
-      NotifyUi(new UpdateSelectionCountEvent() {SelectionCount = selectedObjects.Count});
+      NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selectedObjects.Count});
       NotifyUi(new UpdateSelectionEvent() {ObjectIds = selectedObjects});
     }
 
