@@ -8,6 +8,9 @@ using System.Runtime.Serialization;
 
 namespace Objects.Geometry
 {
+  /// <summary>
+  /// Represents a BREP geometry entity.
+  /// </summary>
   public class Brep : Base, IGeometry
   {
     public object rawData { get; set; }
@@ -45,7 +48,7 @@ namespace Objects.Geometry
     }
 
     [OnDeserialized]
-    internal void onDeserialized(StreamingContext context)
+    internal void OnDeserialized(StreamingContext context)
     {
       Edges.ForEach(e => e.Brep = this);
       Loops.ForEach(l => l.Brep = this);
@@ -110,7 +113,10 @@ namespace Objects.Geometry
     [JsonIgnore] public BrepFace Face => Brep.Faces[FaceIndex];
     [JsonIgnore] public List<BrepTrim> Trims => TrimIndices.Select(i => Brep.Trims[i]).ToList();
   }
-
+  
+  /// <summary>
+  /// Represents a UV Trim curve for one of the <see cref="Brep"/>'s surfaces.
+  /// </summary>
   public class BrepTrim : Base
   {
     [JsonIgnore]
@@ -144,7 +150,10 @@ namespace Objects.Geometry
 
     [JsonIgnore] public BrepLoop Loop => Brep.Loops[LoopIndex];
   }
-
+  
+  /// <summary>
+  /// Represents an edge of the <see cref="Brep"/>.
+  /// </summary>
   public class BrepEdge : Base
   {
     [JsonIgnore]
@@ -172,7 +181,10 @@ namespace Objects.Geometry
     [JsonIgnore] public IEnumerable<BrepTrim> Trims => TrimIndices.Select(i => Brep.Trims[i]);
     [JsonIgnore] public ICurve Curve => Brep.Curve3D[Curve3dIndex];
   }
-
+  
+  /// <summary>
+  /// Represents a vertex of the <see cref="Brep"/>.
+  /// </summary>
   public class BrepVertex : Base
   {
     public BrepVertex()
@@ -187,10 +199,16 @@ namespace Objects.Geometry
     public Point Location { get; set; }
   }
 
+  /// <summary>
+  /// Represents the type of a loop in a <see cref="Brep"/>'s face.
+  /// </summary>
   public enum BrepLoopType
   {
     Unknown = 0,
-    Inner = 2,
     Outer = 1,
+    Inner = 2,
+    Slit,
+    CurveOnSurface,
+    PointOnSurface,
   }
 }
