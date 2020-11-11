@@ -50,18 +50,21 @@ namespace ConverterRevitTests
     [Trait("Opening", "ToNative")]
     public void OpeningToNative()
     {
-      SpeckleToNative<DB.Opening>(AssertOpeningEqual);
+      SpeckleToNative<DB.Element>(AssertOpeningEqual);
     }
 
     [Fact]
     [Trait("Opening", "Selection")]
     public void OpeningSelectionToNative()
     {
-      SelectionToNative<DB.Opening>(AssertOpeningEqual);
+      SelectionToNative<DB.Element>(AssertOpeningEqual);
     }
 
-    private void AssertOpeningEqual(DB.Opening sourceElem, DB.Opening destElem)
+    private void AssertOpeningEqual(DB.Element sourceElem, DB.Element destElem)
     {
+      if (!(sourceElem is DB.Opening))
+        return;
+
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, sourceElem.Name);
 

@@ -99,7 +99,7 @@ namespace Objects.Converter.Revit
     public List<Base> ConvertToSpeckle(List<object> objects)
     {
       var converted = objects.Select(x => ConvertToSpeckle(x)).ToList();
-      return NestHstedObjects(converted, objects.Select(x => x as DB.Element).ToList());
+      return NestHostedObjects(converted, objects.Select(x => x as DB.Element).ToList());
     }
 
     public object ConvertToNative(Base @object)
@@ -198,7 +198,7 @@ namespace Objects.Converter.Revit
       return converted;
     }
 
-    private List<Base> NestHstedObjects(List<Base> baseObjs, List<DB.Element> revitObjs)
+    private List<Base> NestHostedObjects(List<Base> baseObjs, List<DB.Element> revitObjs)
     {
       Dictionary<int, Base> nested = new Dictionary<int, Base>();
       if (baseObjs.Count != revitObjs.Count)

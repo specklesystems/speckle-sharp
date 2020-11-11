@@ -48,7 +48,7 @@ namespace ConverterRevitTests
     {
       ConverterRevit kit = new ConverterRevit();
       kit.SetContextDocument(fixture.Doc);
-      var spkElems = fixture.RevitElements.Select(x => kit.ConvertToSpeckle(x) as Base).ToList();
+      var spkElems = fixture.RevitElements.Select(x => kit.ConvertToSpeckle(x)).ToList();
 
       kit = new ConverterRevit();
       kit.SetContextDocument(fixture.NewDoc);
@@ -107,7 +107,7 @@ namespace ConverterRevitTests
           Assert.Equal(elem.Name, spkRevit.type);
 
         //Assert.NotNull(spkElem.baseGeometry);
-        if(!(spkElem is AdaptiveComponent) && !(spkElem is DirectShape))
+        if (!(spkElem is AdaptiveComponent) && !(spkElem is DirectShape))
           Assert.NotNull(spkRevit.level);
         //Assert.NotNull(spkRevit.displayMesh);
       }

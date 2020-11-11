@@ -24,7 +24,7 @@ namespace Objects.Converter.Revit
       if (docObj != null)
         Doc.Delete(docObj.Id);
 
-      DB.Opening revitOpeneing = null;
+      DB.Opening revitOpening = null;
 
       switch (speckleOpening)
       {
@@ -32,22 +32,22 @@ namespace Objects.Converter.Revit
           {
             var points = (rwo.outline as Polyline).points.Select(x => PointToNative(x)).ToList();
             var host = Doc.GetElement(new ElementId(rwo.revitHostId));
-            revitOpeneing = Doc.Create.NewOpening(host as Wall, points[0], points[2]);
+            revitOpening = Doc.Create.NewOpening(host as Wall, points[0], points[2]);
             break;
           }
 
         case RevitVerticalOpening rvo:
           {
             var host = Doc.GetElement(new ElementId(rvo.revitHostId));
-            revitOpeneing = Doc.Create.NewOpening(host, baseCurves, true);
+            revitOpening = Doc.Create.NewOpening(host, baseCurves, true);
             break;
           }
 
         case RevitShaft rs:
           {
             var bottomLevel = LevelToNative(rs.level);
-            var topLevel = rs.level != null ? LevelToNative(rs.topLevel) : null;
-            revitOpeneing = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
+            var topLevel = rs.topLevel != null ? LevelToNative(rs.topLevel) : null;
+            revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
             break;
           }
 
@@ -56,10 +56,10 @@ namespace Objects.Converter.Revit
           throw new Exception("Opening type not supported");
       }
 
-      if (revitOpeneing is IRevitElement ire)
-        SetElementParams(revitOpeneing, ire);
+      if (speckleOpening is IRevitElement ire)
+        SetElementParams(revitOpening, ire);
 
-      return revitOpeneing;
+      return revitOpening;
     }
 
     public Opening OpeningToSpeckle(DB.Opening revitOpening)
@@ -89,11 +89,16 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        //TODO: check it works!!!
+        //host id is actually set in NestHostedObjects
         if (revitOpening.Host != null)
           speckleOpening = new RevitVerticalOpening();
         else
+        {
           speckleOpening = new RevitShaft();
+          if (topLevelParam != null)
+            ((RevitShaft)speckleOpening).topLevel = (RevitLevel)ParameterToSpeckle(topLevelParam);
+        }
+
 
         var poly = new Polycurve();
         poly.segments = new List<ICurve>();
@@ -107,8 +112,7 @@ namespace Objects.Converter.Revit
 
       if (baseLevelParam != null)
         speckleOpening.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
-      if (topLevelParam != null)
-        speckleOpening["topLevel"] = (RevitLevel)ParameterToSpeckle(topLevelParam);
+
       speckleOpening.type = revitOpening.Name;
 
       AddCommonRevitProps(speckleOpening, revitOpening);
