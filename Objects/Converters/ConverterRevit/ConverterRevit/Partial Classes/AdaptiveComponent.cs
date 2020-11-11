@@ -1,12 +1,10 @@
 ﻿using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
-using Element = Objects.Element;
 using Objects.Revit;
 using System.Linq;
-using Objects.Geometry;
-using System;
-using Objects;
 using Speckle.Core.Models;
+using System.Collections.Generic;
+using Point = Objects.Geometry.Point;
 
 namespace Objects.Converter.Revit
 {
@@ -53,18 +51,18 @@ namespace Objects.Converter.Revit
         revitAc = AdaptiveComponentInstanceUtils.CreateAdaptiveComponentInstance(Doc, familySymbol);
       }
 
-      SetAdaptivePoints(revitAc, speckleAc.baseGeometry as Polyline);
+      SetAdaptivePoints(revitAc, speckleAc.basePoints);
       AdaptiveComponentInstanceUtils.SetInstanceFlipped(revitAc, speckleAc.flipped);
 
       SetElementParams(revitAc, speckleAc);
       return revitAc;
     }
 
-    private Element AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
+    private IRevitElement AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
     {
       var speckleAc = new AdaptiveComponent();
       speckleAc.type = Doc.GetElement(revitAc.GetTypeId()).Name;
-      speckleAc.baseGeometry = GetAdaptivePoints(revitAc);
+      speckleAc.basePoints = GetAdaptivePoints(revitAc);
       speckleAc.flipped = AdaptiveComponentInstanceUtils.IsInstanceFlipped(revitAc);
       speckleAc.displayMesh = MeshUtils.GetElementMesh(revitAc, Scale);
 
@@ -73,14 +71,13 @@ namespace Objects.Converter.Revit
       return speckleAc;
     }
 
-    private void SetAdaptivePoints(DB.FamilyInstance revitAc, Polyline poly)
+    private void SetAdaptivePoints(DB.FamilyInstance revitAc, List<Point> points)
     {
       var pointIds = AdaptiveComponentInstanceUtils.GetInstancePlacementPointElementRefIds(revitAc).ToList();
-      var specklePoints = poly.points;
 
-      if (pointIds.Count != specklePoints.Count)
+      if (pointIds.Count != points.Count)
       {
-        ConversionErrors.Add(new Error ("Adaptive family error", $"Wrong number of points supplied to adapive family" ));
+        ConversionErrors.Add(new Error("Adaptive family error", $"Wrong number of points supplied to adapive family"));
         return;
       }
 
@@ -88,21 +85,21 @@ namespace Objects.Converter.Revit
       for (int i = 0; i < pointIds.Count; i++)
       {
         var point = Doc.GetElement(pointIds[i]) as ReferencePoint;
-        point.Position = PointToNative(specklePoints[i]);
+        point.Position = PointToNative(points[i]);
       }
     }
 
 
-    private Polyline GetAdaptivePoints(DB.FamilyInstance revitAc)
+    private List<Point> GetAdaptivePoints(DB.FamilyInstance revitAc)
     {
       var pointIds = AdaptiveComponentInstanceUtils.GetInstancePlacementPointElementRefIds(revitAc).ToList();
-      var poly = new Polyline();
+      var points = new List<Point>();
       for (int i = 0; i < pointIds.Count; i++)
       {
         var point = Doc.GetElement(pointIds[i]) as ReferencePoint;
-        poly.value.AddRange(PointToSpeckle(point.Position).value);
+        points.Add(PointToSpeckle(point.Position));
       }
-      return poly;
+      return points;
     }
   }
 }

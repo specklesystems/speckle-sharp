@@ -25,6 +25,12 @@ namespace Objects.Geometry
     public Point midPoint { get; set; }
 
     public Point endPoint { get; set; }
+    
+    public Box boundingBox { get; set; }
+    public Point center { get; set; }
+    public double area { get; set; }
+    public double length { get; set; }
+    public string linearUnits { get; set; }
 
     public Arc() { }
 

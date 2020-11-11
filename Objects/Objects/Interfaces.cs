@@ -11,12 +11,38 @@ namespace Objects
   /// </summary>
   public interface IGeometry
   {
+    string linearUnits { get; set; }
   }
+
+  public interface I3DGeometry : IGeometry
+  {
+    Box boundingBox { get; set; }
+
+    Point center { get; set; }
+
+    double volume { get; set; }
+
+    double area { get; set; }
+
+  }
+
+  public interface I2DGeometry : IGeometry
+  {
+    Box boundingBox { get; set; }
+
+    Point center { get; set; }
+
+    double area { get; set; }
+
+    double length { get; set; }
+  }
+
+
 
   /// <summary>
   /// Used to define a curve based Geometry
   /// </summary>
-  public interface ICurve : IGeometry
+  public interface ICurve : I2DGeometry
   {
   }
 }

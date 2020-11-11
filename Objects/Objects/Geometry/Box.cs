@@ -6,12 +6,17 @@ using System.Text;
 
 namespace Objects.Geometry
 {
-  public class Box : Base, IGeometry
+  public class Box : Base, I3DGeometry
   {
     public Plane basePlane { get; set; }
     public Interval xSize { get; set; }
     public Interval ySize { get; set; }
     public Interval zSize { get; set; }
+    public string linearUnits { get; set; }
+    public Box boundingBox { get; set; }
+    public Point center { get; set; }
+    public double area { get; set; }
+    public double volume { get; set; }
 
     public Box()
     {

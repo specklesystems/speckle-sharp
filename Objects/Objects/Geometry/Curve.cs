@@ -18,7 +18,13 @@ namespace Objects.Geometry
     public Interval domain { get; set; }
     public Polyline displayValue { get; set; }
     public bool closed { get; set; }
-    
+
+    public Box boundingBox { get; set; }
+    public Point center { get; set; }
+    public double area { get; set; }
+    public double length { get; set; }
+    public string linearUnits { get; set; }
+
     public Curve() { }
     
     public Curve(Polyline poly, string applicationId = null)
