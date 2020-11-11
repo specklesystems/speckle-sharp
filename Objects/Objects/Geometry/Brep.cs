@@ -126,15 +126,14 @@ namespace Objects.Geometry
     public int LoopIndex { get; set; }
     public int CurveIndex { get; set; }
     public int IsoStatus { get; set; }
-    public int TrimType { get; set; }
+    public BrepTrimType TrimType { get; set; }
     public bool IsReversed { get; set; }
 
     public BrepTrim()
     {
     }
 
-    public BrepTrim(Brep brep, int edgeIndex, int faceIndex, int loopIndex, int curveIndex, int isoStatus, int trimType,
-      bool reversed)
+    public BrepTrim(Brep brep, int edgeIndex, int faceIndex, int loopIndex, int curveIndex, int isoStatus, BrepTrimType trimType, bool reversed)
     {
       Brep = brep;
       EdgeIndex = edgeIndex;
@@ -149,6 +148,12 @@ namespace Objects.Geometry
     [JsonIgnore] public BrepFace Face => Brep.Faces[FaceIndex];
 
     [JsonIgnore] public BrepLoop Loop => Brep.Loops[LoopIndex];
+    
+    [JsonIgnore] public BrepEdge Edge => EdgeIndex != -1 ? Brep.Edges[EdgeIndex] : null;
+
+    [JsonIgnore] public Curve Curve2d => Brep.Curve2D[CurveIndex];
+    
+    
   }
   
   /// <summary>
@@ -162,18 +167,21 @@ namespace Objects.Geometry
     public int[] TrimIndices { get; set; }
     public int StartIndex { get; set; }
     public int EndIndex { get; set; }
-
+    
+    public bool ProxyCurveIsReversed { get; set; }
+    
     public BrepEdge()
     {
     }
 
-    public BrepEdge(Brep brep, int curve3dIndex, int[] trimIndices, int startIndex, int endIndex)
+    public BrepEdge(Brep brep, int curve3dIndex, int[] trimIndices, int startIndex, int endIndex, bool proxyCurvedIsReversed)
     {
       Brep = brep;
       Curve3dIndex = curve3dIndex;
       TrimIndices = trimIndices;
       StartIndex = startIndex;
       EndIndex = endIndex;
+      ProxyCurveIsReversed = proxyCurvedIsReversed;
     }
 
     [JsonIgnore] public BrepVertex StartVertex => Brep.Vertices[StartIndex];
@@ -204,11 +212,23 @@ namespace Objects.Geometry
   /// </summary>
   public enum BrepLoopType
   {
-    Unknown = 0,
-    Outer = 1,
-    Inner = 2,
+    Unknown,
+    Outer,
+    Inner,
     Slit,
     CurveOnSurface,
     PointOnSurface,
+  }
+
+  public enum BrepTrimType
+  {
+    Unknown,
+    Boundary,
+    Mated,
+    Seam,
+    Singular,
+    CurveOnSurface,
+    PointOnSurface,
+    Slit
   }
 }

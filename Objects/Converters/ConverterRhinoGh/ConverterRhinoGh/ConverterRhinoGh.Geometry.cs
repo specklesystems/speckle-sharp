@@ -16,6 +16,7 @@ using BrepFace = Objects.Geometry.BrepFace;
 using BrepLoop = Objects.Geometry.BrepLoop;
 using BrepLoopType = Objects.Geometry.BrepLoopType;
 using BrepTrim = Objects.Geometry.BrepTrim;
+using BrepTrimType = Objects.Geometry.BrepTrimType;
 using BrepVertex = Objects.Geometry.BrepVertex;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
@@ -589,7 +590,8 @@ namespace Objects.Converter.RhinoGh
           edge.EdgeCurveIndex,
           edge.TrimIndices(),
           edge.StartVertex.VertexIndex,
-          edge.EndVertex.VertexIndex
+          edge.EndVertex.VertexIndex,
+          edge.ProxyCurveIsReversed
         )).ToList();
 
       // Loops
@@ -610,7 +612,7 @@ namespace Objects.Converter.RhinoGh
           trim.Loop.LoopIndex,
           trim.TrimCurveIndex,
           (int) trim.IsoStatus,
-          (int) trim.TrimType,
+          (BrepTrimType) trim.TrimType,
           trim.IsReversed()
         ))
         .ToList();
@@ -651,7 +653,7 @@ namespace Objects.Converter.RhinoGh
                 rhTrim = newBrep.Trims.Add(trim.IsReversed, newBrep.Loops[trim.LoopIndex], trim.CurveIndex);
 
               rhTrim.IsoStatus = (IsoStatus)trim.IsoStatus;
-              rhTrim.TrimType = (BrepTrimType) trim.TrimType;
+              rhTrim.TrimType = (RH.BrepTrimType) trim.TrimType;
               rhTrim.SetTolerances(tol,tol);
             });
           });

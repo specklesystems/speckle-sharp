@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
+using System.Linq;
 using Autodesk.Revit.UI;
 using Objects.Geometry;
 using System;
@@ -373,6 +374,172 @@ namespace Objects.Converter.Revit
       }
 
       return ixn.CrossProduct(xn).Normalize();
+    }
+
+    public Brep BrepToSpeckle(Solid solid)
+    {
+      // TODO: Incomplete implementation!!
+      
+      var brep = new Brep();
+
+      var faces = new List<BrepFace>();
+      for (var i = 0; i < solid.Faces.Size; i++)
+      {
+        var face = solid.Faces.get_Item(i);
+        var sFace = new BrepFace();
+      }
+
+      for (var i = 0; i < solid.Edges.Size; i++)
+      {
+        var edge = solid.Edges.get_Item(i);
+        var sFace = new BrepFace();
+      }
+      
+
+      return brep;
+    }
+
+
+    public BRepBuilderEdgeGeometry BrepEdgeToNative(BrepEdge edge)
+    {
+      var edgeCurve = edge.Curve as Curve;
+      
+      // TODO: Trim curve with domain. Unsure if this is necessary as all our curves are converted to NURBS on Rhino output.
+      
+      var nativeCurve = CurveToNative(edgeCurve);
+      if (edge.ProxyCurveIsReversed)
+        nativeCurve = nativeCurve.CreateReversed();
+      
+      // TODO: Remove short segments if smaller than 'Revit.ShortCurveTolerance'.
+
+      return BRepBuilderEdgeGeometry.Create(nativeCurve);
+    }
+
+    public double[] ControlPointWeightsToNative(List<List<ControlPoint>> controlPoints)
+    {
+      var uCount = controlPoints.Count;
+      var vCount = controlPoints[0].Count;
+      var count = uCount * vCount;
+      var weights = new double[count];
+      int p = 0;
+      
+      controlPoints.ForEach(row => 
+        row.ForEach(pt => 
+          weights[p++] = pt.weight));
+      
+      return weights;
+    }
+    
+    public DB.XYZ[] ControlPointsToNative(List<List<ControlPoint>> controlPoints)
+    {
+      var uCount = controlPoints.Count;
+      var vCount = controlPoints[0].Count;
+      var count = uCount * vCount;
+      var points = new DB.XYZ[count];
+      int p = 0;
+      
+      controlPoints.ForEach(row => 
+        row.ForEach(pt => 
+          points[p++] = new DB.XYZ(pt.x,pt.y,pt.z)));
+      
+      return points;
+    }
+
+    public double[] SurfaceKnotsToNative(List<double> list)
+    {
+      var count = list.Count;
+      var knots = new double[count + 2];
+
+      int j = 0, k = 0;
+      while (j < count)
+        knots[++k] = list[j++];
+
+      knots[0] = knots[1];
+      knots[count + 1] = knots[count];
+
+      return knots;
+    }
+    
+    public BRepBuilderSurfaceGeometry BrepFaceToNative(BrepFace face)
+    {
+      var surface = face.Surface;
+      var uvBox = new DB.BoundingBoxUV(surface.knotsU[0], surface.knotsV[0], surface.knotsU[surface.knotsU.Count - 1], surface.knotsV[surface.knotsV.Count - 1]);
+      var surfPts = surface.GetControlPoints();
+      var uKnots = SurfaceKnotsToNative(surface.knotsU);
+      var vKnots = SurfaceKnotsToNative(surface.knotsV);
+      var cPts = ControlPointsToNative(surfPts);
+
+      BRepBuilderSurfaceGeometry result;
+      if (!surface.rational)
+      {
+        result = DB.BRepBuilderSurfaceGeometry.CreateNURBSSurface(surface.degreeU, surface.degreeV, uKnots,
+          vKnots, cPts, false, uvBox);
+      }
+      else
+      {
+        var weights = ControlPointWeightsToNative(surfPts);
+        result = DB.BRepBuilderSurfaceGeometry.CreateNURBSSurface(surface.degreeU, surface.degreeV, uKnots,
+          vKnots, cPts, weights, false, uvBox);
+      }
+
+      return result;
+    }
+    
+    public Solid BrepToNative(Brep brep)
+    {
+      // TODO Incomplete implementation
+      using var builder = new BRepBuilder(BRepType.Solid);
+      
+      var brepEdgeIds = new List<BRepBuilderGeometryId>[brep.Edges.Count];
+      brep.Faces.ForEach(face =>
+      {
+        var faceId = builder.AddFace(BrepFaceToNative(face),face.OrientationReversed); 
+        // builder.SetFaceMaterialId(faceId,null); // TODO: Missing material ID!!!
+        
+        face.Loops.ForEach(loop =>
+        {
+          var loopId = builder.AddLoop(faceId);
+          var trims = new List<BrepTrim>(loop.Trims);
+          if (face.OrientationReversed) trims.Reverse();
+          
+          trims.ForEach(trim =>
+          {
+              // If the trim is mated or boundary, or the edge is null,
+              // -> continue.
+
+              if (trim.TrimType == BrepTrimType.Boundary 
+                  || trim.TrimType == BrepTrimType.Mated
+                  || trim.Edge == null)
+                return;
+              
+              var edgeIds = brepEdgeIds[trim.EdgeIndex];
+              if (edgeIds is null)
+              {
+                edgeIds = new List<BRepBuilderGeometryId>();
+                brepEdgeIds[trim.EdgeIndex] = edgeIds;
+                var rEdge = BrepEdgeToNative(trim.Edge);
+                edgeIds.Add(builder.AddEdge(rEdge)); 
+              }
+
+              var trimReversed = face.OrientationReversed ? !trim.IsReversed : trim.IsReversed;
+              
+              if (trimReversed)
+                edgeIds.Reverse();
+              
+              edgeIds.ForEach(edgeId => builder.AddCoEdge(loopId, edgeId, trimReversed));
+          });
+          
+          // Tell builder loop has finished
+          builder.FinishLoop(loopId);
+        });
+        
+        // Tell builder face has finished
+        builder.FinishFace(faceId);
+      });
+        
+      // Return result if available
+      builder.Finish();
+      return builder.IsResultAvailable() ? builder.GetResult() : null;
     }
   }
 }
