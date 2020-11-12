@@ -1,5 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -11,20 +11,28 @@
     <Product>SpeckleCore</Product>
     <AssemblyName>SpeckleCore2</AssemblyName>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-
+  <Choose>
+    <When Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+      <ItemGroup>
+        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
+      </ItemGroup>
+    </When>
+    <When Condition="$([MSBuild]::IsOsPlatform('OSX'))">
+      <ItemGroup>
+        <PackageReference Include="System.Data.SQLite.Mac" Version="1.0.104.2" />
+      </ItemGroup>
+    </When>
+  </Choose>
   <ItemGroup>
     <PackageReference Include="GraphQL.Client" Version="3.2.0" />
     <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="3.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Piwik.Tracker" Version="3.0.0" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
     <PackageReference Include="Sentry" Version="2.1.6" />
-    <PackageReference Include="DeviceId" Version="5.1.1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Serialisation\" />
