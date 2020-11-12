@@ -92,6 +92,39 @@ namespace Speckle.DesktopUI.Streams
       state.IsSenderCard = !state.IsSenderCard;
     }
 
+    public async void ShowStreamUpdateNameDialog(StreamState state)
+    {
+      Tracker.TrackPageview("stream", "dialog-update");
+      var viewmodel = _dialogFactory.CreateStreamUpdateDialog();
+      viewmodel.StreamState = state;
+      viewmodel.SelectedSlide = 0;
+      var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
+
+      await DialogHost.Show(view, "RootDialogHost");
+    }
+
+    public async void ShowStreamUpdateObjectsDialog(StreamState state)
+    {
+      Tracker.TrackPageview("stream", "dialog-update");
+      var viewmodel = _dialogFactory.CreateStreamUpdateDialog();
+      viewmodel.StreamState = state;
+      viewmodel.SelectedSlide = 1;
+      var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
+
+       await DialogHost.Show(view, "RootDialogHost");
+    }
+
+    public async void ShowStreamUpdateCollabsDialog(StreamState state)
+    {
+      Tracker.TrackPageview("stream", "dialog-update");
+      var viewmodel = _dialogFactory.CreateStreamUpdateDialog();
+      viewmodel.StreamState = state;
+      viewmodel.SelectedSlide = 2;
+      var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
+
+      await DialogHost.Show(view, "RootDialogHost");
+    }
+
     public async void Send(StreamState state)
     {
       state.IsSending = true;

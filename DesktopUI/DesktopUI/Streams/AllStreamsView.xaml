@@ -16,12 +16,13 @@
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
       <ControlTemplate x:Key="BranchButton">
         <Button x:Name="BranchButton"
-                Grid.Column="0"
                 Width="auto"
                 MaxWidth="110"
                 md:ButtonAssist.CornerRadius="3"
                 ContextMenuService.Placement="Bottom"
                 FontSize="11"
+                Style="{StaticResource MaterialDesignToolForegroundButton}"
+                
                 ToolTip="Edit/Change branch">
           <Grid>
             <Grid.ColumnDefinitions>
@@ -38,50 +39,8 @@
             <TextBlock Grid.Column="2"
                        Margin="1,2"
                        FontWeight="Bold"
-                       Text="speckle/wip-releases-long-nameeee" />
+                       Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext.Stream.name}" />
           </Grid>
-          <Button.Style>
-            <Style TargetType="{x:Type Button}"
-                   BasedOn="{StaticResource MaterialDesignToolForegroundButton }">
-              <Style.Triggers>
-                <EventTrigger RoutedEvent="Click">
-                  <EventTrigger.Actions>
-                    <BeginStoryboard>
-                      <Storyboard>
-                        <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="ContextMenu.IsOpen">
-                          <DiscreteBooleanKeyFrame KeyTime="0:0:0"
-                                                   Value="True" />
-                        </BooleanAnimationUsingKeyFrames>
-                      </Storyboard>
-                    </BeginStoryboard>
-                  </EventTrigger.Actions>
-                </EventTrigger>
-              </Style.Triggers>
-              <Setter Property="ContextMenu">
-                <Setter.Value>
-                  <ContextMenu>
-                    <MenuItem />
-                    <MenuItem />
-                  </ContextMenu>
-                </Setter.Value>
-              </Setter>
-            </Style>
-          </Button.Style>
-          <Button.ContextMenu>
-            <ContextMenu>
-              <MenuItem Header="{Binding RelativeSource={RelativeSource  Mode=TemplatedParent}, Path=DataContext.Stream.name}" />
-              <MenuItem Header="dim/dev-whatever" />
-              <MenuItem Header="speckle/wip-releases"
-                        IsCheckable="True"
-                        IsChecked="True" />
-              <Separator></Separator>
-              <MenuItem Header="Add a new branch">
-                <MenuItem.Icon>
-                  <md:PackIcon Kind="Plus" />
-                </MenuItem.Icon>
-              </MenuItem>
-            </ContextMenu>
-          </Button.ContextMenu>
         </Button>
       </ControlTemplate>
       
@@ -202,28 +161,6 @@
                   </Button.Style>
                   <Button.ContextMenu>
                     <ContextMenu>
-                      <MenuItem>
-                        <MenuItem.Header>Collaborators</MenuItem.Header>
-                        <MenuItem.Icon>
-                          <md:PackIcon Kind="People" />
-                        </MenuItem.Icon>
-                        <MenuItem>
-                          <MenuItem.Header>Jane Austen</MenuItem.Header>
-                        </MenuItem>
-                        <MenuItem>
-                          <MenuItem.Header>Marie Curie</MenuItem.Header>
-                        </MenuItem>
-                        <MenuItem>
-                          <MenuItem.Header>Someone Else</MenuItem.Header>
-                        </MenuItem>
-                        <Separator></Separator>
-                        <MenuItem>
-                          <MenuItem.Icon>
-                            <md:PackIcon Kind="OpenInBrowser" />
-                          </MenuItem.Icon>
-                          <MenuItem.Header>Manage</MenuItem.Header>
-                        </MenuItem>
-                      </MenuItem>
                       <MenuItem Header="Remove"
                                 Foreground="Red">
                         <MenuItem.Icon>
@@ -255,7 +192,7 @@
                         MaxWidth="120"
                         Margin="0,0,5,0"
                         md:ButtonAssist.CornerRadius="3"
-                        Command="{s:Action ShowStreamInfo}"
+                        Command="{s:Action ShowStreamUpdateObjectsDialog}"
                         CommandParameter="{Binding}"
                         FontSize="11"
                         Style="{StaticResource MaterialDesignToolForegroundButton}"
@@ -292,16 +229,15 @@
                   <Grid>
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="*" />
                       <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <md:PackIcon Grid.Column="0"
-                                 Kind="CloudUpload" />
+                    <md:PackIcon Grid.Column="1"
+                                 Kind="CloudUpload" HorizontalAlignment="Right"/>
 
-                    <TextBlock Grid.Column="1"
+                    <TextBlock Grid.Column="0"
                                Margin="3,2"
                                HorizontalAlignment="Center"
-                               Text="Send" />
+                               Text="Send    " />
                   </Grid>
                 </Button>
                 <!--The state swapper button-->
@@ -324,35 +260,12 @@
                     Margin="0,30,0,0"
                     Visibility="{Binding IsReceiverCard, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Button x:Name="BranchButtonReceiver"
-                        Grid.Column="0"
-                        Width="auto"
-                        MaxWidth="115"
-                        md:ButtonAssist.CornerRadius="3"
-                        Command="{s:Action ShowStreamInfo}"
-                        CommandParameter="{Binding}"
-                        FontSize="11"
-                        Style="{StaticResource MaterialDesignToolForegroundButton}"
-                        ToolTip="Edit/Change branch">
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="*" />
-                      <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <md:PackIcon Grid.Column="0"
-                                 Kind="SourceBranch" />
-                    <TextBlock Grid.Column="2"
-                               Margin="1,2"
-                               FontWeight="Bold"
-                               Text="dim/long-name-branch-hwello" />
-                  </Grid>
-                </Button>
+                <Control Template="{StaticResource BranchButton}"></Control>
                 <Button x:Name="CommitButton"
                         Grid.Column="1"
                         Width="auto"
@@ -398,13 +311,13 @@
                       <ColumnDefinition Width="*" />
                       <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <md:PackIcon Grid.Column="0"
+                    <md:PackIcon Grid.Column="1"
                                  Kind="CloudDownload" />
 
-                    <TextBlock Grid.Column="1"
+                    <TextBlock Grid.Column="0"
                                Margin="3,2"
                                HorizontalAlignment="Center"
-                               Text="Receive" />
+                               Text="Receive    " />
                   </Grid>
                 </Button>
                 <Button x:Name="SwapStateButton2"

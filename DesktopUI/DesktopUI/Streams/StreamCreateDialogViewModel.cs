@@ -111,7 +111,15 @@ namespace Speckle.DesktopUI.Streams
     public BindableCollection<Stream> StreamSearchResults
     {
       get => _streamSearchResults;
-      set => SetAndNotify(ref _streamSearchResults, value);
+      set
+      {
+        SetAndNotify(ref _streamSearchResults, value);
+      }
+    }
+
+    public bool HasSearchResults
+    {
+      get => StreamSearchResults != null && StreamSearchResults.Count > 0 ? true : false;
     }
 
     private Stream _selectedStream;
