@@ -3,19 +3,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:Speckle.DesktopUI"
-        xmlns:settings ="clr-namespace:Speckle.DesktopUI.Settings"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:s="https://github.com/canton7/Stylet"
+        xmlns:settings="[settings ]clr-namespace:Speckle.DesktopUI.Settings"
         xmlns:stylet="clr-namespace:Stylet;assembly=Stylet"
         xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
         x:Name="RootWindow"
         Title="Speckle"
         Width="450"
-        MaxWidth="500"
         Height="800"
         MinWidth="400"
         MinHeight="300"
+        MaxWidth="500"
         Background="{DynamicResource MaterialDesignPaper}"
         Closing="{s:Action OnClosing}"
         FontFamily="{md:MaterialDesignFont}"
@@ -29,40 +29,43 @@
   <Window.Resources>
     <utils:StringToUpperConverter x:Key="StringToUpperConverter" />
   </Window.Resources>
-  <md:DialogHost CloseOnClickAway="True" DialogTheme="Inherit" Identifier="RootDialogHost" Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
+  <md:DialogHost CloseOnClickAway="True"
+                 DialogTheme="Inherit"
+                 Identifier="RootDialogHost"
+                 Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
     <DockPanel x:Name="TopLevelDockPanel">
 
       <!--#region Top Menu Bar-->
-      <md:ColorZone Padding="0,12,10,12"
-                      Panel.ZIndex="2"
-                      md:ShadowAssist.ShadowDepth="Depth0"
-                      Background="{DynamicResource MaterialDesignCardBackground}"
-                      DockPanel.Dock="Top">
+      <md:Card Padding="0,12,10,12"
+               Panel.ZIndex="2"
+               md:ShadowAssist.ShadowDepth="Depth1"
+               Background="{DynamicResource MaterialDesignCardBackground}"
+               DockPanel.Dock="Top">
         <DockPanel>
-          <ToggleButton x:Name="MenuToggleButton" Margin="12,0,0,0"
-                          Command="{s:Action GoToSettingsOrBack}"
-                          HorizontalAlignment="Right"
-                          Width="40"
-                          Height="40"
-                          Content="{Binding MainButtonIcon}"
-                          IsChecked="{Binding MainButton_Checked}"
-                          Style="{StaticResource MaterialDesignFlatPrimaryToggleButton}">
-          </ToggleButton>
-          <TextBlock VerticalAlignment="Center"
-                     Margin="12,0,0,0"
-                         FontSize="20"
-                         Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-                         Text="{Binding ViewName, Converter={StaticResource StringToUpperConverter}}" />
-
-
+          <ToggleButton x:Name="MenuToggleButton"
+                        Width="40"
+                        Height="40"
+                        Margin="12,0,0,0"
+                        HorizontalAlignment="Right"
+                        Command="{s:Action GoToSettingsOrBack}"
+                        Content="{Binding MainButtonIcon}"
+                        IsChecked="{Binding MainButton_Checked}"
+                        Style="{StaticResource MaterialDesignFlatPrimaryToggleButton}" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     FontSize="20"
+                     Style="{StaticResource MaterialDesignHeadline3TextBlock}"
+                     Text="{Binding ViewName, Converter={StaticResource StringToUpperConverter}}" />
 
         </DockPanel>
-      </md:ColorZone>
+      </md:Card>
       <!--#endregion-->
 
-      <Grid x:Name="MainContent" Margin="0">
+      <Grid x:Name="MainContent"
+            Margin="0">
         <ContentControl s:View.Model="{Binding ActiveItem}" />
-        <md:Snackbar x:Name="MainWindowSnackbar" MessageQueue="{Binding Notifications}" />
+        <md:Snackbar x:Name="MainWindowSnackbar"
+                     MessageQueue="{Binding Notifications}" />
       </Grid>
     </DockPanel>
   </md:DialogHost>

@@ -13,6 +13,78 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <utils:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+      <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+      <ControlTemplate x:Key="BranchButton">
+        <Button x:Name="BranchButton"
+                Grid.Column="0"
+                Width="auto"
+                MaxWidth="110"
+                md:ButtonAssist.CornerRadius="3"
+                ContextMenuService.Placement="Bottom"
+                FontSize="11"
+                ToolTip="Edit/Change branch">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <md:PackIcon Grid.Column="0"
+                         Kind="SourceBranch" />
+            <TextBlock Grid.Column="1"
+                       Margin="1,2"
+                       HorizontalAlignment="Center"
+                       Text="Branch:" />
+            <TextBlock Grid.Column="2"
+                       Margin="1,2"
+                       FontWeight="Bold"
+                       Text="speckle/wip-releases-long-nameeee" />
+          </Grid>
+          <Button.Style>
+            <Style TargetType="{x:Type Button}"
+                   BasedOn="{StaticResource MaterialDesignToolForegroundButton }">
+              <Style.Triggers>
+                <EventTrigger RoutedEvent="Click">
+                  <EventTrigger.Actions>
+                    <BeginStoryboard>
+                      <Storyboard>
+                        <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="ContextMenu.IsOpen">
+                          <DiscreteBooleanKeyFrame KeyTime="0:0:0"
+                                                   Value="True" />
+                        </BooleanAnimationUsingKeyFrames>
+                      </Storyboard>
+                    </BeginStoryboard>
+                  </EventTrigger.Actions>
+                </EventTrigger>
+              </Style.Triggers>
+              <Setter Property="ContextMenu">
+                <Setter.Value>
+                  <ContextMenu>
+                    <MenuItem />
+                    <MenuItem />
+                  </ContextMenu>
+                </Setter.Value>
+              </Setter>
+            </Style>
+          </Button.Style>
+          <Button.ContextMenu>
+            <ContextMenu>
+              <MenuItem Header="{Binding RelativeSource={RelativeSource  Mode=TemplatedParent}, Path=DataContext.Stream.name}" />
+              <MenuItem Header="dim/dev-whatever" />
+              <MenuItem Header="speckle/wip-releases"
+                        IsCheckable="True"
+                        IsChecked="True" />
+              <Separator></Separator>
+              <MenuItem Header="Add a new branch">
+                <MenuItem.Icon>
+                  <md:PackIcon Kind="Plus" />
+                </MenuItem.Icon>
+              </MenuItem>
+            </ContextMenu>
+          </Button.ContextMenu>
+        </Button>
+      </ControlTemplate>
+      
       <DataTemplate x:Key="StreamCardTemplate">
         <Grid>
           <Grid.RowDefinitions>
@@ -37,9 +109,8 @@
                            FontFamily="Consolas"
                            Text="{Binding ServerUrl}"
                            TextWrapping="Wrap" />
-                <TextBlock
-                  Text="Please ensure you have an account for this server and have added it to the Speckle Manager"
-                  TextWrapping="Wrap" />
+                <TextBlock Text="Please ensure you have an account for this server and have added it to the Speckle Manager"
+                           TextWrapping="Wrap" />
               </StackPanel>
             </Border>
           </Grid>
@@ -53,6 +124,7 @@
                    UniformCornerRadius="8"
                    Visibility="{Binding Client, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
           <!--#endregion-->
+
           <md:Card Grid.Row="0"
                    Width="Auto"
                    Margin="12,10,12,10"
@@ -64,200 +136,289 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
               </Grid.RowDefinitions>
-              <Grid Grid.Row="0">
+
+              <Grid Name="StreamCardTitle"
+                    Grid.Row="0">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="56" />
                   <ColumnDefinition Width="40" />
                 </Grid.ColumnDefinitions>
+
                 <TextBlock Grid.Column="0"
                            VerticalAlignment="Center"
                            FontSize="18"
                            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                            Text="{Binding Stream.name}"
                            TextWrapping="Wrap" />
-                <Button x:Name="SendStreamButton"
-                        Grid.Column="1"
-                        Margin="8,0"
+
+                <Button Grid.Column="1"
+                        Width="28"
+                        Height="28"
                         HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Command="{s:Action Send}"
+                        md:RippleAssist.ClipToBounds="True"
+                        Command="{s:Action OpenStreamInWeb}"
                         CommandParameter="{Binding}"
-                        Content="{md:PackIcon Kind=CloudUpload,
-                                        Size=20}"
-                        IsEnabled="{Binding IsReceiving, Converter={StaticResource InverseBooleanConverter}}"
-                        Style="{StaticResource FlatFloatingActionMiniButton}"
-                        ToolTip="Send objects to Speckle"
-                        Visibility="{Binding IsSending, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
-                <Button x:Name="StopSendButton"
-                        Grid.Column="1"
-                        Margin="8,0"
+                        Content="{md:PackIcon Kind=OpenInNew,
+                                        Size=18}"
+                        Style="{StaticResource MaterialDesignIconButton}"
+                        ToolTip="Open this stream in the browser" />
+
+                <Button Grid.Column="2"
+                        Width="28"
+                        Height="28"
+                        ContextMenuService.Placement="Bottom"
                         HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        md:ButtonProgressAssist.IsIndeterminate="False"
-                        md:ButtonProgressAssist.IsIndicatorVisible="True"
-                        md:ButtonProgressAssist.Maximum="{Binding Progress.Maximum, Mode=OneWay}"
-                        md:ButtonProgressAssist.Value="{Binding Progress.Value, Mode=OneWay}"
-                        Command="{s:Action CancelToken}"
-                        Content="{md:PackIcon Kind=Stop,
-                                        Size=20}"
-                        Style="{StaticResource FlatFloatingActionMiniButton}"
-                        ToolTip="Cancel the send operation"
-                        Visibility="{Binding IsSending, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
-                <md:Badged Grid.Column="1"
-                           Margin="48,5,0,0"
-                           Badge="{Binding Placeholders.Count}"
-                           BadgeColorZoneMode="Accent"
-                           ToolTip="objects to send"
-                           Visibility="{Binding Placeholders.Count, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
-                <Button x:Name="ReceiveButton"
-                        Grid.Column="2"
-                        Margin="0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Command="{s:Action Receive}"
-                        CommandParameter="{Binding}"
-                        Content="{md:PackIcon Kind=CloudDownload,
-                                        Size=20}"
-                        IsEnabled="{Binding IsSending, Converter={StaticResource InverseBooleanConverter}}"
-                        Style="{StaticResource FlatFloatingActionMiniDarkButton}"
-                        ToolTip="Receive changes from Speckle"
-                        Visibility="{Binding IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
-                <Button x:Name="StopReceiveButton"
-                        Grid.Column="2"
-                        Margin="0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        md:ButtonProgressAssist.IsIndeterminate="False"
-                        md:ButtonProgressAssist.IsIndicatorVisible="True"
-                        md:ButtonProgressAssist.Maximum="{Binding Progress.Maximum, Mode=OneWay}"
-                        md:ButtonProgressAssist.Value="{Binding Progress.Value, Mode=OneWay}"
-                        Command="{s:Action CancelToken}"
-                        Content="{md:PackIcon Kind=Stop,
-                                        Size=20}"
-                        Style="{StaticResource FlatFloatingActionMiniDarkButton}"
-                        ToolTip="Cancel the receive operation"
-                        Visibility="{Binding IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
-                <md:Badged Grid.Column="2"
-                           Margin="40,5,0,0"
-                           Badge="{md:PackIcon Kind=ExclamationThick}"
-                           BadgeColorZoneMode="Accent"
-                           ToolTip="there are new updates on the server"
-                           Visibility="{Binding ServerUpdates, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+                        md:RippleAssist.ClipToBounds="True"
+                        Content="{md:PackIcon Kind=MoreVert,
+                                        Size=18}"
+                        ToolTip="More options">
+                  <Button.Style>
+                    <Style TargetType="{x:Type Button}"
+                           BasedOn="{StaticResource MaterialDesignIconButton }">
+                      <Style.Triggers>
+                        <EventTrigger RoutedEvent="Click">
+                          <EventTrigger.Actions>
+                            <BeginStoryboard>
+                              <Storyboard>
+                                <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="ContextMenu.IsOpen">
+                                  <DiscreteBooleanKeyFrame KeyTime="0:0:0"
+                                                           Value="True" />
+                                </BooleanAnimationUsingKeyFrames>
+                              </Storyboard>
+                            </BeginStoryboard>
+                          </EventTrigger.Actions>
+                        </EventTrigger>
+                      </Style.Triggers>
+                      <Setter Property="ContextMenu">
+                        <Setter.Value>
+                          <ContextMenu>
+                            <MenuItem />
+                            <MenuItem />
+                          </ContextMenu>
+                        </Setter.Value>
+                      </Setter>
+                    </Style>
+                  </Button.Style>
+                  <Button.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem>
+                        <MenuItem.Header>Collaborators</MenuItem.Header>
+                        <MenuItem.Icon>
+                          <md:PackIcon Kind="People" />
+                        </MenuItem.Icon>
+                        <MenuItem>
+                          <MenuItem.Header>Jane Austen</MenuItem.Header>
+                        </MenuItem>
+                        <MenuItem>
+                          <MenuItem.Header>Marie Curie</MenuItem.Header>
+                        </MenuItem>
+                        <MenuItem>
+                          <MenuItem.Header>Someone Else</MenuItem.Header>
+                        </MenuItem>
+                        <Separator></Separator>
+                        <MenuItem>
+                          <MenuItem.Icon>
+                            <md:PackIcon Kind="OpenInBrowser" />
+                          </MenuItem.Icon>
+                          <MenuItem.Header>Manage</MenuItem.Header>
+                        </MenuItem>
+                      </MenuItem>
+                      <MenuItem Header="Remove"
+                                Foreground="Red">
+                        <MenuItem.Icon>
+                          <md:PackIcon Kind="Trash" />
+                        </MenuItem.Icon>
+                      </MenuItem>
+                    </ContextMenu>
+                  </Button.ContextMenu>
+                </Button>
               </Grid>
 
-              <Grid Grid.Row="1">
-                <StackPanel Orientation="Vertical">
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="*" />
-                      <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <md:Chip Grid.Column="0"
-                             Height="28"
-                             md:ButtonAssist.CornerRadius="14"
-                             Command="{s:Action CopyStreamId}"
-                             CommandParameter="{Binding Stream.id}"
-                             FontFamily="Consolas"
-                             FontSize="12"
-                             ToolTip="Stream ID">
-                      <StackPanel Orientation="Horizontal">
-                        <md:PackIcon Width="12"
-                                     Height="12"
-                                     Margin="0,0,4,0"
-                                     VerticalAlignment="Center"
-                                     Kind="ContentCopy" />
-                        <TextBlock Text="{Binding Stream.id}" />
-                      </StackPanel>
-                    </md:Chip>
-
-                    <Grid Grid.Column="2"
-                          Margin="0,18,0,12"
-                          VerticalAlignment="Center">
-                      <StackPanel Orientation="Horizontal">
-                        <md:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                     Kind="CubeOutline" />
-                        <TextBlock Margin="0,0,12,0"
-                                   Foreground="{DynamicResource MaterialDesignColumnHeader}"
-                                   Text="{Binding Objects.Count, StringFormat=' {0} objects'}" />
-                        <md:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                     Kind="History"
-                                     ToolTip="commits on master branch" />
-                        <TextBlock Margin="4,0,12,0"
-                                   Foreground="{DynamicResource MaterialDesignColumnHeader}"
-                                   Text="{Binding Stream.branches.items[0].commits.items.Count}" />
-                        <md:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                     Kind="Accounts"
-                                     ToolTip="collaborators" />
-                        <TextBlock Margin="4,0,12,0"
-                                   Foreground="{DynamicResource MaterialDesignColumnHeader}"
-                                   Text="{Binding Stream.collaborators.Count}" />
-                        <md:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                     Margin="0,0,6,0"
-                                     Kind="Link"
-                                     ToolTip="link sharing is on"
-                                     Visibility="{Binding Stream.isPublic, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"/>
-                        <md:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                     Margin="0,0,6,0"
-                                     Kind="LinkLock"
-                                     ToolTip="link sharing is off"
-                                     Visibility="{Binding Stream.isPublic, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"/>
-                      </StackPanel>
-                    </Grid>
-                  </Grid>
-                </StackPanel>
-              </Grid>
-
-              <Grid Grid.Row="2"
-                    Margin="0,10,0,0">
+              <Grid Name="StreamCardSenderActions"
+                    Grid.Row="1"
+                    Margin="0,30,0,0"
+                    Visibility="{Binding IsSenderCard, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    >
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <!--  <TextBlock  -->
-                <!--  Grid.Column="0"  -->
-                <!--  Margin="0,12"  -->
-                <!--  FontSize="10"  -->
-                <!--  Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />  -->
-                <Button Grid.Column="0"
-                        Width="Auto"
-                        md:ButtonAssist.CornerRadius="4"
+                <!--The branch button-->
+                <Control Template="{StaticResource BranchButton}"></Control>
+                <!--Selection Filter Button-->
+                <Button x:Name="SelectionFilterButton"
+                        Grid.Column="1"
+                        Width="auto"
+                        MaxWidth="120"
+                        Margin="0,0,5,0"
+                        md:ButtonAssist.CornerRadius="3"
                         Command="{s:Action ShowStreamInfo}"
                         CommandParameter="{Binding}"
-                        Content="DETAILS"
-                        Style="{StaticResource SoftFlatButton}" />
-                <StackPanel Grid.Column="3"
-                            Orientation="Horizontal">
-                  <!--<Button Width="28"
-                  Height="28"
-                  md:RippleAssist.ClipToBounds="True"
-                  Content="{md:PackIcon Kind=Heart,
-                  Size=18}"
-                  Style="{StaticResource MaterialDesignIconButton}" />-->
-                  <!--<Button x:Name="ShareStreamButton"
-                        Width="28"
-                        Height="28"
-                        md:RippleAssist.ClipToBounds="True"
-                        Command="{s:Action ShowShareDialog}"
+                        FontSize="11"
+                        Style="{StaticResource MaterialDesignToolForegroundButton}"
+                        ToolTip="Edit/Change Objects">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <md:PackIcon Grid.Column="0"
+                                 Kind="CubeOutline" />
+
+                    <TextBlock Grid.Column="1"
+                               Margin="3,2"
+                               HorizontalAlignment="Center"
+                               Text="Objects: " />
+                    <TextBlock Grid.Column="2"
+                               Margin="0,2"
+                               FontWeight="Bold"
+                               Text="100" />
+                  </Grid>
+                </Button>
+                <!--The Send Button-->
+                <Button x:Name="SendButton"
+                        Grid.Column="2"
+                        Width="110"
+                        HorizontalAlignment="Right"
+                        md:ButtonAssist.CornerRadius="3"
+                        Command="{s:Action ShowStreamInfo}"
                         CommandParameter="{Binding}"
-                        Content="{md:PackIcon Kind=ShareVariant,
-                                        Size=18}"
-                        Style="{StaticResource MaterialDesignIconButton}"
-                        ToolTip="Share this stream!" />-->
-                  <Button Width="28"
-                          Height="28"
-                          md:RippleAssist.ClipToBounds="True"
-                          Command="{s:Action OpenStreamInWeb}"
-                          CommandParameter="{Binding}"
-                          Content="{md:PackIcon Kind=OpenInNew,
-                                          Size=18}"
-                          Style="{StaticResource MaterialDesignIconButton}"
-                          ToolTip="Open this stream in the browser" />
-                </StackPanel>
+                        FontSize="11"
+                        ToolTip="Send objects to Speckle.">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <md:PackIcon Grid.Column="0"
+                                 Kind="CloudUpload" />
+
+                    <TextBlock Grid.Column="1"
+                               Margin="3,2"
+                               HorizontalAlignment="Center"
+                               Text="Send" />
+                  </Grid>
+                </Button>
+                <!--The state swapper button-->
+                <Button x:Name="SwapStateButton"
+                        Grid.Column="3"
+                        Width="30"
+                        Margin="5,0,0,0"
+                        md:ButtonAssist.CornerRadius="3"
+                        Command="{s:Action SwapState}"
+                        CommandParameter="{Binding}"
+                        FontSize="10"
+                        Style="{StaticResource MaterialDesignToolForegroundButton}"
+                        ToolTip="Receive data from this stream.">
+                  <md:PackIcon Kind="CloudDownload" />
+                </Button>
+              </Grid>
+
+              <Grid x:Name="StreamCardReceiverActions"
+                    Grid.Row="2"
+                    Margin="0,30,0,0"
+                    Visibility="{Binding IsReceiverCard, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Button x:Name="BranchButtonReceiver"
+                        Grid.Column="0"
+                        Width="auto"
+                        MaxWidth="115"
+                        md:ButtonAssist.CornerRadius="3"
+                        Command="{s:Action ShowStreamInfo}"
+                        CommandParameter="{Binding}"
+                        FontSize="11"
+                        Style="{StaticResource MaterialDesignToolForegroundButton}"
+                        ToolTip="Edit/Change branch">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <md:PackIcon Grid.Column="0"
+                                 Kind="SourceBranch" />
+                    <TextBlock Grid.Column="2"
+                               Margin="1,2"
+                               FontWeight="Bold"
+                               Text="dim/long-name-branch-hwello" />
+                  </Grid>
+                </Button>
+                <Button x:Name="CommitButton"
+                        Grid.Column="1"
+                        Width="auto"
+                        MaxWidth="110"
+                        Margin="0,0,10,0"
+                        md:ButtonAssist.CornerRadius="3"
+                        Command="{s:Action ShowStreamInfo}"
+                        CommandParameter="{Binding}"
+                        FontSize="11"
+                        Style="{StaticResource MaterialDesignToolForegroundButton}"
+                        ToolTip="Select Commit">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <md:PackIcon Grid.Column="0"
+                                 Kind="SourceCommit" />
+                    <TextBlock Grid.Column="1"
+                               Margin="3,2"
+                               HorizontalAlignment="Center"
+                               Text="Latest" />
+                    <TextBlock Grid.Column="2"
+                               Margin="0,2"
+                               FontWeight="Bold"
+                               Text="061459c4f2" />
+                  </Grid>
+                </Button>
+                <Button x:Name="ReceiveButton"
+                        Grid.Column="2"
+                        Width="110"
+                        HorizontalAlignment="Right"
+                        md:ButtonAssist.CornerRadius="3"
+                        Command="{s:Action ShowStreamInfo}"
+                        CommandParameter="{Binding}"
+                        FontSize="11"
+                        Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                        ToolTip="Edit/Change Objects">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <md:PackIcon Grid.Column="0"
+                                 Kind="CloudDownload" />
+
+                    <TextBlock Grid.Column="1"
+                               Margin="3,2"
+                               HorizontalAlignment="Center"
+                               Text="Receive" />
+                  </Grid>
+                </Button>
+                <Button x:Name="SwapStateButton2"
+                        Grid.Column="3"
+                        Width="30"
+                        Margin="5,0,0,0"
+                        md:ButtonAssist.CornerRadius="3"
+                        Command="{s:Action SwapState}"
+                        CommandParameter="{Binding}"
+                        FontSize="10"
+                        Style="{StaticResource MaterialDesignToolForegroundButton}"
+                        ToolTip="Send data to this stream.">
+                  <md:PackIcon Kind="CloudUpload" />
+                </Button>
               </Grid>
             </Grid>
           </md:Card>
@@ -269,7 +430,7 @@
 
   <md:TransitioningContent OpeningEffect="{md:TransitionEffect FadeIn}">
     <Grid Margin="0">
-      <Grid Margin="0,8,0,100">
+      <Grid Margin="0,8,0,0">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
@@ -277,28 +438,35 @@
         </Grid.RowDefinitions>
 
         <ScrollViewer Grid.Row="2"
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
+                      VerticalAlignment="Stretch"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
           <ItemsControl ItemTemplate="{StaticResource StreamCardTemplate}"
-                      ItemsSource="{Binding StreamList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                        ItemsSource="{Binding StreamList, Mode=OneWay, UpdateSourceTrigger=Default}" />
         </ScrollViewer>
+
       </Grid>
 
-      <!--  TODO absolute positioning rel to window  -->
+      <!--Big add button-->
+      <Canvas>
+        <Button x:Name="CreateStreamButton"
+                Canvas.Right="0"
+                Canvas.Bottom="0"
+                Width="45"
+                Height="45"
+                Margin="32"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                md:ShadowAssist.ShadowDepth="Depth3"
+                Command="{s:Action ShowStreamCreateDialog}"
+                Content="{md:PackIcon Kind=Plus,
+                                Size=24}"
+                DockPanel.Dock="Bottom"
+                Style="{StaticResource FlatFloatingActionButton}"
+                ToolTip="Add a stream"
+                ToolTipService.Placement="Left" />
+      </Canvas>
 
-      <Button x:Name="CreateStreamButton"
-            Width="45"
-            Height="45"
-            Margin="32"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            Command="{s:Action ShowStreamCreateDialog}"
-            Content="{md:PackIcon Kind=Plus,
-                            Size=24}"
-            DockPanel.Dock="Bottom"
-            Style="{StaticResource FlatFloatingActionAccentButton}"
-            ToolTip="Add a stream"
-            ToolTipService.Placement="Left" />
     </Grid>
   </md:TransitioningContent>
 

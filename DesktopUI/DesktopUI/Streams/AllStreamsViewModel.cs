@@ -8,6 +8,8 @@ using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Speckle.DesktopUI.Utils;
 using Stylet;
+using System.Windows.Controls;
+using Microsoft.Xaml.Behaviors;
 
 namespace Speckle.DesktopUI.Streams
 {
@@ -19,27 +21,6 @@ namespace Speckle.DesktopUI.Streams
     private readonly IDialogFactory _dialogFactory;
     private readonly IEventAggregator _events;
     private readonly ConnectorBindings _bindings;
-
-    public AllStreamsViewModel(
-      IViewManager viewManager,
-      IStreamViewModelFactory streamViewModelFactory,
-      IDialogFactory dialogFactory,
-      IEventAggregator events,
-      StreamsRepository streamsRepo,
-      ConnectorBindings bindings)
-    {
-      _repo = streamsRepo;
-      _events = events;
-      DisplayName = bindings.GetApplicationHostName() + " streams";
-      _viewManager = viewManager;
-      _streamViewModelFactory = streamViewModelFactory;
-      _dialogFactory = dialogFactory;
-      _bindings = bindings;
-
-      StreamList = LoadStreams();
-
-      _events.Subscribe(this);
-    }
 
     private StreamsRepository _repo;
     private BindableCollection<StreamState> _streamList;
@@ -65,10 +46,27 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _selectedBranch, value);
     }
 
+
+    public AllStreamsViewModel(IViewManager viewManager, IStreamViewModelFactory streamViewModelFactory, IDialogFactory dialogFactory, IEventAggregator events, StreamsRepository streamsRepo, ConnectorBindings bindings)
+    {
+      _repo = streamsRepo;
+      _events = events;
+      DisplayName = bindings.GetApplicationHostName() + " streams";
+      _viewManager = viewManager;
+      _streamViewModelFactory = streamViewModelFactory;
+      _dialogFactory = dialogFactory;
+      _bindings = bindings;
+
+      StreamList = LoadStreams();
+
+      _events.Subscribe(this);
+    }
+
     private BindableCollection<StreamState> LoadStreams()
     {
       var streams = new BindableCollection<StreamState>(_bindings.GetFileContext());
-      if ( streams.Count == 0 )
+
+      if (streams.Count == 0)
         streams = _repo.LoadTestStreams();
 
       return streams;
@@ -79,11 +77,19 @@ namespace Speckle.DesktopUI.Streams
       Tracker.TrackPageview(Tracker.STREAM_DETAILS);
       var item = _streamViewModelFactory.CreateStreamViewModel();
       item.StreamState = state;
+
       // get main branch for now
       // TODO allow user to select branch
       item.Branch = _repo.GetMainBranch(state.Stream.branches.items);
-      
-      ((RootViewModel) Parent).GoToStreamViewPage(item);
+
+      ((RootViewModel)Parent).GoToStreamViewPage(item);
+    }
+
+    public void SwapState(StreamState state)
+    {
+      state.Stream = state.Stream;
+      StreamList.Refresh();
+      state.IsSenderCard = !state.IsSenderCard;
     }
 
     public async void Send(StreamState state)
@@ -94,10 +100,10 @@ namespace Speckle.DesktopUI.Streams
       state.CancellationToken = _cancellationToken.Token;
 
       var res = await Task.Run(() => _repo.ConvertAndSend(state));
-      if ( res != null )
+      if (res != null)
       {
         var index = StreamList.IndexOf(state);
-        StreamList[ index ] = res;
+        StreamList[index] = res;
         StreamList.Refresh();
       }
 
@@ -113,7 +119,7 @@ namespace Speckle.DesktopUI.Streams
       state.CancellationToken = _cancellationToken.Token;
 
       var res = await Task.Run(() => _repo.ConvertAndReceive(state));
-      if ( res != null )
+      if (res != null)
       {
         state = res;
         StreamList.Refresh();
@@ -151,7 +157,7 @@ namespace Speckle.DesktopUI.Streams
     public void CopyStreamId(string streamId)
     {
       Clipboard.SetText(streamId);
-      _events.Publish(new ShowNotificationEvent() {Notification = "Stream ID copied to clipboard!"});
+      _events.Publish(new ShowNotificationEvent() { Notification = "Stream ID copied to clipboard!" });
     }
 
     public void OpenStreamInWeb(StreamState state)
@@ -178,18 +184,18 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(ApplicationEvent message)
     {
-      switch ( message.Type )
+      switch (message.Type)
       {
         case ApplicationEvent.EventType.DocumentClosed:
-        {
-          StreamList.Clear();
-          break;
-        }
+          {
+            StreamList.Clear();
+            break;
+          }
         case ApplicationEvent.EventType.DocumentModified:
-        {
-          // warn that stream data may be expired
-          break;
-        }
+          {
+            // warn that stream data may be expired
+            break;
+          }
         case ApplicationEvent.EventType.DocumentOpened:
         case ApplicationEvent.EventType.ViewActivated:
           StreamList.Clear();

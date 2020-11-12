@@ -19,26 +19,6 @@ namespace Speckle.DesktopUI.Streams
     private readonly ConnectorBindings _bindings;
     private StreamsRepository _repo;
 
-    public StreamViewModel(
-      IEventAggregator events,
-      ViewManager viewManager,
-      IDialogFactory dialogFactory,
-      StreamsRepository streamsRepo,
-      ConnectorBindings bindings)
-    {
-      _events = events;
-      _viewManager = viewManager;
-      _dialogFactory = dialogFactory;
-      _repo = streamsRepo;
-      _bindings = bindings;
-
-      DisplayName = "Stream XXX";
-
-      _events.Subscribe(this);
-    }
-
-    private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
-
     private StreamState _streamState;
     public StreamState StreamState
     {
@@ -46,7 +26,8 @@ namespace Speckle.DesktopUI.Streams
       set
       {
         SetAndNotify(ref _streamState, value);
-        Branch = StreamState.Stream.branches.items[ 0 ];
+        Branch = StreamState.Stream.branches.items[0];
+        DisplayName = value.Stream.name;
         NotifyOfPropertyChange(nameof(LatestCommit));
       }
     }
@@ -62,6 +43,28 @@ namespace Speckle.DesktopUI.Streams
     {
       get => StreamState.LatestCommit(Branch.name);
     }
+    
+    private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
+
+
+    public StreamViewModel(
+      IEventAggregator events,
+      ViewManager viewManager,
+      IDialogFactory dialogFactory,
+      StreamsRepository streamsRepo,
+      ConnectorBindings bindings)
+    {
+      _events = events;
+      _viewManager = viewManager;
+      _dialogFactory = dialogFactory;
+      _repo = streamsRepo;
+      _bindings = bindings;
+
+      DisplayName = StreamState?.Stream.name;
+
+      _events.Subscribe(this);
+    }
+
 
     public async void Send()
     {

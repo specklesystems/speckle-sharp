@@ -59,9 +59,31 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
-    [JsonProperty] public string AccountId { get; private set; }
+    [JsonProperty]
+    public string AccountId { get; private set; }
 
-    [JsonProperty] public string ServerUrl { get; private set; }
+    [JsonProperty]
+    public string ServerUrl { get; private set; }
+
+    private bool _IsSender = true;
+
+    /// <summary>
+    /// Tells us wether this is a receiver or a sender card.
+    /// </summary>
+    [JsonProperty]
+    public bool IsSenderCard
+    {
+      get => _IsSender;
+      set 
+      {
+        SetAndNotify(ref _IsSender, value);
+      }
+    }
+
+    public bool IsReceiverCard
+    {
+      get => !_IsSender;
+    }
 
     private Stream _stream;
 
