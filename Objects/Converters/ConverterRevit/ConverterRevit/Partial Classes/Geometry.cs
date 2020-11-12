@@ -13,8 +13,10 @@ using Arc = Objects.Geometry.Arc;
 using Curve = Objects.Geometry.Curve;
 using Mesh = Objects.Geometry.Mesh;
 using System.Linq;
+using System.Net;
 using Ellipse = Objects.Geometry.Ellipse;
 using Objects;
+using Surface = Objects.Geometry.Surface;
 
 namespace Objects.Converter.Revit
 {
@@ -376,6 +378,12 @@ namespace Objects.Converter.Revit
       return ixn.CrossProduct(xn).Normalize();
     }
 
+    public Geometry.Surface FaceToSpeckle(DB.Face face, DB.BoundingBoxUV uvBox)
+    {
+      var surf = DB.ExportUtils.GetNurbsSurfaceDataForSurface(face.GetSurface());
+      var spcklSurface = NurbsSurfaceToSpeckle(surf, face.GetBoundingBox());
+      return spcklSurface;
+    }
 
     public Geometry.Surface NurbsSurfaceToSpeckle(DB.NurbsSurfaceData surface, DB.BoundingBoxUV uvBox)
     {
@@ -383,15 +391,40 @@ namespace Objects.Converter.Revit
 
       result.degreeU = surface.DegreeU;
       result.degreeV = surface.DegreeV;
-      result.knotsU = surface.GetKnotsU().ToList();
-      result.knotsV = surface.GetKnotsV().ToList();
+      
+      var knotsU = surface.GetKnotsU().ToList();
+      var knotsV = surface.GetKnotsV().ToList();
+      
+      result.knotsU = knotsU.GetRange(1,knotsU.Count - 2);
+      result.knotsV = knotsV.GetRange(1,knotsV.Count - 2);
       
       var controlPointCountU = result.knotsU.Count - result.degreeU - 1;
       var controlPointCountV = result.knotsV.Count - result.degreeV - 1;
       
       var controlPoints = surface.GetControlPoints();
-      
+      var weights = surface.GetWeights();
 
+      var points = new List<List<ControlPoint>>();
+      for (var u = 0; u < controlPointCountU; u++)
+      {
+        var uOffset = u * controlPointCountV;
+        var row = new List<ControlPoint>();
+        
+        for (var v = 0; v < controlPointCountV; v++)
+        {
+          var pt = controlPoints[uOffset + v];
+          if (surface.IsRational)
+          {
+            var w = weights[uOffset + v];
+            row.Add(new ControlPoint(pt.X, pt.Y, pt.Z, w));
+          }
+          else
+          {
+            row.Add(new ControlPoint(pt.X, pt.Y, pt.Z));
+          }
+        }
+      }
+      
       return result;
     }
     
@@ -484,14 +517,14 @@ namespace Objects.Converter.Revit
     
     public Solid BrepToNative(Brep brep)
     {
-      // TODO Incomplete implementation
       using var builder = new BRepBuilder(BRepType.Solid);
       
       var brepEdgeIds = new List<BRepBuilderGeometryId>[brep.Edges.Count];
       brep.Faces.ForEach(face =>
       {
         var faceId = builder.AddFace(BrepFaceToNative(face),face.OrientationReversed); 
-        // builder.SetFaceMaterialId(faceId,null); // TODO: Missing material ID!!!
+        
+        builder.SetFaceMaterialId(faceId,null); // TODO: Missing material ID!!!
         
         face.Loops.ForEach(loop =>
         {
@@ -503,7 +536,6 @@ namespace Objects.Converter.Revit
           {
               // If the trim is mated or boundary, or the edge is null,
               // -> continue.
-
               if (trim.TrimType == BrepTrimType.Boundary 
                   || trim.TrimType == BrepTrimType.Mated
                   || trim.Edge == null)
@@ -538,29 +570,90 @@ namespace Objects.Converter.Revit
       builder.Finish();
       return builder.IsResultAvailable() ? builder.GetResult() : null;
     }
-    
+
     public Brep BrepToSpeckle(Solid solid)
     {
       // TODO: Incomplete implementation!!
       
       var brep = new Brep();
 
-      var faces = new List<BrepFace>();
-      for (var i = 0; i < solid.Faces.Size; i++)
-      {
-        var face = solid.Faces.get_Item(i);
-        var sFace = new BrepFace();
-      }
+      if (solid is null || solid.Faces.IsEmpty) return null;
 
-      for (var i = 0; i < solid.Edges.Size; i++)
+      var brepEdges = new Dictionary<DB.Edge, BrepEdge>();
+
+      foreach (var face in solid.Faces.Cast<DB.Face>())
       {
-        var edge = solid.Edges.get_Item(i);
-        var sFace = new BrepFace();
+        var si = AddSurface(brep, face, out var shells, brepEdges);
+        if (si < 0) continue;
+        TrimSurface(brep, si, !face.OrientationMatchesSurfaceOrientation, shells);
       }
       
-
+      // TODO: Revit has no brep vertices. Must call 'brep.SetVertices()' in rhino when provenance is revit.
+      // TODO: Set tolerances and flags in rhino when provenance is revit.
+      
       return brep;
     }
 
+    public Surface FaceToSpeckle(DB.Face face, out bool parametricOrientation, double relativeTolerance = 0.0)
+    {
+      using (var surface = face.GetSurface())
+        parametricOrientation = surface.OrientationMatchesParametricOrientation;
+
+      switch (face)
+      {
+        case null: return null;
+        //case PlanarFace planar:            return ToRhinoSurface(planar, relativeTolerance);
+        //case ConicalFace conical:          return ToRhinoSurface(conical, relativeTolerance);
+        //case CylindricalFace cylindrical:  return ToRhinoSurface(cylindrical, relativeTolerance);
+        //case RevolvedFace revolved:        return ToRhinoSurface(revolved, relativeTolerance);
+        //case RuledFace ruled:              return ToRhinoSurface(ruled, relativeTolerance);
+        case HermiteFace hermite:          return FaceToSpeckle(hermite, face.GetBoundingBox());
+        default: throw new NotImplementedException();
+      }
+    }
+
+    public int AddSurface(Brep brep, DB.Face face, out List<BrepBoundary>[] shells,
+      Dictionary<DB.Edge, BrepEdge> brepEdges = null)
+    {
+      throw new NotImplementedException();
+    }
+
+    public void TrimSurface(Brep brep, int surface, bool orientationReversed, List<BrepBoundary>[] shells)
+    {
+      // TODO: Incomplete method.
+      foreach (var shell in shells)
+      {
+        //var sFace = new BrepFace(brep,surface,null,null,orientationReversed);
+
+        foreach (var loop in shell)
+        {
+          var brepLoop = 0;
+          var edgeCount = loop.edges.Count;
+
+          for (int e = 0; e < edgeCount; ++e)
+          {
+            var brepEdge = loop.edges[e];
+            var orientation = loop.orientation[e];
+            if (orientation == 0) continue;
+
+            if (loop.trims.segments[e] is Curve trim)
+            {
+              brep.Curve2D.Add(trim);
+              // TODO: Missing stuff here!
+            }
+          }
+        }
+        
+      }
+      throw new NotImplementedException();
+    }
+    
+    public struct BrepBoundary
+    {
+      public BrepLoopType type;
+      public List<BrepEdge> edges;
+      public Polycurve trims;
+      public List<int> orientation;
+    }
   }
 }
