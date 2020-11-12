@@ -63,7 +63,7 @@
         Text="{Binding StreamQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
       <TextBlock Margin="0,8" Text="Customise your settings" />
 
-      <ComboBox
+      <!--<ComboBox
         x:Name="AccountSelectionBox"
         Width="Auto"
         Margin="0,16"
@@ -73,7 +73,7 @@
         IsEnabled="True"
         ItemsSource="{Binding Accounts}"
         SelectedItem="{Binding AccountToSendFrom}"
-        StaysOpenOnEdit="True" />
+        StaysOpenOnEdit="True" />-->
 
 
       <Expander
@@ -106,7 +106,7 @@
         </StackPanel>
       </Expander>
 
-      <Button
+      <!--<Button
         Margin="0,12,0,0"
         HorizontalContentAlignment="Stretch"
         Command="{s:Action AddSimpleStream}"
@@ -126,9 +126,9 @@
             Text="Current Selection" />
           <TextBlock Grid.Column="2" Text="{Binding SelectionCount, StringFormat='({0} objects)'}" />
         </Grid>
-      </Button>
+      </Button>-->
 
-      <Button
+      <!--<Button
         Margin="0,12"
         HorizontalContentAlignment="Stretch"
         Command="{s:Action AddStreamFromView}"
@@ -148,7 +148,7 @@
             Text="{Binding ActiveViewName, StringFormat='View: {0}'}" />
           <TextBlock Grid.Column="2" Text="{Binding ActiveViewObjects.Count, StringFormat='({0} objects)'}" />
         </Grid>
-      </Button>
+      </Button>-->
 
       <Expander
         HorizontalAlignment="Stretch"

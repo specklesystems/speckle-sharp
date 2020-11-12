@@ -23,12 +23,13 @@
           <Border BorderThickness="1,0,0,0" Margin="-10"
                   BorderBrush="LightGray"
                   VerticalAlignment="Stretch"></Border>
-          <Button x:Name="AdvancedStreamButton"
+          <Button x:Name="AddExistingStreamButton"
                   Grid.Column="1"
                   Margin="0"
                   HorizontalAlignment="Right"
-                  CommandParameter="2"
                   ToolTip="Select this stream"
+                  Command="{s:Action AddExistingStream}"
+                  CommandParameter="{Binding}"
                   Content="{md:PackIcon Kind=ArrowRight,Size=20}"
                   Foreground="{StaticResource MaterialDesignLightBackground}"
                   Style="{StaticResource FlatFloatingActionMiniButton}" />
@@ -49,36 +50,18 @@
   </UserControl.Resources>
   <StackPanel Margin="24,0,24,36"
                 Orientation="Vertical">
-      <TextBlock Margin="0,0,0,12"
-                 FontSize="20"
-                 Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                 Text="Add a new stream" />
-      <!--<Grid Margin="0,0,0,20">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="40" />
-          <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <md:PackIcon Grid.Column="0"
-                     Kind="Account" Margin="0,10,0,0" />
-        <ComboBox x:Name="AccountSelectionBox"
-                  Grid.Column="1"
-                  Width="Auto"
-                  Margin="0,0"
-                  md:HintAssist.Hint="Account"
-                  DisplayMemberPath="userInfo.email"
-                  IsEditable="True"
-                  IsEnabled="True"
-                  ItemsSource="{Binding Accounts}"
-                  SelectedItem="{Binding AccountToSendFrom}"
-                  StaysOpenOnEdit="True" />
-      </Grid>-->
-      
-      
-      <!--<TextBlock Margin="0,0,0,8"
-                 Text="You can add a new stream, or select an existing one."
-                 TextWrapping="Wrap" />-->
+    <TextBlock Margin="0,0,0,12"
+               FontSize="20"
+               Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+               Text="New Stream" />
 
-    <Grid Margin="0,0,10,20" >
+    <TextBlock Margin="0,0,0,8"
+               FontSize="12"
+               Foreground="Gray"
+                 Text="You can add a new stream, or select an existing one: by typing a name you will see suggestions based on your existing streams."
+                 TextWrapping="Wrap" />
+
+    <Grid Margin="0,0,10,0" >
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="50" />
@@ -97,11 +80,34 @@
               BorderBrush="Transparent"
               ToolTip="Change account"
               Content="{md:PackIcon Kind=Account,Size=20}"
+              Command="{s:Action ToggleAccountSelection}"
               Style="{StaticResource MaterialDesignFloatingActionLightButton}">
-        
       </Button>
     </Grid>
-    
+
+    <Grid Margin="0,0,10,0"
+          Visibility="{Binding AccountSelectionVisibility}">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="50" />
+      </Grid.ColumnDefinitions>
+      <ComboBox x:Name="AccountSelectionBox"
+                  Grid.Column="0"
+                  Height="25"
+                  FontSize="10"
+                  Width="Auto"
+                  Margin="0,0"
+                  md:HintAssist.Hint="Account"
+                  DisplayMemberPath="userInfo.email"
+                  
+                  IsEditable="True"
+                  IsEnabled="True"
+                  ItemsSource="{Binding Accounts}"
+                  SelectedItem="{Binding AccountToSendFrom}"
+                  StaysOpenOnEdit="True" />
+      </Grid>
+
+
     <ScrollViewer
                   VerticalAlignment="Stretch"
                   HorizontalScrollBarVisibility="Disabled"
@@ -129,7 +135,7 @@
                 Grid.Column="1"
                 Margin="8"
                 HorizontalAlignment="Right"
-                Command="{s:Action ContinueStreamCreate}"
+              Command="{s:Action AddSimpleStream}"
                 CommandParameter="2"
                 Content="{md:PackIcon Kind=Plus,Size=20}"
                 md:ShadowAssist.ShadowDepth="Depth4"
@@ -140,7 +146,8 @@
                  VerticalAlignment="Center"
                  FontWeight="Bold"
                  FontSize="18"
-                 Text="{Binding StreamQuery, StringFormat='Create a stream {0}'}"
+                 MaxWidth="200"
+                 Text="{Binding StreamQuery, StringFormat='Create {0}'}"
                  TextWrapping="Wrap"
                  Visibility="{Binding StreamQuery, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
     </Grid>

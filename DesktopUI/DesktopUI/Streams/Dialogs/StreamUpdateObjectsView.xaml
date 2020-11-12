@@ -18,7 +18,7 @@
         FontSize="20"
         Style="{StaticResource MaterialDesignHeadline4TextBlock}"
         Text="{Binding StreamState.Stream.name}" />
-      <TextBlock Margin="0,8" Text="Update this stream" />
+      <TextBlock Margin="0,8" Text="Add or remove the objects that are sent." />
 
       <Button
         Margin="0,12,0,0"

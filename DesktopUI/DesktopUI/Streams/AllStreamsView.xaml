@@ -149,20 +149,13 @@
                           </EventTrigger.Actions>
                         </EventTrigger>
                       </Style.Triggers>
-                      <Setter Property="ContextMenu">
-                        <Setter.Value>
-                          <ContextMenu>
-                            <MenuItem />
-                            <MenuItem />
-                          </ContextMenu>
-                        </Setter.Value>
-                      </Setter>
                     </Style>
                   </Button.Style>
                   <Button.ContextMenu>
                     <ContextMenu>
                       <MenuItem Header="Remove"
-                                Foreground="Red">
+                                Foreground="OrangeRed"
+                                >
                         <MenuItem.Icon>
                           <md:PackIcon Kind="Trash" />
                         </MenuItem.Icon>
@@ -343,7 +336,7 @@
 
   <md:TransitioningContent OpeningEffect="{md:TransitionEffect FadeIn}">
     <Grid Margin="0">
-      <Grid Margin="0,8,0,0">
+      <Grid Margin="0,0,0,0" >
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
