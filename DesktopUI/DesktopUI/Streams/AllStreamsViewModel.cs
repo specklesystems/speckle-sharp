@@ -82,8 +82,8 @@ namespace Speckle.DesktopUI.Streams
       // get main branch for now
       // TODO allow user to select branch
       item.Branch = _repo.GetMainBranch(state.Stream.branches.items);
-      var parent = ( StreamsHomeViewModel ) Parent;
-      parent.ActivateItem(item);
+      
+      ((RootViewModel) Parent).GoToStreamViewPage(item);
     }
 
     public async void Send(StreamState state)
@@ -153,7 +153,6 @@ namespace Speckle.DesktopUI.Streams
       Clipboard.SetText(streamId);
       _events.Publish(new ShowNotificationEvent() {Notification = "Stream ID copied to clipboard!"});
     }
-
 
     public void OpenStreamInWeb(StreamState state)
     {

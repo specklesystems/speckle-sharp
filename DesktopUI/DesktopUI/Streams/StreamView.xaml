@@ -86,17 +86,17 @@
 
     </ResourceDictionary>
   </UserControl.Resources>
-
-  <ScrollViewer VerticalScrollBarVisibility="Auto">
-    <Grid Margin="20 0 20 20">
-      <StackPanel x:Name="StreamViewStackPanel">
-        <Grid Margin="0 0 0 10">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-          </Grid.ColumnDefinitions>
-          <Button Grid.Column="0"
+  <md:TransitioningContent OpeningEffect="{md:TransitionEffect FadeIn}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <Grid Margin="20 20 20 20">
+        <StackPanel x:Name="StreamViewStackPanel">
+          <!--<Grid Margin="0 0 0 10">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0"
                   Width="32"
                   Height="32"
                   Margin="0,0,0,8"
@@ -104,7 +104,7 @@
                   Content="{md:PackIcon Kind=ArrowBack}"
                   Style="{StaticResource MaterialDesignIconForegroundButton}"
                   ToolTip="Back to home" />
-          <TextBlock Grid.Column="0"
+            <TextBlock Grid.Column="0"
                      Grid.ColumnSpan="3"
                      Margin="24,0,24,8"
                      HorizontalAlignment="Center"
@@ -113,7 +113,7 @@
                      TextWrapping="Wrap"
                      Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                      Text="{Binding StreamState.Stream.name}" />
-          <Button Grid.Column="2"
+            <Button Grid.Column="2"
                   Width="32"
                   Height="32"
                   Margin="0,0,0,8"
@@ -123,18 +123,18 @@
                                   Size=22}"
                   Style="{StaticResource MaterialDesignIconButton}"
                   ToolTip="edit stream details" />
-        </Grid>
+          </Grid>-->
 
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-          </Grid.ColumnDefinitions>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-          <WrapPanel Grid.Column="0"
+            <WrapPanel Grid.Column="0"
                      MaxWidth="{Binding ActualWidth, ElementName=StreamViewStackPanel}">
-            <md:Chip Height="28"
+              <md:Chip Height="28"
                      Margin="0,0,8,8"
                      md:ButtonAssist.CornerRadius="14"
                      Command="{s:Action CopyStreamId}"
@@ -142,67 +142,67 @@
                      FontFamily="Consolas"
                      FontSize="13"
                      ToolTip="click to copy stream ID">
-              <StackPanel Orientation="Horizontal">
-                <md:PackIcon Width="12"
+                <StackPanel Orientation="Horizontal">
+                  <md:PackIcon Width="12"
                              Height="12"
                              Margin="0,0,4,0"
                              VerticalAlignment="Center"
                              Kind="ContentCopy" />
-                <TextBlock Text="{Binding StreamState.Stream.id}" />
-              </StackPanel>
-            </md:Chip>
+                  <TextBlock Text="{Binding StreamState.Stream.id}" />
+                </StackPanel>
+              </md:Chip>
 
-            <md:Chip Height="28"
+              <md:Chip Height="28"
                      Margin="0,0,8,8"
                      md:ButtonAssist.CornerRadius="14"
                      FontFamily="Consolas"
                      FontSize="13"
                      ToolTip="current branch">
-              <StackPanel Orientation="Horizontal">
-                <md:PackIcon Width="12"
+                <StackPanel Orientation="Horizontal">
+                  <md:PackIcon Width="12"
                              Height="12"
                              Margin="0,0,4,0"
                              VerticalAlignment="Center"
                              Kind="SourceBranch" />
-                <TextBlock Text="{Binding Branch.name}" />
-              </StackPanel>
-            </md:Chip>
+                  <TextBlock Text="{Binding Branch.name}" />
+                </StackPanel>
+              </md:Chip>
 
-            <md:Chip Height="28"
+              <md:Chip Height="28"
                      Margin="0,0,8,8"
                      md:ButtonAssist.CornerRadius="14"
                      FontFamily="Consolas"
                      FontSize="13"
                      ToolTip="anyone with the link can view"
                      Visibility="{Binding StreamState.Stream.isPublic, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
-              <StackPanel Orientation="Horizontal">
-                <md:PackIcon Width="12"
+                <StackPanel Orientation="Horizontal">
+                  <md:PackIcon Width="12"
                              Height="12"
                              Margin="0,0,4,0"
                              VerticalAlignment="Center"
                              Kind="Link" />
-                <TextBlock Text="Public" />
-              </StackPanel>
-            </md:Chip>
+                  <TextBlock Text="Public" />
+                </StackPanel>
+              </md:Chip>
 
-            <md:Chip Height="28"
+              <md:Chip Height="28"
                      Margin="0,0,8,8"
                      md:ButtonAssist.CornerRadius="14"
                      FontFamily="Consolas"
                      FontSize="13"
                      ToolTip="only specified collaborators can access"
                      Visibility="{Binding StreamState.Stream.isPublic, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}">
-              <StackPanel Orientation="Horizontal">
-                <md:PackIcon Width="12"
+                <StackPanel Orientation="Horizontal">
+                  <md:PackIcon Width="12"
                              Height="12"
                              Margin="0,0,4,0"
                              VerticalAlignment="Center"
                              Kind="LinkLock" />
-                <TextBlock Text="Private" />
-              </StackPanel>
-            </md:Chip>
+                  <TextBlock Text="Private" />
+                </StackPanel>
+              </md:Chip>
 
-            <md:Chip Height="28"
+              <md:Chip Height="28"
                      Margin="0,0,8,8"
                      md:ButtonAssist.CornerRadius="14"
                      Command="{s:Action OpenStreamInWeb}"
@@ -210,31 +210,31 @@
                      FontFamily="Consolas"
                      FontSize="13"
                      ToolTip="open this stream in the browser">
-              <StackPanel Orientation="Horizontal">
-                <md:PackIcon Width="12"
+                <StackPanel Orientation="Horizontal">
+                  <md:PackIcon Width="12"
                              Height="12"
                              Margin="0,0,4,0"
                              VerticalAlignment="Center"
                              Kind="OpenInNew" />
-                <TextBlock Text="{Binding StreamState.Client.Account.serverInfo.name}" />
-              </StackPanel>
-            </md:Chip>
-          </WrapPanel>
+                  <TextBlock Text="{Binding StreamState.Client.Account.serverInfo.name}" />
+                </StackPanel>
+              </md:Chip>
+            </WrapPanel>
 
-        </Grid>
-        <TextBlock Margin="0,16,0,0"
+          </Grid>
+          <TextBlock Margin="0,16,0,0"
                    Text="{Binding StreamState.Stream.description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-        <Grid Margin="8,16">
-          <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-          </Grid.RowDefinitions>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
+          <Grid Margin="8,16">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-          <Button x:Name="SendStreamButton"
+            <Button x:Name="SendStreamButton"
                   Grid.Row="0"
                   Grid.Column="0"
                   Width="150"
@@ -244,22 +244,22 @@
                   Visibility="{Binding StreamState.IsSending, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                   Style="{StaticResource SoftFlatMidBgButton}"
                   ToolTip="Send your changes to the Speckle server">
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <md:PackIcon Grid.Column="0"
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <md:PackIcon Grid.Column="0"
                            Width="24"
                            Height="24"
                            Margin="0,0,12,0"
                            Kind="CloudUpload" />
-              <TextBlock Grid.Column="1"
+                <TextBlock Grid.Column="1"
                          VerticalAlignment="Center"
                          Text="SEND" />
-            </Grid>
-          </Button>
-          <Button x:Name="StopSendButton"
+              </Grid>
+            </Button>
+            <Button x:Name="StopSendButton"
                   Grid.Row="0"
                   Grid.Column="0"
                   Width="150"
@@ -272,24 +272,24 @@
                   Style="{StaticResource SoftFlatMidBgButton}"
                   Visibility="{Binding StreamState.IsSending, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"
                   ToolTip="Cancel the send operation">
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <md:PackIcon Grid.Column="0"
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <md:PackIcon Grid.Column="0"
                            Width="24"
                            Height="24"
                            Margin="0,0,12,0"
                            Kind="Stop" />
-              <TextBlock Grid.Column="1"
+                <TextBlock Grid.Column="1"
                          VerticalAlignment="Center"
                          Text="CANCEL" />
-            </Grid>
-          </Button>
+              </Grid>
+            </Button>
 
 
-          <Button x:Name="ReceiveStreamButton"
+            <Button x:Name="ReceiveStreamButton"
                   Grid.Row="0"
                   Grid.Column="1"
                   Width="150"
@@ -299,22 +299,22 @@
                   IsEnabled="{Binding StreamState.IsSending, Converter={StaticResource InverseBooleanConverter}}"
                   Visibility="{Binding StreamState.IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
                   ToolTip="Receive your changes from the server">
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <md:PackIcon Grid.Column="0"
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <md:PackIcon Grid.Column="0"
                            Width="24"
                            Height="24"
                            Margin="0,0,12,0"
                            Kind="CloudDownload" />
-              <TextBlock Grid.Column="1"
+                <TextBlock Grid.Column="1"
                          VerticalAlignment="Center"
                          Text="RECEIVE" />
-            </Grid>
-          </Button>
-          <Button x:Name="StopReceiveButton"
+              </Grid>
+            </Button>
+            <Button x:Name="StopReceiveButton"
                   Grid.Row="0"
                   Grid.Column="1"
                   Width="150"
@@ -327,61 +327,61 @@
                   Style="{StaticResource SoftFlatDarkBgButton}"
                   Visibility="{Binding StreamState.IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"
                   ToolTip="Cancel the receive operation">
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <md:PackIcon Grid.Column="0"
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <md:PackIcon Grid.Column="0"
                            Width="24"
                            Height="24"
                            Margin="0,0,12,0"
                            Kind="Stop" />
-              <TextBlock Grid.Column="1"
+                <TextBlock Grid.Column="1"
                          VerticalAlignment="Center"
                          Text="CANCEL" />
-            </Grid>
-          </Button>
+              </Grid>
+            </Button>
 
-          <Border Grid.Row="1"
+            <Border Grid.Row="1"
                   Grid.Column="0"
                   Width="150"
                   Height="18"
                   Margin="4"
                   Background="{DynamicResource MaterialDesignChipBackground}"
                   CornerRadius="6">
-            <TextBlock HorizontalAlignment="Center"
+              <TextBlock HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        FontSize="11"
                        Text="{Binding StreamState.Placeholders.Count, StringFormat='Send {0} objects', Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
-          </Border>
+            </Border>
 
-          <Border Grid.Row="1"
+            <Border Grid.Row="1"
                   Grid.Column="1"
                   Width="150"
                   Height="18"
                   Background="{DynamicResource MaterialDesignChipBackground}"
                   CornerRadius="6">
-            <TextBlock HorizontalAlignment="Center"
+              <TextBlock HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        FontSize="11"
                        ToolTip="latest commit ID"
                        Text="{Binding LatestCommit.id, StringFormat='On commit {0}', FallbackValue='No recent commits', Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
-          </Border>
-        </Grid>
+            </Border>
+          </Grid>
 
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-          </Grid.ColumnDefinitions>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-          <TextBlock Grid.Column="0"
+            <TextBlock Grid.Column="0"
                      Margin="0,24,0,8"
                      FontSize="18"
                      Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                      Text="Collaborators" />
-          <Button Grid.Column="1"
+            <Button Grid.Column="1"
                   Width="32"
                   Height="32"
                   Margin="0,0,0,8"
@@ -392,29 +392,29 @@
                                   Size=22}"
                   Style="{StaticResource MaterialDesignIconButton}"
                   ToolTip="edit stream collaborators" />
-        </Grid>
+          </Grid>
 
-        <ItemsControl ItemTemplate="{StaticResource CollboratorChipTemplate}"
+          <ItemsControl ItemTemplate="{StaticResource CollboratorChipTemplate}"
                       ItemsSource="{Binding StreamState.Stream.collaborators}">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <WrapPanel />
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-        </ItemsControl>
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+          </ItemsControl>
 
 
-        <Grid Margin="0,24,0,8">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-          </Grid.ColumnDefinitions>
-          <TextBlock Grid.Column="0"
+          <Grid Margin="0,24,0,8">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
                      VerticalAlignment="Center"
                      FontSize="18"
                      Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                      Text="Objects" />
-          <Button Grid.Column="1"
+            <Button Grid.Column="1"
                   VerticalAlignment="Center"
                   Width="32"
                   Height="32"
@@ -426,30 +426,30 @@
                                   Size=22}"
                   Style="{StaticResource MaterialDesignIconButton}"
                   ToolTip="edit stream objects" />
-        </Grid>
-        <TextBlock Margin="0,4"
+          </Grid>
+          <TextBlock Margin="0,4"
                    Text="{Binding StreamState.Objects.Count, StringFormat='Converted Objects: {0}'}" />
-        <TextBlock Margin="0,4"
+          <TextBlock Margin="0,4"
                    Text="{Binding StreamState.Placeholders.Count, StringFormat='Placeholder Objects: {0}'}" />
 
-        <TextBlock Margin="0,24,0,8"
+          <TextBlock Margin="0,24,0,8"
                    FontSize="18"
                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                    Text="History" />
-        <TextBlock Margin="0"
+          <TextBlock Margin="0"
                    Text="No commit history yet! Add some objects and send them to Speckle to start this off 🚀"
                    TextWrapping="Wrap"
                    Visibility="{Binding Branch.commits.items, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
-        <ItemsControl ItemTemplate="{StaticResource CommitTemplate}"
+          <ItemsControl ItemTemplate="{StaticResource CommitTemplate}"
                       ItemsSource="{Binding Branch.commits.items}" />
 
-        <Grid Margin="0,16,0,12">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
+          <Grid Margin="0,16,0,12">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-          <Button Grid.Column="0"
+            <Button Grid.Column="0"
                   Width="150"
                   Margin="4,0"
                   md:RippleAssist.Feedback="{StaticResource PrimaryHueMidBrush}"
@@ -460,7 +460,7 @@
                   Foreground="{StaticResource PrimaryHueMidBrush}"
                   ToolTip="Remove this stream from the file without deleting"
                   Style="{StaticResource SoftFlatMidBgButton}" />
-          <Button Grid.Column="1"
+            <Button Grid.Column="1"
                   Width="150"
                   Margin="4,0"
                   md:RippleAssist.Feedback="#ff5555"
@@ -471,41 +471,42 @@
                   Foreground="#ff5555"
                   ToolTip="Delete this stream from the server"
                   Style="{StaticResource SoftFlatMidBgButton}">
-            <Button.CommandParameter>
-              <StackPanel Width="260"
+              <Button.CommandParameter>
+                <StackPanel Width="260"
                           Margin="36"
                           s:View.ActionTarget="{Binding}">
-                <TextBlock Margin="0,0,0,24"
+                  <TextBlock Margin="0,0,0,24"
                            FontSize="14"
                            Text="This is irreversible! Are you sure you want to permanently delete this stream?"
                            TextWrapping="Wrap" />
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                  </Grid.ColumnDefinitions>
-                  <Button Grid.Column="0"
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
                           Width="120"
                           Command="{x:Static md:DialogHost.CloseDialogCommand}"
                           Content="CANCEL"
                           IsCancel="True"
                           Style="{StaticResource SoftFlatButton}" />
-                  <Button Grid.Column="2"
+                    <Button Grid.Column="2"
                           Width="120"
                           Background="#ff5555"
                           BorderThickness="0"
                           Content="DELETE"
                           Command="{s:Action DeleteStream}"
                           Style="{StaticResource SoftFlatMidBgButton}" />
-                </Grid>
-              </StackPanel>
-            </Button.CommandParameter>
-          </Button>
+                  </Grid>
+                </StackPanel>
+              </Button.CommandParameter>
+            </Button>
 
-        </Grid>
-      </StackPanel>
-    </Grid>
-  </ScrollViewer>
+          </Grid>
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+  </md:TransitioningContent>
 
 </UserControl>

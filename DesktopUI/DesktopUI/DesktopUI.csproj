@@ -126,7 +126,7 @@
     <Compile Include="Streams\Dialogs\StreamCreateStartView.xaml.cs">
       <DependentUpon>StreamCreateStartView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Streams\StreamsHomeViewModel.cs" />
+    <Compile Include="Streams\Archived\StreamsHomeViewModel.cs" />
     <Compile Include="Streams\StreamsRepository.cs" />
     <Compile Include="Streams\StreamUpdateDialogViewModel.cs" />
     <Compile Include="Streams\StreamViewModel.cs" />
@@ -193,7 +193,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Streams\StreamsHomeView.xaml">
+    <Page Include="Streams\Archived\StreamsHomeView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

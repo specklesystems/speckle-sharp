@@ -4,14 +4,13 @@ using System.ComponentModel;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
 using Speckle.DesktopUI.Settings;
+using Speckle.DesktopUI.Streams;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
 namespace Speckle.DesktopUI
 {
-  public class RootViewModel : Conductor<IScreen>.Collection.OneActive,
-    IHandle<ShowNotificationEvent>,
-    IHandle<ApplicationEvent>
+  public class RootViewModel : Conductor<IScreen>.Collection.OneActive, IHandle<ShowNotificationEvent>, IHandle<ApplicationEvent>
   {
     private IWindowManager _windowManager;
 
@@ -21,25 +20,48 @@ namespace Speckle.DesktopUI
 
     public ConnectorBindings Bindings;
 
-    public string _ViewName;
+    private string _ViewName;
     public string ViewName
     {
       get => _ViewName;
       set => SetAndNotify(ref _ViewName, value);
     }
 
+    private PackIcon BackIcon = new PackIcon { Kind = PackIconKind.ArrowLeft, Foreground = System.Windows.Media.Brushes.White };
+
+    private PackIcon SettingsIcon = new PackIcon { Kind = PackIconKind.Settings, Foreground = System.Windows.Media.Brushes.Gray };
+
+    private PackIcon _MainButtonIcon;
+    public PackIcon MainButtonIcon
+    {
+      get => _MainButtonIcon;
+      set => SetAndNotify(ref _MainButtonIcon, value);
+    }
+
+    private bool _MainButton_Checked = false;
+    public bool MainButton_Checked
+    {
+      get => _MainButton_Checked;
+      set => SetAndNotify(ref _MainButton_Checked, value);
+    }
+
     public Dictionary<string, IScreen> Pages = new Dictionary<string, IScreen>();
 
-    public RootViewModel(IWindowManager windowManager,
-      IEventAggregator events,
-      IViewModelFactory viewModelFactory,
-      ConnectorBindings bindings)
+    public RootViewModel(IWindowManager windowManager, IEventAggregator events, IViewModelFactory viewModelFactory, ConnectorBindings bindings)
     {
       _windowManager = windowManager;
       _viewModelFactory = viewModelFactory;
       Bindings = bindings;
+      
       DisplayName = "Speckle " + bindings.GetApplicationHostName();
+      
       LoadPages();
+
+      ActivateItem(Pages["streams"]);
+
+      ViewName = ActiveItem.DisplayName;
+      MainButtonIcon = SettingsIcon;
+
       events.Subscribe(this);
     }
 
@@ -51,14 +73,11 @@ namespace Speckle.DesktopUI
 
     private void LoadPages()
     {
-
       Pages.Add("settings", _viewModelFactory.CreateSettingsViewModel());
       Items.Add(Pages["settings"]);
 
-      Pages.Add("streams", _viewModelFactory.CreateStreamsHomeViewModel());
+      Pages.Add("streams", _viewModelFactory.CreateAllStreamsViewModel());
       Items.Add(Pages["streams"]);
-
-      ActiveItem = Pages["streams"];
     }
 
     public void OpenLink(string url)
@@ -66,10 +85,39 @@ namespace Speckle.DesktopUI
       Link.OpenInBrowser(url);
     }
 
-    public void GoToSettings()
+    public void GoToSettingsOrBack()
     {
-      ActiveItem = ActiveItem is SettingsViewModel ? Pages["streams"] : Pages["settings"];
+      if( ActiveItem is StreamViewModel )
+      {
+        ActiveItem.RequestClose();
+        ActiveItem = Pages["streams"];
+        ViewName = ActiveItem.DisplayName;
+        MainButtonIcon = SettingsIcon;
+        MainButton_Checked = false;
+        return;
+      }
+
+      ActiveItem = ActiveItem is AllStreamsViewModel ? Pages["settings"] : Pages["streams"];
       ViewName = ActiveItem.DisplayName;
+
+      if(!(ActiveItem is AllStreamsViewModel))
+      {
+        MainButtonIcon = BackIcon;
+        MainButton_Checked = true;
+      } 
+      else
+      {
+        MainButtonIcon = SettingsIcon;
+        MainButton_Checked = false;
+      }
+    }
+
+    public void GoToStreamViewPage( StreamViewModel streamItem)
+    {
+      ActivateItem(streamItem);
+      ViewName = ActiveItem.DisplayName;
+      MainButtonIcon = BackIcon;
+      MainButton_Checked = true;
     }
 
     public void Handle(ShowNotificationEvent message)

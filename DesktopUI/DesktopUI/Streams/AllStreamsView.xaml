@@ -55,7 +55,7 @@
           <!--#endregion-->
           <md:Card Grid.Row="0"
                    Width="Auto"
-                   Margin="8"
+                   Margin="12,10,12,10"
                    md:ShadowAssist.ShadowDepth="Depth0"
                    UniformCornerRadius="8">
             <Grid Margin="16">
@@ -267,40 +267,26 @@
     </ResourceDictionary>
   </UserControl.Resources>
 
-  <Grid>
-    <Grid Margin="0,0,0,100">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="*" />
-      </Grid.RowDefinitions>
-      <!--<ProgressBar
-        Grid.Row="0"
-        Margin="0,0,0,10"
-        Background="Transparent"
-        BorderThickness="0"
-        Foreground="{DynamicResource PrimaryHueLightBrush}"
-        IsIndeterminate="False"
-        Maximum="{Binding Progress.Maximum, Mode=OneWay}"
-        Value="{Binding Progress.Value, Mode=OneWay}" />-->
-      <!--<TextBlock Grid.Row="1"
-                 Padding="5,0,5,10"
-                 HorizontalAlignment="Left"
-                 FontSize="24"
-                 Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-                 Text="STREAMS" />-->
+  <md:TransitioningContent OpeningEffect="{md:TransitionEffect FadeIn}">
+    <Grid Margin="0">
+      <Grid Margin="0,8,0,100">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-      <ScrollViewer Grid.Row="2"
+        <ScrollViewer Grid.Row="2"
                     HorizontalScrollBarVisibility="Disabled"
                     VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemTemplate="{StaticResource StreamCardTemplate}"
+          <ItemsControl ItemTemplate="{StaticResource StreamCardTemplate}"
                       ItemsSource="{Binding StreamList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
-      </ScrollViewer>
-    </Grid>
+        </ScrollViewer>
+      </Grid>
 
-    <!--  TODO absolute positioning rel to window  -->
+      <!--  TODO absolute positioning rel to window  -->
 
-    <Button x:Name="CreateStreamButton"
+      <Button x:Name="CreateStreamButton"
             Width="45"
             Height="45"
             Margin="32"
@@ -313,6 +299,7 @@
             Style="{StaticResource FlatFloatingActionAccentButton}"
             ToolTip="Add a stream"
             ToolTipService.Placement="Left" />
-  </Grid>
+    </Grid>
+  </md:TransitioningContent>
 
 </UserControl>

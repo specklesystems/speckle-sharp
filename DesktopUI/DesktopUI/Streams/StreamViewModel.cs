@@ -40,7 +40,6 @@ namespace Speckle.DesktopUI.Streams
     private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
 
     private StreamState _streamState;
-
     public StreamState StreamState
     {
       get => _streamState;
@@ -53,7 +52,6 @@ namespace Speckle.DesktopUI.Streams
     }
 
     private Branch _branch;
-
     public Branch Branch
     {
       get => _branch;

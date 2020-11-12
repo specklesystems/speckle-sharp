@@ -25,58 +25,45 @@
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextOptions.TextFormattingMode="Ideal"
         TextOptions.TextRenderingMode="Auto"
-        Topmost="{Binding IsPinned, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
         mc:Ignorable="d">
-  
   <Window.Resources>
     <utils:StringToUpperConverter x:Key="StringToUpperConverter" />
   </Window.Resources>
-
-  <md:DialogHost CloseOnClickAway="True"
-                 DialogTheme="Inherit"
-                 Identifier="RootDialogHost"
-                 Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
-
+  <md:DialogHost CloseOnClickAway="True" DialogTheme="Inherit" Identifier="RootDialogHost" Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
     <DockPanel x:Name="TopLevelDockPanel">
 
-        <!--#region Top Menu Bar-->
-        <md:ColorZone Padding="0,12,10,12"
+      <!--#region Top Menu Bar-->
+      <md:ColorZone Padding="0,12,10,12"
                       Panel.ZIndex="2"
                       md:ShadowAssist.ShadowDepth="Depth0"
                       Background="{DynamicResource MaterialDesignCardBackground}"
                       DockPanel.Dock="Top">
         <DockPanel>
+          <ToggleButton x:Name="MenuToggleButton" Margin="12,0,0,0"
+                          Command="{s:Action GoToSettingsOrBack}"
+                          HorizontalAlignment="Right"
+                          Width="40"
+                          Height="40"
+                          Content="{Binding MainButtonIcon}"
+                          IsChecked="{Binding MainButton_Checked}"
+                          Style="{StaticResource MaterialDesignFlatPrimaryToggleButton}">
+          </ToggleButton>
           <TextBlock VerticalAlignment="Center"
-                     Margin="10,0,0,0"
+                     Margin="12,0,0,0"
                          FontSize="20"
                          Style="{StaticResource MaterialDesignHeadline3TextBlock}"
                          Text="{Binding ViewName, Converter={StaticResource StringToUpperConverter}}" />
 
-          <ToggleButton x:Name="MenuToggleButton"
-                          Command="{s:Action GoToSettings}"
-                          HorizontalAlignment="Right"
-                          Width="30"
-                          Height="30"
-                          Content="{md:PackIcon Kind=Settings, Size=22}"
-                          Style="{StaticResource MaterialDesignHamburgerToggleButton}">
-          </ToggleButton>
+
 
         </DockPanel>
-        </md:ColorZone>
-        <!--#endregion-->
+      </md:ColorZone>
+      <!--#endregion-->
 
-        <Grid x:Name="MainContent"
-              Margin="0">
-
-          <!--  Page Content  -->
-          <ContentControl s:View.Model="{Binding ActiveItem}" />
-          
-          <!--Snacks-->
-          <md:Snackbar x:Name="MainWindowSnackbar"
-                       MessageQueue="{Binding Notifications}" />
-        </Grid>
-      </DockPanel>
-
-    <!--</md:DrawerHost>-->
+      <Grid x:Name="MainContent" Margin="0">
+        <ContentControl s:View.Model="{Binding ActiveItem}" />
+        <md:Snackbar x:Name="MainWindowSnackbar" MessageQueue="{Binding Notifications}" />
+      </Grid>
+    </DockPanel>
   </md:DialogHost>
 </Window>
