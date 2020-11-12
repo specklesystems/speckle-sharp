@@ -40,7 +40,7 @@ namespace Speckle.DesktopUI.Utils
     {
       var account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId) ??
                     AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == ServerUrl);
-      if ( account == null ) return;
+      if (account == null) return;
 
       Client = new Client(account);
     }
@@ -52,7 +52,7 @@ namespace Speckle.DesktopUI.Utils
       get => _client;
       set
       {
-        if ( value.AccountId == null ) return;
+        if (value.AccountId == null) return;
         _client = value;
         AccountId = Client.AccountId;
         ServerUrl = Client.ServerUrl;
@@ -74,7 +74,7 @@ namespace Speckle.DesktopUI.Utils
     public bool IsSenderCard
     {
       get => _IsSender;
-      set 
+      set
       {
         SetAndNotify(ref _IsSender, value);
       }
@@ -86,7 +86,6 @@ namespace Speckle.DesktopUI.Utils
     }
 
     private Stream _stream;
-
     [JsonProperty]
     public Stream Stream
     {
@@ -96,6 +95,14 @@ namespace Speckle.DesktopUI.Utils
         SetAndNotify(ref _stream, value);
         Initialise();
       }
+    }
+
+    private Branch _Branch;
+    [JsonProperty]
+    public Branch Branch
+    {
+      get => _Branch;
+      set { SetAndNotify(ref _Branch, value); }
     }
 
     private ISelectionFilter _filter;
@@ -160,7 +167,7 @@ namespace Speckle.DesktopUI.Utils
 
     internal void Initialise()
     {
-      if ( Stream == null || Client?.AccountId == null ) return;
+      if (Stream == null || Client?.AccountId == null) return;
 
       Client.SubscribeStreamUpdated(Stream.id);
       Client.SubscribeCommitCreated(Stream.id);
@@ -171,6 +178,11 @@ namespace Speckle.DesktopUI.Utils
       Client.OnCommitCreated += HandleCommitCreated;
       Client.OnCommitDeleted += HandleCommitCreated;
       Client.OnCommitUpdated += HandleCommitChanged;
+
+      if (Branch == null)
+      {
+        Branch = Stream.branches.items[0];
+      }
     }
 
     private void HandleStreamUpdated(object sender, StreamInfo info)
@@ -182,7 +194,7 @@ namespace Speckle.DesktopUI.Utils
 
     private void HandleCommitCreated(object sender, CommitInfo info)
     {
-      if ( LatestCommit().id == info.id ) return;
+      if (LatestCommit().id == info.id) return;
       ServerUpdates = true;
     }
 
@@ -190,7 +202,7 @@ namespace Speckle.DesktopUI.Utils
     {
       var branch = Stream.branches.items.FirstOrDefault(b => b.name == info.branchName);
       var commit = branch?.commits.items.FirstOrDefault(c => c.id == info.id);
-      if ( commit == null )
+      if (commit == null)
       {
         // something went wrong, but notify the user there were changes anyway
         // ((look like this sub isn't returning a branch name?))
@@ -205,14 +217,14 @@ namespace Speckle.DesktopUI.Utils
     public Commit LatestCommit(string branchName = "main")
     {
       var branch = Stream.branches.items.Find(b => b.name == branchName);
-      if ( branch == null )
+      if (branch == null)
       {
         Log.CaptureException(new SpeckleException($"Could not find branch {branchName} on stream {Stream.id}"));
         return null;
       }
 
       var commits = branch.commits.items;
-      return commits.Any() ? commits[ 0 ] : null;
+      return commits.Any() ? commits[0] : null;
     }
   }
 
@@ -223,7 +235,7 @@ namespace Speckle.DesktopUI.Utils
     public List<string> GetStringList()
     {
       var states = new List<string>();
-      foreach ( var state in StreamStates )
+      foreach (var state in StreamStates)
       {
         states.Add(JsonConvert.SerializeObject(state));
       }

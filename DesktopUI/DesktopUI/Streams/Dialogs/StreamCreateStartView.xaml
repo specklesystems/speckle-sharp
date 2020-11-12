@@ -108,23 +108,12 @@
       </Grid>
 
 
-    <ScrollViewer
-                  VerticalAlignment="Stretch"
+    <ScrollViewer VerticalAlignment="Stretch"
                   HorizontalScrollBarVisibility="Disabled"
                   VerticalScrollBarVisibility="Auto">
       <ItemsControl ItemTemplate="{StaticResource StreamCardTemplate}"
                     ItemsSource="{Binding StreamSearchResults, Mode=OneWay, UpdateSourceTrigger=Default}" />
     </ScrollViewer>
-
-    <!--<TextBox x:Name="StreamDescriptionInput"
-               Height="65"
-               Margin="0,8"
-               md:HintAssist.Hint="Write a short description"
-               AcceptsReturn="False"
-               Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
-               Text="{Binding StreamToCreate.description}"
-               TextAlignment="Left"
-               TextWrapping="Wrap" />-->
     <Separator Visibility="{Binding HasSearchResults, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"></Separator>
       <Grid Margin="0,8">
         <Grid.ColumnDefinitions>
@@ -135,11 +124,10 @@
                 Grid.Column="1"
                 Margin="8"
                 HorizontalAlignment="Right"
-              Command="{s:Action AddSimpleStream}"
+                Command="{s:Action AddSimpleStream}"
                 CommandParameter="2"
                 Content="{md:PackIcon Kind=Plus,Size=20}"
                 md:ShadowAssist.ShadowDepth="Depth4"
-                Foreground="{StaticResource MaterialDesignLightBackground}"
                 Style="{StaticResource FlatFloatingActionMiniButton}" />
       <TextBlock Grid.Column="0"
                  Margin="8,0"

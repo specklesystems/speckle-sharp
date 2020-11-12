@@ -32,14 +32,19 @@
             </Grid.ColumnDefinitions>
             <md:PackIcon Grid.Column="0"
                          Kind="SourceBranch" />
-            <TextBlock Grid.Column="1"
+            <!--<TextBlock Grid.Column="1"
                        Margin="1,2"
                        HorizontalAlignment="Center"
-                       Text="Branch:" />
+                       Text="Branch:" />-->
+            <!--<TextBlock Grid.Column="2"
+                       Margin="1,2"
+                       FontWeight="Bold"
+                       Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext.Stream.name}" />-->
             <TextBlock Grid.Column="2"
                        Margin="1,2"
                        FontWeight="Bold"
-                       Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext.Stream.name}" />
+                       Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext.Branch.name}" />
+
           </Grid>
         </Button>
       </ControlTemplate>
@@ -129,39 +134,12 @@
                         ContextMenuService.Placement="Bottom"
                         HorizontalAlignment="Right"
                         md:RippleAssist.ClipToBounds="True"
-                        Content="{md:PackIcon Kind=MoreVert,
+                        Command="{s:Action ShowStreamInfo}"
+                        CommandParameter="{Binding}"
+                        Style="{StaticResource MaterialDesignIconButton}"
+                        Content="{md:PackIcon Kind=MoreHoriz,
                                         Size=18}"
                         ToolTip="More options">
-                  <Button.Style>
-                    <Style TargetType="{x:Type Button}"
-                           BasedOn="{StaticResource MaterialDesignIconButton }">
-                      <Style.Triggers>
-                        <EventTrigger RoutedEvent="Click">
-                          <EventTrigger.Actions>
-                            <BeginStoryboard>
-                              <Storyboard>
-                                <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="ContextMenu.IsOpen">
-                                  <DiscreteBooleanKeyFrame KeyTime="0:0:0"
-                                                           Value="True" />
-                                </BooleanAnimationUsingKeyFrames>
-                              </Storyboard>
-                            </BeginStoryboard>
-                          </EventTrigger.Actions>
-                        </EventTrigger>
-                      </Style.Triggers>
-                    </Style>
-                  </Button.Style>
-                  <Button.ContextMenu>
-                    <ContextMenu>
-                      <MenuItem Header="Remove"
-                                Foreground="OrangeRed"
-                                >
-                        <MenuItem.Icon>
-                          <md:PackIcon Kind="Trash" />
-                        </MenuItem.Icon>
-                      </MenuItem>
-                    </ContextMenu>
-                  </Button.ContextMenu>
                 </Button>
               </Grid>
 
