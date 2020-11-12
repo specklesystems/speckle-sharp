@@ -376,30 +376,26 @@ namespace Objects.Converter.Revit
       return ixn.CrossProduct(xn).Normalize();
     }
 
-    public Brep BrepToSpeckle(Solid solid)
+
+    public Geometry.Surface NurbsSurfaceToSpeckle(DB.NurbsSurfaceData surface, DB.BoundingBoxUV uvBox)
     {
-      // TODO: Incomplete implementation!!
+      var result = new Geometry.Surface();
+
+      result.degreeU = surface.DegreeU;
+      result.degreeV = surface.DegreeV;
+      result.knotsU = surface.GetKnotsU().ToList();
+      result.knotsV = surface.GetKnotsV().ToList();
       
-      var brep = new Brep();
-
-      var faces = new List<BrepFace>();
-      for (var i = 0; i < solid.Faces.Size; i++)
-      {
-        var face = solid.Faces.get_Item(i);
-        var sFace = new BrepFace();
-      }
-
-      for (var i = 0; i < solid.Edges.Size; i++)
-      {
-        var edge = solid.Edges.get_Item(i);
-        var sFace = new BrepFace();
-      }
+      var controlPointCountU = result.knotsU.Count - result.degreeU - 1;
+      var controlPointCountV = result.knotsV.Count - result.degreeV - 1;
+      
+      var controlPoints = surface.GetControlPoints();
       
 
-      return brep;
+      return result;
     }
-
-
+    
+    
     public BRepBuilderEdgeGeometry BrepEdgeToNative(BrepEdge edge)
     {
       var edgeCurve = edge.Curve as Curve;
@@ -485,6 +481,7 @@ namespace Objects.Converter.Revit
       return result;
     }
     
+    
     public Solid BrepToNative(Brep brep)
     {
       // TODO Incomplete implementation
@@ -541,5 +538,29 @@ namespace Objects.Converter.Revit
       builder.Finish();
       return builder.IsResultAvailable() ? builder.GetResult() : null;
     }
+    
+    public Brep BrepToSpeckle(Solid solid)
+    {
+      // TODO: Incomplete implementation!!
+      
+      var brep = new Brep();
+
+      var faces = new List<BrepFace>();
+      for (var i = 0; i < solid.Faces.Size; i++)
+      {
+        var face = solid.Faces.get_Item(i);
+        var sFace = new BrepFace();
+      }
+
+      for (var i = 0; i < solid.Edges.Size; i++)
+      {
+        var edge = solid.Edges.get_Item(i);
+        var sFace = new BrepFace();
+      }
+      
+
+      return brep;
+    }
+
   }
 }

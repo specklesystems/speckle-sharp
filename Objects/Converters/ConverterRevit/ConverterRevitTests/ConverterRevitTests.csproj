@@ -100,6 +100,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BrepTests.cs" />
     <Compile Include="DuctTests.cs" />
     <Compile Include="RoofTests.cs" />
     <Compile Include="NestedTests.cs" />
