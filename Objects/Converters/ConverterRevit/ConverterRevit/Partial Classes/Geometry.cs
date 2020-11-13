@@ -203,7 +203,14 @@ namespace Objects.Converter.Revit
         if (speckleCurve.knots != null && speckleCurve.weights != null && speckleCurve.knots.Any() && speckleCurve.weights.Any())
         {
           var weights = speckleCurve.weights.GetRange(0, pts.Count);
-          var knots = speckleCurve.knots.GetRange(0, pts.Count + speckleCurve.degree + 1);
+          var speckleKnots = new List<double>(speckleCurve.knots);
+          if (speckleKnots.Count != pts.Count + speckleCurve.degree + 1)
+          {
+            // Curve has rhino knots, repeat first and last.
+            speckleKnots.Insert(0,speckleKnots[0]);
+            speckleKnots.Add(speckleKnots[speckleKnots.Count - 1]);
+          }
+          var knots = speckleKnots.GetRange(0, pts.Count + speckleCurve.degree + 1);
           var curve = NurbSpline.CreateCurve(speckleCurve.degree, knots, pts, weights);
           return curve;
         }
@@ -441,7 +448,8 @@ namespace Objects.Converter.Revit
       
       // TODO: Remove short segments if smaller than 'Revit.ShortCurveTolerance'.
 
-      return BRepBuilderEdgeGeometry.Create(nativeCurve);
+      var edgeGeom =  BRepBuilderEdgeGeometry.Create(nativeCurve);
+      return edgeGeom;
     }
 
     public double[] ControlPointWeightsToNative(List<List<ControlPoint>> controlPoints)
@@ -517,58 +525,40 @@ namespace Objects.Converter.Revit
     
     public Solid BrepToNative(Brep brep)
     {
-      using var builder = new BRepBuilder(BRepType.Solid);
-      
-      var brepEdgeIds = new List<BRepBuilderGeometryId>[brep.Edges.Count];
-      brep.Faces.ForEach(face =>
-      {
-        var faceId = builder.AddFace(BrepFaceToNative(face),face.OrientationReversed); 
-        
-        builder.SetFaceMaterialId(faceId,null); // TODO: Missing material ID!!!
-        
-        face.Loops.ForEach(loop =>
+      using var builder = new BRepBuilder(BRepType.OpenShell);
+      var faceIds = 
+        brep.Faces.Select(face => 
+          builder.AddFace(BrepFaceToNative(face), face.OrientationReversed)).ToList();
+      var edgeIds = 
+        brep.Edges.Select(edge => 
+          builder.AddEdge(BrepEdgeToNative(edge))).ToList();
+      var loopIds =
+        brep.Loops.Select(loop =>
         {
-          var loopId = builder.AddLoop(faceId);
+          var loopId =  builder.AddLoop(faceIds[loop.FaceIndex]);
           var trims = new List<BrepTrim>(loop.Trims);
-          if (face.OrientationReversed) trims.Reverse();
-          
+          if (loop.Face.OrientationReversed)
+            trims.Reverse();
           trims.ForEach(trim =>
           {
-              // If the trim is mated or boundary, or the edge is null,
-              // -> continue.
-              if (trim.TrimType == BrepTrimType.Boundary 
-                  || trim.TrimType == BrepTrimType.Mated
-                  || trim.Edge == null)
-                return;
-              
-              var edgeIds = brepEdgeIds[trim.EdgeIndex];
-              if (edgeIds is null)
-              {
-                edgeIds = new List<BRepBuilderGeometryId>();
-                brepEdgeIds[trim.EdgeIndex] = edgeIds;
-                var rEdge = BrepEdgeToNative(trim.Edge);
-                edgeIds.Add(builder.AddEdge(rEdge)); 
-              }
-
-              var trimReversed = face.OrientationReversed ? !trim.IsReversed : trim.IsReversed;
-              
-              if (trimReversed)
-                edgeIds.Reverse();
-              
-              edgeIds.ForEach(edgeId => builder.AddCoEdge(loopId, edgeId, trimReversed));
+            if (trim.TrimType != BrepTrimType.Boundary && trim.TrimType != BrepTrimType.Mated)
+              return;
+            builder.AddCoEdge(loopId, edgeIds[trim.EdgeIndex], trim.Face.OrientationReversed ? !trim.IsReversed : trim.IsReversed);
           });
-          
-          // Tell builder loop has finished
           builder.FinishLoop(loopId);
-        });
-        
-        // Tell builder face has finished
-        builder.FinishFace(faceId);
-      });
-        
-      // Return result if available
-      builder.Finish();
-      return builder.IsResultAvailable() ? builder.GetResult() : null;
+          return loopId;
+        }).ToList();
+
+      //loopIds.ForEach(id => builder.FinishLoop(id));
+      faceIds.ForEach(id => builder.FinishFace(id));
+      
+      var bRepBuilderOutcome = builder.Finish();
+      
+      if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
+      
+      var isResultAvailable = builder.IsResultAvailable();
+      var result = builder.GetResult();
+      return result;
     }
 
     public Brep BrepToSpeckle(Solid solid)

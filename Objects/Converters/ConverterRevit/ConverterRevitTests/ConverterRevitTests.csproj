@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\packages\xunit.core.2.4.1\build\xunit.core.props" Condition="Exists('..\..\..\packages\xunit.core.2.4.1\build\xunit.core.props')" />
   <Import Project="..\packages\xunit.core.2.4.1\build\xunit.core.props" Condition="Exists('..\packages\xunit.core.2.4.1\build\xunit.core.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -78,24 +79,24 @@
     <Reference Include="WindowsBase">
       <Private>True</Private>
     </Reference>
-    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c">
       <HintPath>..\..\..\packages\xunit.abstractions.2.0.3\lib\net35\xunit.abstractions.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="xunit.assert, Version=2.4.1.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+    <Reference Include="xunit.assert, Version=2.4.1.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c">
       <HintPath>..\..\..\packages\xunit.assert.2.4.1\lib\netstandard1.1\xunit.assert.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="xunit.core, Version=2.4.1.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+    <Reference Include="xunit.core, Version=2.4.1.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c">
       <HintPath>..\..\..\packages\xunit.extensibility.core.2.4.1\lib\net452\xunit.core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="xunit.execution.desktop, Version=2.4.1.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
-      <HintPath>..\packages\xunit.extensibility.execution.2.4.1\lib\net452\xunit.execution.desktop.dll</HintPath>
+    <Reference Include="xunit.execution.desktop, Version=2.4.1.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c">
+      <HintPath>..\..\..\packages\xunit.extensibility.execution.2.4.1\lib\net452\xunit.execution.desktop.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="xUnitRevitUtils, Version=1.0.3.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\packages\xUnitRevitUtils.2021.1.0.3\lib\netstandard2.0\xUnitRevitUtils.dll</HintPath>
+    <Reference Include="xUnitRevitUtils, Version=1.0.4.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\packages\xUnitRevitUtils.2021.1.0.4\lib\netstandard2.0\xUnitRevitUtils.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -123,9 +124,6 @@
     <None Include="SpeckleRevitTests.addin" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\..\..\packages\xunit.analyzers.0.10.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj">
       <Project>{7ef0c96c-1fd9-42b2-85ce-bfd9b10dac06}</Project>
       <Name>Core</Name>
@@ -138,6 +136,9 @@
       <Project>{8752525B-9DB2-48A2-B574-695BE5330C1B}</Project>
       <Name>ConverterRevit</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\..\packages\xunit.analyzers.0.10.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -156,10 +157,10 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\packages\coverlet.collector.1.3.0\build\netstandard1.0\coverlet.collector.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\coverlet.collector.1.3.0\build\netstandard1.0\coverlet.collector.targets'))" />
     <Error Condition="!Exists('..\..\..\packages\xunit.core.2.4.1\build\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\xunit.core.2.4.1\build\xunit.core.props'))" />
     <Error Condition="!Exists('..\..\..\packages\xunit.core.2.4.1\build\xunit.core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\xunit.core.2.4.1\build\xunit.core.targets'))" />
-    <Error Condition="!Exists('..\..\..\packages\coverlet.collector.1.3.0\build\netstandard1.0\coverlet.collector.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\coverlet.collector.1.3.0\build\netstandard1.0\coverlet.collector.targets'))" />
   </Target>
-  <Import Project="..\..\..\packages\xunit.core.2.4.1\build\xunit.core.targets" Condition="Exists('..\..\..\packages\xunit.core.2.4.1\build\xunit.core.targets')" />
   <Import Project="..\..\..\packages\coverlet.collector.1.3.0\build\netstandard1.0\coverlet.collector.targets" Condition="Exists('..\..\..\packages\coverlet.collector.1.3.0\build\netstandard1.0\coverlet.collector.targets')" />
+  <Import Project="..\..\..\packages\xunit.core.2.4.1\build\xunit.core.targets" Condition="Exists('..\..\..\packages\xunit.core.2.4.1\build\xunit.core.targets')" />
 </Project>
