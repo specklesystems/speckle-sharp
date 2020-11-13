@@ -202,20 +202,20 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Themes\DataTemplates.xaml"> 
+    <Page Include="Themes\DataTemplates.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Themes\MaterialDesignTheme.Light.xaml"> 
+    <Page Include="Themes\MaterialDesignTheme.Light.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\MaterialDesignTheme.TabControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Themes\MaterialDesignTheme.Overrides.xaml"> 
+    <Page Include="Themes\MaterialDesignTheme.Overrides.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -256,8 +256,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
-      <Project>{511b8e0f-4368-4bf9-a91c-f4a30c07d6c0}</Project>
-      <Name>SpeckleCore2</Name>
+      <Project>{A2C8730A-B605-483E-914E-61F3ED7954D9}</Project>
+      <Name>Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
