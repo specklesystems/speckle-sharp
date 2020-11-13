@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using DeviceId;
 using Piwik.Tracker;
 
 namespace Speckle.Core.Logging
