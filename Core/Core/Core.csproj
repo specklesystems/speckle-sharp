@@ -15,7 +15,7 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <Choose>
-    <When Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <When Condition="$([MSBuild]::IsOsPlatform('Windows')) Or $([MSBuild]::IsOsPlatform('Linux')) ">
       <ItemGroup>
         <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
       </ItemGroup>
