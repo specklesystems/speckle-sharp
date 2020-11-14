@@ -36,6 +36,9 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Eto2.5.7-dev">
+      <HintPath>..\Eto2.5.7-dev.dll</HintPath>
+    </Reference>
     <Reference Include="GH_IO, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=6a29997d2e6b4f97, processorArchitecture=MSIL">
       <HintPath>..\packages\Grasshopper.6.29.20238.11501\lib\net45\GH_IO.dll</HintPath>
     </Reference>
@@ -96,7 +99,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SchemaBuilder\CreateSchemaObject.eto.cs" />
     <Compile Include="Streams\StreamCreateComponent.cs" />
     <Compile Include="Streams\StreamDetailsComponent.cs" />
     <Compile Include="Streams\StreamGetComponent.cs" />
@@ -133,7 +135,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="Resources\speckle-logo.png" />
     <None Include="packages.config" />
   </ItemGroup>

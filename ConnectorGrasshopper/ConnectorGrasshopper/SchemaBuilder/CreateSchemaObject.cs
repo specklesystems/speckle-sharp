@@ -14,12 +14,22 @@ using ConnectorGrasshopper.Objects;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 using Speckle.Core.Logging;
 using Grasshopper.GUI.Canvas;
+using System.Reflection;
+using Grasshopper.Kernel.Parameters;
+using Grasshopper.Kernel.Special;
+using System.Collections;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace ConnectorGrasshopper
 {
-  // TODO: Convert to task capable component / async so as to not block the ffffing ui
+
+
   public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterComponent
   {
+    private Type SelectedType;
+    private GH_Document _document;
+
     public override Guid ComponentGuid => new Guid("4dc285e3-810d-47db-bfb5-cd96fe459fdd");
     protected override Bitmap Icon => Properties.Resources.CreateSpeckleObject;
 
@@ -46,18 +56,25 @@ namespace ConnectorGrasshopper
 
     public override void AddedToDocument(GH_Document document)
     {
-      base.AddedToDocument(document);
+      if (SelectedType != null)
+      {
+        base.AddedToDocument(document);
+        return;
+      }
+      //base.AddedToDocument(document);
+      _document = document;
 
       var dialog = new CreateSchemaObjectDialog();
       dialog.Owner = Grasshopper.Instances.EtoDocumentEditor;
       var mouse = GH_Canvas.MousePosition;
-      dialog.Location = new Eto.Drawing.Point(mouse.X-(dialog.Width/2), mouse.Y);
+      dialog.Location = new Eto.Drawing.Point(mouse.X - (dialog.Width / 2), mouse.Y);
 
       dialog.ShowModal();
 
       if (dialog.HasResult)
       {
         base.AddedToDocument(document);
+        SwitchToType(dialog.SelectedType);
       }
       else
       {
@@ -65,16 +82,130 @@ namespace ConnectorGrasshopper
       }
     }
 
+    public void SwitchToType(Type myType)
+    {
+      int k = 0;
+      foreach (var p in myType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public).Where(pinfo => pinfo.Name != "Type"))
+      {
+        RegisterPropertyAsInputParameter(p, k++);
+      }
+
+      Message = myType.Name;
+      SelectedType = myType;
+      Params.Output[0].NickName = myType.Name;
+      Params.OnParametersChanged();
+      ExpireSolution(true);
+    }
+
+    /// <summary>
+    /// Adds a property to the component's inputs.
+    /// </summary>
+    /// <param name="prop"></param>
+    void RegisterPropertyAsInputParameter(PropertyInfo prop, int index)
+    {
+      // get property name and value
+      Type propType = prop.PropertyType;
+
+      string propName = prop.Name;
+      object propValue = prop;
+
+      // Create new param based on property name
+      Param_GenericObject newInputParam = new Param_GenericObject();
+      newInputParam.Name = propName;
+      newInputParam.NickName = propName;
+      newInputParam.MutableNickName = false;
+      newInputParam.Description = propName + " as " + propType.Name;
+      newInputParam.Optional = true;
+
+      // check if input needs to be a list or item access
+      bool isCollection = typeof(System.Collections.IEnumerable).IsAssignableFrom(propType) && propType != typeof(string) && !propType.Name.ToLower().Contains("dictionary");
+      if (isCollection == true)
+      {
+        newInputParam.Access = GH_ParamAccess.list;
+      }
+      else
+      {
+        newInputParam.Access = GH_ParamAccess.item;
+      }
+      Params.RegisterInputParam(newInputParam, index);
+
+
+      //add dropdown
+      if (propType.IsEnum)
+      {
+        //expire solution so that node gets proper size
+        ExpireSolution(true);
+
+        var instance = Activator.CreateInstance(propType);
+
+        var vals = Enum.GetValues(propType).Cast<Enum>().Select(x => x.ToString()).ToList();
+        var options = CreateDropDown(propName, vals, Attributes.Bounds.X, Params.Input[index].Attributes.Bounds.Y);
+        _document.AddObject(options, false);
+        Params.Input[index].AddSource(options);
+      }
+    }
+
+    public static GH_ValueList CreateDropDown(string name, List<string> values, float x, float y)
+    {
+      var valueList = new GH_ValueList();
+      valueList.CreateAttributes();
+      valueList.Name = name;
+      valueList.NickName = name + ":";
+      valueList.Description = "Select an option...";
+      valueList.ListMode = GH_ValueListMode.DropDown;
+      valueList.ListItems.Clear();
+
+      for (int i = 0; i < values.Count; i++)
+      {
+        valueList.ListItems.Add(new GH_ValueListItem(values[i], i.ToString()));
+      }
+
+      valueList.Attributes.Pivot = new PointF(x - 200, y - 10);
+
+      return valueList;
+    }
+
     public override bool Read(GH_IReader reader)
     {
-      // TODO: Read kit name and instantiate converter
+      try
+      {
+        SelectedType = ByteArrayToObject<Type>(reader.GetByteArray("SelectedType"));
+      }
+      catch { }
+
       return base.Read(reader);
     }
 
     public override bool Write(GH_IWriter writer)
     {
-      // TODO: Write kit name to disk
+      if (SelectedType != null)
+      {
+        writer.SetByteArray("SelectedType", ObjectToByteArray(SelectedType));
+      }
+
       return base.Write(writer);
+    }
+
+    private static byte[] ObjectToByteArray(Object obj)
+    {
+      BinaryFormatter bf = new BinaryFormatter();
+      using (var ms = new MemoryStream())
+      {
+        bf.Serialize(ms, obj);
+        return ms.ToArray();
+      }
+    }
+
+    private static T ByteArrayToObject<T>(byte[] arrBytes)
+    {
+      using (var memStream = new MemoryStream())
+      {
+        var binForm = new BinaryFormatter();
+        memStream.Write(arrBytes, 0, arrBytes.Length);
+        memStream.Seek(0, SeekOrigin.Begin);
+        var obj = binForm.Deserialize(memStream);
+        return (T)obj;
+      }
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -89,63 +220,116 @@ namespace ConnectorGrasshopper
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      var res = new List<string>();
-      var @base = new Base();
+      if (SelectedType is null)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No schema has been selected.");
+        return;
+      }
+
+      var outputObject = Activator.CreateInstance(SelectedType);
 
       for (int i = 0; i < Params.Input.Count; i++)
       {
-        var param = Params.Input[i] as GenericAccessParam;
-        var type = param.Access.ToString();
-        var detachable = param.Detachable;
-
-        var key = detachable ? "@" + param.NickName : param.NickName;
-
-        object result = null;
-
-        switch (param.Access)
+        if (Params.Input[i].Access == GH_ParamAccess.list)
         {
-          case GH_ParamAccess.item:
-            object value = null;
-            DA.GetData(i, ref value);
+          var ObjectsList = new List<object>();
+          DA.GetDataList(i, ObjectsList);
 
-            if (value == null) break;
+          if (ObjectsList.Count == 0) continue;
 
-            result = Utilities.TryConvertItemToSpeckle(value, Converter);
-
-            if (result == null)
-              AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Data of type {value.GetType().Name} in {param.NickName} could not be converted.");
-            break;
-
-          case GH_ParamAccess.list:
-            var myList = new List<object>();
-            var values = new List<object>();
-            var j = 0;
-            DA.GetDataList(i, values);
-
-            if (values == null) break;
-
-            foreach (var item in values)
+          var listForSetting = (IList)Activator.CreateInstance(outputObject.GetType().GetProperty(Params.Input[i].Name).PropertyType);
+          foreach (var item in ObjectsList)
+          {
+            object innerVal = null;
+            try
             {
-              var conv = Utilities.TryConvertItemToSpeckle(item, Converter);
-              myList.Add(conv);
-              if (conv == null)
-              {
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Data of type {item.GetType().Name} in {param.NickName} at index {j} could not be converted.");
-              }
-              j++;
+              innerVal = item.GetType().GetProperty("Value").GetValue(item);
+            }
+            catch
+            {
+              innerVal = item;
             }
 
-            result = myList;
-            break;
+            listForSetting.Add(innerVal);
+          }
+
+          outputObject.GetType().GetProperty(Params.Input[i].Name).SetValue(outputObject, listForSetting, null);
         }
+        else if (Params.Input[i].Access == GH_ParamAccess.item)
+        {
+          object ghInput = null; // INPUT OBJECT ( PROPERTY )
+          DA.GetData(i, ref ghInput);
 
-        res.Add($"{key} ({type}, detach {detachable}) {result?.ToString()} \n");
+          if (ghInput == null) continue;
 
-        if (result != null)
-          @base[key] = result;
+          object innerValue = null;
+          try
+          {
+            innerValue = ghInput.GetType().GetProperty("Value").GetValue(ghInput);
+          }
+          catch
+          {
+            innerValue = ghInput;
+          }
+
+          if (innerValue == null) continue;
+
+          PropertyInfo prop = outputObject.GetType().GetProperty(Params.Input[i].Name);
+          if (prop.PropertyType.IsEnum)
+          {
+            try
+            {
+              prop.SetValue(outputObject, Enum.Parse(prop.PropertyType, (string)innerValue));
+              continue;
+            }
+            catch { }
+
+            try
+            {
+              prop.SetValue(outputObject, (int)innerValue);
+              continue;
+            }
+            catch { }
+
+            this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + Params.Input[i].Name + ".");
+          }
+
+          else if (innerValue.GetType() != prop.PropertyType)
+          {
+            //try
+            //{
+            //  var conv = SpeckleCore.Converter.Serialise(innerValue);
+            //  prop.SetValue(outputObject, conv);
+            //  continue;
+            //}
+            //catch { }
+
+            //try
+            //{
+            //  prop.SetValue(outputObject, innerValue);
+            //  continue;
+            //}
+            //catch { }
+
+            //try
+            //{
+            //  var conv = SNJ.JsonConvert.DeserializeObject((string)innerValue, prop.PropertyType);
+            //  prop.SetValue(outputObject, conv);
+            //  continue;
+            //}
+            //catch { }
+
+            this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + Params.Input[i].Name + ".");
+          }
+
+          else
+          {
+            prop.SetValue(outputObject, innerValue);
+          }
+        }
       }
 
-      DA.SetData(0, new GH_SpeckleBase() { Value = @base });
+      DA.SetData(0, new GH_SpeckleBase() { Value = outputObject as Base });
     }
 
     public bool CanInsertParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;

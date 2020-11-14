@@ -10,38 +10,39 @@ namespace ConnectorGrasshopper
   {
     private ListBox list;
     private SearchBox search;
-    public bool HasResult = false;
+    private List<Type> types;
+    private List<Type> typesFiltered;
 
-    private List<string> items = new List<string> { "giallo", "rosso", "blu", "verde" };
+    public bool HasResult = false;
+    public Type SelectedType = null;
+
     public CreateSchemaObjectDialog()
     {
       Title = "Create an Object by Schema";
-      Width = 237;
-      Padding = 10;
+      Padding = 5;
       Resizable = true;
 
-      search = new SearchBox();
-      search.Width = 200;
-      search.TextChanged += Search_TextChanged;
-      search.Focus();
-      search.PlaceholderText = "Search for a schema class";
+      types = ListAvailableTypes();
+      typesFiltered = types;
 
-
-      list = new ListBox();
-      list.Width = 200;
-      list.Height = 200;
-
-      for (int i = 0; i < items.Count; i++)
+      search = new SearchBox
       {
-        list.Items.Add(new ListItem { Text = items[i] });
-      }
+        PlaceholderText = "Search for a schema class"
+      };
+      search.Focus();
+      search.TextChanged += Search_TextChanged;
 
 
-      var layout = new StackLayout();
-      layout.Items.Add(search);
-      layout.Items.Add(list);
+      list = new ListBox
+      {
+        Size = new Size(200, 200),
+        ItemTextBinding = Binding.Property<Type, string>(x => x.Name),
+        DataStore = typesFiltered,
+        SelectedIndex = 0
+      };
+      list.SelectedIndexChanged += List_SelectedIndexChanged;
 
-      Content = layout;
+      Content = new TableLayout(search, list) { Spacing = new Size(5, 5), Padding = new Padding(10) }; ;
 
       // buttons
       DefaultButton = new Button { Text = "Create" };
@@ -57,21 +58,35 @@ namespace ConnectorGrasshopper
       NegativeButtons.Add(AbortButton);
     }
 
+    private void List_SelectedIndexChanged(object sender, EventArgs e)
+    {
+      if (DefaultButton == null)
+        return;
+
+      if (list.SelectedIndex == -1)
+        DefaultButton.Enabled = false;
+      else
+      {
+        SelectedType = (Type)list.SelectedValue; //TODO: replace with binding... how?
+        DefaultButton.Enabled = true;
+      }
+
+    }
+
+    private List<Type> ListAvailableTypes()
+    {
+      return Speckle.Core.Kits.KitManager.Types.ToList();
+    }
+
     private void Search_TextChanged(object sender, EventArgs e)
     {
-      list.Items.Clear();
-      var filter = new List<string>();
 
       if (!string.IsNullOrEmpty(search.Text))
-        filter = items.Where(x => x.ToLowerInvariant().Contains(search.Text.ToLowerInvariant())).ToList();
+        typesFiltered = types.Where(x => x.Name.ToLowerInvariant().Contains(search.Text.ToLowerInvariant())).ToList();
       else
-        filter = items;
+        typesFiltered = types;
 
-
-      for (int i = 0; i < filter.Count; i++)
-      {
-        list.Items.Add(new ListItem { Text = filter[i] });
-      }
+      list.DataStore = typesFiltered;
     }
 
   }
