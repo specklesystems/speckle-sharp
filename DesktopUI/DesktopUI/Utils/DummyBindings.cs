@@ -105,16 +105,18 @@ namespace Speckle.DesktopUI.Utils
       state.Progress.Maximum = 100;
 
       var pd = new ConcurrentDictionary<string, int>();
-      pd["fake"] = 1;
+      pd["L"] = 1;
+      pd["A1"] = 1;
 
       UpdateProgress(pd, state.Progress);
 
       for (int i = 1; i < 100; i += 10)
       {
-        pd["fake"] = i;
-        //state.Progress.Value = i/2;
+        Thread.Sleep(rnd.Next(300, 2000));
+        pd["L"] = Math.Min(i * 2, state.Progress.Maximum);
+        pd["A1"] = i;
+
         UpdateProgress(pd, state.Progress);
-        Thread.Sleep(500);
       }
 
 
@@ -159,7 +161,11 @@ namespace Speckle.DesktopUI.Utils
         return;
       }
 
-      Stylet.Execute.PostToUIThread(() => progress.Value = dict.Values.Last());
+      Stylet.Execute.PostToUIThread(() =>
+      {
+        progress.Update(dict);
+        progress.Value = dict.Values.Last();
+      });
     }
   }
 }

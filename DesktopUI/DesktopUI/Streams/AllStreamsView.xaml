@@ -297,7 +297,9 @@
                    md:ShadowAssist.ShadowDepth="Depth0"
                    UniformCornerRadius="8">
             <StackPanel>
-              <Grid Margin="16">
+              <Grid Margin="16"
+                    x:Name="CardGrid"
+                    >
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
                   <RowDefinition Height="Auto" />
@@ -357,7 +359,8 @@
                 <Grid Name="StreamCardSenderActions"
                       Margin="0,30,0,0"
                       Grid.Row="1"
-                      Visibility="{Binding IsSenderCard, Converter={StaticResource BooleanToVisibilityConverter}}">
+                      Visibility="{Binding IsSenderCard, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      IsEnabled="{Binding IsNotSendingOrReceiving}">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -418,6 +421,7 @@
                 <Grid x:Name="StreamCardReceiverActions"
                       Grid.Row="1"
                       Margin="0,30,0,0"
+                      IsEnabled="{Binding IsNotSendingOrReceiving}"
                       Visibility="{Binding IsReceiverCard, Converter={StaticResource BooleanToVisibilityConverter}}">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -491,23 +495,30 @@
                   </Button>
                 </Grid>
                 <!--#endregion-->
-
-
+                
               </Grid>
               <Grid>
+                <!---->
                 <ProgressBar Grid.Row="2"
                              Minimum="0"
-                             Maximum="{Binding Progress.Maximum, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                             Maximum="{Binding Path=DataContext.Progress.Maximum, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
                              Value="{Binding Path=DataContext.Progress.Value, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
                              x:Name="ProgressBar"
+                             Visibility="{Binding Path=DataContext.Progress.IsProgressing, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}"
                              VerticalAlignment="Center"
-                             Margin="0"
-                             Height="5">
-                  <!--<i:Interaction.Behaviors>
+                             Margin="0,0"
+                             Height="10">
+                  <i:Interaction.Behaviors>
                     <utils:ProgresBarAnimateBehavior x:Name="AnimateBehavior" />
-                  </i:Interaction.Behaviors>-->
+                  </i:Interaction.Behaviors>
                 </ProgressBar>
-                <TextBlock Text="Hai!" Height="5"></TextBlock>
+                <TextBlock Text="{Binding Path=DataContext.Progress.ProgressSummary, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                           Height="11"
+                           FontSize="9"
+                           Foreground="White"
+                           Opacity="0.7"
+                           Visibility="{Binding Path=DataContext.Progress.IsProgressing, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}"
+                           HorizontalAlignment="Stretch" TextAlignment="Center"></TextBlock>
               </Grid>
             </StackPanel>
           </md:Card>
@@ -533,7 +544,7 @@
                       HorizontalAlignment="Stretch"
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Auto">
-          <ItemsControl ItemTemplate="{StaticResource StreamCardTemplate}"
+          <ItemsControl Margin="0,10" ItemTemplate="{StaticResource StreamCardTemplate}"
                         ItemsSource="{Binding StreamList, Mode=OneWay, UpdateSourceTrigger=Default}" />
         </ScrollViewer>
       </Grid>

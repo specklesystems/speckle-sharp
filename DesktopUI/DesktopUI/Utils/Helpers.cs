@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interactivity;
 using System.Windows.Media.Animation;
-using Microsoft.Xaml.Behaviors;
 using Speckle.DesktopUI.Streams;
 using Stylet;
 
@@ -41,7 +43,26 @@ namespace Speckle.DesktopUI.Utils
 
   public class ProgressReport : PropertyChangedBase
   {
-    public int CurrentPercentage => Value / Maximum * 100;
+
+    private ConcurrentDictionary<string, int> _ProgressDict;
+    public ConcurrentDictionary<string, int> ProgressDict
+    {
+      get => _ProgressDict;
+      set
+      {
+        ProgressSummary = "";
+        foreach(var kvp in value)
+        {
+          ProgressSummary += $"{kvp.Key}: {kvp.Value} ";
+        }
+
+        ProgressSummary += $"Total: {Maximum}";
+        _ProgressDict = value;
+        NotifyOfPropertyChange(nameof(ProgressSummary));
+      }
+    }
+
+    public string ProgressSummary { get; set; } = "?? / ??";
 
     private int _value = 0;
     public int Value
@@ -50,9 +71,11 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _value, value);
-        NotifyOfPropertyChange(nameof(CurrentPercentage));
+        NotifyOfPropertyChange(nameof(IsProgressing));
       }
     }
+
+    public bool IsProgressing { get => Value != 0; }
 
     private int _maximum = 100;
 
@@ -61,12 +84,18 @@ namespace Speckle.DesktopUI.Utils
       get => _maximum;
       set => SetAndNotify(ref _maximum, value);
     }
-
+    
     public async Task ResetProgress(int millisec = 4000)
     {
       await Task.Delay(millisec);
       Maximum = 100;
       Value = 0;
+    }
+
+    public void Update(ConcurrentDictionary<string, int> pd)
+    {
+      ProgressDict = pd;
+      Value = ProgressDict.Values.Last();
     }
   }
 
@@ -137,7 +166,7 @@ namespace Speckle.DesktopUI.Utils
       _IsAnimating = true;
 
       DoubleAnimation doubleAnimation = new DoubleAnimation
-          (e.OldValue, e.NewValue, new Duration(TimeSpan.FromSeconds(0.3)), FillBehavior.Stop);
+          (e.OldValue, e.NewValue, new Duration(TimeSpan.FromSeconds(0.4)), FillBehavior.Stop);
       doubleAnimation.Completed += Db_Completed;
 
       ((ProgressBar)sender).BeginAnimation(ProgressBar.ValueProperty, doubleAnimation);

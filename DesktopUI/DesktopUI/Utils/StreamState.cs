@@ -229,22 +229,32 @@ namespace Speckle.DesktopUI.Utils
     public bool IsSending
     {
       get => _isSending;
-      set => SetAndNotify(ref _isSending, value);
+      set { SetAndNotify(ref _isSending, value); NotifyOfPropertyChange(nameof(IsNotSendingOrReceiving)); }
     }
 
     private bool _isReceiving;
     public bool IsReceiving
     {
       get => _isReceiving;
-      set => SetAndNotify(ref _isReceiving, value);
+      set
+      {
+        SetAndNotify(ref _isReceiving, value);
+        NotifyOfPropertyChange(nameof(IsNotSendingOrReceiving));
+      }
     }
 
     private bool _serverUpdates;
     public bool ServerUpdates
     {
       get => _serverUpdates;
-      set => SetAndNotify(ref _serverUpdates, value);
+      set
+      {
+        SetAndNotify(ref _serverUpdates, value);
+        NotifyOfPropertyChange(nameof(IsNotSendingOrReceiving));
+      }
     }
+
+    public bool IsNotSendingOrReceiving { get => !(_isReceiving || _isSending); }
 
     public CancellationTokenSource CancellationTokenSource { get; set; }
 
@@ -353,7 +363,7 @@ namespace Speckle.DesktopUI.Utils
 
       await Task.Run(() => Globals.Repo.ConvertAndSend(this));
 
-      Progress.ResetProgress();
+      Progress.ResetProgress(10);
       IsSending = false;
     }
 
@@ -373,7 +383,7 @@ namespace Speckle.DesktopUI.Utils
 
       await Task.Run(() => Globals.Repo.ConvertAndReceive(this));
 
-      Progress.ResetProgress();
+      Progress.ResetProgress(0);
       IsReceiving = false;
     }
 

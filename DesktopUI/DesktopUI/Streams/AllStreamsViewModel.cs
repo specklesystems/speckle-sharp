@@ -8,8 +8,6 @@ using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Speckle.DesktopUI.Utils;
 using Stylet;
-using System.Windows.Controls;
-using Microsoft.Xaml.Behaviors;
 using System.Windows.Controls.Primitives;
 using System.Diagnostics;
 using System.Windows.Data;
