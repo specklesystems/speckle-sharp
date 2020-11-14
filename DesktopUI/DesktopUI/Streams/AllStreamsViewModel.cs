@@ -88,24 +88,15 @@ namespace Speckle.DesktopUI.Streams
       Tracker.TrackPageview(Tracker.STREAM_DETAILS);
       var item = _streamViewModelFactory.CreateStreamViewModel();
       item.StreamState = state;
-
-      //// get main branch for now
-      //// TODO allow user to select branch
-      //item.Branch = _repo.GetMainBranch(state.Stream.branches.items);
-
       ((RootViewModel)Parent).GoToStreamViewPage(item);
     }
 
-    public void SwitchBranch(BranchSwitchCommandArgument args)
-    {
-      args.RootStreamState.SwitchBranch(args.Branch);
-    }
+    public void SwitchBranch(BranchSwitchCommandArgument args) => args.RootStreamState.SwitchBranch(args.Branch);
 
     public void SwapState(StreamState state)
     {
-      state.Stream = state.Stream;
-      StreamList.Refresh();
       state.IsSenderCard = !state.IsSenderCard;
+      StreamList.Refresh();
     }
 
     public async void ShowStreamUpdateObjectsDialog(StreamState state)
@@ -130,6 +121,8 @@ namespace Speckle.DesktopUI.Streams
     public void AddObjectSelection(StreamState state) => state.AddObjectSelection();
 
     public void RemoveObjectSelection(StreamState state) => state.RemoveObjectSelection();
+
+    public void ClearObjectSelection(StreamState state) => state.ClearObjectSelection();
 
     #endregion
 

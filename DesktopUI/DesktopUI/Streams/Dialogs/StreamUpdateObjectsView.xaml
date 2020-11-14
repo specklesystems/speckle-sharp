@@ -18,7 +18,13 @@
         FontSize="20"
         Style="{StaticResource MaterialDesignHeadline4TextBlock}"
         Text="Edit Selection Filter" />
-      <TextBlock Margin="0,8" Text="Add or remove the objects that are sent." />
+      
+      <TextBlock Margin="0,0,0,8"
+                 FontSize="12"
+                 Foreground="Gray"
+                 Text="Filters help you select what is sent to a given stream. They will run automatically on every 'send' and capture the objects that match. For example, if you set a filter for an object category of 'polyline', then all the polylines that are in the active document will be sent."
+                 TextWrapping="Wrap" />
+      <!--<TextBlock Margin="0,8" Text="Add or remove the objects that are sent." />-->
 
       <!--<Button
         Margin="0,12,0,0"

@@ -103,27 +103,6 @@ namespace Speckle.DesktopUI.Streams
       }
     }
 
-    public async void ShowStreamUpdateDialog(int slide = 0)
-    {
-      Tracker.TrackPageview("stream", "dialog-update");
-      var viewmodel = _dialogFactory.CreateStreamUpdateDialog();
-      viewmodel.StreamState = StreamState;
-      viewmodel.SelectedSlide = slide;
-      var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
-
-      var result = await DialogHost.Show(view, "RootDialogHost");
-    }
-
-    public async void ShowShareDialog(StreamState state)
-    {
-      Tracker.TrackPageview("stream", "dialog-share");
-      var viewmodel = _dialogFactory.CreateShareStreamDialogViewModel();
-      viewmodel.StreamState = StreamState;
-      var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
-
-      await DialogHost.Show(view, "RootDialogHost");
-    }
-
     public void RemoveStream()
     {
       Tracker.TrackPageview("stream", "remove");

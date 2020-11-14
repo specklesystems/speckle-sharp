@@ -28,6 +28,8 @@
                   Margin="0"
                   HorizontalAlignment="Right"
                   ToolTip="Select this stream"
+                  Background="Gray"
+                  BorderBrush="Gray"
                   Command="{s:Action AddExistingStream}"
                   CommandParameter="{Binding}"
                   Content="{md:PackIcon Kind=ArrowRight,Size=20}"
@@ -53,7 +55,7 @@
     <TextBlock Margin="0,0,0,12"
                FontSize="20"
                Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-               Text="New Stream" />
+               Text="Add Stream" />
 
     <TextBlock Margin="0,0,0,8"
                FontSize="12"

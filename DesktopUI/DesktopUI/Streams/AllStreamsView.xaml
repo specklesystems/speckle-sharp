@@ -17,6 +17,7 @@
 
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
+      <!--#region Branch Swapping Button (Sender/Receiver shared) -->
       <ControlTemplate x:Key="BranchButton">
         <Button x:Name="BranchButton"
                 Width="auto"
@@ -80,7 +81,9 @@
           </Button.ContextMenu>
         </Button>
       </ControlTemplate>
+      <!--#endregion-->
 
+      <!--#region Sender Selection/Filters Button (Sender) -->
       <ControlTemplate x:Key="SelectionButton">
         <Button x:Name="SelectionButton"
                 Width="auto"
@@ -111,7 +114,8 @@
           </Button.Style>
           <Button.ToolTip>
             <TextBlock>
-              <Run Text="{Binding ObjectSelectionTooltipText, Mode=OneWay}" FontWeight="Bold" />
+              <Run Text="{Binding ObjectSelectionTooltipText, Mode=OneWay}"
+                   FontWeight="Bold" />
               <LineBreak></LineBreak>
               <Run Text="Click to change." />
             </TextBlock>
@@ -137,7 +141,8 @@
             <ContextMenu FontSize="12">
               <MenuItem ToolTip="A filter will run automatically and dynamically select elements that match when sending."
                         Command="{s:Action ShowStreamUpdateObjectsDialog}"
-                        CommandParameter="{Binding}">
+                        CommandParameter="{Binding}"
+                        Visibility="{Binding AppHasFilters, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <MenuItem.Icon>
                   <md:PackIcon Kind="FilterList"></md:PackIcon>
                 </MenuItem.Icon>
@@ -147,8 +152,9 @@
                   </TextBlock>
                 </MenuItem.Header>
               </MenuItem>
-              <Separator />
-              <MenuItem ToolTip="Objects selected in the current document.">
+              <Separator Visibility="{Binding AppHasFilters, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+              <!--<MenuItem ToolTip="Objects selected in the current document.">
                 <MenuItem.Icon>
                   <md:PackIcon Kind="Cube"
                                Foreground="DimGray"></md:PackIcon>
@@ -160,60 +166,110 @@
                   </TextBlock>
                 </MenuItem.Header>
               </MenuItem>
-              <Separator />
-              
-              <MenuItem ToolTip="Clears any existing objects, and sets the current selected ones. NOTE: Will clear any filters previously set."
-                        Command="{s:Action SetObjectSelection}" CommandParameter="{Binding}">
+              <Separator />-->
+
+              <MenuItem Command="{s:Action SetObjectSelection}"
+                        CommandParameter="{Binding}">
+                <MenuItem.ToolTip>
+                  <TextBlock>
+                  <Run>Clears any existing objects, and sets the current selected ones.</Run>
+                    <LineBreak />
+                    <Run FontWeight="Bold">NOTE: Will clear any filters previously set.</Run>
+                  </TextBlock>
+                </MenuItem.ToolTip>
                 <MenuItem.Icon>
                   <md:PackIcon Kind="AddCircle"
                                Foreground="Green"></md:PackIcon>
                 </MenuItem.Icon>
                 <MenuItem.Header>
                   <TextBlock>
-                    <Run>Set current selection</Run>
+                    <Run>Set Selection (</Run>
+                    <Run Text="{Binding SelectionCount}"></Run>
+                    <Run>objs)</Run>
                   </TextBlock>
                 </MenuItem.Header>
               </MenuItem>
 
-              <MenuItem ToolTip="Adds the currently selected objects to the existing list. Does not clear old ones. NOTE: Will clear any filters previously set."
-                        Command="{s:Action AddObjectSelection}"
+              <MenuItem Command="{s:Action AddObjectSelection}"
                         CommandParameter="{Binding}">
+                <MenuItem.ToolTip>
+                  <TextBlock>
+                  <Run>Adds the currently selected objects to the existing list. Does not clear old ones.</Run>
+                    <LineBreak />
+                    <Run FontWeight="Bold">NOTE: Will clear any filters previously set.</Run>
+                  </TextBlock>
+                </MenuItem.ToolTip>
                 <MenuItem.Icon>
                   <md:PackIcon Kind="AddCircle"
                                Foreground="{StaticResource PrimaryHueLightBrush}"></md:PackIcon>
                 </MenuItem.Icon>
                 <MenuItem.Header>
                   <TextBlock>
-                    <Run>Add current selection</Run>
+                    <Run>Add Selection (</Run>
+                    <Run Text="{Binding SelectionCount}"></Run>
+                    <Run>objs)</Run>
                   </TextBlock>
                 </MenuItem.Header>
               </MenuItem>
 
-              <MenuItem ToolTip="Removes the selected objects. NOTE: Will clear any filters previously set."
-                        Command="{s:Action RemoveObjectSelection}"
+              <MenuItem Command="{s:Action RemoveObjectSelection}"
                         CommandParameter="{Binding}">
+                <MenuItem.ToolTip>
+                  <TextBlock>
+                  <Run>Removes the selected objects.</Run>
+                    <LineBreak />
+                    <Run FontWeight="Bold">NOTE: Will clear any filters previously set.</Run>
+                  </TextBlock>
+                </MenuItem.ToolTip>
+                <MenuItem.Icon>
+                  <md:PackIcon Kind="MinusCircle"
+                               Foreground="IndianRed"></md:PackIcon>
+                </MenuItem.Icon>
+                <MenuItem.Header>
+                  <TextBlock>
+                    <Run>Remove Selection (</Run>
+                    <Run Text="{Binding SelectionCount}"></Run>
+                    <Run>objs)</Run>
+                  </TextBlock>
+                </MenuItem.Header>
+              </MenuItem>
+
+              <MenuItem Command="{s:Action ClearObjectSelection}"
+                        CommandParameter="{Binding}">
+                <MenuItem.ToolTip>
+                  <TextBlock>
+                  <Run>Removes all selected objects.</Run>
+                    <LineBreak />
+                    <Run FontWeight="Bold">NOTE: Will clear any filters previously set.</Run>
+                  </TextBlock>
+                </MenuItem.ToolTip>
                 <MenuItem.Icon>
                   <md:PackIcon Kind="RemoveCircleMultiple"
                                Foreground="OrangeRed"></md:PackIcon>
                 </MenuItem.Icon>
                 <MenuItem.Header>
                   <TextBlock>
-                    <Run>Remove current selection</Run>
+                    <Run>Clear Selection</Run>
+                    <!--<Run Text="{Binding SelectionCount}"></Run>
+                    <Run>objects</Run>-->
                   </TextBlock>
                 </MenuItem.Header>
               </MenuItem>
-              
+
             </ContextMenu>
           </Button.ContextMenu>
         </Button>
       </ControlTemplate>
+      <!--#endregion -->
 
+      <!--#region Stream Card Template-->
       <DataTemplate x:Key="StreamCardTemplate">
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
-          <!--#region Disabled because no account-->
+
+          <!--#region Disabled Card (no account) -->
           <Grid Grid.Row="0"
                 Margin="24"
                 Panel.ZIndex="2"
@@ -260,6 +316,7 @@
                 <RowDefinition Height="Auto" />
               </Grid.RowDefinitions>
 
+              <!--#region card header-->
               <Grid Name="StreamCardTitle"
                     Grid.Row="0">
                 <Grid.ColumnDefinitions>
@@ -306,7 +363,9 @@
                         Content="{md:PackIcon Kind=OpenInNew, Size=16}">
                 </Button>
               </Grid>
-              
+              <!--#endregion-->
+
+              <!--#region Stream Card Sender Actions-->
               <Grid Name="StreamCardSenderActions"
                     Margin="0,30,0,0"
                     Grid.Row="2"
@@ -333,7 +392,7 @@
                         HorizontalAlignment="Right"
                         md:ButtonAssist.CornerRadius="3"
                         md:ShadowAssist.ShadowDepth="Depth3"
-                        Command="{s:Action ShowStreamInfo}"
+                        Command="{s:Action Send}"
                         CommandParameter="{Binding}"
                         ToolTip="Send objects to Speckle.">
                   <Grid>
@@ -365,7 +424,9 @@
                   <md:PackIcon Kind="CloudDownloadOutline" />
                 </Button>
               </Grid>
+              <!--#endregion-->
 
+              <!--#region Stream Card Receiver Actions-->
               <Grid x:Name="StreamCardReceiverActions"
                     Grid.Row="2"
                     Margin="0,30,0,0"
@@ -410,7 +471,7 @@
                         Width="110"
                         HorizontalAlignment="Right"
                         md:ButtonAssist.CornerRadius="3"
-                        Command="{s:Action ShowStreamInfo}"
+                        Command="{s:Action Receive}"
                         CommandParameter="{Binding}"
                         Style="{StaticResource MaterialDesignRaisedDarkButton}"
                         ToolTip="Edit/Change Objects">
@@ -441,12 +502,14 @@
                   <md:PackIcon Kind="CloudUploadOutline" />
                 </Button>
               </Grid>
+              <!--#endregion-->
 
             </Grid>
 
           </md:Card>
         </Grid>
       </DataTemplate>
+      <!--#endregion-->
 
     </ResourceDictionary>
   </UserControl.Resources>
@@ -455,13 +518,14 @@
     <Grid Margin="0">
       <Grid Margin="5,0,5,0">
         <Grid.RowDefinitions>
-          <RowDefinition Height="*"/>
+          <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer Grid.Row="0" Grid.Column="0"
+        <ScrollViewer Grid.Row="0"
+                      Grid.Column="0"
                       VerticalAlignment="Stretch"
                       HorizontalAlignment="Stretch"
                       HorizontalScrollBarVisibility="Disabled"

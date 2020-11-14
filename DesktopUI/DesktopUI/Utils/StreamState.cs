@@ -123,10 +123,16 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _filter, value);
+        NotifyOfPropertyChange(nameof(SendEnabled));
         NotifyOfPropertyChange(nameof(ObjectSelectionButtonText));
         NotifyOfPropertyChange(nameof(ObjectSelectionTooltipText));
         NotifyOfPropertyChange(nameof(ObjectSelectionButtonIcon));
       }
+    }
+
+    public bool AppHasFilters
+    {
+      get => Globals.HostBindings.GetSelectionFilters().Count != 0;
     }
 
     private int _selectionCount = 0;
@@ -341,7 +347,7 @@ namespace Speckle.DesktopUI.Utils
       CancellationTokenSource = new CancellationTokenSource();
 
       await Task.Run(() => Globals.Repo.ConvertAndSend(this));
-      
+
       Progress.ResetProgress();
       IsSending = false;
     }
@@ -421,8 +427,8 @@ namespace Speckle.DesktopUI.Utils
       }
 
       var filtered = Objects.Where(o => objIds.IndexOf(o.applicationId) == -1).ToList();
-      
-      if(filtered.Count == Objects.Count)
+
+      if (filtered.Count == Objects.Count)
       {
         Globals.Notify("No objects removed.");
         return;
@@ -430,6 +436,13 @@ namespace Speckle.DesktopUI.Utils
 
       Globals.Notify($"{Objects.Count - filtered.Count} objects removed.");
       Objects = filtered;
+    }
+
+    public void ClearObjectSelection()
+    {
+      Objects = new List<Base>();
+      Filter = null;
+      Globals.Notify($"Selection cleared.");
     }
 
     #endregion

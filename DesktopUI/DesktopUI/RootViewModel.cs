@@ -10,7 +10,7 @@ using Stylet;
 
 namespace Speckle.DesktopUI
 {
-  public class RootViewModel : Conductor<IScreen>.Collection.OneActive, IHandle<ShowNotificationEvent>, IHandle<ApplicationEvent>
+  public class RootViewModel : Conductor<IScreen>.Collection.OneActive, IHandle<ShowNotificationEvent>, IHandle<ApplicationEvent>, IHandle<StreamRemovedEvent>
   {
     private IWindowManager _windowManager;
 
@@ -121,6 +121,12 @@ namespace Speckle.DesktopUI
       ViewName = ActiveItem.DisplayName;
       MainButtonIcon = BackIcon;
       MainButton_Checked = true;
+    }
+
+    public void Handle(StreamRemovedEvent message)
+    {
+      MainButtonIcon = SettingsIcon;
+      MainButton_Checked = false;
     }
 
     public void Handle(ShowNotificationEvent message)
