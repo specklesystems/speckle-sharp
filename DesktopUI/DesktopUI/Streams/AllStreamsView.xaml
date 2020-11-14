@@ -7,6 +7,7 @@
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:s="https://github.com/canton7/Stylet"
              xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              d:DesignHeight="450"
              d:DesignWidth="600"
              mc:Ignorable="d">
@@ -295,27 +296,28 @@
                    Margin="12,10,12,10"
                    md:ShadowAssist.ShadowDepth="Depth0"
                    UniformCornerRadius="8">
-            <Grid Margin="16">
-              <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-              </Grid.RowDefinitions>
+            <StackPanel>
+              <Grid Margin="16">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-              <!--#region card header-->
-              <Grid Name="StreamCardTitle"
-                    Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="56" />
-                  <ColumnDefinition Width="40" />
-                </Grid.ColumnDefinitions>
+                <!--#region card header-->
+                <Grid Name="StreamCardTitle"
+                      Grid.Row="0">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="56" />
+                    <ColumnDefinition Width="40" />
+                  </Grid.ColumnDefinitions>
 
-                <WrapPanel Grid.Column="0">
-                  <TextBlock Grid.Column="0"
-                             VerticalAlignment="Center"
-                             Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                             TextWrapping="Wrap">
+                  <WrapPanel Grid.Column="0">
+                    <TextBlock Grid.Column="0"
+                               VerticalAlignment="Center"
+                               Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                               TextWrapping="Wrap">
                   <Hyperlink Command="{s:Action ShowStreamInfo}"
                              CommandParameter="{Binding}"
                              ToolTip="Open stream details page.">
@@ -323,175 +325,191 @@
                                Text="{Binding Stream.name}" />
                   </Hyperlink>
                 </TextBlock>
+                    <Button Grid.Column="2"
+                            Width="28"
+                            Height="28"
+                            HorizontalAlignment="Right"
+                            md:RippleAssist.ClipToBounds="True"
+                            Command="{s:Action ShowStreamInfo}"
+                            CommandParameter="{Binding}"
+                            ToolTip="Open stream details page."
+                            Foreground="Gray"
+                            Content="{md:PackIcon Kind=MoreHoriz, Size=16}"
+                            Style="{StaticResource MaterialDesignIconButton}">
+                    </Button>
+                  </WrapPanel>
+
                   <Button Grid.Column="2"
                           Width="28"
                           Height="28"
                           HorizontalAlignment="Right"
                           md:RippleAssist.ClipToBounds="True"
+                          Command="{s:Action OpenStreamInWeb}"
+                          CommandParameter="{Binding}"
+                          Style="{StaticResource MaterialDesignIconButton}"
+                          ToolTip="Open this stream in the browser"
+                          Content="{md:PackIcon Kind=OpenInNew, Size=16}">
+                  </Button>
+                </Grid>
+                <!--#endregion-->
+
+                <!--#region Stream Card Sender Actions-->
+                <Grid Name="StreamCardSenderActions"
+                      Margin="0,30,0,0"
+                      Grid.Row="1"
+                      Visibility="{Binding IsSenderCard, Converter={StaticResource BooleanToVisibilityConverter}}">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="30" />
+                  </Grid.ColumnDefinitions>
+
+                  <!--The branch button-->
+                  <Control Template="{StaticResource BranchButton}"></Control>
+
+                  <!--The Objects button-->
+                  <Control  Grid.Column="1"
+                            Template="{StaticResource SelectionButton}"></Control>
+
+                  <!--The Send Button-->
+                  <Button x:Name="SendButton"
+                          Grid.Column="2"
+                          Width="110"
+                          IsEnabled="{Binding SendEnabled}"
+                          HorizontalAlignment="Right"
+                          md:ButtonAssist.CornerRadius="3"
+                          md:ShadowAssist.ShadowDepth="Depth3"
+                          Command="{s:Action Send}"
+                          CommandParameter="{Binding}"
+                          ToolTip="Send objects to Speckle.">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <md:PackIcon Grid.Column="1"
+                                   Kind="CloudUpload"
+                                   HorizontalAlignment="Right" />
+
+                      <TextBlock Grid.Column="0"
+                                 HorizontalAlignment="Center"
+                                 Text="Send  " />
+                    </Grid>
+                  </Button>
+
+                  <!-- The state swapper button-->
+                  <Button x:Name="SwapStateButton"
+                          Grid.Column="3"
+                          Width="30"
+                          Margin="5,0,0,0"
+                          md:ButtonAssist.CornerRadius="3"
+                          Command="{s:Action SwapState}"
+                          CommandParameter="{Binding}"
+                          FontSize="10"
+                          Style="{StaticResource MaterialDesignToolForegroundButton}"
+                          ToolTip="Receive data from this stream.">
+                    <md:PackIcon Kind="CloudDownloadOutline" />
+                  </Button>
+                </Grid>
+                <!--#endregion-->
+
+                <!--#region Stream Card Receiver Actions-->
+                <Grid x:Name="StreamCardReceiverActions"
+                      Grid.Row="1"
+                      Margin="0,30,0,0"
+                      Visibility="{Binding IsReceiverCard, Converter={StaticResource BooleanToVisibilityConverter}}">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="30" />
+                  </Grid.ColumnDefinitions>
+                  <Control Template="{StaticResource BranchButton}"></Control>
+                  <Button x:Name="CommitButton"
+                          Grid.Column="1"
+                          Width="auto"
+                          MaxWidth="110"
+                          Margin="0,0,10,0"
+                          md:ButtonAssist.CornerRadius="3"
                           Command="{s:Action ShowStreamInfo}"
                           CommandParameter="{Binding}"
-                          ToolTip="Open stream details page."
-                          Foreground="Gray"
-                          Content="{md:PackIcon Kind=MoreHoriz, Size=16}"
-                          Style="{StaticResource MaterialDesignIconButton}">
+                          Style="{StaticResource MaterialDesignToolForegroundButton}"
+                          ToolTip="Select Commit">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <md:PackIcon Grid.Column="0"
+                                   Kind="SourceCommit" />
+                      <TextBlock Grid.Column="1"
+                                 Margin="3,2"
+                                 HorizontalAlignment="Center"
+                                 Text="Latest" />
+                      <TextBlock Grid.Column="2"
+                                 Margin="0,2"
+                                 FontWeight="Bold"
+                                 Text="061459c4f2" />
+                    </Grid>
                   </Button>
-                </WrapPanel>
+                  <Button x:Name="ReceiveButton"
+                          Grid.Column="2"
+                          Width="110"
+                          HorizontalAlignment="Right"
+                          md:ButtonAssist.CornerRadius="3"
+                          Command="{s:Action Receive}"
+                          CommandParameter="{Binding}"
+                          Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                          ToolTip="Edit/Change Objects">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <md:PackIcon Grid.Column="1"
+                                   Kind="CloudDownload" />
 
-                <Button Grid.Column="2"
-                        Width="28"
-                        Height="28"
-                        HorizontalAlignment="Right"
-                        md:RippleAssist.ClipToBounds="True"
-                        Command="{s:Action OpenStreamInWeb}"
-                        CommandParameter="{Binding}"
-                        Style="{StaticResource MaterialDesignIconButton}"
-                        ToolTip="Open this stream in the browser"
-                        Content="{md:PackIcon Kind=OpenInNew, Size=16}">
-                </Button>
+                      <TextBlock Grid.Column="0"
+                                 HorizontalAlignment="Center"
+                                 Text="Receive  " />
+                    </Grid>
+                  </Button>
+                  <Button x:Name="SwapStateButton2"
+                          Grid.Column="3"
+                          Width="30"
+                          Margin="5,0,0,0"
+                          md:ButtonAssist.CornerRadius="3"
+                          Command="{s:Action SwapState}"
+                          CommandParameter="{Binding}"
+                          FontSize="10"
+                          Style="{StaticResource MaterialDesignToolForegroundButton}"
+                          ToolTip="Send data to this stream.">
+                    <md:PackIcon Kind="CloudUploadOutline" />
+                  </Button>
+                </Grid>
+                <!--#endregion-->
+
+
               </Grid>
-              <!--#endregion-->
-
-              <!--#region Stream Card Sender Actions-->
-              <Grid Name="StreamCardSenderActions"
-                    Margin="0,30,0,0"
-                    Grid.Row="2"
-                    Visibility="{Binding IsSenderCard, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="30" />
-                </Grid.ColumnDefinitions>
-
-                <!--The branch button-->
-                <Control Template="{StaticResource BranchButton}"></Control>
-
-                <!--The Objects button-->
-                <Control  Grid.Column="1"
-                          Template="{StaticResource SelectionButton}"></Control>
-
-                <!--The Send Button-->
-                <Button x:Name="SendButton"
-                        Grid.Column="2"
-                        Width="110"
-                        IsEnabled="{Binding SendEnabled}"
-                        HorizontalAlignment="Right"
-                        md:ButtonAssist.CornerRadius="3"
-                        md:ShadowAssist.ShadowDepth="Depth3"
-                        Command="{s:Action Send}"
-                        CommandParameter="{Binding}"
-                        ToolTip="Send objects to Speckle.">
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <md:PackIcon Grid.Column="1"
-                                 Kind="CloudUpload"
-                                 HorizontalAlignment="Right" />
-
-                    <TextBlock Grid.Column="0"
-                               HorizontalAlignment="Center"
-                               Text="Send  " />
-                  </Grid>
-                </Button>
-
-                <!-- The state swapper button-->
-                <Button x:Name="SwapStateButton"
-                        Grid.Column="3"
-                        Width="30"
-                        Margin="5,0,0,0"
-                        md:ButtonAssist.CornerRadius="3"
-                        Command="{s:Action SwapState}"
-                        CommandParameter="{Binding}"
-                        FontSize="10"
-                        Style="{StaticResource MaterialDesignToolForegroundButton}"
-                        ToolTip="Receive data from this stream.">
-                  <md:PackIcon Kind="CloudDownloadOutline" />
-                </Button>
+              <Grid>
+                <ProgressBar Grid.Row="2"
+                             Minimum="0"
+                             Maximum="{Binding Progress.Maximum, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                             Value="{Binding Path=DataContext.Progress.Value, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                             x:Name="ProgressBar"
+                             VerticalAlignment="Center"
+                             Margin="0"
+                             Height="5">
+                  <!--<i:Interaction.Behaviors>
+                    <utils:ProgresBarAnimateBehavior x:Name="AnimateBehavior" />
+                  </i:Interaction.Behaviors>-->
+                </ProgressBar>
+                <TextBlock Text="Hai!" Height="5"></TextBlock>
               </Grid>
-              <!--#endregion-->
-
-              <!--#region Stream Card Receiver Actions-->
-              <Grid x:Name="StreamCardReceiverActions"
-                    Grid.Row="2"
-                    Margin="0,30,0,0"
-                    Visibility="{Binding IsReceiverCard, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="30" />
-                </Grid.ColumnDefinitions>
-                <Control Template="{StaticResource BranchButton}"></Control>
-                <Button x:Name="CommitButton"
-                        Grid.Column="1"
-                        Width="auto"
-                        MaxWidth="110"
-                        Margin="0,0,10,0"
-                        md:ButtonAssist.CornerRadius="3"
-                        Command="{s:Action ShowStreamInfo}"
-                        CommandParameter="{Binding}"
-                        Style="{StaticResource MaterialDesignToolForegroundButton}"
-                        ToolTip="Select Commit">
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <md:PackIcon Grid.Column="0"
-                                 Kind="SourceCommit" />
-                    <TextBlock Grid.Column="1"
-                               Margin="3,2"
-                               HorizontalAlignment="Center"
-                               Text="Latest" />
-                    <TextBlock Grid.Column="2"
-                               Margin="0,2"
-                               FontWeight="Bold"
-                               Text="061459c4f2" />
-                  </Grid>
-                </Button>
-                <Button x:Name="ReceiveButton"
-                        Grid.Column="2"
-                        Width="110"
-                        HorizontalAlignment="Right"
-                        md:ButtonAssist.CornerRadius="3"
-                        Command="{s:Action Receive}"
-                        CommandParameter="{Binding}"
-                        Style="{StaticResource MaterialDesignRaisedDarkButton}"
-                        ToolTip="Edit/Change Objects">
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="*" />
-                      <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <md:PackIcon Grid.Column="1"
-                                 Kind="CloudDownload" />
-
-                    <TextBlock Grid.Column="0"
-                               HorizontalAlignment="Center"
-                               Text="Receive  " />
-                  </Grid>
-                </Button>
-                <Button x:Name="SwapStateButton2"
-                        Grid.Column="3"
-                        Width="30"
-                        Margin="5,0,0,0"
-                        md:ButtonAssist.CornerRadius="3"
-                        Command="{s:Action SwapState}"
-                        CommandParameter="{Binding}"
-                        FontSize="10"
-                        Style="{StaticResource MaterialDesignToolForegroundButton}"
-                        ToolTip="Send data to this stream.">
-                  <md:PackIcon Kind="CloudUploadOutline" />
-                </Button>
-              </Grid>
-              <!--#endregion-->
-
-            </Grid>
-
+            </StackPanel>
           </md:Card>
         </Grid>
       </DataTemplate>
@@ -509,7 +527,6 @@
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-
         <ScrollViewer Grid.Row="0"
                       Grid.Column="0"
                       VerticalAlignment="Stretch"
@@ -519,10 +536,9 @@
           <ItemsControl ItemTemplate="{StaticResource StreamCardTemplate}"
                         ItemsSource="{Binding StreamList, Mode=OneWay, UpdateSourceTrigger=Default}" />
         </ScrollViewer>
-
       </Grid>
 
-      <!-- #region Big add button-->
+      <!-- #region The BAB (Big Add Button) -->
       <Canvas>
         <Button x:Name="CreateStreamButton"
                 Canvas.Right="0"

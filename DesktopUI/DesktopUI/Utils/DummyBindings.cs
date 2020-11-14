@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
 using Speckle.DesktopUI.Streams;
@@ -98,6 +100,24 @@ namespace Speckle.DesktopUI.Utils
     public override async Task<StreamState> SendStream(StreamState state)
     {
       state.Objects.AddRange(state.Objects);
+      // Let's fake some progress barsssss
+
+      state.Progress.Maximum = 100;
+
+      var pd = new ConcurrentDictionary<string, int>();
+      pd["fake"] = 1;
+
+      UpdateProgress(pd, state.Progress);
+
+      for (int i = 1; i < 100; i += 10)
+      {
+        pd["fake"] = i;
+        //state.Progress.Value = i/2;
+        UpdateProgress(pd, state.Progress);
+        Thread.Sleep(500);
+      }
+
+
       return state;
     }
 
@@ -130,6 +150,16 @@ namespace Speckle.DesktopUI.Utils
     public override void UpdateStream(StreamState state)
     {
       //
+    }
+
+    private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
+    {
+      if (progress == null)
+      {
+        return;
+      }
+
+      Stylet.Execute.PostToUIThread(() => progress.Value = dict.Values.Last());
     }
   }
 }
