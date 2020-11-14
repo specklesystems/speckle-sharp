@@ -17,10 +17,10 @@
         Margin="0,0,0,12"
         FontSize="20"
         Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-        Text="{Binding StreamState.Stream.name}" />
+        Text="Edit Selection Filter" />
       <TextBlock Margin="0,8" Text="Add or remove the objects that are sent." />
 
-      <Button
+      <!--<Button
         Margin="0,12,0,0"
         HorizontalContentAlignment="Stretch"
         Command="{s:Action UpdateFromSelection}"
@@ -40,9 +40,9 @@
             Text="Current Selection" />
           <TextBlock Grid.Column="2" Text="{Binding SelectionCount, StringFormat='({0} objects)'}" />
         </Grid>
-      </Button>
+      </Button>-->
 
-      <Button
+      <!--<Button
         Margin="0,12"
         HorizontalContentAlignment="Stretch"
         Command="{s:Action UpdateFromView}"
@@ -62,12 +62,12 @@
             Text="{Binding ActiveViewName, StringFormat='View: {0}'}" />
           <TextBlock Grid.Column="2" Text="{Binding ActiveViewObjects.Count, StringFormat='({0} objects)'}" />
         </Grid>
-      </Button>
+      </Button>-->
 
-      <Expander
+      <!--<Expander
         HorizontalAlignment="Stretch"
         md:ExpanderAssist.HorizontalHeaderPadding="16,12"
-        Header="Additional Filter Options">
+        Header="Additional Filter Options">-->
         <TabControl
           Margin="0,12"
           ItemContainerStyle="{StaticResource MaterialDesignTabItem}"
@@ -92,21 +92,12 @@
             </DataTemplate>
           </TabControl.ContentTemplate>
         </TabControl>
-      </Expander>
+      <!--</Expander>-->
 
       <Grid Margin="0,12">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
-          <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Button
-          x:Name="CancelButton"
-          Grid.Column="0"
-          HorizontalAlignment="Center"
-          Command="{s:Action CloseDialog}"
-          Content="CANCEL"
-          IsCancel="True"
-          Style="{StaticResource SoftFlatButton}" />
         <Button
           x:Name="AddObjectsButton"
           Grid.Column="1"
@@ -115,7 +106,7 @@
           md:ButtonProgressAssist.IsIndicatorVisible="{Binding UpdateButtonLoading, Mode=OneWay}"
           md:ButtonProgressAssist.Value="-1"
           Command="{s:Action UpdateStreamObjects}"
-          Content="ADD OBJECTS"
+          Content="SET FILTER"
           Foreground="{StaticResource MaterialDesignLightBackground}"
           Style="{StaticResource SoftFlatMidBgButton}" />
       </Grid>

@@ -225,7 +225,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamState.Placeholders = message.Objects.ToList();
+      StreamState.Objects = message.Objects.ToList();
     }
 
     public void Handle(UpdateSelectionCountEvent message)

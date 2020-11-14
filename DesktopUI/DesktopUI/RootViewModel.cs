@@ -63,6 +63,8 @@ namespace Speckle.DesktopUI
       MainButtonIcon = SettingsIcon;
 
       events.Subscribe(this);
+
+      Utils.Globals.RVMInstance = this;
     }
 
     public ISnackbarMessageQueue Notifications
@@ -85,6 +87,7 @@ namespace Speckle.DesktopUI
       Link.OpenInBrowser(url);
     }
 
+    // Needs a bit of cleanup.
     public void GoToSettingsOrBack()
     {
       if( ActiveItem is StreamViewModel )

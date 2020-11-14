@@ -18,11 +18,7 @@ namespace Speckle.DesktopUI.Streams
     private readonly IEventAggregator _events;
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
 
-    public StreamCreateDialogViewModel(
-      IEventAggregator events,
-      StreamsRepository streamsRepo,
-      AccountsRepository acctsRepo,
-      ConnectorBindings bindings)
+    public StreamCreateDialogViewModel(IEventAggregator events, StreamsRepository streamsRepo, AccountsRepository acctsRepo, ConnectorBindings bindings)
     {
       DisplayName = "Create Stream";
       _events = events;
@@ -133,8 +129,6 @@ namespace Speckle.DesktopUI.Streams
       get => StreamSearchResults != null && StreamSearchResults.Count > 0 ? true : false;
     }
 
-    private Stream _selectedStream;
-
     private async void SearchForStreams()
     {
       if (StreamQuery == null || StreamQuery.Length <= 2)
@@ -156,19 +150,6 @@ namespace Speckle.DesktopUI.Streams
     }
 
     #endregion
-
-    public void ContinueStreamCreate(string slideIndex)
-    {
-      if (StreamQuery == null || StreamQuery.Length < 2)
-      {
-        Notifications.Enqueue("Please choose a name for your stream!");
-        return;
-      }
-
-      StreamToCreate.name = StreamQuery;
-      NotifyOfPropertyChange(nameof(StreamToCreate.name));
-      ChangeSlide(slideIndex);
-    }
 
     public async void AddNewStream()
     {
@@ -194,18 +175,9 @@ namespace Speckle.DesktopUI.Streams
           });
         }
 
-        var filter = SelectedFilterTab.Filter;
-        switch (filter.Name)
-        {
-          case "View":
-          case "Category":
-          case "Selection" when SelectedFilterTab.ListItems.Any():
-            filter.Selection = SelectedFilterTab.ListItems.ToList();
-            break;
-        }
-
         StreamToCreate = await _streamsRepo.GetStream(streamId, AccountToSendFrom);
-        StreamState = new StreamState(client, StreamToCreate) { Filter = filter };
+        
+        StreamState = new StreamState(client, StreamToCreate);
         Bindings.AddNewStream(StreamState);
 
         _events.Publish(new StreamAddedEvent() { NewStream = StreamState });
@@ -252,9 +224,6 @@ namespace Speckle.DesktopUI.Streams
     {
       CreateButtonLoading = true;
       Tracker.TrackPageview("stream", "from-selection");
-      SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
-      SelectedFilterTab.ListItems.Clear();
-      SelectedFilterTab.Filter.Selection = Bindings.GetSelectedObjects();
       StreamToCreate.name = StreamQuery;
 
       AddNewStream();
@@ -276,7 +245,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamState.Placeholders = message.Objects.ToList();
+      StreamState.Objects = message.Objects.ToList();
     }
 
     public void Handle(UpdateSelectionEvent message)

@@ -76,90 +76,69 @@
       </DataTemplate>
 
       <DataTemplate x:Key="CollboratorChipTemplate">
-        <md:Chip
-          Margin="4"
-          Command="{Binding}"
-          Content="{Binding name}"
-          IconBackground="{StaticResource PrimaryHueLightBrush}"
-          ToolTip="{Binding role}">
-          <md:Chip.Icon>
-            <Image Source="{Binding avatar, TargetNullValue={StaticResource DefaultProfImage}}" />
-          </md:Chip.Icon>
-        </md:Chip>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="30"></ColumnDefinition>
+            <ColumnDefinition Width="200"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+          </Grid.ColumnDefinitions>
+          <Image Grid.Column="0"
+                 Source="{Binding avatar, TargetNullValue={StaticResource DefaultProfImage}}" />
+          <TextBlock Margin="10,10"
+                     Grid.Column="1"
+                     FontWeight="Bold"
+                     Text="{Binding name}"></TextBlock>
+          <TextBlock Margin="10,10"
+                     Grid.Column="2"
+                     Foreground="Gray"
+                     HorizontalAlignment="Stretch"
+                     TextAlignment="Right"
+                     Text="{Binding role}"></TextBlock>
+        </Grid>
       </DataTemplate>
 
     </ResourceDictionary>
   </UserControl.Resources>
+  
   <md:TransitioningContent OpeningEffect="{md:TransitionEffect FadeIn}">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <Grid Margin="65,20,20,20">
+      <Grid Margin="65,20,65,20">
         <StackPanel x:Name="StreamViewStackPanel">
-          <!--<Grid Margin="0 0 0 10">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Button Grid.Column="0"
-                  Width="32"
-                  Height="32"
-                  Margin="0,0,0,8"
-                  Command="{s:Action RequestClose}"
-                  Content="{md:PackIcon Kind=ArrowBack}"
-                  Style="{StaticResource MaterialDesignIconForegroundButton}"
-                  ToolTip="Back to home" />
-            <TextBlock Grid.Column="0"
-                     Grid.ColumnSpan="3"
-                     Margin="24,0,24,8"
-                     HorizontalAlignment="Center"
-                     VerticalAlignment="Center"
-                     FontSize="18"
-                     TextWrapping="Wrap"
+          
+          <!--TODO: Disable based on stream role-->
+          <TextBlock Grid.Column="0"
+                     Margin="0,0,0,8"
+                     FontSize="20"
                      Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                     Text="{Binding StreamState.Stream.name}" />
-            <Button Grid.Column="2"
-                  Width="32"
-                  Height="32"
-                  Margin="0,0,0,8"
-                  Command="{s:Action ShowStreamUpdateDialog}"
-                  md:RippleAssist.ClipToBounds="True"
-                  Content="{md:PackIcon PencilOutline,
-                                  Size=22}"
-                  Style="{StaticResource MaterialDesignIconButton}"
-                  ToolTip="edit stream details" />
-          </Grid>-->
+                     Text="Name" />
+          <TextBox Text="{Binding StreamName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=1500}"
+                   FontSize="25"></TextBox>
 
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <WrapPanel Grid.Column="0"
-                       MaxWidth="{Binding ActualWidth, ElementName=StreamViewStackPanel}">
-              <md:Chip Height="28"
-                       Margin="0,0,8,8"
-                       md:ButtonAssist.CornerRadius="14"
-                       Command="{s:Action OpenStreamInWeb}"
-                       CommandParameter="{Binding StreamState}"
-                       FontSize="13"
-                       ToolTip="open this stream in the browser">
-                <StackPanel Orientation="Horizontal">
-                  <md:PackIcon Width="12"
-                               Height="12"
-                               Margin="0,0,4,0"
-                               VerticalAlignment="Center"
-                               Kind="OpenInNew" />
-                  <TextBlock Margin="0,0,4,0">Server:</TextBlock>
-                  <TextBlock Text="{Binding StreamState.Client.Account.serverInfo.name}" />
-                  <TextBlock Margin="4,0,0,0">(</TextBlock>
-                  <TextBlock Text="{Binding StreamState.Client.Account.serverInfo.url}" />
-                  <TextBlock Margin="0,0,4,0">)</TextBlock>
-
-                </StackPanel>
-              </md:Chip>
-            </WrapPanel>
-          </Grid>
+          <WrapPanel Margin="0,20,0,0"
+                     MaxWidth="{Binding ActualWidth, ElementName=StreamViewStackPanel}">
+            <md:Chip Height="28"
+                     Margin="0,0,8,8"
+                     md:ButtonAssist.CornerRadius="14"
+                     Command="{s:Action OpenStreamInWeb}"
+                     CommandParameter="{Binding StreamState}"
+                     FontSize="13"
+                     ToolTip="open this stream in the browser">
+              <StackPanel Orientation="Horizontal">
+                <md:PackIcon Width="12"
+                             Height="12"
+                             Margin="0,0,4,0"
+                             VerticalAlignment="Center"
+                             Kind="OpenInNew" />
+                <TextBlock Margin="0,0,4,0">Server:</TextBlock>
+                <TextBlock Text="{Binding StreamState.Client.Account.serverInfo.name}" />
+                <TextBlock Margin="4,0,0,0">(</TextBlock>
+                <TextBlock Text="{Binding StreamState.Client.Account.serverInfo.url}" />
+                <TextBlock Margin="0,0,4,0">)</TextBlock>
+              </StackPanel>
+            </md:Chip>
+          </WrapPanel>
+          
+          <!--TODO: Disable based on stream role-->
           <TextBlock Grid.Column="0"
                      Margin="0,24,0,8"
                      FontSize="20"
@@ -171,9 +150,12 @@
                md:HintAssist.Hint="Stream description (markdown is supported)"
                AcceptsReturn="true"
                Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
-               Text="{Binding StreamState.Stream.description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+               Text="{Binding StreamDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=1500}"
                TextAlignment="Left"
                TextWrapping="Wrap" />
+          
+          <md:Snackbar MessageQueue="{Binding Notifications}" FontSize="12" />
+
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />

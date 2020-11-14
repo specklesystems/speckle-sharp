@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using MaterialDesignThemes.Wpf;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
@@ -18,8 +20,226 @@ namespace Speckle.DesktopUI.Utils
   /// account information so a `Client` can be recreated.
   /// </summary>
   [JsonObject(MemberSerialization.OptIn)]
-  public partial class StreamState : PropertyChangedBase
+  public partial class StreamState : PropertyChangedBase, IHandle<UpdateSelectionCountEvent>
   {
+    private Client _client;
+    public Client Client
+    {
+      get => _client;
+      set
+      {
+        if (value.AccountId == null)
+        {
+          return;
+        }
+
+        _client = value;
+        AccountId = Client.AccountId;
+        ServerUrl = Client.ServerUrl;
+      }
+    }
+
+    [JsonProperty]
+    public string AccountId { get; private set; }
+
+    [JsonProperty]
+    public string ServerUrl { get; private set; }
+
+    private bool _IsSender = true;
+    /// <summary>
+    /// Tells us wether this is a receiver or a sender card.
+    /// </summary>
+    [JsonProperty]
+    public bool IsSenderCard
+    {
+      get => _IsSender;
+      set
+      {
+        SetAndNotify(ref _IsSender, value);
+      }
+    }
+    public bool IsReceiverCard
+    {
+      get => !_IsSender;
+    }
+
+    private Stream _stream;
+    /// <summary>
+    /// Setting this property will re-initialise this class.
+    /// </summary>
+    [JsonProperty]
+    public Stream Stream
+    {
+      get => _stream;
+      set
+      {
+        SetAndNotify(ref _stream, value);
+        Initialise();
+      }
+    }
+
+    private Branch _Branch;
+    [JsonProperty]
+    public Branch Branch
+    {
+      get => _Branch;
+      set
+      {
+        SetAndNotify(ref _Branch, value);
+        NotifyOfPropertyChange(nameof(BranchContextMenuItems));
+      }
+    }
+
+    public BindableCollection<BranchContextMenuItem> BranchContextMenuItems
+    {
+      get
+      {
+        var all = new BindableCollection<BranchContextMenuItem>();
+        all.AddRange(
+          Stream.branches.items.Select(b => new BranchContextMenuItem()
+          {
+            Branch = b,
+            Tooltip = Branch.name == b.name ? "Current branch" : $"Switch to {b.name}",
+            Icon = Branch.name == b.name ? new PackIcon { Kind = PackIconKind.CheckBold, FontSize = 12 } : new PackIcon { Kind = PackIconKind.SourceBranch, FontSize = 12 },
+            CommandArgument = new BranchSwitchCommandArgument { RootStreamState = this, Branch = b }
+          }));
+
+        all.Add(new BranchContextMenuItem()
+        {
+          Branch = new Branch { name = "Add a new branch" },
+          Tooltip = "Adds a new branch and sets it.",
+          Icon = new PackIcon { Kind = PackIconKind.Add, FontSize = 12 },
+          CommandArgument = new BranchSwitchCommandArgument { RootStreamState = this }
+        });
+
+        return all;
+      }
+    }
+
+    private ISelectionFilter _filter;
+    public ISelectionFilter Filter
+    {
+      get => _filter;
+      set
+      {
+        SetAndNotify(ref _filter, value);
+        NotifyOfPropertyChange(nameof(ObjectSelectionButtonText));
+        NotifyOfPropertyChange(nameof(ObjectSelectionTooltipText));
+        NotifyOfPropertyChange(nameof(ObjectSelectionButtonIcon));
+      }
+    }
+
+    private int _selectionCount = 0;
+    public int SelectionCount
+    {
+      get => _selectionCount;
+      set => SetAndNotify(ref _selectionCount, value);
+    }
+
+    public bool SendEnabled
+    {
+      get => Objects.Count != 0 || Filter != null;
+    }
+
+    public bool SendDisabled
+    {
+      get => !SendEnabled;
+    }
+
+    public string ObjectSelectionButtonText
+    {
+      get
+      {
+        if (Filter != null)
+        {
+          return $"{Filter.Summary}";
+        }
+        return $"{Objects.Count} objects";
+      }
+    }
+
+    public string ObjectSelectionTooltipText
+    {
+      get
+      {
+        if (Filter != null)
+        {
+          return $"Current filter is by {Filter.Name}: {Filter.Summary}";
+        }
+        else
+        {
+          return $"Current object selection: {Objects.Count}.";
+        }
+      }
+    }
+
+    public PackIcon ObjectSelectionButtonIcon
+    {
+      get
+      {
+        if (Filter != null)
+        {
+          return new PackIcon { Kind = (PackIconKind)Enum.Parse(typeof(PackIconKind), Filter.Icon) };
+        }
+        else if (Objects.Count == 0)
+        {
+          return new PackIcon { Kind = PackIconKind.CubeOutline };
+        }
+        else
+        {
+          return new PackIcon { Kind = PackIconKind.Cube };
+        }
+      }
+    }
+
+    private List<Base> _objects = new List<Base>();
+    [JsonProperty]
+    public List<Base> Objects
+    {
+      get => _objects;
+      set
+      {
+        SetAndNotify(ref _objects, value);
+        NotifyOfPropertyChange(nameof(ObjectSelectionTooltipText));
+        NotifyOfPropertyChange(nameof(ObjectSelectionButtonText));
+        NotifyOfPropertyChange(nameof(SelectionCount));
+        NotifyOfPropertyChange(nameof(SendEnabled));
+        NotifyOfPropertyChange(nameof(SendDisabled));
+      }
+    }
+
+    private ProgressReport _progress = new ProgressReport();
+    public ProgressReport Progress
+    {
+      get => _progress;
+      set => SetAndNotify(ref _progress, value);
+    }
+
+    private bool _isSending;
+    public bool IsSending
+    {
+      get => _isSending;
+      set => SetAndNotify(ref _isSending, value);
+    }
+
+    private bool _isReceiving;
+    public bool IsReceiving
+    {
+      get => _isReceiving;
+      set => SetAndNotify(ref _isReceiving, value);
+    }
+
+    private bool _serverUpdates;
+    public bool ServerUpdates
+    {
+      get => _serverUpdates;
+      set => SetAndNotify(ref _serverUpdates, value);
+    }
+
+    public CancellationTokenSource CancellationTokenSource { get; set; }
+
+    #region constructors
+
     public StreamState()
     {
     }
@@ -40,134 +260,21 @@ namespace Speckle.DesktopUI.Utils
     {
       var account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId) ??
                     AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == ServerUrl);
-      if (account == null) return;
+      if (account == null)
+      {
+        // TODO : Notify error!
+        return;
+      }
 
       Client = new Client(account);
     }
 
-    private Client _client;
-
-    public Client Client
-    {
-      get => _client;
-      set
-      {
-        if (value.AccountId == null) return;
-        _client = value;
-        AccountId = Client.AccountId;
-        ServerUrl = Client.ServerUrl;
-      }
-    }
-
-    [JsonProperty]
-    public string AccountId { get; private set; }
-
-    [JsonProperty]
-    public string ServerUrl { get; private set; }
-
-    private bool _IsSender = true;
-
-    /// <summary>
-    /// Tells us wether this is a receiver or a sender card.
-    /// </summary>
-    [JsonProperty]
-    public bool IsSenderCard
-    {
-      get => _IsSender;
-      set
-      {
-        SetAndNotify(ref _IsSender, value);
-      }
-    }
-
-    public bool IsReceiverCard
-    {
-      get => !_IsSender;
-    }
-
-    private Stream _stream;
-    [JsonProperty]
-    public Stream Stream
-    {
-      get => _stream;
-      set
-      {
-        SetAndNotify(ref _stream, value);
-        Initialise();
-      }
-    }
-
-    private Branch _Branch;
-    [JsonProperty]
-    public Branch Branch
-    {
-      get => _Branch;
-      set { SetAndNotify(ref _Branch, value); }
-    }
-
-    private ISelectionFilter _filter;
-
-    public ISelectionFilter Filter
-    {
-      get => _filter;
-      set => SetAndNotify(ref _filter, value);
-    }
-
-    private List<Base> _placeholders = new List<Base>();
-
-    [JsonProperty]
-    public List<Base> Placeholders
-    {
-      get => _placeholders;
-      set => SetAndNotify(ref _placeholders, value);
-    }
-
-    private List<Base> _objects = new List<Base>();
-
-    [JsonProperty]
-    public List<Base> Objects
-    {
-      get => _objects;
-      set => SetAndNotify(ref _objects, value);
-    }
-
-    private ProgressReport _progress = new ProgressReport();
-
-    public ProgressReport Progress
-    {
-      get => _progress;
-      set => SetAndNotify(ref _progress, value);
-    }
-
-    private bool _isSending;
-
-    public bool IsSending
-    {
-      get => _isSending;
-      set => SetAndNotify(ref _isSending, value);
-    }
-
-    private bool _isReceiving;
-
-    public bool IsReceiving
-    {
-      get => _isReceiving;
-      set => SetAndNotify(ref _isReceiving, value);
-    }
-
-    private bool _serverUpdates;
-
-    public bool ServerUpdates
-    {
-      get => _serverUpdates;
-      set => SetAndNotify(ref _serverUpdates, value);
-    }
-
-    public CancellationToken CancellationToken { get; set; }
-
     internal void Initialise()
     {
-      if (Stream == null || Client?.AccountId == null) return;
+      if (Stream == null || Client?.AccountId == null)
+      {
+        return;
+      }
 
       Client.SubscribeStreamUpdated(Stream.id);
       Client.SubscribeCommitCreated(Stream.id);
@@ -181,9 +288,153 @@ namespace Speckle.DesktopUI.Utils
 
       if (Branch == null)
       {
-        Branch = Stream.branches.items[0];
+        var tempBranch = Stream.branches.items.FirstOrDefault(b => b.name == "main");
+        if (tempBranch == null)
+        {
+          Branch = Stream.branches.items[0];
+        }
+        else
+        {
+          Branch = tempBranch;
+        }
       }
     }
+
+    #endregion
+
+    #region Main Actions
+
+    private Random rnd = new Random();
+
+    public void SwitchBranch(Branch branch)
+    {
+      if (branch == null)
+      {
+        Stream.branches.items.Add(new Branch
+        {
+          name = "TODO_" + rnd.Next(1, 10).ToString(),
+          id = rnd.Next(1, 1000000).ToString()
+        });
+        Branch = Stream.branches.items.Last();
+
+        NotifyOfPropertyChange(nameof(BranchContextMenuItem));
+        Globals.Notify($"Created branch {Branch.name} and switched to it.");
+        return;
+      }
+
+      Branch = branch;
+      Globals.Notify($"Switched active branch to {Branch.name}.");
+      NotifyOfPropertyChange(nameof(BranchContextMenuItem));
+    }
+
+    public async void Send()
+    {
+      if (IsSending || IsReceiving)
+      {
+        // TODO: Propagate notification with error. 
+        Globals.Notify("Operation in progress. Cannot send at this time.");
+        return;
+      }
+
+      Tracker.TrackPageview(Tracker.SEND);
+      IsSending = true;
+      CancellationTokenSource = new CancellationTokenSource();
+
+      await Task.Run(() => Globals.Repo.ConvertAndSend(this));
+      
+      Progress.ResetProgress();
+      IsSending = false;
+    }
+
+    public async void Receive()
+    {
+      if (IsSending || IsReceiving)
+      {
+        // TODO: Propagate notification with error. 
+        Globals.Notify("Operation in progress. Cannot send at this time.");
+        return;
+      }
+
+      Tracker.TrackPageview(Tracker.RECEIVE);
+
+      IsReceiving = true;
+      CancellationTokenSource = new CancellationTokenSource();
+
+      await Task.Run(() => Globals.Repo.ConvertAndReceive(this));
+
+      Progress.ResetProgress();
+      IsReceiving = false;
+    }
+
+    public void CancelSendOrReceive()
+    {
+      CancellationTokenSource?.Cancel();
+    }
+
+    #endregion
+
+    #region Selection events
+
+    public void SetObjectSelection()
+    {
+      var objIds = Globals.HostBindings.GetSelectedObjects();
+      if (objIds == null || objIds.Count == 0)
+      {
+        Globals.Notify("Could not get object selection.");
+        return;
+      }
+
+      Objects = objIds.Select(id => new Base { applicationId = id }).ToList();
+
+      Globals.Notify("Object selection set.");
+      Filter = null;
+    }
+
+    public void AddObjectSelection()
+    {
+      var objIds = Globals.HostBindings.GetSelectedObjects();
+      if (objIds == null || objIds.Count == 0)
+      {
+        Globals.Notify("Could not get object selection.");
+        return;
+      }
+
+      objIds.ForEach(id =>
+      {
+        if (Objects.FirstOrDefault(b => b.applicationId == id) == null)
+        {
+          Objects.Add(new Base { applicationId = id });
+        }
+      });
+
+      Globals.Notify("Object added.");
+      Filter = null;
+    }
+
+    public void RemoveObjectSelection()
+    {
+      var objIds = Globals.HostBindings.GetSelectedObjects();
+      if (objIds == null || objIds.Count == 0)
+      {
+        Globals.Notify("Could not get object selection.");
+        return;
+      }
+
+      var filtered = Objects.Where(o => objIds.IndexOf(o.applicationId) == -1).ToList();
+      
+      if(filtered.Count == Objects.Count)
+      {
+        Globals.Notify("No objects removed.");
+        return;
+      }
+
+      Globals.Notify($"{Objects.Count - filtered.Count} objects removed.");
+      Objects = filtered;
+    }
+
+    #endregion
+
+    #region application events 
 
     private void HandleStreamUpdated(object sender, StreamInfo info)
     {
@@ -192,9 +443,18 @@ namespace Speckle.DesktopUI.Utils
       NotifyOfPropertyChange(nameof(Stream));
     }
 
+    public void Handle(UpdateSelectionCountEvent message)
+    {
+      SelectionCount = message.SelectionCount;
+    }
+
     private void HandleCommitCreated(object sender, CommitInfo info)
     {
-      if (LatestCommit().id == info.id) return;
+      if (LatestCommit().id == info.id)
+      {
+        return;
+      }
+
       ServerUpdates = true;
     }
 
@@ -213,6 +473,8 @@ namespace Speckle.DesktopUI.Utils
       commit.message = info.message;
       NotifyOfPropertyChange(nameof(Stream));
     }
+
+    #endregion
 
     public Commit LatestCommit(string branchName = "main")
     {
@@ -247,5 +509,22 @@ namespace Speckle.DesktopUI.Utils
     {
       StreamStates = stringList.Select(JsonConvert.DeserializeObject<StreamState>).ToList();
     }
+  }
+
+  /// <summary>
+  /// Class used for handling the actions around the context menu of branches.
+  /// </summary>
+  public class BranchContextMenuItem
+  {
+    public Branch Branch { get; set; }
+    public string Tooltip { get; set; }
+    public PackIcon Icon { get; set; }
+    public BranchSwitchCommandArgument CommandArgument { get; set; }
+  }
+
+  public class BranchSwitchCommandArgument
+  {
+    public StreamState RootStreamState { get; set; }
+    public Branch Branch { get; set; }
   }
 }

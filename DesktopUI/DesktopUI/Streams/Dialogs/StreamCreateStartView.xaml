@@ -74,7 +74,7 @@
       <Button Grid.Column="1"
               Width="30"
               Height="30"
-              Foreground="AntiqueWhite"
+              Foreground="Gray"
               Background="Transparent"
               HorizontalAlignment="Right"
               BorderBrush="Transparent"

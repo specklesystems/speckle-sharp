@@ -30,9 +30,17 @@ namespace Speckle.DesktopUI.Utils
       throw new NotImplementedException();
     }
 
+    Random rnd = new Random();
+
     public override List<string> GetSelectedObjects()
     {
-      return new List<string>();
+      var nums = rnd.Next(1000);
+      var strs = new List<string>();
+      for (int i = 0; i < nums; i++)
+      {
+        strs.Add($"Object-{i}");
+      }
+      return strs;
     }
 
     public override void BakeStream(string args)
@@ -74,9 +82,8 @@ namespace Speckle.DesktopUI.Utils
     {
       return new List<ISelectionFilter>
       {
-        new ElementsSelectionFilter {Name = "Selection", Icon = "Mouse", Selection = new List<string>()},
-        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = new List<string>()},
-        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = new List<string>()},
+        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = new List<string>() { "Isometric XX", "FloorPlan_xx", "Section 021" } },
+        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = new List<string>()  { "Boats", "Rafts", "Barges" }},
         new PropertySelectionFilter
         {
           Name = "Parameter",
@@ -90,10 +97,7 @@ namespace Speckle.DesktopUI.Utils
 
     public override async Task<StreamState> SendStream(StreamState state)
     {
-      var objects = state.Placeholders;
-      state.Placeholders.Clear();
-      state.Objects.AddRange(objects);
-
+      state.Objects.AddRange(state.Objects);
       return state;
     }
 
@@ -125,7 +129,7 @@ namespace Speckle.DesktopUI.Utils
 
     public override void UpdateStream(StreamState state)
     {
-      throw new NotImplementedException();
+      //
     }
   }
 }

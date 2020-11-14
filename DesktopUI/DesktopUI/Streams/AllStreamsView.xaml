@@ -12,43 +12,202 @@
              mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
+
       <utils:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
       <ControlTemplate x:Key="BranchButton">
         <Button x:Name="BranchButton"
                 Width="auto"
-                MaxWidth="110"
+                MaxWidth="120"
                 md:ButtonAssist.CornerRadius="3"
                 ContextMenuService.Placement="Bottom"
-                FontSize="11"
-                Style="{StaticResource MaterialDesignToolForegroundButton}"
-                
-                ToolTip="Edit/Change branch">
+                FontSize="14"
+                Style="{StaticResource MaterialDesignFlatButton}"
+                local:ContextMenuLeftClickBehavior.IsLeftClickEnabled="True">
+          <Button.ToolTip>
+            <TextBlock>
+              <Run Text="Current branch is" />
+              <Run Text="{Binding Branch.name}" />
+              <Run Text="." />
+              <LineBreak></LineBreak>
+              <Run Text="Click to change." />
+            </TextBlock>
+          </Button.ToolTip>
+          <Grid HorizontalAlignment="Left">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="20" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <md:PackIcon Grid.Column="0"
+                         HorizontalAlignment="Left"
+                         Kind="SourceBranch" />
+            <TextBlock Grid.Column="1"
+                       Margin="4,0"
+                       FontWeight="Normal"
+                       Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext.Branch.name}" />
+          </Grid>
+          <Button.Resources>
+            <local:BindingProxy x:Key="Proxy"
+                                Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext}" />
+          </Button.Resources>
+          <Button.ContextMenu>
+            <ContextMenu ItemsSource="{Binding BranchContextMenuItems, Mode=OneWay}"
+                         FontSize="12">
+              <ContextMenu.ItemTemplate>
+                <DataTemplate DataType="re">
+                  <Grid ToolTip="{Binding Tooltip}">
+                    <Grid.InputBindings>
+                      <MouseBinding Gesture="LeftClick"
+                                    Command="{s:Action SwitchBranch}"
+                                    CommandParameter="{Binding CommandArgument}" />
+
+                    </Grid.InputBindings>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="20"></ColumnDefinition>
+                      <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <md:PackIcon Grid.Column="0"
+                                 Kind="{Binding Icon.Kind}"></md:PackIcon>
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding Branch.name}"
+                               TextAlignment="Left"></TextBlock>
+                  </Grid>
+                </DataTemplate>
+              </ContextMenu.ItemTemplate>
+            </ContextMenu>
+          </Button.ContextMenu>
+        </Button>
+      </ControlTemplate>
+
+      <ControlTemplate x:Key="SelectionButton">
+        <Button x:Name="SelectionButton"
+                Width="auto"
+                md:ButtonAssist.CornerRadius="3"
+                FontSize="14"
+                FontWeight="Normal"
+                local:ContextMenuLeftClickBehavior.IsLeftClickEnabled="true">
+          <Button.Style>
+            <Style TargetType="Button"
+                   BasedOn="{StaticResource MaterialDesignRaisedButton}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding SendDisabled}"
+                             Value="True">
+                  <Setter Property="md:ShadowAssist.ShadowDepth"
+                          Value="Depth3" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SendEnabled}"
+                             Value="True">
+                  <Setter Property="Background"
+                          Value="Transparent" />
+                  <Setter Property="BorderBrush"
+                          Value="Transparent" />
+                  <Setter Property="Foreground"
+                          Value="{StaticResource PrimaryHueMidBrush}" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Button.Style>
+          <Button.ToolTip>
+            <TextBlock>
+              <Run Text="{Binding ObjectSelectionTooltipText, Mode=OneWay}" FontWeight="Bold" />
+              <LineBreak></LineBreak>
+              <Run Text="Click to change." />
+            </TextBlock>
+          </Button.ToolTip>
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <md:PackIcon Grid.Column="0"
-                         Kind="SourceBranch" />
-            <!--<TextBlock Grid.Column="1"
-                       Margin="1,2"
-                       HorizontalAlignment="Center"
-                       Text="Branch:" />-->
-            <!--<TextBlock Grid.Column="2"
-                       Margin="1,2"
-                       FontWeight="Bold"
-                       Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext.Stream.name}" />-->
+                         Kind="{Binding ObjectSelectionButtonIcon.Kind}" />
             <TextBlock Grid.Column="2"
-                       Margin="1,2"
-                       FontWeight="Bold"
-                       Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext.Branch.name}" />
-
+                       Margin="4,0"
+                       FontWeight="Normal">
+              <Run Text="{Binding ObjectSelectionButtonText, Mode=OneWay}" />
+            </TextBlock>
           </Grid>
+          <Button.Resources>
+            <local:BindingProxy x:Key="Proxy"
+                                Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+          </Button.Resources>
+          <Button.ContextMenu>
+            <ContextMenu FontSize="12">
+              <MenuItem ToolTip="A filter will run automatically and dynamically select elements that match when sending."
+                        Command="{s:Action ShowStreamUpdateObjectsDialog}"
+                        CommandParameter="{Binding}">
+                <MenuItem.Icon>
+                  <md:PackIcon Kind="FilterList"></md:PackIcon>
+                </MenuItem.Icon>
+                <MenuItem.Header>
+                  <TextBlock>
+                    <Run>Set/Edit Objects Filter</Run>
+                  </TextBlock>
+                </MenuItem.Header>
+              </MenuItem>
+              <Separator />
+              <MenuItem ToolTip="Objects selected in the current document.">
+                <MenuItem.Icon>
+                  <md:PackIcon Kind="Cube"
+                               Foreground="DimGray"></md:PackIcon>
+                </MenuItem.Icon>
+                <MenuItem.Header>
+                  <TextBlock>
+                    <Run Text="{Binding SelectionCount}"></Run>
+                    <Run>selected objects:</Run>
+                  </TextBlock>
+                </MenuItem.Header>
+              </MenuItem>
+              <Separator />
+              
+              <MenuItem ToolTip="Clears any existing objects, and sets the current selected ones. NOTE: Will clear any filters previously set."
+                        Command="{s:Action SetObjectSelection}" CommandParameter="{Binding}">
+                <MenuItem.Icon>
+                  <md:PackIcon Kind="AddCircle"
+                               Foreground="Green"></md:PackIcon>
+                </MenuItem.Icon>
+                <MenuItem.Header>
+                  <TextBlock>
+                    <Run>Set current selection</Run>
+                  </TextBlock>
+                </MenuItem.Header>
+              </MenuItem>
+
+              <MenuItem ToolTip="Adds the currently selected objects to the existing list. Does not clear old ones. NOTE: Will clear any filters previously set."
+                        Command="{s:Action AddObjectSelection}"
+                        CommandParameter="{Binding}">
+                <MenuItem.Icon>
+                  <md:PackIcon Kind="AddCircle"
+                               Foreground="{StaticResource PrimaryHueLightBrush}"></md:PackIcon>
+                </MenuItem.Icon>
+                <MenuItem.Header>
+                  <TextBlock>
+                    <Run>Add current selection</Run>
+                  </TextBlock>
+                </MenuItem.Header>
+              </MenuItem>
+
+              <MenuItem ToolTip="Removes the selected objects. NOTE: Will clear any filters previously set."
+                        Command="{s:Action RemoveObjectSelection}"
+                        CommandParameter="{Binding}">
+                <MenuItem.Icon>
+                  <md:PackIcon Kind="RemoveCircleMultiple"
+                               Foreground="OrangeRed"></md:PackIcon>
+                </MenuItem.Icon>
+                <MenuItem.Header>
+                  <TextBlock>
+                    <Run>Remove current selection</Run>
+                  </TextBlock>
+                </MenuItem.Header>
+              </MenuItem>
+              
+            </ContextMenu>
+          </Button.ContextMenu>
         </Button>
       </ControlTemplate>
-      
+
       <DataTemplate x:Key="StreamCardTemplate">
         <Grid>
           <Grid.RowDefinitions>
@@ -109,93 +268,73 @@
                   <ColumnDefinition Width="40" />
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0"
-                           VerticalAlignment="Center"
-                           FontSize="18"
-                           Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                           Text="{Binding Stream.name}"
-                           TextWrapping="Wrap" />
+                <WrapPanel Grid.Column="0">
+                  <TextBlock Grid.Column="0"
+                             VerticalAlignment="Center"
+                             Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                             TextWrapping="Wrap">
+                  <Hyperlink Command="{s:Action ShowStreamInfo}"
+                             CommandParameter="{Binding}"
+                             ToolTip="Open stream details page.">
+                    <TextBlock FontSize="20"
+                               Text="{Binding Stream.name}" />
+                  </Hyperlink>
+                </TextBlock>
+                  <Button Grid.Column="2"
+                          Width="28"
+                          Height="28"
+                          HorizontalAlignment="Right"
+                          md:RippleAssist.ClipToBounds="True"
+                          Command="{s:Action ShowStreamInfo}"
+                          CommandParameter="{Binding}"
+                          ToolTip="Open stream details page."
+                          Foreground="Gray"
+                          Content="{md:PackIcon Kind=MoreHoriz, Size=16}"
+                          Style="{StaticResource MaterialDesignIconButton}">
+                  </Button>
+                </WrapPanel>
 
-                <Button Grid.Column="1"
+                <Button Grid.Column="2"
                         Width="28"
                         Height="28"
                         HorizontalAlignment="Right"
                         md:RippleAssist.ClipToBounds="True"
                         Command="{s:Action OpenStreamInWeb}"
                         CommandParameter="{Binding}"
-                        Content="{md:PackIcon Kind=OpenInNew,
-                                        Size=18}"
                         Style="{StaticResource MaterialDesignIconButton}"
-                        ToolTip="Open this stream in the browser" />
-
-                <Button Grid.Column="2"
-                        Width="28"
-                        Height="28"
-                        ContextMenuService.Placement="Bottom"
-                        HorizontalAlignment="Right"
-                        md:RippleAssist.ClipToBounds="True"
-                        Command="{s:Action ShowStreamInfo}"
-                        CommandParameter="{Binding}"
-                        Style="{StaticResource MaterialDesignIconButton}"
-                        Content="{md:PackIcon Kind=MoreHoriz,
-                                        Size=18}"
-                        ToolTip="More options">
+                        ToolTip="Open this stream in the browser"
+                        Content="{md:PackIcon Kind=OpenInNew, Size=16}">
                 </Button>
               </Grid>
-
+              
               <Grid Name="StreamCardSenderActions"
-                    Grid.Row="1"
                     Margin="0,30,0,0"
-                    Visibility="{Binding IsSenderCard, Converter={StaticResource BooleanToVisibilityConverter}}"
-                    >
+                    Grid.Row="2"
+                    Visibility="{Binding IsSenderCard, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="30" />
                 </Grid.ColumnDefinitions>
+
                 <!--The branch button-->
                 <Control Template="{StaticResource BranchButton}"></Control>
-                <!--Selection Filter Button-->
-                <Button x:Name="SelectionFilterButton"
-                        Grid.Column="1"
-                        Width="auto"
-                        MaxWidth="120"
-                        Margin="0,0,5,0"
-                        md:ButtonAssist.CornerRadius="3"
-                        Command="{s:Action ShowStreamUpdateObjectsDialog}"
-                        CommandParameter="{Binding}"
-                        FontSize="11"
-                        Style="{StaticResource MaterialDesignToolForegroundButton}"
-                        ToolTip="Edit/Change Objects">
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <md:PackIcon Grid.Column="0"
-                                 Kind="CubeOutline" />
 
-                    <TextBlock Grid.Column="1"
-                               Margin="3,2"
-                               HorizontalAlignment="Center"
-                               Text="Objects: " />
-                    <TextBlock Grid.Column="2"
-                               Margin="0,2"
-                               FontWeight="Bold"
-                               Text="100" />
-                  </Grid>
-                </Button>
+                <!--The Objects button-->
+                <Control  Grid.Column="1"
+                          Template="{StaticResource SelectionButton}"></Control>
+
                 <!--The Send Button-->
                 <Button x:Name="SendButton"
                         Grid.Column="2"
                         Width="110"
+                        IsEnabled="{Binding SendEnabled}"
                         HorizontalAlignment="Right"
                         md:ButtonAssist.CornerRadius="3"
+                        md:ShadowAssist.ShadowDepth="Depth3"
                         Command="{s:Action ShowStreamInfo}"
                         CommandParameter="{Binding}"
-                        FontSize="11"
                         ToolTip="Send objects to Speckle.">
                   <Grid>
                     <Grid.ColumnDefinitions>
@@ -203,15 +342,16 @@
                       <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <md:PackIcon Grid.Column="1"
-                                 Kind="CloudUpload" HorizontalAlignment="Right"/>
+                                 Kind="CloudUpload"
+                                 HorizontalAlignment="Right" />
 
                     <TextBlock Grid.Column="0"
-                               Margin="3,2"
                                HorizontalAlignment="Center"
-                               Text="Send    " />
+                               Text="Send  " />
                   </Grid>
                 </Button>
-                <!--The state swapper button-->
+
+                <!-- The state swapper button-->
                 <Button x:Name="SwapStateButton"
                         Grid.Column="3"
                         Width="30"
@@ -222,7 +362,7 @@
                         FontSize="10"
                         Style="{StaticResource MaterialDesignToolForegroundButton}"
                         ToolTip="Receive data from this stream.">
-                  <md:PackIcon Kind="CloudDownload" />
+                  <md:PackIcon Kind="CloudDownloadOutline" />
                 </Button>
               </Grid>
 
@@ -231,10 +371,10 @@
                     Margin="0,30,0,0"
                     Visibility="{Binding IsReceiverCard, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="30" />
                 </Grid.ColumnDefinitions>
                 <Control Template="{StaticResource BranchButton}"></Control>
                 <Button x:Name="CommitButton"
@@ -245,7 +385,6 @@
                         md:ButtonAssist.CornerRadius="3"
                         Command="{s:Action ShowStreamInfo}"
                         CommandParameter="{Binding}"
-                        FontSize="11"
                         Style="{StaticResource MaterialDesignToolForegroundButton}"
                         ToolTip="Select Commit">
                   <Grid>
@@ -273,7 +412,6 @@
                         md:ButtonAssist.CornerRadius="3"
                         Command="{s:Action ShowStreamInfo}"
                         CommandParameter="{Binding}"
-                        FontSize="11"
                         Style="{StaticResource MaterialDesignRaisedDarkButton}"
                         ToolTip="Edit/Change Objects">
                   <Grid>
@@ -286,9 +424,8 @@
                                  Kind="CloudDownload" />
 
                     <TextBlock Grid.Column="0"
-                               Margin="3,2"
                                HorizontalAlignment="Center"
-                               Text="Receive    " />
+                               Text="Receive  " />
                   </Grid>
                 </Button>
                 <Button x:Name="SwapStateButton2"
@@ -301,10 +438,12 @@
                         FontSize="10"
                         Style="{StaticResource MaterialDesignToolForegroundButton}"
                         ToolTip="Send data to this stream.">
-                  <md:PackIcon Kind="CloudUpload" />
+                  <md:PackIcon Kind="CloudUploadOutline" />
                 </Button>
               </Grid>
+
             </Grid>
+
           </md:Card>
         </Grid>
       </DataTemplate>
@@ -314,15 +453,17 @@
 
   <md:TransitioningContent OpeningEffect="{md:TransitionEffect FadeIn}">
     <Grid Margin="0">
-      <Grid Margin="0,0,0,0" >
+      <Grid Margin="5,0,5,0">
         <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="*" />
+          <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <ScrollViewer Grid.Row="2"
+        <ScrollViewer Grid.Row="0" Grid.Column="0"
                       VerticalAlignment="Stretch"
+                      HorizontalAlignment="Stretch"
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Auto">
           <ItemsControl ItemTemplate="{StaticResource StreamCardTemplate}"
@@ -331,7 +472,7 @@
 
       </Grid>
 
-      <!--Big add button-->
+      <!-- #region Big add button-->
       <Canvas>
         <Button x:Name="CreateStreamButton"
                 Canvas.Right="0"
@@ -350,7 +491,7 @@
                 ToolTip="Add a stream"
                 ToolTipService.Placement="Left" />
       </Canvas>
-
+      <!-- #endregion -->
     </Grid>
   </md:TransitioningContent>
 
