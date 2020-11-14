@@ -56,6 +56,7 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _IsSender, value);
+        NotifyOfPropertyChange(nameof(BranchContextMenuItems));
       }
     }
     public bool IsReceiverCard
@@ -104,13 +105,16 @@ namespace Speckle.DesktopUI.Utils
             CommandArgument = new BranchSwitchCommandArgument { RootStreamState = this, Branch = b }
           }));
 
-        all.Add(new BranchContextMenuItem()
+        if (IsSenderCard)
         {
-          Branch = new Branch { name = "Add a new branch" },
-          Tooltip = "Adds a new branch and sets it.",
-          Icon = new PackIcon { Kind = PackIconKind.Add, FontSize = 12 },
-          CommandArgument = new BranchSwitchCommandArgument { RootStreamState = this }
-        });
+          all.Add(new BranchContextMenuItem()
+          {
+            Branch = new Branch { name = "Add a new branch" },
+            Tooltip = "Adds a new branch and sets it.",
+            Icon = new PackIcon { Kind = PackIconKind.Add, FontSize = 12 },
+            CommandArgument = new BranchSwitchCommandArgument { RootStreamState = this }
+          });
+        }
 
         return all;
       }
@@ -310,6 +314,7 @@ namespace Speckle.DesktopUI.Utils
 
     #region Main Actions
 
+    // Used for branch names; ignore
     private Random rnd = new Random();
 
     public void SwitchBranch(Branch branch)
@@ -375,6 +380,12 @@ namespace Speckle.DesktopUI.Utils
     public void CancelSendOrReceive()
     {
       CancellationTokenSource?.Cancel();
+    }
+
+    public void SwapState()
+    {
+      IsSenderCard = !IsSenderCard;
+
     }
 
     #endregion

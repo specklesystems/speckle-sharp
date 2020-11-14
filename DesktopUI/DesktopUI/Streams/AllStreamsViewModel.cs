@@ -95,7 +95,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void SwapState(StreamState state)
     {
-      state.IsSenderCard = !state.IsSenderCard;
+      state.SwapState();
       StreamList.Refresh();
     }
 

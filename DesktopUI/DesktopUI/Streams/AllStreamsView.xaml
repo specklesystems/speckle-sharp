@@ -154,20 +154,6 @@
               </MenuItem>
               <Separator Visibility="{Binding AppHasFilters, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
-              <!--<MenuItem ToolTip="Objects selected in the current document.">
-                <MenuItem.Icon>
-                  <md:PackIcon Kind="Cube"
-                               Foreground="DimGray"></md:PackIcon>
-                </MenuItem.Icon>
-                <MenuItem.Header>
-                  <TextBlock>
-                    <Run Text="{Binding SelectionCount}"></Run>
-                    <Run>selected objects:</Run>
-                  </TextBlock>
-                </MenuItem.Header>
-              </MenuItem>
-              <Separator />-->
-
               <MenuItem Command="{s:Action SetObjectSelection}"
                         CommandParameter="{Binding}">
                 <MenuItem.ToolTip>
