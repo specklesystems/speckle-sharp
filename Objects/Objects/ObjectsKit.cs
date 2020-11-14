@@ -18,7 +18,29 @@ namespace Objects
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
 
-    public IEnumerable<Type> Types => Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(Base)) && !t.IsAbstract);
+    public IEnumerable<Type> Types
+    {
+      get
+      {
+        //the types in this assembly
+        var types = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(Base)) && !t.IsAbstract);
+        try
+        {
+          //the types that are in a separate assembly, eg Objects.Revit.dll
+          var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+          var list = Directory.EnumerateFiles(basePath, "Objects.*.dll").Where(x => !x.Contains("Converter")); //TODO: replace with regex
+
+          foreach (var path in list)
+          {
+            var assembly = Assembly.LoadFrom(path);
+            types = types.Concat(assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(Base)) && !t.IsAbstract));
+          }
+        }
+        catch { }
+
+        return types;
+      }
+    }
 
     public List<string> _Converters;
     public IEnumerable<string> Converters
@@ -47,7 +69,7 @@ namespace Objects
       try
       {
         var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        
+
         var path = Path.Combine(basePath, $"Objects.Converter.{app}.dll");
         if (File.Exists(path))
         {
@@ -76,7 +98,7 @@ namespace Objects
     public List<string> GetAvailableConverters()
     {
       var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-      var list = Directory.EnumerateFiles(basePath, "*.Converter.*");
+      var list = Directory.EnumerateFiles(basePath, "Objects.Converter.*");
 
       return list.ToList().Select(dllPath => dllPath.Split('.').Reverse().ToList()[1]).ToList();
     }
