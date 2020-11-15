@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using MaterialDesignThemes.Wpf;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
@@ -258,6 +259,16 @@ namespace Speckle.DesktopUI.Utils
 
     public CancellationTokenSource CancellationTokenSource { get; set; }
 
+    private string _CommitMessage;
+    public string CommitMessage
+    {
+      get => _CommitMessage; 
+      set
+      {
+        SetAndNotify(ref _CommitMessage, value);
+      }
+    }
+
     #region constructors
 
     public StreamState()
@@ -348,6 +359,11 @@ namespace Speckle.DesktopUI.Utils
       NotifyOfPropertyChange(nameof(BranchContextMenuItem));
     }
 
+    public void Test(object sender, KeyEventArgs e)
+    {
+      System.Diagnostics.Debug.WriteLine("2" + ((KeyEventArgs)e).Key);
+    }
+
     public async void Send()
     {
       if (IsSending || IsReceiving)
@@ -356,6 +372,8 @@ namespace Speckle.DesktopUI.Utils
         Globals.Notify("Operation in progress. Cannot send at this time.");
         return;
       }
+
+      var test = CommitMessage;
 
       Tracker.TrackPageview(Tracker.SEND);
       IsSending = true;

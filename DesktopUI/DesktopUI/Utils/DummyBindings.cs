@@ -105,15 +105,13 @@ namespace Speckle.DesktopUI.Utils
       state.Progress.Maximum = 100;
 
       var pd = new ConcurrentDictionary<string, int>();
-      pd["L"] = 1;
       pd["A1"] = 1;
 
       UpdateProgress(pd, state.Progress);
 
       for (int i = 1; i < 100; i += 10)
       {
-        Thread.Sleep(rnd.Next(300, 2000));
-        pd["L"] = Math.Min(i * 2, state.Progress.Maximum);
+        Thread.Sleep(rnd.Next(150, 1000));
         pd["A1"] = i;
 
         UpdateProgress(pd, state.Progress);

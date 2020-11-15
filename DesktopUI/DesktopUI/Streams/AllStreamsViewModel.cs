@@ -11,6 +11,9 @@ using Stylet;
 using System.Windows.Controls.Primitives;
 using System.Diagnostics;
 using System.Windows.Data;
+using AttachedCommandBehavior;
+using System.Windows.Input;
+using System.Windows.Controls;
 
 namespace Speckle.DesktopUI.Streams
 {
@@ -95,6 +98,21 @@ namespace Speckle.DesktopUI.Streams
     {
       state.SwapState();
       StreamList.Refresh();
+    }
+
+    public void Test(object sender, KeyEventArgs e)
+    {
+      if(e.Key == Key.Enter)
+      {
+        var t = (ContextMenu) sender;
+        Debug.WriteLine("ENTER");
+        //t.PreviewKeyUp
+      }
+    }
+
+    public void Test2(object sender, EventArgs e)
+    {
+      Debug.WriteLine("2" + ((KeyEventArgs)e).Key);
     }
 
     public async void ShowStreamUpdateObjectsDialog(StreamState state)

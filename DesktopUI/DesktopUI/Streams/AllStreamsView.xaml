@@ -8,6 +8,7 @@
              xmlns:s="https://github.com/canton7/Stylet"
              xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:acb="clr-namespace:AttachedCommandBehavior;assembly=AttachedCommandBehavior"
              d:DesignHeight="450"
              d:DesignWidth="600"
              mc:Ignorable="d">
@@ -385,7 +386,30 @@
                           md:ShadowAssist.ShadowDepth="Depth3"
                           Command="{s:Action Send}"
                           CommandParameter="{Binding}"
-                          ToolTip="Send objects to Speckle.">
+                          ToolTip="Send objects to Speckle."
+                          ContextMenuService.Placement="Center">
+                    <Button.Resources>
+                      <local:BindingProxy x:Key="Proxy"
+                                          Data="{Binding}" />
+                    </Button.Resources>
+                    <Button.ContextMenu>
+                      <ContextMenu>
+                        <MenuItem>
+                          <MenuItem.Template>
+                            <ControlTemplate>
+                              <TextBox Grid.Column="0"
+                                       Margin="4"
+                                       Width="190"
+                                       Text="{Binding Path=Data.CommitMessage, Source={StaticResource Proxy}}"
+                                       PreviewKeyDown="{s:Action Test}"
+                                       s:View.ActionTarget="{Binding Data, Source={StaticResource Proxy}}"
+                                       md:HintAssist.HelperText="Commit message">
+                              </TextBox>
+                            </ControlTemplate>
+                          </MenuItem.Template>
+                        </MenuItem>
+                      </ContextMenu>
+                    </Button.ContextMenu>
                     <Grid>
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
