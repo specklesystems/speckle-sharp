@@ -85,9 +85,8 @@ namespace Speckle.DesktopUI.Utils
       set => SetAndNotify(ref _maximum, value);
     }
     
-    public async Task ResetProgress(int millisec = 4000)
+    public void ResetProgress()
     {
-      await Task.Delay(millisec);
       Maximum = 100;
       Value = 0;
     }

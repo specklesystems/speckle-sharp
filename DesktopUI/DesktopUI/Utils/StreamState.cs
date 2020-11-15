@@ -230,7 +230,7 @@ namespace Speckle.DesktopUI.Utils
     public bool IsSending
     {
       get => _isSending;
-      set { SetAndNotify(ref _isSending, value); NotifyOfPropertyChange(nameof(IsNotSendingOrReceiving)); }
+      set { SetAndNotify(ref _isSending, value); }
     }
 
     private bool _isReceiving;
@@ -240,7 +240,6 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _isReceiving, value);
-        NotifyOfPropertyChange(nameof(IsNotSendingOrReceiving));
       }
     }
 
@@ -251,11 +250,18 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _serverUpdates, value);
-        NotifyOfPropertyChange(nameof(IsNotSendingOrReceiving));
       }
     }
 
-    public bool IsNotSendingOrReceiving { get => !(_isReceiving || _isSending); }
+    private bool _showProgressBar = false;
+    public bool ShowProgressBar
+    {
+      get => _showProgressBar;
+      set
+      {
+        SetAndNotify(ref _showProgressBar, value);
+      }
+    }
 
     public CancellationTokenSource CancellationTokenSource { get; set; }
 
@@ -359,29 +365,33 @@ namespace Speckle.DesktopUI.Utils
       NotifyOfPropertyChange(nameof(BranchContextMenuItem));
     }
 
-    public void Test(object sender, KeyEventArgs e)
+    public void SendWithCommitMessage(object sender, KeyEventArgs e)
     {
-      System.Diagnostics.Debug.WriteLine("2" + ((KeyEventArgs)e).Key);
+      if(e.Key == Key.Enter)
+      {
+        Send();
+      }
     }
 
     public async void Send()
     {
       if (IsSending || IsReceiving)
       {
-        // TODO: Propagate notification with error. 
         Globals.Notify("Operation in progress. Cannot send at this time.");
         return;
       }
 
-      var test = CommitMessage;
-
       Tracker.TrackPageview(Tracker.SEND);
       IsSending = true;
+      ShowProgressBar = true;
+
       CancellationTokenSource = new CancellationTokenSource();
 
       await Task.Run(() => Globals.Repo.ConvertAndSend(this));
-
-      Progress.ResetProgress(10);
+      
+      ShowProgressBar = false;
+      Progress.ResetProgress();
+      CommitMessage = null;
       IsSending = false;
     }
 
@@ -389,7 +399,6 @@ namespace Speckle.DesktopUI.Utils
     {
       if (IsSending || IsReceiving)
       {
-        // TODO: Propagate notification with error. 
         Globals.Notify("Operation in progress. Cannot send at this time.");
         return;
       }
@@ -397,11 +406,13 @@ namespace Speckle.DesktopUI.Utils
       Tracker.TrackPageview(Tracker.RECEIVE);
 
       IsReceiving = true;
+      ShowProgressBar = true;
       CancellationTokenSource = new CancellationTokenSource();
 
       await Task.Run(() => Globals.Repo.ConvertAndReceive(this));
 
-      Progress.ResetProgress(0);
+      ShowProgressBar = false;
+      Progress.ResetProgress();
       IsReceiving = false;
     }
 

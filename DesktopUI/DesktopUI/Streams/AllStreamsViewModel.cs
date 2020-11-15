@@ -1,19 +1,14 @@
-﻿using System;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Speckle.DesktopUI.Utils;
 using Stylet;
-using System.Windows.Controls.Primitives;
-using System.Diagnostics;
-using System.Windows.Data;
-using AttachedCommandBehavior;
-using System.Windows.Input;
-using System.Windows.Controls;
 
 namespace Speckle.DesktopUI.Streams
 {
@@ -79,7 +74,9 @@ namespace Speckle.DesktopUI.Streams
       var streams = new BindableCollection<StreamState>(_bindings.GetFileContext());
 
       if (streams.Count == 0)
+      {
         streams = _repo.LoadTestStreams();
+      }
 
       return streams;
     }
@@ -98,21 +95,6 @@ namespace Speckle.DesktopUI.Streams
     {
       state.SwapState();
       StreamList.Refresh();
-    }
-
-    public void Test(object sender, KeyEventArgs e)
-    {
-      if(e.Key == Key.Enter)
-      {
-        var t = (ContextMenu) sender;
-        Debug.WriteLine("ENTER");
-        //t.PreviewKeyUp
-      }
-    }
-
-    public void Test2(object sender, EventArgs e)
-    {
-      Debug.WriteLine("2" + ((KeyEventArgs)e).Key);
     }
 
     public async void ShowStreamUpdateObjectsDialog(StreamState state)
@@ -247,16 +229,24 @@ namespace Speckle.DesktopUI.Streams
         if (IsEnabled)
         {
           if (uiElement is ButtonBase)
+          {
             ((ButtonBase)uiElement).Click += OnMouseLeftButtonUp;
+          }
           else
+          {
             uiElement.MouseLeftButtonUp += OnMouseLeftButtonUp;
+          }
         }
         else
         {
           if (uiElement is ButtonBase)
+          {
             ((ButtonBase)uiElement).Click -= OnMouseLeftButtonUp;
+          }
           else
+          {
             uiElement.MouseLeftButtonUp -= OnMouseLeftButtonUp;
+          }
         }
       }
     }
@@ -297,7 +287,7 @@ namespace Speckle.DesktopUI.Streams
 
     public object Data
     {
-      get { return (object)GetValue(DataProperty); }
+      get { return GetValue(DataProperty); }
       set { SetValue(DataProperty, value); }
     }
 
