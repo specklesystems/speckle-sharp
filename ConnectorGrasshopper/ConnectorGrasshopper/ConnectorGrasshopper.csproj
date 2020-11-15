@@ -99,6 +99,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SchemaBuilder\CSOViewModel.cs" />
     <Compile Include="Streams\StreamCreateComponent.cs" />
     <Compile Include="Streams\StreamDetailsComponent.cs" />
     <Compile Include="Streams\StreamGetComponent.cs" />

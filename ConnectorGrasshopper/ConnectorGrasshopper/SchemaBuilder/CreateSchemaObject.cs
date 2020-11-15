@@ -74,7 +74,7 @@ namespace ConnectorGrasshopper
       if (dialog.HasResult)
       {
         base.AddedToDocument(document);
-        SwitchToType(dialog.SelectedType);
+        SwitchToType(dialog.model.SelectedType);
       }
       else
       {
@@ -85,8 +85,11 @@ namespace ConnectorGrasshopper
     public void SwitchToType(Type myType)
     {
       int k = 0;
-      foreach (var p in myType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public).Where(pinfo => pinfo.Name != "Type"))
+      foreach (var p in myType.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(pinfo => pinfo.Name != "Type"))
       {
+        var att = p.GetCustomAttributes();
+        if (p.GetCustomAttributes().Any(x => x is SchemaBuilderIgnoreAttribute))
+          continue;
         RegisterPropertyAsInputParameter(p, k++);
       }
 

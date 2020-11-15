@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
 using System.Linq;
+using System.Reflection;
+using Speckle.Core.Kits;
 
 namespace ConnectorGrasshopper
 {
@@ -10,14 +12,21 @@ namespace ConnectorGrasshopper
   {
     private ListBox list;
     private SearchBox search;
+    private TextArea description;
+
     private List<Type> types;
     private List<Type> typesFiltered;
 
     public bool HasResult = false;
-    public Type SelectedType = null;
+
+    public CSOViewModel model;
 
     public CreateSchemaObjectDialog()
     {
+
+      model = new CSOViewModel();
+      DataContext = model;
+
       Title = "Create an Object by Schema";
       Padding = 5;
       Resizable = true;
@@ -40,12 +49,34 @@ namespace ConnectorGrasshopper
         DataStore = typesFiltered,
         SelectedIndex = 0
       };
-      list.SelectedIndexChanged += List_SelectedIndexChanged;
+      list.SelectedIndexBinding.BindDataContext((CSOViewModel m) => m.SelectedIndex, DualBindingMode.OneWayToSource);
+      list.SelectedValueBinding.BindDataContext((CSOViewModel m) => m.SelectedType, DualBindingMode.OneWayToSource);
 
-      Content = new TableLayout(search, list) { Spacing = new Size(5, 5), Padding = new Padding(10) }; ;
+      description = new TextArea
+      {
+        ReadOnly = true,
+        Size = new Size(200, 200)
+      };
+
+      description.TextBinding.BindDataContext(Binding.Property((CSOViewModel m) => m.SelectedType).
+        Convert(x => GetDescription(x)), DualBindingMode.OneWay);
+
+      Content = new TableLayout
+      {
+        Spacing = new Size(5, 5),
+        Padding = new Padding(10),
+        Rows =
+        {
+          new TableRow(search),
+          new TableRow(list, description)
+        }
+      };
 
       // buttons
       DefaultButton = new Button { Text = "Create" };
+      DefaultButton.BindDataContext(x => x.Enabled, Binding.Property((CSOViewModel m) => m.SelectedIndex)
+        .Convert(x => x > -1), DualBindingMode.OneWay);
+
       DefaultButton.Click += (sender, e) =>
       {
         HasResult = true;
@@ -56,22 +87,10 @@ namespace ConnectorGrasshopper
       AbortButton = new Button { Text = "C&ancel" };
       AbortButton.Click += (sender, e) => Close();
       NegativeButtons.Add(AbortButton);
-    }
-
-    private void List_SelectedIndexChanged(object sender, EventArgs e)
-    {
-      if (DefaultButton == null)
-        return;
-
-      if (list.SelectedIndex == -1)
-        DefaultButton.Enabled = false;
-      else
-      {
-        SelectedType = (Type)list.SelectedValue; //TODO: replace with binding... how?
-        DefaultButton.Enabled = true;
-      }
 
     }
+
+
 
     private List<Type> ListAvailableTypes()
     {
@@ -89,5 +108,23 @@ namespace ConnectorGrasshopper
       list.DataStore = typesFiltered;
     }
 
+    private string GetDescription(Type t)
+    {
+      if (t == null)
+        return "";
+
+      var description = t.FullName;
+
+      var attr = t.GetCustomAttributes().Where(x => x is SchemaBuilderAttribute).FirstOrDefault();
+      if (attr != null)
+      {
+        description += "\n\n" + ((SchemaBuilderAttribute)attr).Description;
+      }
+
+      return description;
+    }
+
+
   }
+
 }
