@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Speckle.Core.Kits;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,6 +10,8 @@ namespace Objects.Revit
     string type { get; set; }
     string family { get; set; } // this can be null
     RevitLevel level { get; set; } // this can be null
+
+    [SchemaBuilderIgnore]
     string elementId { get; set; }
     string applicationId { get; set; }
     Dictionary<string, object> parameters { get; set; }
