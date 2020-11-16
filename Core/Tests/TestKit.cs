@@ -150,6 +150,13 @@ namespace Tests
     }
   }
 
+  public class SuperPoint : Point
+  {
+    public double W { get; set; }
+
+    public SuperPoint() { }
+  }
+
   public class Mesh : Base
   {
     [JsonIgnore]

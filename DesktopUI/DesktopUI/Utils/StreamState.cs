@@ -263,12 +263,22 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
+    public bool _ProgressBarIsIndeterminate = false;
+    public bool ProgressBarIsIndeterminate
+    {
+      get => _ProgressBarIsIndeterminate;
+      set
+      {
+        SetAndNotify(ref _ProgressBarIsIndeterminate, value);
+      }
+    }
+
     public CancellationTokenSource CancellationTokenSource { get; set; }
 
     private string _CommitMessage;
     public string CommitMessage
     {
-      get => _CommitMessage; 
+      get => _CommitMessage;
       set
       {
         SetAndNotify(ref _CommitMessage, value);
@@ -367,7 +377,7 @@ namespace Speckle.DesktopUI.Utils
 
     public void SendWithCommitMessage(object sender, KeyEventArgs e)
     {
-      if(e.Key == Key.Enter)
+      if (e.Key == Key.Enter)
       {
         Send();
       }
@@ -384,15 +394,16 @@ namespace Speckle.DesktopUI.Utils
       Tracker.TrackPageview(Tracker.SEND);
       IsSending = true;
       ShowProgressBar = true;
-
+      ProgressBarIsIndeterminate = false;
       CancellationTokenSource = new CancellationTokenSource();
 
       await Task.Run(() => Globals.Repo.ConvertAndSend(this));
-      
+
       ShowProgressBar = false;
       Progress.ResetProgress();
       CommitMessage = null;
       IsSending = false;
+      Globals.Notify($"Data uploded to {Stream.name}!");
     }
 
     public async void Receive()
@@ -407,6 +418,7 @@ namespace Speckle.DesktopUI.Utils
 
       IsReceiving = true;
       ShowProgressBar = true;
+      ProgressBarIsIndeterminate = false;
       CancellationTokenSource = new CancellationTokenSource();
 
       await Task.Run(() => Globals.Repo.ConvertAndReceive(this));
@@ -414,11 +426,13 @@ namespace Speckle.DesktopUI.Utils
       ShowProgressBar = false;
       Progress.ResetProgress();
       IsReceiving = false;
+      Globals.Notify($"Data received from {Stream.name}!");
     }
 
     public void CancelSendOrReceive()
     {
-      CancellationTokenSource?.Cancel();
+      CancellationTokenSource.Cancel();
+      ProgressBarIsIndeterminate = true;
     }
 
     public void SwapState()

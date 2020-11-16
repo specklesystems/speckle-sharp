@@ -2,11 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Speckle.Core.Api;
-using Speckle.DesktopUI.Streams;
 
 namespace Speckle.DesktopUI.Utils
 {
@@ -106,13 +103,20 @@ namespace Speckle.DesktopUI.Utils
 
       var pd = new ConcurrentDictionary<string, int>();
       pd["A1"] = 1;
+      pd["A2"] = 1;
 
       UpdateProgress(pd, state.Progress);
 
       for (int i = 1; i < 100; i += 10)
       {
-        Thread.Sleep(rnd.Next(150, 1000));
+        if (state.CancellationTokenSource.Token.IsCancellationRequested)
+        {
+          return state;
+        }
+
+        Thread.Sleep(rnd.Next(200, 1000));
         pd["A1"] = i;
+        pd["A2"] = i+2;
 
         UpdateProgress(pd, state.Progress);
       }

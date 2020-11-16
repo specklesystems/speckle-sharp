@@ -47,10 +47,13 @@
                         Height="40"
                         Margin="12,0,0,0"
                         HorizontalAlignment="Right"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        md:ShadowAssist.ShadowDepth="Depth0"
                         Command="{s:Action GoToSettingsOrBack}"
                         Content="{Binding MainButtonIcon}"
                         IsChecked="{Binding MainButton_Checked}"
-                        Style="{StaticResource MaterialDesignFlatPrimaryToggleButton}" />
+                        Style="{StaticResource MaterialDesignFloatingActionDarkButton}" />
           <TextBlock Margin="12,0,0,0"
                      VerticalAlignment="Center"
                      FontSize="20"

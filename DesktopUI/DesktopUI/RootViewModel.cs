@@ -27,7 +27,7 @@ namespace Speckle.DesktopUI
       set => SetAndNotify(ref _ViewName, value);
     }
 
-    private PackIcon BackIcon = new PackIcon { Kind = PackIconKind.ArrowLeft, Foreground = System.Windows.Media.Brushes.White };
+    private PackIcon BackIcon = new PackIcon { Kind = PackIconKind.ArrowLeft, Foreground = System.Windows.Media.Brushes.Gray };
 
     private PackIcon SettingsIcon = new PackIcon { Kind = PackIconKind.Settings, Foreground = System.Windows.Media.Brushes.Gray };
 

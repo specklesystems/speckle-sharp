@@ -165,7 +165,7 @@ namespace Speckle.DesktopUI.Utils
       _IsAnimating = true;
 
       DoubleAnimation doubleAnimation = new DoubleAnimation
-          (e.OldValue, e.NewValue, new Duration(TimeSpan.FromSeconds(0.4)), FillBehavior.Stop);
+          (e.OldValue, e.NewValue, new Duration(TimeSpan.FromSeconds(0.3)), FillBehavior.Stop);
       doubleAnimation.Completed += Db_Completed;
 
       ((ProgressBar)sender).BeginAnimation(ProgressBar.ValueProperty, doubleAnimation);

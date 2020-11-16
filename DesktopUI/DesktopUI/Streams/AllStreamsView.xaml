@@ -43,6 +43,7 @@
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <md:PackIcon Grid.Column="0"
+                         Margin="0,0,0,0"
                          HorizontalAlignment="Left"
                          Kind="SourceBranch" />
             <TextBlock Grid.Column="1"
@@ -326,7 +327,7 @@
                                Text="{Binding Stream.name}" />
                   </Hyperlink>
                 </TextBlock>
-                    <Button Grid.Column="2"
+                    <!--<Button Grid.Column="2"
                             Width="28"
                             Height="28"
                             HorizontalAlignment="Right"
@@ -337,7 +338,7 @@
                             Foreground="Gray"
                             Content="{md:PackIcon Kind=MoreHoriz, Size=16}"
                             Style="{StaticResource MaterialDesignIconButton}">
-                    </Button>
+                    </Button>-->
                   </WrapPanel>
 
                   <Button Grid.Column="2"
@@ -359,7 +360,7 @@
                       Margin="0,30,0,0"
                       Grid.Row="1"
                       Visibility="{Binding IsSenderCard, Converter={StaticResource BooleanToVisibilityConverter}}"
-                      IsEnabled="{Binding IsNotSendingOrReceiving}">
+                      IsEnabled="{Binding ShowProgressBar, Converter={StaticResource InverseBooleanConverter}}">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -401,15 +402,25 @@
                         <MenuItem>
                           <MenuItem.Template>
                             <ControlTemplate>
+                              <Grid>
+                                <Grid.ColumnDefinitions>
+                                  <ColumnDefinition Width="*" />
+                                  <ColumnDefinition Width="30" />
+                                </Grid.ColumnDefinitions>
+                                <md:PackIcon Grid.Column="1"
+                                             Margin="0,10,0,10"
+                                             Kind="MessageAdd" Opacity="0.5"></md:PackIcon>
                               <TextBox Grid.Column="0"
                                        Margin="4"
                                        Width="200"
+                                       md:TextBlockAssist.AutoToolTip="False"
                                        ToolTip="A commit message helps keep track of the changes made, and the reasons behind them."
                                        Text="{Binding Path=Data.CommitMessage, Source={StaticResource Proxy}}"
                                        PreviewKeyDown="{s:Action SendWithCommitMessage}"
                                        s:View.ActionTarget="{Binding Data, Source={StaticResource Proxy}}"
                                        md:HintAssist.HelperText="Commit message (press enter to send)">
                               </TextBox>
+                              </Grid>
                             </ControlTemplate>
                           </MenuItem.Template>
                         </MenuItem>
@@ -438,10 +449,15 @@
                           md:ButtonAssist.CornerRadius="3"
                           Command="{s:Action SwapState}"
                           CommandParameter="{Binding}"
-                          FontSize="10"
+                          Content="{md:PackIcon Kind=SwapHorizontal, Size=20}"
                           Style="{StaticResource MaterialDesignToolForegroundButton}"
-                          ToolTip="Receive data from this stream.">
-                    <md:PackIcon Kind="CloudDownloadOutline" />
+                          >
+                    <Button.ToolTip>
+                      <TextBlock>
+                        <Run>Swaps the type of this stream card.</Run>
+                        <Run FontWeight="Bold">Click to make it a receiver!</Run>
+                      </TextBlock>
+                    </Button.ToolTip>
                   </Button>
                 </Grid>
                 <!--#endregion-->
@@ -450,7 +466,7 @@
                 <Grid x:Name="StreamCardReceiverActions"
                       Grid.Row="1"
                       Margin="0,30,0,0"
-                      IsEnabled="{Binding IsNotSendingOrReceiving}"
+                      IsEnabled="{Binding ShowProgressBar, Converter={StaticResource InverseBooleanConverter}}"
                       Visibility="{Binding IsReceiverCard, Converter={StaticResource BooleanToVisibilityConverter}}">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -517,39 +533,68 @@
                           md:ButtonAssist.CornerRadius="3"
                           Command="{s:Action SwapState}"
                           CommandParameter="{Binding}"
-                          FontSize="10"
+                          Content="{md:PackIcon Kind=SwapHorizontal, Size=20}"
                           Style="{StaticResource MaterialDesignToolForegroundButton}"
-                          ToolTip="Send data to this stream.">
-                    <md:PackIcon Kind="CloudUploadOutline" />
+                          >
+                    <Button.ToolTip>
+                      <TextBlock>
+                        <Run>Swaps the type of this stream card.</Run>
+                        <Run FontWeight="Bold">Click to make it a sender!</Run>
+                      </TextBlock>
+                    </Button.ToolTip>
                   </Button>
                 </Grid>
                 <!--#endregion-->
 
               </Grid>
-              
+
               <!--#region Progress Bar-->
-              <Grid>
-                <ProgressBar Grid.Row="2"
+              <Grid Visibility="{Binding Path=DataContext.ShowProgressBar, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.Resources>
+                  <local:BindingProxy x:Key="Proxy"
+                                        Data="{Binding}" />
+                </Grid.Resources>
+                <ProgressBar Grid.Column="0"
                              Minimum="0"
                              Maximum="{Binding Path=DataContext.Progress.Maximum, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
                              Value="{Binding Path=DataContext.Progress.Value, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
                              x:Name="ProgressBar"
-                             Visibility="{Binding Path=DataContext.ShowProgressBar, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}"
+                             IsIndeterminate="{Binding Path=DataContext.ProgressBarIsIndeterminate, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
                              VerticalAlignment="Center"
+                             BorderBrush="Transparent"
+                             BorderThickness="0"
                              Margin="0,0"
-                             Height="10">
+                             Height="12">
                   <i:Interaction.Behaviors>
                     <utils:ProgresBarAnimateBehavior x:Name="AnimateBehavior" />
                   </i:Interaction.Behaviors>
                 </ProgressBar>
-                <TextBlock Text="{Binding Path=DataContext.Progress.ProgressSummary, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
-                           Height="11"
+                <TextBlock Grid.Column="0"
+                           Text="{Binding Path=DataContext.Progress.ProgressSummary, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                           Height="10"
+                           Margin="20,0"
                            FontSize="9"
                            Foreground="White"
                            Opacity="0.7"
-                           Visibility="{Binding Path=DataContext.Progress.IsProgressing, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}"
-                           HorizontalAlignment="Stretch"
+                           HorizontalAlignment="Left"
                            TextAlignment="Center"></TextBlock>
+                <!--TODO: Figure out how to make this nice-->
+                <Button x:Name="Cancel"
+                        Grid.Column="0"
+                        Margin="0,0,20,0"
+                        Width="14"
+                        Height="15"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        BorderThickness="0"
+                        md:ButtonAssist.CornerRadius="3"
+                        Content="{md:PackIcon Kind=Close, Size=12}"
+                        Command="{s:Action CancelSendOrReceive}"
+                        Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
+                        s:View.ActionTarget="{Binding Source={StaticResource Proxy}, Path=Data}"
+                        HorizontalAlignment="Right"
+                        ToolTip="Cancel">
+                </Button>
               </Grid>
               <!--#endregion-->
             </StackPanel>
