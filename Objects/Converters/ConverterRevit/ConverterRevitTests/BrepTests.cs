@@ -35,6 +35,7 @@ namespace ConverterRevitTests
     [InlineData(@"Brep-TwoFaces.json")]
     [InlineData(@"Brep-TrimmedFace.json")]
     [InlineData(@"Brep-FaceWithHole.json")]
+    [InlineData(@"Brep-NurbsWithHole.json")]
     [InlineData(@"Brep-TwoFacesWithHole.json")]
     [InlineData(@"Brep-Complex.json")]
     [InlineData(@"Brep-QuadDome.json")]

@@ -401,6 +401,7 @@ namespace Objects.Converter.RhinoGh
     public static Curve ToSpeckle(this NurbsCurve curve)
     {
       var tolerance = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+
       /*if (curve.IsArc(tolerance))
       {
         curve.TryGetArc(out var getObj);
@@ -548,6 +549,7 @@ namespace Objects.Converter.RhinoGh
     // Breps
     public static Brep ToSpeckle(this RH.Brep brep)
     {
+      brep.Repair(0.00001);
       var joinedMesh = new RH.Mesh();
       // TODO: This converts everything to nurbs form. May be a more elegant solution.
       

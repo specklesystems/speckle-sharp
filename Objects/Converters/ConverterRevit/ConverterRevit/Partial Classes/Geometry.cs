@@ -175,8 +175,7 @@ namespace Objects.Converter.Revit
       {
         points.AddRange(PointToSpeckle(p).value);
       }
-
-
+      
       Curve speckleCurve = new Curve();
       speckleCurve.weights = revitCurve.Weights.Cast<double>().ToList();
       speckleCurve.points = points;
@@ -447,7 +446,6 @@ namespace Objects.Converter.Revit
         nativeCurve = nativeCurve.CreateReversed();
       
       // TODO: Remove short segments if smaller than 'Revit.ShortCurveTolerance'.
-
       var edgeGeom =  BRepBuilderEdgeGeometry.Create(nativeCurve);
       return edgeGeom;
     }
@@ -477,7 +475,7 @@ namespace Objects.Converter.Revit
       
       controlPoints.ForEach(row => 
         row.ForEach(pt => 
-          points[p++] = new DB.XYZ(pt.x,pt.y,pt.z)));
+          points[p++] = new DB.XYZ(pt.x * Scale,pt.y * Scale,pt.z * Scale)));
       
       return points;
     }
@@ -510,15 +508,14 @@ namespace Objects.Converter.Revit
       if (!surface.rational)
       {
         result = DB.BRepBuilderSurfaceGeometry.CreateNURBSSurface(surface.degreeU, surface.degreeV, uKnots,
-          vKnots, cPts, false, uvBox);
+          vKnots, cPts, face.OrientationReversed, uvBox);
       }
       else
       {
         var weights = ControlPointWeightsToNative(surfPts);
         result = DB.BRepBuilderSurfaceGeometry.CreateNURBSSurface(surface.degreeU, surface.degreeV, uKnots,
-          vKnots, cPts, weights, false, uvBox);
+          vKnots, cPts, weights, face.OrientationReversed, uvBox);
       }
-
       return result;
     }
     
@@ -526,12 +523,15 @@ namespace Objects.Converter.Revit
     public Solid BrepToNative(Brep brep)
     {
       using var builder = new BRepBuilder(brep.IsClosed ? BRepType.Solid : BRepType.OpenShell);
+      builder.AllowRemovalOfProblematicFaces();
+      
       var faceIds = 
         brep.Faces.Select(face => 
           builder.AddFace(BrepFaceToNative(face), face.OrientationReversed)).ToList();
       var edgeIds = 
         brep.Edges.Select(edge => 
           builder.AddEdge(BrepEdgeToNative(edge))).ToList();
+      var visited = new List<int>();
       var loopIds =
         brep.Loops.Select(loop =>
         {
@@ -543,9 +543,25 @@ namespace Objects.Converter.Revit
           {
             if (trim.TrimType != BrepTrimType.Boundary && trim.TrimType != BrepTrimType.Mated)
               return;
-            builder.AddCoEdge(loopId, edgeIds[trim.EdgeIndex], trim.Face.OrientationReversed ? !trim.IsReversed : trim.IsReversed);
+            try
+            {
+              bool reversed = visited.Contains(trim.EdgeIndex);
+              if(!reversed) visited.Add(trim.EdgeIndex);
+              builder.AddCoEdge(loopId, edgeIds[trim.EdgeIndex], reversed);
+            }
+            catch (Exception e)
+            {
+              Console.WriteLine(e);
+            }
           });
-          builder.FinishLoop(loopId);
+          try
+          {
+            builder.FinishLoop(loopId);
+          }
+          catch (Exception e)
+          {
+            Console.WriteLine(e);
+          }
           return loopId;
         }).ToList();
 
