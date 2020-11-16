@@ -547,7 +547,7 @@ namespace Objects.Converter.Revit
             {
               bool reversed = visited.Contains(trim.EdgeIndex);
               if(!reversed) visited.Add(trim.EdgeIndex);
-              builder.AddCoEdge(loopId, edgeIds[trim.EdgeIndex], reversed);
+              builder.AddCoEdge(loopId, edgeIds[trim.EdgeIndex], loop.Face.OrientationReversed ? !reversed : reversed);
             }
             catch (Exception e)
             {
