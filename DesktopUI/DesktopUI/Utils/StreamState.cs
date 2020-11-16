@@ -12,6 +12,7 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Stylet;
+using static Speckle.DesktopUI.Utils.BranchContextMenuItem;
 
 namespace Speckle.DesktopUI.Utils
 {
@@ -88,6 +89,16 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _Branch, value);
+
+        if (value.commits != null && value.commits.items != null && value.commits.items.Count != 0)
+        {
+          Commit = value.commits.items[0];
+        }
+        else
+        {
+          Commit = new Commit { id = "Empty Branch" };
+        }
+
         NotifyOfPropertyChange(nameof(BranchContextMenuItems));
       }
     }
@@ -104,7 +115,7 @@ namespace Speckle.DesktopUI.Utils
             Tooltip = Branch.name == b.name ? "Current branch" : $"Switch to {b.name}",
             Icon = Branch.name == b.name ? new PackIcon { Kind = PackIconKind.CheckBold, FontSize = 12 } : new PackIcon { Kind = PackIconKind.SourceBranch, FontSize = 12 },
             CommandArgument = new BranchSwitchCommandArgument { RootStreamState = this, Branch = b }
-          }));
+          }));;
 
         if (IsSenderCard)
         {
@@ -113,11 +124,58 @@ namespace Speckle.DesktopUI.Utils
             Branch = new Branch { name = "Add a new branch" },
             Tooltip = "Adds a new branch and sets it.",
             Icon = new PackIcon { Kind = PackIconKind.Add, FontSize = 12 },
-            CommandArgument = new BranchSwitchCommandArgument { RootStreamState = this }
+            CommandArgument = new BranchSwitchCommandArgument { RootStreamState = this, Branch = new Branch { name = "Add a new branch" } }
           });
         }
 
         return all;
+      }
+    }
+
+    private Commit _Commit;
+    [JsonProperty]
+    public Commit Commit
+    {
+      get => _Commit;
+      set
+      {
+        SetAndNotify(ref _Commit, value);
+        NotifyOfPropertyChange(nameof(CommitContextMenuItems));
+        NotifyOfPropertyChange(nameof(ReceiveEnabled));
+        NotifyOfPropertyChange(nameof(ReceiveDisabled));
+      }
+    }
+
+    public BindableCollection<CommitContextMenuItem> CommitContextMenuItems
+    {
+      get
+      {
+        var collection = new BindableCollection<CommitContextMenuItem>() { };
+
+        if (Branch.commits == null || Branch.commits.items == null || Branch.commits.items.Count == 0)
+        {
+          collection.Add(new CommitContextMenuItem
+          {
+            Icon = new PackIcon { Kind = PackIconKind.Warning },
+            MainText = "This branch has no commits.",
+            SecondaryText = "Try switching to a different branch.",
+            ToolTip = "Nada. It's empty",
+            CommandArgument = new CommitContextMenuItem.CommitSwitchCommandArgument { RootStreamState = this, Commit = null }
+          });
+
+          return collection;
+        }
+
+        collection.AddRange(Branch.commits.items.Select(commit => new CommitContextMenuItem
+        {
+          MainText = commit.message,
+          SecondaryText = $"by {commit.authorName} - {Formatting.TimeAgo(commit.createdAt)}",
+          ToolTip = commit.message,
+          Icon = Commit.id == commit.id ? new PackIcon { Kind = PackIconKind.Check } : new PackIcon { Kind = PackIconKind.SourceCommit },
+          CommandArgument = new CommitContextMenuItem.CommitSwitchCommandArgument { RootStreamState = this, Commit = commit, }
+        }));
+
+        return collection;
       }
     }
 
@@ -156,6 +214,16 @@ namespace Speckle.DesktopUI.Utils
     public bool SendDisabled
     {
       get => !SendEnabled;
+    }
+
+    public bool ReceiveEnabled
+    {
+      get => Commit != null && Commit.id != "Empty Branch";
+    }
+
+    public bool ReceiveDisabled
+    {
+      get => !ReceiveEnabled;
     }
 
     public string ObjectSelectionButtonText
@@ -346,6 +414,15 @@ namespace Speckle.DesktopUI.Utils
           Branch = tempBranch;
         }
       }
+
+      if (Branch.commits != null && Branch.commits.items != null && Branch.commits.items.Count != 0)
+      {
+        Commit = Branch.commits.items[0];
+      }
+      else
+      {
+        Commit = new Commit { id = "No Commits" };
+      }
     }
 
     #endregion
@@ -374,6 +451,16 @@ namespace Speckle.DesktopUI.Utils
       Branch = branch;
       Globals.Notify($"Switched active branch to {Branch.name}.");
       NotifyOfPropertyChange(nameof(BranchContextMenuItem));
+    }
+
+    public void SwitchCommit(Commit commit)
+    {
+      if (commit == null)
+      {
+        return;
+      }
+
+      Commit = commit;
     }
 
     public void SendWithCommitMessage(object sender, KeyEventArgs e)
@@ -590,7 +677,7 @@ namespace Speckle.DesktopUI.Utils
   }
 
   /// <summary>
-  /// Class used for handling the actions around the context menu of branches.
+  /// Class used for handling the actions around the context menu of branches (sender/receiver),.
   /// </summary>
   public class BranchContextMenuItem
   {
@@ -598,11 +685,30 @@ namespace Speckle.DesktopUI.Utils
     public string Tooltip { get; set; }
     public PackIcon Icon { get; set; }
     public BranchSwitchCommandArgument CommandArgument { get; set; }
+
+    public class BranchSwitchCommandArgument
+    {
+      public StreamState RootStreamState { get; set; }
+      public Branch Branch { get; set; }
+    }
   }
 
-  public class BranchSwitchCommandArgument
+
+  /// <summary>
+  /// Class used for handling actions around the context menu of the commit switcher (receiver).
+  /// </summary>
+  public class CommitContextMenuItem
   {
-    public StreamState RootStreamState { get; set; }
-    public Branch Branch { get; set; }
+    public string MainText { get; set; }
+    public string SecondaryText { get; set; }
+    public string ToolTip { get; set; }
+    public PackIcon Icon { get; set; } = new PackIcon { Kind = PackIconKind.SourceCommit };
+    public CommitSwitchCommandArgument CommandArgument { get; set; }
+
+    public class CommitSwitchCommandArgument
+    {
+      public StreamState RootStreamState { get; set; }
+      public Commit Commit { get; set; }
+    }
   }
 }

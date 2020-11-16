@@ -210,25 +210,6 @@ namespace Speckle.DesktopUI.Streams
 
     public async Task<StreamState> ConvertAndReceive(StreamState state)
     {
-      // var latestCommitId = state.LatestCommit()?.id;
-      try
-      {
-        state.Stream = await state.Client.StreamGet(state.Stream.id);
-      }
-      catch ( Exception e )
-      {
-        if ( e is HttpRequestException )
-          _bindings.RaiseNotification(
-            $"Sorry, we could not connect to the server: {state.Client.ServerUrl}. Please ensure the server is online.");
-        Log.CaptureException(e);
-        return null;
-      }
-      /*if (!state.ServerUpdates && latestCommitId == state.LatestCommit()?.id)
-      {
-        _bindings.RaiseNotification($"Stream {state.Stream.id} is up to date");
-        return state;
-      }*/
-
       try
       {
         var res = await _bindings.ReceiveStream(state);

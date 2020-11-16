@@ -128,6 +128,30 @@ namespace Speckle.DesktopUI.Utils
     public override async Task<StreamState> ReceiveStream(StreamState state)
     {
       state.ServerUpdates = false;
+
+      state.Progress.Maximum = 100;
+
+      var pd = new ConcurrentDictionary<string, int>();
+      pd["A1"] = 1;
+      pd["A2"] = 1;
+
+      UpdateProgress(pd, state.Progress);
+
+      for (int i = 1; i < 100; i += 10)
+      {
+        if (state.CancellationTokenSource.Token.IsCancellationRequested)
+        {
+          return state;
+        }
+
+        Thread.Sleep(rnd.Next(200, 500));
+        pd["A1"] = i;
+        pd["A2"] = i + 2;
+
+        UpdateProgress(pd, state.Progress);
+      }
+
+
       return state;
     }
 

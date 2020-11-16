@@ -91,7 +91,9 @@ namespace Speckle.DesktopUI.Streams
       ((RootViewModel)Parent).GoToStreamViewPage(item);
     }
 
-    public void SwitchBranch(BranchSwitchCommandArgument args) => args.RootStreamState.SwitchBranch(args.Branch);
+    public void SwitchBranch(BranchContextMenuItem.BranchSwitchCommandArgument args) => args.RootStreamState.SwitchBranch(args.Branch);
+
+    public void SwitchCommit(CommitContextMenuItem.CommitSwitchCommandArgument args) => args.RootStreamState.SwitchCommit(args.Commit);
 
     public void SwapState(StreamState state)
     {
