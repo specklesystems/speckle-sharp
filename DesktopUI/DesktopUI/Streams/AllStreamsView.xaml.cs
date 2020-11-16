@@ -9,17 +9,6 @@ namespace Speckle.DesktopUI.Streams
 {
   public partial class AllStreamsView
   {
-    private void CommitMessageBoxKeyUp(object sender, KeyEventArgs e)
-    {
-      if (e.Key == Key.Enter)
-      {
-
-      }
-    }
-
-    private void ContextMenu_Closed(object sender, System.Windows.RoutedEventArgs e)
-    {
-
-    }
+    // In silence there is eloquence.
   }
 }

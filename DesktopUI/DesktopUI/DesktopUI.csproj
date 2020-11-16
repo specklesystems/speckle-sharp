@@ -110,27 +110,11 @@
     <Compile Include="Streams\Dialogs\FilterViews\ViewFilterView.xaml.cs">
       <DependentUpon>ViewFilterView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Streams\Dialogs\StreamUpdateCollabsView.xaml.cs">
-      <DependentUpon>StreamUpdateCollabsView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Streams\Dialogs\StreamUpdateObjectsView.xaml.cs">
       <DependentUpon>StreamUpdateObjectsView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Streams\Dialogs\StreamUpdateStartView.xaml.cs">
-      <DependentUpon>StreamUpdateStartView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Streams\ShareStreamDialogViewModel.cs" />
+    <Compile Include="Streams\Dialogs\ShareStreamDialogViewModel.cs" />
     <Compile Include="Streams\StreamCreateDialogViewModel.cs" />
-    <Compile Include="Streams\Dialogs\StreamCreateAdvancedView.xaml.cs">
-      <DependentUpon>StreamCreateAdvancedView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Streams\Dialogs\StreamCreateSimpleView.xaml.cs">
-      <DependentUpon>StreamCreateSimpleView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Streams\Dialogs\StreamCreateStartView.xaml.cs">
-      <DependentUpon>StreamCreateStartView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Streams\Archived\StreamsHomeViewModel.cs" />
     <Compile Include="Streams\StreamsRepository.cs" />
     <Compile Include="Streams\StreamUpdateDialogViewModel.cs" />
     <Compile Include="Streams\StreamViewModel.cs" />
@@ -143,21 +127,11 @@
     <Compile Include="Utils\ViewModelFactories.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\SelectionFilter.cs" />
-    <Page Include="Feed\FeedView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Inbox\InboxView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Compile Include="Accounts\AccountsRepository.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Feed\FeedViewModel.cs" />
-    <Compile Include="Inbox\InboxViewModel.cs" />
     <Page Include="RootView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -174,32 +148,11 @@
     <Page Include="Streams\Dialogs\FilterViews\ParameterFilterView.xaml" />
     <Page Include="Streams\Dialogs\FilterViews\SelectionFilterView.xaml" />
     <Page Include="Streams\Dialogs\FilterViews\ViewFilterView.xaml" />
-    <Page Include="Streams\Dialogs\StreamUpdateCollabsView.xaml" />
     <Page Include="Streams\Dialogs\StreamUpdateObjectsView.xaml" />
-    <Page Include="Streams\Dialogs\StreamUpdateStartView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Streams\ShareStreamDialogView.xaml" />
-    <Page Include="Streams\Dialogs\StreamCreateAdvancedView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
+    <Page Include="Streams\Dialogs\ShareStreamDialogView.xaml" />
     <Page Include="Streams\StreamCreateDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Streams\Dialogs\StreamCreateSimpleView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Streams\Dialogs\StreamCreateStartView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Streams\Archived\StreamsHomeView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Streams\StreamUpdateDialogView.xaml" />
     <Page Include="Streams\StreamView.xaml">

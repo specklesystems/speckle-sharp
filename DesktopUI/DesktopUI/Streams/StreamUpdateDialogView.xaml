@@ -32,9 +32,7 @@
       <ScrollViewer Grid.Row="1"
                     VerticalScrollBarVisibility="Auto">
         <Grid>
-          <dialogs:StreamUpdateStartView Visibility="{Binding EditingDetails, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
           <dialogs:StreamUpdateObjectsView Visibility="{Binding EditingObjects, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
-          <dialogs:StreamUpdateCollabsView Visibility="{Binding EditingCollabs, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
           <md:Snackbar MessageQueue="{Binding Notifications}" />
         </Grid>
 

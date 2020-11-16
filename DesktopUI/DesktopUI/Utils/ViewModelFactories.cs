@@ -1,9 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Speckle.DesktopUI.Accounts;
-using Speckle.DesktopUI.Feed;
-using Speckle.DesktopUI.Inbox;
-using Speckle.DesktopUI.Settings;
+﻿using Speckle.DesktopUI.Settings;
 using Speckle.DesktopUI.Streams;
 
 namespace Speckle.DesktopUI.Utils
@@ -13,9 +8,6 @@ namespace Speckle.DesktopUI.Utils
   public interface IViewModelFactory
   {
     // view models for main pages
-    StreamsHomeViewModel CreateStreamsHomeViewModel();
-    InboxViewModel CreateInboxViewModel();
-    FeedViewModel CreateFeedViewModel();
     SettingsViewModel CreateSettingsViewModel();
 
     // view models for main stream page
