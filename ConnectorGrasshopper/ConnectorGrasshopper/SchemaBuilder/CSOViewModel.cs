@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Eto.Forms;
 
 namespace ConnectorGrasshopper
 {
@@ -48,6 +49,23 @@ namespace ConnectorGrasshopper
         if (selectedType != value)
         {
           selectedType = value;
+          OnPropertyChanged();
+        }
+      }
+    }
+
+    TreeGridItem selectedItem;
+    public TreeGridItem SelectedItem
+    {
+      get
+      {
+        return selectedItem;
+      }
+      set
+      {
+        if (selectedItem != value)
+        {
+          selectedItem = value;
           OnPropertyChanged();
         }
       }
