@@ -41,7 +41,7 @@ namespace Objects.Converter.Revit
       }
 
       var revitSurface = TopographySurface.Create(Doc, pts);
-      if (speckleSurface is IRevitElement ire)
+      if (speckleSurface is IRevit ire)
         SetElementParams(revitSurface, ire);
 
       return revitSurface;

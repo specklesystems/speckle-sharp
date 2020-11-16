@@ -6,29 +6,20 @@ using Objects.BuiltElements;
 
 namespace Objects.Revit
 {
-  public class RevitRoof : Roof, IRevitElement
-  {
-    public string family { get; set; }
-    public string type { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
-    public string elementId { get; set; }
 
-    public RevitLevel level { get; set; }
-
-  }
-
-
-
-  public class RevitExtrusionRoof : RevitRoof
+  public class RevitExtrusionRoof : RevitElement, IRoof
   {
     public double start { get; set; }
     public double end { get; set; }
     public Line referenceLine { get; set; }
+    public ICurve outline { get; set; }
+    public List<ICurve> voids { get; set; } = new List<ICurve>();
   }
 
-  public class RevitFootprintRoof : RevitRoof
+  public class RevitFootprintRoof : RevitElement, IRoof
   {
     public RevitLevel cutOffLevel { get; set; }
+    public ICurve outline { get; set; }
+    public List<ICurve> voids { get; set; } = new List<ICurve>();
   }
 }

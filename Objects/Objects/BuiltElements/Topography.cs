@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Topography : Base
+  public class Topography : Base, ITopography
   {
     public Mesh baseGeometry { get; set; } = new Mesh();
     public Topography()

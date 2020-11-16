@@ -18,7 +18,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="myElement"></param>
     /// <returns></returns>
-    public IRevitElement FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
+    public IRevit FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
     {
       //adaptive components
       if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(revitFi))

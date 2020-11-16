@@ -3,18 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Objects.BuiltElements;
+using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
-  //[ExposeInSchemaBuilder(false)]
-  public class RevitWall : Wall, IRevitElement
+  [SchemaBuilderIgnore]
+  public class RevitWall : RevitElement, IWall
   {
-    public RevitLevel level { get; set; }
-    public string family { get; set; }
-    public string type { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
-    public string elementId { get; set; }
+    public double height { get; set; }
+    public ICurve baseLine { get; set; }
     public bool structural { get; set; }
     public bool flipped { get; set; }
   }

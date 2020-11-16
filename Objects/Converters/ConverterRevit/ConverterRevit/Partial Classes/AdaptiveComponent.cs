@@ -58,7 +58,7 @@ namespace Objects.Converter.Revit
       return revitAc;
     }
 
-    private IRevitElement AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
+    private IRevit AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
     {
       var speckleAc = new AdaptiveComponent();
       speckleAc.type = Doc.GetElement(revitAc.GetTypeId()).Name;

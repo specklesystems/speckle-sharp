@@ -1,37 +1,33 @@
 ﻿using Objects.BuiltElements;
 using Objects.Geometry;
+using Speckle.Core.Kits;
 using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  public class RevitOpening : Opening, IRevitElement
-  {
-    public string family { get; set; }
-    public string type { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
-    public string elementId { get; set; }
-    public RevitLevel level { get; set; }
-  }
-
-  public class RevitVerticalOpening : RevitOpening
+  [SchemaBuilderIgnore]
+  public class RevitVerticalOpening : RevitElement, IOpening
   {
     public Element host { get; set; }
 
     public int revitHostId { get; set; }
+    public ICurve outline { get; set; }
 
   }
 
-  public class RevitWallOpening : RevitOpening
+  [SchemaBuilderIgnore]
+  public class RevitWallOpening : RevitElement, IOpening
   {
     public RevitWall host { get; set; }
 
     public int revitHostId { get; set; }
+    public ICurve outline { get; set; }
 
   }
 
-  public class RevitShaft : RevitOpening
+  public class RevitShaft : RevitElement, IOpening
   {
     public RevitLevel topLevel { get; set; }
+    public ICurve outline { get; set; }
   }
 }

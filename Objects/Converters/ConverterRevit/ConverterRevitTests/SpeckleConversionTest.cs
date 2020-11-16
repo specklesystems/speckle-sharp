@@ -25,7 +25,7 @@ namespace ConverterRevitTests
 
       foreach (var elem in fixture.RevitElements)
       {
-        var spkElem = kit.ConvertToSpeckle(elem) as IRevitElement;
+        var spkElem = kit.ConvertToSpeckle(elem) as IRevit;
         AssertValidSpeckleElement(elem, spkElem);
       }
       Assert.Empty(kit.ConversionErrors);
@@ -94,14 +94,14 @@ namespace ConverterRevitTests
       }
     }
 
-    internal void AssertValidSpeckleElement(DB.Element elem, IRevitElement spkElem)
+    internal void AssertValidSpeckleElement(DB.Element elem, IRevit spkElem)
     {
       Assert.NotNull(elem);
       Assert.NotNull(spkElem);
       Assert.NotNull(spkElem.parameters);
       Assert.NotNull(spkElem.elementId);
 
-      if (spkElem is IRevitElement spkRevit)
+      if (spkElem is IRevit spkRevit)
       {
         if (!(elem is DB.Architecture.Room || elem is DB.Mechanical.Duct))
           Assert.Equal(elem.Name, spkRevit.type);

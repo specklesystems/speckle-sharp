@@ -33,7 +33,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private IRevitElement BraceToSpeckle(DB.FamilyInstance myFamily)
+    private IRevit BraceToSpeckle(DB.FamilyInstance myFamily)
     {
       var myBeam = BeamToSpeckle(myFamily) as RevitBeam;
 

@@ -83,13 +83,13 @@ namespace Objects.Converter.Revit
         revitWall.Flip();
       }
 
-      if (speckleWall is IRevitElement item)
+      if (speckleWall is IRevit item)
         SetElementParams(revitWall, item);
 
       return revitWall;
     }
 
-    public IRevitElement WallToSpeckle(DB.Wall revitWall)
+    public IRevit WallToSpeckle(DB.Wall revitWall)
     {
       //REVIT PARAMS > SPECKLE PROPS
       var heightParam = revitWall.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM);
@@ -105,7 +105,7 @@ namespace Objects.Converter.Revit
       var level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
       var topLevel = (RevitLevel)ParameterToSpeckle(topLevelParam); //TODO: check if it works
 
-      IRevitElement speckleWall = null;
+      IRevit speckleWall = null;
 
       if (baseGeometry is Geometry.Point)
       {

@@ -13,10 +13,10 @@ namespace Objects.Converter.Revit
   public partial class ConverterRevit
   {
 
-    private void AddCommonRevitProps(IRevitElement speckleElement, DB.Element revitElement)
+    private void AddCommonRevitProps(IRevit speckleElement, DB.Element revitElement)
     {
 
-      if (speckleElement is IRevitElement speckleRevitElement)
+      if (speckleElement is IRevit speckleRevitElement)
       {
         if (revitElement is DB.FamilyInstance)
         {
@@ -190,7 +190,7 @@ namespace Objects.Converter.Revit
       return myParamDict;
     }
 
-    public void SetElementParams(DB.Element myElement, IRevitElement spkElement, List<string> exclusions = null)
+    public void SetElementParams(DB.Element myElement, IRevit spkElement, List<string> exclusions = null)
     {
 
       if (myElement == null) return;
@@ -367,7 +367,7 @@ namespace Objects.Converter.Revit
       }
 
 
-      if (element is IRevitElement ire)
+      if (element is IRevit ire)
       {
         //match family and type
         var match = symbols.FirstOrDefault(x => x.FamilyName == ire.family && x.Name == ire.type);

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class GridLine : Base
+  public class GridLine : Base, IGridLine
   {
     public Line baseLine { get; set; }
     public Level level { get; set; }

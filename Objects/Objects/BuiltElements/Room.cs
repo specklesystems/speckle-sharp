@@ -7,10 +7,10 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Room : Element
+  public class Room : Element, IRoom
   {
     // public ICurve baseGeometry { get; set; }
-    //public string name { get; set; }
+    public string name { get; set; }
     public string number { get; set; }
     public double area { get; set; }
     public double volume { get; set; }

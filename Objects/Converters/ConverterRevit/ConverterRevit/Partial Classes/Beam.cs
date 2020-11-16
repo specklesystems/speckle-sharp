@@ -72,13 +72,13 @@ namespace Objects.Converter.Revit
       //reference level, only for beams
       TrySetParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
 
-      if (speckleBeam is IRevitElement item)
+      if (speckleBeam is IRevit item)
         SetElementParams(revitBeam, item);
 
       return revitBeam;
     }
 
-    private IRevitElement BeamToSpeckle(DB.FamilyInstance revitBeam)
+    private IRevit BeamToSpeckle(DB.FamilyInstance revitBeam)
     {
       var baseGeometry = LocationToSpeckle(revitBeam);
       var baseLine = baseGeometry as ICurve;

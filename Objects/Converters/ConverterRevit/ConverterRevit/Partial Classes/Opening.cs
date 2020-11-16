@@ -56,7 +56,7 @@ namespace Objects.Converter.Revit
           throw new Exception("Opening type not supported");
       }
 
-      if (speckleOpening is IRevitElement ire)
+      if (speckleOpening is IRevit ire)
         SetElementParams(revitOpening, ire);
 
       return revitOpening;

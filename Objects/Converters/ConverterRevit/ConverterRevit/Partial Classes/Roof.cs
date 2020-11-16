@@ -103,7 +103,7 @@ namespace Objects.Converter.Revit
       {
         ConversionErrors.Add(new Error("Could not create holes in roof", ex.Message));
       }
-      if (speckleRoof is IRevitElement ire)
+      if (speckleRoof is IRevit ire)
         SetElementParams(revitRoof, ire);
       return revitRoof;
     }

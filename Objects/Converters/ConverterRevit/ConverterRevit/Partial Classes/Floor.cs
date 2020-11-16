@@ -86,7 +86,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private IRevitElement FloorToSpeckle(DB.Floor revitFloor)
+    private IRevit FloorToSpeckle(DB.Floor revitFloor)
     {
       var baseLevelParam = revitFloor.get_Parameter(BuiltInParameter.LEVEL_PARAM);
       var structuralParam = revitFloor.get_Parameter(BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);

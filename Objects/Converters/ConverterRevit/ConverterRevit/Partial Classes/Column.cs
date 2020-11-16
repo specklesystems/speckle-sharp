@@ -155,7 +155,7 @@ namespace Objects.Converter.Revit
 
     }
 
-    public IRevitElement ColumnToSpeckle(DB.FamilyInstance revitColumn)
+    public IRevit ColumnToSpeckle(DB.FamilyInstance revitColumn)
     {
 
 
