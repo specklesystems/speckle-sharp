@@ -25,6 +25,8 @@ namespace Objects.Geometry
     public List<BrepLoop> Loops { get; set; }
     public List<BrepTrim> Trims { get; set; }
     public List<BrepFace> Faces { get; set; }
+    
+    public bool IsClosed { get; set; }
 
     public Brep()
     {
@@ -37,6 +39,8 @@ namespace Objects.Geometry
       Loops = new List<BrepLoop>();
       Trims = new List<BrepTrim>();
       Faces = new List<BrepFace>();
+
+      IsClosed = false;
     }
 
     public Brep(object rawData, string provenance, Mesh displayValue, string applicationId = null) : this()

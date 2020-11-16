@@ -571,7 +571,7 @@ namespace Objects.Converter.RhinoGh
       spcklBrep.Curve2D = brep.Curves2D.Select(crv => crv.ToNurbsCurve().ToSpeckle()).ToList();
       spcklBrep.Curve3D = brep.Curves3D.Select(crv => crv.ToNurbsCurve().ToSpeckle()).ToList();
       spcklBrep.Surfaces = brep.Surfaces.Select(srf => srf.ToNurbsSurface().ToSpeckle()).ToList();
-
+      spcklBrep.IsClosed = brep.IsSolid;
 
       // Faces
       spcklBrep.Faces = brep.Faces

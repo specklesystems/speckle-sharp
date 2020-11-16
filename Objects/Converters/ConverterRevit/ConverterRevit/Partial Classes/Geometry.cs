@@ -210,8 +210,8 @@ namespace Objects.Converter.Revit
             speckleKnots.Insert(0,speckleKnots[0]);
             speckleKnots.Add(speckleKnots[speckleKnots.Count - 1]);
           }
-          var knots = speckleKnots.GetRange(0, pts.Count + speckleCurve.degree + 1);
-          var curve = NurbSpline.CreateCurve(speckleCurve.degree, knots, pts, weights);
+          //var knots = speckleKnots.GetRange(0, pts.Count + speckleCurve.degree + 1);
+          var curve = NurbSpline.CreateCurve(speckleCurve.degree, speckleKnots, pts, weights);
           return curve;
         }
         else
@@ -525,7 +525,7 @@ namespace Objects.Converter.Revit
     
     public Solid BrepToNative(Brep brep)
     {
-      using var builder = new BRepBuilder(BRepType.OpenShell);
+      using var builder = new BRepBuilder(brep.IsClosed ? BRepType.Solid : BRepType.OpenShell);
       var faceIds = 
         brep.Faces.Select(face => 
           builder.AddFace(BrepFaceToNative(face), face.OrientationReversed)).ToList();
@@ -549,14 +549,13 @@ namespace Objects.Converter.Revit
           return loopId;
         }).ToList();
 
-      //loopIds.ForEach(id => builder.FinishLoop(id));
       faceIds.ForEach(id => builder.FinishFace(id));
       
       var bRepBuilderOutcome = builder.Finish();
-      
       if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
       
       var isResultAvailable = builder.IsResultAvailable();
+      if (!isResultAvailable) return null;
       var result = builder.GetResult();
       return result;
     }

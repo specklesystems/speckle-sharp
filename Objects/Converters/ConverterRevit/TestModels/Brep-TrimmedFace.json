@@ -1,5 +1,5 @@
 ﻿{
-  "rawData": "{\"version\":10000,\"archive3dm\":60,\"opennurbs\":-1938262223,\"data\":\"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\"}",
+  "rawData": "{\"version\":10000,\"archive3dm\":60,\"opennurbs\":-1938262223,\"data\":\"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\"}",
   "provenance": "Rhino",
   "displayValue": {
     "vertices": [
@@ -28,7 +28,7 @@
       0,
       1,
       0,
-      2,
+      3,
       5,
       1,
       0,
@@ -38,12 +38,12 @@
       0,
       2,
       3,
-      5
+      1
     ],
     "colors": [],
     "totalChildrenCount": 0,
     "speckle_type": "Objects.Geometry.Mesh",
-    "id": "68c0ec0f047bba02f9de6e4db188284b"
+    "id": "7fd1b1cd958281173e026e4bde38f346"
   },
   "Surfaces": [
     {
@@ -105,10 +105,10 @@
       "periodic": false,
       "rational": false,
       "points": [
-        6.933961729086052,
-        -3.8696290551063832,
+        6.93396172908605,
+        -3.86962905510638,
         0.0,
-        1.1360036925946808,
+        1.13600369259468,
         -4.20889982211043,
         0.0
       ],
@@ -118,44 +118,44 @@
       ],
       "knots": [
         0.0,
-        5.8078758635372356
+        5.8078758635372347
       ],
       "domain": {
         "start": 0.0,
-        "end": 5.8078758635372356,
+        "end": 5.8078758635372347,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Primitive.Interval",
-        "id": "0f7d1abbdcaf6ef54372e2ece6c8b22a"
+        "id": "c6a235642169217dc2284591ea49810c"
       },
       "displayValue": {
         "value": [
-          6.933961729086052,
-          -3.8696290551063832,
+          6.93396172908605,
+          -3.86962905510638,
           0.0,
-          1.1360036925946808,
+          1.13600369259468,
           -4.20889982211043,
           0.0
         ],
         "closed": false,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Polyline",
-        "id": "c31ecf9ad6e9e2b7378a127fed9d1d5c"
+        "id": "48b3bb6bfd36a0d7adced171eec9f5b1"
       },
       "closed": false,
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.Curve",
-      "id": "a9ef0b1f258f9c21e6a47a40840d451b"
+      "id": "7caf62e004368f762417da305d99d26e"
     },
     {
       "degree": 1,
       "periodic": false,
       "rational": false,
       "points": [
-        1.1360036925946808,
+        1.13600369259468,
         -4.20889982211043,
         0.0,
-        -1.8963607909840441,
-        0.33411783438739628,
+        -1.89636079098404,
+        0.334117834387396,
         0.0
       ],
       "weights": [
@@ -164,44 +164,44 @@
       ],
       "knots": [
         0.0,
-        5.4620732133980656
+        5.4620732133980621
       ],
       "domain": {
         "start": 0.0,
-        "end": 5.4620732133980656,
+        "end": 5.4620732133980621,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Primitive.Interval",
-        "id": "673b7a820107374b528ce3ca6f30611f"
+        "id": "839416547da79c754d1048959e1b54d7"
       },
       "displayValue": {
         "value": [
-          1.1360036925946808,
+          1.13600369259468,
           -4.20889982211043,
           0.0,
-          -1.8963607909840441,
-          0.33411783438739628,
+          -1.89636079098404,
+          0.334117834387396,
           0.0
         ],
         "closed": false,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Polyline",
-        "id": "ea1adeac28eca7b8447287d4b4613e0e"
+        "id": "c8665f45199e71ff2a9106fa7466677e"
       },
       "closed": false,
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.Curve",
-      "id": "0a121eacfc47b98d2802019d34580a70"
+      "id": "0be45b64ea9a0b48d87b161376f6ba2b"
     },
     {
       "degree": 1,
       "periodic": false,
       "rational": false,
       "points": [
-        -1.8963607909840441,
-        0.33411783438739628,
+        -1.89636079098404,
+        0.334117834387396,
         0.0,
-        1.0917991172095531,
-        4.4776865447119949,
+        1.09179911720955,
+        4.47768654471199,
         0.0
       ],
       "weights": [
@@ -210,44 +210,44 @@
       ],
       "knots": [
         0.0,
-        5.1086457397353975
+        5.1086457397353886
       ],
       "domain": {
         "start": 0.0,
-        "end": 5.1086457397353975,
+        "end": 5.1086457397353886,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Primitive.Interval",
-        "id": "2f85e50198c933ef077b71babb525645"
+        "id": "84b2803d6715f007c9ee859e126e54a7"
       },
       "displayValue": {
         "value": [
-          -1.8963607909840441,
-          0.33411783438739628,
+          -1.89636079098404,
+          0.334117834387396,
           0.0,
-          1.0917991172095531,
-          4.4776865447119949,
+          1.09179911720955,
+          4.47768654471199,
           0.0
         ],
         "closed": false,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Polyline",
-        "id": "91e374d4cb5f29cc121d49c4f1953ffd"
+        "id": "0ee503c5cfafd5f7bcd4982bfe051974"
       },
       "closed": false,
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.Curve",
-      "id": "f8c97c3de5039d9329e6367abc60467d"
+      "id": "6ac0d3743a3a352f8244c5f99c0b734c"
     },
     {
       "degree": 1,
       "periodic": false,
       "rational": false,
       "points": [
-        1.0917991172095531,
-        4.4776865447119949,
+        1.09179911720955,
+        4.47768654471199,
         0.0,
-        5.8498535531208722,
-        4.4703502555788468,
+        5.84985355312087,
+        4.47035025557885,
         0.0
       ],
       "weights": [
@@ -256,44 +256,44 @@
       ],
       "knots": [
         0.0,
-        4.7580600917005693
+        4.7580600917005711
       ],
       "domain": {
         "start": 0.0,
-        "end": 4.7580600917005693,
+        "end": 4.7580600917005711,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Primitive.Interval",
-        "id": "f1958d591b107caa6fba71ea6f4656be"
+        "id": "3c3f41d7e50caea64efbe081c363dedd"
       },
       "displayValue": {
         "value": [
-          1.0917991172095531,
-          4.4776865447119949,
+          1.09179911720955,
+          4.47768654471199,
           0.0,
-          5.8498535531208722,
-          4.4703502555788468,
+          5.84985355312087,
+          4.47035025557885,
           0.0
         ],
         "closed": false,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Polyline",
-        "id": "2c0eecfa21ce8647b927f319ae0b9de8"
+        "id": "d89180e57bda84f75b01d9bcf553d391"
       },
       "closed": false,
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.Curve",
-      "id": "77c6dc9acdf476e193f351a4f9a50987"
+      "id": "5edbdec76fbc3b8df1ab23bfc95a97f7"
     },
     {
       "degree": 1,
       "periodic": false,
       "rational": false,
       "points": [
-        5.8498535531208722,
-        4.4703502555788468,
+        5.84985355312087,
+        4.47035025557885,
         0.0,
-        6.0171034862859845,
-        -0.026789890342333811,
+        6.01710348628598,
+        -0.0267898903423338,
         0.0
       ],
       "weights": [
@@ -302,44 +302,44 @@
       ],
       "knots": [
         0.0,
-        4.5002491077938913
+        4.5002491077938949
       ],
       "domain": {
         "start": 0.0,
-        "end": 4.5002491077938913,
+        "end": 4.5002491077938949,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Primitive.Interval",
-        "id": "2e9a87da9a1739d1c7f6aaad0836bbd3"
+        "id": "e359cf3c221a95b04b261f8ed596c3ee"
       },
       "displayValue": {
         "value": [
-          5.8498535531208722,
-          4.4703502555788468,
+          5.84985355312087,
+          4.47035025557885,
           0.0,
-          6.0171034862859845,
-          -0.026789890342333811,
+          6.01710348628598,
+          -0.0267898903423338,
           0.0
         ],
         "closed": false,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Polyline",
-        "id": "993ba1058588a8f48b9d9485d1ca74f3"
+        "id": "87fa4c25ee044b011a16ba33b2a49de7"
       },
       "closed": false,
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.Curve",
-      "id": "7ce2f801537842781ccc12f2396178b4"
+      "id": "2edc23e2dfe3d0129d074031c000730f"
     },
     {
       "degree": 1,
       "periodic": false,
       "rational": false,
       "points": [
-        6.0171034862859845,
-        -0.026789890342333811,
+        6.01710348628598,
+        -0.0267898903423338,
         0.0,
-        6.933961729086052,
-        -3.8696290551063832,
+        6.93396172908605,
+        -3.86962905510638,
         0.0
       ],
       "weights": [
@@ -348,33 +348,33 @@
       ],
       "knots": [
         0.0,
-        3.95070144197646
+        3.9507014419764581
       ],
       "domain": {
         "start": 0.0,
-        "end": 3.95070144197646,
+        "end": 3.9507014419764581,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Primitive.Interval",
-        "id": "353743adfdd310de401503e7dd23aee3"
+        "id": "63475f4b1ffb3495660f815618b7c64b"
       },
       "displayValue": {
         "value": [
-          6.0171034862859845,
-          -0.026789890342333811,
+          6.01710348628598,
+          -0.0267898903423338,
           0.0,
-          6.933961729086052,
-          -3.8696290551063832,
+          6.93396172908605,
+          -3.86962905510638,
           0.0
         ],
         "closed": false,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Polyline",
-        "id": "2cdde84156ba50c133bad3d00835bd3b"
+        "id": "05d5067a256a7a338050e34c3d29e55a"
       },
       "closed": false,
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.Curve",
-      "id": "e6205e29aceec3878ee7ba6daf8c064f"
+      "id": "103ad41508bf122286463aa7ee04f833"
     }
   ],
   "Curve2D": [
@@ -383,17 +383,17 @@
       "periodic": false,
       "rational": false,
       "points": [
-        1.0773776670107924,
-        0.88417010725028866,
+        1.0773776670107968,
+        0.88417010725028844,
         0.0,
-        1.1682955942072641,
-        0.76654039658455,
+        1.168295594207267,
+        0.76654039658455075,
         0.0,
-        1.2628942683740809,
-        0.65229920563891686,
+        1.2628942683740796,
+        0.65229920563891608,
         0.0,
-        1.3616597501811742,
-        0.54117072180559489,
+        1.3616597501811711,
+        0.54117072180559478,
         0.0
       ],
       "weights": [
@@ -406,52 +406,52 @@
         0.0,
         0.0,
         0.0,
-        5.8078758635372356,
-        5.8078758635372356,
-        5.8078758635372356
+        5.8078758635372347,
+        5.8078758635372347,
+        5.8078758635372347
       ],
       "domain": {
         "start": 0.0,
-        "end": 5.8078758635372356,
+        "end": 5.8078758635372347,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Primitive.Interval",
-        "id": "0f7d1abbdcaf6ef54372e2ece6c8b22a"
+        "id": "c6a235642169217dc2284591ea49810c"
       },
       "displayValue": {
         "value": [
-          1.0773776670107924,
-          0.88417010725028866,
+          1.0773776670107968,
+          0.88417010725028844,
           0.0,
-          1.3616597501811742,
-          0.54117072180559489,
+          1.3616597501811711,
+          0.54117072180559478,
           0.0
         ],
         "closed": false,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Polyline",
-        "id": "c858345614c9fd3a6a672c8fdb8cead2"
+        "id": "1559aab1fdc4c914fc75322dbbcd2dc8"
       },
       "closed": false,
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.Curve",
-      "id": "aad1440f627931e791d0350e5cfd7621"
+      "id": "4887645b35d78f70e74f1f824eab4e73"
     },
     {
       "degree": 3,
       "periodic": false,
       "rational": false,
       "points": [
-        1.3616597501811742,
-        0.54117072180559489,
+        1.3616597501811711,
+        0.54117072180559478,
         0.0,
-        3.2161814417771417,
+        3.21618144177714,
         0.48185991191927685,
         0.0,
-        5.0708788247680507,
-        0.42988529480702764,
+        5.070878824768049,
+        0.42988529480702786,
         0.0,
-        6.9257523829546823,
-        0.38304259375490035,
+        6.9257523829546814,
+        0.38304259375490063,
         0.0
       ],
       "weights": [
@@ -464,52 +464,52 @@
         0.0,
         0.0,
         0.0,
-        5.4620732133980656,
-        5.4620732133980656,
-        5.4620732133980656
+        5.4620732133980621,
+        5.4620732133980621,
+        5.4620732133980621
       ],
       "domain": {
         "start": 0.0,
-        "end": 5.4620732133980656,
+        "end": 5.4620732133980621,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Primitive.Interval",
-        "id": "673b7a820107374b528ce3ca6f30611f"
+        "id": "839416547da79c754d1048959e1b54d7"
       },
       "displayValue": {
         "value": [
-          1.3616597501811742,
-          0.54117072180559489,
+          1.3616597501811711,
+          0.54117072180559478,
           0.0,
-          6.9257523829546823,
-          0.38304259375490035,
+          6.9257523829546814,
+          0.38304259375490063,
           0.0
         ],
         "closed": false,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Polyline",
-        "id": "af34015635ffa6522d81e9cbd5d0a8ad"
+        "id": "97ae9bbdbb3f9f69e5ca62d0e712d3ea"
       },
       "closed": false,
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.Curve",
-      "id": "98d6f109112db55c9b04ac91715dba2d"
+      "id": "8bf25aa00e13ab3dc9c182200eab065f"
     },
     {
       "degree": 3,
       "periodic": false,
       "rational": false,
       "points": [
-        6.9257523829546823,
-        0.38304259375490035,
+        6.9257523829546814,
+        0.38304259375490063,
         0.0,
-        8.277649668932666,
-        0.43994361520953312,
+        8.2776496689326642,
+        0.43994361520953318,
         0.0,
-        9.6296146888726675,
-        0.49511050174717391,
+        9.6296146888726639,
+        0.49511050174717397,
         0.0,
-        10.981647455677948,
-        0.54869281839069317,
+        10.98164745567794,
+        0.54869281839069306,
         0.0
       ],
       "weights": [
@@ -522,51 +522,51 @@
         0.0,
         0.0,
         0.0,
-        5.1086457397353975,
-        5.1086457397353975,
-        5.1086457397353975
+        5.1086457397353886,
+        5.1086457397353886,
+        5.1086457397353886
       ],
       "domain": {
         "start": 0.0,
-        "end": 5.1086457397353975,
+        "end": 5.1086457397353886,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Primitive.Interval",
-        "id": "2f85e50198c933ef077b71babb525645"
+        "id": "84b2803d6715f007c9ee859e126e54a7"
       },
       "displayValue": {
         "value": [
-          6.9257523829546823,
-          0.38304259375490035,
+          6.9257523829546814,
+          0.38304259375490063,
           0.0,
-          10.981647455677948,
-          0.54869281839069317,
+          10.98164745567794,
+          0.54869281839069306,
           0.0
         ],
         "closed": false,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Polyline",
-        "id": "56c272952bef2697ad86ea2d385d345b"
+        "id": "7241d2f86874e3a37c1e1cc7fd6946a5"
       },
       "closed": false,
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.Curve",
-      "id": "95ce40a7a0f4a5fbd212d89d4de4ae87"
+      "id": "7b57cebd59bef5ff2cd02eb7713445a9"
     },
     {
       "degree": 3,
       "periodic": false,
       "rational": false,
       "points": [
-        10.981647455677948,
-        0.54869281839069317,
+        10.98164745567794,
+        0.54869281839069306,
         0.0,
-        10.653651638734546,
+        10.653651638734543,
         0.62641487576209731,
         0.0,
-        10.326713406505986,
-        0.7080228557339362,
+        10.326713406505984,
+        0.70802285573393609,
         0.0,
-        10.000822487458766,
+        10.000822487458768,
         0.7941664215110269,
         0.0
       ],
@@ -580,52 +580,52 @@
         0.0,
         0.0,
         0.0,
-        4.7580600917005693,
-        4.7580600917005693,
-        4.7580600917005693
+        4.7580600917005711,
+        4.7580600917005711,
+        4.7580600917005711
       ],
       "domain": {
         "start": 0.0,
-        "end": 4.7580600917005693,
+        "end": 4.7580600917005711,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Primitive.Interval",
-        "id": "f1958d591b107caa6fba71ea6f4656be"
+        "id": "3c3f41d7e50caea64efbe081c363dedd"
       },
       "displayValue": {
         "value": [
-          10.981647455677948,
-          0.54869281839069317,
+          10.98164745567794,
+          0.54869281839069306,
           0.0,
-          10.000822487458766,
+          10.000822487458768,
           0.7941664215110269,
           0.0
         ],
         "closed": false,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Polyline",
-        "id": "f691237d972bc7e8996ced032b17f05a"
+        "id": "8a65914b6f5d317afe95f4c3676985d6"
       },
       "closed": false,
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.Curve",
-      "id": "e81b5601083bc10fca59c4fefaa158e4"
+      "id": "a8a16054e20395d45508c70dcdf4f24d"
     },
     {
       "degree": 3,
       "periodic": false,
       "rational": false,
       "points": [
-        10.000822487458766,
+        10.000822487458768,
         0.7941664215110269,
         0.0,
-        8.4062196087953946,
-        0.80107531040577939,
+        8.4062196087953964,
+        0.80107531040577928,
         0.0,
-        6.8116191843163207,
-        0.80845645549069522,
+        6.8116191843163234,
+        0.808456455490695,
         0.0,
-        5.2170212126784135,
-        0.81642274801543513,
+        5.217021212678417,
+        0.81642274801543491,
         0.0
       ],
       "weights": [
@@ -638,52 +638,52 @@
         0.0,
         0.0,
         0.0,
-        4.5002491077938913,
-        4.5002491077938913,
-        4.5002491077938913
+        4.5002491077938949,
+        4.5002491077938949,
+        4.5002491077938949
       ],
       "domain": {
         "start": 0.0,
-        "end": 4.5002491077938913,
+        "end": 4.5002491077938949,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Primitive.Interval",
-        "id": "2e9a87da9a1739d1c7f6aaad0836bbd3"
+        "id": "e359cf3c221a95b04b261f8ed596c3ee"
       },
       "displayValue": {
         "value": [
-          10.000822487458766,
+          10.000822487458768,
           0.7941664215110269,
           0.0,
-          5.2170212126784135,
-          0.81642274801543513,
+          5.217021212678417,
+          0.81642274801543491,
           0.0
         ],
         "closed": false,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Polyline",
-        "id": "d1b0379ca3aa129e270b9d621d9a6137"
+        "id": "4db2b7ae85aa4a97a2f05d922feb0874"
       },
       "closed": false,
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.Curve",
-      "id": "4f9d3087fd82c978320ba9d0a4234d1e"
+      "id": "8b76477f38fc3bc22f7eb071c2d3ea23"
     },
     {
       "degree": 3,
       "periodic": false,
       "rational": false,
       "points": [
-        5.2170212126784135,
-        0.81642274801543513,
+        5.217021212678417,
+        0.81642274801543491,
         0.0,
-        3.837112750308223,
-        0.83739562862981209,
+        3.8371127503082265,
+        0.83739562862981187,
         0.0,
-        2.4572315744753821,
-        0.85985455430129,
+        2.4572315744753865,
+        0.85985455430128965,
         0.0,
-        1.0773776670107924,
-        0.88417010725028866,
+        1.0773776670107968,
+        0.88417010725028844,
         0.0
       ],
       "weights": [
@@ -696,127 +696,127 @@
         0.0,
         0.0,
         0.0,
-        3.95070144197646,
-        3.95070144197646,
-        3.95070144197646
+        3.9507014419764581,
+        3.9507014419764581,
+        3.9507014419764581
       ],
       "domain": {
         "start": 0.0,
-        "end": 3.95070144197646,
+        "end": 3.9507014419764581,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Primitive.Interval",
-        "id": "353743adfdd310de401503e7dd23aee3"
+        "id": "63475f4b1ffb3495660f815618b7c64b"
       },
       "displayValue": {
         "value": [
-          5.2170212126784135,
-          0.81642274801543513,
+          5.217021212678417,
+          0.81642274801543491,
           0.0,
-          1.0773776670107924,
-          0.88417010725028866,
+          1.0773776670107968,
+          0.88417010725028844,
           0.0
         ],
         "closed": false,
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Polyline",
-        "id": "7ed811bb74610da5a9f4956b5fc228b5"
+        "id": "d9f24fef48fe423a1439afe0a66419bc"
       },
       "closed": false,
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.Curve",
-      "id": "464bd5f8212c8051843278920af639d3"
+      "id": "58b53e1870318fed7e9b2b307ddfce8d"
     }
   ],
   "Vertices": [
     {
       "Location": {
         "value": [
-          6.933961729086052,
-          -3.8696290551063832,
+          6.93396172908605,
+          -3.86962905510638,
           0.0
         ],
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Point",
-        "id": "f98c3968d6ed8313b5a4cefffdbf6c65"
+        "id": "0df018c511932fe6d00b6a6f0fde6d02"
       },
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.BrepVertex",
-      "id": "a8629e991b7c9cfa29677d705931faea"
+      "id": "52badef628fd4179efb941d8ac1b8c1a"
     },
     {
       "Location": {
         "value": [
-          1.1360036925946808,
+          1.13600369259468,
           -4.20889982211043,
           0.0
         ],
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Point",
-        "id": "a7d2ae644e225015405379c1509511ca"
+        "id": "ac74087ae3b0646a33e8d842127fd0e7"
       },
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.BrepVertex",
-      "id": "10dbae059bcc83e1bc7a7fa36bb69799"
+      "id": "764ea89c6c27e3d2540b55693283add1"
     },
     {
       "Location": {
         "value": [
-          -1.8963607909840441,
-          0.33411783438739628,
+          -1.89636079098404,
+          0.334117834387396,
           0.0
         ],
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Point",
-        "id": "38f5c28d07cdfef2d3c0ed14db7f0fc2"
+        "id": "a4fab39df7a3a937597ef897aeb5ee5e"
       },
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.BrepVertex",
-      "id": "58656b911499252bf853349336eee0ea"
+      "id": "d0f26100ce004c2dbb5fc6be7a92d9d7"
     },
     {
       "Location": {
         "value": [
-          1.0917991172095531,
-          4.4776865447119949,
+          1.09179911720955,
+          4.47768654471199,
           0.0
         ],
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Point",
-        "id": "de370f58ba45edaaadb61e2baa3ce526"
+        "id": "83103b0af87c4776cbb9480cbe236b63"
       },
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.BrepVertex",
-      "id": "feee24d0b75b9f5eea21870a63a4fdea"
+      "id": "8c67a2db80f41ff9fe1393a4fe9726c9"
     },
     {
       "Location": {
         "value": [
-          5.8498535531208722,
-          4.4703502555788468,
+          5.84985355312087,
+          4.47035025557885,
           0.0
         ],
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Point",
-        "id": "299391f89f62f3d0eb9fd85faa9caa33"
+        "id": "13f95cc4b3808b86763609e9656a7e16"
       },
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.BrepVertex",
-      "id": "7337e7064b0fdc7e1edf3e66ae6f6f80"
+      "id": "8a5869380106fd6a2f0c5e324d154cd5"
     },
     {
       "Location": {
         "value": [
-          6.0171034862859845,
-          -0.026789890342333811,
+          6.01710348628598,
+          -0.0267898903423338,
           0.0
         ],
         "totalChildrenCount": 0,
         "speckle_type": "Objects.Geometry.Point",
-        "id": "9a61385784bf7972157a33e38ebb86fc"
+        "id": "29bd817f59aadf1c76c162b8feb60704"
       },
       "totalChildrenCount": 0,
       "speckle_type": "Objects.Geometry.BrepVertex",
-      "id": "30ebc5421d341621f6ddd9a647c8f449"
+      "id": "d6cd698c5b9a9b060c7084b37e89814f"
     }
   ],
   "Edges": [
@@ -1011,7 +1011,8 @@
       "id": "d3e6155a22e4cf532df97db79f41f2d9"
     }
   ],
+  "IsClosed": false,
   "totalChildrenCount": 0,
   "speckle_type": "Objects.Geometry.Brep",
-  "id": "69a913ebf6d950a5d5ad1ccb90973b9b"
+  "id": "d717925a9f3cae213ea47c92e80a0da9"
 }
