@@ -122,6 +122,7 @@ namespace Speckle.DesktopUI.Utils
     }
 
     private ISelectionFilter _filter;
+    [JsonProperty]
     public ISelectionFilter Filter
     {
       get => _filter;

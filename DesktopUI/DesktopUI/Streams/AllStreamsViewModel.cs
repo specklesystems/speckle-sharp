@@ -21,7 +21,7 @@ namespace Speckle.DesktopUI.Streams
     private readonly ConnectorBindings _bindings;
 
     private StreamsRepository _repo;
-    private BindableCollection<StreamState> _streamList;
+    private BindableCollection<StreamState> _streamList = new BindableCollection<StreamState>();
     private Stream _selectedStream;
     private Branch _selectedBranch;
     private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
@@ -31,6 +31,8 @@ namespace Speckle.DesktopUI.Streams
       get => _streamList;
       set => SetAndNotify(ref _streamList, value);
     }
+
+    public bool EmptyState { get => StreamList.Count == 0; }
 
     public Stream SelectedStream
     {
@@ -144,6 +146,7 @@ namespace Speckle.DesktopUI.Streams
     public void Handle(StreamAddedEvent message)
     {
       StreamList.Insert(0, message.NewStream);
+      NotifyOfPropertyChange(nameof(EmptyState));
     }
 
     public void Handle(StreamUpdatedEvent message)
@@ -155,6 +158,7 @@ namespace Speckle.DesktopUI.Streams
     {
       var state = StreamList.First(s => s.Stream.id == message.StreamId);
       StreamList.Remove(state);
+      NotifyOfPropertyChange(nameof(EmptyState));
     }
 
     public void Handle(ApplicationEvent message)

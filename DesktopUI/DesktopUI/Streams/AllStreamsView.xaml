@@ -295,8 +295,23 @@
           <md:Card Grid.Row="0"
                    Width="Auto"
                    Margin="12,10,12,10"
-                   md:ShadowAssist.ShadowDepth="Depth0"
                    UniformCornerRadius="8">
+            <md:Card.Style>
+              <Style>
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding ServerUpdates}"
+                               Value="True">
+                    <Setter Property="md:ShadowAssist.ShadowDepth"
+                            Value="Depth5" />
+                  </DataTrigger>
+                  <DataTrigger Binding="{Binding ServerUpdates}"
+                               Value="False">
+                    <Setter Property="md:ShadowAssist.ShadowDepth"
+                            Value="Depth1" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </md:Card.Style>
             <StackPanel>
               <Grid Margin="16"
                     x:Name="CardGrid">
@@ -625,6 +640,25 @@
                         ItemTemplate="{StaticResource StreamCardTemplate}"
                         ItemsSource="{Binding StreamList, Mode=OneWay, UpdateSourceTrigger=Default}" />
         </ScrollViewer>
+        <StackPanel Grid.Row="0" Margin="58,30,58,0" Visibility="{Binding EmptyState, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <!--<StackPanel.Style>
+            <Style TargetType="StackPanel">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding StreamList.Count}" Value="0">
+                  <Setter Property="Visibility"
+                          Value="Visible"></Setter>                  
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </StackPanel.Style>-->
+          <TextBlock
+            FontSize="30" TextWrapping="Wrap" FontWeight="Light" Foreground="Gray">Hello! Seems like you have no streams in this file.</TextBlock>
+          <Separator Margin="0,20,300,20" Background="Gray"></Separator>
+          <TextBlock FontSize="20"
+                     TextWrapping="Wrap"
+                     FontWeight="Light"
+                     Foreground="Gray">You can add or create a stream from the big friendly blue button in the lower right.</TextBlock>
+        </StackPanel>
       </Grid>
 
       <!-- #region The BAB (Big Add Button) -->
@@ -632,8 +666,8 @@
         <Button x:Name="CreateStreamButton"
                 Canvas.Right="0"
                 Canvas.Bottom="0"
-                Width="45"
-                Height="45"
+                Width="60"
+                Height="60"
                 Margin="32"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
