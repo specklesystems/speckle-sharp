@@ -91,7 +91,7 @@ namespace Objects.Converter.Revit
     public DB.FamilyInstance FamilyInstanceToNative(RevitFamilyInstance speckleFi)
     {
       string familyName = speckleFi.family ?? "";
-      DB.FamilySymbol familySymbol = GetFamilySymbol(speckleFi as Element);
+      DB.FamilySymbol familySymbol = GetFamilySymbol(speckleFi as IBuiltElement);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
       DB.Level level = LevelToNative(speckleFi.level);
       DB.FamilyInstance familyInstance = null;

@@ -8,9 +8,9 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public TopographySurface TopographyToNative(Topography speckleSurface)
+    public TopographySurface TopographyToNative(ITopography speckleSurface)
     {
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleSurface.applicationId, speckleSurface.speckle_type);
+      var (docObj, stateObj) = GetExistingElementByApplicationId(((Topography)speckleSurface).applicationId, ((Topography)speckleSurface).speckle_type);
 
       var pts = new List<XYZ>();
       for (int i = 0; i < speckleSurface.baseGeometry.vertices.Count; i += 3)
@@ -41,8 +41,8 @@ namespace Objects.Converter.Revit
       }
 
       var revitSurface = TopographySurface.Create(Doc, pts);
-      if (speckleSurface is IRevit ire)
-        SetElementParams(revitSurface, ire);
+      if (speckleSurface is RevitTopography rt)
+        SetElementParams(revitSurface, rt);
 
       return revitSurface;
     }

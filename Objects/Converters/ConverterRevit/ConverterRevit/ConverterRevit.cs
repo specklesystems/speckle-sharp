@@ -73,10 +73,10 @@ namespace Objects.Converter.Revit
           return ModelCurveToSpeckle(o);
 
         case DB.Opening o:
-          return OpeningToSpeckle(o);
+          return OpeningToSpeckle(o) as Base;
 
         case DB.RoofBase o:
-          return RoofToSpeckle(o);
+          return RoofToSpeckle(o) as Base;
 
         case DB.Architecture.Room o:
           return RoomToSpeckle(o);
@@ -88,7 +88,7 @@ namespace Objects.Converter.Revit
           return WallToSpeckle(o) as Base;
 
         case DB.Mechanical.Duct o:
-          return DuctToSpeckle(o);
+          return DuctToSpeckle(o) as Base;
 
         default:
           ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Speckle"));
@@ -109,7 +109,7 @@ namespace Objects.Converter.Revit
         case AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
 
-        case Beam o:
+        case IBeam o:
           return BeamToNative(o);
 
         case Brace o:

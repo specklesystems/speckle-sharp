@@ -11,14 +11,14 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Level LevelToNative(Level speckleLevel)
+    public DB.Level LevelToNative(ILevel speckleLevel)
     {
 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleLevel.applicationId, speckleLevel.speckle_type);
+      var (docObj, stateObj) = GetExistingElementByApplicationId(((Level)speckleLevel).applicationId, ((Level)speckleLevel).speckle_type);
 
       //TODO: should check hashes on all conversions?
       // if the new and old have the same id (hash equivalent) and the doc obj is not marked as being modified, return the doc object
-      if (stateObj != null && docObj != null && speckleLevel.id == stateObj.id && (bool)stateObj["userModified"] == false)
+      if (stateObj != null && docObj != null && ((Level)speckleLevel).id == stateObj.id && (bool)stateObj["userModified"] == false)
         return (DB.Level)docObj;
 
       if (docObj == null)
@@ -89,15 +89,15 @@ namespace Objects.Converter.Revit
       catch { }
     }
 
-    private DB.Level TryMatchExistingLevel(Level level)
+    private DB.Level TryMatchExistingLevel(ILevel level)
     {
       var collector = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
 
       //match by name
       var revitLevel = collector.FirstOrDefault(x => x.Name == level.name);
       //match by id
-      if (revitLevel == null && level.HasMember<string>("elementId"))
-        revitLevel = collector.FirstOrDefault(x => x.Id.ToString() == level.GetMemberSafe("elementId", ""));
+      if (revitLevel == null && level is RevitLevel rl && !string.IsNullOrEmpty(rl.elementId))
+        revitLevel = collector.FirstOrDefault(x => x.Id.ToString() == rl.elementId);
       //match by elevation
       if (revitLevel == null)
         revitLevel = collector.FirstOrDefault(x => Math.Abs(x.Elevation - level.elevation * Scale) < 0.1);

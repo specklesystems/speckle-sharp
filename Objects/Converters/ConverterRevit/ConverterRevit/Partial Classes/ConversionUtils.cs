@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
     private void AddCommonRevitProps(IRevit speckleElement, DB.Element revitElement)
     {
 
-      if (speckleElement is IRevit speckleRevitElement)
+      if (speckleElement is RevitElement speckleRevitElement)
       {
         if (revitElement is DB.FamilyInstance)
         {
@@ -25,11 +25,11 @@ namespace Objects.Converter.Revit
 
         if (CanGetElementTypeParams(revitElement))
           speckleRevitElement.typeParameters = GetElementTypeParams(revitElement);
+        speckleRevitElement.parameters = GetElementParams(revitElement);
+        speckleRevitElement.applicationId = revitElement.UniqueId;
       }
 
-      speckleElement.parameters = GetElementParams(revitElement);
       speckleElement.elementId = revitElement.Id.ToString();
-      speckleElement.applicationId = revitElement.UniqueId;
     }
     //TODO: CLEAN THE BELOW 
     /// <summary>
@@ -343,16 +343,16 @@ namespace Objects.Converter.Revit
 
 
 
-    private FamilySymbol GetFamilySymbol(Element element)
+    private FamilySymbol GetFamilySymbol(IBuiltElement element)
     {
       List<FamilySymbol> symbols = new List<FamilySymbol>();
       ElementMulticategoryFilter filter = null;
 
-      if (element is Column)
+      if (element is IColumn)
       {
         filter = new ElementMulticategoryFilter(Categories.columnCategories);
       }
-      else if (element is Beam || element is Brace)
+      else if (element is IBeam || element is IBrace)
       {
         filter = new ElementMulticategoryFilter(Categories.beamCategories);
       }
@@ -367,7 +367,7 @@ namespace Objects.Converter.Revit
       }
 
 
-      if (element is IRevit ire)
+      if (element is RevitElement ire)
       {
         //match family and type
         var match = symbols.FirstOrDefault(x => x.FamilyName == ire.family && x.Name == ire.type);

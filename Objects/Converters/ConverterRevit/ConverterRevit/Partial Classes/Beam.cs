@@ -10,7 +10,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
+    public DB.Element BeamToNative(IBeam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
       if (speckleBeam.baseLine == null)
       {
@@ -24,10 +24,11 @@ namespace Objects.Converter.Revit
       DB.FamilyInstance revitBeam = null;
 
       //comes from revit or schema builder, has these props
-      if (speckleBeam is RevitBeam rb)
+      var speckleRevitBeam = speckleBeam as RevitBeam;
+      if (speckleRevitBeam != null)
       {
-        familyName = rb.family;
-        level = LevelToNative(rb.level);
+        familyName = speckleRevitBeam.family;
+        level = LevelToNative(speckleRevitBeam.level);
       }
       else
       {
@@ -35,7 +36,7 @@ namespace Objects.Converter.Revit
       }
 
       //try update existing 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleBeam.applicationId, speckleBeam.speckle_type);
+      var (docObj, stateObj) = GetExistingElementByApplicationId(((Beam)speckleBeam).applicationId, ((Beam)speckleBeam).speckle_type);
       if (docObj != null)
       {
         try
@@ -72,8 +73,8 @@ namespace Objects.Converter.Revit
       //reference level, only for beams
       TrySetParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
 
-      if (speckleBeam is IRevit item)
-        SetElementParams(revitBeam, item);
+      if (speckleRevitBeam != null)
+        SetElementParams(revitBeam, speckleRevitBeam);
 
       return revitBeam;
     }

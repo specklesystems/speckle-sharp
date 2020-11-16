@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
   {
     // TODO: (OLD)  A polycurve spawning multiple walls is not yet handled properly with diffing, etc.
     // TODO: (OLD)  Most probably, just get rid of the polyline wall handling stuff. It's rather annyoing and confusing...
-    public DB.Wall WallToNative(Wall speckleWall)
+    public DB.Wall WallToNative(IWall speckleWall)
     {
 
       if (speckleWall.baseLine == null)
@@ -32,11 +32,12 @@ namespace Objects.Converter.Revit
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0); //TODO: support poliline/polycurve walls
 
       //comes from revit or schema builder, has these props
-      if (speckleWall is RevitWall rw)
+      var speckleRevitWall = speckleWall as RevitWall;
+      if (speckleRevitWall != null)
       {
-        wallType = GetElementByTypeAndName<WallType>(rw.type);
-        level = LevelToNative(rw.level);
-        structural = rw.structural;
+        wallType = GetElementByTypeAndName<WallType>(speckleRevitWall.type);
+        level = LevelToNative(speckleRevitWall.level);
+        structural = speckleRevitWall.structural;
       }
       else
       {
@@ -44,7 +45,7 @@ namespace Objects.Converter.Revit
       }
 
       //try update existing wall
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleWall.applicationId, speckleWall.speckle_type);
+      var (docObj, stateObj) = GetExistingElementByApplicationId(((Wall)speckleWall).applicationId, ((Wall)speckleWall).speckle_type);
       if (docObj != null)
       {
         try
@@ -83,8 +84,8 @@ namespace Objects.Converter.Revit
         revitWall.Flip();
       }
 
-      if (speckleWall is IRevit item)
-        SetElementParams(revitWall, item);
+      if (speckleRevitWall != null)
+        SetElementParams(revitWall, speckleRevitWall);
 
       return revitWall;
     }

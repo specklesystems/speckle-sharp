@@ -54,7 +54,6 @@ namespace Objects
 
   public interface IBuiltElement
   {
-
   }
 
   public interface IBeam : IBuiltElement

@@ -19,7 +19,7 @@ namespace Objects.Converter.Revit
 
       var speckleRoom = new RevitRoom();
 
-      speckleRoom.type = revitRoom.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
+      speckleRoom.name = revitRoom.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
       speckleRoom.number = revitRoom.Number;
       speckleRoom.basePoint = (Point)LocationToSpeckle(revitRoom);
       speckleRoom.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);

@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element RoofToNative(Roof speckleRoof)
+    public DB.Element RoofToNative(IRoof speckleRoof)
     {
       if (speckleRoof.outline == null)
       {
@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
       var roofType = GetElementByTypeAndName<RoofType>(type);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleRoof.applicationId, speckleRoof.speckle_type);
+      var (docObj, stateObj) = GetExistingElementByApplicationId(((Roof)speckleRoof).applicationId, ((Roof)speckleRoof).speckle_type);
       if (docObj != null)
         Doc.Delete(docObj.Id);
 
@@ -103,8 +103,8 @@ namespace Objects.Converter.Revit
       {
         ConversionErrors.Add(new Error("Could not create holes in roof", ex.Message));
       }
-      if (speckleRoof is IRevit ire)
-        SetElementParams(revitRoof, ire);
+      if (speckleRevitRoof != null)
+        SetElementParams(revitRoof, speckleRevitRoof);
       return revitRoof;
     }
 
@@ -117,7 +117,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private Element RoofToSpeckle(DB.RoofBase revitRoof)
+    private IRoof RoofToSpeckle(DB.RoofBase revitRoof)
     {
       var profiles = GetProfiles(revitRoof);
 

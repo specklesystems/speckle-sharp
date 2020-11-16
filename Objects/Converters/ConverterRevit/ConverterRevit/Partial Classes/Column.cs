@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element ColumnToNative(Column speckleColumn)
+    public DB.Element ColumnToNative(IColumn speckleColumn)
     {
       if (speckleColumn.baseLine == null)
       {
@@ -49,7 +49,7 @@ namespace Objects.Converter.Revit
       }
 
 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleColumn.applicationId, speckleColumn.speckle_type);
+      var (docObj, stateObj) = GetExistingElementByApplicationId(((Column)speckleColumn).applicationId, ((Column)speckleColumn).speckle_type);
       //try update existing 
       if (docObj != null)
       {

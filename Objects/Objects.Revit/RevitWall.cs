@@ -7,7 +7,7 @@ using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
-  [SchemaBuilderIgnore]
+  [SchemaVisibility(Visibility.Hidden)]
   public class RevitWall : RevitElement, IWall
   {
     public double height { get; set; }

@@ -11,5 +11,6 @@ namespace Objects.Revit
   public interface IRevit
   {
     string elementId { get; set; }
+    Dictionary<string, object> parameters { get; set; }
   }
 }

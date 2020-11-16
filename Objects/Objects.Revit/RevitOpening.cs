@@ -5,29 +5,33 @@ using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  [SchemaBuilderIgnore]
-  public class RevitVerticalOpening : RevitElement, IOpening
+  [SchemaVisibility(Visibility.Hidden)]
+  public class RevitOpening : RevitElement, IOpening
+  {
+    public ICurve outline { get; set; }
+
+  }
+
+  [SchemaVisibility(Visibility.Hidden)]
+  public class RevitVerticalOpening : RevitOpening
   {
     public Element host { get; set; }
 
     public int revitHostId { get; set; }
-    public ICurve outline { get; set; }
 
   }
 
-  [SchemaBuilderIgnore]
-  public class RevitWallOpening : RevitElement, IOpening
+  [SchemaVisibility(Visibility.Hidden)]
+  public class RevitWallOpening : RevitOpening
   {
     public RevitWall host { get; set; }
 
     public int revitHostId { get; set; }
-    public ICurve outline { get; set; }
 
   }
 
-  public class RevitShaft : RevitElement, IOpening
+  public class RevitShaft : RevitOpening
   {
     public RevitLevel topLevel { get; set; }
-    public ICurve outline { get; set; }
   }
 }

@@ -16,11 +16,11 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Opening OpeningToNative(Opening speckleOpening)
+    public DB.Opening OpeningToNative(IOpening speckleOpening)
     {
       var baseCurves = CurveToNative(speckleOpening.outline);
 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleOpening.applicationId, speckleOpening.speckle_type);
+      var (docObj, stateObj) = GetExistingElementByApplicationId(((Opening)speckleOpening).applicationId, ((Opening)speckleOpening).speckle_type);
       if (docObj != null)
         Doc.Delete(docObj.Id);
 
@@ -56,13 +56,14 @@ namespace Objects.Converter.Revit
           throw new Exception("Opening type not supported");
       }
 
-      if (speckleOpening is IRevit ire)
-        SetElementParams(revitOpening, ire);
+
+      if (speckleOpening is RevitOpening ro)
+        SetElementParams(revitOpening, ro);
 
       return revitOpening;
     }
 
-    public Opening OpeningToSpeckle(DB.Opening revitOpening)
+    public IOpening OpeningToSpeckle(DB.Opening revitOpening)
     {
       //REVIT PARAMS > SPECKLE PROPS
       var baseLevelParam = revitOpening.get_Parameter(BuiltInParameter.WALL_BASE_CONSTRAINT);

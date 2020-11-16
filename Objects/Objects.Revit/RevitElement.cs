@@ -10,14 +10,14 @@ namespace Objects.Revit
   /// Represents a generic Revit element that has type, family, level and parameters
   /// </summary>
 
-  [SchemaBuilderIgnore]
+  [SchemaVisibility(Visibility.Hidden)]
   public class RevitElement : Element, IRevit
   {
     public string type { get; set; }
     public string family { get; set; }
     public RevitLevel level { get; set; }
 
-    [SchemaBuilderIgnore]
+    [SchemaVisibility(Visibility.Hidden)]
     public string elementId { get; set; }
     public Dictionary<string, object> parameters { get; set; }
     public Dictionary<string, object> typeParameters { get; set; }

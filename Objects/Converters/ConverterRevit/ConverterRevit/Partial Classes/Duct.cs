@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Duct DuctToNative(Duct speckleDuct)
+    public DB.Duct DuctToNative(IDuct speckleDuct)
     {
       DB.Duct duct = null;
       var baseLine = LineToNative(speckleDuct.baseLine);
@@ -39,7 +39,7 @@ namespace Objects.Converter.Revit
       var ductType = GetElementByTypeAndName<DB.DuctType>(type);
       var system = GetElementByTypeAndName<MechanicalSystemType>(speckleDuct.system);
 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleDuct.applicationId, speckleDuct.speckle_type);
+      var (docObj, stateObj) = GetExistingElementByApplicationId(((Duct)speckleDuct).applicationId, ((Duct)speckleDuct).speckle_type);
 
       // deleting instead of updating for now!
       if (docObj != null)
@@ -52,7 +52,7 @@ namespace Objects.Converter.Revit
 
       return duct;
     }
-    public Duct DuctToSpeckle(DB.Duct revitDuct)
+    public IDuct DuctToSpeckle(DB.Duct revitDuct)
     {
       var baseGeometry = LocationToSpeckle(revitDuct);
       var baseLine = baseGeometry as Line;

@@ -10,7 +10,7 @@ namespace Objects.Revit
     public Element host { get; set; }
     public Point basePoint { get; set; }
 
-    [SchemaBuilderIgnore]
+    [SchemaVisibility(Visibility.Hidden)]
     public int revitHostId { get; set; }
     public bool facingFlipped { get; set; }
     public bool handFlipped { get; set; }

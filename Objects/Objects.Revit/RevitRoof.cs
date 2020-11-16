@@ -3,23 +3,27 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Objects.BuiltElements;
+using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
+  [SchemaVisibility(Visibility.Hidden)]
 
-  public class RevitExtrusionRoof : RevitElement, IRoof
+  public class RevitRoof : RevitElement, IRoof
+  {
+    public ICurve outline { get; set; }
+    public List<ICurve> voids { get; set; } = new List<ICurve>();
+
+  }
+  public class RevitExtrusionRoof : RevitRoof
   {
     public double start { get; set; }
     public double end { get; set; }
     public Line referenceLine { get; set; }
-    public ICurve outline { get; set; }
-    public List<ICurve> voids { get; set; } = new List<ICurve>();
   }
 
-  public class RevitFootprintRoof : RevitElement, IRoof
+  public class RevitFootprintRoof : RevitRoof
   {
     public RevitLevel cutOffLevel { get; set; }
-    public ICurve outline { get; set; }
-    public List<ICurve> voids { get; set; } = new List<ICurve>();
   }
 }
