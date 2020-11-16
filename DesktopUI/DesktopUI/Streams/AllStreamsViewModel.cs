@@ -100,9 +100,8 @@ namespace Speckle.DesktopUI.Streams
     public async void ShowStreamUpdateObjectsDialog(StreamState state)
     {
       Tracker.TrackPageview("stream", "dialog-update");
-      var viewmodel = _dialogFactory.CreateStreamUpdateDialog();
+      var viewmodel = _dialogFactory.StreamUpdateObjectsDialogView();
       viewmodel.StreamState = state;
-      viewmodel.SelectedSlide = 1;
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
       await DialogHost.Show(view, "RootDialogHost");

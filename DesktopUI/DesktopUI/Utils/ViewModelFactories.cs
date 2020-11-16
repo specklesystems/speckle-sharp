@@ -1,5 +1,6 @@
 ﻿using Speckle.DesktopUI.Settings;
 using Speckle.DesktopUI.Streams;
+using Speckle.DesktopUI.Streams.Dialogs;
 
 namespace Speckle.DesktopUI.Utils
 {
@@ -25,7 +26,7 @@ namespace Speckle.DesktopUI.Utils
   public interface IDialogFactory
   {
     StreamCreateDialogViewModel CreateStreamCreateDialog();
-    StreamUpdateDialogViewModel CreateStreamUpdateDialog();
+    StreamUpdateObjectsDialogViewModel StreamUpdateObjectsDialogView();
     ShareStreamDialogViewModel CreateShareStreamDialogViewModel();
   }
 }
