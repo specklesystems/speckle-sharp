@@ -115,10 +115,10 @@ namespace ConnectorGrasshopper
 
       var description = t.FullName;
 
-      var attr = t.GetCustomAttributes().Where(x => x is SchemaBuilderAttribute).FirstOrDefault();
+      var attr = t.GetCustomAttributes().Where(x => x is SchemaDescriptionAttribute).FirstOrDefault();
       if (attr != null)
       {
-        description += "\n\n" + ((SchemaBuilderAttribute)attr).Description;
+        description += "\n\n" + ((SchemaDescriptionAttribute)attr).Description;
       }
 
       return description;
