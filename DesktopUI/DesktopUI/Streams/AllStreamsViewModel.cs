@@ -29,7 +29,11 @@ namespace Speckle.DesktopUI.Streams
     public BindableCollection<StreamState> StreamList
     {
       get => _streamList;
-      set => SetAndNotify(ref _streamList, value);
+      set 
+      {
+        SetAndNotify(ref _streamList, value);
+        NotifyOfPropertyChange(nameof(EmptyState));
+      }
     }
 
     public bool EmptyState { get => StreamList.Count == 0; }
@@ -74,11 +78,6 @@ namespace Speckle.DesktopUI.Streams
     private BindableCollection<StreamState> LoadStreams()
     {
       var streams = new BindableCollection<StreamState>(_bindings.GetFileContext());
-
-      if (streams.Count == 0)
-      {
-        streams = _repo.LoadTestStreams();
-      }
 
       return streams;
     }
@@ -181,6 +180,7 @@ namespace Speckle.DesktopUI.Streams
         case ApplicationEvent.EventType.ViewActivated:
           StreamList.Clear();
           StreamList = new BindableCollection<StreamState>(message.DynamicInfo);
+          StreamList.Refresh();
           break;
         case ApplicationEvent.EventType.ApplicationIdling:
           break;

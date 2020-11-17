@@ -81,6 +81,20 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
+    public List<Branch> Branches
+    {
+      get
+      {
+        return Stream.branches.items;
+      }
+      set
+      {
+        Stream.branches.items = value;
+        NotifyOfPropertyChange(nameof(BranchContextMenuItems));
+        NotifyOfPropertyChange(nameof(CommitContextMenuItems));
+      }
+    }
+
     private Branch _Branch;
     [JsonProperty]
     public Branch Branch
@@ -109,13 +123,17 @@ namespace Speckle.DesktopUI.Utils
       {
         var all = new BindableCollection<BranchContextMenuItem>();
         all.AddRange(
-          Stream.branches.items.Select(b => new BranchContextMenuItem()
+          Stream.branches.items.Select(b =>
           {
-            Branch = b,
-            Tooltip = Branch.name == b.name ? "Current branch" : $"Switch to {b.name}",
-            Icon = Branch.name == b.name ? new PackIcon { Kind = PackIconKind.CheckBold, FontSize = 12 } : new PackIcon { Kind = PackIconKind.SourceBranch, FontSize = 12 },
-            CommandArgument = new BranchSwitchCommandArgument { RootStreamState = this, Branch = b }
-          }));;
+            return new BranchContextMenuItem()
+            {
+              Branch = new Branch { name = $"{b.name} ({(b.commits?.items != null ? b.commits.items.Count : 0)} commits)" },
+              Tooltip = Branch.name == b.name ? "Current branch" : $"Switch to {b.name}",
+              Icon = Branch.name == b.name ? new PackIcon { Kind = PackIconKind.CheckBold, FontSize = 12 } : new PackIcon { Kind = PackIconKind.SourceBranch, FontSize = 12 },
+              CommandArgument = new BranchSwitchCommandArgument { RootStreamState = this, Branch = b }
+            };
+          }
+          ));
 
         if (IsSenderCard)
         {
@@ -124,7 +142,7 @@ namespace Speckle.DesktopUI.Utils
             Branch = new Branch { name = "Add a new branch" },
             Tooltip = "Adds a new branch and sets it.",
             Icon = new PackIcon { Kind = PackIconKind.Add, FontSize = 12 },
-            CommandArgument = new BranchSwitchCommandArgument { RootStreamState = this, Branch = new Branch { name = "Add a new branch" } }
+            CommandArgument = new BranchSwitchCommandArgument { RootStreamState = this, Branch = null }
           });
         }
 
@@ -439,7 +457,8 @@ namespace Speckle.DesktopUI.Utils
         Stream.branches.items.Add(new Branch
         {
           name = "TODO_" + rnd.Next(1, 10).ToString(),
-          id = rnd.Next(1, 1000000).ToString()
+          id = rnd.Next(1, 1000000).ToString(),
+          commits = new Commits { items = new List<Commit>() }
         });
         Branch = Stream.branches.items.Last();
 
@@ -451,6 +470,7 @@ namespace Speckle.DesktopUI.Utils
       Branch = branch;
       Globals.Notify($"Switched active branch to {Branch.name}.");
       NotifyOfPropertyChange(nameof(BranchContextMenuItem));
+      Globals.HostBindings.UpdateStream(this);
     }
 
     public void SwitchCommit(Commit commit)
@@ -461,6 +481,7 @@ namespace Speckle.DesktopUI.Utils
       }
 
       Commit = commit;
+      Globals.HostBindings.UpdateStream(this);
     }
 
     public void SendWithCommitMessage(object sender, KeyEventArgs e)
@@ -526,7 +547,7 @@ namespace Speckle.DesktopUI.Utils
     public void SwapState()
     {
       IsSenderCard = !IsSenderCard;
-
+      Globals.HostBindings.UpdateStream(this);
     }
 
     #endregion
@@ -615,7 +636,7 @@ namespace Speckle.DesktopUI.Utils
 
     private void HandleCommitCreated(object sender, CommitInfo info)
     {
-      if (LatestCommit().id == info.id)
+      if (IsSenderCard)
       {
         return;
       }

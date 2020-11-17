@@ -95,11 +95,13 @@ namespace Speckle.DesktopUI.Streams
 
         var client = StreamState.Client;
         await client.StreamUpdate(new StreamUpdateInput { id = StreamState.Stream.id, name = _StreamName, description = _StreamDescription });
-        ((RootViewModel)Parent).Notifications.Enqueue("Stream updated."); 
+
+        Globals.HostBindings.UpdateStream(StreamState);
+        Globals.Notify("Stream updated.");
       }
       catch (Exception e)
       {
-        ((RootViewModel)Parent).Notifications.Enqueue($"Failed to update stream.\nError: {e.Message}");
+        Globals.Notify($"Failed to update stream.\nError: {e.Message}");
       }
     }
 
@@ -131,7 +133,7 @@ namespace Speckle.DesktopUI.Streams
     public void CopyStreamId(string streamId)
     {
       Clipboard.SetText(streamId);
-      _events.Publish(new ShowNotificationEvent() { Notification = "Stream ID copied to clipboard!" });
+      Globals.Notify("Stream ID copied to clipboard!");
     }
 
     public void OpenStreamInWeb(StreamState state)
