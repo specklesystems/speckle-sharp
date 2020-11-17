@@ -14,32 +14,32 @@ namespace Objects.Converter.Revit
     public DB.Level LevelToNative(ILevel speckleLevel)
     {
 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(((Level)speckleLevel).applicationId, ((Level)speckleLevel).speckle_type);
+      //var (docObj, stateObj) = GetExistingElementByApplicationId(((Level)speckleLevel).applicationId, ((Level)speckleLevel).speckle_type);
 
       //TODO: should check hashes on all conversions?
       // if the new and old have the same id (hash equivalent) and the doc obj is not marked as being modified, return the doc object
-      if (stateObj != null && docObj != null && ((Level)speckleLevel).id == stateObj.id && (bool)stateObj["userModified"] == false)
-        return (DB.Level)docObj;
+      //if (stateObj != null && docObj != null && ((Level)speckleLevel).id == stateObj.id && (bool)stateObj["userModified"] == false)
+      //  return (DB.Level)docObj;
 
-      if (docObj == null)
-        docObj = TryMatchExistingLevel(speckleLevel);
+      //if (docObj == null)
+      //  docObj = TryMatchExistingLevel(speckleLevel);
 
       var elevation = speckleLevel.elevation * Scale;
       DB.Level revitLevel = null;
 
       //try update existing element
-      if (docObj != null)
-      {
-        try
-        {
-          revitLevel = docObj as DB.Level;
-          revitLevel.Elevation = elevation;
-        }
-        catch (Exception e)
-        {
-          //element update failed, create a new one
-        }
-      }
+      //if (docObj != null)
+      //{
+      //  try
+      //  {
+      //    revitLevel = docObj as DB.Level;
+      //    revitLevel.Elevation = elevation;
+      //  }
+      //  catch (Exception e)
+      //  {
+      //    //element update failed, create a new one
+      //  }
+      //}
 
       var speckleRevitLevel = speckleLevel as RevitLevel;
 

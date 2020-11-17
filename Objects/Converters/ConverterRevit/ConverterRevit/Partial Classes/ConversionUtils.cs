@@ -407,7 +407,7 @@ namespace Objects.Converter.Revit
     private void TrySetParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
     {
       var param = elem.get_Parameter(bip);
-      if (param != null && value != null)
+      if (param != null && value != null && !param.IsReadOnly)
         param.Set(value.Id);
     }
 
