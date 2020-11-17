@@ -7,7 +7,7 @@ using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
-  [SchemaVisibility(Visibility.Hidden)]
+  [SchemaIgnore]
 
   public class RevitRoof : RevitElement, IRoof
   {

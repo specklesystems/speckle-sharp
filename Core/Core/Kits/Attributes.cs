@@ -21,26 +21,15 @@ namespace Speckle.Core.Kits
     }
   }
 
+  /// <summary>
+  /// Used to ignore classes or properties from schema builder, expand objects etc
+  /// </summary>
   [AttributeUsage(AttributeTargets.All)]
-  public class SchemaVisibilityAttribute : Attribute
+  public class SchemaIgnoreAttribute : Attribute
   {
-    private Visibility _visibility;
 
-    public virtual Visibility Visibility
-    {
-      get { return _visibility; }
-    }
 
-    public SchemaVisibilityAttribute(Visibility visibility)
-    {
-      _visibility = visibility;
-    }
   }
 
-  public enum Visibility
-  {
-    Hidden,
-    Internal,
-    Visible
-  }
+
 }

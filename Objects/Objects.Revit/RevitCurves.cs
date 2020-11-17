@@ -11,7 +11,7 @@ namespace Objects.Revit
   {
     public ICurve baseCurve { get; set; }
     public string lineStyle { get; set; }
-    [SchemaVisibility(Visibility.Hidden)]
+    [SchemaIgnore]
     public string elementId { get; set; }
     public Dictionary<string, object> parameters { get; set; }
   }
@@ -20,7 +20,7 @@ namespace Objects.Revit
   {
     public ICurve baseCurve { get; set; }
     public string lineStyle { get; set; }
-    [SchemaVisibility(Visibility.Hidden)]
+    [SchemaIgnore]
     public string elementId { get; set; }
     public Dictionary<string, object> parameters { get; set; }
   }
@@ -29,7 +29,7 @@ namespace Objects.Revit
   {
     public ICurve baseCurve { get; set; }
 
-    [SchemaVisibility(Visibility.Hidden)]
+    [SchemaIgnore]
     public string elementId { get; set; }
     public Dictionary<string, object> parameters { get; set; }
 

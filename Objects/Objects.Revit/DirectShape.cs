@@ -15,7 +15,7 @@ namespace Objects.Revit
     public RevitCategory category { get; set; }
     public Mesh baseGeometry { get; set; }
 
-    [SchemaVisibility(Visibility.Hidden)]
+    [SchemaIgnore]
     public string elementId { get; set; }
     public Dictionary<string, object> parameters { get; set; }
   }

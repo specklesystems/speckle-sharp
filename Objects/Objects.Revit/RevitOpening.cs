@@ -5,14 +5,14 @@ using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  [SchemaVisibility(Visibility.Hidden)]
+  [SchemaIgnore]
   public class RevitOpening : RevitElement, IOpening
   {
     public ICurve outline { get; set; }
 
   }
 
-  [SchemaVisibility(Visibility.Hidden)]
+  [SchemaIgnore]
   public class RevitVerticalOpening : RevitOpening
   {
     public Element host { get; set; }
@@ -21,7 +21,7 @@ namespace Objects.Revit
 
   }
 
-  [SchemaVisibility(Visibility.Hidden)]
+  [SchemaIgnore]
   public class RevitWallOpening : RevitOpening
   {
     public RevitWall host { get; set; }

@@ -12,10 +12,10 @@ namespace Objects.Revit
   {
     public string name { get; set; }
     public string number { get; set; }
-    [SchemaVisibility(Visibility.Hidden)]
+    [SchemaIgnore]
     public double area { get; set; }
 
-    [SchemaVisibility(Visibility.Hidden)]
+    [SchemaIgnore]
     public double volume { get; set; }
     public List<ICurve> voids { get; set; }
     public ICurve outline { get; set; }
@@ -23,7 +23,7 @@ namespace Objects.Revit
     public RevitLevel level { get; set; }
     public Dictionary<string, object> parameters { get; set; }
 
-    [SchemaVisibility(Visibility.Hidden)]
+    [SchemaIgnore]
     public string elementId { get; set; }
   }
 }

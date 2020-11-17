@@ -88,7 +88,7 @@ namespace ConnectorGrasshopper
       foreach (var p in myType.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(pinfo => pinfo.Name != "Type"))
       {
         var att = p.GetCustomAttributes();
-        if (p.GetCustomAttributes().Any(x => x is SchemaVisibilityAttribute sva && sva.Visibility != Visibility.Visible))
+        if (p.GetCustomAttributes().Any(x => x is SchemaIgnoreAttribute sva && sva.Visibility != Visibility.Visible))
           continue;
         RegisterPropertyAsInputParameter(p, k++);
       }

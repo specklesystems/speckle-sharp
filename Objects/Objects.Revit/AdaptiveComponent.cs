@@ -13,7 +13,7 @@ namespace Objects.Revit
     public bool flipped { get; set; }
     public List<Point> basePoints { get; set; }
 
-    [SchemaVisibility(Visibility.Hidden)]
+    [SchemaIgnore]
     public string elementId { get; set; }
     public Dictionary<string, object> parameters { get; set; }
 

@@ -15,7 +15,7 @@ namespace Objects.Revit
     public bool createView { get; set; }
     public Dictionary<string, object> parameters { get; set; }
 
-    [SchemaVisibility(Visibility.Hidden)]
+    [SchemaIgnore]
     public string elementId { get; set; }
 
   }
