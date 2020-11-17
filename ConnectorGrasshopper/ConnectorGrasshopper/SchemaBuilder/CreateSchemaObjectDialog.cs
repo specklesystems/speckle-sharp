@@ -174,7 +174,7 @@ namespace ConnectorGrasshopper
 
     private List<Type> ListAvailableTypes()
     {
-      return KitManager.Types.ToList();
+      return KitManager.Types.Where(x => x.GetCustomAttribute<SchemaIgnoreAttribute>() == null).ToList();
     }
 
     //TODO: expand items?
@@ -193,16 +193,27 @@ namespace ConnectorGrasshopper
 
     private string GetDescription(TreeGridItem t)
     {
-      if (t == null || t.Tag == null)
+      if (t == null || (Type)t.Tag == null)
         return "";
+      var type = (Type)t.Tag;
 
-      var description = ((Type)t.Tag).FullName;
+      var description = "";
 
-      var attr = ((Type)t.Tag).GetCustomAttributes().Where(x => x is SchemaDescriptionAttribute).FirstOrDefault();
+      var attr = type.GetCustomAttribute<SchemaDescriptionAttribute>();
       if (attr != null)
       {
-        description += "\n\n" + ((SchemaDescriptionAttribute)attr).Description;
+        description += attr.Description + "\n\n";
       }
+
+      var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute(typeof(SchemaIgnoreAttribute)) == null && x.Name != "Item");
+      if (props.Any())
+      {
+        description += "Inputs:\n";
+        foreach (var p in props)
+          description += $"\n- {p.Name} ({p.PropertyType.Name})";
+      }
+
+
 
       return description;
     }

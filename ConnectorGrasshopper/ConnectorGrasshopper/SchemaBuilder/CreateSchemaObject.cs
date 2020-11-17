@@ -20,6 +20,7 @@ using Grasshopper.Kernel.Special;
 using System.Collections;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using Speckle.Core.Api;
 
 namespace ConnectorGrasshopper
 {
@@ -67,7 +68,7 @@ namespace ConnectorGrasshopper
       var dialog = new CreateSchemaObjectDialog();
       dialog.Owner = Grasshopper.Instances.EtoDocumentEditor;
       var mouse = GH_Canvas.MousePosition;
-      dialog.Location = new Eto.Drawing.Point(mouse.X - (dialog.Width / 2), mouse.Y);
+      dialog.Location = new Eto.Drawing.Point(mouse.X - 200, mouse.Y - 200); //approx the dialog half-size
 
       dialog.ShowModal();
 
@@ -85,11 +86,9 @@ namespace ConnectorGrasshopper
     public void SwitchToType(Type myType)
     {
       int k = 0;
-      foreach (var p in myType.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(pinfo => pinfo.Name != "Type"))
+      foreach (var p in myType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+        .Where(x => x.Name != "Type" && x.Name != "Item" && x.GetCustomAttribute(typeof(SchemaIgnoreAttribute)) == null))
       {
-        var att = p.GetCustomAttributes();
-        if (p.GetCustomAttributes().Any(x => x is SchemaIgnoreAttribute sva && sva.Visibility != Visibility.Visible))
-          continue;
         RegisterPropertyAsInputParameter(p, k++);
       }
 
@@ -189,7 +188,7 @@ namespace ConnectorGrasshopper
       return base.Write(writer);
     }
 
-    private static byte[] ObjectToByteArray(Object obj)
+    private static byte[] ObjectToByteArray(object obj)
     {
       BinaryFormatter bf = new BinaryFormatter();
       using (var ms = new MemoryStream())
@@ -299,28 +298,35 @@ namespace ConnectorGrasshopper
 
           else if (innerValue.GetType() != prop.PropertyType)
           {
-            //try
-            //{
-            //  var conv = SpeckleCore.Converter.Serialise(innerValue);
-            //  prop.SetValue(outputObject, conv);
-            //  continue;
-            //}
-            //catch { }
+            try
+            {
+              if (Converter.CanConvertToSpeckle(innerValue))
+              {
+                var conv = Converter.ConvertToSpeckle(innerValue);
+                prop.SetValue(outputObject, conv);
+              }
+              continue;
+            }
+            catch { }
 
-            //try
-            //{
-            //  prop.SetValue(outputObject, innerValue);
-            //  continue;
-            //}
-            //catch { }
+            try
+            {
+              prop.SetValue(outputObject, innerValue);
+              continue;
+            }
+            catch { }
 
-            //try
-            //{
-            //  var conv = SNJ.JsonConvert.DeserializeObject((string)innerValue, prop.PropertyType);
-            //  prop.SetValue(outputObject, conv);
-            //  continue;
-            //}
-            //catch { }
+            try
+            {
+              var deserialised = Operations.Deserialize((string)innerValue);
+              if (Converter.CanConvertToSpeckle(deserialised))
+              {
+                var conv = Converter.ConvertToSpeckle(deserialised);
+                prop.SetValue(outputObject, conv);
+                continue;
+              }
+            }
+            catch { }
 
             this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + Params.Input[i].Name + ".");
           }

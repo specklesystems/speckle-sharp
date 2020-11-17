@@ -75,13 +75,13 @@ namespace ConnectorGrasshopper.Objects
       {
         if (speckleObjects.get_Branch(path).Count == 0) continue;
         var obj = speckleObjects.get_DataItem(path, 0);
-        var b =  (obj as GH_SpeckleBase)?.Value;
-        var props = b?.GetDynamicMembers().ToList();
+        var b = (obj as GH_SpeckleBase)?.Value;
+        var props = b?.GetMemberNames().ToList();
         props?.ForEach(prop =>
         {
-          if (!fullProps.Contains(prop) && b[prop] != null) 
+          if (!fullProps.Contains(prop) && b[prop] != null)
             fullProps.Add(prop);
-          else if (fullProps.Contains(prop) && b[prop] == null) 
+          else if (fullProps.Contains(prop) && b[prop] == null)
             fullProps.Remove(prop);
         });
       }
@@ -100,12 +100,12 @@ namespace ConnectorGrasshopper.Objects
 
         if (!speckleObjects.Any())
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"The provided input has no data.");
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "The provided input has no data.");
           return;
         }
         // Ensure only one object per path.
         speckleObjects.Graft(GH_GraftMode.GraftAll);
-        
+
         // Update the output list
         outputList = GetOutputList();
 
@@ -157,11 +157,11 @@ namespace ConnectorGrasshopper.Objects
               continue;
             case System.Collections.IList list:
               var index = 0;
-              foreach(var x in list)
+              foreach (var x in list)
               {
                 var wrapper = new GH_ObjectWrapper();
                 wrapper.Value = Utilities.TryConvertItemToNative(x, Converter);
-                outputDict[prop].Append(wrapper,path);
+                outputDict[prop].Append(wrapper, path);
                 index++;
               }
               break;
@@ -169,10 +169,10 @@ namespace ConnectorGrasshopper.Objects
             // so perhaps this is not an issue. Below a simple stopgap so we can actually see what data is
             // inside a sender-created object.
             case Dictionary<string, List<Base>> dict:
-              foreach(var kvp in dict)
+              foreach (var kvp in dict)
               {
                 var wrapper = new GH_ObjectWrapper();
-                foreach(var b in kvp.Value)
+                foreach (var b in kvp.Value)
                 {
                   wrapper.Value = Utilities.TryConvertItemToNative(b, Converter);
                 }
@@ -233,7 +233,7 @@ namespace ConnectorGrasshopper.Objects
           name = "-";
           description = "Data output no longer exists";
         }
-        
+
         Params.Output[i].Name = name;
         Params.Output[i].NickName = name;
         Params.Output[i].Description = description;
