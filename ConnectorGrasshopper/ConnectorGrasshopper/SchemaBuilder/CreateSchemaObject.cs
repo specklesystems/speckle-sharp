@@ -74,7 +74,7 @@ namespace ConnectorGrasshopper
       if (dialog.HasResult)
       {
         base.AddedToDocument(document);
-        SwitchToType(dialog.model.SelectedType);
+        SwitchToType(dialog.model.SelectedItem.Tag as Type);
       }
       else
       {

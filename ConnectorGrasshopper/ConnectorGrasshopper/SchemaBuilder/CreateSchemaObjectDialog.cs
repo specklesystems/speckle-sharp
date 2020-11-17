@@ -150,6 +150,7 @@ namespace ConnectorGrasshopper
           var subNs = (ns == "") ? key : $"{ns}.{key}"; //fetch count from dictionary
           var count = counts.ContainsKey(subNs) ? counts[subNs] : 0;
           var child = new TreeGridItem($"{key} ({count})");
+          child.Expanded = !string.IsNullOrEmpty(search.Text);
           RecurseTree(d, child, subNs);
           item.Children.Add(child);
 
