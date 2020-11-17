@@ -523,6 +523,7 @@ namespace Objects.Converter.Revit
     public Solid BrepToNative(Brep brep)
     {
       using var builder = new BRepBuilder(brep.IsClosed ? BRepType.Solid : BRepType.OpenShell);
+      builder.SetAllowShortEdges();
       builder.AllowRemovalOfProblematicFaces();
       
       var faceIds = 
@@ -547,7 +548,7 @@ namespace Objects.Converter.Revit
             {
               bool reversed = visited.Contains(trim.EdgeIndex);
               if(!reversed) visited.Add(trim.EdgeIndex);
-              builder.AddCoEdge(loopId, edgeIds[trim.EdgeIndex], loop.Face.OrientationReversed ? !reversed : reversed);
+              builder.AddCoEdge(loopId, edgeIds[trim.EdgeIndex], loop.Face.OrientationReversed ? !trim.IsReversed : trim.IsReversed);
             }
             catch (Exception e)
             {
@@ -566,6 +567,8 @@ namespace Objects.Converter.Revit
         }).ToList();
 
       faceIds.ForEach(id => builder.FinishFace(id));
+
+      var removedFace = builder.RemovedSomeFaces();
       
       var bRepBuilderOutcome = builder.Finish();
       if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;

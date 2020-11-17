@@ -235,4 +235,6 @@ namespace Objects.Geometry
     PointOnSurface,
     Slit
   }
+  
+
 }

@@ -54,7 +54,16 @@ namespace ConverterRevitTests
       {
         native = converter.BrepToNative(brep);
         var ds = DirectShape.CreateElement(fixture.NewDoc, new ElementId(BuiltInCategory.OST_GenericModel));
-        ds.SetShape(new List<GeometryObject>{native});
+
+        if (native == null)
+        {
+          var meshes = converter.MeshToNative(brep.displayValue);
+          ds.SetShape(meshes);
+        }
+        else
+        {
+          ds.SetShape(new List<GeometryObject> {native});
+        }
       }, fixture.NewDoc ).Wait();
       
       Assert.NotNull(native);

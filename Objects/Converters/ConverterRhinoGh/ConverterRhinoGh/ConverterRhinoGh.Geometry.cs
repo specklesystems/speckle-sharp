@@ -445,6 +445,10 @@ namespace Objects.Converter.RhinoGh
 
       var myCurve = new Curve(displayValue);
       var nurbsCurve = curve.ToNurbsCurve();
+    
+      // Hack: Rebuild curve to prevent interior knot multiplicities.
+      //var max = Math.Min(nurbsCurve.Points.Count-1, 3);
+      //nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count, max, true);
 
       myCurve.weights = nurbsCurve.Points.Select(ctp => ctp.Weight).ToList();
       myCurve.points = nurbsCurve.Points.Select(ctp => ctp.Location).ToFlatArray().ToList();
