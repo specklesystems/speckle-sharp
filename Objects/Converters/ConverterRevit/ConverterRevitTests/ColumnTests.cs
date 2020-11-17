@@ -1,17 +1,8 @@
-﻿using System;
-using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using Objects;
+﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
-using Wall = Objects.Wall;
-using Element = Objects.Element;
-using xUnitRevitUtils;
-using Autodesk.Revit.UI;
+
+using DB = Autodesk.Revit.DB;
 
 namespace ConverterRevitTests
 {
@@ -20,7 +11,8 @@ namespace ConverterRevitTests
     public override string TestFile => Globals.GetTestModel("FamilyInstance.rvt");
     public override string NewFile => Globals.GetTestModel("FamilyInstance_ToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns };
-    public ColumnFixture() : base ()
+
+    public ColumnFixture() : base()
     {
     }
   }
@@ -55,10 +47,6 @@ namespace ConverterRevitTests
       SelectionToNative<DB.FamilyInstance>(AssertFamilyInstanceEqual);
     }
 
-
-
-
-    #endregion
-
+    #endregion ToNative
   }
 }

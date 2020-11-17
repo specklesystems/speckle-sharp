@@ -56,7 +56,7 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       if (IsList(@object))
       {
-        var list = ((IEnumerable) @object).Cast<object>().ToList();
+        var list = ((IEnumerable)@object).Cast<object>().ToList();
         return list.Select(x => RecurseTreeToSpeckle(x)).ToList();
       }
 
@@ -157,19 +157,30 @@ namespace Speckle.ConnectorDynamo.Functions
 
     private object TryConvertItemToNative(object value)
     {
+      if (value == null)
+        return value;
+
       //it's a simple type or not a Base
       if (value.GetType().IsSimpleType() || !(value is Base))
       {
         return value;
       }
 
-      var @base = (Base) value;
-      
+      var @base = (Base)value;
+
       //it's an unsupported Base, return a dictionary
       if (!_converter.CanConvertToNative(@base))
       {
-        var members = @base.GetDynamicMembers();
-        return members.ToDictionary(x => x, x => RecurseTreeToNative(@base[x]));
+        //get both dynamic and instance members
+        var instanceMembers = @base.GetInstanceMembersNames();
+        var dynamicMembers = @base.GetDynamicMembers();
+        var dicI = instanceMembers.ToDictionary(x => x, x => RecurseTreeToNative(@base[x]));
+        var dicD = dynamicMembers.ToDictionary(x => x, x => RecurseTreeToNative(@base[x]));
+
+        var dic = dicI.Concat(dicD).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+
+        return dic;
       }
 
       try
@@ -187,6 +198,9 @@ namespace Speckle.ConnectorDynamo.Functions
 
     public static bool IsList(object @object)
     {
+      if (@object == null)
+        return false;
+
       var type = @object.GetType();
       return (typeof(IEnumerable).IsAssignableFrom(type) && !typeof(IDictionary).IsAssignableFrom(type) &&
               type != typeof(string));
@@ -194,6 +208,9 @@ namespace Speckle.ConnectorDynamo.Functions
 
     public static bool IsDictionary(object @object)
     {
+      if (@object == null)
+        return false;
+
       Type type = @object.GetType();
       return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
     }

@@ -1,37 +1,34 @@
 ﻿using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using Objects;
-using Objects.Geometry;
+using Objects.BuiltElements;
+using Objects.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Arc = Objects.Geometry.Arc;
-using Curve = Objects.Geometry.Curve;
-using Line = Objects.Geometry.Line;
-using Point = Objects.Geometry.Point;
-using Element = Objects.Element;
-using Level = Objects.Level;
-using Ellipse = Objects.Geometry.Ellipse;
+using DB = Autodesk.Revit.DB;
+using Element = Objects.BuiltElements.Element;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
 
-    private void AddCommonRevitProps(Base speckleElement, DB.Element revitElement)
+    private void AddCommonRevitProps(IRevitElement speckleElement, DB.Element revitElement)
     {
-      if (revitElement is FamilyInstance)
+
+      if (speckleElement is IRevitElement speckleRevitElement)
       {
-        speckleElement["family"] = (revitElement as FamilyInstance).Symbol.FamilyName;
+        if (revitElement is DB.FamilyInstance)
+        {
+          speckleRevitElement.family = (revitElement as DB.FamilyInstance).Symbol.FamilyName;
+        }
+
+        if (CanGetElementTypeParams(revitElement))
+          speckleRevitElement.typeParameters = GetElementTypeParams(revitElement);
       }
-      speckleElement["parameters"] = GetElementParams(revitElement);
 
-      if (CanGetElementTypeParams(revitElement))
-        speckleElement["typeParameters"] = GetElementTypeParams(revitElement);
-
-      speckleElement["elementId"] = revitElement.Id.ToString();
+      speckleElement.parameters = GetElementParams(revitElement);
+      speckleElement.elementId = revitElement.Id.ToString();
       speckleElement.applicationId = revitElement.UniqueId;
     }
     //TODO: CLEAN THE BELOW 
@@ -193,18 +190,15 @@ namespace Objects.Converter.Revit
       return myParamDict;
     }
 
-    public void SetElementParams(DB.Element myElement, Element spkElement, List<string> exclusions = null)
+    public void SetElementParams(DB.Element myElement, IRevitElement spkElement, List<string> exclusions = null)
     {
-      if (!spkElement.HasMember<Dictionary<string, object>>("parameters"))
-        return;
 
-      var parameters = spkElement["parameters"] as Dictionary<string, object>;
       if (myElement == null) return;
-      if (parameters == null) return;
+      if (spkElement.parameters == null) return;
 
       //var questForTheBest = UnitDictionary;
 
-      foreach (var kvp in parameters)
+      foreach (var kvp in spkElement.parameters)
       {
         if (kvp.Key.Contains("__unitType::")) continue; // skip unit types please
         if (exclusions != null && exclusions.Contains(kvp.Key)) continue;
@@ -220,11 +214,11 @@ namespace Objects.Converter.Revit
           switch (myParam.StorageType)
           {
             case StorageType.Double:
-              var hasUnitKey = parameters.ContainsKey("__unitType::" + myParam.Definition.Name);
+              var hasUnitKey = spkElement.parameters.ContainsKey("__unitType::" + myParam.Definition.Name);
               if (hasUnitKey)
               {
-                var unitType = (string)parameters["__unitType::" + kvp.Key];
-                var unit = (string)parameters["__unit::" + kvp.Key];
+                var unitType = (string)spkElement.parameters["__unitType::" + kvp.Key];
+                var unit = (string)spkElement.parameters["__unit::" + kvp.Key];
                 DisplayUnitType sourceUnit;
                 Enum.TryParse(unit, out sourceUnit);
                 var convertedValue = UnitUtils.ConvertToInternalUnits(Convert.ToDouble(kvp.Value), sourceUnit);
@@ -268,30 +262,29 @@ namespace Objects.Converter.Revit
     }
 
     /// <summary>
-    /// Gets an element by its type and name. If nothing found, returns the first one.
+    /// Gets an element by its type and name. If nothing found, returns the first one of that type.
     /// </summary>
-    /// <param name="type"></param>
     /// <param name="name"></param>
     /// <returns></returns>
-    public DB.Element GetElementByName(Type type, string name)
+    public T GetElementByTypeAndName<T>(string name)
     {
-      var collector = new FilteredElementCollector(Doc).OfClass(type);
+      var collector = new FilteredElementCollector(Doc).OfClass(typeof(T));
 
-      if (name == null) return collector.FirstElement();
+      if (string.IsNullOrEmpty(name)) return (T)(object)collector.FirstElement();
 
       if (name.ToLower().Contains("duct"))
       { // DuctType.Name is just 'Default'
         foreach (DB.Mechanical.DuctType myElement in collector.ToElements())
-          if (myElement.FamilyName == name) return myElement;
+          if (myElement.FamilyName == name) return (T)(object)myElement;
       }
 
       foreach (var myElement in collector.ToElements())
-        if (myElement.Name == name) return myElement;
+        if (myElement.Name == name) return (T)(object)myElement;
 
 
       // now returning the first type, which means we didn't find the type we were actually looking for.
-      ConversionErrors.Add(new Error($"Missing wall type: {name}", $"{collector.FirstElement().Name} has been used instead."));
-      return collector.FirstElement();
+      ConversionErrors.Add(new Error($"Missing type: {name}", $"{collector.FirstElement().Name} has been used instead."));
+      return (T)(object)collector.FirstElement();
     }
 
     /// <summary>
@@ -373,30 +366,32 @@ namespace Objects.Converter.Revit
         symbols = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(FamilySymbol)).ToElements().Cast<FamilySymbol>().ToList();
       }
 
-      var familyName = element.GetMemberSafe("family", "");
 
-      //match family and type
-      var match = symbols.FirstOrDefault(x => x.FamilyName == familyName && x.Name == element.type);
-      if (match != null)
+      if (element is IRevitElement ire)
       {
-        if (!match.IsActive) match.Activate();
-        return match;
+        //match family and type
+        var match = symbols.FirstOrDefault(x => x.FamilyName == ire.family && x.Name == ire.type);
+        if (match != null)
+        {
+          if (!match.IsActive) match.Activate();
+          return match;
+        }
+
+        //match type
+        match = symbols.FirstOrDefault(x => x.FamilyName == ire.family);
+        if (match != null)
+        {
+          ConversionErrors.Add(new Error($"Missing type: {ire.family} {ire.type}", $"Type was replace with: {match.FamilyName} - {match.Name}"));
+          if (!match.IsActive) match.Activate();
+          return match;
+        }
       }
 
-      //match type
-      match = symbols.FirstOrDefault(x => x.FamilyName == familyName);
-      if (match != null)
-      {
-        ConversionErrors.Add(new Error($"Missing type: {familyName} {element.type}", $"Type was replace with: {match.FamilyName} - {match.Name}"));
-        if (!match.IsActive) match.Activate();
-        return match;
-      }
-
-      // get whatever we got, could be a different category!
+      // get whatever we found, could be a different category!
       if (symbols.Any())
       {
-        match = symbols.FirstOrDefault();
-        ConversionErrors.Add(new Error($"Missing family and type: {familyName} {element.type}", $"Family and type were replaced with: {match.FamilyName} - {match.Name}"));
+        var match = symbols.FirstOrDefault();
+        ConversionErrors.Add(new Error($"Missing family and type", $"The following family and type were used: {match.FamilyName} - {match.Name}"));
         if (!match.IsActive) match.Activate();
         return match;
       }

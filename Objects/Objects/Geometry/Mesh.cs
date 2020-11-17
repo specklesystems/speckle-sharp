@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Objects.Geometry
 {
-  public class Mesh : Base, IGeometry
+  public class Mesh : Base, I3DGeometry
   {
     public List<double> vertices { get; set; } = new List<double>();
 
@@ -18,6 +18,12 @@ namespace Objects.Geometry
 
     /// <summary>If any, the colours per vertex.</summary>
     public List<double> textureCoordinates { get; set; } = new List<double>();
+
+    public string linearUnits { get; set; }
+    public Box boundingBox { get; set; }
+    public Point center { get; set; }
+    public double area { get; set; }
+    public double volume { get; set; }
 
     public Mesh()
     {

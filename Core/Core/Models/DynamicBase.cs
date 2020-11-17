@@ -134,7 +134,7 @@ namespace Speckle.Core.Models
     {
       var names = new List<PropertyInfo>();
       var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-      
+
       foreach (var pinfo in pinfos)
         if (pinfo.Name != "Item") names.Add(pinfo);
 
@@ -176,7 +176,8 @@ namespace Speckle.Core.Models
 
       try
       {
-        return (T)GetType().GetProperty(key).GetValue(this) != null;
+        if (GetType().GetProperty(key) != null)
+          return (T)GetType().GetProperty(key).GetValue(this) != null;
       }
       catch
       {

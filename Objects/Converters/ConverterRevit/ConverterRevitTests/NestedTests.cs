@@ -55,9 +55,11 @@ namespace ConverterRevitTests
     public void NestedToNative()
     {
       ConverterRevit kit = new ConverterRevit();
+      kit.SetContextDocument(fixture.Doc);
       var spkElems = kit.ConvertToSpeckle(fixture.RevitElements.Select(x => (object)x).ToList());
 
       kit = new ConverterRevit();
+      kit.SetContextDocument(fixture.NewDoc);
       var revitEls = new List<DB.Element>();
 
       xru.RunInTransaction(() =>

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using DeviceId;
 
 namespace Speckle.Core.Logging
 {
@@ -30,7 +29,7 @@ namespace Speckle.Core.Logging
     private static string _suuid { get; set; }
 
     /// <summary>
-    /// Tries to get the SUUID set by the Manager, and if can't, it falls back to a DeviceID
+    /// Tries to get the SUUID set by the Manager
     /// </summary>
     internal static string SUUID
     {
@@ -46,11 +45,7 @@ namespace Speckle.Core.Logging
           }
           catch { }
 
-          _suuid = new DeviceIdBuilder()
-            .AddMachineName()
-            .AddProcessorId()
-            .AddMotherboardSerialNumber()
-            .ToString();
+          _suuid = "unknown-suuid";
         }
         return _suuid;
       }

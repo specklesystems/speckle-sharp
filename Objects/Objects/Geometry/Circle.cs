@@ -15,11 +15,11 @@ namespace Objects.Geometry
     
     public Interval domain { get; set; }
 
-    [JsonIgnore]
-    public Point center { get { return plane?.origin; } }
-
-    [JsonIgnore]
-    public Vector normal { get { return plane?.normal; } }
+    public Box boundingBox { get; set; }
+    public Point center { get; set; }
+    public double area { get; set; }
+    public double length { get; set; }
+    public string linearUnits { get; set; }
 
     public Circle()
     {

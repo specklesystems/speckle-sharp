@@ -17,57 +17,53 @@ namespace Speckle.ConnectorDynamo.Functions
   public static class Stream
   {
     /// <summary>
-    /// Get an existing Stream
+    /// Get an existing Stream with a specific Account
     /// </summary>
-    /// <param name="streamId">Id of the Stream to get</param>
-    /// <param name="account">Speckle account to use, if not provided the default account will be used</param>
+    /// <param name="stream">Stream to get with the specified account</param>
+    /// <param name="account">Speckle account to get the Stream as</param>
     /// <returns name="stream">A Stream</returns>
-    // [NodeCategory("Create")]
-    // public static object Get([ArbitraryDimensionArrayImport] object streamId,
-    //   [DefaultArgument("null")] Core.Credentials.Account account = null)
-    // {
-    //   Tracker.TrackPageview(Tracker.STREAM_GET);
-    //
-    //   var streamIds = Utils.MultiDimensionalInputToList<string>(streamId);
-    //   if (!streamIds.Any())
-    //   {
-    //     Log.CaptureAndThrow(new Exception("Please provide one or more Stream Ids."));
-    //   }
-    //   else if (streamIds.Count > 20)
-    //   {
-    //     Log.CaptureAndThrow(new Exception("Please provide less than 20 Stream Ids."));
-    //   }
-    //
-    //   var streams = new List<StreamWrapper>();
-    //   try
-    //   {
-    //     foreach (var id in streamIds)
-    //     {
-    //       if (account == null)
-    //         account = AccountManager.GetDefaultAccount();
-    //
-    //       var client = new Client(account);
-    //
-    //       //Exists?
-    //       Core.Api.Stream res = client.StreamGet(id).Result;
-    //       streams.Add(new StreamWrapper(res.id, account.id, account.serverInfo.url));
-    //     }
-    //   }
-    //   catch (Exception e)
-    //   {
-    //     if (e.InnerException!=null)
-    //     {
-    //       if (e.InnerException is HttpRequestException)
-    //         throw new Exception("Could not reach the server, is it online?");
-    //       throw e.InnerException;
-    //     }
-    //   }
-    //
-    //   if (streams.Count() == 1)
-    //     return streams[0];
-    //
-    //   return streams;
-    // }
+    [NodeCategory("Create")]
+    public static object GetAs([ArbitraryDimensionArrayImport] object stream, Core.Credentials.Account account = null)
+    {
+      Tracker.TrackPageview(Tracker.STREAM_GET);
+
+      var streams = Utils.InputToStream(stream);
+      if (!streams.Any())
+      {
+        Log.CaptureAndThrow(new Exception("Please provide one or more Stream Ids."));
+      }
+      else if (streams.Count > 20)
+      {
+        Log.CaptureAndThrow(new Exception("Please provide less than 20 Stream Ids."));
+      }
+
+
+      try
+      {
+        var client = new Client(account);
+        foreach (var s in streams)
+        {
+          //Exists?
+          Core.Api.Stream res = client.StreamGet(s.StreamId).Result;
+          s.AccountId = account.id;
+        }
+      }
+      catch (Exception e)
+      {
+        if (e.InnerException != null)
+        {
+          if (e.InnerException is HttpRequestException)
+            throw new Exception("Could not reach the server, is it online?");
+          throw e.InnerException;
+        }
+      }
+
+
+      if (streams.Count() == 1)
+        return streams[0];
+
+      return streams;
+    }
 
     [IsVisibleInDynamoLibrary(false)]
     public static StreamWrapper GetByStreamAndAccountId(string streamId, string accountId)
@@ -95,7 +91,7 @@ namespace Speckle.ConnectorDynamo.Functions
       [DefaultArgument("null")] string description, [DefaultArgument("null")] bool? isPublic)
     {
       Tracker.TrackPageview(Tracker.STREAM_UPDATE);
-      
+
       if (stream == null)
       {
         Core.Logging.Log.CaptureAndThrow(new Exception("Invalid stream."));

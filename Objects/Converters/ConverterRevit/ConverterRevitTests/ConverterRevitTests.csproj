@@ -128,6 +128,10 @@
       <Project>{7ef0c96c-1fd9-42b2-85ce-bfd9b10dac06}</Project>
       <Name>Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Objects.Revit\Objects.Revit.csproj">
+      <Project>{51162368-2d07-4aeb-ab2d-984b86a4506c}</Project>
+      <Name>Objects.Revit</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Objects\Objects.csproj">
       <Project>{95c2153a-642e-4779-90c0-bff56fc561a9}</Project>
       <Name>Objects</Name>
@@ -157,6 +161,8 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\packages\coverlet.collector.1.3.0\build\netstandard1.0\coverlet.collector.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\coverlet.collector.1.3.0\build\netstandard1.0\coverlet.collector.targets'))" />
+    <Error Condition="!Exists('..\..\..\packages\xunit.core.2.4.1\build\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\xunit.core.2.4.1\build\xunit.core.props'))" />
     <Error Condition="!Exists('..\..\..\packages\coverlet.collector.1.3.0\build\netstandard1.0\coverlet.collector.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\coverlet.collector.1.3.0\build\netstandard1.0\coverlet.collector.targets'))" />
     <Error Condition="!Exists('..\..\..\packages\xunit.core.2.4.1\build\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\xunit.core.2.4.1\build\xunit.core.props'))" />
     <Error Condition="!Exists('..\..\..\packages\xunit.core.2.4.1\build\xunit.core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\xunit.core.2.4.1\build\xunit.core.targets'))" />

@@ -15,7 +15,6 @@ namespace Speckle.ConnectorRevit
     private static List<string> _cachedViews = null;
     public static List<SpeckleException> ConversionErrors { get; set; }
 
-
     private static Dictionary<string, Category> _categories { get; set; }
 
     public static Dictionary<string, Category> GetCategories(Document doc)

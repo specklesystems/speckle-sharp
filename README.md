@@ -33,6 +33,7 @@ The Speckle Connectors are plugins that embed with an application and provide th
 - [Grasshopper](ConnectorGrasshopper)
 - [Dynamo](ConnectorDynamo)
 - [Revit](ConnectorRevit)
+- [Rhino](ConnectorRhino)
 
 ### ➡️ [DesktopUI](DesktopUI)
 

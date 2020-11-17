@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using DeviceId;
 using GraphQL;
 using Sentry;
 using Sentry.Protocol;

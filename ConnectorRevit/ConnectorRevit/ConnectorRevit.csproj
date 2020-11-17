@@ -170,8 +170,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
-      <Project>{521d4aee-08cf-4913-bbe8-5511d176d126}</Project>
-      <Name>SpeckleCore2</Name>
+      <Project>{A2C8730A-B605-483E-914E-61F3ED7954D9}</Project>
+      <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Core\ServerTransport\ServerTransport.csproj">
       <Project>{c94935eb-abd7-4556-a5e7-709392ed3ab4}</Project>
