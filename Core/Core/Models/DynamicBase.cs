@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using System;
 using System.Collections.Generic;
@@ -140,6 +141,39 @@ namespace Speckle.Core.Models
 
       return names;
     }
+
+    /// <summary>
+    /// Gets the names of the typed and dynamic properties that don't have a [SchemaIgnore] attribute.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<string> GetMemberNames()
+    {
+      var names = new List<string>();
+      foreach (var kvp in properties) names.Add(kvp.Key);
+
+      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute(typeof(SchemaIgnoreAttribute)) == null && x.Name != "Item");
+      foreach (var pinfo in pinfos) names.Add(pinfo.Name);
+
+      return names;
+    }
+
+    /// <summary>
+    ///  Gets the typed and dynamic properties that don't have a [SchemaIgnore] attribute.
+    /// </summary>
+    /// <returns></returns>
+    public Dictionary<string, object> GetMembers()
+    {
+      //typed members
+      var dic = new Dictionary<string, object>();
+      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute(typeof(SchemaIgnoreAttribute)) == null && x.Name != "Item");
+      foreach (var pi in pinfos)
+        dic.Add(pi.Name, pi.GetValue(this));
+      //dynamic members
+      foreach (var kvp in properties)
+        dic.Add(kvp.Key, kvp.Value);
+      return dic;
+    }
+
 
     /// <summary>
     /// Gets the dynamically added property names only.
