@@ -89,7 +89,7 @@ namespace Speckle.DesktopUI.Streams
       }
 
       StreamState.Filter = filter;
-      Bindings.UpdateStream(StreamState);
+      Bindings.PersistAndUpdateStreamInFile(StreamState);
       _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
       UpdateButtonLoading = false;
       CloseDialog();

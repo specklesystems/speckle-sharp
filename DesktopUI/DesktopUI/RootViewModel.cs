@@ -53,7 +53,7 @@ namespace Speckle.DesktopUI
       _viewModelFactory = viewModelFactory;
       Bindings = bindings;
       
-      DisplayName = "Speckle " + bindings.GetApplicationHostName();
+      DisplayName = "Speckle " + bindings.GetHostAppName();
       
       LoadPages();
 

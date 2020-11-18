@@ -100,7 +100,7 @@ namespace Speckle.DesktopUI.Streams
       {
         var deleted = await state.Client.StreamDelete(state.Stream.id);
         if ( !deleted ) return false;
-        _bindings.RemoveStream(state.Stream.id);
+        _bindings.RemoveStreamFromFile(state.Stream.id);
       }
       catch ( Exception e )
       {

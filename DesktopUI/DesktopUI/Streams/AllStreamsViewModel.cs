@@ -62,7 +62,7 @@ namespace Speckle.DesktopUI.Streams
     {
       _repo = streamsRepo;
       _events = events;
-      DisplayName = bindings.GetApplicationHostName() + " streams";
+      DisplayName = bindings.GetHostAppName() + " streams";
       _viewManager = viewManager;
       _streamViewModelFactory = streamViewModelFactory;
       _dialogFactory = dialogFactory;
@@ -77,7 +77,7 @@ namespace Speckle.DesktopUI.Streams
 
     private BindableCollection<StreamState> LoadStreams()
     {
-      var streams = new BindableCollection<StreamState>(_bindings.GetFileContext());
+      var streams = new BindableCollection<StreamState>(_bindings.GetStreamsInFile());
 
       return streams;
     }

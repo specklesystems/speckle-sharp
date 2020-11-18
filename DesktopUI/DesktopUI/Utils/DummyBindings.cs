@@ -16,19 +16,9 @@ namespace Speckle.DesktopUI.Utils
       return new List<string>();
     }
 
-    public override void AddExistingStream(string args)
-    {
-      throw new NotImplementedException();
-    }
-
     public override void AddNewStream(StreamState state)
     {
       //
-    }
-
-    public override void AddObjectsToClient(string args)
-    {
-      throw new NotImplementedException();
     }
 
     Random rnd = new Random();
@@ -44,12 +34,7 @@ namespace Speckle.DesktopUI.Utils
       return strs;
     }
 
-    public override void BakeStream(string args)
-    {
-      throw new NotImplementedException();
-    }
-
-    public override string GetApplicationHostName()
+    public override string GetHostAppName()
     {
       return "Desktop";
     }
@@ -69,7 +54,7 @@ namespace Speckle.DesktopUI.Utils
       return "An Active View Name";
     }
 
-    public override List<StreamState> GetFileContext()
+    public override List<StreamState> GetStreamsInFile()
     {
 
       var collection = new List<StreamState>();
@@ -292,19 +277,9 @@ namespace Speckle.DesktopUI.Utils
       return state;
     }
 
-    public override void RemoveStream(string args)
+    public override void RemoveStreamFromFile(string args)
     {
       // ⚽ 👉 🗑
-    }
-
-    public override void RemoveObjectsFromClient(string args)
-    {
-      throw new NotImplementedException();
-    }
-
-    public override void RemoveSelectionFromClient(string args)
-    {
-      throw new NotImplementedException();
     }
 
     public override void SelectClientObjects(string args)
@@ -312,7 +287,7 @@ namespace Speckle.DesktopUI.Utils
       throw new NotImplementedException();
     }
 
-    public override void UpdateStream(StreamState state)
+    public override void PersistAndUpdateStreamInFile(StreamState state)
     {
       //
     }

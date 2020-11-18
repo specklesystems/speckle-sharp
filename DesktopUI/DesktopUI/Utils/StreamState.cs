@@ -164,6 +164,12 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
+    /// <summary>
+    /// Allows clients to keep track of the previous commit id they created, and propagate it to the next one.
+    /// </summary>
+    [JsonProperty]
+    public string PreviousCommitId { get; set; }
+
     public BindableCollection<CommitContextMenuItem> CommitContextMenuItems
     {
       get
@@ -480,7 +486,7 @@ namespace Speckle.DesktopUI.Utils
       Branch = branch;
       Globals.Notify($"Switched active branch to {Branch.name}.");
       NotifyOfPropertyChange(nameof(BranchContextMenuItem));
-      Globals.HostBindings.UpdateStream(this);
+      Globals.HostBindings.PersistAndUpdateStreamInFile(this);
     }
 
     public void SwitchCommit(Commit commit)
@@ -491,7 +497,7 @@ namespace Speckle.DesktopUI.Utils
       }
 
       Commit = commit;
-      Globals.HostBindings.UpdateStream(this);
+      Globals.HostBindings.PersistAndUpdateStreamInFile(this);
     }
 
     public void SendWithCommitMessage(object sender, KeyEventArgs e)
@@ -516,7 +522,7 @@ namespace Speckle.DesktopUI.Utils
       ProgressBarIsIndeterminate = false;
       CancellationTokenSource = new CancellationTokenSource();
 
-      await Task.Run(() => Globals.Repo.ConvertAndSend(this));
+      var res = await Globals.Repo.ConvertAndSend(this);
 
       ShowProgressBar = false;
       Progress.ResetProgress();
@@ -557,7 +563,7 @@ namespace Speckle.DesktopUI.Utils
     public void SwapState()
     {
       IsSenderCard = !IsSenderCard;
-      Globals.HostBindings.UpdateStream(this);
+      Globals.HostBindings.PersistAndUpdateStreamInFile(this);
     }
 
     public void CloseUpdateNotification()

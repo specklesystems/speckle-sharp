@@ -683,6 +683,7 @@
               <TextBlock Grid.Column="0"
                          Foreground="White"
                          TextWrapping="Wrap"
+                         Padding="4"
                          Text="{Binding ServerUpdateSummary}"
                          FontSize="12">
               </TextBlock>

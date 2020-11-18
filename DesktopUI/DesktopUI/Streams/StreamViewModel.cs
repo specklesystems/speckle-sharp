@@ -89,7 +89,7 @@ namespace Speckle.DesktopUI.Streams
         var client = StreamState.Client;
         await client.StreamUpdate(new StreamUpdateInput { id = StreamState.Stream.id, name = _StreamName, description = _StreamDescription });
 
-        Globals.HostBindings.UpdateStream(StreamState);
+        Globals.HostBindings.PersistAndUpdateStreamInFile(StreamState);
         Globals.Notify("Stream updated.");
       }
       catch (Exception e)
@@ -101,7 +101,7 @@ namespace Speckle.DesktopUI.Streams
     public void RemoveStream()
     {
       Tracker.TrackPageview("stream", "remove");
-      _bindings.RemoveStream(StreamState.Stream.id);
+      _bindings.RemoveStreamFromFile(StreamState.Stream.id);
       _events.Publish(new StreamRemovedEvent() { StreamId = StreamState.Stream.id });
       RequestClose();
     }

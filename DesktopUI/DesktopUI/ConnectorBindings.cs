@@ -36,11 +36,6 @@ namespace Speckle.DesktopUI
       NotifyUi(notif);
     }
 
-    public virtual string GetFilters()
-    {
-      return JsonConvert.SerializeObject(GetSelectionFilters());
-    }
-
     public virtual bool CanSelectObjects()
     {
       return false;
@@ -53,17 +48,44 @@ namespace Speckle.DesktopUI
 
     #region abstract methods
 
-    public abstract string GetApplicationHostName();
+    /// <summary>
+    /// Gets the current host application name.
+    /// </summary>
+    /// <returns></returns>
+    public abstract string GetHostAppName();
+
+    /// <summary>
+    /// Gets the current opened/focused file's name.
+    /// Make sure to check regarding unsaved/temporary files.
+    /// </summary>
+    /// <returns></returns>
     public abstract string GetFileName();
+
+    /// <summary>
+    /// Gets the current opened/focused file's id. 
+    /// Generate one in here if the host app does not provide one.
+    /// </summary>
+    /// <returns></returns>
     public abstract string GetDocumentId();
+
+    /// <summary>
+    /// Gets the current opened/focused file's locations.
+    /// Make sure to check regarding unsaved/temporary files.
+    /// </summary>
+    /// <returns></returns>
     public abstract string GetDocumentLocation();
+
+    /// <summary>
+    /// Gets the current opened/focused file's view, if applicable.
+    /// </summary>
+    /// <returns></returns>
     public abstract string GetActiveViewName();
 
     /// <summary>
     /// Returns the serialised clients present in the current open host file.
     /// </summary>
     /// <returns></returns>
-    public abstract List<StreamState> GetFileContext();
+    public abstract List<StreamState> GetStreamsInFile();
 
     /// <summary>
     /// Adds a new client and persists the info to the host file
@@ -71,9 +93,9 @@ namespace Speckle.DesktopUI
     public abstract void AddNewStream(StreamState state);
 
     /// <summary>
-    /// Updates a client and persists the info to the host file
+    /// Persists the stream info to the host file; if maintaining a local in memory copy, make sure to update it too.
     /// </summary>
-    public abstract void UpdateStream(StreamState state);
+    public abstract void PersistAndUpdateStreamInFile(StreamState state);
 
     /// <summary>
     /// Pushes a client's stream
@@ -102,31 +124,10 @@ namespace Speckle.DesktopUI
     public abstract List<string> GetObjectsInView();
 
     /// <summary>
-    /// Adds a receiver and persists the info to the host file
-    /// </summary>
-    public abstract void AddExistingStream(string args);
-
-    /// <summary>
-    /// Removes a client from the file and persists the info to the host file.
+    /// Removes a client from the file and updates the host file.
     /// </summary>
     /// <param name="args"></param>
-    public abstract void RemoveStream(string args);
-
-    /// <summary>
-    /// Bakes the specified client in the host file.
-    /// </summary>
-    /// <param name="args"></param>
-    public abstract void BakeStream(string args);
-
-    /// <summary>
-    /// Removes the current selection from the provided client.
-    /// </summary>
-    /// <param name="args"></param>
-    public abstract void RemoveSelectionFromClient(string args);
-
-    // TODO: See how we go about this
-    public abstract void AddObjectsToClient(string args);
-    public abstract void RemoveObjectsFromClient(string args);
+    public abstract void RemoveStreamFromFile(string streamId);
 
     /// <summary>
     /// clients should be able to select/preview/hover one way or another their associated objects
@@ -134,19 +135,12 @@ namespace Speckle.DesktopUI
     /// <param name="args"></param>
     public abstract void SelectClientObjects(string args);
 
+    /// <summary>
+    /// Should return a list of filters that the application supports. 
+    /// </summary>
+    /// <returns></returns>
     public abstract List<ISelectionFilter> GetSelectionFilters();
 
     #endregion
-
-    // ! to remove
-    // just to play by triggering notifications in the main UI window
-    public void TestBindings(string message)
-    {
-      var notif = new ShowNotificationEvent()
-      {
-        Notification = message
-      };
-      NotifyUi(notif);
-    }
   }
 }
