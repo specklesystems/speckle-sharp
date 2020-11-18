@@ -205,14 +205,21 @@ namespace ConnectorGrasshopper
         description += attr.Description + "\n\n";
       }
 
-      var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute(typeof(SchemaIgnoreAttribute)) == null && x.Name != "Item");
+      var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute<SchemaIgnoreAttribute>() == null && x.Name != "Item");
+
+      //put optional props at the bottom
+      var optionalProps = props.Where(x => x.GetCustomAttribute<SchemaOptionalAttribute>() != null).OrderBy(x => x.PropertyType.ToString()).ThenBy(x => x.Name);
+      var nonOptionalProps = props.Where(x => x.GetCustomAttribute<SchemaOptionalAttribute>() == null).OrderBy(x => x.PropertyType.ToString()).ThenBy(x => x.Name);
+      props = nonOptionalProps;
+      props= props.Concat(optionalProps);
+
       if (props.Any())
       {
         description += "Inputs:\n";
         foreach (var p in props)
         {
           var inputDesc = p.GetCustomAttribute<SchemaDescriptionAttribute>();
-          var d = inputDesc != null ? $": {inputDesc}" : "";
+          var d = inputDesc != null ? $": {inputDesc.Description}" : "";
           description += $"\n- {p.Name} ({p.PropertyType.Name}){d}";
         }
 

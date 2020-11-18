@@ -83,18 +83,25 @@ namespace ConnectorGrasshopper
       }
     }
 
-    public void SwitchToType(Type myType)
+    public void SwitchToType(Type type)
     {
       int k = 0;
-      foreach (var p in myType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-        .Where(x => x.Name != "Type" && x.Name != "Item" && x.GetCustomAttribute(typeof(SchemaIgnoreAttribute)) == null))
+      var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute<SchemaIgnoreAttribute>() == null && x.Name != "Item");
+
+      //put optional props at the bottom
+      var optionalProps = props.Where(x => x.GetCustomAttribute<SchemaOptionalAttribute>() != null).OrderBy(x => x.Name);
+      var nonOptionalProps = props.Where(x => x.GetCustomAttribute<SchemaOptionalAttribute>() == null).OrderBy(x => x.Name);
+      props = nonOptionalProps;
+      props = props.Concat(optionalProps);
+
+      foreach (var p in props)
       {
         RegisterPropertyAsInputParameter(p, k++);
       }
 
-      Message = myType.Name;
-      SelectedType = myType;
-      Params.Output[0].NickName = myType.Name;
+      Message = type.Name;
+      SelectedType = type;
+      Params.Output[0].NickName = type.Name;
       Params.OnParametersChanged();
       ExpireSolution(true);
     }
@@ -111,12 +118,16 @@ namespace ConnectorGrasshopper
       string propName = prop.Name;
       object propValue = prop;
 
+      var inputDesc = prop.GetCustomAttribute<SchemaDescriptionAttribute>();
+      var d = inputDesc != null ? inputDesc.Description : "";
+
       // Create new param based on property name
       Param_GenericObject newInputParam = new Param_GenericObject();
       newInputParam.Name = propName;
       newInputParam.NickName = propName;
       newInputParam.MutableNickName = false;
-      newInputParam.Description = propName + " as " + propType.Name;
+
+      newInputParam.Description = $"(propType.Name) {d}";
       newInputParam.Optional = prop.GetCustomAttribute<SchemaOptionalAttribute>() != null;
 
       // check if input needs to be a list or item access
