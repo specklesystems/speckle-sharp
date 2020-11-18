@@ -209,7 +209,7 @@ namespace Speckle.DesktopUI.Streams
       var client = new Client(AccountToSendFrom);
       StreamToCreate = await client.StreamGet(SelectedStream.id);
 
-      StreamState = new StreamState(client, StreamToCreate) { ServerUpdates = true };
+      StreamState = new StreamState(client, StreamToCreate);
 
       StreamState.IsSenderCard = false; // Assume we're creating a receiver
 

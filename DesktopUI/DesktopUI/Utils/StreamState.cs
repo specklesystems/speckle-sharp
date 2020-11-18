@@ -336,7 +336,7 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
-    private bool _serverUpdates;
+    private bool _serverUpdates = false;
     public bool ServerUpdates
     {
       get => _serverUpdates;
