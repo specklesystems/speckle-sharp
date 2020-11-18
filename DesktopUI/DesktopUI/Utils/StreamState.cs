@@ -522,7 +522,7 @@ namespace Speckle.DesktopUI.Utils
       ProgressBarIsIndeterminate = false;
       CancellationTokenSource = new CancellationTokenSource();
 
-      var res = await Globals.Repo.ConvertAndSend(this);
+      await Task.Run( () => Globals.Repo.ConvertAndSend(this) );
 
       ShowProgressBar = false;
       Progress.ResetProgress();
@@ -662,15 +662,15 @@ namespace Speckle.DesktopUI.Utils
       {
         return;
       }
-      
+
 
       var updatedStream = await Client.StreamGet(Stream.id);
       Branches = updatedStream.branches.items;
 
       var binfo = Branches.FirstOrDefault(b => b.name == info.branchName);
       var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
-      
-      if(Branch.name == info.branchName)
+
+      if (Branch.name == info.branchName)
       {
         Branch = binfo;
       }

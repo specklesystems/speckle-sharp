@@ -174,9 +174,7 @@
                 </MenuItem.Icon>
                 <MenuItem.Header>
                   <TextBlock>
-                    <Run>Set Selection (</Run>
-                    <Run Text="{Binding SelectionCount}"></Run>
-                    <Run>objs)</Run>
+                    <Run>Set Selection</Run>
                   </TextBlock>
                 </MenuItem.Header>
               </MenuItem>
@@ -196,9 +194,7 @@
                 </MenuItem.Icon>
                 <MenuItem.Header>
                   <TextBlock>
-                    <Run>Add Selection (</Run>
-                    <Run Text="{Binding SelectionCount}"></Run>
-                    <Run>objs)</Run>
+                    <Run>Add Selection</Run>
                   </TextBlock>
                 </MenuItem.Header>
               </MenuItem>
@@ -218,9 +214,7 @@
                 </MenuItem.Icon>
                 <MenuItem.Header>
                   <TextBlock>
-                    <Run>Remove Selection (</Run>
-                    <Run Text="{Binding SelectionCount}"></Run>
-                    <Run>objs)</Run>
+                    <Run>Remove Selection</Run>
                   </TextBlock>
                 </MenuItem.Header>
               </MenuItem>
