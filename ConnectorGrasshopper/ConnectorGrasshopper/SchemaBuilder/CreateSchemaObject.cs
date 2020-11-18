@@ -117,7 +117,7 @@ namespace ConnectorGrasshopper
       newInputParam.NickName = propName;
       newInputParam.MutableNickName = false;
       newInputParam.Description = propName + " as " + propType.Name;
-      newInputParam.Optional = true;
+      newInputParam.Optional = prop.GetCustomAttribute<SchemaOptionalAttribute>() != null;
 
       // check if input needs to be a list or item access
       bool isCollection = typeof(System.Collections.IEnumerable).IsAssignableFrom(propType) && propType != typeof(string) && !propType.Name.ToLower().Contains("dictionary");

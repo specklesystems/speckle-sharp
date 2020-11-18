@@ -210,13 +210,46 @@ namespace ConnectorGrasshopper
       {
         description += "Inputs:\n";
         foreach (var p in props)
-          description += $"\n- {p.Name} ({p.PropertyType.Name})";
+        {
+          var inputDesc = p.GetCustomAttribute<SchemaDescriptionAttribute>();
+          var d = inputDesc != null ? $": {inputDesc}" : "";
+          description += $"\n- {p.Name} ({p.PropertyType.Name}){d}";
+        }
+
       }
 
 
 
       return description;
     }
+
+    //rtf description, not working
+    //private string GetDescription(TreeGridItem t)
+    //{
+    //  if (t == null || (Type)t.Tag == null)
+    //    return "";
+    //  var type = (Type)t.Tag;
+
+    //  var description = @"{\rtf1";
+
+    //  var attr = type.GetCustomAttribute<SchemaDescriptionAttribute>();
+    //  if (attr != null)
+    //  {
+    //    description += $@"\b Description: \b0 {attr.Description}\par";
+    //  }
+
+    //  var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute(typeof(SchemaIgnoreAttribute)) == null && x.Name != "Item");
+    //  if (props.Any())
+    //  {
+    //    description += @"\b Inputs:\b0\par";
+    //    foreach (var p in props)
+    //      description += $@"\bullet  {p.Name} \i ({p.PropertyType.Name})\i0\par";
+    //  }
+
+    //  description += "}";
+
+    //  return description;
+    //}
 
 
   }
