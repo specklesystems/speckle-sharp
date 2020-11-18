@@ -79,7 +79,6 @@ namespace Speckle.DesktopUI.Streams
             "https://avatars3.githubusercontent.com/u/7696515?s=88&u=fa253b5228d512e1ce79357c63925b7258e69f4c&v=4"
         }
       };
-
       var branches = new Branches()
       {
         totalCount = 2,
@@ -114,41 +113,6 @@ namespace Speckle.DesktopUI.Streams
         }
       };
 
-      var branches2 = new Branches()
-      {
-        totalCount = 2,
-        items = new List<Branch>()
-        {
-          new Branch()
-          {
-            id = "123",
-            name = "main",
-            commits = new Commits()
-            {
-              items = new List<Commit>()
-              {
-                new Commit()
-                {
-                  authorName = "izzy 2.0",
-                  id = "commit123",
-                  message = "a totally real commit 💫",
-                  createdAt = "sometime"
-                },
-                new Commit()
-                {
-                  authorName = "izzy bot",
-                  id = "commit321",
-                  message = "look @ all these changes 👩‍🎤",
-                  createdAt = "03/05/2030"
-                }
-              }
-            }
-          },
-          new Branch() {id = "321", name = "dev/what/boats"}
-        }
-      };
-
-
       var testStreams = new List<Stream>()
       {
         new Stream
@@ -167,7 +131,7 @@ namespace Speckle.DesktopUI.Streams
           description = "cool and good indeed",
           isPublic = true,
           collaborators = collabs.GetRange(1, 2),
-          branches = branches2
+          branches = branches
         }
       };
 
@@ -180,7 +144,7 @@ namespace Speckle.DesktopUI.Streams
         collection.Add(new StreamState(client, stream));
       }
 
-      collection[ 0 ].Objects.Add(new Core.Models.Base() {id = "random_obj"});
+      collection[ 0 ].Placeholders.Add(new Core.Models.Base() {id = "random_obj"});
 
       return collection;
     }
@@ -210,6 +174,25 @@ namespace Speckle.DesktopUI.Streams
 
     public async Task<StreamState> ConvertAndReceive(StreamState state)
     {
+      // var latestCommitId = state.LatestCommit()?.id;
+      try
+      {
+        state.Stream = await state.Client.StreamGet(state.Stream.id);
+      }
+      catch ( Exception e )
+      {
+        if ( e is HttpRequestException )
+          _bindings.RaiseNotification(
+            $"Sorry, we could not connect to the server: {state.Client.ServerUrl}. Please ensure the server is online.");
+        Log.CaptureException(e);
+        return null;
+      }
+      /*if (!state.ServerUpdates && latestCommitId == state.LatestCommit()?.id)
+      {
+        _bindings.RaiseNotification($"Stream {state.Stream.id} is up to date");
+        return state;
+      }*/
+
       try
       {
         var res = await _bindings.ReceiveStream(state);

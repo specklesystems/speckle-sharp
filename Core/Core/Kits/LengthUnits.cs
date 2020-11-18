@@ -125,23 +125,6 @@ namespace Speckle.Core.Kits
         case "meters":
         case "metres":
           return LengthUnits.Meters;
-        case "km":
-        case "kilometers":
-        case "kilometer":
-          return LengthUnits.Kilometers;
-        case "inches":
-        case "inch":
-        case "in":
-          return LengthUnits.Inches;
-        case "feet":
-        case "foot":
-        case "ft":
-          return LengthUnits.Feet;
-        case "miles":
-        case "mile":
-        case "mi":
-          return LengthUnits.Miles;
-
       }
       var e = new SpeckleException($"Cannot understand what unit {unit} is.");
       Log.CaptureException(e);

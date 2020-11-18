@@ -1,0 +1,121 @@
+﻿<UserControl x:Class="Speckle.DesktopUI.Streams.Dialogs.StreamUpdateObjectsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Speckle.DesktopUI.Streams.Dialogs"
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:s="https://github.com/canton7/Stylet"
+             mc:Ignorable="d"
+             d:DesignHeight="300"
+             d:DesignWidth="300">
+  <Grid>
+    <StackPanel Margin="24,0,24,24"
+                Orientation="Vertical">
+
+      <TextBlock Margin="0,0,0,12"
+                 FontSize="20"
+                 Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                 Text="{Binding StreamState.Stream.name}" />
+      <TextBlock Margin="0,8"
+                 Text="Update this stream" />
+
+      <Button Margin="0,12,0,0"
+              HorizontalContentAlignment="Stretch"
+              Command="{s:Action UpdateFromSelection}"
+              Style="{StaticResource SoftFlatMidBgButton}"
+              ToolTip="Send all currently selected objects">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <md:PackIcon Grid.Column="0"
+                       Kind="CubeOutline" />
+          <TextBlock Grid.Column="1"
+                     Margin="12,0"
+                     HorizontalAlignment="Center"
+                     Text="Current Selection" />
+          <TextBlock Grid.Column="2"
+                     Text="{Binding SelectionCount, StringFormat='({0} objects)'}" />
+        </Grid>
+      </Button>
+
+      <Button Margin="0,12"
+              HorizontalContentAlignment="Stretch"
+              Command="{s:Action UpdateFromView}"
+              Style="{StaticResource SoftFlatMidBgButton}"
+              ToolTip="Send all objects in the active view">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <md:PackIcon Grid.Column="0"
+                       Kind="CubeOutline" />
+          <TextBlock Grid.Column="1"
+                     Margin="12,0"
+                     HorizontalAlignment="Center"
+                     Text="{Binding ActiveViewName, StringFormat='View: {0}'}" />
+          <TextBlock Grid.Column="2"
+                     Text="{Binding ActiveViewObjects.Count, StringFormat='({0} objects)'}" />
+        </Grid>
+      </Button>
+
+      <Expander HorizontalAlignment="Stretch"
+                md:ExpanderAssist.HorizontalHeaderPadding="16,12"
+                Header="Additional Filter Options">
+        <TabControl Margin="0,12"
+                    ItemContainerStyle="{StaticResource MaterialDesignTabItem}"
+                    ItemsSource="{Binding FilterTabs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    SelectedItem="{Binding SelectedFilterTab, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Style="{StaticResource MaterialDesignTabControl}">
+          <TabControl.ItemTemplate>
+            <DataTemplate>
+              <StackPanel>
+                <md:PackIcon Width="18"
+                             Height="18"
+                             HorizontalAlignment="Center"
+                             Kind="{Binding Filter.Icon}" />
+                <TextBlock FontSize="12"
+                           Text="{Binding Filter.Name}" />
+              </StackPanel>
+            </DataTemplate>
+          </TabControl.ItemTemplate>
+          <TabControl.ContentTemplate>
+            <DataTemplate>
+              <ContentControl Margin="16"
+                              Content="{Binding FilterView}" />
+            </DataTemplate>
+          </TabControl.ContentTemplate>
+        </TabControl>
+      </Expander>
+
+      <Grid Margin="0,12">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Button x:Name="CancelButton"
+                Grid.Column="0"
+                HorizontalAlignment="Center"
+                Command="{s:Action CloseDialog}"
+                Content="CANCEL"
+                IsCancel="True"
+                Style="{StaticResource SoftFlatButton}" />
+        <Button x:Name="AddObjectsButton"
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                md:ButtonProgressAssist.IsIndeterminate="True"
+                md:ButtonProgressAssist.IsIndicatorVisible="{Binding UpdateButtonLoading, Mode=OneWay}"
+                md:ButtonProgressAssist.Value="-1"
+                Command="{s:Action UpdateStreamObjects}"
+                Content="ADD OBJECTS"
+                Foreground="{StaticResource MaterialDesignLightBackground}"
+                Style="{StaticResource SoftFlatMidBgButton}" />
+      </Grid>
+    </StackPanel>
+  </Grid>
+</UserControl>

@@ -123,15 +123,6 @@ namespace Tests
       Assert.AreEqual(cat.GetId(), deserialisedFeline.GetId()); // If we're getting the same hash... we're probably fine!
     }
 
-    [Test]
-    public void InheritedTests()
-    {
-      var superPoint = new SuperPoint() { X = 10, Y = 10, Z = 10, W = 42 };
-
-      var str = Operations.Serialize(superPoint);
-      var sstr = str;
-    }
-
 
   }
 }

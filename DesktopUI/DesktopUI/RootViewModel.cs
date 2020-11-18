@@ -1,70 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
-using Speckle.DesktopUI.Settings;
-using Speckle.DesktopUI.Streams;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
 namespace Speckle.DesktopUI
 {
-  public class RootViewModel : Conductor<IScreen>.Collection.OneActive, IHandle<ShowNotificationEvent>, IHandle<ApplicationEvent>, IHandle<StreamRemovedEvent>
+  public class RootViewModel : Conductor<IScreen>.Collection.OneActive,
+    IHandle<ShowNotificationEvent>,
+    IHandle<ApplicationEvent>
   {
     private IWindowManager _windowManager;
-
     private IViewModelFactory _viewModelFactory;
-
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
-
     public ConnectorBindings Bindings;
+    public string HostName => Bindings.GetApplicationHostName();
 
-    private string _ViewName;
-    public string ViewName
-    {
-      get => _ViewName;
-      set => SetAndNotify(ref _ViewName, value);
-    }
-
-    private PackIcon BackIcon = new PackIcon { Kind = PackIconKind.ArrowLeft, Foreground = System.Windows.Media.Brushes.Gray };
-
-    private PackIcon SettingsIcon = new PackIcon { Kind = PackIconKind.Settings, Foreground = System.Windows.Media.Brushes.Gray };
-
-    private PackIcon _MainButtonIcon;
-    public PackIcon MainButtonIcon
-    {
-      get => _MainButtonIcon;
-      set => SetAndNotify(ref _MainButtonIcon, value);
-    }
-
-    private bool _MainButton_Checked = false;
-    public bool MainButton_Checked
-    {
-      get => _MainButton_Checked;
-      set => SetAndNotify(ref _MainButton_Checked, value);
-    }
-
-    public Dictionary<string, IScreen> Pages = new Dictionary<string, IScreen>();
-
-    public RootViewModel(IWindowManager windowManager, IEventAggregator events, IViewModelFactory viewModelFactory, ConnectorBindings bindings)
+    public RootViewModel(
+      IWindowManager windowManager,
+      IEventAggregator events,
+      IViewModelFactory viewModelFactory,
+      ConnectorBindings bindings)
     {
       _windowManager = windowManager;
       _viewModelFactory = viewModelFactory;
       Bindings = bindings;
-      
-      DisplayName = "Speckle " + bindings.GetApplicationHostName();
-      
       LoadPages();
-
-      ActivateItem(Pages["streams"]);
-
-      ViewName = ActiveItem.DisplayName;
-      MainButtonIcon = SettingsIcon;
-
       events.Subscribe(this);
 
-      Utils.Globals.RVMInstance = this;
+      _darkMode = Properties.Settings.Default.Theme == BaseTheme.Dark;
+      ToggleTheme();
     }
 
     public ISnackbarMessageQueue Notifications
@@ -75,11 +43,17 @@ namespace Speckle.DesktopUI
 
     private void LoadPages()
     {
-      Pages.Add("settings", _viewModelFactory.CreateSettingsViewModel());
-      Items.Add(Pages["settings"]);
+      var pages = new List<IScreen>
+        {
+          _viewModelFactory.CreateStreamsHomeViewModel(),
+          //_viewModelFactory.CreateInboxViewModel(),
+          //_viewModelFactory.CreateFeedViewModel(),
+          _viewModelFactory.CreateSettingsViewModel()
+        };
 
-      Pages.Add("streams", _viewModelFactory.CreateAllStreamsViewModel());
-      Items.Add(Pages["streams"]);
+      pages.ForEach(Items.Add);
+
+      ActiveItem = pages[0];
     }
 
     public void OpenLink(string url)
@@ -87,46 +61,30 @@ namespace Speckle.DesktopUI
       Link.OpenInBrowser(url);
     }
 
-    // Needs a bit of cleanup.
-    public void GoToSettingsOrBack()
+    private bool _isPinned = true;
+    public bool IsPinned
     {
-      if( ActiveItem is StreamViewModel )
-      {
-        ActiveItem.RequestClose();
-        ActiveItem = Pages["streams"];
-        ViewName = ActiveItem.DisplayName;
-        MainButtonIcon = SettingsIcon;
-        MainButton_Checked = false;
-        return;
-      }
-
-      ActiveItem = ActiveItem is AllStreamsViewModel ? Pages["settings"] : Pages["streams"];
-      ViewName = ActiveItem.DisplayName;
-
-      if(!(ActiveItem is AllStreamsViewModel))
-      {
-        MainButtonIcon = BackIcon;
-        MainButton_Checked = true;
-      } 
-      else
-      {
-        MainButtonIcon = SettingsIcon;
-        MainButton_Checked = false;
-      }
+      get => _isPinned;
+      set => SetAndNotify(ref _isPinned, value);
     }
 
-    public void GoToStreamViewPage( StreamViewModel streamItem)
+    private bool _darkMode;
+    public bool DarkMode
     {
-      ActivateItem(streamItem);
-      ViewName = ActiveItem.DisplayName;
-      MainButtonIcon = BackIcon;
-      MainButton_Checked = true;
+      get => _darkMode;
+      set => SetAndNotify(ref _darkMode, value);
     }
 
-    public void Handle(StreamRemovedEvent message)
+    public void ToggleTheme()
     {
-      MainButtonIcon = SettingsIcon;
-      MainButton_Checked = false;
+      var paletteHelper = new PaletteHelper();
+      ITheme theme = paletteHelper.GetTheme();
+
+      theme.SetBaseTheme(DarkMode ? Theme.Dark : Theme.Light);
+      paletteHelper.SetTheme(theme);
+
+      Properties.Settings.Default.Theme = DarkMode ? BaseTheme.Dark : BaseTheme.Light;
+      Properties.Settings.Default.Save();
     }
 
     public void Handle(ShowNotificationEvent message)

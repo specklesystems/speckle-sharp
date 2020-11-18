@@ -17,7 +17,7 @@
       <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#047EFB" />
       <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="#FDFDFD" />
       <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="#313BCF" />
-      <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="{StaticResource Primary600Foreground}" />
+      <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="{StaticResource Primary800Foreground}" />
     </ResourceDictionary>
 
     <!--  secondary colour  -->

@@ -11,13 +11,20 @@ namespace Speckle.DesktopUI.Utils
     string Name { get; set; }
     string Icon { get; set; }
     string Type { get; }
-
     List<string> Selection { get; set; }
+  }
 
-    /// <summary>
-    /// Shoud return a succint summary of the filter.
-    /// </summary>
-    string Summary { get; }
+  public class ElementsSelectionFilter : ISelectionFilter
+  {
+    public string Name { get; set; }
+    public string Icon { get; set; }
+
+    public string Type
+    {
+      get { return typeof(ElementsSelectionFilter).ToString(); }
+    }
+
+    public List<string> Selection { get; set; } = new List<string>();
   }
 
   public class ListSelectionFilter : ISelectionFilter
@@ -32,20 +39,6 @@ namespace Speckle.DesktopUI.Utils
 
     public List<string> Values { get; set; }
     public List<string> Selection { get; set; } = new List<string>();
-
-    public string Summary
-    {
-      get
-      {
-        if (Selection.Count != 0)
-        {
-          return string.Join(", ", Selection);
-        } else
-        {
-          return "Not set.";
-        }
-      }
-    }
   }
 
   public class PropertySelectionFilter : ISelectionFilter
@@ -66,14 +59,6 @@ namespace Speckle.DesktopUI.Utils
     public string PropertyValue { get; set; }
     public string PropertyOperator { get; set; }
     public bool HasCustomProperty { get; set; }
-
-    public string Summary
-    {
-      get
-      {
-        return $"{PropertyName} {PropertyOperator} {PropertyValue}";
-      }
-    }
   }
 
   public class FilterTab : PropertyChangedBase

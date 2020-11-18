@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MaterialDesignThemes.Wpf;
 using Speckle.Core.Credentials;
 using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
@@ -14,30 +13,11 @@ namespace Speckle.DesktopUI.Settings
 {
   public class SettingsViewModel : Screen
   {
-    private AccountsRepository _repo = new AccountsRepository();
-
-    public ObservableCollection<Account> LocalAccounts => _repo.LoadAccounts();
-
-    private Account _defaultAccount;
-
-    public Account DefaultAccount
-    {
-      get => _defaultAccount;
-      set => SetAndNotify(ref _defaultAccount, value);
-    }
-
-    public List<HelpLink> HelpLinks { get; set; }
-
-    public RelayCommand<string> ManageAccountsCommand { get; set; }
-
     public SettingsViewModel()
     {
       DisplayName = "Settings";
       DefaultAccount = _repo.GetDefault();
       ManageAccountsCommand = new RelayCommand<string>(OnManageAccountsCommand);
-
-      _darkMode = Properties.Settings.Default.Theme == BaseTheme.Dark;
-      ToggleTheme();
 
       HelpLinks = new List<HelpLink>()
       {
@@ -64,6 +44,16 @@ namespace Speckle.DesktopUI.Settings
         }
       };
     }
+    private AccountsRepository _repo = new AccountsRepository();
+    public ObservableCollection<Account> LocalAccounts => _repo.LoadAccounts();
+    private Account _defaultAccount;
+    public Account DefaultAccount
+    {
+      get => _defaultAccount;
+      set => SetAndNotify(ref _defaultAccount, value);
+    }
+    public List<HelpLink> HelpLinks { get; set; }
+    public RelayCommand<string> ManageAccountsCommand { get; set; }
 
     private void OnManageAccountsCommand(string arg)
     {
@@ -81,25 +71,6 @@ namespace Speckle.DesktopUI.Settings
       public string description { get; set; }
       public string url { get; set; }
       public string icon { get; set; }
-    }
-
-    private bool _darkMode;
-    public bool DarkMode
-    {
-      get => _darkMode;
-      set => SetAndNotify(ref _darkMode, value);
-    }
-
-    public void ToggleTheme()
-    {
-      var paletteHelper = new PaletteHelper();
-      ITheme theme = paletteHelper.GetTheme();
-
-      theme.SetBaseTheme(DarkMode ? Theme.Dark : Theme.Light);
-      paletteHelper.SetTheme(theme);
-
-      Properties.Settings.Default.Theme = DarkMode ? BaseTheme.Dark : BaseTheme.Light;
-      Properties.Settings.Default.Save();
     }
   }
 }
