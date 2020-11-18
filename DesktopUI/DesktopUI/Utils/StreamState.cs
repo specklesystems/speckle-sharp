@@ -664,6 +664,11 @@ namespace Speckle.DesktopUI.Utils
       var binfo = Branches.FirstOrDefault(b => b.name == info.branchName);
       var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
       
+      if(Branch.name == info.branchName)
+      {
+        Branch = binfo;
+      }
+
       ServerUpdateSummary = $"{cinfo.authorName} pushed new data on branch {info.branchName}: {info.message}";
 
       ServerUpdates = true;
