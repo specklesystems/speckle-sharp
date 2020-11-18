@@ -9,26 +9,30 @@ namespace Speckle.DesktopUI.Utils
   public interface ISelectionFilter
   {
     string Name { get; set; }
-    string Icon { get; set; }
-    string Type { get; }
 
-    List<string> Selection { get; set; }
+    string Icon { get; set; }
 
     /// <summary>
-    /// Shoud return a succint summary of the filter.
+    /// Shoud return a succint summary of the filter: what does it contain inside?
     /// </summary>
     string Summary { get; }
+
+    /// <summary>
+    /// Should contain a generic description of the filter and how it works.
+    /// </summary>
+    string Description { get; set; }
+
+    /// <summary>
+    /// Holds the values that the user selected from the filter. Not the actual objects.
+    /// </summary>    
+    List<string> Selection { get; set; }
   }
 
   public class ListSelectionFilter : ISelectionFilter
   {
     public string Name { get; set; }
     public string Icon { get; set; }
-
-    public string Type
-    {
-      get { return typeof(ListSelectionFilter).ToString(); }
-    }
+    public string Description { get; set; }
 
     public List<string> Values { get; set; }
     public List<string> Selection { get; set; } = new List<string>();
@@ -52,11 +56,8 @@ namespace Speckle.DesktopUI.Utils
   {
     public string Name { get; set; }
     public string Icon { get; set; }
+    public string Description { get; set; }
 
-    public string Type
-    {
-      get { return typeof(PropertySelectionFilter).ToString(); }
-    }
 
     public List<string> Selection { get; set; } = new List<string>();
 
@@ -87,21 +88,14 @@ namespace Speckle.DesktopUI.Utils
 
     public object FilterView { get; private set; }
 
-    public FilterTab(ISelectionFilter filter)
-    {
-      Filter = filter;
-      LocateFilterView();
-    }
-
     private string _listItem;
-
     public string ListItem
     {
       get => _listItem;
       set
       {
         SetAndNotify(ref _listItem, value);
-        if (ListItems.Contains(ListItem))return;
+        if (ListItems.Contains(ListItem)) return;
         ListItems.Add(ListItem);
       }
     }
@@ -111,6 +105,23 @@ namespace Speckle.DesktopUI.Utils
     public void RemoveListItem(string name)
     {
       ListItems.Remove(name);
+    }
+
+    public FilterTab(ISelectionFilter filter)
+    {
+      Filter = filter;
+
+      switch (filter)
+      {
+        case PropertySelectionFilter f:
+          FilterView = Activator.CreateInstance(Type.GetType($"Speckle.DesktopUI.Streams.Dialogs.FilterViews.ParameterFilterView"));
+          break;
+        case ListSelectionFilter f:
+          FilterView = Activator.CreateInstance(Type.GetType($"Speckle.DesktopUI.Streams.Dialogs.FilterViews.CategoryFilterView"));
+          break;
+      }
+
+      //LocateFilterView();
     }
 
     private void LocateFilterView()

@@ -104,9 +104,6 @@
     <Compile Include="Streams\Dialogs\FilterViews\ParameterFilterView.xaml.cs">
       <DependentUpon>ParameterFilterView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Streams\Dialogs\FilterViews\SelectionFilterView.xaml.cs">
-      <DependentUpon>SelectionFilterView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Streams\Dialogs\FilterViews\ViewFilterView.xaml.cs">
       <DependentUpon>ViewFilterView.xaml</DependentUpon>
     </Compile>
@@ -143,7 +140,6 @@
     </Page>
     <Page Include="Streams\Dialogs\FilterViews\CategoryFilterView.xaml" />
     <Page Include="Streams\Dialogs\FilterViews\ParameterFilterView.xaml" />
-    <Page Include="Streams\Dialogs\FilterViews\SelectionFilterView.xaml" />
     <Page Include="Streams\Dialogs\FilterViews\ViewFilterView.xaml" />
     <Page Include="Streams\Dialogs\ShareStreamDialogView.xaml" />
     <Page Include="Streams\StreamCreateDialogView.xaml">

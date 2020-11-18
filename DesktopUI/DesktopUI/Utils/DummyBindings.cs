@@ -81,8 +81,8 @@ namespace Speckle.DesktopUI.Utils
     {
       return new List<ISelectionFilter>
       {
-        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = new List<string>() { "Isometric XX", "FloorPlan_xx", "Section 021" } },
-        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = new List<string>()  { "Boats", "Rafts", "Barges" }},
+        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Description = "Hello world. This is a something something filter.", Values = new List<string>() { "Isometric XX", "FloorPlan_xx", "Section 021" } },
+        new ListSelectionFilter {Name = "Category", Icon = "Category",Description = "Hello world. This is a something something filter.Hello world. This is a something something filter.", Values = new List<string>()  { "Boats", "Rafts", "Barges" }},
         new PropertySelectionFilter
         {
           Name = "Parameter",

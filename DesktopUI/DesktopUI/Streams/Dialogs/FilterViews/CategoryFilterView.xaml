@@ -22,16 +22,16 @@
   </UserControl.Resources>
   <Grid>
     <StackPanel>
-      <TextBlock Text="Add objects to this stream by category" />
+      <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap"/>
       <ComboBox
         Width="Auto"
         Margin="0,16"
-        md:HintAssist.Hint="Category"
         IsEditable="True"
         IsEnabled="True"
         ItemsSource="{Binding Filter.Values, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         SelectedItem="{Binding ListItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=300}"
-        StaysOpenOnEdit="True" />
+        StaysOpenOnEdit="False"
+                Style="{StaticResource MaterialDesignFilledComboBox}"/>
 
       <ItemsControl ItemTemplate="{StaticResource CategoryChipTemplate}" ItemsSource="{Binding ListItems}">
         <ItemsControl.ItemsPanel>

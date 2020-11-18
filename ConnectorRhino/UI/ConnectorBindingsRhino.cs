@@ -132,7 +132,6 @@ namespace SpeckleRhino
 
     public override string GetFileName() => Doc?.Name;
 
-
     public override List<string> GetSelectedObjects()
     {
       var objs = Doc?.Objects.GetSelectedObjects(true, false).Select(obj => obj.Id.ToString()).ToList();
@@ -142,9 +141,10 @@ namespace SpeckleRhino
     public override List<ISelectionFilter> GetSelectionFilters()
     {
       var layers = Doc.Layers.ToList().Select(layer => layer.Name).ToList();
+      
       return new List<ISelectionFilter>()
       {
-         new ListSelectionFilter { Name = "Category", Icon = "Filter", Selection = layers }
+         new ListSelectionFilter { Name = "Layers", Icon = "Filter", Description = "Selects objects based on their layers.", Values = layers }
       };
     }
 
@@ -223,7 +223,8 @@ namespace SpeckleRhino
               if (ancestors.Count != 0)
               {
                 newLayer.ParentLayerId = ancestors.Last().Id;
-              } else
+              }
+              else
               {
                 newLayer.ParentLayerId = layer.ParentLayerId;
               }
@@ -331,6 +332,8 @@ namespace SpeckleRhino
 
       int objCount = 0;
 
+      // TODO: check for filters and trawl the doc.
+
       foreach (var placeholder in state.Objects)
       {
         if (state.CancellationTokenSource.Token.IsCancellationRequested)
@@ -430,7 +433,8 @@ namespace SpeckleRhino
         return;
       }
 
-      Execute.PostToUIThread(() => {
+      Execute.PostToUIThread(() =>
+      {
         progress.ProgressDict = dict;
         progress.Value = dict.Values.Last();
       });
