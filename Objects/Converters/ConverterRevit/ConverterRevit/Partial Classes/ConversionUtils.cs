@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
     private void AddCommonRevitProps(IRevit speckleElement, DB.Element revitElement)
     {
 
-      if (speckleElement is RevitElement speckleRevitElement)
+      if (speckleElement is RevitFamilyElement speckleRevitElement)
       {
         if (revitElement is DB.FamilyInstance)
         {
@@ -367,7 +367,7 @@ namespace Objects.Converter.Revit
       }
 
 
-      if (element is RevitElement ire)
+      if (element is RevitFamilyElement ire)
       {
         //match family and type
         var match = symbols.FirstOrDefault(x => x.FamilyName == ire.family && x.Name == ire.type);

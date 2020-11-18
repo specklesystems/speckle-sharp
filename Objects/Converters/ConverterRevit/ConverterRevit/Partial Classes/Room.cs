@@ -22,7 +22,7 @@ namespace Objects.Converter.Revit
       speckleRoom.name = revitRoom.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
       speckleRoom.number = revitRoom.Number;
       speckleRoom.basePoint = (Point)LocationToSpeckle(revitRoom);
-      speckleRoom.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
+      speckleRoom.level = ConvertAndCacheLevel(baseLevelParam);
       speckleRoom.outline = profiles[0];
       if (profiles.Count > 1)
         speckleRoom.voids = profiles.Skip(1).ToList();

@@ -13,6 +13,8 @@ namespace Objects.Revit
     public string name { get; set; }
     public double elevation { get; set; }
     public bool createView { get; set; }
+    public List<Element> elements { get; set; } = new List<Element>();
+
     public Dictionary<string, object> parameters { get; set; }
 
     [SchemaIgnore]

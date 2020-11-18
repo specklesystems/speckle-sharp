@@ -24,6 +24,6 @@ namespace Objects.Revit
 
   public class RevitFootprintRoof : RevitRoof
   {
-    public RevitLevel cutOffLevel { get; set; }
+    public string cutOffLevel { get; set; }
   }
 }

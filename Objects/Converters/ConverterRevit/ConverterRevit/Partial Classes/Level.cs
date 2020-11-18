@@ -89,6 +89,41 @@ namespace Objects.Converter.Revit
       catch { }
     }
 
+    private DB.Level GetLevelByName(string name)
+    {
+      var collector = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
+
+      //match by name
+      var revitLevel = collector.FirstOrDefault(x => x.Name == name);
+      if (revitLevel != null)
+        return revitLevel;
+
+      //match by id?
+      revitLevel = collector.FirstOrDefault(x => x.Id.ToString() == name);
+      if (revitLevel != null)
+        return revitLevel;
+
+      ConversionErrors.Add(new Speckle.Core.Models.Error($"Could not find level `{name}`", "A default level will be used."));
+
+      return collector.FirstOrDefault();
+    }
+
+    private string ConvertAndCacheLevel(Parameter param)
+    {
+      if (param == null || param.StorageType != StorageType.ElementId)
+        return null;
+      return ConvertAndCacheLevel(param.AsElementId());
+    }
+
+    private string ConvertAndCacheLevel(ElementId id)
+    {
+      var level = Doc.GetElement(id) as DB.Level;
+      //add it to our list of levels for the conversion so we can nest elements under them
+      if (!Levels.ContainsKey(level.Name))
+        Levels[level.Name] = LevelToSpeckle(level);
+      return level.Name;
+    }
+
     private DB.Level TryMatchExistingLevel(ILevel level)
     {
       var collector = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
@@ -155,5 +190,8 @@ namespace Objects.Converter.Revit
           throw new NotSupportedException();
       }
     }
+
+
+
   }
 }

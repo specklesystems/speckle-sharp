@@ -104,6 +104,7 @@ namespace Objects
   {
     string name { get; set; }
     double elevation { get; set; }
+    List<Element> elements { get; set; }
   }
 
   public interface IOpening : IBuiltElement

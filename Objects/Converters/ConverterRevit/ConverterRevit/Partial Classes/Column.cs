@@ -22,7 +22,6 @@ namespace Objects.Converter.Revit
         throw new Exception("Only line based Beams are currently supported.");
       }
 
-      string familyName = "";
       DB.FamilySymbol familySymbol = GetFamilySymbol(speckleColumn); ;
       var baseLine = CurveToNative(speckleColumn.baseLine).get_Item(0);
       DB.Level level = null;
@@ -36,14 +35,13 @@ namespace Objects.Converter.Revit
       var speckleRevitColumn = speckleColumn as RevitColumn;
       if (speckleRevitColumn != null)
       {
-        familyName = speckleRevitColumn.family;
-        level = LevelToNative(speckleRevitColumn.level);
-        topLevel = LevelToNative(speckleRevitColumn.topLevel);
+        level = GetLevelByName(speckleRevitColumn.level);
+        topLevel = GetLevelByName(speckleRevitColumn.topLevel);
         structuralType = speckleRevitColumn.structural ? StructuralType.Column : StructuralType.NonStructural;
         //non slanted columns are point based
         isLineBased = speckleRevitColumn.isSlanted;
       }
-      else
+      if (level == null)
       {
         level = LevelToNative(LevelFromCurve(baseLine));
       }
@@ -58,7 +56,7 @@ namespace Objects.Converter.Revit
           var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
 
           // if family changed, tough luck. delete and let us create a new one.
-          if (familyName != revitType.FamilyName)
+          if (familySymbol.FamilyName != revitType.FamilyName)
           {
             Doc.Delete(docObj.Id);
           }
@@ -69,7 +67,7 @@ namespace Objects.Converter.Revit
 
 
             // check for a type change
-            if (!string.IsNullOrEmpty(familyName) && familyName != revitType.Name)
+            if (!string.IsNullOrEmpty(familySymbol.FamilyName) && familySymbol.FamilyName != revitType.Name)
               revitColumn.ChangeTypeId(familySymbol.Id);
           }
         }
@@ -169,8 +167,8 @@ namespace Objects.Converter.Revit
 
       var speckleColumn = new RevitColumn();
       speckleColumn.type = Doc.GetElement(revitColumn.GetTypeId()).Name;
-      speckleColumn.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
-      speckleColumn.topLevel = (RevitLevel)ParameterToSpeckle(topLevelParam);
+      speckleColumn.level = ConvertAndCacheLevel(baseLevelParam);
+      speckleColumn.topLevel = ConvertAndCacheLevel(topLevelParam);
       speckleColumn.baseOffset = (double)ParameterToSpeckle(baseOffsetParam);
       speckleColumn.topOffset = (double)ParameterToSpeckle(topOffsetParam);
       speckleColumn.facingFlipped = revitColumn.FacingFlipped;
@@ -184,7 +182,8 @@ namespace Objects.Converter.Revit
       //make line from point and height
       if (baseLine == null && baseGeometry is Point basePoint)
       {
-        baseLine = new Line(basePoint, new Point(basePoint.x, basePoint.y, speckleColumn.topLevel.elevation + speckleColumn.topOffset));
+        var elevation = ((RevitLevel)ParameterToSpeckle(topLevelParam)).elevation;
+        baseLine = new Line(basePoint, new Point(basePoint.x, basePoint.y, elevation + speckleColumn.topOffset));
       }
 
       if (baseLine == null)

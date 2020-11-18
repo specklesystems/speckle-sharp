@@ -5,7 +5,7 @@ using Objects.BuiltElements;
 
 namespace Objects.Revit
 {
-  public class RevitBrace : RevitElement, IBrace
+  public class RevitBrace : RevitFamilyElement, IBrace
   {
     public ICurve baseLine { get; set; }
 

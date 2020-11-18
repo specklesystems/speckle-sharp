@@ -18,7 +18,7 @@ namespace Objects.Revit
 
   public class RevitWallByLine : RevitWall
   {
-    public RevitLevel topLevel { get; set; }
+    public string topLevel { get; set; }
   }
 
   public class RevitWallUnconnected : RevitWall

@@ -14,12 +14,23 @@ namespace Objects.Revit
   public class RevitElement : Element, IRevit
   {
     public string type { get; set; }
-    public string family { get; set; }
-    public RevitLevel level { get; set; }
+
+    public string level { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> typeParameters { get; set; }
 
     [SchemaIgnore]
     public string elementId { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
+  }
+
+  [SchemaIgnore]
+  public class RevitFamilyElement : RevitElement
+  {
+    public string family { get; set; }
+
   }
 }

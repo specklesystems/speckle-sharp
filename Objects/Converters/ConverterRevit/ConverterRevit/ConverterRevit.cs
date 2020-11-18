@@ -42,6 +42,7 @@ namespace Objects.Converter.Revit
     public Document Doc { get; private set; }
 
     public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
+    public Dictionary<string, RevitLevel> Levels { get; private set; } = new Dictionary<string, RevitLevel>();
 
     public void SetContextDocument(object doc)
     {
@@ -98,8 +99,11 @@ namespace Objects.Converter.Revit
 
     public List<Base> ConvertToSpeckle(List<object> objects)
     {
+      var elements = objects.Select(x => x as DB.Element).ToList();
       var converted = objects.Select(x => ConvertToSpeckle(x)).ToList();
-      return NestHostedObjects(converted, objects.Select(x => x as DB.Element).ToList());
+      var hostObjects = NestHostedObjects(converted, elements);
+      var levelWithObjects = NestObjectsInLevels(hostObjects);
+      return levelWithObjects;
     }
 
     public object ConvertToNative(Base @object)
@@ -168,14 +172,29 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public List<object> ConvertToNative(List<Base> objects)
     {
+      var levels = objects.Where(x => x is ILevel);
+      var nonLevels = objects.Where(x => !(x is ILevel));
+
+      var sortedObjects = new List<Base>();
+      sortedObjects.AddRange(levels); // add the levels first
+      sortedObjects.AddRange(levels.Cast<ILevel>().SelectMany(x => x.elements)); // add their sub elements
+      sortedObjects.AddRange(nonLevels); // add everything else
+
       var converted = new List<object>();
-      foreach (var obj in objects)
+      foreach (var obj in sortedObjects)
       {
-        var c = ConvertToNative(obj) as DB.Element;
-        converted.Add(c);
-        //process nested elements afterwards
-        var nested = obj.GetMemberSafe("@hostedElements", new List<Base>());
-        converted.AddRange(ConvertBatchToNativeWithHost(nested, c.Id.IntegerValue));
+        try
+        {
+          var c = ConvertToNative(obj) as DB.Element;
+          converted.Add(c);
+          //process nested elements afterwards
+          var nested = obj.GetMemberSafe("@hostedElements", new List<Base>());
+          converted.AddRange(ConvertBatchToNativeWithHost(nested, c.Id.IntegerValue));
+        }
+        catch(Exception e)
+        {
+          ConversionErrors.Add(new Error("Conversion failed", e.Message));
+        }
       }
 
       return converted;
@@ -198,6 +217,21 @@ namespace Objects.Converter.Revit
       return converted;
     }
 
+    private List<Base> NestObjectsInLevels(List<Base> baseObjs)
+    {
+      var levelWithObjects = new List<Base>();
+      foreach (var obj in baseObjs)
+      {
+        if (obj is RevitElement re && !string.IsNullOrEmpty(re.level))
+        {
+          Levels[re.level].elements.Add(re);
+        }
+        else
+          levelWithObjects.Add(obj);
+      }
+      levelWithObjects.AddRange(Levels.Values);
+      return levelWithObjects;
+    }
     private List<Base> NestHostedObjects(List<Base> baseObjs, List<DB.Element> revitObjs)
     {
       Dictionary<int, Base> nested = new Dictionary<int, Base>();

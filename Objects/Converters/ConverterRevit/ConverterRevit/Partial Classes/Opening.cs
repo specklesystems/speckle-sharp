@@ -45,8 +45,8 @@ namespace Objects.Converter.Revit
 
         case RevitShaft rs:
           {
-            var bottomLevel = LevelToNative(rs.level);
-            var topLevel = rs.topLevel != null ? LevelToNative(rs.topLevel) : null;
+            var bottomLevel = GetLevelByName(rs.level);
+            var topLevel = !string.IsNullOrEmpty(rs.topLevel) ? GetLevelByName(rs.topLevel) : null;
             revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
             break;
           }
@@ -97,7 +97,7 @@ namespace Objects.Converter.Revit
         {
           speckleOpening = new RevitShaft();
           if (topLevelParam != null)
-            ((RevitShaft)speckleOpening).topLevel = (RevitLevel)ParameterToSpeckle(topLevelParam);
+            ((RevitShaft)speckleOpening).topLevel = ConvertAndCacheLevel(topLevelParam);
         }
 
 
@@ -112,7 +112,7 @@ namespace Objects.Converter.Revit
       }
 
       if (baseLevelParam != null)
-        speckleOpening.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
+        speckleOpening.level = ConvertAndCacheLevel(baseLevelParam);
 
       speckleOpening.type = revitOpening.Name;
 

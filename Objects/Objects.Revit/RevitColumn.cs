@@ -5,9 +5,9 @@ using Objects.BuiltElements;
 
 namespace Objects.Revit
 {
-  public class RevitColumn : RevitElement, IColumn
+  public class RevitColumn : RevitFamilyElement, IColumn
   {
-    public RevitLevel topLevel { get; set; }
+    public string topLevel { get; set; }
     public double baseOffset { get; set; }
     public double topOffset { get; set; }
     public bool facingFlipped { get; set; }

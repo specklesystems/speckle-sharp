@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
       if (speckleRevitDuct != null)
       {
         type = speckleRevitDuct.type;
-        level = LevelToNative(speckleRevitDuct.level);
+        level = GetLevelByName(speckleRevitDuct.level);
       }
       else
       {
@@ -85,7 +85,7 @@ namespace Objects.Converter.Revit
       }
       speckleDuct.length = (double)ParameterToSpeckle(lengthParam);
       speckleDuct.velocity = (double)ParameterToSpeckle(velocityParam);
-      speckleDuct.level = (RevitLevel)ParameterToSpeckle(levelParam);
+      speckleDuct.level = ConvertAndCacheLevel(levelParam);
       speckleDuct.system = (String)ParameterToSpeckle(system);
 
       AddCommonRevitProps(speckleDuct, revitDuct);

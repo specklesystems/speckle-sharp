@@ -6,7 +6,7 @@ using Objects.Geometry;
 
 namespace Objects.Revit
 {
-  public class RevitBeam : RevitElement, IBeam
+  public class RevitBeam : RevitFamilyElement, IBeam
   {
     public ICurve baseLine { get; set; }
   }

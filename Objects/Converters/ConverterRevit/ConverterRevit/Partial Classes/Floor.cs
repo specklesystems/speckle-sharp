@@ -32,7 +32,7 @@ namespace Objects.Converter.Revit
       var speckleRevitFloor = speckleFloor as RevitFloor;
       if (speckleRevitFloor != null)
       {
-        level = LevelToNative(speckleRevitFloor.level);
+        level = GetLevelByName(speckleRevitFloor.level);
         structural = speckleRevitFloor.structural;
         type = speckleRevitFloor.type;
       }
@@ -97,7 +97,7 @@ namespace Objects.Converter.Revit
       speckleFloor.outline = profiles[0];
       if (profiles.Count > 1)
         speckleFloor.voids = profiles.Skip(1).ToList();
-      speckleFloor.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
+      speckleFloor.level = ConvertAndCacheLevel(baseLevelParam);
       speckleFloor.structural = (bool)ParameterToSpeckle(structuralParam);
 
       AddCommonRevitProps(speckleFloor, revitFloor);

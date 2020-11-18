@@ -9,6 +9,8 @@ namespace Objects.BuiltElements
   {
     public string name { get; set; }
     public double elevation { get; set; }
+    [DetachProperty]
+    public List<Element> elements { get; set; } = new List<Element>();
     public Level()
     {
 
