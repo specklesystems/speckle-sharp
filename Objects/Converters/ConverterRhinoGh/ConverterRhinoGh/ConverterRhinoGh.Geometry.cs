@@ -574,8 +574,11 @@ namespace Objects.Converter.RhinoGh
 
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices.Select(vertex => new BrepVertex(vertex.ToSpeckle())).ToList();
-      spcklBrep.Curve2D = brep.Curves2D.Select(crv => crv.ToNurbsCurve().ToSpeckle()).ToList();
-      spcklBrep.Curve3D = brep.Curves3D.Select(crv => crv.ToNurbsCurve().ToSpeckle()).ToList();
+      spcklBrep.Curve3D = brep.Edges.Select(edge =>
+      {
+        var crv = edge.EdgeCurve.Trim(edge.Domain) ?? edge.EdgeCurve;
+        return crv.ToNurbsCurve().ToSpeckle();
+      }).ToList();
       spcklBrep.Surfaces = brep.Surfaces.Select(srf => srf.ToNurbsSurface().ToSpeckle()).ToList();
       spcklBrep.IsClosed = brep.IsSolid;
       spcklBrep.Orientation = (BrepOrientation)brep.SolidOrientation;

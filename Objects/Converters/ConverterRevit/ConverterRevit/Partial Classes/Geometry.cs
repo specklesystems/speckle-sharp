@@ -508,13 +508,13 @@ namespace Objects.Converter.Revit
       if (!surface.rational)
       {
         result = DB.BRepBuilderSurfaceGeometry.CreateNURBSSurface(surface.degreeU, surface.degreeV, uKnots,
-          vKnots, cPts, face.OrientationReversed, uvBox);
+          vKnots, cPts, false, uvBox);
       }
       else
       {
         var weights = ControlPointWeightsToNative(surfPts);
         result = DB.BRepBuilderSurfaceGeometry.CreateNURBSSurface(surface.degreeU, surface.degreeV, uKnots,
-          vKnots, cPts, weights, face.OrientationReversed, uvBox);
+          vKnots, cPts, weights, false, uvBox);
       }
       return result;
     }
@@ -534,51 +534,56 @@ namespace Objects.Converter.Revit
       }
       
       using var builder = new BRepBuilder(brep.IsClosed ? BRepType.Solid : BRepType.OpenShell);
-      //builder.SetAllowShortEdges();
-      //builder.AllowRemovalOfProblematicFaces();
-      
-      var faceIds = 
-        brep.Faces.Select(face => 
-          builder.AddFace(BrepFaceToNative(face), face.OrientationReversed)).ToList();
-      var edgeIds = 
-        brep.Edges.Select(edge => 
-          builder.AddEdge(BrepEdgeToNative(edge))).ToList();
-      var visited = new List<int>();
-      var loopIds =
-        brep.Loops.Select(loop =>
-        {
-          var loopId =  builder.AddLoop(faceIds[loop.FaceIndex]);
-          var trims = new List<BrepTrim>(loop.Trims);
-          if (loop.Face.OrientationReversed)
-            trims.Reverse();
-          trims.ForEach(trim =>
-          {
-            if (trim.TrimType != BrepTrimType.Boundary && trim.TrimType != BrepTrimType.Mated)
-              return;
-            try
-            {
-              bool reversed = visited.Contains(trim.EdgeIndex);
-              if(!reversed) visited.Add(trim.EdgeIndex);
-              builder.AddCoEdge(loopId, edgeIds[trim.EdgeIndex], loop.Face.OrientationReversed ? !trim.IsReversed : trim.IsReversed);
-            }
-            catch (Exception e)
-            {
-              Console.WriteLine(e);
-            }
-          });
-          try
-          {
-            builder.FinishLoop(loopId);
-          }
-          catch (Exception e)
-          {
-            Console.WriteLine(e);
-          }
-          return loopId;
-        }).ToList();
+      builder.SetAllowShortEdges();
+      builder.AllowRemovalOfProblematicFaces();
 
-      faceIds.ForEach(id => builder.FinishFace(id));
-      
+      var brepEdges = new List<DB.BRepBuilderGeometryId>[brep.Edges.Count];
+      foreach(var face in brep.Faces)
+      {
+        var faceId = builder.AddFace(BrepFaceToNative(face), face.OrientationReversed);
+    
+        foreach (var loop in face.Loops)
+        {
+          var loopId = builder.AddLoop(faceId);
+          if (face.OrientationReversed)
+            loop.TrimIndices.Reverse();
+
+          foreach (var trim in loop.Trims)
+          {
+            if(trim.TrimType != BrepTrimType.Boundary && trim.TrimType != BrepTrimType.Mated)
+              continue;
+
+            if (trim.Edge == null)
+              continue;
+            
+            var edgeIds = brepEdges[trim.EdgeIndex];
+            if (edgeIds == null)
+            {
+              // First time we see this edge, convert it and add
+              edgeIds = brepEdges[trim.EdgeIndex] = new List<BRepBuilderGeometryId>();
+              edgeIds.Add(builder.AddEdge(BrepEdgeToNative(trim.Edge)));
+            }
+
+            var trimReversed = face.OrientationReversed ? !trim.IsReversed : trim.IsReversed;
+            if (trimReversed)
+            {
+              for (int e = edgeIds.Count - 1; e >= 0; --e)
+                builder.AddCoEdge(loopId, edgeIds[e], true);
+            }
+            else
+            {
+              for (int e = 0; e < edgeIds.Count; ++e)
+              {
+                builder.AddCoEdge(loopId, edgeIds[e], false);
+              }
+            }
+          }
+          
+          builder.FinishLoop(loopId);
+        }
+        builder.FinishFace(faceId);
+      }
+
       var bRepBuilderOutcome = builder.Finish();
       if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
       
