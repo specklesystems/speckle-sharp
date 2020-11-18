@@ -8,6 +8,7 @@ using Speckle.Core.Models;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
 using Speckle.ConnectorRevit.Storage;
+using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -24,6 +25,7 @@ namespace Speckle.ConnectorRevit.UI
     public List<Action> Queue;
 
     public ExternalEvent Executor;
+
     public Timer SelectionTimer;
 
     /// <summary>
@@ -46,7 +48,7 @@ namespace Speckle.ConnectorRevit.UI
       Executor = eventHandler;
 
       // LOCAL STATE
-      GetFileContext();
+      GetStreamsInFile();
 
       //// REVIT INJECTION
       //InjectRevitAppInKits();
@@ -56,7 +58,6 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp.Application.DocumentChanged += Application_DocumentChanged;
       RevitApp.Application.DocumentOpened += Application_DocumentOpened;
       RevitApp.Application.DocumentClosed += Application_DocumentClosed;
-      RevitApp.Idling += ApplicationIdling;
 
 
       SelectionTimer = new Timer(1400) {AutoReset = true, Enabled = true};
@@ -73,51 +74,22 @@ namespace Speckle.ConnectorRevit.UI
       NotifyUi(new UpdateSelectionEvent() {ObjectIds = selectedObjects});
     }
 
-    public override void AddObjectsToClient(string args)
-    {
-      // implemented in ClientOperations
-    }
+    public override string GetHostAppName() => Applications.Revit;
 
-    public override void AddExistingStream(string args)
-    {
-      throw new NotImplementedException();
-    }
+    public override string GetDocumentId() => GetDocHash(CurrentDoc.Document);
 
-    public override string GetApplicationHostName()
-    {
-      return "Revit";
-    }
+    private string GetDocHash(Document doc) => Utilities.hashString(doc.PathName + doc.Title, Utilities.HashingFuctions.MD5);
 
-    public override string GetDocumentId()
-    {
-      return GetDocHash(CurrentDoc.Document);
-    }
+    public override string GetDocumentLocation() => CurrentDoc.Document.PathName;
 
-    private string GetDocHash(Document doc)
-    {
-      return Utilities.hashString(doc.PathName + doc.Title, Utilities.HashingFuctions.MD5);
-    }
+    public override string GetActiveViewName() => CurrentDoc.Document.ActiveView.Title;
 
-    public override string GetDocumentLocation()
-    {
-      return CurrentDoc.Document.PathName;
-    }
+    public override string GetFileName() => CurrentDoc.Document.Title;
 
-    public override string GetActiveViewName()
-    {
-      return CurrentDoc.Document.ActiveView.Title;
-    }
-
-    public override List<StreamState> GetFileContext()
+    public override List<StreamState> GetStreamsInFile()
     {
       LocalStateWrapper = StreamStateManager.ReadState(CurrentDoc.Document);
-
       return LocalStateWrapper.StreamStates;
-    }
-
-    public override string GetFileName()
-    {
-      return CurrentDoc.Document.Title;
     }
 
     public override List<ISelectionFilter> GetSelectionFilters()
@@ -125,6 +97,7 @@ namespace Speckle.ConnectorRevit.UI
       var categories = new List<string>();
       var parameters = new List<string>();
       var views = new List<string>();
+      
       if ( CurrentDoc != null )
       {
         //selectionCount = CurrentDoc.Selection.GetElementIds().Count();
@@ -133,10 +106,8 @@ namespace Speckle.ConnectorRevit.UI
         views = Globals.GetViewNames(CurrentDoc.Document);
       }
 
-
       return new List<ISelectionFilter>
       {
-        new ElementsSelectionFilter {Name = "Selection", Icon = "Mouse", Selection = new List<string>()},
         new ListSelectionFilter {Name = "Category", Icon = "Category", Values = categories},
         new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = views},
         new PropertySelectionFilter
@@ -148,11 +119,6 @@ namespace Speckle.ConnectorRevit.UI
           Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
         }
       };
-    }
-
-    public override void RemoveObjectsFromClient(string args)
-    {
-      // implemented in ClientOperations
     }
 
     public override void SelectClientObjects(string args)
@@ -168,7 +134,7 @@ namespace Speckle.ConnectorRevit.UI
 
       var appEvent = new ApplicationEvent()
       {
-        Type = ApplicationEvent.EventType.ViewActivated, DynamicInfo = GetFileContext()
+        Type = ApplicationEvent.EventType.ViewActivated, DynamicInfo = GetStreamsInFile()
       };
       NotifyUi(appEvent);
     }
@@ -181,7 +147,7 @@ namespace Speckle.ConnectorRevit.UI
 
     private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
     {
-      var streamStates = GetFileContext();
+      var streamStates = GetStreamsInFile();
       if ( streamStates == LocalStateWrapper.StreamStates ) return;
       var appEvent = new ApplicationEvent()
       {
@@ -194,19 +160,9 @@ namespace Speckle.ConnectorRevit.UI
     {
       var appEvent = new ApplicationEvent()
       {
-        Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = GetFileContext()
+        Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = GetStreamsInFile()
       };
       NotifyUi(appEvent);
-    }
-
-    private void ApplicationIdling(object sender, Autodesk.Revit.UI.Events.IdlingEventArgs e)
-    {
-      // var appEvent = new ApplicationEvent()
-      // {
-      //   Type = ApplicationEvent.EventType.ApplicationIdling,
-      //   DynamicInfo = GetFileContext()
-      // };
-      // NotifyUi(appEvent);
     }
 
     #endregion
