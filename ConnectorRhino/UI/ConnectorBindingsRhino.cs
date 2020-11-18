@@ -30,7 +30,7 @@ namespace SpeckleRhino
     {
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
 
-      SelectionTimer = new Timer(1000) { AutoReset = true, Enabled = true };
+      SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
       SelectionTimer.Elapsed += SelectionTimer_Elapsed;
       SelectionTimer.Start();
     }
@@ -141,7 +141,7 @@ namespace SpeckleRhino
     public override List<ISelectionFilter> GetSelectionFilters()
     {
       var layers = Doc.Layers.ToList().Select(layer => layer.Name).ToList();
-      
+
       return new List<ISelectionFilter>()
       {
          new ListSelectionFilter { Name = "Layers", Icon = "Filter", Description = "Selects objects based on their layers.", Values = layers }
@@ -333,6 +333,16 @@ namespace SpeckleRhino
       int objCount = 0;
 
       // TODO: check for filters and trawl the doc.
+      if (state.Filter != null)
+      {
+        state.Objects = GetObjectsFromFilter(state.Filter);
+      }
+
+      if (state.Objects.Count == 0)
+      {
+        RaiseNotification("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
+        return state;
+      }
 
       foreach (var placeholder in state.Objects)
       {
@@ -406,23 +416,35 @@ namespace SpeckleRhino
 
       var updatedStream = await client.StreamGet(streamId);
       state.Branches = updatedStream.branches.items;
+      state.Stream.name = updatedStream.name;
+      state.Stream.description = updatedStream.description;
 
-      // state.Stream.branches = updatedStream.branches;
-      // state.Placeholders = new List<Base>(); 
-      // ask izzy: confused re the demarcation between state.objects, state.placeholders, etc. seems like
-      // the above clears the set selection of a stream. 
       UpdateStream(state);
-
-      RaiseNotification($"{objCount} objects sent to Speckle 🦏 + 🚀");
+      RaiseNotification($"{objCount} objects sent to {state.Stream.name}.");
 
       return state;
     }
 
+    public List<Base> GetObjectsFromFilter(ISelectionFilter filter)
+    {
+      switch(filter)
+      {
+        case ListSelectionFilter f:
+          List<Base> objs = new List<Base>();
+          foreach(var layerName in f.Selection)
+          {
+            var docObjs = Doc.Objects.FindByLayer(layerName).Select(o => new Base { applicationId = o.Id.ToString() });
+            objs.AddRange(docObjs);
+          }
+          return objs;
+        default:
+          RaiseNotification("Filter type is not supported in this app. Why did the developer implement it in the first place?");
+          return new List<Base>();
+      }
+    }
+
     public override void UpdateStream(StreamState state)
     {
-      var filter = state.Filter;
-      var objects = new List<Base>();
-
       Doc.Strings.SetString("speckle", state.Stream.id, JsonConvert.SerializeObject(state));
     }
 

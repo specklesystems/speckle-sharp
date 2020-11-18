@@ -79,10 +79,7 @@ namespace Speckle.DesktopUI.Utils
 
   public class FilterTab : PropertyChangedBase
   {
-    public string Name
-    {
-      get => Filter.Name;
-    }
+    public string Name => Filter.Name;
 
     public ISelectionFilter Filter { get; }
 
@@ -95,17 +92,13 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _listItem, value);
+        if (value == null) return;
         if (ListItems.Contains(ListItem)) return;
         ListItems.Add(ListItem);
       }
     }
 
     public BindableCollection<string> ListItems { get; } = new BindableCollection<string>();
-
-    public void RemoveListItem(string name)
-    {
-      ListItems.Remove(name);
-    }
 
     public FilterTab(ISelectionFilter filter)
     {
@@ -120,22 +113,12 @@ namespace Speckle.DesktopUI.Utils
           FilterView = Activator.CreateInstance(Type.GetType($"Speckle.DesktopUI.Streams.Dialogs.FilterViews.CategoryFilterView"));
           break;
       }
-
-      //LocateFilterView();
     }
 
-    private void LocateFilterView()
+    public void RemoveListItem(string name)
     {
-      var viewName = $"Speckle.DesktopUI.Streams.Dialogs.FilterViews.{Filter.Name}FilterView";
-      var type = Type.GetType(viewName);
-      try
-      {
-        FilterView = Activator.CreateInstance(type);
-      }
-      catch (Exception e)
-      {
-        Log.CaptureException(e);
-      }
+      ListItem = null;
+      ListItems.Remove(name);
     }
   }
 }

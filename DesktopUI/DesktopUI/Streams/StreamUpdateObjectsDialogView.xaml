@@ -44,7 +44,7 @@
                      Foreground="Gray"
                      Text="Filters help you select what is sent to a given stream. They will run automatically on every 'send' and capture the objects that match. For example, if you set a filter for an object category of 'polyline', then all the polylines that are in the active document will be sent."
                      TextWrapping="Wrap" />
-          <TabControl Margin="0,0"
+          <TabControl Margin="0,12"
                       ItemContainerStyle="{StaticResource MaterialDesignTabItem}"
                       ItemsSource="{Binding FilterTabs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       SelectedItem="{Binding SelectedFilterTab, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

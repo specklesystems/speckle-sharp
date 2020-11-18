@@ -156,6 +156,7 @@
                   </TextBlock>
                 </MenuItem.Header>
               </MenuItem>
+              
               <Separator Visibility="{Binding AppHasFilters, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
               <MenuItem Command="{s:Action SetObjectSelection}"
@@ -240,8 +241,6 @@
                 <MenuItem.Header>
                   <TextBlock>
                     <Run>Clear Selection</Run>
-                    <!--<Run Text="{Binding SelectionCount}"></Run>
-                    <Run>objects</Run>-->
                   </TextBlock>
                 </MenuItem.Header>
               </MenuItem>
@@ -338,6 +337,7 @@
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
 
           <!--#region Disabled Card (no account) -->
@@ -366,8 +366,8 @@
           </Grid>
           <md:Card Grid.Row="0"
                    Width="Auto"
+                   Panel.ZIndex="100"
                    Margin="8"
-                   Panel.ZIndex="1"
                    md:ShadowAssist.ShadowDepth="Depth0"
                    Foreground="{DynamicResource MaterialDesignTextFieldBoxDisabledBackground}"
                    Opacity=".9"
@@ -377,6 +377,7 @@
 
           <md:Card Grid.Row="0"
                    Width="Auto"
+                   
                    Margin="12,10,12,10"
                    UniformCornerRadius="8">
             <md:Card.Style>
@@ -661,6 +662,43 @@
               </Grid>
               <!--#endregion-->
             </StackPanel>
+          </md:Card>
+
+          <md:Card Grid.Row="1"
+                        Margin="30,-10,30,10"
+                        Padding="5"
+                        Panel.ZIndex="1000"
+                        UniformCornerRadius="20"
+                        Background="{StaticResource PrimaryHueDarkBrush}"
+                        Visibility="{Binding ServerUpdates, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <md:Card.Resources>
+              <local:BindingProxy x:Key="Proxy"
+                                    Data="{Binding}" />
+            </md:Card.Resources>
+            <Grid Margin="10,5,10,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="0"
+                         Foreground="White"
+                         TextWrapping="Wrap"
+                         Text="{Binding ServerUpdateSummary}"
+                         FontSize="12">
+              </TextBlock>
+
+              <Button Grid.Column="1" Width="20" Height="20"
+                      Foreground="Black"
+                      Background="White"
+                      BorderBrush="White"
+                      Style="{StaticResource MaterialDesignFloatingActionLightButton}"
+                      Content="{md:PackIcon Kind=Close, Size=10}"
+                      Command="{s:Action CloseUpdateNotification}"
+                      s:View.ActionTarget="{Binding Data, Source={StaticResource Proxy}}"
+                      CommandParameter="{Binding}"
+                      ToolTip="Close notification."
+                      ></Button>
+            </Grid>
           </md:Card>
         </Grid>
       </DataTemplate>

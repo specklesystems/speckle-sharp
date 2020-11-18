@@ -340,6 +340,16 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
+    private string _serverUpdateSummary;
+    public string ServerUpdateSummary
+    {
+      get => _serverUpdateSummary;
+      set
+      {
+        SetAndNotify(ref _serverUpdateSummary, value);
+      }
+    }
+
     private bool _showProgressBar = false;
     public bool ShowProgressBar
     {
@@ -550,6 +560,12 @@ namespace Speckle.DesktopUI.Utils
       Globals.HostBindings.UpdateStream(this);
     }
 
+    public void CloseUpdateNotification()
+    {
+      ServerUpdateSummary = null;
+      ServerUpdates = false;
+    }
+
     #endregion
 
     #region Selection events
@@ -634,12 +650,21 @@ namespace Speckle.DesktopUI.Utils
       SelectionCount = message.SelectionCount;
     }
 
-    private void HandleCommitCreated(object sender, CommitInfo info)
+    private async void HandleCommitCreated(object sender, CommitInfo info)
     {
       if (IsSenderCard)
       {
         return;
       }
+      
+
+      var updatedStream = await Client.StreamGet(Stream.id);
+      Branches = updatedStream.branches.items;
+
+      var binfo = Branches.FirstOrDefault(b => b.name == info.branchName);
+      var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
+      
+      ServerUpdateSummary = $"{cinfo.authorName} pushed new data on branch {info.branchName}: {info.message}";
 
       ServerUpdates = true;
     }
@@ -662,18 +687,6 @@ namespace Speckle.DesktopUI.Utils
 
     #endregion
 
-    public Commit LatestCommit(string branchName = "main")
-    {
-      var branch = Stream.branches.items.Find(b => b.name == branchName);
-      if (branch == null)
-      {
-        Log.CaptureException(new SpeckleException($"Could not find branch {branchName} on stream {Stream.id}"));
-        return null;
-      }
-
-      var commits = branch.commits.items;
-      return commits.Any() ? commits[0] : null;
-    }
   }
 
   public class StreamStateWrapper

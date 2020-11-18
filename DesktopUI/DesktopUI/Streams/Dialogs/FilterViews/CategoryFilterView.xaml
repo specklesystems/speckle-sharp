@@ -13,7 +13,7 @@
   <UserControl.Resources>
     <DataTemplate x:Key="CategoryChipTemplate">
       <md:Chip
-        Margin="4"
+        Margin="10"
         Content="{Binding}"
         DeleteCommand="{s:Action RemoveFilterItem}"
         DeleteCommandParameter="{Binding}"
@@ -29,9 +29,10 @@
         IsEditable="True"
         IsEnabled="True"
         ItemsSource="{Binding Filter.Values, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-        SelectedItem="{Binding ListItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+        SelectedItem="{Binding ListItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         StaysOpenOnEdit="False"
-                Style="{StaticResource MaterialDesignFilledComboBox}"/>
+        md:HintAssist.Hint="Search or select."
+        Style="{StaticResource MaterialDesignFilledComboBox}"/>
 
       <ItemsControl ItemTemplate="{StaticResource CategoryChipTemplate}" ItemsSource="{Binding ListItems}">
         <ItemsControl.ItemsPanel>

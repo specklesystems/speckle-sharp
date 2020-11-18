@@ -31,8 +31,6 @@ namespace Speckle.DesktopUI.Streams
         DisplayName = "Stream Details";
         _StreamName = StreamState.Stream.name;
         _StreamDescription = StreamState.Stream.description;
-
-        NotifyOfPropertyChange(nameof(LatestCommit));
       }
     }
 
@@ -63,11 +61,6 @@ namespace Speckle.DesktopUI.Streams
         SetAndNotify(ref _StreamDescription, value);
         UpdateStreamNameOrDescription();
       }
-    }
-
-    public Commit LatestCommit
-    {
-      get => StreamState.LatestCommit(Branch.name);
     }
 
     private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
