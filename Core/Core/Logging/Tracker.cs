@@ -70,16 +70,27 @@ namespace Speckle.Core.Logging
 
     public static void TrackPageview(params string[] segments)
     {
-      var builder = new StringBuilder();
-      builder.Append($"http://connectors/{Setup.HostApplication}/");
-      
-      foreach (var segment in segments)
+      Task.Run(() =>
       {
-        builder.Append(segment + "/");
-      }
-      
-      PiwikTracker.SetUrl(builder.ToString());
-      PiwikTracker.DoTrackPageView(string.Join("/", segments));
+        try 
+        {
+          var builder = new StringBuilder();
+          builder.Append($"http://connectors/{Setup.HostApplication}/");
+
+          foreach (var segment in segments)
+          {
+            builder.Append(segment + "/");
+          }
+
+          PiwikTracker.SetUrl(builder.ToString());
+          PiwikTracker.DoTrackPageView(string.Join("/", segments));
+        } catch(Exception e)
+        {
+          // POKEMON: Gotta catch 'em all!
+        }
+        
+      });
+
     }
 
   }
