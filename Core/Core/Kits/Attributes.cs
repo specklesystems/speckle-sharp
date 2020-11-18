@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Speckle.Core.Kits
 {
-  [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
   public class SchemaDescriptionAttribute : Attribute
   {
     private string _description;
@@ -26,6 +26,16 @@ namespace Speckle.Core.Kits
   /// </summary>
   [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = false)]
   public class SchemaIgnoreAttribute : Attribute
+  {
+
+
+  }
+
+  /// <summary>
+  /// Used to ignore classes or properties from schema builder, expand objects etc
+  /// </summary>
+  [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+  public class SchemaOptionalAttribute : Attribute
   {
 
 
