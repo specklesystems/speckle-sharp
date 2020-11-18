@@ -26,7 +26,7 @@ namespace Objects.Converter.Revit
       }
 
       DB.Wall revitWall = null;
-      WallType wallType = null;
+      WallType wallType = GetElementType<WallType>(speckleWall);
       DB.Level level = null;
       var structural = false;
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0); //TODO: support poliline/polycurve walls
@@ -35,7 +35,6 @@ namespace Objects.Converter.Revit
       var speckleRevitWall = speckleWall as RevitWall;
       if (speckleRevitWall != null)
       {
-        wallType = GetElementByTypeAndName<WallType>(speckleRevitWall.type);
         level = GetLevelByName(speckleRevitWall.level);
         structural = speckleRevitWall.structural;
       }

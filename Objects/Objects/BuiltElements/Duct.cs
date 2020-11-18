@@ -12,7 +12,6 @@ namespace Objects.BuiltElements
     public double diameter { get; set; }
     public double length { get; set; }
     public double velocity { get; set; }
-    public string system { get; set; }
 
     public Line baseLine { get; set; }
 

@@ -26,7 +26,6 @@ namespace Objects.Converter.Revit
       DB.Floor revitFloor = null;
       bool structural = false;
       var outline = CurveToNative(speckleFloor.outline);
-      var type = "";
 
 
       var speckleRevitFloor = speckleFloor as RevitFloor;
@@ -34,14 +33,13 @@ namespace Objects.Converter.Revit
       {
         level = GetLevelByName(speckleRevitFloor.level);
         structural = speckleRevitFloor.structural;
-        type = speckleRevitFloor.type;
       }
       else
       {
         level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
       }
 
-      var floorType = GetElementByTypeAndName<FloorType>(type);
+      var floorType = GetElementType<FloorType>(speckleFloor);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleFloor.applicationId, speckleFloor.speckle_type);

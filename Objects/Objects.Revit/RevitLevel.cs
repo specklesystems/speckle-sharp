@@ -12,9 +12,15 @@ namespace Objects.Revit
   {
     public string name { get; set; }
     public double elevation { get; set; }
+
+    [SchemaOptional]
+    [SchemaDescription("If true, it creates an associated view in Revit")]
     public bool createView { get; set; }
+
+    [SchemaOptional]
     public List<Element> elements { get; set; } = new List<Element>();
 
+    [SchemaOptional]
     public Dictionary<string, object> parameters { get; set; }
 
     [SchemaIgnore]

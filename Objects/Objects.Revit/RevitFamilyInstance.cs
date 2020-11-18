@@ -1,20 +1,27 @@
-﻿using Objects.BuiltElements;
+﻿using Newtonsoft.Json;
+using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  public class RevitFamilyInstance : RevitFamilyElement
+  public class RevitFamilyInstance : RevitElement
   {
     public Element host { get; set; }
     public Point basePoint { get; set; }
 
+    [SchemaOptional]
+    public bool facingFlipped { get; set; }
+
+    [SchemaOptional]
+    public bool handFlipped { get; set; }
+
+    [SchemaOptional]
+    public double rotation { get; set; }
+
+    [JsonIgnore]
     [SchemaIgnore]
     public int revitHostId { get; set; }
-
-    public bool facingFlipped { get; set; }
-    public bool handFlipped { get; set; }
-    public double rotation { get; set; }
   }
 }

@@ -8,6 +8,7 @@ using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
+  [SchemaDescription("A DirectShape element by mesh")]
   public class DirectShape : Element, IBuiltElement, IRevit
   {
     public string type { get; set; }
@@ -15,9 +16,10 @@ namespace Objects.Revit
     public RevitCategory category { get; set; }
     public Mesh baseGeometry { get; set; }
 
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
     [SchemaIgnore]
     public string elementId { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
   }
 
 

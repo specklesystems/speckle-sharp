@@ -11,27 +11,35 @@ namespace Objects.Revit
   {
     public ICurve baseCurve { get; set; }
     public string lineStyle { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
     [SchemaIgnore]
     public string elementId { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
   }
 
   public class DetailCurve : Base, IRevit
   {
     public ICurve baseCurve { get; set; }
     public string lineStyle { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
     [SchemaIgnore]
     public string elementId { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
   }
 
   public class RoomBoundaryLine : Base, IRevit
   {
     public ICurve baseCurve { get; set; }
 
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
     [SchemaIgnore]
     public string elementId { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
 
   }
 }

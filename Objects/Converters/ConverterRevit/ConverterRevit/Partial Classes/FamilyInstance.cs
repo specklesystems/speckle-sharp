@@ -89,7 +89,7 @@ namespace Objects.Converter.Revit
     //TODO: might need to clean this up and split the logic by beam, FI, etc...
     public DB.FamilyInstance FamilyInstanceToNative(RevitFamilyInstance speckleFi)
     {
-      DB.FamilySymbol familySymbol = GetFamilySymbol(speckleFi as IBuiltElement);
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi as IBuiltElement);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
       DB.Level level = GetLevelByName(speckleFi.level);
       DB.FamilyInstance familyInstance = null;

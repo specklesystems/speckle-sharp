@@ -55,7 +55,7 @@ namespace Objects
   public interface IBuiltElement
   {
     string applicationId { get; set; }
-    string speckle_type { get; set; }
+    string speckle_type { get; }
   }
 
   public interface IBeam : IBuiltElement
@@ -85,7 +85,6 @@ namespace Objects
     double diameter { get; set; }
     double length { get; set; }
     double velocity { get; set; }
-    string system { get; set; }
 
     Line baseLine { get; set; }
 

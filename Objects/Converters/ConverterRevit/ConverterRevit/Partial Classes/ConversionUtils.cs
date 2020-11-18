@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
     private void AddCommonRevitProps(IRevit speckleElement, DB.Element revitElement)
     {
 
-      if (speckleElement is RevitFamilyElement speckleRevitElement)
+      if (speckleElement is RevitElement speckleRevitElement)
       {
         if (revitElement is DB.FamilyInstance)
         {
@@ -261,31 +261,120 @@ namespace Objects.Converter.Revit
       return keyname.Replace("☞", ".");
     }
 
-    /// <summary>
-    /// Gets an element by its type and name. If nothing found, returns the first one of that type.
-    /// </summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
-    public T GetElementByTypeAndName<T>(string name)
+
+
+    private T GetElementType<T>(string family, string type)
     {
-      var collector = new FilteredElementCollector(Doc).OfClass(typeof(T));
+      List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
 
-      if (string.IsNullOrEmpty(name)) return (T)(object)collector.FirstElement();
-
-      if (name.ToLower().Contains("duct"))
-      { // DuctType.Name is just 'Default'
-        foreach (DB.Mechanical.DuctType myElement in collector.ToElements())
-          if (myElement.FamilyName == name) return (T)(object)myElement;
+      //match family and type
+      var match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
+      if (match != null)
+      {
+        if (match is FamilySymbol fs && !fs.IsActive)
+          fs.Activate();
+        return (T)(object)match;
       }
 
-      foreach (var myElement in collector.ToElements())
-        if (myElement.Name == name) return (T)(object)myElement;
+      //match family
+      match = types.FirstOrDefault(x => x.FamilyName == family);
+      if (match != null)
+      {
+        ConversionErrors.Add(new Error($"Missing type: {family} {type}", $"Type was replace with: {match.FamilyName} - {match.Name}"));
+        if (match != null)
+        {
+          if (match is FamilySymbol fs && !fs.IsActive)
+            fs.Activate();
+          return (T)(object)match;
+        }
+      }
 
+      // get whatever we found, could be a different category!
+      if (types.Any())
+      {
+        match = types.FirstOrDefault();
+        ConversionErrors.Add(new Error($"Missing family and type", $"The following family and type were used: {match.FamilyName} - {match.Name}"));
+        if (match != null)
+        {
+          if (match is FamilySymbol fs && !fs.IsActive)
+            fs.Activate();
+          return (T)(object)match;
+        }
+      }
 
-      // now returning the first type, which means we didn't find the type we were actually looking for.
-      ConversionErrors.Add(new Error($"Missing type: {name}", $"{collector.FirstElement().Name} has been used instead."));
-      return (T)(object)collector.FirstElement();
+      throw new Exception($"Could not find any family symbol to use.");
     }
+
+    private T GetElementType<T>(IBuiltElement element)
+    {
+      List<ElementType> types = new List<ElementType>();
+      ElementMulticategoryFilter filter = null;
+
+      if (element is IColumn)
+      {
+        filter = new ElementMulticategoryFilter(Categories.columnCategories);
+      }
+      else if (element is IBeam || element is IBrace)
+      {
+        filter = new ElementMulticategoryFilter(Categories.beamCategories);
+      }
+      //else if (element is IDuct)
+      //{
+      //  filter = new ElementMulticategoryFilter(Categories.ductCategories);
+      //}
+
+      if (filter != null)
+      {
+        types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).WherePasses(filter).ToElements().Cast<ElementType>().ToList();
+      }
+      else
+      {
+        types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
+      }
+
+
+      if (element is RevitElement ire)
+      {
+        //match family and type
+        var match = types.FirstOrDefault(x => x.FamilyName == ire.family && x.Name == ire.type);
+        if (match != null)
+        {
+          if (match is FamilySymbol fs && !fs.IsActive)
+            fs.Activate();
+          return (T)(object)match;
+        }
+
+
+        //match type
+        match = types.FirstOrDefault(x => x.FamilyName == ire.family);
+        if (match != null)
+        {
+          ConversionErrors.Add(new Error($"Missing type: {ire.family} {ire.type}", $"Type was replace with: {match.FamilyName} - {match.Name}"));
+          if (match != null)
+          {
+            if (match is FamilySymbol fs && !fs.IsActive)
+              fs.Activate();
+            return (T)(object)match;
+          }
+        }
+      }
+
+      // get whatever we found, could be a different category!
+      if (types.Any())
+      {
+        var match = types.FirstOrDefault();
+        ConversionErrors.Add(new Error($"Missing family and type", $"The following family and type were used: {match.FamilyName} - {match.Name}"));
+        if (match != null)
+        {
+          if (match is FamilySymbol fs && !fs.IsActive)
+            fs.Activate();
+          return (T)(object)match;
+        }
+      }
+
+      throw new Exception($"Could not find any family symbol to use.");
+    }
+
 
     /// <summary>
     /// Returns, if found, the corresponding doc element and its corresponding local state object.
@@ -319,90 +408,8 @@ namespace Objects.Converter.Revit
 
 
 
-    /// <summary>
-    /// Stolen from grevit.
-    /// </summary>
-    /// <param name="document"></param>
-    /// <param name="type"></param>
-    /// <param name="name"></param>
-    /// <returns></returns>
-    public DB.Element GetElementByClassAndName(Type type, string name = null)
-    {
-      var collector = new FilteredElementCollector(Doc).OfClass(type);
-
-      // check against element name
-      if (name == null)
-        return collector.FirstElement();
-
-      foreach (var e in collector.ToElements())
-        if (e.Name == name)
-          return e;
-
-      return collector.FirstElement();
-    }
 
 
-
-    private FamilySymbol GetFamilySymbol(IBuiltElement element)
-    {
-      List<FamilySymbol> symbols = new List<FamilySymbol>();
-      ElementMulticategoryFilter filter = null;
-
-      if (element is IColumn)
-      {
-        filter = new ElementMulticategoryFilter(Categories.columnCategories);
-      }
-      else if (element is IBeam || element is IBrace)
-      {
-        filter = new ElementMulticategoryFilter(Categories.beamCategories);
-      }
-
-      if (filter != null)
-      {
-        symbols = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(FamilySymbol)).WherePasses(filter).ToElements().Cast<FamilySymbol>().ToList();
-      }
-      else
-      {
-        symbols = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(FamilySymbol)).ToElements().Cast<FamilySymbol>().ToList();
-      }
-
-
-      if (element is RevitFamilyElement ire)
-      {
-        //match family and type
-        var match = symbols.FirstOrDefault(x => x.FamilyName == ire.family && x.Name == ire.type);
-        if (match != null)
-        {
-          if (!match.IsActive) match.Activate();
-          return match;
-        }
-
-        //match type
-        match = symbols.FirstOrDefault(x => x.FamilyName == ire.family);
-        if (match != null)
-        {
-          ConversionErrors.Add(new Error($"Missing type: {ire.family} {ire.type}", $"Type was replace with: {match.FamilyName} - {match.Name}"));
-          if (!match.IsActive) match.Activate();
-          return match;
-        }
-      }
-
-      // get whatever we found, could be a different category!
-      if (symbols.Any())
-      {
-        var match = symbols.FirstOrDefault();
-        ConversionErrors.Add(new Error($"Missing family and type", $"The following family and type were used: {match.FamilyName} - {match.Name}"));
-        if (!match.IsActive) match.Activate();
-        return match;
-      }
-
-      throw new Exception($"Could not find any family symbol to use.");
-    }
-
-    //private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value)
-    //{
-
-    //}
 
     private void TrySetParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
     {

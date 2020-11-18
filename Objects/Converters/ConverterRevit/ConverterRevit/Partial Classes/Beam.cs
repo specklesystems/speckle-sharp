@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
         throw new Exception("Only line based Beams are currently supported.");
       }
 
-      DB.FamilySymbol familySymbol = GetFamilySymbol(speckleBeam);
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
       var baseLine = CurveToNative(speckleBeam.baseLine).get_Item(0);
       DB.Level level = null;
       DB.FamilyInstance revitBeam = null;

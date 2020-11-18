@@ -2,21 +2,37 @@
 using System.Collections.Generic;
 using System.Text;
 using Objects.BuiltElements;
+using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
-  public class RevitColumn : RevitFamilyElement, IColumn
+  [SchemaDescription("A Revit column by line")]
+  public class RevitColumn : RevitElement, IColumn
   {
-    public string topLevel { get; set; }
-    public double baseOffset { get; set; }
-    public double topOffset { get; set; }
-    public bool facingFlipped { get; set; }
-    public bool handFlipped { get; set; }
-    public bool isSlanted { get; set; }
-    public bool structural { get; set; }
-    public double rotation { get; set; }
     public double height { get; set; }
-
     public ICurve baseLine { get; set; }
+    public string topLevel { get; set; }
+
+    [SchemaOptional]
+    public double baseOffset { get; set; }
+
+    [SchemaOptional]
+    public double topOffset { get; set; }
+
+    [SchemaOptional]
+    public bool facingFlipped { get; set; }
+
+    [SchemaOptional]
+    public bool handFlipped { get; set; }
+
+    [SchemaOptional]
+    public bool structural { get; set; }
+
+    [SchemaOptional]
+    public double rotation { get; set; }
+
+    [SchemaIgnore]
+    public bool isSlanted { get; set; }
+
   }
 }

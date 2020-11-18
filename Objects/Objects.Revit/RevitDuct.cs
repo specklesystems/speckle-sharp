@@ -13,7 +13,8 @@ namespace Objects.Revit
     public double diameter { get; set; }
     public double length { get; set; }
     public double velocity { get; set; }
-    public string system { get; set; }
+    public string systemName { get; set; }
+    public string systemType { get; set; }
     public Line baseLine { get; set; }
   }
 }

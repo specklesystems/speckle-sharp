@@ -27,20 +27,18 @@ namespace Objects.Converter.Revit
       DB.RoofBase revitRoof = null;
       DB.Level level = null;
       var outline = CurveToNative(speckleRoof.outline);
-      var type = "";
 
       var speckleRevitRoof = speckleRoof as RevitRoof;
       if (speckleRevitRoof != null)
       {
         level = GetLevelByName(speckleRevitRoof.level);
-        type = speckleRevitRoof.type;
       }
       else
       {
         level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
       }
 
-      var roofType = GetElementByTypeAndName<RoofType>(type);
+      var roofType = GetElementType<RoofType>(speckleRoof);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleRoof.applicationId, speckleRoof.speckle_type);

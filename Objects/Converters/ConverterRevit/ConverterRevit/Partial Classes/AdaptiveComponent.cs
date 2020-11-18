@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleAc.applicationId, speckleAc.type);
 
       string familyName = speckleAc.GetMemberSafe("family", "");
-      DB.FamilySymbol familySymbol = GetFamilySymbol(speckleAc);
+      DB.FamilySymbol familySymbol = GetElementType<DB.FamilySymbol>(speckleAc);
       DB.FamilyInstance revitAc = null;
 
       //try update existing 

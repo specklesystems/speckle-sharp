@@ -13,6 +13,7 @@ namespace Objects.Revit
   [SchemaIgnore]
   public class RevitElement : Element, IRevit
   {
+    public string family { get; set; }
     public string type { get; set; }
 
     public string level { get; set; }
@@ -27,10 +28,4 @@ namespace Objects.Revit
     public string elementId { get; set; }
   }
 
-  [SchemaIgnore]
-  public class RevitFamilyElement : RevitElement
-  {
-    public string family { get; set; }
-
-  }
 }

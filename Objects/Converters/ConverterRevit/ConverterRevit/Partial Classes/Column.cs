@@ -22,7 +22,7 @@ namespace Objects.Converter.Revit
         throw new Exception("Only line based Beams are currently supported.");
       }
 
-      DB.FamilySymbol familySymbol = GetFamilySymbol(speckleColumn); ;
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn); ;
       var baseLine = CurveToNative(speckleColumn.baseLine).get_Item(0);
       DB.Level level = null;
       DB.Level topLevel = null;
