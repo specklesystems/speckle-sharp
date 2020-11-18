@@ -39,7 +39,7 @@ namespace Objects.Converter.Revit
       var ductType = GetElementByTypeAndName<DB.DuctType>(type);
       var system = GetElementByTypeAndName<MechanicalSystemType>(speckleDuct.system);
 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(((Duct)speckleDuct).applicationId, ((Duct)speckleDuct).speckle_type);
+      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleDuct.applicationId, speckleDuct.speckle_type);
 
       // deleting instead of updating for now!
       if (docObj != null)

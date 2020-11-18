@@ -34,34 +34,34 @@ namespace Objects.Converter.Revit
         level = LevelToNative(LevelFromCurve(baseLine));
       }
 
-      ////try update existing 
-      //var (docObj, stateObj) = GetExistingElementByApplicationId(((IBeam)speckleBeam).applicationId, ((IBeam)speckleBeam).speckle_type);
-      //if (docObj != null)
-      //{
-      //  try
-      //  {
-      //    var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
+      //try update existing 
+      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleBeam.applicationId, speckleBeam.speckle_type);
+      if (docObj != null)
+      {
+        try
+        {
+          var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
 
-      //    // if family changed, tough luck. delete and let us create a new one.
-      //    if (familySymbol.FamilyName != revitType.FamilyName)
-      //    {
-      //      Doc.Delete(docObj.Id);
-      //    }
-      //    else
-      //    {
-      //      revitBeam = (DB.FamilyInstance)docObj;
-      //      (revitBeam.Location as LocationCurve).Curve = baseLine;
+          // if family changed, tough luck. delete and let us create a new one.
+          if (familySymbol.FamilyName != revitType.FamilyName)
+          {
+            Doc.Delete(docObj.Id);
+          }
+          else
+          {
+            revitBeam = (DB.FamilyInstance)docObj;
+            (revitBeam.Location as LocationCurve).Curve = baseLine;
 
-      //      // check for a type change
-      //      if (!string.IsNullOrEmpty(familySymbol.FamilyName) && familySymbol.FamilyName != revitType.Name)
-      //        revitBeam.ChangeTypeId(familySymbol.Id);
-      //    }
-      //  }
-      //  catch
-      //  {
-      //    //something went wrong, re-create it
-      //  }
-      //}
+            // check for a type change
+            if (!string.IsNullOrEmpty(familySymbol.FamilyName) && familySymbol.FamilyName != revitType.Name)
+              revitBeam.ChangeTypeId(familySymbol.Id);
+          }
+        }
+        catch
+        {
+          //something went wrong, re-create it
+        }
+      }
 
       //create family instance
       if (revitBeam == null)

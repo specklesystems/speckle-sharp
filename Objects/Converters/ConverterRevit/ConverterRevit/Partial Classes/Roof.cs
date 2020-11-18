@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
       var roofType = GetElementByTypeAndName<RoofType>(type);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
-      var (docObj, stateObj) = GetExistingElementByApplicationId(((Roof)speckleRoof).applicationId, ((Roof)speckleRoof).speckle_type);
+      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleRoof.applicationId, speckleRoof.speckle_type);
       if (docObj != null)
         Doc.Delete(docObj.Id);
 

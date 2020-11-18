@@ -44,7 +44,7 @@ namespace Objects.Converter.Revit
       var floorType = GetElementByTypeAndName<FloorType>(type);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
-      var (docObj, stateObj) = GetExistingElementByApplicationId(((Floor)speckleFloor).applicationId, ((Floor)speckleFloor).speckle_type);
+      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleFloor.applicationId, speckleFloor.speckle_type);
       if (docObj != null)
         Doc.Delete(docObj.Id);
 

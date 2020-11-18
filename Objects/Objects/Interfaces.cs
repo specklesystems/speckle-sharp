@@ -54,6 +54,8 @@ namespace Objects
 
   public interface IBuiltElement
   {
+    string applicationId { get; set; }
+    string speckle_type { get; set; }
   }
 
   public interface IBeam : IBuiltElement
