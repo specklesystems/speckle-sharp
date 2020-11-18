@@ -144,7 +144,7 @@ namespace SpeckleRhino
       var layers = Doc.Layers.ToList().Select(layer => layer.Name).ToList();
       return new List<ISelectionFilter>()
       {
-         new ElementsSelectionFilter { Name = "Selection", Icon = "Mouse", Selection = GetSelectedObjects()},
+         new ListSelectionFilter { Name = "Category", Icon = "Filter", Selection = layers }
       };
     }
 
@@ -154,16 +154,16 @@ namespace SpeckleRhino
       var converter = kit.LoadConverter(Applications.Rhino);
 
       var myStream = await state.Client.StreamGet(state.Stream.id);
-      var commit = myStream.branches.items[0].commits.items[0];
+      var commit = state.Commit;
 
-      if (state.CancellationToken.IsCancellationRequested)
+      if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return null;
       }
 
       var commitObject = await Operations.Receive(
         commit.referencedObject,
-        state.CancellationToken,
+        state.CancellationTokenSource.Token,
         new ServerTransport(state.Client.Account, state.Stream.id),
         onProgressAction: d => UpdateProgress(d, state.Progress),
         onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => state.Progress.Maximum = num)
@@ -171,7 +171,7 @@ namespace SpeckleRhino
 
       var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {myStream.name}");
 
-      var layerName = $"{myStream.name} @ {commit.id}";
+      var layerName = $"{myStream.name}: {state.Branch.name} @ {commit.id}";
       layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty); // Rhino doesn't like emojis in layer names :( 
 
       var existingLayer = Doc.Layers.FindName(layerName);
@@ -219,7 +219,7 @@ namespace SpeckleRhino
             }
             else
             {
-              var newLayer = new Layer() { Color = System.Drawing.Color.Gray, Name = linkName };
+              var newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = linkName };
               if (ancestors.Count != 0)
               {
                 newLayer.ParentLayerId = ancestors.Last().Id;
@@ -236,11 +236,11 @@ namespace SpeckleRhino
         }
         else
         {
-          Doc.Layers.Add(layer);
+          layer.Index = Doc.Layers.Add(layer);
         }
       }
 
-      layer = Doc.Layers.FindName(layer.Name);
+      layer = Doc.Layers.FindIndex(layer.Index);
 
       if (obj is Base baseItem)
       {
@@ -331,9 +331,9 @@ namespace SpeckleRhino
 
       int objCount = 0;
 
-      foreach (var placeholder in state.Placeholders)
+      foreach (var placeholder in state.Objects)
       {
-        if (state.CancellationToken.IsCancellationRequested)
+        if (state.CancellationTokenSource.Token.IsCancellationRequested)
         {
           return null;
         }
@@ -367,7 +367,7 @@ namespace SpeckleRhino
         objCount++;
       }
 
-      if (state.CancellationToken.IsCancellationRequested)
+      if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return null;
       }
@@ -382,7 +382,7 @@ namespace SpeckleRhino
       var hasErrors = false;
       var commitObjId = await Operations.Send(
         commitObj,
-        state.CancellationToken,
+        state.CancellationTokenSource.Token,
         transports,
         onProgressAction: dict => UpdateProgress(dict, state.Progress),
         onErrorAction: (err, exception) => { hasErrors = true; /* TODO: a wee bit nicer handling here; plus request cancellation! */ }
@@ -397,11 +397,14 @@ namespace SpeckleRhino
       {
         streamId = streamId,
         objectId = commitObjId,
-        branchName = "main",
-        message = $"Pushed {objCount} elements from Rhino."
+        branchName = state.Branch.name,
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from Rhino."
       });
 
-      state.Stream = await client.StreamGet(streamId);
+      var updatedStream = await client.StreamGet(streamId);
+      state.Branches = updatedStream.branches.items;
+
+      // state.Stream.branches = updatedStream.branches;
       // state.Placeholders = new List<Base>(); 
       // ask izzy: confused re the demarcation between state.objects, state.placeholders, etc. seems like
       // the above clears the set selection of a stream. 
@@ -417,13 +420,6 @@ namespace SpeckleRhino
       var filter = state.Filter;
       var objects = new List<Base>();
 
-      switch (state.Filter)
-      {
-        case ElementsSelectionFilter selFilter:
-          objects = selFilter.Selection.Select(id => new Base { applicationId = id }).ToList();
-          break;
-      }
-      state.Placeholders = objects;
       Doc.Strings.SetString("speckle", state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
@@ -434,7 +430,10 @@ namespace SpeckleRhino
         return;
       }
 
-      Execute.PostToUIThread(() => progress.Value = dict.Values.Last());
+      Execute.PostToUIThread(() => {
+        progress.ProgressDict = dict;
+        progress.Value = dict.Values.Last();
+      });
     }
   }
 }

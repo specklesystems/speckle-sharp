@@ -7,18 +7,340 @@
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:s="https://github.com/canton7/Stylet"
              xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              d:DesignHeight="450"
              d:DesignWidth="600"
              mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
+
       <utils:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+
+      <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+      <!--#region Branch Swapping Button (Sender/Receiver shared) -->
+      <ControlTemplate x:Key="BranchButton">
+        <Button x:Name="BranchButton"
+                Width="auto"
+                Padding="10,0"
+                md:ButtonAssist.CornerRadius="3"
+                ContextMenuService.Placement="Bottom"
+                HorizontalAlignment="Left"
+                FontSize="14"
+                Style="{StaticResource MaterialDesignFlatButton}"
+                local:ContextMenuLeftClickBehavior.IsLeftClickEnabled="True">
+          <Button.ToolTip>
+            <TextBlock>
+              <Run Text="Current branch is" />
+              <Run Text="{Binding Branch.name}" />
+              <Run Text="." />
+              <LineBreak></LineBreak>
+              <Run Text="Click to change." />
+            </TextBlock>
+          </Button.ToolTip>
+          <Grid HorizontalAlignment="Left">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="20" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <md:PackIcon Grid.Column="0"
+                         Margin="0,0,0,0"
+                         HorizontalAlignment="Left"
+                         Kind="SourceBranch" />
+            <TextBlock Grid.Column="1"
+                       Margin="4,0"
+                       FontWeight="Normal"
+                       Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext.Branch.name}" />
+          </Grid>
+          <Button.Resources>
+            <local:BindingProxy x:Key="Proxy"
+                                Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext}" />
+          </Button.Resources>
+          <Button.ContextMenu>
+            <ContextMenu ItemsSource="{Binding BranchContextMenuItems, Mode=OneWay}"
+                         FontSize="12">
+              <ContextMenu.ItemTemplate>
+                <DataTemplate DataType="re">
+                  <Grid ToolTip="{Binding Tooltip}" Background="Transparent">
+                    <Grid.InputBindings>
+                      <MouseBinding Gesture="LeftClick"
+                                    Command="{s:Action SwitchBranch}"
+                                    CommandParameter="{Binding CommandArgument}" />
+                    </Grid.InputBindings>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="20"></ColumnDefinition>
+                      <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <md:PackIcon Grid.Column="0"
+                                 Kind="{Binding Icon.Kind}"></md:PackIcon>
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding Branch.name}"
+                               TextAlignment="Left"></TextBlock>
+                  </Grid>
+                </DataTemplate>
+              </ContextMenu.ItemTemplate>
+            </ContextMenu>
+          </Button.ContextMenu>
+        </Button>
+      </ControlTemplate>
+      <!--#endregion-->
+
+      <!--#region Sender Selection/Filters Button (Sender) -->
+      <ControlTemplate x:Key="SelectionButton">
+        <Button x:Name="SelectionButton"
+                Padding="5"
+                MinWidth="120"
+                HorizontalAlignment="Left"
+                md:ButtonAssist.CornerRadius="3"
+                FontSize="12"
+                FontWeight="Normal"
+                local:ContextMenuLeftClickBehavior.IsLeftClickEnabled="true">
+          <Button.Style>
+            <Style TargetType="Button"
+                   BasedOn="{StaticResource MaterialDesignRaisedButton}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding SendDisabled}"
+                             Value="True">
+                  <Setter Property="md:ShadowAssist.ShadowDepth"
+                          Value="Depth3" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SendEnabled}"
+                             Value="True">
+                  <Setter Property="Background"
+                          Value="Transparent" />
+                  <Setter Property="BorderBrush"
+                          Value="Transparent" />
+                  <Setter Property="Foreground"
+                          Value="{StaticResource PrimaryHueMidBrush}" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Button.Style>
+          <Button.ToolTip>
+            <TextBlock>
+              <Run Text="{Binding ObjectSelectionTooltipText, Mode=OneWay}"
+                   FontWeight="Bold" />
+              <LineBreak></LineBreak>
+              <Run Text="Click to change." />
+            </TextBlock>
+          </Button.ToolTip>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <md:PackIcon Grid.Column="0"
+                         Kind="{Binding ObjectSelectionButtonIcon.Kind}" />
+            <TextBlock Grid.Column="2"
+                       Margin="5,2"
+                       FontWeight="Normal">
+              <Run Text="{Binding ObjectSelectionButtonText, Mode=OneWay}" />
+            </TextBlock>
+          </Grid>
+          <Button.Resources>
+            <local:BindingProxy x:Key="Proxy"
+                                Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+          </Button.Resources>
+          <Button.ContextMenu>
+            <ContextMenu FontSize="12">
+              <MenuItem ToolTip="A filter will run automatically and dynamically select elements that match when sending."
+                        Command="{s:Action ShowStreamUpdateObjectsDialog}"
+                        CommandParameter="{Binding}"
+                        Visibility="{Binding AppHasFilters, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <MenuItem.Icon>
+                  <md:PackIcon Kind="FilterList"></md:PackIcon>
+                </MenuItem.Icon>
+                <MenuItem.Header>
+                  <TextBlock>
+                    <Run>Set/Edit Objects Filter</Run>
+                  </TextBlock>
+                </MenuItem.Header>
+              </MenuItem>
+              <Separator Visibility="{Binding AppHasFilters, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+              <MenuItem Command="{s:Action SetObjectSelection}"
+                        CommandParameter="{Binding}">
+                <MenuItem.ToolTip>
+                  <TextBlock>
+                  <Run>Clears any existing objects, and sets the current selected ones.</Run>
+                    <LineBreak />
+                    <Run FontWeight="Bold">NOTE: Will clear any filters previously set.</Run>
+                  </TextBlock>
+                </MenuItem.ToolTip>
+                <MenuItem.Icon>
+                  <md:PackIcon Kind="AddCircle"
+                               Foreground="Green"></md:PackIcon>
+                </MenuItem.Icon>
+                <MenuItem.Header>
+                  <TextBlock>
+                    <Run>Set Selection (</Run>
+                    <Run Text="{Binding SelectionCount}"></Run>
+                    <Run>objs)</Run>
+                  </TextBlock>
+                </MenuItem.Header>
+              </MenuItem>
+
+              <MenuItem Command="{s:Action AddObjectSelection}"
+                        CommandParameter="{Binding}">
+                <MenuItem.ToolTip>
+                  <TextBlock>
+                  <Run>Adds the currently selected objects to the existing list. Does not clear old ones.</Run>
+                    <LineBreak />
+                    <Run FontWeight="Bold">NOTE: Will clear any filters previously set.</Run>
+                  </TextBlock>
+                </MenuItem.ToolTip>
+                <MenuItem.Icon>
+                  <md:PackIcon Kind="AddCircle"
+                               Foreground="{StaticResource PrimaryHueLightBrush}"></md:PackIcon>
+                </MenuItem.Icon>
+                <MenuItem.Header>
+                  <TextBlock>
+                    <Run>Add Selection (</Run>
+                    <Run Text="{Binding SelectionCount}"></Run>
+                    <Run>objs)</Run>
+                  </TextBlock>
+                </MenuItem.Header>
+              </MenuItem>
+
+              <MenuItem Command="{s:Action RemoveObjectSelection}"
+                        CommandParameter="{Binding}">
+                <MenuItem.ToolTip>
+                  <TextBlock>
+                  <Run>Removes the selected objects.</Run>
+                    <LineBreak />
+                    <Run FontWeight="Bold">NOTE: Will clear any filters previously set.</Run>
+                  </TextBlock>
+                </MenuItem.ToolTip>
+                <MenuItem.Icon>
+                  <md:PackIcon Kind="MinusCircle"
+                               Foreground="IndianRed"></md:PackIcon>
+                </MenuItem.Icon>
+                <MenuItem.Header>
+                  <TextBlock>
+                    <Run>Remove Selection (</Run>
+                    <Run Text="{Binding SelectionCount}"></Run>
+                    <Run>objs)</Run>
+                  </TextBlock>
+                </MenuItem.Header>
+              </MenuItem>
+
+              <MenuItem Command="{s:Action ClearObjectSelection}"
+                        CommandParameter="{Binding}">
+                <MenuItem.ToolTip>
+                  <TextBlock>
+                  <Run>Removes all selected objects.</Run>
+                    <LineBreak />
+                    <Run FontWeight="Bold">NOTE: Will clear any filters previously set.</Run>
+                  </TextBlock>
+                </MenuItem.ToolTip>
+                <MenuItem.Icon>
+                  <md:PackIcon Kind="RemoveCircleMultiple"
+                               Foreground="OrangeRed"></md:PackIcon>
+                </MenuItem.Icon>
+                <MenuItem.Header>
+                  <TextBlock>
+                    <Run>Clear Selection</Run>
+                    <!--<Run Text="{Binding SelectionCount}"></Run>
+                    <Run>objects</Run>-->
+                  </TextBlock>
+                </MenuItem.Header>
+              </MenuItem>
+
+            </ContextMenu>
+          </Button.ContextMenu>
+        </Button>
+      </ControlTemplate>
+      <!--#endregion -->
+
+      <!--#region Commit Swapping Button (Receiver) -->
+      <ControlTemplate x:Key="CommitSwappingButton">
+        <Button x:Name="CommitSwappingButton"
+                Width="auto"
+                Padding="0"
+                HorizontalAlignment="Left"
+                md:ButtonAssist.CornerRadius="3"
+                ContextMenuService.Placement="Bottom"
+                FontSize="12"
+                Style="{StaticResource MaterialDesignFlatButton}"
+                local:ContextMenuLeftClickBehavior.IsLeftClickEnabled="True">
+          <Button.ToolTip>
+            <TextBlock>
+              <Run Text="Current commit is" />
+              <Run Text="{Binding Commit.id}" />
+              <Run Text="." />
+              <LineBreak></LineBreak>
+              <Run Text="Click to change." />
+            </TextBlock>
+          </Button.ToolTip>
+          <Grid HorizontalAlignment="Left">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="20" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <md:PackIcon Grid.Column="0"
+                         Margin="0,0,0,0"
+                         HorizontalAlignment="Left"
+                         Kind="SourceCommit" />
+            <TextBlock Grid.Column="1"
+                       Margin="4,1"
+                       FontWeight="Normal"
+                       Text="{Binding Commit.id}" />
+          </Grid>
+          <Button.Resources>
+            <local:BindingProxy x:Key="Proxy"
+                                Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext}" />
+          </Button.Resources>
+          <Button.ContextMenu>
+            <ContextMenu ItemsSource="{Binding CommitContextMenuItems, Mode=OneWay}"
+                         FontSize="12">
+              <ContextMenu.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel>
+                    <Grid Margin="0,0">
+                      <Grid.InputBindings>
+                        <MouseBinding Gesture="LeftClick"
+                                      Command="{s:Action SwitchCommit}"
+                                      CommandParameter="{Binding CommandArgument}" />
+                      </Grid.InputBindings>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="10"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                      </Grid.ColumnDefinitions>
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition  Height="Auto" />
+                      </Grid.RowDefinitions>
+                      <md:PackIcon Grid.Column="0"
+                                   Grid.Row="0"
+                                   HorizontalAlignment="Left"
+                                   Margin="-20,0,0,0"
+                                   Kind="{Binding Icon.Kind}"></md:PackIcon>
+                      <TextBlock Grid.Column="1"
+                                 Grid.Row="0"
+                                 TextAlignment="Left">
+                      <Run Text="{Binding MainText}" />
+                      <Run Text="-" />
+                      <Run FontWeight="Bold"
+                           Text="{Binding SecondaryText}" />
+                      </TextBlock>
+                    </Grid>
+                  </StackPanel>
+                </DataTemplate>
+              </ContextMenu.ItemTemplate>
+            </ContextMenu>
+          </Button.ContextMenu>
+        </Button>
+      </ControlTemplate>
+      <!--#endregion-->
+
+      <!--#region Stream Card Template-->
       <DataTemplate x:Key="StreamCardTemplate">
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
-          <!--#region Disabled because no account-->
+
+          <!--#region Disabled Card (no account) -->
           <Grid Grid.Row="0"
                 Margin="24"
                 Panel.ZIndex="2"
@@ -37,9 +359,8 @@
                            FontFamily="Consolas"
                            Text="{Binding ServerUrl}"
                            TextWrapping="Wrap" />
-                <TextBlock
-                  Text="Please ensure you have an account for this server and have added it to the Speckle Manager"
-                  TextWrapping="Wrap" />
+                <TextBlock Text="Please ensure you have an account for this server and have added it to the Speckle Manager"
+                           TextWrapping="Wrap" />
               </StackPanel>
             </Border>
           </Grid>
@@ -53,266 +374,357 @@
                    UniformCornerRadius="8"
                    Visibility="{Binding Client, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
           <!--#endregion-->
+
           <md:Card Grid.Row="0"
                    Width="Auto"
-                   Margin="8"
-                   md:ShadowAssist.ShadowDepth="Depth0"
+                   Margin="12,10,12,10"
                    UniformCornerRadius="8">
-            <Grid Margin="16">
-              <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-              </Grid.RowDefinitions>
-              <Grid Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="56" />
-                  <ColumnDefinition Width="40" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0"
-                           VerticalAlignment="Center"
-                           FontSize="18"
-                           Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                           Text="{Binding Stream.name}"
-                           TextWrapping="Wrap" />
-                <Button x:Name="SendStreamButton"
-                        Grid.Column="1"
-                        Margin="8,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Command="{s:Action Send}"
-                        CommandParameter="{Binding}"
-                        Content="{md:PackIcon Kind=CloudUpload,
-                                        Size=20}"
-                        IsEnabled="{Binding IsReceiving, Converter={StaticResource InverseBooleanConverter}}"
-                        Style="{StaticResource FlatFloatingActionMiniButton}"
-                        ToolTip="Send objects to Speckle"
-                        Visibility="{Binding IsSending, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
-                <Button x:Name="StopSendButton"
-                        Grid.Column="1"
-                        Margin="8,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        md:ButtonProgressAssist.IsIndeterminate="False"
-                        md:ButtonProgressAssist.IsIndicatorVisible="True"
-                        md:ButtonProgressAssist.Maximum="{Binding Progress.Maximum, Mode=OneWay}"
-                        md:ButtonProgressAssist.Value="{Binding Progress.Value, Mode=OneWay}"
-                        Command="{s:Action CancelToken}"
-                        Content="{md:PackIcon Kind=Stop,
-                                        Size=20}"
-                        Style="{StaticResource FlatFloatingActionMiniButton}"
-                        ToolTip="Cancel the send operation"
-                        Visibility="{Binding IsSending, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
-                <md:Badged Grid.Column="1"
-                           Margin="48,5,0,0"
-                           Badge="{Binding Placeholders.Count}"
-                           BadgeColorZoneMode="Accent"
-                           ToolTip="objects to send"
-                           Visibility="{Binding Placeholders.Count, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
-                <Button x:Name="ReceiveButton"
-                        Grid.Column="2"
-                        Margin="0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Command="{s:Action Receive}"
-                        CommandParameter="{Binding}"
-                        Content="{md:PackIcon Kind=CloudDownload,
-                                        Size=20}"
-                        IsEnabled="{Binding IsSending, Converter={StaticResource InverseBooleanConverter}}"
-                        Style="{StaticResource FlatFloatingActionMiniDarkButton}"
-                        ToolTip="Receive changes from Speckle"
-                        Visibility="{Binding IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
-                <Button x:Name="StopReceiveButton"
-                        Grid.Column="2"
-                        Margin="0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        md:ButtonProgressAssist.IsIndeterminate="False"
-                        md:ButtonProgressAssist.IsIndicatorVisible="True"
-                        md:ButtonProgressAssist.Maximum="{Binding Progress.Maximum, Mode=OneWay}"
-                        md:ButtonProgressAssist.Value="{Binding Progress.Value, Mode=OneWay}"
-                        Command="{s:Action CancelToken}"
-                        Content="{md:PackIcon Kind=Stop,
-                                        Size=20}"
-                        Style="{StaticResource FlatFloatingActionMiniDarkButton}"
-                        ToolTip="Cancel the receive operation"
-                        Visibility="{Binding IsReceiving, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
-                <md:Badged Grid.Column="2"
-                           Margin="40,5,0,0"
-                           Badge="{md:PackIcon Kind=ExclamationThick}"
-                           BadgeColorZoneMode="Accent"
-                           ToolTip="there are new updates on the server"
-                           Visibility="{Binding ServerUpdates, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
-              </Grid>
+            <md:Card.Style>
+              <Style>
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding ServerUpdates}"
+                               Value="True">
+                    <Setter Property="md:ShadowAssist.ShadowDepth"
+                            Value="Depth5" />
+                  </DataTrigger>
+                  <DataTrigger Binding="{Binding ServerUpdates}"
+                               Value="False">
+                    <Setter Property="md:ShadowAssist.ShadowDepth"
+                            Value="Depth1" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </md:Card.Style>
+            <StackPanel>
+              <Grid Margin="16"
+                    x:Name="CardGrid">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-              <Grid Grid.Row="1">
-                <StackPanel Orientation="Vertical">
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="*" />
-                      <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                <!--#region card header-->
+                <Grid Name="StreamCardTitle"
+                      Grid.Row="0">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="56" />
+                    <ColumnDefinition Width="40" />
+                  </Grid.ColumnDefinitions>
 
-                    <md:Chip Grid.Column="0"
-                             Height="28"
-                             md:ButtonAssist.CornerRadius="14"
-                             Command="{s:Action CopyStreamId}"
-                             CommandParameter="{Binding Stream.id}"
-                             FontFamily="Consolas"
-                             FontSize="12"
-                             ToolTip="Stream ID">
-                      <StackPanel Orientation="Horizontal">
-                        <md:PackIcon Width="12"
-                                     Height="12"
-                                     Margin="0,0,4,0"
-                                     VerticalAlignment="Center"
-                                     Kind="ContentCopy" />
-                        <TextBlock Text="{Binding Stream.id}" />
-                      </StackPanel>
-                    </md:Chip>
+                  <WrapPanel Grid.Column="0">
+                    <TextBlock Grid.Column="0"
+                               VerticalAlignment="Center"
+                               Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                               TextWrapping="Wrap">
+                    <Hyperlink Command="{s:Action ShowStreamInfo}"
+                               CommandParameter="{Binding}"
+                               ToolTip="Open stream details page.">
+                      <TextBlock FontSize="20"
+                                 Text="{Binding Stream.name}" />      
+                      </Hyperlink>
+                    </TextBlock>
+                  </WrapPanel>
 
-                    <Grid Grid.Column="2"
-                          Margin="0,18,0,12"
-                          VerticalAlignment="Center">
-                      <StackPanel Orientation="Horizontal">
-                        <md:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                     Kind="CubeOutline" />
-                        <TextBlock Margin="0,0,12,0"
-                                   Foreground="{DynamicResource MaterialDesignColumnHeader}"
-                                   Text="{Binding Objects.Count, StringFormat=' {0} objects'}" />
-                        <md:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                     Kind="History"
-                                     ToolTip="commits on master branch" />
-                        <TextBlock Margin="4,0,12,0"
-                                   Foreground="{DynamicResource MaterialDesignColumnHeader}"
-                                   Text="{Binding Stream.branches.items[0].commits.items.Count}" />
-                        <md:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                     Kind="Accounts"
-                                     ToolTip="collaborators" />
-                        <TextBlock Margin="4,0,12,0"
-                                   Foreground="{DynamicResource MaterialDesignColumnHeader}"
-                                   Text="{Binding Stream.collaborators.Count}" />
-                        <md:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                     Margin="0,0,6,0"
-                                     Kind="Link"
-                                     ToolTip="link sharing is on"
-                                     Visibility="{Binding Stream.isPublic, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"/>
-                        <md:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                     Margin="0,0,6,0"
-                                     Kind="LinkLock"
-                                     ToolTip="link sharing is off"
-                                     Visibility="{Binding Stream.isPublic, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"/>
-                      </StackPanel>
-                    </Grid>
-                  </Grid>
-                </StackPanel>
-              </Grid>
-
-              <Grid Grid.Row="2"
-                    Margin="0,10,0,0">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <!--  <TextBlock  -->
-                <!--  Grid.Column="0"  -->
-                <!--  Margin="0,12"  -->
-                <!--  FontSize="10"  -->
-                <!--  Text="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />  -->
-                <Button Grid.Column="0"
-                        Width="Auto"
-                        md:ButtonAssist.CornerRadius="4"
-                        Command="{s:Action ShowStreamInfo}"
-                        CommandParameter="{Binding}"
-                        Content="DETAILS"
-                        Style="{StaticResource SoftFlatButton}" />
-                <StackPanel Grid.Column="3"
-                            Orientation="Horizontal">
-                  <!--<Button Width="28"
-                  Height="28"
-                  md:RippleAssist.ClipToBounds="True"
-                  Content="{md:PackIcon Kind=Heart,
-                  Size=18}"
-                  Style="{StaticResource MaterialDesignIconButton}" />-->
-                  <!--<Button x:Name="ShareStreamButton"
-                        Width="28"
-                        Height="28"
-                        md:RippleAssist.ClipToBounds="True"
-                        Command="{s:Action ShowShareDialog}"
-                        CommandParameter="{Binding}"
-                        Content="{md:PackIcon Kind=ShareVariant,
-                                        Size=18}"
-                        Style="{StaticResource MaterialDesignIconButton}"
-                        ToolTip="Share this stream!" />-->
-                  <Button Width="28"
+                  <Button Grid.Column="2"
+                          Width="28"
                           Height="28"
+                          HorizontalAlignment="Right"
                           md:RippleAssist.ClipToBounds="True"
                           Command="{s:Action OpenStreamInWeb}"
                           CommandParameter="{Binding}"
-                          Content="{md:PackIcon Kind=OpenInNew,
-                                          Size=18}"
                           Style="{StaticResource MaterialDesignIconButton}"
-                          ToolTip="Open this stream in the browser" />
-                </StackPanel>
+                          ToolTip="Open this stream in the browser"
+                          Content="{md:PackIcon Kind=OpenInNew, Size=16}">
+                  </Button>
+                </Grid>
+                <!--#endregion-->
+
+                <!--#region Stream Card Sender Actions-->
+                <Grid Name="StreamCardSenderActions"
+                      Margin="0,30,0,0"
+                      Grid.Row="1"
+                      Visibility="{Binding IsSenderCard, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      IsEnabled="{Binding ShowProgressBar, Converter={StaticResource InverseBooleanConverter}}">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="30" />
+                  </Grid.ColumnDefinitions>
+
+                  <!--The branch button-->
+                  <Control Template="{StaticResource BranchButton}"></Control>
+
+                  <!--The Objects button-->
+                  <Control  Grid.Column="1"
+                            Template="{StaticResource SelectionButton}"></Control>
+
+                  <!--The Send Button-->
+                  <Button x:Name="SendButton"
+                          Grid.Column="2"
+                          Width="110"
+                          IsEnabled="{Binding SendEnabled}"
+                          HorizontalAlignment="Right"
+                          md:ButtonAssist.CornerRadius="3"
+                          md:ShadowAssist.ShadowDepth="Depth3"
+                          Command="{s:Action Send}"
+                          CommandParameter="{Binding}"
+                          ContextMenuService.Placement="Center">
+                    <Button.ToolTip>
+                      <TextBlock>
+                        <Run>Send to Specke: either the selected objects, or the ones picked up by the selected filter.</Run>
+                        <LineBreak></LineBreak>
+                        <Run FontWeight="Bold">Right click this button to set a commit message before sending.</Run>
+                      </TextBlock>
+                    </Button.ToolTip>
+                    <Button.Resources>
+                      <local:BindingProxy x:Key="Proxy"
+                                          Data="{Binding}" />
+                    </Button.Resources>
+                    <Button.ContextMenu>
+                      <ContextMenu>
+                        <MenuItem>
+                          <MenuItem.Template>
+                            <ControlTemplate>
+                              <Grid>
+                                <Grid.ColumnDefinitions>
+                                  <ColumnDefinition Width="*" />
+                                  <ColumnDefinition Width="30" />
+                                </Grid.ColumnDefinitions>
+                                <md:PackIcon Grid.Column="1"
+                                             Margin="0,10,0,10"
+                                             Kind="MessageAdd"
+                                             Opacity="0.5"></md:PackIcon>
+                                <TextBox Grid.Column="0"
+                                         Margin="4"
+                                         Width="200"
+                                         md:TextBlockAssist.AutoToolTip="False"
+                                         ToolTip="A commit message helps keep track of the changes made, and the reasons behind them."
+                                         Text="{Binding Path=Data.CommitMessage, Source={StaticResource Proxy}}"
+                                         PreviewKeyDown="{s:Action SendWithCommitMessage}"
+                                         s:View.ActionTarget="{Binding Data, Source={StaticResource Proxy}}"
+                                         md:HintAssist.HelperText="Commit message (press enter to send)">
+                                </TextBox>
+                              </Grid>
+                            </ControlTemplate>
+                          </MenuItem.Template>
+                        </MenuItem>
+                      </ContextMenu>
+                    </Button.ContextMenu>
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <md:PackIcon Grid.Column="1"
+                                   Kind="CloudUpload"
+                                   HorizontalAlignment="Right" />
+
+                      <TextBlock Grid.Column="0"
+                                 HorizontalAlignment="Center"
+                                 Text="Send  " />
+                    </Grid>
+                  </Button>
+
+                  <!-- The state swapper button-->
+                  <Button x:Name="SwapStateButton"
+                          Grid.Column="3"
+                          Width="30"
+                          Margin="5,0,0,0"
+                          md:ButtonAssist.CornerRadius="3"
+                          Command="{s:Action SwapState}"
+                          CommandParameter="{Binding}"
+                          Content="{md:PackIcon Kind=SwapHorizontal, Size=20}"
+                          Style="{StaticResource MaterialDesignToolForegroundButton}">
+                    <Button.ToolTip>
+                      <TextBlock>
+                        <Run>Swaps the type of this stream card.</Run>
+                        <Run FontWeight="Bold">Click to make it a receiver!</Run>
+                      </TextBlock>
+                    </Button.ToolTip>
+                  </Button>
+                </Grid>
+                <!--#endregion-->
+
+                <!--#region Stream Card Receiver Actions-->
+                <Grid x:Name="StreamCardReceiverActions"
+                      Grid.Row="1"
+                      Margin="0,30,0,0"
+                      IsEnabled="{Binding ShowProgressBar, Converter={StaticResource InverseBooleanConverter}}"
+                      Visibility="{Binding IsReceiverCard, Converter={StaticResource BooleanToVisibilityConverter}}">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="30" />
+                  </Grid.ColumnDefinitions>
+                  <Control Template="{StaticResource BranchButton}"></Control>
+
+                  <!--The branch button-->
+                  <Control Template="{StaticResource CommitSwappingButton}"
+                           Grid.Column="1"></Control>
+
+                  <Button x:Name="ReceiveButton"
+                          Grid.Column="2"
+                          Width="110"
+                          HorizontalAlignment="Right"
+                          md:ButtonAssist.CornerRadius="3"
+                          IsEnabled="{Binding ReceiveEnabled}"
+                          Command="{s:Action Receive}"
+                          CommandParameter="{Binding}"
+                          Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                          ToolTip="Edit/Change Objects">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <md:PackIcon Grid.Column="1"
+                                   Kind="CloudDownload" />
+
+                      <TextBlock Grid.Column="0"
+                                 HorizontalAlignment="Center"
+                                 Text="Receive  " />
+                    </Grid>
+                  </Button>
+                  <Button x:Name="SwapStateButton2"
+                          Grid.Column="3"
+                          Width="30"
+                          Margin="5,0,0,0"
+                          md:ButtonAssist.CornerRadius="3"
+                          Command="{s:Action SwapState}"
+                          CommandParameter="{Binding}"
+                          Content="{md:PackIcon Kind=SwapHorizontal, Size=20}"
+                          Style="{StaticResource MaterialDesignToolForegroundButton}">
+                    <Button.ToolTip>
+                      <TextBlock>
+                        <Run>Swaps the type of this stream card.</Run>
+                        <Run FontWeight="Bold">Click to make it a sender!</Run>
+                      </TextBlock>
+                    </Button.ToolTip>
+                  </Button>
+                </Grid>
+                <!--#endregion-->
+
               </Grid>
-            </Grid>
+
+              <!--#region Progress Bar-->
+              <Grid Visibility="{Binding Path=DataContext.ShowProgressBar, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.Resources>
+                  <local:BindingProxy x:Key="Proxy"
+                                      Data="{Binding}" />
+                </Grid.Resources>
+                <ProgressBar Grid.Column="0"
+                             Minimum="0"
+                             Maximum="{Binding Path=DataContext.Progress.Maximum, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                             Value="{Binding Path=DataContext.Progress.Value, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                             x:Name="ProgressBar"
+                             IsIndeterminate="{Binding Path=DataContext.ProgressBarIsIndeterminate, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                             VerticalAlignment="Center"
+                             BorderBrush="Transparent"
+                             BorderThickness="0"
+                             Margin="0,0"
+                             Height="12">
+                  <i:Interaction.Behaviors>
+                    <utils:ProgresBarAnimateBehavior x:Name="AnimateBehavior" />
+                  </i:Interaction.Behaviors>
+                </ProgressBar>
+                <TextBlock Grid.Column="0"
+                           Text="{Binding Path=DataContext.Progress.ProgressSummary, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                           Height="10"
+                           Margin="20,0"
+                           FontSize="9"
+                           Foreground="White"
+                           Opacity="0.7"
+                           HorizontalAlignment="Left"
+                           TextAlignment="Center"></TextBlock>
+                <!--TODO: Figure out how to make this nice-->
+                <Button x:Name="Cancel"
+                        Grid.Column="0"
+                        Margin="0,0,20,0"
+                        Width="14"
+                        Height="15"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        BorderThickness="0"
+                        md:ButtonAssist.CornerRadius="3"
+                        Content="{md:PackIcon Kind=Close, Size=12}"
+                        Command="{s:Action CancelSendOrReceive}"
+                        Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
+                        s:View.ActionTarget="{Binding Source={StaticResource Proxy}, Path=Data}"
+                        HorizontalAlignment="Right"
+                        ToolTip="Cancel">
+                </Button>
+              </Grid>
+              <!--#endregion-->
+            </StackPanel>
           </md:Card>
         </Grid>
       </DataTemplate>
+      <!--#endregion-->
 
     </ResourceDictionary>
   </UserControl.Resources>
 
-  <Grid>
-    <Grid Margin="0,0,0,100">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="*" />
-      </Grid.RowDefinitions>
-      <!--<ProgressBar
-        Grid.Row="0"
-        Margin="0,0,0,10"
-        Background="Transparent"
-        BorderThickness="0"
-        Foreground="{DynamicResource PrimaryHueLightBrush}"
-        IsIndeterminate="False"
-        Maximum="{Binding Progress.Maximum, Mode=OneWay}"
-        Value="{Binding Progress.Value, Mode=OneWay}" />-->
-      <!--<TextBlock Grid.Row="1"
-                 Padding="5,0,5,10"
-                 HorizontalAlignment="Left"
-                 FontSize="24"
-                 Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-                 Text="STREAMS" />-->
+  <md:TransitioningContent OpeningEffect="{md:TransitionEffect FadeIn}">
+    <Grid Margin="0">
+      <Grid Margin="5,0,5,0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <ScrollViewer Grid.Row="0"
+                      Grid.Column="0"
+                      VerticalAlignment="Stretch"
+                      HorizontalAlignment="Stretch"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+          <ItemsControl Margin="0,10"
+                        ItemTemplate="{StaticResource StreamCardTemplate}"
+                        ItemsSource="{Binding StreamList, Mode=OneWay, UpdateSourceTrigger=Default}" />
+        </ScrollViewer>
+        <StackPanel Grid.Row="0"
+                    Margin="58,30,58,0"
+                    Visibility="{Binding EmptyState, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <TextBlock FontSize="30"
+                     TextWrapping="Wrap"
+                     FontWeight="Light"
+                     Foreground="Gray">Hello! Seems like you have no streams in this file.</TextBlock>
+          <Separator Margin="0,20,300,20"
+                     Background="Gray"></Separator>
+          <TextBlock FontSize="20"
+                     TextWrapping="Wrap"
+                     FontWeight="Light"
+                     Foreground="Gray">You can add or create a stream from the big friendly blue button in the lower right.</TextBlock>
+        </StackPanel>
+      </Grid>
 
-      <ScrollViewer Grid.Row="2"
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemTemplate="{StaticResource StreamCardTemplate}"
-                      ItemsSource="{Binding StreamList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
-      </ScrollViewer>
+      <!-- #region The BAB (Big Add Button) -->
+      <Canvas>
+        <Button x:Name="CreateStreamButton"
+                Canvas.Right="0"
+                Canvas.Bottom="0"
+                Width="60"
+                Height="60"
+                Margin="32"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                md:ShadowAssist.ShadowDepth="Depth3"
+                Command="{s:Action ShowStreamCreateDialog}"
+                Content="{md:PackIcon Kind=Plus,
+                                Size=24}"
+                DockPanel.Dock="Bottom"
+                Style="{StaticResource FlatFloatingActionButton}"
+                ToolTip="Add a stream"
+                ToolTipService.Placement="Left" />
+      </Canvas>
+      <!-- #endregion -->
     </Grid>
-
-    <!--  TODO absolute positioning rel to window  -->
-
-    <Button x:Name="CreateStreamButton"
-            Width="45"
-            Height="45"
-            Margin="32"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            Command="{s:Action ShowStreamCreateDialog}"
-            Content="{md:PackIcon Kind=Plus,
-                            Size=24}"
-            DockPanel.Dock="Bottom"
-            Style="{StaticResource FlatFloatingActionAccentButton}"
-            ToolTip="Add a stream"
-            ToolTipService.Placement="Left" />
-  </Grid>
+  </md:TransitioningContent>
 
 </UserControl>

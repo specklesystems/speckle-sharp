@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Speckle.Core.Credentials;
+﻿using Speckle.Core.Credentials;
 using Stylet;
 
 namespace Speckle.DesktopUI.Accounts

@@ -19,43 +19,50 @@ namespace Speckle.DesktopUI.Streams
     private readonly ConnectorBindings _bindings;
     private StreamsRepository _repo;
 
-    public StreamViewModel(
-      IEventAggregator events,
-      ViewManager viewManager,
-      IDialogFactory dialogFactory,
-      StreamsRepository streamsRepo,
-      ConnectorBindings bindings)
-    {
-      _events = events;
-      _viewManager = viewManager;
-      _dialogFactory = dialogFactory;
-      _repo = streamsRepo;
-      _bindings = bindings;
-
-      _events.Subscribe(this);
-    }
-
-    private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
-
     private StreamState _streamState;
-
     public StreamState StreamState
     {
       get => _streamState;
       set
       {
         SetAndNotify(ref _streamState, value);
-        Branch = StreamState.Stream.branches.items[ 0 ];
+
+        Branch = StreamState.Stream.branches.items[0];
+        DisplayName = "Stream Details";
+        _StreamName = StreamState.Stream.name;
+        _StreamDescription = StreamState.Stream.description;
+
         NotifyOfPropertyChange(nameof(LatestCommit));
       }
     }
 
     private Branch _branch;
-
     public Branch Branch
     {
       get => _branch;
       set => SetAndNotify(ref _branch, value);
+    }
+
+    private string _StreamName;
+    public string StreamName
+    {
+      get => _StreamName;
+      set
+      {
+        SetAndNotify(ref _StreamName, value);
+        UpdateStreamNameOrDescription();
+      }
+    }
+
+    private string _StreamDescription;
+    public string StreamDescription
+    {
+      get => _StreamDescription;
+      set
+      {
+        SetAndNotify(ref _StreamDescription, value);
+        UpdateStreamNameOrDescription();
+      }
     }
 
     public Commit LatestCommit
@@ -63,69 +70,46 @@ namespace Speckle.DesktopUI.Streams
       get => StreamState.LatestCommit(Branch.name);
     }
 
-    public async void Send()
-    {
-      StreamState.IsSending = true;
-      Tracker.TrackPageview(Tracker.SEND);
-      _cancellationToken = new CancellationTokenSource();
-      StreamState.CancellationToken = _cancellationToken.Token;
+    private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
 
-      var res = await Task.Run(() => _repo.ConvertAndSend(StreamState));
-      if ( res != null )
+    public StreamViewModel(IEventAggregator events, ViewManager viewManager, IDialogFactory dialogFactory, StreamsRepository streamsRepo, ConnectorBindings bindings)
+    {
+      _events = events;
+      _viewManager = viewManager;
+      _dialogFactory = dialogFactory;
+      _repo = streamsRepo;
+      _bindings = bindings;
+      DisplayName = StreamState?.Stream.name;
+
+      _events.Subscribe(this);
+    }
+
+    public async void UpdateStreamNameOrDescription()
+    {
+      try
       {
-        StreamState = res;
-        _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
+        if(_StreamName == "")
+        {
+          return;
+        }
+
+        var client = StreamState.Client;
+        await client.StreamUpdate(new StreamUpdateInput { id = StreamState.Stream.id, name = _StreamName, description = _StreamDescription });
+
+        Globals.HostBindings.UpdateStream(StreamState);
+        Globals.Notify("Stream updated.");
       }
-
-      StreamState.IsSending = false;
-      await StreamState.Progress.ResetProgress();
-    }
-
-    public async void Receive()
-    {
-      StreamState.IsReceiving = true;
-      Tracker.TrackPageview(Tracker.RECEIVE);
-      _cancellationToken = new CancellationTokenSource();
-      StreamState.CancellationToken = _cancellationToken.Token;
-
-      var res = await Task.Run(() => _repo.ConvertAndReceive(StreamState));
-      if ( res != null ) StreamState = res;
-
-      StreamState.IsReceiving = false;
-      await StreamState.Progress.ResetProgress();
-    }
-
-    public void CancelToken()
-    {
-      _cancellationToken.Cancel();
-    }
-
-    public async void ShowStreamUpdateDialog(int slide = 0)
-    {
-      Tracker.TrackPageview("stream", "dialog-update");
-      var viewmodel = _dialogFactory.CreateStreamUpdateDialog();
-      viewmodel.StreamState = StreamState;
-      viewmodel.SelectedSlide = slide;
-      var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
-
-      var result = await DialogHost.Show(view, "RootDialogHost");
-    }
-
-    public async void ShowShareDialog(StreamState state)
-    {
-      Tracker.TrackPageview("stream", "dialog-share");
-      var viewmodel = _dialogFactory.CreateShareStreamDialogViewModel();
-      viewmodel.StreamState = StreamState;
-      var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
-
-      var result = await DialogHost.Show(view, "RootDialogHost");
+      catch (Exception e)
+      {
+        Globals.Notify($"Failed to update stream.\nError: {e.Message}");
+      }
     }
 
     public void RemoveStream()
     {
       Tracker.TrackPageview("stream", "remove");
       _bindings.RemoveStream(StreamState.Stream.id);
-      _events.Publish(new StreamRemovedEvent() {StreamId = StreamState.Stream.id});
+      _events.Publish(new StreamRemovedEvent() { StreamId = StreamState.Stream.id });
       RequestClose();
     }
 
@@ -133,13 +117,13 @@ namespace Speckle.DesktopUI.Streams
     {
       Tracker.TrackPageview("stream", "delete");
       var deleted = await _repo.DeleteStream(StreamState);
-      if ( !deleted )
+      if (!deleted)
       {
         DialogHost.CloseDialogCommand.Execute(null, null);
         return;
       }
 
-      _events.Publish(new StreamRemovedEvent() {StreamId = StreamState.Stream.id});
+      _events.Publish(new StreamRemovedEvent() { StreamId = StreamState.Stream.id });
       DialogHost.CloseDialogCommand.Execute(null, null);
       RequestClose();
     }
@@ -149,7 +133,7 @@ namespace Speckle.DesktopUI.Streams
     public void CopyStreamId(string streamId)
     {
       Clipboard.SetText(streamId);
-      _events.Publish(new ShowNotificationEvent() {Notification = "Stream ID copied to clipboard!"});
+      Globals.Notify("Stream ID copied to clipboard!");
     }
 
     public void OpenStreamInWeb(StreamState state)
@@ -160,14 +144,14 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(ApplicationEvent message)
     {
-      switch ( message.Type )
+      switch (message.Type)
       {
         case ApplicationEvent.EventType.DocumentOpened:
         case ApplicationEvent.EventType.DocumentClosed:
-        {
-          RequestClose();
-          break;
-        }
+          {
+            RequestClose();
+            break;
+          }
         default:
           return;
       }
@@ -175,7 +159,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(StreamUpdatedEvent message)
     {
-      if ( message.StreamId != StreamState.Stream.id ) return;
+      if (message.StreamId != StreamState.Stream.id) return;
       StreamState.Stream = message.Stream;
     }
   }

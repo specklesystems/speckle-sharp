@@ -8,13 +8,13 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  public class StreamUpdateDialogViewModel : StreamDialogBase,
+  public class StreamUpdateObjectsDialogViewModel : StreamDialogBase,
     IHandle<RetrievedFilteredObjectsEvent>, IHandle<UpdateSelectionCountEvent>
   {
     private readonly IEventAggregator _events;
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
 
-    public StreamUpdateDialogViewModel(
+    public StreamUpdateObjectsDialogViewModel(
       IEventAggregator events,
       StreamsRepository streamsRepo,
       ConnectorBindings bindings)
@@ -225,7 +225,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamState.Placeholders = message.Objects.ToList();
+      StreamState.Objects = message.Objects.ToList();
     }
 
     public void Handle(UpdateSelectionCountEvent message)

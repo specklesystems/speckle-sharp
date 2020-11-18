@@ -1,10 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Speckle.Core.Api;
-using Speckle.DesktopUI.Streams;
 
 namespace Speckle.DesktopUI.Utils
 {
@@ -30,9 +29,17 @@ namespace Speckle.DesktopUI.Utils
       throw new NotImplementedException();
     }
 
+    Random rnd = new Random();
+
     public override List<string> GetSelectedObjects()
     {
-      return new List<string>();
+      var nums = rnd.Next(1000);
+      var strs = new List<string>();
+      for (int i = 0; i < nums; i++)
+      {
+        strs.Add($"Object-{i}");
+      }
+      return strs;
     }
 
     public override void BakeStream(string args)
@@ -42,7 +49,7 @@ namespace Speckle.DesktopUI.Utils
 
     public override string GetApplicationHostName()
     {
-      return "DesktopDemo";
+      return "Desktop";
     }
 
     public override string GetDocumentId()
@@ -74,9 +81,8 @@ namespace Speckle.DesktopUI.Utils
     {
       return new List<ISelectionFilter>
       {
-        new ElementsSelectionFilter {Name = "Selection", Icon = "Mouse", Selection = new List<string>()},
-        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = new List<string>()},
-        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = new List<string>()},
+        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = new List<string>() { "Isometric XX", "FloorPlan_xx", "Section 021" } },
+        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = new List<string>()  { "Boats", "Rafts", "Barges" }},
         new PropertySelectionFilter
         {
           Name = "Parameter",
@@ -90,9 +96,31 @@ namespace Speckle.DesktopUI.Utils
 
     public override async Task<StreamState> SendStream(StreamState state)
     {
-      var objects = state.Placeholders;
-      state.Placeholders.Clear();
-      state.Objects.AddRange(objects);
+      state.Objects.AddRange(state.Objects);
+      // Let's fake some progress barsssss
+
+      state.Progress.Maximum = 100;
+
+      var pd = new ConcurrentDictionary<string, int>();
+      pd["A1"] = 1;
+      pd["A2"] = 1;
+
+      UpdateProgress(pd, state.Progress);
+
+      for (int i = 1; i < 100; i += 10)
+      {
+        if (state.CancellationTokenSource.Token.IsCancellationRequested)
+        {
+          return state;
+        }
+
+        Thread.Sleep(rnd.Next(200, 1000));
+        pd["A1"] = i;
+        pd["A2"] = i+2;
+
+        UpdateProgress(pd, state.Progress);
+      }
+
 
       return state;
     }
@@ -100,6 +128,30 @@ namespace Speckle.DesktopUI.Utils
     public override async Task<StreamState> ReceiveStream(StreamState state)
     {
       state.ServerUpdates = false;
+
+      state.Progress.Maximum = 100;
+
+      var pd = new ConcurrentDictionary<string, int>();
+      pd["A1"] = 1;
+      pd["A2"] = 1;
+
+      UpdateProgress(pd, state.Progress);
+
+      for (int i = 1; i < 100; i += 10)
+      {
+        if (state.CancellationTokenSource.Token.IsCancellationRequested)
+        {
+          return state;
+        }
+
+        Thread.Sleep(rnd.Next(200, 500));
+        pd["A1"] = i;
+        pd["A2"] = i + 2;
+
+        UpdateProgress(pd, state.Progress);
+      }
+
+
       return state;
     }
 
@@ -125,7 +177,21 @@ namespace Speckle.DesktopUI.Utils
 
     public override void UpdateStream(StreamState state)
     {
-      throw new NotImplementedException();
+      //
+    }
+
+    private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
+    {
+      if (progress == null)
+      {
+        return;
+      }
+
+      Stylet.Execute.PostToUIThread(() =>
+      {
+        progress.Update(dict);
+        progress.Value = dict.Values.Last();
+      });
     }
   }
 }
