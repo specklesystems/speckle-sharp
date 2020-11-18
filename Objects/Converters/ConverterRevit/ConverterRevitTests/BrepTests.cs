@@ -32,6 +32,7 @@ namespace ConverterRevitTests
     [Theory]
     [Trait("Brep", "ToNative")]
     [InlineData(@"Brep-UnitCube.json")]
+    [InlineData(@"Brep-CubeWithHole.json")]
     [InlineData(@"Brep-TwoFaces.json")]
     [InlineData(@"Brep-TrimmedFace.json")]
     [InlineData(@"Brep-FaceWithHole.json")]

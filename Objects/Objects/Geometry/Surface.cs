@@ -71,5 +71,7 @@ namespace Objects.Geometry
     {
       this.applicationId = applicationId;
     }
+
+    public string linearUnits { get; set; }
   }
 }

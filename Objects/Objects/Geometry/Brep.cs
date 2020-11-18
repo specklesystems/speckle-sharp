@@ -19,7 +19,7 @@ namespace Objects.Geometry
     public Point center { get; set; }
     public double area { get; set; }
     public double volume { get; set; }
-
+    
     public List<Surface> Surfaces { get; set; }
     public List<Curve> Curve3D { get; set; }
     public List<Curve> Curve2D { get; set; }
@@ -30,6 +30,7 @@ namespace Objects.Geometry
     public List<BrepFace> Faces { get; set; }
     
     public bool IsClosed { get; set; }
+    public BrepOrientation Orientation { get; set; }
 
     public Brep()
     {
@@ -44,6 +45,7 @@ namespace Objects.Geometry
       Faces = new List<BrepFace>();
 
       IsClosed = false;
+      Orientation = BrepOrientation.None;
     }
 
     public Brep(object rawData, string provenance, Mesh displayValue, string applicationId = null) : this()
@@ -62,6 +64,14 @@ namespace Objects.Geometry
       Trims.ForEach(t => t.Brep = this);
       Faces.ForEach(f => f.Brep = this);
     }
+  }
+
+  public enum BrepOrientation
+  {
+    None = 0,
+    Inward = -1,
+    Outward = 1,
+    Unkown = 2
   }
 
   /// <summary>

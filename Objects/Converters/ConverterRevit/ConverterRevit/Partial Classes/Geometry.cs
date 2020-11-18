@@ -522,9 +522,20 @@ namespace Objects.Converter.Revit
     
     public Solid BrepToNative(Brep brep)
     {
+      var bRepType = BRepType.OpenShell;
+      switch (brep.Orientation)
+      {
+        case BrepOrientation.Inward: 
+          bRepType = BRepType.Void;
+          break;
+        case BrepOrientation.Outward:
+          bRepType = BRepType.Solid;
+          break;
+      }
+      
       using var builder = new BRepBuilder(brep.IsClosed ? BRepType.Solid : BRepType.OpenShell);
-      builder.SetAllowShortEdges();
-      builder.AllowRemovalOfProblematicFaces();
+      //builder.SetAllowShortEdges();
+      //builder.AllowRemovalOfProblematicFaces();
       
       var faceIds = 
         brep.Faces.Select(face => 
@@ -567,8 +578,6 @@ namespace Objects.Converter.Revit
         }).ToList();
 
       faceIds.ForEach(id => builder.FinishFace(id));
-
-      var removedFace = builder.RemovedSomeFaces();
       
       var bRepBuilderOutcome = builder.Finish();
       if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
