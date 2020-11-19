@@ -89,8 +89,8 @@ namespace ConnectorGrasshopper
       var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute<SchemaIgnoreAttribute>() == null && x.Name != "Item");
 
       //put optional props at the bottom
-      var optionalProps = props.Where(x => x.GetCustomAttribute<SchemaOptionalAttribute>() != null).OrderBy(x => x.Name);
-      var nonOptionalProps = props.Where(x => x.GetCustomAttribute<SchemaOptionalAttribute>() == null).OrderBy(x => x.Name);
+      var optionalProps = props.Where(x => x.GetCustomAttribute<SchemaOptionalAttribute>() != null).OrderBy(x => x.PropertyType.ToString()).ThenBy(x => x.Name);
+      var nonOptionalProps = props.Where(x => x.GetCustomAttribute<SchemaOptionalAttribute>() == null).OrderBy(x => x.PropertyType.ToString()).ThenBy(x => x.Name);
       props = nonOptionalProps;
       props = props.Concat(optionalProps);
 
@@ -127,7 +127,7 @@ namespace ConnectorGrasshopper
       newInputParam.NickName = propName;
       newInputParam.MutableNickName = false;
 
-      newInputParam.Description = $"(propType.Name) {d}";
+      newInputParam.Description = $"({propType.Name}) {d}";
       newInputParam.Optional = prop.GetCustomAttribute<SchemaOptionalAttribute>() != null;
 
       // check if input needs to be a list or item access
@@ -243,114 +243,107 @@ namespace ConnectorGrasshopper
 
       for (int i = 0; i < Params.Input.Count; i++)
       {
-        if (Params.Input[i].Access == GH_ParamAccess.list)
+        var param = Params.Input[i];
+        if (param.Access == GH_ParamAccess.list)
         {
-          var ObjectsList = new List<object>();
-          DA.GetDataList(i, ObjectsList);
-
-          if (ObjectsList.Count == 0) continue;
-
-          var listForSetting = (IList)Activator.CreateInstance(outputObject.GetType().GetProperty(Params.Input[i].Name).PropertyType);
-          foreach (var item in ObjectsList)
-          {
-            object innerVal = null;
-            try
-            {
-              innerVal = item.GetType().GetProperty("Value").GetValue(item);
-            }
-            catch
-            {
-              innerVal = item;
-            }
-
-            listForSetting.Add(innerVal);
-          }
-
-          outputObject.GetType().GetProperty(Params.Input[i].Name).SetValue(outputObject, listForSetting, null);
+          var inputValues = new List<object>();
+          DA.GetDataList(i, inputValues);
+          inputValues = inputValues.Select(x => ExtractRealInputValue(x)).ToList();
+          SetObjectListProp(param, outputObject, inputValues);
         }
-        else if (Params.Input[i].Access == GH_ParamAccess.item)
+        else if (param.Access == GH_ParamAccess.item)
         {
-          object ghInput = null; // INPUT OBJECT ( PROPERTY )
-          DA.GetData(i, ref ghInput);
-
-          if (ghInput == null) continue;
-
-          object innerValue = null;
-          try
-          {
-            innerValue = ghInput.GetType().GetProperty("Value").GetValue(ghInput);
-          }
-          catch
-          {
-            innerValue = ghInput;
-          }
-
-          if (innerValue == null) continue;
-
-          PropertyInfo prop = outputObject.GetType().GetProperty(Params.Input[i].Name);
-          if (prop.PropertyType.IsEnum)
-          {
-            try
-            {
-              prop.SetValue(outputObject, Enum.Parse(prop.PropertyType, (string)innerValue));
-              continue;
-            }
-            catch { }
-
-            try
-            {
-              prop.SetValue(outputObject, (int)innerValue);
-              continue;
-            }
-            catch { }
-
-            this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + Params.Input[i].Name + ".");
-          }
-
-          else if (innerValue.GetType() != prop.PropertyType)
-          {
-            try
-            {
-              if (Converter.CanConvertToSpeckle(innerValue))
-              {
-                var conv = Converter.ConvertToSpeckle(innerValue);
-                prop.SetValue(outputObject, conv);
-              }
-              continue;
-            }
-            catch { }
-
-            try
-            {
-              prop.SetValue(outputObject, innerValue);
-              continue;
-            }
-            catch { }
-
-            try
-            {
-              var deserialised = Operations.Deserialize((string)innerValue);
-              if (Converter.CanConvertToSpeckle(deserialised))
-              {
-                var conv = Converter.ConvertToSpeckle(deserialised);
-                prop.SetValue(outputObject, conv);
-                continue;
-              }
-            }
-            catch { }
-
-            this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + Params.Input[i].Name + ".");
-          }
-
-          else
-          {
-            prop.SetValue(outputObject, innerValue);
-          }
+          object inputValue = null;
+          DA.GetData(i, ref inputValue);
+          SetObjectProp(param, outputObject, ExtractRealInputValue(inputValue));
         }
+
       }
 
       DA.SetData(0, new GH_SpeckleBase() { Value = outputObject as Base });
     }
+
+
+
+    private object ExtractRealInputValue(object inputValue)
+    {
+      if(inputValue == null)
+        return null;
+
+      object realInputValue;
+      try
+      {
+        realInputValue = inputValue.GetType().GetProperty("Value").GetValue(inputValue);
+      }
+      catch
+      {
+        realInputValue = inputValue;
+      }
+      return realInputValue;
+    }
+
+    //list input
+    private void SetObjectListProp(IGH_Param param, object @object, List<object> values)
+    {
+      if (!values.Any()) return;
+
+      PropertyInfo prop = @object.GetType().GetProperty(param.Name);
+      var list = (IList)Activator.CreateInstance(prop.PropertyType);
+      var listElementType = list.GetType().GetGenericArguments().Single();
+      foreach (var value in values)
+      {
+        list.Add(ConvertType(listElementType, value, param.Name));
+      }
+
+      prop.SetValue(@object, list, null);
+    }
+
+    private void SetObjectProp(IGH_Param param, object @object, object value)
+    {
+      PropertyInfo prop = @object.GetType().GetProperty(param.Name);
+      var convertedValue = ConvertType(prop.PropertyType, value, param.Name);
+      prop.SetValue(@object, convertedValue);
+    }
+
+    private object ConvertType(Type type, object value, string name)
+    {
+      if (value == null || value.GetType() == type || type.IsAssignableFrom(value.GetType()))
+        return value;
+      try
+      {
+        return Convert.ChangeType(value, type);
+      }
+      catch { }
+      try
+      {
+        return Enum.Parse(type, value.ToString());
+      }
+      catch { }
+      try
+      {
+        if (Converter.CanConvertToSpeckle(value))
+        {
+          return Converter.ConvertToSpeckle(value);
+        }
+      }
+      catch { }
+
+      try
+      {
+        var deserialised = Operations.Deserialize((string)value);
+        if (Converter.CanConvertToSpeckle(deserialised))
+        {
+          return Converter.ConvertToSpeckle(deserialised);
+        }
+      }
+      catch { }
+
+      this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");
+      throw new Exception($"Could not covert object to {type}");
+
+    }
+
+
 
     public bool CanInsertParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;
 
