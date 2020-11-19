@@ -9,7 +9,7 @@ using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit
 {
-  public static class Globals
+  public static class ConnectorRevitUtils
   {
     private static List<string> _cachedParameters = null;
     private static List<string> _cachedViews = null;

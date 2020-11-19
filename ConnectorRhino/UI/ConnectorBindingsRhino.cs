@@ -436,15 +436,22 @@ namespace SpeckleRhino
 
       if (state.PreviousCommitId != null) { actualCommit.previousCommitIds = new List<string>() { state.PreviousCommitId }; }
 
-      var res = await client.CommitCreate(actualCommit);
+      try
+      {
+        var res = await client.CommitCreate(actualCommit);
 
-      var updatedStream = await client.StreamGet(streamId);
-      state.Branches = updatedStream.branches.items;
-      state.Stream.name = updatedStream.name;
-      state.Stream.description = updatedStream.description;
+        var updatedStream = await client.StreamGet(streamId);
+        state.Branches = updatedStream.branches.items;
+        state.Stream.name = updatedStream.name;
+        state.Stream.description = updatedStream.description;
 
-      PersistAndUpdateStreamInFile(state);
-      RaiseNotification($"{objCount} objects sent to {state.Stream.name}.");
+        PersistAndUpdateStreamInFile(state);
+        RaiseNotification($"{objCount} objects sent to {state.Stream.name}.");
+      } 
+      catch(Exception e)
+      {
+        Globals.Notify($"Failed to create commit.\n{e.Message}");
+      }
 
       return state;
     }

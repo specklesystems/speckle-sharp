@@ -44,9 +44,6 @@ namespace Speckle.ConnectorRevit.UI
       // LOCAL STATE
       GetStreamsInFile();
 
-      //// REVIT INJECTION
-      //InjectRevitAppInKits();
-
       //// GLOBAL EVENT HANDLERS
       RevitApp.ViewActivated += RevitApp_ViewActivated;
       RevitApp.Application.DocumentChanged += Application_DocumentChanged;
@@ -89,9 +86,9 @@ namespace Speckle.ConnectorRevit.UI
       if ( CurrentDoc != null )
       {
         //selectionCount = CurrentDoc.Selection.GetElementIds().Count();
-        categories = Globals.GetCategoryNames(CurrentDoc.Document);
-        parameters = Globals.GetParameterNames(CurrentDoc.Document);
-        views = Globals.GetViewNames(CurrentDoc.Document);
+        categories = ConnectorRevitUtils.GetCategoryNames(CurrentDoc.Document);
+        parameters = ConnectorRevitUtils.GetParameterNames(CurrentDoc.Document);
+        views = ConnectorRevitUtils.GetViewNames(CurrentDoc.Document);
       }
 
       return new List<ISelectionFilter>
