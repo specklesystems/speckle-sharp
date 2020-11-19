@@ -14,7 +14,6 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit : ConnectorBindings
   {
-    public string TestParam = "hello from Revit bindings!";
     public static UIApplication RevitApp;
 
     public static UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
@@ -27,11 +26,6 @@ namespace Speckle.ConnectorRevit.UI
     public ExternalEvent Executor;
 
     public Timer SelectionTimer;
-
-    /// <summary>
-    /// Holds the current project's streams
-    /// </summary>
-    public StreamStateWrapper LocalStateWrapper;
 
     public ConnectorBindingsRevit(UIApplication revitApp) : base()
     {
@@ -85,12 +79,6 @@ namespace Speckle.ConnectorRevit.UI
     public override string GetActiveViewName() => CurrentDoc.Document.ActiveView.Title;
 
     public override string GetFileName() => CurrentDoc.Document.Title;
-
-    public override List<StreamState> GetStreamsInFile()
-    {
-      LocalStateWrapper = StreamStateManager.ReadState(CurrentDoc.Document);
-      return LocalStateWrapper.StreamStates;
-    }
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
@@ -148,11 +136,11 @@ namespace Speckle.ConnectorRevit.UI
     private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
     {
       var streamStates = GetStreamsInFile();
-      if ( streamStates == LocalStateWrapper.StreamStates ) return;
       var appEvent = new ApplicationEvent()
       {
         Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = streamStates
       };
+
       NotifyUi(appEvent);
     }
 
@@ -162,23 +150,11 @@ namespace Speckle.ConnectorRevit.UI
       {
         Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = GetStreamsInFile()
       };
+
       NotifyUi(appEvent);
     }
 
     #endregion
 
-    private void WriteStateToFile()
-    {
-      Queue.Add(new Action(() =>
-      {
-        using ( Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State") )
-        {
-          t.Start();
-          StreamStateManager.WriteState(CurrentDoc.Document, LocalStateWrapper);
-          t.Commit();
-        }
-      }));
-      Executor.Raise();
-    }
   }
 }

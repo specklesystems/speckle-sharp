@@ -700,27 +700,6 @@ namespace Speckle.DesktopUI.Utils
 
   }
 
-  public class StreamStateWrapper
-  {
-    public List<StreamState> StreamStates { get; set; } = new List<StreamState>();
-
-    public List<string> GetStringList()
-    {
-      var states = new List<string>();
-      foreach (var state in StreamStates)
-      {
-        states.Add(JsonConvert.SerializeObject(state));
-      }
-
-      return states;
-    }
-
-    public void SetState(IEnumerable<string> stringList)
-    {
-      StreamStates = stringList.Select(JsonConvert.DeserializeObject<StreamState>).ToList();
-    }
-  }
-
   /// <summary>
   /// Class used for handling the actions around the context menu of branches (sender/receiver),.
   /// </summary>

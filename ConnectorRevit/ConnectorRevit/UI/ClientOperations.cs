@@ -15,25 +15,44 @@ using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.DesktopUI.Utils;
 using Stylet;
+using Speckle.ConnectorRevit.Storage;
 
 namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit
   {
+    public List<StreamState> DocumentStreams { get; set; } = new List<StreamState>();
+
+    public override List<StreamState> GetStreamsInFile()
+    {
+      DocumentStreams = StreamStateManager.ReadState(CurrentDoc.Document);
+      return DocumentStreams;
+    }
+
+
     /// <summary>
-    /// Adds a new stream to the file. It takes a stream state, gets the Revit elements
-    /// the user wants to add using the filter, and writes the StreamState to the file.
+    /// Adds a new stream to the file.
     /// </summary>
     /// <param name="state">StreamState passed by the UI</param>
     public override void AddNewStream(StreamState state)
     {
-      // add stream and related data to the class
-      LocalStateWrapper.StreamStates.Add(state);
-
-      if (state.Filter != null)
-        GetSelectionFilterObjects(state.Filter, state.AccountId, state.Stream.id);
+      var index = DocumentStreams.FindIndex(b => b.Stream.id == state.Stream.id);
+      if (index == -1)
+      {
+        DocumentStreams.Add(state);
+        WriteStateToFile();
+      }
     }
 
+    public override void RemoveStreamFromFile(string streamId)
+    {
+      var streamState = DocumentStreams.FirstOrDefault(s => s.Stream.id == streamId);
+      if (streamState != null)
+      {
+        DocumentStreams.Remove(streamState);
+        WriteStateToFile();
+      }
+    }
 
     /// <summary>
     /// Update the stream state and adds adds the filtered objects
@@ -41,10 +60,29 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state"></param>
     public override void PersistAndUpdateStreamInFile(StreamState state)
     {
-      var index = LocalStateWrapper.StreamStates.FindIndex(b => b.Stream.id == state.Stream.id);
-      LocalStateWrapper.StreamStates[index] = state;
+      var index = DocumentStreams.FindIndex(b => b.Stream.id == state.Stream.id);
+      if (index != -1)
+      {
+        DocumentStreams[index] = state;
+        WriteStateToFile();
+      }
+    }
 
-      GetSelectionFilterObjects(state.Filter, state.AccountId, state.Stream.id);
+    /// <summary>
+    /// Transaction wrapper around writing the local streams to the file.
+    /// </summary>
+    private void WriteStateToFile()
+    {
+      Queue.Add(new Action(() =>
+      {
+        using (Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State"))
+        {
+          t.Start();
+          StreamStateManager.WriteStreamStateList(CurrentDoc.Document, DocumentStreams);
+          t.Commit();
+        }
+      }));
+      Executor.Raise();
     }
 
     /// <summary>
@@ -255,36 +293,28 @@ namespace Speckle.ConnectorRevit.UI
       Execute.PostToUIThread(() => progress.Value = dict.Values.Last());
     }
 
-    /// <summary>
-    /// Pass selected element ids to UI
-    /// </summary>
-    /// <param name="args"></param>
     public override List<string> GetSelectedObjects()
     {
-      var selectedObjects = CurrentDoc != null
-        ? CurrentDoc.Selection.GetElementIds().Select(
-          id => CurrentDoc.Document.GetElement(id).UniqueId).ToList()
-        : new List<string>();
+      if (CurrentDoc == null)
+      {
+        return new List<string>();
+      }
 
+      var selectedObjects = CurrentDoc.Selection.GetElementIds().Select(id => CurrentDoc.Document.GetElement(id).UniqueId).ToList();
       return selectedObjects;
     }
 
     public override List<string> GetObjectsInView()
     {
-      var collector = new FilteredElementCollector(CurrentDoc.Document, CurrentDoc.Document.ActiveView.Id)
-        .WhereElementIsNotElementType();
+      if (CurrentDoc == null)
+      {
+        return new List<string>();
+      }
+
+      var collector = new FilteredElementCollector(CurrentDoc.Document, CurrentDoc.Document.ActiveView.Id).WhereElementIsNotElementType();
       var elementIds = collector.ToElements().Select(el => el.UniqueId);
 
       return new List<string>(elementIds);
-    }
-
-    public override void RemoveStreamFromFile(string streamId)
-    {
-      var streamState = LocalStateWrapper.StreamStates.FirstOrDefault(
-        cl => cl.Stream.id == streamId
-      );
-      LocalStateWrapper.StreamStates.Remove(streamState);
-      WriteStateToFile();
     }
 
     #region private methods
@@ -410,9 +440,7 @@ namespace Speckle.ConnectorRevit.UI
         return temp;
       });
 
-      var streamState = LocalStateWrapper.StreamStates.FirstOrDefault(
-        cl => (string)cl.Stream.id == (string)streamId
-      );
+      var streamState = DocumentStreams.FirstOrDefault(s => s.Stream.id == streamId);
 
       streamState.Objects.AddRange(objects);
 

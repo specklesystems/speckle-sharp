@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
+using Newtonsoft.Json;
 using Speckle.DesktopUI.Utils;
 
 namespace Speckle.ConnectorRevit.Storage
@@ -16,20 +17,20 @@ namespace Speckle.ConnectorRevit.Storage
     readonly static Guid ID = new Guid("{5D453471-1F20-44CE-B1D0-BBD2BDE4616A}");
 
     /// <summary>
-    /// Returns the speckle stream states present in the current document.
+    /// Returns all the speckle stream states present in the current document.
     /// </summary>
     /// <param name="doc"></param>
     /// <returns></returns>
-    public static StreamStateWrapper ReadState(Document doc)
+    public static List<StreamState> ReadState(Document doc)
     {
       var streamStatesEntity = GetSpeckleEntity(doc);
       if (streamStatesEntity == null || !streamStatesEntity.IsValid())
-        return new StreamStateWrapper();
+        return new List<StreamState>();
 
-      var myStreamStates = new StreamStateWrapper();
-      myStreamStates.SetState(streamStatesEntity.Get<IList<string>>("StreamStates"));
+      var str = streamStatesEntity.Get<string>("StreamStates");
+      var states = JsonConvert.DeserializeObject<List<StreamState>>(str);
 
-      return myStreamStates;
+      return states;
     }
 
     /// <summary>
@@ -37,17 +38,17 @@ namespace Speckle.ConnectorRevit.Storage
     /// </summary>
     /// <param name="doc"></param>
     /// <param name="wrap"></param>
-    public static void WriteState(Document doc, StreamStateWrapper wrap)
+    public static void WriteStreamStateList(Document doc, List<StreamState> streamStates)
     {
       var ds = GetSettingsDataStorage(doc);
 
       if (ds == null)
         ds = DataStorage.Create(doc);
 
-      var streamStatesEntity = new Entity(StreamStateSchema.GetSchema());
+      var streamStatesEntity = new Entity(StreamStateListSchema.GetSchema());
 
-      streamStatesEntity.Set("StreamStates", wrap.GetStringList()as IList<string>);
-
+      streamStatesEntity.Set("StreamStates", JsonConvert.SerializeObject(streamStates) as string);
+      
       var idEntity = new Entity(DSUniqueSchemaStreamStateStorage.GetSchema());
       idEntity.Set("Id", ID);
 
@@ -87,13 +88,59 @@ namespace Speckle.ConnectorRevit.Storage
       var dataStorages = collector.OfClass(typeof(DataStorage));
       foreach (DataStorage dataStorage in dataStorages)
       {
-        Entity settingEntity = dataStorage.GetEntity(StreamStateSchema.GetSchema());
+        Entity settingEntity = dataStorage.GetEntity(StreamStateListSchema.GetSchema());
         if (!settingEntity.IsValid())
           continue;
 
         return settingEntity;
       }
       return null;
+    }
+  }
+
+  /// <summary>
+  /// Revit schema of the StreamStateWrapper class.
+  /// </summary>
+  public static class StreamStateListSchema
+  {
+    static readonly Guid schemaGuid = new Guid("{F29ABD4E-C2DA-4F6A-A301-C70F1C32128D}");
+
+    public static Schema GetSchema()
+    {
+      var schema = Schema.Lookup(schemaGuid);
+      if (schema != null)
+        return schema;
+
+      var builder = new SchemaBuilder(schemaGuid);
+      builder.SetSchemaName("StreamStateWrapper");
+      builder.AddSimpleField("StreamStates", typeof(string));
+
+      return builder.Finish();
+    }
+  }
+
+
+  /// <summary>
+  /// Unique schema for... something ¯\_(ツ)_/¯
+  /// </summary>
+  static class DSUniqueSchemaStreamStateStorage
+  {
+    static readonly Guid schemaGuid = new Guid("{174C7EEE-EC5E-4A3F-894A-C801871AEDB8}");
+
+    public static Schema GetSchema()
+    {
+      Schema schema = Schema.Lookup(schemaGuid);
+
+      if (schema != null)
+        return schema;
+
+      SchemaBuilder schemaBuilder = new SchemaBuilder(schemaGuid);
+
+      schemaBuilder.SetSchemaName("DataStorageUniqueId");
+
+      schemaBuilder.AddSimpleField("Id", typeof(Guid));
+
+      return schemaBuilder.Finish();
     }
   }
 }
