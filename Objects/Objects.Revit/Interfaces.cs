@@ -13,4 +13,9 @@ namespace Objects.Revit
     string elementId { get; set; }
     Dictionary<string, object> parameters { get; set; }
   }
+
+  public interface IHostable
+  {
+    int revitHostId { get; set; }
+  }
 }

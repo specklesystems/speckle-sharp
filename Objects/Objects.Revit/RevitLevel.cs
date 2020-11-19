@@ -18,6 +18,7 @@ namespace Objects.Revit
     public bool createView { get; set; }
 
     [SchemaOptional]
+    [DetachProperty]
     public List<Element> elements { get; set; } = new List<Element>();
 
     [SchemaOptional]

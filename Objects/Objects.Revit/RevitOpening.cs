@@ -13,7 +13,7 @@ namespace Objects.Revit
   }
 
   [SchemaIgnore]
-  public class RevitVerticalOpening : RevitOpening
+  public class RevitVerticalOpening : RevitOpening, IHostable
   {
     public Element host { get; set; }
 
@@ -22,7 +22,7 @@ namespace Objects.Revit
   }
 
   [SchemaIgnore]
-  public class RevitWallOpening : RevitOpening
+  public class RevitWallOpening : RevitOpening, IHostable
   {
     public RevitWall host { get; set; }
 

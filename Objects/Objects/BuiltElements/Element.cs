@@ -7,7 +7,7 @@ namespace Objects.BuiltElements
   public class Element : Base
   {
     [SchemaOptional]
-    public Mesh displayMesh { get; set; } = new Mesh();
+    public Mesh displayMesh { get; set; }
 
     [SchemaIgnore]
     public string linearUnits { get; set; }

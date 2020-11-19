@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  public class RevitFamilyInstance : RevitElement
+  public class RevitFamilyInstance : RevitElement, IHostable
   {
     public Element host { get; set; }
     public Point basePoint { get; set; }

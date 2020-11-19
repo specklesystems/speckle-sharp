@@ -116,10 +116,10 @@ namespace Objects.Converter.Revit
         case IBeam o:
           return BeamToNative(o);
 
-        case Brace o:
+        case IBrace o:
           return BraceToNative(o);
 
-        case Column o:
+        case IColumn o:
           return ColumnToNative(o);
 
         case DetailCurve o:
@@ -131,31 +131,31 @@ namespace Objects.Converter.Revit
         case RevitFamilyInstance o:
           return FamilyInstanceToNative(o);
 
-        case Floor o:
+        case IFloor o:
           return FloorToNative(o);
 
-        case Level o:
+        case ILevel o:
           return LevelToNative(o);
 
         case ModelCurve o:
           return ModelCurveToNative(o);
 
-        case Opening o:
+        case IOpening o:
           return OpeningToNative(o);
 
         case RoomBoundaryLine o:
           return RoomBoundaryLineToNative(o);
 
-        case Roof o:
+        case IRoof o:
           return RoofToNative(o);
 
-        case Topography o:
+        case ITopography o:
           return TopographyToNative(o);
 
-        case Wall o:
+        case IWall o:
           return WallToNative(o);
 
-        case Duct o:
+        case IDuct o:
           return DuctToNative(o);
 
         default:
@@ -185,11 +185,16 @@ namespace Objects.Converter.Revit
       {
         try
         {
-          var c = ConvertToNative(obj) as DB.Element;
-          converted.Add(c);
+          var conversionResult = ConvertToNative(obj);
+          var revitElement = conversionResult as DB.Element;
+          if (revitElement == null)
+            continue;
+          converted.Add(revitElement);
+
           //process nested elements afterwards
-          var nested = obj.GetMemberSafe("@hostedElements", new List<Base>());
-          converted.AddRange(ConvertBatchToNativeWithHost(nested, c.Id.IntegerValue));
+          //this will take care of levels and host elements
+          if(obj["@elements"] !=null && obj["@elements"] is List<Base> nestedElements)
+            converted.AddRange(ConvertNestedObjectsToNative(nestedElements, revitElement));
         }
         catch(Exception e)
         {
@@ -200,18 +205,26 @@ namespace Objects.Converter.Revit
       return converted;
     }
 
-    private List<object> ConvertBatchToNativeWithHost(List<Base> objects, int hostId)
+    private List<object> ConvertNestedObjectsToNative(List<Base> objects, DB.Element host)
     {
       var converted = new List<object>();
       foreach (var obj in objects)
       {
-        if (hostId != -1)
-          obj["revitHostId"] = hostId;
-        var c = ConvertToNative(obj) as DB.Element;
-        converted.Add(c);
-        //process nested elements afterwards
-        var nested = obj.GetMemberSafe("@hostedElements", new List<Base>());
-        converted.AddRange(ConvertBatchToNativeWithHost(nested, c.Id.IntegerValue));
+        //add level name on object, this overrides potential existing values
+        if (host is DB.Level && obj is RevitElement re)
+          re.level = host.Name;
+        //if hosted element, use the revitHostId prop
+        else if (host.Id.IntegerValue != -1 && obj is IHostable io)
+          io.revitHostId = host.Id.IntegerValue;
+
+        var conversionResult = ConvertToNative(obj);
+        var revitElement = conversionResult as DB.Element;
+        if (revitElement == null)
+          continue;
+        converted.Add(revitElement);
+        //continue un-nesting
+        if (obj["@elements"] != null && obj["@elements"] is List<Base> nestedElements)
+          converted.AddRange(ConvertNestedObjectsToNative(nestedElements, revitElement));
       }
 
       return converted;
@@ -270,11 +283,11 @@ namespace Objects.Converter.Revit
         //if already in the nested list, add child to it, otherwise to the baseObject
         if (nested.ContainsKey(hostElem.Id.IntegerValue))
         {
-          nested[hostElem.Id.IntegerValue].GetMemberSafe("@hostedElements", new List<Base>()).Add(baseObj);
+          nested[hostElem.Id.IntegerValue].GetMemberSafe("@elements", new List<Base>()).Add(baseObj);
         }
         else
         {
-          baseObjs[hostIndex].GetMemberSafe("@hostedElements", new List<Base>()).Add(baseObj);
+          baseObjs[hostIndex].GetMemberSafe("@elements", new List<Base>()).Add(baseObj);
         }
       }
       return nested.Select(x => x.Value).ToList();
