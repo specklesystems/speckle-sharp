@@ -217,10 +217,6 @@ namespace Speckle.ConnectorRevit.UI
         return null;
       }
 
-      var objByType = convertedObjects.GroupBy(o => o.speckle_type);
-      var convertedTypes = objByType.Select(
-        grouping => $"{grouping.Count()} {grouping.Key.Split('.').Last()}s").ToList();
-
       var actualCommit = new CommitCreateInput()
       {
         streamId = streamId,
@@ -241,7 +237,7 @@ namespace Speckle.ConnectorRevit.UI
         state.Stream.description = updatedStream.description;
 
         WriteStateToFile();
-        RaiseNotification($"{convertedObjects.Count()} objects sent to Speckle 🚀");
+        RaiseNotification($"{convertedCount} objects sent to Speckle 🚀");
       }
       catch (Exception e)
       {

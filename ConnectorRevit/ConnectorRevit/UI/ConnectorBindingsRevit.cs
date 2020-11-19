@@ -132,13 +132,13 @@ namespace Speckle.ConnectorRevit.UI
 
     private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
     {
-      var streamStates = GetStreamsInFile();
-      var appEvent = new ApplicationEvent()
-      {
-        Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = streamStates
-      };
+      //var streamStates = GetStreamsInFile();
+      //var appEvent = new ApplicationEvent()
+      //{
+      //  Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = streamStates
+      //};
 
-      NotifyUi(appEvent);
+      //NotifyUi(appEvent);
     }
 
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)

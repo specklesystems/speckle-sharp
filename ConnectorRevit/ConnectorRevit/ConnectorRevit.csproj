@@ -185,10 +185,6 @@
       <Name>DesktopUI</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
-      <Project>{be852be3-37b8-4b62-ac2c-0872c41a2542}</Project>
-      <Name>Objects</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

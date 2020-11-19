@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -10,42 +10,35 @@ namespace Speckle.ConnectorRevit.Entry
   [Transaction(TransactionMode.Manual)]
   public class Cmd : IExternalCommand
   {
-    //static object consoleLock = new object();
-    //static ManualResetEvent finished = new ManualResetEvent(false);
-    //static Result result = Result.Succeeded;
 
-    public Result Execute(
-      ExternalCommandData commandData,
-      ref string message,
-      ElementSet elements)
+    public static Bootstrapper Bootstrapper { get; set; }
+
+    public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
-      UIApplication uiapp = commandData.Application;
-
-      // create application instance (Revit doesn't have one already)
-      if ( Application.Current == null ) new Application();
-
-      // refocuses window if it already exists
-      var window = Application.Current?.MainWindow;
-      if (window != null)
+      if (Bootstrapper != null)
       {
-        window.Show();
-        window.Focus();
+        Bootstrapper.Application.MainWindow.Show();
         return Result.Succeeded;
       }
 
-      // create a new Speckle Revit bindings instance
-      var revitBindings = new ConnectorBindingsRevit(uiapp);
+      UIApplication uiapp = commandData.Application;
 
-      // create an external event handler to raise actions
-      var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(revitBindings));
-      // Give it to our bindings so we can actually do stuff with revit
-      revitBindings.SetExecutorAndInit(eventHandler);
+      var bindings = new ConnectorBindingsRevit(uiapp);
+      var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(bindings));
+      bindings.SetExecutorAndInit(eventHandler);
 
-      var bootstrapper = new Bootstrapper()
+      Bootstrapper = new Bootstrapper()
       {
-        Bindings = revitBindings
+        Bindings = bindings
       };
-      bootstrapper.Setup(Application.Current);
+
+      Bootstrapper.Setup(Application.Current != null ? Application.Current : new Application());
+
+      Bootstrapper.Application.Startup += (o, e) =>
+      {
+        var helper = new System.Windows.Interop.WindowInteropHelper(Bootstrapper.Application.MainWindow);
+        helper.Owner = commandData.Application.MainWindowHandle;
+      };
 
       return Result.Succeeded;
     }

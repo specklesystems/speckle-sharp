@@ -336,6 +336,7 @@
           </Grid.RowDefinitions>
 
           <!--#region Disabled Card (no account) -->
+          
           <Grid Grid.Row="0"
                 Margin="24"
                 Panel.ZIndex="2"
@@ -399,7 +400,8 @@
                   <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!--#region card header-->
+                <!--#region Card Header-->
+                
                 <Grid Name="StreamCardTitle"
                       Grid.Row="0">
                   <Grid.ColumnDefinitions>
@@ -437,6 +439,7 @@
                 <!--#endregion-->
 
                 <!--#region Stream Card Sender Actions-->
+                
                 <Grid Name="StreamCardSenderActions"
                       Margin="0,30,0,0"
                       Grid.Row="1"
@@ -544,6 +547,7 @@
                 <!--#endregion-->
 
                 <!--#region Stream Card Receiver Actions-->
+                
                 <Grid x:Name="StreamCardReceiverActions"
                       Grid.Row="1"
                       Margin="0,30,0,0"
@@ -557,7 +561,7 @@
                   </Grid.ColumnDefinitions>
                   <Control Template="{StaticResource BranchButton}"></Control>
 
-                  <!--The branch button-->
+                  <!-- The branch button-->
                   <Control Template="{StaticResource CommitSwappingButton}"
                            Grid.Column="1"></Control>
 
@@ -607,6 +611,7 @@
               </Grid>
 
               <!--#region Progress Bar-->
+              
               <Grid Visibility="{Binding Path=DataContext.ShowProgressBar, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid.Resources>
                   <local:BindingProxy x:Key="Proxy"
@@ -656,7 +661,7 @@
               </Grid>
               <!--#endregion-->
 
-              <!--#region Updates-->
+              <!--#region Updates display -->
               <md:Card Grid.Row="1"
                        Margin="0,0,0,0"
                        Padding="5"
@@ -698,7 +703,7 @@
               </md:Card>
               <!--#endregion-->
 
-              <!--#region errors-->
+              <!--#region Error display-->
               <md:Card Grid.Row="1"
                        Margin="0,0,0,0"
                        Padding="5"
@@ -738,6 +743,7 @@
                                          TextWrapping="Wrap"
                                          BorderBrush="Transparent"
                                          Foreground="Gray"
+                                         Background="Transparent"
                                          HorizontalAlignment="Stretch"
                                          IsReadOnly="True">
                                   <TextBox.Text>
