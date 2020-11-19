@@ -258,17 +258,19 @@ namespace Objects.Converter.RhinoGh
       return new Ellipse(e.Plane.ToSpeckle(), e.Radius1, e.Radius2);
     }
 
-    public static NurbsCurve ToNative(this Ellipse e)
+    public static RH.Curve ToNative(this Ellipse e)
     {
       RH.Ellipse elp = new RH.Ellipse(e.plane.ToNative(), (double)e.firstRadius, (double)e.secondRadius);
-
-
+      
       var myEllp = NurbsCurve.CreateFromEllipse(elp);
       var shit = myEllp.IsEllipse(Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
 
       if (e.domain != null)
         myEllp.Domain = e.domain.ToNative();
 
+      if (e.trimDomain != null)
+        myEllp = myEllp.Trim(e.trimDomain.ToNative()).ToNurbsCurve();
+      
       return myEllp;
     }
 

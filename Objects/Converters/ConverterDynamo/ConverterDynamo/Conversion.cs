@@ -465,9 +465,10 @@ namespace Objects.Converter.Dynamo
         var ellipse = new Ellipse(
           basePlane.ToSpeckle(),
           e.MajorAxis.Length,
-          e.MinorAxis.Length);
+          e.MinorAxis.Length, new Interval(e.StartParameter(),e.EndParameter()),null);
+        
         ellipse.SetDynamicMembers(e.GetSpeckleProperties());
-
+        
         return ellipse;
       }
     }
@@ -477,14 +478,20 @@ namespace Objects.Converter.Dynamo
     /// </summary>
     /// <param name="e"></param>
     /// <returns></returns>
-    public static DS.Ellipse ToNative(this Ellipse e)
+    public static DS.Curve ToNative(this Ellipse e)
     {
-      var ellipse = DS.Ellipse.ByPlaneRadii(
+      DS.Curve ellipse = DS.Ellipse.ByPlaneRadii(
           e.plane.ToNative(),
           e.firstRadius.Value,
           e.secondRadius.Value
       );
-      return ellipse.SetDynamoProperties<DS.Ellipse>(e.GetDynamicMembersDictionary());
+      ellipse.SetDynamoProperties<DS.Ellipse>(e.GetDynamicMembersDictionary());
+      
+      if (e.trimDomain != null)
+        ellipse.TrimByParameter(e.trimDomain.start ?? 0, e.trimDomain.end ?? 2 * Math.PI);
+      
+
+      return ellipse;
     }
 
     /// <summary>
