@@ -376,6 +376,32 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
+    public BindableCollection<Exception> Errors { get; set; } = new BindableCollection<Exception>();
+
+    public BindableCollection<string> FormattedErrors
+    {
+      get
+      {
+        var bc = new BindableCollection<string>();
+        foreach (var e in Errors)
+        {
+          bc.Add($"{e.Message}\n{e.StackTrace}");
+        }
+        return bc;
+      }
+    }
+
+    public bool _ShowErrors = false;
+    public bool ShowErrors
+    {
+      get => _ShowErrors;
+      set
+      {
+        SetAndNotify(ref _ShowErrors, value);
+      }
+    }
+
+
     public CancellationTokenSource CancellationTokenSource { get; set; }
 
     private string _CommitMessage;
@@ -510,6 +536,9 @@ namespace Speckle.DesktopUI.Utils
 
     public async void Send()
     {
+      Errors = new BindableCollection<Exception>();
+      ShowErrors = false;
+
       if (IsSending || IsReceiving)
       {
         Globals.Notify("Operation in progress. Cannot send at this time.");
@@ -522,17 +551,27 @@ namespace Speckle.DesktopUI.Utils
       ProgressBarIsIndeterminate = false;
       CancellationTokenSource = new CancellationTokenSource();
 
-      await Task.Run( () => Globals.Repo.ConvertAndSend(this) );
+      await Task.Run(() => Globals.Repo.ConvertAndSend(this));
 
       ShowProgressBar = false;
       Progress.ResetProgress();
       CommitMessage = null;
       IsSending = false;
       Globals.Notify($"Data uploded to {Stream.name}!");
+
+      if (Errors.Count != 0)
+      {
+        Errors.Refresh();
+        NotifyOfPropertyChange(nameof(Errors));
+        ShowErrors = true;
+      }
     }
 
     public async void Receive()
     {
+      Errors = new BindableCollection<Exception>();
+      ShowErrors = false;
+
       if (IsSending || IsReceiving)
       {
         Globals.Notify("Operation in progress. Cannot send at this time.");
@@ -552,6 +591,13 @@ namespace Speckle.DesktopUI.Utils
       Progress.ResetProgress();
       IsReceiving = false;
       Globals.Notify($"Data received from {Stream.name}!");
+
+      if (Errors.Count != 0)
+      {
+        Errors.Refresh();
+        NotifyOfPropertyChange(nameof(Errors));
+        ShowErrors = true;
+      }
     }
 
     public void CancelSendOrReceive()
@@ -570,6 +616,12 @@ namespace Speckle.DesktopUI.Utils
     {
       ServerUpdateSummary = null;
       ServerUpdates = false;
+    }
+
+    public void CloseErrorNotification()
+    {
+      Errors.Clear();
+      ShowErrors = false;
     }
 
     #endregion

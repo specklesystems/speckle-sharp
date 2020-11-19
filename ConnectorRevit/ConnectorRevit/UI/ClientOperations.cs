@@ -245,9 +245,10 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception e)
       {
+        state.Errors.Add(e);
         Globals.Notify($"Failed to create commit.\n{e.Message}");
       }
-
+      state.Errors.AddRange(ConversionErrors);
       return state;
     }
 

@@ -61,7 +61,8 @@
                          FontSize="12">
               <ContextMenu.ItemTemplate>
                 <DataTemplate DataType="re">
-                  <Grid ToolTip="{Binding Tooltip}" Background="Transparent">
+                  <Grid ToolTip="{Binding Tooltip}"
+                        Background="Transparent">
                     <Grid.InputBindings>
                       <MouseBinding Gesture="LeftClick"
                                     Command="{s:Action SwitchBranch}"
@@ -156,7 +157,7 @@
                   </TextBlock>
                 </MenuItem.Header>
               </MenuItem>
-              
+
               <Separator Visibility="{Binding AppHasFilters, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
               <MenuItem Command="{s:Action SetObjectSelection}"
@@ -371,7 +372,6 @@
 
           <md:Card Grid.Row="0"
                    Width="Auto"
-                   
                    Margin="12,10,12,10"
                    UniformCornerRadius="8">
             <md:Card.Style>
@@ -655,46 +655,131 @@
                 </Button>
               </Grid>
               <!--#endregion-->
+
+              <!--#region Updates-->
+              <md:Card Grid.Row="1"
+                       Margin="0,0,0,0"
+                       Padding="5"
+                       Panel.ZIndex="1000"
+                       UniformCornerRadius="0"
+                       md:ShadowAssist.ShadowDepth="Depth0"
+                       Background="{StaticResource PrimaryHueDarkBrush}"
+                       Visibility="{Binding ServerUpdates, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <md:Card.Resources>
+                  <local:BindingProxy x:Key="Proxy"
+                                      Data="{Binding}" />
+                </md:Card.Resources>
+                <Grid Margin="10,5,10,0">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="20" />
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Grid.Column="0"
+                             Foreground="White"
+                             TextWrapping="Wrap"
+                             Padding="4"
+                             Text="{Binding ServerUpdateSummary}"
+                             FontSize="12">
+                  </TextBlock>
+
+                  <Button Grid.Column="1"
+                          Width="20"
+                          Height="20"
+                          Foreground="Black"
+                          Background="White"
+                          BorderBrush="White"
+                          Style="{StaticResource MaterialDesignFloatingActionLightButton}"
+                          Content="{md:PackIcon Kind=Close, Size=10}"
+                          Command="{s:Action CloseUpdateNotification}"
+                          s:View.ActionTarget="{Binding Data, Source={StaticResource Proxy}}"
+                          CommandParameter="{Binding}"
+                          ToolTip="Close notification."></Button>
+                </Grid>
+              </md:Card>
+              <!--#endregion-->
+
+              <!--#region errors-->
+              <md:Card Grid.Row="1"
+                       Margin="0,0,0,0"
+                       Padding="5"
+                       Panel.ZIndex="1000"
+                       md:ShadowAssist.ShadowDepth="Depth0"
+                       Visibility="{Binding ShowErrors, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <md:Card.Resources>
+                  <local:BindingProxy x:Key="Proxy"
+                                      Data="{Binding}" />
+                </md:Card.Resources>
+                <Grid Margin="0,0,10,0">
+                  <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                  </Grid.RowDefinitions>
+                  <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="20" />
+                    </Grid.ColumnDefinitions>
+                    <Expander Grid.Row="1"
+                              Background="Transparent"
+                              md:ExpanderAssist.DownHeaderPadding="0"
+                              HorizontalAlignment="Stretch"
+                              FontSize="12">
+                      <Expander.Header>
+                        <TextBlock FontSize="12">Errors / Warnings</TextBlock>
+                      </Expander.Header>
+                      <ScrollViewer MaxHeight="200"
+                                    Margin="26,0,27,0"
+                                    md:ScrollBarAssist.ThumbWidth="10">
+                        <ItemsControl ItemsSource="{Binding Errors}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                              <StackPanel Margin="0,5">
+                                <TextBox Style="{x:Null}"
+                                         TextWrapping="Wrap"
+                                         BorderBrush="Transparent"
+                                         Foreground="Gray"
+                                         HorizontalAlignment="Stretch"
+                                         IsReadOnly="True">
+                                  <TextBox.Text>
+                                    <MultiBinding StringFormat=" {0} &#x0a; {1}">
+                                      <Binding Path="Message"
+                                               Mode="OneWay" />
+                                      <Binding Path="StackTrace"
+                                               Mode="OneWay" />
+                                    </MultiBinding>
+                                  </TextBox.Text>
+                                </TextBox>
+                                <Separator Margin="0,10,10,10"/>
+                              </StackPanel>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </ScrollViewer>
+                    </Expander>
+                    <Button Grid.Column="1"
+                            Width="20"
+                            Height="20"
+                            VerticalAlignment="Top"
+                            Margin="0,13"
+                            Foreground="Black"
+                            Background="White"
+                            BorderBrush="White"
+                            Style="{StaticResource MaterialDesignFloatingActionLightButton}"
+                            Content="{md:PackIcon Kind=Close, Size=10}"
+                            Command="{s:Action CloseErrorNotification}"
+                            s:View.ActionTarget="{Binding Data, Source={StaticResource Proxy}}"
+                            CommandParameter="{Binding}"
+                            ToolTip="Close notification."></Button>
+                  </Grid>
+
+
+                </Grid>
+              </md:Card>
+              <!--#endregion-->
+
             </StackPanel>
           </md:Card>
 
-          <md:Card Grid.Row="1"
-                        Margin="30,-10,30,10"
-                        Padding="5"
-                        Panel.ZIndex="1000"
-                        UniformCornerRadius="20"
-                        Background="{StaticResource PrimaryHueDarkBrush}"
-                        Visibility="{Binding ServerUpdates, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <md:Card.Resources>
-              <local:BindingProxy x:Key="Proxy"
-                                    Data="{Binding}" />
-            </md:Card.Resources>
-            <Grid Margin="10,5,10,0">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="20"/>
-              </Grid.ColumnDefinitions>
-              <TextBlock Grid.Column="0"
-                         Foreground="White"
-                         TextWrapping="Wrap"
-                         Padding="4"
-                         Text="{Binding ServerUpdateSummary}"
-                         FontSize="12">
-              </TextBlock>
-
-              <Button Grid.Column="1" Width="20" Height="20"
-                      Foreground="Black"
-                      Background="White"
-                      BorderBrush="White"
-                      Style="{StaticResource MaterialDesignFloatingActionLightButton}"
-                      Content="{md:PackIcon Kind=Close, Size=10}"
-                      Command="{s:Action CloseUpdateNotification}"
-                      s:View.ActionTarget="{Binding Data, Source={StaticResource Proxy}}"
-                      CommandParameter="{Binding}"
-                      ToolTip="Close notification."
-                      ></Button>
-            </Grid>
-          </md:Card>
         </Grid>
       </DataTemplate>
       <!--#endregion-->

@@ -196,7 +196,7 @@ namespace Speckle.DesktopUI.Utils
 
     public override string GetFileName()
     {
-      return "Some Random File"; 
+      return "Some Random File";
     }
 
     public override List<ISelectionFilter> GetSelectionFilters()
@@ -238,11 +238,23 @@ namespace Speckle.DesktopUI.Utils
 
         Thread.Sleep(rnd.Next(200, 1000));
         pd["A1"] = i;
-        pd["A2"] = i+2;
+        pd["A2"] = i + 2;
 
         UpdateProgress(pd, state.Progress);
       }
 
+      // Mock some errors
+      for (int i = 0; i < 10; i++)
+      {
+        try
+        {
+          throw new Exception($"Number {i} fail");
+        }
+        catch (Exception e)
+        {
+          state.Errors.Add(e);
+        }
+      }
 
       return state;
     }
@@ -270,9 +282,31 @@ namespace Speckle.DesktopUI.Utils
         pd["A1"] = i;
         pd["A2"] = i + 2;
 
+        try
+        {
+          if (i % 7 == 0)
+            throw new Exception($"Something happened.");
+        }
+        catch (Exception e)
+        {
+          state.Errors.Add(e);
+        }
+
         UpdateProgress(pd, state.Progress);
       }
 
+      // Mock some errors
+      for (int i = 0; i < 10; i++)
+      {
+        try
+        {
+          throw new Exception($"Number {i} fail");
+        }
+        catch (Exception e)
+        {
+          state.Errors.Add(e);
+        }
+      }
 
       return state;
     }
