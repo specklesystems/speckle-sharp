@@ -264,11 +264,6 @@ namespace Objects.Converter.RhinoGh
       RH.Ellipse elp = new RH.Ellipse(plane, (double) e.firstRadius, (double) e.secondRadius); 
       var myEllp = elp.ToNurbsCurve();
 
-      RH.Ellipse elp = new RH.Ellipse(e.plane.ToNative(), (double)e.firstRadius, (double)e.secondRadius);
-      
-      var myEllp = NurbsCurve.CreateFromEllipse(elp);
-      var shit = myEllp.IsEllipse(Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
-
       if (e.domain != null)
         myEllp.Domain = e.domain.ToNative();
 
