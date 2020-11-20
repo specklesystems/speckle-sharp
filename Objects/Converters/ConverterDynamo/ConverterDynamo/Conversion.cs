@@ -480,12 +480,11 @@ namespace Objects.Converter.Dynamo
     /// <returns></returns>
     public static DS.Curve ToNative(this Ellipse e)
     {
-
       if (e.trimDomain != null)
       {
         // Curve is an ellipse arc
         var ellipseArc = DS.EllipseArc.ByPlaneRadiiAngles(e.plane.ToNative(), e.firstRadius.Value, e.secondRadius.Value,
-          e.trimDomain.start.Value, (double) (e.trimDomain.end - e.trimDomain.start));
+          e.trimDomain.start.Value*360/(2*Math.PI), (double) (e.trimDomain.end - e.trimDomain.start)*360/(2*Math.PI));
         return ellipseArc;
       }
       else
