@@ -147,6 +147,7 @@ namespace Objects.Converter.Revit
       {
         var c = ConvertToNative(obj) as DB.Element;
         converted.Add(c);
+
         //process nested elements afterwards
         var nested = obj.GetMemberSafe("@hostedElements", new List<Base>());
         converted.AddRange(ConvertBatchToNativeWithHost(nested, c.Id.IntegerValue));

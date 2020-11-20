@@ -182,7 +182,8 @@ namespace Speckle.ConnectorRevit.UI
       {
         // TODO: Get rid of the custom Error class. It's not needed.
         // PS: The errors seem to be quite bare at the moment?
-        ConversionErrors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.Message}")));
+        ConversionErrors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.details}")));
+        state.Errors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.details}")));
       }
 
       if (convertedCount == 0)
@@ -210,7 +211,7 @@ namespace Speckle.ConnectorRevit.UI
           OperationErrors.Add(e); // TODO!
           state.Errors.Add(e);
           state.CancellationTokenSource.Cancel();
-        } 
+        }
         );
 
       if (OperationErrors.Count != 0)
@@ -251,116 +252,144 @@ namespace Speckle.ConnectorRevit.UI
         state.Errors.Add(e);
         Globals.Notify($"Failed to create commit.\n{e.Message}");
       }
-      
+
       return state;
     }
 
     public override async Task<StreamState> ReceiveStream(StreamState state)
     {
+      ConversionErrors.Clear();
+      OperationErrors.Clear();
+
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Revit);
       converter.SetContextDocument(CurrentDoc.Document);
 
       var transport = new ServerTransport(state.Client.Account, state.Stream.id);
-      var newStream = await state.Client.StreamGet(state.Stream.id);
-      var commit = newStream.branches.items[0].commits.items[0];
-      Base commitObject;
+      var commit = state.Commit;
 
       if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return null;
       }
 
-      commitObject = await Operations.Receive(commit.referencedObject, state.CancellationTokenSource.Token, transport,
+      var commitObject = await Operations.Receive(
+        commit.referencedObject,
+        state.CancellationTokenSource.Token,
+        transport,
         onProgressAction: dict => UpdateProgress(dict, state.Progress),
-        onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count));
+        onErrorAction: (s, e) =>
+        {
+          OperationErrors.Add(e);
+          state.Errors.Add(e);
+          state.CancellationTokenSource.Cancel();
+        },
+        onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count)
+        );
 
-      if (state.CancellationTokenSource.Token.IsCancellationRequested)
+      if (OperationErrors.Count != 0)
       {
-        return null;
-      }
-
-      var newObjects = new List<Base>();
-      var oldObjects = state.Objects;
-
-      var data = (List<object>)commitObject["@data"];
-      try
-      {
-        newObjects = data.Select(o => (Base)o)?.ToList();
-      }
-      catch (Exception e)
-      {
-        Log.CaptureException(e);
-        state.Stream = newStream;
-        state.Objects = new List<Base>() { commitObject };
-        WriteStateToFile();
-        RaiseNotification($"Received stream, but could not convert objects to Revit");
+        Globals.Notify("Failed to get commit.");
         return state;
       }
 
-      // TODO: edit objects from connector so we don't need to delete and recreate everything
-      // var toDelete = oldObjects.Except(newObjects, new BaseObjectComparer()).ToList();
-      // var toCreate = newObjects;
-      var toDelete = oldObjects;
-      var toUpdate = newObjects;
-
-      var revitElements = new List<object>();
-      var errors = new List<SpeckleException>();
-
-      // TODO diff stream states
-
-      // delete
-      Queue.Add(() =>
+      if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
-        using (var t = new Transaction(CurrentDoc.Document, $"Speckle Delete: ({state.Stream.id})"))
-        {
-          t.Start();
-          foreach (var oldObj in toDelete)
-          {
-            var revitElement = CurrentDoc.Document.GetElement(oldObj.applicationId);
-            if (revitElement == null)
-            {
-              errors.Add(new SpeckleException(message: "Could not retrieve element"));
-              Debug.WriteLine(
-                $"Could not retrieve element (id: {oldObj.applicationId}, type: {oldObj.speckle_type})");
-              continue;
-            }
-
-            CurrentDoc.Document.Delete(revitElement.Id);
-          }
-
-          t.Commit();
-        }
-      });
-      Executor.Raise();
-
-      // update or create
-      Queue.Add(() =>
-      {
-        using (var t = new Transaction(CurrentDoc.Document, $"Speckle Receive: ({state.Stream.id})"))
-        {
-          // TODO `t.SetFailureHandlingOptions`
-          t.Start();
-          revitElements = converter.ConvertToNative(toUpdate);
-          t.Commit();
-        }
-      });
-      Executor.Raise();
-
-      if (errors.Any() || converter.ConversionErrors.Any())
-      {
-        var convErrors = converter.ConversionErrors.Count;
-        var err = errors.Count;
-        Log.CaptureException(new SpeckleException(
-          $"{convErrors} conversion error{Formatting.PluralS(convErrors)} and {err} error{Formatting.PluralS(err)}"));
+        return null;
       }
 
-      state.Stream = newStream;
-      state.Objects = newObjects;
-      WriteStateToFile();
-      RaiseNotification($"Deleting {toDelete.Count} elements and updating {toUpdate.Count} elements...");
+      //var newObjIds = Newtonsoft.Json.JsonConvert.DeserializeObject<ClosureBag>(new SQLiteTransport().GetObject(commitObject.id)).AllChildrenIds;
+      //var oldObjIds = state.Objects.Select(o => o.applicationId);
+
+      #region old
+      //var newObjects = new List<Base>();
+      //var oldObjects = state.Objects;
+
+
+      //var revitElements = new List<object>();
+      ////var errors = new List<SpeckleException>();
+
+      //// TODO diff stream states
+
+      //// delete
+      //Queue.Add(() =>
+      //{
+      //  using (var t = new Transaction(CurrentDoc.Document, $"Speckle Delete: ({state.Stream.id})"))
+      //  {
+      //    t.Start();
+      //    foreach (var oldObj in toDelete)
+      //    {
+      //      var revitElement = CurrentDoc.Document.GetElement(oldObj.applicationId);
+      //      if (revitElement == null)
+      //      {
+      //        Debug.WriteLine(
+      //          $"Could not retrieve element (id: {oldObj.applicationId}, type: {oldObj.speckle_type})");
+      //        continue;
+      //      }
+
+      //      CurrentDoc.Document.Delete(revitElement.Id);
+      //    }
+
+      //    t.Commit();
+      //  }
+      //});
+      //Executor.Raise();
+
+      //// update or create
+      //Queue.Add(() =>
+      //{
+      //  using (var t = new Transaction(CurrentDoc.Document, $"Speckle Receive: ({state.Stream.id})"))
+      //  {
+      //    // TODO `t.SetFailureHandlingOptions`
+      //    t.Start();
+      //    revitElements = converter.ConvertToNative(toUpdate);
+      //    t.Commit();
+      //  }
+      //});
+      //Executor.Raise();
+
+      //if (errors.Any() || converter.ConversionErrors.Any())
+      //{
+      //  var convErrors = converter.ConversionErrors.Count;
+      //  var err = errors.Count;
+      //  Log.CaptureException(new SpeckleException($"{convErrors} conversion error{Formatting.PluralS(convErrors)} and {err} error{Formatting.PluralS(err)}"));
+
+      //}
+      #endregion
+
+      try
+      {
+        var updatedStream = await state.Client.StreamGet(state.Stream.id);
+        state.Branches = updatedStream.branches.items;
+        state.Stream.name = updatedStream.name;
+        state.Stream.description = updatedStream.description;
+
+        WriteStateToFile();
+        RaiseNotification($"Receiving done.");
+      }
+      catch (Exception e)
+      {
+        state.Errors.Add(e);
+        Globals.Notify($"Receiving done, but failed to update stream from server.\n{e.Message}");
+      }
 
       return state;
+    }
+
+    private void HandleAndConvert(object obj)
+    {
+      // check if there are any objects that have been prev received
+      // !!! check if objwect has prop named "elements" (hosted stuff is in there) 
+      if(obj is Base b)
+      {
+        /*
+         * if can convert to revit / conversion does not return null
+         * --> check if b has an application id; if so add it to a list; at the end subtract [new app ids] from [old application ids]
+         *
+         * 
+         * 
+         */
+      }
     }
 
     private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
@@ -529,5 +558,12 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     #endregion
+  }
+
+  internal class ClosureBag
+  {
+    public Dictionary<string, int> __closure { get; set; } = new Dictionary<string, int>();
+
+    public List<string> AllChildrenIds { get => __closure.Keys.ToList(); }
   }
 }
