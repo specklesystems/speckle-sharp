@@ -145,10 +145,12 @@ namespace Objects.Converter.RhinoGh
 
     public static RH.Plane ToNative(this Plane plane)
     {
-      var returnPlane = new RH.Plane(plane.origin.ToNative().Location, plane.normal.ToNative());
-      returnPlane.XAxis = plane.xdir.ToNative();
-      returnPlane.YAxis = plane.ydir.ToNative();
-      return returnPlane;
+      var xAxis = plane.xdir.ToNative();
+      xAxis.Unitize();
+      var yAxis = plane.ydir.ToNative();
+      yAxis.Unitize();
+      
+      return new RH.Plane(plane.origin.ToNative().Location, xAxis,yAxis);
     }
 
     // Line
@@ -262,6 +264,7 @@ namespace Objects.Converter.RhinoGh
     {
       RH.Plane plane = e.plane.ToNative();
       RH.Ellipse elp = new RH.Ellipse(plane, (double) e.firstRadius, (double) e.secondRadius); 
+      
       var myEllp = elp.ToNurbsCurve();
 
       if (e.domain != null)
@@ -269,7 +272,7 @@ namespace Objects.Converter.RhinoGh
 
       if (e.trimDomain != null)
         myEllp = myEllp.Trim(e.trimDomain.ToNative()).ToNurbsCurve();
-
+      
       return myEllp;
     }
 
