@@ -66,7 +66,7 @@ namespace Objects.Converter.RhinoGh
         //case UnitSystem.Unset:
         //  break;
         default:
-          throw new System.Exception("The current Document uses an unsupported UnitSystem.");
+          throw new System.Exception("The current Unit System is unsupported.");
       }
     }
   }

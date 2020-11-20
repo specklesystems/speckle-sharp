@@ -22,7 +22,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit : ISpeckleConverter
   {
-    #region implemented props
+    #region ISpeckleConverter props
 
     public string Description => "Default Speckle Kit for Revit";
     public string Name => nameof(ConverterRevit);
@@ -37,7 +37,6 @@ namespace Objects.Converter.Revit
     {
     }
 
-    private double Scale { get; set; } = 3.2808399;
 
     public Document Doc { get; private set; }
 
@@ -46,7 +45,7 @@ namespace Objects.Converter.Revit
 
     public void SetContextDocument(object doc)
     {
-      Doc = (Autodesk.Revit.DB.Document)doc;
+      Doc = (Document)doc;
     }
 
     public Base ConvertToSpeckle(object @object)
@@ -193,10 +192,10 @@ namespace Objects.Converter.Revit
 
           //process nested elements afterwards
           //this will take care of levels and host elements
-          if(obj["@elements"] !=null && obj["@elements"] is List<Base> nestedElements)
+          if (obj["@elements"] != null && obj["@elements"] is List<Base> nestedElements)
             converted.AddRange(ConvertNestedObjectsToNative(nestedElements, revitElement));
         }
-        catch(Exception e)
+        catch (Exception e)
         {
           ConversionErrors.Add(new Error("Conversion failed", e.Message));
         }

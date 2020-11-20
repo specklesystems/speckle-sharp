@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
         case Point g:
           return PointToNative(g);
         case ICurve g:
-          return CurveToNative(g as ICurve);
+          return CurveToNative(g);
         case Plane g:
           return PlaneToNative(g);
         case Vector g:
@@ -41,17 +41,17 @@ namespace Objects.Converter.Revit
     }
     public XYZ PointToNative(Point pt)
     {
-      return new XYZ(pt.value[0] * Scale, pt.value[1] * Scale, pt.value[2] * Scale);
+      return new XYZ(ScaleToNative(pt.value[0], pt.units), ScaleToNative(pt.value[1], pt.units), ScaleToNative(pt.value[2], pt.units));
     }
 
     public Point PointToSpeckle(XYZ pt)
     {
-      return new Point(pt.X / Scale, pt.Y / Scale, pt.Z / Scale);
+      return new Point(ScaleToSpeckle(pt.X), ScaleToSpeckle(pt.Y), ScaleToSpeckle(pt.Z), ModelUnits);
     }
 
     public XYZ VectorToNative(Vector pt)
     {
-      return new XYZ(pt.value[0] * Scale, pt.value[1] * Scale, pt.value[2] * Scale);
+      return new XYZ(ScaleToNative(pt.value[0], pt.units), ScaleToNative(pt.value[1], pt.units), ScaleToNative(pt.value[2], pt.units));
     }
 
     public DB.Plane PlaneToNative(Plane plane)
@@ -62,9 +62,9 @@ namespace Objects.Converter.Revit
     public Plane PlaneToSpeckle(DB.Plane plane)
     {
       var origin = PointToSpeckle(plane.Origin);
-      var normal = new Vector(plane.Normal.X / Scale, plane.Normal.Y, plane.Normal.Z / Scale);
-      var xdir = new Vector(plane.XVec.X / Scale, plane.XVec.Y / Scale, plane.XVec.Z / Scale);
-      var ydir = new Vector(plane.YVec.X / Scale, plane.YVec.Y / Scale, plane.YVec.Z / Scale);
+      var normal = new Vector(ScaleToSpeckle(plane.Normal.X), ScaleToSpeckle(plane.Normal.Y), ScaleToSpeckle(plane.Normal.Z));
+      var xdir = new Vector(ScaleToSpeckle(plane.XVec.X), ScaleToSpeckle(plane.XVec.Y), ScaleToSpeckle(plane.XVec.Z));
+      var ydir = new Vector(ScaleToSpeckle(plane.YVec.X), ScaleToSpeckle(plane.YVec.Y), ScaleToSpeckle(plane.YVec.Z));
 
       return new Plane(origin, normal, xdir, ydir);
     }
