@@ -376,7 +376,7 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
-    public BindableCollection<Exception> Errors { get; set; } = new BindableCollection<Exception>();
+    public List<Exception> Errors { get; set; } = new List<Exception>();
 
     public string FormattedErrors
     {
@@ -537,7 +537,7 @@ namespace Speckle.DesktopUI.Utils
 
     public async void Send()
     {
-      Errors = new BindableCollection<Exception>();
+      Errors = new List<Exception>();
       ShowErrors = false;
 
       if (IsSending || IsReceiving)
@@ -569,7 +569,7 @@ namespace Speckle.DesktopUI.Utils
 
     public async void Receive()
     {
-      Errors = new BindableCollection<Exception>();
+      Errors = new List<Exception>();
       ShowErrors = false;
 
       if (IsSending || IsReceiving)

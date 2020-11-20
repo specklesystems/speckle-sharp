@@ -108,7 +108,7 @@
   <ItemGroup>
     <Compile Include="Entry\App.cs" />
     <Compile Include="Entry\CmdAvailabilityViews.cs" />
-    <Compile Include="Entry\Cmd.cs" />
+    <Compile Include="Entry\SpeckleRevitCommand.cs" />
     <Compile Include="ExternalEventHandler.cs" />
     <Compile Include="ConnectorRevitUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

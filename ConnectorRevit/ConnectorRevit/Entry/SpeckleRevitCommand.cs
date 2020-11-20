@@ -8,20 +8,26 @@ using Speckle.DesktopUI;
 namespace Speckle.ConnectorRevit.Entry
 {
   [Transaction(TransactionMode.Manual)]
-  public class Cmd : IExternalCommand
+  public class SpeckleRevitCommand : IExternalCommand
   {
 
     public static Bootstrapper Bootstrapper { get; set; }
 
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
+      OpenOrFocusSpeckle(commandData.Application);
+      return Result.Succeeded;
+    }
+
+    public static void OpenOrFocusSpeckle(UIApplication app)
+    {
       if (Bootstrapper != null)
       {
         Bootstrapper.Application.MainWindow.Show();
-        return Result.Succeeded;
+        return;
       }
 
-      UIApplication uiapp = commandData.Application;
+      UIApplication uiapp = app;
 
       var bindings = new ConnectorBindingsRevit(uiapp);
       var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(bindings));
@@ -37,18 +43,10 @@ namespace Speckle.ConnectorRevit.Entry
       Bootstrapper.Application.Startup += (o, e) =>
       {
         var helper = new System.Windows.Interop.WindowInteropHelper(Bootstrapper.Application.MainWindow);
-        helper.Owner = commandData.Application.MainWindowHandle;
+        helper.Owner = app.MainWindowHandle;
       };
-
-      commandData.Application.Application.DocumentOpened += FirstDocOpen;
-
-      return Result.Succeeded;
     }
 
-    private void FirstDocOpen(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
-    {
-      
-    }
   }
 
 }

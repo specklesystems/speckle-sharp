@@ -1,4 +1,6 @@
-﻿using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.ApplicationServices;
+using Autodesk.Revit.UI;
+using Speckle.ConnectorRevit.Storage;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,15 +15,18 @@ namespace Speckle.ConnectorRevit.Entry
 {
   public class App : IExternalApplication
   {
-    public Result OnShutdown(UIControlledApplication application)
-    {
-      return Result.Succeeded;
-    }
+
+    public static UIApplication AppInstance { get; set; }
+
+    public static UIControlledApplication UICtrlApp { get; set; }
 
     public Result OnStartup(UIControlledApplication application)
     {
+      UICtrlApp = application;
+      UICtrlApp.Idling += Initialise; // Fires an init event, where we can get the UIApp
+
       var SpecklePanel = application.CreateRibbonPanel("Speckle 2");
-      var SpeckleButton = SpecklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(Cmd).FullName)) as PushButton;
+      var SpeckleButton = SpecklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
 
       if (SpeckleButton != null)
       {
@@ -33,6 +38,28 @@ namespace Speckle.ConnectorRevit.Entry
         SpeckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 
+      return Result.Succeeded;
+    }
+
+    private void Initialise(object sender, Autodesk.Revit.UI.Events.IdlingEventArgs e)
+    {
+      UICtrlApp.Idling -= Initialise;
+      AppInstance = sender as UIApplication;
+
+      AppInstance.Application.DocumentOpened += CheckForStreamsAndOpenSpeckle; // Adds an event on doc open to check for streams and launch/focus speckle if any are present.
+    }
+
+    private void CheckForStreamsAndOpenSpeckle(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
+    {
+      var streams = StreamStateManager.ReadState(e.Document);
+      if (streams != null && streams.Count != 0)
+      {
+        SpeckleRevitCommand.OpenOrFocusSpeckle(AppInstance);
+      }
+    }
+
+    public Result OnShutdown(UIControlledApplication application)
+    {
       return Result.Succeeded;
     }
 

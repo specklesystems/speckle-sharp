@@ -13,6 +13,11 @@ namespace Speckle.DesktopUI.Utils
     string Icon { get; set; }
 
     /// <summary>
+    /// Used as the discriminator for deserialisation.
+    /// </summary>
+    string Type { get; }
+
+    /// <summary>
     /// Shoud return a succint summary of the filter: what does it contain inside?
     /// </summary>
     string Summary { get; }
@@ -30,6 +35,8 @@ namespace Speckle.DesktopUI.Utils
 
   public class ListSelectionFilter : ISelectionFilter
   {
+    public string Type => typeof(ListSelectionFilter).ToString();
+
     public string Name { get; set; }
     public string Icon { get; set; }
     public string Description { get; set; }
@@ -54,6 +61,8 @@ namespace Speckle.DesktopUI.Utils
 
   public class PropertySelectionFilter : ISelectionFilter
   {
+    public string Type => typeof(ListSelectionFilter).ToString();
+
     public string Name { get; set; }
     public string Icon { get; set; }
     public string Description { get; set; }

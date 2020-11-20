@@ -181,7 +181,7 @@ namespace Speckle.ConnectorRevit.UI
       if (converter.ConversionErrors.Count != 0)
       {
         // TODO: Get rid of the custom Error class. It's not needed.
-        // PS: The errors seem to be quite bare at the moment.
+        // PS: The errors seem to be quite bare at the moment?
         ConversionErrors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.Message}")));
       }
 
