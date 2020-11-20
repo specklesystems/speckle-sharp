@@ -8,7 +8,7 @@ using Rhino;
 
 namespace Objects.Converter.RhinoGh
 {
-  public class ConverterRhinoGh : ISpeckleConverter
+  public partial class ConverterRhinoGh : ISpeckleConverter
   {
     public string Description => "Default Speckle Kit for Rhino & Grasshopper";
     public string Name => nameof(ConverterRhinoGh);
@@ -22,17 +22,23 @@ namespace Objects.Converter.RhinoGh
 
     public void SetContextDocument(object doc)
     {
-      Doc = ( RhinoDoc ) doc;
+      Doc = (RhinoDoc)doc;
     }
 
     public Base ConvertToSpeckle(object @object)
     {
       var m = ConversionMethods(@object, "ToSpeckle");
-      
+
       if (m == null)
         throw new NotSupportedException();
-      
-      return m.Invoke(null, new[] { @object }) as Base;
+
+      var @base = m.Invoke(null, new[] { @object }) as Base;
+
+      if (@base is IGeometry geom)
+        SetUnits(geom);
+
+
+      return @base; ;
     }
 
     public List<Base> ConvertToSpeckle(List<object> objects)
@@ -45,7 +51,7 @@ namespace Objects.Converter.RhinoGh
       var m = ConversionMethods(@object, "ToNative");
       if (m == null)
         throw new NotSupportedException();
-      
+
       return m.Invoke(null, new[] { @object });
     }
 
