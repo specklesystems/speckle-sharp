@@ -15,7 +15,7 @@ namespace Objects.Geometry
     public Base pathTangent { get; set; }
     public List<Base> profiles { get; set; }
     public double? length;
-    public string linearUnits { get; set; }
+    public string units { get; set; }
     public Box boundingBox { get; set; }
     public Point center { get; set; }
     public double area { get; set; }

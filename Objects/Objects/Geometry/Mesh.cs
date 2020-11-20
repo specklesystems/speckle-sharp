@@ -19,7 +19,7 @@ namespace Objects.Geometry
     /// <summary>If any, the colours per vertex.</summary>
     public List<double> textureCoordinates { get; set; } = new List<double>();
 
-    public string linearUnits { get; set; }
+    public string units { get; set; }
     public Box boundingBox { get; set; }
     public Point center { get; set; }
     public double area { get; set; }

@@ -13,7 +13,7 @@ namespace Objects
   /// </summary>
   public interface IGeometry
   {
-    string linearUnits { get; set; }
+    string units { get; set; }
   }
 
   public interface I3DGeometry : IGeometry

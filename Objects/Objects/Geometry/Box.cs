@@ -12,7 +12,7 @@ namespace Objects.Geometry
     public Interval xSize { get; set; }
     public Interval ySize { get; set; }
     public Interval zSize { get; set; }
-    public string linearUnits { get; set; }
+    public string units { get; set; }
     public Box boundingBox { get; set; }
     public Point center { get; set; }
     public double area { get; set; }

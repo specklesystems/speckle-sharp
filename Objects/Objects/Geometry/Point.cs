@@ -10,7 +10,7 @@ namespace Objects.Geometry
   {
     public List<double> value { get; set; }
 
-    public string linearUnits { get; set; }
+    public string units { get; set; }
 
     public Point() { }
 
