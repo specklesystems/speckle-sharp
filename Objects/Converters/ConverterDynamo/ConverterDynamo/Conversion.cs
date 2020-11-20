@@ -480,34 +480,38 @@ namespace Objects.Converter.Dynamo
     /// <returns></returns>
     public static DS.Curve ToNative(this Ellipse e)
     {
-      DS.Curve ellipse = DS.Ellipse.ByPlaneRadii(
-          e.plane.ToNative(),
-          e.firstRadius.Value,
-          e.secondRadius.Value
-      );
-      ellipse.SetDynamoProperties<DS.Ellipse>(e.GetDynamicMembersDictionary());
-      
-      if (e.trimDomain != null)
-        ellipse.TrimByParameter(e.trimDomain.start ?? 0, e.trimDomain.end ?? 2 * Math.PI);
-      
 
-      return ellipse;
+      if (e.trimDomain != null)
+      {
+        // Curve is an ellipse arc
+        var ellipseArc = DS.EllipseArc.ByPlaneRadiiAngles(e.plane.ToNative(), e.firstRadius.Value, e.secondRadius.Value,
+          e.trimDomain.start.Value, (double) (e.trimDomain.end - e.trimDomain.start));
+        return ellipseArc;
+      }
+      else
+      {
+        // Curve is an ellipse
+        var ellipse = DS.Ellipse.ByPlaneRadii(
+            e.plane.ToNative(),
+            e.firstRadius.Value,
+            e.secondRadius.Value
+        );
+        ellipse.SetDynamoProperties<DS.Ellipse>(e.GetDynamicMembersDictionary());
+        return ellipse;
+      }
     }
 
     /// <summary>
-    /// DS EllipsArc to SpeckleCurve?????
+    /// DS EllipseArc to Speckle Ellipse
     /// </summary>
     /// <param name="arc"></param>
     /// <returns></returns>
-    public static Base ToSpeckle(this EllipseArc arc)
+    public static Ellipse ToSpeckle(this EllipseArc arc)
     {
-      //EllipseArcs as NurbsCurves
-      using (NurbsCurve nurbsCurve = arc.ToNurbsCurve())
-      {
-        var nurbs = nurbsCurve.ToSpeckle();
-        nurbs.SetDynamicMembers(arc.GetSpeckleProperties());
-        return nurbs;
-      }
+      var ellipArc = new Ellipse(arc.Plane.ToSpeckle(), arc.MajorAxis.Length, arc.MinorAxis.Length,
+        new Interval(0, 2 * Math.PI), new Interval(arc.StartAngle, arc.StartAngle + arc.SweepAngle));
+      ellipArc.SetDynamicMembers(arc.GetSpeckleProperties());
+      return ellipArc;
     }
 
     //public static EllipseArc ToNative(this SpeckleCurve arc)
