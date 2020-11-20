@@ -17,6 +17,7 @@ using Ellipse = Objects.Geometry.Ellipse;
 using Curve = Objects.Geometry.Curve;
 using Mesh = Objects.Geometry.Mesh;
 using Objects;
+using Surface = Objects.Geometry.Surface;
 
 namespace Objects.Converter.Dynamo
 {
@@ -26,11 +27,11 @@ namespace Objects.Converter.Dynamo
   //Code form: https://github.com/speckleworks/SpeckleCoreGeometry/blob/master/SpeckleCoreGeometryDynamo/Conversions.cs
   static class Conversion
   {
-
     private const double EPS = 1e-6;
     private const string speckleKey = "speckle";
 
     #region Points
+
     /// <summary>
     /// DS Point to SpecklePoint
     /// </summary>
@@ -87,6 +88,7 @@ namespace Objects.Converter.Dynamo
     #endregion
 
     #region Vectors
+
     /// <summary>
     /// DS Vector to Vector
     /// </summary>
@@ -114,7 +116,7 @@ namespace Objects.Converter.Dynamo
     /// <returns></returns>
     public static double[] ToArray(this DS.Vector vc)
     {
-      return new double[] { vc.X, vc.Y, vc.Z };
+      return new double[] {vc.X, vc.Y, vc.Z};
     }
 
     /// <summary>
@@ -126,10 +128,12 @@ namespace Objects.Converter.Dynamo
     {
       return DS.Vector.ByCoordinates(arr[0], arr[1], arr[2]);
     }
+
     #endregion
 
 
     #region Planes
+
     /// <summary>
     /// DS Plane to Plane
     /// </summary>
@@ -138,10 +142,10 @@ namespace Objects.Converter.Dynamo
     public static Plane ToSpeckle(this DS.Plane plane)
     {
       var p = new Plane(
-      plane.Origin.ToSpeckle(),
-      plane.Normal.ToSpeckle(),
-      plane.XAxis.ToSpeckle(),
-      plane.YAxis.ToSpeckle());
+        plane.Origin.ToSpeckle(),
+        plane.Normal.ToSpeckle(),
+        plane.XAxis.ToSpeckle(),
+        plane.YAxis.ToSpeckle());
       p.SetDynamicMembers(plane.GetSpeckleProperties());
       return p;
     }
@@ -160,9 +164,11 @@ namespace Objects.Converter.Dynamo
 
       return pln.SetDynamoProperties<DS.Plane>(plane.GetDynamicMembersDictionary());
     }
+
     #endregion
 
     #region Linear
+
     /// <summary>
     /// DS Line to SpeckleLine
     /// </summary>
@@ -171,7 +177,7 @@ namespace Objects.Converter.Dynamo
     public static Line ToSpeckle(this DS.Line line)
     {
       var l = new Line(
-        (new DS.Point[] { line.StartPoint, line.EndPoint }).ToFlatArray());
+        (new DS.Point[] {line.StartPoint, line.EndPoint}).ToFlatArray());
       l.SetDynamicMembers(line.GetSpeckleProperties());
       return l;
     }
@@ -229,7 +235,9 @@ namespace Objects.Converter.Dynamo
     public static DS.Curve ToNative(this Polyline polyline)
     {
       var points = polyline.value.ToPoints();
-      if (polyline.closed) return DS.PolyCurve.ByPoints(points).CloseWithLine().SetDynamoProperties<DS.PolyCurve>(polyline.GetDynamicMembersDictionary());
+      if (polyline.closed)
+        return DS.PolyCurve.ByPoints(points).CloseWithLine()
+          .SetDynamoProperties<DS.PolyCurve>(polyline.GetDynamicMembersDictionary());
 
       return PolyCurve.ByPoints(points).SetDynamoProperties<PolyCurve>(polyline.GetDynamicMembersDictionary());
     }
@@ -243,7 +251,11 @@ namespace Objects.Converter.Dynamo
     {
       try
       {
-        if (curve.IsClosed) { return false; }
+        if (curve.IsClosed)
+        {
+          return false;
+        }
+
         //Dynamo cannot be trusted when less than 1e-6
         var extremesDistance = curve.StartPoint.DistanceTo(curve.EndPoint);
         return Threshold(curve.Length, extremesDistance);
@@ -256,7 +268,11 @@ namespace Objects.Converter.Dynamo
 
     public static DS.Line GetAsLine(this DS.Curve curve)
     {
-      if (curve.IsClosed) { throw new ArgumentException("Curve is closed, cannot be a Line"); }
+      if (curve.IsClosed)
+      {
+        throw new ArgumentException("Curve is closed, cannot be a Line");
+      }
+
       return DS.Line.ByStartPointEndPoint(curve.StartPoint, curve.EndPoint);
     }
 
@@ -269,7 +285,11 @@ namespace Objects.Converter.Dynamo
     {
       try
       {
-        if (curve.IsClosed) { return false; }
+        if (curve.IsClosed)
+        {
+          return false;
+        }
+
         using (DS.Point midPoint = curve.PointAtParameter(0.5))
         using (DS.Arc arc = DS.Arc.ByThreePoints(curve.StartPoint, midPoint, curve.EndPoint))
         {
@@ -284,19 +304,26 @@ namespace Objects.Converter.Dynamo
 
     public static DS.Arc GetAsArc(this DS.Curve curve)
     {
-      if (curve.IsClosed) { throw new ArgumentException("Curve is closed, cannot be an Arc"); }
+      if (curve.IsClosed)
+      {
+        throw new ArgumentException("Curve is closed, cannot be an Arc");
+      }
+
       using (DS.Point midPoint = curve.PointAtParameter(0.5))
       {
         return DS.Arc.ByThreePoints(curve.StartPoint, midPoint, curve.EndPoint);
       }
-
     }
 
     public static bool IsCircle(this DS.Curve curve)
     {
       try
       {
-        if (!curve.IsClosed) { return false; }
+        if (!curve.IsClosed)
+        {
+          return false;
+        }
+
         using (DS.Point midPoint = curve.PointAtParameter(0.5))
         {
           double radius = curve.StartPoint.DistanceTo(midPoint) * 0.5;
@@ -311,16 +338,20 @@ namespace Objects.Converter.Dynamo
 
     public static DS.Circle GetAsCircle(this DS.Curve curve)
     {
-      if (!curve.IsClosed) { throw new ArgumentException("Curve is not closed, cannot be a Circle"); }
+      if (!curve.IsClosed)
+      {
+        throw new ArgumentException("Curve is not closed, cannot be a Circle");
+      }
 
       DS.Point start = curve.StartPoint;
       using (DS.Point midPoint = curve.PointAtParameter(0.5))
-      using (DS.Point centre = DS.Point.ByCoordinates(Median(start.X, midPoint.X), Median(start.Y, midPoint.Y), Median(start.Z, midPoint.Z)))
+      using (DS.Point centre = DS.Point.ByCoordinates(Median(start.X, midPoint.X), Median(start.Y, midPoint.Y),
+        Median(start.Z, midPoint.Z)))
       {
         return DS.Circle.ByCenterPointRadiusNormal(
-            centre,
-            centre.DistanceTo(start),
-            curve.Normal
+          centre,
+          centre.DistanceTo(start),
+          curve.Normal
         );
       }
     }
@@ -329,10 +360,13 @@ namespace Objects.Converter.Dynamo
     {
       try
       {
-        if (!curve.IsClosed) { return false; }
+        if (!curve.IsClosed)
+        {
+          return false;
+        }
 
         //http://www.numericana.com/answer/ellipse.htm
-        double[] parameters = new double[4] { 0, 0.25, 0.5, 0.75 };
+        double[] parameters = new double[4] {0, 0.25, 0.5, 0.75};
         DS.Point[] points = parameters.Select(p => curve.PointAtParameter(p)).ToArray();
         double a = points[0].DistanceTo(points[2]) * 0.5; // Max Radius
         double b = points[1].DistanceTo(points[3]) * 0.5; // Min Radius
@@ -351,21 +385,26 @@ namespace Objects.Converter.Dynamo
 
     public static DS.Ellipse GetAsEllipse(this DS.Curve curve)
     {
-      if (!curve.IsClosed) { throw new ArgumentException("Curve is not closed, cannot be an Ellipse"); }
-      double[] parameters = new double[4] { 0, 0.25, 0.5, 0.75 };
+      if (!curve.IsClosed)
+      {
+        throw new ArgumentException("Curve is not closed, cannot be an Ellipse");
+      }
+
+      double[] parameters = new double[4] {0, 0.25, 0.5, 0.75};
       DS.Point[] points = parameters.Select(p => curve.PointAtParameter(p)).ToArray();
       double a = points[0].DistanceTo(points[2]) * 0.5; // Max Radius
       double b = points[1].DistanceTo(points[3]) * 0.5; // Min Radius
 
-      using (DS.Point centre = DS.Point.ByCoordinates(Median(points[0].X, points[2].X), Median(points[0].Y, points[2].Y), Median(points[0].Z, points[2].Z)))
+      using (DS.Point centre = DS.Point.ByCoordinates(Median(points[0].X, points[2].X),
+        Median(points[0].Y, points[2].Y), Median(points[0].Z, points[2].Z)))
       {
         points.ForEach(p => p.Dispose());
 
         return DS.Ellipse.ByPlaneRadii(
-            DS.Plane.ByOriginNormalXAxis(centre, curve.Normal, DS.Vector.ByTwoPoints(centre, curve.StartPoint)),
-            a,
-            b
-            );
+          DS.Plane.ByOriginNormalXAxis(centre, curve.Normal, DS.Vector.ByTwoPoints(centre, curve.StartPoint)),
+          a,
+          b
+        );
       }
     }
 
@@ -404,7 +443,7 @@ namespace Objects.Converter.Dynamo
       using (DS.Vector preXvector = DS.Vector.ByTwoPoints(preCircle.CenterPoint, preCircle.StartPoint))
       {
         double angle = preXvector.AngleAboutAxis(basePlane.XAxis, basePlane.Normal);
-        var circle = (DS.Circle)preCircle.Rotate(basePlane, angle);
+        var circle = (DS.Circle) preCircle.Rotate(basePlane, angle);
 
         return circle.SetDynamoProperties<DS.Circle>(circ.GetDynamicMembersDictionary());
       }
@@ -421,12 +460,12 @@ namespace Objects.Converter.Dynamo
       using (DS.Plane basePlane = DS.Plane.ByOriginNormalXAxis(a.CenterPoint, a.Normal, xAxis))
       {
         var arc = new Arc(
-            basePlane.ToSpeckle(),
-            a.Radius,
-            0, // This becomes 0 as arcs are interpreted to start from the plane's X axis.
-            a.SweepAngle.ToRadians(),
-            a.SweepAngle.ToRadians()
-            );
+          basePlane.ToSpeckle(),
+          a.Radius,
+          0, // This becomes 0 as arcs are interpreted to start from the plane's X axis.
+          a.SweepAngle.ToRadians(),
+          a.SweepAngle.ToRadians()
+        );
 
         arc.SetDynamicMembers(a.GetSpeckleProperties());
         return arc;
@@ -441,14 +480,14 @@ namespace Objects.Converter.Dynamo
     public static DS.Arc ToNative(this Arc a)
     {
       using (DS.Plane basePlane = a.plane.ToNative())
-      using (DS.Point startPoint = (DS.Point)basePlane.Origin.Translate(basePlane.XAxis, a.radius.Value))
+      using (DS.Point startPoint = (DS.Point) basePlane.Origin.Translate(basePlane.XAxis, a.radius.Value))
       {
         var arc = DS.Arc.ByCenterPointStartPointSweepAngle(
-            basePlane.Origin,
-            startPoint,
-            a.angleRadians.Value.ToDegrees(),
-            basePlane.Normal
-          );
+          basePlane.Origin,
+          startPoint,
+          a.angleRadians.Value.ToDegrees(),
+          basePlane.Normal
+        );
         return arc.SetDynamoProperties<DS.Arc>(a.GetDynamicMembersDictionary());
       }
     }
@@ -540,7 +579,7 @@ namespace Objects.Converter.Dynamo
       {
         Polycurve spkPolycurve = new Polycurve();
         spkPolycurve.SetDynamicMembers(polycurve.GetSpeckleProperties());
-        spkPolycurve.segments = polycurve.Curves().Select(c => (ICurve)c.ToSpeckle()).ToList();
+        spkPolycurve.segments = polycurve.Curves().Select(c => (ICurve) c.ToSpeckle()).ToList();
 
         return spkPolycurve;
       }
@@ -576,6 +615,7 @@ namespace Objects.Converter.Dynamo
             break;
         }
       }
+
       var polyCrv = PolyCurve.ByJoinedCurves(curves);
       return polyCrv.SetDynamoProperties<PolyCurve>(polycurve.GetDynamicMembersDictionary());
     }
@@ -585,19 +625,31 @@ namespace Objects.Converter.Dynamo
       Base speckleCurve;
       if (curve.IsLinear())
       {
-        using (DS.Line line = curve.GetAsLine()) { speckleCurve = line.ToSpeckle(); }
+        using (DS.Line line = curve.GetAsLine())
+        {
+          speckleCurve = line.ToSpeckle();
+        }
       }
       else if (curve.IsArc())
       {
-        using (DS.Arc arc = curve.GetAsArc()) { speckleCurve = arc.ToSpeckle(); }
+        using (DS.Arc arc = curve.GetAsArc())
+        {
+          speckleCurve = arc.ToSpeckle();
+        }
       }
       else if (curve.IsCircle())
       {
-        using (DS.Circle circle = curve.GetAsCircle()) { speckleCurve = circle.ToSpeckle(); }
+        using (DS.Circle circle = curve.GetAsCircle())
+        {
+          speckleCurve = circle.ToSpeckle();
+        }
       }
       else if (curve.IsEllipse())
       {
-        using (DS.Ellipse ellipse = curve.GetAsEllipse()) { speckleCurve = ellipse.ToSpeckle(); }
+        using (DS.Ellipse ellipse = curve.GetAsEllipse())
+        {
+          speckleCurve = ellipse.ToSpeckle();
+        }
       }
       else
       {
@@ -616,11 +668,11 @@ namespace Objects.Converter.Dynamo
       dsKnots.Add(dsKnots.Last());
 
       NurbsCurve nurbsCurve = NurbsCurve.ByControlPointsWeightsKnots(
-          points,
-          curve.weights.ToArray(),
-          dsKnots.ToArray(),
-          curve.degree
-          );
+        points,
+        curve.weights.ToArray(),
+        dsKnots.ToArray(),
+        curve.degree
+      );
 
       return nurbsCurve.SetDynamoProperties<NurbsCurve>(curve.GetDynamicMembersDictionary());
     }
@@ -630,25 +682,38 @@ namespace Objects.Converter.Dynamo
       Base speckleCurve;
       if (curve.IsLinear())
       {
-        using (DS.Line line = curve.GetAsLine()) { speckleCurve = line.ToSpeckle(); }
+        using (DS.Line line = curve.GetAsLine())
+        {
+          speckleCurve = line.ToSpeckle();
+        }
       }
       else if (curve.IsArc())
       {
-        using (DS.Arc arc = curve.GetAsArc()) { speckleCurve = arc.ToSpeckle(); }
+        using (DS.Arc arc = curve.GetAsArc())
+        {
+          speckleCurve = arc.ToSpeckle();
+        }
       }
       else if (curve.IsCircle())
       {
-        using (DS.Circle circle = curve.GetAsCircle()) { speckleCurve = circle.ToSpeckle(); }
+        using (DS.Circle circle = curve.GetAsCircle())
+        {
+          speckleCurve = circle.ToSpeckle();
+        }
       }
       else if (curve.IsEllipse())
       {
-        using (DS.Ellipse ellipse = curve.GetAsEllipse()) { speckleCurve = ellipse.ToSpeckle(); }
+        using (DS.Ellipse ellipse = curve.GetAsEllipse())
+        {
+          speckleCurve = ellipse.ToSpeckle();
+        }
       }
       else
       {
         // SpeckleCurve DisplayValue
         DS.Curve[] curves = curve.ApproximateWithArcAndLineSegments();
-        List<double> polylineCoordinates = curves.SelectMany(c => new DS.Point[2] { c.StartPoint, c.EndPoint }.ToFlatArray()).ToList();
+        List<double> polylineCoordinates =
+          curves.SelectMany(c => new DS.Point[2] {c.StartPoint, c.EndPoint}.ToFlatArray()).ToList();
         polylineCoordinates.AddRange(curves.Last().EndPoint.ToArray());
         curves.ForEach(c => c.Dispose());
 
@@ -672,9 +737,9 @@ namespace Objects.Converter.Dynamo
 
         speckleCurve = spkCurve;
       }
+
       speckleCurve.SetDynamicMembers(curve.GetSpeckleProperties());
       return speckleCurve;
-
     }
 
     public static Base ToSpeckle(this Helix helix)
@@ -697,6 +762,7 @@ namespace Objects.Converter.Dynamo
       {
         return brep.displayValue.ToNative();
       }
+
       return null;
     }
 
@@ -707,11 +773,17 @@ namespace Objects.Converter.Dynamo
       var defaultColour = System.Drawing.Color.FromArgb(255, 100, 100, 100);
 
       var faces = mesh.FaceIndices.SelectMany(f =>
-      {
-        if (f.Count == 4) { return new int[5] { 1, (int)f.A, (int)f.B, (int)f.C, (int)f.D }; }
-        else { return new int[4] { 0, (int)f.A, (int)f.B, (int)f.C }; }
-      })
-      .ToArray();
+        {
+          if (f.Count == 4)
+          {
+            return new int[5] {1, (int) f.A, (int) f.B, (int) f.C, (int) f.D};
+          }
+          else
+          {
+            return new int[4] {0, (int) f.A, (int) f.B, (int) f.C};
+          }
+        })
+        .ToArray();
 
       var colors = Enumerable.Repeat(defaultColour.ToArgb(), vertices.Count()).ToArray();
       //double[] textureCoords;
@@ -737,32 +809,98 @@ namespace Objects.Converter.Dynamo
       while (i < mesh.faces.Count)
       {
         if (mesh.faces[i] == 0)
-        { // triangle
-          var ig = IndexGroup.ByIndices((uint)mesh.faces[i + 1], (uint)mesh.faces[i + 2], (uint)mesh.faces[i + 3]);
+        {
+          // triangle
+          var ig = IndexGroup.ByIndices((uint) mesh.faces[i + 1], (uint) mesh.faces[i + 2], (uint) mesh.faces[i + 3]);
           faces.Add(ig);
           i += 4;
         }
         else
-        { // quad
-          var ig = IndexGroup.ByIndices((uint)mesh.faces[i + 1], (uint)mesh.faces[i + 2], (uint)mesh.faces[i + 3], (uint)mesh.faces[i + 4]);
+        {
+          // quad
+          var ig = IndexGroup.ByIndices((uint) mesh.faces[i + 1], (uint) mesh.faces[i + 2], (uint) mesh.faces[i + 3],
+            (uint) mesh.faces[i + 4]);
           faces.Add(ig);
           i += 5;
         }
       }
 
       var dsMesh = DS.Mesh.ByPointsFaceIndices(points, faces);
-      
+
       dsMesh.SetDynamoProperties<DS.Mesh>(mesh.GetDynamicMembersDictionary());
-      
+
       return dsMesh;
     }
+
     #endregion
+
+    public static NurbsSurface ToNative(this Surface surface)
+    {
+      var points = new DS.Point[][] { };
+      var weights = new double[][] { };
+
+      var controlPoints = surface.GetControlPoints();
+
+      points = controlPoints.Select(row => row.Select(pt => DS.Point.ByCoordinates(pt.x, pt.y, pt.z)).ToArray())
+        .ToArray();
+      weights = controlPoints.Select(row => row.Select(pt => pt.weight).ToArray()).ToArray();
+      
+      var knotsU = surface.knotsU;
+      knotsU.Insert(0, knotsU[0]);
+      knotsU.Add(knotsU[knotsU.Count - 1]);
+      
+      var knotsV = surface.knotsV;
+      knotsV.Insert(0, knotsV[0]);
+      knotsV.Add(knotsV[knotsV.Count - 1]);
+      
+      var result = DS.NurbsSurface.ByControlPointsWeightsKnots(points, weights, knotsU.ToArray(), surface.knotsV.ToArray(),
+        surface.degreeU, surface.degreeV);
+      return result;
+    }
+
+    public static Surface ToSpeckle(this NurbsSurface surface)
+    {
+      var result = new Surface();
+      // Set control points
+      var dsPoints = surface.ControlPoints();
+      var dsWeights = surface.Weights();
+      var points = new List<List<ControlPoint>>();
+      for (var i = 0; i < dsPoints.Length; i++)
+      {
+        var row = new List<ControlPoint>();
+        for (var j = 0; j < dsPoints[i].Length; j++)
+        {
+          var dsPoint = dsPoints[i][j];
+          var dsWeight = dsWeights[i][j];
+          row.Add(new ControlPoint(dsPoint.X, dsPoint.Y, dsPoint.Z, dsWeight, null));
+        }
+
+        points.Add(row);
+      }
+
+      result.SetControlPoints(points);
+
+      // Set degree
+      result.degreeU = surface.DegreeU;
+      result.degreeV = surface.DegreeV;
+
+      // Set knot vectors
+      result.knotsU = surface.UKnots().ToList();
+      result.knotsV = surface.VKnots().ToList();
+
+      // Set other
+      result.rational = surface.IsRational;
+      result.closedU = surface.ClosedInU;
+      result.closedV = surface.ClosedInV;
+
+      return result;
+    }
 
     #region Helper Methods
 
     public static double[] ToArray(this DS.Point pt)
     {
-      return new double[] { pt.X, pt.Y, pt.Z };
+      return new double[] {pt.X, pt.Y, pt.Z};
     }
 
     public static DS.Point ToPoint(this double[] arr)
@@ -793,7 +931,11 @@ namespace Objects.Converter.Dynamo
     /// SpeckleCore does not currently support dictionaries, therefore avoiding the canonical ToSpeckle
     public static Dictionary<string, object> ToSpeckleX(this DesignScript.Builtin.Dictionary dict)
     {
-      if (dict == null) { return null; }
+      if (dict == null)
+      {
+        return null;
+      }
+
       var speckleDict = new Dictionary<string, object>();
       foreach (var key in dict.Keys)
       {
@@ -802,6 +944,7 @@ namespace Objects.Converter.Dynamo
         {
           value = (value as DesignScript.Builtin.Dictionary).ToSpeckleX();
         }
+
         //TODO:
         //else if (value is Geometry)
         //{
@@ -809,13 +952,18 @@ namespace Objects.Converter.Dynamo
         //}
         speckleDict.Add(key, value);
       }
+
       return speckleDict;
     }
 
     /// SpeckleCore does not currently support dictionaries, therofere avoiding the canonical ToNative
     public static DesignScript.Builtin.Dictionary ToNativeX(this Dictionary<string, object> speckleDict)
     {
-      if (speckleDict == null) { return null; }
+      if (speckleDict == null)
+      {
+        return null;
+      }
+
       var keys = new List<string>();
       var values = new List<object>();
       foreach (var pair in speckleDict)
@@ -825,6 +973,7 @@ namespace Objects.Converter.Dynamo
         {
           value = (value as Dictionary<string, object>).ToNativeX();
         }
+
         //else if (value is Base)
         //{
         //  value = Converter.Deserialise(value as Base);
@@ -832,6 +981,7 @@ namespace Objects.Converter.Dynamo
         keys.Add(pair.Key);
         values.Add(value);
       }
+
       return DesignScript.Builtin.Dictionary.ByKeysValues(keys, values);
     }
 
@@ -840,7 +990,8 @@ namespace Objects.Converter.Dynamo
       var userData = geometry.Tags.LookupTag(speckleKey) as DesignScript.Builtin.Dictionary;
       if (userData == null)
         return new Dictionary<string, object>();
-      return userData.ToSpeckleX(); ;
+      return userData.ToSpeckleX();
+      ;
     }
 
     public static T SetDynamoProperties<T>(this DesignScriptEntity geometry, Dictionary<string, object> properties)
@@ -849,7 +1000,8 @@ namespace Objects.Converter.Dynamo
       {
         geometry.Tags.AddTag(speckleKey, properties.ToNativeX());
       }
-      return (T)Convert.ChangeType(geometry, typeof(T));
+
+      return (T) Convert.ChangeType(geometry, typeof(T));
     }
 
     #endregion
