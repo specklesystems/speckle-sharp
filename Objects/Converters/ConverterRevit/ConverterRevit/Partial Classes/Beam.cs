@@ -93,7 +93,7 @@ namespace Objects.Converter.Revit
       speckleBeam.type = Doc.GetElement(revitBeam.GetTypeId()).Name;
       speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(baseLevelParam);
-      speckleBeam.displayMesh = MeshUtils.GetElementMesh(revitBeam, Scale);
+      speckleBeam.displayMesh = GetElementMesh(revitBeam);
 
       AddCommonRevitProps(speckleBeam, revitBeam);
 

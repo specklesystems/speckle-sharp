@@ -183,7 +183,7 @@ namespace Objects.Converter.Revit
       if (baseLine == null && baseGeometry is Point basePoint)
       {
         var elevation = ((RevitLevel)ParameterToSpeckle(topLevelParam)).elevation;
-        baseLine = new Line(basePoint, new Point(basePoint.x, basePoint.y, elevation + speckleColumn.topOffset));
+        baseLine = new Line(basePoint, new Point(basePoint.x, basePoint.y, elevation + speckleColumn.topOffset, ModelUnits), ModelUnits);
       }
 
       if (baseLine == null)
@@ -200,7 +200,7 @@ namespace Objects.Converter.Revit
         speckleColumn.rotation = ((LocationPoint)revitColumn.Location).Rotation;
       }
 
-      speckleColumn.displayMesh = MeshUtils.GetElementMesh(revitColumn, Scale);
+      speckleColumn.displayMesh = GetElementMesh(revitColumn);
 
       return speckleColumn;
     }

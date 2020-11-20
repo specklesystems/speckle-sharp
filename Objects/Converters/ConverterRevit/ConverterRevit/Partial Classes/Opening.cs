@@ -82,9 +82,9 @@ namespace Objects.Converter.Revit
         var btmLeft = PointToSpeckle(revitOpening.BoundaryRect[0]);
         var topRight = PointToSpeckle(revitOpening.BoundaryRect[1]);
         poly.value.AddRange(btmLeft.value);
-        poly.value.AddRange(new Point(btmLeft.value[0], btmLeft.value[1], topRight.value[2]).value);
+        poly.value.AddRange(new Point(btmLeft.value[0], btmLeft.value[1], topRight.value[2], ModelUnits).value);
         poly.value.AddRange(topRight.value);
-        poly.value.AddRange(new Point(topRight.value[0], topRight.value[1], btmLeft.value[2]).value);
+        poly.value.AddRange(new Point(topRight.value[0], topRight.value[1], btmLeft.value[2], ModelUnits).value);
         poly.value.AddRange(btmLeft.value);
         speckleOpening.outline = poly;
       }
@@ -101,7 +101,7 @@ namespace Objects.Converter.Revit
         }
 
 
-        var poly = new Polycurve();
+        var poly = new Polycurve(ModelUnits);
         poly.segments = new List<ICurve>();
         foreach (DB.Curve curve in revitOpening.BoundaryCurves)
         {

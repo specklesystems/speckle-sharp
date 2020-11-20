@@ -23,13 +23,14 @@ namespace Objects.Geometry
 
     }
 
-    public Box(Plane basePlane, Interval xSize, Interval ySize, Interval zSize, string applicationId = null)
+    public Box(Plane basePlane, Interval xSize, Interval ySize, Interval zSize, string units, string applicationId = null)
     {
       this.basePlane = basePlane;
       this.xSize = xSize;
       this.ySize = ySize;
       this.zSize = zSize;
       this.applicationId = applicationId;
+      this.units = units;
     }
   }
 }

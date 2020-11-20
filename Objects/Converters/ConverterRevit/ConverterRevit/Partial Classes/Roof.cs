@@ -146,7 +146,7 @@ namespace Objects.Converter.Revit
               end = (double)ParameterToSpeckle(revitExtrusionRoof.get_Parameter(BuiltInParameter.EXTRUSION_END_PARAM))
             };
             var plane = revitExtrusionRoof.GetProfile().get_Item(0).SketchPlane.GetPlane();
-            speckleExtrusionRoof.referenceLine = new Line(PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate())), PointToSpeckle(plane.Origin)); //TODO: test!
+            speckleExtrusionRoof.referenceLine = new Line(PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate())), PointToSpeckle(plane.Origin), ModelUnits); //TODO: test!
             var baseLevelParam = revitExtrusionRoof.get_Parameter(BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM);
             speckleExtrusionRoof.level = ConvertAndCacheLevel(baseLevelParam);
             speckleRoof = speckleExtrusionRoof;
@@ -166,7 +166,7 @@ namespace Objects.Converter.Revit
 
       AddCommonRevitProps(speckleRoof, revitRoof);
 
-      (speckleRoof.displayMesh.faces, speckleRoof.displayMesh.vertices) = MeshUtils.GetFaceVertexArrayFromElement(revitRoof, Scale, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      (speckleRoof.displayMesh.faces, speckleRoof.displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       return speckleRoof;
     }
 
@@ -185,7 +185,7 @@ namespace Objects.Converter.Revit
             for (var i = 0; i < crvLoops.Size; i++)
             {
               var crvLoop = crvLoops.get_Item(i);
-              var poly = new Polycurve();
+              var poly = new Polycurve(ModelUnits);
               foreach (DB.ModelCurve curve in crvLoop)
               {
                 if (curve == null) continue;
@@ -208,7 +208,7 @@ namespace Objects.Converter.Revit
         case ExtrusionRoof extrusion:
           {
             var crvloop = extrusion.GetProfile();
-            var poly = new Polycurve();
+            var poly = new Polycurve(ModelUnits);
             foreach (DB.ModelCurve curve in crvloop)
             {
               if (curve == null) continue;

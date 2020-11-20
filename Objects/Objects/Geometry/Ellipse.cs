@@ -64,8 +64,8 @@ namespace Objects.Geometry
     /// <param name="radius1">First radius of the ellipse.</param>
     /// <param name="radius2">Second radius of the ellipse.</param>
     /// <param name="applicationId">Application ID, defaults to null.</param>
-    public Ellipse(Plane plane, double radius1, double radius2, string applicationId = null)
-      : this(plane, radius1, radius2, new Interval(0, 2 * Math.PI), null)
+    public Ellipse(Plane plane, double radius1, double radius2, string units, string applicationId = null)
+      : this(plane, radius1, radius2, new Interval(0, 2 * Math.PI), null, units)
     {
     }
 
@@ -78,7 +78,7 @@ namespace Objects.Geometry
     /// <param name="domain">The curve's internal parametrization domain.</param>   
     /// <param name="trimDomain">The domain to trim the curve with. Will be null if the ellipse is not trimmed.</param>
     /// <param name="applicationId">Application ID, defaults to null.</param>
-    public Ellipse(Plane plane, double radius1, double radius2, Interval domain, Interval trimDomain,
+    public Ellipse(Plane plane, double radius1, double radius2, Interval domain, Interval trimDomain, string units,
       string applicationId = null)
     {
       this.plane = plane;
@@ -87,6 +87,7 @@ namespace Objects.Geometry
       this.domain = domain;
       this.trimDomain = trimDomain;
       this.applicationId = applicationId;
+      this.units = units;
     }
   }
 }

@@ -14,9 +14,16 @@ namespace Objects.Geometry
 
     public Point() { }
 
-    public Point(double x, double y, double z = 0, string units, string applicationId = null)
+    public Point(double x, double y, double z, string units, string applicationId = null)
     {
       this.value = new List<double>() { x, y, z };
+      this.applicationId = applicationId;
+      this.units = units;
+    }
+
+    public Point(double x, double y, string units, string applicationId = null)
+    {
+      this.value = new List<double>() { x, y, 0 };
       this.applicationId = applicationId;
       this.units = units;
     }

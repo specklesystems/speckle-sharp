@@ -49,7 +49,7 @@ namespace Objects.Converter.Revit
       speckleAc.type = revitAc.Name;
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
       speckleAc.category = RevitUtils.GetCategory(cat);
-      speckleAc.displayMesh = MeshUtils.GetElementMesh(revitAc, Scale);
+      speckleAc.displayMesh = GetElementMesh(revitAc);
       speckleAc.baseGeometry = speckleAc.displayMesh;
 
       AddCommonRevitProps(speckleAc, revitAc);

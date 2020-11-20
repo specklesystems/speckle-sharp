@@ -22,13 +22,14 @@ namespace Objects.Geometry
 
     }
     public Plane(Point origin, Vector normal,
-      Vector xDir, Vector yDir, string applicationId = null)
+      Vector xDir, Vector yDir, string units, string applicationId = null)
     {
       this.origin = origin;
       this.normal = normal;
       this.xdir = xDir;
       this.ydir = yDir;
       this.applicationId = applicationId;
+      this.units = units;
     }
   }
 }

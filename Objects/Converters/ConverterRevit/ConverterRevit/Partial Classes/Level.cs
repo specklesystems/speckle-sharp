@@ -24,7 +24,7 @@ namespace Objects.Converter.Revit
       //if (docObj == null)
       //  docObj = TryMatchExistingLevel(speckleLevel);
 
-      var elevation = speckleLevel.elevation * Scale;
+      var elevation = ScaleToNative(speckleLevel.elevation, speckleLevel.units);
       DB.Level revitLevel = null;
 
       //try update existing element
@@ -70,7 +70,7 @@ namespace Objects.Converter.Revit
     {
       var speckleLevel = new RevitLevel();
       //TODO: check why using Scale?
-      speckleLevel.elevation = revitLevel.Elevation / Scale; // UnitUtils.ConvertFromInternalUnits(myLevel.Elevation, DisplayUnitType.Meters)
+      speckleLevel.elevation = ScaleToSpeckle(revitLevel.Elevation);
       speckleLevel.name = revitLevel.Name;
 
       AddCommonRevitProps(speckleLevel, revitLevel);
@@ -135,14 +135,14 @@ namespace Objects.Converter.Revit
         revitLevel = collector.FirstOrDefault(x => x.Id.ToString() == rl.elementId);
       //match by elevation
       if (revitLevel == null)
-        revitLevel = collector.FirstOrDefault(x => Math.Abs(x.Elevation - level.elevation * Scale) < 0.1);
+        revitLevel = collector.FirstOrDefault(x => Math.Abs(x.Elevation - ScaleToNative(level.elevation, level.units)) < 0.1);
 
       return revitLevel;
     }
 
     private RevitLevel LevelFromPoint(XYZ point)
     {
-      return new RevitLevel() { elevation = point.Z / Scale, name = "Speckle Level " + point.Z / Scale };
+      return new RevitLevel() { elevation = ScaleToSpeckle(point.Z), name = "Speckle Level " + ScaleToSpeckle(point.Z) };
     }
 
     private RevitLevel LevelFromCurve(DB.Curve curve)
@@ -158,7 +158,7 @@ namespace Objects.Converter.Revit
       if (level != null)
         return level;
 
-      return new RevitLevel() { elevation = point.Z / Scale, name = "Speckle Level " + point.Z / Scale };
+      return new RevitLevel() { elevation = ScaleToSpeckle(point.Z), name = "Speckle Level " + ScaleToSpeckle(point.Z) };
     }
 
     private RevitLevel EnsureLevelExists(RevitLevel level, DB.Curve curve)

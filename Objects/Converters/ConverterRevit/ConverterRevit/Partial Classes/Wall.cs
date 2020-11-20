@@ -159,17 +159,17 @@ namespace Objects.Converter.Revit
         var mySolids = new List<Solid>();
         foreach (ElementId panelId in grid.GetPanelIds())
         {
-          mySolids.AddRange(MeshUtils.GetElementSolids(Doc.GetElement(panelId)));
+          mySolids.AddRange(GetElementSolids(Doc.GetElement(panelId)));
         }
         foreach (ElementId mullionId in grid.GetMullionIds())
         {
-          mySolids.AddRange(MeshUtils.GetElementSolids(Doc.GetElement(mullionId)));
+          mySolids.AddRange(GetElementSolids(Doc.GetElement(mullionId)));
         }
-        (mesh.faces, mesh.vertices) = MeshUtils.GetFaceVertexArrFromSolids(mySolids, Scale);
+        (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(mySolids);
       }
       else
       {
-        (mesh.faces, mesh.vertices) = MeshUtils.GetFaceVertexArrayFromElement(wall, Scale, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+        (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(wall, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       }
 
       return mesh;

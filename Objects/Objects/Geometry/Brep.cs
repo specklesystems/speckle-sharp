@@ -94,11 +94,12 @@ namespace Objects.Geometry
     /// <param name="provenance"></param>
     /// <param name="displayValue"></param>
     /// <param name="applicationId"></param>
-    public Brep(string provenance, Mesh displayValue, string applicationId = null) : this()
+    public Brep(string provenance, Mesh displayValue, string units, string applicationId = null) : this()
     {
       this.provenance = provenance;
       this.displayValue = displayValue;
       this.applicationId = applicationId;
+      this.units = units;
     }
 
 

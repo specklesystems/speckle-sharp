@@ -23,12 +23,13 @@ namespace Objects.Geometry
 
     public Extrusion() { }
 
-    public Extrusion(Base profile, double length, bool capped, string applicationId = null)
+    public Extrusion(Base profile, double length, bool capped, string units, string applicationId = null)
     {
       this.profile = profile;
       this.length = length;
       this.capped = capped;
       this.applicationId = applicationId;
+      this.units = units;
     }
   }
 }

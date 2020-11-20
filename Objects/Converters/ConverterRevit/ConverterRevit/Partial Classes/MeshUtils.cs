@@ -9,9 +9,9 @@ using Mesh = Objects.Geometry.Mesh;
 
 namespace Objects.Converter.Revit
 {
-  public static class MeshUtils
+  public partial class ConverterRevit
   {
-    public static Mesh GetElementMesh(DB.Element element, double scale, List<DB.Element> subElements = null)
+    public Mesh GetElementMesh(DB.Element element, List<DB.Element> subElements = null)
     {
       Mesh mesh = new Mesh();
 
@@ -19,7 +19,7 @@ namespace Objects.Converter.Revit
       if (!allSolids.Any()) //it's a mesh!
       {
         var geom = element.get_Geometry(new Options());
-        mesh = GetMesh(geom, scale);
+        mesh = GetMesh(geom);
       }
       else
       {
@@ -31,7 +31,7 @@ namespace Objects.Converter.Revit
           }
         }
 
-        (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(allSolids, scale);
+        (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(allSolids);
       }
 
       return mesh;
@@ -44,10 +44,10 @@ namespace Objects.Converter.Revit
     /// <param name="opt">The view options to use</param>
     /// <param name="useOriginGeom4FamilyInstance">Whether to refer to the orignal geometry of the family (if it's a family).</param>
     /// <returns></returns>
-    public static (List<int>, List<double>) GetFaceVertexArrayFromElement(DB.Element elem, double scale, Options opt = null, bool useOriginGeom4FamilyInstance = false)
+    public (List<int>, List<double>) GetFaceVertexArrayFromElement(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
     {
       var solids = GetElementSolids(elem, opt, useOriginGeom4FamilyInstance);
-      return GetFaceVertexArrFromSolids(solids, scale);
+      return GetFaceVertexArrFromSolids(solids);
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ namespace Objects.Converter.Revit
     /// <param name="opt"></param>
     /// <param name="useOriginGeom4FamilyInstance"></param>
     /// <returns></returns>
-    public static List<Solid> GetElementSolids(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
+    public List<Solid> GetElementSolids(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
     {
       if (null == elem)
       {
@@ -99,7 +99,7 @@ namespace Objects.Converter.Revit
       return solids;
     }
 
-    private static Mesh GetMesh(GeometryElement geom, double scale)
+    private Mesh GetMesh(GeometryElement geom)
     {
       var speckleMesh = new Mesh();
       foreach (var element in geom)
@@ -110,7 +110,7 @@ namespace Objects.Converter.Revit
 
           foreach (var vert in mesh.Vertices)
           {
-            speckleMesh.vertices.AddRange(new double[] { vert.X / scale, vert.Y / scale, vert.Z / scale });
+            speckleMesh.vertices.AddRange(new double[] { ScaleToSpeckle(vert.X), ScaleToSpeckle(vert.Y), ScaleToSpeckle(vert.Z) });
           }
 
           for (int i = 0; i < mesh.NumTriangles; i++)
@@ -132,7 +132,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="gObj"></param>
     /// <returns></returns>
-    private static List<Solid> GetSolids(GeometryObject gObj)
+    private List<Solid> GetSolids(GeometryObject gObj)
     {
       List<Solid> solids = new List<Solid>();
       if (gObj is Solid) // already solid
@@ -167,7 +167,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="solids"></param>
     /// <returns></returns>
-    public static (List<int>, List<double>) GetFaceVertexArrFromSolids(IEnumerable<Solid> solids, double scale)
+    public (List<int>, List<double>) GetFaceVertexArrFromSolids(IEnumerable<Solid> solids)
     {
       var faceArr = new List<int>();
       var vertexArr = new List<double>();
@@ -184,7 +184,7 @@ namespace Objects.Converter.Revit
 
           foreach (var point in m.Vertices)
           {
-            vertexArr.AddRange(new double[] { point.X / scale, point.Y / scale, point.Z / scale });
+            vertexArr.AddRange(new double[] { ScaleToSpeckle(point.X), ScaleToSpeckle(point.Y), ScaleToSpeckle(point.Z) });
           }
 
           for (int i = 0; i < m.NumTriangles; i++)

@@ -21,5 +21,11 @@ namespace Objects.Geometry
     {
 
     }
+
+    public Polycurve(string units, string applicationId = null)
+    {
+      this.applicationId = applicationId;
+      this.units = units;
+    }
   }
 }
