@@ -78,7 +78,7 @@
     <Copy Condition="$([MSBuild]::IsOsPlatform('OSX'))" SourceFiles="@(BuildFiles)" DestinationFolder="~/.config/Speckle/Kits/Objects" />
   </Target>-->
    <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
-    <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(ProjectName).gha"</PostBuildEvent>
+     <PostBuildEvent>Copy "$(TargetDir)$(AssemblyName).dll" "$(AppData)\Speckle\Kits\Objects\"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
     <PostBuildEvent>mkdir -p $HOME/.config/Speckle/Kits/Objects</PostBuildEvent>
