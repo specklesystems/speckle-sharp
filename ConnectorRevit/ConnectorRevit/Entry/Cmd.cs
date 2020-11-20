@@ -40,7 +40,14 @@ namespace Speckle.ConnectorRevit.Entry
         helper.Owner = commandData.Application.MainWindowHandle;
       };
 
+      commandData.Application.Application.DocumentOpened += FirstDocOpen;
+
       return Result.Succeeded;
+    }
+
+    private void FirstDocOpen(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
+    {
+      
     }
   }
 

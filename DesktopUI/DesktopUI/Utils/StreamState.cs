@@ -378,7 +378,7 @@ namespace Speckle.DesktopUI.Utils
 
     public BindableCollection<Exception> Errors { get; set; } = new BindableCollection<Exception>();
 
-    public BindableCollection<string> FormattedErrors
+    public string FormattedErrors
     {
       get
       {
@@ -387,8 +387,9 @@ namespace Speckle.DesktopUI.Utils
         {
           bc.Add($"{e.Message}\n{e.StackTrace}");
         }
-        return bc;
+        return string.Join("\n\n",bc);
       }
+      set { }
     }
 
     public bool _ShowErrors = false;
@@ -561,8 +562,7 @@ namespace Speckle.DesktopUI.Utils
 
       if (Errors.Count != 0)
       {
-        Errors.Refresh();
-        NotifyOfPropertyChange(nameof(Errors));
+        NotifyOfPropertyChange(nameof(FormattedErrors));
         ShowErrors = true;
       }
     }
@@ -594,8 +594,7 @@ namespace Speckle.DesktopUI.Utils
 
       if (Errors.Count != 0)
       {
-        Errors.Refresh();
-        NotifyOfPropertyChange(nameof(Errors));
+        NotifyOfPropertyChange(nameof(FormattedErrors));
         ShowErrors = true;
       }
     }

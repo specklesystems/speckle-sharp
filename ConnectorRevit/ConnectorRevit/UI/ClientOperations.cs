@@ -162,6 +162,7 @@ namespace Speckle.ConnectorRevit.UI
         if (conversionResult == null)
         {
           ConversionErrors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
+          state.Errors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
           continue;
         }
 
@@ -180,6 +181,7 @@ namespace Speckle.ConnectorRevit.UI
       if (converter.ConversionErrors.Count != 0)
       {
         // TODO: Get rid of the custom Error class. It's not needed.
+        // PS: The errors seem to be quite bare at the moment.
         ConversionErrors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.Message}")));
       }
 
@@ -203,7 +205,12 @@ namespace Speckle.ConnectorRevit.UI
         cancellationToken: state.CancellationTokenSource.Token,
         transports: transports,
         onProgressAction: dict => UpdateProgress(dict, state.Progress),
-        onErrorAction: (s, e) => { OperationErrors.Add(e); } // TODO!
+        onErrorAction: (s, e) =>
+        {
+          OperationErrors.Add(e); // TODO!
+          state.Errors.Add(e);
+          state.CancellationTokenSource.Cancel();
+        } 
         );
 
       if (OperationErrors.Count != 0)
@@ -222,7 +229,7 @@ namespace Speckle.ConnectorRevit.UI
         streamId = streamId,
         objectId = objectId,
         branchName = state.Branch.name,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} objs from ${Applications.Revit}."
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} objs from {Applications.Revit}."
       };
 
       if (state.PreviousCommitId != null) { actualCommit.previousCommitIds = new List<string>() { state.PreviousCommitId }; }
@@ -244,7 +251,7 @@ namespace Speckle.ConnectorRevit.UI
         state.Errors.Add(e);
         Globals.Notify($"Failed to create commit.\n{e.Message}");
       }
-      state.Errors.AddRange(ConversionErrors);
+      
       return state;
     }
 

@@ -243,8 +243,8 @@ namespace Speckle.DesktopUI.Utils
         UpdateProgress(pd, state.Progress);
       }
 
-      // Mock some errors
-      for (int i = 0; i < 10; i++)
+      // Mock "some" errors
+      for (int i = 0; i < 50; i++)
       {
         try
         {

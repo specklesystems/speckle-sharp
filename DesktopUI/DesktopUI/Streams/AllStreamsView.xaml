@@ -732,35 +732,21 @@
                       <Expander.Header>
                         <TextBlock FontSize="12">Errors / Warnings</TextBlock>
                       </Expander.Header>
-                      <ScrollViewer MaxHeight="200"
-                                    Margin="26,0,27,0"
-                                    md:ScrollBarAssist.ThumbWidth="10">
-                        <ItemsControl ItemsSource="{Binding Errors}">
-                          <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                              <StackPanel Margin="0,5">
-                                <TextBox Style="{x:Null}"
-                                         TextWrapping="Wrap"
-                                         BorderBrush="Transparent"
-                                         Foreground="Gray"
-                                         Background="Transparent"
-                                         HorizontalAlignment="Stretch"
-                                         IsReadOnly="True">
-                                  <TextBox.Text>
-                                    <MultiBinding StringFormat=" {0} &#x0a; {1}">
-                                      <Binding Path="Message"
-                                               Mode="OneWay" />
-                                      <Binding Path="StackTrace"
-                                               Mode="OneWay" />
-                                    </MultiBinding>
-                                  </TextBox.Text>
-                                </TextBox>
-                                <Separator Margin="0,10,10,10"/>
-                              </StackPanel>
-                            </DataTemplate>
-                          </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                      </ScrollViewer>
+                      <TextBox Style="{x:Null}"
+                               Margin="25,0,25,0"
+                                 TextWrapping="Wrap"
+                                 BorderBrush="Transparent"
+                                 Foreground="Gray"
+                                 Background="Transparent"
+                                 HorizontalAlignment="Stretch"
+                                 MaxHeight="200"
+                                 VerticalScrollBarVisibility="Visible"
+                                 IsReadOnly="True">
+                          <TextBox.Text>
+                            <Binding Path="FormattedErrors"
+                                     Mode="OneWay"></Binding>
+                          </TextBox.Text>
+                        </TextBox>
                     </Expander>
                     <Button Grid.Column="1"
                             Width="20"
