@@ -17,6 +17,7 @@ using System.Net;
 using Ellipse = Objects.Geometry.Ellipse;
 using Objects;
 using Surface = Objects.Geometry.Surface;
+using Objects.Primitive;
 
 namespace Objects.Converter.Revit
 {
@@ -152,7 +153,8 @@ namespace Objects.Converter.Revit
           0,
            2 * Math.PI
           ) as DB.Ellipse;
-        e.MakeBound(0, 2 * Math.PI);
+        
+        e.MakeBound(ellipse.trimDomain?.start ?? 0, ellipse.trimDomain?.end ?? 2 * Math.PI);
         return e;
       }
     }
@@ -161,10 +163,12 @@ namespace Objects.Converter.Revit
     {
       using (DB.Plane basePlane = DB.Plane.CreateByOriginAndBasis(ellipse.Center, ellipse.XDirection, ellipse.YDirection))
       {
+        var trim = ellipse.IsBound ? new Interval(ellipse.GetEndParameter(0), ellipse.GetEndParameter(1)) : null;
+        
         return new Ellipse(
           PlaneToSpeckle(basePlane),
           ellipse.RadiusX / Scale,
-          ellipse.RadiusY / Scale);
+          ellipse.RadiusY / Scale,new Interval(0, 2* Math.PI), trim);
       }
     }
 

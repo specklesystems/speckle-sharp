@@ -155,10 +155,12 @@ namespace Objects.Converter.RhinoGh
 
     public static RH.Plane ToNative(this Plane plane)
     {
-      var returnPlane = new RH.Plane(plane.origin.ToNative().Location, plane.normal.ToNative());
-      returnPlane.XAxis = plane.xdir.ToNative();
-      returnPlane.YAxis = plane.ydir.ToNative();
-      return returnPlane;
+      var xAxis = plane.xdir.ToNative();
+      xAxis.Unitize();
+      var yAxis = plane.ydir.ToNative();
+      yAxis.Unitize();
+      
+      return new RH.Plane(plane.origin.ToNative().Location, xAxis,yAxis);
     }
 
     // Line
@@ -269,17 +271,16 @@ namespace Objects.Converter.RhinoGh
       return new Ellipse(e.Plane.ToSpeckle(), e.Radius1, e.Radius2);
     }
 
-    public static NurbsCurve ToNative(this Ellipse e)
+    public static RH.Curve ToNative(this Ellipse e)
     {
       RH.Ellipse elp = new RH.Ellipse(e.plane.ToNative(), (double) e.firstRadius, (double) e.secondRadius);
-
-
-      var myEllp = NurbsCurve.CreateFromEllipse(elp);
-      var shit = myEllp.IsEllipse(Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
 
       if (e.domain != null)
         myEllp.Domain = e.domain.ToNative();
 
+      if (e.trimDomain != null)
+        myEllp = myEllp.Trim(e.trimDomain.ToNative()).ToNurbsCurve();
+      
       return myEllp;
     }
 
@@ -428,6 +429,44 @@ namespace Objects.Converter.RhinoGh
           return getObj.ToSpeckle();
         }
       }*/
+
+      curve.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
+
+      Polyline displayValue;
+
+      if (poly.Count == 2)
+      {
+        displayValue = new Polyline();
+        displayValue.value = new List<double> {poly[0].X, poly[0].Y, poly[0].Z, poly[1].X, poly[1].Y, poly[1].Z};
+      }
+      else
+      {
+        displayValue = poly.ToSpeckle() as Polyline;
+      }
+
+      var myCurve = new Curve(displayValue);
+      var nurbsCurve = curve.ToNurbsCurve();
+    
+      // Hack: Rebuild curve to prevent interior knot multiplicities.
+      //var max = Math.Min(nurbsCurve.Points.Count-1, 3);
+      //nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count, max, true);
+
+      myCurve.weights = nurbsCurve.Points.Select(ctp => ctp.Weight).ToList();
+      myCurve.points = nurbsCurve.Points.Select(ctp => ctp.Location).ToFlatArray().ToList();
+      myCurve.knots = nurbsCurve.Knots.ToList();
+      myCurve.degree = nurbsCurve.Degree;
+      myCurve.periodic = nurbsCurve.IsPeriodic;
+      myCurve.rational = nurbsCurve.IsRational;
+      myCurve.domain = nurbsCurve.Domain.ToSpeckle();
+      myCurve.closed = nurbsCurve.IsClosed;
+
+      return myCurve;
+    }
+
+
+    public static Curve ToSpeckleNurbs(this NurbsCurve curve)
+    {
+      var tolerance = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
 
       curve.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
 
