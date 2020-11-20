@@ -32,5 +32,16 @@ namespace Objects.Geometry
       this.displayValue = poly;
       this.applicationId = applicationId;
     }
+
+    public IEnumerable<Point> GetPoints()
+    {
+      if (points.Count % 3 != 0) throw new Exception("Array malformed: length%3 != 0.");
+      
+      Point[] pts = new Point[points.Count / 3];
+      var asArray = points.ToArray();
+      for (int i = 2, k = 0; i < points.Count; i += 3)
+        pts[k++] = new Point(asArray[i - 2], asArray[i - 1], asArray[i]);
+      return pts;
+    }
   }
 }
