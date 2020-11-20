@@ -10,7 +10,6 @@ namespace Objects.Geometry
 {
   public class Brep : Base, I3DGeometry
   {
-    public object rawData { get; set; }
     public string provenance { get; set; }
     public Mesh displayValue { get; set; }
 
@@ -19,19 +18,60 @@ namespace Objects.Geometry
     public Point center { get; set; }
     public double area { get; set; }
     public double volume { get; set; }
-    
+
+    /// <summary>
+    /// Gets or sets the list of surfaces in this <see cref="Brep"/> instance.
+    /// </summary>
     public List<Surface> Surfaces { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of 3-dimensional curves in this <see cref="Brep"/> instance.
+    /// </summary>
     public List<Curve> Curve3D { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of 2-dimensional UV curves in this <see cref="Brep"/> instance.
+    /// </summary>
     public List<Curve> Curve2D { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of vertices in this <see cref="Brep"/> instance.
+    /// </summary>
     public List<BrepVertex> Vertices { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of edges in this <see cref="Brep"/> instance.
+    /// </summary>
     public List<BrepEdge> Edges { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of closed UV loops in this <see cref="Brep"/> instance.
+    /// </summary>
     public List<BrepLoop> Loops { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of UV trim segments for each surface in this <see cref="Brep"/> instance.
+    /// </summary>
     public List<BrepTrim> Trims { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of faces in this <see cref="Brep"/> instance.
+    /// </summary>
     public List<BrepFace> Faces { get; set; }
-    
+
+    /// <summary>
+    /// Gets or sets if this <see cref="Brep"/> instance is closed or not.
+    /// </summary>
     public bool IsClosed { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of surfaces in this <see cref="Brep"/> instance.
+    /// </summary>
     public BrepOrientation Orientation { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="Brep"/> class.
+    /// </summary>
     public Brep()
     {
       Surfaces = new List<Surface>();
@@ -48,13 +88,19 @@ namespace Objects.Geometry
       Orientation = BrepOrientation.None;
     }
 
-    public Brep(object rawData, string provenance, Mesh displayValue, string applicationId = null) : this()
+    /// <summary>
+    /// Initializes a new instance of <see cref="Brep"/> class.
+    /// </summary>
+    /// <param name="provenance"></param>
+    /// <param name="displayValue"></param>
+    /// <param name="applicationId"></param>
+    public Brep(string provenance, Mesh displayValue, string applicationId = null) : this()
     {
-      this.rawData = rawData;
       this.provenance = provenance;
       this.displayValue = displayValue;
       this.applicationId = applicationId;
     }
+
 
     [OnDeserialized]
     internal void OnDeserialized(StreamingContext context)
@@ -66,6 +112,9 @@ namespace Objects.Geometry
     }
   }
 
+  /// <summary>
+  /// Represents the orientation of a <see cref="Brep"/>
+  /// </summary>
   public enum BrepOrientation
   {
     None = 0,
@@ -79,8 +128,7 @@ namespace Objects.Geometry
   /// </summary>
   public class BrepFace : Base
   {
-    [JsonIgnore]
-    public Brep Brep { get; set; }
+    [JsonIgnore] public Brep Brep { get; set; }
     public int SurfaceIndex { get; set; }
     public List<int> LoopIndices { get; set; }
     public int OuterLoopIndex { get; set; }
@@ -109,8 +157,7 @@ namespace Objects.Geometry
   /// </summary>
   public class BrepLoop : Base
   {
-    [JsonIgnore]
-    public Brep Brep { get; set; }
+    [JsonIgnore] public Brep Brep { get; set; }
     public int FaceIndex { get; set; }
     public List<int> TrimIndices { get; set; }
     public BrepLoopType Type { get; set; }
@@ -130,14 +177,13 @@ namespace Objects.Geometry
     [JsonIgnore] public BrepFace Face => Brep.Faces[FaceIndex];
     [JsonIgnore] public List<BrepTrim> Trims => TrimIndices.Select(i => Brep.Trims[i]).ToList();
   }
-  
+
   /// <summary>
   /// Represents a UV Trim curve for one of the <see cref="Brep"/>'s surfaces.
   /// </summary>
   public class BrepTrim : Base
   {
-    [JsonIgnore]
-    public Brep Brep { get; set; }
+    [JsonIgnore] public Brep Brep { get; set; }
     public int EdgeIndex { get; set; }
     public int FaceIndex { get; set; }
     public int LoopIndex { get; set; }
@@ -150,7 +196,8 @@ namespace Objects.Geometry
     {
     }
 
-    public BrepTrim(Brep brep, int edgeIndex, int faceIndex, int loopIndex, int curveIndex, int isoStatus, BrepTrimType trimType, bool reversed)
+    public BrepTrim(Brep brep, int edgeIndex, int faceIndex, int loopIndex, int curveIndex, int isoStatus,
+      BrepTrimType trimType, bool reversed)
     {
       Brep = brep;
       EdgeIndex = edgeIndex;
@@ -165,33 +212,31 @@ namespace Objects.Geometry
     [JsonIgnore] public BrepFace Face => Brep.Faces[FaceIndex];
 
     [JsonIgnore] public BrepLoop Loop => Brep.Loops[LoopIndex];
-    
+
     [JsonIgnore] public BrepEdge Edge => EdgeIndex != -1 ? Brep.Edges[EdgeIndex] : null;
 
     [JsonIgnore] public Curve Curve2d => Brep.Curve2D[CurveIndex];
-    
-    
   }
-  
+
   /// <summary>
   /// Represents an edge of the <see cref="Brep"/>.
   /// </summary>
   public class BrepEdge : Base
   {
-    [JsonIgnore]
-    public Brep Brep { get; set; }
+    [JsonIgnore] public Brep Brep { get; set; }
     public int Curve3dIndex { get; set; }
     public int[] TrimIndices { get; set; }
     public int StartIndex { get; set; }
     public int EndIndex { get; set; }
-    
+
     public bool ProxyCurveIsReversed { get; set; }
-    
+
     public BrepEdge()
     {
     }
 
-    public BrepEdge(Brep brep, int curve3dIndex, int[] trimIndices, int startIndex, int endIndex, bool proxyCurvedIsReversed)
+    public BrepEdge(Brep brep, int curve3dIndex, int[] trimIndices, int startIndex, int endIndex,
+      bool proxyCurvedIsReversed)
     {
       Brep = brep;
       Curve3dIndex = curve3dIndex;
@@ -206,7 +251,7 @@ namespace Objects.Geometry
     [JsonIgnore] public IEnumerable<BrepTrim> Trims => TrimIndices.Select(i => Brep.Trims[i]);
     [JsonIgnore] public ICurve Curve => Brep.Curve3D[Curve3dIndex];
   }
-  
+
   /// <summary>
   /// Represents a vertex of the <see cref="Brep"/>.
   /// </summary>
@@ -248,6 +293,4 @@ namespace Objects.Geometry
     PointOnSurface,
     Slit
   }
-  
-
 }
