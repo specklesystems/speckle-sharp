@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -51,25 +51,37 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj">
-      <Project>{7ef0c96c-1fd9-42b2-85ce-bfd9b10dac06}</Project>
+      <Project>{B4D98D2C-E5DA-463E-BF6C-68E9B77C72F3}</Project>
       <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Objects\Objects.csproj">
-      <Project>{95c2153a-642e-4779-90c0-bff56fc561a9}</Project>
+      <Project>{9103058A-0D20-49AA-B053-01548DD66D16}</Project>
       <Name>Objects</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="6.30.20288.16411" />
+    <PackageReference Include="Grasshopper" Version="6.31.20315.17001">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="RhinoCommon" Version="6.30.20288.16411" />
+    <PackageReference Include="RhinoCommon" Version="6.31.20315.17001">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- After build targets -->
-  <Target Name="AfterBuild">
+  <!--  <Target Name="AfterBuild">
     <ItemGroup>
       <BuildFiles Include="$(TargetDir)$(AssemblyName).dll" />
     </ItemGroup>
-    <Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(AppData)\Speckle\Kits\Objects" />
-  </Target>
+    <Copy Condition="$([MSBuild]::IsOsPlatform('Windows'))" SourceFiles="@(BuildFiles)" DestinationFolder="$(AppData)\Speckle\Kits\Objects" />
+    <Copy Condition="$([MSBuild]::IsOsPlatform('OSX'))" SourceFiles="@(BuildFiles)" DestinationFolder="~/.config/Speckle/Kits/Objects" />
+  </Target>-->
+   <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(ProjectName).gha"</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
+    <PostBuildEvent>mkdir -p $HOME/.config/Speckle/Kits/Objects</PostBuildEvent>
+    <PostBuildEvent>cp '$(TargetDir)$(AssemblyName).dll' $HOME/.config/Speckle/Kits/Objects/</PostBuildEvent>
+  </PropertyGroup>
 </Project>

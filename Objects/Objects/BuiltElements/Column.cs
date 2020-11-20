@@ -4,11 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Objects
+namespace Objects.BuiltElements
 {
-  public class Column : Element
+  public class Column : Element, IColumn
   {
     public double height { get; set; }
+
+    public ICurve baseLine { get; set; }
 
     public Column()
     {

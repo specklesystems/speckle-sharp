@@ -10,6 +10,8 @@ namespace Objects.Geometry
   {
     public List<double> value { get; set; }
 
+    public string linearUnits { get; set; }
+
     public Point() { }
 
     public Point(double x, double y, double z = 0, string applicationId = null)

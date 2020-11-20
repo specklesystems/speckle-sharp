@@ -1,33 +1,31 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Architecture;
-using DB = Autodesk.Revit.DB.Architecture;
 using Objects.Geometry;
-using System;
+using Objects.Revit;
 using System.Collections.Generic;
-using System.Text;
-using Room = Objects.Room;
-using Level= Objects.Level;
-using Objects;
 using System.Linq;
+using DB = Autodesk.Revit.DB.Architecture;
+using Level = Objects.BuiltElements.Level;
+using Point = Objects.Geometry.Point;
+using Room = Objects.BuiltElements.Room;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public Room RoomToSpeckle(DB.Room revitRoom)
+    public RevitRoom RoomToSpeckle(DB.Room revitRoom)
     {
       var baseLevelParam = revitRoom.get_Parameter(BuiltInParameter.ROOM_LEVEL_ID);
       var profiles = GetProfiles(revitRoom);
 
-      var speckleRoom = new Room();
+      var speckleRoom = new RevitRoom();
 
-      speckleRoom.type = revitRoom.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
+      speckleRoom.name = revitRoom.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
       speckleRoom.number = revitRoom.Number;
-      speckleRoom["basePoint"] = LocationToSpeckle(revitRoom);
-      speckleRoom.level = (Level)ParameterToSpeckle(baseLevelParam);
-      speckleRoom.baseGeometry = profiles[0];
+      speckleRoom.basePoint = (Point)LocationToSpeckle(revitRoom);
+      speckleRoom.level = ConvertAndCacheLevel(baseLevelParam);
+      speckleRoom.outline = profiles[0];
       if (profiles.Count > 1)
-        speckleRoom.holes = profiles.Skip(1).ToList();
+        speckleRoom.voids = profiles.Skip(1).ToList();
 
       AddCommonRevitProps(speckleRoom, revitRoom);
 

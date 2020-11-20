@@ -1,16 +1,16 @@
 ﻿using Objects.Geometry;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Objects
+namespace Objects.BuiltElements
 {
   public class Element : Base
   {
-    public IGeometry baseGeometry { get; set; }
-    public Mesh displayMesh { get; set; } = new Mesh();
-    public string type { get; set; }
-    public Level level { get; set; }
+    [SchemaOptional]
+    public Mesh displayMesh { get; set; }
+
+    [SchemaIgnore]
+    public string linearUnits { get; set; }
   }
+
 }

@@ -4,11 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Objects
+namespace Objects.BuiltElements
 {
-  public class Roof : Element
+  public class Roof : Element, IRoof
   {
-    public List<ICurve> holes { get; set; } = new List<ICurve>();
+    public ICurve outline { get; set; }
+    public List<ICurve> voids { get; set; } = new List<ICurve>();
     public Roof()
     {
 

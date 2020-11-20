@@ -1,15 +1,14 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
-using Objects;
-using System;
+using Objects.BuiltElements;
+using Objects.Revit;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public TopographySurface TopographyToNative(Topography speckleSurface)
+    public TopographySurface TopographyToNative(ITopography speckleSurface)
     {
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleSurface.applicationId, speckleSurface.speckle_type);
 
@@ -17,8 +16,8 @@ namespace Objects.Converter.Revit
       for (int i = 0; i < speckleSurface.baseGeometry.vertices.Count; i += 3)
       {
         pts.Add(new XYZ(
-          speckleSurface.baseGeometry.vertices[i] * Scale, 
-          speckleSurface.baseGeometry.vertices[i + 1] * Scale, 
+          speckleSurface.baseGeometry.vertices[i] * Scale,
+          speckleSurface.baseGeometry.vertices[i + 1] * Scale,
           speckleSurface.baseGeometry.vertices[i + 2] * Scale));
       }
 
@@ -26,7 +25,7 @@ namespace Objects.Converter.Revit
       {
         Doc.Delete(docObj.Id);
 
-        // TODO: Can't start a transaction here as we have started a global transaction for the creation of all objects. 
+        // TODO: Can't start a transaction here as we have started a global transaction for the creation of all objects.
         // TODO: Let each individual ToNative method handle its own transactions. It's a big change, so will leave for later.
 
         //var srf = (TopographySurface) docObj;
@@ -41,15 +40,18 @@ namespace Objects.Converter.Revit
         //return srf;
       }
 
-      return TopographySurface.Create(Doc, pts);
+      var revitSurface = TopographySurface.Create(Doc, pts);
+      if (speckleSurface is RevitTopography rt)
+        SetElementParams(revitSurface, rt);
+
+      return revitSurface;
     }
 
-    public Topography TopographyToSpeckle(TopographySurface revitTopo)
+    public RevitTopography TopographyToSpeckle(TopographySurface revitTopo)
     {
-      var speckleTopo = new Topography();
+      var speckleTopo = new RevitTopography();
       speckleTopo.baseGeometry = MeshUtils.GetElementMesh(revitTopo, Scale);
       AddCommonRevitProps(speckleTopo, revitTopo);
-
 
       return speckleTopo;
     }

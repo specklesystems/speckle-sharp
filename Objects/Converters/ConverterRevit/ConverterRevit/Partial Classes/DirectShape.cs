@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
-using Element = Objects.Element;
+using Element = Objects.BuiltElements.Element;
 using Objects.Revit;
 using System.Linq;
 using Objects.Geometry;
@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
       return revitDs;
     }
 
-    private Element DirectShapeToSpeckle(DB.DirectShape revitAc)
+    private IRevit DirectShapeToSpeckle(DB.DirectShape revitAc)
     {
       var speckleAc = new DirectShape();
       speckleAc.type = revitAc.Name;

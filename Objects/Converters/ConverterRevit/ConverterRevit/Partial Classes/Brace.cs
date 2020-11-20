@@ -1,51 +1,52 @@
-﻿using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB.Structure;
+using Objects.BuiltElements;
+using Objects.Revit;
 using DB = Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Structure;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Element = Objects.Element;
-using Objects;
+using Element = Objects.BuiltElements.Element;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element BraceToNative(Brace myBrace)
+    public DB.Element BraceToNative(IBrace speckleBrace)
     {
-      var myBeam = new Beam()
+      //reuse logic in Beam class, at these are basically the same thing
+      if (speckleBrace is RevitBrace rb)
       {
-        type = myBrace.type,
-        baseGeometry = myBrace.baseGeometry,
-        level = myBrace.level
-      };
+        var speckleBeam = new RevitBeam
+        {
+          baseLine = rb.baseLine,
+          type = rb.type,
+          level = rb.level,
+          family = rb.family,
+          parameters = rb.parameters,
+          typeParameters = rb.typeParameters
+        };
 
-      myBeam["family"] = myBrace["family"];
-      myBeam["parameters"] = myBrace["parameters"];
-      myBeam["typeParameters"] = myBrace["typeParameters"];
-
-      return FamilyInstanceToNative(myBeam, StructuralType.Brace);
+        return BeamToNative(speckleBeam, StructuralType.Brace);
+      }
+      else
+      {
+        var speckleBeam = new Beam();
+        speckleBeam.baseLine = speckleBrace.baseLine;
+        return BeamToNative(speckleBeam, StructuralType.Brace);
+      }
     }
 
-    private Element BraceToSpeckle(FamilyInstance myFamily)
+    private IRevit BraceToSpeckle(DB.FamilyInstance myFamily)
     {
-      var myBeam = BeamToSpeckle(myFamily) as Beam;
+      var myBeam = BeamToSpeckle(myFamily) as RevitBeam;
 
-      var myBrace = new Brace()
+      var myBrace = new RevitBrace()
       {
         type = myBeam.type,
-        baseGeometry = myBeam.baseGeometry,
-        level = myBeam.level
+        baseLine = myBeam.baseLine,
+        level = myBeam.level,
+        family = myBeam.family,
+        parameters = myBeam.parameters,
+        typeParameters = myBeam.typeParameters
       };
-
-      myBrace["family"] = myBeam["family"];
-      myBrace["parameters"] = myBeam["parameters"];
-      myBrace["typeParameters"] = myBeam["typeParameters"];
-
       return myBrace;
     }
-
-
-
   }
 }

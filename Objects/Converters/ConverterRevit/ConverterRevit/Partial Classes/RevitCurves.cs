@@ -1,13 +1,11 @@
 ﻿using Autodesk.Revit.DB;
-using Objects;
-using Objects.Geometry;
 using Objects.Revit;
 using Speckle.Core.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+
 using DB = Autodesk.Revit.DB;
+
 using DetailCurve = Objects.Revit.DetailCurve;
 using ModelCurve = Objects.Revit.ModelCurve;
 
@@ -22,7 +20,6 @@ namespace Objects.Converter.Revit
       speckleCurve.lineStyle = revitCurve.LineStyle.Name;
 
       return speckleCurve;
-
     }
 
     public DB.ModelCurve ModelCurveToNative(ModelCurve speckleCurve)
@@ -44,9 +41,8 @@ namespace Objects.Converter.Revit
       var lineStyles = revitCurve.GetLineStyleIds();
       var lineStyleId = lineStyles.FirstOrDefault(x => Doc.GetElement(x).Name == speckleCurve.lineStyle);
       if (lineStyleId != null)
-        revitCurve.LineStyle = Doc.GetElement(lineStyleId) ;
+        revitCurve.LineStyle = Doc.GetElement(lineStyleId);
       return revitCurve;
-
     }
 
     public DetailCurve DetailCurveToSpeckle(DB.DetailCurve revitCurve)
@@ -56,7 +52,6 @@ namespace Objects.Converter.Revit
       speckleCurve.lineStyle = revitCurve.LineStyle.Name;
 
       return speckleCurve;
-
     }
 
     public DB.DetailCurve DetailCurveToNative(DetailCurve speckleCurve)
@@ -79,7 +74,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
-        ConversionErrors.Add(new Error ( "Detail curve creation failed", $"View is not valid for detail curve creation." ));
+        ConversionErrors.Add(new Error("Detail curve creation failed", $"View is not valid for detail curve creation."));
         throw;
       }
 
@@ -88,7 +83,6 @@ namespace Objects.Converter.Revit
       if (lineStyleId != null)
         revitCurve.LineStyle = Doc.GetElement(lineStyleId);
       return revitCurve;
-
     }
 
     public RoomBoundaryLine RoomBoundaryLineToSpeckle(DB.ModelCurve revitCurve)
@@ -97,7 +91,6 @@ namespace Objects.Converter.Revit
       speckleCurve.baseCurve = CurveToSpeckle(revitCurve.GeometryCurve);
 
       return speckleCurve;
-
     }
 
     public DB.ModelCurve RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)
@@ -123,10 +116,7 @@ namespace Objects.Converter.Revit
         ConversionErrors.Add(new Error("Room boundary line creation failed", $"View is not valid for room boundary line creation."));
         throw;
       }
-
-
     }
-
 
     /// <summary>
     /// Credits: Grevit
@@ -185,7 +175,5 @@ namespace Objects.Converter.Revit
     {
       return DB.Plane.CreateByNormalAndOrigin(basis, startPoint);
     }
-
-
   }
 }

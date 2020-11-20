@@ -1,77 +1,75 @@
-﻿using Objects;
-using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
+using Objects.Geometry;
+using Objects.Revit;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Opening = Objects.Opening;
-using Element = Objects.Element;
-using Level = Objects.Level;
-using Mesh = Objects.Geometry.Mesh;
-using Autodesk.Revit.DB.Structure;
-using Objects.Geometry;
-using Point = Objects.Geometry.Point;
-using Objects.Revit;
 using System.Linq;
-using Speckle.Core.Models;
+
+using DB = Autodesk.Revit.DB;
+
+using Level = Objects.BuiltElements.Level;
+using Opening = Objects.BuiltElements.Opening;
+using Point = Objects.Geometry.Point;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Opening OpeningToNative(Opening speckleOpening)
+    public DB.Opening OpeningToNative(IOpening speckleOpening)
     {
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleOpening.applicationId, speckleOpening.type);
+      var baseCurves = CurveToNative(speckleOpening.outline);
 
-      var baseCurves = CurveToNative(speckleOpening.baseGeometry as ICurve);
-
+      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleOpening.applicationId, speckleOpening.speckle_type);
       if (docObj != null)
         Doc.Delete(docObj.Id);
 
-      DB.Opening revitOpeneing = null;
+      DB.Opening revitOpening = null;
 
-      //wall opening (could also check if the host is a wall)
-      if (speckleOpening is RevitWallOpening && speckleOpening.HasMember<int>("revitHostId"))
+      switch (speckleOpening)
       {
-        var points = (speckleOpening.baseGeometry as Polyline).points.Select(x => PointToNative(x)).ToList();
-        var host = Doc.GetElement(new ElementId((int)speckleOpening["revitHostId"]));
-        revitOpeneing = Doc.Create.NewOpening(host as DB.Wall, points[0], points[2]);
-      }
-      //vertical opening
-      else if (speckleOpening.HasMember<int>("revitHostId"))
-      {
-        var host = Doc.GetElement(new ElementId((int)speckleOpening["revitHostId"]));
-        revitOpeneing = Doc.Create.NewOpening(host, baseCurves, true);
-      }
-      //shaft opening
-      else if (speckleOpening.level != null)
-      {
-        var bottomLevel = LevelToNative(speckleOpening.level);
-        var topLevel = speckleOpening.HasMember<Level>("topLevel") ? LevelToNative(speckleOpening["topLevel"] as Level) : null;
-        revitOpeneing = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
-      }
-      else
-      {
-        ConversionErrors.Add(new Error("Cannot create Opening", "Does not satisfy requrements to create a Revit Opening"));
-        throw new Exception("Cannot create Opening");
+        case RevitWallOpening rwo:
+          {
+            var points = (rwo.outline as Polyline).points.Select(x => PointToNative(x)).ToList();
+            var host = Doc.GetElement(new ElementId(rwo.revitHostId));
+            revitOpening = Doc.Create.NewOpening(host as Wall, points[0], points[2]);
+            break;
+          }
+
+        case RevitVerticalOpening rvo:
+          {
+            var host = Doc.GetElement(new ElementId(rvo.revitHostId));
+            revitOpening = Doc.Create.NewOpening(host, baseCurves, true);
+            break;
+          }
+
+        case RevitShaft rs:
+          {
+            var bottomLevel = GetLevelByName(rs.level);
+            var topLevel = !string.IsNullOrEmpty(rs.topLevel) ? GetLevelByName(rs.topLevel) : null;
+            revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
+            break;
+          }
+
+        default:
+          ConversionErrors.Add(new Error("Cannot create Opening", "Opening type not supported"));
+          throw new Exception("Opening type not supported");
       }
 
-      SetElementParams(revitOpeneing, speckleOpening);
 
+      if (speckleOpening is RevitOpening ro)
+        SetElementParams(revitOpening, ro);
 
-      return revitOpeneing;
+      return revitOpening;
     }
 
-    public Opening OpeningToSpeckle(DB.Opening revitOpening)
+    public IOpening OpeningToSpeckle(DB.Opening revitOpening)
     {
       //REVIT PARAMS > SPECKLE PROPS
       var baseLevelParam = revitOpening.get_Parameter(BuiltInParameter.WALL_BASE_CONSTRAINT);
       var topLevelParam = revitOpening.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE);
 
-      Opening speckleOpening = null;
-
-
-
+      RevitOpening speckleOpening = null;
 
       if (revitOpening.IsRectBoundary)
       {
@@ -88,12 +86,20 @@ namespace Objects.Converter.Revit
         poly.value.AddRange(topRight.value);
         poly.value.AddRange(new Point(topRight.value[0], topRight.value[1], btmLeft.value[2]).value);
         poly.value.AddRange(btmLeft.value);
-        speckleOpening.baseGeometry = poly;
-
+        speckleOpening.outline = poly;
       }
       else
       {
-        speckleOpening = new Opening(); //either a VerticalOpening or a ShaftOpening
+        //host id is actually set in NestHostedObjects
+        if (revitOpening.Host != null)
+          speckleOpening = new RevitVerticalOpening();
+        else
+        {
+          speckleOpening = new RevitShaft();
+          if (topLevelParam != null)
+            ((RevitShaft)speckleOpening).topLevel = ConvertAndCacheLevel(topLevelParam);
+        }
+
 
         var poly = new Polycurve();
         poly.segments = new List<ICurve>();
@@ -102,22 +108,17 @@ namespace Objects.Converter.Revit
           if (curve != null)
             poly.segments.Add(CurveToSpeckle(curve));
         }
-        speckleOpening.baseGeometry = poly;
+        speckleOpening.outline = poly;
       }
 
       if (baseLevelParam != null)
-        speckleOpening.level = (Level)ParameterToSpeckle(baseLevelParam);
-      if (topLevelParam != null)
-        speckleOpening["topLevel"] = (Level)ParameterToSpeckle(topLevelParam);
+        speckleOpening.level = ConvertAndCacheLevel(baseLevelParam);
+
       speckleOpening.type = revitOpening.Name;
 
       AddCommonRevitProps(speckleOpening, revitOpening);
 
       return speckleOpening;
     }
-
-
-
-
   }
 }

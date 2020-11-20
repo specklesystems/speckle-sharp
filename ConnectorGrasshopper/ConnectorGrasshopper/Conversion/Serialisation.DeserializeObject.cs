@@ -65,8 +65,8 @@ namespace ConnectorGrasshopper.Conversion
 
           try
           {
-            var serialised = Operations.Deserialize(item.Value);
-            ConvertedObjects.Append(new GH_SpeckleBase() { Value = serialised }, Objects.Paths[branchIndex]);
+            var deserialised = Operations.Deserialize(item.Value);
+            ConvertedObjects.Append(new GH_SpeckleBase() { Value = deserialised }, Objects.Paths[branchIndex]);
           }
           catch (Exception e)
           {

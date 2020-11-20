@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Autodesk.Revit.DB;
+using System;
 using System.Collections.Generic;
-using DB = Autodesk.Revit.DB;
-using Autodesk.Revit.DB;
-using Mesh = Objects.Geometry.Mesh;
 using System.Linq;
+
+using DB = Autodesk.Revit.DB;
+
+using Mesh = Objects.Geometry.Mesh;
 
 namespace Objects.Converter.Revit
 {
@@ -12,14 +14,14 @@ namespace Objects.Converter.Revit
     public static Mesh GetElementMesh(DB.Element element, double scale, List<DB.Element> subElements = null)
     {
       Mesh mesh = new Mesh();
-      
+
       var allSolids = GetElementSolids(element, opt: new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true });
       if (!allSolids.Any()) //it's a mesh!
       {
         var geom = element.get_Geometry(new Options());
         mesh = GetMesh(geom, scale);
       }
-      else 
+      else
       {
         if (subElements != null)
         {
@@ -28,15 +30,12 @@ namespace Objects.Converter.Revit
             allSolids.AddRange(GetElementSolids(sb));
           }
         }
-        
+
         (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(allSolids, scale);
       }
 
-
       return mesh;
     }
-
-
 
     /// <summary>
     /// Returns a merged face and vertex array representing the provided element, if possible.
@@ -72,7 +71,7 @@ namespace Objects.Converter.Revit
       {
         if (useOriginGeom4FamilyInstance && elem is Autodesk.Revit.DB.FamilyInstance)
         {
-          // we transform the geometry to instance coordinate to reflect actual geometry 
+          // we transform the geometry to instance coordinate to reflect actual geometry
           Autodesk.Revit.DB.FamilyInstance fInst = elem as Autodesk.Revit.DB.FamilyInstance;
           gElem = fInst.GetOriginalGeometry(opt);
           Transform trf = fInst.GetTransform();
@@ -129,7 +128,7 @@ namespace Objects.Converter.Revit
     }
 
     /// <summary>
-    /// Extracts solids from a geometry object. see: https://forums.autodesk.com/t5/revit-api-forum/getting-beam-column-and-wall-geometry/td-p/8138893 
+    /// Extracts solids from a geometry object. see: https://forums.autodesk.com/t5/revit-api-forum/getting-beam-column-and-wall-geometry/td-p/8138893
     /// </summary>
     /// <param name="gObj"></param>
     /// <returns></returns>
@@ -163,9 +162,8 @@ namespace Objects.Converter.Revit
       return solids;
     }
 
-
     /// <summary>
-    /// Returns a merged face and vertex array for the group of solids passed in that can be used to set them in a speckle mesh or any object that inherits from a speckle mesh. 
+    /// Returns a merged face and vertex array for the group of solids passed in that can be used to set them in a speckle mesh or any object that inherits from a speckle mesh.
     /// </summary>
     /// <param name="solids"></param>
     /// <returns></returns>
@@ -204,6 +202,5 @@ namespace Objects.Converter.Revit
 
       return (faceArr, vertexArr);
     }
-
   }
 }
