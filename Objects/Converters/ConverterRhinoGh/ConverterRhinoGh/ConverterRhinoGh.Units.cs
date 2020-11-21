@@ -1,13 +1,34 @@
-﻿using Objects.Primitive;
+﻿using Objects;
 using Rhino;
 using Speckle.Core.Kits;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Objects.Converter.RhinoGh
 {
-  public static partial class Conversion
+  public partial class ConverterRhinoGh
   {
+    private string _modelUnits;
+    public string ModelUnits
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(_modelUnits))
+        {
+          _modelUnits = UnitToSpeckle(Doc.ModelUnitSystem);
+        }
+        return _modelUnits;
+      }
+    }
+    private void SetUnits(IGeometry geom)
+    {
+      geom.units = ModelUnits;
+    }
 
-    public static string ToSpeckle(this UnitSystem us)
+    private string UnitToSpeckle(UnitSystem us)
     {
       switch (us)
       {
@@ -69,5 +90,8 @@ namespace Objects.Converter.RhinoGh
           throw new System.Exception("The current Unit System is unsupported.");
       }
     }
+
+
+
   }
 }

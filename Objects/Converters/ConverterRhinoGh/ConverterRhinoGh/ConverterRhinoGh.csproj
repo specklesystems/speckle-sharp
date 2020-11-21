@@ -45,7 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConverterRhinoGh.Geometry.cs" />
-    <Compile Include="ConverterRhinoGh.Primitives.cs" />
+    <Compile Include="ConverterRhinoGh.Units.cs" />
     <Compile Include="ConverterRhinoGh.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -77,8 +77,8 @@
     <Copy Condition="$([MSBuild]::IsOsPlatform('Windows'))" SourceFiles="@(BuildFiles)" DestinationFolder="$(AppData)\Speckle\Kits\Objects" />
     <Copy Condition="$([MSBuild]::IsOsPlatform('OSX'))" SourceFiles="@(BuildFiles)" DestinationFolder="~/.config/Speckle/Kits/Objects" />
   </Target>-->
-   <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
-     <PostBuildEvent>Copy "$(TargetDir)$(AssemblyName).dll" "$(AppData)\Speckle\Kits\Objects\"</PostBuildEvent>
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <PostBuildEvent>Copy "$(TargetDir)$(AssemblyName).dll" "$(AppData)\Speckle\Kits\Objects\"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
     <PostBuildEvent>mkdir -p $HOME/.config/Speckle/Kits/Objects</PostBuildEvent>
