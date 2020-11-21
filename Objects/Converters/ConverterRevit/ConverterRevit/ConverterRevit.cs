@@ -183,14 +183,6 @@ namespace Objects.Converter.Revit
       var converted = new List<object>();
       foreach (var obj in sortedObjects)
       {
-<<<<<<< HEAD
-        var c = ConvertToNative(obj) as DB.Element;
-        converted.Add(c);
-
-        //process nested elements afterwards
-        var nested = obj.GetMemberSafe("@hostedElements", new List<Base>());
-        converted.AddRange(ConvertBatchToNativeWithHost(nested, c.Id.IntegerValue));
-=======
         try
         {
           var conversionResult = ConvertToNative(obj);
@@ -208,7 +200,6 @@ namespace Objects.Converter.Revit
         {
           ConversionErrors.Add(new Error("Conversion failed", e.Message));
         }
->>>>>>> origin/gh/schema-builder
       }
 
       return converted;

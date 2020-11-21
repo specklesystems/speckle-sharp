@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -357,6 +358,46 @@ namespace Speckle.ConnectorRevit.UI
       //}
       #endregion
 
+      UpdateProgress(new ConcurrentDictionary<string, int>() { ["Converting"] = 1 }, state.Progress);
+
+      var (ids, objs) = HandleAndFlatten(commitObject, converter);
+
+      // Delete old baked elements.
+      if (state.Objects.Count != 0)
+      {
+        var toDeleteIds = state.Objects.Select(o => o.applicationId).Except(ids);
+
+        Queue.Add(() =>
+        {
+          using (var t = new Transaction(CurrentDoc.Document, $"Cleaning up old elements for stream {state.Stream.name}"))
+          {
+            t.Start();
+            foreach (var oldId in toDeleteIds)
+            {
+              var elem = CurrentDoc.Document.GetElement(oldId);
+              if (elem != null)
+              {
+                CurrentDoc.Document.Delete(elem.Id);
+              }
+            }
+            t.Commit();
+          }
+        });
+      }
+
+      // Bake the new ones.
+      Queue.Add(() =>
+      {
+        using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.Stream.name}"))
+        {
+          t.Start();
+          converter.ConvertToNative(objs);
+          t.Commit();
+        }
+      });
+
+      Executor.Raise();
+
       try
       {
         var updatedStream = await state.Client.StreamGet(state.Stream.id);
@@ -376,20 +417,75 @@ namespace Speckle.ConnectorRevit.UI
       return state;
     }
 
-    private void HandleAndConvert(object obj)
+    private List<Base> FlattenStreamData(Base commit)
     {
-      // check if there are any objects that have been prev received
-      // !!! check if objwect has prop named "elements" (hosted stuff is in there) 
-      if(obj is Base b)
+      var list = new List<Base>();
+      foreach (var member in commit.GetDynamicMemberNames())
       {
-        /*
-         * if can convert to revit / conversion does not return null
-         * --> check if b has an application id; if so add it to a list; at the end subtract [new app ids] from [old application ids]
-         *
-         * 
-         * 
-         */
+        RecursivelyFlattenStream(commit[member], list);
       }
+      return list;
+    }
+
+    private void RecursivelyFlattenStream(object @object, List<Base> list)
+    {
+      if (@object is Base @base)
+        list.Add(@base);
+      else if (@object is List<object> objects)
+      {
+        foreach (var o in objects)
+        {
+          RecursivelyFlattenStream(o, list);
+        }
+      }
+    }
+
+
+    private (HashSet<string>, List<Base>) HandleAndFlatten(object obj, ISpeckleConverter converter)
+    {
+      HashSet<string> appIds = new HashSet<string>();
+      List<Base> objects = new List<Base>();
+
+      if (obj is Base baseItem)
+      {
+        if (baseItem.applicationId != null) appIds.Add(baseItem.applicationId);
+
+        objects.Add(baseItem);
+
+
+        foreach (var prop in baseItem.GetDynamicMembers())
+        {
+          var (ids, objs) = HandleAndFlatten(baseItem[prop], converter);
+          appIds.UnionWith(ids);
+          objects.AddRange(objs);
+        }
+
+        return (appIds, objects);
+      }
+
+      if (obj is List<object> list)
+      {
+        foreach (var listObj in list)
+        {
+          var (ids, objs) = HandleAndFlatten(listObj, converter);
+          appIds.UnionWith(ids);
+          objects.AddRange(objs);
+        }
+        return (appIds, objects);
+      }
+
+      if (obj is IDictionary dict)
+      {
+        foreach (DictionaryEntry kvp in dict)
+        {
+          var (ids, objs) = HandleAndFlatten(kvp.Value, converter);
+          appIds.UnionWith(ids);
+          objects.AddRange(objs);
+        }
+        return (appIds, objects);
+      }
+
+      return (appIds, objects);
     }
 
     private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
