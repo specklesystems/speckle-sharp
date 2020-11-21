@@ -1,4 +1,4 @@
-using Grasshopper.Kernel.Types;
+﻿using Grasshopper.Kernel.Types;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -73,13 +73,13 @@ namespace ConnectorGrasshopper.Extras
 
       return parent;
     }
-    
+
 
     public static IGH_Goo TryConvertItemToNative(object value, ISpeckleConverter converter)
     {
       if (value == null)
         return null;
-      
+
       if (value is IGH_Goo)
       {
         value = value.GetType().GetProperty("Value")?.GetValue(value);
@@ -88,8 +88,8 @@ namespace ConnectorGrasshopper.Extras
       if (value is Base @base && converter.CanConvertToNative(@base))
       {
         var converted = converter.ConvertToNative(@base);
-        var goo = new GH_ObjectWrapper {Value = converted};
-        return  goo;
+        var goo = new GH_ObjectWrapper { Value = converted };
+        return goo;
       }
 
       if (value is Base @base2)
@@ -124,6 +124,8 @@ namespace ConnectorGrasshopper.Extras
       {
         return converter.ConvertToSpeckle(value);
       }
+
+
 
       return result;
     }

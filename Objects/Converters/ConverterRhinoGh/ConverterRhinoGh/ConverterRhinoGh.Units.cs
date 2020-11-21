@@ -28,6 +28,13 @@ namespace Objects.Converter.RhinoGh
       geom.units = ModelUnits;
     }
 
+    private double ScaleToNative(double value, string units)
+    {
+      var f = Units.GetConversionFactor(units, ModelUnits);
+      return value * f;
+    }
+
+
     private string UnitToSpeckle(UnitSystem us)
     {
       switch (us)
@@ -89,6 +96,8 @@ namespace Objects.Converter.RhinoGh
         default:
           throw new System.Exception("The current Unit System is unsupported.");
       }
+
+
     }
 
 

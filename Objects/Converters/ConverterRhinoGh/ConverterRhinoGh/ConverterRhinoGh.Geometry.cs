@@ -1,14 +1,12 @@
 ﻿using Grasshopper.Kernel.Types;
-using Newtonsoft.Json;
-using Rhino.Geometry;
-using Speckle.Core.Models;
-using Objects;
 using Objects.Geometry;
 using Objects.Primitive;
+using Rhino.Geometry;
+using Rhino.Geometry.Collections;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rhino.Geometry.Collections;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
@@ -30,7 +28,9 @@ using Mesh = Objects.Geometry.Mesh;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
+
 using RH = Rhino.Geometry;
+
 using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.RhinoGh
@@ -53,14 +53,8 @@ namespace Objects.Converter.RhinoGh
       return new double[] { pt.X, pt.Y };
     }
 
-    public Point3d ArrayToPoint(double[] arr)
-    {
-      return new Point3d(arr[0], arr[1], arr[2]);
-    }
-
-
     // Mass point converter
-    public Point3d[] ListToPoints(IEnumerable<double> arr)
+    public Point3d[] PointListToNative(IEnumerable<double> arr, string units)
     {
       var enumerable = arr.ToList();
       if (enumerable.Count % 3 != 0) throw new Exception("Array malformed: length%3 != 0.");
@@ -68,7 +62,10 @@ namespace Objects.Converter.RhinoGh
       Point3d[] points = new Point3d[enumerable.Count / 3];
       var asArray = enumerable.ToArray();
       for (int i = 2, k = 0; i < enumerable.Count; i += 3)
-        points[k++] = new Point3d(asArray[i - 2], asArray[i - 1], asArray[i]);
+        points[k++] = new Point3d(
+          ScaleToNative(asArray[i - 2], units),
+          ScaleToNative(asArray[i - 1], units),
+          ScaleToNative(asArray[i], units));
 
       return points;
     }
@@ -104,7 +101,10 @@ namespace Objects.Converter.RhinoGh
     // Rh Capture?
     public Rhino.Geometry.Point PointToNative(Point pt)
     {
-      var myPoint = new Rhino.Geometry.Point(new Point3d(pt.value[0], pt.value[1], pt.value[2]));
+      var myPoint = new Rhino.Geometry.Point(new Point3d(
+        ScaleToNative(pt.value[0], pt.units),
+        ScaleToNative(pt.value[1], pt.units),
+        ScaleToNative(pt.value[2], pt.units)));
 
       return myPoint;
     }
@@ -122,7 +122,10 @@ namespace Objects.Converter.RhinoGh
 
     public Vector3d VectorToNative(Vector pt)
     {
-      return new Vector3d(pt.value[0], pt.value[1], pt.value[2]);
+      return new Vector3d(
+        ScaleToNative(pt.value[0], pt.units),
+        ScaleToNative(pt.value[1], pt.units),
+        ScaleToNative(pt.value[2], pt.units));
     }
 
     // Interval
@@ -184,7 +187,7 @@ namespace Objects.Converter.RhinoGh
     // Back again only to LINECURVES because we hate grasshopper and its dealings with rhinocommon
     public LineCurve LineToNative(Line line)
     {
-      var pts = ListToPoints(line.value);
+      var pts = PointListToNative(line.value, line.units);
       var myLine = new LineCurve(pts[0], pts[1]);
       if (line.domain != null)
         myLine.Domain = IntervalToNative(line.domain);
@@ -210,7 +213,7 @@ namespace Objects.Converter.RhinoGh
 
     public ArcCurve CircleToNative(Circle circ)
     {
-      RH.Circle circle = new RH.Circle(PlaneToNative(circ.plane), (double)circ.radius);
+      RH.Circle circle = new RH.Circle(PlaneToNative(circ.plane), ScaleToNative((double)circ.radius, circ.units));
 
       var myCircle = new ArcCurve(circle);
       if (circ.domain != null)
@@ -255,7 +258,7 @@ namespace Objects.Converter.RhinoGh
 
     public ArcCurve ArcToNative(Arc a)
     {
-      RH.Arc arc = new RH.Arc(PlaneToNative(a.plane), (double)a.radius, (double)a.angleRadians);
+      RH.Arc arc = new RH.Arc(PlaneToNative(a.plane), ScaleToNative((double)a.radius, a.units), (double)a.angleRadians);
       arc.StartAngle = (double)a.startAngle;
       arc.EndAngle = (double)a.endAngle;
       var myArc = new ArcCurve(arc);
@@ -276,7 +279,7 @@ namespace Objects.Converter.RhinoGh
 
     public RH.Curve EllipseToNative(Ellipse e)
     {
-      RH.Ellipse elp = new RH.Ellipse(PlaneToNative(e.plane), (double)e.firstRadius, (double)e.secondRadius);
+      RH.Ellipse elp = new RH.Ellipse(PlaneToNative(e.plane), ScaleToNative((double)e.firstRadius, e.units), ScaleToNative((double)e.secondRadius, e.units));
       var myEllp = elp.ToNurbsCurve();
 
       if (e.domain != null)
@@ -331,7 +334,7 @@ namespace Objects.Converter.RhinoGh
     // Deserialise
     public PolylineCurve PolylineToNative(Polyline poly)
     {
-      var points = ListToPoints(poly.value).ToList();
+      var points = PointListToNative(poly.value, poly.units).ToList();
       if (poly.closed) points.Add(points[0]);
 
       var myPoly = new PolylineCurve(points);
@@ -388,16 +391,22 @@ namespace Objects.Converter.RhinoGh
       {
         case Circle circle:
           return CircleToNative(circle);
+
         case Arc arc:
           return ArcToNative(arc);
+
         case Ellipse ellipse:
           return EllipseToNative(ellipse);
+
         case Curve crv:
           return CurveToNative(crv);
+
         case Polyline polyline:
           return PolylineToNative(polyline);
+
         case Line line:
           return LineToNative(line);
+
         default:
           return null;
       }
@@ -405,7 +414,7 @@ namespace Objects.Converter.RhinoGh
 
     public ICurve CurveToSpeckle(NurbsCurve curve)
     {
-      var tolerance = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+      var tolerance = Doc.ModelAbsoluteTolerance;
 
       if (curve.IsArc(tolerance))
       {
@@ -437,10 +446,9 @@ namespace Objects.Converter.RhinoGh
       return NurbsToSpeckle(curve);
     }
 
-
     public Curve NurbsToSpeckle(NurbsCurve curve)
     {
-      var tolerance = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+      var tolerance = Doc.ModelAbsoluteTolerance;
 
       curve.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
 
@@ -477,7 +485,7 @@ namespace Objects.Converter.RhinoGh
 
     public NurbsCurve NurbsToNative(Curve curve)
     {
-      var ptsList = ListToPoints(curve.points);
+      var ptsList = PointListToNative(curve.points, curve.units);
 
       var nurbsCurve = NurbsCurve.Create(false, curve.degree, ptsList);
 
@@ -526,7 +534,7 @@ namespace Objects.Converter.RhinoGh
     public RH.Mesh MeshToNative(Mesh mesh)
     {
       RH.Mesh m = new RH.Mesh();
-      m.Vertices.AddVertices(ListToPoints(mesh.vertices));
+      m.Vertices.AddVertices(PointListToNative(mesh.vertices, mesh.units));
 
       int i = 0;
 
@@ -570,7 +578,7 @@ namespace Objects.Converter.RhinoGh
     /// <returns></returns>
     public Brep BrepToSpeckle(RH.Brep brep)
     {
-      brep.Repair(0.00001);
+      brep.Repair(0.00001); //should maybe use ModelAbsoluteTolerance ?
       var joinedMesh = new RH.Mesh();
       var mySettings = new MeshingParameters(0);
 
@@ -579,7 +587,6 @@ namespace Objects.Converter.RhinoGh
         joinedMesh.Append(meshPart);
         return true;
       });
-
 
       var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh),
         provenance: Speckle.Core.Kits.Applications.Rhino, units: ModelUnits);
@@ -686,7 +693,6 @@ namespace Objects.Converter.RhinoGh
         newBrep.Repair(tol);
 
         return newBrep;
-
       }
       catch
       {
@@ -758,7 +764,6 @@ namespace Objects.Converter.RhinoGh
     //      }
     //      catch { }
 
-
     //    //switch ( extrusion.Profile )
     //    //{
     //    //  case SpeckleCore.SpeckleCurve curve:
@@ -803,7 +808,7 @@ namespace Objects.Converter.RhinoGh
     //}
 
     // Proper explosion of polycurves:
-    // (C) The Rutten David https://www.grasshopper3d.com/forum/topics/explode-closed-planar-curve-using-rhinocommon 
+    // (C) The Rutten David https://www.grasshopper3d.com/forum/topics/explode-closed-planar-curve-using-rhinocommon
     public bool CurveSegments(List<RH.Curve> L, RH.Curve crv, bool recursive)
     {
       if (crv == null)
@@ -898,7 +903,14 @@ namespace Objects.Converter.RhinoGh
     public NurbsSurface SurfaceToNative(Geometry.Surface surface)
     {
       // Create rhino surface
-      var points = surface.GetControlPoints();
+      var points = surface.GetControlPoints().Select(l => l.Select(p => p =
+        new ControlPoint(
+          ScaleToNative(p.x, p.units),
+          ScaleToNative(p.y, p.units),
+          ScaleToNative(p.z, p.units),
+          p.weight,
+          p.units)).ToList()).ToList(); //TODO: @alan, please check it works!
+
       var result = NurbsSurface.Create(3, surface.rational, surface.degreeU + 1, surface.degreeV + 1,
         points.Count, points[0].Count);
 
@@ -949,7 +961,6 @@ namespace Objects.Converter.RhinoGh
 
     public Geometry.Surface SurfaceToSpeckle(NurbsSurface surface)
     {
-
       var result = new Geometry.Surface
       {
         degreeU = surface.OrderU - 1,
@@ -962,6 +973,7 @@ namespace Objects.Converter.RhinoGh
         knotsU = surface.KnotsU.ToList(),
         knotsV = surface.KnotsV.ToList()
       };
+      result.units = ModelUnits;
 
       result.SetControlPoints(ControlPointsToSpeckle(surface.Points));
       return result;
