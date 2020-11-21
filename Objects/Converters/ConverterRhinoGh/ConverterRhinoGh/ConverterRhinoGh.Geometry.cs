@@ -16,7 +16,6 @@ using BrepLoop = Objects.Geometry.BrepLoop;
 using BrepLoopType = Objects.Geometry.BrepLoopType;
 using BrepTrim = Objects.Geometry.BrepTrim;
 using BrepTrimType = Objects.Geometry.BrepTrimType;
-using BrepVertex = Objects.Geometry.BrepVertex;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
 using Curve = Objects.Geometry.Curve;
@@ -593,7 +592,7 @@ namespace Objects.Converter.RhinoGh
 
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices
-        .Select(vertex => new BrepVertex(PointToSpeckle(vertex))).ToList();
+        .Select(vertex => PointToSpeckle(vertex)).ToList();
       spcklBrep.Curve3D = brep.Edges
         .Select(edge => NurbsToSpeckle((edge.EdgeCurve).ToNurbsCurve())).ToList();
       spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c => NurbsToSpeckle(c.ToNurbsCurve())).ToList();
@@ -663,7 +662,7 @@ namespace Objects.Converter.RhinoGh
         brep.Curve2D.ForEach(crv => newBrep.AddTrimCurve(CurveToNative(crv)));
         brep.Surfaces.ForEach(surf => newBrep.AddSurface(SurfaceToNative(surf)));
 
-        brep.Vertices.ForEach(vert => newBrep.Vertices.Add(PointToNative(vert.Location).Location, tol));
+        brep.Vertices.ForEach(vert => newBrep.Vertices.Add(PointToNative(vert).Location, tol));
         brep.Edges.ForEach(edge => newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, tol));
         brep.Faces.ForEach(face =>
         {
