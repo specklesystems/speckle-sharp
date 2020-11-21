@@ -55,7 +55,6 @@ namespace ConnectorGrasshopper.Conversion
       {
         Converter = Kit.LoadConverter(Applications.Rhino);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-        var x = Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem;
       }
       catch
       {
