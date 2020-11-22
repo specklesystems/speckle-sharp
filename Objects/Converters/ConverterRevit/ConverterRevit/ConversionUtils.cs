@@ -443,7 +443,7 @@ namespace Objects.Converter.Revit
 
     #endregion
 
-    #region conversion "edit" facilitation
+    #region conversion "edit existing if possible" utilities
     /// <summary>
     /// Returns, if found, the corresponding doc element and its corresponding local state object.
     /// The doc object can be null if the user deleted it. 
