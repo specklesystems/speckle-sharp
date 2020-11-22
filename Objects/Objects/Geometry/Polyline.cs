@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Objects.Primitive;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace Objects.Geometry
     {
 
     }
-    public Polyline(IEnumerable<double> coordinatesArray, string units, string applicationId = null)
+    public Polyline(IEnumerable<double> coordinatesArray, string units = Units.Meters, string applicationId = null)
     {
       this.value = coordinatesArray.ToList();
       this.applicationId = applicationId;

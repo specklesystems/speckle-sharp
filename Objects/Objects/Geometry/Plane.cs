@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Models;
+﻿using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,7 +23,7 @@ namespace Objects.Geometry
 
     }
     public Plane(Point origin, Vector normal,
-      Vector xDir, Vector yDir, string units, string applicationId = null)
+      Vector xDir, Vector yDir, string units = Units.Meters, string applicationId = null)
     {
       this.origin = origin;
       this.normal = normal;

@@ -1,4 +1,5 @@
 ﻿using Objects.Primitive;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,7 @@ namespace Objects.Geometry
 
     public Arc() { }
 
-    public Arc(Plane plane, double radius, double startAngle, double endAngle, double angleRadians, string units, string applicationId = null)
+    public Arc(Plane plane, double radius, double startAngle, double endAngle, double angleRadians, string units = Units.Meters, string applicationId = null)
     {
       this.plane = plane;
       this.radius = radius;

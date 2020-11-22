@@ -1,4 +1,5 @@
 ﻿using Objects.Primitive;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -19,21 +20,21 @@ namespace Objects.Geometry
 
     public Line() { }
 
-    public Line(double x, double y, string units, double z = 0, string applicationId = null)
+    public Line(double x, double y, double z = 0, string units = Units.Meters, string applicationId = null)
     {
       this.value = new List<double>() { x, y, z };
       this.applicationId = applicationId;
       this.units = units;
     }
 
-    public Line(Point start, Point end, string units, string applicationId = null)
+    public Line(Point start, Point end, string units = Units.Meters, string applicationId = null)
     {
       this.value = start.value.Concat(end.value).ToList();
       this.applicationId = applicationId;
       this.units = units;
     }
 
-    public Line(IEnumerable<double> coordinatesArray, string units, string applicationId = null)
+    public Line(IEnumerable<double> coordinatesArray, string units = Units.Meters, string applicationId = null)
     {
       this.value = coordinatesArray.ToList();
       this.applicationId = applicationId;
