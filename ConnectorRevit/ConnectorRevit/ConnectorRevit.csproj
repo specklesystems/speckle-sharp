@@ -108,12 +108,11 @@
   <ItemGroup>
     <Compile Include="Entry\App.cs" />
     <Compile Include="Entry\CmdAvailabilityViews.cs" />
-    <Compile Include="Entry\Cmd.cs" />
+    <Compile Include="Entry\SpeckleRevitCommand.cs" />
     <Compile Include="ExternalEventHandler.cs" />
-    <Compile Include="Globals.cs" />
+    <Compile Include="ConnectorRevitUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Storage\StreamStateManager.cs" />
-    <Compile Include="Storage\HelperClasses.cs" />
     <Compile Include="UI\ConnectorBindingsRevit.cs" />
     <Compile Include="UI\ClientOperations.cs" />
   </ItemGroup>
@@ -170,7 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
-      <Project>{A2C8730A-B605-483E-914E-61F3ED7954D9}</Project>
+      <Project>{521d4aee-08cf-4913-bbe8-5511d176d126}</Project>
       <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Core\ServerTransport\ServerTransport.csproj">
@@ -185,10 +184,6 @@
       <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
       <Name>DesktopUI</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
-      <Project>{be852be3-37b8-4b62-ac2c-0872c41a2542}</Project>
-      <Name>Objects</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

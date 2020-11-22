@@ -18,7 +18,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="myElement"></param>
     /// <returns></returns>
-    public IRevitElement FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
+    public IRevit FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
     {
       //adaptive components
       if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(revitFi))
@@ -57,8 +57,7 @@ namespace Objects.Converter.Revit
       speckleFi.type = Doc.GetElement(revitFi.GetTypeId()).Name;
       speckleFi.facingFlipped = revitFi.FacingFlipped;
       speckleFi.handFlipped = revitFi.HandFlipped;
-      if (baseLevelParam != null)
-        speckleFi.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
+      speckleFi.level = ConvertAndCacheLevel(baseLevelParam);
 
       if (revitFi.Location is LocationPoint)
       {
@@ -90,10 +89,9 @@ namespace Objects.Converter.Revit
     //TODO: might need to clean this up and split the logic by beam, FI, etc...
     public DB.FamilyInstance FamilyInstanceToNative(RevitFamilyInstance speckleFi)
     {
-      string familyName = speckleFi.family ?? "";
-      DB.FamilySymbol familySymbol = GetFamilySymbol(speckleFi as Element);
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi as IBuiltElement);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
-      DB.Level level = LevelToNative(speckleFi.level);
+      DB.Level level = GetLevelByName(speckleFi.level);
       DB.FamilyInstance familyInstance = null;
 
       //try update existing
@@ -105,7 +103,7 @@ namespace Objects.Converter.Revit
           var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
 
           // if family changed, tough luck. delete and let us create a new one.
-          if (familyName != revitType.FamilyName)
+          if (familySymbol.FamilyName != revitType.FamilyName)
           {
             Doc.Delete(docObj.Id);
           }

@@ -8,13 +8,13 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  public class StreamUpdateDialogViewModel : StreamDialogBase,
+  public class StreamUpdateObjectsDialogViewModel : StreamDialogBase,
     IHandle<RetrievedFilteredObjectsEvent>, IHandle<UpdateSelectionCountEvent>
   {
     private readonly IEventAggregator _events;
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
 
-    public StreamUpdateDialogViewModel(
+    public StreamUpdateObjectsDialogViewModel(
       IEventAggregator events,
       StreamsRepository streamsRepo,
       ConnectorBindings bindings)
@@ -60,25 +60,7 @@ namespace Speckle.DesktopUI.Streams
       set
       {
         SetAndNotify(ref _streamState, value);
-        NewName = StreamState.Stream.name;
-        NewDescription = StreamState.Stream.description;
       }
-    }
-
-    private string _newName;
-
-    public string NewName
-    {
-      get => _newName;
-      set => SetAndNotify(ref _newName, value);
-    }
-
-    private string _newDescription;
-
-    public string NewDescription
-    {
-      get => _newDescription;
-      set => SetAndNotify(ref _newDescription, value);
     }
 
     private bool _updateButtonLoading;
@@ -87,30 +69,6 @@ namespace Speckle.DesktopUI.Streams
     {
       get => _updateButtonLoading;
       set => SetAndNotify(ref _updateButtonLoading, value);
-    }
-
-    public async void UpdateStreamDetails()
-    {
-      if ( NewName == StreamState.Stream.name && NewDescription == StreamState.Stream.description ) CloseDialog();
-      try
-      {
-        Tracker.TrackPageview(Tracker.STREAM_UPDATE);
-        var res = await StreamState.Client.StreamUpdate(new StreamUpdateInput()
-        {
-          id = StreamState.Stream.id,
-          name = NewName,
-          description = NewDescription,
-          isPublic = StreamState.Stream.isPublic
-        });
-        var update = await StreamState.Client.StreamGet(StreamState.Stream.id);
-        _events.Publish(new StreamUpdatedEvent(update));
-        CloseDialog();
-      }
-      catch ( Exception e )
-      {
-        Log.CaptureException(e);
-        Notifications.Enqueue($"Error: {e}");
-      }
     }
 
     public async void UpdateStreamObjects()
@@ -122,6 +80,8 @@ namespace Speckle.DesktopUI.Streams
       {
         case "View":
         case "Category":
+        case "Layers":
+        case "Object Types":
         case "Selection"
           when SelectedFilterTab.ListItems.Any():
           filter.Selection = SelectedFilterTab.ListItems.ToList();
@@ -129,7 +89,7 @@ namespace Speckle.DesktopUI.Streams
       }
 
       StreamState.Filter = filter;
-      Bindings.UpdateStream(StreamState);
+      Bindings.PersistAndUpdateStreamInFile(StreamState);
       _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
       UpdateButtonLoading = false;
       CloseDialog();
@@ -225,7 +185,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamState.Placeholders = message.Objects.ToList();
+      StreamState.Objects = message.Objects.ToList();
     }
 
     public void Handle(UpdateSelectionCountEvent message)

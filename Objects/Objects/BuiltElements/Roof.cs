@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Roof : Element
+  public class Roof : Element, IRoof
   {
     public ICurve outline { get; set; }
     public List<ICurve> voids { get; set; } = new List<ICurve>();

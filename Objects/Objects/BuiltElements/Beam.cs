@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Beam : Element
+  public class Beam : Element, IBeam
   {
     public ICurve baseLine { get; set; }
     public Beam()
@@ -14,4 +14,5 @@ namespace Objects.BuiltElements
 
     }
   }
+
 }

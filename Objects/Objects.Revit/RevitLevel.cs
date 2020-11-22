@@ -2,18 +2,30 @@
 using System.Collections.Generic;
 using System.Text;
 using Objects.BuiltElements;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace Objects.Revit
 {
-  public class RevitLevel : Level, IRevitElement
+  [SchemaDescription("Creates a Revit level by elevation and name")]
+  public class RevitLevel : Element, ILevel, IRevit
   {
+    public string name { get; set; }
+    public double elevation { get; set; }
+
+    [SchemaOptional]
+    [SchemaDescription("If true, it creates an associated view in Revit")]
     public bool createView { get; set; }
 
-    public string family { get; set; }
-    public string type { get; set; }
-    public RevitLevel level { get; set; }
+    [SchemaOptional]
+    [DetachProperty]
+    public List<Element> elements { get; set; } = new List<Element>();
+
+    [SchemaOptional]
     public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
+
+    [SchemaIgnore]
     public string elementId { get; set; }
+
   }
 }

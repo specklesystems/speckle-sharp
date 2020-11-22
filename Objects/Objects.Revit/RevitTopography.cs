@@ -6,16 +6,8 @@ using Objects.Geometry;
 
 namespace Objects.Revit
 {
-  public class RevitTopography : Topography, IRevitElement
+  public class RevitTopography : RevitElement, ITopography
   {
-    public string family { get; set; }
-    public string type { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
-    public string elementId { get; set; }
-
-    public RevitLevel level { get; set; }
-
-    public new Mesh baseGeometry { get; set; } = new Mesh();
+    public Mesh baseGeometry { get; set; } = new Mesh();
   }
 }

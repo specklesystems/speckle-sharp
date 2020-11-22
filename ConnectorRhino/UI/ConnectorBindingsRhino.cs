@@ -26,11 +26,16 @@ namespace SpeckleRhino
 
     public Timer SelectionTimer;
 
+    /// <summary>
+    /// TODO: Any errors thrown should be stored here and passed to the ui state (somehow).
+    /// </summary>
+    public List<Exception> Exceptions { get; set; } = new List<Exception>();
+
     public ConnectorBindingsRhino()
     {
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
 
-      SelectionTimer = new Timer(1000) { AutoReset = true, Enabled = true };
+      SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
       SelectionTimer.Elapsed += SelectionTimer_Elapsed;
       SelectionTimer.Start();
     }
@@ -63,9 +68,11 @@ namespace SpeckleRhino
       GetFileContextAndNotifyUI();
     }
 
+    #region Local streams I/O with local file
+
     public void GetFileContextAndNotifyUI()
     {
-      var streamStates = GetFileContext();
+      var streamStates = GetStreamsInFile();
 
       var appEvent = new ApplicationEvent()
       {
@@ -76,50 +83,23 @@ namespace SpeckleRhino
       NotifyUi(appEvent);
     }
 
-    // TODO: ask izzy when this is called/used?
-    public override void AddExistingStream(string args)
-    {
-      //throw new NotImplementedException();
-    }
-
     public override void AddNewStream(StreamState state)
     {
       var stateee = JsonConvert.SerializeObject(state);
       Doc.Strings.SetString("speckle", state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
-    public override void AddObjectsToClient(string args)
+    public override void RemoveStreamFromFile(string streamId)
     {
-      //throw new NotImplementedException();
+      Doc.Strings.Delete("speckle", streamId);
     }
 
-    public override void BakeStream(string args)
+    public override void PersistAndUpdateStreamInFile(StreamState state)
     {
-      //throw new NotImplementedException();
+      Doc.Strings.SetString("speckle", state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
-    public override string GetActiveViewName()
-    {
-      return "Entire Document"; // Note: rhino does not have views that filter objects.
-    }
-
-    public override List<string> GetObjectsInView()
-    {
-      var objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList(); // Note: this returns all the doc objects.
-
-      return objs;
-    }
-
-    public override string GetApplicationHostName() => Applications.Rhino;
-
-    public override string GetDocumentId()
-    {
-      return Speckle.Core.Models.Utilities.hashString("X" + Doc?.Path + Doc?.Name, Speckle.Core.Models.Utilities.HashingFuctions.MD5);
-    }
-
-    public override string GetDocumentLocation() => Doc?.Path;
-
-    public override List<StreamState> GetFileContext()
+    public override List<StreamState> GetStreamsInFile()
     {
       var strings = Doc?.Strings.GetEntryNames("speckle");
       if (strings == null)
@@ -130,8 +110,31 @@ namespace SpeckleRhino
       return strings.Select(s => JsonConvert.DeserializeObject<StreamState>(Doc.Strings.GetValue("speckle", s))).ToList();
     }
 
-    public override string GetFileName() => Doc?.Name;
+    #endregion
 
+    #region boilerplate
+
+    public override string GetActiveViewName()
+    {
+      return "Entire Document"; // Note: rhino does not have views that filter objects.
+    }
+
+    public override List<string> GetObjectsInView()
+    {
+      var objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList(); // Note: this returns all the doc objects.
+      return objs;
+    }
+
+    public override string GetHostAppName() => Applications.Rhino;
+
+    public override string GetDocumentId()
+    {
+      return Speckle.Core.Models.Utilities.hashString("X" + Doc?.Path + Doc?.Name, Speckle.Core.Models.Utilities.HashingFuctions.MD5);
+    }
+
+    public override string GetDocumentLocation() => Doc?.Path;
+
+    public override string GetFileName() => Doc?.Name;
 
     public override List<string> GetSelectedObjects()
     {
@@ -142,11 +145,35 @@ namespace SpeckleRhino
     public override List<ISelectionFilter> GetSelectionFilters()
     {
       var layers = Doc.Layers.ToList().Select(layer => layer.Name).ToList();
+
       return new List<ISelectionFilter>()
       {
-         new ElementsSelectionFilter { Name = "Selection", Icon = "Mouse", Selection = GetSelectedObjects()},
+         new ListSelectionFilter { Name = "Layers", Icon = "Filter", Description = "Selects objects based on their layers.", Values = layers }
       };
     }
+
+    public override void SelectClientObjects(string args)
+    {
+      throw new NotImplementedException();
+    }
+
+    private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
+    {
+      if (progress == null)
+      {
+        return;
+      }
+
+      Execute.PostToUIThread(() =>
+      {
+        progress.ProgressDict = dict;
+        progress.Value = dict.Values.Last();
+      });
+    }
+
+    #endregion
+
+    #region receiving 
 
     public override async Task<StreamState> ReceiveStream(StreamState state)
     {
@@ -154,24 +181,32 @@ namespace SpeckleRhino
       var converter = kit.LoadConverter(Applications.Rhino);
 
       var myStream = await state.Client.StreamGet(state.Stream.id);
-      var commit = myStream.branches.items[0].commits.items[0];
+      var commit = state.Commit;
 
-      if (state.CancellationToken.IsCancellationRequested)
+      if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return null;
       }
 
+      Exceptions.Clear();
+
       var commitObject = await Operations.Receive(
         commit.referencedObject,
-        state.CancellationToken,
+        state.CancellationTokenSource.Token,
         new ServerTransport(state.Client.Account, state.Stream.id),
         onProgressAction: d => UpdateProgress(d, state.Progress),
-        onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => state.Progress.Maximum = num)
+        onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => state.Progress.Maximum = num),
+        onErrorAction: (message, exception) => { Exceptions.Add(exception); }
         );
+
+      if(Exceptions.Count != 0)
+      {
+        RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
+      }
 
       var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {myStream.name}");
 
-      var layerName = $"{myStream.name} @ {commit.id}";
+      var layerName = $"{myStream.name}: {state.Branch.name} @ {commit.id}";
       layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty); // Rhino doesn't like emojis in layer names :( 
 
       var existingLayer = Doc.Layers.FindName(layerName);
@@ -219,11 +254,12 @@ namespace SpeckleRhino
             }
             else
             {
-              var newLayer = new Layer() { Color = System.Drawing.Color.Gray, Name = linkName };
+              var newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = linkName };
               if (ancestors.Count != 0)
               {
                 newLayer.ParentLayerId = ancestors.Last().Id;
-              } else
+              }
+              else
               {
                 newLayer.ParentLayerId = layer.ParentLayerId;
               }
@@ -236,11 +272,11 @@ namespace SpeckleRhino
         }
         else
         {
-          Doc.Layers.Add(layer);
+          layer.Index = Doc.Layers.Add(layer);
         }
       }
 
-      layer = Doc.Layers.FindName(layer.Name);
+      layer = Doc.Layers.FindIndex(layer.Index);
 
       if (obj is Base baseItem)
       {
@@ -298,31 +334,15 @@ namespace SpeckleRhino
       }
     }
 
-    public override void RemoveObjectsFromClient(string args)
-    {
-      throw new NotImplementedException();
-    }
+    #endregion
 
-    public override void RemoveSelectionFromClient(string args)
-    {
-      throw new NotImplementedException();
-    }
-
-    // TODO: remark: ui should not delete streams from the server, rather just from the file?
-    public override void RemoveStream(string streamId)
-    {
-      Doc.Strings.Delete("speckle", streamId);
-    }
-
-    public override void SelectClientObjects(string args)
-    {
-      throw new NotImplementedException();
-    }
+    #region sending
 
     public override async Task<StreamState> SendStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Rhino);
+      Exceptions.Clear();
 
       var commitObj = new Base();
 
@@ -331,9 +351,21 @@ namespace SpeckleRhino
 
       int objCount = 0;
 
-      foreach (var placeholder in state.Placeholders)
+      // TODO: check for filters and trawl the doc.
+      if (state.Filter != null)
       {
-        if (state.CancellationToken.IsCancellationRequested)
+        state.Objects = GetObjectsFromFilter(state.Filter);
+      }
+
+      if (state.Objects.Count == 0)
+      {
+        RaiseNotification("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
+        return state;
+      }
+
+      foreach (var placeholder in state.Objects)
+      {
+        if (state.CancellationTokenSource.Token.IsCancellationRequested)
         {
           return null;
         }
@@ -367,7 +399,7 @@ namespace SpeckleRhino
         objCount++;
       }
 
-      if (state.CancellationToken.IsCancellationRequested)
+      if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return null;
       }
@@ -379,62 +411,70 @@ namespace SpeckleRhino
 
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
-      var hasErrors = false;
       var commitObjId = await Operations.Send(
         commitObj,
-        state.CancellationToken,
+        state.CancellationTokenSource.Token,
         transports,
         onProgressAction: dict => UpdateProgress(dict, state.Progress),
-        onErrorAction: (err, exception) => { hasErrors = true; /* TODO: a wee bit nicer handling here; plus request cancellation! */ }
+        /* TODO: a wee bit nicer handling here; plus request cancellation! */
+        onErrorAction: (err, exception) => { Exceptions.Add(exception); }
         );
 
-      if (hasErrors)
+      if (Exceptions.Count != 0)
       {
+        RaiseNotification($"Failed to send: \n {Exceptions.Last().Message}");
         return null;
       }
 
-      var res = await client.CommitCreate(new CommitCreateInput()
+      var actualCommit = new CommitCreateInput
       {
         streamId = streamId,
         objectId = commitObjId,
-        branchName = "main",
-        message = $"Pushed {objCount} elements from Rhino."
-      });
+        branchName = state.Branch.name,
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from Rhino."
+      };
 
-      state.Stream = await client.StreamGet(streamId);
-      // state.Placeholders = new List<Base>(); 
-      // ask izzy: confused re the demarcation between state.objects, state.placeholders, etc. seems like
-      // the above clears the set selection of a stream. 
-      UpdateStream(state);
+      if (state.PreviousCommitId != null) { actualCommit.previousCommitIds = new List<string>() { state.PreviousCommitId }; }
 
-      RaiseNotification($"{objCount} objects sent to Speckle 🦏 + 🚀");
+      try
+      {
+        var res = await client.CommitCreate(actualCommit);
+
+        var updatedStream = await client.StreamGet(streamId);
+        state.Branches = updatedStream.branches.items;
+        state.Stream.name = updatedStream.name;
+        state.Stream.description = updatedStream.description;
+
+        PersistAndUpdateStreamInFile(state);
+        RaiseNotification($"{objCount} objects sent to {state.Stream.name}.");
+      } 
+      catch(Exception e)
+      {
+        Globals.Notify($"Failed to create commit.\n{e.Message}");
+      }
 
       return state;
     }
 
-    public override void UpdateStream(StreamState state)
+    private List<Base> GetObjectsFromFilter(ISelectionFilter filter)
     {
-      var filter = state.Filter;
-      var objects = new List<Base>();
-
-      switch (state.Filter)
+      switch (filter)
       {
-        case ElementsSelectionFilter selFilter:
-          objects = selFilter.Selection.Select(id => new Base { applicationId = id }).ToList();
-          break;
+        case ListSelectionFilter f:
+          List<Base> objs = new List<Base>();
+          foreach (var layerName in f.Selection)
+          {
+            var docObjs = Doc.Objects.FindByLayer(layerName).Select(o => new Base { applicationId = o.Id.ToString() });
+            objs.AddRange(docObjs);
+          }
+          return objs;
+        default:
+          RaiseNotification("Filter type is not supported in this app. Why did the developer implement it in the first place?");
+          return new List<Base>();
       }
-      state.Placeholders = objects;
-      Doc.Strings.SetString("speckle", state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
-    private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
-    {
-      if (progress == null)
-      {
-        return;
-      }
+    #endregion
 
-      Execute.PostToUIThread(() => progress.Value = dict.Values.Last());
-    }
   }
 }

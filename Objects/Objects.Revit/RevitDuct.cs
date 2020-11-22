@@ -6,13 +6,15 @@ using Objects.Geometry;
 
 namespace Objects.Revit
 {
-  public class RevitDuct : Duct, IRevitElement
+  public class RevitDuct : RevitElement, IDuct
   {
-    public string family { get; set; }
-    public string type { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
-    public string elementId { get; set; }
-    public RevitLevel level { get; set; }
+    public double width { get; set; }
+    public double height { get; set; }
+    public double diameter { get; set; }
+    public double length { get; set; }
+    public double velocity { get; set; }
+    public string systemName { get; set; }
+    public string systemType { get; set; }
+    public Line baseLine { get; set; }
   }
 }

@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
   {
     // TODO: (OLD)  A polycurve spawning multiple walls is not yet handled properly with diffing, etc.
     // TODO: (OLD)  Most probably, just get rid of the polyline wall handling stuff. It's rather annyoing and confusing...
-    public DB.Wall WallToNative(Wall speckleWall)
+    public DB.Wall WallToNative(IWall speckleWall)
     {
 
       if (speckleWall.baseLine == null)
@@ -26,17 +26,17 @@ namespace Objects.Converter.Revit
       }
 
       DB.Wall revitWall = null;
-      WallType wallType = null;
+      WallType wallType = GetElementType<WallType>(speckleWall);
       DB.Level level = null;
       var structural = false;
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0); //TODO: support poliline/polycurve walls
 
       //comes from revit or schema builder, has these props
-      if (speckleWall is RevitWall rw)
+      var speckleRevitWall = speckleWall as RevitWall;
+      if (speckleRevitWall != null)
       {
-        wallType = GetElementByTypeAndName<WallType>(rw.type);
-        level = LevelToNative(rw.level);
-        structural = rw.structural;
+        level = GetLevelByName(speckleRevitWall.level);
+        structural = speckleRevitWall.structural;
       }
       else
       {
@@ -69,7 +69,7 @@ namespace Objects.Converter.Revit
 
       if (speckleWall is RevitWallByLine rwbl)
       {
-        DB.Level topLevel = LevelToNative(rwbl.topLevel);
+        DB.Level topLevel = GetLevelByName(rwbl.topLevel);
         TrySetParam(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE, topLevel);
       }
 
@@ -83,13 +83,13 @@ namespace Objects.Converter.Revit
         revitWall.Flip();
       }
 
-      if (speckleWall is IRevitElement item)
-        SetElementParams(revitWall, item);
+      if (speckleRevitWall != null)
+        SetElementParams(revitWall, speckleRevitWall);
 
       return revitWall;
     }
 
-    public IRevitElement WallToSpeckle(DB.Wall revitWall)
+    public IRevit WallToSpeckle(DB.Wall revitWall)
     {
       //REVIT PARAMS > SPECKLE PROPS
       var heightParam = revitWall.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM);
@@ -102,10 +102,10 @@ namespace Objects.Converter.Revit
 
       var baseGeometry = LocationToSpeckle(revitWall);
       var height = (double)ParameterToSpeckle(heightParam);
-      var level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
-      var topLevel = (RevitLevel)ParameterToSpeckle(topLevelParam); //TODO: check if it works
+      var level = ConvertAndCacheLevel(baseLevelParam);
+      var topLevel = ConvertAndCacheLevel(topLevelParam);
 
-      IRevitElement speckleWall = null;
+      IRevit speckleWall = null;
 
       if (baseGeometry is Geometry.Point)
       {

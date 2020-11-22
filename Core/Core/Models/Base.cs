@@ -6,6 +6,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Speckle.Core.Api;
+using Speckle.Core.Kits;
 using Speckle.Core.Transports;
 
 namespace Speckle.Core.Models
@@ -24,6 +25,7 @@ namespace Speckle.Core.Models
     /// <summary>
     /// A speckle object's id is an unique hash based on its properties. <b>NOTE: this field will be null unless the object was deserialised from a source. Use the <see cref="GetId(bool)"/> function to get it.</b>
     /// </summary>
+    [SchemaIgnore]
     public virtual string id
     {
       get; set;
@@ -47,6 +49,7 @@ namespace Speckle.Core.Models
       return JObject.Parse(obj).GetValue("id").ToString();
     }
 
+    [SchemaIgnore]
     public long GetTotalChildrenCount()
     {
       var parsed = new HashSet<int>();
@@ -164,11 +167,13 @@ namespace Speckle.Core.Models
     /// <summary>
     /// This property will only be populated if the object is retreieved from storage. Use <see cref="GetTotalChildrenCount"/> otherwise. 
     /// </summary>
+    [SchemaIgnore]
     public long totalChildrenCount { get; set; }
-    
+
     /// <summary>
     /// Secondary, ideally host application driven, object identifier.
     /// </summary>
+    [SchemaIgnore]
     public string applicationId { get; set; }
 
     private string __type;
@@ -178,6 +183,7 @@ namespace Speckle.Core.Models
     /// from its assembly name and inheritance.
     /// TODO: add versioning capabilities.
     /// </summary>
+    [SchemaIgnore]
     public string speckle_type
     {
       get

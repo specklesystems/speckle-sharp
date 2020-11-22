@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Opening OpeningToNative(Opening speckleOpening)
+    public DB.Opening OpeningToNative(IOpening speckleOpening)
     {
       var baseCurves = CurveToNative(speckleOpening.outline);
 
@@ -45,8 +45,8 @@ namespace Objects.Converter.Revit
 
         case RevitShaft rs:
           {
-            var bottomLevel = LevelToNative(rs.level);
-            var topLevel = rs.topLevel != null ? LevelToNative(rs.topLevel) : null;
+            var bottomLevel = GetLevelByName(rs.level);
+            var topLevel = !string.IsNullOrEmpty(rs.topLevel) ? GetLevelByName(rs.topLevel) : null;
             revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
             break;
           }
@@ -56,13 +56,14 @@ namespace Objects.Converter.Revit
           throw new Exception("Opening type not supported");
       }
 
-      if (speckleOpening is IRevitElement ire)
-        SetElementParams(revitOpening, ire);
+
+      if (speckleOpening is RevitOpening ro)
+        SetElementParams(revitOpening, ro);
 
       return revitOpening;
     }
 
-    public Opening OpeningToSpeckle(DB.Opening revitOpening)
+    public IOpening OpeningToSpeckle(DB.Opening revitOpening)
     {
       //REVIT PARAMS > SPECKLE PROPS
       var baseLevelParam = revitOpening.get_Parameter(BuiltInParameter.WALL_BASE_CONSTRAINT);
@@ -96,7 +97,7 @@ namespace Objects.Converter.Revit
         {
           speckleOpening = new RevitShaft();
           if (topLevelParam != null)
-            ((RevitShaft)speckleOpening).topLevel = (RevitLevel)ParameterToSpeckle(topLevelParam);
+            ((RevitShaft)speckleOpening).topLevel = ConvertAndCacheLevel(topLevelParam);
         }
 
 
@@ -111,7 +112,7 @@ namespace Objects.Converter.Revit
       }
 
       if (baseLevelParam != null)
-        speckleOpening.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
+        speckleOpening.level = ConvertAndCacheLevel(baseLevelParam);
 
       speckleOpening.type = revitOpening.Name;
 

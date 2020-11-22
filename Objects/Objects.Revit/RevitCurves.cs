@@ -3,25 +3,43 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Objects.BuiltElements;
+using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
-  public class ModelCurve : Base
+  public class ModelCurve : Base, IRevit
   {
     public ICurve baseCurve { get; set; }
     public string lineStyle { get; set; }
-    //public Dictionary<string, object> parameters { get; set; }
-  }
 
-  public class DetailCurve : Base
-  {
-    public ICurve baseCurve { get; set; }
-    public string lineStyle { get; set; }
-  }
-
-  public class RoomBoundaryLine : Base
-  {
-    public ICurve baseCurve { get; set; }
+    [SchemaOptional]
     public Dictionary<string, object> parameters { get; set; }
+
+    [SchemaIgnore]
+    public string elementId { get; set; }
+  }
+
+  public class DetailCurve : Base, IRevit
+  {
+    public ICurve baseCurve { get; set; }
+    public string lineStyle { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
+    [SchemaIgnore]
+    public string elementId { get; set; }
+  }
+
+  public class RoomBoundaryLine : Base, IRevit
+  {
+    public ICurve baseCurve { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
+    [SchemaIgnore]
+    public string elementId { get; set; }
+
   }
 }

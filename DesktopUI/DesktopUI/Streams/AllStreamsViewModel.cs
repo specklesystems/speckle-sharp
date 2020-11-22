@@ -1,8 +1,9 @@
-﻿using System;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
@@ -11,8 +12,7 @@ using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {
-  public class AllStreamsViewModel : Screen, IHandle<StreamAddedEvent>, IHandle<StreamUpdatedEvent>, IHandle<
-    StreamRemovedEvent>, IHandle<ApplicationEvent>, IHandle<ReloadRequestedEvent>
+  public class AllStreamsViewModel : Screen, IHandle<StreamAddedEvent>, IHandle<StreamUpdatedEvent>, IHandle<StreamRemovedEvent>, IHandle<ApplicationEvent>, IHandle<ReloadRequestedEvent>, IHandle<UpdateSelectionCountEvent>
   {
     private readonly IViewManager _viewManager;
     private readonly IStreamViewModelFactory _streamViewModelFactory;
@@ -20,29 +20,8 @@ namespace Speckle.DesktopUI.Streams
     private readonly IEventAggregator _events;
     private readonly ConnectorBindings _bindings;
 
-    public AllStreamsViewModel(
-      IViewManager viewManager,
-      IStreamViewModelFactory streamViewModelFactory,
-      IDialogFactory dialogFactory,
-      IEventAggregator events,
-      StreamsRepository streamsRepo,
-      ConnectorBindings bindings)
-    {
-      _repo = streamsRepo;
-      _events = events;
-      DisplayName = "Home";
-      _viewManager = viewManager;
-      _streamViewModelFactory = streamViewModelFactory;
-      _dialogFactory = dialogFactory;
-      _bindings = bindings;
-
-      StreamList = LoadStreams();
-
-      _events.Subscribe(this);
-    }
-
     private StreamsRepository _repo;
-    private BindableCollection<StreamState> _streamList;
+    private BindableCollection<StreamState> _streamList = new BindableCollection<StreamState>();
     private Stream _selectedStream;
     private Branch _selectedBranch;
     private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
@@ -50,8 +29,14 @@ namespace Speckle.DesktopUI.Streams
     public BindableCollection<StreamState> StreamList
     {
       get => _streamList;
-      set => SetAndNotify(ref _streamList, value);
+      set 
+      {
+        SetAndNotify(ref _streamList, value);
+        NotifyOfPropertyChange(nameof(EmptyState));
+      }
     }
+
+    public bool EmptyState { get => StreamList.Count == 0; }
 
     public Stream SelectedStream
     {
@@ -65,11 +50,34 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _selectedBranch, value);
     }
 
+    private int _selectionCount = 0;
+
+    public int SelectionCount
+    {
+      get => _selectionCount;
+      set => SetAndNotify(ref _selectionCount, value);
+    }
+
+    public AllStreamsViewModel(IViewManager viewManager, IStreamViewModelFactory streamViewModelFactory, IDialogFactory dialogFactory, IEventAggregator events, StreamsRepository streamsRepo, ConnectorBindings bindings)
+    {
+      _repo = streamsRepo;
+      _events = events;
+      DisplayName = bindings.GetHostAppName() + " streams";
+      _viewManager = viewManager;
+      _streamViewModelFactory = streamViewModelFactory;
+      _dialogFactory = dialogFactory;
+      _bindings = bindings;
+
+      StreamList = LoadStreams();
+
+      _events.Subscribe(this);
+
+      Globals.Repo = _repo;
+    }
+
     private BindableCollection<StreamState> LoadStreams()
     {
-      var streams = new BindableCollection<StreamState>(_bindings.GetFileContext());
-      if ( streams.Count == 0 )
-        streams = _repo.LoadTestStreams();
+      var streams = new BindableCollection<StreamState>(_bindings.GetStreamsInFile());
 
       return streams;
     }
@@ -79,54 +87,44 @@ namespace Speckle.DesktopUI.Streams
       Tracker.TrackPageview(Tracker.STREAM_DETAILS);
       var item = _streamViewModelFactory.CreateStreamViewModel();
       item.StreamState = state;
-      // get main branch for now
-      // TODO allow user to select branch
-      item.Branch = _repo.GetMainBranch(state.Stream.branches.items);
-      var parent = ( StreamsHomeViewModel ) Parent;
-      parent.ActivateItem(item);
+      ((RootViewModel)Parent).GoToStreamViewPage(item);
     }
 
-    public async void Send(StreamState state)
+    public void SwitchBranch(BranchContextMenuItem.BranchSwitchCommandArgument args) => args.RootStreamState.SwitchBranch(args.Branch);
+
+    public void SwitchCommit(CommitContextMenuItem.CommitSwitchCommandArgument args) => args.RootStreamState.SwitchCommit(args.Commit);
+
+    public void SwapState(StreamState state)
     {
-      state.IsSending = true;
-      Tracker.TrackPageview(Tracker.SEND);
-      _cancellationToken = new CancellationTokenSource();
-      state.CancellationToken = _cancellationToken.Token;
-
-      var res = await Task.Run(() => _repo.ConvertAndSend(state));
-      if ( res != null )
-      {
-        var index = StreamList.IndexOf(state);
-        StreamList[ index ] = res;
-        StreamList.Refresh();
-      }
-
-      state.Progress.ResetProgress();
-      state.IsSending = false;
+      state.SwapState();
+      StreamList.Refresh();
     }
 
-    public async void Receive(StreamState state)
+    public async void ShowStreamUpdateObjectsDialog(StreamState state)
     {
-      state.IsReceiving = true;
-      Tracker.TrackPageview(Tracker.RECEIVE);
-      _cancellationToken = new CancellationTokenSource();
-      state.CancellationToken = _cancellationToken.Token;
+      Tracker.TrackPageview("stream", "dialog-update");
+      var viewmodel = _dialogFactory.StreamUpdateObjectsDialogView();
+      viewmodel.StreamState = state;
+      var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
-      var res = await Task.Run(() => _repo.ConvertAndReceive(state));
-      if ( res != null )
-      {
-        state = res;
-        StreamList.Refresh();
-      }
-
-      state.Progress.ResetProgress();
-      state.IsReceiving = false;
+      await DialogHost.Show(view, "RootDialogHost");
     }
 
-    public void CancelToken()
-    {
-      _cancellationToken.Cancel();
-    }
+    public async void Send(StreamState state) => state.Send();
+
+    public async void Receive(StreamState state) => state.Receive();
+
+    #region Selection events
+
+    public void SetObjectSelection(StreamState state) => state.SetObjectSelection();
+
+    public void AddObjectSelection(StreamState state) => state.AddObjectSelection();
+
+    public void RemoveObjectSelection(StreamState state) => state.RemoveObjectSelection();
+
+    public void ClearObjectSelection(StreamState state) => state.ClearObjectSelection();
+
+    #endregion
 
     public async void ShowStreamCreateDialog()
     {
@@ -138,32 +136,18 @@ namespace Speckle.DesktopUI.Streams
       var result = await DialogHost.Show(view, "RootDialogHost");
     }
 
-    public async void ShowShareDialog(StreamState state)
-    {
-      Tracker.TrackPageview("stream", "dialog-share");
-      var viewmodel = _dialogFactory.CreateShareStreamDialogViewModel();
-      viewmodel.StreamState = state;
-      var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
-
-      var result = await DialogHost.Show(view, "RootDialogHost");
-    }
-
-    public void CopyStreamId(string streamId)
-    {
-      Clipboard.SetText(streamId);
-      _events.Publish(new ShowNotificationEvent() {Notification = "Stream ID copied to clipboard!"});
-    }
-
-
     public void OpenStreamInWeb(StreamState state)
     {
       Tracker.TrackPageview("stream", "web");
       Link.OpenInBrowser($"{state.ServerUrl}/streams/{state.Stream.id}");
     }
 
+    #region Application events
+
     public void Handle(StreamAddedEvent message)
     {
       StreamList.Insert(0, message.NewStream);
+      NotifyOfPropertyChange(nameof(EmptyState));
     }
 
     public void Handle(StreamUpdatedEvent message)
@@ -175,26 +159,28 @@ namespace Speckle.DesktopUI.Streams
     {
       var state = StreamList.First(s => s.Stream.id == message.StreamId);
       StreamList.Remove(state);
+      NotifyOfPropertyChange(nameof(EmptyState));
     }
 
     public void Handle(ApplicationEvent message)
     {
-      switch ( message.Type )
+      switch (message.Type)
       {
         case ApplicationEvent.EventType.DocumentClosed:
-        {
-          StreamList.Clear();
-          break;
-        }
+          {
+            StreamList.Clear();
+            break;
+          }
         case ApplicationEvent.EventType.DocumentModified:
-        {
-          // warn that stream data may be expired
-          break;
-        }
+          {
+            // warn that stream data may be expired
+            break;
+          }
         case ApplicationEvent.EventType.DocumentOpened:
         case ApplicationEvent.EventType.ViewActivated:
           StreamList.Clear();
           StreamList = new BindableCollection<StreamState>(message.DynamicInfo);
+          StreamList.Refresh();
           break;
         case ApplicationEvent.EventType.ApplicationIdling:
           break;
@@ -207,5 +193,112 @@ namespace Speckle.DesktopUI.Streams
     {
       StreamList = LoadStreams();
     }
+
+    public void Handle(UpdateSelectionCountEvent message)
+    {
+      SelectionCount = message.SelectionCount;
+    }
+
+    #endregion
   }
+
+  /// <summary>
+  /// Opens context menus on left click and positions them directly under the button.
+  /// </summary>
+  public static class ContextMenuLeftClickBehavior
+  {
+    public static bool GetIsLeftClickEnabled(DependencyObject obj)
+    {
+      return (bool)obj.GetValue(IsLeftClickEnabledProperty);
+    }
+
+    public static void SetIsLeftClickEnabled(DependencyObject obj, bool value)
+    {
+      obj.SetValue(IsLeftClickEnabledProperty, value);
+    }
+
+    public static readonly DependencyProperty IsLeftClickEnabledProperty = DependencyProperty.RegisterAttached(
+        "IsLeftClickEnabled",
+        typeof(bool),
+        typeof(ContextMenuLeftClickBehavior),
+        new UIPropertyMetadata(false, OnIsLeftClickEnabledChanged));
+
+    private static void OnIsLeftClickEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+      var uiElement = sender as UIElement;
+
+      if (uiElement != null)
+      {
+        bool IsEnabled = e.NewValue is bool && (bool)e.NewValue;
+
+        if (IsEnabled)
+        {
+          if (uiElement is ButtonBase)
+          {
+            ((ButtonBase)uiElement).Click += OnMouseLeftButtonUp;
+          }
+          else
+          {
+            uiElement.MouseLeftButtonUp += OnMouseLeftButtonUp;
+          }
+        }
+        else
+        {
+          if (uiElement is ButtonBase)
+          {
+            ((ButtonBase)uiElement).Click -= OnMouseLeftButtonUp;
+          }
+          else
+          {
+            uiElement.MouseLeftButtonUp -= OnMouseLeftButtonUp;
+          }
+        }
+      }
+    }
+
+    private static void OnMouseLeftButtonUp(object sender, RoutedEventArgs e)
+    {
+      Debug.Print("OnMouseLeftButtonUp");
+      var fe = sender as FrameworkElement;
+      if (fe != null)
+      {
+        // if we use binding in our context menu, then it's DataContext won't be set when we show the menu on left click
+        // (it seems setting DataContext for ContextMenu is hardcoded in WPF when user right clicks on a control, although I'm not sure)
+        // so we have to set up ContextMenu.DataContext manually here
+        if (fe.ContextMenu.DataContext == null)
+        {
+          fe.ContextMenu.SetBinding(FrameworkElement.DataContextProperty, new Binding { Source = fe.DataContext });
+        }
+        fe.ContextMenu.PlacementTarget = fe;
+        //fe.ContextMenu.
+        fe.ContextMenu.Placement = PlacementMode.Bottom;
+        //fe.ContextMenu.HorizontalOffset = 0;
+        //fe.ContextMenu.VerticalOffset = 0;
+        if (fe.ContextMenu.IsOpen)
+        {
+          Debug.WriteLine("WASD OPEN");
+        }
+        fe.ContextMenu.IsOpen = true;
+      }
+    }
+  }
+
+  public class BindingProxy : Freezable
+  {
+    protected override Freezable CreateInstanceCore()
+    {
+      return new BindingProxy();
+    }
+
+    public object Data
+    {
+      get { return GetValue(DataProperty); }
+      set { SetValue(DataProperty, value); }
+    }
+
+    public static readonly DependencyProperty DataProperty =
+        DependencyProperty.Register("Data", typeof(object), typeof(BindingProxy), new UIPropertyMetadata(null));
+  }
+
+
 }

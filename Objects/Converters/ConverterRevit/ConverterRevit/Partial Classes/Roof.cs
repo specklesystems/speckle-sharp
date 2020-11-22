@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element RoofToNative(Roof speckleRoof)
+    public DB.Element RoofToNative(IRoof speckleRoof)
     {
       if (speckleRoof.outline == null)
       {
@@ -27,20 +27,18 @@ namespace Objects.Converter.Revit
       DB.RoofBase revitRoof = null;
       DB.Level level = null;
       var outline = CurveToNative(speckleRoof.outline);
-      var type = "";
 
       var speckleRevitRoof = speckleRoof as RevitRoof;
       if (speckleRevitRoof != null)
       {
-        level = LevelToNative(speckleRevitRoof.level);
-        type = speckleRevitRoof.type;
+        level = GetLevelByName(speckleRevitRoof.level);
       }
       else
       {
         level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
       }
 
-      var roofType = GetElementByTypeAndName<RoofType>(type);
+      var roofType = GetElementType<RoofType>(speckleRoof);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleRoof.applicationId, speckleRoof.speckle_type);
@@ -80,7 +78,7 @@ namespace Objects.Converter.Revit
             }
             if (speckleFootprintRoof.cutOffLevel != null)
             {
-              var cutOffLevel = LevelToNative(speckleFootprintRoof.cutOffLevel);
+              var cutOffLevel = GetLevelByName(speckleFootprintRoof.cutOffLevel);
               TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM, cutOffLevel);
             }
 
@@ -103,8 +101,8 @@ namespace Objects.Converter.Revit
       {
         ConversionErrors.Add(new Error("Could not create holes in roof", ex.Message));
       }
-      if (speckleRoof is IRevitElement ire)
-        SetElementParams(revitRoof, ire);
+      if (speckleRevitRoof != null)
+        SetElementParams(revitRoof, speckleRevitRoof);
       return revitRoof;
     }
 
@@ -117,7 +115,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private Element RoofToSpeckle(DB.RoofBase revitRoof)
+    private IRoof RoofToSpeckle(DB.RoofBase revitRoof)
     {
       var profiles = GetProfiles(revitRoof);
 
@@ -132,8 +130,8 @@ namespace Objects.Converter.Revit
             var cutOffLevelParam = footPrintRoof.get_Parameter(BuiltInParameter.ROOF_UPTO_LEVEL_PARAM);
             var speckleFootprintRoof = new RevitFootprintRoof
             {
-              level = (RevitLevel)ParameterToSpeckle(baseLevelParam),
-              cutOffLevel = (RevitLevel)ParameterToSpeckle(cutOffLevelParam)
+              level = ConvertAndCacheLevel(baseLevelParam),
+              cutOffLevel = ConvertAndCacheLevel(cutOffLevelParam)
             };
 
             speckleRoof = speckleFootprintRoof;
@@ -150,7 +148,7 @@ namespace Objects.Converter.Revit
             var plane = revitExtrusionRoof.GetProfile().get_Item(0).SketchPlane.GetPlane();
             speckleExtrusionRoof.referenceLine = new Line(PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate())), PointToSpeckle(plane.Origin)); //TODO: test!
             var baseLevelParam = revitExtrusionRoof.get_Parameter(BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM);
-            speckleExtrusionRoof.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
+            speckleExtrusionRoof.level = ConvertAndCacheLevel(baseLevelParam);
             speckleRoof = speckleExtrusionRoof;
             break;
           }

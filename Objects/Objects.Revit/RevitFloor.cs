@@ -2,18 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 using Objects.BuiltElements;
+using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
-  public class RevitFloor : Floor, IRevitElement
+  public class RevitFloor : RevitElement, IFloor
   {
-    public string family { get; set; }
-    public string type { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
-    public string elementId { get; set; }
+    public ICurve outline { get; set; }
+    public List<ICurve> voids { get; set; } = new List<ICurve>();
 
-    public RevitLevel level { get; set; }
+    [SchemaOptional]
     public bool structural { get; set; }
   }
 }

@@ -20,7 +20,7 @@ namespace Speckle.DesktopUI
     protected override void OnStart()
     {
       base.OnStart();
-      Core.Logging.Setup.Init(Bindings.GetApplicationHostName());
+      Core.Logging.Setup.Init(Bindings.GetHostAppName());
       Tracker.TrackPageview(Tracker.SESSION_START);
       InitializeMaterialDesign();
       LoadThemeResources();

@@ -10,26 +10,26 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
+    public DB.Element BeamToNative(IBeam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
       if (speckleBeam.baseLine == null)
       {
         throw new Exception("Only line based Beams are currently supported.");
       }
 
-      string familyName = "";
-      DB.FamilySymbol familySymbol = GetFamilySymbol(speckleBeam);
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
       var baseLine = CurveToNative(speckleBeam.baseLine).get_Item(0);
       DB.Level level = null;
       DB.FamilyInstance revitBeam = null;
 
       //comes from revit or schema builder, has these props
-      if (speckleBeam is RevitBeam rb)
+      var speckleRevitBeam = speckleBeam as RevitBeam;
+      if (speckleRevitBeam != null)
       {
-        familyName = rb.family;
-        level = LevelToNative(rb.level);
+        level = GetLevelByName(speckleRevitBeam.level);
       }
-      else
+
+      if (level == null)
       {
         level = LevelToNative(LevelFromCurve(baseLine));
       }
@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
           var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
 
           // if family changed, tough luck. delete and let us create a new one.
-          if (familyName != revitType.FamilyName)
+          if (familySymbol.FamilyName != revitType.FamilyName)
           {
             Doc.Delete(docObj.Id);
           }
@@ -53,7 +53,7 @@ namespace Objects.Converter.Revit
             (revitBeam.Location as LocationCurve).Curve = baseLine;
 
             // check for a type change
-            if (!string.IsNullOrEmpty(familyName) && familyName != revitType.Name)
+            if (!string.IsNullOrEmpty(familySymbol.FamilyName) && familySymbol.FamilyName != revitType.Name)
               revitBeam.ChangeTypeId(familySymbol.Id);
           }
         }
@@ -72,13 +72,13 @@ namespace Objects.Converter.Revit
       //reference level, only for beams
       TrySetParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
 
-      if (speckleBeam is IRevitElement item)
-        SetElementParams(revitBeam, item);
+      if (speckleRevitBeam != null)
+        SetElementParams(revitBeam, speckleRevitBeam);
 
       return revitBeam;
     }
 
-    private IRevitElement BeamToSpeckle(DB.FamilyInstance revitBeam)
+    private IRevit BeamToSpeckle(DB.FamilyInstance revitBeam)
     {
       var baseGeometry = LocationToSpeckle(revitBeam);
       var baseLine = baseGeometry as ICurve;
@@ -92,7 +92,7 @@ namespace Objects.Converter.Revit
       var speckleBeam = new RevitBeam();
       speckleBeam.type = Doc.GetElement(revitBeam.GetTypeId()).Name;
       speckleBeam.baseLine = baseLine;
-      speckleBeam.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
+      speckleBeam.level = ConvertAndCacheLevel(baseLevelParam);
       speckleBeam.displayMesh = MeshUtils.GetElementMesh(revitBeam, Scale);
 
       AddCommonRevitProps(speckleBeam, revitBeam);

@@ -8,7 +8,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element BraceToNative(Brace speckleBrace)
+    public DB.Element BraceToNative(IBrace speckleBrace)
     {
       //reuse logic in Beam class, at these are basically the same thing
       if (speckleBrace is RevitBrace rb)
@@ -33,7 +33,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private IRevitElement BraceToSpeckle(DB.FamilyInstance myFamily)
+    private IRevit BraceToSpeckle(DB.FamilyInstance myFamily)
     {
       var myBeam = BeamToSpeckle(myFamily) as RevitBeam;
 

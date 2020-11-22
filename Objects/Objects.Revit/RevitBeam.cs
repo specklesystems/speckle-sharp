@@ -3,18 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using Objects.BuiltElements;
 using Objects.Geometry;
+using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
-  public class RevitBeam : Beam, IRevitElement
+  [SchemaDescription("A Revit beam by line")]
+  public class RevitBeam : RevitElement, IBeam
   {
-    public string family { get; set; }
-    public string type { get; set; }
-    public RevitLevel level { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
-    public string elementId { get; set; }
-
-
+    public ICurve baseLine { get; set; }
   }
 }

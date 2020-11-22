@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element FloorToNative(Floor speckleFloor)
+    public DB.Element FloorToNative(IFloor speckleFloor)
     {
       if (speckleFloor.outline == null)
       {
@@ -26,22 +26,20 @@ namespace Objects.Converter.Revit
       DB.Floor revitFloor = null;
       bool structural = false;
       var outline = CurveToNative(speckleFloor.outline);
-      var type = "";
 
 
       var speckleRevitFloor = speckleFloor as RevitFloor;
       if (speckleRevitFloor != null)
       {
-        level = LevelToNative(speckleRevitFloor.level);
+        level = GetLevelByName(speckleRevitFloor.level);
         structural = speckleRevitFloor.structural;
-        type = speckleRevitFloor.type;
       }
       else
       {
         level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
       }
 
-      var floorType = GetElementByTypeAndName<FloorType>(type);
+      var floorType = GetElementType<FloorType>(speckleFloor);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleFloor.applicationId, speckleFloor.speckle_type);
@@ -86,7 +84,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private IRevitElement FloorToSpeckle(DB.Floor revitFloor)
+    private IRevit FloorToSpeckle(DB.Floor revitFloor)
     {
       var baseLevelParam = revitFloor.get_Parameter(BuiltInParameter.LEVEL_PARAM);
       var structuralParam = revitFloor.get_Parameter(BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);
@@ -97,7 +95,7 @@ namespace Objects.Converter.Revit
       speckleFloor.outline = profiles[0];
       if (profiles.Count > 1)
         speckleFloor.voids = profiles.Skip(1).ToList();
-      speckleFloor.level = (RevitLevel)ParameterToSpeckle(baseLevelParam);
+      speckleFloor.level = ConvertAndCacheLevel(baseLevelParam);
       speckleFloor.structural = (bool)ParameterToSpeckle(structuralParam);
 
       AddCommonRevitProps(speckleFloor, revitFloor);

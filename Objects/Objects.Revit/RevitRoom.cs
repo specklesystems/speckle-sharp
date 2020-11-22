@@ -3,18 +3,23 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Objects.BuiltElements;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace Objects.Revit
 {
-  public class RevitRoom : Room, IRevitElement
+  [SchemaIgnore]
+  public class RevitRoom : Element, IRoom, IRevit
   {
+    public string name { get; set; }
+    public string number { get; set; }
+    public double area { get; set; }
+    public double volume { get; set; }
+    public List<ICurve> voids { get; set; }
+    public ICurve outline { get; set; }
     public Point basePoint { get; set; }
-    public new ICurve outline { get; set; }
-    public string family { get; set; }
-    public string type { get; set; }
-    public RevitLevel level { get; set; }
+    public string level { get; set; }
     public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
     public string elementId { get; set; }
   }
 }

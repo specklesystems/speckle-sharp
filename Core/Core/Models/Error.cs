@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Speckle.Core.Models
 {
-  public class Error
+  public class Error : Exception
   {
     public string message { get; set; }
     public string details { get; set; }
@@ -19,6 +19,6 @@ namespace Speckle.Core.Models
       this.details = details;
     }
 
-  
+
   }
 }

@@ -3,23 +3,18 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Objects.BuiltElements;
+using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
-  public class RevitRoof : Roof, IRevitElement
-  {
-    public string family { get; set; }
-    public string type { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
-    public string elementId { get; set; }
+  [SchemaIgnore]
 
-    public RevitLevel level { get; set; }
+  public class RevitRoof : RevitElement, IRoof
+  {
+    public ICurve outline { get; set; }
+    public List<ICurve> voids { get; set; } = new List<ICurve>();
 
   }
-
-
-
   public class RevitExtrusionRoof : RevitRoof
   {
     public double start { get; set; }
@@ -29,6 +24,6 @@ namespace Objects.Revit
 
   public class RevitFootprintRoof : RevitRoof
   {
-    public RevitLevel cutOffLevel { get; set; }
+    public string cutOffLevel { get; set; }
   }
 }

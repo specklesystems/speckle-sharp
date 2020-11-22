@@ -25,8 +25,9 @@ namespace ConverterRevitTests
 
       foreach (var elem in fixture.RevitElements)
       {
-        var spkElem = kit.ConvertToSpeckle(elem) as IRevitElement;
-        AssertValidSpeckleElement(elem, spkElem);
+        var spkElem = kit.ConvertToSpeckle(elem);
+        if (spkElem is RevitElement re)
+          AssertValidSpeckleElement(elem, re);
       }
       Assert.Empty(kit.ConversionErrors);
     }
@@ -94,23 +95,23 @@ namespace ConverterRevitTests
       }
     }
 
-    internal void AssertValidSpeckleElement(DB.Element elem, IRevitElement spkElem)
+    internal void AssertValidSpeckleElement(DB.Element elem, RevitElement spkElem)
     {
       Assert.NotNull(elem);
       Assert.NotNull(spkElem);
       Assert.NotNull(spkElem.parameters);
       Assert.NotNull(spkElem.elementId);
+      Assert.NotNull(spkElem.type);
 
-      if (spkElem is IRevitElement spkRevit)
-      {
-        if (!(elem is DB.Architecture.Room || elem is DB.Mechanical.Duct))
-          Assert.Equal(elem.Name, spkRevit.type);
 
-        //Assert.NotNull(spkElem.baseGeometry);
-        if (!(spkElem is AdaptiveComponent) && !(spkElem is DirectShape))
-          Assert.NotNull(spkRevit.level);
-        //Assert.NotNull(spkRevit.displayMesh);
-      }
+      if (!(elem is DB.Architecture.Room || elem is DB.Mechanical.Duct))
+        Assert.Equal(elem.Name, spkElem.type);
+
+      //Assert.NotNull(spkElem.baseGeometry);
+
+      Assert.NotNull(spkElem.level);
+      //Assert.NotNull(spkRevit.displayMesh);
+
 
     }
 

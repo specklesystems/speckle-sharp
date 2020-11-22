@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleAc.applicationId, speckleAc.type);
 
       string familyName = speckleAc.GetMemberSafe("family", "");
-      DB.FamilySymbol familySymbol = GetFamilySymbol(speckleAc);
+      DB.FamilySymbol familySymbol = GetElementType<DB.FamilySymbol>(speckleAc);
       DB.FamilyInstance revitAc = null;
 
       //try update existing 
@@ -58,7 +58,7 @@ namespace Objects.Converter.Revit
       return revitAc;
     }
 
-    private IRevitElement AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
+    private IRevit AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
     {
       var speckleAc = new AdaptiveComponent();
       speckleAc.type = Doc.GetElement(revitAc.GetTypeId()).Name;

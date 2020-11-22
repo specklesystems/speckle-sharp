@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
       return revitDs;
     }
 
-    private IRevitElement DirectShapeToSpeckle(DB.DirectShape revitAc)
+    private IRevit DirectShapeToSpeckle(DB.DirectShape revitAc)
     {
       var speckleAc = new DirectShape();
       speckleAc.type = revitAc.Name;

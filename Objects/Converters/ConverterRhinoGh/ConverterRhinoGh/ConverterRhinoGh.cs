@@ -21,6 +21,10 @@ namespace Objects.Converter.RhinoGh
 
     public RhinoDoc Doc { get; private set; }
 
+    public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+
+    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
+
     public void SetContextDocument(object doc)
     {
       Doc = ( RhinoDoc ) doc;

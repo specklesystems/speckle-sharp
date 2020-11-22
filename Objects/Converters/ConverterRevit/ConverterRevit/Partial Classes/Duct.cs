@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Duct DuctToNative(Duct speckleDuct)
+    public DB.Duct DuctToNative(IDuct speckleDuct)
     {
       DB.Duct duct = null;
       var baseLine = LineToNative(speckleDuct.baseLine);
@@ -29,15 +29,17 @@ namespace Objects.Converter.Revit
       if (speckleRevitDuct != null)
       {
         type = speckleRevitDuct.type;
-        level = LevelToNative(speckleRevitDuct.level);
+        level = GetLevelByName(speckleRevitDuct.level);
       }
       else
       {
         level = LevelToNative(LevelFromCurve(baseLine));
       }
 
-      var ductType = GetElementByTypeAndName<DB.DuctType>(type);
-      var system = GetElementByTypeAndName<MechanicalSystemType>(speckleDuct.system);
+      var ductType = GetElementType<DB.DuctType>(speckleDuct);
+      var systemFamily = (speckleDuct is RevitDuct rd) ? rd.systemName : "";
+      //var systemType = (speckleDuct is RevitDuct rd2) ? rd2.systemType : "";
+      var system = GetElementType<MechanicalSystemType>(systemFamily, "");
 
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleDuct.applicationId, speckleDuct.speckle_type);
 
@@ -52,7 +54,7 @@ namespace Objects.Converter.Revit
 
       return duct;
     }
-    public Duct DuctToSpeckle(DB.Duct revitDuct)
+    public IDuct DuctToSpeckle(DB.Duct revitDuct)
     {
       var baseGeometry = LocationToSpeckle(revitDuct);
       var baseLine = baseGeometry as Line;
@@ -68,7 +70,7 @@ namespace Objects.Converter.Revit
       var lengthParam = revitDuct.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH);
       var levelParam = revitDuct.get_Parameter(BuiltInParameter.RBS_START_LEVEL_PARAM);
       var velocityParam = revitDuct.get_Parameter(BuiltInParameter.RBS_VELOCITY);
-      var system = revitDuct.get_Parameter(BuiltInParameter.RBS_SYSTEM_CLASSIFICATION_PARAM);
+      //var system = revitDuct.get_Parameter(BuiltInParameter.RBS_SYSTEM_CLASSIFICATION_PARAM);
 
       // SPECKLE DUCT
       var speckleDuct = new RevitDuct();
@@ -85,8 +87,10 @@ namespace Objects.Converter.Revit
       }
       speckleDuct.length = (double)ParameterToSpeckle(lengthParam);
       speckleDuct.velocity = (double)ParameterToSpeckle(velocityParam);
-      speckleDuct.level = (RevitLevel)ParameterToSpeckle(levelParam);
-      speckleDuct.system = (String)ParameterToSpeckle(system);
+      speckleDuct.level = ConvertAndCacheLevel(levelParam);
+
+      speckleDuct.systemName = revitDuct.MEPSystem.Name;
+      //speckleDuct.systemName = ((MechanicalSystem)revitDuct.MEPSystem).SystemType.ToString();
 
       AddCommonRevitProps(speckleDuct, revitDuct);
 

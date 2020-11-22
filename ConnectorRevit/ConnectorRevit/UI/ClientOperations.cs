@@ -4,10 +4,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using RevitElement = Autodesk.Revit.DB.Element;
+using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -15,36 +14,90 @@ using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.DesktopUI.Utils;
 using Stylet;
+using RevitElement = Autodesk.Revit.DB.Element;
 
 namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit
   {
+    public List<StreamState> DocumentStreams { get; set; } = new List<StreamState>();
+
+
+    public List<Exception> ConversionErrors { get; set; } = new List<Exception>();
+
     /// <summary>
-    /// Adds a new stream to the file. It takes a stream state, gets the Revit elements
-    /// the user wants to add using the filter, and writes the StreamState to the file.
+    /// Keeps track of errors in the operations of send/receive.
+    /// </summary>
+    public List<Exception> OperationErrors { get; set; } = new List<Exception>();
+
+    public override List<StreamState> GetStreamsInFile()
+    {
+      DocumentStreams = StreamStateManager.ReadState(CurrentDoc.Document);
+      return DocumentStreams;
+    }
+
+    #region Local file i/o
+
+    /// <summary>
+    /// Adds a new stream to the file.
     /// </summary>
     /// <param name="state">StreamState passed by the UI</param>
     public override void AddNewStream(StreamState state)
     {
-      // add stream and related data to the class
-      LocalStateWrapper.StreamStates.Add(state);
+      var index = DocumentStreams.FindIndex(b => b.Stream.id == state.Stream.id);
+      if (index == -1)
+      {
+        DocumentStreams.Add(state);
+        WriteStateToFile();
+      }
+    }
 
-      if ( state.Filter != null )
-        GetSelectionFilterObjects(state.Filter, state.AccountId, state.Stream.id);
+    /// <summary>
+    /// Removes a stream from the file.
+    /// </summary>
+    /// <param name="streamId"></param>
+    public override void RemoveStreamFromFile(string streamId)
+    {
+      var streamState = DocumentStreams.FirstOrDefault(s => s.Stream.id == streamId);
+      if (streamState != null)
+      {
+        DocumentStreams.Remove(streamState);
+        WriteStateToFile();
+      }
     }
 
     /// <summary>
     /// Update the stream state and adds adds the filtered objects
     /// </summary>
     /// <param name="state"></param>
-    public override void UpdateStream(StreamState state)
+    public override void PersistAndUpdateStreamInFile(StreamState state)
     {
-      var index = LocalStateWrapper.StreamStates.FindIndex(b => b.Stream.id == state.Stream.id);
-      LocalStateWrapper.StreamStates[ index ] = state;
-
-      GetSelectionFilterObjects(state.Filter, state.AccountId, state.Stream.id);
+      var index = DocumentStreams.FindIndex(b => b.Stream.id == state.Stream.id);
+      if (index != -1)
+      {
+        DocumentStreams[index] = state;
+        WriteStateToFile();
+      }
     }
+
+    /// <summary>
+    /// Transaction wrapper around writing the local streams to the file.
+    /// </summary>
+    private void WriteStateToFile()
+    {
+      Queue.Add(new Action(() =>
+      {
+        using (Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State"))
+        {
+          t.Start();
+          StreamStateManager.WriteStreamStateList(CurrentDoc.Document, DocumentStreams);
+          t.Commit();
+        }
+      }));
+      Executor.Raise();
+    }
+
+    #endregion
 
     /// <summary>
     /// Converts the Revit elements that have been added to the stream by the user, sends them to
@@ -53,289 +106,379 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state">StreamState passed by the UI</param>
     public override async Task<StreamState> SendStream(StreamState state)
     {
+      ConversionErrors.Clear();
+      OperationErrors.Clear();
+
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Revit);
       converter.SetContextDocument(CurrentDoc.Document);
 
-      var objsToConvert = state.Placeholders.Union(state.Objects, comparer: new ApplicationObjectComparer());
       var streamId = state.Stream.id;
       var client = state.Client;
 
-
       var convertedObjects = new List<Base>();
-      var failedConversions = new List<RevitElement>();
 
-      var units = CurrentDoc.Document.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits.ToString()
-        .ToLowerInvariant().Replace("dut_", "");
-      // InjectScaleInKits(GetScale(units)); // this is used for feet to sane units conversion.
-
-      var errorMsg = "";
-      var errors = new List<SpeckleException>();
-
-      foreach ( var obj in objsToConvert )
+      if (state.Filter != null)
       {
-        // TODO: why is this one fkin model curve losing its application id???
-        RevitElement revitElement = null;
-        if ( obj.applicationId != null )
-          revitElement = CurrentDoc.Document.GetElement(obj.applicationId);
+        state.Objects = GetSelectionFilterObjects(state.Filter);
+      }
 
-        if ( revitElement == null )
+      if (state.Objects.Count == 0)
+      {
+        state.Errors.Add(new Exception("There are zero objects to send. Please create a filter, or set some via selection."));
+        return state;
+      }
+
+      var commitObject = new Base();
+
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 0;
+      Execute.PostToUIThread(() => state.Progress.Maximum = state.Objects.Count());
+      var convertedCount = 0;
+
+      var placeholders = new List<Base>();
+
+      foreach (var obj in state.Objects)
+      {
+        RevitElement revitElement = null;
+        if (obj.applicationId != null)
         {
-          errors.Add(new SpeckleException(message: $"Could not retrieve element: {obj.speckle_type}"));
+          revitElement = CurrentDoc.Document.GetElement(obj.applicationId);
+        }
+
+        if (revitElement == null)
+        {
+          ConversionErrors.Add(new SpeckleException(message: $"Could not retrieve element: {obj.speckle_type}"));
           continue;
         }
 
         var conversionResult = converter.ConvertToSpeckle(revitElement);
-        if ( conversionResult == null )
+
+        conversionProgressDict["Conversion"]++;
+        UpdateProgress(conversionProgressDict, state.Progress);
+
+        if (conversionResult == null)
         {
-          // TODO what happens to failed conversions?
-          failedConversions.Add(revitElement);
+          ConversionErrors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
+          state.Errors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
           continue;
         }
 
-        convertedObjects.Add(conversionResult);
+        placeholders.Add(new ApplicationPlaceholderObject { applicationId = obj.applicationId, ApplicationGeneratedId = obj.applicationId });
+
+        convertedCount++;
+
+        var category = $"@{revitElement.Category.Name}";
+        if (commitObject[category] == null)
+        {
+          commitObject[category] = new List<Base>();
+        }
+
+        ((List<Base>)commitObject[category]).Add(conversionResult);
+
       }
 
-      if ( errors.Any() || converter.ConversionErrors.Any() )
+      if (converter.ConversionErrors.Count != 0)
       {
-        errorMsg = string.Format("There {0} {1} failed conversion{2} and {3} error{4}",
-          converter.ConversionErrors.Count() == 1 ? "is" : "are",
-          converter.ConversionErrors.Count(),
-          converter.ConversionErrors.Count() == 1 ? "" : "s",
-          errors.Count(),
-          errors.Count() == 1 ? "" : "s");
-        Log.CaptureException(new SpeckleException(errorMsg));
+        // TODO: Get rid of the custom Error class. It's not needed.
+        ConversionErrors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.details}")));
+        state.Errors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.details}")));
       }
 
-      var transports = new List<ITransport>() {new ServerTransport(client.Account, streamId)};
-      var emptyBase = new Base();
-      var @base = new Base {[ "@data" ] = convertedObjects};
-      var objectId = "";
-      Execute.PostToUIThread(() => state.Progress.Maximum = ( int ) @base.GetTotalChildrenCount());
+      if (convertedCount == 0)
+      {
+        Globals.Notify("Failed to convert any objects. Push aborted.");
+        return state;
+      }
 
-      if ( state.CancellationToken.IsCancellationRequested ) return null;
+      state.Objects = placeholders; // this should prevent issues when swapping the same stream between sender/receiver states.
 
-      objectId = await Operations.Send(@base, state.CancellationToken, transports,
-        onProgressAction: dict => UpdateProgress(dict, state.Progress));
+      Execute.PostToUIThread(() => state.Progress.Maximum = (int)commitObject.GetTotalChildrenCount());
 
-      if ( state.CancellationToken.IsCancellationRequested ) return null;
+      if (state.CancellationTokenSource.Token.IsCancellationRequested)
+      {
+        return state;
+      }
 
-      var objByType = convertedObjects.GroupBy(o => o.speckle_type);
-      var convertedTypes = objByType.Select(
-        grouping => $"{grouping.Count()} {grouping.Key.Split('.').Last()}s").ToList();
+      var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
-      var res = await client.CommitCreate(new CommitCreateInput()
+      var objectId = await Operations.Send(
+        @object: commitObject,
+        cancellationToken: state.CancellationTokenSource.Token,
+        transports: transports,
+        onProgressAction: dict => UpdateProgress(dict, state.Progress),
+        onErrorAction: (s, e) =>
+        {
+          OperationErrors.Add(e); // TODO!
+          state.Errors.Add(e);
+          state.CancellationTokenSource.Cancel();
+        }
+        );
+
+      if (OperationErrors.Count != 0)
+      {
+        Globals.Notify("Failed to send.");
+        state.Errors.AddRange(OperationErrors);
+        return state;
+      }
+
+      if (state.CancellationTokenSource.Token.IsCancellationRequested)
+      {
+        return null;
+      }
+
+      var actualCommit = new CommitCreateInput()
       {
         streamId = streamId,
         objectId = objectId,
-        branchName = "main",
-        message =
-          $"Added {convertedObjects.Count()} elements from Revit: {string.Join(", ", convertedTypes)}. " +
-          $"There were {converter.ConversionErrors.Count} failed conversions."
-      });
+        branchName = state.Branch.name,
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} objs from {Applications.Revit}."
+      };
 
-      // update the state
-      state.Objects = convertedObjects;
-      state.Placeholders = new List<Base>(); // just clearing doesn't raise prop changed notif
-      state.Stream = await client.StreamGet(streamId);
+      if (state.PreviousCommitId != null) { actualCommit.previousCommitIds = new List<string>() { state.PreviousCommitId }; }
 
-      // Persist state to revit file
-      WriteStateToFile();
+      try
+      {
+        var res = await client.CommitCreate(actualCommit);
 
-      RaiseNotification($"{convertedObjects.Count()} objects sent to Speckle 🚀");
+        var updatedStream = await client.StreamGet(streamId);
+        state.Branches = updatedStream.branches.items;
+        state.Stream.name = updatedStream.name;
+        state.Stream.description = updatedStream.description;
+
+        WriteStateToFile();
+        RaiseNotification($"{convertedCount} objects sent to Speckle 🚀");
+      }
+      catch (Exception e)
+      {
+        state.Errors.Add(e);
+        Globals.Notify($"Failed to create commit.\n{e.Message}");
+      }
+
       return state;
     }
 
     public override async Task<StreamState> ReceiveStream(StreamState state)
     {
+      ConversionErrors.Clear();
+      OperationErrors.Clear();
+
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Revit);
       converter.SetContextDocument(CurrentDoc.Document);
 
       var transport = new ServerTransport(state.Client.Account, state.Stream.id);
-      var newStream = await state.Client.StreamGet(state.Stream.id);
-      var commit = newStream.branches.items[ 0 ].commits.items[ 0 ];
-      Base commitObject;
+      var commit = state.Commit;
 
-      if ( state.CancellationToken.IsCancellationRequested ) return null;
-
-      commitObject = await Operations.Receive(commit.referencedObject, state.CancellationToken, transport,
-        onProgressAction: dict => UpdateProgress(dict, state.Progress),
-        onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count));
-
-      if ( state.CancellationToken.IsCancellationRequested ) return null;
-
-      var newObjects = new List<Base>();
-      var oldObjects = state.Objects;
-
-      var data = ( List<object> ) commitObject[ "@data" ];
-      try
+      if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
-        newObjects = data.Select(o => ( Base ) o)?.ToList();
+        return null;
       }
-      catch ( Exception e )
+
+      var commitObject = await Operations.Receive(
+        commit.referencedObject,
+        state.CancellationTokenSource.Token,
+        transport,
+        onProgressAction: dict => UpdateProgress(dict, state.Progress),
+        onErrorAction: (s, e) =>
+        {
+          OperationErrors.Add(e);
+          state.Errors.Add(e);
+          state.CancellationTokenSource.Cancel();
+        },
+        onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count)
+        );
+
+      if (OperationErrors.Count != 0)
       {
-        Log.CaptureException(e);
-        state.Stream = newStream;
-        state.Objects = new List<Base>() {commitObject};
-        WriteStateToFile();
-        RaiseNotification($"Received stream, but could not convert objects to Revit");
+        Globals.Notify("Failed to get commit.");
         return state;
       }
 
-      // TODO: edit objects from connector so we don't need to delete and recreate everything
-      // var toDelete = oldObjects.Except(newObjects, new BaseObjectComparer()).ToList();
-      // var toCreate = newObjects;
-      var toDelete = oldObjects;
-      var toUpdate = newObjects;
-
-      var revitElements = new List<object>();
-      var errors = new List<SpeckleException>();
-
-      // TODO diff stream states
-
-      // delete
-      Queue.Add(() =>
+      if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
-        using ( var t = new Transaction(CurrentDoc.Document, $"Speckle Delete: ({state.Stream.id})") )
-        {
-          t.Start();
-          foreach ( var oldObj in toDelete )
-          {
-            var revitElement = CurrentDoc.Document.GetElement(oldObj.applicationId);
-            if ( revitElement == null )
-            {
-              errors.Add(new SpeckleException(message: "Could not retrieve element"));
-              Debug.WriteLine(
-                $"Could not retrieve element (id: {oldObj.applicationId}, type: {oldObj.speckle_type})");
-              continue;
-            }
-
-            CurrentDoc.Document.Delete(revitElement.Id);
-          }
-
-          t.Commit();
-        }
-      });
-      Executor.Raise();
-
-      // update or create
-      Queue.Add(() =>
-      {
-        using ( var t = new Transaction(CurrentDoc.Document, $"Speckle Receive: ({state.Stream.id})") )
-        {
-          // TODO `t.SetFailureHandlingOptions`
-          t.Start();
-          revitElements = converter.ConvertToNative(toUpdate);
-          t.Commit();
-        }
-      });
-      Executor.Raise();
-
-      if ( errors.Any() || converter.ConversionErrors.Any() )
-      {
-        var convErrors = converter.ConversionErrors.Count;
-        var err = errors.Count;
-        Log.CaptureException(new SpeckleException(
-          $"{convErrors} conversion error{Formatting.PluralS(convErrors)} and {err} error{Formatting.PluralS(err)}"));
+        return null;
       }
 
-      state.Stream = newStream;
-      state.Objects = newObjects;
-      WriteStateToFile();
-      RaiseNotification($"Deleting {toDelete.Count} elements and updating {toUpdate.Count} elements...");
+      UpdateProgress(new ConcurrentDictionary<string, int>() { ["Converting"] = 1 }, state.Progress);
+
+      var (ids, objs) = HandleAndFlatten(commitObject, converter);
+
+      // Delete old baked elements.
+      if (state.Objects.Count != 0)
+      {
+        converter.SetContextObjects(state.Objects.Cast<ApplicationPlaceholderObject>().ToList()); // needs to be set for editing to work
+
+        Queue.Add(() =>
+        {
+          using (var t = new Transaction(CurrentDoc.Document, $"Cleaning up old elements for stream {state.Stream.name}"))
+          {
+            t.Start();
+            foreach (var placeholder in state.Objects)
+            {
+              if (ids.Contains(placeholder["speckleId"])) continue;
+              var elem = CurrentDoc.Document.GetElement(placeholder.applicationId);
+              if (elem != null)
+              {
+                CurrentDoc.Document.Delete(elem.Id);
+              }
+            }
+            t.Commit();
+          }
+        });
+        Executor.Raise();
+      }
+
+      // Bake the new ones.
+      Queue.Add(() =>
+      {
+        using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.Stream.name}"))
+        {
+          t.Start();
+          var elems = converter.ConvertToNative(objs).Cast<RevitElement>().ToList();
+
+          for (int i = 0; i < elems.Count; i++)
+          {
+            var placeholder = new ApplicationPlaceholderObject { applicationId = elems[i].UniqueId, ApplicationGeneratedId = objs[i].applicationId };
+            state.Objects.Add(placeholder);
+          }
+          state.Errors.AddRange(converter.ConversionErrors.Select(e => new Exception($"{e.message}: {e.details}")));
+
+          t.Commit();
+        }
+      });
+
+      Executor.Raise();
+
+      try
+      {
+        var updatedStream = await state.Client.StreamGet(state.Stream.id);
+        state.Branches = updatedStream.branches.items;
+        state.Stream.name = updatedStream.name;
+        state.Stream.description = updatedStream.description;
+
+        WriteStateToFile();
+      }
+      catch (Exception e)
+      {
+        state.Errors.Add(e);
+        Globals.Notify($"Receiving done, but failed to update stream from server.\n{e.Message}");
+      }
 
       return state;
     }
 
-    public override void BakeStream(string args)
+
+    private (HashSet<string>, List<Base>) HandleAndFlatten(object obj, ISpeckleConverter converter)
     {
-      throw new NotImplementedException();
+      HashSet<string> appIds = new HashSet<string>();
+      List<Base> objects = new List<Base>();
+
+      if (obj is Base baseItem)
+      {
+        if (baseItem.applicationId != null) appIds.Add(baseItem.applicationId);
+
+        objects.Add(baseItem);
+
+
+        foreach (var prop in baseItem.GetDynamicMembers())
+        {
+          var (ids, objs) = HandleAndFlatten(baseItem[prop], converter);
+          appIds.UnionWith(ids);
+          objects.AddRange(objs);
+        }
+
+        return (appIds, objects);
+      }
+
+      if (obj is List<object> list)
+      {
+        foreach (var listObj in list)
+        {
+          var (ids, objs) = HandleAndFlatten(listObj, converter);
+          appIds.UnionWith(ids);
+          objects.AddRange(objs);
+        }
+        return (appIds, objects);
+      }
+
+      if (obj is IDictionary dict)
+      {
+        foreach (DictionaryEntry kvp in dict)
+        {
+          var (ids, objs) = HandleAndFlatten(kvp.Value, converter);
+          appIds.UnionWith(ids);
+          objects.AddRange(objs);
+        }
+        return (appIds, objects);
+      }
+
+      return (appIds, objects);
     }
 
     private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
     {
-      if ( progress == null ) return;
-      Execute.PostToUIThread(() => progress.Value = dict.Values.Last());
+      if (progress == null)
+      {
+        return;
+      }
+
+      Execute.PostToUIThread(() =>
+      {
+        progress.ProgressDict = dict;
+        progress.Value = dict.Values.Last();
+      });
     }
 
-    /// <summary>
-    /// Pass selected element ids to UI
-    /// </summary>
-    /// <param name="args"></param>
+    #region selection, views and filters
+
     public override List<string> GetSelectedObjects()
     {
-      var selectedObjects = CurrentDoc != null
-        ? CurrentDoc.Selection.GetElementIds().Select(
-          id => CurrentDoc.Document.GetElement(id).UniqueId).ToList()
-        : new List<string>();
+      if (CurrentDoc == null)
+      {
+        return new List<string>();
+      }
 
-      return  selectedObjects;
+      var selectedObjects = CurrentDoc.Selection.GetElementIds().Select(id => CurrentDoc.Document.GetElement(id).UniqueId).ToList();
+      return selectedObjects;
     }
 
     public override List<string> GetObjectsInView()
     {
-      var collector = new FilteredElementCollector(CurrentDoc.Document, CurrentDoc.Document.ActiveView.Id)
-        .WhereElementIsNotElementType();
-      var elementIds = collector.ToElements().Select(el => el.UniqueId);
+      if (CurrentDoc == null)
+      {
+        return new List<string>();
+      }
 
-      return new List<string>(elementIds);
+      var collector = new FilteredElementCollector(CurrentDoc.Document, CurrentDoc.Document.ActiveView.Id).WhereElementIsNotElementType();
+      var elementIds = collector.ToElements().Select(el => el.UniqueId).ToList(); ;
+
+      return elementIds;
     }
 
-    public override void RemoveSelectionFromClient(string args)
-    {
-      throw new NotImplementedException();
-    }
-
-    public override void RemoveStream(string streamId)
-    {
-      var streamState = LocalStateWrapper.StreamStates.FirstOrDefault(
-        cl => cl.Stream.id == streamId
-      );
-      LocalStateWrapper.StreamStates.Remove(streamState);
-      WriteStateToFile();
-    }
-
-    #region private methods
-
-    private Type GetFilterType(string typeString)
-    {
-      Assembly ass = typeof(ISelectionFilter).Assembly;
-      return ass.GetType(typeString);
-    }
 
     /// <summary>
-    /// Given the filter in use by a stream returns the document elements that match it
+    /// Given the filter in use by a stream returns the document elements that match it.
     /// </summary>
     /// <param name="filter"></param>
-    /// <param name="accountId"></param>
-    /// <param name="streamId"></param>
     /// <returns></returns>
-    private IEnumerable<Base> GetSelectionFilterObjects(ISelectionFilter filter, string accountId, string streamId)
+    private List<Base> GetSelectionFilterObjects(ISelectionFilter filter)
     {
       var doc = CurrentDoc.Document;
-      IEnumerable<Base> objects = new List<Base>();
 
       var selectionIds = new List<string>();
 
-      switch ( filter.Name )
+      switch (filter.Name)
       {
-        case "Selection":
-        {
-          var selFilter = filter as ElementsSelectionFilter;
-          selectionIds = selFilter.Selection;
-          break;
-        }
         case "Category":
-        {
           var catFilter = filter as ListSelectionFilter;
           var bics = new List<BuiltInCategory>();
-          var categories = Globals.GetCategories(doc);
+          var categories = ConnectorRevitUtils.GetCategories(doc);
           IList<ElementFilter> elementFilters = new List<ElementFilter>();
 
-          foreach ( var cat in catFilter.Selection )
+          foreach (var cat in catFilter.Selection)
           {
-            elementFilters.Add(new ElementCategoryFilter(categories[ cat ].Id));
+            elementFilters.Add(new ElementCategoryFilter(categories[cat].Id));
           }
 
           var categoryFilter = new LogicalOrFilter(elementFilters);
@@ -346,9 +489,8 @@ namespace Speckle.ConnectorRevit.UI
             .WherePasses(categoryFilter)
             .Select(x => x.UniqueId).ToList();
           break;
-        }
+
         case "View":
-        {
           var viewFilter = filter as ListSelectionFilter;
 
           var views = new FilteredElementCollector(doc)
@@ -356,7 +498,7 @@ namespace Speckle.ConnectorRevit.UI
             .OfClass(typeof(View))
             .Where(x => viewFilter.Selection.Contains(x.Name));
 
-          foreach ( var view in views )
+          foreach (var view in views)
           {
             var ids = new FilteredElementCollector(doc, view.Id)
               .WhereElementIsNotElementType()
@@ -366,9 +508,8 @@ namespace Speckle.ConnectorRevit.UI
 
             selectionIds = selectionIds.Union(ids).ToList();
           }
-
           break;
-        }
+
         case "Parameter":
           try
           {
@@ -382,7 +523,7 @@ namespace Speckle.ConnectorRevit.UI
 
             propFilter.PropertyValue = propFilter.PropertyValue.ToLowerInvariant();
 
-            switch ( propFilter.PropertyOperator )
+            switch (propFilter.PropertyOperator)
             {
               case "equals":
                 query = query.Where(fi =>
@@ -408,103 +549,36 @@ namespace Speckle.ConnectorRevit.UI
 
             selectionIds = query.Select(x => x.UniqueId).ToList();
           }
-          catch ( Exception e )
+          catch (Exception e)
           {
             Log.CaptureException(e);
           }
-
           break;
       }
 
-      // LOCAL STATE management
-      objects = selectionIds.Select(id =>
-      {
-        var temp = new Base();
-        temp.applicationId = id;
-        temp[ "__type" ] = "Placeholder";
-        return temp;
-      });
-
-      var streamState = LocalStateWrapper.StreamStates.FirstOrDefault(
-        cl => ( string ) cl.Stream.id == ( string ) streamId
-      );
-      streamState.Placeholders.AddRange(objects);
-
-      // Persist state and clients to revit file
-      WriteStateToFile();
-      var plural = objects.Count() == 1 ? "" : "s";
-
-      if ( objects.Any() )
-        NotifyUi(new RetrievedFilteredObjectsEvent()
-        {
-          Notification = $"You have added {objects.Count()} object{plural} to this stream.",
-          AccountId = accountId,
-          Objects = objects
-        });
-      RaiseNotification($"You have added {objects.Count()} object{plural} to this stream.");
-
-      return objects;
+      return selectionIds.Select(id => new Base { applicationId = id }).ToList();
     }
 
     private string GetStringValue(Parameter p)
     {
       string value = "";
-      if ( !p.HasValue )
+      if (!p.HasValue)
+      {
         return value;
-      if ( string.IsNullOrEmpty(p.AsValueString()) && string.IsNullOrEmpty(p.AsString()) )
+      }
+
+      if (string.IsNullOrEmpty(p.AsValueString()) && string.IsNullOrEmpty(p.AsString()))
+      {
         return value;
-      if ( !string.IsNullOrEmpty(p.AsValueString()) )
+      }
+
+      if (!string.IsNullOrEmpty(p.AsValueString()))
+      {
         return p.AsValueString().ToLowerInvariant();
+      }
       else
+      {
         return p.AsString().ToLowerInvariant();
-    }
-
-    private class BaseObjectComparer : IEqualityComparer<Base>
-    {
-      /// <summary>
-      /// compares two speckle objects for equality based on both:
-      /// matching application id and matching speckle id
-      /// </summary>
-      /// <param name="obj1"></param>
-      /// <param name="obj2"></param>
-      /// <returns></returns>
-      public bool Equals(Base obj1, Base obj2)
-      {
-        if ( ReferenceEquals(obj1, obj2) )
-          return true;
-        if ( obj1 == null || obj2 == null )
-          return false;
-        return obj1.applicationId == obj2.applicationId && obj1.id == obj2.id;
-      }
-
-      public int GetHashCode(Base obj)
-      {
-        return base.GetHashCode();
-      }
-    }
-
-    private class ApplicationObjectComparer : IEqualityComparer<Base>
-    {
-      /// <summary>
-      /// compares two speckle objects for equality based on matching applications id.
-      /// mainly for comparing objects from the StreamState.Placeholders list (no speckle id)
-      /// and the StreamState.Objects list (does have speckle id)
-      /// </summary>
-      /// <param name="obj1"></param>
-      /// <param name="obj2"></param>
-      /// <returns></returns>
-      public bool Equals(Base obj1, Base obj2)
-      {
-        if ( ReferenceEquals(obj1, obj2) )
-          return true;
-        if ( obj1 == null || obj2 == null )
-          return false;
-        return obj1.applicationId == obj2.applicationId;
-      }
-
-      public int GetHashCode(Base obj)
-      {
-        return base.GetHashCode();
       }
     }
 
