@@ -239,6 +239,8 @@ namespace ConnectorGrasshopper
         return;
       }
 
+      var g = Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem;
+
       var outputObject = Activator.CreateInstance(SelectedType);
 
       for (int i = 0; i < Params.Input.Count; i++)
@@ -267,7 +269,7 @@ namespace ConnectorGrasshopper
 
     private object ExtractRealInputValue(object inputValue)
     {
-      if(inputValue == null)
+      if (inputValue == null)
         return null;
 
       object realInputValue;

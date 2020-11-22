@@ -2,18 +2,23 @@
 
 namespace Objects.Geometry
 {
-  public class ControlPoint: Point, IGeometry
+  public class ControlPoint : Point, IGeometry
   {
     public ControlPoint()
     {
 
     }
-    
-    public ControlPoint(double x, double y, double z, double w = 1, string applicationId = null) : base(x, y, z, applicationId)
+
+    public ControlPoint(double x, double y, double z, string units, string applicationId = null) : base(x, y, z, units, applicationId)
+    {
+      value.Add(1); //w = 1
+    }
+
+    public ControlPoint(double x, double y, double z, double w, string units, string applicationId = null) : base(x, y, z, units, applicationId)
     {
       value.Add(w);
     }
-    
+
     [JsonIgnore]
     public double weight => value[3];
 

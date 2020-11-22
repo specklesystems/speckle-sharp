@@ -13,7 +13,7 @@ namespace Objects.Geometry
     public string provenance { get; set; }
     public Mesh displayValue { get; set; }
 
-    public string linearUnits { get; set; }
+    public string units { get; set; }
     public Box boundingBox { get; set; }
     public Point center { get; set; }
     public double area { get; set; }
@@ -37,7 +37,7 @@ namespace Objects.Geometry
     /// <summary>
     /// Gets or sets the list of vertices in this <see cref="Brep"/> instance.
     /// </summary>
-    public List<BrepVertex> Vertices { get; set; }
+    public List<Point> Vertices { get; set; }
 
     /// <summary>
     /// Gets or sets the list of edges in this <see cref="Brep"/> instance.
@@ -78,7 +78,7 @@ namespace Objects.Geometry
       Curve2D = new List<Curve>();
       Curve3D = new List<Curve>();
 
-      Vertices = new List<BrepVertex>();
+      Vertices = new List<Point>();
       Edges = new List<BrepEdge>();
       Loops = new List<BrepLoop>();
       Trims = new List<BrepTrim>();
@@ -94,11 +94,12 @@ namespace Objects.Geometry
     /// <param name="provenance"></param>
     /// <param name="displayValue"></param>
     /// <param name="applicationId"></param>
-    public Brep(string provenance, Mesh displayValue, string applicationId = null) : this()
+    public Brep(string provenance, Mesh displayValue, string units, string applicationId = null) : this()
     {
       this.provenance = provenance;
       this.displayValue = displayValue;
       this.applicationId = applicationId;
+      this.units = units;
     }
 
 
@@ -246,28 +247,12 @@ namespace Objects.Geometry
       ProxyCurveIsReversed = proxyCurvedIsReversed;
     }
 
-    [JsonIgnore] public BrepVertex StartVertex => Brep.Vertices[StartIndex];
-    [JsonIgnore] public BrepVertex EndVertex => Brep.Vertices[EndIndex];
+    [JsonIgnore] public Point StartVertex => Brep.Vertices[StartIndex];
+    [JsonIgnore] public Point EndVertex => Brep.Vertices[EndIndex];
     [JsonIgnore] public IEnumerable<BrepTrim> Trims => TrimIndices.Select(i => Brep.Trims[i]);
     [JsonIgnore] public ICurve Curve => Brep.Curve3D[Curve3dIndex];
   }
 
-  /// <summary>
-  /// Represents a vertex of the <see cref="Brep"/>.
-  /// </summary>
-  public class BrepVertex : Base
-  {
-    public BrepVertex()
-    {
-    }
-
-    public BrepVertex(Point location)
-    {
-      Location = location;
-    }
-
-    public Point Location { get; set; }
-  }
 
   /// <summary>
   /// Represents the type of a loop in a <see cref="Brep"/>'s face.

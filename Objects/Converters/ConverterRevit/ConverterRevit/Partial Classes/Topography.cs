@@ -16,9 +16,9 @@ namespace Objects.Converter.Revit
       for (int i = 0; i < speckleSurface.baseGeometry.vertices.Count; i += 3)
       {
         pts.Add(new XYZ(
-          speckleSurface.baseGeometry.vertices[i] * Scale,
-          speckleSurface.baseGeometry.vertices[i + 1] * Scale,
-          speckleSurface.baseGeometry.vertices[i + 2] * Scale));
+          ScaleToNative(speckleSurface.baseGeometry.vertices[i], speckleSurface.baseGeometry.units),
+          ScaleToNative(speckleSurface.baseGeometry.vertices[i + 1], speckleSurface.baseGeometry.units),
+          ScaleToNative(speckleSurface.baseGeometry.vertices[i + 2], speckleSurface.baseGeometry.units)));
       }
 
       if (docObj != null)
@@ -50,7 +50,7 @@ namespace Objects.Converter.Revit
     public RevitTopography TopographyToSpeckle(TopographySurface revitTopo)
     {
       var speckleTopo = new RevitTopography();
-      speckleTopo.baseGeometry = MeshUtils.GetElementMesh(revitTopo, Scale);
+      speckleTopo.baseGeometry = GetElementMesh(revitTopo);
       AddCommonRevitProps(speckleTopo, revitTopo);
 
       return speckleTopo;

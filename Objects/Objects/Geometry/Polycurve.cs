@@ -15,11 +15,17 @@ namespace Objects.Geometry
     public Point center { get; set; }
     public double area { get; set; }
     public double length { get; set; }
-    public string linearUnits { get; set; }
+    public string units { get; set; }
 
     public Polycurve()
     {
 
+    }
+
+    public Polycurve(string units, string applicationId = null)
+    {
+      this.applicationId = applicationId;
+      this.units = units;
     }
   }
 }

@@ -64,7 +64,7 @@ namespace Objects.Converter.Revit
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
       }
 
-      speckleFi.displayMesh = MeshUtils.GetElementMesh(revitFi, Scale, subElements);
+      speckleFi.displayMesh = GetElementMesh(revitFi, subElements);
 
       AddCommonRevitProps(speckleFi, revitFi);
 

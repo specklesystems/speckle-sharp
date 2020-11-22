@@ -19,7 +19,7 @@ namespace Objects.Geometry
     /// <summary>If any, the colours per vertex.</summary>
     public List<double> textureCoordinates { get; set; } = new List<double>();
 
-    public string linearUnits { get; set; }
+    public string units { get; set; }
     public Box boundingBox { get; set; }
     public Point center { get; set; }
     public double area { get; set; }
@@ -30,13 +30,14 @@ namespace Objects.Geometry
 
     }
 
-    public Mesh(double[] vertices, int[] faces, int[] colors = null, double[] texture_coords = null, string applicationId = null)
+    public Mesh(double[] vertices, int[] faces, string units, int[] colors = null, double[] texture_coords = null, string applicationId = null)
     {
       this.vertices = vertices.ToList();
       this.faces = faces.ToList();
       this.colors = colors?.ToList();
       this.textureCoordinates = texture_coords?.ToList();
       this.applicationId = applicationId;
+      this.units = units;
     }
   }
 }

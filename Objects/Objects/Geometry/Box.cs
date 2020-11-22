@@ -12,7 +12,7 @@ namespace Objects.Geometry
     public Interval xSize { get; set; }
     public Interval ySize { get; set; }
     public Interval zSize { get; set; }
-    public string linearUnits { get; set; }
+    public string units { get; set; }
     public Box boundingBox { get; set; }
     public Point center { get; set; }
     public double area { get; set; }
@@ -23,13 +23,14 @@ namespace Objects.Geometry
 
     }
 
-    public Box(Plane basePlane, Interval xSize, Interval ySize, Interval zSize, string applicationId = null)
+    public Box(Plane basePlane, Interval xSize, Interval ySize, Interval zSize, string units, string applicationId = null)
     {
       this.basePlane = basePlane;
       this.xSize = xSize;
       this.ySize = ySize;
       this.zSize = zSize;
       this.applicationId = applicationId;
+      this.units = units;
     }
   }
 }

@@ -23,24 +23,25 @@ namespace Objects.Geometry
     public Point center { get; set; }
     public double area { get; set; }
     public double length { get; set; }
-    public string linearUnits { get; set; }
+    public string units { get; set; }
 
     public Curve() { }
-    
-    public Curve(Polyline poly, string applicationId = null)
+
+    public Curve(Polyline poly, string units, string applicationId = null)
     {
       this.displayValue = poly;
       this.applicationId = applicationId;
+      this.units = units;
     }
 
     public IEnumerable<Point> GetPoints()
     {
       if (points.Count % 3 != 0) throw new Exception("Array malformed: length%3 != 0.");
-      
+
       Point[] pts = new Point[points.Count / 3];
       var asArray = points.ToArray();
       for (int i = 2, k = 0; i < points.Count; i += 3)
-        pts[k++] = new Point(asArray[i - 2], asArray[i - 1], asArray[i]);
+        pts[k++] = new Point(asArray[i - 2], asArray[i - 1], asArray[i], units);
       return pts;
     }
   }

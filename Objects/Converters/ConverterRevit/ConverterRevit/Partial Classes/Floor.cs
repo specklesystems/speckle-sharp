@@ -100,7 +100,7 @@ namespace Objects.Converter.Revit
 
       AddCommonRevitProps(speckleFloor, revitFloor);
 
-      (speckleFloor.displayMesh.faces, speckleFloor.displayMesh.vertices) = MeshUtils.GetFaceVertexArrayFromElement(revitFloor, Scale, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      (speckleFloor.displayMesh.faces, speckleFloor.displayMesh.vertices) = GetFaceVertexArrayFromElement(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       return speckleFloor;
     }
 
@@ -113,7 +113,7 @@ namespace Objects.Converter.Revit
       var crvLoops = face.GetEdgesAsCurveLoops();
       foreach (var crvloop in crvLoops)
       {
-        var poly = new Polycurve();
+        var poly = new Polycurve(ModelUnits);
         foreach (var curve in crvloop)
         {
           var c = curve as DB.Curve;

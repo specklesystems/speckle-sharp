@@ -17,25 +17,25 @@ namespace Objects.Geometry
 
     // TODO: Rewrite this to be store as a list<double>
     public List<double> pointData { get; set; }
-    
+
     public int countU { get; set; }
     public int countV { get; set; }
 
     public List<List<ControlPoint>> GetControlPoints()
     {
 
-        var matrix = new List<List<ControlPoint>>();
-        for (var i = 0; i < countU; i++)
-          matrix.Add(new List<ControlPoint>());
+      var matrix = new List<List<ControlPoint>>();
+      for (var i = 0; i < countU; i++)
+        matrix.Add(new List<ControlPoint>());
 
-        for (var i = 0; i < pointData.Count; i += 4)
-        {
-          var uIndex = i  / (countV * 4);
-          matrix[uIndex]
-            .Add(new ControlPoint(pointData[i], pointData[i + 1], pointData[i + 2], pointData[i + 3]));
-        }
-        
-        return matrix;
+      for (var i = 0; i < pointData.Count; i += 4)
+      {
+        var uIndex = i / (countV * 4);
+        matrix[uIndex]
+          .Add(new ControlPoint(pointData[i], pointData[i + 1], pointData[i + 2], pointData[i + 3], units));
+      }
+
+      return matrix;
     }
     public void SetControlPoints(List<List<ControlPoint>> value)
     {
@@ -51,7 +51,7 @@ namespace Objects.Geometry
       }));
       pointData = data;
     }
-    
+
     public List<double> knotsU { get; set; }
     public List<double> knotsV { get; set; }
     public Interval domainU { get; set; }
@@ -67,11 +67,12 @@ namespace Objects.Geometry
       this.pointData = new List<double>();
     }
 
-    public Surface(string applicationId = null)
+    public Surface(string units, string applicationId = null)
     {
       this.applicationId = applicationId;
+      this.units = units;
     }
 
-    public string linearUnits { get; set; }
+    public string units { get; set; }
   }
 }

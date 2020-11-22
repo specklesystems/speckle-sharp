@@ -17,15 +17,16 @@ namespace Objects.Geometry
     public Point center { get; set; }
     public double area { get; set; }
     public double length { get; set; }
-    public string linearUnits { get; set; }
+    public string units { get; set; }
     public Polyline()
     {
 
     }
-    public Polyline(IEnumerable<double> coordinatesArray, string applicationId = null)
+    public Polyline(IEnumerable<double> coordinatesArray, string units, string applicationId = null)
     {
       this.value = coordinatesArray.ToList();
       this.applicationId = applicationId;
+      this.units = units;
     }
 
     [JsonIgnore]
@@ -36,7 +37,7 @@ namespace Objects.Geometry
         List<Point> points = new List<Point>();
         for (int i = 0; i < value.Count; i += 3)
         {
-          points.Add(new Point(value[i], value[i + 1], value[i + 2]));
+          points.Add(new Point(value[i], value[i + 1], value[i + 2], units));
         }
         return points;
       }

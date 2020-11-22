@@ -116,15 +116,15 @@ namespace Objects.Converter.Revit
         if (!elem.GetMemberSafe<bool>("isSlanted") || IsVertical(curve))
         {
           var baseLine = elem.GetMemberSafe<Line>("baseLine");
-          var point = new Point(baseLine.value[0], baseLine.value[1], baseLine.value[3] - offset);
+          var point = new Point(baseLine.value[0], baseLine.value[1], baseLine.value[3] - offset, ModelUnits);
 
           return PointToNative(point);
         }
       }
       //undo offset transform
-      else if (elem is Wall)
+      else if (elem is Wall w)
       {
-        var revitOffset = offset * Scale;
+        var revitOffset = ScaleToNative(offset, w.baseLine.units);
         XYZ vector = new XYZ(0, 0, -revitOffset);
         Transform tf = Transform.CreateTranslation(vector);
         curve = curve.CreateTransformed(tf);

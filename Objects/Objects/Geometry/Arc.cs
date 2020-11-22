@@ -25,16 +25,16 @@ namespace Objects.Geometry
     public Point midPoint { get; set; }
 
     public Point endPoint { get; set; }
-    
+
     public Box boundingBox { get; set; }
     public Point center { get; set; }
     public double area { get; set; }
     public double length { get; set; }
-    public string linearUnits { get; set; }
+    public string units { get; set; }
 
     public Arc() { }
 
-    public Arc(Plane plane, double radius, double startAngle, double endAngle, double angleRadians, string applicationId = null)
+    public Arc(Plane plane, double radius, double startAngle, double endAngle, double angleRadians, string units, string applicationId = null)
     {
       this.plane = plane;
       this.radius = radius;
@@ -42,6 +42,7 @@ namespace Objects.Geometry
       this.endAngle = endAngle;
       this.angleRadians = angleRadians;
       this.applicationId = applicationId;
+      this.units = units;
     }
   }
 }

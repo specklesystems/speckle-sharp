@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
 
       AddCommonRevitProps(speckleRoom, revitRoom);
 
-      (speckleRoom.displayMesh.faces, speckleRoom.displayMesh.vertices) = MeshUtils.GetFaceVertexArrayFromElement(revitRoom, Scale);
+      (speckleRoom.displayMesh.faces, speckleRoom.displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoom);
 
       return speckleRoom;
     }
@@ -40,7 +40,7 @@ namespace Objects.Converter.Revit
       var boundaries = room.GetBoundarySegments(new SpatialElementBoundaryOptions());
       foreach (var loop in boundaries)
       {
-        var poly = new Polycurve();
+        var poly = new Polycurve(ModelUnits);
         foreach (var segment in loop)
         {
           var c = segment.GetCurve();

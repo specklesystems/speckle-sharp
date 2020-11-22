@@ -15,20 +15,21 @@ namespace Objects.Geometry
     public Point center { get; set; }
     public double area { get; set; }
     public double length { get; set; }
-    public string linearUnits { get; set; }
+    public string units { get; set; }
 
     public Plane()
     {
 
     }
     public Plane(Point origin, Vector normal,
-      Vector xDir, Vector yDir, string applicationId = null)
+      Vector xDir, Vector yDir, string units, string applicationId = null)
     {
       this.origin = origin;
       this.normal = normal;
       this.xdir = xDir;
       this.ydir = yDir;
       this.applicationId = applicationId;
+      this.units = units;
     }
   }
 }

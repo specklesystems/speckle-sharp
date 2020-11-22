@@ -10,7 +10,7 @@ namespace Objects.BuiltElements
     public Mesh displayMesh { get; set; }
 
     [SchemaIgnore]
-    public string linearUnits { get; set; }
+    public string units { get; set; }
   }
 
 }
