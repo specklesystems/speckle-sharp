@@ -41,6 +41,7 @@ namespace Objects.Converter.Revit
         //non slanted columns are point based
         isLineBased = speckleRevitColumn.isSlanted;
       }
+
       if (level == null)
       {
         level = LevelToNative(LevelFromCurve(baseLine));
@@ -48,6 +49,7 @@ namespace Objects.Converter.Revit
 
 
       var (docObj, stateObj) = GetExistingElementByApplicationId(speckleColumn.applicationId, speckleColumn.speckle_type);
+      
       //try update existing 
       if (docObj != null)
       {

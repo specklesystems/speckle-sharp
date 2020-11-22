@@ -117,11 +117,6 @@ namespace Speckle.ConnectorRevit.UI
       var client = state.Client;
 
       var convertedObjects = new List<Base>();
-      var failedConversions = new List<RevitElement>();
-
-      var units = CurrentDoc.Document.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits.ToString()
-        .ToLowerInvariant().Replace("dut_", "");
-      // InjectScaleInKits(GetScale(units)); // this is used for feet to sane units conversion.
 
       if (state.Filter != null)
       {
@@ -130,7 +125,7 @@ namespace Speckle.ConnectorRevit.UI
 
       if (state.Objects.Count == 0)
       {
-        Globals.Notify("There are zero objects to send. Please create a filter, or set some via selection.");
+        state.Errors.Add(new Exception("There are zero objects to send. Please create a filter, or set some via selection."));
         return state;
       }
 
@@ -140,6 +135,8 @@ namespace Speckle.ConnectorRevit.UI
       conversionProgressDict["Conversion"] = 0;
       Execute.PostToUIThread(() => state.Progress.Maximum = state.Objects.Count());
       var convertedCount = 0;
+
+      var placeholders = new List<Base>();
 
       foreach (var obj in state.Objects)
       {
@@ -167,6 +164,8 @@ namespace Speckle.ConnectorRevit.UI
           continue;
         }
 
+        placeholders.Add(new RevitPlaceholderObject { applicationId = obj.applicationId, RevitId = obj.applicationId });
+
         convertedCount++;
 
         var category = $"@{revitElement.Category.Name}";
@@ -182,7 +181,6 @@ namespace Speckle.ConnectorRevit.UI
       if (converter.ConversionErrors.Count != 0)
       {
         // TODO: Get rid of the custom Error class. It's not needed.
-        // PS: The errors seem to be quite bare at the moment?
         ConversionErrors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.details}")));
         state.Errors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.details}")));
       }
@@ -192,6 +190,8 @@ namespace Speckle.ConnectorRevit.UI
         Globals.Notify("Failed to convert any objects. Push aborted.");
         return state;
       }
+
+      state.Objects = placeholders; // this should prevent issues when swapping the same stream between sender/receiver states.
 
       Execute.PostToUIThread(() => state.Progress.Maximum = (int)commitObject.GetTotalChildrenCount());
 
@@ -218,6 +218,7 @@ namespace Speckle.ConnectorRevit.UI
       if (OperationErrors.Count != 0)
       {
         Globals.Notify("Failed to send.");
+        state.Errors.AddRange(OperationErrors);
         return state;
       }
 
@@ -299,65 +300,6 @@ namespace Speckle.ConnectorRevit.UI
         return null;
       }
 
-      //var newObjIds = Newtonsoft.Json.JsonConvert.DeserializeObject<ClosureBag>(new SQLiteTransport().GetObject(commitObject.id)).AllChildrenIds;
-      //var oldObjIds = state.Objects.Select(o => o.applicationId);
-
-      #region old
-      //var newObjects = new List<Base>();
-      //var oldObjects = state.Objects;
-
-
-      //var revitElements = new List<object>();
-      ////var errors = new List<SpeckleException>();
-
-      //// TODO diff stream states
-
-      //// delete
-      //Queue.Add(() =>
-      //{
-      //  using (var t = new Transaction(CurrentDoc.Document, $"Speckle Delete: ({state.Stream.id})"))
-      //  {
-      //    t.Start();
-      //    foreach (var oldObj in toDelete)
-      //    {
-      //      var revitElement = CurrentDoc.Document.GetElement(oldObj.applicationId);
-      //      if (revitElement == null)
-      //      {
-      //        Debug.WriteLine(
-      //          $"Could not retrieve element (id: {oldObj.applicationId}, type: {oldObj.speckle_type})");
-      //        continue;
-      //      }
-
-      //      CurrentDoc.Document.Delete(revitElement.Id);
-      //    }
-
-      //    t.Commit();
-      //  }
-      //});
-      //Executor.Raise();
-
-      //// update or create
-      //Queue.Add(() =>
-      //{
-      //  using (var t = new Transaction(CurrentDoc.Document, $"Speckle Receive: ({state.Stream.id})"))
-      //  {
-      //    // TODO `t.SetFailureHandlingOptions`
-      //    t.Start();
-      //    revitElements = converter.ConvertToNative(toUpdate);
-      //    t.Commit();
-      //  }
-      //});
-      //Executor.Raise();
-
-      //if (errors.Any() || converter.ConversionErrors.Any())
-      //{
-      //  var convErrors = converter.ConversionErrors.Count;
-      //  var err = errors.Count;
-      //  Log.CaptureException(new SpeckleException($"{convErrors} conversion error{Formatting.PluralS(convErrors)} and {err} error{Formatting.PluralS(err)}"));
-
-      //}
-      #endregion
-
       UpdateProgress(new ConcurrentDictionary<string, int>() { ["Converting"] = 1 }, state.Progress);
 
       var (ids, objs) = HandleAndFlatten(commitObject, converter);
@@ -365,16 +307,15 @@ namespace Speckle.ConnectorRevit.UI
       // Delete old baked elements.
       if (state.Objects.Count != 0)
       {
-        var toDeleteIds = state.Objects.Select(o => o.applicationId).Except(ids);
-
         Queue.Add(() =>
         {
           using (var t = new Transaction(CurrentDoc.Document, $"Cleaning up old elements for stream {state.Stream.name}"))
           {
             t.Start();
-            foreach (var oldId in toDeleteIds)
+            foreach (var placeholder in state.Objects)
             {
-              var elem = CurrentDoc.Document.GetElement(oldId);
+              if (ids.Contains(placeholder["speckleId"])) continue;
+              var elem = CurrentDoc.Document.GetElement(placeholder.applicationId);
               if (elem != null)
               {
                 CurrentDoc.Document.Delete(elem.Id);
@@ -383,6 +324,7 @@ namespace Speckle.ConnectorRevit.UI
             t.Commit();
           }
         });
+        Executor.Raise();
       }
 
       // Bake the new ones.
@@ -391,7 +333,15 @@ namespace Speckle.ConnectorRevit.UI
         using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.Stream.name}"))
         {
           t.Start();
-          converter.ConvertToNative(objs);
+          var elems = converter.ConvertToNative(objs).Cast<RevitElement>().ToList();
+
+          for (int i = 0; i < elems.Count; i++)
+          {
+            var placeholder = new RevitPlaceholderObject { applicationId = elems[i].UniqueId, RevitId = objs[i].applicationId };
+            state.Objects.Add(placeholder);
+          }
+          state.Errors.AddRange(converter.ConversionErrors.Select(e => new Exception($"{e.message}: {e.details}")));
+
           t.Commit();
         }
       });
@@ -406,7 +356,6 @@ namespace Speckle.ConnectorRevit.UI
         state.Stream.description = updatedStream.description;
 
         WriteStateToFile();
-        RaiseNotification($"Receiving done.");
       }
       catch (Exception e)
       {
@@ -415,29 +364,6 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       return state;
-    }
-
-    private List<Base> FlattenStreamData(Base commit)
-    {
-      var list = new List<Base>();
-      foreach (var member in commit.GetDynamicMemberNames())
-      {
-        RecursivelyFlattenStream(commit[member], list);
-      }
-      return list;
-    }
-
-    private void RecursivelyFlattenStream(object @object, List<Base> list)
-    {
-      if (@object is Base @base)
-        list.Add(@base);
-      else if (@object is List<object> objects)
-      {
-        foreach (var o in objects)
-        {
-          RecursivelyFlattenStream(o, list);
-        }
-      }
     }
 
 
@@ -502,6 +428,9 @@ namespace Speckle.ConnectorRevit.UI
       });
     }
 
+
+    #region selection, views and filters
+
     public override List<string> GetSelectedObjects()
     {
       if (CurrentDoc == null)
@@ -526,7 +455,6 @@ namespace Speckle.ConnectorRevit.UI
       return elementIds;
     }
 
-    #region private methods
 
     /// <summary>
     /// Given the filter in use by a stream returns the document elements that match it.
@@ -656,10 +584,10 @@ namespace Speckle.ConnectorRevit.UI
     #endregion
   }
 
-  internal class ClosureBag
+  public class RevitPlaceholderObject : Base
   {
-    public Dictionary<string, int> __closure { get; set; } = new Dictionary<string, int>();
+    public RevitPlaceholderObject() { }
 
-    public List<string> AllChildrenIds { get => __closure.Keys.ToList(); }
+    public string RevitId { get; set; }
   }
 }

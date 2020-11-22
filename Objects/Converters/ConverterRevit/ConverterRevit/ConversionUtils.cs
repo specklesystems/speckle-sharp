@@ -1,17 +1,17 @@
 ﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements;
 using Objects.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
-using Element = Objects.BuiltElements.Element;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+
+    #region parameters
 
     private void AddCommonRevitProps(IRevit speckleElement, DB.Element revitElement)
     {
@@ -24,13 +24,17 @@ namespace Objects.Converter.Revit
         }
 
         if (CanGetElementTypeParams(revitElement))
+        {
           speckleRevitElement.typeParameters = GetElementTypeParams(revitElement);
+        }
+
         speckleRevitElement.parameters = GetElementParams(revitElement);
         speckleRevitElement.applicationId = revitElement.UniqueId;
       }
 
       speckleElement.elementId = revitElement.Id.ToString();
     }
+
     //TODO: CLEAN THE BELOW 
     /// <summary>
     /// Gets a dictionary representation of all this element's parameters.
@@ -59,7 +63,7 @@ namespace Objects.Converter.Revit
               myParamDict["__unit::" + keyName] = p.DisplayUnitType.ToString();
 
             }
-            catch (Exception e)
+            catch (Exception)
             {
               myParamDict[keyName] = val;
             }
@@ -92,7 +96,11 @@ namespace Objects.Converter.Revit
       {
         var keyName = SanitizeKeyname(p.Definition.Name);
 
-        if (myParamDict.ContainsKey(keyName)) continue;
+        if (myParamDict.ContainsKey(keyName))
+        {
+          continue;
+        }
+
         switch (p.StorageType)
         {
           case StorageType.Double:
@@ -104,7 +112,7 @@ namespace Objects.Converter.Revit
               myParamDict["__unitType::" + keyName] = p.Definition.UnitType.ToString();
               myParamDict["__unit::" + keyName] = p.DisplayUnitType.ToString();
             }
-            catch (Exception e)
+            catch (Exception)
             {
               myParamDict[keyName] = val;
             }
@@ -132,11 +140,15 @@ namespace Objects.Converter.Revit
       // TODO: (OLD) BIG CORE PROBLEM: failure to serialise things with nested dictionary (like the line above).
       return myParamDict;
     }
+
     private bool CanGetElementTypeParams(DB.Element element)
     {
       var typeElement = Doc.GetElement(element.GetTypeId());
       if (typeElement == null || typeElement.Parameters == null)
+      {
         return false;
+      }
+
       return true;
     }
 
@@ -150,7 +162,11 @@ namespace Objects.Converter.Revit
       {
         var keyName = SanitizeKeyname(p.Definition.Name);
 
-        if (myParamDict.ContainsKey(keyName)) continue;
+        if (myParamDict.ContainsKey(keyName))
+        {
+          continue;
+        }
+
         switch (p.StorageType)
         {
           case StorageType.Double:
@@ -162,7 +178,7 @@ namespace Objects.Converter.Revit
               myParamDict["__unitType::" + keyName] = p.Definition.UnitType.ToString();
               myParamDict["__unit::" + keyName] = p.DisplayUnitType.ToString();
             }
-            catch (Exception e)
+            catch (Exception)
             {
               myParamDict[keyName] = val;
             }
@@ -193,23 +209,45 @@ namespace Objects.Converter.Revit
     public void SetElementParams(DB.Element myElement, IRevit spkElement, List<string> exclusions = null)
     {
 
-      if (myElement == null) return;
-      if (spkElement.parameters == null) return;
+      if (myElement == null)
+      {
+        return;
+      }
+
+      if (spkElement.parameters == null)
+      {
+        return;
+      }
 
       //var questForTheBest = UnitDictionary;
 
       foreach (var kvp in spkElement.parameters)
       {
-        if (kvp.Key.Contains("__unitType::")) continue; // skip unit types please
-        if (exclusions != null && exclusions.Contains(kvp.Key)) continue;
+        if (kvp.Key.Contains("__unitType::"))
+        {
+          continue; // skip unit types please
+        }
+
+        if (exclusions != null && exclusions.Contains(kvp.Key))
+        {
+          continue;
+        }
+
         try
         {
           var keyName = UnsanitizeKeyname(kvp.Key);
 
           //TODO: try support params in foreign language
           var myParam = myElement.ParametersMap.get_Item(keyName);
-          if (myParam == null) continue;
-          if (myParam.IsReadOnly) continue;
+          if (myParam == null)
+          {
+            continue;
+          }
+
+          if (myParam.IsReadOnly)
+          {
+            continue;
+          }
 
           switch (myParam.StorageType)
           {
@@ -244,11 +282,20 @@ namespace Objects.Converter.Revit
               break;
           }
         }
-        catch (Exception e)
+        catch (Exception)
         {
         }
       }
 
+    }
+
+    private void TrySetParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
+    {
+      var param = elem.get_Parameter(bip);
+      if (param != null && value != null && !param.IsReadOnly)
+      {
+        param.Set(value.Id);
+      }
     }
 
     public static string SanitizeKeyname(string keyName)
@@ -261,8 +308,9 @@ namespace Objects.Converter.Revit
       return keyname.Replace("☞", ".");
     }
 
+    #endregion
 
-
+    #region  element types
     private T GetElementType<T>(string family, string type)
     {
       List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
@@ -272,7 +320,10 @@ namespace Objects.Converter.Revit
       if (match != null)
       {
         if (match is FamilySymbol fs && !fs.IsActive)
+        {
           fs.Activate();
+        }
+
         return (T)(object)match;
       }
 
@@ -284,7 +335,10 @@ namespace Objects.Converter.Revit
         if (match != null)
         {
           if (match is FamilySymbol fs && !fs.IsActive)
+          {
             fs.Activate();
+          }
+
           return (T)(object)match;
         }
       }
@@ -297,7 +351,10 @@ namespace Objects.Converter.Revit
         if (match != null)
         {
           if (match is FamilySymbol fs && !fs.IsActive)
+          {
             fs.Activate();
+          }
+
           return (T)(object)match;
         }
       }
@@ -340,7 +397,10 @@ namespace Objects.Converter.Revit
         if (match != null)
         {
           if (match is FamilySymbol fs && !fs.IsActive)
+          {
             fs.Activate();
+          }
+
           return (T)(object)match;
         }
 
@@ -353,7 +413,10 @@ namespace Objects.Converter.Revit
           if (match != null)
           {
             if (match is FamilySymbol fs && !fs.IsActive)
+            {
               fs.Activate();
+            }
+
             return (T)(object)match;
           }
         }
@@ -367,7 +430,10 @@ namespace Objects.Converter.Revit
         if (match != null)
         {
           if (match is FamilySymbol fs && !fs.IsActive)
+          {
             fs.Activate();
+          }
+
           return (T)(object)match;
         }
       }
@@ -375,14 +441,16 @@ namespace Objects.Converter.Revit
       throw new Exception($"Could not find any family symbol to use.");
     }
 
+    #endregion
 
+    #region conversion "edit" facilitation
     /// <summary>
     /// Returns, if found, the corresponding doc element and its corresponding local state object.
     /// The doc object can be null if the user deleted it. 
     /// </summary>
     /// <param name="ApplicationId"></param>
     /// <returns></returns>
-    public static (DB.Element, Base) GetExistingElementByApplicationId(string ApplicationId, string ObjectType)
+    public (DB.Element, Base) GetExistingElementByApplicationId(string ApplicationId, string ObjectType)
     {
       //TODO: uncomment the below
       //foreach (var stream in Revit)
@@ -394,7 +462,7 @@ namespace Objects.Converter.Revit
       return (null, null);
     }
 
-    public static (List<DB.Element>, List<Base>) GetExistingElementsByApplicationId(string ApplicationId, string ObjectType)
+    public (List<DB.Element>, List<Base>) GetExistingElementsByApplicationId(string ApplicationId, string ObjectType)
     {
       //TODO: uncomment the below
       //var allStateObjects = (from p in Initialiser.LocalRevitState.SelectMany(s => s.Objects) select p).ToList();
@@ -406,17 +474,6 @@ namespace Objects.Converter.Revit
       return (null, null);
     }
 
-
-
-
-
-
-    private void TrySetParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
-    {
-      var param = elem.get_Parameter(bip);
-      if (param != null && value != null && !param.IsReadOnly)
-        param.Set(value.Id);
-    }
-
+    #endregion
   }
 }

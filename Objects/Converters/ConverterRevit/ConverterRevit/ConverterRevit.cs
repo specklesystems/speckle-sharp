@@ -245,6 +245,7 @@ namespace Objects.Converter.Revit
       levelWithObjects.AddRange(Levels.Values);
       return levelWithObjects;
     }
+
     private List<Base> NestHostedObjects(List<Base> baseObjs, List<DB.Element> revitObjs)
     {
       Dictionary<int, Base> nested = new Dictionary<int, Base>();
@@ -292,17 +293,6 @@ namespace Objects.Converter.Revit
       }
       return nested.Select(x => x.Value).ToList();
     }
-
-    //private MethodInfo ConversionMethods(object @object, string methodName)
-    //{
-    //  var methods = typeof(Conversion).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
-    //    .Where(m => m.Name == methodName);
-    //  var par = methods.ElementAt(1).GetParameters()[0].ParameterType;
-    //  var par2 = @object.GetType();
-    //  //is there any method that takes in the above type as input?
-    //  return typeof(Conversion).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
-    //    .FirstOrDefault(m => m.Name == methodName && m.GetParameters().Any(p => p.ParameterType == @object.GetType()));
-    //}
 
     public bool CanConvertToSpeckle(object @object)
     {
