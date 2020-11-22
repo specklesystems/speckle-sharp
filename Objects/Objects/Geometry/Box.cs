@@ -1,4 +1,5 @@
 ﻿using Objects.Primitive;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace Objects.Geometry
 
     }
 
-    public Box(Plane basePlane, Interval xSize, Interval ySize, Interval zSize, string units, string applicationId = null)
+    public Box(Plane basePlane, Interval xSize, Interval ySize, Interval zSize, string units = Units.Meters, string applicationId = null)
     {
       this.basePlane = basePlane;
       this.xSize = xSize;

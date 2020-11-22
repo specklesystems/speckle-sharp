@@ -527,7 +527,7 @@ namespace Objects.Converter.RhinoGh
 
       var Colors = mesh.VertexColors.Select(cl => cl.ToArgb()).ToArray();
 
-      return new Mesh(verts, Faces, ModelUnits, Colors);
+      return new Mesh(verts, Faces, Colors, null, ModelUnits);
     }
 
     public RH.Mesh MeshToNative(Mesh mesh)

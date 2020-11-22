@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
+using Speckle.Core.Kits;
 
 namespace Objects.Geometry
 {
@@ -25,7 +26,7 @@ namespace Objects.Geometry
     {
     }
 
-    public Circle(Plane plane, double radius, string units, string applicationId = null)
+    public Circle(Plane plane, double radius, string units = Units.Meters, string applicationId = null)
     {
       this.plane = plane;
       this.radius = radius;

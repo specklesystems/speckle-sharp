@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using Speckle.Core.Kits;
 
 namespace Objects.Geometry
 {
@@ -67,7 +68,7 @@ namespace Objects.Geometry
       this.pointData = new List<double>();
     }
 
-    public Surface(string units, string applicationId = null)
+    public Surface(string units = Units.Meters, string applicationId = null)
     {
       this.applicationId = applicationId;
       this.units = units;

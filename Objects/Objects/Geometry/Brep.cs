@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
+using Speckle.Core.Kits;
 
 namespace Objects.Geometry
 {
@@ -94,7 +95,7 @@ namespace Objects.Geometry
     /// <param name="provenance"></param>
     /// <param name="displayValue"></param>
     /// <param name="applicationId"></param>
-    public Brep(string provenance, Mesh displayValue, string units, string applicationId = null) : this()
+    public Brep(string provenance, Mesh displayValue, string units = Units.Meters, string applicationId = null) : this()
     {
       this.provenance = provenance;
       this.displayValue = displayValue;

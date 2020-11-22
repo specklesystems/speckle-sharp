@@ -1,4 +1,5 @@
 ﻿using Objects.Primitive;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace Objects.Geometry
 
     public Curve() { }
 
-    public Curve(Polyline poly, string units, string applicationId = null)
+    public Curve(Polyline poly, string units = Units.Meters, string applicationId = null)
     {
       this.displayValue = poly;
       this.applicationId = applicationId;

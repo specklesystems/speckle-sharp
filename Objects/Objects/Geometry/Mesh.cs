@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Models;
+﻿using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace Objects.Geometry
 
     }
 
-    public Mesh(double[] vertices, int[] faces, string units, int[] colors = null, double[] texture_coords = null, string applicationId = null)
+    public Mesh(double[] vertices, int[] faces, int[] colors = null, double[] texture_coords = null, string units = Units.Meters, string applicationId = null)
     {
       this.vertices = vertices.ToList();
       this.faces = faces.ToList();
