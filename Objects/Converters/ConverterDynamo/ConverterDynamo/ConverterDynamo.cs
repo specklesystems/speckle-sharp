@@ -19,6 +19,10 @@ namespace Objects.Converter.Dynamo
 
     public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
 
+    public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+
+    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
+
     public Base ConvertToSpeckle(object @object)
     {
       var m = ConversionMethods(@object, "ToSpeckle");

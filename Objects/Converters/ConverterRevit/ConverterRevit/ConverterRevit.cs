@@ -42,6 +42,8 @@ namespace Objects.Converter.Revit
     public Document Doc { get; private set; }
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+    
+    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
 
     public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
 
@@ -51,8 +53,6 @@ namespace Objects.Converter.Revit
     {
       Doc = (Autodesk.Revit.DB.Document)doc;
     }
-
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
 
     public Base ConvertToSpeckle(object @object)
     {
