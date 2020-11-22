@@ -307,6 +307,8 @@ namespace Speckle.ConnectorRevit.UI
       // Delete old baked elements.
       if (state.Objects.Count != 0)
       {
+        converter.SetContextObjects(state.Objects.Cast<ApplicationPlaceholderObject>().ToList()); // needs to be set for editing to work
+
         Queue.Add(() =>
         {
           using (var t = new Transaction(CurrentDoc.Document, $"Cleaning up old elements for stream {state.Stream.name}"))
@@ -427,7 +429,6 @@ namespace Speckle.ConnectorRevit.UI
         progress.Value = dict.Values.Last();
       });
     }
-
 
     #region selection, views and filters
 
