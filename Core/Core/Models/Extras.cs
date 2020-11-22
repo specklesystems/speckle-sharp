@@ -65,4 +65,15 @@ namespace Speckle.Core.Models
       this.current = current; this.total = total; this.scope = scope;
     }
   }
+
+  /// <summary>
+  /// A simple wrapper to keep track of the relationship between speckle objects and their host-application siblings in cases where the
+  /// <see cref="Base.applicationId"/> cannot correspond with the <see cref="ApplicationPlaceholderObject.ApplicationGeneratedId"/> (ie, on receiving operations). 
+  /// </summary>
+  public class ApplicationPlaceholderObject : Base
+  {
+    public ApplicationPlaceholderObject() { }
+
+    public string ApplicationGeneratedId { get; set; }
+  }
 }

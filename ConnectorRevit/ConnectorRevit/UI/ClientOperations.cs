@@ -164,7 +164,7 @@ namespace Speckle.ConnectorRevit.UI
           continue;
         }
 
-        placeholders.Add(new RevitPlaceholderObject { applicationId = obj.applicationId, RevitId = obj.applicationId });
+        placeholders.Add(new ApplicationPlaceholderObject { applicationId = obj.applicationId, ApplicationGeneratedId = obj.applicationId });
 
         convertedCount++;
 
@@ -337,7 +337,7 @@ namespace Speckle.ConnectorRevit.UI
 
           for (int i = 0; i < elems.Count; i++)
           {
-            var placeholder = new RevitPlaceholderObject { applicationId = elems[i].UniqueId, RevitId = objs[i].applicationId };
+            var placeholder = new ApplicationPlaceholderObject { applicationId = elems[i].UniqueId, ApplicationGeneratedId = objs[i].applicationId };
             state.Objects.Add(placeholder);
           }
           state.Errors.AddRange(converter.ConversionErrors.Select(e => new Exception($"{e.message}: {e.details}")));
@@ -582,12 +582,5 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     #endregion
-  }
-
-  public class RevitPlaceholderObject : Base
-  {
-    public RevitPlaceholderObject() { }
-
-    public string RevitId { get; set; }
   }
 }

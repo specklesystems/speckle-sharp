@@ -41,13 +41,18 @@ namespace Objects.Converter.Revit
 
     public Document Doc { get; private set; }
 
+    public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+
     public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
+
     public Dictionary<string, RevitLevel> Levels { get; private set; } = new Dictionary<string, RevitLevel>();
 
     public void SetContextDocument(object doc)
     {
       Doc = (Autodesk.Revit.DB.Document)doc;
     }
+
+    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
 
     public Base ConvertToSpeckle(object @object)
     {
