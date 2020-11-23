@@ -12,7 +12,7 @@ namespace Objects.Converter.Revit
   {
     public DB.Element AdaptiveComponentToNative(AdaptiveComponent speckleAc)
     {
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleAc.applicationId, speckleAc.type);
+      var docObj = GetExistingElementByApplicationId(speckleAc.applicationId);
 
       string familyName = speckleAc.GetMemberSafe("family", "");
       DB.FamilySymbol familySymbol = GetElementType<DB.FamilySymbol>(speckleAc);

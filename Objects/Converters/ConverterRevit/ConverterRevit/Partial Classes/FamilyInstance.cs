@@ -95,7 +95,7 @@ namespace Objects.Converter.Revit
       DB.FamilyInstance familyInstance = null;
 
       //try update existing
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleFi.applicationId, speckleFi.type);
+      var docObj = GetExistingElementByApplicationId(speckleFi.applicationId);
       if (docObj != null)
       {
         try

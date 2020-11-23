@@ -41,7 +41,7 @@ namespace Objects.Converter.Revit
       //var systemType = (speckleDuct is RevitDuct rd2) ? rd2.systemType : "";
       var system = GetElementType<MechanicalSystemType>(systemFamily, "");
 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleDuct.applicationId, speckleDuct.speckle_type);
+      var docObj = GetExistingElementByApplicationId(speckleDuct.applicationId);
 
       // deleting instead of updating for now!
       if (docObj != null)

@@ -24,7 +24,7 @@ namespace Objects.Converter.Revit
 
     public DB.ModelCurve ModelCurveToNative(ModelCurve speckleCurve)
     {
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleCurve.applicationId, "");
+      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
 
       //TODO: support poliline/polycurve lines
       var baseCurve = CurveToNative(speckleCurve.baseCurve as ICurve).get_Item(0);
@@ -56,7 +56,7 @@ namespace Objects.Converter.Revit
 
     public DB.DetailCurve DetailCurveToNative(DetailCurve speckleCurve)
     {
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleCurve.applicationId, "");
+      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
 
       //TODO: support polybline/polycurve lines
       var baseCurve = CurveToNative(speckleCurve.baseCurve as ICurve).get_Item(0);
@@ -95,7 +95,7 @@ namespace Objects.Converter.Revit
 
     public DB.ModelCurve RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)
     {
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleCurve.applicationId, "");
+      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
 
       //TODO: support poliline/polycurve lines
       var baseCurve = CurveToNative(speckleCurve.baseCurve as ICurve);

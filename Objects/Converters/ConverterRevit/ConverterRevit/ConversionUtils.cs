@@ -448,30 +448,22 @@ namespace Objects.Converter.Revit
     /// Returns, if found, the corresponding doc element and its corresponding local state object.
     /// The doc object can be null if the user deleted it. 
     /// </summary>
-    /// <param name="ApplicationId"></param>
+    /// <param name="applicationId"></param>
     /// <returns></returns>
-    public (DB.Element, Base) GetExistingElementByApplicationId(string ApplicationId, string ObjectType)
+    public DB.Element GetExistingElementByApplicationId(string applicationId)
     {
-      //TODO: uncomment the below
-      //foreach (var stream in Revit)
-      //{
-      //  var found = stream.Objects.FirstOrDefault(s => s.ApplicationId == ApplicationId && (string)s.Properties["__type"] == ObjectType);
-      //  if (found != null)
-      //    return (Doc.GetElement(found.Properties["revitUniqueId"] as string), (Base)found);
-      //}
-      return (null, null);
-    }
+      var @ref = ContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
 
-    public (List<DB.Element>, List<Base>) GetExistingElementsByApplicationId(string ApplicationId, string ObjectType)
-    {
-      //TODO: uncomment the below
-      //var allStateObjects = (from p in Initialiser.LocalRevitState.SelectMany(s => s.Objects) select p).ToList();
+      if (@ref == null) return null;
 
-      //var found = allStateObjects.Where(obj => obj.ApplicationId == ApplicationId && (string)obj.Properties["__type"] == ObjectType);
-      //var revitObjs = found.Select(obj => Doc.GetElement(obj.Properties["revitUniqueId"] as string));
+      var docElement = Doc.GetElement(@ref.ApplicationGeneratedId);
 
-      //return (revitObjs.ToList(), found.ToList());
-      return (null, null);
+      if (docElement != null)
+      {
+        return docElement;
+      }
+
+      return null;
     }
 
     #endregion

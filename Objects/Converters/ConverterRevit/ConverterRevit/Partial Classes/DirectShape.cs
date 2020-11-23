@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
   {
     public DB.Element DirectShapeToNative(DirectShape speckleDs)
     {
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleDs.applicationId, speckleDs.type);
+      var docObj = GetExistingElementByApplicationId(speckleDs.applicationId);
 
       //just create new one 
       if (docObj != null)

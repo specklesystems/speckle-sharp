@@ -10,7 +10,7 @@ namespace Objects.Converter.Revit
   {
     public TopographySurface TopographyToNative(ITopography speckleSurface)
     {
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleSurface.applicationId, speckleSurface.speckle_type);
+      var docObj = GetExistingElementByApplicationId(speckleSurface.applicationId);
 
       var pts = new List<XYZ>();
       for (int i = 0; i < speckleSurface.baseGeometry.vertices.Count; i += 3)

@@ -44,7 +44,8 @@ namespace Objects.Converter.Revit
       }
 
       //try update existing wall
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleWall.applicationId, speckleWall.speckle_type);
+      var docObj = GetExistingElementByApplicationId(speckleWall.applicationId);
+
       if (docObj != null)
       {
         try

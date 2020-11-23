@@ -35,7 +35,8 @@ namespace Objects.Converter.Revit
       }
 
       //try update existing 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleBeam.applicationId, speckleBeam.speckle_type);
+      var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
+      
       if (docObj != null)
       {
         try
