@@ -647,12 +647,19 @@ namespace Objects.Converter.RhinoGh
 
       return spcklBrep;
     }
-
+    
+    /// <summary>
+    /// Converts a Speckle <see cref="Brep"/> instance to a Rhino <see cref="Rhino.Geometry.Brep"/>
+    /// </summary>
+    /// <param name="brep">The Speckle Brep to convert</param>
+    /// <returns></returns>
+    /// <exception cref="Exception">Throws exception if the provenance is not Rhino</exception>
     public RH.Brep BrepToNative(Brep brep)
     {
       const double tol = 0.0; // TODO: Check tolerance.
       try
       {
+        // TODO: Provenance exception is meaningless now, must change for provenance build checks.
         if (brep.provenance != Speckle.Core.Kits.Applications.Rhino)
           throw new Exception("Unknown brep provenance: " + brep.provenance +
                               ". Don't know how to convert from one to the other.");
