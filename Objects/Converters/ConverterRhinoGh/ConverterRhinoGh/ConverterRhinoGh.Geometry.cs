@@ -415,16 +415,16 @@ namespace Objects.Converter.RhinoGh
     {
       var tolerance = Doc.ModelAbsoluteTolerance;
 
-      if (curve.IsArc(tolerance))
-      {
-        curve.TryGetArc(out var getObj);
-        return ArcToSpeckle(getObj);
-      }
-
       if (curve.IsCircle(tolerance) && curve.IsClosed)
       {
         curve.TryGetCircle(out var getObj);
         return CircleToSpeckle(getObj);
+      }
+
+      if (curve.IsArc(tolerance))
+      {
+        curve.TryGetArc(out var getObj);
+        return ArcToSpeckle(getObj);
       }
 
       if (curve.IsEllipse(tolerance) && curve.IsClosed)
@@ -594,8 +594,8 @@ namespace Objects.Converter.RhinoGh
       spcklBrep.Vertices = brep.Vertices
         .Select(vertex => PointToSpeckle(vertex)).ToList();
       spcklBrep.Curve3D = brep.Edges
-        .Select(edge => NurbsToSpeckle((edge.EdgeCurve).ToNurbsCurve())).ToList();
-      spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c => NurbsToSpeckle(c.ToNurbsCurve())).ToList();
+        .Select(edge => CurveToSpeckle(edge.EdgeCurve.ToNurbsCurve())).ToList();
+      spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c => CurveToSpeckle(c.ToNurbsCurve())).ToList();
       spcklBrep.Surfaces = brep.Surfaces
         .Select(srf => SurfaceToSpeckle(srf.ToNurbsSurface())).ToList();
       spcklBrep.IsClosed = brep.IsSolid;

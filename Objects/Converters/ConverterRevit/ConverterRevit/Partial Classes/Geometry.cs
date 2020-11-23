@@ -100,7 +100,9 @@ namespace Objects.Converter.Revit
     public DB.Arc CircleToNative(Circle circle)
     {
       var plane = PlaneToNative(circle.plane);
-      return DB.Arc.Create(plane, ScaleToNative((double)circle.radius, circle.units), 0, 2 * Math.PI);
+      var arc =  DB.Arc.Create(plane, ScaleToNative((double)circle.radius, circle.units), 0, 2 * Math.PI);
+      arc.MakeBound(0, 2*Math.PI);
+      return arc;
     }
 
     public DB.Arc ArcToNative(Arc arc)
@@ -266,7 +268,7 @@ namespace Objects.Converter.Revit
         case Arc arc:
           curveArray.Append(ArcToNative(arc));
           return curveArray;
-
+        
         case Circle circle:
           curveArray.Append(CircleToNative(circle));
           return curveArray;
@@ -412,9 +414,9 @@ namespace Objects.Converter.Revit
       return spcklSurface;
     }
 
-    public Geometry.Surface NurbsSurfaceToSpeckle(DB.NurbsSurfaceData surface, DB.BoundingBoxUV uvBox)
+    public Surface NurbsSurfaceToSpeckle(DB.NurbsSurfaceData surface, DB.BoundingBoxUV uvBox)
     {
-      var result = new Geometry.Surface();
+      var result = new Surface();
 
       result.units = ModelUnits;
 
@@ -458,19 +460,60 @@ namespace Objects.Converter.Revit
     }
 
 
-    public BRepBuilderEdgeGeometry BrepEdgeToNative(BrepEdge edge)
+    public List<BRepBuilderEdgeGeometry> BrepEdgeToNative(BrepEdge edge)
     {
-      var edgeCurve = edge.Curve as Curve;
-
+      var edgeCurve = edge.Curve;
+      
       // TODO: Trim curve with domain. Unsure if this is necessary as all our curves are converted to NURBS on Rhino output.
 
-      var nativeCurve = CurveToNative(edgeCurve);
-      if (edge.ProxyCurveIsReversed)
-        nativeCurve = nativeCurve.CreateReversed();
+      var nativeCurveArray = CurveToNative(edgeCurve);
+      if (nativeCurveArray.Size == 1)
+      {
+        var nativeCurve = nativeCurveArray.get_Item(0);
+        if (edge.ProxyCurveIsReversed)
+          nativeCurve = nativeCurve.CreateReversed();
+      
+        if(nativeCurve == null)       
+          return new List<BRepBuilderEdgeGeometry>();
 
-      // TODO: Remove short segments if smaller than 'Revit.ShortCurveTolerance'.
-      var edgeGeom = BRepBuilderEdgeGeometry.Create(nativeCurve);
-      return edgeGeom;
+        if (nativeCurve.IsClosed)
+        {
+        
+          // Revit does not like single curve loop edges, so we split them in two.
+          var start = nativeCurve.GetEndParameter(0);
+          var end = nativeCurve.GetEndParameter(1);
+          var mid = (end - start) / 2;
+        
+          var a = nativeCurve.Clone();
+          a.MakeBound(start,mid);
+          var halfEdgeA = BRepBuilderEdgeGeometry.Create(a);
+        
+          var b = nativeCurve.Clone();
+          b.MakeBound(mid,end);
+          
+          var halfEdgeB = BRepBuilderEdgeGeometry.Create(b);
+
+          return new List<BRepBuilderEdgeGeometry>{halfEdgeA, halfEdgeB};
+        }
+        // TODO: Remove short segments if smaller than 'Revit.ShortCurveTolerance'.
+        var fullEdge = BRepBuilderEdgeGeometry.Create(nativeCurve);
+        return new List<BRepBuilderEdgeGeometry>{fullEdge};
+      }
+
+      var iterator = edge.ProxyCurveIsReversed
+        ? nativeCurveArray.ReverseIterator()
+        : nativeCurveArray.ForwardIterator();
+      
+      var result = new List<BRepBuilderEdgeGeometry>();
+      while (iterator.MoveNext())
+      {
+        var crv = iterator.Current as DB.Curve;
+        if (edge.ProxyCurveIsReversed)
+          crv = crv.CreateReversed();
+        result.Add(BRepBuilderEdgeGeometry.Create(crv));
+      }
+
+      return result;
     }
 
     public double[] ControlPointWeightsToNative(List<List<ControlPoint>> controlPoints)
@@ -556,9 +599,9 @@ namespace Objects.Converter.Revit
           break;
       }
 
-      using var builder = new BRepBuilder(brep.IsClosed ? BRepType.Solid : BRepType.OpenShell);
+      using var builder = new BRepBuilder(bRepType);
       builder.SetAllowShortEdges();
-      builder.AllowRemovalOfProblematicFaces();
+      //builder.AllowRemovalOfProblematicFaces();
 
       var brepEdges = new List<DB.BRepBuilderGeometryId>[brep.Edges.Count];
       foreach (var face in brep.Faces)
@@ -584,9 +627,9 @@ namespace Objects.Converter.Revit
             {
               // First time we see this edge, convert it and add
               edgeIds = brepEdges[trim.EdgeIndex] = new List<BRepBuilderGeometryId>();
-              edgeIds.Add(builder.AddEdge(BrepEdgeToNative(trim.Edge)));
+              edgeIds.AddRange(BrepEdgeToNative(trim.Edge).Select(edge => builder.AddEdge(edge)));
             }
-
+            
             var trimReversed = face.OrientationReversed ? !trim.IsReversed : trim.IsReversed;
             if (trimReversed)
             {

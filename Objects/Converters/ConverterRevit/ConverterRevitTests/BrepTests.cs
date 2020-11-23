@@ -29,9 +29,10 @@ namespace ConverterRevitTests
       this.fixture = fixture;
     }
     public static string TestFolder => @"Y:\Documents\Speckle\speckle-sharp\Objects\Converters\ConverterRevit\TestModels\";
+    
     [Theory]
     [Trait("Brep", "ToNative")]
-    [InlineData(@"Brep-UnitCube.json")]
+    [InlineData(@"Brep-Cube.json")]
     [InlineData(@"Brep-CubeWithHole.json")]
     [InlineData(@"Brep-TwoFaces.json")]
     [InlineData(@"Brep-TrimmedFace.json")]
