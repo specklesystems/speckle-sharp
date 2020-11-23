@@ -10,14 +10,14 @@ using Level = Objects.BuiltElements.Level;
 using Mesh = Objects.Geometry.Mesh;
 using Wall = Objects.BuiltElements.Wall;
 using Element = Objects.BuiltElements.Element;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    // TODO: (OLD)  A polycurve spawning multiple walls is not yet handled properly with diffing, etc.
-    // TODO: (OLD)  Most probably, just get rid of the polyline wall handling stuff. It's rather annyoing and confusing...
-    public DB.Wall WallToNative(IWall speckleWall)
+
+    public List<ApplicationPlaceholderObject> WallToNative(IWall speckleWall)
     {
 
       if (speckleWall.baseLine == null)
@@ -87,7 +87,15 @@ namespace Objects.Converter.Revit
       if (speckleRevitWall != null)
         SetElementParams(revitWall, speckleRevitWall);
 
-      return revitWall;
+      // TODO: create nested children too
+
+      var placeholder = new ApplicationPlaceholderObject
+      {
+        applicationId = speckleWall.applicationId,
+        ApplicationGeneratedId = revitWall.Id.ToString()
+      };
+
+      return new List<ApplicationPlaceholderObject>() { placeholder };
     }
 
     public IRevit WallToSpeckle(DB.Wall revitWall)
@@ -146,6 +154,9 @@ namespace Objects.Converter.Revit
 
       AddCommonRevitProps(speckleWall, revitWall);
 
+      // TODO
+      var hostedElements = revitWall.FindInserts(true, true, true, true);
+
       return speckleWall;
     }
 
@@ -175,5 +186,6 @@ namespace Objects.Converter.Revit
 
       return mesh;
     }
+  
   }
 }

@@ -10,12 +10,13 @@ using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Autodesk.Revit.DB.Structure;
 using Objects.Revit;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element ColumnToNative(IColumn speckleColumn)
+    public List<ApplicationPlaceholderObject> ColumnToNative(IColumn speckleColumn)
     {
       if (speckleColumn.baseLine == null)
       {
@@ -115,7 +116,11 @@ namespace Objects.Converter.Revit
         SetElementParams(revitColumn, speckleRevitColumn, exclusions);
       }
 
-      return revitColumn;
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitColumn.applicationId, ApplicationGeneratedId = revitColumn.UniqueId } };
+
+      // TODO: nested elements.
+
+      return placeholders;
     }
 
     /// <summary>

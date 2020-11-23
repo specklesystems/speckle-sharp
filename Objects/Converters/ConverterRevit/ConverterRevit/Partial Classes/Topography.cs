@@ -1,14 +1,14 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
-using Objects.BuiltElements;
 using Objects.Revit;
+using Speckle.Core.Models;
 using System.Collections.Generic;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public TopographySurface TopographyToNative(ITopography speckleSurface)
+    public ApplicationPlaceholderObject TopographyToNative(ITopography speckleSurface)
     {
       var docObj = GetExistingElementByApplicationId(speckleSurface.applicationId);
 
@@ -24,27 +24,15 @@ namespace Objects.Converter.Revit
       if (docObj != null)
       {
         Doc.Delete(docObj.Id);
-
-        // TODO: Can't start a transaction here as we have started a global transaction for the creation of all objects.
-        // TODO: Let each individual ToNative method handle its own transactions. It's a big change, so will leave for later.
-
-        //var srf = (TopographySurface) docObj;
-
-        //using( TopographyEditScope e = new TopographyEditScope( Doc, "Speckle Topo Edit" ) )
-        //{
-        //  e.Start(srf.Id);
-        //  srf.DeletePoints( srf.GetPoints() );
-        //  srf.AddPoints( pts );
-        //  e.Commit( null );
-        //}
-        //return srf;
       }
 
       var revitSurface = TopographySurface.Create(Doc, pts);
       if (speckleSurface is RevitTopography rt)
+      {
         SetElementParams(revitSurface, rt);
+      }
 
-      return revitSurface;
+      return new ApplicationPlaceholderObject { applicationId = speckleSurface.applicationId, ApplicationGeneratedId = revitSurface.UniqueId };
     }
 
     public RevitTopography TopographyToSpeckle(TopographySurface revitTopo)
