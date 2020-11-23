@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
@@ -176,6 +175,17 @@ namespace Speckle.ConnectorRevit.UI
 
         ((List<Base>)commitObject[category]).Add(conversionResult);
 
+        //var level = (Level) CurrentDoc.Document.GetElement(revitElement.LevelId);
+
+        //if(commitObject[$"@{level.Name}"] == null)
+        //{
+        //  commitObject[$"@{level.Name}"] = new Base
+        //  {
+        //    ["@objects"] = new List<Base>(),
+        //    ["elevation"] = level.Elevation, // TODO Cast! 
+        //  };
+        //}
+
       }
 
       if (converter.ConversionErrors.Count != 0)
@@ -258,6 +268,11 @@ namespace Speckle.ConnectorRevit.UI
       return state;
     }
 
+    /// <summary>
+    /// Receives a stream and bakes into the existing revit file.
+    /// </summary>
+    /// <param name="state"></param>
+    /// <returns></returns>
     public override async Task<StreamState> ReceiveStream(StreamState state)
     {
       ConversionErrors.Clear();
@@ -302,46 +317,20 @@ namespace Speckle.ConnectorRevit.UI
 
       UpdateProgress(new ConcurrentDictionary<string, int>() { ["Converting"] = 1 }, state.Progress);
 
-      var (ids, objs) = HandleAndFlatten(commitObject, converter);
-
-      // Delete old baked elements.
-      if (state.Objects.Count != 0)
-      {
-        converter.SetContextObjects(state.Objects.Cast<ApplicationPlaceholderObject>().ToList()); // needs to be set for editing to work
-
-        Queue.Add(() =>
-        {
-          using (var t = new Transaction(CurrentDoc.Document, $"Cleaning up old elements for stream {state.Stream.name}"))
-          {
-            t.Start();
-            foreach (var placeholder in state.Objects)
-            {
-              if (ids.Contains(placeholder["speckleId"])) continue;
-              var elem = CurrentDoc.Document.GetElement(placeholder.applicationId);
-              if (elem != null)
-              {
-                CurrentDoc.Document.Delete(elem.Id);
-              }
-            }
-            t.Commit();
-          }
-        });
-        Executor.Raise();
-      }
-
       // Bake the new ones.
       Queue.Add(() =>
       {
+        converter.SetContextObjects(state.Objects.Cast<ApplicationPlaceholderObject>().ToList()); // needs to be set for editing to work
+
         using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.Stream.name}"))
         {
           t.Start();
-          var elems = converter.ConvertToNative(objs).Cast<RevitElement>().ToList();
 
-          for (int i = 0; i < elems.Count; i++)
-          {
-            var placeholder = new ApplicationPlaceholderObject { applicationId = elems[i].UniqueId, ApplicationGeneratedId = objs[i].applicationId };
-            state.Objects.Add(placeholder);
-          }
+          var newPlaceholderObjects = HandleAndConvertToNative(commitObject, converter);
+
+          // TODO: delete old objects.
+
+          state.Objects = newPlaceholderObjects.Cast<Base>().ToList();
           state.Errors.AddRange(converter.ConversionErrors.Select(e => new Exception($"{e.message}: {e.details}")));
 
           t.Commit();
@@ -368,52 +357,66 @@ namespace Speckle.ConnectorRevit.UI
       return state;
     }
 
-
-    private (HashSet<string>, List<Base>) HandleAndFlatten(object obj, ISpeckleConverter converter)
+    /// <summary>
+    /// Recurses through the commit object and converts objects as it goes though them. 
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <param name="converter"></param>
+    /// <returns></returns>
+    private List<ApplicationPlaceholderObject> HandleAndConvertToNative(object obj, ISpeckleConverter converter)
     {
       HashSet<string> appIds = new HashSet<string>();
       List<Base> objects = new List<Base>();
 
+      List<ApplicationPlaceholderObject> placeholders = new List<ApplicationPlaceholderObject>();
+
       if (obj is Base baseItem)
       {
-        if (baseItem.applicationId != null) appIds.Add(baseItem.applicationId);
+        if (baseItem.applicationId != null)
+        {
+          appIds.Add(baseItem.applicationId);
+        }
 
         objects.Add(baseItem);
 
+        // --> return a list of ApplicationPlaceholderObject so we can do deletion afterwards
+        var convRes = converter.ConvertToNative(baseItem);
+        if (convRes is ApplicationPlaceholderObject placeholder)
+        {
+          placeholders.Add(placeholder);
+        }
+        else if (convRes is List<ApplicationPlaceholderObject> placeholderList)
+        {
+          placeholders.AddRange(placeholderList);
+        }
 
         foreach (var prop in baseItem.GetDynamicMembers())
         {
-          var (ids, objs) = HandleAndFlatten(baseItem[prop], converter);
-          appIds.UnionWith(ids);
-          objects.AddRange(objs);
+          placeholders.AddRange( HandleAndConvertToNative(baseItem[prop], converter) );
         }
 
-        return (appIds, objects);
+        return placeholders;
       }
 
       if (obj is List<object> list)
       {
         foreach (var listObj in list)
         {
-          var (ids, objs) = HandleAndFlatten(listObj, converter);
-          appIds.UnionWith(ids);
-          objects.AddRange(objs);
+          placeholders.AddRange( HandleAndConvertToNative(listObj, converter));
         }
-        return (appIds, objects);
+        return placeholders;
       }
 
       if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
         {
-          var (ids, objs) = HandleAndFlatten(kvp.Value, converter);
-          appIds.UnionWith(ids);
-          objects.AddRange(objs);
+          placeholders.AddRange( HandleAndConvertToNative(kvp.Value, converter));
         }
-        return (appIds, objects);
+        return placeholders;
       }
 
-      return (appIds, objects);
+      return placeholders;
     }
 
     private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)

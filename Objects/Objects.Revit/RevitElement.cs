@@ -1,8 +1,6 @@
 ﻿using Objects.BuiltElements;
 using Speckle.Core.Kits;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Objects.Revit
 {
@@ -14,9 +12,10 @@ namespace Objects.Revit
   public class RevitElement : Element, IRevit
   {
     public string family { get; set; }
+
     public string type { get; set; }
 
-    public string level { get; set; }
+    public Level level { get; set; }
 
     [SchemaOptional]
     public Dictionary<string, object> parameters { get; set; }

@@ -88,13 +88,11 @@ namespace Objects
   public interface IBeam : IBuiltElement
   {
     ICurve baseLine { get; set; }
-
   }
 
   public interface IBrace : IBuiltElement
   {
     ICurve baseLine { get; set; }
-
   }
 
   public interface IColumn : IBuiltElement
@@ -102,7 +100,6 @@ namespace Objects
     double height { get; set; }
 
     ICurve baseLine { get; set; }
-
   }
 
   public interface IDuct : IBuiltElement
@@ -114,7 +111,6 @@ namespace Objects
     double velocity { get; set; }
 
     Line baseLine { get; set; }
-
   }
 
   public interface IFloor : IBuiltElement
@@ -160,7 +156,6 @@ namespace Objects
   public interface ITopography : IBuiltElement
   {
     Mesh baseGeometry { get; set; }
-
   }
 
   public interface IWall : IBuiltElement
@@ -168,8 +163,6 @@ namespace Objects
     double height { get; set; }
 
     ICurve baseLine { get; set; }
-
-
   }
 
   #endregion

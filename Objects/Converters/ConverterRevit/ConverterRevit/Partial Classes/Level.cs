@@ -191,7 +191,5 @@ namespace Objects.Converter.Revit
       }
     }
 
-
-
   }
 }

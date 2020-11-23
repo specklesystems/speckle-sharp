@@ -254,18 +254,18 @@ namespace Objects.Converter.Revit
     private List<Base> NestObjectsInLevels(List<Base> baseObjs)
     {
       var levelWithObjects = new List<Base>();
-      foreach (var obj in baseObjs)
-      {
-        if (obj is RevitElement re && !string.IsNullOrEmpty(re.level))
-        {
-          Levels[re.level].elements.Add(re);
-        }
-        else
-        {
-          levelWithObjects.Add(obj);
-        }
-      }
-      levelWithObjects.AddRange(Levels.Values);
+      //foreach (var obj in baseObjs)
+      //{
+      //  if (obj is RevitElement re && !string.IsNullOrEmpty(re.level))
+      //  {
+      //    Levels[re.level].elements.Add(re);
+      //  }
+      //  else
+      //  {
+      //    levelWithObjects.Add(obj);
+      //  }
+      //}
+      //levelWithObjects.AddRange(Levels.Values);
       return levelWithObjects;
     }
 
