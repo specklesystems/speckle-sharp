@@ -1,15 +1,11 @@
-﻿using Dynamo.Extensions;
-using Dynamo.ViewModels;
+﻿using Dynamo.ViewModels;
 using Dynamo.Wpf.Extensions;
 using Speckle.ConnectorDynamo.Functions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Speckle.Core.Logging;
 using Speckle.Core.Kits;
+using Dynamo.Applications.Models;
+using RevitServices.Persistence;
 
 namespace Speckle.ConnectorDynamo.Extension
 {
@@ -29,6 +25,11 @@ namespace Speckle.ConnectorDynamo.Extension
         var dynamoViewModel = viewLoadedParams.DynamoWindow.DataContext as DynamoViewModel;
         var speckleWatchHandler = new SpeckleWatchHandler(dynamoViewModel.PreferenceSettings);
 
+        if (dynamoViewModel.Model is RevitDynamoModel rdm)
+        {
+          rdm.RevitDocumentChanged += Rdm_RevitDocumentChanged;
+          Globals.RevitDocument = DocumentManager.Instance.CurrentDBDocument;
+        }
         //sets a read-only property using reflection WatchHandler
         //typeof(DynamoViewModel).GetProperty("WatchHandler").SetValue(dynamoViewModel, speckleWatchHandler);
 
@@ -37,6 +38,12 @@ namespace Speckle.ConnectorDynamo.Extension
       {
 
       }
+    }
+
+    private void Rdm_RevitDocumentChanged(object sender, EventArgs e)
+    {
+
+      Globals.RevitDocument = DocumentManager.Instance.CurrentDBDocument;
     }
 
     public void Dispose() { }

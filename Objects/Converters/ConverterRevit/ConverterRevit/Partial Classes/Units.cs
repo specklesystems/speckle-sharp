@@ -14,7 +14,6 @@ namespace Objects.Converter.Revit
       {
         if (string.IsNullOrEmpty(_modelUnits))
         {
-          var fo = Doc.GetUnits().GetFormatOptions(SpecTypeId.Length);
           _modelUnits = UnitsToSpeckle(RevitLengthTypeId.TypeId);
         }
         return _modelUnits;

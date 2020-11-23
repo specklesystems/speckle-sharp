@@ -908,7 +908,7 @@ namespace Objects.Converter.RhinoGh
           ScaleToNative(p.y, p.units),
           ScaleToNative(p.z, p.units),
           p.weight,
-          p.units)).ToList()).ToList(); //TODO: @alan, please check it works!
+          p.units)).ToList()).ToList();
 
       var result = NurbsSurface.Create(3, surface.rational, surface.degreeU + 1, surface.degreeV + 1,
         points.Count, points[0].Count);

@@ -1,5 +1,4 @@
 ﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements;
 using Objects.Revit;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -11,12 +10,8 @@ using DB = Autodesk.Revit.DB;
 
 using DetailCurve = Objects.Revit.DetailCurve;
 using DirectShape = Objects.Revit.DirectShape;
-using RevitFamilyInstance = Objects.Revit.RevitFamilyInstance;
-using Floor = Objects.BuiltElements.Floor;
-using Level = Objects.BuiltElements.Level;
 using ModelCurve = Objects.Revit.ModelCurve;
-using Opening = Objects.BuiltElements.Opening;
-using Wall = Objects.BuiltElements.Wall;
+using RevitFamilyInstance = Objects.Revit.RevitFamilyInstance;
 
 namespace Objects.Converter.Revit
 {
@@ -31,17 +26,16 @@ namespace Objects.Converter.Revit
 
     public IEnumerable<string> GetServicedApplications() => new string[] { Applications.Revit };
 
-    #endregion implemented props
+    #endregion ISpeckleConverter props
 
     public ConverterRevit()
     {
     }
 
-
     public Document Doc { get; private set; }
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
-    
+
     public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
 
     public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
@@ -300,12 +294,104 @@ namespace Objects.Converter.Revit
 
     public bool CanConvertToSpeckle(object @object)
     {
-      throw new NotImplementedException();
+      switch (@object)
+      {
+        case DB.DetailCurve _:
+          return true;
+
+        case DB.DirectShape _:
+          return true;
+
+        case DB.FamilyInstance _:
+          return true;
+
+        case DB.Floor _:
+          return true;
+
+        case DB.Level _:
+          return true;
+
+        case DB.ModelCurve _:
+          return true;
+
+        case DB.Opening _:
+          return true;
+
+        case DB.RoofBase _:
+          return true;
+
+        case DB.Architecture.Room _:
+          return true;
+
+        case DB.Architecture.TopographySurface _:
+          return true;
+
+        case DB.Wall _:
+          return true;
+
+        case DB.Mechanical.Duct _:
+          return true;
+
+        default:
+          return false;
+      }
     }
 
     public bool CanConvertToNative(Base @object)
     {
-      throw new NotImplementedException();
+      switch (@object)
+      {
+        case AdaptiveComponent _:
+          return true;
+
+        case IBeam _:
+          return true;
+
+        case IBrace _:
+          return true;
+
+        case IColumn _:
+          return true;
+
+        case DetailCurve _:
+          return true;
+
+        case DirectShape _:
+          return true;
+
+        case RevitFamilyInstance _:
+          return true;
+
+        case IFloor _:
+          return true;
+
+        case ILevel _:
+          return true;
+
+        case ModelCurve _:
+          return true;
+
+        case IOpening _:
+          return true;
+
+        case RoomBoundaryLine _:
+          return true;
+
+        case IRoof _:
+          return true;
+
+        case ITopography _:
+          return true;
+
+        case IWall _:
+          return true;
+
+        case IDuct _:
+          return true;
+
+        default:
+          return false;
+      }
     }
   }
 }

@@ -18,6 +18,7 @@ namespace Speckle.ConnectorDynamo.Functions
   [IsVisibleInDynamoLibrary(false)]
   public static class Functions
   {
+
     /// <summary>
     /// Sends data to a Speckle Server by creating a commit on the master branch of a Stream
     /// </summary>
@@ -51,7 +52,10 @@ namespace Speckle.ConnectorDynamo.Functions
         var res = client.CommitCreate(cancellationToken,
           new CommitCreateInput
           {
-            streamId = streams[i].StreamId, branchName = branchName, objectId = objectId, message = message
+            streamId = streams[i].StreamId,
+            branchName = branchName,
+            objectId = objectId,
+            message = message
           }).Result;
 
         responses.Add(res);
@@ -74,7 +78,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// </summary>
     /// <param name="stream">Stream to receive from</param>
     /// <returns></returns>
-    [MultiReturn(new[] {"data", "commit"})]
+    [MultiReturn(new[] { "data", "commit" })]
     public static Dictionary<string, object> Receive(StreamWrapper stream, CancellationToken cancellationToken,
       Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null,
       Action<int> onTotalChildrenCountKnown = null)
@@ -95,7 +99,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
         if (!mainBranch.commits.items.Any())
           throw new Exception("No commits found.");
-        
+
         commit = mainBranch.commits.items[0];
       }
       else
@@ -127,7 +131,7 @@ namespace Speckle.ConnectorDynamo.Functions
       var converter = new BatchConverter();
       var data = converter.ConvertRecursivelyToNative(@base);
 
-      return new Dictionary<string, object> {{"data", data}, {"commit", commit}};
+      return new Dictionary<string, object> { { "data", data }, { "commit", commit } };
     }
 
 

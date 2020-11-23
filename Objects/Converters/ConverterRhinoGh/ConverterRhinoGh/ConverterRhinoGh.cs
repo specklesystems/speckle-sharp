@@ -201,14 +201,6 @@ namespace Objects.Converter.RhinoGh
       return objects.Select(x => ConvertToNative(x)).ToList();
     }
 
-    private MethodInfo ConversionMethods(object @object, string methodName)
-    {
-      // TODO: Cache the result!
-      //is there any method that takes in the above type as input?
-      return typeof(ConverterRhinoGh).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
-        .FirstOrDefault(m => m.Name == methodName && m.GetParameters().Any(p => p.ParameterType == @object.GetType()));
-    }
-
     public bool CanConvertToSpeckle(object @object)
     {
       switch (@object)

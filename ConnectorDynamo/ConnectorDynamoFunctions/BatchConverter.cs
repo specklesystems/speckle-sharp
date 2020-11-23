@@ -22,7 +22,12 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       var kit = KitManager.GetDefaultKit();
       _converter = kit.LoadConverter(Applications.Dynamo);
+#if REVIT
+      _converter.SetContextDocument(Globals.RevitDocument);
+#endif
     }
+
+
 
     /// <summary>
     /// Helper method to convert a tree-like structure (nested lists) to Speckle
@@ -216,3 +221,4 @@ namespace Speckle.ConnectorDynamo.Functions
     }
   }
 }
+
