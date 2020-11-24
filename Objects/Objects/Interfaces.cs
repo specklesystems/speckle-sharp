@@ -46,22 +46,22 @@ namespace Objects
   public interface I2DGeometry : IGeometry
   {
     /// <summary>
-    /// Gets or sets the bounding box for this <see cref="I3DGeometry"/> instance.
+    /// Gets or sets the bounding box for this <see cref="I2DGeometry"/> instance.
     /// </summary>
     Box boundingBox { get; set; }
 
     /// <summary>
-    /// Gets or sets the center point for this <see cref="I3DGeometry"/> instance.
+    /// Gets or sets the center point for this <see cref="I2DGeometry"/> instance.
     /// </summary>
     Point center { get; set; }
 
     /// <summary>
-    /// Gets or sets the area for this <see cref="I3DGeometry"/> instance.
+    /// Gets or sets the area for this <see cref="I2DGeometry"/> instance.
     /// </summary>
     double area { get; set; }
 
     /// <summary>
-    /// Gets or set the length of this <see cref="I3DGeometry"/> instance.
+    /// Gets or set the length of this <see cref="I2DGeometry"/> instance.
     /// </summary>
     double length { get; set; }
   }
@@ -88,13 +88,11 @@ namespace Objects
   public interface IBeam : IBuiltElement
   {
     ICurve baseLine { get; set; }
-
   }
 
   public interface IBrace : IBuiltElement
   {
     ICurve baseLine { get; set; }
-
   }
 
   public interface IColumn : IBuiltElement
@@ -102,7 +100,6 @@ namespace Objects
     double height { get; set; }
 
     ICurve baseLine { get; set; }
-
   }
 
   public interface IDuct : IBuiltElement
@@ -114,7 +111,6 @@ namespace Objects
     double velocity { get; set; }
 
     Line baseLine { get; set; }
-
   }
 
   public interface IFloor : IBuiltElement
@@ -132,7 +128,7 @@ namespace Objects
   {
     string name { get; set; }
     string units { get; set; }
-    double elevation { get; set; }
+    double? elevation { get; set; }
     List<Element> elements { get; set; }
   }
 
@@ -160,7 +156,6 @@ namespace Objects
   public interface ITopography : IBuiltElement
   {
     Mesh baseGeometry { get; set; }
-
   }
 
   public interface IWall : IBuiltElement
@@ -168,8 +163,6 @@ namespace Objects
     double height { get; set; }
 
     ICurve baseLine { get; set; }
-
-
   }
 
   #endregion

@@ -23,7 +23,7 @@ namespace Objects.Revit
   [SchemaDescription("A Revit wall by base line and top and bottom levels")]
   public class RevitWallByLine : RevitWall
   {
-    public string topLevel { get; set; }
+    public RevitLevel topLevel { get; set; }
 
     //hiding the height as not needed here
     [SchemaIgnore]

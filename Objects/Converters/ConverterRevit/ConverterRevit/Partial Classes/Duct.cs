@@ -1,21 +1,17 @@
-﻿using Objects;
-using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB.Mechanical;
-using Duct = Objects.BuiltElements.Duct;
-using Level = Objects.BuiltElements.Level;
-using Line = Objects.Geometry.Line;
+﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
+using Objects.Revit;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Autodesk.Revit.DB.Mechanical;
-using System.Linq;
-using Objects.Revit;
+using DB = Autodesk.Revit.DB.Mechanical;
+using Line = Objects.Geometry.Line;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Duct DuctToNative(IDuct speckleDuct)
+    public List<ApplicationPlaceholderObject> DuctToNative(IDuct speckleDuct)
     {
       DB.Duct duct = null;
       var baseLine = LineToNative(speckleDuct.baseLine);
@@ -29,7 +25,7 @@ namespace Objects.Converter.Revit
       if (speckleRevitDuct != null)
       {
         type = speckleRevitDuct.type;
-        level = GetLevelByName(speckleRevitDuct.level);
+        level = LevelToNative(speckleRevitDuct.level);
       }
       else
       {
@@ -41,19 +37,28 @@ namespace Objects.Converter.Revit
       //var systemType = (speckleDuct is RevitDuct rd2) ? rd2.systemType : "";
       var system = GetElementType<MechanicalSystemType>(systemFamily, "");
 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleDuct.applicationId, speckleDuct.speckle_type);
+      var docObj = GetExistingElementByApplicationId(speckleDuct.applicationId);
 
       // deleting instead of updating for now!
       if (docObj != null)
+      {
         Doc.Delete(docObj.Id);
+      }
 
       duct = DB.Duct.Create(Doc, system.Id, ductType.Id, level.Id, startPoint, endPoint);
 
       if (speckleRevitDuct != null)
+      {
         SetElementParams(duct, speckleRevitDuct);
+      }
 
-      return duct;
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitDuct.applicationId, ApplicationGeneratedId = duct.UniqueId } };
+
+      // TODO: nested elements (if any?).
+
+      return placeholders;
     }
+
     public IDuct DuctToSpeckle(DB.Duct revitDuct)
     {
       var baseGeometry = LocationToSpeckle(revitDuct);
@@ -96,7 +101,5 @@ namespace Objects.Converter.Revit
 
       return speckleDuct;
     }
-
-
   }
 }

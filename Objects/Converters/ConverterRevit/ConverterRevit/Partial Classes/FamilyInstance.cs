@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.Revit;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 
@@ -68,6 +69,9 @@ namespace Objects.Converter.Revit
 
       AddCommonRevitProps(speckleFi, revitFi);
 
+      // TODO:
+      // revitFi.GetSubelements();
+
       return speckleFi;
     }
 
@@ -87,15 +91,15 @@ namespace Objects.Converter.Revit
     }
 
     //TODO: might need to clean this up and split the logic by beam, FI, etc...
-    public DB.FamilyInstance FamilyInstanceToNative(RevitFamilyInstance speckleFi)
+    public List<ApplicationPlaceholderObject> FamilyInstanceToNative(RevitFamilyInstance speckleFi)
     {
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi as IBuiltElement);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
-      DB.Level level = GetLevelByName(speckleFi.level);
+      DB.Level level = LevelToNative(speckleFi.level);
       DB.FamilyInstance familyInstance = null;
 
       //try update existing
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleFi.applicationId, speckleFi.type);
+      var docObj = GetExistingElementByApplicationId(speckleFi.applicationId);
       if (docObj != null)
       {
         try
@@ -150,7 +154,11 @@ namespace Objects.Converter.Revit
 
       SetElementParams(familyInstance, speckleFi);
 
-      return familyInstance;
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleFi.applicationId, ApplicationGeneratedId = familyInstance.UniqueId } };
+
+      // TODO: nested elements.
+
+      return placeholders;
     }
   }
 }

@@ -1,23 +1,18 @@
 ﻿using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using System.Linq;
-using Autodesk.Revit.UI;
 using Objects.Geometry;
+using Objects.Primitive;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Point = Objects.Geometry.Point;
-using Plane = Objects.Geometry.Plane;
-using Line = Objects.Geometry.Line;
+using System.Linq;
 using Arc = Objects.Geometry.Arc;
 using Curve = Objects.Geometry.Curve;
-using Mesh = Objects.Geometry.Mesh;
-using System.Linq;
-using System.Net;
+using DB = Autodesk.Revit.DB;
 using Ellipse = Objects.Geometry.Ellipse;
-using Objects;
+using Line = Objects.Geometry.Line;
+using Mesh = Objects.Geometry.Mesh;
+using Plane = Objects.Geometry.Plane;
+using Point = Objects.Geometry.Point;
 using Surface = Objects.Geometry.Surface;
-using Objects.Primitive;
 
 namespace Objects.Converter.Revit
 {
@@ -242,7 +237,7 @@ namespace Objects.Converter.Revit
         }
 
       }
-      catch (Exception e)
+      catch (Exception)
       {
         return null;
       }
@@ -284,7 +279,10 @@ namespace Objects.Converter.Revit
 
         case Polycurve plc:
           foreach (var seg in plc.segments)
+          {
             curveArray.Append(CurveToNative(seg).get_Item(0));
+          }
+
           return curveArray;
         default:
           throw new Exception("The provided geometry is not a valid curve");
@@ -299,7 +297,10 @@ namespace Objects.Converter.Revit
           return LineToSpeckle(line);
         case DB.Arc arc:
           if (!arc.IsBound)
+          {
             return (CircleToSpeckle(arc));
+          }
+
           return ArcToSpeckle(arc);
         case DB.Ellipse ellipse:
           return EllipseToSpeckle(ellipse);
@@ -381,12 +382,17 @@ namespace Objects.Converter.Revit
 
     public XYZ[] ArrayToPoints(IEnumerable<double> arr, string units)
     {
-      if (arr.Count() % 3 != 0) throw new Exception("Array malformed: length%3 != 0.");
+      if (arr.Count() % 3 != 0)
+      {
+        throw new Exception("Array malformed: length%3 != 0.");
+      }
 
       XYZ[] points = new XYZ[arr.Count() / 3];
       var asArray = arr.ToArray();
       for (int i = 2, k = 0; i < arr.Count(); i += 3)
+      {
         points[k++] = new XYZ(ScaleToNative(asArray[i - 2], units), ScaleToNative(asArray[i - 1], units), ScaleToNative(asArray[i], units));
+      }
 
       return points;
     }
@@ -466,7 +472,9 @@ namespace Objects.Converter.Revit
 
       var nativeCurve = CurveToNative(edgeCurve);
       if (edge.ProxyCurveIsReversed)
+      {
         nativeCurve = nativeCurve.CreateReversed();
+      }
 
       // TODO: Remove short segments if smaller than 'Revit.ShortCurveTolerance'.
       var edgeGeom = BRepBuilderEdgeGeometry.Create(nativeCurve);
@@ -510,7 +518,9 @@ namespace Objects.Converter.Revit
 
       int j = 0, k = 0;
       while (j < count)
+      {
         knots[++k] = list[j++];
+      }
 
       knots[0] = knots[1];
       knots[count + 1] = knots[count];
@@ -545,14 +555,11 @@ namespace Objects.Converter.Revit
 
     public Solid BrepToNative(Brep brep)
     {
-      var bRepType = BRepType.OpenShell;
       switch (brep.Orientation)
       {
         case BrepOrientation.Inward:
-          bRepType = BRepType.Void;
           break;
         case BrepOrientation.Outward:
-          bRepType = BRepType.Solid;
           break;
       }
 
@@ -569,15 +576,21 @@ namespace Objects.Converter.Revit
         {
           var loopId = builder.AddLoop(faceId);
           if (face.OrientationReversed)
+          {
             loop.TrimIndices.Reverse();
+          }
 
           foreach (var trim in loop.Trims)
           {
             if (trim.TrimType != BrepTrimType.Boundary && trim.TrimType != BrepTrimType.Mated)
+            {
               continue;
+            }
 
             if (trim.Edge == null)
+            {
               continue;
+            }
 
             var edgeIds = brepEdges[trim.EdgeIndex];
             if (edgeIds == null)
@@ -591,7 +604,9 @@ namespace Objects.Converter.Revit
             if (trimReversed)
             {
               for (int e = edgeIds.Count - 1; e >= 0; --e)
+              {
                 builder.AddCoEdge(loopId, edgeIds[e], true);
+              }
             }
             else
             {
@@ -608,10 +623,17 @@ namespace Objects.Converter.Revit
       }
 
       var bRepBuilderOutcome = builder.Finish();
-      if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
+      if (bRepBuilderOutcome == BRepBuilderOutcome.Failure)
+      {
+        return null;
+      }
 
       var isResultAvailable = builder.IsResultAvailable();
-      if (!isResultAvailable) return null;
+      if (!isResultAvailable)
+      {
+        return null;
+      }
+
       var result = builder.GetResult();
       return result;
     }
@@ -623,14 +645,21 @@ namespace Objects.Converter.Revit
       var brep = new Brep();
       brep.units = ModelUnits;
 
-      if (solid is null || solid.Faces.IsEmpty) return null;
+      if (solid is null || solid.Faces.IsEmpty)
+      {
+        return null;
+      }
 
       var brepEdges = new Dictionary<DB.Edge, BrepEdge>();
 
       foreach (var face in solid.Faces.Cast<DB.Face>())
       {
         var si = AddSurface(brep, face, out var shells, brepEdges);
-        if (si < 0) continue;
+        if (si < 0)
+        {
+          continue;
+        }
+
         TrimSurface(brep, si, !face.OrientationMatchesSurfaceOrientation, shells);
       }
 
@@ -643,7 +672,9 @@ namespace Objects.Converter.Revit
     public Surface FaceToSpeckle(DB.Face face, out bool parametricOrientation, double relativeTolerance = 0.0)
     {
       using (var surface = face.GetSurface())
+      {
         parametricOrientation = surface.OrientationMatchesParametricOrientation;
+      }
 
       switch (face)
       {
@@ -673,14 +704,16 @@ namespace Objects.Converter.Revit
 
         foreach (var loop in shell)
         {
-          var brepLoop = 0;
           var edgeCount = loop.edges.Count;
 
           for (int e = 0; e < edgeCount; ++e)
           {
             var brepEdge = loop.edges[e];
             var orientation = loop.orientation[e];
-            if (orientation == 0) continue;
+            if (orientation == 0)
+            {
+              continue;
+            }
 
             if (loop.trims.segments[e] is Curve trim)
             {

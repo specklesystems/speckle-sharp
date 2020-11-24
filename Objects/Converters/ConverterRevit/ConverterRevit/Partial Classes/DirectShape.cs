@@ -9,14 +9,16 @@ using Objects;
 using DirectShape = Objects.Revit.DirectShape;
 using System.Collections.Generic;
 using Mesh = Objects.Geometry.Mesh;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element DirectShapeToNative(DirectShape speckleDs)
+
+    public ApplicationPlaceholderObject DirectShapeToNative(DirectShape speckleDs)
     {
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleDs.applicationId, speckleDs.type);
+      var docObj = GetExistingElementByApplicationId(speckleDs.applicationId);
 
       //just create new one 
       if (docObj != null)
@@ -40,7 +42,8 @@ namespace Objects.Converter.Revit
       revitDs.Name = speckleDs.type;
 
       SetElementParams(revitDs, speckleDs);
-      return revitDs;
+ 
+      return new ApplicationPlaceholderObject { applicationId = speckleDs.applicationId, ApplicationGeneratedId = revitDs.UniqueId };
     }
 
     private IRevit DirectShapeToSpeckle(DB.DirectShape revitAc)
@@ -56,8 +59,6 @@ namespace Objects.Converter.Revit
 
       return speckleAc;
     }
-
-
 
   }
 }

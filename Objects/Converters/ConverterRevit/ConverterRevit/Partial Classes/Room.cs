@@ -4,9 +4,7 @@ using Objects.Revit;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB.Architecture;
-using Level = Objects.BuiltElements.Level;
 using Point = Objects.Geometry.Point;
-using Room = Objects.BuiltElements.Room;
 
 namespace Objects.Converter.Revit
 {
@@ -25,7 +23,9 @@ namespace Objects.Converter.Revit
       speckleRoom.level = ConvertAndCacheLevel(baseLevelParam);
       speckleRoom.outline = profiles[0];
       if (profiles.Count > 1)
+      {
         speckleRoom.voids = profiles.Skip(1).ToList();
+      }
 
       AddCommonRevitProps(speckleRoom, revitRoom);
 
@@ -45,7 +45,11 @@ namespace Objects.Converter.Revit
         {
           var c = segment.GetCurve();
 
-          if (c == null) continue;
+          if (c == null)
+          {
+            continue;
+          }
+
           poly.segments.Add(CurveToSpeckle(c));
         }
         profiles.Add(poly);

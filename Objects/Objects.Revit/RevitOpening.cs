@@ -32,6 +32,6 @@ namespace Objects.Revit
 
   public class RevitShaft : RevitOpening
   {
-    public string topLevel { get; set; }
+    public RevitLevel topLevel { get; set; }
   }
 }

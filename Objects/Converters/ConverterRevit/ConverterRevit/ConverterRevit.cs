@@ -5,9 +5,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using DB = Autodesk.Revit.DB;
-
 using DetailCurve = Objects.Revit.DetailCurve;
 using DirectShape = Objects.Revit.DirectShape;
 using ModelCurve = Objects.Revit.ModelCurve;
@@ -49,10 +47,17 @@ namespace Objects.Converter.Revit
 
     public Base ConvertToSpeckle(object @object)
     {
+
+      var test = @object.GetType().GetProperty("Host").GetValue(@object);
+
+
+
+      var xxx = ((DB.FamilyInstance)@object).Host.Id;
+
       switch (@object)
       {
         case DB.DetailCurve o:
-          return DetailCurveToSpeckle(o) as Base;
+          return DetailCurveToSpeckle(o);
 
         case DB.DirectShape o:
           return DirectShapeToSpeckle(o) as Base;
@@ -68,7 +73,10 @@ namespace Objects.Converter.Revit
 
         case DB.ModelCurve o:
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
+          {
             return RoomBoundaryLineToSpeckle(o);
+          }
+
           return ModelCurveToSpeckle(o);
 
         case DB.Opening o:
@@ -186,13 +194,18 @@ namespace Objects.Converter.Revit
           var conversionResult = ConvertToNative(obj);
           var revitElement = conversionResult as DB.Element;
           if (revitElement == null)
+          {
             continue;
+          }
+
           converted.Add(revitElement);
 
           //process nested elements afterwards
           //this will take care of levels and host elements
           if (obj["@elements"] != null && obj["@elements"] is List<Base> nestedElements)
+          {
             converted.AddRange(ConvertNestedObjectsToNative(nestedElements, revitElement));
+          }
         }
         catch (Exception e)
         {
@@ -206,24 +219,33 @@ namespace Objects.Converter.Revit
     private List<object> ConvertNestedObjectsToNative(List<Base> objects, DB.Element host)
     {
       var converted = new List<object>();
-      foreach (var obj in objects)
-      {
-        //add level name on object, this overrides potential existing values
-        if (host is DB.Level && obj is RevitElement re)
-          re.level = host.Name;
-        //if hosted element, use the revitHostId prop
-        else if (host.Id.IntegerValue != -1 && obj is IHostable io)
-          io.revitHostId = host.Id.IntegerValue;
+      //foreach (var obj in objects)
+      //{
+      //  //add level name on object, this overrides potential existing values
+      //  if (host is DB.Level && obj is RevitElement re)
+      //  {
+      //    re.level = host.Name;
+      //  }
+      //  //if hosted element, use the revitHostId prop
+      //  else if (host.Id.IntegerValue != -1 && obj is IHostable io)
+      //  {
+      //    io.revitHostId = host.Id.IntegerValue;
+      //  }
 
-        var conversionResult = ConvertToNative(obj);
-        var revitElement = conversionResult as DB.Element;
-        if (revitElement == null)
-          continue;
-        converted.Add(revitElement);
-        //continue un-nesting
-        if (obj["@elements"] != null && obj["@elements"] is List<Base> nestedElements)
-          converted.AddRange(ConvertNestedObjectsToNative(nestedElements, revitElement));
-      }
+      //  var conversionResult = ConvertToNative(obj);
+      //  var revitElement = conversionResult as DB.Element;
+      //  if (revitElement == null)
+      //  {
+      //    continue;
+      //  }
+
+      //  converted.Add(revitElement);
+      //  //continue un-nesting
+      //  if (obj["@elements"] != null && obj["@elements"] is List<Base> nestedElements)
+      //  {
+      //    converted.AddRange(ConvertNestedObjectsToNative(nestedElements, revitElement));
+      //  }
+      //}
 
       return converted;
     }
@@ -231,16 +253,18 @@ namespace Objects.Converter.Revit
     private List<Base> NestObjectsInLevels(List<Base> baseObjs)
     {
       var levelWithObjects = new List<Base>();
-      foreach (var obj in baseObjs)
-      {
-        if (obj is RevitElement re && !string.IsNullOrEmpty(re.level))
-        {
-          Levels[re.level].elements.Add(re);
-        }
-        else
-          levelWithObjects.Add(obj);
-      }
-      levelWithObjects.AddRange(Levels.Values);
+      //foreach (var obj in baseObjs)
+      //{
+      //  if (obj is RevitElement re && !string.IsNullOrEmpty(re.level))
+      //  {
+      //    Levels[re.level].elements.Add(re);
+      //  }
+      //  else
+      //  {
+      //    levelWithObjects.Add(obj);
+      //  }
+      //}
+      //levelWithObjects.AddRange(Levels.Values);
       return levelWithObjects;
     }
 
@@ -248,7 +272,9 @@ namespace Objects.Converter.Revit
     {
       Dictionary<int, Base> nested = new Dictionary<int, Base>();
       if (baseObjs.Count != revitObjs.Count)
+      {
         throw new Exception("Object count must be equal");
+      }
 
       for (var i = 0; i < baseObjs.Count; i++)
       {
@@ -268,9 +294,13 @@ namespace Objects.Converter.Revit
         var hostIndex = -1;
 
         if (revitObj is DB.FamilyInstance)
+        {
           hostIndex = revitObjs.FindIndex(x => x.Id == (revitObj as DB.FamilyInstance).Host.Id);
+        }
         else if (revitObj is DB.Opening)
+        {
           hostIndex = revitObjs.FindIndex(x => x.Id == (revitObj as DB.Opening).Host.Id);
+        }
 
         if (hostIndex == -1) //host not in current selection
         {

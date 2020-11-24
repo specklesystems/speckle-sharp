@@ -7,17 +7,13 @@ using System.Collections.Generic;
 using System.Linq;
 
 using DB = Autodesk.Revit.DB;
-
-using Element = Objects.BuiltElements.Element;
-using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
-using Roof = Objects.BuiltElements.Roof;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element RoofToNative(IRoof speckleRoof)
+    public List<ApplicationPlaceholderObject> RoofToNative(IRoof speckleRoof)
     {
       if (speckleRoof.outline == null)
       {
@@ -31,7 +27,7 @@ namespace Objects.Converter.Revit
       var speckleRevitRoof = speckleRoof as RevitRoof;
       if (speckleRevitRoof != null)
       {
-        level = GetLevelByName(speckleRevitRoof.level);
+        level = LevelToNative(speckleRevitRoof.level);
       }
       else
       {
@@ -41,10 +37,11 @@ namespace Objects.Converter.Revit
       var roofType = GetElementType<RoofType>(speckleRoof);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleRoof.applicationId, speckleRoof.speckle_type);
+      var docObj = GetExistingElementByApplicationId(speckleRoof.applicationId);
       if (docObj != null)
+      {
         Doc.Delete(docObj.Id);
-
+      }
 
       switch (speckleRoof)
       {
@@ -78,7 +75,7 @@ namespace Objects.Converter.Revit
             }
             if (speckleFootprintRoof.cutOffLevel != null)
             {
-              var cutOffLevel = GetLevelByName(speckleFootprintRoof.cutOffLevel);
+              var cutOffLevel = LevelToNative(speckleFootprintRoof.cutOffLevel);
               TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM, cutOffLevel);
             }
 
@@ -101,9 +98,17 @@ namespace Objects.Converter.Revit
       {
         ConversionErrors.Add(new Error("Could not create holes in roof", ex.Message));
       }
+
       if (speckleRevitRoof != null)
+      {
         SetElementParams(revitRoof, speckleRevitRoof);
-      return revitRoof;
+      }
+
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitRoof.applicationId, ApplicationGeneratedId = revitRoof.UniqueId } };
+
+      // TODO: nested elements.
+
+      return placeholders;
     }
 
     private void MakeOpeningsInRoof(DB.RoofBase roof, List<ICurve> holes)
@@ -161,12 +166,18 @@ namespace Objects.Converter.Revit
       {
         speckleRoof.outline = profiles[0];
         if (profiles.Count > 1)
+        {
           speckleRoof.voids = profiles.Skip(1).ToList();
+        }
       }
 
       AddCommonRevitProps(speckleRoof, revitRoof);
 
       (speckleRoof.displayMesh.faces, speckleRoof.displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+
+      // TODO
+      var hostedElements = revitRoof.FindInserts(true, true, true, true);
+
       return speckleRoof;
     }
 
@@ -188,7 +199,10 @@ namespace Objects.Converter.Revit
               var poly = new Polycurve(ModelUnits);
               foreach (DB.ModelCurve curve in crvLoop)
               {
-                if (curve == null) continue;
+                if (curve == null)
+                {
+                  continue;
+                }
 
                 var segment = CurveToSpeckle(curve.GeometryCurve) as Base; //it's a safe casting, should be improved tho...
                 segment["slopeAngle"] = ParameterToSpeckle(curve.get_Parameter(BuiltInParameter.ROOF_SLOPE));
@@ -198,7 +212,9 @@ namespace Objects.Converter.Revit
 
                 //roud profiles are returned duplicated!
                 if (curve is ModelArc arc && arc.GeometryCurve.IsClosed)
+                {
                   break;
+                }
               }
               profiles.Add(poly);
             }
@@ -211,7 +227,11 @@ namespace Objects.Converter.Revit
             var poly = new Polycurve(ModelUnits);
             foreach (DB.ModelCurve curve in crvloop)
             {
-              if (curve == null) continue;
+              if (curve == null)
+              {
+                continue;
+              }
+
               poly.segments.Add(CurveToSpeckle(curve.GeometryCurve));
             }
             profiles.Add(poly);

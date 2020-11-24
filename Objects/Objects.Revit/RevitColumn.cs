@@ -11,7 +11,7 @@ namespace Objects.Revit
   {
     public double height { get; set; }
     public ICurve baseLine { get; set; }
-    public string topLevel { get; set; }
+    public RevitLevel topLevel { get; set; }
 
     [SchemaOptional]
     public double baseOffset { get; set; }

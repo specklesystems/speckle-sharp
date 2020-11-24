@@ -10,12 +10,13 @@ using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Autodesk.Revit.DB.Structure;
 using Objects.Revit;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element ColumnToNative(IColumn speckleColumn)
+    public List<ApplicationPlaceholderObject> ColumnToNative(IColumn speckleColumn)
     {
       if (speckleColumn.baseLine == null)
       {
@@ -35,8 +36,8 @@ namespace Objects.Converter.Revit
       var speckleRevitColumn = speckleColumn as RevitColumn;
       if (speckleRevitColumn != null)
       {
-        level = GetLevelByName(speckleRevitColumn.level);
-        topLevel = GetLevelByName(speckleRevitColumn.topLevel);
+        level = LevelToNative(speckleRevitColumn.level);
+        topLevel = LevelToNative(speckleRevitColumn.topLevel);
         structuralType = speckleRevitColumn.structural ? StructuralType.Column : StructuralType.NonStructural;
         //non slanted columns are point based
         isLineBased = speckleRevitColumn.isSlanted;
@@ -48,7 +49,7 @@ namespace Objects.Converter.Revit
       }
 
 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleColumn.applicationId, speckleColumn.speckle_type);
+      var docObj = GetExistingElementByApplicationId(speckleColumn.applicationId);
       
       //try update existing 
       if (docObj != null)
@@ -115,7 +116,11 @@ namespace Objects.Converter.Revit
         SetElementParams(revitColumn, speckleRevitColumn, exclusions);
       }
 
-      return revitColumn;
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitColumn.applicationId, ApplicationGeneratedId = revitColumn.UniqueId } };
+
+      // TODO: nested elements.
+
+      return placeholders;
     }
 
     /// <summary>
@@ -157,15 +162,11 @@ namespace Objects.Converter.Revit
 
     public IRevit ColumnToSpeckle(DB.FamilyInstance revitColumn)
     {
-
-
       //REVIT PARAMS > SPECKLE PROPS
       var baseLevelParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
       var topLevelParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
       var baseOffsetParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
       var topOffsetParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
-
-
 
       var speckleColumn = new RevitColumn();
       speckleColumn.type = Doc.GetElement(revitColumn.GetTypeId()).Name;
@@ -181,10 +182,11 @@ namespace Objects.Converter.Revit
       //geometry
       var baseGeometry = LocationToSpeckle(revitColumn);
       var baseLine = baseGeometry as ICurve;
+      
       //make line from point and height
       if (baseLine == null && baseGeometry is Point basePoint)
       {
-        var elevation = ((RevitLevel)ParameterToSpeckle(topLevelParam)).elevation;
+        var elevation = (double) ((RevitLevel)ParameterToSpeckle(topLevelParam)).elevation;
         baseLine = new Line(basePoint, new Point(basePoint.x, basePoint.y, elevation + speckleColumn.topOffset, ModelUnits), ModelUnits);
       }
 

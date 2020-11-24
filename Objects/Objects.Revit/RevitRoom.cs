@@ -18,7 +18,7 @@ namespace Objects.Revit
     public List<ICurve> voids { get; set; }
     public ICurve outline { get; set; }
     public Point basePoint { get; set; }
-    public string level { get; set; }
+    public RevitLevel level { get; set; }
     public Dictionary<string, object> parameters { get; set; }
     public string elementId { get; set; }
   }

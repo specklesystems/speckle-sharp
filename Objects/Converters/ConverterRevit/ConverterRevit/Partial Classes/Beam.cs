@@ -1,16 +1,16 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Objects.BuiltElements;
 using Objects.Revit;
+using Speckle.Core.Models;
 using System;
-
+using System.Collections.Generic;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element BeamToNative(IBeam speckleBeam, StructuralType structuralType = StructuralType.Beam)
+    public List<ApplicationPlaceholderObject> BeamToNative(IBeam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
       if (speckleBeam.baseLine == null)
       {
@@ -24,9 +24,10 @@ namespace Objects.Converter.Revit
 
       //comes from revit or schema builder, has these props
       var speckleRevitBeam = speckleBeam as RevitBeam;
+      
       if (speckleRevitBeam != null)
       {
-        level = GetLevelByName(speckleRevitBeam.level);
+        level = GetLevelByName(speckleRevitBeam.level.name);
       }
 
       if (level == null)
@@ -35,7 +36,8 @@ namespace Objects.Converter.Revit
       }
 
       //try update existing 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleBeam.applicationId, speckleBeam.speckle_type);
+      var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
+
       if (docObj != null)
       {
         try
@@ -54,7 +56,9 @@ namespace Objects.Converter.Revit
 
             // check for a type change
             if (!string.IsNullOrEmpty(familySymbol.FamilyName) && familySymbol.FamilyName != revitType.Name)
+            {
               revitBeam.ChangeTypeId(familySymbol.Id);
+            }
           }
         }
         catch
@@ -73,9 +77,16 @@ namespace Objects.Converter.Revit
       TrySetParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
 
       if (speckleRevitBeam != null)
+      {
         SetElementParams(revitBeam, speckleRevitBeam);
+      }
 
-      return revitBeam;
+      // TODO: get sub families, it's a family! 
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleBeam.applicationId, ApplicationGeneratedId = revitBeam.UniqueId } };
+
+      // TODO: nested elements.
+
+      return placeholders;
     }
 
     private IRevit BeamToSpeckle(DB.FamilyInstance revitBeam)

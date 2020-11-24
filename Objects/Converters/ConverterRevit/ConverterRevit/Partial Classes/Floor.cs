@@ -7,15 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
-using Element = Objects.BuiltElements.Element;
-using Floor = Objects.BuiltElements.Floor;
-using Level = Objects.BuiltElements.Level;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element FloorToNative(IFloor speckleFloor)
+    public List<ApplicationPlaceholderObject> FloorToNative(IFloor speckleFloor)
     {
       if (speckleFloor.outline == null)
       {
@@ -31,7 +28,7 @@ namespace Objects.Converter.Revit
       var speckleRevitFloor = speckleFloor as RevitFloor;
       if (speckleRevitFloor != null)
       {
-        level = GetLevelByName(speckleRevitFloor.level);
+        level = LevelToNative(speckleRevitFloor.level);
         structural = speckleRevitFloor.structural;
       }
       else
@@ -42,9 +39,12 @@ namespace Objects.Converter.Revit
       var floorType = GetElementType<FloorType>(speckleFloor);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleFloor.applicationId, speckleFloor.speckle_type);
+      var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
+
       if (docObj != null)
+      {
         Doc.Delete(docObj.Id);
+      }
 
       if (floorType == null)
       {
@@ -70,9 +70,12 @@ namespace Objects.Converter.Revit
       {
         SetElementParams(revitFloor, speckleRevitFloor);
       }
-      return revitFloor;
 
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitFloor.applicationId, ApplicationGeneratedId = revitFloor.UniqueId } };
 
+      // TODO: nested elements.
+
+      return placeholders;
     }
 
     private void MakeOpeningsInFloor(DB.Floor floor, List<ICurve> holes)
@@ -94,13 +97,20 @@ namespace Objects.Converter.Revit
       speckleFloor.type = Doc.GetElement(revitFloor.GetTypeId()).Name;
       speckleFloor.outline = profiles[0];
       if (profiles.Count > 1)
+      {
         speckleFloor.voids = profiles.Skip(1).ToList();
+      }
+
       speckleFloor.level = ConvertAndCacheLevel(baseLevelParam);
       speckleFloor.structural = (bool)ParameterToSpeckle(structuralParam);
 
       AddCommonRevitProps(speckleFloor, revitFloor);
 
       (speckleFloor.displayMesh.faces, speckleFloor.displayMesh.vertices) = GetFaceVertexArrayFromElement(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+
+      // TODO
+      var hostedElements = revitFloor.FindInserts(true, true, true, true);
+
       return speckleFloor;
     }
 
@@ -116,9 +126,13 @@ namespace Objects.Converter.Revit
         var poly = new Polycurve(ModelUnits);
         foreach (var curve in crvloop)
         {
-          var c = curve as DB.Curve;
+          var c = curve;
 
-          if (c == null) continue;
+          if (c == null)
+          {
+            continue;
+          }
+
           poly.segments.Add(CurveToSpeckle(c));
         }
         profiles.Add(poly);

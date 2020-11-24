@@ -20,7 +20,7 @@ namespace Objects.Converter.Revit
     {
       var baseCurves = CurveToNative(speckleOpening.outline);
 
-      var (docObj, stateObj) = GetExistingElementByApplicationId(speckleOpening.applicationId, speckleOpening.speckle_type);
+      var docObj = GetExistingElementByApplicationId(speckleOpening.applicationId);
       if (docObj != null)
         Doc.Delete(docObj.Id);
 
@@ -45,8 +45,8 @@ namespace Objects.Converter.Revit
 
         case RevitShaft rs:
           {
-            var bottomLevel = GetLevelByName(rs.level);
-            var topLevel = !string.IsNullOrEmpty(rs.topLevel) ? GetLevelByName(rs.topLevel) : null;
+            var bottomLevel = LevelToNative(rs.level);
+            var topLevel = LevelToNative(rs.topLevel);
             revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
             break;
           }
