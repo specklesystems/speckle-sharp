@@ -211,7 +211,7 @@ namespace Objects.Converter.Revit
                 poly.segments.Add(segment as ICurve);
 
                 //roud profiles are returned duplicated!
-                if (curve is ModelArc arc && arc.GeometryCurve.IsClosed)
+                if (curve is ModelArc arc && RevitVersionHelper.IsCurveClosed(arc.GeometryCurve))
                 {
                   break;
                 }

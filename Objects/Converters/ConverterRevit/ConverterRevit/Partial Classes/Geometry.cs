@@ -195,7 +195,7 @@ namespace Objects.Converter.Revit
       speckleCurve.degree = revitCurve.Degree;
       //speckleCurve.periodic = revitCurve.Period;
       speckleCurve.rational = revitCurve.isRational;
-      speckleCurve.closed = revitCurve.IsClosed;
+      speckleCurve.closed = RevitVersionHelper.IsCurveClosed(revitCurve);
       speckleCurve.units = ModelUnits;
       //speckleCurve.domain = new Interval(revitCurve.StartParameter(), revitCurve.EndParameter());
 
@@ -413,7 +413,13 @@ namespace Objects.Converter.Revit
 
     public Geometry.Surface FaceToSpeckle(DB.Face face, DB.BoundingBoxUV uvBox)
     {
+
+#if Revit2021
       var surf = DB.ExportUtils.GetNurbsSurfaceDataForSurface(face.GetSurface());
+#else
+      var surf = DB.ExportUtils.GetNurbsSurfaceDataForFace(face);
+#endif
+
       var spcklSurface = NurbsSurfaceToSpeckle(surf, face.GetBoundingBox());
       return spcklSurface;
     }

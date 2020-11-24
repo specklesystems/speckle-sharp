@@ -5,18 +5,52 @@
     <LangVersion>8.0</LangVersion>
     <RootNamespace>Objects.Converter.Revit</RootNamespace>
     <AssemblyName>Objects.Converter.Revit</AssemblyName>
+    <Configurations>Debug;Release;Debug2019;Release2019;Debug2020;Release2020;Debug2021;Release2021</Configurations>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Autodesk.Revit.SDK" Version="2021.0.0" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug2019' Or '$(Configuration)' == 'Release2019'">
+    <DefineConstants>$(DefineConstants);REVIT2019</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug2020' Or '$(Configuration)' == 'Release2020'">
+    <DefineConstants>$(DefineConstants);REVIT2020</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug2021' Or '$(Configuration)' == 'Release2021'">
+    <DefineConstants>$(DefineConstants);REVIT2021</DefineConstants>
+  </PropertyGroup>
+
+  <Choose>
+    <When Condition="'$(Configuration)' == 'Debug2019' Or '$(Configuration)' == 'Release2019'">
+      <ItemGroup>
+        <PackageReference Include="Autodesk.Revit.SDK">
+          <Version>2019.2.2</Version>
+          <ExcludeAssets>runtime</ExcludeAssets>
+        </PackageReference>
+      </ItemGroup>
+    </When>
+    <When Condition="'$(Configuration)' == 'Debug2020' Or '$(Configuration)' == 'Release2020'">
+      <ItemGroup>
+        <PackageReference Include="Autodesk.Revit.SDK">
+          <Version>2020.2.1</Version>
+          <ExcludeAssets>runtime</ExcludeAssets>
+        </PackageReference>
+      </ItemGroup>
+    </When>
+    <When Condition="'$(Configuration)' == 'Debug2021' Or '$(Configuration)' == 'Release2021'">
+      <ItemGroup>
+        <PackageReference Include="Autodesk.Revit.SDK">
+          <Version>2021.0.0</Version>
+          <ExcludeAssets>runtime</ExcludeAssets>
+        </PackageReference>
+      </ItemGroup>
+    </When>
+  </Choose>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\Objects.Revit\Objects.Revit.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
   </ItemGroup>
-  
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
   </Target>
