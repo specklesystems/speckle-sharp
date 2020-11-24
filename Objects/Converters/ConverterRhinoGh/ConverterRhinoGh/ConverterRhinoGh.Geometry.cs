@@ -570,6 +570,20 @@ namespace Objects.Converter.RhinoGh
       return m;
     }
 
+    private bool HasInvalidMultiplicity(NurbsCurve curve)
+    {
+      var knots = curve.Knots;
+      var degree = curve.Degree;
+      
+      for (int i = degree; i < knots.Count - degree; i++)
+      {
+        var mult = knots.KnotMultiplicity(i);
+        i += mult - 1;
+        if (mult > degree - 2) 
+          return true;
+      }
+      return false;
+    }
     /// <summary>
     /// Converts a Rhino <see cref="Rhino.Geometry.Brep"/> instance to a Speckle <see cref="Brep"/>
     /// </summary>
@@ -597,15 +611,29 @@ namespace Objects.Converter.RhinoGh
         .Select(edge =>
         {
           var nurbsCurve = edge.EdgeCurve.ToNurbsCurve();
-          nurbsCurve.Knots.RemoveMultipleKnots(1, nurbsCurve.Degree, Doc.ModelAbsoluteTolerance );
-          var crv = CurveToSpeckle(nurbsCurve);
-          return crv;
+          
+          // Nurbs curves of degree 2 have weird support in Revit, so we up everything to degree 3.
+          if (nurbsCurve.Degree < 3)
+            nurbsCurve.IncreaseDegree(3);
+          
+          // Check for invalid multiplicity in the curves. This is also to better support Revit.
+          var invalid = HasInvalidMultiplicity(nurbsCurve);
+          
+          // If the curve has invalid multiplicity and is not closed, rebuild with same number of points and degree.
+          // TODO: Figure out why closed curves don't like this hack?
+          if (invalid && !nurbsCurve.IsClosed)
+            nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count,nurbsCurve.Degree,true);
+          
+          // And finally convert to speckle
+          return CurveToSpeckle(nurbsCurve);
         }).ToList();
       spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c =>
       {
         var nurbsCurve = c.ToNurbsCurve();
-        nurbsCurve.Knots.RemoveMultipleKnots(1, nurbsCurve.Degree, Doc.ModelAbsoluteTolerance );
-        var crv = CurveToSpeckle(nurbsCurve);
+        //nurbsCurve.Knots.RemoveMultipleKnots(1, nurbsCurve.Degree, Doc.ModelAbsoluteTolerance );
+        var rebuild = nurbsCurve.Rebuild(nurbsCurve.Points.Count,nurbsCurve.Degree,true);
+        
+        var crv = CurveToSpeckle(rebuild);
         return crv;
       }).ToList();
       spcklBrep.Surfaces = brep.Surfaces
