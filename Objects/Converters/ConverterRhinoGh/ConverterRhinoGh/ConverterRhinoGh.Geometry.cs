@@ -417,19 +417,19 @@ namespace Objects.Converter.RhinoGh
 
       if (curve.IsCircle(tolerance) && curve.IsClosed)
       {
-        curve.TryGetCircle(out var getObj);
+        curve.TryGetCircle(out var getObj,tolerance);
         return CircleToSpeckle(getObj);
       }
 
       if (curve.IsArc(tolerance))
       {
-        curve.TryGetArc(out var getObj);
+        curve.TryGetArc(out var getObj,tolerance);
         return ArcToSpeckle(getObj);
       }
 
       if (curve.IsEllipse(tolerance) && curve.IsClosed)
       {
-        curve.TryGetEllipse(out var getObj);
+        curve.TryGetEllipse(out var getObj,tolerance);
         return EllipseToSpeckle(getObj);
       }
 
@@ -594,8 +594,20 @@ namespace Objects.Converter.RhinoGh
       spcklBrep.Vertices = brep.Vertices
         .Select(vertex => PointToSpeckle(vertex)).ToList();
       spcklBrep.Curve3D = brep.Edges
-        .Select(edge => CurveToSpeckle(edge.EdgeCurve.ToNurbsCurve())).ToList();
-      spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c => CurveToSpeckle(c.ToNurbsCurve())).ToList();
+        .Select(edge =>
+        {
+          var nurbsCurve = edge.EdgeCurve.ToNurbsCurve();
+          nurbsCurve.Knots.RemoveMultipleKnots(1, nurbsCurve.Degree, Doc.ModelAbsoluteTolerance );
+          var crv = CurveToSpeckle(nurbsCurve);
+          return crv;
+        }).ToList();
+      spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c =>
+      {
+        var nurbsCurve = c.ToNurbsCurve();
+        nurbsCurve.Knots.RemoveMultipleKnots(1, nurbsCurve.Degree, Doc.ModelAbsoluteTolerance );
+        var crv = CurveToSpeckle(nurbsCurve);
+        return crv;
+      }).ToList();
       spcklBrep.Surfaces = brep.Surfaces
         .Select(srf => SurfaceToSpeckle(srf.ToNurbsSurface())).ToList();
       spcklBrep.IsClosed = brep.IsSolid;

@@ -60,7 +60,9 @@ namespace Objects.Converter.Revit
 
     public DB.Plane PlaneToNative(Plane plane)
     {
-      return DB.Plane.CreateByOriginAndBasis(PointToNative(plane.origin), VectorToNative(plane.xdir).Normalize(), VectorToNative(plane.ydir).Normalize());
+      var basisX = VectorToNative(plane.xdir).Normalize();
+      var basisY = VectorToNative(plane.ydir).Normalize();
+      return DB.Plane.CreateByOriginAndBasis(PointToNative(plane.origin), basisX, basisY);
     }
 
     public Plane PlaneToSpeckle(DB.Plane plane)
