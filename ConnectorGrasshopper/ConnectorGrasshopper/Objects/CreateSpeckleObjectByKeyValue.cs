@@ -96,11 +96,12 @@ namespace ConnectorGrasshopper.Objects
       }
 
       // Set output
-      DA.SetData(0, new GH_SpeckleBase {Value = speckleObj});
+      DA.SetData(0, new GH_SpeckleBase { Value = speckleObj });
     }
 
     protected override void BeforeSolveInstance()
     {
+      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
       Tracker.TrackPageview("objects", "create", "keyvalue");
       base.BeforeSolveInstance();
     }

@@ -1,31 +1,25 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using Grasshopper.Kernel;
-using Rhino.Geometry;
-using ConnectorGrasshopper.Extras;
-using Speckle.Core.Models;
-using GH_IO.Serialization;
-using Speckle.Core.Kits;
-using System.Windows.Forms;
+using System.IO;
 using System.Linq;
-using ConnectorGrasshopper.Objects;
-using Utilities = ConnectorGrasshopper.Extras.Utilities;
-using Speckle.Core.Logging;
-using Grasshopper.GUI.Canvas;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
+using ConnectorGrasshopper.Extras;
+using ConnectorGrasshopper.Objects;
+using GH_IO.Serialization;
+using Grasshopper.GUI.Canvas;
+using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
-using System.Collections;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.IO;
 using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper
 {
-
-
   public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterComponent
   {
     private Type SelectedType;
@@ -110,7 +104,7 @@ namespace ConnectorGrasshopper
     /// Adds a property to the component's inputs.
     /// </summary>
     /// <param name="prop"></param>
-    void RegisterPropertyAsInputParameter(PropertyInfo prop, int index)
+    private void RegisterPropertyAsInputParameter(PropertyInfo prop, int index)
     {
       // get property name and value
       Type propType = prop.PropertyType;
@@ -141,7 +135,6 @@ namespace ConnectorGrasshopper
         newInputParam.Access = GH_ParamAccess.item;
       }
       Params.RegisterInputParam(newInputParam, index);
-
 
       //add dropdown
       if (propType.IsEnum)
@@ -239,8 +232,6 @@ namespace ConnectorGrasshopper
         return;
       }
 
-      var g = Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem;
-
       var outputObject = Activator.CreateInstance(SelectedType);
 
       for (int i = 0; i < Params.Input.Count; i++)
@@ -259,13 +250,10 @@ namespace ConnectorGrasshopper
           DA.GetData(i, ref inputValue);
           SetObjectProp(param, outputObject, ExtractRealInputValue(inputValue));
         }
-
       }
 
       DA.SetData(0, new GH_SpeckleBase() { Value = outputObject as Base });
     }
-
-
 
     private object ExtractRealInputValue(object inputValue)
     {
@@ -342,10 +330,7 @@ namespace ConnectorGrasshopper
 
       this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");
       throw new Exception($"Could not covert object to {type}");
-
     }
-
-
 
     public bool CanInsertParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;
 
@@ -377,10 +362,9 @@ namespace ConnectorGrasshopper
 
     protected override void BeforeSolveInstance()
     {
+      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
       Tracker.TrackPageview("objects", "create", "variableinput");
       base.BeforeSolveInstance();
     }
-
   }
-
 }

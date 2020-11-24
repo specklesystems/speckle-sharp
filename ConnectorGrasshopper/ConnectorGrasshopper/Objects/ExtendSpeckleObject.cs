@@ -87,8 +87,8 @@ namespace ConnectorGrasshopper.Objects
           var subPath = new GH_Path(index);
           if (subTree.PathExists(subPath))
           {
-                    // Value is a list, convert and assign.
-                    var list = subTree.get_Branch(subPath) as List<IGH_Goo>;
+            // Value is a list, convert and assign.
+            var list = subTree.get_Branch(subPath) as List<IGH_Goo>;
             if (list?.Count > 0)
             {
               var converted = list.Select(goo => Utilities.TryConvertItemToSpeckle(goo, Converter)).ToList();
@@ -114,8 +114,8 @@ namespace ConnectorGrasshopper.Objects
         var contains = keys.Contains(key);
         if (!contains)
         {
-                // Key has been deleted
-                @base[key] = null;
+          // Key has been deleted
+          @base[key] = null;
         }
       });
     }
@@ -133,7 +133,8 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("objects", "extend" );
+      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      Tracker.TrackPageview("objects", "extend");
       base.BeforeSolveInstance();
     }
   }

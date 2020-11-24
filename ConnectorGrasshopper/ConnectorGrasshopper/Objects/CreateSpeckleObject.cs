@@ -78,6 +78,7 @@ namespace ConnectorGrasshopper
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+
       var res = new List<string>();
       var @base = new Base();
 
@@ -167,6 +168,7 @@ namespace ConnectorGrasshopper
 
     protected override void BeforeSolveInstance()
     {
+      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
       Tracker.TrackPageview("objects", "create", "variableinput");
       base.BeforeSolveInstance();
     }
