@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Objects.Revit</RootNamespace>
@@ -8,17 +8,15 @@
     <Company>Speckle</Company>
     <Authors>AEC Systems</Authors>
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Objects\Objects.csproj" >
+    <ProjectReference Include="..\Objects\Objects.csproj">
       <Private>false</Private>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
   </ItemGroup>
-
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
+    <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="mkdir -p $HOME'/.config/Speckle/Kits/Objects'" />
+    <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="cp '$(TargetDir)$(AssemblyName).dll' $HOME'/.config/Speckle/Kits/Objects/'" />
   </Target>
-
-
 </Project>
