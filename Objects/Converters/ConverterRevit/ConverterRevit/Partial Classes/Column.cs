@@ -162,15 +162,11 @@ namespace Objects.Converter.Revit
 
     public IRevit ColumnToSpeckle(DB.FamilyInstance revitColumn)
     {
-
-
       //REVIT PARAMS > SPECKLE PROPS
       var baseLevelParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
       var topLevelParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
       var baseOffsetParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
       var topOffsetParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
-
-
 
       var speckleColumn = new RevitColumn();
       speckleColumn.type = Doc.GetElement(revitColumn.GetTypeId()).Name;
@@ -186,10 +182,11 @@ namespace Objects.Converter.Revit
       //geometry
       var baseGeometry = LocationToSpeckle(revitColumn);
       var baseLine = baseGeometry as ICurve;
+      
       //make line from point and height
       if (baseLine == null && baseGeometry is Point basePoint)
       {
-        var elevation = ((RevitLevel)ParameterToSpeckle(topLevelParam)).elevation;
+        var elevation = (double) ((RevitLevel)ParameterToSpeckle(topLevelParam)).elevation;
         baseLine = new Line(basePoint, new Point(basePoint.x, basePoint.y, elevation + speckleColumn.topOffset, ModelUnits), ModelUnits);
       }
 

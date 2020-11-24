@@ -15,6 +15,7 @@ namespace Objects.Revit
 
     public string type { get; set; }
 
+    [SchemaOptional]
     public Level level { get; set; }
 
     [SchemaOptional]

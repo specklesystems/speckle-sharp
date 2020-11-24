@@ -24,9 +24,10 @@ namespace Objects.Converter.Revit
 
       //comes from revit or schema builder, has these props
       var speckleRevitBeam = speckleBeam as RevitBeam;
+      
       if (speckleRevitBeam != null)
       {
-        level = GetLevelByName(speckleRevitBeam.level);
+        level = GetLevelByName(speckleRevitBeam.level.name);
       }
 
       if (level == null)
@@ -81,7 +82,7 @@ namespace Objects.Converter.Revit
       }
 
       // TODO: get sub families, it's a family! 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitBeam.applicationId, ApplicationGeneratedId = revitBeam.UniqueId } };
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleBeam.applicationId, ApplicationGeneratedId = revitBeam.UniqueId } };
 
       // TODO: nested elements.
 

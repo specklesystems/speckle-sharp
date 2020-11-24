@@ -46,22 +46,22 @@ namespace Objects
   public interface I2DGeometry : IGeometry
   {
     /// <summary>
-    /// Gets or sets the bounding box for this <see cref="I3DGeometry"/> instance.
+    /// Gets or sets the bounding box for this <see cref="I2DGeometry"/> instance.
     /// </summary>
     Box boundingBox { get; set; }
 
     /// <summary>
-    /// Gets or sets the center point for this <see cref="I3DGeometry"/> instance.
+    /// Gets or sets the center point for this <see cref="I2DGeometry"/> instance.
     /// </summary>
     Point center { get; set; }
 
     /// <summary>
-    /// Gets or sets the area for this <see cref="I3DGeometry"/> instance.
+    /// Gets or sets the area for this <see cref="I2DGeometry"/> instance.
     /// </summary>
     double area { get; set; }
 
     /// <summary>
-    /// Gets or set the length of this <see cref="I3DGeometry"/> instance.
+    /// Gets or set the length of this <see cref="I2DGeometry"/> instance.
     /// </summary>
     double length { get; set; }
   }
@@ -128,7 +128,7 @@ namespace Objects
   {
     string name { get; set; }
     string units { get; set; }
-    double elevation { get; set; }
+    double? elevation { get; set; }
     List<Element> elements { get; set; }
   }
 

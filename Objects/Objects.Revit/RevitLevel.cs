@@ -14,7 +14,7 @@ namespace Objects.Revit
 
     [SchemaOptional]
     [SchemaDescription("If not set, Speckle will try to find an existing level in the revit file you will receive this with the same name. The conversion **will fail** if none is present.")]
-    public double elevation { get; set; }
+    public double? elevation { get; set; }
 
     [SchemaOptional]
     [SchemaDescription("If true, it creates an associated view in Revit")]
