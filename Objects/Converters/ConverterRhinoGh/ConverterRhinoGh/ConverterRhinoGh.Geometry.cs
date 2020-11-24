@@ -398,7 +398,7 @@ namespace Objects.Converter.RhinoGh
           return EllipseToNative(ellipse);
 
         case Curve crv:
-          return CurveToNative(crv);
+          return NurbsToNative(crv);
 
         case Polyline polyline:
           return PolylineToNative(polyline);
