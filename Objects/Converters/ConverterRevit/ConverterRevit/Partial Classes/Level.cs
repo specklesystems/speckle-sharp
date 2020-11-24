@@ -14,6 +14,18 @@ namespace Objects.Converter.Revit
 
     private Dictionary<string, Level> modifiedLevels = new Dictionary<string, Level>();
 
+    /// <summary>
+    /// This function generates a new level or returns a matching one from the current document. How it works: 
+    /// <para><strong>1) If the speckle level passed in has an elevation:</strong></para>
+    /// <para>1a) It will try and match an existing document level at that elevation with a tolerance of 1cm. If found, it returns it.</para>
+    /// <para>1b) If it finds an existing level by name, and it's the first time (in this conversion run) that it encounter it, it will modify its elevation to match the one of the speckle level. </para>
+    /// <para>1c) If it finds an existing level by name, but <strong>it is not the first time that it modifies it</strong>, it will create a new level at the specified elevation and a conversion error. </para>
+    /// <para>1d) If no existing level was found by name or elevation, it will just create a new one.</para>
+    /// <para><strong>2) If the speckle level passed in has NO elevation set, there is a matching doc level by name, it will return the matched level.</strong></para>
+    /// <para><strong>3) If the speckle level passed in has no elevation, and there is no matching doc level by name, it returns null (and adds a conversion error).</strong></para>
+    /// </summary>
+    /// <param name="speckleLevel"></param>
+    /// <returns></returns>
     public DB.Level LevelToNative(ILevel speckleLevel)
     {
 
@@ -133,7 +145,7 @@ namespace Objects.Converter.Revit
       return collector.FirstOrDefault();
     }
 
-    private string ConvertAndCacheLevel(Parameter param)
+    private RevitLevel ConvertAndCacheLevel(Parameter param)
     {
       if (param == null || param.StorageType != StorageType.ElementId)
       {
@@ -143,7 +155,7 @@ namespace Objects.Converter.Revit
       return ConvertAndCacheLevel(param.AsElementId());
     }
 
-    private string ConvertAndCacheLevel(ElementId id)
+    private RevitLevel ConvertAndCacheLevel(ElementId id)
     {
       var level = Doc.GetElement(id) as DB.Level;
       //add it to our list of levels for the conversion so we can nest elements under them
@@ -152,7 +164,7 @@ namespace Objects.Converter.Revit
         Levels[level.Name] = LevelToSpeckle(level);
       }
 
-      return level.Name;
+      return Levels[level.Name];
     }
 
     private DB.Level TryMatchExistingLevel(ILevel level)

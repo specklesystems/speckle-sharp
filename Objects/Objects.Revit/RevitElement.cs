@@ -16,7 +16,7 @@ namespace Objects.Revit
     public string type { get; set; }
 
     [SchemaOptional]
-    public Level level { get; set; }
+    public RevitLevel level { get; set; }
 
     [SchemaOptional]
     public Dictionary<string, object> parameters { get; set; }

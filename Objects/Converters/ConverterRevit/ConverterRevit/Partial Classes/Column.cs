@@ -36,8 +36,8 @@ namespace Objects.Converter.Revit
       var speckleRevitColumn = speckleColumn as RevitColumn;
       if (speckleRevitColumn != null)
       {
-        level = GetLevelByName(speckleRevitColumn.level);
-        topLevel = GetLevelByName(speckleRevitColumn.topLevel);
+        level = LevelToNative(speckleRevitColumn.level);
+        topLevel = LevelToNative(speckleRevitColumn.topLevel);
         structuralType = speckleRevitColumn.structural ? StructuralType.Column : StructuralType.NonStructural;
         //non slanted columns are point based
         isLineBased = speckleRevitColumn.isSlanted;

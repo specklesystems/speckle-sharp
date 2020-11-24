@@ -28,7 +28,7 @@ namespace Objects.Converter.Revit
       var speckleRevitFloor = speckleFloor as RevitFloor;
       if (speckleRevitFloor != null)
       {
-        level = GetLevelByName(speckleRevitFloor.level);
+        level = LevelToNative(speckleRevitFloor.level);
         structural = speckleRevitFloor.structural;
       }
       else

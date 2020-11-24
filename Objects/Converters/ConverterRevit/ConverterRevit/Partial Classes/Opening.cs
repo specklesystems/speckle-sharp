@@ -45,8 +45,8 @@ namespace Objects.Converter.Revit
 
         case RevitShaft rs:
           {
-            var bottomLevel = GetLevelByName(rs.level);
-            var topLevel = !string.IsNullOrEmpty(rs.topLevel) ? GetLevelByName(rs.topLevel) : null;
+            var bottomLevel = LevelToNative(rs.level);
+            var topLevel = LevelToNative(rs.topLevel);
             revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
             break;
           }

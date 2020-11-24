@@ -220,33 +220,33 @@ namespace Objects.Converter.Revit
     private List<object> ConvertNestedObjectsToNative(List<Base> objects, DB.Element host)
     {
       var converted = new List<object>();
-      foreach (var obj in objects)
-      {
-        //add level name on object, this overrides potential existing values
-        if (host is DB.Level && obj is RevitElement re)
-        {
-          re.level = host.Name;
-        }
-        //if hosted element, use the revitHostId prop
-        else if (host.Id.IntegerValue != -1 && obj is IHostable io)
-        {
-          io.revitHostId = host.Id.IntegerValue;
-        }
+      //foreach (var obj in objects)
+      //{
+      //  //add level name on object, this overrides potential existing values
+      //  if (host is DB.Level && obj is RevitElement re)
+      //  {
+      //    re.level = host.Name;
+      //  }
+      //  //if hosted element, use the revitHostId prop
+      //  else if (host.Id.IntegerValue != -1 && obj is IHostable io)
+      //  {
+      //    io.revitHostId = host.Id.IntegerValue;
+      //  }
 
-        var conversionResult = ConvertToNative(obj);
-        var revitElement = conversionResult as DB.Element;
-        if (revitElement == null)
-        {
-          continue;
-        }
+      //  var conversionResult = ConvertToNative(obj);
+      //  var revitElement = conversionResult as DB.Element;
+      //  if (revitElement == null)
+      //  {
+      //    continue;
+      //  }
 
-        converted.Add(revitElement);
-        //continue un-nesting
-        if (obj["@elements"] != null && obj["@elements"] is List<Base> nestedElements)
-        {
-          converted.AddRange(ConvertNestedObjectsToNative(nestedElements, revitElement));
-        }
-      }
+      //  converted.Add(revitElement);
+      //  //continue un-nesting
+      //  if (obj["@elements"] != null && obj["@elements"] is List<Base> nestedElements)
+      //  {
+      //    converted.AddRange(ConvertNestedObjectsToNative(nestedElements, revitElement));
+      //  }
+      //}
 
       return converted;
     }

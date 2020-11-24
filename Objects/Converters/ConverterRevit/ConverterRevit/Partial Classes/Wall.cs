@@ -31,7 +31,7 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitWall != null)
       {
-        level = GetLevelByName(speckleRevitWall.level);
+        level = LevelToNative(speckleRevitWall.level);
         structural = speckleRevitWall.structural;
       }
       else
@@ -70,7 +70,7 @@ namespace Objects.Converter.Revit
 
       if (speckleWall is RevitWallByLine rwbl)
       {
-        DB.Level topLevel = GetLevelByName(rwbl.topLevel);
+        DB.Level topLevel = LevelToNative(rwbl.topLevel);
         TrySetParam(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE, topLevel);
       }
 

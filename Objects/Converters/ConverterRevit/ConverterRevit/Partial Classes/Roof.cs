@@ -27,7 +27,7 @@ namespace Objects.Converter.Revit
       var speckleRevitRoof = speckleRoof as RevitRoof;
       if (speckleRevitRoof != null)
       {
-        level = GetLevelByName(speckleRevitRoof.level);
+        level = LevelToNative(speckleRevitRoof.level);
       }
       else
       {
@@ -75,7 +75,7 @@ namespace Objects.Converter.Revit
             }
             if (speckleFootprintRoof.cutOffLevel != null)
             {
-              var cutOffLevel = GetLevelByName(speckleFootprintRoof.cutOffLevel);
+              var cutOffLevel = LevelToNative(speckleFootprintRoof.cutOffLevel);
               TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM, cutOffLevel);
             }
 

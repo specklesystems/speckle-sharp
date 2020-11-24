@@ -1,16 +1,11 @@
-﻿using Objects;
-using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB.Mechanical;
-using Duct = Objects.BuiltElements.Duct;
-using Level = Objects.BuiltElements.Level;
-using Line = Objects.Geometry.Line;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
-using System.Linq;
 using Objects.Revit;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using DB = Autodesk.Revit.DB.Mechanical;
+using Line = Objects.Geometry.Line;
 
 namespace Objects.Converter.Revit
 {
@@ -30,7 +25,7 @@ namespace Objects.Converter.Revit
       if (speckleRevitDuct != null)
       {
         type = speckleRevitDuct.type;
-        level = GetLevelByName(speckleRevitDuct.level);
+        level = LevelToNative(speckleRevitDuct.level);
       }
       else
       {
@@ -46,12 +41,16 @@ namespace Objects.Converter.Revit
 
       // deleting instead of updating for now!
       if (docObj != null)
+      {
         Doc.Delete(docObj.Id);
+      }
 
       duct = DB.Duct.Create(Doc, system.Id, ductType.Id, level.Id, startPoint, endPoint);
 
       if (speckleRevitDuct != null)
+      {
         SetElementParams(duct, speckleRevitDuct);
+      }
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitDuct.applicationId, ApplicationGeneratedId = duct.UniqueId } };
 
@@ -59,7 +58,7 @@ namespace Objects.Converter.Revit
 
       return placeholders;
     }
-    
+
     public IDuct DuctToSpeckle(DB.Duct revitDuct)
     {
       var baseGeometry = LocationToSpeckle(revitDuct);

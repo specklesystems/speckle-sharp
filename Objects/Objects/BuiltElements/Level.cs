@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Models;
+﻿using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,6 +13,7 @@ namespace Objects.BuiltElements
     public double? elevation { get; set; }
     
     [DetachProperty]
+    [SchemaOptional]
     public List<Element> elements { get; set; } = new List<Element>();
     
     public Level()
