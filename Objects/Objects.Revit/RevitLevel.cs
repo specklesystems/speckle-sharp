@@ -7,14 +7,13 @@ using Speckle.Core.Models;
 
 namespace Objects.Revit
 {
-  [SchemaDescription("Creates a Revit level by elevation and name")]
+  [SchemaDescription("Creates a new Revit level by elevation and name")]
   public class RevitLevel : Element, ILevel, IRevit
   {
     public string name { get; set; }
 
-    [SchemaOptional]
-    [SchemaDescription("If not set, Speckle will try to find an existing level in the revit file you will receive this with the same name. The conversion **will fail** if none is present.")]
-    public double? elevation { get; set; }
+    [SchemaDescription("Elevation of the level")]
+    public double elevation { get; set; }
 
     [SchemaOptional]
     [SchemaDescription("If true, it creates an associated view in Revit")]
@@ -29,6 +28,20 @@ namespace Objects.Revit
 
     [SchemaIgnore]
     public string elementId { get; set; }
+
+  }
+
+  [SchemaDescription("An existing Revit level")]
+  public class RevitLevelByName : Element, ILevel
+  {
+    public string name { get; set; }
+
+    [SchemaIgnore]
+    public double elevation { get; set; }
+
+    [SchemaOptional]
+    [DetachProperty]
+    public List<Element> elements { get; set; } = new List<Element>();
 
   }
 }

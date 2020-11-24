@@ -128,7 +128,7 @@ namespace Objects
   {
     string name { get; set; }
     string units { get; set; }
-    double? elevation { get; set; }
+    double elevation { get; set; }
     List<Element> elements { get; set; }
   }
 
