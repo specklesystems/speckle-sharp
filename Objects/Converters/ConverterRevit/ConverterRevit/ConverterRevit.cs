@@ -48,12 +48,6 @@ namespace Objects.Converter.Revit
     public Base ConvertToSpeckle(object @object)
     {
 
-      var test = @object.GetType().GetProperty("Host").GetValue(@object);
-
-
-
-      var xxx = ((DB.FamilyInstance)@object).Host.Id;
-
       switch (@object)
       {
         case DB.DetailCurve o:
