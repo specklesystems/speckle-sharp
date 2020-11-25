@@ -14,7 +14,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public IGeometry LocationToSpeckle(DB.Element revitElement)
+    public IHasBoundingBox LocationToSpeckle(DB.Element revitElement)
     {
       if (revitElement is FamilyInstance familyInstance)
       {
@@ -62,7 +62,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="loc"></param>
     /// <returns></returns>
-    private IGeometry TryGetLocationAsCurve(FamilyInstance familyInstance)
+    private IHasBoundingBox TryGetLocationAsCurve(FamilyInstance familyInstance)
     {
       if (familyInstance.CanHaveAnalyticalModel())
       {

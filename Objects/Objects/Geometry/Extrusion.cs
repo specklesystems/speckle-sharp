@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Objects.Geometry
 {
-  public class Extrusion : Base, I3DGeometry
+  public class Extrusion : Base, IHasVolume, IHasArea, IHasBoundingBox
   {
     public bool? capped { get; set; }
     public Base profile { get; set; }
@@ -16,9 +16,9 @@ namespace Objects.Geometry
     public Base pathTangent { get; set; }
     public List<Base> profiles { get; set; }
     public double? length;
-    public string units { get; set; }
+
     public Box bbox { get; set; }
-    public Point center { get; set; }
+
     public double area { get; set; }
     public double volume { get; set; }
 

@@ -7,7 +7,7 @@ using System.Text;
 namespace Objects.BuiltElements
 {
 
-  public class Wall : Element, IWall
+  public class Wall : Base, IWall
   {
     public double height { get; set; }
 

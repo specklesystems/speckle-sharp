@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Objects.Geometry
 {
-  public class Box : Base, IHasVolume, IHasArea, IGeometry
+  public class Box : Base, IHasVolume, IHasArea, IHasBoundingBox
   {
     public Plane basePlane { get; set; }
 

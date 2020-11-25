@@ -18,7 +18,7 @@ namespace Objects.Converter.Revit
     {
       var docLevels = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
       var existingLevelByName = docLevels.FirstOrDefault(docLevel => docLevel.Name == speckleLevel.name);
-      var speckleLevelElevation = ScaleToNative((double)speckleLevel.elevation, speckleLevel.units);
+      var speckleLevelElevation = ScaleToNative((double)speckleLevel.elevation, ((Base)speckleLevel).units);
 
       switch (speckleLevel)
       {
@@ -47,7 +47,7 @@ namespace Objects.Converter.Revit
               CreateViewPlan(speckleLevel.name, newLevel.Id);
             }
 
-            SetElementParams(newLevel, revitLevel);
+            //SetElementParams(newLevel, revitLevel);
           }
           else
           {
@@ -205,7 +205,7 @@ namespace Objects.Converter.Revit
       //match by elevation
       if (revitLevel == null)
       {
-        revitLevel = collector.FirstOrDefault(x => Math.Abs(x.Elevation - ScaleToNative((double)level.elevation, level.units)) < 0.1);
+        revitLevel = collector.FirstOrDefault(x => Math.Abs(x.Elevation - ScaleToNative((double)level.elevation, ((Base)level).units)) < 0.1);
       }
 
       return revitLevel;

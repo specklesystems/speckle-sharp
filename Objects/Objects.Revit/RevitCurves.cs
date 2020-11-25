@@ -7,7 +7,7 @@ using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
-  public class ModelCurve : Base, IRevit
+  public class ModelCurve : Base, IBaseRevitElement
   {
     public ICurve baseCurve { get; set; }
     public string lineStyle { get; set; }
@@ -19,7 +19,7 @@ namespace Objects.Revit
     public string elementId { get; set; }
   }
 
-  public class DetailCurve : Base, IRevit
+  public class DetailCurve : Base, IBaseRevitElement
   {
     public ICurve baseCurve { get; set; }
     public string lineStyle { get; set; }
@@ -31,7 +31,7 @@ namespace Objects.Revit
     public string elementId { get; set; }
   }
 
-  public class RoomBoundaryLine : Base, IRevit
+  public class RoomBoundaryLine : Base, IBaseRevitElement
   {
     public ICurve baseCurve { get; set; }
 

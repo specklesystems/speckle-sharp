@@ -20,7 +20,7 @@ namespace Objects.Converter.Revit
     {
       var baseCurves = CurveToNative(speckleOpening.outline);
 
-      var docObj = GetExistingElementByApplicationId(speckleOpening.applicationId);
+      var docObj = GetExistingElementByApplicationId(((Base)speckleOpening).applicationId);
       if (docObj != null)
         Doc.Delete(docObj.Id);
 

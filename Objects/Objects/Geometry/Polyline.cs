@@ -9,16 +9,15 @@ using System.Text;
 
 namespace Objects.Geometry
 {
-  public class Polyline : Base, ICurve
+  public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox
   {
     public List<double> value { get; set; } = new List<double>();
     public bool closed { get; set; }
     public Interval domain { get; set; }
     public Box bbox { get; set; }
-    public Point center { get; set; }
     public double area { get; set; }
     public double length { get; set; }
-    public string units { get; set; }
+
     public Polyline()
     {
 

@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Objects.BuiltElements;
-using Objects.Geometry;
+﻿using Objects.Geometry;
+using Speckle.Core.Models;
 
 namespace Objects.Revit
 {
-  public class RevitTopography : RevitElement, ITopography
+  public class RevitTopography : Base, IBaseRevitElement, ITopography
   {
     public Mesh baseGeometry { get; set; } = new Mesh();
+
+    public string elementId { get; set; }
   }
 }

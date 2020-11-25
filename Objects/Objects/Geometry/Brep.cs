@@ -9,14 +9,11 @@ using Speckle.Core.Kits;
 
 namespace Objects.Geometry
 {
-  public class Brep : Base, I3DGeometry
+  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox
   {
     public string provenance { get; set; }
     public Mesh displayValue { get; set; }
-
-    public string units { get; set; }
     public Box bbox { get; set; }
-    public Point center { get; set; }
     public double area { get; set; }
     public double volume { get; set; }
 

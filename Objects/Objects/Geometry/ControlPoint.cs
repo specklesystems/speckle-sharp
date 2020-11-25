@@ -2,7 +2,7 @@
 
 namespace Objects.Geometry
 {
-  public class ControlPoint : Point, IGeometry
+  public class ControlPoint : Point, IHasBoundingBox
   {
     public ControlPoint()
     {

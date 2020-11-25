@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
   /// </summary>
   public partial class ConverterRevit
   {
-    public object GeometryToNative(IGeometry geom)
+    public object GeometryToNative(IHasBoundingBox geom)
     {
       switch (geom)
       {

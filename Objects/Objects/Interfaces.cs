@@ -9,7 +9,7 @@ namespace Objects
 {
   #region Generic interfaces.
 
-  public interface IGeometry
+  public interface IHasBoundingBox
   {
     Box bbox { get; }
   }

@@ -8,15 +8,15 @@ using System.Text;
 
 namespace Objects.Geometry
 {
-  public class Line : Base, ICurve
+  public class Line : Base, ICurve, IHasBoundingBox
   {
     public List<double> value { get; set; }
     public Interval domain { get; set; }
+
     public Box bbox { get; set; }
-    public Point center { get; set; }
+
     public double area { get; set; }
     public double length { get; set; }
-    public string units { get; set; }
 
     public Line() { }
 

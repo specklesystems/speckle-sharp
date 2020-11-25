@@ -1,15 +1,27 @@
-﻿using System;
+﻿using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System.Collections.Generic;
-using System.Text;
-using Objects.BuiltElements;
-using Objects.Geometry;
-using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
   [SchemaDescription("A Revit beam by line")]
-  public class RevitBeam : RevitElement, IBeam
+  public class RevitBeam : Base, IRevitElement, IBeam
   {
     public ICurve baseLine { get; set; }
+
+    [SchemaOptional]
+    public string family { get; set; }
+    
+    [SchemaOptional]
+    public string type { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> typeParameters { get; set; }
+
+    [SchemaIgnore]
+    public string elementId { get; set; }
   }
 }
