@@ -159,6 +159,20 @@ namespace Objects.Converter.Revit
       // TODO
       var hostedElements = revitWall.FindInserts(true, true, true, true);
 
+      foreach (var elemId in hostedElements)
+      {
+        var element = Doc.GetElement(elemId);
+        try
+        {
+          var obj = ConvertToSpeckle(element);
+          var xx = obj;
+        }
+        catch (Exception e)
+        {
+          ConversionErrors.Add(new Error { message = e.Message, details = e.StackTrace });
+        }
+      }
+
       return speckleWall;
     }
 
