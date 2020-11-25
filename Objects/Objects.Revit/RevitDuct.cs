@@ -8,12 +8,19 @@ namespace Objects.Revit
   public class RevitDuct : Base, IRevitElement, IDuct
   {
     public double width { get; set; }
+
     public double height { get; set; }
+
     public double diameter { get; set; }
+
     public double length { get; set; }
+
     public double velocity { get; set; }
+
     public string systemName { get; set; }
+
     public string systemType { get; set; }
+
     public Line baseLine { get; set; }
 
     [SchemaOptional]

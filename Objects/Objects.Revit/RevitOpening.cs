@@ -1,14 +1,27 @@
 ﻿using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using System.Collections.Generic;
 
 namespace Objects.Revit
 {
   [SchemaIgnore]
-  public class RevitOpening : Base, IBaseRevitElement, IOpening
+  public class RevitOpening : Base, IRevitElement, IOpening
   {
     public string elementId { get; set; }
 
     public ICurve outline { get; set; }
+
+    [SchemaOptional]
+    public string family { get; set; }
+
+    [SchemaOptional]
+    public string type { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> typeParameters { get; set; }
   }
 
   [SchemaIgnore]

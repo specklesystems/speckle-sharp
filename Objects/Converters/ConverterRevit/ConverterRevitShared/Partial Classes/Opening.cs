@@ -7,9 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using DB = Autodesk.Revit.DB;
-
-using Level = Objects.BuiltElements.Level;
-using Opening = Objects.BuiltElements.Opening;
 using Point = Objects.Geometry.Point;
 
 namespace Objects.Converter.Revit
@@ -22,7 +19,9 @@ namespace Objects.Converter.Revit
 
       var docObj = GetExistingElementByApplicationId(((Base)speckleOpening).applicationId);
       if (docObj != null)
+      {
         Doc.Delete(docObj.Id);
+      }
 
       DB.Opening revitOpening = null;
 
@@ -45,7 +44,7 @@ namespace Objects.Converter.Revit
 
         case RevitShaft rs:
           {
-            var bottomLevel = LevelToNative(rs.level);
+            var bottomLevel = LevelToNative(rs.bottomLevel);
             var topLevel = LevelToNative(rs.topLevel);
             revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
             break;
@@ -58,7 +57,9 @@ namespace Objects.Converter.Revit
 
 
       if (speckleOpening is RevitOpening ro)
-        SetElementParams(revitOpening, ro);
+      {
+        SetElementParams(revitOpening, (IRevitElement)ro);
+      }
 
       return revitOpening;
     }
@@ -92,12 +93,16 @@ namespace Objects.Converter.Revit
       {
         //host id is actually set in NestHostedObjects
         if (revitOpening.Host != null)
+        {
           speckleOpening = new RevitVerticalOpening();
+        }
         else
         {
           speckleOpening = new RevitShaft();
           if (topLevelParam != null)
+          {
             ((RevitShaft)speckleOpening).topLevel = ConvertAndCacheLevel(topLevelParam);
+          }
         }
 
 
@@ -106,13 +111,17 @@ namespace Objects.Converter.Revit
         foreach (DB.Curve curve in revitOpening.BoundaryCurves)
         {
           if (curve != null)
+          {
             poly.segments.Add(CurveToSpeckle(curve));
+          }
         }
         speckleOpening.outline = poly;
       }
 
-      if (baseLevelParam != null)
-        speckleOpening.level = ConvertAndCacheLevel(baseLevelParam);
+      //if (baseLevelParam != null)
+      //{
+      //  speckleOpening.bottomLevel = ConvertAndCacheLevel(baseLevelParam);
+      //}
 
       speckleOpening.type = revitOpening.Name;
 
