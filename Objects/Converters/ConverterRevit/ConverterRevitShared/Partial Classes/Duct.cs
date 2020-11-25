@@ -32,12 +32,12 @@ namespace Objects.Converter.Revit
         level = LevelToNative(LevelFromCurve(baseLine));
       }
 
-      var ductType = GetElementType<DB.DuctType>(speckleDuct);
+      var ductType = GetElementType<DB.DuctType>((Base)speckleDuct);
       var systemFamily = (speckleDuct is RevitDuct rd) ? rd.systemName : "";
       //var systemType = (speckleDuct is RevitDuct rd2) ? rd2.systemType : "";
       var system = GetElementType<MechanicalSystemType>(systemFamily, "");
 
-      var docObj = GetExistingElementByApplicationId(speckleDuct.applicationId);
+      var docObj = GetExistingElementByApplicationId(((Base)speckleDuct).applicationId);
 
       // deleting instead of updating for now!
       if (docObj != null)
@@ -49,7 +49,7 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitDuct != null)
       {
-        SetElementParams(duct, speckleRevitDuct);
+        SetElementParamsFromSpeckle(duct, speckleRevitDuct);
       }
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitDuct.applicationId, ApplicationGeneratedId = duct.UniqueId } };

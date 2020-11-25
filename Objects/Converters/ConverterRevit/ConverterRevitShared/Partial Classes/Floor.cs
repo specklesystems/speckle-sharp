@@ -36,10 +36,10 @@ namespace Objects.Converter.Revit
         level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
       }
 
-      var floorType = GetElementType<FloorType>(speckleFloor);
+      var floorType = GetElementType<FloorType>((Base)speckleFloor);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
-      var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
+      var docObj = GetExistingElementByApplicationId(((Base)speckleFloor).applicationId);
 
       if (docObj != null)
       {
@@ -68,7 +68,7 @@ namespace Objects.Converter.Revit
       }
       if (speckleRevitFloor != null)
       {
-        SetElementParams(revitFloor, speckleRevitFloor);
+        SetElementParamsFromSpeckle(revitFloor, speckleRevitFloor);
       }
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitFloor.applicationId, ApplicationGeneratedId = revitFloor.UniqueId } };
@@ -87,7 +87,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private IRevit FloorToSpeckle(DB.Floor revitFloor)
+    private RevitFloor FloorToSpeckle(DB.Floor revitFloor)
     {
       var baseLevelParam = revitFloor.get_Parameter(BuiltInParameter.LEVEL_PARAM);
       var structuralParam = revitFloor.get_Parameter(BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);
@@ -106,7 +106,10 @@ namespace Objects.Converter.Revit
 
       AddCommonRevitProps(speckleFloor, revitFloor);
 
-      (speckleFloor.displayMesh.faces, speckleFloor.displayMesh.vertices) = GetFaceVertexArrayFromElement(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      var mesh = new Geometry.Mesh();
+      (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+
+      speckleFloor["@displayMesh"] = mesh;
 
       // TODO
       var hostedElements = revitFloor.FindInserts(true, true, true, true);

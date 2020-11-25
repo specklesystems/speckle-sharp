@@ -58,7 +58,7 @@ namespace Objects.Converter.Revit
 
       if (speckleOpening is RevitOpening ro)
       {
-        SetElementParams(revitOpening, (IRevitElement)ro);
+        SetElementParamsFromSpeckle(revitOpening, ro);
       }
 
       return revitOpening;

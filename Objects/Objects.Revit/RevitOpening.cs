@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Objects.Revit
 {
   [SchemaIgnore]
-  public class RevitOpening : Base, IRevitElement, IOpening
+  public class RevitOpening : Base, IRevitHasFamilyAndType, IRevitHasParameters, IRevitHasTypeParameters, IOpening
   {
     public string elementId { get; set; }
 

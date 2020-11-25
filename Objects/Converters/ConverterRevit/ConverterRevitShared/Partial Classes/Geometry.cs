@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.Geometry;
 using Objects.Primitive;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,7 @@ namespace Objects.Converter.Revit
   /// </summary>
   public partial class ConverterRevit
   {
-    public object GeometryToNative(IHasBoundingBox geom)
+    public object GeometryToNative(Base geom)
     {
       switch (geom)
       {

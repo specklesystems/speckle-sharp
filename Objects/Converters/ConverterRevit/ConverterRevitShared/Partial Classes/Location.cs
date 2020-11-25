@@ -1,11 +1,9 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
+using Speckle.Core.Models;
 using System;
-
 using DB = Autodesk.Revit.DB;
-
-using Element = Objects.BuiltElements.Element;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Wall = Objects.BuiltElements.Wall;
@@ -14,7 +12,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public IHasBoundingBox LocationToSpeckle(DB.Element revitElement)
+    public Base LocationToSpeckle(DB.Element revitElement)
     {
       if (revitElement is FamilyInstance familyInstance)
       {
@@ -42,7 +40,7 @@ namespace Objects.Converter.Revit
               curve = curve.CreateTransformed(tf);
             }
 
-            return CurveToSpeckle(curve);
+            return CurveToSpeckle(curve) as Base;
           }
         case LocationPoint locationPoint:
           {
@@ -62,14 +60,16 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="loc"></param>
     /// <returns></returns>
-    private IHasBoundingBox TryGetLocationAsCurve(FamilyInstance familyInstance)
+    private Base TryGetLocationAsCurve(FamilyInstance familyInstance)
     {
       if (familyInstance.CanHaveAnalyticalModel())
       {
         //no need to apply offset transform
         var analiticalModel = familyInstance.GetAnalyticalModel();
         if (analiticalModel != null)
-          return CurveToSpeckle(analiticalModel.GetCurve());
+        {
+          return CurveToSpeckle(analiticalModel.GetCurve()) as Base;
+        }
       }
       var point = (familyInstance.Location as LocationPoint).Point;
       try
@@ -89,34 +89,34 @@ namespace Objects.Converter.Revit
     }
 
     //TODO: revise and improve
-    private object LocationToNative(Element elem)
+    private object LocationToNative(Base elem)
     {
 
       //no transforms are appliend on points
 
-      if (elem.HasMember<Point>("basePoint"))
+      if (elem["basePoint"] as Point != null)
       {
-        return PointToNative(elem.GetMemberSafe<Point>("basePoint"));
+        return PointToNative(elem["basePoint"] as Point);
       }
 
-      if (!elem.HasMember<ICurve>("baseLine"))
+      if (elem["baseLine"] == null)
       {
         throw new Exception("Location is null.");
       }
 
       //must be a curve!?
-      var converted = GeometryToNative(elem.GetMemberSafe<ICurve>("baseLine"));
+      var converted = GeometryToNative(elem["baseLine"] as Base);
       var curve = (converted as CurveArray).get_Item(0);
       //reapply revit's offset
-      var offset = elem.GetMemberSafe<double>("baseOffset");
+      var offset = elem["baseOffset"] as double?;
 
       if (elem is Column)
       {
         //revit verical columns can only be POINT based
-        if (!elem.GetMemberSafe<bool>("isSlanted") || IsVertical(curve))
+        if (!(bool)elem["isSlanted"] || IsVertical(curve))
         {
-          var baseLine = elem.GetMemberSafe<Line>("baseLine");
-          var point = new Point(baseLine.value[0], baseLine.value[1], baseLine.value[3] - offset, ModelUnits);
+          var baseLine = elem["baseLine"] as Line;
+          var point = new Point(baseLine.value[0], baseLine.value[1], baseLine.value[3] - (double) offset, ModelUnits);
 
           return PointToNative(point);
         }
@@ -124,7 +124,7 @@ namespace Objects.Converter.Revit
       //undo offset transform
       else if (elem is Wall w)
       {
-        var revitOffset = ScaleToNative(offset, w.baseLine.units);
+        var revitOffset = ScaleToNative((double)offset, ((Base)w.baseLine).units);
         XYZ vector = new XYZ(0, 0, -revitOffset);
         Transform tf = Transform.CreateTranslation(vector);
         curve = curve.CreateTransformed(tf);
@@ -144,7 +144,9 @@ namespace Objects.Converter.Revit
       var diffY = Math.Abs(curve.GetEndPoint(0).Y - curve.GetEndPoint(1).Y);
 
       if (diffX < 0.1 && diffY < 0.1)
+      {
         return true;
+      }
 
       return false;
     }

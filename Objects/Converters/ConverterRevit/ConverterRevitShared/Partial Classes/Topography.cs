@@ -10,7 +10,7 @@ namespace Objects.Converter.Revit
   {
     public ApplicationPlaceholderObject TopographyToNative(ITopography speckleSurface)
     {
-      var docObj = GetExistingElementByApplicationId(speckleSurface.applicationId);
+      var docObj = GetExistingElementByApplicationId(((Base)speckleSurface).applicationId);
 
       var pts = new List<XYZ>();
       for (int i = 0; i < speckleSurface.baseGeometry.vertices.Count; i += 3)
@@ -29,10 +29,10 @@ namespace Objects.Converter.Revit
       var revitSurface = TopographySurface.Create(Doc, pts);
       if (speckleSurface is RevitTopography rt)
       {
-        SetElementParams(revitSurface, rt);
+        SetElementParamsFromSpeckle(revitSurface, rt);
       }
 
-      return new ApplicationPlaceholderObject { applicationId = speckleSurface.applicationId, ApplicationGeneratedId = revitSurface.UniqueId };
+      return new ApplicationPlaceholderObject { applicationId = ((Base)speckleSurface).applicationId, ApplicationGeneratedId = revitSurface.UniqueId };
     }
 
     public RevitTopography TopographyToSpeckle(TopographySurface revitTopo)

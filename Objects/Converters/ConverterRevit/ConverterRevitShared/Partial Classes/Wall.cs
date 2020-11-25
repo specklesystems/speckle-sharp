@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
       }
 
       DB.Wall revitWall = null;
-      WallType wallType = GetElementType<WallType>(speckleWall);
+      WallType wallType = GetElementType<WallType>(((Base)speckleWall));
       DB.Level level = null;
       var structural = false;
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
@@ -40,7 +40,7 @@ namespace Objects.Converter.Revit
       }
 
       //try update existing wall
-      var docObj = GetExistingElementByApplicationId(speckleWall.applicationId);
+      var docObj = GetExistingElementByApplicationId(((Base)speckleWall).applicationId);
 
       if (docObj != null)
       {
@@ -86,21 +86,21 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitWall != null)
       {
-        SetElementParams(revitWall, speckleRevitWall);
+        SetElementParamsFromSpeckle(revitWall, speckleRevitWall);
       }
 
       // TODO: create nested children too
 
       var placeholder = new ApplicationPlaceholderObject
       {
-        applicationId = speckleWall.applicationId,
+        applicationId = ((Base)speckleWall).applicationId,
         ApplicationGeneratedId = revitWall.Id.ToString()
       };
 
       return new List<ApplicationPlaceholderObject>() { placeholder };
     }
 
-    public IRevit WallToSpeckle(DB.Wall revitWall)
+    public RevitWall WallToSpeckle(DB.Wall revitWall)
     {
       //REVIT PARAMS > SPECKLE PROPS
       var heightParam = revitWall.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM);
@@ -152,7 +152,7 @@ namespace Objects.Converter.Revit
 
       speckleWall["flipped"] = revitWall.Flipped;
       speckleWall["structural"] = (bool)ParameterToSpeckle(structural);
-      speckleWall.displayMesh = GetWallDisplayMesh(revitWall);
+      speckleWall["@displayMesh"] = GetWallDisplayMesh(revitWall);
 
       AddCommonRevitProps(speckleWall, revitWall);
 

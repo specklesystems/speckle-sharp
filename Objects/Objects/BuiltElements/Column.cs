@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Column : IColumn
+  public class Column : Base, IColumn
   {
     public double height { get; set; }
 

@@ -6,9 +6,10 @@ using System.Collections.Generic;
 namespace Objects.Revit
 {
   [SchemaIgnore]
-  public class RevitWall : Base, IRevitElement, IWall
+  public class RevitWall : Base, IRevitHasFamilyAndType, IRevitHasParameters, IRevitHasTypeParameters, IWall
   {
     public double height { get; set; }
+
     public ICurve baseLine { get; set; }
 
     [SchemaOptional]
@@ -31,6 +32,9 @@ namespace Objects.Revit
 
     [SchemaIgnore]
     public string elementId { get; set; }
+
+    [SchemaOptional]
+    public ILevel level { get; set; }
   }
 
   [SchemaDescription("A Revit wall by base line and top and bottom levels")]

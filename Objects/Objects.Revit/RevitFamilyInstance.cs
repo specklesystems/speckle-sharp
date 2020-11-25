@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  public class RevitFamilyInstance : Base, IRevitElement
+  public class RevitFamilyInstance : Base, IRevitHasFamilyAndType, IRevitHasParameters, IRevitHasTypeParameters
   {
     [SchemaIgnore]
     public string elementId { get; set; }
@@ -35,5 +35,8 @@ namespace Objects.Revit
     
     [SchemaOptional]
     public Dictionary<string, object> typeParameters { get; set; }
+
+    [SchemaOptional]
+    public ILevel level { get; set; }
   }
 }

@@ -34,10 +34,9 @@ namespace Objects.Converter.Revit
         level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
       }
 
-      var roofType = GetElementType<RoofType>(speckleRoof);
+      var roofType = GetElementType<RoofType>((Base)speckleRoof);
 
-      // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
-      var docObj = GetExistingElementByApplicationId(speckleRoof.applicationId);
+      var docObj = GetExistingElementByApplicationId(((Base)speckleRoof).applicationId);
       if (docObj != null)
       {
         Doc.Delete(docObj.Id);
@@ -65,13 +64,17 @@ namespace Objects.Converter.Revit
             for (var i = 0; i < curveArray.Size; i++)
             {
               var poly = speckleFootprintRoof.outline as Polycurve;
-              revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), ((Base)poly.segments[i]).GetMemberSafe<bool>("isSloped"));
+              var isSloped = ((Base)poly.segments[i])["isSloped"] as bool?;
+              revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), isSloped == true);
+              
               try
               {
-                revitFootprintRoof.set_SlopeAngle(curveArray.get_Item(i), ((Base)poly.segments[i]).GetMemberSafe<double>("slopeAngle"));
+                var slopeAngle = ((Base)poly.segments[i])["slopeAngle"] as double?;
+                revitFootprintRoof.set_SlopeAngle(curveArray.get_Item(i), (double) slopeAngle);
               }
               catch { }
-              revitFootprintRoof.set_Offset(curveArray.get_Item(i), ((Base)poly.segments[i]).GetMemberSafe<double>("offset"));
+              var offset = ((Base)poly.segments[i])["offset"] as double?;
+              revitFootprintRoof.set_Offset(curveArray.get_Item(i), (double) offset);
             }
             if (speckleFootprintRoof.cutOffLevel != null)
             {
@@ -101,7 +104,7 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitRoof != null)
       {
-        SetElementParams(revitRoof, speckleRevitRoof);
+        SetElementParamsFromSpeckle(revitRoof, speckleRevitRoof);
       }
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitRoof.applicationId, ApplicationGeneratedId = revitRoof.UniqueId } };
@@ -173,7 +176,9 @@ namespace Objects.Converter.Revit
 
       AddCommonRevitProps(speckleRoof, revitRoof);
 
-      (speckleRoof.displayMesh.faces, speckleRoof.displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      var displayMesh = new Geometry.Mesh();
+      (displayMesh.faces, displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleRoof["@displayMesh"] = displayMesh;
 
       // TODO
       var hostedElements = revitRoof.FindInserts(true, true, true, true);

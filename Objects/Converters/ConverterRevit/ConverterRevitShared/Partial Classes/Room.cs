@@ -28,8 +28,10 @@ namespace Objects.Converter.Revit
       }
 
       AddCommonRevitProps(speckleRoom, revitRoom);
-
-      (speckleRoom.displayMesh.faces, speckleRoom.displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoom);
+      
+      var displayMesh = new Geometry.Mesh();
+      (displayMesh.faces, displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoom);
+      speckleRoom["@displayMesh"] = displayMesh;
 
       return speckleRoom;
     }

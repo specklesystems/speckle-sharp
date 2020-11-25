@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  public class RevitDuct : Base, IRevitElement, IDuct
+  public class RevitDuct : Base, IRevitHasFamilyAndType, IRevitHasParameters, IRevitHasTypeParameters, IDuct
   {
     public double width { get; set; }
 
@@ -37,5 +37,8 @@ namespace Objects.Revit
 
     [SchemaIgnore]
     public string elementId { get; set; }
+
+    [SchemaOptional]
+    public ILevel level { get; set; }
   }
 }

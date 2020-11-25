@@ -4,10 +4,7 @@ using Objects.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
-
 using DB = Autodesk.Revit.DB;
-
-using Element = Objects.BuiltElements.Element;
 using Point = Objects.Geometry.Point;
 
 namespace Objects.Converter.Revit
@@ -19,7 +16,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="myElement"></param>
     /// <returns></returns>
-    public IRevit FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
+    public Base FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
     {
       //adaptive components
       if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(revitFi))
@@ -65,7 +62,7 @@ namespace Objects.Converter.Revit
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
       }
 
-      speckleFi.displayMesh = GetElementMesh(revitFi, subElements);
+      speckleFi["@displayMesh"] = GetElementMesh(revitFi, subElements);
 
       AddCommonRevitProps(speckleFi, revitFi);
 
@@ -93,7 +90,7 @@ namespace Objects.Converter.Revit
     //TODO: might need to clean this up and split the logic by beam, FI, etc...
     public List<ApplicationPlaceholderObject> FamilyInstanceToNative(RevitFamilyInstance speckleFi)
     {
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi as IBuiltElement);
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi as Base);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
       DB.Level level = LevelToNative(speckleFi.level);
       DB.FamilyInstance familyInstance = null;
@@ -152,7 +149,7 @@ namespace Objects.Converter.Revit
       var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
       (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
 
-      SetElementParams(familyInstance, speckleFi);
+      SetElementParamsFromSpeckle(familyInstance, speckleFi);
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleFi.applicationId, ApplicationGeneratedId = familyInstance.UniqueId } };
 

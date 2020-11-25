@@ -4,7 +4,6 @@ using Objects.Revit;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 using DB = Autodesk.Revit.DB;
-using Element = Objects.BuiltElements.Element;
 
 namespace Objects.Converter.Revit
 {
@@ -35,7 +34,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private IRevit BraceToSpeckle(DB.FamilyInstance myFamily)
+    private Base BraceToSpeckle(DB.FamilyInstance myFamily)
     {
       var myBeam = BeamToSpeckle(myFamily) as RevitBeam;
 

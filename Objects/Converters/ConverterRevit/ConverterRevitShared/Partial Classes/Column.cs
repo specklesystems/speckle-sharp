@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Column = Objects.BuiltElements.Column;
-using Element = Objects.BuiltElements.Element;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Autodesk.Revit.DB.Structure;
@@ -23,7 +22,7 @@ namespace Objects.Converter.Revit
         throw new Exception("Only line based Beams are currently supported.");
       }
 
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn); ;
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn as Base); ;
       var baseLine = CurveToNative(speckleColumn.baseLine).get_Item(0);
       DB.Level level = null;
       DB.Level topLevel = null;
@@ -49,7 +48,7 @@ namespace Objects.Converter.Revit
       }
 
 
-      var docObj = GetExistingElementByApplicationId(speckleColumn.applicationId);
+      var docObj = GetExistingElementByApplicationId(((Base)speckleColumn).applicationId);
       
       //try update existing 
       if (docObj != null)
@@ -113,7 +112,7 @@ namespace Objects.Converter.Revit
 
         SetOffsets(revitColumn, speckleRevitColumn);
         var exclusions = new List<string> { "Base Offset", "Top Offset" };
-        SetElementParams(revitColumn, speckleRevitColumn, exclusions);
+        SetElementParamsFromSpeckle(revitColumn, speckleRevitColumn, exclusions);
       }
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitColumn.applicationId, ApplicationGeneratedId = revitColumn.UniqueId } };
@@ -160,7 +159,7 @@ namespace Objects.Converter.Revit
 
     }
 
-    public IRevit ColumnToSpeckle(DB.FamilyInstance revitColumn)
+    public RevitColumn ColumnToSpeckle(DB.FamilyInstance revitColumn)
     {
       //REVIT PARAMS > SPECKLE PROPS
       var baseLevelParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
@@ -204,7 +203,7 @@ namespace Objects.Converter.Revit
         speckleColumn.rotation = ((LocationPoint)revitColumn.Location).Rotation;
       }
 
-      speckleColumn.displayMesh = GetElementMesh(revitColumn);
+      speckleColumn["@displayMesh"] = GetElementMesh(revitColumn);
 
       return speckleColumn;
     }

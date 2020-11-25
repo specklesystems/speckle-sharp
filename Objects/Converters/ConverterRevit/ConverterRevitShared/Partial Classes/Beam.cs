@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
         throw new Exception("Only line based Beams are currently supported.");
       }
 
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam as Base);
       var baseLine = CurveToNative(speckleBeam.baseLine).get_Item(0);
       DB.Level level = null;
       DB.FamilyInstance revitBeam = null;
@@ -36,7 +36,7 @@ namespace Objects.Converter.Revit
       }
 
       //try update existing 
-      var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
+      var docObj = GetExistingElementByApplicationId(((Base)speckleBeam).applicationId);
 
       if (docObj != null)
       {
@@ -78,18 +78,18 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitBeam != null)
       {
-        SetElementParams(revitBeam, speckleRevitBeam);
+        SetElementParamsFromSpeckle(revitBeam, speckleRevitBeam);
       }
 
       // TODO: get sub families, it's a family! 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleBeam.applicationId, ApplicationGeneratedId = revitBeam.UniqueId } };
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = ((Base)speckleBeam).applicationId, ApplicationGeneratedId = revitBeam.UniqueId } };
 
       // TODO: nested elements.
 
       return placeholders;
     }
 
-    private IRevit BeamToSpeckle(DB.FamilyInstance revitBeam)
+    private RevitBeam BeamToSpeckle(DB.FamilyInstance revitBeam)
     {
       var baseGeometry = LocationToSpeckle(revitBeam);
       var baseLine = baseGeometry as ICurve;
@@ -104,7 +104,7 @@ namespace Objects.Converter.Revit
       speckleBeam.type = Doc.GetElement(revitBeam.GetTypeId()).Name;
       speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(baseLevelParam);
-      speckleBeam.displayMesh = GetElementMesh(revitBeam);
+      speckleBeam["@displayMesh"] = GetElementMesh(revitBeam);
 
       AddCommonRevitProps(speckleBeam, revitBeam);
 

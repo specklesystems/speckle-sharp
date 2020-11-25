@@ -7,7 +7,7 @@ namespace Objects.Revit
 {
   [SchemaIgnore]
 
-  public class RevitRoof : Base, IRevitElement, IRoof
+  public class RevitRoof : Base, IRevitHasFamilyAndType, IRevitHasParameters, IRevitHasTypeParameters, IRoof
   {
     public ICurve outline { get; set; }
 
@@ -28,6 +28,9 @@ namespace Objects.Revit
 
     [SchemaIgnore]
     public string elementId { get; set; }
+
+    [SchemaOptional]
+    public ILevel level { get; set; }
 
   }
   public class RevitExtrusionRoof : RevitRoof

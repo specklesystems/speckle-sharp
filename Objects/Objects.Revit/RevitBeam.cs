@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Objects.Revit
 {
   [SchemaDescription("A Revit beam by line")]
-  public class RevitBeam : Base, IRevitElement, IBeam
+  public class RevitBeam : Base, IRevitHasFamilyAndType, IRevitHasParameters, IRevitHasTypeParameters, IBeam
   {
     public ICurve baseLine { get; set; }
 
@@ -23,5 +23,8 @@ namespace Objects.Revit
 
     [SchemaIgnore]
     public string elementId { get; set; }
+
+    [SchemaOptional]
+    public ILevel level { get; set; }
   }
 }

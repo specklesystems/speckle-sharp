@@ -1,6 +1,5 @@
 ﻿using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
-using Element = Objects.BuiltElements.Element;
 using Objects.Revit;
 using System.Linq;
 using Objects.Geometry;
@@ -41,19 +40,19 @@ namespace Objects.Converter.Revit
       revitDs.SetShape(mesh);
       revitDs.Name = speckleDs.type;
 
-      SetElementParams(revitDs, speckleDs);
- 
+      SetElementParamsFromSpeckle(revitDs, speckleDs);
+
       return new ApplicationPlaceholderObject { applicationId = speckleDs.applicationId, ApplicationGeneratedId = revitDs.UniqueId };
     }
 
-    private IRevit DirectShapeToSpeckle(DB.DirectShape revitAc)
+    private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
     {
       var speckleAc = new DirectShape();
       speckleAc.type = revitAc.Name;
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
       speckleAc.category = RevitUtils.GetCategory(cat);
-      speckleAc.displayMesh = GetElementMesh(revitAc);
-      speckleAc.baseGeometry = speckleAc.displayMesh;
+      speckleAc["@displayMesh"] = GetElementMesh(revitAc);
+      speckleAc.baseGeometry = speckleAc["@displayMesh"] as Mesh;
 
       AddCommonRevitProps(speckleAc, revitAc);
 

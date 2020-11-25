@@ -8,7 +8,7 @@ using Speckle.Core.Models;
 namespace Objects.Revit
 {
   [SchemaDescription("Creates a new Revit level by elevation and name")]
-  public class RevitLevel : IBaseRevitElement, ILevel
+  public class RevitLevel : Base, IBaseRevitElement, IRevitHasParameters, ILevel
   {
     public string name { get; set; }
 
@@ -37,10 +37,5 @@ namespace Objects.Revit
 
     [SchemaIgnore]
     public string elementId { get; set; }
-
-    [SchemaOptional]
-    [DetachProperty]
-    public List<IRevitElement> elements { get; set; } = new List<IRevitElement>();
-
   }
 }

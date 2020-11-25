@@ -14,11 +14,19 @@ namespace Objects.Converter.Revit
 
     private void AddCommonRevitProps(IBaseRevitElement speckleElement, DB.Element revitElement)
     {
-      if (speckleElement is IRevitElement obj)
+      if (speckleElement is IRevitHasFamilyAndType foo)
       {
-        obj.family = (revitElement as DB.FamilyInstance)?.Symbol?.FamilyName;
-        obj.typeParameters = GetElementTypeParams(revitElement);
-        obj.parameters = GetElementParams(revitElement);
+        foo.family = (revitElement as DB.FamilyInstance)?.Symbol?.FamilyName;
+      }
+
+      if (speckleElement is IRevitHasTypeParameters bar)
+      {
+        bar.typeParameters = GetElementTypeParams(revitElement);
+      }
+
+      if (speckleElement is IRevitHasParameters baz)
+      {
+        baz.parameters = GetElementParams(revitElement);
       }
 
       speckleElement.elementId = revitElement.Id.ToString();
@@ -179,7 +187,7 @@ namespace Objects.Converter.Revit
       return myParamDict;
     }
 
-    public void SetElementParams(DB.Element myElement, IRevitElement spkElement, List<string> exclusions = null)
+    public void SetElementParamsFromSpeckle(DB.Element myElement, IRevitHasParameters spkElement, List<string> exclusions = null)
     {
       if (myElement == null)
       {
@@ -281,6 +289,7 @@ namespace Objects.Converter.Revit
     #endregion
 
     #region  element types
+
     private T GetElementType<T>(string family, string type)
     {
       List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
@@ -360,7 +369,7 @@ namespace Objects.Converter.Revit
       }
 
 
-      if (element is IRevitElement ire)
+      if (element is IRevitHasFamilyAndType ire)
       {
         //match family and type
         var match = types.FirstOrDefault(x => x.FamilyName == ire.family && x.Name == ire.type);

@@ -38,7 +38,6 @@ namespace Objects.Converter.Revit
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
-
     public List<string> ConvertedObjectsList { get; set; } = new List<string>();
 
     public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
@@ -59,13 +58,13 @@ namespace Objects.Converter.Revit
           return DetailCurveToSpeckle(o);
 
         case DB.DirectShape o:
-          return DirectShapeToSpeckle(o) as Base;
+          return DirectShapeToSpeckle(o);
 
         case DB.FamilyInstance o:
-          return FamilyInstanceToSpeckle(o) as Base;
+          return FamilyInstanceToSpeckle(o);
 
         case DB.Floor o:
-          return FloorToSpeckle(o) as Base;
+          return FloorToSpeckle(o);
 
         case DB.Level o:
           return LevelToSpeckle(o);
@@ -178,40 +177,40 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public List<object> ConvertToNative(List<Base> objects)
     {
-      var levels = objects.Where(x => x is ILevel);
-      var nonLevels = objects.Where(x => !(x is ILevel));
+      //var levels = objects.Where(x => x is ILevel);
+      //var nonLevels = objects.Where(x => !(x is ILevel));
 
-      var sortedObjects = new List<Base>();
-      sortedObjects.AddRange(levels); // add the levels first
-      sortedObjects.AddRange(levels.Cast<ILevel>().SelectMany(x => x.elements)); // add their sub elements
-      sortedObjects.AddRange(nonLevels); // add everything else
+      //var sortedObjects = new List<Base>();
+      //sortedObjects.AddRange(levels); // add the levels first
+      //sortedObjects.AddRange(levels.Cast<ILevel>().SelectMany(x => x.elements)); // add their sub elements
+      //sortedObjects.AddRange(nonLevels); // add everything else
 
       var converted = new List<object>();
-      foreach (var obj in sortedObjects)
-      {
-        try
-        {
-          var conversionResult = ConvertToNative(obj);
-          var revitElement = conversionResult as DB.Element;
-          if (revitElement == null)
-          {
-            continue;
-          }
+      //foreach (var obj in sortedObjects)
+      //{
+      //  try
+      //  {
+      //    var conversionResult = ConvertToNative(obj);
+      //    var revitElement = conversionResult as DB.Element;
+      //    if (revitElement == null)
+      //    {
+      //      continue;
+      //    }
 
-          converted.Add(revitElement);
+      //    converted.Add(revitElement);
 
-          //process nested elements afterwards
-          //this will take care of levels and host elements
-          if (obj["@elements"] != null && obj["@elements"] is List<Base> nestedElements)
-          {
-            converted.AddRange(ConvertNestedObjectsToNative(nestedElements, revitElement));
-          }
-        }
-        catch (Exception e)
-        {
-          ConversionErrors.Add(new Error("Conversion failed", e.Message));
-        }
-      }
+      //    //process nested elements afterwards
+      //    //this will take care of levels and host elements
+      //    if (obj["@elements"] != null && obj["@elements"] is List<Base> nestedElements)
+      //    {
+      //      converted.AddRange(ConvertNestedObjectsToNative(nestedElements, revitElement));
+      //    }
+      //  }
+      //  catch (Exception e)
+      //  {
+      //    ConversionErrors.Add(new Error("Conversion failed", e.Message));
+      //  }
+      //}
 
       return converted;
     }
@@ -271,54 +270,54 @@ namespace Objects.Converter.Revit
     private List<Base> NestHostedObjects(List<Base> baseObjs, List<DB.Element> revitObjs)
     {
       Dictionary<int, Base> nested = new Dictionary<int, Base>();
-      if (baseObjs.Count != revitObjs.Count)
-      {
-        throw new Exception("Object count must be equal");
-      }
+      //if (baseObjs.Count != revitObjs.Count)
+      //{
+      //  throw new Exception("Object count must be equal");
+      //}
 
-      for (var i = 0; i < baseObjs.Count; i++)
-      {
-        var revitObj = revitObjs[i];
-        var baseObj = baseObjs[i];
+      //for (var i = 0; i < baseObjs.Count; i++)
+      //{
+      //  var revitObj = revitObjs[i];
+      //  var baseObj = baseObjs[i];
 
-        if (baseObj == null //conversion failed
-          || (revitObj as DB.FamilyInstance == null && revitObj as DB.Opening == null) // not a family instance nor opening
-          || (revitObj is DB.FamilyInstance && (revitObj as DB.FamilyInstance).Host == null) // family instance not hosted
-          || (revitObj is DB.FamilyInstance && (revitObj as DB.FamilyInstance).HostFace != null) // family instance face hosted
-          || (revitObj is DB.Opening && (revitObj as DB.Opening).Host == null)) // opening not hosted
-        {
-          nested.Add(revitObj.Id.IntegerValue, baseObj);
-          continue;
-        }
+      //  if (baseObj == null //conversion failed
+      //    || (revitObj as DB.FamilyInstance == null && revitObj as DB.Opening == null) // not a family instance nor opening
+      //    || (revitObj is DB.FamilyInstance && (revitObj as DB.FamilyInstance).Host == null) // family instance not hosted
+      //    || (revitObj is DB.FamilyInstance && (revitObj as DB.FamilyInstance).HostFace != null) // family instance face hosted
+      //    || (revitObj is DB.Opening && (revitObj as DB.Opening).Host == null)) // opening not hosted
+      //  {
+      //    nested.Add(revitObj.Id.IntegerValue, baseObj);
+      //    continue;
+      //  }
 
-        var hostIndex = -1;
+      //  var hostIndex = -1;
 
-        if (revitObj is DB.FamilyInstance)
-        {
-          hostIndex = revitObjs.FindIndex(x => x.Id == (revitObj as DB.FamilyInstance).Host.Id);
-        }
-        else if (revitObj is DB.Opening)
-        {
-          hostIndex = revitObjs.FindIndex(x => x.Id == (revitObj as DB.Opening).Host.Id);
-        }
+      //  if (revitObj is DB.FamilyInstance)
+      //  {
+      //    hostIndex = revitObjs.FindIndex(x => x.Id == (revitObj as DB.FamilyInstance).Host.Id);
+      //  }
+      //  else if (revitObj is DB.Opening)
+      //  {
+      //    hostIndex = revitObjs.FindIndex(x => x.Id == (revitObj as DB.Opening).Host.Id);
+      //  }
 
-        if (hostIndex == -1) //host not in current selection
-        {
-          nested.Add(revitObj.Id.IntegerValue, baseObj);
-          continue;
-        }
+      //  if (hostIndex == -1) //host not in current selection
+      //  {
+      //    nested.Add(revitObj.Id.IntegerValue, baseObj);
+      //    continue;
+      //  }
 
-        var hostElem = revitObjs[hostIndex];
-        //if already in the nested list, add child to it, otherwise to the baseObject
-        if (nested.ContainsKey(hostElem.Id.IntegerValue))
-        {
-          nested[hostElem.Id.IntegerValue].GetMemberSafe("@elements", new List<Base>()).Add(baseObj);
-        }
-        else
-        {
-          baseObjs[hostIndex].GetMemberSafe("@elements", new List<Base>()).Add(baseObj);
-        }
-      }
+      //  var hostElem = revitObjs[hostIndex];
+      //  //if already in the nested list, add child to it, otherwise to the baseObject
+      //  if (nested.ContainsKey(hostElem.Id.IntegerValue))
+      //  {
+      //    nested[hostElem.Id.IntegerValue].GetMemberSafe("@elements", new List<Base>()).Add(baseObj);
+      //  }
+      //  else
+      //  {
+      //    baseObjs[hostIndex].GetMemberSafe("@elements", new List<Base>()).Add(baseObj);
+      //  }
+      //}
       return nested.Select(x => x.Value).ToList();
     }
     #endregion

@@ -55,11 +55,11 @@ namespace Objects.Converter.Revit
       SetAdaptivePoints(revitAc, speckleAc.basePoints);
       AdaptiveComponentInstanceUtils.SetInstanceFlipped(revitAc, speckleAc.flipped);
 
-      SetElementParams(revitAc, speckleAc);
+      SetElementParamsFromSpeckle(revitAc, speckleAc);
       return revitAc;
     }
 
-    private IRevitElement AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
+    private AdaptiveComponent AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
     {
       var speckleAc = new AdaptiveComponent();
       speckleAc.type = Doc.GetElement(revitAc.GetTypeId()).Name;
