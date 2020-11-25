@@ -15,13 +15,27 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRhinoGh", "Convert
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamo", "Converters\ConverterDynamo\ConverterDynamo\ConverterDynamo.csproj", "{21A0F179-07D0-4018-93B2-C483F2E47D3E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit", "Converters\ConverterRevit\ConverterRevit\ConverterRevit.csproj", "{D26DF8CE-D7C1-478E-B4B0-4769F800CC00}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRevitTests", "Converters\ConverterRevit\ConverterRevitTests\ConverterRevitTests.csproj", "{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Objects.Revit", "Objects.Revit\Objects.Revit.csproj", "{51162368-2D07-4AEB-AB2D-984B86A4506C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects.Revit", "Objects.Revit\Objects.Revit.csproj", "{51162368-2D07-4AEB-AB2D-984B86A4506C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterRevit", "ConverterRevit", "{1987848E-D753-4791-B89E-F74EDF136CB3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2019", "Converters\ConverterRevit\ConverterRevit2019\ConverterRevit2019.csproj", "{0BCB32CF-A3CF-4A6A-A9F8-DFE5D85D608C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2020", "Converters\ConverterRevit\ConverterRevit2020\ConverterRevit2020.csproj", "{E4006179-462F-4133-9481-219279138B93}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2021", "Converters\ConverterRevit\ConverterRevit2021\ConverterRevit2021.csproj", "{BF5515B4-C97C-4FB9-9F93-1740D2B615B3}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterRevitShared", "Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.shproj", "{2DCD648D-DCA5-4D2A-8B14-AD2CB85D24B0}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{0bcb32cf-a3cf-4a6a-a9f8-dfe5d85d608c}*SharedItemsImports = 5
+		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
+		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{bf5515b4-c97c-4fb9-9f93-1740d2b615b3}*SharedItemsImports = 5
+		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{e4006179-462f-4133-9481-219279138b93}*SharedItemsImports = 5
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -39,14 +53,10 @@ Global
 		{A987E5E1-8605-46BA-9476-1D8D28502273}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A987E5E1-8605-46BA-9476-1D8D28502273}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A987E5E1-8605-46BA-9476-1D8D28502273}.Release|Any CPU.Build.0 = Release|Any CPU
-		{21A0F179-07D0-4018-93B2-C483F2E47D3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{21A0F179-07D0-4018-93B2-C483F2E47D3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{21A0F179-07D0-4018-93B2-C483F2E47D3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{21A0F179-07D0-4018-93B2-C483F2E47D3E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D26DF8CE-D7C1-478E-B4B0-4769F800CC00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D26DF8CE-D7C1-478E-B4B0-4769F800CC00}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D26DF8CE-D7C1-478E-B4B0-4769F800CC00}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D26DF8CE-D7C1-478E-B4B0-4769F800CC00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21A0F179-07D0-4018-93B2-C483F2E47D3E}.Debug|Any CPU.ActiveCfg = DebugSandbox|Any CPU
+		{21A0F179-07D0-4018-93B2-C483F2E47D3E}.Debug|Any CPU.Build.0 = DebugSandbox|Any CPU
+		{21A0F179-07D0-4018-93B2-C483F2E47D3E}.Release|Any CPU.ActiveCfg = ReleaseSandbox|Any CPU
+		{21A0F179-07D0-4018-93B2-C483F2E47D3E}.Release|Any CPU.Build.0 = ReleaseSandbox|Any CPU
 		{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -55,6 +65,18 @@ Global
 		{51162368-2D07-4AEB-AB2D-984B86A4506C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51162368-2D07-4AEB-AB2D-984B86A4506C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51162368-2D07-4AEB-AB2D-984B86A4506C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BCB32CF-A3CF-4A6A-A9F8-DFE5D85D608C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BCB32CF-A3CF-4A6A-A9F8-DFE5D85D608C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BCB32CF-A3CF-4A6A-A9F8-DFE5D85D608C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BCB32CF-A3CF-4A6A-A9F8-DFE5D85D608C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4006179-462F-4133-9481-219279138B93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4006179-462F-4133-9481-219279138B93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4006179-462F-4133-9481-219279138B93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4006179-462F-4133-9481-219279138B93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF5515B4-C97C-4FB9-9F93-1740D2B615B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF5515B4-C97C-4FB9-9F93-1740D2B615B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF5515B4-C97C-4FB9-9F93-1740D2B615B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF5515B4-C97C-4FB9-9F93-1740D2B615B3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -63,8 +85,12 @@ Global
 		{7EF0C96C-1FD9-42B2-85CE-BFD9B10DAC06} = {986B7226-6A4C-4881-8481-ADAFD0EC70B0}
 		{A987E5E1-8605-46BA-9476-1D8D28502273} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 		{21A0F179-07D0-4018-93B2-C483F2E47D3E} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
-		{D26DF8CE-D7C1-478E-B4B0-4769F800CC00} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 		{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
+		{1987848E-D753-4791-B89E-F74EDF136CB3} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
+		{0BCB32CF-A3CF-4A6A-A9F8-DFE5D85D608C} = {1987848E-D753-4791-B89E-F74EDF136CB3}
+		{E4006179-462F-4133-9481-219279138B93} = {1987848E-D753-4791-B89E-F74EDF136CB3}
+		{BF5515B4-C97C-4FB9-9F93-1740D2B615B3} = {1987848E-D753-4791-B89E-F74EDF136CB3}
+		{2DCD648D-DCA5-4D2A-8B14-AD2CB85D24B0} = {1987848E-D753-4791-B89E-F74EDF136CB3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}

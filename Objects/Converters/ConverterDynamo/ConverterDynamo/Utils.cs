@@ -1,24 +1,8 @@
 ﻿using Autodesk.DesignScript.Geometry;
-using Objects.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Speckle.Core.Models;
-using System.Runtime.CompilerServices;
 using DS = Autodesk.DesignScript.Geometry;
-using Objects.Primitive;
-using Point = Objects.Geometry.Point;
-using Vector = Objects.Geometry.Vector;
-using Line = Objects.Geometry.Line;
-using Plane = Objects.Geometry.Plane;
-using Circle = Objects.Geometry.Circle;
-using Arc = Objects.Geometry.Arc;
-using Ellipse = Objects.Geometry.Ellipse;
-using Curve = Objects.Geometry.Curve;
-using Mesh = Objects.Geometry.Mesh;
-using Objects;
-using Surface = Objects.Geometry.Surface;
-using Speckle.Core.Kits;
 
 namespace Objects.Converter.Dynamo
 {
