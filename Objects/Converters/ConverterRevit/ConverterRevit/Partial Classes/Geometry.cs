@@ -746,5 +746,15 @@ namespace Objects.Converter.Revit
       public Polycurve trims;
       public List<int> orientation;
     }
+
+    private DB.DirectShape BrepToDirectShape(Brep brep, DB.BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    {
+      var solid = BrepToNative(brep);
+      if (solid == null) return null;
+      var revitDs = DB.DirectShape.CreateElement(Doc, new ElementId(cat));
+      revitDs.SetShape(new List<GeometryObject>{solid});
+      return revitDs;
+
+    }
   }
 }
