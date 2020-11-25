@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
 
@@ -11,6 +12,14 @@ namespace Speckle.ConnectorRevit
 {
   public static class ConnectorRevitUtils
   {
+#if REVIT2021
+    public static string RevitAppName = Applications.Revit2021;
+#elif REVIT2020
+      public static string RevitAppName = Applications.Revit2020;
+#else
+      public static string RevitAppName = Applications.Revit2019;
+#endif
+
     private static List<string> _cachedParameters = null;
     private static List<string> _cachedViews = null;
     public static List<SpeckleException> ConversionErrors { get; set; }
