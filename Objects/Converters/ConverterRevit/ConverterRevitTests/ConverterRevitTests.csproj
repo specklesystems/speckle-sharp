@@ -136,9 +136,9 @@
       <Project>{95c2153a-642e-4779-90c0-bff56fc561a9}</Project>
       <Name>Objects</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ConverterRevit\ConverterRevit.csproj">
-      <Project>{8752525B-9DB2-48A2-B574-695BE5330C1B}</Project>
-      <Name>ConverterRevit</Name>
+    <ProjectReference Include="..\ConverterRevit2021\ConverterRevit2021.csproj">
+      <Project>{bf5515b4-c97c-4fb9-9f93-1740d2b615b3}</Project>
+      <Name>ConverterRevit2021</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

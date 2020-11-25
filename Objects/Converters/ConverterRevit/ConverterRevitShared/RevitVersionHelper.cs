@@ -11,7 +11,7 @@ namespace Objects.Converter.Revit
     {
 #if REVIT2021
       return curve.IsClosed;
-#else
+# else
       return curve.isClosed;
 #endif
     }

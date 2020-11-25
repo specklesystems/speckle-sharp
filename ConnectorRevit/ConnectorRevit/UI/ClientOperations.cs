@@ -19,6 +19,8 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit
   {
+
+
     public List<StreamState> DocumentStreams { get; set; } = new List<StreamState>();
 
 
@@ -109,7 +111,7 @@ namespace Speckle.ConnectorRevit.UI
       OperationErrors.Clear();
 
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.Revit);
+      var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
       converter.SetContextDocument(CurrentDoc.Document);
 
       var streamId = state.Stream.id;
@@ -242,7 +244,7 @@ namespace Speckle.ConnectorRevit.UI
         streamId = streamId,
         objectId = objectId,
         branchName = state.Branch.name,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} objs from {Applications.Revit}."
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} objs from {ConnectorRevitUtils.RevitAppName}."
       };
 
       if (state.PreviousCommitId != null) { actualCommit.previousCommitIds = new List<string>() { state.PreviousCommitId }; }
@@ -279,7 +281,7 @@ namespace Speckle.ConnectorRevit.UI
       OperationErrors.Clear();
 
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.Revit);
+      var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
       converter.SetContextDocument(CurrentDoc.Document);
 
       var transport = new ServerTransport(state.Client.Account, state.Stream.id);
@@ -392,7 +394,7 @@ namespace Speckle.ConnectorRevit.UI
 
         foreach (var prop in baseItem.GetDynamicMembers())
         {
-          placeholders.AddRange( HandleAndConvertToNative(baseItem[prop], converter) );
+          placeholders.AddRange(HandleAndConvertToNative(baseItem[prop], converter));
         }
 
         return placeholders;
@@ -402,7 +404,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         foreach (var listObj in list)
         {
-          placeholders.AddRange( HandleAndConvertToNative(listObj, converter));
+          placeholders.AddRange(HandleAndConvertToNative(listObj, converter));
         }
         return placeholders;
       }
@@ -411,7 +413,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         foreach (DictionaryEntry kvp in dict)
         {
-          placeholders.AddRange( HandleAndConvertToNative(kvp.Value, converter));
+          placeholders.AddRange(HandleAndConvertToNative(kvp.Value, converter));
         }
         return placeholders;
       }

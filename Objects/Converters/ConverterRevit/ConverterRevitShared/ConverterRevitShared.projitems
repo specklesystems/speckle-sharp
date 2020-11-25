@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ConverterRevitShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Categories.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConversionUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\AdaptiveComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Beam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Brace.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Column.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\DirectShape.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Duct.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\FamilyInstance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Floor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Level.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Location.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\MeshUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Opening.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Param.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\RevitCurves.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Roof.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Room.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Topography.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Units.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Wall.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
+  </ItemGroup>
+</Project>

@@ -15,6 +15,14 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit : ISpeckleConverter
   {
+#if REVIT2021
+    public static string RevitAppName = Applications.Revit2021;
+#elif REVIT2020
+      public static string RevitAppName = Applications.Revit2020;
+#else
+    public static string RevitAppName = Applications.Revit2019;
+#endif
+
     #region ISpeckleConverter props
 
     public string Description => "Default Speckle Kit for Revit";
@@ -22,7 +30,7 @@ namespace Objects.Converter.Revit
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
 
-    public IEnumerable<string> GetServicedApplications() => new string[] { Applications.Revit };
+    public IEnumerable<string> GetServicedApplications() => new string[] { RevitAppName };
 
     #endregion ISpeckleConverter props
 
@@ -47,13 +55,6 @@ namespace Objects.Converter.Revit
 
     public Base ConvertToSpeckle(object @object)
     {
-
-      var test = @object.GetType().GetProperty("Host").GetValue(@object);
-
-
-
-      var xxx = ((DB.FamilyInstance)@object).Host.Id;
-
       switch (@object)
       {
         case DB.DetailCurve o:
