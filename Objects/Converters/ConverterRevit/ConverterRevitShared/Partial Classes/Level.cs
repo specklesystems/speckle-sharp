@@ -178,6 +178,8 @@ namespace Objects.Converter.Revit
     private RevitLevel ConvertAndCacheLevel(ElementId id)
     {
       var level = Doc.GetElement(id) as DB.Level;
+
+      if (level == null) return null;
       //add it to our list of levels for the conversion so we can nest elements under them
       if (!Levels.ContainsKey(level.Name))
       {

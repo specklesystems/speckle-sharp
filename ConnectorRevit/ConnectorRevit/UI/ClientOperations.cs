@@ -141,41 +141,48 @@ namespace Speckle.ConnectorRevit.UI
 
       foreach (var obj in state.Objects)
       {
-        RevitElement revitElement = null;
-        if (obj.applicationId != null)
+        try
         {
-          revitElement = CurrentDoc.Document.GetElement(obj.applicationId);
-        }
+          RevitElement revitElement = null;
+          if (obj.applicationId != null)
+          {
+            revitElement = CurrentDoc.Document.GetElement(obj.applicationId);
+          }
 
-        if (revitElement == null)
+          if (revitElement == null)
+          {
+            ConversionErrors.Add(new SpeckleException(message: $"Could not retrieve element: {obj.speckle_type}"));
+            continue;
+          }
+
+          var conversionResult = converter.ConvertToSpeckle(revitElement);
+
+          conversionProgressDict["Conversion"]++;
+          UpdateProgress(conversionProgressDict, state.Progress);
+
+          if (conversionResult == null)
+          {
+            ConversionErrors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
+            state.Errors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
+            continue;
+          }
+
+          placeholders.Add(new ApplicationPlaceholderObject { applicationId = obj.applicationId, ApplicationGeneratedId = obj.applicationId });
+
+          convertedCount++;
+
+          var category = $"@{revitElement.Category.Name}";
+          if (commitObject[category] == null)
+          {
+            commitObject[category] = new List<Base>();
+          }
+
+          ((List<Base>)commitObject[category]).Add(conversionResult);
+        }
+        catch (Exception e)
         {
-          ConversionErrors.Add(new SpeckleException(message: $"Could not retrieve element: {obj.speckle_type}"));
-          continue;
+          state.Errors.Add(e);
         }
-
-        var conversionResult = converter.ConvertToSpeckle(revitElement);
-
-        conversionProgressDict["Conversion"]++;
-        UpdateProgress(conversionProgressDict, state.Progress);
-
-        if (conversionResult == null)
-        {
-          ConversionErrors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
-          state.Errors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
-          continue;
-        }
-
-        placeholders.Add(new ApplicationPlaceholderObject { applicationId = obj.applicationId, ApplicationGeneratedId = obj.applicationId });
-
-        convertedCount++;
-
-        var category = $"@{revitElement.Category.Name}";
-        if (commitObject[category] == null)
-        {
-          commitObject[category] = new List<Base>();
-        }
-
-        ((List<Base>)commitObject[category]).Add(conversionResult);
 
         //var level = (Level) CurrentDoc.Document.GetElement(revitElement.LevelId);
 
