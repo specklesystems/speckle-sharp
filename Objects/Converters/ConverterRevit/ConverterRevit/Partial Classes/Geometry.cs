@@ -456,8 +456,9 @@ namespace Objects.Converter.Revit
             row.Add(new ControlPoint(pt.X, pt.Y, pt.Z, ModelUnits));
           }
         }
+        points.Add(row);
       }
-
+      result.SetControlPoints(points);
       return result;
     }
 
@@ -533,7 +534,7 @@ namespace Objects.Converter.Revit
       return weights;
     }
 
-    public DB.XYZ[] ControlPointsToNative(List<List<ControlPoint>> controlPoints)
+    public XYZ[] ControlPointsToNative(List<List<ControlPoint>> controlPoints)
     {
       var uCount = controlPoints.Count;
       var vCount = controlPoints[0].Count;
@@ -671,14 +672,34 @@ namespace Objects.Converter.Revit
       if (solid is null || solid.Faces.IsEmpty) return null;
 
       var brepEdges = new Dictionary<DB.Edge, BrepEdge>();
-
-      foreach (var face in solid.Faces.Cast<DB.Face>())
+      var faceIndex = 0;
+      var curve2dIndex = 0;
+      var curve3dIndex = 0;
+      
+      foreach (var face in solid.Faces.Cast<Face>())
       {
-        var si = AddSurface(brep, face, out var shells, brepEdges);
-        if (si < 0) continue;
-        TrimSurface(brep, si, !face.OrientationMatchesSurfaceOrientation, shells);
-      }
+        var surface = FaceToSpeckle(face, out bool orientation, 0.0);
+        
+        brep.Faces.Add(new BrepFace(brep,0,new List<int>{},-1,false ));
+        brep.Surfaces.Add(surface);
+        var iterator = face.EdgeLoops.ForwardIterator();
+        while (iterator.MoveNext())
+        {
+          var loop = iterator.Current as EdgeArray;
+          var loopIterator = loop.ForwardIterator();
+          while (loopIterator.MoveNext())
+          {
+            var edge = loopIterator.Current as Edge;
+            var faceA = edge.GetFace(0);
+            var faceB = edge.GetFace(1);
 
+            bool sharesA = face == faceA;
+            bool sharesB = face == faceB;
+            
+            var sEdge = new BrepEdge(brep,curve3dIndex,null,-1,-1,orientation);
+          }
+        }
+      }
       // TODO: Revit has no brep vertices. Must call 'brep.SetVertices()' in rhino when provenance is revit.
       // TODO: Set tolerances and flags in rhino when provenance is revit.
 
@@ -693,16 +714,36 @@ namespace Objects.Converter.Revit
       switch (face)
       {
         case null: return null;
-        //case PlanarFace planar:            return ToRhinoSurface(planar, relativeTolerance);
-        //case ConicalFace conical:          return ToRhinoSurface(conical, relativeTolerance);
-        //case CylindricalFace cylindrical:  return ToRhinoSurface(cylindrical, relativeTolerance);
-        //case RevolvedFace revolved:        return ToRhinoSurface(revolved, relativeTolerance);
-        //case RuledFace ruled:              return ToRhinoSurface(ruled, relativeTolerance);
+        case PlanarFace planar:            return FaceToSpeckle(planar, relativeTolerance);
+        case ConicalFace conical:          return FaceToSpeckle(conical, relativeTolerance);
+        case CylindricalFace cylindrical:  return FaceToSpeckle(cylindrical, relativeTolerance);
+        case RevolvedFace revolved:        return FaceToSpeckle(revolved, relativeTolerance);
+        case RuledFace ruled:              return FaceToSpeckle(ruled, relativeTolerance);
         case HermiteFace hermite: return FaceToSpeckle(hermite, face.GetBoundingBox());
         default: throw new NotImplementedException();
       }
     }
-
+    public Surface FaceToSpeckle(PlanarFace planarFace, double tolerance)
+    {
+      throw new NotImplementedException();
+    }
+    public Surface FaceToSpeckle(ConicalFace conicalFace, double tolerance)
+    {
+      throw new NotImplementedException();
+    }
+    public Surface FaceToSpeckle(CylindricalFace cylindricalFace, double tolerance)
+    {
+      throw new NotImplementedException();
+    }
+    public Surface FaceToSpeckle(RevolvedFace revolvedFace, double tolerance)
+    {
+      throw new NotImplementedException();
+    }
+    public Surface FaceToSpeckle(RuledFace ruledFace, double tolerance)
+    {
+      throw new NotImplementedException();
+    }
+    
     public int AddSurface(Brep brep, DB.Face face, out List<BrepBoundary>[] shells,
       Dictionary<DB.Edge, BrepEdge> brepEdges = null)
     {

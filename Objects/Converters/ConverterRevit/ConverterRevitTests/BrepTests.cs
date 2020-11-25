@@ -60,7 +60,7 @@ namespace ConverterRevitTests
         native = converter.BrepToDirectShape(brep);
       }, fixture.NewDoc ).Wait();
       
-      Assert.NotNull(native);
+      Assert.True(native.get_Geometry(new Options()).First() is Solid);
     }
 
     [Fact]
@@ -84,11 +84,7 @@ namespace ConverterRevitTests
         throw new Exception("DS was not composed of a solid.");
       converter.BrepToSpeckle(solid);
     }
-
-    internal void AssertBrepEqual(DirectShape source, DirectShape result)
-    {
-      Assert.NotNull(result);
-    }
+    
   }
 
 }
