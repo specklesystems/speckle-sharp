@@ -139,6 +139,7 @@ namespace Speckle.ConnectorRevit.UI
 
       var placeholders = new List<Base>();
 
+      converter.SetContextObjects(state.Objects.Select(obj => new ApplicationPlaceholderObject { applicationId = obj.applicationId}).ToList());
       foreach (var obj in state.Objects)
       {
         try

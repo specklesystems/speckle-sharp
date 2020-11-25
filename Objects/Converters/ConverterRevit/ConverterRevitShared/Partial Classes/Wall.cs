@@ -116,7 +116,7 @@ namespace Objects.Converter.Revit
       var level = ConvertAndCacheLevel(baseLevelParam);
       var topLevel = ConvertAndCacheLevel(topLevelParam);
 
-      IRevit speckleWall = null;
+      RevitWall speckleWall = null;
 
       if (baseGeometry is Geometry.Point)
       {
@@ -158,20 +158,35 @@ namespace Objects.Converter.Revit
 
       // TODO
       var hostedElements = revitWall.FindInserts(true, true, true, true);
+      var hostedElementsList = new List<Base>();
 
       foreach (var elemId in hostedElements)
       {
         var element = Doc.GetElement(elemId);
+        var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
+        
+        if(isSelectedInContextObjects == -1)
+        {
+          continue;
+        }
+
         try
         {
           var obj = ConvertToSpeckle(element);
           var xx = obj;
+
+          if(obj!=null)
+          {
+            hostedElementsList.Add(obj);
+          }
         }
         catch (Exception e)
         {
           ConversionErrors.Add(new Error { message = e.Message, details = e.StackTrace });
         }
       }
+
+      ((RevitWall)speckleWall)["elements"] = hostedElementsList;
 
       return speckleWall;
     }

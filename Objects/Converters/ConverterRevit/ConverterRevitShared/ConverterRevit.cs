@@ -34,24 +34,22 @@ namespace Objects.Converter.Revit
 
     #endregion ISpeckleConverter props
 
-    public ConverterRevit()
-    {
-    }
-
     public Document Doc { get; private set; }
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
+
+    public List<string> ConvertedObjectsList { get; set; } = new List<string>();
 
     public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
 
     public Dictionary<string, RevitLevel> Levels { get; private set; } = new Dictionary<string, RevitLevel>();
 
-    public void SetContextDocument(object doc)
-    {
-      Doc = (Document)doc;
-    }
+    public ConverterRevit() { }
+
+    public void SetContextDocument(object doc) => Doc = (Document)doc;
+
+    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
 
     public Base ConvertToSpeckle(object @object)
     {
@@ -102,15 +100,6 @@ namespace Objects.Converter.Revit
           ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Speckle"));
           return null;
       }
-    }
-
-    public List<Base> ConvertToSpeckle(List<object> objects)
-    {
-      var elements = objects.Select(x => x as DB.Element).ToList();
-      var converted = objects.Select(x => ConvertToSpeckle(x)).ToList();
-      var hostObjects = NestHostedObjects(converted, elements);
-      var levelWithObjects = NestObjectsInLevels(hostObjects);
-      return levelWithObjects;
     }
 
     public object ConvertToNative(Base @object)
@@ -169,6 +158,16 @@ namespace Objects.Converter.Revit
           ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Revit"));
           return null;
       }
+    }
+
+    #region pending deprecation
+    public List<Base> ConvertToSpeckle(List<object> objects)
+    {
+      var elements = objects.Select(x => x as DB.Element).ToList();
+      var converted = objects.Select(x => ConvertToSpeckle(x)).ToList();
+      var hostObjects = NestHostedObjects(converted, elements);
+      var levelWithObjects = NestObjectsInLevels(hostObjects);
+      return levelWithObjects;
     }
 
     /// <summary>
@@ -322,6 +321,7 @@ namespace Objects.Converter.Revit
       }
       return nested.Select(x => x.Value).ToList();
     }
+    #endregion
 
     public bool CanConvertToSpeckle(object @object)
     {
