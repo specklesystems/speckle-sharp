@@ -7,9 +7,8 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Room : Element, IRoom
+  public class Room : IRoom, IHasArea, IHasVolume
   {
-    // public ICurve baseGeometry { get; set; }
     public string name { get; set; }
     public string number { get; set; }
     public double area { get; set; }
@@ -17,7 +16,7 @@ namespace Objects.BuiltElements
 
     public List<ICurve> voids { get; set; } = new List<ICurve>();
     public ICurve outline { get; set; }
-    // public Mesh displayMesh { get; set; } = new Mesh();
+
     public Room()
     {
 

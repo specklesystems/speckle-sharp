@@ -150,9 +150,9 @@ namespace Objects.Converter.Revit
         };
       }
 
-      ((RevitWall)speckleWall)["flipped"] = revitWall.Flipped;
-      ((RevitWall)speckleWall)["structural"] = (bool)ParameterToSpeckle(structural);
-      ((RevitWall)speckleWall).displayMesh = GetWallDisplayMesh(revitWall);
+      speckleWall["flipped"] = revitWall.Flipped;
+      speckleWall["structural"] = (bool)ParameterToSpeckle(structural);
+      speckleWall.displayMesh = GetWallDisplayMesh(revitWall);
 
       AddCommonRevitProps(speckleWall, revitWall);
 

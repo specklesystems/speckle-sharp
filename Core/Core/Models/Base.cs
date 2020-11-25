@@ -49,7 +49,10 @@ namespace Speckle.Core.Models
       return JObject.Parse(obj).GetValue("id").ToString();
     }
 
-    [SchemaIgnore]
+    /// <summary>
+    /// Attempts to count the total number of detachable objects.
+    /// </summary>
+    /// <returns>The total count of the detachable children + 1 (itself).</returns>
     public long GetTotalChildrenCount()
     {
       var parsed = new HashSet<int>();
@@ -175,6 +178,31 @@ namespace Speckle.Core.Models
     /// </summary>
     [SchemaIgnore]
     public string applicationId { get; set; }
+
+
+    private string _units;
+    /// <summary>
+    /// The units in which any spatial values within this object are expressed. 
+    /// </summary>
+    [SchemaIgnore]
+    public string units
+    {
+      get
+      {
+        try
+        {
+          return Core.Kits.Units.GetUnitsFromString(_units);
+        }
+        catch
+        {
+          return _units;
+        }
+      }
+      set
+      {
+        _units = Core.Kits.Units.GetUnitsFromString(value);
+      }
+    }
 
     private string __type;
 

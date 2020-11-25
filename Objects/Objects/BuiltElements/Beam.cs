@@ -6,9 +6,10 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Beam : Element, IBeam
+  public class Beam : IBeam
   {
     public ICurve baseLine { get; set; }
+    
     public Beam()
     {
 

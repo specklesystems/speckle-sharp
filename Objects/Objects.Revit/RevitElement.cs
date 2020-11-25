@@ -1,30 +1,22 @@
-﻿using Objects.BuiltElements;
-using Speckle.Core.Kits;
+﻿using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  /// <summary>
-  /// Represents a generic Revit element that has type, family, level and parameters
-  /// </summary>
-
-  [SchemaIgnore]
-  public class RevitElement : Element, IRevit
+  public interface IBaseRevitElement
   {
-    public string family { get; set; }
-
-    public string type { get; set; }
-
-    public ILevel level { get; set; }
-
-    [SchemaOptional]
-    public Dictionary<string, object> parameters { get; set; }
-
-    [SchemaOptional]
-    public Dictionary<string, object> typeParameters { get; set; }
-
-    [SchemaIgnore]
-    public string elementId { get; set; }
+    string elementId { get; set; }
   }
 
+  public interface IRevitElement : IBaseRevitElement
+  {
+    string family { get; set; }
+
+    string type { get; set; }
+
+    Dictionary<string, object> parameters { get; set; }
+
+    Dictionary<string, object> typeParameters { get; set; }
+  }
 }

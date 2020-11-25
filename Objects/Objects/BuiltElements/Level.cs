@@ -6,15 +6,11 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Level : Element, ILevel
+  public class Level : ILevel
   {
     public string name { get; set; }
 
     public double elevation { get; set; }
-
-    [DetachProperty]
-    [SchemaOptional]
-    public List<Element> elements { get; set; } = new List<Element>();
 
     public Level()
     {

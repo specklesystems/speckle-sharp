@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Duct : Element, IDuct
+  public class Duct : IDuct
   {
     public double width { get; set; }
     public double height { get; set; }

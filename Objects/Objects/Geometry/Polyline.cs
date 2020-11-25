@@ -14,7 +14,7 @@ namespace Objects.Geometry
     public List<double> value { get; set; } = new List<double>();
     public bool closed { get; set; }
     public Interval domain { get; set; }
-    public Box boundingBox { get; set; }
+    public Box bbox { get; set; }
     public Point center { get; set; }
     public double area { get; set; }
     public double length { get; set; }

@@ -16,7 +16,7 @@ namespace Objects.Geometry
 
     public Interval domain { get; set; }
 
-    public Box boundingBox { get; set; }
+    public Box bbox { get; set; }
     public Point center { get; set; }
     public double area { get; set; }
     public double length { get; set; }

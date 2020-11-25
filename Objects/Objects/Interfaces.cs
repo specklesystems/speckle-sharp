@@ -7,102 +7,50 @@ using System.Text;
 
 namespace Objects
 {
-  #region geometry
-  /// <summary>
-  /// Used to define a geometrical Base
-  /// </summary>
+  #region Generic interfaces.
+
   public interface IGeometry
   {
-    /// <summary>
-    /// Gets or sets the linear units assigned to this <see cref="IGeometry"/> instance.
-    /// </summary>
-    string units { get; set; }
+    Box bbox { get; }
   }
 
-  public interface I3DGeometry : IGeometry
+  public interface IHasArea
   {
-    /// <summary>
-    /// Gets or sets the bounding box for this <see cref="I3DGeometry"/> instance.
-    /// </summary>
-    Box boundingBox { get; set; }
+    double area { get; set; }
+  }
 
-    /// <summary>
-    /// Gets or sets the center point for this <see cref="I3DGeometry"/> instance.
-    /// </summary>
-    Point center { get; set; }
-
-    /// <summary>
-    /// Gets or sets the volume for this <see cref="I3DGeometry"/> instance.
-    /// </summary>
+  public interface IHasVolume
+  {
     double volume { get; set; }
-
-    /// <summary>
-    /// Gets or sets the area for this <see cref="I3DGeometry"/> instance.
-    /// </summary>
-    double area { get; set; }
-
   }
 
-  public interface I2DGeometry : IGeometry
+  public interface ICurve
   {
-    /// <summary>
-    /// Gets or sets the bounding box for this <see cref="I2DGeometry"/> instance.
-    /// </summary>
-    Box boundingBox { get; set; }
-
-    /// <summary>
-    /// Gets or sets the center point for this <see cref="I2DGeometry"/> instance.
-    /// </summary>
-    Point center { get; set; }
-
-    /// <summary>
-    /// Gets or sets the area for this <see cref="I2DGeometry"/> instance.
-    /// </summary>
-    double area { get; set; }
-
-    /// <summary>
-    /// Gets or set the length of this <see cref="I2DGeometry"/> instance.
-    /// </summary>
     double length { get; set; }
-  }
-
-
-
-  /// <summary>
-  /// Used to define a curve based Geometry
-  /// </summary>
-  public interface ICurve : I2DGeometry
-  {
   }
 
   #endregion
 
-  #region builtelems
+  #region Built elements
 
-  public interface IBuiltElement
-  {
-    string applicationId { get; set; }
-    string speckle_type { get; }
-  }
-
-  public interface IBeam : IBuiltElement
+  public interface IBeam 
   {
     ICurve baseLine { get; set; }
   }
 
-  public interface IBrace : IBuiltElement
+  public interface IBrace 
   {
     ICurve baseLine { get; set; }
   }
 
-  public interface IColumn : IBuiltElement
+  public interface IColumn 
   {
     double height { get; set; }
 
     ICurve baseLine { get; set; }
   }
 
-  public interface IDuct : IBuiltElement
+  public interface IDuct 
   {
     double width { get; set; }
     double height { get; set; }
@@ -113,37 +61,35 @@ namespace Objects
     Line baseLine { get; set; }
   }
 
-  public interface IFloor : IBuiltElement
+  public interface IFloor  
   {
     ICurve outline { get; set; }
     List<ICurve> voids { get; set; }
   }
 
-  public interface IGridLine : IBuiltElement
+  public interface IGridLine  
   {
     Line baseLine { get; set; }
   }
 
-  public interface ILevel : IBuiltElement
+  public interface ILevel  
   {
     string name { get; set; }
-    string units { get; set; }
     double elevation { get; set; }
-    List<Element> elements { get; set; }
   }
 
-  public interface IOpening : IBuiltElement
+  public interface IOpening  
   {
     ICurve outline { get; set; }
   }
 
-  public interface IRoof : IBuiltElement
+  public interface IRoof  
   {
     ICurve outline { get; set; }
     List<ICurve> voids { get; set; }
   }
 
-  public interface IRoom : IBuiltElement
+  public interface IRoom  
   {
     string name { get; set; }
     string number { get; set; }
@@ -153,12 +99,12 @@ namespace Objects
     ICurve outline { get; set; }
   }
 
-  public interface ITopography : IBuiltElement
+  public interface ITopography  
   {
     Mesh baseGeometry { get; set; }
   }
 
-  public interface IWall : IBuiltElement
+  public interface IWall  
   {
     double height { get; set; }
 

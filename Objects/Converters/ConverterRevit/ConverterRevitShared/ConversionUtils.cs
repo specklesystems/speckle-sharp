@@ -10,39 +10,21 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-
     #region parameters
 
-    private void AddCommonRevitProps(IRevit speckleElement, DB.Element revitElement)
+    private void AddCommonRevitProps(IBaseRevitElement speckleElement, DB.Element revitElement)
     {
-
-      if (speckleElement is RevitElement speckleRevitElement)
+      if (speckleElement is IRevitElement obj)
       {
-        if (revitElement is DB.FamilyInstance)
-        {
-          speckleRevitElement.family = (revitElement as DB.FamilyInstance).Symbol.FamilyName;
-        }
-
-        if (CanGetElementTypeParams(revitElement))
-        {
-          speckleRevitElement.typeParameters = GetElementTypeParams(revitElement);
-        }
-
-        speckleRevitElement.parameters = GetElementParams(revitElement);
-        speckleRevitElement.applicationId = revitElement.UniqueId;
+        obj.family = (revitElement as DB.FamilyInstance)?.Symbol?.FamilyName;
+        obj.typeParameters = GetElementTypeParams(revitElement);
+        obj.parameters = GetElementParams(revitElement);
       }
 
       speckleElement.elementId = revitElement.Id.ToString();
+      ((Base)speckleElement).applicationId = revitElement.UniqueId;
     }
 
-    //TODO: CLEAN THE BELOW 
-    /// <summary>
-    /// Gets a dictionary representation of all this element's parameters.
-    /// TODO: (old) manage (somehow!) units; essentially set them back to whatever the current document
-    /// setting is (meters, millimiters, etc). 
-    /// </summary>
-    /// <param name="myElement"></param>
-    /// <returns></returns>
     public Dictionary<string, object> GetElementParams(DB.Element myElement)
     {
       var myParamDict = new Dictionary<string, object>();
@@ -141,22 +123,13 @@ namespace Objects.Converter.Revit
       return myParamDict;
     }
 
-    private bool CanGetElementTypeParams(DB.Element element)
-    {
-      var typeElement = Doc.GetElement(element.GetTypeId());
-      if (typeElement == null || typeElement.Parameters == null)
-      {
-        return false;
-      }
-
-      return true;
-    }
-
     public Dictionary<string, object> GetElementTypeParams(DB.Element myElement)
     {
-      var myParamDict = new Dictionary<string, object>();
-
       var myElementType = Doc.GetElement(myElement.GetTypeId());
+
+      if (myElementType == null || myElementType.Parameters == null) return null;
+
+      var myParamDict = new Dictionary<string, object>();
 
       foreach (Parameter p in myElementType.Parameters)
       {
@@ -206,9 +179,8 @@ namespace Objects.Converter.Revit
       return myParamDict;
     }
 
-    public void SetElementParams(DB.Element myElement, IRevit spkElement, List<string> exclusions = null)
+    public void SetElementParams(DB.Element myElement, IRevitElement spkElement, List<string> exclusions = null)
     {
-
       if (myElement == null)
       {
         return;
@@ -218,8 +190,6 @@ namespace Objects.Converter.Revit
       {
         return;
       }
-
-      //var questForTheBest = UnitDictionary;
 
       foreach (var kvp in spkElement.parameters)
       {
@@ -362,7 +332,7 @@ namespace Objects.Converter.Revit
       throw new Exception($"Could not find any family symbol to use.");
     }
 
-    private T GetElementType<T>(IBuiltElement element)
+    private T GetElementType<T>(Base element)
     {
       List<ElementType> types = new List<ElementType>();
       ElementMulticategoryFilter filter = null;
@@ -390,7 +360,7 @@ namespace Objects.Converter.Revit
       }
 
 
-      if (element is RevitElement ire)
+      if (element is IRevitElement ire)
       {
         //match family and type
         var match = types.FirstOrDefault(x => x.FamilyName == ire.family && x.Name == ire.type);

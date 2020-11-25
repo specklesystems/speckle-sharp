@@ -6,9 +6,10 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Opening : Element, IOpening
+  public class Opening : IOpening
   {
     public ICurve outline { get; set; }
+
     public Opening()
     {
 

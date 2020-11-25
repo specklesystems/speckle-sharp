@@ -17,7 +17,7 @@ namespace Objects.Geometry
     public List<Base> profiles { get; set; }
     public double? length;
     public string units { get; set; }
-    public Box boundingBox { get; set; }
+    public Box bbox { get; set; }
     public Point center { get; set; }
     public double area { get; set; }
     public double volume { get; set; }

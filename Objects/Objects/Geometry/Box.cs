@@ -7,22 +7,23 @@ using System.Text;
 
 namespace Objects.Geometry
 {
-  public class Box : Base, I3DGeometry
+  public class Box : Base, IHasVolume, IHasArea, IGeometry
   {
     public Plane basePlane { get; set; }
+
     public Interval xSize { get; set; }
+
     public Interval ySize { get; set; }
+
     public Interval zSize { get; set; }
-    public string units { get; set; }
-    public Box boundingBox { get; set; }
-    public Point center { get; set; }
+
+    public Box bbox { get; }
+
     public double area { get; set; }
+
     public double volume { get; set; }
 
-    public Box()
-    {
-
-    }
+    public Box() { }
 
     public Box(Plane basePlane, Interval xSize, Interval ySize, Interval zSize, string units = Units.Meters, string applicationId = null)
     {

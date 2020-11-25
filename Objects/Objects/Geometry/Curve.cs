@@ -20,7 +20,7 @@ namespace Objects.Geometry
     public Polyline displayValue { get; set; }
     public bool closed { get; set; }
 
-    public Box boundingBox { get; set; }
+    public Box bbox { get; set; }
     public Point center { get; set; }
     public double area { get; set; }
     public double length { get; set; }
