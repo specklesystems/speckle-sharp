@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.Converter.Revit;
 using Xunit;
@@ -51,22 +52,12 @@ namespace ConverterRevitTests
       
       // You read the wrong file, OOOPS!!
       if (!(@base is Brep brep)) throw new Exception("Object was not a brep, did you choose the right file?");
-      Solid native = null;
+      DirectShape native = null;
       
       xru.RunInTransaction(() =>
       {
-        native = converter.BrepToNative(brep);
-        var ds = DirectShape.CreateElement(fixture.NewDoc, new ElementId(BuiltInCategory.OST_GenericModel));
-
-        if (native == null)
-        {
-          var meshes = converter.MeshToNative(brep.displayValue);
-          ds.SetShape(meshes);
-        }
-        else
-        {
-          ds.SetShape(new List<GeometryObject> {native});
-        }
+        converter.SetContextDocument(fixture.NewDoc);
+        native = converter.BrepToDirectShape(brep);
       }, fixture.NewDoc ).Wait();
       
       Assert.NotNull(native);
@@ -77,6 +68,26 @@ namespace ConverterRevitTests
     public void BrepToSpeckle()
     {
       throw new NotImplementedException();
+    }
+    
+    [Fact]
+    [Trait("Brep", "Selection")]
+    public void BrepSelectionToNative()
+    {
+      var converter = new ConverterRevit();
+      converter.SetContextDocument(fixture.NewDoc);
+
+      if(!(fixture.Selection[0] is DirectShape ds))
+        throw new Exception("Selected object was not a direct shape.");
+      var geo = ds.get_Geometry(new Options());
+      if(!(geo.First() is Solid solid))
+        throw new Exception("DS was not composed of a solid.");
+      converter.BrepToSpeckle(solid);
+    }
+
+    internal void AssertBrepEqual(DirectShape source, DirectShape result)
+    {
+      Assert.NotNull(result);
     }
   }
 

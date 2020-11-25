@@ -747,14 +747,22 @@ namespace Objects.Converter.Revit
       public List<int> orientation;
     }
 
-    private DB.DirectShape BrepToDirectShape(Brep brep, DB.BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    public DirectShape BrepToDirectShape(Brep brep, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
     {
-      var solid = BrepToNative(brep);
-      if (solid == null) return null;
-      var revitDs = DB.DirectShape.CreateElement(Doc, new ElementId(cat));
-      revitDs.SetShape(new List<GeometryObject>{solid});
-      return revitDs;
+      var revitDs = DirectShape.CreateElement(Doc, new ElementId(cat));
 
+      try
+      {
+        var solid = BrepToNative(brep);
+        if (solid == null) throw new Exception("Could not convert Brep to Solid");
+        revitDs.SetShape(new List<GeometryObject>{solid});
+      }
+      catch (Exception e)
+      {
+        var mesh = MeshToNative(brep.displayValue);
+        revitDs.SetShape(mesh);
+      }
+      return revitDs;
     }
   }
 }
