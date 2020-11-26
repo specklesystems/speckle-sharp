@@ -4,22 +4,18 @@ using System.Collections.Generic;
 
 namespace Objects.Revit
 {
+  /// <summary>
+  /// Something, anyting in Revit, has an element id.
+  /// <para>Note: the uniqueId is captured in the Base's object applicationId. This elementId is captured for selection purposes.</para>
+  /// </summary>
   public interface IBaseRevitElement
   {
     string elementId { get; set; }
   }
 
-  //public interface IRevitElement : IBaseRevitElement
-  //{
-  //  string family { get; set; }
-
-  //  string type { get; set; }
-
-  //  Dictionary<string, object> parameters { get; set; }
-
-  //  Dictionary<string, object> typeParameters { get; set; }
-  //}
-
+  /// <summary>
+  /// Describes family-like objects.
+  /// </summary>
   public interface IRevitHasFamilyAndType : IBaseRevitElement
   {
     string family { get; set; }
@@ -27,6 +23,9 @@ namespace Objects.Revit
     string type { get; set; }
   }
 
+  /// <summary>
+  /// Objects having a parameters property.
+  /// </summary>
   public interface IRevitHasParameters : IBaseRevitElement
   {
     Dictionary<string, object> parameters { get; set; }
