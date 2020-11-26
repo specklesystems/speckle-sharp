@@ -675,6 +675,11 @@ namespace Objects.Converter.Revit
       var faceIndex = 0;
       var curve2dIndex = 0;
       var curve3dIndex = 0;
+
+      var speckleFaces = new BrepFace[solid.Faces.Size];
+      var speckleEdges = new BrepEdge[solid.Edges.Size];
+      var speckle3dCurves = new ICurve[solid.Edges.Size];
+      var speckle2dCurves = new List<ICurve>();
       
       foreach (var face in solid.Faces.Cast<Face>())
       {
@@ -693,10 +698,9 @@ namespace Objects.Converter.Revit
             var faceA = edge.GetFace(0);
             var faceB = edge.GetFace(1);
 
-            bool sharesA = face == faceA;
-            bool sharesB = face == faceB;
+            var edgeFace = face == faceA ? faceA : faceB;
             
-            var sEdge = new BrepEdge(brep,curve3dIndex,null,-1,-1,orientation);
+            var sEdge = new BrepEdge(brep,curve3dIndex,null,-1,-1,edge.IsFlippedOnFace(edgeFace));
           }
         }
       }
