@@ -82,7 +82,14 @@ namespace Speckle.Core.Serialisation
             if (val == null) continue;
             if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
             {
-              addMethod.Invoke(arr, new object[] { Convert.ChangeType(HandleValue(val, serializer, CancellationToken), jsonProperty.PropertyType.GenericTypeArguments[0]) });
+              try
+              {
+                addMethod.Invoke(arr, new object[] { Convert.ChangeType(HandleValue(val, serializer, CancellationToken), jsonProperty.PropertyType.GenericTypeArguments[0]) });
+              }
+              catch (Exception e)
+              {
+                addMethod.Invoke(arr, new object[] { HandleValue(val, serializer, CancellationToken) });
+              }
             }
             else
             {

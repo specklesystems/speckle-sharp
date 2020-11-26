@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Speckle.Core.Models
 {
@@ -75,5 +76,8 @@ namespace Speckle.Core.Models
     public ApplicationPlaceholderObject() { }
 
     public string ApplicationGeneratedId { get; set; }
+
+    [JsonIgnore]
+    public object NativeObject { get; set; }
   }
 }
