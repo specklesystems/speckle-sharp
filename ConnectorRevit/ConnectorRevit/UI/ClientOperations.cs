@@ -139,7 +139,7 @@ namespace Speckle.ConnectorRevit.UI
 
       var placeholders = new List<Base>();
 
-      converter.SetContextObjects(state.Objects.Select(obj => new ApplicationPlaceholderObject { applicationId = obj.applicationId}).ToList());
+      converter.SetContextObjects(state.Objects.Select(obj => new ApplicationPlaceholderObject { applicationId = obj.applicationId }).ToList());
       foreach (var obj in state.Objects)
       {
         try
@@ -152,7 +152,6 @@ namespace Speckle.ConnectorRevit.UI
 
           if (revitElement == null)
           {
-            ConversionErrors.Add(new SpeckleException(message: $"Could not retrieve element: {obj.speckle_type}"));
             continue;
           }
 
@@ -161,12 +160,12 @@ namespace Speckle.ConnectorRevit.UI
           conversionProgressDict["Conversion"]++;
           UpdateProgress(conversionProgressDict, state.Progress);
 
-          if (conversionResult == null)
-          {
-            ConversionErrors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
-            state.Errors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
-            continue;
-          }
+          //if (conversionResult == null)
+          //{
+          //  ConversionErrors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
+          //  state.Errors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
+          //  continue;
+          //}
 
           placeholders.Add(new ApplicationPlaceholderObject { applicationId = obj.applicationId, ApplicationGeneratedId = obj.applicationId });
 
@@ -211,7 +210,7 @@ namespace Speckle.ConnectorRevit.UI
         return state;
       }
 
-      state.Objects = placeholders; // this should prevent issues when swapping the same stream between sender/receiver states.
+      //state.Objects = placeholders; // this should prevent issues when swapping the same stream between sender/receiver states.
 
       Execute.PostToUIThread(() => state.Progress.Maximum = (int)commitObject.GetTotalChildrenCount());
 
@@ -330,7 +329,7 @@ namespace Speckle.ConnectorRevit.UI
       // Bake the new ones.
       Queue.Add(() =>
       {
-        converter.SetContextObjects(state.Objects.Cast<ApplicationPlaceholderObject>().ToList()); // needs to be set for editing to work
+        converter.SetContextObjects(state.ReceivedObjects); // needs to be set for editing to work
 
         using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.Stream.name}"))
         {
@@ -340,7 +339,7 @@ namespace Speckle.ConnectorRevit.UI
 
           // TODO: delete old objects.
 
-          state.Objects = newPlaceholderObjects.Cast<Base>().ToList();
+          state.ReceivedObjects = newPlaceholderObjects;
           state.Errors.AddRange(converter.ConversionErrors.Select(e => new Exception($"{e.message}: {e.details}")));
 
           t.Commit();
@@ -402,7 +401,8 @@ namespace Speckle.ConnectorRevit.UI
 
         foreach (var prop in baseItem.GetDynamicMembers())
         {
-          placeholders.AddRange(HandleAndConvertToNative(baseItem[prop], converter));
+          //if (converter.CanConvertToNative(baseItem[prop] as Base))
+            placeholders.AddRange(HandleAndConvertToNative(baseItem[prop], converter));
         }
 
         return placeholders;

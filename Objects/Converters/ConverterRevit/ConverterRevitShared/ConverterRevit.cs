@@ -154,7 +154,6 @@ namespace Objects.Converter.Revit
           return DuctToNative(o);
 
         default:
-          ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Revit"));
           return null;
       }
     }

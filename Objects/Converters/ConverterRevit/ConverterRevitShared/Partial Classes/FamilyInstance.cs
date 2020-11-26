@@ -18,22 +18,40 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public Base FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
     {
+
+      // Check if it's been converted previously - from a parent host.
+      if (ConvertedObjectsList.IndexOf(revitFi.UniqueId) != -1)
+      {
+        return null;
+      }
+
+      // If the parent is in our selection list, back off, as this element will be converted by the host element.
+      if (revitFi.Host != null && ContextObjects.FindIndex(obj => obj.applicationId == revitFi.Host.UniqueId) != -1)
+      {
+        return null;  
+      }
+
       //adaptive components
       if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(revitFi))
+      {
         return AdaptiveComponentToSpeckle(revitFi);
+      }
 
       //beams & braces
       if (Categories.beamCategories.Contains(revitFi.Category))
       {
         if (revitFi.StructuralType == StructuralType.Beam)
+        {
           return BeamToSpeckle(revitFi);
+        }
         else if (revitFi.StructuralType == StructuralType.Brace)
+        {
           return BraceToSpeckle(revitFi);
+        }
       }
 
       //columns
-      if (Categories.columnCategories.Contains(revitFi.Category)
-          || revitFi.StructuralType == StructuralType.Column)
+      if (Categories.columnCategories.Contains(revitFi.Category) || revitFi.StructuralType == StructuralType.Column)
       {
         return ColumnToSpeckle(revitFi);
       }
@@ -90,7 +108,7 @@ namespace Objects.Converter.Revit
     //TODO: might need to clean this up and split the logic by beam, FI, etc...
     public List<ApplicationPlaceholderObject> FamilyInstanceToNative(RevitFamilyInstance speckleFi)
     {
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi as Base);
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
       DB.Level level = LevelToNative(speckleFi.level);
       DB.FamilyInstance familyInstance = null;
@@ -115,7 +133,9 @@ namespace Objects.Converter.Revit
 
             // check for a type change
             if (speckleFi.type != null && speckleFi.type != revitType.Name)
+            {
               familyInstance.ChangeTypeId(familySymbol.Id);
+            }
 
             //some elements us the Level param, otehrs the Reference Level param (eg beams)
           }
@@ -136,15 +156,21 @@ namespace Objects.Converter.Revit
           familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, host, level, StructuralType.NonStructural);
         }
         else
+        {
           familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, level, StructuralType.NonStructural);
+        }
       }
       TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
 
       if (speckleFi.handFlipped != familyInstance.HandFlipped)
+      {
         familyInstance.flipHand();
+      }
 
       if (speckleFi.facingFlipped != familyInstance.FacingFlipped)
+      {
         familyInstance.flipFacing();
+      }
 
       var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
       (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);

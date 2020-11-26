@@ -114,6 +114,7 @@ namespace Speckle.Core.Kits
 
     public static string GetUnitsFromString(string unit)
     {
+      if (unit == null) return null;
       switch (unit.ToLower())
       {
         case "mm":

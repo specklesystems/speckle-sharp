@@ -36,6 +36,7 @@ namespace Objects.Converter.Revit
 
       speckleElement["elementId"] = revitElement.Id.ToString();
       speckleElement.applicationId = revitElement.UniqueId;
+      speckleElement.units = ModelUnits;
     }
 
     public Dictionary<string, object> GetElementParams(DB.Element myElement)

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
-using Wall = Objects.BuiltElements.Wall;
 
 namespace Objects.Converter.Revit
 {
@@ -164,8 +163,8 @@ namespace Objects.Converter.Revit
       {
         var element = Doc.GetElement(elemId);
         var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
-        
-        if(isSelectedInContextObjects == -1)
+
+        if (isSelectedInContextObjects == -1)
         {
           continue;
         }
@@ -175,9 +174,10 @@ namespace Objects.Converter.Revit
           var obj = ConvertToSpeckle(element);
           var xx = obj;
 
-          if(obj!=null)
+          if (obj != null)
           {
             hostedElementsList.Add(obj);
+            ConvertedObjectsList.Add(obj.applicationId);
           }
         }
         catch (Exception e)
@@ -186,7 +186,10 @@ namespace Objects.Converter.Revit
         }
       }
 
-      ((RevitWall)speckleWall)["elements"] = hostedElementsList;
+      if (hostedElements.Count != 0)
+      {
+        speckleWall["elements"] = hostedElementsList;
+      }
 
       return speckleWall;
     }
