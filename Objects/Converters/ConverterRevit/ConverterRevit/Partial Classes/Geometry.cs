@@ -18,6 +18,7 @@ using Ellipse = Objects.Geometry.Ellipse;
 using Objects;
 using Surface = Objects.Geometry.Surface;
 using Objects.Primitive;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.Revit
 {
@@ -806,6 +807,7 @@ namespace Objects.Converter.Revit
       {
         var mesh = MeshToNative(brep.displayValue);
         revitDs.SetShape(mesh);
+        ConversionErrors.Add(new Error(e.Message,e.InnerException?.Message ?? "No details available."));
       }
       return revitDs;
     }
