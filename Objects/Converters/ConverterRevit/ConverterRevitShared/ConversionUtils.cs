@@ -14,8 +14,8 @@ namespace Objects.Converter.Revit
 
     private void AddCommonRevitProps(Base speckleElement, DB.Element revitElement)
     {
-      
-      if(revitElement is FamilyInstance)
+
+      if (revitElement is FamilyInstance)
       {
         speckleElement["family"] = (revitElement as DB.FamilyInstance)?.Symbol?.FamilyName;
         speckleElement["type"] = (revitElement as DB.FamilyInstance)?.Symbol?.GetType().Name;
@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
 
 
       var typeParams = GetElementTypeParams(revitElement);
-      if(typeParams != null)
+      if (typeParams != null)
       {
         speckleElement["typeParameters"] = typeParams;
       }
@@ -140,7 +140,10 @@ namespace Objects.Converter.Revit
     {
       var myElementType = Doc.GetElement(myElement.GetTypeId());
 
-      if (myElementType == null || myElementType.Parameters == null) return null;
+      if (myElementType == null || myElementType.Parameters == null)
+      {
+        return null;
+      }
 
       var myParamDict = new Dictionary<string, object>();
 
@@ -440,7 +443,10 @@ namespace Objects.Converter.Revit
     {
       var @ref = ContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
 
-      if (@ref == null) return null;
+      if (@ref == null)
+      {
+        return null;
+      }
 
       var docElement = Doc.GetElement(@ref.ApplicationGeneratedId);
 
