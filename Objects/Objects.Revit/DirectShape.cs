@@ -7,7 +7,7 @@ using static Objects.Revit.RevitUtils;
 namespace Objects.Revit
 {
   [SchemaDescription("A DirectShape element by mesh")]
-  public class DirectShape : Base, IBaseRevitElement, IRevitHasParameters
+  public class DirectShape : Base, IBaseRevitElement
   {
     public string type { get; set; }
     

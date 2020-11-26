@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Objects.Revit
 {
   [SchemaDescription("A Revit brace by line")]
-  public class RevitBrace : Base, IRevitHasFamilyAndType, IRevitHasParameters, IRevitHasTypeParameters, IBrace
+  public class RevitBrace : Base, IRevitHasFamilyAndType, IBrace
   {
     public ICurve baseLine { get; set; }
 

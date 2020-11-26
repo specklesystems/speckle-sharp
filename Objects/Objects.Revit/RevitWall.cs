@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Objects.Revit
 {
   [SchemaIgnore]
-  public class RevitWall : Base, IRevitHasFamilyAndType, IRevitHasParameters, IRevitHasTypeParameters, IWall
+  public class RevitWall : Base, IRevitHasFamilyAndType, IWall
   {
     public double height { get; set; }
 

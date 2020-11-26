@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  public class RevitFloor : Base, IRevitHasFamilyAndType, IRevitHasParameters, IRevitHasTypeParameters, IFloor
+  public class RevitFloor : Base, IRevitHasFamilyAndType, IFloor
   {
     public ICurve outline { get; set; }
 

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Objects.Revit
 {
   [SchemaDescription("A Revit column by line")]
-  public class RevitColumn : Base, IRevitHasFamilyAndType, IRevitHasParameters, IRevitHasTypeParameters, IColumn
+  public class RevitColumn : Base, IRevitHasFamilyAndType, IColumn
   {
     public double height { get; set; }
 

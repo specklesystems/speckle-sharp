@@ -23,18 +23,4 @@ namespace Objects.Revit
     string type { get; set; }
   }
 
-  /// <summary>
-  /// Objects having a parameters property.
-  /// </summary>
-  public interface IRevitHasParameters : IBaseRevitElement
-  {
-    Dictionary<string, object> parameters { get; set; }
-
-  }
-
-  public interface IRevitHasTypeParameters : IBaseRevitElement
-  {
-    Dictionary<string, object> typeParameters { get; set; }
-  }
-
 }

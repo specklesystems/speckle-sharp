@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  public class AdaptiveComponent : Base, IRevitHasFamilyAndType, IRevitHasParameters, IRevitHasTypeParameters
+  public class AdaptiveComponent : Base, IRevitHasFamilyAndType
   {
     public string type { get; set; }
 

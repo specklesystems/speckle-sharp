@@ -12,28 +12,30 @@ namespace Objects.Converter.Revit
   {
     #region parameters
 
-    private void AddCommonRevitProps(IBaseRevitElement speckleElement, DB.Element revitElement)
+    private void AddCommonRevitProps(Base speckleElement, DB.Element revitElement)
     {
       
-
-      
-      if (speckleElement is IRevitHasFamilyAndType foo)
+      if(revitElement is FamilyInstance)
       {
-        foo.family = (revitElement as DB.FamilyInstance)?.Symbol?.FamilyName;
+        speckleElement["family"] = (revitElement as DB.FamilyInstance)?.Symbol?.FamilyName;
+        speckleElement["type"] = (revitElement as DB.FamilyInstance)?.Symbol?.GetType().Name;
       }
 
-      if (speckleElement is IRevitHasTypeParameters bar)
+      var parms = GetElementTypeParams(revitElement);
+      if (parms != null)
       {
-        bar.typeParameters = GetElementTypeParams(revitElement);
+        speckleElement["parameters"] = parms;
       }
 
-      if (speckleElement is IRevitHasParameters baz)
+
+      var typeParams = GetElementTypeParams(revitElement);
+      if(typeParams != null)
       {
-        baz.parameters = GetElementParams(revitElement);
+        speckleElement["typeParameters"] = typeParams;
       }
 
-      speckleElement.elementId = revitElement.Id.ToString();
-      ((Base)speckleElement).applicationId = revitElement.UniqueId;
+      speckleElement["elementId"] = revitElement.Id.ToString();
+      speckleElement.applicationId = revitElement.UniqueId;
     }
 
     public Dictionary<string, object> GetElementParams(DB.Element myElement)
@@ -190,19 +192,21 @@ namespace Objects.Converter.Revit
       return myParamDict;
     }
 
-    public void SetElementParamsFromSpeckle(DB.Element myElement, IRevitHasParameters spkElement, List<string> exclusions = null)
+    public void SetElementParamsFromSpeckle(Element myElement, Base spkElement, List<string> exclusions = null)
     {
       if (myElement == null)
       {
         return;
       }
 
-      if (spkElement.parameters == null)
+      var paramDictionary = spkElement["parameters"] as Dictionary<string, object>;
+
+      if (paramDictionary == null)
       {
         return;
       }
 
-      foreach (var kvp in spkElement.parameters)
+      foreach (var kvp in paramDictionary)
       {
         if (kvp.Key.Contains("__unitType::"))
         {
@@ -233,11 +237,11 @@ namespace Objects.Converter.Revit
           switch (myParam.StorageType)
           {
             case StorageType.Double:
-              var hasUnitKey = spkElement.parameters.ContainsKey("__unitType::" + myParam.Definition.Name);
+              var hasUnitKey = paramDictionary.ContainsKey("__unitType::" + myParam.Definition.Name);
               if (hasUnitKey)
               {
-                var unitType = (string)spkElement.parameters["__unitType::" + kvp.Key];
-                var unit = (string)spkElement.parameters["__unit::" + kvp.Key];
+                var unitType = (string)paramDictionary["__unitType::" + kvp.Key];
+                var unit = (string)paramDictionary["__unit::" + kvp.Key];
                 DisplayUnitType sourceUnit;
                 Enum.TryParse(unit, out sourceUnit);
                 var convertedValue = UnitUtils.ConvertToInternalUnits(Convert.ToDouble(kvp.Value), sourceUnit);

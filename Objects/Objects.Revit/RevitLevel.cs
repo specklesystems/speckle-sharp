@@ -8,7 +8,7 @@ using Speckle.Core.Models;
 namespace Objects.Revit
 {
   [SchemaDescription("Creates a new Revit level by elevation and name")]
-  public class RevitLevel : Base, IBaseRevitElement, IRevitHasParameters, ILevel
+  public class RevitLevel : Base, IBaseRevitElement, ILevel
   {
     public string name { get; set; }
 

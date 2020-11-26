@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  public class RevitFamilyInstance : Base, IRevitHasFamilyAndType, IRevitHasParameters, IRevitHasTypeParameters
+  public class RevitFamilyInstance : Base, IRevitHasFamilyAndType
   {
     [SchemaIgnore]
     public string elementId { get; set; }
