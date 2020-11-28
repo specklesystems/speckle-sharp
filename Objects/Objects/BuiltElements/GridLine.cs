@@ -14,6 +14,8 @@ namespace Objects.BuiltElements
     [SchemaOptional]
     public Level level { get; set; }
 
+    public GridLine() { }
+
     public GridLine(Line baseLine, Level level = null)
     {
       this.baseLine = baseLine;
