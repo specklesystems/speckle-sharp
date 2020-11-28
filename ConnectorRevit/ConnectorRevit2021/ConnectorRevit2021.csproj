@@ -72,6 +72,11 @@
       <Name>DesktopUI</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
+    <ProjectReference Include="..\..\Objects\Converters\ConverterRevit\ConverterRevit2021\ConverterRevit2021.csproj">
+      <Project>{cfbd9a83-5aa2-4849-8735-28d4f73f4f56}</Project>
+      <Name>ConverterRevit2021</Name>
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

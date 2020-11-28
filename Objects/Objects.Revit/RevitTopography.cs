@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  public class RevitTopography : Base, IBaseRevitElement, ITopography
+  public class RevitTopography : Base, IBaseRevitElement
   {
     public Mesh baseGeometry { get; set; } = new Mesh();
 

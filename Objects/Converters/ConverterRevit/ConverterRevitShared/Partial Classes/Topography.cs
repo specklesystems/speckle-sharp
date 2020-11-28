@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
-using Objects.Revit;
+using Objects.BuiltElements;
+using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 
@@ -8,7 +9,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationPlaceholderObject TopographyToNative(ITopography speckleSurface)
+    public ApplicationPlaceholderObject TopographyToNative(Topography speckleSurface)
     {
       var docObj = GetExistingElementByApplicationId(((Base)speckleSurface).applicationId);
 
@@ -32,7 +33,7 @@ namespace Objects.Converter.Revit
         SetElementParamsFromSpeckle(revitSurface, rt);
       }
 
-      return new ApplicationPlaceholderObject { applicationId = ((Base)speckleSurface).applicationId, ApplicationGeneratedId = revitSurface.UniqueId };
+      return new ApplicationPlaceholderObject { applicationId = ((Base)speckleSurface).applicationId, ApplicationGeneratedId = revitSurface.UniqueId, NativeObject = revitSurface };
     }
 
     public RevitTopography TopographyToSpeckle(TopographySurface revitTopo)

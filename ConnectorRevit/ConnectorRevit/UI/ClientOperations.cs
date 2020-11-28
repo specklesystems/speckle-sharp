@@ -337,7 +337,20 @@ namespace Speckle.ConnectorRevit.UI
 
           var newPlaceholderObjects = HandleAndConvertToNative(commitObject, converter);
 
-          // TODO: delete old objects.
+          foreach (var obj in state.ReceivedObjects)
+          {
+            var indexInNew = newPlaceholderObjects.FindIndex(x => x.applicationId == obj.applicationId);
+            if (indexInNew == -1)
+            {
+              var existing = CurrentDoc.Document.GetElement(obj.ApplicationGeneratedId);
+              if (existing != null)
+              {
+                CurrentDoc.Document.Delete(existing.Id);
+              }
+            }
+          }
+
+
 
           state.ReceivedObjects = newPlaceholderObjects;
           state.Errors.AddRange(converter.ConversionErrors.Select(e => new Exception($"{e.message}: {e.details}")));
@@ -402,7 +415,7 @@ namespace Speckle.ConnectorRevit.UI
         foreach (var prop in baseItem.GetDynamicMembers())
         {
           //if (converter.CanConvertToNative(baseItem[prop] as Base))
-            placeholders.AddRange(HandleAndConvertToNative(baseItem[prop], converter));
+          placeholders.AddRange(HandleAndConvertToNative(baseItem[prop], converter));
         }
 
         return placeholders;

@@ -1,7 +1,7 @@
 ﻿
 using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using Objects.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -12,21 +12,18 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> FloorToNative(IFloor speckleFloor)
+    public List<ApplicationPlaceholderObject> FloorToNative(BuiltElements.Floor speckleFloor)
     {
       if (speckleFloor.outline == null)
       {
         throw new Exception("Only outline based Floor are currently supported.");
       }
 
-      DB.Level level = null;
-      DB.Floor revitFloor = null;
       bool structural = false;
       var outline = CurveToNative(speckleFloor.outline);
 
-
-      var speckleRevitFloor = speckleFloor as RevitFloor;
-      if (speckleRevitFloor != null)
+      Level level;
+      if (speckleFloor is RevitFloor speckleRevitFloor)
       {
         level = LevelToNative(speckleRevitFloor.level);
         structural = speckleRevitFloor.structural;
@@ -36,19 +33,18 @@ namespace Objects.Converter.Revit
         level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
       }
 
-      var floorType = GetElementType<FloorType>((Base)speckleFloor);
+      var floorType = GetElementType<FloorType>(speckleFloor);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
-      var docObj = GetExistingElementByApplicationId(((Base)speckleFloor).applicationId);
-
+      var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
       if (docObj != null)
       {
         Doc.Delete(docObj.Id);
       }
 
+      Floor revitFloor;
       if (floorType == null)
       {
-        //create floor without a type
         revitFloor = Doc.Create.NewFloor(outline, structural);
       }
       else
@@ -60,25 +56,23 @@ namespace Objects.Converter.Revit
 
       try
       {
-        MakeOpeningsInFloor(revitFloor, speckleFloor.voids.ToList());
+        CreateOpenings(revitFloor, speckleFloor.voids);
       }
       catch (Exception ex)
       {
-        ConversionErrors.Add(new Error("Could not create holes in floor", ex.Message));
-      }
-      if (speckleRevitFloor != null)
-      {
-        SetElementParamsFromSpeckle(revitFloor, speckleRevitFloor);
+        ConversionErrors.Add(new Error($"Could not create openings in floor {speckleFloor.applicationId}", ex.Message));
       }
 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitFloor.applicationId, ApplicationGeneratedId = revitFloor.UniqueId } };
+      SetElementParamsFromSpeckle(revitFloor, speckleFloor);
+
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleFloor.applicationId, ApplicationGeneratedId = revitFloor.UniqueId, NativeObject = revitFloor } };
 
       // TODO: nested elements.
 
       return placeholders;
     }
 
-    private void MakeOpeningsInFloor(DB.Floor floor, List<ICurve> holes)
+    private void CreateOpenings(DB.Floor floor, List<ICurve> holes)
     {
       foreach (var hole in holes)
       {

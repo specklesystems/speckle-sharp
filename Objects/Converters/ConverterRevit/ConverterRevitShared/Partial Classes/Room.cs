@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
+using Objects.BuiltElements;
 using Objects.Geometry;
-using Objects.Revit;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB.Architecture;
@@ -10,16 +10,16 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public RevitRoom RoomToSpeckle(DB.Room revitRoom)
+    public BuiltElements.Room RoomToSpeckle(DB.Room revitRoom)
     {
       var baseLevelParam = revitRoom.get_Parameter(BuiltInParameter.ROOM_LEVEL_ID);
       var profiles = GetProfiles(revitRoom);
 
-      var speckleRoom = new RevitRoom();
+      var speckleRoom = new Room();
 
       speckleRoom.name = revitRoom.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
       speckleRoom.number = revitRoom.Number;
-      speckleRoom.basePoint = (Point)LocationToSpeckle(revitRoom);
+      speckleRoom.center = (Point)LocationToSpeckle(revitRoom);
       speckleRoom.level = ConvertAndCacheLevel(baseLevelParam);
       speckleRoom.outline = profiles[0];
       if (profiles.Count > 1)
@@ -28,7 +28,7 @@ namespace Objects.Converter.Revit
       }
 
       AddCommonRevitProps(speckleRoom, revitRoom);
-      
+
       var displayMesh = new Geometry.Mesh();
       (displayMesh.faces, displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoom);
       speckleRoom["@displayMesh"] = displayMesh;

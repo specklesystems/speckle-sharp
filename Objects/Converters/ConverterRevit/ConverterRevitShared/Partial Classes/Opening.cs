@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using Objects.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Opening OpeningToNative(IOpening speckleOpening)
+    public DB.Opening OpeningToNative(BuiltElements.Opening speckleOpening)
     {
       var baseCurves = CurveToNative(speckleOpening.outline);
 
@@ -64,7 +64,7 @@ namespace Objects.Converter.Revit
       return revitOpening;
     }
 
-    public IOpening OpeningToSpeckle(DB.Opening revitOpening)
+    public BuiltElements.Opening OpeningToSpeckle(DB.Opening revitOpening)
     {
       //REVIT PARAMS > SPECKLE PROPS
       var baseLevelParam = revitOpening.get_Parameter(BuiltInParameter.WALL_BASE_CONSTRAINT);
@@ -104,7 +104,6 @@ namespace Objects.Converter.Revit
             ((RevitShaft)speckleOpening).topLevel = ConvertAndCacheLevel(topLevelParam);
           }
         }
-
 
         var poly = new Polycurve(ModelUnits);
         poly.segments = new List<ICurve>();

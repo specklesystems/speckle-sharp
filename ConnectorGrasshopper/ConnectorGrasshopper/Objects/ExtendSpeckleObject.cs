@@ -125,7 +125,7 @@ namespace ConnectorGrasshopper.Objects
       var index = 0;
       keys.ForEach(key =>
       {
-        if (b.HasMember(key))
+        if (b[key]!=null)
           AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Object {b.id} - Property {key} has been overwritten");
         b[key] = Utilities.TryConvertItemToSpeckle(values[index++], Converter);
       });

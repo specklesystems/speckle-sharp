@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
-using Objects.Revit;
+using Objects.BuiltElements;
+using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -12,10 +13,15 @@ namespace Objects.Converter.Revit
   {
     #region parameters
 
+    /// <summary>
+    /// Sets various common properties on a speckle object, where found. Examples: family, type, parameters, type parameters, elementIds, etc.
+    /// </summary>
+    /// <param name="speckleElement"></param>
+    /// <param name="revitElement"></param>
     private void AddCommonRevitProps(Base speckleElement, DB.Element revitElement)
     {
 
-      if (revitElement is FamilyInstance)
+      if (revitElement is DB.FamilyInstance)
       {
         speckleElement["family"] = (revitElement as DB.FamilyInstance)?.Symbol?.FamilyName;
         speckleElement["type"] = (revitElement as DB.FamilyInstance)?.Symbol?.GetType().Name;
@@ -357,18 +363,22 @@ namespace Objects.Converter.Revit
       List<ElementType> types = new List<ElementType>();
       ElementMulticategoryFilter filter = null;
 
-      if (element is IColumn)
+      if (element is BuiltElements.Wall)
+      {
+        filter = new ElementMulticategoryFilter(Categories.wallCategories);
+      }
+      else if (element is Column)
       {
         filter = new ElementMulticategoryFilter(Categories.columnCategories);
       }
-      else if (element is IBeam || element is IBrace)
+      else if (element is Beam || element is Brace)
       {
         filter = new ElementMulticategoryFilter(Categories.beamCategories);
       }
-      //else if (element is IDuct)
-      //{
-      //  filter = new ElementMulticategoryFilter(Categories.ductCategories);
-      //}
+      else if (element is Duct)
+      {
+        filter = new ElementMulticategoryFilter(Categories.ductCategories);
+      }
 
       if (filter != null)
       {
@@ -379,61 +389,54 @@ namespace Objects.Converter.Revit
         types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
       }
 
-
-      if (element is IRevitHasFamilyAndType ire)
+      if (types.Count == 0)
       {
-        //match family and type
-        var match = types.FirstOrDefault(x => x.FamilyName == ire.family && x.Name == ire.type);
-        if (match != null)
-        {
-          if (match is FamilySymbol fs && !fs.IsActive)
-          {
-            fs.Activate();
-          }
-
-          return (T)(object)match;
-        }
-
-
-        //match type
-        match = types.FirstOrDefault(x => x.FamilyName == ire.family);
-        if (match != null)
-        {
-          ConversionErrors.Add(new Error($"Missing type: {ire.family} {ire.type}", $"Type was replace with: {match.FamilyName} - {match.Name}"));
-          if (match != null)
-          {
-            if (match is FamilySymbol fs && !fs.IsActive)
-            {
-              fs.Activate();
-            }
-
-            return (T)(object)match;
-          }
-        }
+        throw new Exception($"Could not find any type symbol to use for family {nameof(T)}.");
       }
 
-      // get whatever we found, could be a different category!
-      if (types.Any())
-      {
-        var match = types.FirstOrDefault();
-        ConversionErrors.Add(new Error($"Missing family and type", $"The following family and type were used: {match.FamilyName} - {match.Name}"));
-        if (match != null)
-        {
-          if (match is FamilySymbol fs && !fs.IsActive)
-          {
-            fs.Activate();
-          }
+      var family = element["family"] as string;
+      var type = element["type"] as string;
 
-          return (T)(object)match;
-        }
+      if (family == null && type == null)
+      {
+        return (T)(object)types.First();
       }
 
-      throw new Exception($"Could not find any family symbol to use.");
+      ElementType match = null;
+
+      if (family != null && type != null)
+      {
+        match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
+      }
+
+      if (match == null && type != null) // try and match the type only
+      {
+        match = types.FirstOrDefault(x => x.Name == type);
+      }
+
+      if (match == null && family != null) // try and match the family only.
+      {
+        match = types.FirstOrDefault(x => x.FamilyName == family);
+      }
+
+      if (match == null) // okay, try something!
+      {
+        match = types.First();
+        ConversionErrors.Add(new Error($"Missing type. Family: {family} Type:{type}", $"Type was replaced with: {match.FamilyName} - {match.Name}"));
+      }
+
+      if (match is FamilySymbol fs && !fs.IsActive)
+      {
+        fs.Activate();
+      }
+
+      return (T)(object)match;
     }
 
     #endregion
 
     #region conversion "edit existing if possible" utilities
+
     /// <summary>
     /// Returns, if found, the corresponding doc element and its corresponding local state object.
     /// The doc object can be null if the user deleted it. 

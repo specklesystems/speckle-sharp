@@ -1,15 +1,12 @@
 ﻿using Autodesk.Revit.DB;
-using Objects.Revit;
+using BE = Objects.BuiltElements;
+using BER = Objects.BuiltElements.Revit;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
-using DetailCurve = Objects.Revit.DetailCurve;
-using DirectShape = Objects.Revit.DirectShape;
-using ModelCurve = Objects.Revit.ModelCurve;
-using RevitFamilyInstance = Objects.Revit.RevitFamilyInstance;
 
 namespace Objects.Converter.Revit
 {
@@ -42,7 +39,7 @@ namespace Objects.Converter.Revit
 
     public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
 
-    public Dictionary<string, RevitLevel> Levels { get; private set; } = new Dictionary<string, RevitLevel>();
+    public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
 
     public ConverterRevit() { }
 
@@ -105,52 +102,52 @@ namespace Objects.Converter.Revit
     {
       switch (@object)
       {
-        case AdaptiveComponent o:
+        case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
 
-        case IBeam o:
+        case BE.Beam o:
           return BeamToNative(o);
 
-        case IBrace o:
+        case BE.Brace o:
           return BraceToNative(o);
 
-        case IColumn o:
+        case BE.Column o:
           return ColumnToNative(o);
 
-        case DetailCurve o:
+        case BER.DetailCurve o:
           return DetailCurveToNative(o);
 
-        case DirectShape o:
+        case BER.DirectShape o:
           return DirectShapeToNative(o);
 
-        case RevitFamilyInstance o:
+        case BER.FamilyInstance o:
           return FamilyInstanceToNative(o);
 
-        case IFloor o:
+        case BE.Floor o:
           return FloorToNative(o);
 
-        case ILevel o:
+        case BE.Level o:
           return LevelToNative(o);
 
-        case ModelCurve o:
+        case BER.ModelCurve o:
           return ModelCurveToNative(o);
 
-        case IOpening o:
+        case BE.Opening o:
           return OpeningToNative(o);
 
-        case RoomBoundaryLine o:
+        case BER.RoomBoundaryLine o:
           return RoomBoundaryLineToNative(o);
 
-        case IRoof o:
+        case BE.Roof o:
           return RoofToNative(o);
 
-        case ITopography o:
+        case BE.Topography o:
           return TopographyToNative(o);
 
-        case IWall o:
+        case BE.Wall o:
           return WallToNative(o);
 
-        case IDuct o:
+        case BE.Duct o:
           return DuctToNative(o);
 
         default:
@@ -211,52 +208,52 @@ namespace Objects.Converter.Revit
     {
       switch (@object)
       {
-        case AdaptiveComponent _:
+        case BER.AdaptiveComponent _:
           return true;
 
-        case IBeam _:
+        case BE.Beam _:
           return true;
 
-        case IBrace _:
+        case BE.Brace _:
           return true;
 
-        case IColumn _:
+        case BE.Column _:
           return true;
 
-        case DetailCurve _:
+        case BER.DetailCurve _:
           return true;
 
-        case DirectShape _:
+        case BER.DirectShape _:
           return true;
 
-        case RevitFamilyInstance _:
+        case BER.FamilyInstance _:
           return true;
 
-        case IFloor _:
+        case BE.Floor _:
           return true;
 
-        case ILevel _:
+        case BE.Level _:
           return true;
 
-        case ModelCurve _:
+        case BER.ModelCurve _:
           return true;
 
-        case IOpening _:
+        case BE.Opening _:
           return true;
 
-        case RoomBoundaryLine _:
+        case BER.RoomBoundaryLine _:
           return true;
 
-        case IRoof _:
+        case BE.Roof _:
           return true;
 
-        case ITopography _:
+        case BE.Topography _:
           return true;
 
-        case IWall _:
+        case BE.Wall _:
           return true;
 
-        case IDuct _:
+        case BE.Duct _:
           return true;
 
         default:

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Objects.Revit
+namespace Objects.BuiltElements.Revit
 {
   public static class RevitUtils
   {
@@ -47,7 +47,6 @@ namespace Objects.Revit
 
     public static RevitCategory GetCategory(string builtInCategory)
     {
-
       return (RevitCategory)List.IndexOf(builtInCategory);
     }
 

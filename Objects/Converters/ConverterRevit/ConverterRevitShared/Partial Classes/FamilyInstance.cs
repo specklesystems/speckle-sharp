@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Objects.Revit;
+using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Objects.Converter.Revit
       // If the parent is in our selection list, back off, as this element will be converted by the host element.
       if (revitFi.Host != null && ContextObjects.FindIndex(obj => obj.applicationId == revitFi.Host.UniqueId) != -1)
       {
-        return null;  
+        return null;
       }
 
       //adaptive components
@@ -68,7 +68,7 @@ namespace Objects.Converter.Revit
       var baseLevelParam2 = revitFi.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
       var subElements = GetFamSubElements(revitFi);
 
-      var speckleFi = new RevitFamilyInstance();
+      var speckleFi = new BuiltElements.Revit.FamilyInstance();
       speckleFi.basePoint = basePoint;
       speckleFi.type = Doc.GetElement(revitFi.GetTypeId()).Name;
       speckleFi.facingFlipped = revitFi.FacingFlipped;
@@ -78,6 +78,11 @@ namespace Objects.Converter.Revit
       if (revitFi.Location is LocationPoint)
       {
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
+      }
+
+      if (revitFi.Host != null)
+      {
+        speckleFi.revitHostId = revitFi.Host.UniqueId;
       }
 
       speckleFi["@displayMesh"] = GetElementMesh(revitFi, subElements);
@@ -106,7 +111,7 @@ namespace Objects.Converter.Revit
     }
 
     //TODO: might need to clean this up and split the logic by beam, FI, etc...
-    public List<ApplicationPlaceholderObject> FamilyInstanceToNative(RevitFamilyInstance speckleFi)
+    public List<ApplicationPlaceholderObject> FamilyInstanceToNative(BuiltElements.Revit.FamilyInstance speckleFi)
     {
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
@@ -150,9 +155,9 @@ namespace Objects.Converter.Revit
       if (familyInstance == null)
       {
         //hosted family instance
-        if (speckleFi.revitHostId != 0)
+        if (speckleFi.revitHostId != null)
         {
-          var host = Doc.GetElement(new ElementId(speckleFi.revitHostId));
+          var host = Doc.GetElement(speckleFi.revitHostId);
           familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, host, level, StructuralType.NonStructural);
         }
         else
@@ -177,9 +182,13 @@ namespace Objects.Converter.Revit
 
       SetElementParamsFromSpeckle(familyInstance, speckleFi);
 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleFi.applicationId, ApplicationGeneratedId = familyInstance.UniqueId } };
-
-      // TODO: nested elements.
+      var placeholders = new List<ApplicationPlaceholderObject>() { 
+        new ApplicationPlaceholderObject { 
+          applicationId = speckleFi.applicationId, 
+          ApplicationGeneratedId = familyInstance.UniqueId,
+          NativeObject = familyInstance
+        } 
+      };
 
       return placeholders;
     }

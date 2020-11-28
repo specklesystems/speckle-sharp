@@ -8,14 +8,14 @@ using Column = Objects.BuiltElements.Column;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Autodesk.Revit.DB.Structure;
-using Objects.Revit;
 using Speckle.Core.Models;
+using Objects.BuiltElements.Revit;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> ColumnToNative(IColumn speckleColumn)
+    public List<ApplicationPlaceholderObject> ColumnToNative(Column speckleColumn)
     {
       if (speckleColumn.baseLine == null)
       {
@@ -115,7 +115,7 @@ namespace Objects.Converter.Revit
         SetElementParamsFromSpeckle(revitColumn, speckleRevitColumn, exclusions);
       }
 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitColumn.applicationId, ApplicationGeneratedId = revitColumn.UniqueId } };
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitColumn.applicationId, ApplicationGeneratedId = revitColumn.UniqueId, NativeObject = revitColumn } };
 
       // TODO: nested elements.
 

@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Objects.Revit;
+using Objects.BuiltElements;
+using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -10,21 +11,21 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> BeamToNative(IBeam speckleBeam, StructuralType structuralType = StructuralType.Beam)
+    public List<ApplicationPlaceholderObject> BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
       if (speckleBeam.baseLine == null)
       {
         throw new Exception("Only line based Beams are currently supported.");
       }
 
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam as Base);
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
       var baseLine = CurveToNative(speckleBeam.baseLine).get_Item(0);
       DB.Level level = null;
       DB.FamilyInstance revitBeam = null;
 
       //comes from revit or schema builder, has these props
       var speckleRevitBeam = speckleBeam as RevitBeam;
-      
+
       if (speckleRevitBeam != null)
       {
         level = GetLevelByName(speckleRevitBeam.level.name);
@@ -36,7 +37,7 @@ namespace Objects.Converter.Revit
       }
 
       //try update existing 
-      var docObj = GetExistingElementByApplicationId(((Base)speckleBeam).applicationId);
+      var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
 
       if (docObj != null)
       {
@@ -82,7 +83,7 @@ namespace Objects.Converter.Revit
       }
 
       // TODO: get sub families, it's a family! 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = ((Base)speckleBeam).applicationId, ApplicationGeneratedId = revitBeam.UniqueId } };
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleBeam.applicationId, ApplicationGeneratedId = revitBeam.UniqueId, NativeObject = revitBeam } };
 
       // TODO: nested elements.
 

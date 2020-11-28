@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
+using Objects.BuiltElements;
+using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using Objects.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> RoofToNative(IRoof speckleRoof)
+    public List<ApplicationPlaceholderObject> RoofToNative(Roof speckleRoof)
     {
       if (speckleRoof.outline == null)
       {
@@ -107,7 +108,7 @@ namespace Objects.Converter.Revit
         SetElementParamsFromSpeckle(revitRoof, speckleRevitRoof);
       }
 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitRoof.applicationId, ApplicationGeneratedId = revitRoof.UniqueId } };
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitRoof.applicationId, ApplicationGeneratedId = revitRoof.UniqueId, NativeObject = speckleRevitRoof } };
 
       // TODO: nested elements.
 
@@ -123,7 +124,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private IRoof RoofToSpeckle(DB.RoofBase revitRoof)
+    private Roof RoofToSpeckle(DB.RoofBase revitRoof)
     {
       var profiles = GetProfiles(revitRoof);
 

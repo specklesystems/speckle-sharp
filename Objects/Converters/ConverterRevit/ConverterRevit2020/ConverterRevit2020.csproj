@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\..\Objects.Revit\Objects.Revit.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
   </ItemGroup>
 

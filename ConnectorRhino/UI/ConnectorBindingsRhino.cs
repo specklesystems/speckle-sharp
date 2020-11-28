@@ -346,7 +346,7 @@ namespace SpeckleRhino
 
       var commitObj = new Base();
 
-      var units = LengthUnits.GetUnitsFromString(Doc.GetUnitSystemName(true, false, false, false));
+      var units = Units.GetUnitsFromString(Doc.GetUnitSystemName(true, false, false, false));
       commitObj["units"] = units;
 
       int objCount = 0;

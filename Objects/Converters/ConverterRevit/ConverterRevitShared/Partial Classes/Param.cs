@@ -18,7 +18,10 @@ namespace Objects.Converter.Revit
           var elementId = param.AsElementId();
           var element = Doc.GetElement(elementId);
           if (element == null)
+          {
             return null;
+          }
+
           return ConvertToSpeckle(element);
 
         case StorageType.Integer:
@@ -32,7 +35,11 @@ namespace Objects.Converter.Revit
           }
         case StorageType.String:
           var asString = param.AsString();
-          if (asString == null) return param.AsValueString();
+          if (asString == null)
+          {
+            return param.AsValueString();
+          }
+
           return asString;
 
         default:

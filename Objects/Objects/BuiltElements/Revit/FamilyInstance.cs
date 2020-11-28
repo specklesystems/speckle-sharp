@@ -4,11 +4,10 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 
-namespace Objects.Revit
+namespace Objects.BuiltElements.Revit
 {
-  public class RevitFamilyInstance : Base, IRevitHasFamilyAndType
+  public class FamilyInstance : Base
   {
-    
     public Point basePoint { get; set; }
 
     public string family { get; set; }
@@ -16,13 +15,13 @@ namespace Objects.Revit
     public string type { get; set; }
 
     [SchemaOptional]
+    public double rotation { get; set; }
+
+    [SchemaOptional]
     public bool facingFlipped { get; set; }
 
     [SchemaOptional]
     public bool handFlipped { get; set; }
-
-    [SchemaOptional]
-    public double rotation { get; set; }
 
     [JsonIgnore]
     [SchemaIgnore]
@@ -30,15 +29,14 @@ namespace Objects.Revit
 
     [SchemaOptional]
     public Dictionary<string, object> parameters { get; set; }
-    
-    [SchemaOptional]
+
+    [SchemaIgnore]
     public Dictionary<string, object> typeParameters { get; set; }
 
     [SchemaOptional]
-    public ILevel level { get; set; }
+    public Level level { get; set; }
 
     [SchemaIgnore]
     public string elementId { get; set; }
-
   }
 }

@@ -30,7 +30,7 @@ namespace ConnectorGrasshopper
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    private System.Timers.Timer Debouncer;
+    public string Seed;
 
     public CreateSchemaObject()
       : base("Create Schema Object", "CsO",
@@ -47,16 +47,38 @@ namespace ConnectorGrasshopper
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
       }
+
+      Seed = GenerateSeed();
+    }
+
+    public string GenerateSeed()
+    {
+      return new string(Speckle.Core.Models.Utilities.hashString(Guid.NewGuid().ToString()).Take(20).ToArray());
     }
 
     public override void AddedToDocument(GH_Document document)
-    {
+    { 
       if (SelectedType != null)
       {
         base.AddedToDocument(document);
+        if (Grasshopper.Instances.ActiveCanvas.Document != null)
+        {
+          var otherSchemaBuilders = Grasshopper.Instances.ActiveCanvas.Document.FindObjects(new List<string>() { Name }, 10000);
+          foreach (var comp in otherSchemaBuilders)
+          {
+            if (comp is CreateSchemaObject scb)
+            {
+              if (scb.Seed == Seed)
+              {
+                Seed = GenerateSeed();
+                break;
+              }
+            }
+          }
+        }
         return;
       }
-      //base.AddedToDocument(document);
+
       _document = document;
 
       var dialog = new CreateSchemaObjectDialog();
@@ -179,6 +201,11 @@ namespace ConnectorGrasshopper
       }
       catch { }
 
+      try
+      {
+        Seed = reader.GetString("seed");
+      }
+      catch { }
       return base.Read(reader);
     }
 
@@ -189,6 +216,7 @@ namespace ConnectorGrasshopper
         writer.SetByteArray("SelectedType", ObjectToByteArray(SelectedType));
       }
 
+      writer.SetString("seed", Seed);
       return base.Write(writer);
     }
 
@@ -251,6 +279,9 @@ namespace ConnectorGrasshopper
           SetObjectProp(param, outputObject, ExtractRealInputValue(inputValue));
         }
       }
+      
+      ((Base)outputObject).applicationId = $"{Seed}-{SelectedType.Name}-{DA.Iteration}";
+      ((Base)outputObject).units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
 
       DA.SetData(0, new GH_SpeckleBase() { Value = outputObject as Base });
     }
@@ -346,7 +377,7 @@ namespace ConnectorGrasshopper
       };
 
       myParam.NickName = myParam.Name;
-      myParam.ObjectChanged += (sender, e) => Debouncer.Start();
+      //myParam.ObjectChanged += (sender, e) => Debouncer.Start();
 
       return myParam;
     }

@@ -1,14 +1,11 @@
 ﻿using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using Objects.Revit;
-using System.Linq;
-using Objects.Geometry;
-using System;
-using Objects;
-using DirectShape = Objects.Revit.DirectShape;
-using System.Collections.Generic;
-using Mesh = Objects.Geometry.Mesh;
+using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using DB = Autodesk.Revit.DB;
+using DirectShape = Objects.BuiltElements.Revit.DirectShape;
+using Mesh = Objects.Geometry.Mesh;
 
 namespace Objects.Converter.Revit
 {
@@ -26,7 +23,7 @@ namespace Objects.Converter.Revit
       }
 
       //TODO: support other geometries
-      IList<GeometryObject> mesh = MeshToNative(speckleDs.baseGeometry as Mesh);
+      IList<GeometryObject> mesh = MeshToNative(speckleDs.baseGeometry);
 
       var cat = BuiltInCategory.OST_GenericModel;
       var bic = RevitUtils.GetBuiltInCategory(speckleDs.category);
@@ -42,7 +39,7 @@ namespace Objects.Converter.Revit
 
       SetElementParamsFromSpeckle(revitDs, speckleDs);
 
-      return new ApplicationPlaceholderObject { applicationId = speckleDs.applicationId, ApplicationGeneratedId = revitDs.UniqueId };
+      return new ApplicationPlaceholderObject { applicationId = speckleDs.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)

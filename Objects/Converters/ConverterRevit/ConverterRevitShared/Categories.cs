@@ -10,6 +10,8 @@ namespace Objects.Converter.Revit
     public static readonly List<BuiltInCategory> columnCategories = new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns };
     public static readonly List<BuiltInCategory> beamCategories = new List<BuiltInCategory> { BuiltInCategory.OST_StructuralFraming };
     public static readonly List<BuiltInCategory> ductCategories = new List<BuiltInCategory> { BuiltInCategory.OST_DuctCurves };
+    public static readonly List<BuiltInCategory> wallCategories = new List<BuiltInCategory> { BuiltInCategory.OST_Walls };
+    public static readonly List<BuiltInCategory> floorCategories = new List<BuiltInCategory> { BuiltInCategory.OST_Floors };
 
     public static bool Contains(this IEnumerable<BuiltInCategory> categories, Category category)
     {

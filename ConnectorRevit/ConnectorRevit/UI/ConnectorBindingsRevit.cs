@@ -133,6 +133,7 @@ namespace Speckle.ConnectorRevit.UI
 
     private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
     {
+      
       //var streamStates = GetStreamsInFile();
       //var appEvent = new ApplicationEvent()
       //{

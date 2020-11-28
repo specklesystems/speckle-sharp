@@ -35,6 +35,16 @@ namespace Objects.Revit
 
     [SchemaOptional]
     public ILevel level { get; set; }
+
+    [SchemaOptional]
+    public double baseOffset { get; set; }
+
+    [SchemaOptional]
+    public double topOffset { get; set; }
+
+    [SchemaOptional]
+    [DetachProperty]
+    public List<Base> hostedElements { get; set; }
   }
 
   [SchemaDescription("A Revit wall by base line and top and bottom levels")]

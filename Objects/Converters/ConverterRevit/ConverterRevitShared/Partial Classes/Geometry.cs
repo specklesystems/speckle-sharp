@@ -301,7 +301,6 @@ namespace Objects.Converter.Revit
           {
             return (CircleToSpeckle(arc));
           }
-
           return ArcToSpeckle(arc);
         case DB.Ellipse ellipse:
           return EllipseToSpeckle(ellipse);
@@ -317,7 +316,7 @@ namespace Objects.Converter.Revit
       var curveArray = new CurveArray();
       if (polyline.value.Count == 6)
       {
-        curveArray.Append(LineToNative(new Line(polyline.value, ModelUnits)));
+        curveArray.Append(LineToNative(new Line(polyline.value, polyline.units)));
       }
       else
       {
@@ -325,14 +324,14 @@ namespace Objects.Converter.Revit
 
         for (int i = 1; i < pts.Count; i++)
         {
-          var speckleLine = new Line(new double[] { pts[i - 1].value[0], pts[i - 1].value[1], pts[i - 1].value[2], pts[i].value[0], pts[i].value[1], pts[i].value[2] }, ModelUnits);
+          var speckleLine = new Line(new double[] { pts[i - 1].value[0], pts[i - 1].value[1], pts[i - 1].value[2], pts[i].value[0], pts[i].value[1], pts[i].value[2] }, polyline.units);
 
           curveArray.Append(LineToNative(speckleLine));
         }
 
         if (polyline.closed)
         {
-          var speckleLine = new Line(new double[] { pts[pts.Count - 1].value[0], pts[pts.Count - 1].value[1], pts[pts.Count - 1].value[2], pts[0].value[0], pts[0].value[1], pts[0].value[2] }, ModelUnits);
+          var speckleLine = new Line(new double[] { pts[pts.Count - 1].value[0], pts[pts.Count - 1].value[1], pts[pts.Count - 1].value[2], pts[0].value[0], pts[0].value[1], pts[0].value[2] }, polyline.units);
           curveArray.Append(LineToNative(speckleLine));
         }
       }

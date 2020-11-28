@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
-using Objects.Revit;
+using Objects.BuiltElements;
+using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> DuctToNative(IDuct speckleDuct)
+    public List<ApplicationPlaceholderObject> DuctToNative(BuiltElements.Duct speckleDuct)
     {
       DB.Duct duct = null;
       var baseLine = LineToNative(speckleDuct.baseLine);
@@ -52,14 +53,14 @@ namespace Objects.Converter.Revit
         SetElementParamsFromSpeckle(duct, speckleRevitDuct);
       }
 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitDuct.applicationId, ApplicationGeneratedId = duct.UniqueId } };
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitDuct.applicationId, ApplicationGeneratedId = duct.UniqueId, NativeObject = duct } };
 
       // TODO: nested elements (if any?).
 
       return placeholders;
     }
 
-    public IDuct DuctToSpeckle(DB.Duct revitDuct)
+    public BuiltElements.Duct DuctToSpeckle(DB.Duct revitDuct)
     {
       var baseGeometry = LocationToSpeckle(revitDuct);
       var baseLine = baseGeometry as Line;

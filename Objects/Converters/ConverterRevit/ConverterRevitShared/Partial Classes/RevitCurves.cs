@@ -1,13 +1,13 @@
 ﻿using Autodesk.Revit.DB;
-using Objects.Revit;
+using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Linq;
 
 using DB = Autodesk.Revit.DB;
 
-using DetailCurve = Objects.Revit.DetailCurve;
-using ModelCurve = Objects.Revit.ModelCurve;
+using DetailCurve = Objects.BuiltElements.Revit.DetailCurve;
+using ModelCurve = Objects.BuiltElements.Revit.ModelCurve;
 
 namespace Objects.Converter.Revit
 {
@@ -27,7 +27,7 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
 
       //TODO: support poliline/polycurve lines
-      var baseCurve = CurveToNative(speckleCurve.baseCurve as ICurve).get_Item(0);
+      var baseCurve = CurveToNative(speckleCurve.baseCurve).get_Item(0);
 
       //delete and re-create line
       //TODO: check if can be modified
@@ -41,7 +41,12 @@ namespace Objects.Converter.Revit
       var lineStyles = revitCurve.GetLineStyleIds();
       var lineStyleId = lineStyles.FirstOrDefault(x => Doc.GetElement(x).Name == speckleCurve.lineStyle);
       if (lineStyleId != null)
+      {
         revitCurve.LineStyle = Doc.GetElement(lineStyleId);
+      }
+
+      // TODO: return appplaceholderobject
+
       return revitCurve;
     }
 
@@ -59,7 +64,7 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
 
       //TODO: support polybline/polycurve lines
-      var baseCurve = CurveToNative(speckleCurve.baseCurve as ICurve).get_Item(0);
+      var baseCurve = CurveToNative(speckleCurve.baseCurve).get_Item(0);
 
       //delete and re-create line
       //TODO: check if can be modified
@@ -72,7 +77,7 @@ namespace Objects.Converter.Revit
       {
         revitCurve = Doc.Create.NewDetailCurve(Doc.ActiveView, baseCurve);
       }
-      catch (Exception e)
+      catch (Exception)
       {
         ConversionErrors.Add(new Error("Detail curve creation failed", $"View is not valid for detail curve creation."));
         throw;
@@ -81,7 +86,10 @@ namespace Objects.Converter.Revit
       var lineStyles = revitCurve.GetLineStyleIds();
       var lineStyleId = lineStyles.FirstOrDefault(x => Doc.GetElement(x).Name == speckleCurve.lineStyle);
       if (lineStyleId != null)
+      {
         revitCurve.LineStyle = Doc.GetElement(lineStyleId);
+      }
+
       return revitCurve;
     }
 
@@ -111,7 +119,7 @@ namespace Objects.Converter.Revit
       {
         return Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0)), baseCurve, Doc.ActiveView).get_Item(0);
       }
-      catch (Exception e)
+      catch (Exception)
       {
         ConversionErrors.Add(new Error("Room boundary line creation failed", $"View is not valid for room boundary line creation."));
         throw;
