@@ -355,8 +355,7 @@ namespace Objects.Converter.RhinoGh
       CurveSegments(segments, p, true);
 
       //let the converter pick the best type of curve
-      var c = new ConverterRhinoGh();
-      myPoly.segments = segments.Select(s => (ICurve)c.ConvertToSpeckle(s)).ToList();
+      myPoly.segments = segments.Select(s => (ICurve)ConvertToSpeckle(s)).ToList();
 
       return myPoly;
     }
@@ -369,8 +368,7 @@ namespace Objects.Converter.RhinoGh
         try
         {
           //let the converter pick the best type of curve
-          var c = new ConverterRhinoGh();
-          myPolyc.AppendSegment((RH.Curve)c.ConvertToNative((Base)segment));
+          myPolyc.AppendSegment((RH.Curve)ConvertToNative((Base)segment));
         }
         catch
         {
