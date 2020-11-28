@@ -78,6 +78,6 @@ namespace Speckle.Core.Models
     public string ApplicationGeneratedId { get; set; }
 
     [JsonIgnore]
-    public object NativeObject { get; set; }
+    public object NativeObject;
   }
 }
