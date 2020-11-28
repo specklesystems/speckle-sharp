@@ -396,13 +396,13 @@ namespace Objects.Converter.Revit
 
       var family = element["family"] as string;
       var type = element["type"] as string;
+      
+      ElementType match = null;
 
       if (family == null && type == null)
       {
-        return (T)(object)types.First();
+        match = types.First();
       }
-
-      ElementType match = null;
 
       if (family != null && type != null)
       {

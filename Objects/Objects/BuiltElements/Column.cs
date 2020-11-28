@@ -9,20 +9,14 @@ namespace Objects.BuiltElements
 {
   public class Column : Base
   {
-    public double height { get; set; }
-
     public ICurve baseLine { get; set; }
 
-    public Column()
-    {
-
-    }
+    public Column() { }
   }
 }
 
 namespace Objects.BuiltElements.Revit
 {
-
   public class RevitColumn : Column
   {
     [SchemaOptional]

@@ -6,7 +6,6 @@ namespace Objects.BuiltElements
 {
   public class Floor : Base
   {
-
     public ICurve outline { get; set; }
 
     [SchemaOptional]
