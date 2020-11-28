@@ -350,8 +350,6 @@ namespace Speckle.ConnectorRevit.UI
             }
           }
 
-
-
           state.ReceivedObjects = newPlaceholderObjects;
           state.Errors.AddRange(converter.ConversionErrors.Select(e => new Exception($"{e.message}: {e.details}")));
 
