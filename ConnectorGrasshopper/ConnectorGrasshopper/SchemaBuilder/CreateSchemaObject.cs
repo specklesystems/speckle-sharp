@@ -13,6 +13,7 @@ using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
+using Rhino.Geometry;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -57,7 +58,7 @@ namespace ConnectorGrasshopper
     }
 
     public override void AddedToDocument(GH_Document document)
-    { 
+    {
       if (SelectedType != null)
       {
         base.AddedToDocument(document);
@@ -279,7 +280,7 @@ namespace ConnectorGrasshopper
           SetObjectProp(param, outputObject, ExtractRealInputValue(inputValue));
         }
       }
-      
+
       ((Base)outputObject).applicationId = $"{Seed}-{SelectedType.Name}-{DA.Iteration}";
       ((Base)outputObject).units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
 
@@ -291,16 +292,12 @@ namespace ConnectorGrasshopper
       if (inputValue == null)
         return null;
 
-      object realInputValue;
-      try
+      if (inputValue is Grasshopper.Kernel.Types.IGH_Goo)
       {
-        realInputValue = inputValue.GetType().GetProperty("Value").GetValue(inputValue);
+        return inputValue.GetType().GetProperty("Value").GetValue(inputValue);
       }
-      catch
-      {
-        realInputValue = inputValue;
-      }
-      return realInputValue;
+
+      return inputValue;
     }
 
     //list input
@@ -328,38 +325,63 @@ namespace ConnectorGrasshopper
 
     private object ConvertType(Type type, object value, string name)
     {
-      if (value == null || value.GetType() == type || type.IsAssignableFrom(value.GetType()))
+      if (value == null)
+      {
+        return null;
+      }
+
+      var typeOfValue = value.GetType();
+      if (value == null || typeOfValue == type || type.IsAssignableFrom(typeOfValue))
         return value;
-      try
+
+      // int, doubles, etc
+      if (Speckle.Core.Models.Utilities.IsSimpleType(value.GetType()))
       {
         return Convert.ChangeType(value, type);
       }
-      catch { }
-      try
-      {
-        return Enum.Parse(type, value.ToString());
-      }
-      catch { }
-      try
+
+      if (typeOfValue.Namespace.ToLowerInvariant().Contains("rhino.geometry"))
       {
         if (Converter.CanConvertToSpeckle(value))
         {
           return Converter.ConvertToSpeckle(value);
         }
-      }
-      catch { }
-
-      try
-      {
-        var deserialised = Operations.Deserialize((string)value);
-        if (Converter.CanConvertToSpeckle(deserialised))
+        else
         {
-          return Converter.ConvertToSpeckle(deserialised);
+          // Log conversion error?
         }
       }
+      //try
+      //{
+      //  return Convert.ChangeType(value, type);
+      //}
+      //catch { }
+      try
+      {
+        return Enum.Parse(type, value.ToString());
+      }
       catch { }
 
-      this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");
+      //try
+      //{
+      //  if (Converter.CanConvertToSpeckle(value))
+      //  {
+      //    return Converter.ConvertToSpeckle(value);
+      //  }
+      //}
+      //catch { }
+
+      //try
+      //{
+      //  var deserialised = Operations.Deserialize((string)value);
+      //  if (Converter.CanConvertToSpeckle(deserialised))
+      //  {
+      //    return Converter.ConvertToSpeckle(deserialised);
+      //  }
+      //}
+      //catch { }
+
+      AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");
       throw new Exception($"Could not covert object to {type}");
     }
 
