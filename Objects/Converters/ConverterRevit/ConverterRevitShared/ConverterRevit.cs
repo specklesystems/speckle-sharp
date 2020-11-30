@@ -35,6 +35,8 @@ namespace Objects.Converter.Revit
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
+    public Element CurrentHostElement { get; set; }
+
     public List<string> ConvertedObjectsList { get; set; } = new List<string>();
 
     public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();

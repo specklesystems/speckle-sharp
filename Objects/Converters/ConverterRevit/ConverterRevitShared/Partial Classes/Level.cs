@@ -14,6 +14,11 @@ namespace Objects.Converter.Revit
 
     private Dictionary<string, Level> modifiedLevels = new Dictionary<string, Level>();
 
+    /// <summary>
+    /// BORKED: what happens if you change the level's name?
+    /// </summary>
+    /// <param name="speckleLevel"></param>
+    /// <returns></returns>
     public Level LevelToNative(BuiltElements.Level speckleLevel)
     {
       var docLevels = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();

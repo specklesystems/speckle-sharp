@@ -154,17 +154,18 @@ namespace Objects.Converter.Revit
       //create family instance
       if (familyInstance == null)
       {
-        //hosted family instance
-        if (speckleFi.revitHostId != null)
+        //If the current host element is not null, it means we're coming from inside a nested conversion. 
+        if(CurrentHostElement != null)
         {
-          var host = Doc.GetElement(speckleFi.revitHostId);
-          familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, host, level, StructuralType.NonStructural);
+          familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
         }
+        //Otherwise, proceed as normal.
         else
         {
           familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, level, StructuralType.NonStructural);
         }
       }
+
       TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
 
       if (speckleFi.handFlipped != familyInstance.HandFlipped)

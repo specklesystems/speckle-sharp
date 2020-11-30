@@ -160,13 +160,6 @@ namespace Speckle.ConnectorRevit.UI
           conversionProgressDict["Conversion"]++;
           UpdateProgress(conversionProgressDict, state.Progress);
 
-          //if (conversionResult == null)
-          //{
-          //  ConversionErrors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
-          //  state.Errors.Add(new Exception($"Failed to convert item with id {obj.applicationId}"));
-          //  continue;
-          //}
-
           placeholders.Add(new ApplicationPlaceholderObject { applicationId = obj.applicationId, ApplicationGeneratedId = obj.applicationId });
 
           convertedCount++;
@@ -209,8 +202,6 @@ namespace Speckle.ConnectorRevit.UI
         Globals.Notify("Failed to convert any objects. Push aborted.");
         return state;
       }
-
-      //state.Objects = placeholders; // this should prevent issues when swapping the same stream between sender/receiver states.
 
       Execute.PostToUIThread(() => state.Progress.Maximum = (int)commitObject.GetTotalChildrenCount());
 
@@ -370,6 +361,7 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception e)
       {
+        WriteStateToFile();
         state.Errors.Add(e);
         Globals.Notify($"Receiving done, but failed to update stream from server.\n{e.Message}");
       }

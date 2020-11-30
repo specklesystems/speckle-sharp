@@ -23,6 +23,7 @@ namespace Objects.Converter.Revit
       var outline = CurveToNative(speckleFloor.outline);
 
       Level level;
+
       if (speckleFloor is RevitFloor speckleRevitFloor)
       {
         level = LevelToNative(speckleRevitFloor.level);
