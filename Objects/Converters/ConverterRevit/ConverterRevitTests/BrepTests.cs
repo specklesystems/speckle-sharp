@@ -82,7 +82,9 @@ namespace ConverterRevitTests
       var geo = ds.get_Geometry(new Options());
       if(!(geo.First() is Solid solid))
         throw new Exception("DS was not composed of a solid.");
-      converter.BrepToSpeckle(solid);
+      var converted = converter.BrepToSpeckle(solid);
+      var nativeconverted = converter.BrepToNative(converted);
+      Assert.NotNull(nativeconverted);
     }
     
   }

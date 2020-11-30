@@ -310,9 +310,17 @@ namespace Objects.Converter.Revit
           return EllipseToSpeckle(ellipse);
         case DB.NurbSpline nurbs:
           return NurbsToSpeckle(nurbs);
+        case DB.HermiteSpline spline:
+          return HermiteSplineToSpeckle(spline);
         default:
           throw new Exception("Cannot convert Curve of type " + curve.GetType());
       }
+    }
+
+    private ICurve HermiteSplineToSpeckle(HermiteSpline spline)
+    {
+      var nurbs = DB.NurbSpline.Create(spline);
+      return NurbsToSpeckle(nurbs);
     }
 
     public CurveArray PolylineToNative(Polyline polyline)
@@ -432,8 +440,8 @@ namespace Objects.Converter.Revit
       result.knotsU = knotsU.GetRange(1, knotsU.Count - 2);
       result.knotsV = knotsV.GetRange(1, knotsV.Count - 2);
 
-      var controlPointCountU = result.knotsU.Count - result.degreeU - 1;
-      var controlPointCountV = result.knotsV.Count - result.degreeV - 1;
+      var controlPointCountU = knotsU.Count - result.degreeU - 1;
+      var controlPointCountV = knotsV.Count - result.degreeV - 1;
 
       var controlPoints = surface.GetControlPoints();
       var weights = surface.GetWeights();
@@ -672,8 +680,6 @@ namespace Objects.Converter.Revit
       brep.units = ModelUnits;
 
       if (solid is null || solid.Faces.IsEmpty) return null;
-
-      var brepEdges = new Dictionary<DB.Edge, BrepEdge>();
       
       var faceIndex = 0;
       var edgeIndex = 0;
@@ -714,16 +720,18 @@ namespace Objects.Converter.Revit
             
             // Get curve, create trim and save index
             var trim = edge.GetCurveUV(edgeSide);
-            var sTrim = new BrepTrim(brep, edgeIndex, faceA.Id, loopIndex, curve2dIndex, 0, BrepTrimType.Unknown, edge.IsFlippedOnFace(edgeSide));
+            var sTrim = new BrepTrim(brep, edgeIndex, faceIndex, loopIndex, curve2dIndex, 0, BrepTrimType.Boundary, !edge.IsFlippedOnFace(edgeSide));
             var sTrimIndex = trimIndex;
             loopTrimIndices.Add(sTrimIndex);
+            
             // Add curve and trim, increase index counters.
             speckle2dCurves.Add(CurveToSpeckle(trim.As3DCurveInXYPlane()));
             speckleTrims.Add(sTrim);
             curve2dIndex++;
             trimIndex++;
 
-            if (!brepEdges.ContainsKey(edge))
+            // Check if we have visited this edge before.
+            if (!speckleEdges.ContainsKey(edge))
             {
               // First time we visit this edge, add 3d curve and create new BrepEdge.
               var edgeCurve = edge.AsCurve();
@@ -732,13 +740,13 @@ namespace Objects.Converter.Revit
               curve3dIndex++;
 
               // Create a trim with just one of the trimIndices set, the second one will be set on the opposite condition.
-              var sEdge = new BrepEdge(brep, sCurveIndex, new [] {sTrimIndex}, -1, -1, false);
-              brepEdges.Add(edge,sEdge);
+              var sEdge = new BrepEdge(brep, sCurveIndex, new [] {sTrimIndex}, -1, -1, edge.IsFlippedOnFace(face));
+              speckleEdges.Add(edge,sEdge);
             }
             else
             {
               // Already visited this edge, skip curve 3d
-              var sEdge = brepEdges[edge];
+              var sEdge = speckleEdges[edge];
               // Update trim indices with new item.
               // TODO: Make this better.
               var trimIndices = sEdge.TrimIndices.ToList();
@@ -754,7 +762,7 @@ namespace Objects.Converter.Revit
           loopIndices.Add(sLoopIndex);
         }
         
-        speckleFaces.Add(face,new BrepFace(brep,surfaceIndex,loopIndices,loopIndices[0],false ));
+        speckleFaces.Add(face,new BrepFace(brep,surfaceIndex,loopIndices,loopIndices[0], !face.OrientationMatchesSurfaceOrientation ));
         faceIndex++;
         brep.Surfaces.Add(surface);
         surfaceIndex++;
