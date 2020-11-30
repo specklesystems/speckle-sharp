@@ -604,6 +604,7 @@ namespace Objects.Converter.Revit
       }
 
       using var builder = new BRepBuilder(bRepType);
+      
       builder.SetAllowShortEdges();
       //builder.AllowRemovalOfProblematicFaces();
 
@@ -673,41 +674,100 @@ namespace Objects.Converter.Revit
       if (solid is null || solid.Faces.IsEmpty) return null;
 
       var brepEdges = new Dictionary<DB.Edge, BrepEdge>();
+      
       var faceIndex = 0;
+      var edgeIndex = 0;
       var curve2dIndex = 0;
       var curve3dIndex = 0;
-
-      var speckleFaces = new BrepFace[solid.Faces.Size];
-      var speckleEdges = new BrepEdge[solid.Edges.Size];
+      var loopIndex = 0;
+      var trimIndex = 0;
+      var surfaceIndex = 0;
+      
+      var speckleFaces = new Dictionary<Face,BrepFace>();
+      var speckleEdges = new Dictionary<Edge,BrepEdge>();
       var speckle3dCurves = new ICurve[solid.Edges.Size];
       var speckle2dCurves = new List<ICurve>();
+      var speckleLoops = new List<BrepLoop>();
+      var speckleTrims = new List<BrepTrim>();
       
       foreach (var face in solid.Faces.Cast<Face>())
       {
         var surface = FaceToSpeckle(face, out bool orientation, 0.0);
-        
-        brep.Faces.Add(new BrepFace(brep,0,new List<int>{},-1,false ));
-        brep.Surfaces.Add(surface);
         var iterator = face.EdgeLoops.ForwardIterator();
+        var loopIndices = new List<int>();
+    
         while (iterator.MoveNext())
         {
           var loop = iterator.Current as EdgeArray;
+          var loopTrimIndices = new List<int>();
+          // Loop through the edges in the loop.
           var loopIterator = loop.ForwardIterator();
           while (loopIterator.MoveNext())
           {
+            // Each edge should create a 2d curve, a 3d curve, a BrepTrim and a BrepEdge.
             var edge = loopIterator.Current as Edge;
             var faceA = edge.GetFace(0);
             var faceB = edge.GetFace(1);
-
-            var edgeFace = face == faceA ? faceA : faceB;
             
-            var sEdge = new BrepEdge(brep,curve3dIndex,null,-1,-1,edge.IsFlippedOnFace(edgeFace));
+            // Determine what face side are we currently on.
+            var edgeSide = face == faceA ? 0 : 1;
+            
+            // Get curve, create trim and save index
+            var trim = edge.GetCurveUV(edgeSide);
+            var sTrim = new BrepTrim(brep, edgeIndex, faceA.Id, loopIndex, curve2dIndex, 0, BrepTrimType.Unknown, edge.IsFlippedOnFace(edgeSide));
+            var sTrimIndex = trimIndex;
+            loopTrimIndices.Add(sTrimIndex);
+            // Add curve and trim, increase index counters.
+            speckle2dCurves.Add(CurveToSpeckle(trim.As3DCurveInXYPlane()));
+            speckleTrims.Add(sTrim);
+            curve2dIndex++;
+            trimIndex++;
+
+            if (!brepEdges.ContainsKey(edge))
+            {
+              // First time we visit this edge, add 3d curve and create new BrepEdge.
+              var edgeCurve = edge.AsCurve();
+              speckle3dCurves[curve3dIndex] = CurveToSpeckle(edgeCurve);
+              var sCurveIndex = curve3dIndex;
+              curve3dIndex++;
+
+              // Create a trim with just one of the trimIndices set, the second one will be set on the opposite condition.
+              var sEdge = new BrepEdge(brep, sCurveIndex, new [] {sTrimIndex}, -1, -1, false);
+              brepEdges.Add(edge,sEdge);
+            }
+            else
+            {
+              // Already visited this edge, skip curve 3d
+              var sEdge = brepEdges[edge];
+              // Update trim indices with new item.
+              // TODO: Make this better.
+              var trimIndices = sEdge.TrimIndices.ToList();
+              trimIndices.Append(sTrimIndex);
+              sEdge.TrimIndices = trimIndices.ToArray();
+            }
           }
+          
+          var speckleLoop = new BrepLoop(brep,faceIndex,loopTrimIndices,BrepLoopType.Outer );
+          speckleLoops.Add(speckleLoop);
+          var sLoopIndex = loopIndex;
+          loopIndex++;
+          loopIndices.Add(sLoopIndex);
         }
+        
+        speckleFaces.Add(face,new BrepFace(brep,surfaceIndex,loopIndices,loopIndices[0],false ));
+        faceIndex++;
+        brep.Surfaces.Add(surface);
+        surfaceIndex++;
       }
       // TODO: Revit has no brep vertices. Must call 'brep.SetVertices()' in rhino when provenance is revit.
       // TODO: Set tolerances and flags in rhino when provenance is revit.
-
+      brep.Faces = speckleFaces.Values.ToList();
+      brep.Curve2D = speckle2dCurves;
+      brep.Curve3D = speckle3dCurves.ToList();
+      brep.Trims = speckleTrims;
+      brep.Edges = speckleEdges.Values.ToList();
+      brep.Loops = speckleLoops;
+      
       return brep;
     }
 
