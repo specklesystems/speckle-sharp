@@ -717,7 +717,6 @@ namespace Speckle.DesktopUI.Utils
         return;
       }
 
-
       var updatedStream = await Client.StreamGet(Stream.id);
       Branches = updatedStream.branches.items;
 
@@ -748,6 +747,13 @@ namespace Speckle.DesktopUI.Utils
 
       commit.message = info.message;
       NotifyOfPropertyChange(nameof(Stream));
+    }
+
+    public async void RefreshStream()
+    {
+      var updatedStream = await Client.StreamGet(Stream.id);
+      Stream = updatedStream;
+      Branches = updatedStream.branches.items;
     }
 
     #endregion
