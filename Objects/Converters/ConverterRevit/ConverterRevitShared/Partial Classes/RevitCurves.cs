@@ -22,7 +22,7 @@ namespace Objects.Converter.Revit
       return speckleCurve;
     }
 
-    public DB.ModelCurve ModelCurveToNative(ModelCurve speckleCurve)
+    public ApplicationPlaceholderObject ModelCurveToNative(ModelCurve speckleCurve)
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
 
@@ -45,9 +45,7 @@ namespace Objects.Converter.Revit
         revitCurve.LineStyle = Doc.GetElement(lineStyleId);
       }
 
-      // TODO: return appplaceholderobject
-
-      return revitCurve;
+      return new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve };
     }
 
     public DetailCurve DetailCurveToSpeckle(DB.DetailCurve revitCurve)
@@ -59,7 +57,7 @@ namespace Objects.Converter.Revit
       return speckleCurve;
     }
 
-    public DB.DetailCurve DetailCurveToNative(DetailCurve speckleCurve)
+    public ApplicationPlaceholderObject DetailCurveToNative(DetailCurve speckleCurve)
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
 
@@ -89,8 +87,8 @@ namespace Objects.Converter.Revit
       {
         revitCurve.LineStyle = Doc.GetElement(lineStyleId);
       }
+      return new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve };
 
-      return revitCurve;
     }
 
     public RoomBoundaryLine RoomBoundaryLineToSpeckle(DB.ModelCurve revitCurve)
@@ -101,7 +99,7 @@ namespace Objects.Converter.Revit
       return speckleCurve;
     }
 
-    public DB.ModelCurve RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)
+    public ApplicationPlaceholderObject RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
 
@@ -117,7 +115,8 @@ namespace Objects.Converter.Revit
 
       try
       {
-        return Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0)), baseCurve, Doc.ActiveView).get_Item(0);
+        var res = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0)), baseCurve, Doc.ActiveView).get_Item(0);
+        return new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res };
       }
       catch (Exception)
       {

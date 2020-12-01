@@ -10,7 +10,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Element AdaptiveComponentToNative(AdaptiveComponent speckleAc)
+    public ApplicationPlaceholderObject AdaptiveComponentToNative(AdaptiveComponent speckleAc)
     {
       var docObj = GetExistingElementByApplicationId(speckleAc.applicationId);
 
@@ -56,7 +56,8 @@ namespace Objects.Converter.Revit
       AdaptiveComponentInstanceUtils.SetInstanceFlipped(revitAc, speckleAc.flipped);
 
       SetElementParamsFromSpeckle(revitAc, speckleAc);
-      return revitAc;
+
+      return new ApplicationPlaceholderObject { applicationId = speckleAc.applicationId, ApplicationGeneratedId = revitAc.UniqueId, NativeObject = revitAc };
     }
 
     private AdaptiveComponent AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
