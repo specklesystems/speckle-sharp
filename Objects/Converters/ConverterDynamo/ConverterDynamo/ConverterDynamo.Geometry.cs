@@ -28,9 +28,6 @@ namespace Objects.Converter.Dynamo
   //Code form: https://github.com/speckleworks/SpeckleCoreGeometry/blob/master/SpeckleCoreGeometryDynamo/Conversions.cs
   public partial class ConverterDynamo
   {
-
-
-
     #region Points
 
 
@@ -43,7 +40,7 @@ namespace Objects.Converter.Dynamo
     {
 
       var point = new Point(pt.X, pt.Y, pt.Z, ModelUnits);
-      point.SetDynamicMembers(pt.GetSpeckleProperties());
+      CopyProperties(point, pt);
       return point;
     }
 
@@ -58,7 +55,7 @@ namespace Objects.Converter.Dynamo
       var point = DS.Point.ByCoordinates(
         ScaleToNative(pt.value[0], pt.units), ScaleToNative(pt.value[1], pt.units), ScaleToNative(pt.value[2], pt.units));
 
-      return point.SetDynamoProperties<DS.Point>(pt.GetDynamicMembersDictionary());
+      return point.SetDynamoProperties<DS.Point>(GetDynamicMembersFromBase(pt));
     }
 
 
@@ -143,7 +140,6 @@ namespace Objects.Converter.Dynamo
 
     #endregion
 
-
     #region Planes
 
     /// <summary>
@@ -159,7 +155,7 @@ namespace Objects.Converter.Dynamo
         VectorToSpeckle(plane.XAxis),
         VectorToSpeckle(plane.YAxis),
         ModelUnits);
-      p.SetDynamicMembers(plane.GetSpeckleProperties());
+      CopyProperties(p, plane);
       return p;
     }
 
@@ -175,7 +171,7 @@ namespace Objects.Converter.Dynamo
         VectorToNative(plane.xdir),
         VectorToNative(plane.ydir));
 
-      return pln.SetDynamoProperties<DS.Plane>(plane.GetDynamicMembersDictionary());
+      return pln.SetDynamoProperties<DS.Plane>(GetDynamicMembersFromBase(plane));
     }
 
     #endregion
@@ -192,7 +188,8 @@ namespace Objects.Converter.Dynamo
       var l = new Line(
        PointListToFlatArray(new DS.Point[] { line.StartPoint, line.EndPoint }),
         ModelUnits);
-      l.SetDynamicMembers(line.GetSpeckleProperties());
+
+      CopyProperties(l, line);
       return l;
     }
 
@@ -208,7 +205,7 @@ namespace Objects.Converter.Dynamo
 
       pts.ForEach(pt => pt.Dispose());
 
-      return ln.SetDynamoProperties<DS.Line>(line.GetDynamicMembersDictionary());
+      return ln.SetDynamoProperties<DS.Line>(GetDynamicMembersFromBase(line));
     }
 
     /// <summary>
@@ -222,7 +219,7 @@ namespace Objects.Converter.Dynamo
       {
         closed = true,
       };
-      poly.SetDynamicMembers(polygon.GetSpeckleProperties());
+      CopyProperties(poly, polygon);
 
       return poly;
     }
@@ -236,7 +233,8 @@ namespace Objects.Converter.Dynamo
     public Polyline PolylineToSpeckle(DS.Rectangle rectangle)
     {
       var rect = PolylineToSpeckle(rectangle as DS.Polygon);
-      rect.SetDynamicMembers(rectangle.GetSpeckleProperties());
+
+      CopyProperties(rect, rectangle);
       return rect;
     }
 
@@ -251,16 +249,12 @@ namespace Objects.Converter.Dynamo
       var points = ArrayToPointList(polyline.value, polyline.units);
       if (polyline.closed)
         return DS.PolyCurve.ByPoints(points).CloseWithLine()
-          .SetDynamoProperties<DS.PolyCurve>(polyline.GetDynamicMembersDictionary());
+          .SetDynamoProperties<DS.PolyCurve>(GetDynamicMembersFromBase(polyline));
 
-      return PolyCurve.ByPoints(points).SetDynamoProperties<PolyCurve>(polyline.GetDynamicMembersDictionary());
+      return PolyCurve.ByPoints(points).SetDynamoProperties<PolyCurve>(GetDynamicMembersFromBase(polyline));
     }
 
     #endregion
-
-
-
-
 
     #region Curves
 
@@ -275,8 +269,7 @@ namespace Objects.Converter.Dynamo
       using (DS.Plane plane = DS.Plane.ByOriginNormalXAxis(circ.CenterPoint, circ.Normal, xAxis))
       {
         var myCircle = new Circle(PlaneToSpeckle(plane), circ.Radius, ModelUnits);
-        myCircle.SetDynamicMembers(circ.GetSpeckleProperties());
-
+        CopyProperties(myCircle, circ);
         return myCircle;
       }
     }
@@ -296,7 +289,7 @@ namespace Objects.Converter.Dynamo
         double angle = preXvector.AngleAboutAxis(basePlane.XAxis, basePlane.Normal);
         var circle = (DS.Circle)preCircle.Rotate(basePlane, angle);
 
-        return circle.SetDynamoProperties<DS.Circle>(circ.GetDynamicMembersDictionary());
+        return circle.SetDynamoProperties<DS.Circle>(GetDynamicMembersFromBase(circ));
       }
     }
 
@@ -319,7 +312,8 @@ namespace Objects.Converter.Dynamo
           ModelUnits
         );
 
-        arc.SetDynamicMembers(a.GetSpeckleProperties());
+        CopyProperties(arc, a);
+
         return arc;
       }
     }
@@ -340,7 +334,7 @@ namespace Objects.Converter.Dynamo
           a.angleRadians.Value.ToDegrees(),
           basePlane.Normal
         );
-        return arc.SetDynamoProperties<DS.Arc>(a.GetDynamicMembersDictionary());
+        return arc.SetDynamoProperties<DS.Arc>(GetDynamicMembersFromBase(a));
       }
     }
 
@@ -361,8 +355,7 @@ namespace Objects.Converter.Dynamo
           null,
           ModelUnits);
 
-        ellipse.SetDynamicMembers(e.GetSpeckleProperties());
-
+        CopyProperties(ellipse, e);
         return ellipse;
       }
     }
@@ -393,7 +386,7 @@ namespace Objects.Converter.Dynamo
             ScaleToNative(e.firstRadius.Value, e.units),
             ScaleToNative(e.secondRadius.Value, e.units)
         );
-        ellipse.SetDynamoProperties<DS.Ellipse>(e.GetDynamicMembersDictionary());
+        ellipse.SetDynamoProperties<DS.Ellipse>(GetDynamicMembersFromBase(e));
         return ellipse;
       }
     }
@@ -412,7 +405,8 @@ namespace Objects.Converter.Dynamo
         new Interval(0, 2 * Math.PI),
         new Interval(arc.StartAngle, arc.StartAngle + arc.SweepAngle),
         ModelUnits);
-      ellipArc.SetDynamicMembers(arc.GetSpeckleProperties());
+
+      CopyProperties(ellipArc, arc);
       return ellipArc;
     }
 
@@ -431,13 +425,14 @@ namespace Objects.Converter.Dynamo
         points.AddRange(PointToArray(polycurve.Curves().Last().EndPoint));
         var poly = new Polyline(points, ModelUnits);
 
-        poly.SetDynamicMembers(polycurve.GetSpeckleProperties());
+        CopyProperties(poly, polycurve);
         return poly;
       }
       else
       {
         Polycurve spkPolycurve = new Polycurve();
-        spkPolycurve.SetDynamicMembers(polycurve.GetSpeckleProperties());
+        CopyProperties(spkPolycurve, polycurve);
+
         spkPolycurve.segments = polycurve.Curves().Select(c => (ICurve)CurveToSpeckle(c)).ToList();
 
         return spkPolycurve;
@@ -476,7 +471,7 @@ namespace Objects.Converter.Dynamo
       }
 
       var polyCrv = PolyCurve.ByJoinedCurves(curves);
-      return polyCrv.SetDynamoProperties<PolyCurve>(polycurve.GetDynamicMembersDictionary());
+      return polyCrv.SetDynamoProperties<PolyCurve>(GetDynamicMembersFromBase(polycurve));
     }
 
     public Base CurveToSpeckle(DS.Curve curve)
@@ -515,7 +510,7 @@ namespace Objects.Converter.Dynamo
         speckleCurve = CurveToSpeckle(curve.ToNurbsCurve());
       }
 
-      speckleCurve.SetDynamicMembers(curve.GetSpeckleProperties());
+      CopyProperties(speckleCurve, curve);
       return speckleCurve;
     }
 
@@ -533,7 +528,7 @@ namespace Objects.Converter.Dynamo
         curve.degree
       );
 
-      return nurbsCurve.SetDynamoProperties<NurbsCurve>(curve.GetDynamicMembersDictionary());
+      return nurbsCurve.SetDynamoProperties<NurbsCurve>(GetDynamicMembersFromBase(curve));
     }
 
     public Base CurveToSpeckle(NurbsCurve curve)
@@ -597,7 +592,7 @@ namespace Objects.Converter.Dynamo
         speckleCurve = spkCurve;
       }
 
-      speckleCurve.SetDynamicMembers(curve.GetSpeckleProperties());
+      CopyProperties(speckleCurve, curve);
       return speckleCurve;
     }
 
@@ -606,7 +601,7 @@ namespace Objects.Converter.Dynamo
       using (NurbsCurve nurbsCurve = helix.ToNurbsCurve())
       {
         var curve = CurveToSpeckle(nurbsCurve);
-        curve.SetDynamicMembers(helix.GetSpeckleProperties());
+        CopyProperties(curve, helix);
         return curve;
       }
     }
@@ -654,8 +649,8 @@ namespace Objects.Converter.Dynamo
       //}
 
       var speckleMesh = new Mesh(vertices, faces, colors, units: ModelUnits);
-      speckleMesh.SetDynamicMembers(mesh.GetSpeckleProperties());
 
+      CopyProperties(speckleMesh, mesh);
       return speckleMesh;
     }
 
@@ -686,7 +681,7 @@ namespace Objects.Converter.Dynamo
 
       var dsMesh = DS.Mesh.ByPointsFaceIndices(points, faces);
 
-      dsMesh.SetDynamoProperties<DS.Mesh>(mesh.GetDynamicMembersDictionary());
+      dsMesh.SetDynamoProperties<DS.Mesh>(GetDynamicMembersFromBase(mesh));
 
       return dsMesh;
     }
@@ -761,6 +756,29 @@ namespace Objects.Converter.Dynamo
       return result;
     }
 
+    /// <summary>
+    /// Copies props from a design script entity to a speckle object.
+    /// </summary>
+    /// <param name="to"></param>
+    /// <param name="from"></param>
+    public void CopyProperties(Base to, DesignScriptEntity from)
+    {
+      var dict = from.GetSpeckleProperties();
+      foreach(var kvp in dict)
+      {
+        to[kvp.Key] = kvp.Value;
+      }
+    }
+
+    public Dictionary<string, object> GetDynamicMembersFromBase(Base obj)
+    {
+      var dict = new Dictionary<string, object>();
+      foreach( var prop in obj.GetDynamicMembers())
+      {
+        dict.Add(prop, obj[prop]);
+      }
+      return dict;
+    }
 
   }
 }

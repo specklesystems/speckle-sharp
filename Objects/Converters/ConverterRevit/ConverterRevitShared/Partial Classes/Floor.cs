@@ -38,6 +38,7 @@ namespace Objects.Converter.Revit
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element. The closest thing would be:
       // https://adndevblog.typepad.com/aec/2013/10/change-the-boundary-of-floorsslabs.html
+      // This would only work if the floors have the same number (and type!!!) of outline curves. 
       var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
       if (docObj != null)
       {
