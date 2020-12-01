@@ -124,12 +124,30 @@ namespace Tests
     }
 
     [Test]
-    public void InheritedTests()
+    public void InheritanceTests()
     {
       var superPoint = new SuperPoint() { X = 10, Y = 10, Z = 10, W = 42 };
 
       var str = Operations.Serialize(superPoint);
-      var sstr = str;
+      var sstr = Operations.Deserialize(str);
+
+      Assert.AreEqual(superPoint.speckle_type, sstr.speckle_type);
+    }
+
+    [Test]
+    public void ListDynamicProp()
+    {
+      var point = new Point();
+      var test = new List<Base>();
+
+      for (var i = 0; i < 100; i++) test.Add(new SuperPoint { W = i });
+      point["test"] = test;
+
+      var str = Operations.Serialize(point);
+      var dsrls = Operations.Deserialize(str);
+
+      var list = dsrls["test"] as List<object>; // NOTE: on dynamically added lists, we cannot infer the inner type and we always fall back to a generic list<object>.
+      Assert.AreEqual(100, list.Count);
     }
 
 
