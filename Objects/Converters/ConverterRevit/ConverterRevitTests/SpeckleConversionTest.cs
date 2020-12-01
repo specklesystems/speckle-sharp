@@ -130,7 +130,6 @@ namespace ConverterRevitTests
       Assert.NotNull(spkElem);
       Assert.NotNull(spkElem["parameters"]);
       Assert.NotNull(spkElem["elementId"]);
-      Assert.NotNull(spkElem["type"]);
 
 
       if (!(elem is DB.Architecture.Room || elem is DB.Mechanical.Duct))

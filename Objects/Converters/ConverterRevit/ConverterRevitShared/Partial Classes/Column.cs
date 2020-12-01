@@ -94,7 +94,7 @@ namespace Objects.Converter.Revit
       }
 
       //try with a point based column
-      if (speckleRevitColumn != null && revitColumn == null)
+      if (speckleRevitColumn != null && revitColumn == null && !isLineBased)
       {
         var start = baseLine.GetEndPoint(0);
         var end = baseLine.GetEndPoint(1);

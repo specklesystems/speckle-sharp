@@ -27,7 +27,7 @@ namespace Objects.Converter.Revit
       //  speckleElement["type"] = (revitElement as DB.FamilyInstance)?.Symbol?.GetType().Name;
       //}
 
-      var parms = GetElementTypeParams(revitElement);
+      var parms = GetElementParams(revitElement);
       if (parms != null)
       {
         speckleElement["parameters"] = parms;
