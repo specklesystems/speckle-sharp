@@ -102,6 +102,7 @@ namespace Objects.Converter.Revit
           if (topLevelParam != null)
           {
             ((RevitShaft)speckleOpening).topLevel = ConvertAndCacheLevel(topLevelParam);
+            ((RevitShaft)speckleOpening).bottomLevel = ConvertAndCacheLevel(baseLevelParam);
           }
         }
 
