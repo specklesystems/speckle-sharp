@@ -34,6 +34,7 @@ namespace Objects.Converter.Revit
         (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(allSolids);
       }
 
+      mesh.units = ModelUnits;
       return mesh;
     }
 
