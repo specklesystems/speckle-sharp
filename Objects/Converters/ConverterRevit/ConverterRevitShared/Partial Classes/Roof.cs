@@ -108,7 +108,7 @@ namespace Objects.Converter.Revit
         SetElementParamsFromSpeckle(revitRoof, speckleRevitRoof);
       }
 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitRoof.applicationId, ApplicationGeneratedId = revitRoof.UniqueId, NativeObject = speckleRevitRoof } };
+      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitRoof.applicationId, ApplicationGeneratedId = revitRoof.UniqueId, NativeObject = revitRoof } };
 
       // TODO: nested elements.
 

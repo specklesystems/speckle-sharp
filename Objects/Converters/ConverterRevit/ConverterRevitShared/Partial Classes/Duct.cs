@@ -5,6 +5,7 @@ using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DB = Autodesk.Revit.DB.Mechanical;
 using Line = Objects.Geometry.Line;
 
@@ -33,10 +34,16 @@ namespace Objects.Converter.Revit
         level = LevelToNative(LevelFromCurve(baseLine));
       }
 
-      var ductType = GetElementType<DB.DuctType>((Base)speckleDuct);
+      var ductType = GetElementType<DB.DuctType>(speckleDuct);
       var systemFamily = (speckleDuct is RevitDuct rd) ? rd.systemName : "";
-      //var systemType = (speckleDuct is RevitDuct rd2) ? rd2.systemType : "";
-      var system = GetElementType<MechanicalSystemType>(systemFamily, "");
+
+      List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(MechanicalSystemType)).ToElements().Cast<ElementType>().ToList();
+      var system = types.FirstOrDefault(x => x.Name == systemFamily);
+      if (system == null)
+      {
+        system = types.FirstOrDefault();
+        ConversionErrors.Add(new Error { message = $"Duct type {systemFamily} not found; replaced with {system.Name}" });
+      }
 
       var docObj = GetExistingElementByApplicationId(((Base)speckleDuct).applicationId);
 
@@ -95,8 +102,13 @@ namespace Objects.Converter.Revit
       speckleDuct.velocity = (double)ParameterToSpeckle(velocityParam);
       speckleDuct.level = ConvertAndCacheLevel(levelParam);
 
-      speckleDuct.systemName = revitDuct.MEPSystem.Name;
+      speckleDuct.systemName = revitDuct.MEPSystem.Name; // NOTE: this seems to return the instance name? 
+      var typeEl = revitDuct.MEPSystem.GetTypeId();
+      var typeDoc = Doc.GetElement(typeEl);
+      var name = typeDoc.Name;
+      speckleDuct.systemName = name;
       //speckleDuct.systemName = ((MechanicalSystem)revitDuct.MEPSystem).SystemType.ToString();
+
 
       AddCommonRevitProps(speckleDuct, revitDuct);
 

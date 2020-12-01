@@ -423,7 +423,14 @@ namespace Objects.Converter.Revit
 
       if (match == null && type != null) // try and match the type only
       {
-        match = types.FirstOrDefault(x => x.Name == type);
+        if (element is Duct)
+        {
+          match = types.FirstOrDefault(x => x.FamilyName == type);
+        }
+        else
+        {
+          match = types.FirstOrDefault(x => x.Name == type);
+        }
       }
 
       if (match == null && family != null) // try and match the family only.
