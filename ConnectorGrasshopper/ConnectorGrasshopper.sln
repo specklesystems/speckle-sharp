@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrasshopperAsyncComponent",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects", "..\Objects\Objects\Objects.csproj", "{9103058A-0D20-49AA-B053-01548DD66D16}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Objects.Revit", "..\Objects\Objects.Revit\Objects.Revit.csproj", "{B09C5754-BB9D-47E6-BEE6-8582A1FB31DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects.Revit", "..\Objects\Objects.Revit\Objects.Revit.csproj", "{B09C5754-BB9D-47E6-BEE6-8582A1FB31DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
