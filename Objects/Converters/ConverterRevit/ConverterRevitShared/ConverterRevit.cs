@@ -33,10 +33,21 @@ namespace Objects.Converter.Revit
 
     public Document Doc { get; private set; }
 
+    /// <summary>
+    /// <para>When receiving, we keep track of previously received objects from a given stream in here. If possible, conversions routines
+    /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
+    /// <para>When sending, we keep track in here of all the selected objects that will need conversions. Elements that have children use this to determine wether they should send their children out or not.</para>
+    /// </summary>
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
+    /// <summary>
+    /// Keeps track of the current host element that is creating any sub-objects it may have.
+    /// </summary>
     public Element CurrentHostElement { get; set; }
 
+    /// <summary>
+    /// Used when sending; keeps track of all the converted objects so far. Child elements first check in here if they should convert themselves again (they may have been converted as part of a parent's hosted elements).
+    /// </summary>
     public List<string> ConvertedObjectsList { get; set; } = new List<string>();
 
     public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();

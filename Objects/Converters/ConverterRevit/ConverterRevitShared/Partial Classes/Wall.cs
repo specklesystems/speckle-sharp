@@ -53,10 +53,11 @@ namespace Objects.Converter.Revit
 
       // Note: setting a base offset on a wall modifies its location curve. As such, to distinguish between an old curve and a new one, we need to
       // remove any existing base offset before comparing it to the original one. And yes, of course, we need to check within a tolerance.
-      var cbo = (double)revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble();
+      var cbo = (double)revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble(); // note: we're using raw internal units, no need for conversions
       if (Math.Abs(ocrvStart.X - ncrvStart.X) > 0.01 || Math.Abs(ocrvStart.Y - ncrvStart.Y) > 0.01 || Math.Abs(ocrvStart.Z + cbo - ncrvStart.Z) > 0.01 ||
         Math.Abs(ocrvEnd.X - ncrvEnd.X) > 0.01 || Math.Abs(ocrvEnd.Y - ncrvEnd.Y) > 0.01 || Math.Abs(ocrvEnd.Z + cbo - ncrvEnd.Z) > 0.01)
       {
+        revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).Set(0); // note: always reset the base offset before setting a new location curve, otherwise it's applied twice.
         ((LocationCurve)revitWall.Location).Curve = baseCurve;
       }
 
@@ -185,8 +186,8 @@ namespace Objects.Converter.Revit
       AddCommonRevitProps(speckleWall, revitWall);
 
       #region hosted elements capture
-      // TODO: perhaps move to generic method once patterns emerge (re other hosts).
 
+      // TODO: perhaps move to generic method once patterns emerge (re other hosts).
       var hostedElements = revitWall.FindInserts(true, true, true, true);
       var hostedElementsList = new List<Base>();
 

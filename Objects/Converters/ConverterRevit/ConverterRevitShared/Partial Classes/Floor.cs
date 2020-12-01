@@ -36,10 +36,16 @@ namespace Objects.Converter.Revit
 
       var floorType = GetElementType<FloorType>(speckleFloor);
 
-      // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element.
+      // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element. The closest thing would be:
+      // https://adndevblog.typepad.com/aec/2013/10/change-the-boundary-of-floorsslabs.html
       var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
       if (docObj != null)
       {
+        SubTransaction transTemp = new SubTransaction(Doc);
+        transTemp.Start(); 
+        ICollection<ElementId> ids = Doc.Delete(docObj.Id);
+        transTemp.RollBack();
+
         Doc.Delete(docObj.Id);
       }
 
@@ -52,7 +58,7 @@ namespace Objects.Converter.Revit
       {
         revitFloor = Doc.Create.NewFloor(outline, floorType, level, structural);
       }
-      
+
       Doc.Regenerate();
 
       try
@@ -64,7 +70,7 @@ namespace Objects.Converter.Revit
         ConversionErrors.Add(new Error($"Could not create openings in floor {speckleFloor.applicationId}", ex.Message));
       }
 
-      SetElementParamsFromSpeckle(revitFloor, speckleFloor);
+      //SetElementParamsFromSpeckle(revitFloor, speckleFloor);
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleFloor.applicationId, ApplicationGeneratedId = revitFloor.UniqueId, NativeObject = revitFloor } };
 

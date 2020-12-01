@@ -202,6 +202,13 @@ namespace Objects.Converter.Revit
       return myParamDict;
     }
 
+    /// <summary>
+    /// Note: this is a function that is a bit slow and not sure it actually does anything much, as most of the things it tries to set fail.
+    /// I've removed it from the wall conversion for a 5x speedup...
+    /// </summary>
+    /// <param name="myElement"></param>
+    /// <param name="spkElement"></param>
+    /// <param name="exclusions"></param>
     public void SetElementParamsFromSpeckle(Element myElement, Base spkElement, List<string> exclusions = null)
     {
       if (myElement == null)

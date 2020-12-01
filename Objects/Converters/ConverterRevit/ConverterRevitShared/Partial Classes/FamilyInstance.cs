@@ -19,6 +19,8 @@ namespace Objects.Converter.Revit
     public Base FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
     {
 
+      #region host handling
+      
       // Check if it's been converted previously - from a parent host.
       if (ConvertedObjectsList.IndexOf(revitFi.UniqueId) != -1)
       {
@@ -30,6 +32,8 @@ namespace Objects.Converter.Revit
       {
         return null;
       }
+
+      #endregion
 
       //adaptive components
       if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(revitFi))
@@ -95,6 +99,11 @@ namespace Objects.Converter.Revit
       return speckleFi;
     }
 
+    /// <summary>
+    /// Note: not tested. Not sure what the scenarios here would be either (super families?)
+    /// </summary>
+    /// <param name="familyInstance"></param>
+    /// <returns></returns>
     private List<DB.Element> GetFamSubElements(DB.FamilyInstance familyInstance)
     {
       var subElements = new List<DB.Element>();
@@ -181,7 +190,7 @@ namespace Objects.Converter.Revit
       var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
       (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
 
-      SetElementParamsFromSpeckle(familyInstance, speckleFi);
+      //SetElementParamsFromSpeckle(familyInstance, speckleFi); // slow and unsteady, fails most of the times
 
       var placeholders = new List<ApplicationPlaceholderObject>() { 
         new ApplicationPlaceholderObject { 
