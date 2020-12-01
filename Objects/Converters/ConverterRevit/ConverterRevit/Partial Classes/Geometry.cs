@@ -720,7 +720,7 @@ namespace Objects.Converter.Revit
             
             // Get curve, create trim and save index
             var trim = edge.GetCurveUV(edgeSide);
-            var sTrim = new BrepTrim(brep, edgeIndex, faceIndex, loopIndex, curve2dIndex, 0, BrepTrimType.Boundary, !edge.IsFlippedOnFace(edgeSide));
+            var sTrim = new BrepTrim(brep, edgeIndex, faceIndex, loopIndex, curve2dIndex, 0, BrepTrimType.Boundary, edge.IsFlippedOnFace(edgeSide));
             var sTrimIndex = trimIndex;
             loopTrimIndices.Add(sTrimIndex);
             
@@ -742,6 +742,7 @@ namespace Objects.Converter.Revit
               // Create a trim with just one of the trimIndices set, the second one will be set on the opposite condition.
               var sEdge = new BrepEdge(brep, sCurveIndex, new [] {sTrimIndex}, -1, -1, edge.IsFlippedOnFace(face));
               speckleEdges.Add(edge,sEdge);
+              edgeIndex++;
             }
             else
             {

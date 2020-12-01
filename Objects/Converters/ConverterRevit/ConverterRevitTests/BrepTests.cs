@@ -13,7 +13,7 @@ namespace ConverterRevitTests
 {
   public class BrepFixture: SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("Curve.rvt");
+    public override string TestFile => Globals.GetTestModel("Brep.rvt");
 
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Mass, BuiltInCategory.OST_Mass };
 
@@ -43,8 +43,10 @@ namespace ConverterRevitTests
     [InlineData(@"Brep-TwoFacesWithHole.json")]
     [InlineData(@"Brep-Complex.json")]
     [InlineData(@"Brep-QuadDome.json")]
+    [InlineData(@"Brep-SimpleHyparHole.json")]
     public void BrepToNative(string fileName)
     {
+    
       // Read and obtain `base` object.
       var contents = System.IO.File.ReadAllText(TestFolder + fileName);
       var converter = new ConverterRevit();
