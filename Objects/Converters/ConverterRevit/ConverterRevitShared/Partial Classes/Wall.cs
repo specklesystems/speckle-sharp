@@ -102,6 +102,11 @@ namespace Objects.Converter.Revit
           toffsetParam.Set(ScaleToNative(spklRevitWall.topOffset, speckleWall.units));
         }
       }
+      else // Set wall unconnected height.
+      {
+        var heightParam = revitWall.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM);
+        heightParam.Set(ScaleToNative(speckleWall.height, speckleWall.units));
+      }
 
       //SetElementParamsFromSpeckle(revitWall, speckleWall); // This takes very long and doesn't do much. IMHO we should stop supporting it.
 
@@ -144,6 +149,8 @@ namespace Objects.Converter.Revit
       }
 
       #endregion
+
+      Doc.Regenerate();
 
       return placeholders;
     }

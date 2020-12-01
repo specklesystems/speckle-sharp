@@ -396,6 +396,11 @@ namespace Objects.Converter.Revit
         types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
       }
 
+      if (element is BuiltElements.Wall)
+      {
+        types.Reverse(); // Hack for "simple" walls: the first types returned are usually curtain walls.
+      }
+
       if (types.Count == 0)
       {
         throw new Exception($"Could not find any type symbol to use for family {nameof(T)}.");
@@ -403,7 +408,7 @@ namespace Objects.Converter.Revit
 
       var family = element["family"] as string;
       var type = element["type"] as string;
-      
+
       ElementType match = null;
 
       if (family == null && type == null)
