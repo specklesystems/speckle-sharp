@@ -1,16 +1,15 @@
 ﻿using Objects.Geometry;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Objects.BuiltElements;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using System.Collections.Generic;
 
 namespace Objects.Revit
 {
   [SchemaIgnore]
-  public class RevitWall : RevitElement, IWall
+  public class RevitWall : Base, IRevitHasFamilyAndType, IWall
   {
     public double height { get; set; }
+
     public ICurve baseLine { get; set; }
 
     [SchemaOptional]
@@ -18,12 +17,40 @@ namespace Objects.Revit
 
     [SchemaOptional]
     public bool flipped { get; set; }
+
+    [SchemaOptional]
+    public string family { get; set; }
+
+    [SchemaOptional]
+    public string type { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> typeParameters { get; set; }
+
+    [SchemaIgnore]
+    public string elementId { get; set; }
+
+    [SchemaOptional]
+    public ILevel level { get; set; }
+
+    [SchemaOptional]
+    public double baseOffset { get; set; }
+
+    [SchemaOptional]
+    public double topOffset { get; set; }
+
+    [SchemaOptional]
+    [DetachProperty]
+    public List<Base> hostedElements { get; set; }
   }
 
   [SchemaDescription("A Revit wall by base line and top and bottom levels")]
   public class RevitWallByLine : RevitWall
   {
-    public string topLevel { get; set; }
+    public RevitLevel topLevel { get; set; }
 
     //hiding the height as not needed here
     [SchemaIgnore]

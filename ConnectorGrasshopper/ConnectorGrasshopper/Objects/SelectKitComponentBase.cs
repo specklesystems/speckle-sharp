@@ -24,6 +24,7 @@ namespace ConnectorGrasshopper.Objects
       try
       {
         Converter = Kit.LoadConverter(Applications.Rhino);
+        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         Message = $"{Kit.Name} Kit";
       }
       catch
@@ -53,6 +54,7 @@ namespace ConnectorGrasshopper.Objects
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
+      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
 
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);

@@ -7,6 +7,7 @@ namespace Speckle.ConnectorDynamo.Functions
 {
   internal static class Utils
   {
+
     internal static List<StreamWrapper> InputToStream(object input)
     {
       try
@@ -44,7 +45,7 @@ namespace Speckle.ConnectorDynamo.Functions
         //single stream wrapper
         var sw = input as StreamWrapper;
         if (sw != null)
-          return new List<StreamWrapper> {sw};
+          return new List<StreamWrapper> { sw };
       }
       catch
       {
@@ -56,7 +57,7 @@ namespace Speckle.ConnectorDynamo.Functions
         //single url
         var s = input as string;
         if (!string.IsNullOrEmpty(s))
-          return new List<StreamWrapper> {new StreamWrapper(s)};
+          return new List<StreamWrapper> { new StreamWrapper(s) };
       }
       catch
       {

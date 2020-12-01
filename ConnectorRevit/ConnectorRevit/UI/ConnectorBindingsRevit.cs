@@ -51,7 +51,7 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp.Application.DocumentClosed += Application_DocumentClosed;
 
 
-      SelectionTimer = new Timer(1400) {AutoReset = true, Enabled = true};
+      SelectionTimer = new Timer(1400) { AutoReset = true, Enabled = true };
       SelectionTimer.Elapsed += SelectionTimer_Elapsed;
       // TODO: Find a way to handle when document is closed via middle mouse click
       // thus triggering the focus on a new project
@@ -61,11 +61,11 @@ namespace Speckle.ConnectorRevit.UI
     {
       var selectedObjects = GetSelectedObjects();
 
-      NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selectedObjects.Count});
-      NotifyUi(new UpdateSelectionEvent() {ObjectIds = selectedObjects});
+      NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selectedObjects.Count });
+      NotifyUi(new UpdateSelectionEvent() { ObjectIds = selectedObjects });
     }
 
-    public override string GetHostAppName() => Applications.Revit;
+    public override string GetHostAppName() => ConnectorRevitUtils.RevitAppName;
 
     public override string GetDocumentId() => GetDocHash(CurrentDoc.Document);
 
@@ -82,8 +82,8 @@ namespace Speckle.ConnectorRevit.UI
       var categories = new List<string>();
       var parameters = new List<string>();
       var views = new List<string>();
-      
-      if ( CurrentDoc != null )
+
+      if (CurrentDoc != null)
       {
         //selectionCount = CurrentDoc.Selection.GetElementIds().Count();
         categories = ConnectorRevitUtils.GetCategoryNames(CurrentDoc.Document);
@@ -115,23 +115,25 @@ namespace Speckle.ConnectorRevit.UI
 
     private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
     {
-      if ( GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView?.Document) ) return;
+      if (GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView?.Document)) return;
 
       var appEvent = new ApplicationEvent()
       {
-        Type = ApplicationEvent.EventType.ViewActivated, DynamicInfo = GetStreamsInFile()
+        Type = ApplicationEvent.EventType.ViewActivated,
+        DynamicInfo = GetStreamsInFile()
       };
       NotifyUi(appEvent);
     }
 
     private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
     {
-      var appEvent = new ApplicationEvent() {Type = ApplicationEvent.EventType.DocumentClosed};
+      var appEvent = new ApplicationEvent() { Type = ApplicationEvent.EventType.DocumentClosed };
       NotifyUi(appEvent);
     }
 
     private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
     {
+      
       //var streamStates = GetStreamsInFile();
       //var appEvent = new ApplicationEvent()
       //{
@@ -145,7 +147,8 @@ namespace Speckle.ConnectorRevit.UI
     {
       var appEvent = new ApplicationEvent()
       {
-        Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = GetStreamsInFile()
+        Type = ApplicationEvent.EventType.DocumentOpened,
+        DynamicInfo = GetStreamsInFile()
       };
 
       NotifyUi(appEvent);

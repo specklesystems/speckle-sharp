@@ -169,7 +169,7 @@ namespace Tests
 
       for (int i = 0; i < 30; i++)
       {
-        myObject.GetMemberSafe("items", new List<Base>()).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-fab/---" });
+        ((List<Base>)myObject["items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-fab/---" });
       }
 
       ConcurrentDictionary<string, int> progress = null;

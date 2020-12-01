@@ -1,20 +1,58 @@
 ﻿using Objects.Geometry;
-using System;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Duct : Element, IDuct
+  public class Duct : Base
   {
-    public double width { get; set; }
-    public double height { get; set; }
-    public double diameter { get; set; }
-    public double length { get; set; }
-    public double velocity { get; set; }
-
     public Line baseLine { get; set; }
+
+    [SchemaOptional]
+    public double width { get; set; }
+
+    [SchemaOptional]
+    public double height { get; set; }
+
+    [SchemaOptional]
+    public double diameter { get; set; }
+
+    [SchemaOptional]
+    public double length { get; set; }
+
+    [SchemaOptional]
+    public double velocity { get; set; }
 
     public Duct() { }
   }
+}
+
+namespace Objects.BuiltElements.Revit
+{
+
+  public class RevitDuct : Duct
+  {
+    [SchemaOptional]
+    public string type { get; set; }
+
+    [SchemaOptional]
+    public string systemName { get; set; }
+
+    [SchemaOptional]
+    public string systemType { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
+    [SchemaIgnore]
+    public Dictionary<string, object> typeParameters { get; set; }
+
+    [SchemaIgnore]
+    public string elementId { get; set; }
+
+    [SchemaOptional]
+    public Level level { get; set; }
+  }
+
 }

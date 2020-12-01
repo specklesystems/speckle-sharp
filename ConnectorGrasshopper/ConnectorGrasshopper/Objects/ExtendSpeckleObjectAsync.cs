@@ -59,7 +59,10 @@ namespace ConnectorGrasshopper.Objects
 
     public void SetConverterFromKit(string kitName)
     {
-      if (kitName == Kit.Name) return;
+      if (kitName == Kit.Name)
+      {
+        return;
+      }
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
@@ -108,9 +111,11 @@ namespace ConnectorGrasshopper.Objects
       var index = 0;
       keys.ForEach(key =>
       {
-        if (b.HasMember(key))
-          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
-            $"Object {b.id} - Property {key} has been overwritten");
+        if (b[key] != null)
+        {
+          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Object {b.id} - Property {key} has been overwritten");
+        }
+
         b[key] = Utilities.TryConvertItemToSpeckle(values[index++], Converter);
       });
     }
@@ -155,8 +160,9 @@ namespace ConnectorGrasshopper.Objects
             // Value is a list, convert and assign.
             var list = subTree.get_Branch(subPath) as List<IGH_Goo>;
             if (list?.Count > 0)
+            {
               @base[key] = list.Select(goo => Utilities.TryConvertItemToSpeckle(goo, Converter)).ToList();
-            ;
+            };
           }
           else
           {
@@ -173,7 +179,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override void SetData(IGH_DataAccess DA)
     {
-      DA.SetData(0, new GH_SpeckleBase {Value = @base});
+      DA.SetData(0, new GH_SpeckleBase { Value = @base });
     }
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
@@ -183,7 +189,11 @@ namespace ConnectorGrasshopper.Objects
       DA.GetDataList(1, keys);
       DA.GetDataTree(2, out valueTree);
       iteration = DA.Iteration;
-      if (ghBase == null) return;
+      if (ghBase == null)
+      {
+        return;
+      }
+
       @base = ghBase.Value.ShallowCopy();
     }
   }

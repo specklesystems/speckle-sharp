@@ -1,6 +1,7 @@
 ﻿using Objects;
 using Rhino;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace Objects.Converter.RhinoGh
         return _modelUnits;
       }
     }
-    private void SetUnits(IGeometry geom)
+    private void SetUnits(Base geom)
     {
       geom.units = ModelUnits;
     }

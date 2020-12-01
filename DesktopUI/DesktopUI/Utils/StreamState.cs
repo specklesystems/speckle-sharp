@@ -312,6 +312,9 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
+    [JsonProperty]
+    public List<ApplicationPlaceholderObject> ReceivedObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+
     private ProgressReport _progress = new ProgressReport();
     public ProgressReport Progress
     {
@@ -714,7 +717,6 @@ namespace Speckle.DesktopUI.Utils
         return;
       }
 
-
       var updatedStream = await Client.StreamGet(Stream.id);
       Branches = updatedStream.branches.items;
 
@@ -745,6 +747,13 @@ namespace Speckle.DesktopUI.Utils
 
       commit.message = info.message;
       NotifyOfPropertyChange(nameof(Stream));
+    }
+
+    public async void RefreshStream()
+    {
+      var updatedStream = await Client.StreamGet(Stream.id);
+      Stream = updatedStream;
+      Branches = updatedStream.branches.items;
     }
 
     #endregion

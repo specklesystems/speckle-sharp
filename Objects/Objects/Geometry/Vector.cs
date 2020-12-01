@@ -6,10 +6,11 @@ using System.Text;
 
 namespace Objects.Geometry
 {
-  public class Vector : Base, IGeometry
+  public class Vector : Base, IHasBoundingBox
   {
     public List<double> value { get; set; }
-    public string units { get; set; }
+    
+    public Box bbox { get; set; }
 
     public Vector() { }
 

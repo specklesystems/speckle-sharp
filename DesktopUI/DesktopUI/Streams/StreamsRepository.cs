@@ -64,6 +64,7 @@ namespace Speckle.DesktopUI.Streams
       {
         Log.CaptureException(e);
         _bindings.RaiseNotification($"Error: {e.Message}");
+        state.Errors.Add(e);
         return null;
       }
 
