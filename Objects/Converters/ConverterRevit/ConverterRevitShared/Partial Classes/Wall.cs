@@ -126,7 +126,11 @@ namespace Objects.Converter.Revit
 
         foreach (var obj in hostedElements)
         {
-          if (obj == null) continue;
+          if (obj == null)
+          {
+            continue;
+          }
+
           try
           {
             var res = ConvertToNative(obj);
@@ -198,39 +202,46 @@ namespace Objects.Converter.Revit
       var hostedElements = revitWall.FindInserts(true, true, true, true);
       var hostedElementsList = new List<Base>();
 
-      ContextObjects.RemoveAt(ContextObjects.FindIndex(obj => obj.applicationId == revitWall.UniqueId));
-
-      foreach (var elemId in hostedElements)
+      if (hostedElements != null)
       {
-        var element = Doc.GetElement(elemId);
-        var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
-
-        if (isSelectedInContextObjects == -1)
+        var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == revitWall.UniqueId);
+        if (elementIndex != -1)
         {
-          continue;
+          ContextObjects.RemoveAt(elementIndex);
         }
 
-        ContextObjects.RemoveAt(isSelectedInContextObjects);
-
-        try
+        foreach (var elemId in hostedElements)
         {
-          var obj = ConvertToSpeckle(element);
+          var element = Doc.GetElement(elemId);
+          var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
 
-          if (obj != null)
+          if (isSelectedInContextObjects == -1)
           {
-            hostedElementsList.Add(obj);
-            ConvertedObjectsList.Add(obj.applicationId);
+            continue;
+          }
+
+          ContextObjects.RemoveAt(isSelectedInContextObjects);
+
+          try
+          {
+            var obj = ConvertToSpeckle(element);
+
+            if (obj != null)
+            {
+              hostedElementsList.Add(obj);
+              ConvertedObjectsList.Add(obj.applicationId);
+            }
+          }
+          catch (Exception e)
+          {
+            ConversionErrors.Add(new Error { message = e.Message, details = e.StackTrace });
           }
         }
-        catch (Exception e)
-        {
-          ConversionErrors.Add(new Error { message = e.Message, details = e.StackTrace });
-        }
-      }
 
-      if (hostedElements.Count != 0)
-      {
-        speckleWall.hostedElements = hostedElementsList;
+        if (hostedElements.Count != 0)
+        {
+          speckleWall.hostedElements = hostedElementsList;
+        }
       }
 
       #endregion

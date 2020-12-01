@@ -21,11 +21,11 @@ namespace Objects.Converter.Revit
     private void AddCommonRevitProps(Base speckleElement, DB.Element revitElement)
     {
 
-      if (revitElement is DB.FamilyInstance)
-      {
-        speckleElement["family"] = (revitElement as DB.FamilyInstance)?.Symbol?.FamilyName;
-        speckleElement["type"] = (revitElement as DB.FamilyInstance)?.Symbol?.GetType().Name;
-      }
+      //if (revitElement is DB.FamilyInstance)
+      //{
+      //  speckleElement["family"] = (revitElement as DB.FamilyInstance)?.Symbol?.FamilyName;
+      //  speckleElement["type"] = (revitElement as DB.FamilyInstance)?.Symbol?.GetType().Name;
+      //}
 
       var parms = GetElementTypeParams(revitElement);
       if (parms != null)

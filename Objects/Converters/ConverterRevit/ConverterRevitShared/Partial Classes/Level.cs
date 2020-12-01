@@ -21,6 +21,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public Level LevelToNative(BuiltElements.Level speckleLevel)
     {
+      if (speckleLevel == null) return null;
       var docLevels = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
 
       var existingLevel = docLevels.FirstOrDefault(docLevel => docLevel.Name == speckleLevel.name);

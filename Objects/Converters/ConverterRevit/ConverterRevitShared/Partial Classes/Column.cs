@@ -52,10 +52,8 @@ namespace Objects.Converter.Revit
         topLevel = LevelToNative(LevelFromPoint(baseLine.GetEndPoint(1)));
       }
 
-
-      var docObj = GetExistingElementByApplicationId(speckleColumn.applicationId);
-
       //try update existing 
+      var docObj = GetExistingElementByApplicationId(speckleColumn.applicationId);
       if (docObj != null)
       {
         try
@@ -96,7 +94,7 @@ namespace Objects.Converter.Revit
       }
 
       //try with a point based column
-      if (speckleRevitColumn != null)
+      if (speckleRevitColumn != null && revitColumn == null)
       {
         var start = baseLine.GetEndPoint(0);
         var end = baseLine.GetEndPoint(1);

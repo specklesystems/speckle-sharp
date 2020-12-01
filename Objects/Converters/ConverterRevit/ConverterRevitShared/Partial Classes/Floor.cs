@@ -41,10 +41,10 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
       if (docObj != null)
       {
-        SubTransaction transTemp = new SubTransaction(Doc);
-        transTemp.Start(); 
-        ICollection<ElementId> ids = Doc.Delete(docObj.Id);
-        transTemp.RollBack();
+        //SubTransaction transTemp = new SubTransaction(Doc);
+        //transTemp.Start(); 
+        //ICollection<ElementId> ids = Doc.Delete(docObj.Id);
+        //transTemp.RollBack();
 
         Doc.Delete(docObj.Id);
       }
