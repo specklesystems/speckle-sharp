@@ -119,9 +119,10 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("Stream", "S",
+      var streamInputIndex = pManager.AddGenericParameter("Stream", "S",
         "The Speckle Stream you want to receive data from. You can also input the Stream ID or it's URL as text.",
         GH_ParamAccess.tree);
+      pManager[streamInputIndex].Optional = true;
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -242,8 +243,13 @@ namespace ConnectorGrasshopper.Ops
 
     public void ParseInput(IGH_DataAccess DA)
     {
-      DA.GetDataTree(0, out GH_Structure<IGH_Goo> DataInput);
-
+      var check = DA.GetDataTree(0, out GH_Structure<IGH_Goo> DataInput);
+      if (DataInput.IsEmpty)
+      {
+        StreamWrapper = null;
+        TriggerAutoSave();
+        return;
+      }
       var ghGoo = DataInput.get_DataItem(0);
       if (ghGoo == null)
       {
