@@ -238,7 +238,7 @@ namespace Objects.Converter.Revit
         try
         {
           var keyName = UnsanitizeKeyname(kvp.Key);
-
+          if (keyName.StartsWith("__")) continue;
           //TODO: try support params in foreign language
           var myParam = myElement.ParametersMap.get_Item(keyName);
           if (myParam == null)
