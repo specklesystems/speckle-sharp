@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Kits;
+﻿
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
@@ -24,19 +25,19 @@ namespace Objects
       {
         //the types in this assembly
         var types = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(Base)) && !t.IsAbstract);
-        try
-        {
-          //the types that are in a separate assembly, eg Objects.Revit.dll
-          var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-          var list = Directory.EnumerateFiles(basePath, "Objects.*.dll").Where(x => !x.Contains("Converter")); //TODO: replace with regex
+        //try
+        //{
+        //  //the types that are in a separate assembly, eg Objects.Revit.dll
+        //  var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        //  var list = Directory.EnumerateFiles(basePath, "Objects.*.dll").Where(x => !x.Contains("Converter")); //TODO: replace with regex
 
-          foreach (var path in list)
-          {
-            var assembly = Assembly.LoadFrom(path);
-            types = types.Concat(assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(Base)) && !t.IsAbstract));
-          }
-        }
-        catch { }
+        //  foreach (var path in list)
+        //  {
+        //    var assembly = Assembly.LoadFrom(path);
+        //    types = types.Concat(assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(Base)) && !t.IsAbstract));
+        //  }
+        //}
+        //catch { }
 
         return types;
       }
