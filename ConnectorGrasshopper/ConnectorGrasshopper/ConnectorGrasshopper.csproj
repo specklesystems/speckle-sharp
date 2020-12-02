@@ -77,6 +77,7 @@
     <Compile Include="Extras\SpeckleStreamParam.cs" />
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
+    <Compile Include="Loader.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObjectDialog.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObject.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
