@@ -179,6 +179,7 @@ namespace SpeckleRhino
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Rhino);
+      converter.SetContextDocument(Doc);
 
       var myStream = await state.Client.StreamGet(state.Stream.id);
       var commit = state.Commit;
@@ -220,10 +221,11 @@ namespace SpeckleRhino
       if (layerIndex == -1)
       {
         RaiseNotification($"Coould not create layer {layerName} to bake objects into.");
+        state.Errors.Add(new Exception($"Coould not create layer {layerName} to bake objects into."));
         return state;
       }
       currentRootLayerName = layerName;
-      HandleAndConvert(commitObject, converter, Doc.Layers.FindIndex(layerIndex));
+      HandleAndConvert(commitObject, converter, Doc.Layers.FindIndex(layerIndex), state);
 
       Doc.Views.Redraw();
 
@@ -234,7 +236,7 @@ namespace SpeckleRhino
 
     private string currentRootLayerName;
 
-    private void HandleAndConvert(object obj, ISpeckleConverter converter, Layer layer)
+    private void HandleAndConvert(object obj, ISpeckleConverter converter, Layer layer, StreamState state)
     {
       if (!layer.HasIndex)
       {
@@ -286,6 +288,9 @@ namespace SpeckleRhino
           if (converted != null)
           {
             Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = layer.Index });
+          } else
+          {
+            state.Errors.Add(new Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
           }
 
           return;
@@ -307,7 +312,7 @@ namespace SpeckleRhino
             }
 
             var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = layerName };
-            HandleAndConvert(value, converter, subLayer);
+            HandleAndConvert(value, converter, subLayer, state);
           }
 
           return;
@@ -319,7 +324,7 @@ namespace SpeckleRhino
 
         foreach (var listObj in list)
         {
-          HandleAndConvert(listObj, converter, layer);
+          HandleAndConvert(listObj, converter, layer, state);
         }
         return;
       }
@@ -328,7 +333,7 @@ namespace SpeckleRhino
       {
         foreach (DictionaryEntry kvp in dict)
         {
-          HandleAndConvert(kvp.Value, converter, layer);
+          HandleAndConvert(kvp.Value, converter, layer, state);
         }
         return;
       }
@@ -342,6 +347,7 @@ namespace SpeckleRhino
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Rhino);
+      converter.SetContextDocument(Doc);
       Exceptions.Clear();
 
       var commitObj = new Base();
@@ -373,14 +379,18 @@ namespace SpeckleRhino
         var obj = Doc.Objects.FindId(new Guid(placeholder.applicationId));
         if (obj == null)
         {
+          state.Errors.Add(new Exception($"Failed to find local object ${placeholder.applicationId}."));
           continue;
         }
 
         var converted = converter.ConvertToSpeckle(obj.Geometry);
         if (converted == null)
         {
+          state.Errors.Add(new Exception($"Failed to find convert object ${placeholder.applicationId} of type ${obj.Geometry.ObjectType.ToString()}."));
           continue;
         }
+
+        converted.applicationId = placeholder.applicationId;
 
         foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
         {
@@ -451,6 +461,7 @@ namespace SpeckleRhino
       catch(Exception e)
       {
         Globals.Notify($"Failed to create commit.\n{e.Message}");
+        state.Errors.Add(e);
       }
 
       return state;
