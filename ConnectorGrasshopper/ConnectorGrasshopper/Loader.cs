@@ -45,6 +45,9 @@ namespace ConnectorGrasshopper
       // Update the selected kit
       selectedKit = loadedKits.First(kit => clickedItem.Text.Trim() == kit.Name);
 
+      var key = "Speckle2:kit.default.name";
+      Grasshopper.Instances.Settings.SetValue(key, selectedKit.Name);
+      Grasshopper.Instances.Settings.WritePersistentSettings();
       // Update the check status of all
       foreach (var item in kitMenuItems)
       {
@@ -77,11 +80,6 @@ namespace ConnectorGrasshopper
       });
       kitMenuItems = kitItems;
       
-      // Select the first kit by default.
-      if (speckleMenu.DropDown.Items.Count > 0)
-        speckleMenu.DropDown.Items[0].PerformClick();
-
-
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
 
       speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo);
@@ -92,7 +90,12 @@ namespace ConnectorGrasshopper
         Grasshopper.Instances.DocumentEditor.Invoke(new Action(() =>
         {
           if (!MenuHasBeenAdded)
+          {
             mainMenu.Items.Add(speckleMenu);
+            // Select the first kit by default.
+            if (speckleMenu.DropDown.Items.Count > 0)
+              HandleKitSelectedEvent(kitMenuItems.FirstOrDefault(k => k.Text.Trim() == "Objects"), null);
+          }
         }));
         MenuHasBeenAdded = true;
       }
