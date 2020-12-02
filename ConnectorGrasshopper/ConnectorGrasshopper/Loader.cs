@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Timers;
@@ -13,65 +15,90 @@ namespace ConnectorGrasshopper
 {
   public class Loader : GH_AssemblyPriority
   {
-    System.Timers.Timer loadTimer;
-    static bool MenuHasBeenAdded = false;
+    public bool MenuHasBeenAdded = false;
 
-    public Loader( ) { }
+    public IEnumerable<ISpeckleKit> loadedKits;
+    public ISpeckleKit selectedKit;
+    private ToolStripMenuItem speckleMenu;
+    private IEnumerable<ToolStripItem> kitMenuItems;
 
-    public override GH_LoadingInstruction PriorityLoad( )
+    public Loader()
+    {
+    }
+
+    public override GH_LoadingInstruction PriorityLoad()
     {
       Setup.Init(Applications.Grasshopper);
       Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
       return GH_LoadingInstruction.Proceed;
-      
     }
 
     private void CanvasCreatedEvent(GH_DocumentServer server, GH_Document doc)
     {
-      Console.WriteLine("CAnvas created");
-      AddSpeckleMenu(null,null);
+      AddSpeckleMenu(null, null);
     }
-    
-    private void AddSpeckleMenu( object sender, ElapsedEventArgs e )
+
+    private void HandleKitSelectedEvent(object sender, EventArgs args)
     {
-      if ( Grasshopper.Instances.DocumentEditor == null ) return;
-      if ( MenuHasBeenAdded )
+      var clickedItem = (ToolStripMenuItem) sender;
+
+      // Update the selected kit
+      selectedKit = loadedKits.First(kit => clickedItem.Text.Trim() == kit.Name);
+
+      // Update the check status of all
+      foreach (var item in kitMenuItems)
       {
-        return;
+        if(item is ToolStripMenuItem menuItem)
+          menuItem.CheckState =
+            clickedItem.Text.Trim() == selectedKit.Name
+              ? CheckState.Checked
+              : CheckState.Unchecked;
       }
+    }
 
-      var speckleMenu = new ToolStripMenuItem( "Speckle 2" );
+    private void AddSpeckleMenu(object sender, ElapsedEventArgs e)
+    {
+      if (Grasshopper.Instances.DocumentEditor == null || MenuHasBeenAdded) return;
 
-      var kitHeader = speckleMenu.DropDown.Items.Add( "Select the converter you want to use.");
+      speckleMenu = new ToolStripMenuItem("Speckle 2");
+
+      var kitHeader = speckleMenu.DropDown.Items.Add("Select the converter you want to use.");
       kitHeader.Enabled = false;
 
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+      loadedKits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
       
-      kits.ToList().ForEach(kit =>
+      var kitItems = new List<ToolStripItem>();
+      loadedKits.ToList().ForEach(kit =>
       {
-        speckleMenu.DropDown.Items.Add("  " + kit.Name);
-        speckleMenu.CheckState = CheckState.Checked;
-        speckleMenu.CheckOnClick = true;
+        var item = speckleMenu.DropDown.Items.Add("  " + kit.Name);
         
+        item.Click += HandleKitSelectedEvent;
+        kitItems.Add(item);
       });
+      kitMenuItems = kitItems;
       
-      speckleMenu.DropDown.Items.Add( new ToolStripSeparator() );
+      // Select the first kit by default.
+      if (speckleMenu.DropDown.Items.Count > 0)
+        speckleMenu.DropDown.Items[0].PerformClick();
 
-      speckleMenu.DropDown.Items.Add( "Open Speckle Manager", Properties.Resources.speckle_logo);
+
+      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
+
+      speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo);
 
       try
       {
         var mainMenu = Grasshopper.Instances.DocumentEditor.MainMenuStrip;
-        Grasshopper.Instances.DocumentEditor.Invoke( new Action( ( ) =>
+        Grasshopper.Instances.DocumentEditor.Invoke(new Action(() =>
         {
-          if(!MenuHasBeenAdded)
-            mainMenu.Items.Add( speckleMenu );
-        } ) );
+          if (!MenuHasBeenAdded)
+            mainMenu.Items.Add(speckleMenu);
+        }));
         MenuHasBeenAdded = true;
       }
-      catch ( Exception err )
+      catch (Exception err)
       {
-        Debug.WriteLine( err.Message );
+        Debug.WriteLine(err.Message);
       }
     }
   }
