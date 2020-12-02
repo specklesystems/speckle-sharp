@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -32,7 +33,21 @@ namespace Speckle.DesktopUI.Streams
     }
 
     private readonly StreamsRepository _streamsRepo;
+
     private readonly AccountsRepository _acctRepo;
+
+    public override Account AccountToSendFrom
+    {
+      get => _accountToSendFrom;
+      set
+      {
+        SetAndNotify(ref _accountToSendFrom, value);
+
+        _latestStreams = null;
+        StreamSearchResults?.Clear();
+        SearchForStreams();
+      }
+    }
 
     public ISnackbarMessageQueue Notifications
     {
@@ -113,6 +128,8 @@ namespace Speckle.DesktopUI.Streams
       }
     }
 
+
+
     private BindableCollection<Stream> _streamSearchResults;
 
     public BindableCollection<Stream> StreamSearchResults
@@ -129,12 +146,37 @@ namespace Speckle.DesktopUI.Streams
       get => StreamSearchResults != null && StreamSearchResults.Count > 0 ? true : false;
     }
 
+    private List<Stream> _latestStreams;
+
+    private async Task<List<Stream>> GetLatestStreams()
+    {
+      if (_latestStreams == null)
+      {
+        var client = new Client(AccountToSendFrom);
+        _latestStreams = await client.StreamsGet(3);
+      }
+      return _latestStreams;
+    }
+
     private async void SearchForStreams()
     {
-      if (StreamQuery == null || StreamQuery.Length <= 2)
+      //Show latest 3 streams if query field is empty
+      if (string.IsNullOrEmpty(StreamQuery))
       {
+        try
+        {
+          StreamSearchResults = new BindableCollection<Stream>(await GetLatestStreams());
+        }
+        catch
+        {
+          StreamSearchResults?.Clear();
+        }
         return;
       }
+
+
+      if (StreamQuery.Length <= 2)
+        return;
 
       try
       {
@@ -176,7 +218,7 @@ namespace Speckle.DesktopUI.Streams
         }
 
         StreamToCreate = await _streamsRepo.GetStream(streamId, AccountToSendFrom);
-        
+
         StreamState = new StreamState(client, StreamToCreate);
         Bindings.AddNewStream(StreamState);
 
