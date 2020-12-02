@@ -88,6 +88,7 @@ namespace Speckle.DesktopUI.Streams
       catch ( Exception e )
       {
         Log.CaptureException(e);
+        state.Errors.Add(e);
         _bindings.RaiseNotification($"Error: {e.Message}");
         return null;
       }
@@ -106,6 +107,7 @@ namespace Speckle.DesktopUI.Streams
       catch ( Exception e )
       {
         Log.CaptureException(e);
+        state.Errors.Add(e);
         _bindings.RaiseNotification($"Error: {e}");
         return false;
       }
