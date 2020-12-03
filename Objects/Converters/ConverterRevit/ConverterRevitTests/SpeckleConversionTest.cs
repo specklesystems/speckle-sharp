@@ -143,18 +143,16 @@ namespace ConverterRevitTests
       xru.RunInTransaction(() =>
       {
 
-        revitEls = spkElems.Select(x => kit.ConvertToNative(x)).ToList();
+        //revitEls = spkElems.Select(x => kit.ConvertToNative(x)).ToList();
         foreach (var el in spkElems)
         {
           var res = kit.ConvertToNative(el);
-          if (res is ApplicationPlaceholderObject apl) resEls.Add(res);
-          else if (res is List<ApplicationPlaceholderObject> apls)
+          if (res is List<ApplicationPlaceholderObject> apls)
           {
-            foreach (var aplobj in apls) resEls.Add(aplobj);
+            resEls.AddRange(apls);
           }
           else resEls.Add(el);
         }
-
       }, fixture.NewDoc).Wait();
 
       Assert.Empty(kit.ConversionErrors);
@@ -162,9 +160,7 @@ namespace ConverterRevitTests
       for (var i = 0; i < revitEls.Count; i++)
       {
         var sourceElem = (T)(object)fixture.RevitElements[i];
-        T destElement;
-        if (resEls[i] is ApplicationPlaceholderObject apl) destElement = (T)apl.NativeObject;
-        else destElement = (T)resEls[i];
+        var destElement = (T)((ApplicationPlaceholderObject)resEls[i]).NativeObject;
 
         assert(sourceElem, (T)destElement);
       }
