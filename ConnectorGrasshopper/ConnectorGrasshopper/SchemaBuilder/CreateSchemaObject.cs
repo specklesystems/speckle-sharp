@@ -23,7 +23,7 @@ namespace ConnectorGrasshopper
 {
   public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterComponent
   {
-    private Type SelectedType;
+    private ConstructorInfo SelectedConstructor;
     private GH_Document _document;
 
     public override Guid ComponentGuid => new Guid("4dc285e3-810d-47db-bfb5-cd96fe459fdd");
@@ -59,7 +59,7 @@ namespace ConnectorGrasshopper
 
     public override void AddedToDocument(GH_Document document)
     {
-      if (SelectedType != null)
+      if (SelectedConstructor != null)
       {
         base.AddedToDocument(document);
         if (Grasshopper.Instances.ActiveCanvas.Document != null)
@@ -92,7 +92,7 @@ namespace ConnectorGrasshopper
       if (dialog.HasResult)
       {
         base.AddedToDocument(document);
-        SwitchToType(dialog.model.SelectedItem.Tag as Type);
+        SwitchConstructor(dialog.model.SelectedItem.Tag as ConstructorInfo);
       }
       else
       {
@@ -100,25 +100,22 @@ namespace ConnectorGrasshopper
       }
     }
 
-    public void SwitchToType(Type type)
+    public void SwitchConstructor(ConstructorInfo constructor)
     {
       int k = 0;
-      var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute<SchemaIgnoreAttribute>() == null && x.Name != "Item");
-
-      //put optional props at the bottom
-      var optionalProps = props.Where(x => x.GetCustomAttribute<SchemaOptionalAttribute>() != null).OrderBy(x => x.PropertyType.ToString()).ThenBy(x => x.Name);
-      var nonOptionalProps = props.Where(x => x.GetCustomAttribute<SchemaOptionalAttribute>() == null).OrderBy(x => x.PropertyType.ToString()).ThenBy(x => x.Name);
-      props = nonOptionalProps;
-      props = props.Concat(optionalProps);
+      var props = constructor.GetParameters();
 
       foreach (var p in props)
       {
         RegisterPropertyAsInputParameter(p, k++);
       }
 
-      Message = type.Name;
-      SelectedType = type;
-      Params.Output[0].NickName = type.Name;
+      this.Name = constructor.DeclaringType.Name + " " + constructor.GetCustomAttribute<SchemaInfo>().Name;
+      this.Description = constructor.GetCustomAttribute<SchemaInfo>().Description;
+      
+      Message = constructor.DeclaringType.FullName.Split('.')[0];
+      SelectedConstructor = constructor;
+      Params.Output[0].NickName = constructor.DeclaringType.Name;
       Params.OnParametersChanged();
       ExpireSolution(true);
     }
@@ -126,17 +123,24 @@ namespace ConnectorGrasshopper
     /// <summary>
     /// Adds a property to the component's inputs.
     /// </summary>
-    /// <param name="prop"></param>
-    private void RegisterPropertyAsInputParameter(PropertyInfo prop, int index)
+    /// <param name="param"></param>
+    private void RegisterPropertyAsInputParameter(ParameterInfo param, int index)
     {
       // get property name and value
-      Type propType = prop.PropertyType;
+      Type propType = param.ParameterType;
 
-      string propName = prop.Name;
-      object propValue = prop;
+      string propName = param.Name;
+      object propValue = param;
 
-      var inputDesc = prop.GetCustomAttribute<SchemaDescriptionAttribute>();
+      var inputDesc = param.GetCustomAttribute<SchemaParamInfo>();
       var d = inputDesc != null ? inputDesc.Description : "";
+      if (param.IsOptional)
+      {
+        if (!string.IsNullOrEmpty(d)) 
+          d += ", ";
+        var def = param.DefaultValue == null ? "null" : param.DefaultValue.ToString();
+        d += "default = " + def;
+      }
 
       // Create new param based on property name
       Param_GenericObject newInputParam = new Param_GenericObject();
@@ -145,7 +149,7 @@ namespace ConnectorGrasshopper
       newInputParam.MutableNickName = false;
 
       newInputParam.Description = $"({propType.Name}) {d}";
-      newInputParam.Optional = prop.GetCustomAttribute<SchemaOptionalAttribute>() != null;
+      newInputParam.Optional = param.IsOptional;
 
       // check if input needs to be a list or item access
       bool isCollection = typeof(System.Collections.IEnumerable).IsAssignableFrom(propType) && propType != typeof(string) && !propType.Name.ToLower().Contains("dictionary");
@@ -198,7 +202,7 @@ namespace ConnectorGrasshopper
     {
       try
       {
-        SelectedType = ByteArrayToObject<Type>(reader.GetByteArray("SelectedType"));
+        SelectedConstructor = ByteArrayToObject<ConstructorInfo>(reader.GetByteArray("SelectedConstructor"));
       }
       catch { }
 
@@ -212,9 +216,9 @@ namespace ConnectorGrasshopper
 
     public override bool Write(GH_IWriter writer)
     {
-      if (SelectedType != null)
+      if (SelectedConstructor != null)
       {
-        writer.SetByteArray("SelectedType", ObjectToByteArray(SelectedType));
+        writer.SetByteArray("SelectedConstructor", ObjectToByteArray(SelectedConstructor));
       }
 
       writer.SetString("seed", Seed);
@@ -255,33 +259,38 @@ namespace ConnectorGrasshopper
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      if (SelectedType is null)
+      if (SelectedConstructor is null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No schema has been selected.");
         return;
       }
 
-      var outputObject = Activator.CreateInstance(SelectedType);
+
+      List<object> cParamsValues = new List<object>();
+      var cParams = SelectedConstructor.GetParameters();
 
       for (int i = 0; i < Params.Input.Count; i++)
       {
+        var cParam = cParams[i];
         var param = Params.Input[i];
         if (param.Access == GH_ParamAccess.list)
         {
           var inputValues = new List<object>();
           DA.GetDataList(i, inputValues);
           inputValues = inputValues.Select(x => ExtractRealInputValue(x)).ToList();
-          SetObjectListProp(param, outputObject, inputValues);
+          cParamsValues.Add(GetObjectListProp(param, inputValues, cParam.ParameterType));
         }
         else if (param.Access == GH_ParamAccess.item)
         {
           object inputValue = null;
           DA.GetData(i, ref inputValue);
-          SetObjectProp(param, outputObject, ExtractRealInputValue(inputValue));
+          cParamsValues.Add(GetObjectProp(param, ExtractRealInputValue(inputValue), cParam.ParameterType));
         }
       }
 
-      ((Base)outputObject).applicationId = $"{Seed}-{SelectedType.Name}-{DA.Iteration}";
+      var outputObject = SelectedConstructor.Invoke(cParamsValues.ToArray());
+
+      ((Base)outputObject).applicationId = $"{Seed}-{SelectedConstructor.Name}-{DA.Iteration}";
       ((Base)outputObject).units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
 
       DA.SetData(0, new GH_SpeckleBase() { Value = outputObject as Base });
@@ -301,26 +310,24 @@ namespace ConnectorGrasshopper
     }
 
     //list input
-    private void SetObjectListProp(IGH_Param param, object @object, List<object> values)
+    private object GetObjectListProp(IGH_Param param, List<object> values, Type t)
     {
-      if (!values.Any()) return;
+      if (!values.Any()) return null;
 
-      PropertyInfo prop = @object.GetType().GetProperty(param.Name);
-      var list = (IList)Activator.CreateInstance(prop.PropertyType);
+      var list = (IList)Activator.CreateInstance(t);
       var listElementType = list.GetType().GetGenericArguments().Single();
       foreach (var value in values)
       {
         list.Add(ConvertType(listElementType, value, param.Name));
       }
 
-      prop.SetValue(@object, list, null);
+      return list;
     }
 
-    private void SetObjectProp(IGH_Param param, object @object, object value)
+    private object GetObjectProp(IGH_Param param, object value, Type t)
     {
-      PropertyInfo prop = @object.GetType().GetProperty(param.Name);
-      var convertedValue = ConvertType(prop.PropertyType, value, param.Name);
-      prop.SetValue(@object, convertedValue);
+      var convertedValue = ConvertType(t, value, param.Name);
+      return convertedValue;
     }
 
     private object ConvertType(Type type, object value, string name)
