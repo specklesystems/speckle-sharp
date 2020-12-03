@@ -39,7 +39,7 @@ namespace Speckle.Core.Transports
     private bool IS_WRITING = false;
     private int MAX_TRANSACTION_SIZE = 1000;
 
-    public SQLiteTransport(string basePath = null, string applicationName = "Speckle", string scope = "Objects")
+    public SQLiteTransport(string basePath = null, string applicationName = "Speckle", string scope = "Data")
     {
       Log.AddBreadcrumb("New SqlLite Transport");
 
@@ -50,7 +50,7 @@ namespace Speckle.Core.Transports
         applicationName = "Speckle";
 
       if (scope == null)
-        scope = "Objects";
+        scope = "Data";
 
       Directory.CreateDirectory(Path.Combine(basePath, applicationName)); //ensure dir is there
 
