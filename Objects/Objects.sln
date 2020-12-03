@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamo", "Converte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRevitTests", "Converters\ConverterRevit\ConverterRevitTests\ConverterRevitTests.csproj", "{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects.Revit", "Objects.Revit\Objects.Revit.csproj", "{51162368-2D07-4AEB-AB2D-984B86A4506C}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterRevit", "ConverterRevit", "{1987848E-D753-4791-B89E-F74EDF136CB3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2019", "Converters\ConverterRevit\ConverterRevit2019\ConverterRevit2019.csproj", "{0BCB32CF-A3CF-4A6A-A9F8-DFE5D85D608C}"
@@ -61,10 +59,6 @@ Global
 		{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{51162368-2D07-4AEB-AB2D-984B86A4506C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{51162368-2D07-4AEB-AB2D-984B86A4506C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{51162368-2D07-4AEB-AB2D-984B86A4506C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{51162368-2D07-4AEB-AB2D-984B86A4506C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0BCB32CF-A3CF-4A6A-A9F8-DFE5D85D608C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0BCB32CF-A3CF-4A6A-A9F8-DFE5D85D608C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BCB32CF-A3CF-4A6A-A9F8-DFE5D85D608C}.Release|Any CPU.ActiveCfg = Release|Any CPU
