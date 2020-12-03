@@ -8,23 +8,24 @@ namespace Objects.BuiltElements
   public class Duct : Base
   {
     public Line baseLine { get; set; }
-
-    [SchemaOptional]
     public double width { get; set; }
-
-    [SchemaOptional]
     public double height { get; set; }
-
-    [SchemaOptional]
     public double diameter { get; set; }
 
-    [SchemaOptional]
     public double length { get; set; }
-
-    [SchemaOptional]
     public double velocity { get; set; }
 
     public Duct() { }
+
+    [SchemaInfo("Duct", "Creates a Speckle duct")]
+    public Duct(Line baseLine, double width, double height, double diameter, double velocity = 0)
+    {
+      this.baseLine = baseLine;
+      this.width = width;
+      this.height = height;
+      this.diameter = diameter;
+      this.velocity = velocity;
+    }
   }
 }
 
@@ -33,26 +34,32 @@ namespace Objects.BuiltElements.Revit
 
   public class RevitDuct : Duct
   {
-    [SchemaOptional]
     public string type { get; set; }
-
-    [SchemaOptional]
     public string systemName { get; set; }
-
-    [SchemaOptional]
     public string systemType { get; set; }
-
-    [SchemaOptional]
+    public Level level { get; set; }
     public Dictionary<string, object> parameters { get; set; }
-
-    [SchemaIgnore]
     public Dictionary<string, object> typeParameters { get; set; }
-
-    [SchemaIgnore]
     public string elementId { get; set; }
 
-    [SchemaOptional]
-    public Level level { get; set; }
+    public RevitDuct()
+    {
+    }
+
+    [SchemaInfo("RevitDuct", "Creates a Revit duct")]
+    public RevitDuct(Line baseLine, string type, string systemName, string systemType, Level level, double width, double height, double diameter, double velocity = 0, Dictionary<string, object> parameters = null)
+    {
+      this.baseLine = baseLine;
+      this.type = type;
+      this.width = width;
+      this.height = height;
+      this.diameter = diameter;
+      this.velocity = velocity;
+      this.systemName = systemName;
+      this.systemType = systemType;
+      this.parameters = parameters;
+      this.level = level;
+    }
   }
 
 }

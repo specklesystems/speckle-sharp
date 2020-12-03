@@ -56,7 +56,7 @@ namespace ConnectorGrasshopper
       //list.SelectedValueBinding.BindDataContext((CSOViewModel m) => m.SelectedType, DualBindingMode.OneWayToSource);
 
 
-      tree = new TreeGridView { Size = new Size(200, 200) };
+      tree = new TreeGridView { Size = new Size(300, 200) };
       tree.Columns.Add(new GridColumn { DataCell = new TextBoxCell(0) });
       tree.DataStore = GenerateTree();
       tree.BindDataContext(x => x.SelectedItem, (CSOViewModel m) => m.SelectedItem, DualBindingMode.OneWayToSource);
@@ -64,7 +64,7 @@ namespace ConnectorGrasshopper
       description = new TextArea
       {
         ReadOnly = true,
-        Size = new Size(200, 200)
+        Size = new Size(400, 200)
       };
 
       description.TextBinding.BindDataContext(Binding.Property((CSOViewModel m) => m.SelectedItem).
@@ -134,7 +134,14 @@ namespace ConnectorGrasshopper
       {
         var constructors = GetValidConstr(t)
           .ToDictionary(x => x.GetCustomAttribute<SchemaInfo>().Name, x => (object)x);
-        ((Dictionary<string, object>)tree[key])[t.Name] = constructors;
+        if (constructors.Values.Count > 1)
+          ((Dictionary<string, object>)tree[key])[t.Name] = constructors;
+        else
+        {
+          //simplify structure if only 1 constructor
+          ((Dictionary<string, object>)tree[key])[t.Name] = constructors.Values.First();
+        }
+
       }
     }
 
@@ -178,11 +185,9 @@ namespace ConnectorGrasshopper
 
     private List<Type> ListAvailableTypes()
     {
-      // exclude types that should be ignored
-      // and types that don't have any constructors with a SchemaInfo attribute
+      // exclude types that don't have any constructors with a SchemaInfo attribute
       return KitManager.Types.Where(
-        x => x.GetCustomAttribute<SchemaIgnoreAttribute>() == null &&
-        GetValidConstr(x).Any()).ToList();
+        x => GetValidConstr(x).Any()).OrderBy(x=>x.Name).ToList();
     }
 
     //TODO: expand items?
@@ -225,7 +230,7 @@ namespace ConnectorGrasshopper
           if (p.IsOptional)
           {
             var def = p.DefaultValue == null ? "null" : p.DefaultValue.ToString();
-            d += ", default = " + def;
+            description += ", default = " + def;
           }
         }
 

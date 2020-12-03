@@ -110,9 +110,9 @@ namespace ConnectorGrasshopper
         RegisterPropertyAsInputParameter(p, k++);
       }
 
-      this.Name = constructor.DeclaringType.Name + " " + constructor.GetCustomAttribute<SchemaInfo>().Name;
+      this.Name = constructor.GetCustomAttribute<SchemaInfo>().Name;
       this.Description = constructor.GetCustomAttribute<SchemaInfo>().Description;
-      
+
       Message = constructor.DeclaringType.FullName.Split('.')[0];
       SelectedConstructor = constructor;
       Params.Output[0].NickName = constructor.DeclaringType.Name;
@@ -136,7 +136,7 @@ namespace ConnectorGrasshopper
       var d = inputDesc != null ? inputDesc.Description : "";
       if (param.IsOptional)
       {
-        if (!string.IsNullOrEmpty(d)) 
+        if (!string.IsNullOrEmpty(d))
           d += ", ";
         var def = param.DefaultValue == null ? "null" : param.DefaultValue.ToString();
         d += "default = " + def;

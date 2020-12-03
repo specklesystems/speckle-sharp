@@ -1,31 +1,37 @@
 ﻿using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Objects.BuiltElements.Revit
 {
   public class AdaptiveComponent : Base
   {
     public string type { get; set; }
-
-    [SchemaIgnore]
     public string family { get; set; }
 
     public List<Point> basePoints { get; set; }
 
-    [SchemaOptional]
     public bool flipped { get; set; }
 
-    [SchemaIgnore]
     public string elementId { get; set; }
 
-    [SchemaOptional]
     public Dictionary<string, object> parameters { get; set; }
 
-    [SchemaIgnore]
     public Dictionary<string, object> typeParameters { get; set; }
+
+    public AdaptiveComponent()
+    {
+    }
+
+    [SchemaInfo("AdaptiveComponent", "Creates a Revit adaptive component by points")]
+    public AdaptiveComponent(string type, string family, List<Point> basePoints, bool flipped = false, Dictionary<string, object> parameters = null)
+    {
+      this.type = type;
+      this.family = family;
+      this.basePoints = basePoints;
+      this.flipped = flipped;
+      this.parameters = parameters;
+    }
   }
 }

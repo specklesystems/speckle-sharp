@@ -8,9 +8,17 @@ namespace Objects.BuiltElements
   {
     public double height { get; set; }
 
+
     public ICurve baseLine { get; set; }
 
     public Wall() { }
+
+    [SchemaInfo("Wall", "Creates a Speckle wall")]
+    public Wall(double height, ICurve baseLine)
+    {
+      this.height = height;
+      this.baseLine = baseLine;
+    }
   }
 }
 
@@ -19,34 +27,14 @@ namespace Objects.BuiltElements.Revit
   public class RevitWall : Wall
   {
     public string type { get; set; }
-
-    [SchemaOptional]
     public double baseOffset { get; set; }
-
-    [SchemaOptional]
     public double topOffset { get; set; }
-
-    [SchemaOptional]
     public bool flipped { get; set; }
-
-    [SchemaOptional]
     public bool structural { get; set; }
-
-    [SchemaOptional]
     public Level level { get; set; }
-
-    [SchemaOptional]
-    [SchemaDescription("Setting the top level constraint on a wall will override its height parameter.")]
     public Level topLevel { get; set; }
-
-    [SchemaDescription("Set in here any nested elements that this level might have.")]
-    [SchemaOptional]
     public List<Base> hostedElements { get; set; }
-
-    [SchemaOptional]
     public Dictionary<string, object> parameters { get; set; }
-
-    [SchemaIgnore]
     public string elementId { get; set; }
 
     public RevitWall()
@@ -54,10 +42,12 @@ namespace Objects.BuiltElements.Revit
 
     }
 
-    [SchemaInfo("By curve and levels", "Creates a Revit wall with a top and base level.")]
+    [SchemaInfo("Wall by curve and levels", "Creates a Revit wall with a top and base level.")]
     public RevitWall(
       [SchemaParamInfo("The Revit wall type, it must exist in a Revit document when receiving the wall, otherwise a default will be used.")] string type,
-      ICurve baseLine, Level level, Level topLevel, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false, List<Base> hostedElements = null, Dictionary<string, object> parameters = null)
+      ICurve baseLine, Level level, Level topLevel, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
+      [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> hostedElements = null,
+      Dictionary<string, object> parameters = null)
     {
       this.type = type;
       this.baseLine = baseLine;
@@ -71,10 +61,12 @@ namespace Objects.BuiltElements.Revit
       this.parameters = parameters;
     }
 
-    [SchemaInfo("By curve and height", "Creates an unconnected Revit wall.")]
+    [SchemaInfo("Wall by curve and height", "Creates an unconnected Revit wall.")]
     public RevitWall(
       [SchemaParamInfo("The Revit wall type, it must exist in a Revit document when receiving the wall, otherwise a default will be used.")] string type,
-      ICurve baseLine, Level level, double height, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false, List<Base> hostedElements = null, Dictionary<string, object> parameters = null)
+      ICurve baseLine, Level level, double height, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
+      [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> hostedElements = null,
+      Dictionary<string, object> parameters = null)
     {
       this.type = type;
       this.baseLine = baseLine;
