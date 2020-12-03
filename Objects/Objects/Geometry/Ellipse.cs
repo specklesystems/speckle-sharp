@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Objects.Geometry
 {
-  public class Ellipse : Base, ICurve
+  public class Ellipse : Base, ICurve, IHasArea
   {
     /// <summary>
     /// Gets or sets the first radius of the <see cref="Ellipse"/>. This is usually the major radius.
@@ -35,7 +35,7 @@ namespace Objects.Geometry
     public Interval trimDomain { get; set; }
 
     /// <inheritdoc />
-    public Box boundingBox { get; set; }
+    public Box bbox { get; set; }
 
     /// <inheritdoc />
     public Point center { get; set; }
@@ -45,9 +45,6 @@ namespace Objects.Geometry
 
     /// <inheritdoc />
     public double length { get; set; }
-
-    /// <inheritdoc />
-    public string units { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ellipse"/> class.

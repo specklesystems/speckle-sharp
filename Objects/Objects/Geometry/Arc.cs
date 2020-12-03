@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Objects.Geometry
 {
-  public class Arc : Base, ICurve
+  public class Arc : Base, IHasBoundingBox, ICurve, IHasArea
   {
     public double? radius { get; set; }
 
@@ -27,11 +27,11 @@ namespace Objects.Geometry
 
     public Point endPoint { get; set; }
 
-    public Box boundingBox { get; set; }
-    public Point center { get; set; }
+    public Box bbox { get; set; }
+
     public double area { get; set; }
+
     public double length { get; set; }
-    public string units { get; set; }
 
     public Arc() { }
 

@@ -1,6 +1,5 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.Converter.Revit;
-using Objects.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -9,8 +8,7 @@ using Xunit;
 using xUnitRevitUtils;
 
 using DB = Autodesk.Revit.DB;
-using DirectShape = Objects.Revit.DirectShape;
-using Element = Objects.BuiltElements.Element;
+using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 
 namespace ConverterRevitTests
 {
@@ -26,7 +24,7 @@ namespace ConverterRevitTests
       foreach (var elem in fixture.RevitElements)
       {
         var spkElem = kit.ConvertToSpeckle(elem);
-        if (spkElem is RevitElement re)
+        if (spkElem is Base re)
           AssertValidSpeckleElement(elem, re);
       }
       Assert.Empty(kit.ConversionErrors);
@@ -53,11 +51,23 @@ namespace ConverterRevitTests
 
       kit = new ConverterRevit();
       kit.SetContextDocument(fixture.NewDoc);
-      var revitEls = new List<T>();
+      var revitEls = new List<object>();
+      var resEls = new List<object>();
 
       xru.RunInTransaction(() =>
       {
-        revitEls = spkElems.Select(x => (T)kit.ConvertToNative(x)).ToList();
+        revitEls = spkElems.Select(x => kit.ConvertToNative(x)).ToList();
+        foreach(var el in spkElems)
+        {
+          var res = kit.ConvertToNative(el);
+          if (res is ApplicationPlaceholderObject apl) resEls.Add(res);
+          else if (res is List<ApplicationPlaceholderObject> apls)
+          {
+            foreach (var aplobj in apls) resEls.Add(aplobj);
+          }
+          else resEls.Add(el);
+        }
+
       }, fixture.NewDoc).Wait();
 
       Assert.Empty(kit.ConversionErrors);
@@ -65,8 +75,11 @@ namespace ConverterRevitTests
       for (var i = 0; i < revitEls.Count; i++)
       {
         var sourceElem = (T)(object)fixture.RevitElements[i];
-        var destElem = revitEls[i];
-        assert(sourceElem, destElem);
+        T destElement;
+        if (resEls[i] is ApplicationPlaceholderObject apl) destElement = (T)apl.NativeObject;
+        else destElement = (T)resEls[i];
+
+        assert(sourceElem, (T)destElement);
       }
     }
 
@@ -78,41 +91,54 @@ namespace ConverterRevitTests
 
       kit = new ConverterRevit();
       kit.SetContextDocument(fixture.NewDoc);
-      var revitEls = new List<T>();
+      var revitEls = new List<object>();
+      var resEls = new List<object>();
 
       xru.RunInTransaction(() =>
       {
-        revitEls = spkElems.Select(x => (T)kit.ConvertToNative(x)).ToList();
+        
+        revitEls = spkElems.Select(x => kit.ConvertToNative(x)).ToList();
+        foreach (var el in spkElems)
+        {
+          var res = kit.ConvertToNative(el);
+          if (res is ApplicationPlaceholderObject apl) resEls.Add(res);
+          else if (res is List<ApplicationPlaceholderObject> apls)
+          {
+            foreach (var aplobj in apls) resEls.Add(aplobj);
+          }
+          else resEls.Add(el);
+        }
+
       }, fixture.NewDoc).Wait();
 
       Assert.Empty(kit.ConversionErrors);
 
       for (var i = 0; i < revitEls.Count; i++)
       {
-        var sourceElem = (T)(object)fixture.Selection[i];
-        var destElem = revitEls[i];
-        assert(sourceElem, destElem);
+        var sourceElem = (T)(object)fixture.RevitElements[i];
+        T destElement;
+        if (resEls[i] is ApplicationPlaceholderObject apl) destElement = (T)apl.NativeObject;
+        else destElement = (T)resEls[i];
+
+        assert(sourceElem, (T)destElement);
       }
     }
 
-    internal void AssertValidSpeckleElement(DB.Element elem, RevitElement spkElem)
+    internal void AssertValidSpeckleElement(DB.Element elem, Base spkElem)
     {
       Assert.NotNull(elem);
       Assert.NotNull(spkElem);
-      Assert.NotNull(spkElem.parameters);
-      Assert.NotNull(spkElem.elementId);
-      Assert.NotNull(spkElem.type);
+      Assert.NotNull(spkElem["parameters"]);
+      Assert.NotNull(spkElem["elementId"]);
 
 
       if (!(elem is DB.Architecture.Room || elem is DB.Mechanical.Duct))
-        Assert.Equal(elem.Name, spkElem.type);
+        Assert.Equal(elem.Name, spkElem["type"]);
 
       //Assert.NotNull(spkElem.baseGeometry);
 
-      Assert.NotNull(spkElem.level);
+      //Assert.NotNull(spkElem.level);
       //Assert.NotNull(spkRevit.displayMesh);
-
-
     }
 
     internal void AssertFamilyInstanceEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
@@ -129,7 +155,7 @@ namespace ConverterRevitTests
 
       Assert.Equal(sourceElem.FacingFlipped, destElem.FacingFlipped);
       Assert.Equal(sourceElem.HandFlipped, destElem.HandFlipped);
-      Assert.Equal(sourceElem.IsSlantedColumn, destElem.IsSlantedColumn);
+      Assert.Equal(sourceElem.IsSlantedColumn, destElem.IsSlantedColumn );
       Assert.Equal(sourceElem.StructuralType, destElem.StructuralType);
 
       //rotation

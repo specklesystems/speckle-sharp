@@ -21,9 +21,9 @@ namespace Speckle.DesktopUI.Utils
       set => SetAndNotify(ref _selectedSlide, value);
     }
 
-    private Account _accountToSendFrom = AccountManager.GetDefaultAccount();
+    internal Account _accountToSendFrom = AccountManager.GetDefaultAccount();
 
-    public Account AccountToSendFrom
+    public virtual Account AccountToSendFrom
     {
       get => _accountToSendFrom;
       set => SetAndNotify(ref _accountToSendFrom, value);
@@ -95,13 +95,13 @@ namespace Speckle.DesktopUI.Utils
       {
         SetAndNotify(ref _userQuery, value);
 
-        if ( value == "" )
+        if (value == "")
         {
           SelectedUser = null;
           UserSearchResults?.Clear();
         }
 
-        if ( SelectedUser != null ) return;
+        if (SelectedUser != null) return;
         SearchForUsers();
       }
     }
@@ -122,7 +122,7 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _selectedUser, value);
-        if ( SelectedUser == null )
+        if (SelectedUser == null)
           return;
         UserQuery = SelectedUser.name;
         AddCollabToCollection(SelectedUser);
@@ -131,7 +131,7 @@ namespace Speckle.DesktopUI.Utils
 
     public async void SearchForUsers()
     {
-      if ( UserQuery == null || UserQuery.Length <= 2 )
+      if (UserQuery == null || UserQuery.Length <= 2)
         return;
 
       try
@@ -140,7 +140,7 @@ namespace Speckle.DesktopUI.Utils
         var users = await client.UserSearch(UserQuery);
         UserSearchResults = new BindableCollection<User>(users);
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         // search prob returned no results
         UserSearchResults?.Clear();
@@ -167,7 +167,7 @@ namespace Speckle.DesktopUI.Utils
 
     private void AddCollabToCollection(User user)
     {
-      if ( Collaborators.All(c => c.id != user.id) )
+      if (Collaborators.All(c => c.id != user.id))
         Collaborators.Add(user);
     }
 
@@ -186,7 +186,7 @@ namespace Speckle.DesktopUI.Utils
 
   public class StreamRole
   {
-    public StreamRole(string name,  string description)
+    public StreamRole(string name, string description)
     {
       Name = name;
       Role = $"stream:{name}";

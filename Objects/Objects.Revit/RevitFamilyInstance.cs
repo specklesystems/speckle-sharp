@@ -1,15 +1,19 @@
 ﻿using Newtonsoft.Json;
-using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System.Collections.Generic;
 
 namespace Objects.Revit
 {
-  public class RevitFamilyInstance : RevitElement, IHostable
+  public class RevitFamilyInstance : Base, IRevitHasFamilyAndType
   {
-    public Element host { get; set; }
+    
     public Point basePoint { get; set; }
+
+    public string family { get; set; }
+
+    public string type { get; set; }
 
     [SchemaOptional]
     public bool facingFlipped { get; set; }
@@ -22,6 +26,19 @@ namespace Objects.Revit
 
     [JsonIgnore]
     [SchemaIgnore]
-    public int revitHostId { get; set; }
+    public string revitHostId { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+    
+    [SchemaOptional]
+    public Dictionary<string, object> typeParameters { get; set; }
+
+    [SchemaOptional]
+    public ILevel level { get; set; }
+
+    [SchemaIgnore]
+    public string elementId { get; set; }
+
   }
 }

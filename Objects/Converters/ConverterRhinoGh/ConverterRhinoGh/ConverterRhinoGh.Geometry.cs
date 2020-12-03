@@ -355,8 +355,7 @@ namespace Objects.Converter.RhinoGh
       CurveSegments(segments, p, true);
 
       //let the converter pick the best type of curve
-      var c = new ConverterRhinoGh();
-      myPoly.segments = segments.Select(s => (ICurve)c.ConvertToSpeckle(s)).ToList();
+      myPoly.segments = segments.Select(s => (ICurve)ConvertToSpeckle(s)).ToList();
 
       return myPoly;
     }
@@ -369,8 +368,7 @@ namespace Objects.Converter.RhinoGh
         try
         {
           //let the converter pick the best type of curve
-          var c = new ConverterRhinoGh();
-          myPolyc.AppendSegment((RH.Curve)c.ConvertToNative((Base)segment));
+          myPolyc.AppendSegment((RH.Curve)ConvertToNative((Base)segment));
         }
         catch
         {
@@ -955,7 +953,7 @@ namespace Objects.Converter.RhinoGh
           ScaleToNative(p.y, p.units),
           ScaleToNative(p.z, p.units),
           p.weight,
-          p.units)).ToList()).ToList(); //TODO: @alan, please check it works!
+          p.units)).ToList()).ToList();
 
       var result = NurbsSurface.Create(3, surface.rational, surface.degreeU + 1, surface.degreeV + 1,
         points.Count, points[0].Count);

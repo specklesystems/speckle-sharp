@@ -82,7 +82,15 @@ namespace Speckle.Core.Serialisation
             if (val == null) continue;
             if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
             {
-              addMethod.Invoke(arr, new object[] { Convert.ChangeType(HandleValue(val, serializer, CancellationToken), jsonProperty.PropertyType.GenericTypeArguments[0]) });
+              // TODO: Remove the try cathc business. Check if val is a simple type, and if so, go the convert.changeType route; otherwise just set it.
+              try
+              {
+                addMethod.Invoke(arr, new object[] { Convert.ChangeType(HandleValue(val, serializer, CancellationToken), jsonProperty.PropertyType.GenericTypeArguments[0]) });
+              }
+              catch (Exception e)
+              {
+                addMethod.Invoke(arr, new object[] { HandleValue(val, serializer, CancellationToken) });
+              }
             }
             else
             {

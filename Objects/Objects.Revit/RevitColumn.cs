@@ -1,17 +1,18 @@
-﻿using System;
+﻿using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System.Collections.Generic;
-using System.Text;
-using Objects.BuiltElements;
-using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
   [SchemaDescription("A Revit column by line")]
-  public class RevitColumn : RevitElement, IColumn
+  public class RevitColumn : Base, IRevitHasFamilyAndType, IColumn
   {
     public double height { get; set; }
+
     public ICurve baseLine { get; set; }
-    public string topLevel { get; set; }
+
+    [SchemaOptional]
+    public RevitLevel topLevel { get; set; }
 
     [SchemaOptional]
     public double baseOffset { get; set; }
@@ -33,6 +34,24 @@ namespace Objects.Revit
 
     [SchemaIgnore]
     public bool isSlanted { get; set; }
+
+    [SchemaOptional]
+    public string family { get; set; }
+
+    [SchemaOptional]
+    public string type { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> typeParameters { get; set; }
+
+    [SchemaIgnore]
+    public string elementId { get; set; }
+
+    [SchemaOptional]
+    public ILevel level { get; set; }
 
   }
 }

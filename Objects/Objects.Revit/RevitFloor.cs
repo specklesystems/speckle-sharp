@@ -1,17 +1,35 @@
-﻿using System;
+﻿using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System.Collections.Generic;
-using System.Text;
-using Objects.BuiltElements;
-using Speckle.Core.Kits;
 
 namespace Objects.Revit
 {
-  public class RevitFloor : RevitElement, IFloor
+  public class RevitFloor : Base, IRevitHasFamilyAndType, IFloor
   {
     public ICurve outline { get; set; }
+
+    [SchemaOptional]
     public List<ICurve> voids { get; set; } = new List<ICurve>();
 
     [SchemaOptional]
     public bool structural { get; set; }
+
+    [SchemaOptional]
+    public string family { get; set; }
+
+    [SchemaOptional]
+    public string type { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> typeParameters { get; set; }
+
+    [SchemaIgnore]
+    public string elementId { get; set; }
+
+    [SchemaOptional]
+    public ILevel level { get; set; }
   }
 }

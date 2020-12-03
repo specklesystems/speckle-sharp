@@ -1,3 +1,5 @@
+
+
 # Connector Dynamo
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works)
@@ -25,7 +27,7 @@ We encourage everyone interested to debug / hack /contribute / give feedback to 
 
 ### Requirements
 
-- Dynamo 2.1 or above (we're currently testing with 2.8)
+- Dynamo 2.1 or above (we're currently testing with 2.7+)
 - A Speckle Server running (more on this below)
 - Speckle Manager (more on this below)
 
@@ -58,6 +60,13 @@ After installing it, you can use it to add/create an account on the Server.
 
 After setting up dependencies, server and accounts you're good to go. Just make sure of the following:
 
+- you have selected the right build configuration (either for Sandbox or Revit)
+  - currently the Revit build defaults to 2021 and Sandbox to 2.7
+
+![image](https://user-images.githubusercontent.com/2679513/100000736-ea6ace80-2db9-11eb-8b04-10588e15e4b9.png)
+
+
+
 - the Solution builds fine in your IDE
 - you IDE is set to start the correct version of Dynamo or Revit on Debug
   ![image](https://user-images.githubusercontent.com/2679513/97479008-a666e400-1949-11eb-983a-3fccc066b597.png)
@@ -66,7 +75,7 @@ The first time you run Dynamo after having built the project, you need to add th
 
 - Click on `Settings` > `Manage Node and Package Paths...`
   ![image](https://user-images.githubusercontent.com/2679513/97480730-baabe080-194b-11eb-92e8-0655a9765b3a.png)
-- Add the `dist` folder in your `repo folder\ConnectorDynamo\ConnectorDynamo\dist` 
+- Add the `dist\Revit` or `dist\Sandbox` folder in your `repo folder\ConnectorDynamo\ConnectorDynamo\dist\Revit` 
   ![image](https://user-images.githubusercontent.com/2679513/97480369-35c0c700-194b-11eb-994a-3f03ee55ebee.png)
 
 

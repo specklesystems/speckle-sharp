@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -6,12 +7,64 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Opening : Element, IOpening
+  public class Opening : Base
   {
     public ICurve outline { get; set; }
-    public Opening()
-    {
 
-    }
+    public Opening() { }
   }
+}
+
+namespace Objects.BuiltElements.Revit
+{
+
+  [SchemaIgnore]
+  public class RevitOpening : Opening
+  {
+    [SchemaIgnore]
+    public string elementId { get; set; }
+
+    [SchemaOptional]
+    public string family { get; set; }
+
+    [SchemaOptional]
+    public string type { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> parameters { get; set; }
+
+    [SchemaOptional]
+    public Dictionary<string, object> typeParameters { get; set; }
+
+    public RevitOpening() { }
+  }
+
+  [SchemaIgnore]
+  public class RevitVerticalOpening : RevitOpening
+  {
+    public int revitHostId { get; set; }
+  }
+
+  [SchemaIgnore]
+  public class RevitWallOpening : RevitOpening
+  {
+    public RevitWall host { get; set; }
+
+    public int revitHostId { get; set; }
+
+    public RevitWallOpening() { }
+  }
+
+  public class RevitShaft : RevitOpening
+  {
+    public Level bottomLevel { get; set; }
+
+    // TODO: set descriptions and optionals stuff
+    public Level topLevel { get; set; }
+
+    public double height { get; set; }
+
+    public RevitShaft() { }
+  }
+
 }

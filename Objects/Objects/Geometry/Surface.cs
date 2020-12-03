@@ -10,17 +10,20 @@ using Speckle.Core.Kits;
 namespace Objects.Geometry
 {
   //TODO: to finish
-  public class Surface : Base, IGeometry
+  public class Surface : Base, IHasBoundingBox, IHasArea
   {
     public int degreeU { get; set; }
     public int degreeV { get; set; }
     public bool rational { get; set; }
+    public double area { get; set; }
 
     // TODO: Rewrite this to be store as a list<double>
     public List<double> pointData { get; set; }
 
     public int countU { get; set; }
     public int countV { get; set; }
+    
+    public Box bbox { get; set; }
 
     public List<List<ControlPoint>> GetControlPoints()
     {
@@ -74,6 +77,5 @@ namespace Objects.Geometry
       this.units = units;
     }
 
-    public string units { get; set; }
   }
 }

@@ -12,28 +12,51 @@
     <AssemblyName>SpeckleConnectorDynamo</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <StartAction>Program</StartAction>
-    <StartProgram>C:\Program Files\Dynamo\Dynamo Core\2.7\DynamoSandbox.exe</StartProgram>
+
     <FileAlignment>512</FileAlignment>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugSandbox|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <OutputPath>bin\DebugSandbox\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;SANDBOX</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\SpeckleConnectorDynamo.xml</DocumentationFile>
     <PlatformTarget>x64</PlatformTarget>
+    <StartProgram>C:\Program Files\Dynamo\Dynamo Core\2.7\DynamoSandbox.exe</StartProgram>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseSandbox|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <OutputPath>bin\ReleaseSandbox\</OutputPath>
+    <DefineConstants>TRACE;SANDBOX</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugRevit|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\DebugRevit\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;REVIT</DefineConstants>
+    <DocumentationFile>bin\Debug\SpeckleConnectorDynamo.xml</DocumentationFile>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <StartProgram>C:\Program Files\Autodesk\Revit 2021\Revit.exe</StartProgram>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseRevit|AnyCPU'">
+    <OutputPath>bin\ReleaseRevit\</OutputPath>
+    <DefineConstants>TRACE;REVIT</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json-8.0.3">
@@ -59,14 +82,17 @@
       <Version>2.7.0.9206</Version>
     </PackageReference>
     <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.7.0.9206">
+      <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>runtime</ExcludeAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="DynamoVisualProgramming.WpfUILibrary">
+      <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>runtime</ExcludeAssets>
       <Version>2.8.0.2471</Version>
     </PackageReference>
     <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.7.0.9206">
+      <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>runtime</ExcludeAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -165,9 +191,16 @@
   <Target Name="BeforeBuild">
   </Target>
   -->
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseSandbox' OR  '$(Configuration)' == 'DebugSandbox'">
     <PackageName>ConnectorDynamo</PackageName>
-    <PackageFolder>$(ProjectDir)dist\$(PackageName)\</PackageFolder>
+    <PackageFolder>$(ProjectDir)dist\Sandbox\$(PackageName)\</PackageFolder>
+    <BinFolder>$(PackageFolder)bin\</BinFolder>
+    <ExtraFolder>$(PackageFolder)extra\</ExtraFolder>
+    <DyfFolder>$(PackageFolder)dyf\</DyfFolder>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseRevit' OR  '$(Configuration)' == 'DebugRevit'">
+    <PackageName>ConnectorDynamo</PackageName>
+    <PackageFolder>$(ProjectDir)dist\Revit\$(PackageName)\</PackageFolder>
     <BinFolder>$(PackageFolder)bin\</BinFolder>
     <ExtraFolder>$(PackageFolder)extra\</ExtraFolder>
     <DyfFolder>$(PackageFolder)dyf\</DyfFolder>

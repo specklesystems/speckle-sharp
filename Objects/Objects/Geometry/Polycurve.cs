@@ -7,16 +7,14 @@ using System.Text;
 
 namespace Objects.Geometry
 {
-  public class Polycurve : Base, ICurve
+  public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox
   {
     public List<ICurve> segments { get; set; } = new List<ICurve>();
     public Interval domain { get; set; }
     public bool closed { get; set; }
-    public Box boundingBox { get; set; }
-    public Point center { get; set; }
+    public Box bbox { get; set; }
     public double area { get; set; }
     public double length { get; set; }
-    public string units { get; set; }
 
     public Polycurve()
     {

@@ -1,21 +1,26 @@
 ﻿using Speckle.Core.Kits;
-using System;
+using Speckle.Core.Models;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Objects.Revit
 {
   /// <summary>
-  /// Interface for all the Object kit classes specific to Revit
+  /// Something, anyting in Revit, has an element id.
+  /// <para>Note: the uniqueId is captured in the Base's object applicationId. This elementId is captured for selection purposes.</para>
   /// </summary>
-  public interface IRevit
+  public interface IBaseRevitElement
   {
     string elementId { get; set; }
-    Dictionary<string, object> parameters { get; set; }
   }
 
-  public interface IHostable
+  /// <summary>
+  /// Describes family-like objects.
+  /// </summary>
+  public interface IRevitHasFamilyAndType : IBaseRevitElement
   {
-    int revitHostId { get; set; }
+    string family { get; set; }
+
+    string type { get; set; }
   }
+
 }

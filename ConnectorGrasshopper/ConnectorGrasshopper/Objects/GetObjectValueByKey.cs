@@ -76,6 +76,7 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void BeforeSolveInstance()
     {
+      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
       Tracker.TrackPageview("objects", "getvalue", "key");
       base.BeforeSolveInstance();
     }
