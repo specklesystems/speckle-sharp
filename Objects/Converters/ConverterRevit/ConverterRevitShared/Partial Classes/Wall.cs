@@ -35,8 +35,11 @@ namespace Objects.Converter.Revit
         level = LevelToNative(LevelFromCurve(baseCurve));
       }
 
+      //if it's a new element, we don't need to update certain properties
+      bool isUpdate = true;
       if (revitWall == null)
       {
+        isUpdate = false;
         revitWall = DB.Wall.Create(Doc, baseCurve, level.Id, structural);
       }
 
@@ -46,27 +49,44 @@ namespace Objects.Converter.Revit
         return null;
       }
 
-      var ocrvStart = ((LocationCurve)revitWall.Location).Curve.GetEndPoint(0);
-      var ocrvEnd = ((LocationCurve)revitWall.Location).Curve.GetEndPoint(1);
-      var ncrvStart = baseCurve.GetEndPoint(0);
-      var ncrvEnd = baseCurve.GetEndPoint(1);
+      //var ocrvStart = ((LocationCurve)revitWall.Location).Curve.GetEndPoint(0);
+      //var ocrvEnd = ((LocationCurve)revitWall.Location).Curve.GetEndPoint(1);
+      //var ncrvStart = baseCurve.GetEndPoint(0);
+      //var ncrvEnd = baseCurve.GetEndPoint(1);
 
-      // Note: setting a base offset on a wall modifies its location curve. As such, to distinguish between an old curve and a new one, we need to
-      // remove any existing base offset before comparing it to the original one. And yes, of course, we need to check within a tolerance.
-      var cbo = (double)revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble(); // note: we're using raw internal units, no need for conversions
-      if (Math.Abs(ocrvStart.X - ncrvStart.X) > 0.01 || Math.Abs(ocrvStart.Y - ncrvStart.Y) > 0.01 || Math.Abs(ocrvStart.Z + cbo - ncrvStart.Z) > 0.01 ||
-        Math.Abs(ocrvEnd.X - ncrvEnd.X) > 0.01 || Math.Abs(ocrvEnd.Y - ncrvEnd.Y) > 0.01 || Math.Abs(ocrvEnd.Z + cbo - ncrvEnd.Z) > 0.01)
-      {
-        revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).Set(0); // note: always reset the base offset before setting a new location curve, otherwise it's applied twice.
-        ((LocationCurve)revitWall.Location).Curve = baseCurve;
-      }
+      //// Note: setting a base offset on a wall modifies its location curve. As such, to distinguish between an old curve and a new one, we need to
+      //// remove any existing base offset before comparing it to the original one. And yes, of course, we need to check within a tolerance.
+      //var cbo = (double)revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble(); // note: we're using raw internal units, no need for conversions
+      //if (Math.Abs(ocrvStart.X - ncrvStart.X) > 0.01 || Math.Abs(ocrvStart.Y - ncrvStart.Y) > 0.01 || Math.Abs(ocrvStart.Z + cbo - ncrvStart.Z) > 0.01 ||
+      //  Math.Abs(ocrvEnd.X - ncrvEnd.X) > 0.01 || Math.Abs(ocrvEnd.Y - ncrvEnd.Y) > 0.01 || Math.Abs(ocrvEnd.Z + cbo - ncrvEnd.Z) > 0.01)
+      //{
+      //  // note: always reset the base offset before setting a new location curve, otherwise it's applied twice.
+      //  revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).Set(0); 
+      //  ((LocationCurve)revitWall.Location).Curve = baseCurve;
+      //}
 
-      TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
+      //TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
 
-      if (wallType != null && revitWall.WallType.Name != wallType.Name)
+      if (revitWall.WallType.Name != wallType.Name)
       {
         revitWall.ChangeTypeId(wallType.Id);
       }
+
+      if (isUpdate)
+      {
+        var z = ((LocationCurve)revitWall.Location).Curve.GetEndPoint(0).Z;
+        var start = new XYZ(baseCurve.GetEndPoint(0).X, baseCurve.GetEndPoint(0).Y, z);
+        var end = new XYZ(baseCurve.GetEndPoint(1).X, baseCurve.GetEndPoint(1).Y, z);
+
+        var offsetLine = Line.CreateBound(start, end);
+
+        ((LocationCurve)revitWall.Location).Curve = offsetLine;
+
+        TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
+
+      }
+
+
 
       if (speckleWall is RevitWall spklRevitWall)
       {
