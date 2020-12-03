@@ -108,7 +108,7 @@ namespace Objects.Converter.Revit
         heightParam.Set(ScaleToNative(speckleWall.height, speckleWall.units));
       }
 
-      //SetElementParamsFromSpeckle(revitWall, speckleWall); // This takes very long and doesn't do much. IMHO we should stop supporting it.
+      SetElementParamsFromSpeckle(revitWall, speckleWall); // This takes very long and doesn't do much. IMHO we should stop supporting it.
 
       var placeholders = new List<ApplicationPlaceholderObject>() {new ApplicationPlaceholderObject
       {
