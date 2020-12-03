@@ -16,7 +16,7 @@ namespace Objects.BuiltElements
 
     [SchemaInfo("Level", "Creates a Speckle level")]
     public Level(string name, double elevation,
-     [SchemaParamInfo("Any nested elements that this floor might have.")] List<Base> elements = null)
+     [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null)
     {
       this.name = name;
       this.elevation = elevation;
@@ -40,10 +40,10 @@ namespace Objects.BuiltElements.Revit
 
     public RevitLevel() { }
 
-    [SchemaInfo("RevitLevel", "Creates a Revit level")]
+    [SchemaInfo("Create", "Creates a Revit level")]
     public RevitLevel(string name, double elevation,
       [SchemaParamInfo("If true, it creates an associated view in Revit")] bool createView,
-      [SchemaParamInfo("Any nested elements that this floor might have.")] List<Base> elements = null,
+      [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null,
       Dictionary<string, object> parameters = null)
     {
       this.name = name;
@@ -53,6 +53,7 @@ namespace Objects.BuiltElements.Revit
       this.parameters = parameters;
     }
 
+    [SchemaInfo("ByReference", "Creates a Revit level")]
     public RevitLevel(string name)
     {
       this.name = name;
