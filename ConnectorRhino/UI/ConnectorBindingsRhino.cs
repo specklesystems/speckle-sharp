@@ -369,6 +369,11 @@ namespace SpeckleRhino
         return state;
       }
 
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 0;
+      Execute.PostToUIThread(() => state.Progress.Maximum = state.Objects.Count());
+      var convertedCount = 0;
+
       foreach (var placeholder in state.Objects)
       {
         if (state.CancellationTokenSource.Token.IsCancellationRequested)
@@ -390,6 +395,10 @@ namespace SpeckleRhino
           continue;
         }
 
+        conversionProgressDict["Conversion"]++;
+        UpdateProgress(conversionProgressDict, state.Progress);
+
+        // TODO: potentially get more info from the object: materials and other rhino specific stuff?
         converted.applicationId = placeholder.applicationId;
 
         foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
