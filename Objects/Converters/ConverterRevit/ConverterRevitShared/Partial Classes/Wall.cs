@@ -74,12 +74,10 @@ namespace Objects.Converter.Revit
 
       if (isUpdate)
       {
+        //when a curve is created its Z and gets adjusted to the level elevation!
+        //make sure the new curve is at the same Z as the previous
         var z = ((LocationCurve)revitWall.Location).Curve.GetEndPoint(0).Z;
-        var start = new XYZ(baseCurve.GetEndPoint(0).X, baseCurve.GetEndPoint(0).Y, z);
-        var end = new XYZ(baseCurve.GetEndPoint(1).X, baseCurve.GetEndPoint(1).Y, z);
-
-        var offsetLine = Line.CreateBound(start, end);
-
+        var offsetLine = baseCurve.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, z)));
         ((LocationCurve)revitWall.Location).Curve = offsetLine;
 
         TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
