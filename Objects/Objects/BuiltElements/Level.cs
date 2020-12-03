@@ -40,7 +40,7 @@ namespace Objects.BuiltElements.Revit
 
     public RevitLevel() { }
 
-    [SchemaInfo("Create", "Creates a Revit level")]
+    [SchemaInfo("Create level", "Creates a new Revit level unless one with the same name already exists, in which case it edits it")]
     public RevitLevel(string name, double elevation,
       [SchemaParamInfo("If true, it creates an associated view in Revit")] bool createView,
       [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null,
@@ -51,12 +51,14 @@ namespace Objects.BuiltElements.Revit
       this.elements = elements;
       this.createView = createView;
       this.parameters = parameters;
+      this.referenceOnly = false;
     }
 
-    [SchemaInfo("ByReference", "Creates a Revit level")]
+    [SchemaInfo("Level by name", "Gets an existing Revit level by name")]
     public RevitLevel(string name)
     {
       this.name = name;
+      this.referenceOnly = true;
     }
   }
 }

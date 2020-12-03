@@ -26,6 +26,7 @@ namespace Objects.BuiltElements.Revit
 {
   public class RevitWall : Wall
   {
+    public string family { get; set; }
     public string type { get; set; }
     public double baseOffset { get; set; }
     public double topOffset { get; set; }
@@ -43,12 +44,12 @@ namespace Objects.BuiltElements.Revit
     }
 
     [SchemaInfo("Wall by curve and levels", "Creates a Revit wall with a top and base level.")]
-    public RevitWall(
-      [SchemaParamInfo("The Revit wall type, it must exist in a Revit document when receiving the wall, otherwise a default will be used.")] string type,
+    public RevitWall(string family, string type,
       ICurve baseLine, Level level, Level topLevel, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> hostedElements = null,
       Dictionary<string, object> parameters = null)
     {
+      this.family = family;
       this.type = type;
       this.baseLine = baseLine;
       this.baseOffset = baseOffset;
@@ -62,12 +63,12 @@ namespace Objects.BuiltElements.Revit
     }
 
     [SchemaInfo("Wall by curve and height", "Creates an unconnected Revit wall.")]
-    public RevitWall(
-      [SchemaParamInfo("The Revit wall type, it must exist in a Revit document when receiving the wall, otherwise a default will be used.")] string type,
+    public RevitWall(string family, string type,
       ICurve baseLine, Level level, double height, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> hostedElements = null,
       Dictionary<string, object> parameters = null)
     {
+      this.family = family;
       this.type = type;
       this.baseLine = baseLine;
       this.height = height;

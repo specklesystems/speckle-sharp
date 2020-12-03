@@ -11,6 +11,7 @@ namespace Objects.BuiltElements.Revit.Curve
     public Dictionary<string, object> parameters { get; set; }
     public string elementId { get; set; }
 
+    public ModelCurve() { }
     [SchemaInfo("ModelCurve", "Creates a Revit model curve")]
     public ModelCurve(ICurve baseCurve, string lineStyle, Dictionary<string, object> parameters = null)
     {
@@ -28,6 +29,7 @@ namespace Objects.BuiltElements.Revit.Curve
 
     public string elementId { get; set; }
 
+    public DetailCurve() { }
     [SchemaInfo("DetailCurve", "Creates a Revit detail curve")]
     public DetailCurve(ICurve baseCurve, string lineStyle, Dictionary<string, object> parameters = null)
     {
@@ -45,6 +47,8 @@ namespace Objects.BuiltElements.Revit.Curve
 
     public string elementId { get; set; }
 
+    public RoomBoundaryLine()
+    { }
     [SchemaInfo("RoomBoundaryLine", "Creates a Revit room boundary line")]
     public RoomBoundaryLine(ICurve baseCurve, Dictionary<string, object> parameters = null)
     {
