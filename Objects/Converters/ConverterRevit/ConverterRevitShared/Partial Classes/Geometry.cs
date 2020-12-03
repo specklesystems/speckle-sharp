@@ -485,38 +485,38 @@ namespace Objects.Converter.Revit
 
       // TODO: Trim curve with domain. Unsure if this is necessary as all our curves are converted to NURBS on Rhino output.
 
-      var nativeCurveArray = CurveToNative(edgeCurve);
+      var nativeCurveArray = CurveToNative(edge.Curve);
       if (nativeCurveArray.Size == 1)
       {
         var nativeCurve = nativeCurveArray.get_Item(0);
-      if (edge.ProxyCurveIsReversed)
-        nativeCurve = nativeCurve.CreateReversed();
-      
-        if(nativeCurve == null)       
+        if (edge.ProxyCurveIsReversed)
+          nativeCurve = nativeCurve.CreateReversed();
+
+        if (nativeCurve == null)
           return new List<BRepBuilderEdgeGeometry>();
 
-        if (nativeCurve.IsClosed)
+        /*if (nativeCurve.IsClosed)
         {
-        
           // Revit does not like single curve loop edges, so we split them in two.
           var start = nativeCurve.GetEndParameter(0);
           var end = nativeCurve.GetEndParameter(1);
           var mid = (end - start) / 2;
-        
+
           var a = nativeCurve.Clone();
-          a.MakeBound(start,mid);
+          a.MakeBound(start, mid);
           var halfEdgeA = BRepBuilderEdgeGeometry.Create(a);
-        
+
           var b = nativeCurve.Clone();
-          b.MakeBound(mid,end);
-          
+          b.MakeBound(mid, end);
+
           var halfEdgeB = BRepBuilderEdgeGeometry.Create(b);
 
-          return new List<BRepBuilderEdgeGeometry>{halfEdgeA, halfEdgeB};
-        }
-      // TODO: Remove short segments if smaller than 'Revit.ShortCurveTolerance'.
+          return new List<BRepBuilderEdgeGeometry> {halfEdgeA, halfEdgeB};
+        }*/
+
+        // TODO: Remove short segments if smaller than 'Revit.ShortCurveTolerance'.
         var fullEdge = BRepBuilderEdgeGeometry.Create(nativeCurve);
-        return new List<BRepBuilderEdgeGeometry>{fullEdge};
+        return new List<BRepBuilderEdgeGeometry> {fullEdge};
       }
 
       var iterator = edge.ProxyCurveIsReversed
@@ -683,13 +683,14 @@ namespace Objects.Converter.Revit
 
     public Brep BrepToSpeckle(Solid solid)
     {
+#if Revit2021
       // TODO: Incomplete implementation!!
 
       var brep = new Brep();
       brep.units = ModelUnits;
 
       if (solid is null || solid.Faces.IsEmpty) return null;
-      
+
       var faceIndex = 0;
       var edgeIndex = 0;
       var curve2dIndex = 0;
@@ -697,20 +698,20 @@ namespace Objects.Converter.Revit
       var loopIndex = 0;
       var trimIndex = 0;
       var surfaceIndex = 0;
-      
-      var speckleFaces = new Dictionary<Face,BrepFace>();
-      var speckleEdges = new Dictionary<Edge,BrepEdge>();
+
+      var speckleFaces = new Dictionary<Face, BrepFace>();
+      var speckleEdges = new Dictionary<Edge, BrepEdge>();
       var speckle3dCurves = new ICurve[solid.Edges.Size];
       var speckle2dCurves = new List<ICurve>();
       var speckleLoops = new List<BrepLoop>();
       var speckleTrims = new List<BrepTrim>();
-      
+
       foreach (var face in solid.Faces.Cast<Face>())
       {
         var surface = FaceToSpeckle(face, out bool orientation, 0.0);
         var iterator = face.EdgeLoops.ForwardIterator();
         var loopIndices = new List<int>();
-    
+
         while (iterator.MoveNext())
         {
           var loop = iterator.Current as EdgeArray;
@@ -723,10 +724,10 @@ namespace Objects.Converter.Revit
             var edge = loopIterator.Current as Edge;
             var faceA = edge.GetFace(0);
             var faceB = edge.GetFace(1);
-            
+
             // Determine what face side are we currently on.
             var edgeSide = face == faceA ? 0 : 1;
-            
+
             // Get curve, create trim and save index
             var trim = edge.GetCurveUV(edgeSide);
             var sTrim = new BrepTrim(brep, edgeIndex, faceIndex, loopIndex, curve2dIndex, 0, BrepTrimType.Boundary, edge.IsFlippedOnFace(edgeSide));
@@ -741,7 +742,7 @@ namespace Objects.Converter.Revit
 
             // Check if we have visited this edge before.
             if (!speckleEdges.ContainsKey(edge))
-      {
+            {
               // First time we visit this edge, add 3d curve and create new BrepEdge.
               var edgeCurve = edge.AsCurve();
               speckle3dCurves[curve3dIndex] = CurveToSpeckle(edgeCurve);
@@ -749,12 +750,12 @@ namespace Objects.Converter.Revit
               curve3dIndex++;
 
               // Create a trim with just one of the trimIndices set, the second one will be set on the opposite condition.
-              var sEdge = new BrepEdge(brep, sCurveIndex, new [] {sTrimIndex}, -1, -1, edge.IsFlippedOnFace(face));
-              speckleEdges.Add(edge,sEdge);
+              var sEdge = new BrepEdge(brep, sCurveIndex, new[] {sTrimIndex}, -1, -1, edge.IsFlippedOnFace(face));
+              speckleEdges.Add(edge, sEdge);
               edgeIndex++;
             }
             else
-        {
+            {
               // Already visited this edge, skip curve 3d
               var sEdge = speckleEdges[edge];
               // Update trim indices with new item.
@@ -763,20 +764,22 @@ namespace Objects.Converter.Revit
               trimIndices.Append(sTrimIndex);
               sEdge.TrimIndices = trimIndices.ToArray();
             }
-        }
+          }
 
-          var speckleLoop = new BrepLoop(brep,faceIndex,loopTrimIndices,BrepLoopType.Outer );
+          var speckleLoop = new BrepLoop(brep, faceIndex, loopTrimIndices, BrepLoopType.Outer);
           speckleLoops.Add(speckleLoop);
           var sLoopIndex = loopIndex;
           loopIndex++;
           loopIndices.Add(sLoopIndex);
-      }
+        }
 
-        speckleFaces.Add(face,new BrepFace(brep,surfaceIndex,loopIndices,loopIndices[0], !face.OrientationMatchesSurfaceOrientation ));
+        speckleFaces.Add(face,
+          new BrepFace(brep, surfaceIndex, loopIndices, loopIndices[0], !face.OrientationMatchesSurfaceOrientation));
         faceIndex++;
         brep.Surfaces.Add(surface);
         surfaceIndex++;
       }
+
       // TODO: Revit has no brep vertices. Must call 'brep.SetVertices()' in rhino when provenance is revit.
       // TODO: Set tolerances and flags in rhino when provenance is revit.
       brep.Faces = speckleFaces.Values.ToList();
@@ -787,6 +790,9 @@ namespace Objects.Converter.Revit
       brep.Loops = speckleLoops;
 
       return brep;
+#else
+      throw new Exception("Converting BREPs to Speckle is currently only supported in Revit 2021.");
+#endif
     }
 
     public Surface FaceToSpeckle(DB.Face face, out bool parametricOrientation, double relativeTolerance = 0.0)
