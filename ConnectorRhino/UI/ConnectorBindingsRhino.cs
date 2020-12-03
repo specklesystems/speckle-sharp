@@ -238,10 +238,13 @@ namespace SpeckleRhino
 
     private void HandleAndConvert(object obj, ISpeckleConverter converter, Layer layer, StreamState state)
     {
-      if (!layer.HasIndex)
+      Layer myLayer = null;
+
+      // The rhino layer api is a bit sucky, hence the result below. It probably can be cleaned up and optimised.
+      if (!layer.HasIndex || layer.Index == -1)
       {
         // Try and recreate layer structure if coming from Rhino.
-        if (layer.Name.Contains("::"))
+        if (layer.Name.Contains("::") || layer.FullPath.Contains("::"))
         {
           var layers = layer.Name.Split(new string[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
           var ancestors = new List<Layer>();
@@ -274,7 +277,21 @@ namespace SpeckleRhino
         }
         else
         {
-          layer.Index = Doc.Layers.Add(layer);
+          var index = Doc.Layers.Add(layer);
+          if(index == -1) // it means it exists already, and we're returning to a previously created higher level layer.
+          {
+            var fullPath = "";
+            if (layer.ParentLayerId != null)
+            {
+              var parent = Doc.Layers.FindId(layer.ParentLayerId);
+              fullPath += parent.FullPath + "::" + layer.Name;
+            }
+            var existingLayerIndex = Doc.Layers.FindByFullPath(fullPath, true);
+            layer.Index = Doc.Layers.FindIndex(existingLayerIndex).Index;
+          } else
+          {
+            layer.Index = index;
+          }
         }
       }
 
@@ -311,7 +328,7 @@ namespace SpeckleRhino
               layerName = prop;
             }
 
-            var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = layerName };
+            var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = $"{layerName}" };
             HandleAndConvert(value, converter, subLayer, state);
           }
 
