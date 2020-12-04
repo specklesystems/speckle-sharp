@@ -422,7 +422,7 @@ namespace Objects.Converter.Revit
     public Geometry.Surface FaceToSpeckle(DB.Face face, DB.BoundingBoxUV uvBox)
     {
 
-#if Revit2021
+#if REVIT2021
       var surf = DB.ExportUtils.GetNurbsSurfaceDataForSurface(face.GetSurface());
 #else
       var surf = DB.ExportUtils.GetNurbsSurfaceDataForFace(face);
@@ -481,8 +481,6 @@ namespace Objects.Converter.Revit
 
     public List<BRepBuilderEdgeGeometry> BrepEdgeToNative(BrepEdge edge)
     {
-      var edgeCurve = edge.Curve as Curve;
-
       // TODO: Trim curve with domain. Unsure if this is necessary as all our curves are converted to NURBS on Rhino output.
 
       var nativeCurveArray = CurveToNative(edge.Curve);
@@ -494,8 +492,15 @@ namespace Objects.Converter.Revit
 
         if (nativeCurve == null)
           return new List<BRepBuilderEdgeGeometry>();
-
-        /*if (nativeCurve.IsClosed)
+        
+        if(!nativeCurve.IsBound)
+          nativeCurve.MakeBound(0, nativeCurve.Period);
+        
+        var endPoint = nativeCurve.GetEndPoint(0);
+        var source = nativeCurve.GetEndPoint(1);
+        var distanceTo = endPoint.DistanceTo(source);
+        var closed = distanceTo < 1E-6;
+        if (closed)
         {
           // Revit does not like single curve loop edges, so we split them in two.
           var start = nativeCurve.GetEndParameter(0);
@@ -504,16 +509,15 @@ namespace Objects.Converter.Revit
 
           var a = nativeCurve.Clone();
           a.MakeBound(start, mid);
-          var halfEdgeA = BRepBuilderEdgeGeometry.Create(a);
 
           var b = nativeCurve.Clone();
           b.MakeBound(mid, end);
 
+          var halfEdgeA = BRepBuilderEdgeGeometry.Create(a);
           var halfEdgeB = BRepBuilderEdgeGeometry.Create(b);
-
           return new List<BRepBuilderEdgeGeometry> {halfEdgeA, halfEdgeB};
-        }*/
-
+        }
+        
         // TODO: Remove short segments if smaller than 'Revit.ShortCurveTolerance'.
         var fullEdge = BRepBuilderEdgeGeometry.Create(nativeCurve);
         return new List<BRepBuilderEdgeGeometry> {fullEdge};
@@ -657,7 +661,7 @@ namespace Objects.Converter.Revit
             {
               for (int e = edgeIds.Count - 1; e >= 0; --e)
                 builder.AddCoEdge(loopId, edgeIds[e], true);
-              }
+            }
             else
             {
               for (int e = 0; e < edgeIds.Count; ++e)
@@ -683,7 +687,7 @@ namespace Objects.Converter.Revit
 
     public Brep BrepToSpeckle(Solid solid)
     {
-#if Revit2021
+#if REVIT2021
       // TODO: Incomplete implementation!!
 
       var brep = new Brep();
