@@ -15,6 +15,8 @@ namespace Objects.Converter.Revit
   {
     public ApplicationPlaceholderObject OpeningToNative(BuiltElements.Opening speckleOpening)
     {
+
+
       var baseCurves = CurveToNative(speckleOpening.outline);
 
       var docObj = GetExistingElementByApplicationId(((Base)speckleOpening).applicationId);
@@ -30,15 +32,13 @@ namespace Objects.Converter.Revit
         case RevitWallOpening rwo:
           {
             var points = (rwo.outline as Polyline).points.Select(x => PointToNative(x)).ToList();
-            var host = Doc.GetElement(new ElementId(rwo.revitHostId));
-            revitOpening = Doc.Create.NewOpening(host as Wall, points[0], points[2]);
+            revitOpening = Doc.Create.NewOpening(CurrentHostElement as Wall, points[0], points[2]);
             break;
           }
 
         case RevitVerticalOpening rvo:
           {
-            var host = Doc.GetElement(new ElementId(rvo.revitHostId));
-            revitOpening = Doc.Create.NewOpening(host, baseCurves, true);
+            revitOpening = Doc.Create.NewOpening(CurrentHostElement, baseCurves, true);
             break;
           }
 
@@ -66,6 +66,22 @@ namespace Objects.Converter.Revit
 
     public BuiltElements.Opening OpeningToSpeckle(DB.Opening revitOpening)
     {
+      #region host handling
+
+      // Check if it's been converted previously - from a parent host.
+      if (ConvertedObjectsList.IndexOf(revitOpening.UniqueId) != -1)
+      {
+        return null;
+      }
+
+      // If the parent is in our selection list, back off, as this element will be converted by the host element.
+      if (revitOpening.Host != null && ContextObjects.FindIndex(obj => obj.applicationId == revitOpening.Host.UniqueId) != -1)
+      {
+        return null;
+      }
+
+      #endregion
+
       //REVIT PARAMS > SPECKLE PROPS
       var baseLevelParam = revitOpening.get_Parameter(BuiltInParameter.WALL_BASE_CONSTRAINT);
       var topLevelParam = revitOpening.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE);
@@ -118,7 +134,7 @@ namespace Objects.Converter.Revit
         speckleOpening.outline = poly;
       }
 
-      speckleOpening.type = revitOpening.Name;
+      //speckleOpening.type = revitOpening.Name;
 
       AddCommonRevitProps(speckleOpening, revitOpening);
 

@@ -384,31 +384,42 @@ namespace Speckle.ConnectorRevit.UI
 
       if (obj is Base baseItem)
       {
-        if (baseItem.applicationId != null)
+        if (converter.CanConvertToNative(baseItem))
         {
-          appIds.Add(baseItem.applicationId);
+          if (baseItem.applicationId != null)
+          {
+            appIds.Add(baseItem.applicationId);
+          }
+
+          objects.Add(baseItem);
+
+          // --> return a list of ApplicationPlaceholderObject so we can do deletion afterwards
+          var convRes = converter.ConvertToNative(baseItem);
+          if (convRes is ApplicationPlaceholderObject placeholder)
+          {
+            placeholders.Add(placeholder);
+          }
+          else if (convRes is List<ApplicationPlaceholderObject> placeholderList)
+          {
+            placeholders.AddRange(placeholderList);
+          }
+
+          foreach (var prop in baseItem.GetDynamicMembers())
+          {
+            //if (converter.CanConvertToNative(baseItem[prop] as Base))
+            placeholders.AddRange(HandleAndConvertToNative(baseItem[prop], converter));
+          }
+
+          return placeholders;
         }
-
-        objects.Add(baseItem);
-
-        // --> return a list of ApplicationPlaceholderObject so we can do deletion afterwards
-        var convRes = converter.ConvertToNative(baseItem);
-        if (convRes is ApplicationPlaceholderObject placeholder)
+        else
         {
-          placeholders.Add(placeholder);
+          foreach (var prop in baseItem.GetDynamicMembers())
+          {
+            placeholders.AddRange(HandleAndConvertToNative(baseItem[prop], converter));
+          }
+          return placeholders;
         }
-        else if (convRes is List<ApplicationPlaceholderObject> placeholderList)
-        {
-          placeholders.AddRange(placeholderList);
-        }
-
-        foreach (var prop in baseItem.GetDynamicMembers())
-        {
-          //if (converter.CanConvertToNative(baseItem[prop] as Base))
-          placeholders.AddRange(HandleAndConvertToNative(baseItem[prop], converter));
-        }
-
-        return placeholders;
       }
 
       if (obj is List<object> list)

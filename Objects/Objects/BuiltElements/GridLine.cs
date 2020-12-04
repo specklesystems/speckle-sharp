@@ -10,12 +10,11 @@ namespace Objects.BuiltElements
   public class GridLine : Base
   {
     public Line baseLine { get; set; }
-
-    [SchemaOptional]
     public Level level { get; set; }
 
     public GridLine() { }
 
+    [SchemaInfo("GridLine", "Creates a Speckle grid line")]
     public GridLine(Line baseLine, Level level = null)
     {
       this.baseLine = baseLine;
