@@ -35,6 +35,8 @@ namespace Objects.BuiltElements.Revit
 
     [SchemaOptional]
     public Dictionary<string, object> typeParameters { get; set; }
+
+    public RevitOpening() { }
   }
 
   [SchemaIgnore]
@@ -49,13 +51,20 @@ namespace Objects.BuiltElements.Revit
     public RevitWall host { get; set; }
 
     public int revitHostId { get; set; }
+
+    public RevitWallOpening() { }
   }
 
   public class RevitShaft : RevitOpening
   {
     public Level bottomLevel { get; set; }
 
+    // TODO: set descriptions and optionals stuff
     public Level topLevel { get; set; }
+
+    public double height { get; set; }
+
+    public RevitShaft() { }
   }
 
 }

@@ -207,6 +207,16 @@ namespace SpeckleRhino
 
       var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {myStream.name}");
 
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 0;
+      Execute.PostToUIThread(() => state.Progress.Maximum = state.Objects.Count());
+
+      Action updateProgressAction = () =>
+      {
+        conversionProgressDict["Conversion"]++;
+        UpdateProgress(conversionProgressDict, state.Progress);
+      };
+
       var layerName = $"{myStream.name}: {state.Branch.name} @ {commit.id}";
       layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty); // Rhino doesn't like emojis in layer names :( 
 
@@ -234,14 +244,20 @@ namespace SpeckleRhino
       return state;
     }
 
+    /// <summary>
+    /// Used to hold in state for the handle and convert function below.
+    /// </summary>
     private string currentRootLayerName;
 
-    private void HandleAndConvert(object obj, ISpeckleConverter converter, Layer layer, StreamState state)
+    private void HandleAndConvert(object obj, ISpeckleConverter converter, Layer layer, StreamState state, Action updateProgressAction = null)
     {
-      if (!layer.HasIndex)
+      Layer myLayer = null;
+
+      // The rhino layer api is a bit sucky, hence the result below. It probably can be cleaned up and optimised.
+      if (!layer.HasIndex || layer.Index == -1)
       {
         // Try and recreate layer structure if coming from Rhino.
-        if (layer.Name.Contains("::"))
+        if (layer.Name.Contains("::") || layer.FullPath.Contains("::"))
         {
           var layers = layer.Name.Split(new string[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
           var ancestors = new List<Layer>();
@@ -274,7 +290,21 @@ namespace SpeckleRhino
         }
         else
         {
-          layer.Index = Doc.Layers.Add(layer);
+          var index = Doc.Layers.Add(layer);
+          if(index == -1) // it means it exists already, and we're returning to a previously created higher level layer.
+          {
+            var fullPath = "";
+            if (layer.ParentLayerId != null)
+            {
+              var parent = Doc.Layers.FindId(layer.ParentLayerId);
+              fullPath += parent.FullPath + "::" + layer.Name;
+            }
+            var existingLayerIndex = Doc.Layers.FindByFullPath(fullPath, true);
+            layer.Index = Doc.Layers.FindIndex(existingLayerIndex).Index;
+          } else
+          {
+            layer.Index = index;
+          }
         }
       }
 
@@ -292,7 +322,7 @@ namespace SpeckleRhino
           {
             state.Errors.Add(new Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
           }
-
+          updateProgressAction?.Invoke();
           return;
         }
         else
@@ -311,8 +341,8 @@ namespace SpeckleRhino
               layerName = prop;
             }
 
-            var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = layerName };
-            HandleAndConvert(value, converter, subLayer, state);
+            var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = $"{layerName}" };
+            HandleAndConvert(value, converter, subLayer, state, updateProgressAction);
           }
 
           return;
@@ -324,7 +354,7 @@ namespace SpeckleRhino
 
         foreach (var listObj in list)
         {
-          HandleAndConvert(listObj, converter, layer, state);
+          HandleAndConvert(listObj, converter, layer, state, updateProgressAction);
         }
         return;
       }
@@ -333,7 +363,7 @@ namespace SpeckleRhino
       {
         foreach (DictionaryEntry kvp in dict)
         {
-          HandleAndConvert(kvp.Value, converter, layer, state);
+          HandleAndConvert(kvp.Value, converter, layer, state, updateProgressAction);
         }
         return;
       }
@@ -369,6 +399,10 @@ namespace SpeckleRhino
         return state;
       }
 
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 0;
+      Execute.PostToUIThread(() => state.Progress.Maximum = state.Objects.Count());
+
       foreach (var placeholder in state.Objects)
       {
         if (state.CancellationTokenSource.Token.IsCancellationRequested)
@@ -390,6 +424,10 @@ namespace SpeckleRhino
           continue;
         }
 
+        conversionProgressDict["Conversion"]++;
+        UpdateProgress(conversionProgressDict, state.Progress);
+
+        // TODO: potentially get more info from the object: materials and other rhino specific stuff?
         converted.applicationId = placeholder.applicationId;
 
         foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
