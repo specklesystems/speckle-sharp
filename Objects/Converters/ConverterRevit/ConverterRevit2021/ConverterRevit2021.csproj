@@ -21,8 +21,11 @@
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
   </ItemGroup>
+  <PropertyGroup>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+  </PropertyGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
     <Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
   </Target>
 
