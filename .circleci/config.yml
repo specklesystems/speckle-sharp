@@ -1,12 +1,91 @@
 version: 2.1
 
-jobs:
-  # The unit tests.
+orbs:
+  swissknife: roopakv/swissknife@0.54.0
+  jq: circleci/jq@2.2.0
+  win: circleci/windows@2.2.0
 
+jobs:
+  # The job that selects which job to run
+  selective-ci:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    steps:
+      - checkout
+      - jq/install
+      - swissknife/trigger-workflows-for-all-modified:
+          additional-param-map: '{"run_trigger_workflow": false}'
+          code-param-name-map: '[
+            {"regex": "Objects/.*", "param_name": "run_objects"},
+            {"regex": "Core/.*", "param_name": "run_core"}
+          ]'
+  
+  # Core build/test
+  build-core:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    steps:
+      - checkout
+      - run: dotnet restore Core/Core.sln
+      - run: dotnet test Core/Tests/TestsUnit.csproj
+
+  # Objects build/test each proj independently.
+  build-objects:
+    executor:
+      name: win/default
+      shell: powershell.exe
+    steps:
+      - checkout
+      - run:
+          name: Restore Packages
+          command: dotnet restore Objects/Objects.sln -p:IsDesktopBuild=false
+      - run: 
+          name: "Objects"
+          command: dotnet build Objects/Objects/Objects.csproj -p:IsDesktopBuild=false
+      - run: 
+          name: "Dynamo Connector"
+          command: dotnet build Objects/Converters/ConverterDynamo/ConverterDynamo/ConverterDynamo.csproj -p:IsDesktopBuild=false
+      - run: 
+          name: "Revit 2019"
+          command: dotnet build Objects/Converters/ConverterRevit/ConverterRevit2019/ConverterRevit2019.csproj -p:IsDesktopBuild=false
+      - run: 
+          name: "Revit 2020"
+          command: dotnet build Objects/Converters/ConverterRevit/ConverterRevit2020/ConverterRevit2020.csproj -p:IsDesktopBuild=false
+      - run: 
+          name: "Revit 2021"
+          command: dotnet build Objects/Converters/ConverterRevit/ConverterRevit2021/ConverterRevit2021.csproj -p:IsDesktopBuild=false
+      - run: 
+          name: "GH Connector"
+          command: dotnet build Objects/Converters/ConverterRhinoGh/ConverterRhinoGh/ConverterRhinoGh.csproj -p:IsDesktopBuild=false
+  build-connector-gh:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    steps:
+      - checkout
+      - run: dotnet build ConnectorGrasshopper/ConnectorGrasshopper.sln
+  build-connector-dynamo:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    steps:
+      - checkout
+      - run: dotnet build ConnectorDynamo/ConnectorDynamo.sln
+  build-connector-revit:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    steps:
+      - checkout
+      - run: dotnet build ConnectorRevit/ConnectorRevit.sln
+  build-connector-rhino:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    steps:
+      - checkout
+      - run: dotnet build ConnectorRhino/ConnectorRhino.sln
+    
+  # The unit tests.
   unit-tests:
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
-
     steps:
       - checkout
       - run:
@@ -18,7 +97,6 @@ jobs:
       - run: dotnet test Core/Tests/TestsUnit.csproj < /dev/null
 
   # The integration tests. Spins up a full blown speckle server.
-
   integration-tests:
     working_directory: /temp
 
@@ -78,8 +156,63 @@ jobs:
           working_directory: core
           command: dotnet test Core/IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true"
 
+# The main workflows for our monorepo pipeline.
 workflows:
-  test:
+  ci:
+    when: << pipeline.parameters.run_trigger_workflow >>
     jobs:
-      - integration-tests
-      - unit-tests
+      - selective-ci
+  objects:
+    when: << pipeline.parameters.run_objects >>
+    jobs:
+      - build-objects
+  core:
+    when: << pipeline.parameters.run_core >>
+    jobs:
+      - build-core
+  connector_grasshopper:
+    when: << pipeline.parameters.run_connector_gh >>
+    jobs:
+      - build-connector-gh
+  connector_rhino:
+    when: << pipeline.parameters.run_connector_rhino >>
+    jobs:
+      - build-connector-rhino
+  connector_dynamo:
+    when: << pipeline.parameters.run_connector_dynamo >>
+    jobs:
+      - build-connector-dynamo
+  connector_revit:
+    when: << pipeline.parameters.run_connector_revit >>
+    jobs:
+      - build-connector-revit
+
+  # test:
+  #   when: << pipeline.parameters.run_trigger_workflow >>
+  #   jobs:
+  #     - integration-tests
+  #     - unit-tests
+
+# Parameters of our pipeline. Most of them are booleans that indicate which project to build/test.
+parameters:
+  run_core:
+    type: boolean
+    default: false
+  run_objects:
+    type: boolean
+    default: false
+  run_connector_gh:
+    type: boolean
+    default: false
+  run_connector_revit:
+    type: boolean
+    default: false
+  run_connector_dynamo:
+    type: boolean
+    default: false
+  run_connector_rhino:
+    type: boolean
+    default: false
+  run_trigger_workflow:
+    type: boolean
+    default: true
