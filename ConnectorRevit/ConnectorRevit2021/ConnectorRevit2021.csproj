@@ -84,8 +84,11 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+  </PropertyGroup>
   <!-- POST BUILD EVENTS START -->
-  <Target Name="AfterBuild">
+  <Target Name="AfterBuild"  Condition="'$(IsDesktopBuild)' == true">
     <CallTarget Condition="'$(Configuration)' == 'Debug'" Targets="AfterBuildDebug" />
     <CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />
   </Target>
@@ -97,7 +100,7 @@
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
   </Target>
-  <Target Name="AfterBuildRelease">
+  <Target Name="AfterBuildRelease" >
     <ItemGroup>
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
       <SourceManifest Include="$(TargetDir)*.addin" />

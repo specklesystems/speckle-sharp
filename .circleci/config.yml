@@ -17,7 +17,11 @@ jobs:
           additional-param-map: '{"run_trigger_workflow": false}'
           code-param-name-map: '[
             {"regex": "Objects/.*", "param_name": "run_objects"},
-            {"regex": "Core/.*", "param_name": "run_core"}
+            {"regex": "Core/.*", "param_name": "run_core"},
+            {"regex": "ConnectorGrasshopper/.*", "param_name": "run_connector_gh"},
+            {"regex": "ConnectorDynamo/.*", "param_name": "run_connector_dynamo"},
+            {"regex": "ConnectorRevit/.*", "param_name": "run_connector_revit"},
+            {"regex": "ConnectorRhino/.*", "param_name": "run_connector_rhino"}
           ]'
   
   # Core build/test
@@ -26,9 +30,15 @@ jobs:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
     steps:
       - checkout
-      - run: dotnet restore Core/Core.sln
-      - run: dotnet test Core/Tests/TestsUnit.csproj
-
+      - run: 
+          name: Restore Core packages
+          command: dotnet restore Core/Core.sln
+      - run: 
+          name: Build Core
+          command: dotnet build Core/Core.sln --no-restore
+      - run: 
+          name: Test Core
+          command: dotnet test Core/Tests/TestsUnit.csproj --no-restore --no-build
   # Objects build/test each proj independently.
   build-objects:
     executor:
@@ -37,50 +47,89 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Restore Packages
+          name: Restore Objects Packages
           command: dotnet restore Objects/Objects.sln -p:IsDesktopBuild=false
       - run: 
-          name: "Objects"
+          name: Build Objects
           command: dotnet build Objects/Objects/Objects.csproj -p:IsDesktopBuild=false
       - run: 
-          name: "Dynamo Connector"
+          name: Build Dynamo Converter
           command: dotnet build Objects/Converters/ConverterDynamo/ConverterDynamo/ConverterDynamo.csproj -p:IsDesktopBuild=false
       - run: 
-          name: "Revit 2019"
+          name: Build Revit 2019 Converter
           command: dotnet build Objects/Converters/ConverterRevit/ConverterRevit2019/ConverterRevit2019.csproj -p:IsDesktopBuild=false
       - run: 
-          name: "Revit 2020"
+          name: Build Revit 2020 Converter
           command: dotnet build Objects/Converters/ConverterRevit/ConverterRevit2020/ConverterRevit2020.csproj -p:IsDesktopBuild=false
       - run: 
-          name: "Revit 2021"
+          name: Build Revit 2021 Converter
           command: dotnet build Objects/Converters/ConverterRevit/ConverterRevit2021/ConverterRevit2021.csproj -p:IsDesktopBuild=false
       - run: 
-          name: "GH Connector"
-          command: dotnet build Objects/Converters/ConverterRhinoGh/ConverterRhinoGh/ConverterRhinoGh.csproj -p:IsDesktopBuild=false
+          name: Build Restore GH Converter
+          command: nuget restore Objects/Converters/ConverterRhinoGh/ConverterRhinoGh/ConverterRhinoGh.csproj
+      - run: 
+          name: Build GH Converter
+          command: msbuild Objects/Converters/ConverterRhinoGh/ConverterRhinoGh/ConverterRhinoGh.csproj /p:Configuration=Release /p:PreBuildEvent= /p:PostBuildEvent=
   build-connector-gh:
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    executor:
+      name: win/default
+      shell: powershell.exe
     steps:
       - checkout
-      - run: dotnet build ConnectorGrasshopper/ConnectorGrasshopper.sln
+      - run: 
+          name: Clone GH Connector dependencies
+          command: git clone https://github.com/specklesystems/GrasshopperAsyncComponent.git ../GrasshopperAsyncComponent/
+      - run: 
+          name: Restore GH Connector dependencies
+          command: nuget restore ../GrasshopperAsyncComponent/GrasshopperAsyncComponent/GrasshopperAsyncComponent.sln
+      - run: 
+          name: Restore GH Connector
+          command: nuget restore ConnectorGrasshopper/ConnectorGrasshopper.sln
+      - run: 
+          name: Build GH Connector
+          command: msbuild ConnectorGrasshopper/ConnectorGrasshopper.sln /p:Configuration=Release
   build-connector-dynamo:
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    executor:
+      name: win/default
+      shell: powershell.exe
     steps:
       - checkout
-      - run: dotnet build ConnectorDynamo/ConnectorDynamo.sln
+      - run: 
+          name: Restore Dynamo Connector
+          command: nuget restore ConnectorDynamo/ConnectorDynamo.sln
+      - run: 
+          name: Build Dynamo Connector
+          command: msbuild ConnectorDynamo/ConnectorDynamo.sln
   build-connector-revit:
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    executor:
+      name: win/default
+      shell: powershell.exe
     steps:
       - checkout
-      - run: dotnet build ConnectorRevit/ConnectorRevit.sln
+      - run: 
+          name: Restore Revit Connector
+          command: nuget restore ConnectorRevit/ConnectorRevit.sln
+      - run: 
+          name: Build Revit 2021 Connector
+          command: msbuild ConnectorRevit/ConnectorRevit2021/ConnectorRevit2021.csproj /p:Configuration=Release /p:PreBuildEvent= /p:PostBuildEvent= /p:AfterBuildRelease= /p:IsDesktopBuild=false
+      - run: 
+          name: Build Revit 2020 Connector
+          command: msbuild ConnectorRevit/ConnectorRevit2020/ConnectorRevit2020.csproj /p:Configuration=Release /p:PreBuildEvent= /p:PostBuildEvent= /p:AfterBuildRelease= /p:IsDesktopBuild=false
+      - run: 
+          name: Build Revit 2019 Connector
+          command: msbuild ConnectorRevit/ConnectorRevit2019/ConnectorRevit2019.csproj /p:Configuration=Release /p:PreBuildEvent= /p:PostBuildEvent= /p:AfterBuildRelease= /p:IsDesktopBuild=false
   build-connector-rhino:
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    executor:
+      name: win/default
+      shell: powershell.exe
     steps:
       - checkout
-      - run: dotnet build ConnectorRhino/ConnectorRhino.sln
+      - run: 
+          name: Restore Rhino Connector
+          command: nuget restore ConnectorRhino/ConnectorRhino.sln
+      - run: 
+          name: Build Rhino Connector
+          command: msbuild ConnectorRhino/ConnectorRhino.sln /p:Configuration=Release
     
   # The unit tests.
   unit-tests:
@@ -161,7 +210,12 @@ workflows:
   ci:
     when: << pipeline.parameters.run_trigger_workflow >>
     jobs:
-      - selective-ci
+      - selective-ci:
+          filters:  # using regex filters requires the entire branch to match
+            branches:
+              only:  # only branches matching the below regex filters will run
+                - master
+                - /ci\/.*/
   objects:
     when: << pipeline.parameters.run_objects >>
     jobs:
