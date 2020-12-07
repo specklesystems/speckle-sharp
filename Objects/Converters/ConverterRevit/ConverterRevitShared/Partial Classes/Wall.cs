@@ -105,7 +105,7 @@ namespace Objects.Converter.Revit
         heightParam.Set(ScaleToNative(speckleWall.height, speckleWall.units));
       }
 
-      SetElementParamsFromSpeckle(revitWall, speckleWall);
+      SetInstanceParameters(revitWall, speckleWall);
 
       var placeholders = new List<ApplicationPlaceholderObject>() {new ApplicationPlaceholderObject
       {
@@ -116,12 +116,11 @@ namespace Objects.Converter.Revit
 
       #region hosted elements creation
 
-      var hostedElements = speckleWall["hostedElements"] as List<Base>;
-      if (hostedElements != null)
+      if (speckleWall.elements != null)
       {
         CurrentHostElement = revitWall; // set the wall as the current host element.
 
-        foreach (var obj in hostedElements)
+        foreach (var obj in speckleWall.elements)
         {
           if (obj == null)
           {
@@ -237,7 +236,7 @@ namespace Objects.Converter.Revit
 
         if (hostedElements.Count != 0)
         {
-          speckleWall.hostedElements = hostedElementsList;
+          speckleWall.elements = hostedElementsList;
         }
       }
 

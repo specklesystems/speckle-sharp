@@ -203,58 +203,41 @@ namespace Objects.Converter.Revit
     }
 
     /// <summary>
-    /// Note: this is a function that is a bit slow and not sure it actually does anything much, as most of the things it tries to set fail.
-    /// I've removed it from the wall conversion for a 5x speedup...
     /// </summary>
-    /// <param name="myElement"></param>
+    /// <param name="revitElement"></param>
     /// <param name="spkElement"></param>
     /// <param name="exclusions"></param>
-    public void SetElementParamsFromSpeckle(Element myElement, Base spkElement, List<string> exclusions = null)
+    public void SetInstanceParameters(Element revitElement, Base spkElement, List<string> exclusions = null)
     {
-      if (myElement == null)
-      {
+      if (revitElement == null)
         return;
-      }
 
       var paramDictionary = spkElement["parameters"] as Dictionary<string, object>;
-
-      if (paramDictionary == null)
-      {
+      if (paramDictionary == null || !paramDictionary.Any())
         return;
-      }
 
-      foreach (var kvp in paramDictionary)
+      exclusions = (exclusions != null) ? exclusions : new List<string>();
+      var cleanParams = paramDictionary.Where(x => !x.Key.StartsWith("__") && !exclusions.Contains(x.Key));
+
+
+      var elemParams = revitElement.ParametersMap.Cast<Parameter>().Where(x => x != null && !x.IsReadOnly)
+        .ToDictionary(x => x.Definition.Name, x => x);
+
+      foreach (var kvp in cleanParams)
       {
-        if (kvp.Key.Contains("__unitType::"))
-        {
-          continue; // skip unit types please
-        }
-
-        if (exclusions != null && exclusions.Contains(kvp.Key))
-        {
-          continue;
-        }
-
         try
         {
           var keyName = UnsanitizeKeyname(kvp.Key);
-          if (keyName.StartsWith("__")) continue;
+          if (!elemParams.ContainsKey(keyName))
+            continue;
+
           //TODO: try support params in foreign language
-          var myParam = myElement.ParametersMap.get_Item(keyName);
-          if (myParam == null)
-          {
-            continue;
-          }
+          var parameter = elemParams[keyName];
 
-          if (myParam.IsReadOnly)
-          {
-            continue;
-          }
-
-          switch (myParam.StorageType)
+          switch (parameter.StorageType)
           {
             case StorageType.Double:
-              var hasUnitKey = paramDictionary.ContainsKey("__unitType::" + myParam.Definition.Name);
+              var hasUnitKey = paramDictionary.ContainsKey("__unitType::" + parameter.Definition.Name);
               if (hasUnitKey)
               {
                 var unitType = (string)paramDictionary["__unitType::" + kvp.Key];
@@ -263,20 +246,20 @@ namespace Objects.Converter.Revit
                 Enum.TryParse(unit, out sourceUnit);
                 var convertedValue = UnitUtils.ConvertToInternalUnits(Convert.ToDouble(kvp.Value), sourceUnit);
 
-                myParam.Set(convertedValue);
+                parameter.Set(convertedValue);
               }
               else
               {
-                myParam.Set(Convert.ToDouble(kvp.Value));
+                parameter.Set(Convert.ToDouble(kvp.Value));
               }
               break;
 
             case StorageType.Integer:
-              myParam.Set(Convert.ToInt32(kvp.Value));
+              parameter.Set(Convert.ToInt32(kvp.Value));
               break;
 
             case StorageType.String:
-              myParam.Set(Convert.ToString(kvp.Value));
+              parameter.Set(Convert.ToString(kvp.Value));
               break;
 
             case StorageType.ElementId:
@@ -284,7 +267,7 @@ namespace Objects.Converter.Revit
               break;
           }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
         }
       }

@@ -106,7 +106,7 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitRoof != null)
       {
-        SetElementParamsFromSpeckle(revitRoof, speckleRevitRoof);
+        SetInstanceParameters(revitRoof, speckleRevitRoof);
       }
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitRoof.applicationId, ApplicationGeneratedId = revitRoof.UniqueId, NativeObject = revitRoof } };

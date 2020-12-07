@@ -170,22 +170,28 @@ namespace Objects.Converter.Revit
         }
       }
 
+      Doc.Regenerate();
+
       TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
 
-      if (speckleFi.handFlipped != familyInstance.HandFlipped)
+      if (familyInstance.CanFlipHand && speckleFi.handFlipped != familyInstance.HandFlipped)
       {
         familyInstance.flipHand();
       }
 
-      if (speckleFi.facingFlipped != familyInstance.FacingFlipped)
+      if (familyInstance.CanFlipFacing && speckleFi.facingFlipped != familyInstance.FacingFlipped)
       {
         familyInstance.flipFacing();
       }
 
-      var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
-      (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
+      if (familyInstance.CanRotate && speckleFi.rotation != (familyInstance.Location as LocationPoint).Rotation)
+      {
+        var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
+        (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
+      }
+        
 
-      //SetElementParamsFromSpeckle(familyInstance, speckleFi); // slow and unsteady, fails most of the times
+      SetInstanceParameters(familyInstance, speckleFi);
 
       var placeholders = new List<ApplicationPlaceholderObject>() {
         new ApplicationPlaceholderObject {
