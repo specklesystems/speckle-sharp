@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
       var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;
 
       var wallType = GetElementType<WallType>(speckleWall);
-      var level = GetFirstDocLevel();
+      Level level = null;
       var structural = false;
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
 

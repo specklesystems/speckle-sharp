@@ -92,7 +92,7 @@ namespace ConverterRevitTests
           {
             resEls.AddRange(apls);
           }
-          else resEls.Add(el);
+          else resEls.Add(res);
         }
       }, fixture.NewDoc).Wait();
 
@@ -227,7 +227,9 @@ namespace ConverterRevitTests
       {
         var e1 = fixture.SourceDoc.GetElement(expecedParam.AsElementId());
         var e2 = fixture.NewDoc.GetElement(actual.get_Parameter(param).AsElementId());
-        if (e1 != null && e2 != null)
+        if(e1 is Level l1 && e2 is Level l2)
+          Assert.Equal(l1.Elevation, l2.Elevation, 3);
+        else if (e1 != null && e2 != null)
           Assert.Equal(e1.Name, e2.Name);
       }
     }
