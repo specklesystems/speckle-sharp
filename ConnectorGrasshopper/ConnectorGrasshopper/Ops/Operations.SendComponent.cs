@@ -51,7 +51,7 @@ namespace ConnectorGrasshopper.Ops
 
     public ISpeckleKit Kit;
 
-    public SendComponent() : base("Send", "Send", "Sends data to the provided transports/streams.", "Speckle 2",
+    public SendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", "Speckle 2",
       "   Send/Receive")
     {
       BaseWorker = new SendComponentWorker(this);
@@ -123,7 +123,7 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("Data", "D", "A Speckle object containing the data you want to send.",
+      pManager.AddGenericParameter("Data", "D", "The data to send.",
         GH_ParamAccess.tree);
       pManager.AddGenericParameter("Stream", "S", "Stream(s) and/or transports to send to.", GH_ParamAccess.tree);
       pManager.AddTextParameter("Branch", "B", "The branch you want your commit associated with.", GH_ParamAccess.tree,
@@ -137,8 +137,9 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("Commits", "C",
-        "The created commits. Commits are created automatically for any streams.", GH_ParamAccess.list);
+      // TODO:  Ouptut of dynamo is just a "stream", but we have several outputs here, should I kill them?
+      pManager.AddGenericParameter("Stream", "S",
+        "Stream or streams pointing to the created commit", GH_ParamAccess.list);
       pManager.AddTextParameter("Object Id", "O", "The object id (hash) of the sent data.", GH_ParamAccess.list);
       pManager.AddGenericParameter("Data", "D", "The actual sent object.", GH_ParamAccess.list);
     }

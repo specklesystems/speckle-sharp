@@ -185,9 +185,9 @@ namespace Speckle.ConnectorDynamo.SendNode
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("data", "The data to send")));
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream", "The stream or streams to send to")));
       InPorts.Add(new PortModel(PortType.Input, this,
-        new PortData("branchName", "The branch to use to", defaultBranchValue)));
+        new PortData("branchName", "The branch you want your commit associated with.", defaultBranchValue)));
       InPorts.Add(new PortModel(PortType.Input, this,
-        new PortData("message", "The commit message", defaultMessageValue)));
+        new PortData("message", "Commit message. If left blank, one will be generated for you.", defaultMessageValue)));
     }
 
     private void AddOutputs()

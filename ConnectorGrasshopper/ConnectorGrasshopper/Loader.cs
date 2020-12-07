@@ -30,6 +30,9 @@ namespace ConnectorGrasshopper
     {
       Setup.Init(Applications.Grasshopper);
       Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
+      Grasshopper.Instances.ComponentServer.AddCategoryIcon("Speckle2", Properties.Resources.speckle_logo);
+      Grasshopper.Instances.ComponentServer.AddCategorySymbolName("Speckle2", 'S');
+
       return GH_LoadingInstruction.Proceed;
     }
 

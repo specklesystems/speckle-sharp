@@ -26,7 +26,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
   /// <summary>
   /// Create Stream
   /// </summary>
-  [NodeName("Create")]
+  [NodeName("Create Stream")]
   [NodeCategory("Speckle 2.Stream.Create")]
   [NodeDescription("Create a new Speckle Stream")]
   [NodeSearchTags("stream", "create", "speckle")]
