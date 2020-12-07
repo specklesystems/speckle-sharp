@@ -13,30 +13,38 @@ namespace Objects.BuiltElements.Revit
     public string family { get; set; }
 
     public string type { get; set; }
-
-    [SchemaOptional]
-    public double rotation { get; set; }
-
-    [SchemaOptional]
-    public bool facingFlipped { get; set; }
-
-    [SchemaOptional]
-    public bool handFlipped { get; set; }
-
-    [JsonIgnore]
-    [SchemaIgnore]
-    public string revitHostId { get; set; }
-
-    [SchemaOptional]
-    public Dictionary<string, object> parameters { get; set; }
-
-    [SchemaIgnore]
-    public Dictionary<string, object> typeParameters { get; set; }
-
-    [SchemaOptional]
     public Level level { get; set; }
 
-    [SchemaIgnore]
+    public double rotation { get; set; }
+
+    public bool facingFlipped { get; set; }
+
+    public bool handFlipped { get; set; }
+
+    public Dictionary<string, object> parameters { get; set; }
+
+    public Dictionary<string, object> typeParameters { get; set; }
+
     public string elementId { get; set; }
+
+    public FamilyInstance()
+    {
+
+    }
+
+    [SchemaInfo("FamilyInstance", "Creates a Revit family instance")]
+    public FamilyInstance(Point basePoint, string family, string type, Level level,
+      double rotation = 0, bool facingFlipped = false, bool handFlipped = false,
+      Dictionary<string, object> parameters = null)
+    {
+      this.basePoint = basePoint;
+      this.family = family;
+      this.type = type;
+      this.level = level;
+      this.rotation = rotation;
+      this.facingFlipped = facingFlipped;
+      this.handFlipped = handFlipped;
+      this.parameters = parameters;
+    }
   }
 }

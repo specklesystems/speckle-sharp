@@ -20,7 +20,7 @@ namespace Objects.Converter.Revit
     {
 
       #region host handling
-      
+
       // Check if it's been converted previously - from a parent host.
       if (ConvertedObjectsList.IndexOf(revitFi.UniqueId) != -1)
       {
@@ -82,11 +82,6 @@ namespace Objects.Converter.Revit
       if (revitFi.Location is LocationPoint)
       {
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
-      }
-
-      if (revitFi.Host != null)
-      {
-        speckleFi.revitHostId = revitFi.Host.UniqueId;
       }
 
       speckleFi["@displayMesh"] = GetElementMesh(revitFi, subElements);
@@ -164,7 +159,7 @@ namespace Objects.Converter.Revit
       if (familyInstance == null)
       {
         //If the current host element is not null, it means we're coming from inside a nested conversion. 
-        if(CurrentHostElement != null)
+        if (CurrentHostElement != null)
         {
           familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
         }
@@ -192,12 +187,12 @@ namespace Objects.Converter.Revit
 
       //SetElementParamsFromSpeckle(familyInstance, speckleFi); // slow and unsteady, fails most of the times
 
-      var placeholders = new List<ApplicationPlaceholderObject>() { 
-        new ApplicationPlaceholderObject { 
-          applicationId = speckleFi.applicationId, 
+      var placeholders = new List<ApplicationPlaceholderObject>() {
+        new ApplicationPlaceholderObject {
+          applicationId = speckleFi.applicationId,
           ApplicationGeneratedId = familyInstance.UniqueId,
           NativeObject = familyInstance
-        } 
+        }
       };
 
       return placeholders;

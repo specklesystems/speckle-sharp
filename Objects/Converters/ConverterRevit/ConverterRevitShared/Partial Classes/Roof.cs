@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
+using Objects.BuiltElements.Revit.RevitRoof;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using System;
@@ -67,15 +68,15 @@ namespace Objects.Converter.Revit
               var poly = speckleFootprintRoof.outline as Polycurve;
               var isSloped = ((Base)poly.segments[i])["isSloped"] as bool?;
               revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), isSloped == true);
-              
+
               try
               {
                 var slopeAngle = ((Base)poly.segments[i])["slopeAngle"] as double?;
-                revitFootprintRoof.set_SlopeAngle(curveArray.get_Item(i), (double) slopeAngle);
+                revitFootprintRoof.set_SlopeAngle(curveArray.get_Item(i), (double)slopeAngle);
               }
               catch { }
               var offset = ((Base)poly.segments[i])["offset"] as double?;
-              revitFootprintRoof.set_Offset(curveArray.get_Item(i), (double) offset);
+              revitFootprintRoof.set_Offset(curveArray.get_Item(i), (double)offset);
             }
             if (speckleFootprintRoof.cutOffLevel != null)
             {

@@ -79,15 +79,18 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+  </PropertyGroup>
   <!-- POST BUILD EVENTS START -->
-  <Target Name="AfterBuild">
+  <Target Name="AfterBuild" Condition="'$(IsDesktopBuild)' == true">
     <CallTarget Condition="'$(Configuration)' == 'Debug'" Targets="AfterBuildDebug" />
     <CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />
   </Target>
   <Target Name="AfterBuildDebug">
     <ItemGroup>
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
-      <SourceManifest Include="$(ProjectDir)*.addin" />
+      <SourceManifest Include="$(TargetDir)*.addin" />
     </ItemGroup>
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
@@ -95,7 +98,7 @@
   <Target Name="AfterBuildRelease">
     <ItemGroup>
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
-      <SourceManifest Include="$(ProjectDir)*.addin" />
+      <SourceManifest Include="$(TargetDir)*.addin" />
     </ItemGroup>
     <Message Importance="High" Text="RELEASE copy from $(TargetDir) to $(SolutionDir)\Release\Release$(RevitVersion)\$(RevitFolderName)\" />
     <Copy DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />

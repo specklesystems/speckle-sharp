@@ -25,21 +25,22 @@ namespace Objects.Converter.Revit
       var docLevels = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
 
       var existingLevel = docLevels.FirstOrDefault(docLevel => docLevel.Name == speckleLevel.name);
-      var speckleLevelElevation = speckleLevel.elevation != null ? (double?)ScaleToNative((double)speckleLevel.elevation, ((Base)speckleLevel).units) : null;
 
-      // If we don't have an elevation, either return the existing level or fail.
-      if (speckleLevelElevation == null)
+      // it's a level created with schema builder for reference only
+      // we only try to match it by name
+      var rl = speckleLevel as RevitLevel;
+      if (rl != null && rl.referenceOnly)
       {
         if (existingLevel != null)
-        {
           return existingLevel;
-        }
         else
         {
-          ConversionErrors.Add(new Error { message = $"Could not find level {speckleLevel.name} in this document. Please create it first by setting an elevation." });
+          ConversionErrors.Add(new Error { message = $"Could not find level '{speckleLevel.name}' in this document." });
           return null;
         }
       }
+
+      var speckleLevelElevation = ScaleToNative((double)speckleLevel.elevation, speckleLevel.units);
 
       // If we don't have an existing level, create it.
       if (existingLevel == null)
@@ -55,7 +56,7 @@ namespace Objects.Converter.Revit
           existingLevel.Name = speckleLevel.name;
         }
 
-        if (speckleLevel is RevitLevel rl && rl.createView)
+        if (rl != null && rl.createView)
         {
           CreateViewPlan(speckleLevel.name, existingLevel.Id);
         }
@@ -63,7 +64,7 @@ namespace Objects.Converter.Revit
       }
 
       // If we do have an existing level and the elevations are different, gently edit the existing level.
-      if (Math.Abs((double)speckleLevelElevation - existingLevel.Elevation) > 0.0164042) // 0.5cm tolerance.
+      if (Math.Abs((double)speckleLevelElevation - existingLevel.Elevation) > 0.0164042) // 5mm tolerance.
       {
         if (modifiedLevels.ContainsKey(existingLevel.Name))
         {
