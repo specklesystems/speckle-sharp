@@ -65,13 +65,13 @@ namespace ConnectorGrasshopper.Conversion
 
           try
           {
-            var deserialised = Operations.Deserialize(item.Value);
-            ConvertedObjects.Append(new GH_SpeckleBase() { Value = deserialised }, Objects.Paths[branchIndex]);
+            var deserialized = Operations.Deserialize(item.Value);
+            ConvertedObjects.Append(new GH_SpeckleBase { Value = deserialized }, path);
           }
           catch (Exception e)
           {
-            ConvertedObjects.Append(new GH_SpeckleBase() { Value = null }, Objects.Paths[branchIndex]);
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Object at {Objects.Paths[branchIndex]} is not a Speckle object. Exception: {e.Message}.");
+            ConvertedObjects.Append(new GH_SpeckleBase { Value = null }, path);
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Object at {path} is not a Speckle object. Exception: {e.Message}.");
           }
 
           ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
@@ -98,7 +98,7 @@ namespace ConnectorGrasshopper.Conversion
         var path = _objects.Paths[branchIndex];
         foreach (var item in list)
         {
-          Objects.Append(item, _objects.Paths[branchIndex]);
+          Objects.Append(item,path);
         }
         branchIndex++;
       }
