@@ -404,6 +404,8 @@ namespace ConnectorGrasshopper.Ops
       ErrorAction = (transportName, exception) =>
       {
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
+        var asyncParent = (GH_AsyncComponent) Parent;
+        asyncParent.CancellationSources.ForEach(source => source.Cancel());
       };
 
       if (CancellationToken.IsCancellationRequested)
