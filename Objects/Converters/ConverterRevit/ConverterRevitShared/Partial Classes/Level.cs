@@ -12,10 +12,13 @@ namespace Objects.Converter.Revit
   public partial class ConverterRevit
   {
 
-    private Dictionary<string, Level> modifiedLevels = new Dictionary<string, Level>();
-
     /// <summary>
-    /// BORKED: what happens if you change the level's name?
+    /// Tries to find a level by ELEVATION only, otherwise it creates it.
+    /// Unless it was created with schema builder and has `referenceOnly=true`, in which case it gets it by name only
+    /// Reason for this approach, take the example below: 
+    /// source file has L0 @0m and L1 @4m
+    /// dest file has L1 @0m and L2 @4m
+    /// attempting to move or rename levels would just be a mess, hence, we don't do that!
     /// </summary>
     /// <param name="speckleLevel"></param>
     /// <returns></returns>
@@ -24,13 +27,12 @@ namespace Objects.Converter.Revit
       if (speckleLevel == null) return null;
       var docLevels = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
 
-      var existingLevel = docLevels.FirstOrDefault(docLevel => docLevel.Name == speckleLevel.name);
-
       // it's a level created with schema builder for reference only
       // we only try to match it by name
       var rl = speckleLevel as RevitLevel;
       if (rl != null && rl.referenceOnly)
       {
+        var existingLevel = docLevels.FirstOrDefault(docLevel => docLevel.Name == speckleLevel.name);
         if (existingLevel != null)
           return existingLevel;
         else
@@ -41,44 +43,20 @@ namespace Objects.Converter.Revit
       }
 
       var speckleLevelElevation = ScaleToNative((double)speckleLevel.elevation, speckleLevel.units);
+      var existingLevelByElevation = docLevels.FirstOrDefault(l => Math.Abs(l.Elevation - (double)speckleLevelElevation) < 0.0164042);
+      if (existingLevelByElevation != null)
+        return existingLevelByElevation;
 
       // If we don't have an existing level, create it.
-      if (existingLevel == null)
+      var level = Level.Create(Doc, (double)speckleLevelElevation);
+      if (!docLevels.Any(x => x.Name == speckleLevel.name))
+        level.Name = speckleLevel.name;
+      if (rl != null && rl.createView)
       {
-        var existingLevelByElevation = docLevels.FirstOrDefault(l => Math.Abs(l.Elevation - (double)speckleLevelElevation) < 0.0164042);
-        if (existingLevelByElevation != null)
-        {
-          existingLevel = existingLevelByElevation;
-        }
-        else
-        {
-          existingLevel = Level.Create(Doc, (double)speckleLevelElevation);
-          existingLevel.Name = speckleLevel.name;
-        }
-
-        if (rl != null && rl.createView)
-        {
-          CreateViewPlan(speckleLevel.name, existingLevel.Id);
-        }
-        return existingLevel;
+        CreateViewPlan(speckleLevel.name, level.Id);
       }
+      return level;
 
-      // If we do have an existing level and the elevations are different, gently edit the existing level.
-      if (Math.Abs((double)speckleLevelElevation - existingLevel.Elevation) > 0.0164042) // 5mm tolerance.
-      {
-        if (modifiedLevels.ContainsKey(existingLevel.Name))
-        {
-          ConversionErrors.Add(new Error { details = $"Specifically, ${existingLevel.Name} has been found with an elevation of {speckleLevelElevation} and {modifiedLevels[speckleLevel.name].Elevation}.", message = $"Found levels with same name but different elevations." });
-
-          return existingLevel;
-        }
-
-        existingLevel.Elevation = (double)speckleLevelElevation;
-        modifiedLevels[existingLevel.Name] = existingLevel;
-        return existingLevel;
-      }
-
-      return existingLevel;
     }
 
     public RevitLevel LevelToSpeckle(DB.Level revitLevel)
