@@ -9,6 +9,7 @@ namespace ConverterRevitTests
   public class ColumnFixture : SpeckleConversionFixture
   {
     public override string TestFile => Globals.GetTestModel("FamilyInstance.rvt");
+    public override string UpdatedTestFile => Globals.GetTestModel("FamilyInstanceUpdated.rvt");
     public override string NewFile => Globals.GetTestModel("FamilyInstance_ToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns };
 
@@ -38,6 +39,13 @@ namespace ConverterRevitTests
     public void ColumnToNative()
     {
       SpeckleToNative<DB.FamilyInstance>(AssertFamilyInstanceEqual);
+    }
+
+    [Fact]
+    [Trait("Column", "ToNativeUpdates")]
+    public void WallToNativeUpdates()
+    {
+      SpeckleToNativeUpdates<DB.FamilyInstance>(AssertFamilyInstanceEqual);
     }
 
     [Fact]

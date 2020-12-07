@@ -18,16 +18,16 @@ namespace ConverterRevitTests
 
     internal void NativeToSpeckle()
     {
-      ConverterRevit kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.SourceDoc);
+      ConverterRevit converter = new ConverterRevit();
+      converter.SetContextDocument(fixture.SourceDoc);
 
       foreach (var elem in fixture.RevitElements)
       {
-        var spkElem = kit.ConvertToSpeckle(elem);
+        var spkElem = converter.ConvertToSpeckle(elem);
         if (spkElem is Base re)
           AssertValidSpeckleElement(elem, re);
       }
-      Assert.Empty(kit.ConversionErrors);
+      Assert.Empty(converter.ConversionErrors);
     }
 
     internal void NativeToSpeckleBase()
@@ -70,14 +70,14 @@ namespace ConverterRevitTests
       }
 
 
-      ConverterRevit kit = new ConverterRevit();
-      kit.SetContextDocument(doc);
-      var spkElems = elements.Select(x => kit.ConvertToSpeckle(x)).ToList();
+      ConverterRevit converter = new ConverterRevit();
+      converter.SetContextDocument(doc);
+      var spkElems = elements.Select(x => converter.ConvertToSpeckle(x)).ToList();
 
-      kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.NewDoc);
+      converter = new ConverterRevit();
+      converter.SetContextDocument(fixture.NewDoc);
       if (appPlaceholders != null)
-        kit.SetContextObjects(appPlaceholders);
+        converter.SetContextObjects(appPlaceholders);
 
       //var revitEls = new List<object>();
       var resEls = new List<object>();
@@ -87,7 +87,7 @@ namespace ConverterRevitTests
         //revitEls = spkElems.Select(x => kit.ConvertToNative(x)).ToList();
         foreach (var el in spkElems)
         {
-          var res = kit.ConvertToNative(el);
+          var res = converter.ConvertToNative(el);
           if (res is List<ApplicationPlaceholderObject> apls)
           {
             resEls.AddRange(apls);
@@ -96,7 +96,7 @@ namespace ConverterRevitTests
         }
       }, fixture.NewDoc).Wait();
 
-      Assert.Empty(kit.ConversionErrors);
+      Assert.Empty(converter.ConversionErrors);
 
       for (var i = 0; i < spkElems.Count; i++)
       {
@@ -131,12 +131,12 @@ namespace ConverterRevitTests
 
     internal void SelectionToNative<T>(Action<T, T> assert)
     {
-      ConverterRevit kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.SourceDoc);
-      var spkElems = fixture.Selection.Select(x => kit.ConvertToSpeckle(x) as Base).ToList();
+      ConverterRevit converter = new ConverterRevit();
+      converter.SetContextDocument(fixture.SourceDoc);
+      var spkElems = fixture.Selection.Select(x => converter.ConvertToSpeckle(x) as Base).ToList();
 
-      kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.NewDoc);
+      converter = new ConverterRevit();
+      converter.SetContextDocument(fixture.NewDoc);
       var revitEls = new List<object>();
       var resEls = new List<object>();
 
@@ -146,7 +146,7 @@ namespace ConverterRevitTests
         //revitEls = spkElems.Select(x => kit.ConvertToNative(x)).ToList();
         foreach (var el in spkElems)
         {
-          var res = kit.ConvertToNative(el);
+          var res = converter.ConvertToNative(el);
           if (res is List<ApplicationPlaceholderObject> apls)
           {
             resEls.AddRange(apls);
@@ -155,7 +155,7 @@ namespace ConverterRevitTests
         }
       }, fixture.NewDoc).Wait();
 
-      Assert.Empty(kit.ConversionErrors);
+      Assert.Empty(converter.ConversionErrors);
 
       for (var i = 0; i < revitEls.Count; i++)
       {
