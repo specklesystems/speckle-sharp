@@ -26,7 +26,7 @@ namespace ConnectorGrasshopper.Conversion
 
     private ISpeckleKit Kit;
 
-    public ToSpeckleConverterAsync() : base("To Speckle", "To Speckle", "Converts objects to their Speckle equivalents.", "Speckle 2 Dev", "Conversion")
+    public ToSpeckleConverterAsync() : base("To Speckle", "To Speckle", "Convert data from Rhino to their Speckle Base equivalent.", "Speckle 2 Dev", "Conversion")
     {
       SetDefaultKitAndConverter();
       BaseWorker = new ToSpeckleWorker(Converter);
@@ -108,12 +108,12 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("Objects", "O", "Objects you want to convert to Speckle", GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Objects", "O", "Objects to convert to Speckle Base.", GH_ParamAccess.tree);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("Converted", "C", "Converted objects.", GH_ParamAccess.tree);
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Objects", "O", "Converted Speckle objects.", GH_ParamAccess.item));
     }
 
     protected override void BeforeSolveInstance()
@@ -153,7 +153,7 @@ namespace ConnectorGrasshopper.Conversion
           if (CancellationToken.IsCancellationRequested) return;
 
           var converted = Extras.Utilities.TryConvertItemToSpeckle(item, Converter) as Base;
-          ConvertedObjects.Append(new GH_SpeckleBase() { Value = converted }, Objects.Paths[branchIndex]);
+          ConvertedObjects.Append(new GH_SpeckleBase { Value = converted }, Objects.Paths[branchIndex]);
           ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
         }
 
@@ -173,16 +173,16 @@ namespace ConnectorGrasshopper.Conversion
     {
       if (CancellationToken.IsCancellationRequested) return;
 
-      GH_Structure<IGH_Goo> _objects;
+      GH_Structure<GH_SpeckleBase> _objects;
       DA.GetDataTree(0, out _objects);
 
-      int branchIndex = 0;
+      var branchIndex = 0;
       foreach (var list in _objects.Branches)
       {
         var path = _objects.Paths[branchIndex];
         foreach (var item in list)
         {
-          Objects.Append(item, _objects.Paths[branchIndex]);
+          Objects.Append(item, path);
         }
         branchIndex++;
       }

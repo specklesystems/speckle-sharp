@@ -21,14 +21,13 @@ namespace ConnectorGrasshopper.Streams
 
     public StreamWrapper stream { get; set; } = null;
 
-    public StreamCreateComponent() : base("Create Stream", "Create", "Create a new speckle stream", "Speckle 2",
+    public StreamCreateComponent() : base("Create Stream", "sCreate", "Create a new speckle stream", "Speckle 2",
         "Streams")
     { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      var account = pManager.AddTextParameter("Account", "A", "Account to be used when creating the stream.", GH_ParamAccess.item);
-      //Params.Input[account].Optional = true;
+       pManager.AddTextParameter("Account", "A", "Account to be used when creating the stream.", GH_ParamAccess.item);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
