@@ -140,8 +140,8 @@ namespace ConnectorGrasshopper.Ops
       // TODO:  Ouptut of dynamo is just a "stream", but we have several outputs here, should I kill them?
       pManager.AddGenericParameter("Stream", "S",
         "Stream or streams pointing to the created commit", GH_ParamAccess.list);
-      pManager.AddTextParameter("Object Id", "O", "The object id (hash) of the sent data.", GH_ParamAccess.list);
-      pManager.AddGenericParameter("Data", "D", "The actual sent object.", GH_ParamAccess.list);
+      //pManager.AddTextParameter("Object Id", "O", "The object id (hash) of the sent data.", GH_ParamAccess.list);
+      //pManager.AddGenericParameter("Data", "D", "The actual sent object.", GH_ParamAccess.list);
     }
 
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
@@ -231,7 +231,7 @@ namespace ConnectorGrasshopper.Ops
       else if (!JustPastedIn)
       {
         DA.SetDataList(0, OutputWrappers);
-        DA.SetData(1, BaseId);
+        //DA.SetData(1, BaseId);
         CurrentComponentState = "expired";
         Message = "Expired";
         OnDisplayExpired(true);
@@ -509,7 +509,7 @@ namespace ConnectorGrasshopper.Ops
       {
         ((SendComponent)Parent).JustPastedIn = false;
         DA.SetDataList(0, ((SendComponent)Parent).OutputWrappers);
-        DA.SetData(1, ((SendComponent)Parent).BaseId);
+        //DA.SetData(1, ((SendComponent)Parent).BaseId);
         return;
       }
 
@@ -525,8 +525,8 @@ namespace ConnectorGrasshopper.Ops
       }
 
       DA.SetDataList(0, OutputWrappers);
-      DA.SetData(1, BaseId);
-      DA.SetData(2, new GH_SpeckleBase { Value = ObjectToSend });
+      //DA.SetData(1, BaseId);
+      //DA.SetData(2, new GH_SpeckleBase { Value = ObjectToSend });
 
       ((SendComponent)Parent).CurrentComponentState = "up_to_date";
       ((SendComponent)Parent).OutputWrappers =
