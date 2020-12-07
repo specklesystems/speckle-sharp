@@ -22,16 +22,14 @@ namespace ConnectorGrasshopper
     private ToolStripMenuItem speckleMenu;
     private IEnumerable<ToolStripItem> kitMenuItems;
 
-    public Loader()
-    {
-    }
-
     public override GH_LoadingInstruction PriorityLoad()
     {
       Setup.Init(Applications.Grasshopper);
       Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
-      Grasshopper.Instances.ComponentServer.AddCategoryIcon("Speckle2", Properties.Resources.speckle_logo);
-      Grasshopper.Instances.ComponentServer.AddCategorySymbolName("Speckle2", 'S');
+      Grasshopper.Instances.ComponentServer.AddCategoryIcon("Speckle 2", Properties.Resources.speckle_logo);
+      Grasshopper.Instances.ComponentServer.AddCategorySymbolName("Speckle 2", 'S');
+      Grasshopper.Instances.ComponentServer.AddCategoryIcon("Speckle 2 Dev", Properties.Resources.speckle_logo);
+      Grasshopper.Instances.ComponentServer.AddCategorySymbolName("Speckle 2 Dev", 'S');
 
       return GH_LoadingInstruction.Proceed;
     }
