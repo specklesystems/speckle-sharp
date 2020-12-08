@@ -115,7 +115,9 @@ namespace Speckle.ConnectorRevit.UI
 
     private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
     {
-      if (GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView?.Document)) return;
+
+      if (e.Document == null || GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView?.Document))
+        return;
 
       var appEvent = new ApplicationEvent()
       {
@@ -133,7 +135,7 @@ namespace Speckle.ConnectorRevit.UI
 
     private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
     {
-      
+
       //var streamStates = GetStreamsInFile();
       //var appEvent = new ApplicationEvent()
       //{
