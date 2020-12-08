@@ -45,6 +45,10 @@
     <Reference Include="Grasshopper, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=dda4f5ec2cd80803, processorArchitecture=MSIL">
       <HintPath>..\packages\Grasshopper.6.29.20238.11501\lib\net45\Grasshopper.dll</HintPath>
     </Reference>
+    <Reference Include="GrasshopperAsyncComponent, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\GrasshopperAsyncComponent.0.2.0\lib\net45\GrasshopperAsyncComponent.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Rhino.UI, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
       <HintPath>..\packages\RhinoCommon.6.29.20238.11501\lib\net45\Rhino.UI.dll</HintPath>
     </Reference>
@@ -115,10 +119,6 @@
     <Compile Include="Conversion\Serialisation.DeserializeObject.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\GrasshopperAsyncComponent\GrasshopperAsyncComponent\GrasshopperAsyncComponent.csproj">
-      <Project>{695d2b91-ddb6-416e-8a99-dde6253da7aa}</Project>
-      <Name>GrasshopperAsyncComponent</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{b4d98d2c-e5da-463e-bf6c-68e9b77c72f3}</Project>
       <Name>Core</Name>
