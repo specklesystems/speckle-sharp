@@ -173,7 +173,7 @@ namespace ConnectorGrasshopper.Conversion
     {
       if (CancellationToken.IsCancellationRequested) return;
 
-      GH_Structure<GH_SpeckleBase> _objects;
+      GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);
 
       var branchIndex = 0;
