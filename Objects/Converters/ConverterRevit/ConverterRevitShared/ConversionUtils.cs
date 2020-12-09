@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
+using Floor = Objects.BuiltElements.Floor;
 
 namespace Objects.Converter.Revit
 {
@@ -351,24 +352,8 @@ namespace Objects.Converter.Revit
     private T GetElementType<T>(Base element)
     {
       List<ElementType> types = new List<ElementType>();
-      ElementMulticategoryFilter filter = null;
+      ElementMulticategoryFilter filter = GetCategoryFilter(element);
 
-      if (element is BuiltElements.Wall)
-      {
-        filter = new ElementMulticategoryFilter(Categories.wallCategories);
-      }
-      else if (element is Column)
-      {
-        filter = new ElementMulticategoryFilter(Categories.columnCategories);
-      }
-      else if (element is Beam || element is Brace)
-      {
-        filter = new ElementMulticategoryFilter(Categories.beamCategories);
-      }
-      else if (element is Duct)
-      {
-        filter = new ElementMulticategoryFilter(Categories.ductCategories);
-      }
 
       if (filter != null)
       {
@@ -377,11 +362,6 @@ namespace Objects.Converter.Revit
       else
       {
         types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
-      }
-
-      if (element is BuiltElements.Wall)
-      {
-        types.Reverse(); // Hack for "simple" walls: the first types returned are usually curtain walls.
       }
 
       if (types.Count == 0)
@@ -424,7 +404,7 @@ namespace Objects.Converter.Revit
       if (match == null) // okay, try something!
       {
         match = types.First();
-        ConversionErrors.Add(new Error($"Missing type. Family: {family} Type:{type}", $"Type was replaced with: {match.FamilyName} - {match.Name}"));
+        ConversionErrors.Add(new Error($"Missing type. Family: {family} Type:{type}", $"Type was replaced with: {match.FamilyName}, {match.Name}"));
       }
 
       if (match is FamilySymbol fs && !fs.IsActive)
@@ -433,6 +413,47 @@ namespace Objects.Converter.Revit
       }
 
       return (T)(object)match;
+    }
+
+
+    private ElementMulticategoryFilter GetCategoryFilter(Base element)
+    {
+      ElementMulticategoryFilter filter = null;
+      if (element is BuiltElements.Wall)
+      {
+        filter = new ElementMulticategoryFilter(Categories.wallCategories);
+      }
+      else if (element is Column)
+      {
+        filter = new ElementMulticategoryFilter(Categories.columnCategories);
+      }
+      else if (element is Beam || element is Brace)
+      {
+        filter = new ElementMulticategoryFilter(Categories.beamCategories);
+      }
+      else if (element is Duct)
+      {
+        filter = new ElementMulticategoryFilter(Categories.ductCategories);
+      }
+      else if (element is Floor)
+      {
+        filter = new ElementMulticategoryFilter(Categories.floorCategories);
+      }
+      else if (element is Roof)
+      {
+        filter = new ElementMulticategoryFilter(new List<BuiltInCategory> { BuiltInCategory.OST_Roofs });
+      }
+      else
+      {
+        //try get category from the parameters
+        if (element["parameters"] != null && element["parameters"] is Dictionary<string, object> dic && dic.ContainsKey("Category"))
+        {
+          var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == dic["Category"].ToString());
+          if (cat != null)
+            filter = new ElementMulticategoryFilter(new List<ElementId> { cat.Id });     
+        }
+      }
+      return filter;
     }
 
     #endregion

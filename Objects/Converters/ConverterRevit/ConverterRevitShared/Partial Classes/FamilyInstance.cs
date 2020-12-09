@@ -72,9 +72,12 @@ namespace Objects.Converter.Revit
       var baseLevelParam2 = revitFi.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
       var subElements = GetFamSubElements(revitFi);
 
+      var symbol = Doc.GetElement(revitFi.GetTypeId()) as FamilySymbol;
+
       var speckleFi = new BuiltElements.Revit.FamilyInstance();
       speckleFi.basePoint = basePoint;
-      speckleFi.type = Doc.GetElement(revitFi.GetTypeId()).Name;
+      speckleFi.family = symbol.FamilyName;
+      speckleFi.type = symbol.Name;
       speckleFi.facingFlipped = revitFi.FacingFlipped;
       speckleFi.handFlipped = revitFi.HandFlipped;
       speckleFi.level = ConvertAndCacheLevel(baseLevelParam);
@@ -172,6 +175,7 @@ namespace Objects.Converter.Revit
 
       Doc.Regenerate();
 
+      TrySetParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
       TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
 
       if (familyInstance.CanFlipHand && speckleFi.handFlipped != familyInstance.HandFlipped)
@@ -189,7 +193,7 @@ namespace Objects.Converter.Revit
         var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
         (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
       }
-        
+
 
       SetInstanceParameters(familyInstance, speckleFi);
 
