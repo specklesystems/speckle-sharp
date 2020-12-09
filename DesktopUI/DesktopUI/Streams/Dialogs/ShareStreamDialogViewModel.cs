@@ -66,9 +66,17 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _shareMessage, value);
     }
 
+    private bool _shareLink;
+
+    public bool ShareLink
+    {
+      get => _shareLink;
+      set => SetAndNotify(ref _shareLink, value);
+    }
+
     public async void SearchForUsers()
     {
-      if (UserQuery.Length <= 2)
+      if ( UserQuery.Length <= 2 )
         return;
 
       try
@@ -76,7 +84,7 @@ namespace Speckle.DesktopUI.Streams
         var users = await StreamState.Client.UserSearch(UserQuery);
         UserSearchResults = new BindableCollection<User>(users);
       }
-      catch (Exception e)
+      catch ( Exception e )
       {
         // search prob returned no results
         UserSearchResults?.Clear();
