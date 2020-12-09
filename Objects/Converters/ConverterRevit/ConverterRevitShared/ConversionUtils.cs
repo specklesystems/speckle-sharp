@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Floor = Objects.BuiltElements.Floor;
+using Level = Objects.BuiltElements.Level;
 
 namespace Objects.Converter.Revit
 {
@@ -21,22 +22,14 @@ namespace Objects.Converter.Revit
     /// <param name="revitElement"></param>
     private void AddCommonRevitProps(Base speckleElement, DB.Element revitElement)
     {
-
-      //if (revitElement is DB.FamilyInstance)
-      //{
-      //  speckleElement["family"] = (revitElement as DB.FamilyInstance)?.Symbol?.FamilyName;
-      //  speckleElement["type"] = (revitElement as DB.FamilyInstance)?.Symbol?.GetType().Name;
-      //}
-
       var parms = GetElementParams(revitElement);
       if (parms != null)
       {
         speckleElement["parameters"] = parms;
       }
 
-
       var typeParams = GetElementTypeParams(revitElement);
-      if (typeParams != null)
+      if (typeParams != null && !(speckleElement is Level)) //ignore type props of levels..!
       {
         speckleElement["typeParameters"] = typeParams;
       }
@@ -450,7 +443,7 @@ namespace Objects.Converter.Revit
         {
           var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == dic["Category"].ToString());
           if (cat != null)
-            filter = new ElementMulticategoryFilter(new List<ElementId> { cat.Id });     
+            filter = new ElementMulticategoryFilter(new List<ElementId> { cat.Id });
         }
       }
       return filter;

@@ -3,6 +3,7 @@ using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
 
@@ -195,10 +196,10 @@ namespace Objects.Converter.Revit
       #region hosted elements capture
 
       // TODO: perhaps move to generic method once patterns emerge (re other hosts).
-      var hostedElements = revitWall.FindInserts(true, true, true, true);
-      var hostedElementsList = new List<Base>();
+      var hostedElementIds = revitWall.FindInserts(true, true, true, true);
+      var convertedHostedElements = new List<Base>();
 
-      if (hostedElements != null)
+      if (hostedElementIds != null)
       {
         var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == revitWall.UniqueId);
         if (elementIndex != -1)
@@ -206,7 +207,7 @@ namespace Objects.Converter.Revit
           ContextObjects.RemoveAt(elementIndex);
         }
 
-        foreach (var elemId in hostedElements)
+        foreach (var elemId in hostedElementIds)
         {
           var element = Doc.GetElement(elemId);
           var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
@@ -218,25 +219,21 @@ namespace Objects.Converter.Revit
 
           ContextObjects.RemoveAt(isSelectedInContextObjects);
 
-          try
+          if (CanConvertToSpeckle(element))
           {
             var obj = ConvertToSpeckle(element);
 
             if (obj != null)
             {
-              hostedElementsList.Add(obj);
+              convertedHostedElements.Add(obj);
               ConvertedObjectsList.Add(obj.applicationId);
             }
           }
-          catch (Exception e)
-          {
-            ConversionErrors.Add(new Error { message = e.Message, details = e.StackTrace });
-          }
         }
 
-        if (hostedElements.Count != 0)
+        if (convertedHostedElements.Any())
         {
-          speckleWall.elements = hostedElementsList;
+          speckleWall.elements = convertedHostedElements;
         }
       }
 
