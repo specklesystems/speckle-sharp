@@ -345,7 +345,7 @@ namespace Objects.Converter.Revit
     private T GetElementType<T>(Base element)
     {
       List<ElementType> types = new List<ElementType>();
-      ElementMulticategoryFilter filter = GetCategoryFilter(element);
+      ElementFilter filter = GetCategoryFilter(element);
 
 
       if (filter != null)
@@ -409,9 +409,9 @@ namespace Objects.Converter.Revit
     }
 
 
-    private ElementMulticategoryFilter GetCategoryFilter(Base element)
+    private ElementFilter GetCategoryFilter(Base element)
     {
-      ElementMulticategoryFilter filter = null;
+      ElementFilter filter = null;
       if (element is BuiltElements.Wall)
       {
         filter = new ElementMulticategoryFilter(Categories.wallCategories);
@@ -434,7 +434,7 @@ namespace Objects.Converter.Revit
       }
       else if (element is Roof)
       {
-        filter = new ElementMulticategoryFilter(new List<BuiltInCategory> { BuiltInCategory.OST_Roofs });
+        filter = new ElementCategoryFilter(BuiltInCategory.OST_Roofs);
       }
       else
       {
@@ -480,5 +480,92 @@ namespace Objects.Converter.Revit
 
     #endregion
 
+    private class BetterBasePoint
+    {
+      public double X { get; set; } = 0;
+      public double Y { get; set; } = 0;
+      public double Z { get; set; } = 0;
+      public double Angle { get; set; } = 0;
+    }
+
+
+    ////////////////////////////////////////////////
+    /// NOTE
+    ////////////////////////////////////////////////
+    /// The BasePoint in Revit is a mess!
+    /// First of all, a BP with coordinates (0,0,0) 
+    /// doesn't always, correspond with Revit's absolute origin (0,0,0)
+    /// In a brand new file it seems they correspond, but after changing 
+    /// the BP values a few times it'll jump somewhere else, try and see yourself.
+    /// When it happens the BP symbol in a Revit site view will not be located at (0,0,0)
+    /// even if all its values are set to 0. This issue *should not* affect our code,
+    /// it just drives you crazy when you don't know it!
+    /// Secondly, there are various ways to access the BP values form the API
+    /// We are using a FilteredElementCollector .... bla bla ... (BuiltInCategory.OST_ProjectBasePoint)
+    /// because Doc.ActiveProjectLocation.GetProjectPosition() always returns an Elevation = 0
+    /// WHY?!
+    /// Rant end
+    ////////////////////////////////////////////////
+
+
+    private BetterBasePoint _basePoint;
+    private BetterBasePoint BasePoint
+    {
+      get
+      {
+        if (_basePoint == null)
+        {
+          var bp = new FilteredElementCollector(Doc).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_ProjectBasePoint)).FirstOrDefault() as BasePoint;
+          if (bp == null)
+          {
+            _basePoint = new BetterBasePoint();
+          }
+          else
+          {
+            _basePoint = new BetterBasePoint
+            {
+              X = bp.get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM).AsDouble(),
+              Y = bp.get_Parameter(BuiltInParameter.BASEPOINT_NORTHSOUTH_PARAM).AsDouble(),
+              Z = bp.get_Parameter(BuiltInParameter.BASEPOINT_ELEVATION_PARAM).AsDouble(),
+              Angle = bp.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble()
+            };
+          }
+        }
+        return _basePoint;
+      }
+    }
+
+    /// <summary>
+    /// For exporting out of Revit, moves and rotates a point according to this document BasePoint
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public XYZ ToExternalCoordinates(XYZ p)
+    {
+      p = new XYZ(p.X - BasePoint.X, p.Y - BasePoint.Y, p.Z - BasePoint.Z);
+      //rotation
+      double centX = (p.X * Math.Cos(-BasePoint.Angle)) - (p.Y * Math.Sin(-BasePoint.Angle));
+      double centY = (p.X * Math.Sin(-BasePoint.Angle)) + (p.Y * Math.Cos(-BasePoint.Angle));
+
+      XYZ newP = new XYZ(centX, centY, p.Z);
+
+      return newP;
+    }
+
+    /// <summary>
+    /// For importing in Revit, moves and rotates a point according to this document BasePoint
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public XYZ ToInternalCoordinates(XYZ p)
+    {
+      //rotation
+      double centX = (p.X * Math.Cos(BasePoint.Angle)) - (p.Y * Math.Sin(BasePoint.Angle));
+      double centY = (p.X * Math.Sin(BasePoint.Angle)) + (p.Y * Math.Cos(BasePoint.Angle));
+
+      XYZ newP = new XYZ(centX + BasePoint.X, centY + BasePoint.Y, p.Z + BasePoint.Z);
+
+      return newP;
+    }
   }
 }

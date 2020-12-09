@@ -67,7 +67,7 @@ namespace Speckle.ConnectorRevit.UI
 
     public override string GetHostAppName() => ConnectorRevitUtils.RevitAppName;
 
-    public override string GetDocumentId() => GetDocHash(CurrentDoc.Document);
+    public override string GetDocumentId() => GetDocHash(CurrentDoc?.Document);
 
     private string GetDocHash(Document doc) => Utilities.hashString(doc.PathName + doc.Title, Utilities.HashingFuctions.MD5);
 

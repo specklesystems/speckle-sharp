@@ -23,7 +23,9 @@ namespace Speckle.DesktopUI
     /// <param name="notifyEvent">The event to be published</param>
     public virtual void NotifyUi(EventBase notifyEvent)
     {
-      _events.PublishOnUIThread(notifyEvent);
+      //TODO: checked why it's null sometimes
+      if(_events!=null)
+        _events.PublishOnUIThread(notifyEvent);
     }
 
     /// <summary>
