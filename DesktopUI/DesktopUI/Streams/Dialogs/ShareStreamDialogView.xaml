@@ -13,6 +13,8 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <utils:NullAvatarToRobotConverter x:Key="NullAvatarToRobotConverter" />
+      <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
       <DataTemplate x:Key="UserTemplate">
         <Grid Margin="0,4">
           <Grid.ColumnDefinitions>
@@ -38,8 +40,21 @@
                        Text="{Binding name}" />
             <TextBlock Text="{Binding company}" />
           </StackPanel>
-
         </Grid>
+      </DataTemplate>
+
+      <DataTemplate x:Key="UserChipTemplate">
+        <Ellipse Grid.Column="0"
+                 Width="32"
+                 Height="32"
+                 Margin="0,0,4,0"
+                 HorizontalAlignment="Left"
+                 VerticalAlignment="Top"
+                 ToolTip="{Binding name}">
+          <Ellipse.Fill>
+            <ImageBrush ImageSource="{Binding Converter={StaticResource NullAvatarToRobotConverter}}" />
+          </Ellipse.Fill>
+        </Ellipse>
       </DataTemplate>
     </ResourceDictionary>
   </UserControl.Resources>
@@ -54,6 +69,8 @@
                        Height="Auto" />
         <RowDefinition x:Name="UserListRow"
                        Height="*" />
+        <RowDefinition x:Name="UserAddRow"
+                       Height="Auto" />
         <RowDefinition x:Name="LinkSharingRow"
                        Height="Auto" />
       </Grid.RowDefinitions>
@@ -105,6 +122,9 @@
           <RowDefinition Height="Auto" />
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
         <md:PackIcon Grid.Row="0"
                      Margin="10,0"
@@ -113,22 +133,58 @@
                      Kind="Search" />
         <TextBox x:Name="SearchTextBox"
                  Grid.Row="0"
+                 VerticalContentAlignment="Center"
                  md:HintAssist.Hint="Search for users"
                  md:TextFieldAssist.PrefixText="     "
                  FontSize="14"
                  Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
-                 Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
+                 Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+        <Button Width="45"
+                Height="Auto"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                md:ButtonAssist.CornerRadius="10"
+                md:RippleAssist.IsDisabled="True"
+                Background="Transparent"
+                BorderThickness="0"
+                Command="{s:Action ToggleDropdown}"
+                Content="{md:PackIcon Kind=MenuDown}"
+                Foreground="{DynamicResource PrimaryHueMidBrush}"
+                Visibility="{Binding DropdownState, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
+        <Button Width="45"
+                Height="Auto"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                md:ButtonAssist.CornerRadius="10"
+                md:RippleAssist.IsDisabled="True"
+                Background="Transparent"
+                BorderThickness="0"
+                Command="{s:Action ToggleDropdown}"
+                Content="{md:PackIcon Kind=MenuUp}"
+                Foreground="{DynamicResource PrimaryHueMidBrush}"
+                Visibility="{Binding DropdownState, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
       </Grid>
       <ListBox Grid.Row="3"
-               IsTextSearchCaseSensitive="False"
-               IsTextSearchEnabled="True"
                ItemTemplate="{StaticResource UserTemplate}"
                ItemsSource="{Binding UserSearchResults}"
                ScrollViewer.CanContentScroll="False"
-               SelectionMode="Multiple" />
+               SelectionChanged="{s:Action UserSelectionChanged}"
+               SelectionMode="Multiple"
+               Visibility="{Binding DropdownState, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
 
       <Grid Grid.Row="4">
+        <ItemsControl Margin="0,12"
+                      ItemTemplate="{StaticResource UserChipTemplate}"
+                      ItemsSource="{Binding SelectedUsers}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+      </Grid>
+
+      <Grid Grid.Row="5">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
@@ -139,7 +195,7 @@
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Separator Margin="0,12,-28,12" />
+        <Separator Margin="0,0,-28,12" />
 
         <TextBlock Grid.Row="1"
                    Grid.Column="0"
