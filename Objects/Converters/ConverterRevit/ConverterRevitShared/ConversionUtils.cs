@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
+using Floor = Objects.BuiltElements.Floor;
+using Level = Objects.BuiltElements.Level;
 
 namespace Objects.Converter.Revit
 {
@@ -20,22 +22,14 @@ namespace Objects.Converter.Revit
     /// <param name="revitElement"></param>
     private void AddCommonRevitProps(Base speckleElement, DB.Element revitElement)
     {
-
-      //if (revitElement is DB.FamilyInstance)
-      //{
-      //  speckleElement["family"] = (revitElement as DB.FamilyInstance)?.Symbol?.FamilyName;
-      //  speckleElement["type"] = (revitElement as DB.FamilyInstance)?.Symbol?.GetType().Name;
-      //}
-
       var parms = GetElementParams(revitElement);
       if (parms != null)
       {
         speckleElement["parameters"] = parms;
       }
 
-
       var typeParams = GetElementTypeParams(revitElement);
-      if (typeParams != null)
+      if (typeParams != null && !(speckleElement is Level)) //ignore type props of levels..!
       {
         speckleElement["typeParameters"] = typeParams;
       }
@@ -203,58 +197,41 @@ namespace Objects.Converter.Revit
     }
 
     /// <summary>
-    /// Note: this is a function that is a bit slow and not sure it actually does anything much, as most of the things it tries to set fail.
-    /// I've removed it from the wall conversion for a 5x speedup...
     /// </summary>
-    /// <param name="myElement"></param>
+    /// <param name="revitElement"></param>
     /// <param name="spkElement"></param>
     /// <param name="exclusions"></param>
-    public void SetElementParamsFromSpeckle(Element myElement, Base spkElement, List<string> exclusions = null)
+    public void SetInstanceParameters(Element revitElement, Base spkElement, List<string> exclusions = null)
     {
-      if (myElement == null)
-      {
+      if (revitElement == null)
         return;
-      }
 
       var paramDictionary = spkElement["parameters"] as Dictionary<string, object>;
-
-      if (paramDictionary == null)
-      {
+      if (paramDictionary == null || !paramDictionary.Any())
         return;
-      }
 
-      foreach (var kvp in paramDictionary)
+      exclusions = (exclusions != null) ? exclusions : new List<string>();
+      var cleanParams = paramDictionary.Where(x => !x.Key.StartsWith("__") && !exclusions.Contains(x.Key));
+
+
+      var elemParams = revitElement.ParametersMap.Cast<Parameter>().Where(x => x != null && !x.IsReadOnly)
+        .ToDictionary(x => x.Definition.Name, x => x);
+
+      foreach (var kvp in cleanParams)
       {
-        if (kvp.Key.Contains("__unitType::"))
-        {
-          continue; // skip unit types please
-        }
-
-        if (exclusions != null && exclusions.Contains(kvp.Key))
-        {
-          continue;
-        }
-
         try
         {
           var keyName = UnsanitizeKeyname(kvp.Key);
-          if (keyName.StartsWith("__")) continue;
+          if (!elemParams.ContainsKey(keyName))
+            continue;
+
           //TODO: try support params in foreign language
-          var myParam = myElement.ParametersMap.get_Item(keyName);
-          if (myParam == null)
-          {
-            continue;
-          }
+          var parameter = elemParams[keyName];
 
-          if (myParam.IsReadOnly)
-          {
-            continue;
-          }
-
-          switch (myParam.StorageType)
+          switch (parameter.StorageType)
           {
             case StorageType.Double:
-              var hasUnitKey = paramDictionary.ContainsKey("__unitType::" + myParam.Definition.Name);
+              var hasUnitKey = paramDictionary.ContainsKey("__unitType::" + parameter.Definition.Name);
               if (hasUnitKey)
               {
                 var unitType = (string)paramDictionary["__unitType::" + kvp.Key];
@@ -263,20 +240,20 @@ namespace Objects.Converter.Revit
                 Enum.TryParse(unit, out sourceUnit);
                 var convertedValue = UnitUtils.ConvertToInternalUnits(Convert.ToDouble(kvp.Value), sourceUnit);
 
-                myParam.Set(convertedValue);
+                parameter.Set(convertedValue);
               }
               else
               {
-                myParam.Set(Convert.ToDouble(kvp.Value));
+                parameter.Set(Convert.ToDouble(kvp.Value));
               }
               break;
 
             case StorageType.Integer:
-              myParam.Set(Convert.ToInt32(kvp.Value));
+              parameter.Set(Convert.ToInt32(kvp.Value));
               break;
 
             case StorageType.String:
-              myParam.Set(Convert.ToString(kvp.Value));
+              parameter.Set(Convert.ToString(kvp.Value));
               break;
 
             case StorageType.ElementId:
@@ -284,7 +261,7 @@ namespace Objects.Converter.Revit
               break;
           }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
         }
       }
@@ -368,24 +345,8 @@ namespace Objects.Converter.Revit
     private T GetElementType<T>(Base element)
     {
       List<ElementType> types = new List<ElementType>();
-      ElementMulticategoryFilter filter = null;
+      ElementFilter filter = GetCategoryFilter(element);
 
-      if (element is BuiltElements.Wall)
-      {
-        filter = new ElementMulticategoryFilter(Categories.wallCategories);
-      }
-      else if (element is Column)
-      {
-        filter = new ElementMulticategoryFilter(Categories.columnCategories);
-      }
-      else if (element is Beam || element is Brace)
-      {
-        filter = new ElementMulticategoryFilter(Categories.beamCategories);
-      }
-      else if (element is Duct)
-      {
-        filter = new ElementMulticategoryFilter(Categories.ductCategories);
-      }
 
       if (filter != null)
       {
@@ -394,11 +355,6 @@ namespace Objects.Converter.Revit
       else
       {
         types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
-      }
-
-      if (element is BuiltElements.Wall)
-      {
-        types.Reverse(); // Hack for "simple" walls: the first types returned are usually curtain walls.
       }
 
       if (types.Count == 0)
@@ -441,7 +397,7 @@ namespace Objects.Converter.Revit
       if (match == null) // okay, try something!
       {
         match = types.First();
-        ConversionErrors.Add(new Error($"Missing type. Family: {family} Type:{type}", $"Type was replaced with: {match.FamilyName} - {match.Name}"));
+        ConversionErrors.Add(new Error($"Missing type. Family: {family} Type:{type}", $"Type was replaced with: {match.FamilyName}, {match.Name}"));
       }
 
       if (match is FamilySymbol fs && !fs.IsActive)
@@ -450,6 +406,47 @@ namespace Objects.Converter.Revit
       }
 
       return (T)(object)match;
+    }
+
+
+    private ElementFilter GetCategoryFilter(Base element)
+    {
+      ElementFilter filter = null;
+      if (element is BuiltElements.Wall)
+      {
+        filter = new ElementMulticategoryFilter(Categories.wallCategories);
+      }
+      else if (element is Column)
+      {
+        filter = new ElementMulticategoryFilter(Categories.columnCategories);
+      }
+      else if (element is Beam || element is Brace)
+      {
+        filter = new ElementMulticategoryFilter(Categories.beamCategories);
+      }
+      else if (element is Duct)
+      {
+        filter = new ElementMulticategoryFilter(Categories.ductCategories);
+      }
+      else if (element is Floor)
+      {
+        filter = new ElementMulticategoryFilter(Categories.floorCategories);
+      }
+      else if (element is Roof)
+      {
+        filter = new ElementCategoryFilter(BuiltInCategory.OST_Roofs);
+      }
+      else
+      {
+        //try get category from the parameters
+        if (element["parameters"] != null && element["parameters"] is Dictionary<string, object> dic && dic.ContainsKey("Category"))
+        {
+          var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == dic["Category"].ToString());
+          if (cat != null)
+            filter = new ElementMulticategoryFilter(new List<ElementId> { cat.Id });
+        }
+      }
+      return filter;
     }
 
     #endregion
@@ -483,5 +480,92 @@ namespace Objects.Converter.Revit
 
     #endregion
 
+    private class BetterBasePoint
+    {
+      public double X { get; set; } = 0;
+      public double Y { get; set; } = 0;
+      public double Z { get; set; } = 0;
+      public double Angle { get; set; } = 0;
+    }
+
+
+    ////////////////////////////////////////////////
+    /// NOTE
+    ////////////////////////////////////////////////
+    /// The BasePoint in Revit is a mess!
+    /// First of all, a BP with coordinates (0,0,0) 
+    /// doesn't always, correspond with Revit's absolute origin (0,0,0)
+    /// In a brand new file it seems they correspond, but after changing 
+    /// the BP values a few times it'll jump somewhere else, try and see yourself.
+    /// When it happens the BP symbol in a Revit site view will not be located at (0,0,0)
+    /// even if all its values are set to 0. This issue *should not* affect our code,
+    /// it just drives you crazy when you don't know it!
+    /// Secondly, there are various ways to access the BP values form the API
+    /// We are using a FilteredElementCollector .... bla bla ... (BuiltInCategory.OST_ProjectBasePoint)
+    /// because Doc.ActiveProjectLocation.GetProjectPosition() always returns an Elevation = 0
+    /// WHY?!
+    /// Rant end
+    ////////////////////////////////////////////////
+
+
+    private BetterBasePoint _basePoint;
+    private BetterBasePoint BasePoint
+    {
+      get
+      {
+        if (_basePoint == null)
+        {
+          var bp = new FilteredElementCollector(Doc).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_ProjectBasePoint)).FirstOrDefault() as BasePoint;
+          if (bp == null)
+          {
+            _basePoint = new BetterBasePoint();
+          }
+          else
+          {
+            _basePoint = new BetterBasePoint
+            {
+              X = bp.get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM).AsDouble(),
+              Y = bp.get_Parameter(BuiltInParameter.BASEPOINT_NORTHSOUTH_PARAM).AsDouble(),
+              Z = bp.get_Parameter(BuiltInParameter.BASEPOINT_ELEVATION_PARAM).AsDouble(),
+              Angle = bp.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble()
+            };
+          }
+        }
+        return _basePoint;
+      }
+    }
+
+    /// <summary>
+    /// For exporting out of Revit, moves and rotates a point according to this document BasePoint
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public XYZ ToExternalCoordinates(XYZ p)
+    {
+      p = new XYZ(p.X - BasePoint.X, p.Y - BasePoint.Y, p.Z - BasePoint.Z);
+      //rotation
+      double centX = (p.X * Math.Cos(-BasePoint.Angle)) - (p.Y * Math.Sin(-BasePoint.Angle));
+      double centY = (p.X * Math.Sin(-BasePoint.Angle)) + (p.Y * Math.Cos(-BasePoint.Angle));
+
+      XYZ newP = new XYZ(centX, centY, p.Z);
+
+      return newP;
+    }
+
+    /// <summary>
+    /// For importing in Revit, moves and rotates a point according to this document BasePoint
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public XYZ ToInternalCoordinates(XYZ p)
+    {
+      //rotation
+      double centX = (p.X * Math.Cos(BasePoint.Angle)) - (p.Y * Math.Sin(BasePoint.Angle));
+      double centY = (p.X * Math.Sin(BasePoint.Angle)) + (p.Y * Math.Cos(BasePoint.Angle));
+
+      XYZ newP = new XYZ(centX + BasePoint.X, centY + BasePoint.Y, p.Z + BasePoint.Z);
+
+      return newP;
+    }
   }
 }

@@ -30,7 +30,7 @@ namespace Objects.Converter.Revit
       var revitSurface = TopographySurface.Create(Doc, pts);
       if (speckleSurface is RevitTopography rt)
       {
-        SetElementParamsFromSpeckle(revitSurface, rt);
+        SetInstanceParameters(revitSurface, rt);
       }
 
       return new ApplicationPlaceholderObject { applicationId = ((Base)speckleSurface).applicationId, ApplicationGeneratedId = revitSurface.UniqueId, NativeObject = revitSurface };

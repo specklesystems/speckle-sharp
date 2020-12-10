@@ -58,7 +58,7 @@ namespace Objects.Converter.Revit
 
       if (speckleOpening is RevitOpening ro)
       {
-        SetElementParamsFromSpeckle(revitOpening, ro);
+        SetInstanceParameters(revitOpening, ro);
       }
 
       return new ApplicationPlaceholderObject { NativeObject = revitOpening, applicationId = speckleOpening.applicationId, ApplicationGeneratedId = revitOpening.UniqueId };
@@ -103,6 +103,7 @@ namespace Objects.Converter.Revit
         poly.value.AddRange(topRight.value);
         poly.value.AddRange(new Point(topRight.value[0], topRight.value[1], btmLeft.value[2], ModelUnits).value);
         poly.value.AddRange(btmLeft.value);
+        poly.units = ModelUnits;
         speckleOpening.outline = poly;
       }
       else

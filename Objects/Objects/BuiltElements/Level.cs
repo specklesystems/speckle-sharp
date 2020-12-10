@@ -40,9 +40,11 @@ namespace Objects.BuiltElements.Revit
 
     public RevitLevel() { }
 
-    [SchemaInfo("Create level", "Creates a new Revit level unless one with the same name already exists, in which case it edits it")]
-    public RevitLevel(string name, double elevation,
-      [SchemaParamInfo("If true, it creates an associated view in Revit")] bool createView,
+    [SchemaInfo("Create level", "Creates a new Revit level unless one with the same elevation already exists")]
+    public RevitLevel(
+      [SchemaParamInfo("Level name. NOTE: updating level name is not supported")] string name,
+      [SchemaParamInfo("Level elevation. NOTE: updating level elevation is not supported, a new one will be created unless another level at the new elevation already exists.")] double elevation,
+      [SchemaParamInfo("If true, it creates an associated view in Revit. NOTE: only used when creating a level for the first time")] bool createView,
       [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null,
       Dictionary<string, object> parameters = null)
     {
