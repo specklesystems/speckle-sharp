@@ -214,7 +214,7 @@ namespace Objects.Converter.Revit
       var cleanParams = paramDictionary.Where(x => !x.Key.StartsWith("__") && !exclusions.Contains(x.Key));
 
 
-      var elemParams = revitElement.ParametersMap.Cast<Parameter>().Where(x => x != null && !x.IsReadOnly)
+      var paramMap = revitElement.ParametersMap.Cast<Parameter>().Where(x => x != null && !x.IsReadOnly)
         .ToDictionary(x => x.Definition.Name, x => x);
 
       foreach (var kvp in cleanParams)
@@ -222,11 +222,11 @@ namespace Objects.Converter.Revit
         try
         {
           var keyName = UnsanitizeKeyname(kvp.Key);
-          if (!elemParams.ContainsKey(keyName))
+          if (!paramMap.ContainsKey(keyName))
             continue;
 
           //TODO: try support params in foreign language
-          var parameter = elemParams[keyName];
+          var parameter = paramMap[keyName];
 
           switch (parameter.StorageType)
           {

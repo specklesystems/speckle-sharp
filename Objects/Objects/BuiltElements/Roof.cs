@@ -12,6 +12,7 @@ namespace Objects.BuiltElements
     public ICurve outline { get; set; }
     public List<ICurve> voids { get; set; } = new List<ICurve>();
 
+    [DetachProperty]
     public List<Base> elements { get; set; }
 
     public Roof() { }

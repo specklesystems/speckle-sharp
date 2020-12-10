@@ -27,6 +27,7 @@ namespace Objects.BuiltElements.Revit
 
     public string elementId { get; set; }
 
+    [DetachProperty]
     public List<Base> elements { get; set; }
 
     public FamilyInstance()

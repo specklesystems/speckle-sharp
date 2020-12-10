@@ -8,6 +8,7 @@ namespace Objects.BuiltElements
   {
     public double height { get; set; }
 
+    [DetachProperty]
     public List<Base> elements { get; set; }
     public ICurve baseLine { get; set; }
 
