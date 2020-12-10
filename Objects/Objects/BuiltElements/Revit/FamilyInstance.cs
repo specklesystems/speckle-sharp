@@ -27,6 +27,8 @@ namespace Objects.BuiltElements.Revit
 
     public string elementId { get; set; }
 
+    public List<Base> elements { get; set; }
+
     public FamilyInstance()
     {
 

@@ -4,6 +4,7 @@ using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
 
@@ -70,11 +71,13 @@ namespace Objects.Converter.Revit
       //anything else
       var baseLevelParam = revitFi.get_Parameter(BuiltInParameter.FAMILY_LEVEL_PARAM);
       var baseLevelParam2 = revitFi.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
-      var subElements = GetFamSubElements(revitFi);
+
+      var symbol = Doc.GetElement(revitFi.GetTypeId()) as FamilySymbol;
 
       var speckleFi = new BuiltElements.Revit.FamilyInstance();
       speckleFi.basePoint = basePoint;
-      speckleFi.type = Doc.GetElement(revitFi.GetTypeId()).Name;
+      speckleFi.family = symbol.FamilyName;
+      speckleFi.type = symbol.Name;
       speckleFi.facingFlipped = revitFi.FacingFlipped;
       speckleFi.handFlipped = revitFi.HandFlipped;
       speckleFi.level = ConvertAndCacheLevel(baseLevelParam);
@@ -84,9 +87,37 @@ namespace Objects.Converter.Revit
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
       }
 
-      speckleFi["@displayMesh"] = GetElementMesh(revitFi, subElements);
+      speckleFi["@displayMesh"] = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
 
       AddCommonRevitProps(speckleFi, revitFi);
+
+      #region sub elements capture
+
+      var subElementIds = revitFi.GetSubComponentIds();
+      var convertedSubElements = new List<Base>();
+
+      foreach (var elemId in subElementIds)
+      {
+        var subElem = Doc.GetElement(elemId);
+        if (CanConvertToSpeckle(subElem))
+        {
+          var obj = ConvertToSpeckle(subElem);
+
+          if (obj != null)
+          {
+            convertedSubElements.Add(obj);
+            ConvertedObjectsList.Add(obj.applicationId);
+          }
+        }
+      }
+
+      if (convertedSubElements.Any())
+      {
+        speckleFi.elements = convertedSubElements;
+      }
+
+
+      #endregion
 
       // TODO:
       // revitFi.GetSubelements();
@@ -99,7 +130,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="familyInstance"></param>
     /// <returns></returns>
-    private List<DB.Element> GetFamSubElements(DB.FamilyInstance familyInstance)
+    private List<DB.Element> GetAllFamSubElements(DB.FamilyInstance familyInstance)
     {
       var subElements = new List<DB.Element>();
       foreach (var id in familyInstance.GetSubComponentIds())
@@ -108,7 +139,7 @@ namespace Objects.Converter.Revit
         subElements.Add(element);
         if (element is Autodesk.Revit.DB.FamilyInstance)
         {
-          subElements.AddRange(GetFamSubElements(element as DB.FamilyInstance));
+          subElements.AddRange(GetAllFamSubElements(element as DB.FamilyInstance));
         }
       }
       return subElements;
@@ -170,22 +201,29 @@ namespace Objects.Converter.Revit
         }
       }
 
+      Doc.Regenerate();
+
+      TrySetParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
       TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
 
-      if (speckleFi.handFlipped != familyInstance.HandFlipped)
+      if (familyInstance.CanFlipHand && speckleFi.handFlipped != familyInstance.HandFlipped)
       {
         familyInstance.flipHand();
       }
 
-      if (speckleFi.facingFlipped != familyInstance.FacingFlipped)
+      if (familyInstance.CanFlipFacing && speckleFi.facingFlipped != familyInstance.FacingFlipped)
       {
         familyInstance.flipFacing();
       }
 
-      var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
-      (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
+      if (familyInstance.CanRotate && speckleFi.rotation != (familyInstance.Location as LocationPoint).Rotation)
+      {
+        var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
+        (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
+      }
 
-      //SetElementParamsFromSpeckle(familyInstance, speckleFi); // slow and unsteady, fails most of the times
+
+      SetInstanceParameters(familyInstance, speckleFi);
 
       var placeholders = new List<ApplicationPlaceholderObject>() {
         new ApplicationPlaceholderObject {

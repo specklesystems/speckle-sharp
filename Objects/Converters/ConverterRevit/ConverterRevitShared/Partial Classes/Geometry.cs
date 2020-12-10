@@ -41,17 +41,22 @@ namespace Objects.Converter.Revit
     }
     public XYZ PointToNative(Point pt)
     {
-      return new XYZ(ScaleToNative(pt.value[0], pt.units), ScaleToNative(pt.value[1], pt.units), ScaleToNative(pt.value[2], pt.units));
+      var revitPoint = new XYZ(ScaleToNative(pt.value[0], pt.units), ScaleToNative(pt.value[1], pt.units), ScaleToNative(pt.value[2], pt.units));
+      var intPt = ToInternalCoordinates(revitPoint);
+      return intPt;
     }
 
     public Point PointToSpeckle(XYZ pt)
     {
-      return new Point(ScaleToSpeckle(pt.X), ScaleToSpeckle(pt.Y), ScaleToSpeckle(pt.Z), ModelUnits);
+      var extPt = ToExternalCoordinates(pt);
+      return new Point(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), ModelUnits);
     }
 
     public XYZ VectorToNative(Vector pt)
     {
-      return new XYZ(ScaleToNative(pt.value[0], pt.units), ScaleToNative(pt.value[1], pt.units), ScaleToNative(pt.value[2], pt.units));
+      var revitVector = new XYZ(ScaleToNative(pt.value[0], pt.units), ScaleToNative(pt.value[1], pt.units), ScaleToNative(pt.value[2], pt.units));
+      var intV = ToInternalCoordinates(revitVector);
+      return intV;
     }
 
     public DB.Plane PlaneToNative(Plane plane)
@@ -116,8 +121,6 @@ namespace Objects.Converter.Revit
       return DB.Arc.Create(PointToNative(arc.startPoint), PointToNative(arc.endPoint), PointToNative(arc.midPoint));
       //return Arc.Create( plane.Origin, (double) arc.Radius * Scale, startAngle, endAngle, plane.XVec, plane.YVec );
     }
-
-
 
     public Arc ArcToSpeckle(DB.Arc arc)
     {
@@ -399,7 +402,9 @@ namespace Objects.Converter.Revit
       var asArray = arr.ToArray();
       for (int i = 2, k = 0; i < arr.Count(); i += 3)
       {
-        points[k++] = new XYZ(ScaleToNative(asArray[i - 2], units), ScaleToNative(asArray[i - 1], units), ScaleToNative(asArray[i], units));
+        var p = new XYZ(ScaleToNative(asArray[i - 2], units), ScaleToNative(asArray[i - 1], units), ScaleToNative(asArray[i], units));
+        var intP = ToInternalCoordinates(p);
+        points[k++] = intP;
       }
 
       return points;
@@ -462,14 +467,15 @@ namespace Objects.Converter.Revit
         for (var v = 0; v < controlPointCountV; v++)
         {
           var pt = controlPoints[uOffset + v];
+          var extPt = ToExternalCoordinates(pt);
           if (surface.IsRational)
           {
             var w = weights[uOffset + v];
-            row.Add(new ControlPoint(pt.X, pt.Y, pt.Z, w, ModelUnits));
+            row.Add(new ControlPoint(extPt.X, extPt.Y, extPt.Z, w, ModelUnits));
           }
           else
           {
-            row.Add(new ControlPoint(pt.X, pt.Y, pt.Z, ModelUnits));
+            row.Add(new ControlPoint(extPt.X, extPt.Y, extPt.Z, ModelUnits));
           }
         }
         points.Add(row);
@@ -492,10 +498,10 @@ namespace Objects.Converter.Revit
 
         if (nativeCurve == null)
           return new List<BRepBuilderEdgeGeometry>();
-        
-        if(!nativeCurve.IsBound)
+
+        if (!nativeCurve.IsBound)
           nativeCurve.MakeBound(0, nativeCurve.Period);
-        
+
         var endPoint = nativeCurve.GetEndPoint(0);
         var source = nativeCurve.GetEndPoint(1);
         var distanceTo = endPoint.DistanceTo(source);
@@ -515,18 +521,18 @@ namespace Objects.Converter.Revit
 
           var halfEdgeA = BRepBuilderEdgeGeometry.Create(a);
           var halfEdgeB = BRepBuilderEdgeGeometry.Create(b);
-          return new List<BRepBuilderEdgeGeometry> {halfEdgeA, halfEdgeB};
+          return new List<BRepBuilderEdgeGeometry> { halfEdgeA, halfEdgeB };
         }
-        
+
         // TODO: Remove short segments if smaller than 'Revit.ShortCurveTolerance'.
         var fullEdge = BRepBuilderEdgeGeometry.Create(nativeCurve);
-        return new List<BRepBuilderEdgeGeometry> {fullEdge};
+        return new List<BRepBuilderEdgeGeometry> { fullEdge };
       }
 
       var iterator = edge.ProxyCurveIsReversed
         ? nativeCurveArray.ReverseIterator()
         : nativeCurveArray.ForwardIterator();
-      
+
       var result = new List<BRepBuilderEdgeGeometry>();
       while (iterator.MoveNext())
       {
@@ -564,7 +570,12 @@ namespace Objects.Converter.Revit
 
       controlPoints.ForEach(row =>
         row.ForEach(pt =>
-          points[p++] = new DB.XYZ(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units))));
+        {
+          var revitPt = new DB.XYZ(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
+          var intPt = ToInternalCoordinates(revitPt);
+          points[p++] = intPt;
+        }
+         ));
 
       return points;
     }
@@ -625,7 +636,7 @@ namespace Objects.Converter.Revit
       }
 
       using var builder = new BRepBuilder(bRepType);
-      
+
       builder.SetAllowShortEdges();
       //builder.AllowRemovalOfProblematicFaces();
 
@@ -754,7 +765,7 @@ namespace Objects.Converter.Revit
               curve3dIndex++;
 
               // Create a trim with just one of the trimIndices set, the second one will be set on the opposite condition.
-              var sEdge = new BrepEdge(brep, sCurveIndex, new[] {sTrimIndex}, -1, -1, edge.IsFlippedOnFace(face));
+              var sEdge = new BrepEdge(brep, sCurveIndex, new[] { sTrimIndex }, -1, -1, edge.IsFlippedOnFace(face));
               speckleEdges.Add(edge, sEdge);
               edgeIndex++;
             }
@@ -807,11 +818,11 @@ namespace Objects.Converter.Revit
       switch (face)
       {
         case null: return null;
-        case PlanarFace planar:            return FaceToSpeckle(planar, relativeTolerance);
-        case ConicalFace conical:          return FaceToSpeckle(conical, relativeTolerance);
-        case CylindricalFace cylindrical:  return FaceToSpeckle(cylindrical, relativeTolerance);
-        case RevolvedFace revolved:        return FaceToSpeckle(revolved, relativeTolerance);
-        case RuledFace ruled:              return FaceToSpeckle(ruled, relativeTolerance);
+        case PlanarFace planar: return FaceToSpeckle(planar, relativeTolerance);
+        case ConicalFace conical: return FaceToSpeckle(conical, relativeTolerance);
+        case CylindricalFace cylindrical: return FaceToSpeckle(cylindrical, relativeTolerance);
+        case RevolvedFace revolved: return FaceToSpeckle(revolved, relativeTolerance);
+        case RuledFace ruled: return FaceToSpeckle(ruled, relativeTolerance);
         case HermiteFace hermite: return FaceToSpeckle(hermite, face.GetBoundingBox());
         default: throw new NotImplementedException();
       }
@@ -889,13 +900,13 @@ namespace Objects.Converter.Revit
       {
         var solid = BrepToNative(brep);
         if (solid == null) throw new Exception("Could not convert Brep to Solid");
-        revitDs.SetShape(new List<GeometryObject>{solid});
+        revitDs.SetShape(new List<GeometryObject> { solid });
       }
       catch (Exception e)
       {
         var mesh = MeshToNative(brep.displayValue);
         revitDs.SetShape(mesh);
-        ConversionErrors.Add(new Error(e.Message,e.InnerException?.Message ?? "No details available."));
+        ConversionErrors.Add(new Error(e.Message, e.InnerException?.Message ?? "No details available."));
       }
       return revitDs;
     }

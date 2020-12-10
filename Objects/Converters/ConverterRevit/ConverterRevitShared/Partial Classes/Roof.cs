@@ -63,21 +63,25 @@ namespace Objects.Converter.Revit
           {
             ModelCurveArray curveArray = new ModelCurveArray();
             var revitFootprintRoof = Doc.Create.NewFootPrintRoof(outline, level, roofType, out curveArray);
-            for (var i = 0; i < curveArray.Size; i++)
+            var poly = speckleFootprintRoof.outline as Polycurve;
+            if(poly != null)
             {
-              var poly = speckleFootprintRoof.outline as Polycurve;
-              var isSloped = ((Base)poly.segments[i])["isSloped"] as bool?;
-              revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), isSloped == true);
-
-              try
+              for (var i = 0; i < curveArray.Size; i++)
               {
-                var slopeAngle = ((Base)poly.segments[i])["slopeAngle"] as double?;
-                revitFootprintRoof.set_SlopeAngle(curveArray.get_Item(i), (double)slopeAngle);
+                var isSloped = ((Base)poly.segments[i])["isSloped"] as bool?;
+                revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), isSloped == true);
+
+                try
+                {
+                  var slopeAngle = ((Base)poly.segments[i])["slopeAngle"] as double?;
+                  revitFootprintRoof.set_SlopeAngle(curveArray.get_Item(i), (double)slopeAngle);
+                }
+                catch { }
+                var offset = ((Base)poly.segments[i])["offset"] as double?;
+                revitFootprintRoof.set_Offset(curveArray.get_Item(i), (double)offset);
               }
-              catch { }
-              var offset = ((Base)poly.segments[i])["offset"] as double?;
-              revitFootprintRoof.set_Offset(curveArray.get_Item(i), (double)offset);
             }
+            
             if (speckleFootprintRoof.cutOffLevel != null)
             {
               var cutOffLevel = LevelToNative(speckleFootprintRoof.cutOffLevel);
@@ -106,7 +110,7 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitRoof != null)
       {
-        SetElementParamsFromSpeckle(revitRoof, speckleRevitRoof);
+        SetInstanceParameters(revitRoof, speckleRevitRoof);
       }
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitRoof.applicationId, ApplicationGeneratedId = revitRoof.UniqueId, NativeObject = revitRoof } };

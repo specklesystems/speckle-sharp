@@ -79,7 +79,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
 
     }
     [SchemaInfo("RevitFootprintRoof", "Creates a Revit roof by outline")]
-    public RevitFootprintRoof(ICurve outline, string family, string type, Level level, RevitLevel cutOffLevel, List<ICurve> voids = null,
+    public RevitFootprintRoof(ICurve outline, string family, string type, Level level, RevitLevel cutOffLevel = null, List<ICurve> voids = null,
       List<Base> elements = null,
       Dictionary<string, object> parameters = null)
     {

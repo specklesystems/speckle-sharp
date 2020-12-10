@@ -130,7 +130,7 @@ namespace Objects.Converter.Revit
 
         SetOffsets(revitColumn, speckleRevitColumn);
         var exclusions = new List<string> { "Base Offset", "Top Offset" };
-        SetElementParamsFromSpeckle(revitColumn, speckleRevitColumn, exclusions);
+        SetInstanceParameters(revitColumn, speckleRevitColumn, exclusions);
       }
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleColumn.applicationId, ApplicationGeneratedId = revitColumn.UniqueId, NativeObject = revitColumn } };
