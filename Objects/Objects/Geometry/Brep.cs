@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
+using Objects.Primitive;
 using Speckle.Core.Kits;
 
 namespace Objects.Geometry
@@ -190,7 +191,9 @@ namespace Objects.Geometry
     public int IsoStatus { get; set; }
     public BrepTrimType TrimType { get; set; }
     public bool IsReversed { get; set; }
-
+    
+    public Interval Domain { get; set; }
+    
     public BrepTrim()
     {
     }
@@ -226,16 +229,17 @@ namespace Objects.Geometry
     public int Curve3dIndex { get; set; }
     public int[] TrimIndices { get; set; }
     public int StartIndex { get; set; }
-    public int EndIndex { get; set; }
-
+    public int EndIndex { get; set; } 
+    
     public bool ProxyCurveIsReversed { get; set; }
-
+    
+    public Interval Domain { get; set; }
     public BrepEdge()
     {
     }
 
     public BrepEdge(Brep brep, int curve3dIndex, int[] trimIndices, int startIndex, int endIndex,
-      bool proxyCurvedIsReversed)
+      bool proxyCurvedIsReversed, Interval domain)
     {
       Brep = brep;
       Curve3dIndex = curve3dIndex;
@@ -243,6 +247,7 @@ namespace Objects.Geometry
       StartIndex = startIndex;
       EndIndex = endIndex;
       ProxyCurveIsReversed = proxyCurvedIsReversed;
+      Domain = domain;
     }
 
     [JsonIgnore] public Point StartVertex => Brep.Vertices[StartIndex];

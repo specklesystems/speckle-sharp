@@ -171,7 +171,9 @@ namespace Objects.Converter.RhinoGh
     // Gh Line capture
     public Line LineToSpeckle(RH.Line line)
     {
-      return new Line(PointsToFlatArray(new Point3d[] { line.From, line.To }), ModelUnits);
+      var sLine =  new Line(PointsToFlatArray(new Point3d[] { line.From, line.To }), ModelUnits);
+
+      return sLine;
     }
 
     // Rh Line capture
@@ -292,10 +294,16 @@ namespace Objects.Converter.RhinoGh
 
     // Polyline
     // Gh Capture
-    public ICurve PolylineToSpeckle(RH.Polyline poly)
+    public ICurve PolylineToSpeckle(RH.Polyline poly) => PolylineToSpeckle(poly, null);
+
+    public ICurve PolylineToSpeckle(RH.Polyline poly, Interval domain)
     {
       if (poly.Count == 2)
-        return new Line(PointsToFlatArray(poly), ModelUnits);
+      {
+        var l =  new Line(PointsToFlatArray(poly), ModelUnits);
+        l.domain = domain;
+        return l;
+      }
 
       var myPoly = new Polyline(PointsToFlatArray(poly), ModelUnits);
       myPoly.closed = poly.IsClosed;
@@ -303,6 +311,7 @@ namespace Objects.Converter.RhinoGh
       if (myPoly.closed)
         myPoly.value.RemoveRange(myPoly.value.Count - 3, 3);
 
+      myPoly.domain = domain;
       return myPoly;
     }
 
@@ -436,7 +445,7 @@ namespace Objects.Converter.RhinoGh
         curve.TryGetPolyline(out var getObj);
         if (null != getObj)
         {
-          return PolylineToSpeckle(getObj);
+          return PolylineToSpeckle(getObj, IntervalToSpeckle(curve.Domain));
         }
       }
 
@@ -589,7 +598,7 @@ namespace Objects.Converter.RhinoGh
     /// <returns></returns>
     public Brep BrepToSpeckle(RH.Brep brep)
     {
-      brep.Repair(0.00001); //should maybe use ModelAbsoluteTolerance ?
+      //brep.Repair(0.00001); //should maybe use ModelAbsoluteTolerance ?
       var joinedMesh = new RH.Mesh();
       var mySettings = new MeshingParameters(0);
 
@@ -609,11 +618,9 @@ namespace Objects.Converter.RhinoGh
         .Select(edge =>
         {
           var nurbsCurve = edge.EdgeCurve.ToNurbsCurve();
-          
           // Nurbs curves of degree 2 have weird support in Revit, so we up everything to degree 3.
           if (nurbsCurve.Degree < 3)
             nurbsCurve.IncreaseDegree(3);
-          
           // Check for invalid multiplicity in the curves. This is also to better support Revit.
           var invalid = HasInvalidMultiplicity(nurbsCurve);
           
@@ -621,7 +628,8 @@ namespace Objects.Converter.RhinoGh
           // TODO: Figure out why closed curves don't like this hack?
           if (invalid && !nurbsCurve.IsClosed)
             nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count,nurbsCurve.Degree,true);
-          
+
+          nurbsCurve.Domain = edge.EdgeCurve.Domain;
           // And finally convert to speckle
           return CurveToSpeckle(nurbsCurve);
         }).ToList();
@@ -657,7 +665,8 @@ namespace Objects.Converter.RhinoGh
           edge.TrimIndices(),
           edge.StartVertex.VertexIndex,
           edge.EndVertex.VertexIndex,
-          edge.ProxyCurveIsReversed
+          edge.ProxyCurveIsReversed,
+          IntervalToSpeckle(edge.Domain)
         )).ToList();
 
       // Loops
@@ -671,16 +680,21 @@ namespace Objects.Converter.RhinoGh
 
       // Trims
       spcklBrep.Trims = brep.Trims
-        .Select(trim => new BrepTrim(
-          spcklBrep,
-          trim.Edge?.EdgeIndex ?? -1,
-          trim.Face.FaceIndex,
-          trim.Loop.LoopIndex,
-          trim.TrimCurveIndex,
-          (int)trim.IsoStatus,
-          (BrepTrimType)trim.TrimType,
-          trim.IsReversed()
-        ))
+        .Select(trim =>
+        {
+          var t = new BrepTrim(
+            spcklBrep,
+            trim.Edge?.EdgeIndex ?? -1,
+            trim.Face.FaceIndex,
+            trim.Loop.LoopIndex,
+            trim.TrimCurveIndex,
+            (int) trim.IsoStatus,
+            (BrepTrimType) trim.TrimType,
+            trim.IsReversed()
+          );
+          t.Domain = IntervalToSpeckle(trim.Domain);
+          return t;
+        })
         .ToList();
 
       return spcklBrep;
@@ -706,9 +720,14 @@ namespace Objects.Converter.RhinoGh
         brep.Curve3D.ForEach(crv => newBrep.AddEdgeCurve(CurveToNative(crv)));
         brep.Curve2D.ForEach(crv => newBrep.AddTrimCurve(CurveToNative(crv)));
         brep.Surfaces.ForEach(surf => newBrep.AddSurface(SurfaceToNative(surf)));
-
         brep.Vertices.ForEach(vert => newBrep.Vertices.Add(PointToNative(vert).Location, tol));
-        brep.Edges.ForEach(edge => newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, tol));
+        brep.Edges.ForEach(edge =>
+        {
+          if (edge.Domain == null)
+            newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, tol);
+          else
+            newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, IntervalToNative(edge.Domain), tol);
+        });
         brep.Faces.ForEach(face =>
         {
           var f = newBrep.Faces.Add(face.SurfaceIndex);
