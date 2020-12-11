@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -80,5 +81,21 @@ namespace Speckle.Core.Models
         }.Contains(type) ||
         Convert.GetTypeCode(type) != TypeCode.Object;
     }
+
+    /// <summary>
+    /// Chunks a list into pieces.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    /// <param name="chunkSize"></param>
+    /// <returns></returns>
+    public static IEnumerable<SerializableChunk<T>> SplitList<T>(List<T> list, int chunkSize = 50)
+    {
+      for (int i = 0; i < list.Count; i += chunkSize)
+      {
+        yield return new SerializableChunk<T> { data = list.GetRange(i, Math.Min(chunkSize, list.Count - i)) };
+      }
+    }
   }
+
 }
