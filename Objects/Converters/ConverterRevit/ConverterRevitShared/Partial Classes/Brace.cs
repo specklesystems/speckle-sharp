@@ -21,7 +21,6 @@ namespace Objects.Converter.Revit
           level = rb.level,
           family = rb.family,
           parameters = rb.parameters,
-          typeParameters = rb.typeParameters
         };
 
         return BeamToNative(speckleBeam, StructuralType.Brace);
@@ -44,8 +43,7 @@ namespace Objects.Converter.Revit
         baseLine = myBeam.baseLine,
         level = myBeam.level,
         family = myBeam.family,
-        parameters = myBeam.parameters,
-        typeParameters = myBeam.typeParameters
+        parameters = myBeam.parameters
       };
       return myBrace;
     }

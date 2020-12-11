@@ -105,6 +105,10 @@ namespace Objects.Converter.Revit
 
         case DB.Mechanical.Duct o:
           return DuctToSpeckle(o) as Base;
+       
+          //these should be handled by curtain walls 
+        case DB.CurtainGridLine o:
+          return null;
 
         default:
           ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Speckle"));

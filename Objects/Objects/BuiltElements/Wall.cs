@@ -38,7 +38,7 @@ namespace Objects.BuiltElements.Revit
     public Level level { get; set; }
     public Level topLevel { get; set; }
 
-    public Dictionary<string, object> parameters { get; set; }
+    public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
 
     public RevitWall()
@@ -50,7 +50,7 @@ namespace Objects.BuiltElements.Revit
     public RevitWall(string family, string type,
       ICurve baseLine, Level level, Level topLevel, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
-      Dictionary<string, object> parameters = null)
+      List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -69,7 +69,7 @@ namespace Objects.BuiltElements.Revit
     public RevitWall(string family, string type,
       ICurve baseLine, Level level, double height, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
-      Dictionary<string, object> parameters = null)
+      List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -100,7 +100,7 @@ namespace Objects.BuiltElements.Revit
   //   public bool flipped { get; set; }
   //
   //   [SchemaOptional]
-  //   public Dictionary<string, object> parameters { get; set; }
+  //   public List<Parameter> parameters { get; set; }
   //
   //   [SchemaIgnore]
   //   public string elementId { get; set; }
@@ -111,7 +111,7 @@ namespace Objects.BuiltElements.Revit
   // public class RevitWallByPoint : Base
   // {
   //   [SchemaOptional]
-  //   public Dictionary<string, object> parameters { get; set; }
+  //   public List<Parameter> parameters { get; set; }
   //
   //   [SchemaIgnore]
   //   public string elementId { get; set; }

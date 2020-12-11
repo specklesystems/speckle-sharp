@@ -63,7 +63,7 @@ namespace Objects.Converter.Revit
         var offsetLine = baseCurve.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, z)));
         ((LocationCurve)revitWall.Location).Curve = offsetLine;
 
-        TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
+        TrySetElementParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
       }
 
       if (speckleWall is RevitWall spklRevitWall)
@@ -76,7 +76,7 @@ namespace Objects.Converter.Revit
         if (spklRevitWall.topLevel != null)
         {
           var topLevel = LevelToNative(spklRevitWall.topLevel);
-          TrySetParam(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE, topLevel);
+          TrySetElementParam(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE, topLevel);
         }
         else
         {
@@ -84,7 +84,7 @@ namespace Objects.Converter.Revit
           heightParam.Set(ScaleToNative(speckleWall.height, speckleWall.units));
         }
 
-        var currentBaseOffset = (double)ParameterToSpeckle(revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET));
+        var currentBaseOffset = (double)ParameterToSpeckle(revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET)).value;
         if (spklRevitWall.baseOffset != currentBaseOffset)
         {
           var boffsetparam = revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET);
@@ -92,7 +92,7 @@ namespace Objects.Converter.Revit
           boffsetparam.Set(ScaleToNative(spklRevitWall.baseOffset, speckleWall.units));
         }
 
-        var currentTopOffset = (double)ParameterToSpeckle(revitWall.get_Parameter(BuiltInParameter.WALL_TOP_OFFSET));
+        var currentTopOffset = (double)ParameterToSpeckle(revitWall.get_Parameter(BuiltInParameter.WALL_TOP_OFFSET)).value;
         if (spklRevitWall.topOffset != currentTopOffset)
         {
           var toffsetParam = revitWall.get_Parameter(BuiltInParameter.WALL_TOP_OFFSET);
@@ -168,7 +168,7 @@ namespace Objects.Converter.Revit
       var structural = revitWall.get_Parameter(BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT); ;
 
       var baseGeometry = LocationToSpeckle(revitWall);
-      var height = (double)ParameterToSpeckle(heightParam);
+      var height = (double)ParameterToSpeckle(heightParam).value;
       var level = ConvertAndCacheLevel(baseLevelParam);
       var topLevel = ConvertAndCacheLevel(topLevelParam);
 
@@ -184,14 +184,15 @@ namespace Objects.Converter.Revit
       speckleWall.level = level;
       speckleWall.topLevel = topLevel;
       speckleWall.height = height;
-      speckleWall.baseOffset = (double)ParameterToSpeckle(baseOffsetParam);
-      speckleWall.topOffset = (double)ParameterToSpeckle(topOffsetParam);
-      speckleWall.structural = (bool)ParameterToSpeckle(structural);
+      speckleWall.baseOffset = (double)ParameterToSpeckle(baseOffsetParam).value;
+      speckleWall.topOffset = (double)ParameterToSpeckle(topOffsetParam).value;
+      speckleWall.structural = (bool)ParameterToSpeckle(structural).value;
       speckleWall.flipped = revitWall.Flipped;
 
       speckleWall["@displayMesh"] = GetWallDisplayMesh(revitWall);
 
-      AddCommonRevitProps(speckleWall, revitWall);
+      AddParameters(speckleWall, revitWall, new List<string> { "WALL_USER_HEIGHT_PARAM", "WALL_BASE_OFFSET", "WALL_TOP_OFFSET", "WALL_BASE_CONSTRAINT",
+      "WALL_HEIGHT_TYPE", "WALL_STRUCTURAL_SIGNIFICANT"});
 
       #region hosted elements capture
 

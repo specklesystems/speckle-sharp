@@ -30,7 +30,7 @@ namespace Objects.BuiltElements.Revit
   {
     public bool createView { get; set; }
 
-    public Dictionary<string, object> parameters { get; set; }
+    public List<Parameter> parameters { get; set; }
 
     public string elementId { get; set; }
 
@@ -43,7 +43,7 @@ namespace Objects.BuiltElements.Revit
       [SchemaParamInfo("Level name. NOTE: updating level name is not supported")] string name,
       [SchemaParamInfo("Level elevation. NOTE: updating level elevation is not supported, a new one will be created unless another level at the new elevation already exists.")] double elevation,
       [SchemaParamInfo("If true, it creates an associated view in Revit. NOTE: only used when creating a level for the first time")] bool createView,
-      Dictionary<string, object> parameters = null)
+      List<Parameter> parameters = null)
     {
       this.name = name;
       this.elevation = elevation;

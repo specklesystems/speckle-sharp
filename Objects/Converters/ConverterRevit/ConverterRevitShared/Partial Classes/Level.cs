@@ -67,7 +67,7 @@ namespace Objects.Converter.Revit
       speckleLevel.name = revitLevel.Name;
       speckleLevel.createView = true;
 
-      AddCommonRevitProps(speckleLevel, revitLevel);
+      AddParameters(speckleLevel, revitLevel);
       return speckleLevel;
     }
 
@@ -106,7 +106,7 @@ namespace Objects.Converter.Revit
       return collector.FirstOrDefault();
     }
 
-    private RevitLevel ConvertAndCacheLevel(Parameter param)
+    private RevitLevel ConvertAndCacheLevel(DB.Parameter param)
     {
       if (param == null || param.StorageType != StorageType.ElementId)
       {
@@ -121,7 +121,6 @@ namespace Objects.Converter.Revit
       var level = Doc.GetElement(id) as DB.Level;
 
       if (level == null) return null;
-      //add it to our list of levels for the conversion so we can nest elements under them
       if (!Levels.ContainsKey(level.Name))
       {
         Levels[level.Name] = LevelToSpeckle(level);

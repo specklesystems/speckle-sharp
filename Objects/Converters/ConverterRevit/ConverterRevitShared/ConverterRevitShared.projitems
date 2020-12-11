@@ -25,7 +25,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Location.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\MeshUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Opening.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Param.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\RevitCurves.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Roof.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Room.cs" />

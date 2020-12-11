@@ -35,8 +35,7 @@ namespace Objects.BuiltElements.Revit
     public string type { get; set; }
     public Level level { get; set; }
     public bool structural { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
+    public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
     public RevitFloor()
     {
@@ -46,7 +45,7 @@ namespace Objects.BuiltElements.Revit
     public RevitFloor(ICurve outline, string family, string type,
        Level level, bool structural = false, List<ICurve> voids = null,
       [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null,
-      Dictionary<string, object> parameters = null)
+      List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;

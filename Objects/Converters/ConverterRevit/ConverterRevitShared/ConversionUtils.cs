@@ -8,6 +8,7 @@ using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
+using Parameter = Objects.BuiltElements.Revit.Parameter;
 
 namespace Objects.Converter.Revit
 {
@@ -15,23 +16,30 @@ namespace Objects.Converter.Revit
   {
     #region parameters
 
+    #region ToSpeckle
     /// <summary>
-    /// Sets various common properties on a speckle object, where found. Examples: family, type, parameters, type parameters, elementIds, etc.
+    /// Adds Instance and Type parameters, ElementId, ApplicationId and Units.
     /// </summary>
     /// <param name="speckleElement"></param>
     /// <param name="revitElement"></param>
-    private void AddCommonRevitProps(Base speckleElement, DB.Element revitElement)
+    /// <param name="exclusions">List of BuiltInParameters or GUIDs used to indicate what parameters NOT to get,
+    /// we exclude all params already defined on the top level object to avoid duplication and 
+    /// potential conflicts when setting them back on the element</param>
+    private void AddParameters(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
     {
-      var parms = GetElementParams(revitElement);
+      var parms = GetInstanceParams(revitElement, exclusions);
       if (parms != null)
       {
         speckleElement["parameters"] = parms;
       }
 
-      var typeParams = GetElementTypeParams(revitElement);
+      var typeParams = GetTypeParams(revitElement);
       if (typeParams != null && !(speckleElement is Level)) //ignore type props of levels..!
       {
-        speckleElement["typeParameters"] = typeParams;
+        if ((List<Parameter>)speckleElement["parameters"] == null)
+          speckleElement["parameters"] = new List<Parameter>();
+        ((List<Parameter>)speckleElement["parameters"]).AddRange(typeParams);
+
       }
 
       speckleElement["elementId"] = revitElement.Id.ToString();
@@ -39,236 +47,180 @@ namespace Objects.Converter.Revit
       speckleElement.units = ModelUnits;
     }
 
-    public Dictionary<string, object> GetElementParams(DB.Element myElement)
+    //private List<string> alltimeExclusions = new List<string> { 
+    //  "ELEM_CATEGORY_PARAM" };
+    private List<Parameter> GetInstanceParams(DB.Element element, List<string> exclusions)
     {
-      var myParamDict = new Dictionary<string, object>();
+      return GetParams(element, false, exclusions);
+    }
+    private List<Parameter> GetTypeParams(DB.Element element)
+    {
+      var elementType = Doc.GetElement(element.GetTypeId());
 
-      // Get params from the unique list
-      foreach (Parameter p in myElement.ParametersMap)
+      if (elementType == null || elementType.Parameters == null)
       {
-        var keyName = SanitizeKeyname(p.Definition.Name);
-        switch (p.StorageType)
-        {
-          case StorageType.Double:
-            // NOTE: do not use p.AsDouble() as direct input for unit utils conversion, it doesn't work.  ¯\_(ツ)_/¯
-            var val = p.AsDouble();
-            try
-            {
-              myParamDict[keyName] = UnitUtils.ConvertFromInternalUnits(val, p.DisplayUnitType);
-              myParamDict["__unitType::" + keyName] = p.Definition.UnitType.ToString();
-              myParamDict["__unit::" + keyName] = p.DisplayUnitType.ToString();
-
-            }
-            catch (Exception)
-            {
-              myParamDict[keyName] = val;
-            }
-            break;
-          case StorageType.Integer:
-            myParamDict[keyName] = p.AsInteger();
-            //myParamDict[ keyName ] = UnitUtils.ConvertFromInternalUnits( p.AsInteger(), p.DisplayUnitType);
-            break;
-          case StorageType.String:
-            myParamDict[keyName] = p.AsString();
-            break;
-          case StorageType.ElementId:
-            // TODO: (OLD) Properly get ref elemenet and serialise it in here.
-            // NOTE: Too much garbage for too little info...
-            //var docEl = Doc.GetElement( p.AsElementId() );
-            //var spk = SpeckleCore.Converter.Serialise( docEl );
-            //if( !(spk is SpeckleNull) ) {
-            //  myParamDict[ keyName + "_el" ] = spk;
-            //  myParamDict[ keyName ] = p.AsValueString();
-            //} else
-            myParamDict[keyName] = p.AsValueString();
-            break;
-          case StorageType.None:
-            break;
-        }
+        return new List<Parameter>();
       }
+      return GetParams(elementType, true);
 
-      // Get any other parameters from the "big" list
-      foreach (Parameter p in myElement.Parameters)
-      {
-        var keyName = SanitizeKeyname(p.Definition.Name);
-
-        if (myParamDict.ContainsKey(keyName))
-        {
-          continue;
-        }
-
-        switch (p.StorageType)
-        {
-          case StorageType.Double:
-            // NOTE: do not use p.AsDouble() as direct input for unit utils conversion, it doesn't work.  ¯\_(ツ)_/¯
-            var val = p.AsDouble();
-            try
-            {
-              myParamDict[keyName] = UnitUtils.ConvertFromInternalUnits(val, p.DisplayUnitType);
-              myParamDict["__unitType::" + keyName] = p.Definition.UnitType.ToString();
-              myParamDict["__unit::" + keyName] = p.DisplayUnitType.ToString();
-            }
-            catch (Exception)
-            {
-              myParamDict[keyName] = val;
-            }
-            break;
-          case StorageType.Integer:
-            myParamDict[keyName] = p.AsInteger();
-            //myParamDict[ keyName ] = UnitUtils.ConvertFromInternalUnits( p.AsInteger(), p.DisplayUnitType);
-            break;
-          case StorageType.String:
-            myParamDict[keyName] = p.AsString();
-            break;
-          case StorageType.ElementId:
-            myParamDict[keyName] = p.AsValueString();
-            break;
-          case StorageType.None:
-            break;
-        }
-      }
-
-      //sort parameters
-      myParamDict = myParamDict.OrderBy(obj => obj.Key).ToDictionary(obj => obj.Key, obj => obj.Value);
-
-
-      // myParamDict["__units"] = unitsDict;
-      // TODO: (OLD) BIG CORE PROBLEM: failure to serialise things with nested dictionary (like the line above).
-      return myParamDict;
     }
 
-    public Dictionary<string, object> GetElementTypeParams(DB.Element myElement)
+    private List<Parameter> GetParams(DB.Element element, bool isTypeParameter = false, List<string> exclusions = null)
     {
-      var myElementType = Doc.GetElement(myElement.GetTypeId());
+      exclusions = (exclusions != null) ? exclusions : new List<string>();
 
-      if (myElementType == null || myElementType.Parameters == null)
-      {
-        return null;
-      }
+      //exclude parameters that don't have a value and those pointing to other elements as we don't support them
+      var revitParameters = element.Parameters.Cast<DB.Parameter>()
+        .Where(x => x.HasValue && x.StorageType != StorageType.ElementId && !exclusions.Contains(GetParamInternalName(x))).ToList();
 
-      var myParamDict = new Dictionary<string, object>();
-
-      foreach (Parameter p in myElementType.Parameters)
-      {
-        var keyName = SanitizeKeyname(p.Definition.Name);
-
-        if (myParamDict.ContainsKey(keyName))
-        {
-          continue;
-        }
-
-        switch (p.StorageType)
-        {
-          case StorageType.Double:
-            // NOTE: do not use p.AsDouble() as direct input for unit utils conversion, it doesn't work.  ¯\_(ツ)_/¯
-            var val = p.AsDouble();
-            try
-            {
-              myParamDict[keyName] = UnitUtils.ConvertFromInternalUnits(val, p.DisplayUnitType);
-              myParamDict["__unitType::" + keyName] = p.Definition.UnitType.ToString();
-              myParamDict["__unit::" + keyName] = p.DisplayUnitType.ToString();
-            }
-            catch (Exception)
-            {
-              myParamDict[keyName] = val;
-            }
-            break;
-          case StorageType.Integer:
-            myParamDict[keyName] = p.AsInteger();
-            break;
-          case StorageType.String:
-            myParamDict[keyName] = p.AsString();
-            break;
-          case StorageType.ElementId:
-            myParamDict[keyName] = p.AsValueString();
-            break;
-          case StorageType.None:
-            break;
-        }
-      }
-
-      //sort parameters
-      myParamDict = myParamDict.OrderBy(obj => obj.Key).ToDictionary(obj => obj.Key, obj => obj.Value);
-
-
-      // myParamDict["__units"] = unitsDict;
-      // TODO: (OLD) BIG CORE PROBLEM: failure to serialise things with nested dictionary (like the line above).
-      return myParamDict;
+      //exclude parameters that failed to convert
+      var speckleParameters = revitParameters.Select(x => ParameterToSpeckle(x, isTypeParameter))
+        .Where(x => x != null);
+      return speckleParameters.OrderBy(x => x.name).ToList();
     }
+
+
+
+    private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false)
+    {
+      var sp = new Parameter
+      {
+        name = rp.Definition.Name,
+        applicationId = GetParamInternalName(rp),
+        isShared = rp.IsShared,
+        isReadOnly = rp.IsReadOnly,
+        isTypeParameter = isTypeParameter,
+        revitUnitType = rp.Definition.UnitType.ToString() //eg UT_Length
+      };
+
+      switch (rp.StorageType)
+      {
+        case StorageType.Double:
+          // NOTE: do not use p.AsDouble() as direct input for unit utils conversion, it doesn't work.  ¯\_(ツ)_/¯
+          var val = rp.AsDouble();
+          try
+          {
+            sp.revitUnit = rp.DisplayUnitType.ToString(); //eg DUT_MILLIMITERS, this can throw!
+            sp.value = UnitUtils.ConvertFromInternalUnits(val, rp.DisplayUnitType);
+          }
+          catch
+          {
+            sp.value = val;
+          }
+          break;
+        case StorageType.Integer:
+          switch (rp.Definition.ParameterType)
+          {
+            case ParameterType.YesNo:
+              sp.value = Convert.ToBoolean(rp.AsInteger());
+              break;
+            default:
+              sp.value = rp.AsInteger();
+              break;
+          }
+          break;
+        case StorageType.String:
+          sp.value = rp.AsString();
+          if (sp.value == null)
+            sp.value = rp.AsValueString();
+          break;
+        //case StorageType.ElementId:
+        //  // NOTE: if this collects too much garbage, maybe we can ignore it
+        //  var id = rp.AsElementId();
+        //  var e = Doc.GetElement(id);
+        //  if (e != null && CanConvertToSpeckle(e))
+        //    sp.value = ConvertToSpeckle(e);
+        //  break;
+        default:
+          return null;
+          break;
+      }
+      return sp;
+    }
+
+    #endregion
 
     /// <summary>
     /// </summary>
     /// <param name="revitElement"></param>
-    /// <param name="spkElement"></param>
-    /// <param name="exclusions"></param>
-    public void SetInstanceParameters(Element revitElement, Base spkElement, List<string> exclusions = null)
+    /// <param name="speckleElement"></param>
+    public void SetInstanceParameters(Element revitElement, Base speckleElement)
     {
       if (revitElement == null)
         return;
 
-      var paramDictionary = spkElement["parameters"] as Dictionary<string, object>;
-      if (paramDictionary == null || !paramDictionary.Any())
+
+      var speckleParameters = speckleElement["parameters"] as List<Parameter>;
+      if (speckleParameters == null || !speckleParameters.Any())
         return;
 
-      exclusions = (exclusions != null) ? exclusions : new List<string>();
-      var cleanParams = paramDictionary.Where(x => !x.Key.StartsWith("__") && !exclusions.Contains(x.Key));
 
+      // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
+      // Parameters most likely contains extra (garbage) stuff that we don't need to set anyways
+      // so it's a much faster conversion. If we find that's not the case, we might need to change it in the future
+      // We also turn that into a dictionary for faster (I guess) lookup
+      var revitParameters = revitElement.ParametersMap.Cast<DB.Parameter>().Where(x => x != null && !x.IsReadOnly)
+        .ToDictionary(x => GetParamInternalName(x), x => x);
 
-      var paramMap = revitElement.ParametersMap.Cast<Parameter>().Where(x => x != null && !x.IsReadOnly)
-        .ToDictionary(x => x.Definition.Name, x => x);
+      //only loop params we can set and exist on the revit element
+      var filteredSpeckleParameters = speckleParameters.Where(x => !x.isReadOnly && revitParameters.ContainsKey(x.applicationId));
 
-      foreach (var kvp in cleanParams)
+      foreach (var sp in filteredSpeckleParameters)
       {
+        var rp = revitParameters[sp.applicationId];
         try
         {
-          var keyName = UnsanitizeKeyname(kvp.Key);
-          if (!paramMap.ContainsKey(keyName))
-            continue;
-
-          //TODO: try support params in foreign language
-          var parameter = paramMap[keyName];
-
-          switch (parameter.StorageType)
+          switch (rp.StorageType)
           {
             case StorageType.Double:
-              var hasUnitKey = paramDictionary.ContainsKey("__unitType::" + parameter.Definition.Name);
-              if (hasUnitKey)
+              if (!string.IsNullOrEmpty(sp.revitUnit))
               {
-                var unitType = (string)paramDictionary["__unitType::" + kvp.Key];
-                var unit = (string)paramDictionary["__unit::" + kvp.Key];
-                DisplayUnitType sourceUnit;
-                Enum.TryParse(unit, out sourceUnit);
-                var convertedValue = UnitUtils.ConvertToInternalUnits(Convert.ToDouble(kvp.Value), sourceUnit);
-
-                parameter.Set(convertedValue);
+                Enum.TryParse(sp.revitUnit, out DisplayUnitType sourceUnit);
+                var val = UnitUtils.ConvertToInternalUnits(Convert.ToDouble(sp.value), sourceUnit);
+                rp.Set(val);
               }
               else
-              {
-                parameter.Set(Convert.ToDouble(kvp.Value));
-              }
+                rp.Set(Convert.ToDouble(sp.value));
               break;
 
             case StorageType.Integer:
-              parameter.Set(Convert.ToInt32(kvp.Value));
+              rp.Set(Convert.ToInt32(sp.value));
               break;
 
             case StorageType.String:
-              parameter.Set(Convert.ToString(kvp.Value));
+              rp.Set(Convert.ToString(sp.value));
               break;
-
-            case StorageType.ElementId:
-              // TODO (OLD) /Fake out: most important element id params should go as props in the object model
+            default:
               break;
           }
         }
         catch (Exception ex)
         {
+          continue;
         }
       }
 
     }
 
-    private void TrySetParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
+    private string GetParamInternalName(DB.Parameter rp)
+    {
+      //Shared parameters use a GUID to be uniquely identified
+      //Other parameters use a BuiltInParameter enum
+      if (rp.IsShared)
+        return rp.GUID.ToString();
+      else
+        return (rp.Definition as InternalDefinition).BuiltInParameter.ToString();
+    }
+
+    private void TrySetElementParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
+    {
+      var param = elem.get_Parameter(bip);
+      if (param != null && value != null && !param.IsReadOnly)
+      {
+        param.Set(value.Id);
+      }
+    }
+    private void TryGetElementParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
     {
       var param = elem.get_Parameter(bip);
       if (param != null && value != null && !param.IsReadOnly)
@@ -277,15 +229,6 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public static string SanitizeKeyname(string keyName)
-    {
-      return keyName.Replace(".", "☞"); // BECAUSE FML
-    }
-
-    public static string UnsanitizeKeyname(string keyname)
-    {
-      return keyname.Replace("☞", ".");
-    }
 
     #endregion
 
@@ -480,6 +423,7 @@ namespace Objects.Converter.Revit
 
     #endregion
 
+    #region Project Base Point
     private class BetterBasePoint
     {
       public double X { get; set; } = 0;
@@ -487,7 +431,6 @@ namespace Objects.Converter.Revit
       public double Z { get; set; } = 0;
       public double Angle { get; set; } = 0;
     }
-
 
     ////////////////////////////////////////////////
     /// NOTE
@@ -567,5 +510,6 @@ namespace Objects.Converter.Revit
 
       return newP;
     }
+    #endregion
   }
 }

@@ -42,6 +42,11 @@ namespace Objects.Converter.Revit
         return AdaptiveComponentToSpeckle(revitFi);
       }
 
+      //these elements come when the curtain wall is generated
+      //let's not send them to speckle unless we realize they are needed!
+      if (Categories.curtainWallSubElements.Contains(revitFi.Category))
+        return null;
+
       //beams & braces
       if (Categories.beamCategories.Contains(revitFi.Category))
       {
@@ -89,7 +94,7 @@ namespace Objects.Converter.Revit
 
       speckleFi["@displayMesh"] = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
 
-      AddCommonRevitProps(speckleFi, revitFi);
+      AddParameters(speckleFi, revitFi);
 
       #region sub elements capture
 
@@ -203,8 +208,8 @@ namespace Objects.Converter.Revit
 
       Doc.Regenerate();
 
-      TrySetParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
-      TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
+      TrySetElementParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
+      TrySetElementParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
 
       if (familyInstance.CanFlipHand && speckleFi.handFlipped != familyInstance.HandFlipped)
       {

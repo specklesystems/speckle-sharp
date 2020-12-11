@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(speckleAc.applicationId);
 
       string familyName = speckleAc["family"] as string != null ? speckleAc["family"] as string : "";
-      
+
       DB.FamilySymbol familySymbol = GetElementType<DB.FamilySymbol>(speckleAc);
       DB.FamilyInstance revitAc = null;
 
@@ -68,7 +68,7 @@ namespace Objects.Converter.Revit
       speckleAc.flipped = AdaptiveComponentInstanceUtils.IsInstanceFlipped(revitAc);
       speckleAc["@displayMesh"] = GetElementMesh(revitAc);
 
-      AddCommonRevitProps(speckleAc, revitAc);
+      AddParameters(speckleAc, revitAc);
 
       return speckleAc;
     }
