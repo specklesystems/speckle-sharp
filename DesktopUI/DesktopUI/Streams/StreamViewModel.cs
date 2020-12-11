@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
@@ -139,6 +137,25 @@ namespace Speckle.DesktopUI.Streams
       RequestClose();
     }
 
+    public async void RemoveCollaborator(Collaborator collaborator)
+    {
+      Tracker.TrackPageview("stream", "remove-collaborator");
+      try
+      {
+        await StreamState.Client.StreamRevokePermission(new StreamRevokePermissionInput()
+        {
+          streamId = StreamState.Stream.id, userId = collaborator.id
+        });
+      }
+      catch ( Exception e )
+      {
+        _bindings.RaiseNotification($"Error: {e.Message}");
+        return;
+      }
+
+      await StreamState.RefreshStream();
+    }
+
     // TODO figure out how to call this from parent instead of
     // rewriting the method here
     public void CopyStreamId(string streamId)
@@ -168,10 +185,10 @@ namespace Speckle.DesktopUI.Streams
       }
     }
 
-    public void Handle(StreamUpdatedEvent message)
+    public async void Handle(StreamUpdatedEvent message)
     {
       if ( message.StreamId != StreamState.Stream.id ) return;
-      StreamState.Stream = message.Stream;
+      await StreamState.RefreshStream();
     }
   }
 }
