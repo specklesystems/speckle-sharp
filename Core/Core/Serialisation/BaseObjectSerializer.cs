@@ -292,7 +292,7 @@ namespace Speckle.Core.Serialisation
           var property = contract.Properties.GetClosestMatchProperty(prop);
 
           // Ignore properties decorated with [JsonIgnore].
-          if (property != null && property.Ignored && !property.Writable ) continue;
+          if (property != null && property.Ignored ) continue;
           
 
           // Ignore nulls
