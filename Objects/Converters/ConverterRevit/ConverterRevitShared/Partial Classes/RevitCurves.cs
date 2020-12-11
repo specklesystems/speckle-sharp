@@ -1,13 +1,13 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
+using Objects.BuiltElements.Revit.Curve;
 using Speckle.Core.Models;
 using System;
 using System.Linq;
 
 using DB = Autodesk.Revit.DB;
-
-using DetailCurve = Objects.BuiltElements.Revit.DetailCurve;
-using ModelCurve = Objects.BuiltElements.Revit.ModelCurve;
+using DetailCurve = Objects.BuiltElements.Revit.Curve.DetailCurve;
+using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 
 namespace Objects.Converter.Revit
 {
@@ -15,9 +15,7 @@ namespace Objects.Converter.Revit
   {
     public ModelCurve ModelCurveToSpeckle(DB.ModelCurve revitCurve)
     {
-      var speckleCurve = new ModelCurve();
-      speckleCurve.baseCurve = CurveToSpeckle(revitCurve.GeometryCurve);
-      speckleCurve.lineStyle = revitCurve.LineStyle.Name;
+      var speckleCurve = new ModelCurve(CurveToSpeckle(revitCurve.GeometryCurve), revitCurve.LineStyle.Name);
 
       return speckleCurve;
     }
@@ -50,10 +48,7 @@ namespace Objects.Converter.Revit
 
     public DetailCurve DetailCurveToSpeckle(DB.DetailCurve revitCurve)
     {
-      var speckleCurve = new DetailCurve();
-      speckleCurve.baseCurve = CurveToSpeckle(revitCurve.GeometryCurve);
-      speckleCurve.lineStyle = revitCurve.LineStyle.Name;
-
+      var speckleCurve = new DetailCurve(CurveToSpeckle(revitCurve.GeometryCurve), revitCurve.LineStyle.Name);
       return speckleCurve;
     }
 
@@ -93,8 +88,7 @@ namespace Objects.Converter.Revit
 
     public RoomBoundaryLine RoomBoundaryLineToSpeckle(DB.ModelCurve revitCurve)
     {
-      var speckleCurve = new RoomBoundaryLine();
-      speckleCurve.baseCurve = CurveToSpeckle(revitCurve.GeometryCurve);
+      var speckleCurve = new RoomBoundaryLine(CurveToSpeckle(revitCurve.GeometryCurve));
 
       return speckleCurve;
     }

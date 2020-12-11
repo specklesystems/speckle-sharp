@@ -27,7 +27,7 @@ namespace ConnectorGrasshopper.Conversion
 
     private ISpeckleKit Kit;
 
-    public ToNativeConverterAsync() : base("To Native", "To Native", "Converts Speckle objects to their Grasshopper equivalents.", "Speckle 2 Dev", "Conversion")
+    public ToNativeConverterAsync() : base("To Native", "To Native", "Convert data from Speckle's Base object to it`s Dynamo equivalent.", "Speckle 2 Dev", "Conversion")
     {
       SetDefaultKitAndConverter();
       BaseWorker = new ToNativeWorker(Converter);
@@ -111,7 +111,7 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("Objects", "O", "Objects you want to convert back to GH", GH_ParamAccess.tree);
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Objects", "O", "Speckle Base objects to convert to Grasshopper.", GH_ParamAccess.tree));
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -128,7 +128,7 @@ namespace ConnectorGrasshopper.Conversion
 
   public class ToNativeWorker : WorkerInstance
   {
-    GH_Structure<IGH_Goo> Objects;
+    GH_Structure<GH_SpeckleBase> Objects;
     GH_Structure<GH_ObjectWrapper> ConvertedObjects;
 
     public ISpeckleConverter Converter { get; set; }
@@ -136,7 +136,7 @@ namespace ConnectorGrasshopper.Conversion
     public ToNativeWorker(ISpeckleConverter _Converter) : base(null)
     {
       Converter = _Converter;
-      Objects = new GH_Structure<IGH_Goo>();
+      Objects = new GH_Structure<GH_SpeckleBase>();
       ConvertedObjects = new GH_Structure<GH_ObjectWrapper>();
     }
 
@@ -160,9 +160,9 @@ namespace ConnectorGrasshopper.Conversion
             return;
           }
 
-          var converted = Utilities.TryConvertItemToNative(item, Converter);
-          ConvertedObjects.Append(new GH_ObjectWrapper() { Value = converted }, Objects.Paths[branchIndex]);
-          ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
+          var converted = Utilities.TryConvertItemToNative(item?.Value, Converter);
+          ConvertedObjects.Append(new GH_ObjectWrapper() { Value = converted }, path);
+          ReportProgress(Id, (completed++ + 1) / (double)Objects.Count());
         }
 
         branchIndex++;
@@ -188,16 +188,16 @@ namespace ConnectorGrasshopper.Conversion
         return;
       }
 
-      GH_Structure<IGH_Goo> _objects;
+      GH_Structure<GH_SpeckleBase> _objects;
       DA.GetDataTree(0, out _objects);
 
-      int branchIndex = 0;
+      var branchIndex = 0;
       foreach (var list in _objects.Branches)
       {
         var path = _objects.Paths[branchIndex];
         foreach (var item in list)
         {
-          Objects.Append(item, _objects.Paths[branchIndex]);
+          Objects.Append(item, path);
         }
         branchIndex++;
       }

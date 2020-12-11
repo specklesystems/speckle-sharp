@@ -57,7 +57,7 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitDuct != null)
       {
-        SetElementParamsFromSpeckle(duct, speckleRevitDuct);
+        SetInstanceParameters(duct, speckleRevitDuct);
       }
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitDuct.applicationId, ApplicationGeneratedId = duct.UniqueId, NativeObject = duct } };

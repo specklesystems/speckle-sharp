@@ -68,7 +68,8 @@ namespace Speckle.Core.Kits
         return _AvailableTypes;
       }
     }
-
+    
+    
     /// <summary>
     /// Gets the default Speckle provided kit, "Objects".
     /// </summary>

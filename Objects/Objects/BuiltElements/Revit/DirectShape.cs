@@ -6,7 +6,6 @@ using static Objects.BuiltElements.Revit.RevitUtils;
 
 namespace Objects.BuiltElements.Revit
 {
-  [SchemaDescription("A DirectShape element by mesh")]
   public class DirectShape : Base
   {
     public string type { get; set; }
@@ -15,11 +14,20 @@ namespace Objects.BuiltElements.Revit
 
     public Mesh baseGeometry { get; set; }
 
-    [SchemaOptional]
     public Dictionary<string, object> parameters { get; set; }
-
-    [SchemaIgnore]
     public string elementId { get; set; }
+
+    public DirectShape()
+    { }
+
+    [SchemaInfo("DirectShape by mesh", "Creates a Revit DirectShape by mesh")]
+    public DirectShape(string type, RevitCategory category, Mesh baseGeometry, Dictionary<string, object> parameters = null)
+    {
+      this.type = type;
+      this.category = category;
+      this.baseGeometry = baseGeometry;
+      this.parameters = parameters;
+    }
   }
 
 }

@@ -179,6 +179,7 @@ namespace SpeckleRhino
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Rhino);
+      converter.SetContextDocument(Doc);
 
       var myStream = await state.Client.StreamGet(state.Stream.id);
       var commit = state.Commit;
@@ -206,6 +207,16 @@ namespace SpeckleRhino
 
       var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {myStream.name}");
 
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 0;
+      Execute.PostToUIThread(() => state.Progress.Maximum = state.Objects.Count());
+
+      Action updateProgressAction = () =>
+      {
+        conversionProgressDict["Conversion"]++;
+        UpdateProgress(conversionProgressDict, state.Progress);
+      };
+
       var layerName = $"{myStream.name}: {state.Branch.name} @ {commit.id}";
       layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty); // Rhino doesn't like emojis in layer names :( 
 
@@ -220,10 +231,11 @@ namespace SpeckleRhino
       if (layerIndex == -1)
       {
         RaiseNotification($"Coould not create layer {layerName} to bake objects into.");
+        state.Errors.Add(new Exception($"Coould not create layer {layerName} to bake objects into."));
         return state;
       }
       currentRootLayerName = layerName;
-      HandleAndConvert(commitObject, converter, Doc.Layers.FindIndex(layerIndex));
+      HandleAndConvert(commitObject, converter, Doc.Layers.FindIndex(layerIndex), state);
 
       Doc.Views.Redraw();
 
@@ -232,14 +244,20 @@ namespace SpeckleRhino
       return state;
     }
 
+    /// <summary>
+    /// Used to hold in state for the handle and convert function below.
+    /// </summary>
     private string currentRootLayerName;
 
-    private void HandleAndConvert(object obj, ISpeckleConverter converter, Layer layer)
+    private void HandleAndConvert(object obj, ISpeckleConverter converter, Layer layer, StreamState state, Action updateProgressAction = null)
     {
-      if (!layer.HasIndex)
+      Layer myLayer = null;
+
+      // The rhino layer api is a bit sucky, hence the result below. It probably can be cleaned up and optimised.
+      if (!layer.HasIndex || layer.Index == -1)
       {
         // Try and recreate layer structure if coming from Rhino.
-        if (layer.Name.Contains("::"))
+        if (layer.Name.Contains("::") || layer.FullPath.Contains("::"))
         {
           var layers = layer.Name.Split(new string[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
           var ancestors = new List<Layer>();
@@ -272,7 +290,21 @@ namespace SpeckleRhino
         }
         else
         {
-          layer.Index = Doc.Layers.Add(layer);
+          var index = Doc.Layers.Add(layer);
+          if(index == -1) // it means it exists already, and we're returning to a previously created higher level layer.
+          {
+            var fullPath = "";
+            if (layer.ParentLayerId != null)
+            {
+              var parent = Doc.Layers.FindId(layer.ParentLayerId);
+              fullPath += parent.FullPath + "::" + layer.Name;
+            }
+            var existingLayerIndex = Doc.Layers.FindByFullPath(fullPath, true);
+            layer.Index = Doc.Layers.FindIndex(existingLayerIndex).Index;
+          } else
+          {
+            layer.Index = index;
+          }
         }
       }
 
@@ -286,8 +318,11 @@ namespace SpeckleRhino
           if (converted != null)
           {
             Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = layer.Index });
+          } else
+          {
+            state.Errors.Add(new Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
           }
-
+          updateProgressAction?.Invoke();
           return;
         }
         else
@@ -306,8 +341,8 @@ namespace SpeckleRhino
               layerName = prop;
             }
 
-            var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = layerName };
-            HandleAndConvert(value, converter, subLayer);
+            var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = $"{layerName}" };
+            HandleAndConvert(value, converter, subLayer, state, updateProgressAction);
           }
 
           return;
@@ -319,7 +354,7 @@ namespace SpeckleRhino
 
         foreach (var listObj in list)
         {
-          HandleAndConvert(listObj, converter, layer);
+          HandleAndConvert(listObj, converter, layer, state, updateProgressAction);
         }
         return;
       }
@@ -328,7 +363,7 @@ namespace SpeckleRhino
       {
         foreach (DictionaryEntry kvp in dict)
         {
-          HandleAndConvert(kvp.Value, converter, layer);
+          HandleAndConvert(kvp.Value, converter, layer, state, updateProgressAction);
         }
         return;
       }
@@ -342,6 +377,7 @@ namespace SpeckleRhino
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Rhino);
+      converter.SetContextDocument(Doc);
       Exceptions.Clear();
 
       var commitObj = new Base();
@@ -363,6 +399,10 @@ namespace SpeckleRhino
         return state;
       }
 
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 0;
+      Execute.PostToUIThread(() => state.Progress.Maximum = state.Objects.Count());
+
       foreach (var placeholder in state.Objects)
       {
         if (state.CancellationTokenSource.Token.IsCancellationRequested)
@@ -373,14 +413,22 @@ namespace SpeckleRhino
         var obj = Doc.Objects.FindId(new Guid(placeholder.applicationId));
         if (obj == null)
         {
+          state.Errors.Add(new Exception($"Failed to find local object ${placeholder.applicationId}."));
           continue;
         }
 
         var converted = converter.ConvertToSpeckle(obj.Geometry);
         if (converted == null)
         {
+          state.Errors.Add(new Exception($"Failed to find convert object ${placeholder.applicationId} of type ${obj.Geometry.ObjectType.ToString()}."));
           continue;
         }
+
+        conversionProgressDict["Conversion"]++;
+        UpdateProgress(conversionProgressDict, state.Progress);
+
+        // TODO: potentially get more info from the object: materials and other rhino specific stuff?
+        converted.applicationId = placeholder.applicationId;
 
         foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
         {
@@ -451,6 +499,7 @@ namespace SpeckleRhino
       catch(Exception e)
       {
         Globals.Notify($"Failed to create commit.\n{e.Message}");
+        state.Errors.Add(e);
       }
 
       return state;

@@ -11,6 +11,12 @@ namespace Objects.BuiltElements
   {
     public Mesh baseGeometry { get; set; } = new Mesh();
     public Topography() { }
+
+    [SchemaInfo("Topography", "Creates a Speckle topography")]
+    public Topography(Mesh baseGeometry)
+    {
+      this.baseGeometry = baseGeometry;
+    }
   }
 }
 
@@ -18,11 +24,20 @@ namespace Objects.BuiltElements.Revit
 {
   public class RevitTopography : Topography
   {
-    [SchemaIgnore]
     public string elementId { get; set; }
 
-    [SchemaOptional]
     public Dictionary<string, object> parameters { get; set; }
+    public RevitTopography()
+    {
+
+    }
+
+    [SchemaInfo("RevitTopography", "Creates a Revit topography")]
+    public RevitTopography(Mesh baseGeometry, Dictionary<string, object> parameters = null)
+    {
+      this.baseGeometry = baseGeometry;
+      this.parameters = parameters;
+    }
   }
 
 }
