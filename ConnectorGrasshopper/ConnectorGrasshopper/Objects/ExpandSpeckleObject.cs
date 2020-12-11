@@ -147,11 +147,11 @@ namespace ConnectorGrasshopper.Objects
           continue;
         }
         var obj = baseGoo.Value;
-        foreach (var prop in obj.GetDynamicMembers())
+        foreach (var prop in obj.GetMembers())
         {
           // Convert and add to corresponding output structure
-          var value = obj[prop];
-          if (!outputDict.ContainsKey(prop)) continue;
+          var value = prop.Value;
+          if (!outputDict.ContainsKey(prop.Key)) continue;
           switch (value)
           {
             case null:
@@ -162,7 +162,7 @@ namespace ConnectorGrasshopper.Objects
               {
                 var wrapper = new GH_ObjectWrapper();
                 wrapper.Value = Utilities.TryConvertItemToNative(x, Converter);
-                outputDict[prop].Append(wrapper, path);
+                outputDict[prop.Key].Append(wrapper, path);
                 index++;
               }
               break;
@@ -177,12 +177,12 @@ namespace ConnectorGrasshopper.Objects
                 {
                   wrapper.Value = Utilities.TryConvertItemToNative(b, Converter);
                 }
-                outputDict[prop].Append(wrapper, path);
+                outputDict[prop.Key].Append(wrapper, path);
               }
               break;
             default:
-              outputDict[prop].Append(
-                new GH_ObjectWrapper(Utilities.TryConvertItemToNative(obj[prop], Converter)),
+              outputDict[prop.Key].Append(
+                new GH_ObjectWrapper(Utilities.TryConvertItemToNative(obj[prop.Key], Converter)),
                 path);
               break;
           }

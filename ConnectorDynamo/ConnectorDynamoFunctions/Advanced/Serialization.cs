@@ -8,10 +8,10 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
   public static class Serialization
   {
     /// <summary>
-    /// Serialize a Base object to JSON
+    /// Serialize a Speckle Base object to JSON
     /// </summary>
-    /// <param name="base">Base object</param>
-    /// <returns name="json">JSON text</returns>
+    /// <param name="base">Speckle Base objects to serialize.</param>
+    /// <returns name="json">Serialized object in JSON format.</returns>
     public static string Serialize(Base @base)
     {
       Tracker.TrackPageview(Tracker.SERIALIZE);
@@ -19,10 +19,10 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
     }
 
     /// <summary>
-    /// Deserialize JSON text to a Base object
+    /// Deserialize JSON text to a Speckle Base object
     /// </summary>
-    /// <param name="json">JSON text</param>
-    /// <returns name="base">Base object</returns>
+    /// <param name="json">Serialized objects in JSON format.</param>
+    /// <returns name="base">Deserialized Speckle Base objects.</returns>
     public static object Deserialize(string json)
     {
       Tracker.TrackPageview(Tracker.DESERIALIZE);
