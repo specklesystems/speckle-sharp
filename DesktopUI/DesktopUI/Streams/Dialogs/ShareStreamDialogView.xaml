@@ -20,7 +20,6 @@
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
           <Ellipse Grid.Column="0"
                    Width="32"
@@ -44,6 +43,11 @@
       </DataTemplate>
 
       <DataTemplate x:Key="UserChipTemplate">
+        <!--<md:Chip Content="{Binding name}" IconBackground="Transparent">
+          <md:Chip.Icon>
+            <Image Source="{Binding Converter={StaticResource NullAvatarToRobotConverter}}" />
+          </md:Chip.Icon>
+        </md:Chip>-->
         <Ellipse Grid.Column="0"
                  Width="32"
                  Height="32"
@@ -56,8 +60,20 @@
           </Ellipse.Fill>
         </Ellipse>
       </DataTemplate>
+
+      <DataTemplate x:Key="CollabRoleTemplate">
+        <StackPanel Orientation="Vertical">
+          <TextBlock Text="{Binding Name}" />
+          <TextBlock FontSize="11"
+                     Foreground="Gray"
+                     Text="{Binding Description}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </DataTemplate>
+
     </ResourceDictionary>
   </UserControl.Resources>
+
   <Grid MinWidth="350">
     <Grid Margin="24,0,24,24">
       <Grid.RowDefinitions>
@@ -92,29 +108,6 @@
                  FontSize="18"
                  Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                  Text="Share this stream" />
-      <!--<ComboBox
-            Margin="0,16"
-            md:HintAssist.Hint="Add collaborators (this search doesn't work yet)"
-            md:HintAssist.HintOpacity=".5"
-            DisplayMemberPath="name"
-            IsEditable="True"
-            IsEnabled="True"
-            IsTextSearchEnabled="True"
-            ItemsSource="{Binding UserSearchResults, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-            SelectedItem="{Binding SelectedUser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            StaysOpenOnEdit="True"
-            Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />-->
-      <!--<TextBox
-            Height="80"
-            Margin="0,8"
-            VerticalAlignment="Top"
-            md:HintAssist.Hint="Message"
-            md:HintAssist.HintOpacity=".5"
-            AcceptsReturn="True"
-            Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
-            Text="{Binding ShareMessage}"
-            TextWrapping="Wrap"
-            VerticalScrollBarVisibility="Auto" />-->
 
       <Grid Grid.Row="2"
             Margin="0,8">
@@ -164,6 +157,7 @@
                 Foreground="{DynamicResource PrimaryHueMidBrush}"
                 Visibility="{Binding DropdownState, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
       </Grid>
+
       <ListBox Grid.Row="3"
                ItemTemplate="{StaticResource UserTemplate}"
                ItemsSource="{Binding UserSearchResults}"
@@ -173,6 +167,10 @@
                Visibility="{Binding DropdownState, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
 
       <Grid Grid.Row="4">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
         <ItemsControl Margin="0,12"
                       ItemTemplate="{StaticResource UserChipTemplate}"
                       ItemsSource="{Binding SelectedUsers}">
@@ -182,6 +180,32 @@
             </ItemsPanelTemplate>
           </ItemsControl.ItemsPanel>
         </ItemsControl>
+
+        <Button x:Name="AddCollabButton"
+                Grid.Column="1"
+                Margin="0,6,0,12"
+                Command="{s:Action AddCollaborators}">
+          <Button.Content>
+            <TextBlock Margin="0,0,10,0"
+                       Text="{Binding SelectedRole.Name, StringFormat='Add {0}s'}" />
+          </Button.Content>
+        </Button>
+        <md:PopupBox Grid.Column="1"
+                     Width="30"
+                     Height="20"
+                     Margin="0,0,-8,4"
+                     HorizontalAlignment="Right"
+                     md:RippleAssist.IsDisabled="True">
+          <md:PopupBox.ToggleContent>
+            <md:PackIcon Foreground="{Binding ElementName=AddCollabButton, Path=Foreground}"
+                         Kind="MenuDown"
+                         ToolTip="Click to change role" />
+          </md:PopupBox.ToggleContent>
+          <ListBox MaxWidth="150"
+                   ItemTemplate="{StaticResource CollabRoleTemplate}"
+                   ItemsSource="{Binding Roles}"
+                   SelectedItem="{Binding SelectedRole}" />
+        </md:PopupBox>
       </Grid>
 
       <Grid Grid.Row="5">
@@ -190,6 +214,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
@@ -210,16 +235,26 @@
                 Height="32"
                 Margin="0,0,0,8"
                 md:RippleAssist.ClipToBounds="True"
+                Command="{s:Action ToggleShareLink}"
                 Content="{md:PackIcon Kind=Link,
                                 Size=20}"
                 Style="{StaticResource MaterialDesignIconButton}" />
         <TextBlock Grid.Row="2"
                    Text="Be warned! Anyone with the link will be able to view the stream."
                    TextWrapping="Wrap" />
+        <TextBox Grid.Row="3"
+                 Margin="0,12,0,0"
+                 FontFamily="Consolas"
+                 IsReadOnly="True"
+                 PreviewMouseUp="{s:Action SelectAllText}"
+                 Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+                 Text="{Binding ShareLink, Mode=OneWay}"
+                 TextWrapping="WrapWithOverflow"
+                 Visibility="{Binding ShareLinkVisible, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
       </Grid>
 
     </Grid>
-
+    <md:Snackbar MessageQueue="{Binding Notifications}" />
   </Grid>
 
 </UserControl>
