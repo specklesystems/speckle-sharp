@@ -12,9 +12,9 @@
              mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
+      <utils:SplitFirstNameConverter x:Key="SplitFirstNameConverter" />
       <utils:NullAvatarToRobotConverter x:Key="NullAvatarToRobotConverter" />
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-
       <DataTemplate x:Key="UserTemplate">
         <Grid Margin="0,4">
           <Grid.ColumnDefinitions>
@@ -41,13 +41,7 @@
           </StackPanel>
         </Grid>
       </DataTemplate>
-
       <DataTemplate x:Key="UserChipTemplate">
-        <!--<md:Chip Content="{Binding name}" IconBackground="Transparent">
-          <md:Chip.Icon>
-            <Image Source="{Binding Converter={StaticResource NullAvatarToRobotConverter}}" />
-          </md:Chip.Icon>
-        </md:Chip>-->
         <Ellipse Grid.Column="0"
                  Width="32"
                  Height="32"
@@ -60,7 +54,6 @@
           </Ellipse.Fill>
         </Ellipse>
       </DataTemplate>
-
       <DataTemplate x:Key="CollabRoleTemplate">
         <StackPanel Orientation="Vertical">
           <TextBlock Text="{Binding Name}" />
@@ -70,10 +63,8 @@
                      TextWrapping="Wrap" />
         </StackPanel>
       </DataTemplate>
-
     </ResourceDictionary>
   </UserControl.Resources>
-
   <Grid MinWidth="350">
     <Grid Margin="24,0,24,24">
       <Grid.RowDefinitions>
@@ -89,6 +80,8 @@
                        Height="Auto" />
         <RowDefinition x:Name="LinkSharingRow"
                        Height="Auto" />
+        <RowDefinition x:Name="ToastNotificationRow"
+                       Height="Auto" />
       </Grid.RowDefinitions>
       <Button Grid.Row="0"
               Width="25"
@@ -103,12 +96,10 @@
               IsCancel="True"
               Style="{StaticResource MaterialDesignIconForegroundButton}"
               ToolTip="Cancel" />
-
       <TextBlock Grid.Row="1"
                  FontSize="18"
                  Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                  Text="Share this stream" />
-
       <Grid Grid.Row="2"
             Margin="0,8">
         <Grid.RowDefinitions>
@@ -118,7 +109,6 @@
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-
         <md:PackIcon Grid.Row="0"
                      Margin="10,0"
                      VerticalAlignment="Center"
@@ -142,62 +132,95 @@
                 BorderThickness="0"
                 Command="{s:Action ToggleDropdown}"
                 Content="{md:PackIcon Kind=MenuDown}"
-                Foreground="{DynamicResource PrimaryHueMidBrush}"
-                Visibility="{Binding DropdownState, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
-        <Button Width="45"
-                Height="Auto"
-                HorizontalAlignment="Right"
-                HorizontalContentAlignment="Center"
-                md:ButtonAssist.CornerRadius="10"
-                md:RippleAssist.IsDisabled="True"
-                Background="Transparent"
-                BorderThickness="0"
-                Command="{s:Action ToggleDropdown}"
-                Content="{md:PackIcon Kind=MenuUp}"
-                Foreground="{DynamicResource PrimaryHueMidBrush}"
-                Visibility="{Binding DropdownState, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+                Foreground="{DynamicResource PrimaryHueMidBrush}" />
       </Grid>
-
       <ListBox Grid.Row="3"
                ItemTemplate="{StaticResource UserTemplate}"
                ItemsSource="{Binding UserSearchResults}"
                ScrollViewer.CanContentScroll="False"
-               SelectionChanged="{s:Action UserSelectionChanged}"
-               SelectionMode="Multiple"
+               SelectedItem="{Binding SelectedUser}"
+               SelectionChanged="{s:Action UserSelected}"
                Visibility="{Binding DropdownState, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
-
       <Grid Grid.Row="4">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <ItemsControl Margin="0,12"
-                      ItemTemplate="{StaticResource UserChipTemplate}"
-                      ItemsSource="{Binding SelectedUsers}">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <WrapPanel />
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-        </ItemsControl>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <md:Card x:Name="SelectedUserCard"
+                 Grid.Row="0"
+                 Margin="0,4"
+                 md:ShadowAssist.ShadowDepth="Depth0"
+                 UniformCornerRadius="8"
+                 Visibility="{Binding SelectedUser, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+          <md:Card.Background>
+            <SolidColorBrush Opacity=".15"
+                             Color="LightSlateGray" />
+          </md:Card.Background>
+          <Grid Margin="8,10">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Ellipse Grid.Column="0"
+                     Width="32"
+                     Height="32"
+                     Margin="0,0,8,0"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Top">
+              <Ellipse.Fill>
+                <ImageBrush ImageSource="{Binding SelectedUser, Converter={StaticResource NullAvatarToRobotConverter}}" />
+              </Ellipse.Fill>
+            </Ellipse>
+            <StackPanel Grid.Column="1"
+                        Orientation="Vertical">
+              <TextBlock Margin="0,0,0,4"
+                         FontSize="14"
+                         FontWeight="Bold"
+                         Text="{Binding SelectedUser.name}" />
+              <TextBlock Text="{Binding SelectedUser.company}" />
+            </StackPanel>
+            <Button Grid.Column="2"
+                    Margin="0,0,-8,0"
+                    md:RippleAssist.IsDisabled="True"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Command="{s:Action ClearSelection}"
+                    Content="{md:PackIcon Kind=Close,
+                                    Size=16}"
+                    Foreground="{DynamicResource MaterialDesignBody}" />
+          </Grid>
+        </md:Card>
 
         <Button x:Name="AddCollabButton"
-                Grid.Column="1"
+                Grid.Row="1"
                 Margin="0,6,0,12"
-                Command="{s:Action AddCollaborators}">
+                md:ShadowAssist.ShadowDepth="Depth0"
+                Command="{s:Action AddCollaborator}"
+                Visibility="{Binding ElementName=SelectedUserCard, Path=Visibility}">
           <Button.Content>
-            <TextBlock Margin="0,0,10,0"
-                       Text="{Binding SelectedRole.Name, StringFormat='Add {0}s'}" />
+            <TextBlock>
+              <Run Text="Add" />
+              <Run Text="{Binding SelectedUser.name, Converter={StaticResource SplitFirstNameConverter}}" />
+              <Run Text="{Binding SelectedRole.Name, StringFormat='as {0}'}" />
+            </TextBlock>
+
           </Button.Content>
         </Button>
-        <md:PopupBox Grid.Column="1"
+        <md:PopupBox Grid.Row="1"
                      Width="30"
                      Height="20"
-                     Margin="0,0,-8,4"
+                     Margin="0,0,-4,4"
                      HorizontalAlignment="Right"
-                     md:RippleAssist.IsDisabled="True">
+                     md:RippleAssist.IsDisabled="True"
+                     Visibility="{Binding ElementName=SelectedUserCard, Path=Visibility}">
           <md:PopupBox.ToggleContent>
-            <md:PackIcon Foreground="{Binding ElementName=AddCollabButton, Path=Foreground}"
+            <md:PackIcon Foreground="White"
                          Kind="MenuDown"
                          ToolTip="Click to change role" />
           </md:PopupBox.ToggleContent>
@@ -207,7 +230,6 @@
                    SelectedItem="{Binding SelectedRole}" />
         </md:PopupBox>
       </Grid>
-
       <Grid Grid.Row="5">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
@@ -219,16 +241,13 @@
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-
-        <Separator Margin="0,0,-28,12" />
-
+        <Separator Margin="0,12,-32,12" />
         <TextBlock Grid.Row="1"
                    Grid.Column="0"
                    VerticalAlignment="Center"
                    FontSize="18"
                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                    Text="Or create a sharable link" />
-
         <Button Grid.Row="1"
                 Grid.Column="1"
                 Width="32"
@@ -252,9 +271,9 @@
                  TextWrapping="WrapWithOverflow"
                  Visibility="{Binding ShareLinkVisible, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
       </Grid>
-
+      <md:Snackbar Grid.Row="6"
+                   Margin="-24,12,-24,-24"
+                   MessageQueue="{Binding Notifications}" />
     </Grid>
-    <md:Snackbar MessageQueue="{Binding Notifications}" />
   </Grid>
-
 </UserControl>

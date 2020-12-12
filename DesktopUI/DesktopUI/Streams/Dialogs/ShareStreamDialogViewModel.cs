@@ -28,7 +28,7 @@ namespace Speckle.DesktopUI.Streams
         new CollabRole("Reviewer", "stream:reviewer", "Can only view."),
         new CollabRole("Owner", "stream:owner", "Has full access, including deletion rights & access control.")
       };
-      SelectedRole = Roles[0];
+      SelectedRole = Roles[ 0 ];
     }
 
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
@@ -67,12 +67,12 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _userSearchResults, value);
     }
 
-    private BindableCollection<User> _selectedUsers = new BindableCollection<User>();
+    private User _selectedUser;
 
-    public BindableCollection<User> SelectedUsers
+    public User SelectedUser
     {
-      get => _selectedUsers;
-      set => SetAndNotify(ref _selectedUsers, value);
+      get => _selectedUser;
+      set => SetAndNotify(ref _selectedUser, value);
     }
 
     private CollabRole _selectedRole;
@@ -93,6 +93,7 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _shareLinkVisible, value);
     }
 
+    // select full share link in link sharing box on click 
     public void SelectAllText(TextBox sender, EventArgs args)
     {
       sender.SelectAll();
@@ -103,124 +104,76 @@ namespace Speckle.DesktopUI.Streams
     public bool DropdownState
     {
       get => _dropdownState;
-      set => SetAndNotify(ref _dropdownState, value);
+      set { SetAndNotify(ref _dropdownState, value); }
     }
-
-    private bool sourceChanged = false;
 
     public async void SearchForUsers()
     {
-      if (UserQuery.Length <= 2)
+      if ( UserQuery.Length <= 2 )
         return;
 
       try
       {
         var users = await StreamState.Client.UserSearch(UserQuery);
-        DropdownState = sourceChanged = true;
+        DropdownState = true; // open search dropdown when there are results
         UserSearchResults = new BindableCollection<User>(users);
       }
-      catch (Exception e)
+      catch ( Exception e )
       {
         // search prob returned no results
         UserSearchResults?.Clear();
       }
     }
 
-    private bool _canAddCollaborators;
-
-    public bool CanAddCollaborators
+    public async void AddCollaborator()
     {
-      get => _canAddCollaborators;
-      set => SetAndNotify(ref _canAddCollaborators, value);
-    }
-
-    public async void AddCollaborators()
-    {
-      var errors = new BindableCollection<User>();
-      foreach (var user in SelectedUsers)
+      try
       {
-        try
+        var res = await StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput()
         {
-          var res = await StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput()
-          {
-            streamId = StreamState.Stream.id,
-            role = SelectedRole.Role,
-            userId = user.id
-          });
-          if (!res)
-            errors.Add(user);
-        }
-        catch (Exception)
-        {
-          errors.Add(user);
-        }
+          streamId = StreamState.Stream.id, role = SelectedRole.Role, userId = SelectedUser.id
+        });
       }
-
-      _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
-
-      if (errors.Count != 0)
+      catch ( Exception e )
       {
-        SelectedUsers = errors;
-        var message =
-          $"Could not add {errors.Count} {SelectedRole.Name.ToLower()}{Formatting.PluralS(errors.Count)} to stream:\n";
-        message = errors.Aggregate(message, (current, user) => current + $"{user.name}, ");
-
-        message = message.Remove(message.Length - 2);
-        Notifications.Enqueue(message);
+        Notifications.Enqueue($"Sorry - could not add {SelectedUser.name} to this stream. Error: {e.Message}");
         return;
       }
 
-      _bindings.RaiseNotification(
-        $"Added {SelectedUsers.Count} {SelectedRole.Name.ToLower()}{Formatting.PluralS(errors.Count)} to this stream");
-      CloseDialog();
+      _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
+      Notifications.Enqueue(
+        $"Added {SelectedUser.name} as a {SelectedRole.Name.ToLower()} to this stream");
+      ClearSelection();
     }
 
+    // toggle search results dropdown
     public void ToggleDropdown()
     {
       DropdownState = !DropdownState;
     }
 
-    public void UserSelectionChanged(ListBox sender, SelectionChangedEventArgs e)
+    // close the dropdown when a user is selected
+    public void UserSelected(ListBox sender, SelectionChangedEventArgs e)
     {
-      // we're only allowing adding items by click,
-      //so if changed items is more than 1, something is sus
-      if (e.AddedItems.Count == 1)
+      if ( e.AddedItems.Count == 1 )
       {
-        var added = (User)e.AddedItems[0];
-        if (!SelectedUsers.Any(s => s.id == added.id))
-          SelectedUsers.Add((User)e.AddedItems[0]);
-        CanAddCollaborators = true;
-        return;
-      }
-
-      // avoid removing all selected users when new search is made
-      if (sourceChanged)
-      {
-        sourceChanged = !sourceChanged;
-
-        var selected = sender.Items.Cast<User>().Where(sel => SelectedUsers.Any(u => sel.id == u.id));
-        foreach (var s in selected)
-        {
-          sender.SelectedItems.Add(s);
-        }
-
-        return;
-      }
-
-      if (e.RemovedItems.Count == 1)
-      {
-        var removed = (User)e.RemovedItems[0];
-        var toRemove = SelectedUsers.FirstOrDefault(s => s.id == removed.id);
-        SelectedUsers.Remove(toRemove);
-        CanAddCollaborators = SelectedUsers.Count != 0;
+        DropdownState = false;
       }
     }
 
+    public void ClearSelection()
+    {
+      SelectedUser = null;
+      UserQuery = "";
+    }
+
+    // turn on or off link sharing of the stream 
+    // doesn't work right now - server bug doesn't allow flipping `isPublic`
     public async void ToggleShareLink()
     {
-      ShareLinkVisible = !ShareLinkVisible; // toggle sharing
+      ShareLinkVisible = !ShareLinkVisible;
 
-      if (ShareLinkVisible != StreamState.Stream.isPublic)
+      if ( ShareLinkVisible != StreamState.Stream.isPublic )
       {
         try
         {
@@ -233,7 +186,7 @@ namespace Speckle.DesktopUI.Streams
           });
           _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
         }
-        catch (Exception e)
+        catch ( Exception e )
         {
           Notifications.Enqueue($"Could not set link sharing to {ShareLinkVisible}. Error: {e.Message}");
         }
@@ -256,7 +209,6 @@ namespace Speckle.DesktopUI.Streams
       public string Description { get; set; }
     }
 
-    // TODO extract dialog logic into separate manager to better handle open / close
     public void CloseDialog()
     {
       DialogHost.CloseDialogCommand.Execute(null, null);
