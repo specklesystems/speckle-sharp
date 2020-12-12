@@ -27,6 +27,24 @@ namespace Speckle.DesktopUI.Utils
     }
   }
 
+  public class SplitFirstNameConverter : IValueConverter
+  {
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+      if ( value != null && value is string )
+      {
+        return ( ( string ) value ).Split(' ')[ 0 ];
+      }
+
+      return value;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+      throw new NotImplementedException();
+    }
+  }
+
   public class TimeAgoConverter : IValueConverter
   {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -65,6 +83,9 @@ namespace Speckle.DesktopUI.Utils
   {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
+      if ( value == null )
+        return value;
+
       if ( value.GetType() == typeof(User) )
       {
         var user = ( User ) value;
