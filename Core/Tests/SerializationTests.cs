@@ -163,7 +163,7 @@ namespace Tests
     }
 
     [Test]
-    public void Generics()
+    public void ChunkSerialisation()
     {
       var baseBasedChunk = new SerializableChunk<SuperPoint>();
       for (var i = 0; i < 200; i++)
@@ -196,6 +196,21 @@ namespace Tests
       Assert.AreEqual(doubleBasedChunk.speckle_type, doubleChunkDeserialised.speckle_type);
     }
 
+    [Test]
+    public void ObjectWithChunksSerialisation()
+    {
+      var mesh = new FakeMesh();
+      for (int i = 0; i < 1000; i++)
+      {
+        mesh.Vertices.Add(i / 2);
+        mesh.Tables.Add(new DiningTable { TableModel = "wot" + i });
+      }
+
+      var serialised = Operations.Serialize(mesh);
+      var deserialised = Operations.Deserialize(serialised);
+
+      Assert.AreEqual(deserialised.GetId(), mesh.GetId());
+    }
 
   }
 }

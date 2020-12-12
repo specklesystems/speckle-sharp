@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using static Speckle.Core.Models.Utilities;
 
 namespace Tests
 {
@@ -77,6 +79,45 @@ namespace Tests
     {
       return null;
     }
+  }
+
+  public class FakeMesh : Base
+  {
+    [JsonIgnore]
+    public List<double> Vertices { get; set; } = new List<double>();
+    [DetachProperty]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public List<SerializableChunk<double>> VerticesData
+    {
+      get => SplitList(Vertices, 500).ToList();
+      set
+      {
+        Vertices = new List<double>();
+        foreach (var ch in value)
+        {
+          Vertices.AddRange(ch.data);
+        }
+      }
+    }
+
+    [JsonIgnore]
+    public List<DiningTable> Tables { get; set; } = new List<DiningTable>();
+    [DetachProperty]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public List<SerializableChunk<double>> TablesData
+    {
+      get => SplitList(Vertices, 150).ToList();
+      set
+      {
+        Tables = new List<DiningTable>();
+        foreach (var ch in value)
+        {
+          Vertices.AddRange(ch.data);
+        }
+      }
+    }
+
+    public FakeMesh() { }
   }
 
   public class DiningTable : Base
