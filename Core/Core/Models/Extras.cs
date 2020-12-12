@@ -56,6 +56,27 @@ namespace Speckle.Core.Models
   public class SerializableChunk<T> : Base
   {
     public List<T> data { get; set; } = new List<T>();
+    private string __type;
+    public override string speckle_type
+    {
+      get
+      {
+        if (__type == null)
+        {
+          if (typeof(Base).IsAssignableFrom(typeof(T)))
+          {
+            var x = (Base)Activator.CreateInstance(typeof(T));
+            __type = $"SerializableChunk<{x.speckle_type}>";
+          }
+          else
+          {
+            __type = $"SerializableChunk<{typeof(T).FullName}>";
+          }
+        }
+        return __type;
+      }
+    }
+
     public SerializableChunk() { }
   }
 

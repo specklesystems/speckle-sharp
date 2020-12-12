@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Speckle.Core.Transports;
 using NUnit.Framework;
-using Speckle.Core.Models;
 using Speckle.Core.Api;
+using Speckle.Core.Models;
+using Speckle.Core.Transports;
 
 namespace Tests
 {
@@ -23,7 +23,9 @@ namespace Tests
 
       var polyline = new Polyline();
       for (int i = 0; i < 100; i++)
+      {
         polyline.Points.Add(new Point() { X = i * 2, Y = i % 2 });
+      }
 
       var strPoly = Operations.Serialize(polyline);
       var dePoly = Operations.Deserialize(strPoly);
@@ -36,7 +38,9 @@ namespace Tests
     {
       var objs = new List<Base>();
       for (int i = 0; i < 10; i++)
+      {
         objs.Add(new Point(i, i, i));
+      }
 
       var result = Operations.Serialize(objs);
       var test = Operations.DeserializeArray(result);
@@ -49,7 +53,9 @@ namespace Tests
       // TODO
       var dict = new Dictionary<string, Base>();
       for (int i = 0; i < 10; i++)
+      {
         dict[$"key{i}"] = new Point(i, i, i);
+      }
 
       var result = Operations.Serialize(dict);
       var test = Operations.DeserializeDictionary(result);
@@ -103,7 +109,9 @@ namespace Tests
         cat.Claws[$"Claw number {i}"] = new Line { Start = new Point(i, i, i), End = new Point(i + 3.14, i + 3.14, i + 3.14) };
 
         if (i % 2 == 0)
+        {
           cat.Whiskers.Add(new Line { Start = new Point(i / 2, i / 2, i / 2), End = new Point(i + 3.14, i + 3.14, i + 3.14) });
+        }
         else
         {
           var brokenWhisker = new Polyline();
@@ -140,7 +148,11 @@ namespace Tests
       var point = new Point();
       var test = new List<Base>();
 
-      for (var i = 0; i < 100; i++) test.Add(new SuperPoint { W = i });
+      for (var i = 0; i < 100; i++)
+      {
+        test.Add(new SuperPoint { W = i });
+      }
+
       point["test"] = test;
 
       var str = Operations.Serialize(point);
@@ -148,6 +160,40 @@ namespace Tests
 
       var list = dsrls["test"] as List<object>; // NOTE: on dynamically added lists, we cannot infer the inner type and we always fall back to a generic list<object>.
       Assert.AreEqual(100, list.Count);
+    }
+
+    [Test]
+    public void Generics()
+    {
+      var baseBasedChunk = new SerializableChunk<SuperPoint>();
+      for (var i = 0; i < 200; i++)
+      {
+        baseBasedChunk.data.Add(new SuperPoint { W = i });
+      }
+
+      var stringBasedChunk = new SerializableChunk<string>();
+      for (var i = 0; i < 200; i++)
+      {
+        stringBasedChunk.data.Add(i + "_hai");
+      }
+
+      var doubleBasedChunk = new SerializableChunk<double>();
+      for (var i = 0; i < 200; i++)
+      {
+        doubleBasedChunk.data.Add(i + 0.33);
+      }
+
+      var baseChunkString = Operations.Serialize(baseBasedChunk);
+      var stringChunkString = Operations.Serialize(stringBasedChunk);
+      var doubleChunkString = Operations.Serialize(doubleBasedChunk);
+
+      var baseChunkDeserialised = Operations.Deserialize(baseChunkString);
+      var stringChunkDeserialised = Operations.Deserialize(stringChunkString);
+      var doubleChunkDeserialised = Operations.Deserialize(doubleChunkString);
+
+      Assert.AreEqual(baseBasedChunk.speckle_type, baseChunkDeserialised.speckle_type);
+      Assert.AreEqual(stringBasedChunk.speckle_type, stringChunkDeserialised.speckle_type);
+      Assert.AreEqual(doubleBasedChunk.speckle_type, doubleChunkDeserialised.speckle_type);
     }
 
 

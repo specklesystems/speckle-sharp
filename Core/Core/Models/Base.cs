@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -61,7 +60,11 @@ namespace Speckle.Core.Models
 
     private long CountDescendants(Base @base, HashSet<int> parsed)
     {
-      if (parsed.Contains(@base.GetHashCode())) return 0;
+      if (parsed.Contains(@base.GetHashCode()))
+      {
+        return 0;
+      }
+
       parsed.Add(@base.GetHashCode());
 
       long count = 0;
@@ -79,7 +82,11 @@ namespace Speckle.Core.Models
       var dynamicProps = @base.GetDynamicMembers();
       foreach (var propName in dynamicProps)
       {
-        if (!propName.StartsWith("@")) continue;
+        if (!propName.StartsWith("@"))
+        {
+          continue;
+        }
+
         count += HandleObjectCount(@base[propName], parsed);
       }
 
@@ -90,7 +97,9 @@ namespace Speckle.Core.Models
     {
       long count = 0;
       if (value == null)
+      {
         return count;
+      }
 
       if (value is Base)
       {
@@ -153,7 +162,11 @@ namespace Speckle.Core.Models
       foreach (var prop in GetDynamicMemberNames())
       {
         var p = GetType().GetProperty(prop);
-        if (p != null && !p.CanWrite) continue;
+        if (p != null && !p.CanWrite)
+        {
+          continue;
+        }
+
         try
         {
           myDuplicate[prop] = this[prop];
@@ -191,7 +204,7 @@ namespace Speckle.Core.Models
       {
         try
         {
-          return Core.Kits.Units.GetUnitsFromString(_units);
+          return Units.GetUnitsFromString(_units);
         }
         catch
         {
@@ -200,7 +213,7 @@ namespace Speckle.Core.Models
       }
       set
       {
-        _units = Core.Kits.Units.GetUnitsFromString(value);
+        _units = Units.GetUnitsFromString(value);
       }
     }
 
@@ -212,7 +225,7 @@ namespace Speckle.Core.Models
     /// TODO: add versioning capabilities.
     /// </summary>
     [SchemaIgnore]
-    public string speckle_type
+    public virtual string speckle_type
     {
       get
       {
@@ -220,6 +233,7 @@ namespace Speckle.Core.Models
         {
           List<string> bases = new List<string>();
           Type myType = this.GetType();
+
           while (myType.Name != nameof(Base))
           {
             bases.Add(myType.FullName);

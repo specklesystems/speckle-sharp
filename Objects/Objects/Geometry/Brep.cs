@@ -21,15 +21,26 @@ namespace Objects.Geometry
     /// <summary>
     /// Gets or sets the list of surfaces in this <see cref="Brep"/> instance.
     /// </summary>
-    [JsonIgnore] 
+    [JsonIgnore]
     public List<Surface> Surfaces { get; set; }
-    [DetachProperty] 
-    public List<SerializableChunk<Surface>> SurfaceData => SplitList(Surfaces, 50).ToList();
+    [DetachProperty]
+    public List<SerializableChunk<Surface>> SurfaceData
+    {
+      get => SplitList(Surfaces, 50).ToList(); 
+      set
+      {
+        Surfaces = new List<Surface>();
+        foreach(var ch in value)
+        {
+          Surfaces.AddRange(ch.data);
+        }
+      }
+    }
 
     /// <summary>
     /// Gets or sets the list of 3-dimensional curves in this <see cref="Brep"/> instance.
     /// </summary>
-    [JsonIgnore] 
+    [JsonIgnore]
     public List<Curve> Curve3D { get; set; }
     [DetachProperty]
     public List<SerializableChunk<Curve>> Curve3DData => SplitList(Curve3D, 100).ToList();
@@ -37,7 +48,7 @@ namespace Objects.Geometry
     /// <summary>
     /// Gets or sets the list of 2-dimensional UV curves in this <see cref="Brep"/> instance.
     /// </summary>
-    [JsonIgnore] 
+    [JsonIgnore]
     public List<Curve> Curve2D { get; set; }
     [DetachProperty]
     public List<SerializableChunk<Curve>> Curve2DData => SplitList(Curve2D, 100).ToList();
@@ -48,7 +59,7 @@ namespace Objects.Geometry
     [JsonIgnore]
     public List<Point> Vertices { get; set; }
     [DetachProperty]
-    public List<SerializableChunk<Point>> VerticesData => SplitList(Vertices, 100).ToList();
+    public List<SerializableChunk<Point>> VerticesData => SplitList(Vertices, 1000).ToList();
 
     /// <summary>
     /// Gets or sets the list of edges in this <see cref="Brep"/> instance.
@@ -61,7 +72,7 @@ namespace Objects.Geometry
     /// <summary>
     /// Gets or sets the list of closed UV loops in this <see cref="Brep"/> instance.
     /// </summary>
-    [JsonIgnore] 
+    [JsonIgnore]
     public List<BrepLoop> Loops { get; set; }
     [DetachProperty]
     public List<SerializableChunk<BrepLoop>> LoopsData => SplitList(Loops, 1000).ToList();
