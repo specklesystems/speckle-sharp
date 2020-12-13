@@ -83,39 +83,42 @@ namespace Tests
 
   public class FakeMesh : Base
   {
-    [JsonIgnore]
+    [DetachProperty]
+    [Chunkable(800)]
     public List<double> Vertices { get; set; } = new List<double>();
-    [DetachProperty]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<SerializableChunk<double>> VerticesData
-    {
-      get => SplitList(Vertices, 500).ToList();
-      set
-      {
-        Vertices = new List<double>();
-        foreach (var ch in value)
-        {
-          Vertices.AddRange(ch.data);
-        }
-      }
-    }
+    //[DetachProperty]
+    //[EditorBrowsable(EditorBrowsableState.Never)]
+    //public List<SerializableChunk<double>> VerticesData
+    //{
+    //  get => SplitList(Vertices, 500).ToList();
+    //  set
+    //  {
+    //    Vertices = new List<double>();
+    //    foreach (var ch in value)
+    //    {
+    //      Vertices.AddRange(ch.data);
+    //    }
+    //  }
+    //}
 
-    [JsonIgnore]
-    public List<DiningTable> Tables { get; set; } = new List<DiningTable>();
     [DetachProperty]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<SerializableChunk<double>> TablesData
-    {
-      get => SplitList(Vertices, 150).ToList();
-      set
-      {
-        Tables = new List<DiningTable>();
-        foreach (var ch in value)
-        {
-          Vertices.AddRange(ch.data);
-        }
-      }
-    }
+    [Chunkable(250)]
+    public List<Tabletop> Tables { get; set; } = new List<Tabletop>();
+    
+    //[DetachProperty]
+    //[EditorBrowsable(EditorBrowsableState.Never)]
+    //public List<SerializableChunk<double>> TablesData
+    //{
+    //  get => SplitList(Vertices, 150).ToList();
+    //  set
+    //  {
+    //    Tables = new List<DiningTable>();
+    //    foreach (var ch in value)
+    //    {
+    //      Vertices.AddRange(ch.data);
+    //    }
+    //  }
+    //}
 
     public FakeMesh() { }
   }

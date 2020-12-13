@@ -17,7 +17,6 @@ namespace Speckle.Core.Kits
     public SchemaDescriptionAttribute(string description)
     {
       _description = description;
-
     }
   }
 
@@ -27,8 +26,6 @@ namespace Speckle.Core.Kits
   [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = false)]
   public class SchemaIgnoreAttribute : Attribute
   {
-
-
   }
 
   /// <summary>
@@ -37,8 +34,6 @@ namespace Speckle.Core.Kits
   [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
   public class SchemaOptionalAttribute : Attribute
   {
-
-
   }
 
 

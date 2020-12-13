@@ -96,6 +96,15 @@ namespace Speckle.Core.Models
         yield return new SerializableChunk<T> { data = list.GetRange(i, Math.Min(chunkSize, list.Count - i)) };
       }
     }
+
+    //public static IEnumerable<SerializableChunk<T>> SplitList<T>(IEnumerable list, int chunkSize = 50)
+    //{
+    //  for(int i = 0; i < list.Count(); i+= chunkSize)
+    //  {
+    //    var data = new List<T>
+    //  }
+    //}
+
   }
 
 }

@@ -103,6 +103,7 @@ namespace Speckle.Core.Serialisation
         }
       }
 
+      // Lists
       if (value is JArray)
       {
         if (CancellationToken.IsCancellationRequested)
@@ -129,21 +130,45 @@ namespace Speckle.Core.Serialisation
               continue;
             }
 
-            if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
+            var item = HandleValue(val, serializer, CancellationToken);
+
+            if (item is SerializableChunk<object> chunk)
             {
-              // TODO: Remove the try cathc business. Check if val is a simple type, and if so, go the convert.changeType route; otherwise just set it.
-              try
+              foreach (var dataItem in chunk.data)
               {
-                addMethod.Invoke(arr, new object[] { Convert.ChangeType(HandleValue(val, serializer, CancellationToken), jsonProperty.PropertyType.GenericTypeArguments[0]) });
+                if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
+                {
+                  // TODO: Remove the try catch. Check if val is a simple type, and if so, go the convert.changeType route; otherwise just set it.  
+                  if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(dataItem.GetType()))
+                  {
+                    addMethod.Invoke(arr, new object[] { dataItem });
+                  }
+                  else
+                  {
+                    addMethod.Invoke(arr, new object[] { Convert.ChangeType(dataItem, jsonProperty.PropertyType.GenericTypeArguments[0]) });
+                  }
+                }
+                else
+                {
+                  addMethod.Invoke(arr, new object[] { dataItem });
+                }
               }
-              catch (Exception)
+            }
+            else if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
+            {
+              // TODO: Remove the try catch. Check if val is a simple type, and if so, go the convert.changeType route; otherwise just set it.  
+              if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(item.GetType()))
               {
-                addMethod.Invoke(arr, new object[] { HandleValue(val, serializer, CancellationToken) });
+                addMethod.Invoke(arr, new object[] { item });
+              }
+              else
+              {
+                addMethod.Invoke(arr, new object[] { Convert.ChangeType(item, jsonProperty.PropertyType.GenericTypeArguments[0]) });
               }
             }
             else
             {
-              addMethod.Invoke(arr, new object[] { HandleValue(val, serializer, CancellationToken) });
+              addMethod.Invoke(arr, new object[] { item });
             }
           }
           return arr;
@@ -171,13 +196,31 @@ namespace Speckle.Core.Serialisation
               continue;
             }
 
-            if (!jsonProperty.PropertyType.GetElementType().IsInterface)
+            var item = HandleValue(val, serializer, CancellationToken);
+            if (item is SerializableChunk<object> chunk)
             {
-              ((IList)arr).Add(Convert.ChangeType(HandleValue(val, serializer, CancellationToken), jsonProperty.PropertyType.GetElementType()));
+              foreach (var dataItem in chunk.data)
+              {
+                if (!jsonProperty.PropertyType.GetElementType().IsInterface)
+                {
+                  ((IList)arr).Add(Convert.ChangeType(dataItem, jsonProperty.PropertyType.GetElementType()));
+                }
+                else
+                {
+                  ((IList)arr).Add(dataItem);
+                }
+              }
             }
             else
             {
-              ((IList)arr).Add(HandleValue(val, serializer, CancellationToken));
+              if (!jsonProperty.PropertyType.GetElementType().IsInterface)
+              {
+                ((IList)arr).Add(Convert.ChangeType(item, jsonProperty.PropertyType.GetElementType()));
+              }
+              else
+              {
+                ((IList)arr).Add(item);
+              }
             }
           }
 
@@ -204,7 +247,16 @@ namespace Speckle.Core.Serialisation
               continue;
             }
 
-            arr.Add(HandleValue(val, serializer, CancellationToken));
+            var item = HandleValue(val, serializer, CancellationToken);
+
+            if (item is SerializableChunk<object> chunk)
+            {
+              arr.AddRange(chunk.data);
+            }
+            else
+            {
+              arr.Add(item);
+            }
           }
           return arr;
         }

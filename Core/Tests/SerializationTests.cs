@@ -200,10 +200,10 @@ namespace Tests
     public void ObjectWithChunksSerialisation()
     {
       var mesh = new FakeMesh();
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < 2020; i++)
       {
         mesh.Vertices.Add(i / 2);
-        mesh.Tables.Add(new DiningTable { TableModel = "wot" + i });
+        mesh.Tables.Add(new Tabletop { length = 2000 });
       }
 
       var serialised = Operations.Serialize(mesh);

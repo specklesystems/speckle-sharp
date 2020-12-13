@@ -28,4 +28,15 @@ namespace Speckle.Core.Models
       Detachable = true;
     }
   }
+
+  [AttributeUsage(AttributeTargets.Property)]
+  public class Chunkable : Attribute
+  {
+    public int MaxObjCountPerChunk { get; set; } = 1000;
+    
+    public Chunkable(int maxCount = 1000)
+    {
+      MaxObjCountPerChunk = maxCount;
+    }
+  }
 }
