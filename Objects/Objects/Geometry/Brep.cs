@@ -1,60 +1,78 @@
-﻿using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
-using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.Serialization;
+using static Speckle.Core.Models.Utilities;
 
 namespace Objects.Geometry
 {
   public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox
   {
     public string provenance { get; set; }
-    public Mesh displayValue { get; set; }
     public Box bbox { get; set; }
     public double area { get; set; }
     public double volume { get; set; }
 
+    [DetachProperty]
+    public Mesh displayValue { get; set; }
+
     /// <summary>
     /// Gets or sets the list of surfaces in this <see cref="Brep"/> instance.
     /// </summary>
+    [DetachProperty]
+    [Chunkable(200)]
     public List<Surface> Surfaces { get; set; }
 
     /// <summary>
     /// Gets or sets the list of 3-dimensional curves in this <see cref="Brep"/> instance.
     /// </summary>
+    [DetachProperty]
+    [Chunkable(200)]
     public List<ICurve> Curve3D { get; set; }
 
     /// <summary>
     /// Gets or sets the list of 2-dimensional UV curves in this <see cref="Brep"/> instance.
     /// </summary>
+    [DetachProperty]
+    [Chunkable(200)]
     public List<ICurve> Curve2D { get; set; }
 
     /// <summary>
     /// Gets or sets the list of vertices in this <see cref="Brep"/> instance.
     /// </summary>
+    [DetachProperty]
+    [Chunkable(5000)]
     public List<Point> Vertices { get; set; }
 
     /// <summary>
     /// Gets or sets the list of edges in this <see cref="Brep"/> instance.
     /// </summary>
+    [DetachProperty]
+    [Chunkable(5000)]
     public List<BrepEdge> Edges { get; set; }
 
     /// <summary>
     /// Gets or sets the list of closed UV loops in this <see cref="Brep"/> instance.
     /// </summary>
+    [DetachProperty]
+    [Chunkable(5000)]
     public List<BrepLoop> Loops { get; set; }
 
     /// <summary>
     /// Gets or sets the list of UV trim segments for each surface in this <see cref="Brep"/> instance.
     /// </summary>
+    [DetachProperty]
+    [Chunkable(5000)]
     public List<BrepTrim> Trims { get; set; }
 
     /// <summary>
     /// Gets or sets the list of faces in this <see cref="Brep"/> instance.
     /// </summary>
+    [DetachProperty]
+    [Chunkable(5000)]
     public List<BrepFace> Faces { get; set; }
 
     /// <summary>
@@ -108,6 +126,8 @@ namespace Objects.Geometry
       Loops.ForEach(l => l.Brep = this);
       Trims.ForEach(t => t.Brep = this);
       Faces.ForEach(f => f.Brep = this);
+
+      //TODO: all the data props to the real props
     }
   }
 

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using static Speckle.Core.Models.Utilities;
 
 namespace Tests
 {
@@ -77,6 +79,27 @@ namespace Tests
     {
       return null;
     }
+  }
+
+  public class FakeMesh : Base
+  {
+    [DetachProperty]
+    [Chunkable]
+    public List<double> Vertices { get; set; } = new List<double>();
+
+    [DetachProperty]
+    [Chunkable(1000)]
+    public double[] ArrayOfDoubles { get; set; }
+
+    [DetachProperty]
+    [Chunkable(1000)]
+    public TableLeg[] ArrayOfLegs { get; set; }
+
+    [DetachProperty]
+    [Chunkable(2500)]
+    public List<Tabletop> Tables { get; set; } = new List<Tabletop>();
+  
+    public FakeMesh() { }
   }
 
   public class DiningTable : Base

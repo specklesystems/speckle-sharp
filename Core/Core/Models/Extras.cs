@@ -48,6 +48,17 @@ namespace Speckle.Core.Models
 
   }
 
+  /// <summary>
+  /// <para>In short, this helps you chunk big things into smaller things.</para>
+  /// See the following <see href="https://pics.me.me/chunky-boi-57848570.png">reference.</see>
+  /// </summary>
+  /// <typeparam name="T"></typeparam>
+  public class DataChunk : Base
+  {
+    public List<object> data { get; set; } = new List<object>();
+    public DataChunk() { }
+  }
+
   public class ObjectReference
   {
     public string referencedId { get; set; }

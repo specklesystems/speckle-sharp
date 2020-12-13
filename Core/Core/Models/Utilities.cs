@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -44,7 +45,10 @@ namespace Speckle.Core.Models
           var hash = sha.ComputeHash(ms.ToArray());
           StringBuilder sb = new StringBuilder();
           foreach (byte b in hash)
+          {
             sb.Append(b.ToString("X2"));
+          }
+
           return sb.ToString().ToLower();
         }
       }
@@ -60,7 +64,10 @@ namespace Speckle.Core.Models
           var hash = md5.ComputeHash(ms.ToArray());
           StringBuilder sb = new StringBuilder();
           foreach (byte b in hash)
+          {
             sb.Append(b.ToString("X2"));
+          }
+
           return sb.ToString().ToLower();
         }
       }
@@ -80,5 +87,22 @@ namespace Speckle.Core.Models
         }.Contains(type) ||
         Convert.GetTypeCode(type) != TypeCode.Object;
     }
+
+    /// <summary>
+    /// Chunks a list into pieces.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    /// <param name="chunkSize"></param>
+    /// <returns></returns>
+    public static IEnumerable<List<T>> SplitList<T>(List<T> list, int chunkSize = 50)
+    {
+      for (int i = 0; i < list.Count; i += chunkSize)
+      {
+        yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
+      }
+    }
+
   }
+
 }
