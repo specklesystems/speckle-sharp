@@ -31,15 +31,14 @@ namespace Objects.Geometry
     /// </summary>
     [DetachProperty]
     [Chunkable(200)]
-    public List<Curve> Curve3D { get; set; }
-
+    public List<ICurve> Curve3D { get; set; }
 
     /// <summary>
     /// Gets or sets the list of 2-dimensional UV curves in this <see cref="Brep"/> instance.
     /// </summary>
     [DetachProperty]
     [Chunkable(200)]
-    public List<Curve> Curve2D { get; set; }
+    public List<ICurve> Curve2D { get; set; }
 
     /// <summary>
     /// Gets or sets the list of vertices in this <see cref="Brep"/> instance.

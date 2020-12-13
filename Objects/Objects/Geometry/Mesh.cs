@@ -9,15 +9,20 @@ namespace Objects.Geometry
 {
   public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea
   {
+    [DetachProperty]
+    [Chunkable(20000)]
     public List<double> vertices { get; set; } = new List<double>();
 
-    /// <summary>The faces array.</summary>
+    [DetachProperty]
+    [Chunkable(20000)]
     public List<int> faces { get; set; } = new List<int>();
 
-    /// <summary>If any, the colours per vertex.</summary>
+    [DetachProperty]
+    [Chunkable(20000)]
     public List<int> colors { get; set; } = new List<int>();
 
-    /// <summary>If any, the colours per vertex.</summary>
+    [DetachProperty]
+    [Chunkable(20000)]
     public List<double> textureCoordinates { get; set; } = new List<double>();
 
     public Box bbox { get; set; }
