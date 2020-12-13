@@ -79,7 +79,7 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitBeam != null)
       {
-        SetElementParamsFromSpeckle(revitBeam, speckleRevitBeam);
+        SetInstanceParameters(revitBeam, speckleRevitBeam);
       }
 
       // TODO: get sub families, it's a family! 

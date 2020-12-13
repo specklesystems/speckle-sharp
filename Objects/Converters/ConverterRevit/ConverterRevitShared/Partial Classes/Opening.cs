@@ -13,8 +13,10 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.Opening OpeningToNative(BuiltElements.Opening speckleOpening)
+    public ApplicationPlaceholderObject OpeningToNative(BuiltElements.Opening speckleOpening)
     {
+
+
       var baseCurves = CurveToNative(speckleOpening.outline);
 
       var docObj = GetExistingElementByApplicationId(((Base)speckleOpening).applicationId);
@@ -30,15 +32,13 @@ namespace Objects.Converter.Revit
         case RevitWallOpening rwo:
           {
             var points = (rwo.outline as Polyline).points.Select(x => PointToNative(x)).ToList();
-            var host = Doc.GetElement(new ElementId(rwo.revitHostId));
-            revitOpening = Doc.Create.NewOpening(host as Wall, points[0], points[2]);
+            revitOpening = Doc.Create.NewOpening(CurrentHostElement as Wall, points[0], points[2]);
             break;
           }
 
         case RevitVerticalOpening rvo:
           {
-            var host = Doc.GetElement(new ElementId(rvo.revitHostId));
-            revitOpening = Doc.Create.NewOpening(host, baseCurves, true);
+            revitOpening = Doc.Create.NewOpening(CurrentHostElement, baseCurves, true);
             break;
           }
 
@@ -58,20 +58,36 @@ namespace Objects.Converter.Revit
 
       if (speckleOpening is RevitOpening ro)
       {
-        SetElementParamsFromSpeckle(revitOpening, ro);
+        SetInstanceParameters(revitOpening, ro);
       }
 
-      return revitOpening;
+      return new ApplicationPlaceholderObject { NativeObject = revitOpening, applicationId = speckleOpening.applicationId, ApplicationGeneratedId = revitOpening.UniqueId };
     }
 
     public BuiltElements.Opening OpeningToSpeckle(DB.Opening revitOpening)
     {
+      #region host handling
+
+      // Check if it's been converted previously - from a parent host.
+      if (ConvertedObjectsList.IndexOf(revitOpening.UniqueId) != -1)
+      {
+        return null;
+      }
+
+      // If the parent is in our selection list, back off, as this element will be converted by the host element.
+      if (revitOpening.Host != null && ContextObjects.FindIndex(obj => obj.applicationId == revitOpening.Host.UniqueId) != -1)
+      {
+        return null;
+      }
+
+      #endregion
+
       //REVIT PARAMS > SPECKLE PROPS
       var baseLevelParam = revitOpening.get_Parameter(BuiltInParameter.WALL_BASE_CONSTRAINT);
       var topLevelParam = revitOpening.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE);
+      var heightParam = revitOpening.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM);
 
-      RevitOpening speckleOpening = null;
-
+      RevitOpening speckleOpening;
       if (revitOpening.IsRectBoundary)
       {
         speckleOpening = new RevitWallOpening();
@@ -87,11 +103,11 @@ namespace Objects.Converter.Revit
         poly.value.AddRange(topRight.value);
         poly.value.AddRange(new Point(topRight.value[0], topRight.value[1], btmLeft.value[2], ModelUnits).value);
         poly.value.AddRange(btmLeft.value);
+        poly.units = ModelUnits;
         speckleOpening.outline = poly;
       }
       else
       {
-        //host id is actually set in NestHostedObjects
         if (revitOpening.Host != null)
         {
           speckleOpening = new RevitVerticalOpening();
@@ -103,6 +119,7 @@ namespace Objects.Converter.Revit
           {
             ((RevitShaft)speckleOpening).topLevel = ConvertAndCacheLevel(topLevelParam);
             ((RevitShaft)speckleOpening).bottomLevel = ConvertAndCacheLevel(baseLevelParam);
+            ((RevitShaft)speckleOpening).height = (double)ParameterToSpeckle(heightParam);
           }
         }
 
@@ -118,12 +135,7 @@ namespace Objects.Converter.Revit
         speckleOpening.outline = poly;
       }
 
-      //if (baseLevelParam != null)
-      //{
-      //  speckleOpening.bottomLevel = ConvertAndCacheLevel(baseLevelParam);
-      //}
-
-      speckleOpening.type = revitOpening.Name;
+      //speckleOpening.type = revitOpening.Name;
 
       AddCommonRevitProps(speckleOpening, revitOpening);
 

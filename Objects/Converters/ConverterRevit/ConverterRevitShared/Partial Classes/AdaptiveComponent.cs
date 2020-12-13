@@ -55,7 +55,7 @@ namespace Objects.Converter.Revit
       SetAdaptivePoints(revitAc, speckleAc.basePoints);
       AdaptiveComponentInstanceUtils.SetInstanceFlipped(revitAc, speckleAc.flipped);
 
-      SetElementParamsFromSpeckle(revitAc, speckleAc);
+      SetInstanceParameters(revitAc, speckleAc);
 
       return new ApplicationPlaceholderObject { applicationId = speckleAc.applicationId, ApplicationGeneratedId = revitAc.UniqueId, NativeObject = revitAc };
     }

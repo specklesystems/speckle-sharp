@@ -33,6 +33,7 @@ namespace Objects.Geometry
     [Chunkable(200)]
     public List<Curve> Curve3D { get; set; }
 
+
     /// <summary>
     /// Gets or sets the list of 2-dimensional UV curves in this <see cref="Brep"/> instance.
     /// </summary>
@@ -91,8 +92,8 @@ namespace Objects.Geometry
     public Brep()
     {
       Surfaces = new List<Surface>();
-      Curve2D = new List<Curve>();
-      Curve3D = new List<Curve>();
+      Curve2D = new List<ICurve>();
+      Curve3D = new List<ICurve>();
 
       Vertices = new List<Point>();
       Edges = new List<BrepEdge>();
@@ -234,7 +235,7 @@ namespace Objects.Geometry
 
     [JsonIgnore] public BrepEdge Edge => EdgeIndex != -1 ? Brep.Edges[EdgeIndex] : null;
 
-    [JsonIgnore] public Curve Curve2d => Brep.Curve2D[CurveIndex];
+    [JsonIgnore] public ICurve Curve2d => Brep.Curve2D[CurveIndex];
   }
 
   /// <summary>

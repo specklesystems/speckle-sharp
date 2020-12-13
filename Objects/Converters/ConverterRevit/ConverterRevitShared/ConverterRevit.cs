@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
+using BERC = Objects.BuiltElements.Revit.Curve;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -127,7 +128,7 @@ namespace Objects.Converter.Revit
         case BE.Column o:
           return ColumnToNative(o);
 
-        case BER.DetailCurve o:
+        case BERC.DetailCurve o:
           return DetailCurveToNative(o);
 
         case BER.DirectShape o:
@@ -142,13 +143,13 @@ namespace Objects.Converter.Revit
         case BE.Level o:
           return LevelToNative(o);
 
-        case BER.ModelCurve o:
+        case BERC.ModelCurve o:
           return ModelCurveToNative(o);
 
         case BE.Opening o:
           return OpeningToNative(o);
 
-        case BER.RoomBoundaryLine o:
+        case BERC.RoomBoundaryLine o:
           return RoomBoundaryLineToNative(o);
 
         case BE.Roof o:
@@ -233,7 +234,7 @@ namespace Objects.Converter.Revit
         case BE.Column _:
           return true;
 
-        case BER.DetailCurve _:
+        case BERC.DetailCurve _:
           return true;
 
         case BER.DirectShape _:
@@ -248,13 +249,13 @@ namespace Objects.Converter.Revit
         case BE.Level _:
           return true;
 
-        case BER.ModelCurve _:
+        case BERC.ModelCurve _:
           return true;
 
         case BE.Opening _:
           return true;
 
-        case BER.RoomBoundaryLine _:
+        case BERC.RoomBoundaryLine _:
           return true;
 
         case BE.Roof _:

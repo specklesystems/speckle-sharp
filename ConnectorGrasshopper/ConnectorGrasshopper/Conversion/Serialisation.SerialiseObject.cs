@@ -7,6 +7,7 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Linq;
+using ConnectorGrasshopper.Extras;
 
 namespace ConnectorGrasshopper.Conversion
 {
@@ -18,19 +19,19 @@ namespace ConnectorGrasshopper.Conversion
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle object to a JSON string", "Speckle 2 Dev", "Conversion")
+    public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle Base object to JSON", "Speckle 2 Dev", "Conversion")
     {
       BaseWorker = new SerializeWorker(this);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("O", "O", "Speckle objects you want to serialize.", GH_ParamAccess.tree);
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Speckle objects to serialize.", GH_ParamAccess.tree));
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddTextParameter("S", "S", "Serialized objects.", GH_ParamAccess.tree);
+      pManager.AddTextParameter("S", "S", "Serialized objects in JSON format.", GH_ParamAccess.tree);
     }
 
     protected override void BeforeSolveInstance()
@@ -42,12 +43,12 @@ namespace ConnectorGrasshopper.Conversion
 
   public class SerializeWorker : WorkerInstance
   {
-    GH_Structure<IGH_Goo> Objects;
+    GH_Structure<GH_SpeckleBase> Objects;
     GH_Structure<GH_String> ConvertedObjects;
 
     public SerializeWorker(GH_Component parent) : base(parent)
     {
-      Objects = new GH_Structure<IGH_Goo>();
+      Objects = new GH_Structure<GH_SpeckleBase>();
       ConvertedObjects = new GH_Structure<GH_String>();
     }
 
@@ -62,22 +63,15 @@ namespace ConnectorGrasshopper.Conversion
         foreach (var item in list)
         {
           if (CancellationToken.IsCancellationRequested) return;
-
-          object result = null;
-
-          if (item is Grasshopper.Kernel.Types.IGH_Goo)
+          
+          if (item != null)
           {
-            result = item.GetType().GetProperty("Value").GetValue(item);
-          }
-
-          if (result is Base)
-          {
-            var serialised = Operations.Serialize(result as Base);
-            ConvertedObjects.Append(new GH_String() { Value = serialised }, Objects.Paths[branchIndex]);
+            var serialised = Operations.Serialize(item.Value);
+            ConvertedObjects.Append(new GH_String { Value = serialised }, path);
           }
           else
           {
-            ConvertedObjects.Append(new GH_String() { Value = null }, Objects.Paths[branchIndex]);
+            ConvertedObjects.Append(new GH_String { Value = null }, path);
             Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Object at {Objects.Paths[branchIndex]} is not a Speckle object.");
           }
 
@@ -96,7 +90,7 @@ namespace ConnectorGrasshopper.Conversion
     {
       if (CancellationToken.IsCancellationRequested) return;
 
-      GH_Structure<IGH_Goo> _objects;
+      GH_Structure<GH_SpeckleBase> _objects;
       DA.GetDataTree(0, out _objects);
 
       int branchIndex = 0;
@@ -105,7 +99,7 @@ namespace ConnectorGrasshopper.Conversion
         var path = _objects.Paths[branchIndex];
         foreach (var item in list)
         {
-          Objects.Append(item, _objects.Paths[branchIndex]);
+          Objects.Append(item, path);
         }
         branchIndex++;
       }

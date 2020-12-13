@@ -104,7 +104,7 @@
     <Compile Include="BrepTests.cs" />
     <Compile Include="DuctTests.cs" />
     <Compile Include="RoofTests.cs" />
-    <Compile Include="NestedTests.cs" />
+    <Compile Include="FamilyInstanceTests.cs" />
     <Compile Include="CurveTests.cs" />
     <Compile Include="DirectShapeTests.cs" />
     <Compile Include="AdaptiveComponentTests.cs" />

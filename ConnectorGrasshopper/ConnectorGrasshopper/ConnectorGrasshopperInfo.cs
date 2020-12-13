@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using Grasshopper.Kernel;
-using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper
 {
@@ -19,17 +17,5 @@ namespace ConnectorGrasshopper
     public override string AuthorName => "AEC Systems";
 
     public override string AuthorContact => "hello@speckle.systems";
-  }
-
-  public class Loader : GH_AssemblyPriority
-  {
-
-    public Loader() { }
-
-    public override GH_LoadingInstruction PriorityLoad()
-    {
-      Setup.Init(Applications.Grasshopper);
-      return GH_LoadingInstruction.Proceed;
-    }
   }
 }
