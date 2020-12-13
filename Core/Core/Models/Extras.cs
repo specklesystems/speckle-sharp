@@ -53,31 +53,10 @@ namespace Speckle.Core.Models
   /// See the following <see href="https://pics.me.me/chunky-boi-57848570.png">reference.</see>
   /// </summary>
   /// <typeparam name="T"></typeparam>
-  public class SerializableChunk<T> : Base
+  public class DataChunk : Base
   {
-    public List<T> data { get; set; } = new List<T>();
-    private string __type;
-    public override string speckle_type
-    {
-      get
-      {
-        if (__type == null)
-        {
-          if (typeof(Base).IsAssignableFrom(typeof(T)))
-          {
-            var x = (Base)Activator.CreateInstance(typeof(T));
-            __type = $"SerializableChunk<{x.speckle_type}>";
-          }
-          else
-          {
-            __type = $"SerializableChunk<{typeof(T).FullName}>";
-          }
-        }
-        return __type;
-      }
-    }
-
-    public SerializableChunk() { }
+    public List<object> data { get; set; } = new List<object>();
+    public DataChunk() { }
   }
 
   public class ObjectReference

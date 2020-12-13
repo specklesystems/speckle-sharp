@@ -184,7 +184,7 @@ namespace Speckle.Core.Models
     /// This property will only be populated if the object is retreieved from storage. Use <see cref="GetTotalChildrenCount"/> otherwise. 
     /// </summary>
     [SchemaIgnore]
-    public long totalChildrenCount { get; set; }
+    public virtual long totalChildrenCount { get; set; }
 
     /// <summary>
     /// Secondary, ideally host application driven, object identifier.
@@ -222,7 +222,6 @@ namespace Speckle.Core.Models
     /// <summary>
     /// Holds the type information of this speckle object, derived automatically
     /// from its assembly name and inheritance.
-    /// TODO: add versioning capabilities.
     /// </summary>
     [SchemaIgnore]
     public virtual string speckle_type

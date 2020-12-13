@@ -26,16 +26,19 @@ namespace Speckle.Core.Serialisation
         return cachedTypes[objFullType];
       }
 
-      if (objFullType.Contains("SerializableChunk"))
-      {
-        var st = objFullType.IndexOf('<'); var end = objFullType.LastIndexOf('>');
-        var innerTypeName = objFullType.Substring(st + 1, end - st - 1);
-        var innerType = GetSytemOrSpeckleType(innerTypeName);
-        var genericType = typeof(SerializableChunk<>);
-        var constructed = genericType.MakeGenericType(new Type[] { innerType });
+      //if (objFullType.Contains("<") && objFullType.Contains(">"))
+      //{
+      //var st = objFullType.IndexOf('<'); var end = objFullType.LastIndexOf('>');
+      //var innerTypeName = objFullType.Substring(st + 1, end - st - 1);
+      //var innerType = GetSytemOrSpeckleType(innerTypeName);
+      //var genericType = typeof(DataChunk<>);
+      //var constructed = genericType.MakeGenericType(new Type[] { innerType });
 
-        cachedTypes[objFullType] = constructed;
-        return constructed;
+      //cachedTypes[objFullType] = constructed;
+      //return constructed;
+      //}
+      if (false)
+      {
       }
       else
       {
@@ -132,13 +135,12 @@ namespace Speckle.Core.Serialisation
 
             var item = HandleValue(val, serializer, CancellationToken);
 
-            if (item is SerializableChunk<object> chunk)
+            if (item is DataChunk chunk)
             {
               foreach (var dataItem in chunk.data)
               {
                 if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
                 {
-                  // TODO: Remove the try catch. Check if val is a simple type, and if so, go the convert.changeType route; otherwise just set it.  
                   if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(dataItem.GetType()))
                   {
                     addMethod.Invoke(arr, new object[] { dataItem });
@@ -156,7 +158,6 @@ namespace Speckle.Core.Serialisation
             }
             else if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
             {
-              // TODO: Remove the try catch. Check if val is a simple type, and if so, go the convert.changeType route; otherwise just set it.  
               if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(item.GetType()))
               {
                 addMethod.Invoke(arr, new object[] { item });
@@ -182,7 +183,6 @@ namespace Speckle.Core.Serialisation
           }
 
           var arr = Activator.CreateInstance(typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType()));
-          var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType(), ((JArray)value).Count);
 
           foreach (var val in ((JArray)value))
           {
@@ -197,7 +197,7 @@ namespace Speckle.Core.Serialisation
             }
 
             var item = HandleValue(val, serializer, CancellationToken);
-            if (item is SerializableChunk<object> chunk)
+            if (item is DataChunk chunk)
             {
               foreach (var dataItem in chunk.data)
               {
@@ -223,7 +223,7 @@ namespace Speckle.Core.Serialisation
               }
             }
           }
-
+          var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType(), ((IList)arr).Count);
           ((IList)arr).CopyTo(actualArr, 0);
           return actualArr;
         }
@@ -249,7 +249,7 @@ namespace Speckle.Core.Serialisation
 
             var item = HandleValue(val, serializer, CancellationToken);
 
-            if (item is SerializableChunk<object> chunk)
+            if (item is DataChunk chunk)
             {
               arr.AddRange(chunk.data);
             }

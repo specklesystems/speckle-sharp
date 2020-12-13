@@ -45,7 +45,10 @@ namespace Speckle.Core.Models
           var hash = sha.ComputeHash(ms.ToArray());
           StringBuilder sb = new StringBuilder();
           foreach (byte b in hash)
+          {
             sb.Append(b.ToString("X2"));
+          }
+
           return sb.ToString().ToLower();
         }
       }
@@ -61,7 +64,10 @@ namespace Speckle.Core.Models
           var hash = md5.ComputeHash(ms.ToArray());
           StringBuilder sb = new StringBuilder();
           foreach (byte b in hash)
+          {
             sb.Append(b.ToString("X2"));
+          }
+
           return sb.ToString().ToLower();
         }
       }
@@ -89,21 +95,13 @@ namespace Speckle.Core.Models
     /// <param name="list"></param>
     /// <param name="chunkSize"></param>
     /// <returns></returns>
-    public static IEnumerable<SerializableChunk<T>> SplitList<T>(List<T> list, int chunkSize = 50)
+    public static IEnumerable<List<T>> SplitList<T>(List<T> list, int chunkSize = 50)
     {
       for (int i = 0; i < list.Count; i += chunkSize)
       {
-        yield return new SerializableChunk<T> { data = list.GetRange(i, Math.Min(chunkSize, list.Count - i)) };
+        yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
       }
     }
-
-    //public static IEnumerable<SerializableChunk<T>> SplitList<T>(IEnumerable list, int chunkSize = 50)
-    //{
-    //  for(int i = 0; i < list.Count(); i+= chunkSize)
-    //  {
-    //    var data = new List<T>
-    //  }
-    //}
 
   }
 

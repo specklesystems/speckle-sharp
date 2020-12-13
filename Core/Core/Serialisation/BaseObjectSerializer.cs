@@ -498,15 +498,15 @@ namespace Speckle.Core.Serialisation
         {
           var maxCount = chunkInfo.MaxObjCountPerChunk;
           var i = 0;
-          var chunkList = new List<SerializableChunk<object>>();
-          var currChunk = new SerializableChunk<object>();
+          var chunkList = new List<DataChunk>();
+          var currChunk = new DataChunk();
 
           foreach (var arrValue in ((IEnumerable)value))
           {
             if (i == maxCount)
             {
               chunkList.Add(currChunk);
-              currChunk = new SerializableChunk<object>();
+              currChunk = new DataChunk();
               i = 0;
             }
             currChunk.data.Add(arrValue);

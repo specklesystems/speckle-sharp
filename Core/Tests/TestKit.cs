@@ -84,42 +84,21 @@ namespace Tests
   public class FakeMesh : Base
   {
     [DetachProperty]
-    [Chunkable(800)]
+    [Chunkable]
     public List<double> Vertices { get; set; } = new List<double>();
-    //[DetachProperty]
-    //[EditorBrowsable(EditorBrowsableState.Never)]
-    //public List<SerializableChunk<double>> VerticesData
-    //{
-    //  get => SplitList(Vertices, 500).ToList();
-    //  set
-    //  {
-    //    Vertices = new List<double>();
-    //    foreach (var ch in value)
-    //    {
-    //      Vertices.AddRange(ch.data);
-    //    }
-    //  }
-    //}
 
     [DetachProperty]
-    [Chunkable(250)]
-    public List<Tabletop> Tables { get; set; } = new List<Tabletop>();
-    
-    //[DetachProperty]
-    //[EditorBrowsable(EditorBrowsableState.Never)]
-    //public List<SerializableChunk<double>> TablesData
-    //{
-    //  get => SplitList(Vertices, 150).ToList();
-    //  set
-    //  {
-    //    Tables = new List<DiningTable>();
-    //    foreach (var ch in value)
-    //    {
-    //      Vertices.AddRange(ch.data);
-    //    }
-    //  }
-    //}
+    [Chunkable(1000)]
+    public double[] ArrayOfDoubles { get; set; }
 
+    [DetachProperty]
+    [Chunkable(1000)]
+    public TableLeg[] ArrayOfLegs { get; set; }
+
+    [DetachProperty]
+    [Chunkable(2500)]
+    public List<Tabletop> Tables { get; set; } = new List<Tabletop>();
+  
     public FakeMesh() { }
   }
 

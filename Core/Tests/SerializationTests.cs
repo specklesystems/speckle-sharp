@@ -165,19 +165,19 @@ namespace Tests
     [Test]
     public void ChunkSerialisation()
     {
-      var baseBasedChunk = new SerializableChunk<SuperPoint>();
+      var baseBasedChunk = new DataChunk();
       for (var i = 0; i < 200; i++)
       {
         baseBasedChunk.data.Add(new SuperPoint { W = i });
       }
 
-      var stringBasedChunk = new SerializableChunk<string>();
+      var stringBasedChunk = new DataChunk();
       for (var i = 0; i < 200; i++)
       {
         stringBasedChunk.data.Add(i + "_hai");
       }
 
-      var doubleBasedChunk = new SerializableChunk<double>();
+      var doubleBasedChunk = new DataChunk();
       for (var i = 0; i < 200; i++)
       {
         doubleBasedChunk.data.Add(i + 0.33);
@@ -187,23 +187,30 @@ namespace Tests
       var stringChunkString = Operations.Serialize(stringBasedChunk);
       var doubleChunkString = Operations.Serialize(doubleBasedChunk);
 
-      var baseChunkDeserialised = Operations.Deserialize(baseChunkString);
-      var stringChunkDeserialised = Operations.Deserialize(stringChunkString);
-      var doubleChunkDeserialised = Operations.Deserialize(doubleChunkString);
+      var baseChunkDeserialised = (DataChunk) Operations.Deserialize(baseChunkString);
+      var stringChunkDeserialised = (DataChunk) Operations.Deserialize(stringChunkString);
+      var doubleChunkDeserialised = (DataChunk) Operations.Deserialize(doubleChunkString);
 
-      Assert.AreEqual(baseBasedChunk.speckle_type, baseChunkDeserialised.speckle_type);
-      Assert.AreEqual(stringBasedChunk.speckle_type, stringChunkDeserialised.speckle_type);
-      Assert.AreEqual(doubleBasedChunk.speckle_type, doubleChunkDeserialised.speckle_type);
+      Assert.AreEqual(baseBasedChunk.data.Count, baseChunkDeserialised.data.Count);
+      Assert.AreEqual(stringBasedChunk.data.Count, stringChunkDeserialised.data.Count);
+      Assert.AreEqual(doubleBasedChunk.data.Count, doubleChunkDeserialised.data.Count);
     }
 
     [Test]
     public void ObjectWithChunksSerialisation()
     {
+      int MAX_NUM = 2020;
       var mesh = new FakeMesh();
-      for (int i = 0; i < 2020; i++)
+      
+      mesh.ArrayOfDoubles = new double[MAX_NUM];
+      mesh.ArrayOfLegs = new TableLeg[MAX_NUM];
+
+      for (int i = 0; i < MAX_NUM; i++)
       {
         mesh.Vertices.Add(i / 2);
         mesh.Tables.Add(new Tabletop { length = 2000 });
+        mesh.ArrayOfDoubles[i] = i * 3.3;
+        mesh.ArrayOfLegs[i] = new TableLeg { height = 2 + i };
       }
 
       var serialised = Operations.Serialize(mesh);
