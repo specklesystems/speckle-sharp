@@ -2,6 +2,7 @@
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using static Speckle.Core.Models.Utilities;
@@ -21,77 +22,58 @@ namespace Objects.Geometry
     /// <summary>
     /// Gets or sets the list of surfaces in this <see cref="Brep"/> instance.
     /// </summary>
-    [JsonIgnore]
-    public List<Surface> Surfaces { get; set; }
     [DetachProperty]
-    public List<SerializableChunk<Surface>> SurfaceData
-    {
-      get => SplitList(Surfaces, 50).ToList(); 
-      set
-      {
-        Surfaces = new List<Surface>();
-        foreach(var ch in value)
-        {
-          Surfaces.AddRange(ch.data);
-        }
-      }
-    }
+    [Chunkable(200)]
+    public List<Surface> Surfaces { get; set; }
 
     /// <summary>
     /// Gets or sets the list of 3-dimensional curves in this <see cref="Brep"/> instance.
     /// </summary>
-    [JsonIgnore]
-    public List<Curve> Curve3D { get; set; }
     [DetachProperty]
-    public List<SerializableChunk<Curve>> Curve3DData => SplitList(Curve3D, 100).ToList();
+    [Chunkable(200)]
+    public List<Curve> Curve3D { get; set; }
 
     /// <summary>
     /// Gets or sets the list of 2-dimensional UV curves in this <see cref="Brep"/> instance.
     /// </summary>
-    [JsonIgnore]
-    public List<Curve> Curve2D { get; set; }
     [DetachProperty]
-    public List<SerializableChunk<Curve>> Curve2DData => SplitList(Curve2D, 100).ToList();
+    [Chunkable(200)]
+    public List<Curve> Curve2D { get; set; }
 
     /// <summary>
     /// Gets or sets the list of vertices in this <see cref="Brep"/> instance.
     /// </summary>
-    [JsonIgnore]
-    public List<Point> Vertices { get; set; }
     [DetachProperty]
-    public List<SerializableChunk<Point>> VerticesData => SplitList(Vertices, 1000).ToList();
+    [Chunkable(5000)]
+    public List<Point> Vertices { get; set; }
 
     /// <summary>
     /// Gets or sets the list of edges in this <see cref="Brep"/> instance.
     /// </summary>
-    [JsonIgnore]
-    public List<BrepEdge> Edges { get; set; }
     [DetachProperty]
-    public List<SerializableChunk<BrepEdge>> EdgesData => SplitList(Edges, 1000).ToList();
+    [Chunkable(5000)]
+    public List<BrepEdge> Edges { get; set; }
 
     /// <summary>
     /// Gets or sets the list of closed UV loops in this <see cref="Brep"/> instance.
     /// </summary>
-    [JsonIgnore]
-    public List<BrepLoop> Loops { get; set; }
     [DetachProperty]
-    public List<SerializableChunk<BrepLoop>> LoopsData => SplitList(Loops, 1000).ToList();
+    [Chunkable(5000)]
+    public List<BrepLoop> Loops { get; set; }
 
     /// <summary>
     /// Gets or sets the list of UV trim segments for each surface in this <see cref="Brep"/> instance.
     /// </summary>
-    [JsonIgnore]
-    public List<BrepTrim> Trims { get; set; }
     [DetachProperty]
-    public List<SerializableChunk<BrepTrim>> TrimsData => SplitList(Trims, 1000).ToList();
+    [Chunkable(5000)]
+    public List<BrepTrim> Trims { get; set; }
 
     /// <summary>
     /// Gets or sets the list of faces in this <see cref="Brep"/> instance.
     /// </summary>
-    [JsonIgnore]
-    public List<BrepFace> Faces { get; set; }
     [DetachProperty]
-    public List<SerializableChunk<BrepFace>> FacesData => SplitList(Faces, 1000).ToList();
+    [Chunkable(5000)]
+    public List<BrepFace> Faces { get; set; }
 
     /// <summary>
     /// Gets or sets if this <see cref="Brep"/> instance is closed or not.
