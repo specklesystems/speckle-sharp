@@ -25,27 +25,10 @@ namespace Speckle.Core.Serialisation
       {
         return cachedTypes[objFullType];
       }
+      var type = GetAtomicType(objFullType);
+      cachedTypes[objFullType] = type;
+      return type;
 
-      //if (objFullType.Contains("<") && objFullType.Contains(">"))
-      //{
-      //var st = objFullType.IndexOf('<'); var end = objFullType.LastIndexOf('>');
-      //var innerTypeName = objFullType.Substring(st + 1, end - st - 1);
-      //var innerType = GetSytemOrSpeckleType(innerTypeName);
-      //var genericType = typeof(DataChunk<>);
-      //var constructed = genericType.MakeGenericType(new Type[] { innerType });
-
-      //cachedTypes[objFullType] = constructed;
-      //return constructed;
-      //}
-      if (false)
-      {
-      }
-      else
-      {
-        var type = GetAtomicType(objFullType);
-        cachedTypes[objFullType] = type;
-        return type;
-      }
     }
 
     internal static Type GetAtomicType(string objFullType)
