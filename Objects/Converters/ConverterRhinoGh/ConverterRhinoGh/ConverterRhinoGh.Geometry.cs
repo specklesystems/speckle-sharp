@@ -413,21 +413,21 @@ namespace Objects.Converter.RhinoGh
     {
       var tolerance = Doc.ModelAbsoluteTolerance;
 
-      if (curve.IsArc(tolerance))
-      {
-        curve.TryGetArc(out var getObj);
-        return ArcToSpeckle(getObj);
-      }
-
       if (curve.IsCircle(tolerance) && curve.IsClosed)
       {
-        curve.TryGetCircle(out var getObj);
+        curve.TryGetCircle(out var getObj,tolerance);
         return CircleToSpeckle(getObj);
+      }
+
+      if (curve.IsArc(tolerance))
+      {
+        curve.TryGetArc(out var getObj,tolerance);
+        return ArcToSpeckle(getObj);
       }
 
       if (curve.IsEllipse(tolerance) && curve.IsClosed)
       {
-        curve.TryGetEllipse(out var getObj);
+        curve.TryGetEllipse(out var getObj,tolerance);
         return EllipseToSpeckle(getObj);
       }
 
@@ -568,6 +568,20 @@ namespace Objects.Converter.RhinoGh
       return m;
     }
 
+    private bool HasInvalidMultiplicity(NurbsCurve curve)
+    {
+      var knots = curve.Knots;
+      var degree = curve.Degree;
+      
+      for (int i = degree; i < knots.Count - degree; i++)
+      {
+        var mult = knots.KnotMultiplicity(i);
+        i += mult - 1;
+        if (mult > degree - 2) 
+          return true;
+      }
+      return false;
+    }
     /// <summary>
     /// Converts a Rhino <see cref="Rhino.Geometry.Brep"/> instance to a Speckle <see cref="Brep"/>
     /// </summary>
@@ -592,8 +606,34 @@ namespace Objects.Converter.RhinoGh
       spcklBrep.Vertices = brep.Vertices
         .Select(vertex => PointToSpeckle(vertex)).ToList();
       spcklBrep.Curve3D = brep.Edges
-        .Select(edge => NurbsToSpeckle((edge.EdgeCurve).ToNurbsCurve())).ToList();
-      spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c => NurbsToSpeckle(c.ToNurbsCurve())).ToList();
+        .Select(edge =>
+        {
+          var nurbsCurve = edge.EdgeCurve.ToNurbsCurve();
+          
+          // Nurbs curves of degree 2 have weird support in Revit, so we up everything to degree 3.
+          if (nurbsCurve.Degree < 3)
+            nurbsCurve.IncreaseDegree(3);
+          
+          // Check for invalid multiplicity in the curves. This is also to better support Revit.
+          var invalid = HasInvalidMultiplicity(nurbsCurve);
+          
+          // If the curve has invalid multiplicity and is not closed, rebuild with same number of points and degree.
+          // TODO: Figure out why closed curves don't like this hack?
+          if (invalid && !nurbsCurve.IsClosed)
+            nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count,nurbsCurve.Degree,true);
+          
+          // And finally convert to speckle
+          return CurveToSpeckle(nurbsCurve);
+        }).ToList();
+      spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c =>
+      {
+        var nurbsCurve = c.ToNurbsCurve();
+        //nurbsCurve.Knots.RemoveMultipleKnots(1, nurbsCurve.Degree, Doc.ModelAbsoluteTolerance );
+        var rebuild = nurbsCurve.Rebuild(nurbsCurve.Points.Count,nurbsCurve.Degree,true);
+        
+        var crv = CurveToSpeckle(rebuild);
+        return crv;
+      }).ToList();
       spcklBrep.Surfaces = brep.Surfaces
         .Select(srf => SurfaceToSpeckle(srf.ToNurbsSurface())).ToList();
       spcklBrep.IsClosed = brep.IsSolid;
@@ -645,12 +685,19 @@ namespace Objects.Converter.RhinoGh
 
       return spcklBrep;
     }
-
+    
+    /// <summary>
+    /// Converts a Speckle <see cref="Brep"/> instance to a Rhino <see cref="Rhino.Geometry.Brep"/>
+    /// </summary>
+    /// <param name="brep">The Speckle Brep to convert</param>
+    /// <returns></returns>
+    /// <exception cref="Exception">Throws exception if the provenance is not Rhino</exception>
     public RH.Brep BrepToNative(Brep brep)
     {
       const double tol = 0.0; // TODO: Check tolerance.
       try
       {
+        // TODO: Provenance exception is meaningless now, must change for provenance build checks.
         if (brep.provenance != Speckle.Core.Kits.Applications.Rhino)
           throw new Exception("Unknown brep provenance: " + brep.provenance +
                               ". Don't know how to convert from one to the other.");

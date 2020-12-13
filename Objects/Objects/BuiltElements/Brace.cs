@@ -12,6 +12,13 @@ namespace Objects.BuiltElements
     public ICurve baseLine { get; set; }
 
     public Brace() { }
+
+
+    [SchemaInfo("Brace", "Creates a Speckle brace")]
+    public Brace(ICurve baseLine)
+    {
+      this.baseLine = baseLine;
+    }
   }
 }
 
@@ -20,22 +27,27 @@ namespace Objects.BuiltElements.Revit
 
   public class RevitBrace : Brace
   {
-    [SchemaOptional]
     public string family { get; set; }
-
-    [SchemaOptional]
     public string type { get; set; }
-
-    [SchemaOptional]
     public Dictionary<string, object> parameters { get; set; }
-
-    [SchemaOptional]
     public Dictionary<string, object> typeParameters { get; set; }
-
-    [SchemaIgnore]
     public string elementId { get; set; }
-
-    [SchemaOptional]
     public Level level { get; set; }
+
+    public RevitBrace()
+    {
+
+    }
+
+    [SchemaInfo("RevitBrace", "Creates a Revit brace by curve and base level.")]
+    public RevitBrace(string family, string type, ICurve baseLine, Level level, Dictionary<string, object> parameters = null)
+    {
+      this.family = family;
+      this.type = type;
+      this.baseLine = baseLine;
+      this.parameters = parameters;
+      this.level = level;
+
+    }
   }
 }

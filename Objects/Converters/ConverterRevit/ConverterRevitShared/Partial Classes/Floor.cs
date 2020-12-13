@@ -71,7 +71,7 @@ namespace Objects.Converter.Revit
         ConversionErrors.Add(new Error($"Could not create openings in floor {speckleFloor.applicationId}", ex.Message));
       }
 
-      //SetElementParamsFromSpeckle(revitFloor, speckleFloor);
+      SetInstanceParameters(revitFloor, speckleFloor);
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleFloor.applicationId, ApplicationGeneratedId = revitFloor.UniqueId, NativeObject = revitFloor } };
 

@@ -18,22 +18,22 @@ namespace ConverterRevitTests
 
     internal void NativeToSpeckle()
     {
-      ConverterRevit kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.Doc);
+      ConverterRevit converter = new ConverterRevit();
+      converter.SetContextDocument(fixture.SourceDoc);
 
       foreach (var elem in fixture.RevitElements)
       {
-        var spkElem = kit.ConvertToSpeckle(elem);
+        var spkElem = converter.ConvertToSpeckle(elem);
         if (spkElem is Base re)
           AssertValidSpeckleElement(elem, re);
       }
-      Assert.Empty(kit.ConversionErrors);
+      Assert.Empty(converter.ConversionErrors);
     }
 
     internal void NativeToSpeckleBase()
     {
       ConverterRevit kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.Doc);
+      kit.SetContextDocument(fixture.SourceDoc);
 
       foreach (var elem in fixture.RevitElements)
       {
@@ -43,82 +43,130 @@ namespace ConverterRevitTests
       Assert.Empty(kit.ConversionErrors);
     }
 
-    internal void SpeckleToNative<T>(Action<T, T> assert)
+    /// <summary>
+    /// Gets elements from the fixture SourceDoc
+    /// Converts them to Speckle
+    /// Creates a new Doc (or uses the open one if open!)
+    /// Converts the speckle objects to Native
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="assert"></param>
+    internal List<object> SpeckleToNative<T>(Action<T, T> assert, UpdateData ud = null)
     {
-      ConverterRevit kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.Doc);
-      var spkElems = fixture.RevitElements.Select(x => kit.ConvertToSpeckle(x)).ToList();
+      Document doc = null;
+      IList<Element> elements = null;
+      List<ApplicationPlaceholderObject> appPlaceholders = null;
 
-      kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.NewDoc);
-      var revitEls = new List<object>();
+      if (ud == null)
+      {
+        doc = fixture.SourceDoc;
+        elements = fixture.RevitElements;
+      }
+      else
+      {
+        doc = ud.Doc;
+        elements = ud.Elements;
+        appPlaceholders = ud.AppPlaceholders;
+      }
+
+
+      ConverterRevit converter = new ConverterRevit();
+      converter.SetContextDocument(doc);
+      //setting context objects for nested routine
+      converter.SetContextObjects(elements.Select(obj => new ApplicationPlaceholderObject { applicationId = obj.UniqueId }).ToList());
+      var spkElems = elements.Select(x => converter.ConvertToSpeckle(x)).Where(x => x != null).ToList();
+
+      converter = new ConverterRevit();
+      converter.SetContextDocument(fixture.NewDoc);
+      //setting context objects for update routine
+      if (appPlaceholders != null)
+        converter.SetContextObjects(appPlaceholders);
+
       var resEls = new List<object>();
+      //used to associate th nested Base objects with eh flat revit ones
+      var flatSpkElems = new List<Base>();
 
       xru.RunInTransaction(() =>
       {
-        revitEls = spkElems.Select(x => kit.ConvertToNative(x)).ToList();
-        foreach(var el in spkElems)
+        foreach (var el in spkElems)
         {
-          var res = kit.ConvertToNative(el);
-          if (res is ApplicationPlaceholderObject apl) resEls.Add(res);
-          else if (res is List<ApplicationPlaceholderObject> apls)
+          var res = converter.ConvertToNative(el);
+          if (res is List<ApplicationPlaceholderObject> apls)
           {
-            foreach (var aplobj in apls) resEls.Add(aplobj);
+            resEls.AddRange(apls);
+            flatSpkElems.Add(el);
+            if (el["elements"] != null)
+              flatSpkElems.AddRange(el["elements"] as List<Base>);
           }
-          else resEls.Add(el);
+          else
+          {
+            resEls.Add(res);
+            flatSpkElems.Add(el);
+          }
         }
-
       }, fixture.NewDoc).Wait();
 
-      Assert.Empty(kit.ConversionErrors);
+      Assert.Empty(converter.ConversionErrors);
 
-      for (var i = 0; i < revitEls.Count; i++)
+      for (var i = 0; i < spkElems.Count; i++)
       {
-        var sourceElem = (T)(object)fixture.RevitElements[i];
-        T destElement;
-        if (resEls[i] is ApplicationPlaceholderObject apl) destElement = (T)apl.NativeObject;
-        else destElement = (T)resEls[i];
-
-        assert(sourceElem, (T)destElement);
+        var sourceElem = (T)(object)elements.FirstOrDefault(x => x.UniqueId == flatSpkElems[i].applicationId);
+        var destElement = (T)((ApplicationPlaceholderObject)resEls[i]).NativeObject;
+        assert(sourceElem, destElement);
       }
+
+      return resEls;
+    }
+
+    /// <summary>
+    /// Runs SpeckleToNative with SourceDoc and UpdatedDoc
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="assert"></param>
+    internal void SpeckleToNativeUpdates<T>(Action<T, T> assert)
+    {
+      var result = SpeckleToNative(assert);
+
+      SpeckleToNative(assert, new UpdateData
+      {
+        AppPlaceholders = result.Cast<ApplicationPlaceholderObject>().ToList(),
+        Doc = fixture.UpdatedDoc,
+        Elements = fixture.UpdatedRevitElements
+      });
     }
 
     internal void SelectionToNative<T>(Action<T, T> assert)
     {
-      ConverterRevit kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.Doc);
-      var spkElems = fixture.Selection.Select(x => kit.ConvertToSpeckle(x) as Base).ToList();
+      ConverterRevit converter = new ConverterRevit();
+      converter.SetContextDocument(fixture.SourceDoc);
+      var spkElems = fixture.Selection.Select(x => converter.ConvertToSpeckle(x) as Base).ToList();
 
-      kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.NewDoc);
+      converter = new ConverterRevit();
+      converter.SetContextDocument(fixture.NewDoc);
       var revitEls = new List<object>();
       var resEls = new List<object>();
 
       xru.RunInTransaction(() =>
       {
-        
-        revitEls = spkElems.Select(x => kit.ConvertToNative(x)).ToList();
+
+        //revitEls = spkElems.Select(x => kit.ConvertToNative(x)).ToList();
         foreach (var el in spkElems)
         {
-          var res = kit.ConvertToNative(el);
-          if (res is ApplicationPlaceholderObject apl) resEls.Add(res);
-          else if (res is List<ApplicationPlaceholderObject> apls)
+          var res = converter.ConvertToNative(el);
+          if (res is List<ApplicationPlaceholderObject> apls)
           {
-            foreach (var aplobj in apls) resEls.Add(aplobj);
+            resEls.AddRange(apls);
           }
           else resEls.Add(el);
         }
-
       }, fixture.NewDoc).Wait();
 
-      Assert.Empty(kit.ConversionErrors);
+      Assert.Empty(converter.ConversionErrors);
 
       for (var i = 0; i < revitEls.Count; i++)
       {
         var sourceElem = (T)(object)fixture.RevitElements[i];
-        T destElement;
-        if (resEls[i] is ApplicationPlaceholderObject apl) destElement = (T)apl.NativeObject;
-        else destElement = (T)resEls[i];
+        var destElement = (T)((ApplicationPlaceholderObject)resEls[i]).NativeObject;
 
         assert(sourceElem, (T)destElement);
       }
@@ -155,7 +203,7 @@ namespace ConverterRevitTests
 
       Assert.Equal(sourceElem.FacingFlipped, destElem.FacingFlipped);
       Assert.Equal(sourceElem.HandFlipped, destElem.HandFlipped);
-      Assert.Equal(sourceElem.IsSlantedColumn, destElem.IsSlantedColumn );
+      Assert.Equal(sourceElem.IsSlantedColumn, destElem.IsSlantedColumn);
       Assert.Equal(sourceElem.StructuralType, destElem.StructuralType);
 
       //rotation
@@ -183,11 +231,21 @@ namespace ConverterRevitTests
       }
       else if (expecedParam.StorageType == StorageType.ElementId)
       {
-        var e1 = fixture.Doc.GetElement(expecedParam.AsElementId());
+        var e1 = fixture.SourceDoc.GetElement(expecedParam.AsElementId());
         var e2 = fixture.NewDoc.GetElement(actual.get_Parameter(param).AsElementId());
-        if (e1 != null && e2 != null)
+        if (e1 is Level l1 && e2 is Level l2)
+          Assert.Equal(l1.Elevation, l2.Elevation, 3);
+        else if (e1 != null && e2 != null)
           Assert.Equal(e1.Name, e2.Name);
       }
     }
+  }
+
+  public class UpdateData
+  {
+    public Document Doc { get; set; }
+    public IList<Element> Elements { get; set; }
+    public List<ApplicationPlaceholderObject> AppPlaceholders { get; set; }
+
   }
 }

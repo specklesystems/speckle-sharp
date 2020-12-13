@@ -359,3 +359,4 @@ MigrationBackup/
 *.DS_Store
 ConnectorDynamo/ConnectorDynamo/GPUCache/
 ConnectorDynamo/ConnectorDynamo/dist/
+*.3dmbak

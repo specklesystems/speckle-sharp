@@ -51,7 +51,7 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         ProgressSummary = "";
-        foreach(var kvp in value)
+        foreach (var kvp in value)
         {
           ProgressSummary += $"{kvp.Key}: {kvp.Value} ";
         }
@@ -84,7 +84,7 @@ namespace Speckle.DesktopUI.Utils
       get => _maximum;
       set => SetAndNotify(ref _maximum, value);
     }
-    
+
     public void ResetProgress()
     {
       Maximum = 100;
@@ -146,44 +146,44 @@ namespace Speckle.DesktopUI.Utils
     }
   }
 
-  class ProgresBarAnimateBehavior : Behavior<ProgressBar>
-  {
-    bool _IsAnimating = false;
+  //class ProgresBarAnimateBehavior : Behavior<ProgressBar>
+  //{
+  //  bool _IsAnimating = false;
 
-    protected override void OnAttached()
-    {
-      base.OnAttached();
-      ProgressBar progressBar = this.AssociatedObject;
-      progressBar.ValueChanged += ProgressBar_ValueChanged;
-    }
+  //  protected override void OnAttached()
+  //  {
+  //    base.OnAttached();
+  //    ProgressBar progressBar = this.AssociatedObject;
+  //    progressBar.ValueChanged += ProgressBar_ValueChanged;
+  //  }
 
-    private void ProgressBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-    {
-      if (_IsAnimating)
-        return;
+  //  private void ProgressBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+  //  {
+  //    if (_IsAnimating)
+  //      return;
 
-      _IsAnimating = true;
+  //    _IsAnimating = true;
 
-      DoubleAnimation doubleAnimation = new DoubleAnimation
-          (e.OldValue, e.NewValue, new Duration(TimeSpan.FromSeconds(0.3)), FillBehavior.Stop);
-      doubleAnimation.Completed += Db_Completed;
+  //    DoubleAnimation doubleAnimation = new DoubleAnimation
+  //        (e.OldValue, e.NewValue, new Duration(TimeSpan.FromSeconds(0.3)), FillBehavior.Stop);
+  //    doubleAnimation.Completed += Db_Completed;
 
-      ((ProgressBar)sender).BeginAnimation(ProgressBar.ValueProperty, doubleAnimation);
+  //    ((ProgressBar)sender).BeginAnimation(ProgressBar.ValueProperty, doubleAnimation);
 
-      e.Handled = true;
-    }
+  //    e.Handled = true;
+  //  }
 
-    private void Db_Completed(object sender, EventArgs e)
-    {
-      _IsAnimating = false;
-    }
+  //  private void Db_Completed(object sender, EventArgs e)
+  //  {
+  //    _IsAnimating = false;
+  //  }
 
-    protected override void OnDetaching()
-    {
-      base.OnDetaching();
-      ProgressBar progressBar = this.AssociatedObject;
-      progressBar.ValueChanged -= ProgressBar_ValueChanged;
-    }
-  }
+  //  protected override void OnDetaching()
+  //  {
+  //    base.OnDetaching();
+  //    ProgressBar progressBar = this.AssociatedObject;
+  //    progressBar.ValueChanged -= ProgressBar_ValueChanged;
+  //  }
+  //}
 
 }

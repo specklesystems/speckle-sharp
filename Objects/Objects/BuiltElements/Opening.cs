@@ -12,43 +12,41 @@ namespace Objects.BuiltElements
     public ICurve outline { get; set; }
 
     public Opening() { }
+
+    //[SchemaInfo("Opening", "Creates a Speckle opening")]
+    public Opening(ICurve outline)
+    {
+      this.outline = outline;
+    }
   }
 }
 
 namespace Objects.BuiltElements.Revit
 {
 
-  [SchemaIgnore]
   public class RevitOpening : Opening
   {
-    [SchemaIgnore]
-    public string elementId { get; set; }
+    //public string family { get; set; }
 
-    [SchemaOptional]
-    public string family { get; set; }
+    //public string type { get; set; }
 
-    [SchemaOptional]
-    public string type { get; set; }
-
-    [SchemaOptional]
     public Dictionary<string, object> parameters { get; set; }
 
-    [SchemaOptional]
-    public Dictionary<string, object> typeParameters { get; set; }
+    //public Dictionary<string, object> typeParameters { get; set; }
+    public string elementId { get; set; }
+
+    public RevitOpening() { }
   }
 
-  [SchemaIgnore]
   public class RevitVerticalOpening : RevitOpening
   {
-    public int revitHostId { get; set; }
   }
 
-  [SchemaIgnore]
   public class RevitWallOpening : RevitOpening
   {
     public RevitWall host { get; set; }
 
-    public int revitHostId { get; set; }
+    public RevitWallOpening() { }
   }
 
   public class RevitShaft : RevitOpening
@@ -56,6 +54,19 @@ namespace Objects.BuiltElements.Revit
     public Level bottomLevel { get; set; }
 
     public Level topLevel { get; set; }
+
+    public double height { get; set; }
+
+    public RevitShaft() { }
+
+    [SchemaInfo("RevitShaft", "Creates a Revit shaft")]
+    public RevitShaft(ICurve outline, Level bottomLevel, Level topLevel, Dictionary<string, object> parameters = null)
+    {
+      this.outline = outline;
+      this.bottomLevel = bottomLevel;
+      this.topLevel = topLevel;
+      this.parameters = parameters;
+    }
   }
 
 }

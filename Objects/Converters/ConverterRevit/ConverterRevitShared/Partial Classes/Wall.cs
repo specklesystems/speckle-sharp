@@ -3,6 +3,7 @@ using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
 
@@ -21,7 +22,7 @@ namespace Objects.Converter.Revit
       var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;
 
       var wallType = GetElementType<WallType>(speckleWall);
-      var level = GetFirstDocLevel();
+      Level level = null;
       var structural = false;
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
 
@@ -35,8 +36,11 @@ namespace Objects.Converter.Revit
         level = LevelToNative(LevelFromCurve(baseCurve));
       }
 
+      //if it's a new element, we don't need to update certain properties
+      bool isUpdate = true;
       if (revitWall == null)
       {
+        isUpdate = false;
         revitWall = DB.Wall.Create(Doc, baseCurve, level.Id, structural);
       }
 
@@ -46,26 +50,20 @@ namespace Objects.Converter.Revit
         return null;
       }
 
-      var ocrvStart = ((LocationCurve)revitWall.Location).Curve.GetEndPoint(0);
-      var ocrvEnd = ((LocationCurve)revitWall.Location).Curve.GetEndPoint(1);
-      var ncrvStart = baseCurve.GetEndPoint(0);
-      var ncrvEnd = baseCurve.GetEndPoint(1);
-
-      // Note: setting a base offset on a wall modifies its location curve. As such, to distinguish between an old curve and a new one, we need to
-      // remove any existing base offset before comparing it to the original one. And yes, of course, we need to check within a tolerance.
-      var cbo = (double)revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble(); // note: we're using raw internal units, no need for conversions
-      if (Math.Abs(ocrvStart.X - ncrvStart.X) > 0.01 || Math.Abs(ocrvStart.Y - ncrvStart.Y) > 0.01 || Math.Abs(ocrvStart.Z + cbo - ncrvStart.Z) > 0.01 ||
-        Math.Abs(ocrvEnd.X - ncrvEnd.X) > 0.01 || Math.Abs(ocrvEnd.Y - ncrvEnd.Y) > 0.01 || Math.Abs(ocrvEnd.Z + cbo - ncrvEnd.Z) > 0.01)
-      {
-        revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).Set(0); // note: always reset the base offset before setting a new location curve, otherwise it's applied twice.
-        ((LocationCurve)revitWall.Location).Curve = baseCurve;
-      }
-
-      TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
-
-      if (wallType != null && revitWall.WallType.Name != wallType.Name)
+      if (revitWall.WallType.Name != wallType.Name)
       {
         revitWall.ChangeTypeId(wallType.Id);
+      }
+
+      if (isUpdate)
+      {
+        //when a curve is created its Z and gets adjusted to the level elevation!
+        //make sure the new curve is at the same Z as the previous
+        var z = ((LocationCurve)revitWall.Location).Curve.GetEndPoint(0).Z;
+        var offsetLine = baseCurve.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, z)));
+        ((LocationCurve)revitWall.Location).Curve = offsetLine;
+
+        TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
       }
 
       if (speckleWall is RevitWall spklRevitWall)
@@ -108,7 +106,7 @@ namespace Objects.Converter.Revit
         heightParam.Set(ScaleToNative(speckleWall.height, speckleWall.units));
       }
 
-      //SetElementParamsFromSpeckle(revitWall, speckleWall); // This takes very long and doesn't do much. IMHO we should stop supporting it.
+      SetInstanceParameters(revitWall, speckleWall);
 
       var placeholders = new List<ApplicationPlaceholderObject>() {new ApplicationPlaceholderObject
       {
@@ -119,12 +117,11 @@ namespace Objects.Converter.Revit
 
       #region hosted elements creation
 
-      var hostedElements = speckleWall["hostedElements"] as List<Base>;
-      if (hostedElements != null)
+      if (speckleWall.elements != null)
       {
         CurrentHostElement = revitWall; // set the wall as the current host element.
 
-        foreach (var obj in hostedElements)
+        foreach (var obj in speckleWall.elements)
         {
           if (obj == null)
           {
@@ -199,10 +196,10 @@ namespace Objects.Converter.Revit
       #region hosted elements capture
 
       // TODO: perhaps move to generic method once patterns emerge (re other hosts).
-      var hostedElements = revitWall.FindInserts(true, true, true, true);
-      var hostedElementsList = new List<Base>();
+      var hostedElementIds = revitWall.FindInserts(true, true, true, true);
+      var convertedHostedElements = new List<Base>();
 
-      if (hostedElements != null)
+      if (hostedElementIds != null)
       {
         var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == revitWall.UniqueId);
         if (elementIndex != -1)
@@ -210,7 +207,7 @@ namespace Objects.Converter.Revit
           ContextObjects.RemoveAt(elementIndex);
         }
 
-        foreach (var elemId in hostedElements)
+        foreach (var elemId in hostedElementIds)
         {
           var element = Doc.GetElement(elemId);
           var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
@@ -222,25 +219,21 @@ namespace Objects.Converter.Revit
 
           ContextObjects.RemoveAt(isSelectedInContextObjects);
 
-          try
+          if (CanConvertToSpeckle(element))
           {
             var obj = ConvertToSpeckle(element);
 
             if (obj != null)
             {
-              hostedElementsList.Add(obj);
+              convertedHostedElements.Add(obj);
               ConvertedObjectsList.Add(obj.applicationId);
             }
           }
-          catch (Exception e)
-          {
-            ConversionErrors.Add(new Error { message = e.Message, details = e.StackTrace });
-          }
         }
 
-        if (hostedElements.Count != 0)
+        if (convertedHostedElements.Any())
         {
-          speckleWall.hostedElements = hostedElementsList;
+          speckleWall.elements = convertedHostedElements;
         }
       }
 

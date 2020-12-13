@@ -37,7 +37,7 @@ namespace Objects.Converter.Revit
       revitDs.SetShape(mesh);
       revitDs.Name = speckleDs.type;
 
-      SetElementParamsFromSpeckle(revitDs, speckleDs);
+      SetInstanceParameters(revitDs, speckleDs);
 
       return new ApplicationPlaceholderObject { applicationId = speckleDs.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }

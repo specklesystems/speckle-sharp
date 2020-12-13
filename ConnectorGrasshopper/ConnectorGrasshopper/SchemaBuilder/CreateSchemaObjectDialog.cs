@@ -56,7 +56,7 @@ namespace ConnectorGrasshopper
       //list.SelectedValueBinding.BindDataContext((CSOViewModel m) => m.SelectedType, DualBindingMode.OneWayToSource);
 
 
-      tree = new TreeGridView { Size = new Size(200, 200) };
+      tree = new TreeGridView { Size = new Size(300, 200) };
       tree.Columns.Add(new GridColumn { DataCell = new TextBoxCell(0) });
       tree.DataStore = GenerateTree();
       tree.BindDataContext(x => x.SelectedItem, (CSOViewModel m) => m.SelectedItem, DualBindingMode.OneWayToSource);
@@ -64,7 +64,7 @@ namespace ConnectorGrasshopper
       description = new TextArea
       {
         ReadOnly = true,
-        Size = new Size(200, 200)
+        Size = new Size(400, 200)
       };
 
       description.TextBinding.BindDataContext(Binding.Property((CSOViewModel m) => m.SelectedItem).
@@ -107,7 +107,9 @@ namespace ConnectorGrasshopper
       foreach (var type in typesFiltered)
       {
         RecurseNamespace(type.Namespace.Split('.'), tree, type);
-        IncreaseCounts(type.Namespace);
+        //treat the type name as part of the namespace, since now we are using constructors to populate
+        //out tree items
+        IncreaseCounts($"{type.Namespace}.{type.Name}", GetValidConstr(type).Count());
       }
 
       var item = new TreeGridItem();
@@ -130,7 +132,16 @@ namespace ConnectorGrasshopper
       }
       else
       {
-        ((Dictionary<string, object>)tree[key])[t.Name] = t;
+        var constructors = GetValidConstr(t)
+          .ToDictionary(x => x.GetCustomAttribute<SchemaInfo>().Name, x => (object)x);
+        if (constructors.Values.Count > 1)
+          ((Dictionary<string, object>)tree[key])[t.Name] = constructors;
+        else
+        {
+          //simplify structure if only 1 constructor
+          ((Dictionary<string, object>)tree[key])[t.Name] = constructors.Values.First();
+        }
+
       }
     }
 
@@ -139,10 +150,10 @@ namespace ConnectorGrasshopper
       foreach (var key in tree.Keys)
       {
 
-        if (tree[key] is Type t)
+        if (tree[key] is ConstructorInfo c)
         {
-          var child = new TreeGridItem(t.Name);
-          child.Tag = t;
+          var child = new TreeGridItem(c.GetCustomAttribute<SchemaInfo>().Name);
+          child.Tag = c;
           item.Children.Add(child);
         }
         else if (tree[key] is Dictionary<string, object> d)
@@ -158,23 +169,25 @@ namespace ConnectorGrasshopper
       }
     }
 
-    private void IncreaseCounts(string ns)
+    private void IncreaseCounts(string ns, int constrCount)
     {
       var parts = ns.Split('.');
       for (var i = 0; i < parts.Length; i++)
       {
         var name = string.Join(".", parts.Take(i + 1));
         if (!counts.ContainsKey(name))
-          counts[name] = 1;
+          counts[name] = constrCount;
         else
-          counts[name]++;
+          counts[name] += constrCount;
       }
     }
 
 
     private List<Type> ListAvailableTypes()
     {
-      return KitManager.Types.Where(x => x.GetCustomAttribute<SchemaIgnoreAttribute>() == null).ToList();
+      // exclude types that don't have any constructors with a SchemaInfo attribute
+      return KitManager.Types.Where(
+        x => GetValidConstr(x).Any()).OrderBy(x=>x.Name).ToList();
     }
 
     //TODO: expand items?
@@ -193,41 +206,41 @@ namespace ConnectorGrasshopper
 
     private string GetDescription(TreeGridItem t)
     {
-      if (t == null || (Type)t.Tag == null)
+      if (t == null || (ConstructorInfo)t.Tag == null)
         return "";
-      var type = (Type)t.Tag;
+      var constructor = (ConstructorInfo)t.Tag;
 
       var description = "";
 
-      var attr = type.GetCustomAttribute<SchemaDescriptionAttribute>();
+      var attr = constructor.GetCustomAttribute<SchemaInfo>();
       if (attr != null)
       {
         description += attr.Description + "\n\n";
       }
 
-      var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute<SchemaIgnoreAttribute>() == null && x.Name != "Item");
-
-      //put optional props at the bottom
-      var optionalProps = props.Where(x => x.GetCustomAttribute<SchemaOptionalAttribute>() != null).OrderBy(x => x.PropertyType.ToString()).ThenBy(x => x.Name);
-      var nonOptionalProps = props.Where(x => x.GetCustomAttribute<SchemaOptionalAttribute>() == null).OrderBy(x => x.PropertyType.ToString()).ThenBy(x => x.Name);
-      props = nonOptionalProps;
-      props= props.Concat(optionalProps);
-
+      var props = constructor.GetParameters();
       if (props.Any())
       {
         description += "Inputs:\n";
         foreach (var p in props)
         {
-          var inputDesc = p.GetCustomAttribute<SchemaDescriptionAttribute>();
+          var inputDesc = p.GetCustomAttribute<SchemaParamInfo>();
           var d = inputDesc != null ? $": {inputDesc.Description}" : "";
-          description += $"\n- {p.Name} ({p.PropertyType.Name}){d}";
+          description += $"\n- {p.Name} ({p.ParameterType.Name}){d}";
+          if (p.IsOptional)
+          {
+            var def = p.DefaultValue == null ? "null" : p.DefaultValue.ToString();
+            description += ", default = " + def;
+          }
         }
 
       }
-
-
-
       return description;
+    }
+
+    private IEnumerable<ConstructorInfo> GetValidConstr(Type type)
+    {
+      return type.GetConstructors().Where(y => y.GetCustomAttribute<SchemaInfo>() != null);
     }
 
     //rtf description, not working
