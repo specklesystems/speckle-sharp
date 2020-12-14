@@ -28,4 +28,20 @@ namespace Speckle.Core.Models
       Detachable = true;
     }
   }
+
+  /// <summary>
+  /// Flags a list or array as splittable into chunks during serialisation. These chunks will be recomposed on deserialisation into the original list. Note: this attribute should be used in conjunction with <see cref="DetachProperty"/>.
+  /// <para>Use this attribute on properties that can become very long and are not worth detaching into individual elements.</para>
+  /// <para>Objects per chunk: for simple types, like numbers, use a high value (>10000); for other objects, use a more conservative number depending on their serialised size.</para>
+  /// </summary>
+  [AttributeUsage(AttributeTargets.Property)]
+  public class Chunkable : Attribute
+  {
+    public int MaxObjCountPerChunk { get; set; }
+
+    public Chunkable(int ObjectsPerChunk = 1000)
+    {
+      MaxObjCountPerChunk = ObjectsPerChunk;
+    }
+  }
 }

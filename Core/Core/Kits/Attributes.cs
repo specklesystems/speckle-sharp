@@ -52,7 +52,5 @@ namespace Speckle.Core.Kits
   [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
   public class SchemaIgnore : Attribute
   {
-
-
   }
 }
