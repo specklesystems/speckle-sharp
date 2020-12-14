@@ -32,14 +32,14 @@
     </ResourceDictionary>
 
 
-    <!-- stylet bootstrapper -->
+    <!--  stylet bootstrapper  -->
     <s:ApplicationLoader>
       <s:ApplicationLoader.Bootstrapper>
         <root:Bootstrapper />
       </s:ApplicationLoader.Bootstrapper>
     </s:ApplicationLoader>
 
-    <!-- more theme resources -->
+    <!--  more theme resources  -->
     <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/MaterialDesignTheme.Light.xaml" />
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
     <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/MaterialDesignTheme.TabControl.xaml" />

@@ -245,7 +245,7 @@ namespace Speckle.ConnectorRevit.UI
         streamId = streamId,
         objectId = objectId,
         branchName = state.Branch.name,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} objs from {ConnectorRevitUtils.RevitAppName}."
+        message = state.CommitMessage != null ? state.CommitMessage : $"Sent {convertedCount} objs from {ConnectorRevitUtils.RevitAppName}."
       };
 
       if (state.PreviousCommitId != null) { actualCommit.previousCommitIds = new List<string>() { state.PreviousCommitId }; }
@@ -286,6 +286,16 @@ namespace Speckle.ConnectorRevit.UI
       converter.SetContextDocument(CurrentDoc.Document);
 
       var transport = new ServerTransport(state.Client.Account, state.Stream.id);
+
+      string referencedObject = state.Commit.referencedObject;
+
+      //if "latest", always make sure we get the latest commit when the user clicks "receive"
+      if (state.Commit.id == "latest")
+      {
+        var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
+        referencedObject = res.commits.items.FirstOrDefault().referencedObject;
+      }
+
       var commit = state.Commit;
 
       if (state.CancellationTokenSource.Token.IsCancellationRequested)
@@ -294,18 +304,18 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       var commitObject = await Operations.Receive(
-        commit.referencedObject,
-        state.CancellationTokenSource.Token,
-        transport,
-        onProgressAction: dict => UpdateProgress(dict, state.Progress),
-        onErrorAction: (s, e) =>
-        {
-          OperationErrors.Add(e);
-          state.Errors.Add(e);
-          state.CancellationTokenSource.Cancel();
-        },
-        onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count)
-        );
+          referencedObject,
+          state.CancellationTokenSource.Token,
+          transport,
+          onProgressAction: dict => UpdateProgress(dict, state.Progress),
+          onErrorAction: (s, e) =>
+          {
+            OperationErrors.Add(e);
+            state.Errors.Add(e);
+            state.CancellationTokenSource.Cancel();
+          },
+          onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count)
+          );
 
       if (OperationErrors.Count != 0)
       {
