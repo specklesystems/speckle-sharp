@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.Geometry;
 using Objects.Primitive;
 using Speckle.Core.Models;
@@ -490,15 +490,19 @@ namespace Objects.Converter.Revit
       // TODO: Trim curve with domain. Unsure if this is necessary as all our curves are converted to NURBS on Rhino output.
 
       var nativeCurveArray = CurveToNative(edge.Curve);
+      bool isTrimmed = edge.Curve.domain != null &&
+                       (edge.Curve.domain.start != edge.Domain.start 
+                        || edge.Curve.domain.end != edge.Domain.end);
       if (nativeCurveArray.Size == 1)
       {
         var nativeCurve = nativeCurveArray.get_Item(0);
+        
         if (edge.ProxyCurveIsReversed)
           nativeCurve = nativeCurve.CreateReversed();
 
         if (nativeCurve == null)
           return new List<BRepBuilderEdgeGeometry>();
-
+        
         if (!nativeCurve.IsBound)
           nativeCurve.MakeBound(0, nativeCurve.Period);
 
@@ -638,7 +642,7 @@ namespace Objects.Converter.Revit
       using var builder = new BRepBuilder(bRepType);
 
       builder.SetAllowShortEdges();
-      //builder.AllowRemovalOfProblematicFaces();
+      builder.AllowRemovalOfProblematicFaces();
 
       var brepEdges = new List<DB.BRepBuilderGeometryId>[brep.Edges.Count];
       foreach (var face in brep.Faces)
@@ -765,7 +769,7 @@ namespace Objects.Converter.Revit
               curve3dIndex++;
 
               // Create a trim with just one of the trimIndices set, the second one will be set on the opposite condition.
-              var sEdge = new BrepEdge(brep, sCurveIndex, new[] { sTrimIndex }, -1, -1, edge.IsFlippedOnFace(face));
+              var sEdge = new BrepEdge(brep, sCurveIndex, new[] { sTrimIndex }, -1, -1, edge.IsFlippedOnFace(face), null);
               speckleEdges.Add(edge, sEdge);
               edgeIndex++;
             }

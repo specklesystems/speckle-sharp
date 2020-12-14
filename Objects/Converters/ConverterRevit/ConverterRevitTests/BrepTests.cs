@@ -44,6 +44,8 @@ namespace ConverterRevitTests
     [InlineData(@"Brep-Complex.json")]
     [InlineData(@"Brep-QuadDome.json")]
     [InlineData(@"Brep-SimpleHyparHole.json")]
+    [InlineData(@"Brep-FaceWithTrimmedEdge.json")]
+    [InlineData(@"Brep-Boat.json")]
     public void BrepToNative(string fileName)
     {
     
