@@ -110,7 +110,7 @@ namespace Objects.Converter.Revit
       //speckleDuct.systemName = ((MechanicalSystem)revitDuct.MEPSystem).SystemType.ToString();
 
 
-      AddParameters(speckleDuct, revitDuct,
+      GetRevitParameters(speckleDuct, revitDuct,
         new List<string> { "RBS_CURVE_HEIGHT_PARAM", "RBS_CURVE_WIDTH_PARAM", "RBS_CURVE_DIAMETER_PARAM", "CURVE_ELEM_LENGTH", "RBS_START_LEVEL_PARAM", "RBS_VELOCITY" });
 
       return speckleDuct;

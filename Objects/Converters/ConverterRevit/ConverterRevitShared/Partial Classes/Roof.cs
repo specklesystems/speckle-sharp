@@ -180,7 +180,7 @@ namespace Objects.Converter.Revit
         }
       }
 
-      AddParameters(speckleRoof, revitRoof, new List<string> { "ROOF_BASE_LEVEL_PARAM", "ROOF_UPTO_LEVEL_PARAM", "EXTRUSION_START_PARAM", "EXTRUSION_END_PARAM" });
+      GetRevitParameters(speckleRoof, revitRoof, new List<string> { "ROOF_BASE_LEVEL_PARAM", "ROOF_UPTO_LEVEL_PARAM", "EXTRUSION_START_PARAM", "EXTRUSION_END_PARAM" });
 
       var displayMesh = new Geometry.Mesh();
       (displayMesh.faces, displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });

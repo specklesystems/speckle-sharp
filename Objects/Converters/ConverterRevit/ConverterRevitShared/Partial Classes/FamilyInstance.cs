@@ -94,7 +94,7 @@ namespace Objects.Converter.Revit
 
       speckleFi["@displayMesh"] = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
 
-      AddParameters(speckleFi, revitFi);
+      GetRevitParameters(speckleFi, revitFi);
 
       #region sub elements capture
 

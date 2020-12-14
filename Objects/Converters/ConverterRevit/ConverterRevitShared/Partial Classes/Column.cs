@@ -214,7 +214,7 @@ namespace Objects.Converter.Revit
 
       speckleColumn.baseLine = baseLine; //all speckle columns should be line based
 
-      AddParameters(speckleColumn, revitColumn,
+      GetRevitParameters(speckleColumn, revitColumn,
         new List<string> { "FAMILY_BASE_LEVEL_PARAM", "FAMILY_TOP_LEVEL_PARAM", "FAMILY_BASE_LEVEL_OFFSET_PARAM", "FAMILY_TOP_LEVEL_OFFSET_PARAM" });
 
       if (revitColumn.Location is LocationPoint)

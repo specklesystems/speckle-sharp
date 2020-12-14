@@ -67,7 +67,7 @@ namespace Objects.Converter.Revit
       speckleLevel.name = revitLevel.Name;
       speckleLevel.createView = true;
 
-      AddParameters(speckleLevel, revitLevel);
+      GetRevitParameters(speckleLevel, revitLevel);
       return speckleLevel;
     }
 

@@ -25,7 +25,7 @@ namespace Objects.Converter.Revit
     /// <param name="exclusions">List of BuiltInParameters or GUIDs used to indicate what parameters NOT to get,
     /// we exclude all params already defined on the top level object to avoid duplication and 
     /// potential conflicts when setting them back on the element</param>
-    private void AddParameters(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
+    private void GetRevitParameters(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
     {
       var parms = GetInstanceParams(revitElement, exclusions);
       if (parms != null)
@@ -163,7 +163,7 @@ namespace Objects.Converter.Revit
         .ToDictionary(x => GetParamInternalName(x), x => x);
 
       //only loop params we can set and exist on the revit element
-      var filteredSpeckleParameters = speckleParameters.Where(x => !x.isReadOnly && revitParameters.ContainsKey(x.applicationId));
+      var filteredSpeckleParameters = speckleParameters.Where(x => !x.isTypeParameter && !x.isReadOnly && revitParameters.ContainsKey(x.applicationId));
 
       foreach (var sp in filteredSpeckleParameters)
       {

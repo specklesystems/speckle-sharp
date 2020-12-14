@@ -40,7 +40,7 @@ namespace Objects.Converter.Revit
     {
       var speckleTopo = new RevitTopography();
       speckleTopo.baseGeometry = GetElementMesh(revitTopo);
-      AddParameters(speckleTopo, revitTopo);
+      GetRevitParameters(speckleTopo, revitTopo);
 
       return speckleTopo;
     }

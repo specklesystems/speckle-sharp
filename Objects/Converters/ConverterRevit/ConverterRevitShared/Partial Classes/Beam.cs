@@ -107,7 +107,7 @@ namespace Objects.Converter.Revit
       speckleBeam.level = ConvertAndCacheLevel(baseLevelParam);
       speckleBeam["@displayMesh"] = GetElementMesh(revitBeam);
 
-      AddParameters(speckleBeam, revitBeam);
+      GetRevitParameters(speckleBeam, revitBeam);
 
       return speckleBeam;
     }
