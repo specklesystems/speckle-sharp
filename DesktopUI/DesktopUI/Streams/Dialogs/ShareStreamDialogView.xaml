@@ -207,7 +207,7 @@
             <TextBlock>
               <Run Text="Add" />
               <Run Text="{Binding SelectedUser.name, Converter={StaticResource SplitFirstNameConverter}}" />
-              <Run Text="{Binding SelectedRole.Name, StringFormat='as {0}'}" />
+              <Run Text="{Binding SelectedRole.Name, StringFormat='as {0}', Mode=OneWay}" />
             </TextBlock>
 
           </Button.Content>

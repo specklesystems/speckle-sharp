@@ -12,23 +12,21 @@ namespace Speckle.DesktopUI.Streams
   public class ShareStreamDialogViewModel : Conductor<IScreen>
   {
     private readonly IEventAggregator _events;
+    private readonly StreamsRepository _streamsRepo;
     private readonly ConnectorBindings _bindings;
 
     public ShareStreamDialogViewModel(
       IEventAggregator events,
+      StreamsRepository streamsRepo,
       ConnectorBindings bindings)
     {
       DisplayName = "Share Stream";
       _events = events;
+      _streamsRepo = streamsRepo;
       _bindings = bindings;
 
-      Roles = new List<CollabRole>()
-      {
-        new CollabRole("Contributor", "stream:contributor", "Can edit, push and pull."),
-        new CollabRole("Reviewer", "stream:reviewer", "Can only view."),
-        new CollabRole("Owner", "stream:owner", "Has full access, including deletion rights & access control.")
-      };
-      SelectedRole = Roles[ 0 ];
+      Roles = _streamsRepo.GetRoles();
+      SelectedRole = Roles[0];
     }
 
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
@@ -75,9 +73,9 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _selectedUser, value);
     }
 
-    private CollabRole _selectedRole;
+    private StreamRole _selectedRole;
 
-    public CollabRole SelectedRole
+    public StreamRole SelectedRole
     {
       get => _selectedRole;
       set => SetAndNotify(ref _selectedRole, value);
@@ -109,7 +107,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void SearchForUsers()
     {
-      if ( UserQuery.Length <= 2 )
+      if (UserQuery.Length <= 2)
         return;
 
       try
@@ -118,7 +116,7 @@ namespace Speckle.DesktopUI.Streams
         DropdownState = true; // open search dropdown when there are results
         UserSearchResults = new BindableCollection<User>(users);
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         // search prob returned no results
         UserSearchResults?.Clear();
@@ -131,10 +129,12 @@ namespace Speckle.DesktopUI.Streams
       {
         var res = await StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput()
         {
-          streamId = StreamState.Stream.id, role = SelectedRole.Role, userId = SelectedUser.id
+          streamId = StreamState.Stream.id,
+          role = SelectedRole.Role,
+          userId = SelectedUser.id
         });
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         Notifications.Enqueue($"Sorry - could not add {SelectedUser.name} to this stream. Error: {e.Message}");
         return;
@@ -155,7 +155,7 @@ namespace Speckle.DesktopUI.Streams
     // close the dropdown when a user is selected
     public void UserSelected(ListBox sender, SelectionChangedEventArgs e)
     {
-      if ( e.AddedItems.Count == 1 )
+      if (e.AddedItems.Count == 1)
       {
         DropdownState = false;
       }
@@ -173,7 +173,7 @@ namespace Speckle.DesktopUI.Streams
     {
       ShareLinkVisible = !ShareLinkVisible;
 
-      if ( ShareLinkVisible != StreamState.Stream.isPublic )
+      if (ShareLinkVisible != StreamState.Stream.isPublic)
       {
         try
         {
@@ -186,28 +186,14 @@ namespace Speckle.DesktopUI.Streams
           });
           _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
         }
-        catch ( Exception e )
+        catch (Exception e)
         {
           Notifications.Enqueue($"Could not set link sharing to {ShareLinkVisible}. Error: {e.Message}");
         }
       }
     }
 
-    public List<CollabRole> Roles { get; set; }
-
-    public class CollabRole
-    {
-      public CollabRole(string name, string role, string description = "")
-      {
-        Name = name;
-        Role = role;
-        Description = description;
-      }
-
-      public string Name { get; set; }
-      public string Role { get; set; }
-      public string Description { get; set; }
-    }
+    public List<StreamRole> Roles { get; set; }
 
     public void CloseDialog()
     {
