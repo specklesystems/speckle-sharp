@@ -433,19 +433,24 @@ namespace Objects.Converter.RhinoGh
       if (curve.IsCircle(tolerance) && curve.IsClosed)
       {
         curve.TryGetCircle(out var getObj,tolerance);
-        return CircleToSpeckle(getObj);
+        var cir = CircleToSpeckle(getObj);
+        cir.domain = IntervalToSpeckle(curve.Domain);
+        return cir;
       }
 
       if (curve.IsArc(tolerance))
       {
         curve.TryGetArc(out var getObj,tolerance);
-        return ArcToSpeckle(getObj);
+        var arc =  ArcToSpeckle(getObj);
+        arc.domain = IntervalToSpeckle(curve.Domain);
+        return arc;
       }
 
       if (curve.IsEllipse(tolerance) && curve.IsClosed)
       {
         curve.TryGetEllipse(pln, out var getObj,tolerance);
-        return EllipseToSpeckle(getObj);
+        var ellipse =  EllipseToSpeckle(getObj);
+        ellipse.domain = IntervalToSpeckle(curve.Domain);
       }
 
       if (curve.IsLinear(tolerance) || curve.IsPolyline()) // defaults to polyline
@@ -757,6 +762,9 @@ namespace Objects.Converter.RhinoGh
             if (trim.EdgeIndex != -1)
               rhTrim = newBrep.Trims.Add(newBrep.Edges[trim.EdgeIndex], trim.IsReversed,
                 newBrep.Loops[trim.LoopIndex], trim.CurveIndex);
+            else if (trim.TrimType == BrepTrimType.Singular)
+              rhTrim = newBrep.Trims.AddSingularTrim(newBrep.Vertices[trim.EndIndex],
+                newBrep.Loops[trim.LoopIndex], (RH.IsoStatus)trim.IsoStatus, trim.CurveIndex);
             else
               rhTrim = newBrep.Trims.Add(trim.IsReversed, newBrep.Loops[trim.LoopIndex], trim.CurveIndex);
 
