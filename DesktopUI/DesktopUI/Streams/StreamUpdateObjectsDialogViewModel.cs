@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Windows.Controls;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
@@ -63,6 +64,24 @@ namespace Speckle.DesktopUI.Streams
       }
     }
 
+    private bool _dropdownState = false;
+
+    public bool DropdownState
+    {
+      get => _dropdownState;
+      set { SetAndNotify(ref _dropdownState, value); }
+    }
+
+    // toggle filter dropdown
+    public void ToggleDropdown()
+    {
+      DropdownState = !DropdownState;
+    }
+    public void OpenDropdown()
+    {
+      DropdownState = true;
+    }
+
     private bool _updateButtonLoading;
 
     public bool UpdateButtonLoading
@@ -71,12 +90,48 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _updateButtonLoading, value);
     }
 
+    public void HandleSelectionChanged(ListBox sender, SelectionChangedEventArgs e)
+    {
+      if (e.AddedItems.Count == 1)
+      {
+        var toAdd = (string)e.AddedItems[0];
+        if (SelectedFilterTab.ListItems.Contains(toAdd)) return;
+        SelectedFilterTab.ListItems.Add(toAdd);
+      }
+
+      // select current selection (ListItems) when the search resuslts change
+      if (SelectedFilterTab.searchSourceChanged)
+      {
+        SelectedFilterTab.searchSourceChanged = false;
+        foreach (var item in SelectedFilterTab.ListItems)
+        {
+          sender.SelectedItems.Add(item);
+        }
+        return;
+      }
+
+      if (e.RemovedItems.Count == 1)
+      {
+        var toRemove = (string)e.RemovedItems[0];
+        if (!SelectedFilterTab.ListItems.Contains(toRemove)) return;
+        SelectedFilterTab.ListItems.Remove(toRemove);
+      }
+
+      e.Handled = true;
+    }
+
+    public void ClearSelected()
+    {
+      SelectedFilterTab.ListItems?.Clear();
+      SelectedFilterTab.ListItem = null;
+    }
+
     public async void UpdateStreamObjects()
     {
       UpdateButtonLoading = true;
       Tracker.TrackPageview("stream", "objects-changed");
       var filter = SelectedFilterTab.Filter;
-      switch ( filter.Name )
+      switch (filter.Name)
       {
         case "View":
         case "Category":
@@ -117,26 +172,28 @@ namespace Speckle.DesktopUI.Streams
 
     public async void AddCollaboratorsToStream()
     {
-      if ( Role == null )
+      if (Role == null)
       {
         Notifications.Enqueue("Please select a role");
         return;
       }
 
-      if ( !Collaborators.Any() ) return;
+      if (!Collaborators.Any()) return;
       Tracker.TrackPageview("stream", "collaborators");
       var success = 0;
-      foreach ( var collaborator in Collaborators )
+      foreach (var collaborator in Collaborators)
       {
         try
         {
           var res = await StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput()
           {
-            role = Role.Role, streamId = StreamState.Stream.id, userId = collaborator.id
+            role = Role.Role,
+            streamId = StreamState.Stream.id,
+            userId = collaborator.id
           });
-          if ( res ) success++;
+          if (res) success++;
         }
-        catch ( Exception e )
+        catch (Exception e)
         {
           Log.CaptureException(e);
           Notifications.Enqueue($"Failed to add collaborators: {e}");
@@ -144,7 +201,7 @@ namespace Speckle.DesktopUI.Streams
         }
       }
 
-      if ( success == 0 )
+      if (success == 0)
       {
         Notifications.Enqueue("Could not add collaborators to this stream");
         return;
@@ -163,15 +220,16 @@ namespace Speckle.DesktopUI.Streams
       {
         var res = await StreamState.Client.StreamRevokePermission(new StreamRevokePermissionInput()
         {
-          streamId = StreamState.Stream.id, userId = collaborator.id
+          streamId = StreamState.Stream.id,
+          userId = collaborator.id
         });
-        if ( !res )
+        if (!res)
         {
           Notifications.Enqueue($"Could not revoke {collaborator.name}'s permissions");
           return;
         }
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         Log.CaptureException(e);
         Notifications.Enqueue($"Could not revoke {collaborator.name}'s permissions: {e}");

@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Controls;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.DesktopUI.Utils;
@@ -11,15 +12,29 @@ namespace Speckle.DesktopUI.Streams
   public class ShareStreamDialogViewModel : Conductor<IScreen>
   {
     private readonly IEventAggregator _events;
+    private readonly StreamsRepository _streamsRepo;
     private readonly ConnectorBindings _bindings;
 
     public ShareStreamDialogViewModel(
       IEventAggregator events,
+      StreamsRepository streamsRepo,
       ConnectorBindings bindings)
     {
       DisplayName = "Share Stream";
       _events = events;
+      _streamsRepo = streamsRepo;
       _bindings = bindings;
+
+      Roles = _streamsRepo.GetRoles();
+      SelectedRole = Roles[0];
+    }
+
+    private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
+
+    public ISnackbarMessageQueue Notifications
+    {
+      get => _notifications;
+      set => SetAndNotify(ref _notifications, value);
     }
 
     private StreamState _streamState;
@@ -58,12 +73,36 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _selectedUser, value);
     }
 
-    private string _shareMessage;
+    private StreamRole _selectedRole;
 
-    public string ShareMessage
+    public StreamRole SelectedRole
     {
-      get => _shareMessage;
-      set => SetAndNotify(ref _shareMessage, value);
+      get => _selectedRole;
+      set => SetAndNotify(ref _selectedRole, value);
+    }
+
+    public string ShareLink => $"{StreamState.ServerUrl}/streams/{StreamState.Stream.id}";
+
+    private bool _shareLinkVisible;
+
+    public bool ShareLinkVisible
+    {
+      get => _shareLinkVisible;
+      set => SetAndNotify(ref _shareLinkVisible, value);
+    }
+
+    // select full share link in link sharing box on click 
+    public void SelectAllText(TextBox sender, EventArgs args)
+    {
+      sender.SelectAll();
+    }
+
+    private bool _dropdownState = false;
+
+    public bool DropdownState
+    {
+      get => _dropdownState;
+      set { SetAndNotify(ref _dropdownState, value); }
     }
 
     public async void SearchForUsers()
@@ -74,6 +113,7 @@ namespace Speckle.DesktopUI.Streams
       try
       {
         var users = await StreamState.Client.UserSearch(UserQuery);
+        DropdownState = true; // open search dropdown when there are results
         UserSearchResults = new BindableCollection<User>(users);
       }
       catch (Exception e)
@@ -83,7 +123,78 @@ namespace Speckle.DesktopUI.Streams
       }
     }
 
-    // TODO extract dialog logic into separate manager to better handle open / close
+    public async void AddCollaborator()
+    {
+      try
+      {
+        var res = await StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput()
+        {
+          streamId = StreamState.Stream.id,
+          role = SelectedRole.Role,
+          userId = SelectedUser.id
+        });
+      }
+      catch (Exception e)
+      {
+        Notifications.Enqueue($"Sorry - could not add {SelectedUser.name} to this stream. Error: {e.Message}");
+        return;
+      }
+
+      _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
+      Notifications.Enqueue(
+        $"Added {SelectedUser.name} as a {SelectedRole.Name.ToLower()} to this stream");
+      ClearSelection();
+    }
+
+    // toggle search results dropdown
+    public void ToggleDropdown()
+    {
+      DropdownState = !DropdownState;
+    }
+
+    // close the dropdown when a user is selected
+    public void UserSelected(ListBox sender, SelectionChangedEventArgs e)
+    {
+      if (e.AddedItems.Count == 1)
+      {
+        DropdownState = false;
+      }
+    }
+
+    public void ClearSelection()
+    {
+      SelectedUser = null;
+      UserQuery = "";
+    }
+
+    // turn on or off link sharing of the stream 
+    // doesn't work right now - server bug doesn't allow flipping `isPublic`
+    public async void ToggleShareLink()
+    {
+      ShareLinkVisible = !ShareLinkVisible;
+
+      if (ShareLinkVisible != StreamState.Stream.isPublic)
+      {
+        try
+        {
+          await StreamState.Client.StreamUpdate(new StreamUpdateInput()
+          {
+            id = StreamState.Stream.id,
+            name = StreamState.Stream.name,
+            description = StreamState.Stream.description,
+            isPublic = ShareLinkVisible
+          });
+          _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
+        }
+        catch (Exception e)
+        {
+          Notifications.Enqueue($"Could not set link sharing to {ShareLinkVisible}. Error: {e.Message}");
+        }
+      }
+    }
+
+    public List<StreamRole> Roles { get; set; }
+
     public void CloseDialog()
     {
       DialogHost.CloseDialogCommand.Execute(null, null);

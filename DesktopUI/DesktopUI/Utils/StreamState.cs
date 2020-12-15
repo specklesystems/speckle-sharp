@@ -767,11 +767,20 @@ namespace Speckle.DesktopUI.Utils
       NotifyOfPropertyChange(nameof(Stream));
     }
 
-    public async void RefreshStream()
+    public async Task<bool> RefreshStream()
     {
-      var updatedStream = await Client.StreamGet(Stream.id);
-      Stream = updatedStream;
-      Branches = updatedStream.branches.items;
+      try
+      {
+        var updatedStream = await Client.StreamGet(Stream.id);
+        Stream = updatedStream;
+        Branches = updatedStream.branches.items;
+      }
+      catch (Exception)
+      {
+        return false;
+      }
+
+      return true;
     }
 
     #endregion
