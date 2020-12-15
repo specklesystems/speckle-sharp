@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Objects.Geometry
 {
-  public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox
+  public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible
   {
     public List<double> value { get; set; } = new List<double>();
     public bool closed { get; set; }
@@ -43,40 +43,96 @@ namespace Objects.Geometry
       }
     }
 
-
-    public static explicit operator Polycurve(Polyline polyline)
+    object IConvertible.ToType(Type conversionType, IFormatProvider provider)
     {
-      Polycurve polycurve = new Polycurve
-      {
+      if (conversionType == typeof(Polycurve))
+        return (Polycurve)this;
+      throw new InvalidCastException();
+    }
 
-        units = polyline.units,
-        area = polyline.area,
-        domain = polyline.domain,
-        closed = polyline.closed,
-        bbox = polyline.bbox,
-        length = polyline.length
-      };
+    public TypeCode GetTypeCode()
+    {
+      throw new NotImplementedException();
+    }
 
+    public bool ToBoolean(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
 
-      for (var i = 0; i < polyline.points.Count - 1; i++)
-      {
-        //close poly
-        if (i == polyline.points.Count - 1 && polyline.closed)
-        {
-          var line = new Line(polyline.points[i], polyline.points[0], polyline.units);
-          polycurve.segments.Add(line);
-        }
-        else
-        {
-          var line = new Line(polyline.points[i], polyline.points[i + 1], polyline.units);
-          polycurve.segments.Add(line);
-        }
+    public byte ToByte(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
 
+    public char ToChar(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
 
-      }
+    public DateTime ToDateTime(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
 
+    public decimal ToDecimal(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
 
-      return polycurve;
+    public double ToDouble(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
+
+    public short ToInt16(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
+
+    public int ToInt32(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
+
+    public long ToInt64(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
+
+    public sbyte ToSByte(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
+
+    public float ToSingle(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
+
+    public string ToString(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
+
+    public object ToType(Type conversionType, IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
+
+    public ushort ToUInt16(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
+
+    public uint ToUInt32(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
+    }
+
+    public ulong ToUInt64(IFormatProvider provider)
+    {
+      throw new NotImplementedException();
     }
   }
 }
