@@ -12,6 +12,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    //NOTE: BuildingPad cannot be created from the API AFAIK
     private BuildingPad BuildingPadToSpeckle(DB.BuildingPad revitPad)
     {
       var baseLevelParam = revitPad.get_Parameter(BuiltInParameter.LEVEL_PARAM);

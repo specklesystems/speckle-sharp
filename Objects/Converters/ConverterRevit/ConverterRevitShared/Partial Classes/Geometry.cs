@@ -293,6 +293,16 @@ namespace Objects.Converter.Revit
       }
     }
 
+    //thanks Revit
+    public CurveLoop CurveArrayToCurveLoop(CurveArray array)
+    {
+      var loop = new CurveLoop();
+      foreach (var item in array.Cast<DB.Curve>())
+        loop.Append(item);
+
+      return loop;
+    }
+
     public ICurve CurveToSpeckle(DB.Curve curve)
     {
       switch (curve)
@@ -314,6 +324,17 @@ namespace Objects.Converter.Revit
         default:
           throw new Exception("Cannot convert Curve of type " + curve.GetType());
       }
+    }
+
+    public Polycurve CurveListToSpeckle(IList<DB.Curve> loop)
+    {
+      var polycurve = new Polycurve();
+      polycurve.units = ModelUnits;
+      polycurve.closed = loop.First().GetEndPoint(0).DistanceTo(loop.Last().GetEndPoint(1)) < 0.0164042; //5mm
+      polycurve.length = loop.Sum(x => x.Length);
+
+      polycurve.segments.AddRange(loop.Select(x => CurveToSpeckle(x)));
+      return polycurve;
     }
 
     public Polycurve CurveLoopToSpeckle(CurveLoop loop)

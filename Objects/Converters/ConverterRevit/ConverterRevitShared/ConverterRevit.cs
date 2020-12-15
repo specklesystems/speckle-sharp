@@ -122,6 +122,12 @@ namespace Objects.Converter.Revit
         case DB.Architecture.StairsLanding _:
           return null;
 
+        case DB.Architecture.Railing o:
+          return RailingToSpeckle(o);
+
+        case DB.Architecture.TopRail o:
+          return null;
+
         default:
           ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Speckle"));
           return null;
@@ -179,6 +185,9 @@ namespace Objects.Converter.Revit
 
         case BE.Duct o:
           return DuctToNative(o);
+
+        case BE.Revit.RevitRailing o:
+          return RailingToNative(o);
 
         default:
           return null;
@@ -245,6 +254,12 @@ namespace Objects.Converter.Revit
         case DB.Architecture.StairsLanding _:
           return true;
 
+        case DB.Architecture.Railing _:
+          return true;
+
+        case DB.Architecture.TopRail _:
+          return true;
+
         default:
           return false;
       }
@@ -300,6 +315,9 @@ namespace Objects.Converter.Revit
           return true;
 
         case BE.Duct _:
+          return true;
+
+        case BE.Revit.RevitRailing _:
           return true;
 
         default:

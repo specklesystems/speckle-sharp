@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Kits;
+﻿using Objects.Geometry;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 
@@ -35,8 +36,8 @@ namespace Objects.BuiltElements.Revit
   {
     public string family { get; set; }
     public string type { get; set; }
-    public ICurve path { get; set; }
-    public ICurve outline { get; set; }
+    public Polycurve path { get; set; }
+    public Polycurve outline { get; set; }
     public double runWidth { get; set; }
     public int risersNumber { get; set; }
     public int treadsNumber { get; set; }
@@ -64,7 +65,7 @@ namespace Objects.BuiltElements.Revit
     public bool isAutomaticLanding { get; set; }
     public double baseElevation { get; set; }
     public double thickness { get; set; }
-    public ICurve outline { get; set; }
+    public Polycurve outline { get; set; }
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
 

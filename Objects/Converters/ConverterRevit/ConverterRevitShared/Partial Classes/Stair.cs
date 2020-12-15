@@ -12,6 +12,8 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    //NOTE: we are currently only converting Stairs ToSpeckle
+    //a ToNative method might come later on!
     private RevitStair StairToSpeckle(Stairs revitStair)
     {
       var baseLevelParam = revitStair.get_Parameter(BuiltInParameter.STAIRS_BASE_LEVEL_PARAM);
