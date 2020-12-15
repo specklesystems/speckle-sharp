@@ -206,6 +206,9 @@ namespace Objects.Geometry
   {
     [JsonIgnore] public Brep Brep { get; set; }
     public int EdgeIndex { get; set; }
+    
+    public int StartIndex { get; set; }
+    public int EndIndex { get; set; }
     public int FaceIndex { get; set; }
     public int LoopIndex { get; set; }
     public int CurveIndex { get; set; }
@@ -220,7 +223,7 @@ namespace Objects.Geometry
     }
 
     public BrepTrim(Brep brep, int edgeIndex, int faceIndex, int loopIndex, int curveIndex, int isoStatus,
-      BrepTrimType trimType, bool reversed)
+      BrepTrimType trimType, bool reversed, int startIndex, int endIndex)
     {
       Brep = brep;
       EdgeIndex = edgeIndex;
@@ -231,7 +234,7 @@ namespace Objects.Geometry
       TrimType = trimType;
       IsReversed = reversed;
     }
-
+  
     [JsonIgnore] public BrepFace Face => Brep.Faces[FaceIndex];
 
     [JsonIgnore] public BrepLoop Loop => Brep.Loops[LoopIndex];

@@ -606,7 +606,9 @@ namespace Objects.Converter.RhinoGh
     /// <returns></returns>
     public Brep BrepToSpeckle(RH.Brep brep)
     {
-      brep.Repair(0.0); //should maybe use ModelAbsoluteTolerance ?
+      //brep.Repair(0.0); //should maybe use ModelAbsoluteTolerance ?
+      
+      brep.MakeValidForV2();
       var joinedMesh = new RH.Mesh();
       var mySettings = new MeshingParameters(0);
 
@@ -698,9 +700,12 @@ namespace Objects.Converter.RhinoGh
             trim.TrimCurveIndex,
             (int) trim.IsoStatus,
             (BrepTrimType) trim.TrimType,
-            trim.IsReversed()
+            trim.IsReversed(),
+            trim.StartVertex.VertexIndex,
+            trim.EndVertex.VertexIndex
           );
           t.Domain = IntervalToSpeckle(trim.Domain);
+          
           return t;
         })
         .ToList();
@@ -716,7 +721,7 @@ namespace Objects.Converter.RhinoGh
     /// <exception cref="Exception">Throws exception if the provenance is not Rhino</exception>
     public RH.Brep BrepToNative(Brep brep)
     {
-      var tol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+      var tol = 0.0;
       try
       {
         // TODO: Provenance exception is meaningless now, must change for provenance build checks.
@@ -761,8 +766,8 @@ namespace Objects.Converter.RhinoGh
           });
         });
 
-        newBrep.Repair(tol);
-
+        //newBrep.Repair(tol);
+        
         return newBrep;
       }
       catch
