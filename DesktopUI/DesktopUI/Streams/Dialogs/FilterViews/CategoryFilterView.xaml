@@ -68,13 +68,27 @@
                  ItemsSource="{Binding SearchResults}"
                  ScrollViewer.CanContentScroll="True"
                  SelectedItem="{Binding ListItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 SelectionMode="Single"
+                 SelectionChanged="{s:Action HandleSelectionChanged}"
+                 SelectionMode="Multiple"
                  Style="{StaticResource MaterialDesignFilterChipOutlineListBox}"
                  Visibility="{Binding RelativeSource={RelativeSource AncestorLevel=2, AncestorType={x:Type UserControl}}, Path=DataContext.DropdownState, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
       </ScrollViewer>
 
 
-      <TextBlock Margin="0,0,0,12"
+      <ItemsControl ItemsSource="{Binding ListItems}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding StringFormat=' {0}, '}" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+      </ItemsControl>
+
+      <!--<TextBlock Margin="0,0,0,12"
                  FontSize="14"
                  FontWeight="Medium"
                  Text="Currently selected:" />
@@ -87,7 +101,7 @@
             <WrapPanel />
           </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
-      </ItemsControl>
+      </ItemsControl>-->
 
 
       <!--<TextBlock Text="{Binding ListItems, Converter={StaticResource ListToStringConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />-->

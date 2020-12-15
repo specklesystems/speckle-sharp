@@ -104,9 +104,9 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _listItem, value);
-        if (ListItem == null || ListItems.Contains(ListItem)) return;
-        ListItems.Add(ListItem);
-        SearchResults.Remove(ListItem);
+        //if (ListItem == null || ListItems.Contains(ListItem)) return;
+        //ListItems.Add(ListItem);
+        //SearchResults.Remove(ListItem);
       }
     }
     public BindableCollection<string> ListItems { get; set; } = new BindableCollection<string>();
