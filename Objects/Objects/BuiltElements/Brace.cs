@@ -29,8 +29,7 @@ namespace Objects.BuiltElements.Revit
   {
     public string family { get; set; }
     public string type { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
+    public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
     public Level level { get; set; }
 
@@ -40,7 +39,7 @@ namespace Objects.BuiltElements.Revit
     }
 
     [SchemaInfo("RevitBrace", "Creates a Revit brace by curve and base level.")]
-    public RevitBrace(string family, string type, ICurve baseLine, Level level, Dictionary<string, object> parameters = null)
+    public RevitBrace(string family, string type, ICurve baseLine, Level level, List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;

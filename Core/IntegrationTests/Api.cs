@@ -39,7 +39,7 @@ namespace TestsIntegration
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo {url = "http://127.0.0.1:3000", name = "TestServer"};
+      testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
 
       firstUserAccount = Fixtures.SeedUser(testServer);
       secondUserAccount = Fixtures.SeedUser(testServer);
@@ -71,7 +71,8 @@ namespace TestsIntegration
     {
       var res = await myClient.StreamCreate(new StreamCreateInput
       {
-        description = "Hello World", name = "Super Stream 01"
+        description = "Hello World",
+        name = "Super Stream 01"
       });
 
       myServerTransport.StreamId = res;
@@ -110,7 +111,9 @@ namespace TestsIntegration
     {
       var res = await myClient.StreamUpdate(new StreamUpdateInput
       {
-        id = streamId, description = "Hello World", name = "Super Stream 01 EDITED"
+        id = streamId,
+        description = "Hello World",
+        name = "Super Stream 01 EDITED"
       });
 
       Assert.IsTrue(res);
@@ -122,7 +125,9 @@ namespace TestsIntegration
       var res = await myClient.StreamGrantPermission(
         new StreamGrantPermissionInput
         {
-          streamId = streamId, userId = secondUserAccount.userInfo.id, role = "stream:owner"
+          streamId = streamId,
+          userId = secondUserAccount.userInfo.id,
+          role = "stream:owner"
         }
       );
 
@@ -133,7 +138,7 @@ namespace TestsIntegration
     public async Task StreamRevokePermission()
     {
       var res = await myClient.StreamRevokePermission(
-        new StreamRevokePermissionInput {streamId = streamId, userId = secondUserAccount.userInfo.id}
+        new StreamRevokePermissionInput { streamId = streamId, userId = secondUserAccount.userInfo.id }
       );
 
       Assert.IsTrue(res);
@@ -146,11 +151,22 @@ namespace TestsIntegration
     {
       var res = await myClient.BranchCreate(new BranchCreateInput
       {
-        streamId = streamId, description = "this is a sample branch", name = "sample-branch"
+        streamId = streamId,
+        description = "this is a sample branch",
+        name = "sample-branch"
       });
       Assert.NotNull(res);
       branchId = res;
       branchName = "sample-branch";
+    }
+
+    [Test, Order(42)]
+    public async Task BranchGet()
+    {
+      var res = await myClient.BranchGet(streamId, branchName);
+
+      Assert.NotNull(res);
+      Assert.AreEqual("this is a sample branch", res.description);
     }
 
     #region commit
@@ -165,11 +181,14 @@ namespace TestsIntegration
 
       myObject["@Points"] = ptsList;
 
-      objectId = await Operations.Send(myObject, new List<ITransport>() {myServerTransport}, false);
+      objectId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport }, false);
 
       var res = await myClient.CommitCreate(new CommitCreateInput
       {
-        streamId = streamId, branchName = branchName, objectId = objectId, message = "MATT0E IS THE B3ST"
+        streamId = streamId,
+        branchName = branchName,
+        objectId = objectId,
+        message = "MATT0E IS THE B3ST"
       });
 
       Assert.NotNull(res);
@@ -203,7 +222,9 @@ namespace TestsIntegration
     {
       var res = await myClient.CommitUpdate(new CommitUpdateInput
       {
-        streamId = streamId, id = commitId, message = "DIM IS DA BEST"
+        streamId = streamId,
+        id = commitId,
+        message = "DIM IS DA BEST"
       });
 
       Assert.IsTrue(res);
@@ -212,7 +233,7 @@ namespace TestsIntegration
     [Test, Order(47)]
     public async Task CommitDelete()
     {
-      var res = await myClient.CommitDelete(new CommitDeleteInput {id = commitId, streamId = streamId}
+      var res = await myClient.CommitDelete(new CommitDeleteInput { id = commitId, streamId = streamId }
       );
       Assert.IsTrue(res);
     }
@@ -224,7 +245,9 @@ namespace TestsIntegration
     {
       var res = await myClient.BranchUpdate(new BranchUpdateInput
       {
-        streamId = streamId, id = branchId, name = "sample-branch EDITED"
+        streamId = streamId,
+        id = branchId,
+        name = "sample-branch EDITED"
       });
 
       Assert.IsTrue(res);
@@ -233,7 +256,7 @@ namespace TestsIntegration
     [Test, Order(50)]
     public async Task BranchDelete()
     {
-      var res = await myClient.BranchDelete(new BranchDeleteInput {id = branchId, streamId = streamId}
+      var res = await myClient.BranchDelete(new BranchDeleteInput { id = branchId, streamId = streamId }
       );
       Assert.IsTrue(res);
     }
@@ -252,7 +275,7 @@ namespace TestsIntegration
 
       myObject["@Points"] = ptsList;
 
-      objectId = await Operations.Send(myObject, new List<ITransport>() {myServerTransport});
+      objectId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport });
     }
 
     [Test, Order(61)]
@@ -260,7 +283,7 @@ namespace TestsIntegration
     {
       var myObject = await Operations.Receive(objectId, myServerTransport);
       Assert.NotNull(myObject);
-      Assert.AreEqual(100, ((List<object>) myObject["@Points"]).Count);
+      Assert.AreEqual(100, ((List<object>)myObject["@Points"]).Count);
     }
 
     #endregion

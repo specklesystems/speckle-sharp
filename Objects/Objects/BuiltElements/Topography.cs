@@ -26,14 +26,14 @@ namespace Objects.BuiltElements.Revit
   {
     public string elementId { get; set; }
 
-    public Dictionary<string, object> parameters { get; set; }
+    public List<Parameter> parameters { get; set; }
     public RevitTopography()
     {
 
     }
 
     [SchemaInfo("RevitTopography", "Creates a Revit topography")]
-    public RevitTopography(Mesh baseGeometry, Dictionary<string, object> parameters = null)
+    public RevitTopography(Mesh baseGeometry, List<Parameter> parameters = null)
     {
       this.baseGeometry = baseGeometry;
       this.parameters = parameters;

@@ -78,57 +78,59 @@
       <DataTemplate x:Key="CollboratorChipTemplate">
         <Grid>
           <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="30"></ColumnDefinition>
-            <ColumnDefinition Width="200"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="30" />
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-          <Image Grid.Column="0"
-                 Source="{Binding avatar, TargetNullValue={StaticResource DefaultProfImage}}" />
-          <TextBlock Margin="10,10"
-                     Grid.Column="1"
-                     FontWeight="Bold"
-                     Text="{Binding name}"></TextBlock>
-          <TextBlock Margin="10,10"
-                     Grid.Column="2"
-                     Foreground="Gray"
-                     HorizontalAlignment="Stretch"
-                     TextAlignment="Right"
-                     Text="{Binding role}"></TextBlock>
+          <Image Grid.Column="0" Source="{Binding avatar, TargetNullValue={StaticResource DefaultProfImage}}" />
+          <TextBlock
+            Grid.Column="1"
+            Margin="10,10"
+            FontWeight="Bold"
+            Text="{Binding name}" />
+          <TextBlock
+            Grid.Column="2"
+            Margin="10,10"
+            HorizontalAlignment="Stretch"
+            Foreground="Gray"
+            Text="{Binding role}"
+            TextAlignment="Right" />
         </Grid>
       </DataTemplate>
 
     </ResourceDictionary>
   </UserControl.Resources>
-  
+
   <md:TransitioningContent OpeningEffect="{md:TransitionEffect FadeIn}">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
       <Grid Margin="65,20,65,20">
         <StackPanel x:Name="StreamViewStackPanel">
-          
-          <!--TODO: Disable based on stream role-->
-          <TextBlock Grid.Column="0"
-                     Margin="0,0,0,8"
-                     FontSize="20"
-                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                     Text="Name" />
-          <TextBox Text="{Binding StreamName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=1500}"
-                   FontSize="25"></TextBox>
 
-          <WrapPanel Margin="0,20,0,0"
-                     MaxWidth="{Binding ActualWidth, ElementName=StreamViewStackPanel}">
-            <md:Chip Height="28"
-                     Margin="0,0,8,8"
-                     md:ButtonAssist.CornerRadius="14"
-                     Command="{s:Action OpenStreamInWeb}"
-                     CommandParameter="{Binding StreamState}"
-                     FontSize="13"
-                     ToolTip="open this stream in the browser">
+          <!--  TODO: Disable based on stream role  -->
+          <TextBlock
+            Grid.Column="0"
+            Margin="0,0,0,8"
+            FontSize="20"
+            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+            Text="Name" />
+          <TextBox FontSize="25" Text="{Binding StreamName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=1500}" />
+
+          <WrapPanel MaxWidth="{Binding ActualWidth, ElementName=StreamViewStackPanel}" Margin="0,20,0,0">
+            <md:Chip
+              Height="28"
+              Margin="0,0,8,8"
+              md:ButtonAssist.CornerRadius="14"
+              Command="{s:Action OpenStreamInWeb}"
+              CommandParameter="{Binding StreamState}"
+              FontSize="13"
+              ToolTip="open this stream in the browser">
               <StackPanel Orientation="Horizontal">
-                <md:PackIcon Width="12"
-                             Height="12"
-                             Margin="0,0,4,0"
-                             VerticalAlignment="Center"
-                             Kind="OpenInNew" />
+                <md:PackIcon
+                  Width="12"
+                  Height="12"
+                  Margin="0,0,4,0"
+                  VerticalAlignment="Center"
+                  Kind="OpenInNew" />
                 <TextBlock Margin="0,0,4,0">Server:</TextBlock>
                 <TextBlock Text="{Binding StreamState.Client.Account.serverInfo.name}" />
                 <TextBlock Margin="4,0,0,0">(</TextBlock>
@@ -137,24 +139,26 @@
               </StackPanel>
             </md:Chip>
           </WrapPanel>
-          
-          <!--TODO: Disable based on stream role-->
-          <TextBlock Grid.Column="0"
-                     Margin="0,24,0,8"
-                     FontSize="20"
-                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                     Text="Description" />
-          <TextBox x:Name="StreamDescriptionInput"
-               Height="100"
-               Margin="0,10"
-               md:HintAssist.Hint="Stream description (markdown is supported)"
-               AcceptsReturn="true"
-               Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
-               Text="{Binding StreamDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=1500}"
-               TextAlignment="Left"
-               TextWrapping="Wrap" />
-          
-          <md:Snackbar MessageQueue="{Binding Notifications}" FontSize="12" />
+
+          <!--  TODO: Disable based on stream role  -->
+          <TextBlock
+            Grid.Column="0"
+            Margin="0,24,0,8"
+            FontSize="20"
+            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+            Text="Description" />
+          <TextBox
+            x:Name="StreamDescriptionInput"
+            Height="100"
+            Margin="0,10"
+            md:HintAssist.Hint="Stream description (markdown is supported)"
+            AcceptsReturn="true"
+            Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+            Text="{Binding StreamDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=1500}"
+            TextAlignment="Left"
+            TextWrapping="Wrap" />
+
+          <md:Snackbar FontSize="12" MessageQueue="{Binding Notifications}" />
 
           <Grid>
             <Grid.ColumnDefinitions>
@@ -162,16 +166,16 @@
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0"
-                       Margin="0,24,0,20"
-                       FontSize="20"
-                       Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                       Text="Collaborators" />
+            <TextBlock
+              Grid.Column="0"
+              Margin="0,24,0,20"
+              FontSize="20"
+              Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+              Text="Collaborators" />
           </Grid>
           <!--<Separator Margin="0,10" Background="Gray"></Separator>-->
-          
-          <ItemsControl ItemTemplate="{StaticResource CollboratorChipTemplate}"
-                        ItemsSource="{Binding StreamState.Stream.collaborators}">
+
+          <ItemsControl ItemTemplate="{StaticResource CollboratorChipTemplate}" ItemsSource="{Binding StreamState.Stream.collaborators}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <WrapPanel />
@@ -186,31 +190,33 @@
                     FontSize="18"
                     Text="{Binding StreamQuery, UpdateSourceTrigger=PropertyChanged,Mode=OneWayToSource, Delay=300}">
           </TextBox>-->
-          
+
           <!--<Separator Margin="0,20,0,0"></Separator>-->
-          <TextBlock Grid.Column="0"
-                     Margin="0,24,0,8"
-                     FontSize="20"
-                     Foreground="#ff5555"
-                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                     Text="Danger Zone" />
-          <Separator Margin="0,0,0,0" Background="#ff5555"></Separator>
+          <TextBlock
+            Grid.Column="0"
+            Margin="0,24,0,8"
+            FontSize="20"
+            Foreground="#ff5555"
+            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+            Text="Danger Zone" />
+          <Separator Margin="0,0,0,0" Background="#ff5555" />
           <Grid Margin="0,16,0,12">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="0"
-                    Margin="4,0"
-                    HorizontalAlignment="Left"
-                    md:RippleAssist.Feedback="#ff5555"
-                    Background="#ff5555"
-                    Foreground="White"
-                    BorderThickness="0"
-                    Style="{StaticResource MaterialDesignFlatButton}"
-                    Command="{s:Action RemoveStream}"
-                    Content="Remove"
-                    ToolTip="Remove this stream from the file. This will not delete it from the server." />
+            <Button
+              Grid.Column="0"
+              Margin="4,0"
+              HorizontalAlignment="Left"
+              md:RippleAssist.Feedback="#ff5555"
+              Background="#ff5555"
+              BorderThickness="0"
+              Command="{s:Action RemoveStream}"
+              Content="Remove"
+              Foreground="White"
+              Style="{StaticResource MaterialDesignFlatButton}"
+              ToolTip="Remove this stream from the file. This will not delete it from the server." />
           </Grid>
         </StackPanel>
       </Grid>

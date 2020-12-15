@@ -30,9 +30,8 @@ namespace Objects.BuiltElements.Revit
 
     //public string type { get; set; }
 
-    public Dictionary<string, object> parameters { get; set; }
+    public List<Parameter> parameters { get; set; }
 
-    //public Dictionary<string, object> typeParameters { get; set; }
     public string elementId { get; set; }
 
     public RevitOpening() { }
@@ -60,7 +59,7 @@ namespace Objects.BuiltElements.Revit
     public RevitShaft() { }
 
     [SchemaInfo("RevitShaft", "Creates a Revit shaft")]
-    public RevitShaft(ICurve outline, Level bottomLevel, Level topLevel, Dictionary<string, object> parameters = null)
+    public RevitShaft(ICurve outline, Level bottomLevel, Level topLevel, List<Parameter> parameters = null)
     {
       this.outline = outline;
       this.bottomLevel = bottomLevel;

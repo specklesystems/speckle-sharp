@@ -75,7 +75,7 @@ namespace Objects.Converter.Revit
       }
 
       //reference level, only for beams
-      TrySetParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
+      TrySetElementParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
 
       if (speckleRevitBeam != null)
       {
@@ -107,7 +107,7 @@ namespace Objects.Converter.Revit
       speckleBeam.level = ConvertAndCacheLevel(baseLevelParam);
       speckleBeam["@displayMesh"] = GetElementMesh(revitBeam);
 
-      AddCommonRevitProps(speckleBeam, revitBeam);
+      GetRevitParameters(speckleBeam, revitBeam);
 
       return speckleBeam;
     }

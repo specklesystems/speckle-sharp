@@ -91,15 +91,15 @@ namespace Objects.Converter.Revit
       speckleDuct.baseLine = baseLine;
       if (diameterParam != null)
       {
-        speckleDuct.diameter = (double)ParameterToSpeckle(diameterParam);
+        speckleDuct.diameter = (double)ParameterToSpeckle(diameterParam).value;
       }
       else
       {
-        speckleDuct.height = (double)ParameterToSpeckle(heightParam);
-        speckleDuct.width = (double)ParameterToSpeckle(widthParam);
+        speckleDuct.height = (double)ParameterToSpeckle(heightParam).value;
+        speckleDuct.width = (double)ParameterToSpeckle(widthParam).value;
       }
-      speckleDuct.length = (double)ParameterToSpeckle(lengthParam);
-      speckleDuct.velocity = (double)ParameterToSpeckle(velocityParam);
+      speckleDuct.length = (double)ParameterToSpeckle(lengthParam).value;
+      speckleDuct.velocity = (double)ParameterToSpeckle(velocityParam).value;
       speckleDuct.level = ConvertAndCacheLevel(levelParam);
 
       speckleDuct.systemName = revitDuct.MEPSystem.Name; // NOTE: this seems to return the instance name? 
@@ -110,7 +110,8 @@ namespace Objects.Converter.Revit
       //speckleDuct.systemName = ((MechanicalSystem)revitDuct.MEPSystem).SystemType.ToString();
 
 
-      AddCommonRevitProps(speckleDuct, revitDuct);
+      GetRevitParameters(speckleDuct, revitDuct,
+        new List<string> { "RBS_CURVE_HEIGHT_PARAM", "RBS_CURVE_WIDTH_PARAM", "RBS_CURVE_DIAMETER_PARAM", "CURVE_ELEM_LENGTH", "RBS_START_LEVEL_PARAM", "RBS_VELOCITY" });
 
       return speckleDuct;
     }

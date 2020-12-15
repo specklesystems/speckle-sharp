@@ -119,7 +119,7 @@ namespace Objects.Converter.Revit
           {
             ((RevitShaft)speckleOpening).topLevel = ConvertAndCacheLevel(topLevelParam);
             ((RevitShaft)speckleOpening).bottomLevel = ConvertAndCacheLevel(baseLevelParam);
-            ((RevitShaft)speckleOpening).height = (double)ParameterToSpeckle(heightParam);
+            ((RevitShaft)speckleOpening).height = (double)ParameterToSpeckle(heightParam).value;
           }
         }
 
@@ -137,7 +137,7 @@ namespace Objects.Converter.Revit
 
       //speckleOpening.type = revitOpening.Name;
 
-      AddCommonRevitProps(speckleOpening, revitOpening);
+      GetRevitParameters(speckleOpening, revitOpening, new List<string> { "WALL_BASE_CONSTRAINT", "WALL_HEIGHT_TYPE", "WALL_USER_HEIGHT_PARAM" });
 
       return speckleOpening;
     }

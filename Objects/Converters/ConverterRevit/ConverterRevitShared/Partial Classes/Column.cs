@@ -22,7 +22,7 @@ namespace Objects.Converter.Revit
 
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn); ;
       var baseLine = CurveToNative(speckleColumn.baseLine).get_Item(0);
-      
+
       // If the start point elevation is higher than the end point elevation, reverse the line.
       if (baseLine.GetEndPoint(0).Z > baseLine.GetEndPoint(1).Z)
       {
@@ -68,7 +68,7 @@ namespace Objects.Converter.Revit
           else
           {
             revitColumn = (DB.FamilyInstance)docObj;
-            switch(revitColumn.Location)
+            switch (revitColumn.Location)
             {
               case LocationCurve crv:
                 crv.Curve = baseLine;
@@ -107,14 +107,14 @@ namespace Objects.Converter.Revit
         (revitColumn.Location as LocationPoint).Rotate(axis, speckleRevitColumn.rotation - (revitColumn.Location as LocationPoint).Rotation);
       }
 
-      if(revitColumn == null)
+      if (revitColumn == null)
       {
-        ConversionErrors.Add(new Error{ message = $"Failed to create column for {speckleColumn.applicationId}." });
+        ConversionErrors.Add(new Error { message = $"Failed to create column for {speckleColumn.applicationId}." });
         return null;
       }
 
-      TrySetParam(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
-      TrySetParam(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM, topLevel);
+      TrySetElementParam(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
+      TrySetElementParam(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM, topLevel);
 
       if (speckleRevitColumn != null)
       {
@@ -129,8 +129,7 @@ namespace Objects.Converter.Revit
         }
 
         SetOffsets(revitColumn, speckleRevitColumn);
-        var exclusions = new List<string> { "Base Offset", "Top Offset" };
-        SetInstanceParameters(revitColumn, speckleRevitColumn, exclusions);
+        SetInstanceParameters(revitColumn, speckleRevitColumn);
       }
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleColumn.applicationId, ApplicationGeneratedId = revitColumn.UniqueId, NativeObject = revitColumn } };
@@ -190,8 +189,8 @@ namespace Objects.Converter.Revit
       speckleColumn.type = Doc.GetElement(revitColumn.GetTypeId()).Name;
       speckleColumn.level = ConvertAndCacheLevel(baseLevelParam);
       speckleColumn.topLevel = ConvertAndCacheLevel(topLevelParam);
-      speckleColumn.baseOffset = (double)ParameterToSpeckle(baseOffsetParam);
-      speckleColumn.topOffset = (double)ParameterToSpeckle(topOffsetParam);
+      speckleColumn.baseOffset = (double)ParameterToSpeckle(baseOffsetParam).value;
+      speckleColumn.topOffset = (double)ParameterToSpeckle(topOffsetParam).value;
       speckleColumn.facingFlipped = revitColumn.FacingFlipped;
       speckleColumn.handFlipped = revitColumn.HandFlipped;
       speckleColumn.isSlanted = revitColumn.IsSlantedColumn;
@@ -204,7 +203,7 @@ namespace Objects.Converter.Revit
       //make line from point and height
       if (baseLine == null && baseGeometry is Point basePoint)
       {
-        var elevation = (double)((RevitLevel)ParameterToSpeckle(topLevelParam)).elevation;
+        var elevation = (double)((RevitLevel)ParameterToSpeckle(topLevelParam).value).elevation;
         baseLine = new Line(basePoint, new Point(basePoint.x, basePoint.y, elevation + speckleColumn.topOffset, ModelUnits), ModelUnits);
       }
 
@@ -215,7 +214,8 @@ namespace Objects.Converter.Revit
 
       speckleColumn.baseLine = baseLine; //all speckle columns should be line based
 
-      AddCommonRevitProps(speckleColumn, revitColumn);
+      GetRevitParameters(speckleColumn, revitColumn,
+        new List<string> { "FAMILY_BASE_LEVEL_PARAM", "FAMILY_TOP_LEVEL_PARAM", "FAMILY_BASE_LEVEL_OFFSET_PARAM", "FAMILY_TOP_LEVEL_OFFSET_PARAM" });
 
       if (revitColumn.Location is LocationPoint)
       {
