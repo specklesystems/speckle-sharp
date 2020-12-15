@@ -733,7 +733,7 @@
                       Background="Transparent"
                       FontSize="12">
                       <Expander.Header>
-                        <TextBlock FontSize="12">Errors / Warnings</TextBlock>
+                        <TextBlock FontSize="12">Warnings</TextBlock>
                       </Expander.Header>
                       <TextBox
                         MaxHeight="200"

@@ -155,6 +155,14 @@ namespace Speckle.ConnectorRevit.UI
             continue;
           }
 
+          if (!converter.CanConvertToSpeckle(revitElement))
+          {
+            state.Errors.Add(new Exception($"Skipping {revitElement.GetType()}, not supported"));
+            continue;
+          }
+
+
+
           var conversionResult = converter.ConvertToSpeckle(revitElement);
 
           conversionProgressDict["Conversion"]++;

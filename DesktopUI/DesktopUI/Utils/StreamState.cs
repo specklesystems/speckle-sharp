@@ -104,7 +104,7 @@ namespace Speckle.DesktopUI.Utils
       {
         SetAndNotify(ref _Branch, value);
 
-        if (Commit!=null && !string.IsNullOrEmpty(Commit.id))
+        if (Commit != null && !string.IsNullOrEmpty(Commit.id))
         {
           //do nothing, it means the current commit is either "latest" or a previous commitId, 
           //in which case we don't want to switch it automatically
@@ -401,7 +401,12 @@ namespace Speckle.DesktopUI.Utils
         var bc = new BindableCollection<string>();
         foreach (var e in Errors)
         {
-          bc.Add($"{e.Message}\n{e.StackTrace}");
+          var msg = e.Message.Replace("Exception of type 'Speckle.Core.Models.Error' was thrown.\n", "");
+          if (e.StackTrace != null)
+            msg += $"\n{e.StackTrace}";
+
+          if (!bc.Contains(msg))
+            bc.Add(msg);
         }
         return string.Join("\n\n", bc);
       }
