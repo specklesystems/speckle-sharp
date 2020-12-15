@@ -316,6 +316,17 @@ namespace Objects.Converter.Revit
       }
     }
 
+    public Polycurve CurveLoopToSpeckle(CurveLoop loop)
+    {
+      var polycurve = new Polycurve();
+      polycurve.units = ModelUnits;
+      polycurve.closed = !loop.IsOpen();
+      polycurve.length = ScaleToSpeckle(loop.GetExactLength());
+
+      polycurve.segments.AddRange(loop.Select(x => CurveToSpeckle(x)));
+      return polycurve;
+    }
+
     private ICurve HermiteSplineToSpeckle(HermiteSpline spline)
     {
       var nurbs = DB.NurbSpline.Create(spline);

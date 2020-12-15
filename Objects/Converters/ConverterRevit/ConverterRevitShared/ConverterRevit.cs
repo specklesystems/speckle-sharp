@@ -1,12 +1,11 @@
 ﻿using Autodesk.Revit.DB;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using System.Collections.Generic;
+using System.Linq;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -106,12 +105,22 @@ namespace Objects.Converter.Revit
         case DB.Mechanical.Duct o:
           return DuctToSpeckle(o);
 
-        //these should be handled by curtain walls 
+        //these should be handled by curtain walls
         case DB.CurtainGridLine _:
           return null;
 
         case DB.Architecture.BuildingPad o:
           return BuildingPadToSpeckle(o);
+
+        case DB.Architecture.Stairs o:
+          return StairToSpeckle(o);
+
+        //these are handled by Stairs
+        case DB.Architecture.StairsRun _:
+          return null;
+
+        case DB.Architecture.StairsLanding _:
+          return null;
 
         default:
           ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Speckle"));
@@ -220,11 +229,22 @@ namespace Objects.Converter.Revit
         case DB.Mechanical.Duct _:
           return true;
 
-        //these should be handled by curtain walls 
+        //these should be handled by curtain walls
         case DB.CurtainGridLine _:
           return true;
+
         case DB.Architecture.BuildingPad _:
           return true;
+
+        case DB.Architecture.Stairs _:
+          return true;
+
+        case DB.Architecture.StairsRun _:
+          return true;
+
+        case DB.Architecture.StairsLanding _:
+          return true;
+
         default:
           return false;
       }
