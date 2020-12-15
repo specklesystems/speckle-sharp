@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Windows.Controls;
 using Speckle.Core.Logging;
 using Stylet;
 
@@ -51,7 +53,8 @@ namespace Speckle.DesktopUI.Utils
         if (Selection.Count != 0)
         {
           return string.Join(", ", Selection);
-        } else
+        }
+        else
         {
           return "Not set.";
         }
@@ -101,13 +104,12 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _listItem, value);
-        if (value == null) return;
-        if (ListItems.Contains(ListItem)) return;
+        if (ListItem == null || ListItems.Contains(ListItem)) return;
         ListItems.Add(ListItem);
+        SearchResults.Remove(ListItem);
       }
     }
-
-    public BindableCollection<string> ListItems { get; } = new BindableCollection<string>();
+    public BindableCollection<string> ListItems { get; set; } = new BindableCollection<string>();
 
     public FilterTab(ISelectionFilter filter)
     {
@@ -120,14 +122,34 @@ namespace Speckle.DesktopUI.Utils
           break;
         case ListSelectionFilter f:
           FilterView = Activator.CreateInstance(Type.GetType($"Speckle.DesktopUI.Streams.Dialogs.FilterViews.CategoryFilterView"));
+          _valuesList = SearchResults = new BindableCollection<string>(f.Values);
           break;
       }
     }
+
+    private string _searchQuery;
+    public string SearchQuery
+    {
+      get => _searchQuery;
+      set
+      {
+        SetAndNotify(ref _searchQuery, value);
+        searchSourceChanged = true;
+        SearchResults = new BindableCollection<string>(_valuesList.Where(v => v.ToLower().Contains(SearchQuery.ToLower())).ToList());
+        NotifyOfPropertyChange(nameof(SearchResults));
+      }
+    }
+
+    public BindableCollection<string> SearchResults { get; set; } = new BindableCollection<string>();
+    public bool searchSourceChanged { get; set; } = false;
+    private BindableCollection<string> _valuesList { get; }
 
     public void RemoveListItem(string name)
     {
       ListItem = null;
       ListItems.Remove(name);
+      if (SearchQuery != null && !name.Contains(SearchQuery)) return;
+      SearchResults.Add(name);
     }
   }
 }
