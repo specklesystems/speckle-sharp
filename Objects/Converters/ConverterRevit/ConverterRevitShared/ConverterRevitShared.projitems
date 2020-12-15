@@ -15,10 +15,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\AdaptiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Beam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Brace.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Stair.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Column.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\DirectShape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Duct.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\FamilyInstance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\BuildingPad.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Floor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Level.cs" />

@@ -43,7 +43,6 @@ namespace Objects.Converter.Revit
         isUpdate = false;
         revitWall = DB.Wall.Create(Doc, baseCurve, level.Id, structural);
       }
-
       if (revitWall == null)
       {
         ConversionErrors.Add(new Error { message = $"Failed to create wall ${speckleWall.applicationId}." });
@@ -179,6 +178,7 @@ namespace Objects.Converter.Revit
       }
 
       RevitWall speckleWall = new RevitWall();
+      speckleWall.family = revitWall.WallType.FamilyName;
       speckleWall.type = revitWall.WallType.Name;
       speckleWall.baseLine = (ICurve)baseGeometry;
       speckleWall.level = level;

@@ -163,7 +163,7 @@ namespace Objects.Converter.Revit
         .ToDictionary(x => GetParamInternalName(x), x => x);
 
       //only loop params we can set and exist on the revit element
-      var filteredSpeckleParameters = speckleParameters.Where(x => !x.isTypeParameter && !x.isReadOnly && revitParameters.ContainsKey(x.applicationId));
+      var filteredSpeckleParameters = speckleParameters.Where(x => !x.isReadOnly && revitParameters.ContainsKey(x.applicationId));
 
       foreach (var sp in filteredSpeckleParameters)
       {
