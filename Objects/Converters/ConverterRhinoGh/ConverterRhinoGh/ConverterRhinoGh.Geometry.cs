@@ -1,4 +1,4 @@
-﻿using Grasshopper.Kernel.Types;
+using Grasshopper.Kernel.Types;
 using Objects.Geometry;
 using Objects.Primitive;
 using Rhino.Geometry;
@@ -7,6 +7,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rhino;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
@@ -209,6 +210,7 @@ namespace Objects.Converter.RhinoGh
     public Circle CircleToSpeckle(RH.Circle circ)
     {
       var circle = new Circle(PlaneToSpeckle(circ.Plane), circ.Radius, ModelUnits);
+      circle.domain = new Interval(0, 1);
       return circle;
     }
 
@@ -254,6 +256,7 @@ namespace Objects.Converter.RhinoGh
       arc.endPoint = PointToSpeckle(a.EndPoint);
       arc.startPoint = PointToSpeckle(a.StartPoint);
       arc.midPoint = PointToSpeckle(a.MidPoint);
+      arc.domain = new Interval(0,1);
       return arc;
     }
 
@@ -275,7 +278,10 @@ namespace Objects.Converter.RhinoGh
     //Ellipse
     public Ellipse EllipseToSpeckle(RH.Ellipse e)
     {
-      return new Ellipse(PlaneToSpeckle(e.Plane), e.Radius1, e.Radius2, ModelUnits);
+      
+      var el =  new Ellipse(PlaneToSpeckle(e.Plane), e.Radius1, e.Radius2, ModelUnits);
+      el.domain = new Interval(0,1);
+      return el;
     }
 
     public RH.Curve EllipseToNative(Ellipse e)
@@ -420,8 +426,10 @@ namespace Objects.Converter.RhinoGh
 
     public ICurve CurveToSpeckle(NurbsCurve curve)
     {
-      var tolerance = Doc.ModelAbsoluteTolerance;
-
+      var tolerance = 0.0;
+      Rhino.Geometry.Plane pln = Rhino.Geometry.Plane.Unset;
+      curve.TryGetPlane(out pln, tolerance);
+      
       if (curve.IsCircle(tolerance) && curve.IsClosed)
       {
         curve.TryGetCircle(out var getObj,tolerance);
@@ -436,7 +444,7 @@ namespace Objects.Converter.RhinoGh
 
       if (curve.IsEllipse(tolerance) && curve.IsClosed)
       {
-        curve.TryGetEllipse(out var getObj,tolerance);
+        curve.TryGetEllipse(pln, out var getObj,tolerance);
         return EllipseToSpeckle(getObj);
       }
 
@@ -454,7 +462,7 @@ namespace Objects.Converter.RhinoGh
 
     public Curve NurbsToSpeckle(NurbsCurve curve)
     {
-      var tolerance = Doc.ModelAbsoluteTolerance;
+      var tolerance = 0.0;
 
       curve.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
 
@@ -598,7 +606,7 @@ namespace Objects.Converter.RhinoGh
     /// <returns></returns>
     public Brep BrepToSpeckle(RH.Brep brep)
     {
-      //brep.Repair(0.00001); //should maybe use ModelAbsoluteTolerance ?
+      brep.Repair(0.0); //should maybe use ModelAbsoluteTolerance ?
       var joinedMesh = new RH.Mesh();
       var mySettings = new MeshingParameters(0);
 
@@ -708,7 +716,7 @@ namespace Objects.Converter.RhinoGh
     /// <exception cref="Exception">Throws exception if the provenance is not Rhino</exception>
     public RH.Brep BrepToNative(Brep brep)
     {
-      const double tol = 0.0; // TODO: Check tolerance.
+      var tol = Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
       try
       {
         // TODO: Provenance exception is meaningless now, must change for provenance build checks.
@@ -723,7 +731,7 @@ namespace Objects.Converter.RhinoGh
         brep.Vertices.ForEach(vert => newBrep.Vertices.Add(PointToNative(vert).Location, tol));
         brep.Edges.ForEach(edge =>
         {
-          if (edge.Domain == null)
+          if (edge.Domain == null || (edge.Domain.start == edge.Curve.domain.start && edge.Domain.end == edge.Curve.domain.end))
             newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, tol);
           else
             newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, IntervalToNative(edge.Domain), tol);
