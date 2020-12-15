@@ -122,7 +122,8 @@ namespace Speckle.DesktopUI.Streams
 
     public void ClearSelected()
     {
-      SelectedFilterTab?.ListItems?.Clear();
+      SelectedFilterTab.ListItems?.Clear();
+      SelectedFilterTab.ListItem = null;
     }
 
     public async void UpdateStreamObjects()

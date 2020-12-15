@@ -75,6 +75,10 @@
       </ScrollViewer>
 
 
+      <TextBlock Margin="0,12,0,8"
+                 FontSize="14"
+                 FontWeight="Medium"
+                 Text="Current selection:" />
       <ItemsControl ItemsSource="{Binding ListItems}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
