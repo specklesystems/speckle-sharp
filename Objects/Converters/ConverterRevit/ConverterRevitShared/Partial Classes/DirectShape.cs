@@ -71,7 +71,7 @@ namespace Objects.Converter.Revit
       speckleAc["@displayMesh"] = GetElementMesh(revitAc);
       speckleAc.baseGeometry = speckleAc["@displayMesh"] as Mesh;
 
-      AddCommonRevitProps(speckleAc, revitAc);
+      GetRevitParameters(speckleAc, revitAc);
 
       return speckleAc;
     }

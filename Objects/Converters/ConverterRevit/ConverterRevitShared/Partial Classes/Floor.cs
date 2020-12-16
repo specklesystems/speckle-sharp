@@ -104,9 +104,9 @@ namespace Objects.Converter.Revit
       }
 
       speckleFloor.level = ConvertAndCacheLevel(baseLevelParam);
-      speckleFloor.structural = (bool)ParameterToSpeckle(structuralParam);
+      speckleFloor.structural = (bool)ParameterToSpeckle(structuralParam).value;
 
-      AddCommonRevitProps(speckleFloor, revitFloor);
+      GetRevitParameters(speckleFloor, revitFloor, new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL" });
 
       var mesh = new Geometry.Mesh();
       (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });

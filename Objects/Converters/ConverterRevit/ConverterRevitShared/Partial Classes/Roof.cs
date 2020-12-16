@@ -64,7 +64,7 @@ namespace Objects.Converter.Revit
             ModelCurveArray curveArray = new ModelCurveArray();
             var revitFootprintRoof = Doc.Create.NewFootPrintRoof(outline, level, roofType, out curveArray);
             var poly = speckleFootprintRoof.outline as Polycurve;
-            if(poly != null)
+            if (poly != null)
             {
               for (var i = 0; i < curveArray.Size; i++)
               {
@@ -81,11 +81,11 @@ namespace Objects.Converter.Revit
                 revitFootprintRoof.set_Offset(curveArray.get_Item(i), (double)offset);
               }
             }
-            
+
             if (speckleFootprintRoof.cutOffLevel != null)
             {
               var cutOffLevel = LevelToNative(speckleFootprintRoof.cutOffLevel);
-              TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM, cutOffLevel);
+              TrySetElementParam(revitFootprintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM, cutOffLevel);
             }
 
             revitRoof = revitFootprintRoof;
@@ -156,8 +156,8 @@ namespace Objects.Converter.Revit
             var speckleExtrusionRoof = new RevitExtrusionRoof
             {
               start = (double)ParameterToSpeckle(
-                revitExtrusionRoof.get_Parameter(BuiltInParameter.EXTRUSION_START_PARAM)),
-              end = (double)ParameterToSpeckle(revitExtrusionRoof.get_Parameter(BuiltInParameter.EXTRUSION_END_PARAM))
+                revitExtrusionRoof.get_Parameter(BuiltInParameter.EXTRUSION_START_PARAM)).value,
+              end = (double)ParameterToSpeckle(revitExtrusionRoof.get_Parameter(BuiltInParameter.EXTRUSION_END_PARAM)).value
             };
             var plane = revitExtrusionRoof.GetProfile().get_Item(0).SketchPlane.GetPlane();
             speckleExtrusionRoof.referenceLine = new Line(PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate())), PointToSpeckle(plane.Origin), ModelUnits); //TODO: test!
@@ -180,7 +180,7 @@ namespace Objects.Converter.Revit
         }
       }
 
-      AddCommonRevitProps(speckleRoof, revitRoof);
+      GetRevitParameters(speckleRoof, revitRoof, new List<string> { "ROOF_BASE_LEVEL_PARAM", "ROOF_UPTO_LEVEL_PARAM", "EXTRUSION_START_PARAM", "EXTRUSION_END_PARAM" });
 
       var displayMesh = new Geometry.Mesh();
       (displayMesh.faces, displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });

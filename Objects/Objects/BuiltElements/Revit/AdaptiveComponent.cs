@@ -16,16 +16,14 @@ namespace Objects.BuiltElements.Revit
 
     public string elementId { get; set; }
 
-    public Dictionary<string, object> parameters { get; set; }
-
-    public Dictionary<string, object> typeParameters { get; set; }
+    public List<Parameter> parameters { get; set; }
 
     public AdaptiveComponent()
     {
     }
 
     [SchemaInfo("AdaptiveComponent", "Creates a Revit adaptive component by points")]
-    public AdaptiveComponent(string type, string family, List<Point> basePoints, bool flipped = false, Dictionary<string, object> parameters = null)
+    public AdaptiveComponent(string type, string family, List<Point> basePoints, bool flipped = false, List<Parameter> parameters = null)
     {
       this.type = type;
       this.family = family;

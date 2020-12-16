@@ -153,7 +153,7 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       if (IsList(@object))
       {
-        var list = (@object as IEnumerable<object>).Cast<object>().ToList();
+        var list = ((IEnumerable)@object).Cast<object>();
         return list.Select(x => RecurseTreeToNative(x)).ToList();
       }
 

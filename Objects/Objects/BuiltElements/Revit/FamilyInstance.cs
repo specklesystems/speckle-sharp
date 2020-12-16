@@ -21,12 +21,11 @@ namespace Objects.BuiltElements.Revit
 
     public bool handFlipped { get; set; }
 
-    public Dictionary<string, object> parameters { get; set; }
-
-    public Dictionary<string, object> typeParameters { get; set; }
+    public List<Parameter> parameters { get; set; }
 
     public string elementId { get; set; }
 
+    [DetachProperty]
     public List<Base> elements { get; set; }
 
     public FamilyInstance()
@@ -37,7 +36,7 @@ namespace Objects.BuiltElements.Revit
     [SchemaInfo("FamilyInstance", "Creates a Revit family instance")]
     public FamilyInstance(Point basePoint, string family, string type, Level level,
       double rotation = 0, bool facingFlipped = false, bool handFlipped = false,
-      Dictionary<string, object> parameters = null)
+      List<Parameter> parameters = null)
     {
       this.basePoint = basePoint;
       this.family = family;

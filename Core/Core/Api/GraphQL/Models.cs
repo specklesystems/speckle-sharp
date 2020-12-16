@@ -93,6 +93,11 @@ namespace Speckle.Core.Api
     public Branches branches { get; set; }
 
     /// <summary>
+    /// Set only in the case that you've requested this through <see cref="Client.BranchGet(System.Threading.CancellationToken, string, string, int)"/>.
+    /// </summary>
+    public Branch branch { get; set; }
+
+    /// <summary>
     /// Set only in the case that you've requested this through <see cref="Client.CommitGet(System.Threading.CancellationToken, string, string)"/>.
     /// </summary>
     public Commit commit { get; set; }

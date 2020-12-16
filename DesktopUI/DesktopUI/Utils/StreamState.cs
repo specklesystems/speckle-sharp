@@ -104,9 +104,14 @@ namespace Speckle.DesktopUI.Utils
       {
         SetAndNotify(ref _Branch, value);
 
-        if (value.commits != null && value.commits.items != null && value.commits.items.Count != 0)
+        if (Commit != null && !string.IsNullOrEmpty(Commit.id))
         {
-          Commit = value.commits.items[0];
+          //do nothing, it means the current commit is either "latest" or a previous commitId, 
+          //in which case we don't want to switch it automatically
+        }
+        else if (value.commits != null && value.commits.items != null && value.commits.items.Count != 0)
+        {
+          Commit = new Commit { id = "latest" };
         }
         else
         {
@@ -189,6 +194,14 @@ namespace Speckle.DesktopUI.Utils
 
           return collection;
         }
+
+        collection.Add(new CommitContextMenuItem
+        {
+          MainText = "Always receive the lastest commit sent to this branch.",
+          ToolTip = "The latest commit",
+          Icon = Commit.id == "latest" ? new PackIcon { Kind = PackIconKind.Check } : new PackIcon { Kind = PackIconKind.SourceCommit },
+          CommandArgument = new CommitContextMenuItem.CommitSwitchCommandArgument { RootStreamState = this, Commit = new Commit { id = "latest" }, }
+        });
 
         collection.AddRange(Branch.commits.items.Select(commit => new CommitContextMenuItem
         {
@@ -388,9 +401,14 @@ namespace Speckle.DesktopUI.Utils
         var bc = new BindableCollection<string>();
         foreach (var e in Errors)
         {
-          bc.Add($"{e.Message}\n{e.StackTrace}");
+          var msg = e.Message.Replace("Exception of type 'Speckle.Core.Models.Error' was thrown.\n", "");
+          if (e.StackTrace != null)
+            msg += $"\n{e.StackTrace}";
+
+          if (!bc.Contains(msg))
+            bc.Add(msg);
         }
-        return string.Join("\n\n",bc);
+        return string.Join("\n\n", bc);
       }
       set { }
     }
@@ -481,7 +499,7 @@ namespace Speckle.DesktopUI.Utils
 
       if (Branch.commits != null && Branch.commits.items != null && Branch.commits.items.Count != 0)
       {
-        Commit = Branch.commits.items[0];
+        Commit = new Commit { id = "latest" };
       }
       else
       {
@@ -728,7 +746,7 @@ namespace Speckle.DesktopUI.Utils
         Branch = binfo;
       }
 
-      ServerUpdateSummary = $"{cinfo.authorName} pushed new data on branch {info.branchName}: {info.message}";
+      ServerUpdateSummary = $"{cinfo.authorName} sent new data on branch {info.branchName}: {info.message}";
 
       ServerUpdates = true;
     }
@@ -749,11 +767,20 @@ namespace Speckle.DesktopUI.Utils
       NotifyOfPropertyChange(nameof(Stream));
     }
 
-    public async void RefreshStream()
+    public async Task<bool> RefreshStream()
     {
-      var updatedStream = await Client.StreamGet(Stream.id);
-      Stream = updatedStream;
-      Branches = updatedStream.branches.items;
+      try
+      {
+        var updatedStream = await Client.StreamGet(Stream.id);
+        Stream = updatedStream;
+        Branches = updatedStream.branches.items;
+      }
+      catch (Exception)
+      {
+        return false;
+      }
+
+      return true;
     }
 
     #endregion

@@ -15,8 +15,8 @@ namespace Objects.BuiltElements.Revit
     public Mesh baseGeometry { get; set; }
     
     public Brep solidGeometry { get; set; }
-    
-    public Dictionary<string, object> parameters { get; set; }
+
+    public List<Parameter> parameters { get; set; }
     
     public string elementId { get; set; }
 
@@ -26,7 +26,7 @@ namespace Objects.BuiltElements.Revit
     { }
 
     [SchemaInfo("DirectShape by mesh", "Creates a Revit DirectShape by mesh")]
-    public DirectShape(string type, RevitCategory category, Mesh baseGeometry, Dictionary<string, object> parameters = null)
+    public DirectShape(string type, RevitCategory category, Mesh baseGeometry, List<Parameter> parameters = null)
     {
       this.type = type;
       this.category = category;

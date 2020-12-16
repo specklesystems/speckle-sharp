@@ -601,6 +601,72 @@ namespace Speckle.Core.Api
     }
 
     /// <summary>
+    /// Gets a given branch from a stream.
+    /// </summary>
+    /// <param name="streamId"></param>
+    /// <param name="branchName"></param>
+    /// <returns></returns>
+    public Task<Branch> BranchGet(string streamId, string branchName, int commitsLimit = 10)
+    {
+      return BranchGet(CancellationToken.None, streamId, branchName, commitsLimit);
+    }
+
+    /// <summary>
+    /// Gets a given branch from a stream.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="streamId"></param>
+    /// <param name="branchName"></param>
+    /// <returns></returns>
+    public async Task<Branch> BranchGet(CancellationToken cancellationToken, string streamId, string branchName, int commitsLimit = 10)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = $@"query Stream($streamId: String!, $branchName: String!) {{
+                      stream(id: $streamId) {{
+                        branch(name: $branchName){{
+                          id,
+                          name,
+                          description,
+                          commits (limit: {commitsLimit}) {{
+                            totalCount,
+                            cursor,
+                            items {{
+                              id,
+                              referencedObject,
+                              message,
+                              authorName,
+                              authorId,
+                              createdAt
+                            }}
+                          }}
+                        }}                       
+                      }}
+                    }}",
+          Variables = new
+          {
+            streamId,
+            branchName
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
+
+        if (res.Errors != null && res.Errors.Any())
+          Log.CaptureAndThrow(new GraphQLException(res.Errors[0].Message), res.Errors);
+
+        return res.Data.stream.branch;
+      }
+      catch (Exception e)
+      {
+        Log.CaptureException(e);
+        throw e;
+      }
+    }
+
+    /// <summary>
     /// Updates a branch.
     /// </summary>
     /// <param name="branchInput"></param>
@@ -724,7 +790,8 @@ namespace Speckle.Core.Api
                     }}",
           Variables = new
           {
-            streamId, commitId
+            streamId,
+            commitId
           }
         };
 
@@ -907,7 +974,7 @@ namespace Speckle.Core.Api
                         }}                       
                       }}
                     }}",
-          Variables = new {streamId, objectId}
+          Variables = new { streamId, objectId }
         };
 
         var res = await GQLClient.SendQueryAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
@@ -955,7 +1022,7 @@ namespace Speckle.Core.Api
                         }}                       
                       }}
                     }}",
-          Variables = new {streamId, objectId}
+          Variables = new { streamId, objectId }
         };
 
         var res = await GQLClient.SendQueryAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);

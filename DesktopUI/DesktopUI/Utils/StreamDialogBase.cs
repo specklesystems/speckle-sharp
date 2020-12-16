@@ -189,7 +189,7 @@ namespace Speckle.DesktopUI.Utils
     public StreamRole(string name, string description)
     {
       Name = name;
-      Role = $"stream:{name}";
+      Role = $"stream:{name.ToLower()}";
       Description = description;
     }
 

@@ -27,7 +27,7 @@ namespace Objects.Converter.Revit
         speckleRoom.voids = profiles.Skip(1).ToList();
       }
 
-      AddCommonRevitProps(speckleRoom, revitRoom);
+      GetRevitParameters(speckleRoom, revitRoom);
 
       var displayMesh = new Geometry.Mesh();
       (displayMesh.faces, displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoom);

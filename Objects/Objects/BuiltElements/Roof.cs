@@ -12,6 +12,7 @@ namespace Objects.BuiltElements
     public ICurve outline { get; set; }
     public List<ICurve> voids { get; set; } = new List<ICurve>();
 
+    [DetachProperty]
     public List<Base> elements { get; set; }
 
     public Roof() { }
@@ -32,8 +33,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
   {
     public string family { get; set; }
     public string type { get; set; }
-    public Dictionary<string, object> parameters { get; set; }
-    public Dictionary<string, object> typeParameters { get; set; }
+    public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
     public Level level { get; set; }
 
@@ -56,7 +56,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
     [SchemaInfo("RevitExtrusionRoof", "Creates a Revit roof by extruding a curve")]
     public RevitExtrusionRoof(string family, string type, double start, double end, Line referenceLine, Level level,
       List<Base> elements = null,
-      Dictionary<string, object> parameters = null)
+      List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -81,7 +81,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
     [SchemaInfo("RevitFootprintRoof", "Creates a Revit roof by outline")]
     public RevitFootprintRoof(ICurve outline, string family, string type, Level level, RevitLevel cutOffLevel = null, List<ICurve> voids = null,
       List<Base> elements = null,
-      Dictionary<string, object> parameters = null)
+      List<Parameter> parameters = null)
     {
       this.outline = outline;
       this.voids = voids;
