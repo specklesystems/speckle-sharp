@@ -33,6 +33,14 @@ namespace Objects.BuiltElements.Revit
       this.baseGeometry = baseGeometry;
       this.parameters = parameters;
     }
+    [SchemaInfo("DirectShape by brep", "Creates a Revit DirectShape by brep")]
+    public DirectShape(string type, RevitCategory category, Brep solidGeometry, List<Parameter> parameters = null)
+    {
+      this.type = type;
+      this.category = category;
+      this.solidGeometry = solidGeometry;
+      this.parameters = parameters;
+    }
 
   }
 
