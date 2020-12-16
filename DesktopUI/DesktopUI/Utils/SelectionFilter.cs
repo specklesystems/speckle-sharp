@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Windows.Controls;
-using Speckle.Core.Logging;
+using Newtonsoft.Json;
 using Stylet;
 
 namespace Speckle.DesktopUI.Utils
 {
+
   public interface ISelectionFilter
   {
     string Name { get; set; }
@@ -64,12 +63,11 @@ namespace Speckle.DesktopUI.Utils
 
   public class PropertySelectionFilter : ISelectionFilter
   {
-    public string Type => typeof(ListSelectionFilter).ToString();
+    public string Type => typeof(PropertySelectionFilter).ToString();
 
     public string Name { get; set; }
     public string Icon { get; set; }
     public string Description { get; set; }
-
 
     public List<string> Selection { get; set; } = new List<string>();
 
@@ -148,8 +146,31 @@ namespace Speckle.DesktopUI.Utils
     {
       ListItem = null;
       ListItems.Remove(name);
-      if (SearchQuery != null && !name.Contains(SearchQuery)) return;
+      if (SearchQuery != null && !name.Contains(SearchQuery))return;
       SearchResults.Add(name);
+    }
+  }
+
+  public class SelectionFilterConverter : JsonConverter
+  {
+    public override bool CanConvert(Type objectType)
+    {
+      return objectType == typeof(ISelectionFilter);
+    }
+
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    {
+      ISelectionFilter filter;
+      filter = serializer.Deserialize<ListSelectionFilter>(reader) ?? (ISelectionFilter)serializer.Deserialize<PropertySelectionFilter>(reader);
+      if (filter != null)
+        return filter;
+
+      throw new NotSupportedException($"Type {objectType} unrecognised and could not be deserialised.");
+    }
+
+    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    {
+      serializer.Serialize(writer, value);
     }
   }
 }

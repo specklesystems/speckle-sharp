@@ -220,6 +220,7 @@ namespace Speckle.DesktopUI.Utils
     private ISelectionFilter _filter;
 
     [JsonProperty]
+    [JsonConverter(typeof(SelectionFilterConverter))]
     public ISelectionFilter Filter
     {
       get => _filter;
@@ -475,6 +476,8 @@ namespace Speckle.DesktopUI.Utils
       {
         return;
       }
+      // refresh after deserialisation
+      Task.Run(() => RefreshStream());
 
       Client.SubscribeStreamUpdated(Stream.id);
       Client.SubscribeCommitCreated(Stream.id);
