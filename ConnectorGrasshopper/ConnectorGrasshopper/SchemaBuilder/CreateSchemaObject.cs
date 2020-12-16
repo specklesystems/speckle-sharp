@@ -84,9 +84,10 @@ namespace ConnectorGrasshopper
 
       var dialog = new CreateSchemaObjectDialog();
       dialog.Owner = Grasshopper.Instances.EtoDocumentEditor;
+      var viewport = Grasshopper.Instances.ActiveCanvas.Viewport;
       var mouse = GH_Canvas.MousePosition;
-      dialog.Location = new Eto.Drawing.Point(mouse.X - 200, mouse.Y - 200); //approx the dialog half-size
-
+      dialog.Location = new Eto.Drawing.Point((int)viewport.MidPoint.X,(int)viewport.MidPoint.Y ); //approx the dialog half-size
+      
       dialog.ShowModal();
 
       if (dialog.HasResult)
