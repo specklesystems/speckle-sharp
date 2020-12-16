@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -478,11 +478,18 @@ namespace Speckle.DesktopUI.Utils
       Client.SubscribeCommitCreated(Stream.id);
       Client.SubscribeCommitUpdated(Stream.id);
       Client.SubscribeCommitDeleted(Stream.id);
+      Client.SubscribeBranchCreated(Stream.id);
+      Client.SubscribeBranchUpdated(Stream.id);
+      Client.SubscribeBranchDeleted(Stream.id);
 
       Client.OnStreamUpdated += HandleStreamUpdated;
       Client.OnCommitCreated += HandleCommitCreated;
       Client.OnCommitDeleted += HandleCommitCreated;
-      Client.OnCommitUpdated += HandleCommitChanged;
+      Client.OnCommitUpdated += HandleCommitUpdated;
+      // BUG: due to subs bug, these all have to be handled by fetching new list from server
+      Client.OnBranchCreated += HandleBranchCreated;
+      Client.OnBranchUpdated += HandleBranchCreated;
+      Client.OnBranchUpdated += HandleBranchCreated;
 
       if (Branch == null)
       {
@@ -751,7 +758,7 @@ namespace Speckle.DesktopUI.Utils
       ServerUpdates = true;
     }
 
-    private void HandleCommitChanged(object sender, CommitInfo info)
+    private void HandleCommitUpdated(object sender, CommitInfo info)
     {
       var branch = Stream.branches.items.FirstOrDefault(b => b.name == info.branchName);
       var commit = branch?.commits.items.FirstOrDefault(c => c.id == info.id);
@@ -765,6 +772,29 @@ namespace Speckle.DesktopUI.Utils
 
       commit.message = info.message;
       NotifyOfPropertyChange(nameof(Stream));
+    }
+
+    private async void HandleBranchCreated(object sender, BranchInfo info)
+    {
+      var updatedStream = await Client.StreamGet(Stream.id);
+      Branches = updatedStream.branches.items;
+    }
+
+    private void HandleBranchUpdated(object sender, BranchInfo info)
+    {
+      var branch = Branches.FirstOrDefault(b => b.id == info.id);
+      if (branch == null)return;
+      branch.name = info.name;
+      branch.description = info.description;
+      NotifyOfPropertyChange(nameof(BranchContextMenuItems));
+    }
+
+    private void HandleBranchDeleted(object sender, BranchInfo info)
+    {
+      var branch = Branches.FirstOrDefault(b => b.id == info.id);
+      if (branch == null)return;
+      Stream.branches.items.Remove(branch);
+      NotifyOfPropertyChange(nameof(BranchContextMenuItems));
     }
 
     public async Task<bool> RefreshStream()
