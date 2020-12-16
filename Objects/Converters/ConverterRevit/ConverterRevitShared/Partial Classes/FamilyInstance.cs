@@ -12,6 +12,101 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    //TODO: might need to clean this up and split the logic by beam, FI, etc...
+    public List<ApplicationPlaceholderObject> FamilyInstanceToNative(BuiltElements.Revit.FamilyInstance speckleFi)
+    {
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi);
+      XYZ basePoint = PointToNative(speckleFi.basePoint);
+      DB.Level level = LevelToNative(speckleFi.level);
+      DB.FamilyInstance familyInstance = null;
+
+      //try update existing
+      var docObj = GetExistingElementByApplicationId(speckleFi.applicationId);
+      if (docObj != null)
+      {
+        try
+        {
+          var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
+
+          // if family changed, tough luck. delete and let us create a new one.
+          if (familySymbol.FamilyName != revitType.FamilyName)
+          {
+            Doc.Delete(docObj.Id);
+          }
+          else
+          {
+            familyInstance = (DB.FamilyInstance)docObj;
+
+            //NOTE: updating an element location is quite buggy in Revit!
+            //Let's say the first time an element is created its base point/curve is @ 10m and the Level is @ 0m
+            //the element will be created @ 0m
+            //but when this element is updated (let's say with no changes), it will jump @ 10m (unless there is a level change)!
+            //to avoid this behavior we're always setting the previous location Z coordinate when updating an element
+            //this means the Z coord of an element will only be set by its Level 
+            //and by additional parameters as sill height, base offset etc
+            (familyInstance.Location as LocationPoint).Point = new XYZ(basePoint.X, basePoint.Y, (familyInstance.Location as LocationPoint).Point.Z) ;
+
+            // check for a type change
+            if (speckleFi.type != null && speckleFi.type != revitType.Name)
+            {
+              familyInstance.ChangeTypeId(familySymbol.Id);
+            }
+
+            TrySetElementParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
+            TrySetElementParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
+          }
+        }
+        catch
+        {
+          //something went wrong, re-create it
+        }
+      }
+
+      //create family instance
+      if (familyInstance == null)
+      {
+        //If the current host element is not null, it means we're coming from inside a nested conversion. 
+        if (CurrentHostElement != null)
+        {
+          familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
+        }
+        //Otherwise, proceed as normal.
+        else
+        {
+          familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, level, StructuralType.NonStructural);
+        }
+      }
+
+      if (familyInstance.CanFlipHand && speckleFi.handFlipped != familyInstance.HandFlipped)
+      {
+        familyInstance.flipHand();
+      }
+
+      if (familyInstance.CanFlipFacing && speckleFi.facingFlipped != familyInstance.FacingFlipped)
+      {
+        familyInstance.flipFacing();
+      }
+
+      if (familyInstance.CanRotate && speckleFi.rotation != (familyInstance.Location as LocationPoint).Rotation)
+      {
+        var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
+        (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
+      }
+
+
+      SetInstanceParameters(familyInstance, speckleFi);
+
+      var placeholders = new List<ApplicationPlaceholderObject>() {
+        new ApplicationPlaceholderObject {
+          applicationId = speckleFi.applicationId,
+          ApplicationGeneratedId = familyInstance.UniqueId,
+          NativeObject = familyInstance
+        }
+      };
+
+      return placeholders;
+    }
+
     /// <summary>
     /// Entry point for all revit family conversions. TODO: Check for Beams and Columns and any other "dedicated" speckle elements and convert them as such rather than to the generic "family instance" object.
     /// </summary>
@@ -148,97 +243,6 @@ namespace Objects.Converter.Revit
         }
       }
       return subElements;
-    }
-
-    //TODO: might need to clean this up and split the logic by beam, FI, etc...
-    public List<ApplicationPlaceholderObject> FamilyInstanceToNative(BuiltElements.Revit.FamilyInstance speckleFi)
-    {
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi);
-      XYZ basePoint = PointToNative(speckleFi.basePoint);
-      DB.Level level = LevelToNative(speckleFi.level);
-      DB.FamilyInstance familyInstance = null;
-
-      //try update existing
-      var docObj = GetExistingElementByApplicationId(speckleFi.applicationId);
-      if (docObj != null)
-      {
-        try
-        {
-          var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
-
-          // if family changed, tough luck. delete and let us create a new one.
-          if (familySymbol.FamilyName != revitType.FamilyName)
-          {
-            Doc.Delete(docObj.Id);
-          }
-          else
-          {
-            familyInstance = (DB.FamilyInstance)docObj;
-            (familyInstance.Location as LocationPoint).Point = basePoint;
-
-            // check for a type change
-            if (speckleFi.type != null && speckleFi.type != revitType.Name)
-            {
-              familyInstance.ChangeTypeId(familySymbol.Id);
-            }
-
-            //some elements us the Level param, otehrs the Reference Level param (eg beams)
-          }
-        }
-        catch
-        {
-          //something went wrong, re-create it
-        }
-      }
-
-      //create family instance
-      if (familyInstance == null)
-      {
-        //If the current host element is not null, it means we're coming from inside a nested conversion. 
-        if (CurrentHostElement != null)
-        {
-          familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
-        }
-        //Otherwise, proceed as normal.
-        else
-        {
-          familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, level, StructuralType.NonStructural);
-        }
-      }
-
-      Doc.Regenerate();
-
-      TrySetElementParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
-      TrySetElementParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
-
-      if (familyInstance.CanFlipHand && speckleFi.handFlipped != familyInstance.HandFlipped)
-      {
-        familyInstance.flipHand();
-      }
-
-      if (familyInstance.CanFlipFacing && speckleFi.facingFlipped != familyInstance.FacingFlipped)
-      {
-        familyInstance.flipFacing();
-      }
-
-      if (familyInstance.CanRotate && speckleFi.rotation != (familyInstance.Location as LocationPoint).Rotation)
-      {
-        var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
-        (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
-      }
-
-
-      SetInstanceParameters(familyInstance, speckleFi);
-
-      var placeholders = new List<ApplicationPlaceholderObject>() {
-        new ApplicationPlaceholderObject {
-          applicationId = speckleFi.applicationId,
-          ApplicationGeneratedId = familyInstance.UniqueId,
-          NativeObject = familyInstance
-        }
-      };
-
-      return placeholders;
     }
   }
 }

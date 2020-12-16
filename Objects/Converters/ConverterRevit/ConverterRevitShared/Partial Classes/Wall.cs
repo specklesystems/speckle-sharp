@@ -56,8 +56,13 @@ namespace Objects.Converter.Revit
 
       if (isUpdate)
       {
-        //when a curve is created its Z and gets adjusted to the level elevation!
-        //make sure the new curve is at the same Z as the previous
+        //NOTE: updating an element location is quite buggy in Revit!
+        //Let's say the first time an element is created its base point/curve is @ 10m and the Level is @ 0m
+        //the element will be created @ 0m
+        //but when this element is updated (let's say with no changes), it will jump @ 10m (unless there is a level change)!
+        //to avoid this behavior we're always setting the previous location Z coordinate when updating an element
+        //this means the Z coord of an element will only be set by its Level 
+        //and by additional parameters as sill height, base offset etc
         var z = ((LocationCurve)revitWall.Location).Curve.GetEndPoint(0).Z;
         var offsetLine = baseCurve.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, z)));
         ((LocationCurve)revitWall.Location).Curve = offsetLine;
