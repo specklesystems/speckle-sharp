@@ -128,6 +128,9 @@ namespace Objects.Converter.Revit
         case DB.Architecture.TopRail o:
           return null;
 
+        case DB.Ceiling o:
+          return CeilingToSpeckle(o);
+
         default:
           ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Speckle"));
           return null;
@@ -258,6 +261,9 @@ namespace Objects.Converter.Revit
           return true;
 
         case DB.Architecture.TopRail _:
+          return true;
+
+        case DB.Ceiling _:
           return true;
 
         default:
