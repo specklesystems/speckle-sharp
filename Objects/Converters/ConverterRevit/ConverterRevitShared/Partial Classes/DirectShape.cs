@@ -22,9 +22,29 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
       }
 
-      //TODO: support other geometries
-      IList<GeometryObject> mesh = MeshToNative(speckleDs.baseGeometry);
-
+      IList<GeometryObject> mesh;
+      
+      // Check if DS contains a solid or a mesh
+      if (speckleDs.isSolid)
+      {
+        try
+        {
+          // Try to convert the BRep, this process can fail. If this happens we fallback to the mesh displayValue.
+          // TODO: Once Brep conversion is sturdy enough, we should remove the displayValue logic.
+          var brep = BrepToNative(speckleDs.solidGeometry);
+          mesh = new List<GeometryObject> {brep};
+        }
+        catch (Exception e)
+        {
+          ConversionErrors.Add(new Error("Brep conversion failed: " + e.Message,e.InnerException?.Message ?? "No details available." ));
+          mesh = MeshToNative(speckleDs.solidGeometry.displayValue);
+        }
+      }
+      else
+      {
+        mesh = MeshToNative(speckleDs.baseGeometry);
+      }
+      
       var cat = BuiltInCategory.OST_GenericModel;
       var bic = RevitUtils.GetBuiltInCategory(speckleDs.category);
 

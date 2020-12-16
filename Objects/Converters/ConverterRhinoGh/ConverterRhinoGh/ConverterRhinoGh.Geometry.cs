@@ -774,7 +774,7 @@ namespace Objects.Converter.RhinoGh
           });
         });
 
-        //newBrep.Repair(tol);
+        newBrep.Repair(tol);
         
         return newBrep;
       }

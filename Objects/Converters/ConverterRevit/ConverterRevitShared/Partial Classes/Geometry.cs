@@ -39,6 +39,7 @@ namespace Objects.Converter.Revit
           throw new Exception("Cannot convert Curve of type " + geom.GetType());
       }
     }
+    
     public XYZ PointToNative(Point pt)
     {
       var revitPoint = new XYZ(ScaleToNative(pt.value[0], pt.units), ScaleToNative(pt.value[1], pt.units), ScaleToNative(pt.value[2], pt.units));
@@ -159,8 +160,8 @@ namespace Objects.Converter.Revit
           ScaleToNative((double)ellipse.secondRadius, ellipse.units),
           basePlane.XVec.Normalize(),
           basePlane.YVec.Normalize(),
-          0,
-           2 * Math.PI
+           ellipse.domain.start ?? 0,
+           ellipse.domain.end ?? 2 * Math.PI
           ) as DB.Ellipse;
 
         e.MakeBound(ellipse.trimDomain?.start ?? 0, ellipse.trimDomain?.end ?? 2 * Math.PI);
@@ -749,7 +750,7 @@ namespace Objects.Converter.Revit
 
             // Get curve, create trim and save index
             var trim = edge.GetCurveUV(edgeSide);
-            var sTrim = new BrepTrim(brep, edgeIndex, faceIndex, loopIndex, curve2dIndex, 0, BrepTrimType.Boundary, edge.IsFlippedOnFace(edgeSide));
+            var sTrim = new BrepTrim(brep, edgeIndex, faceIndex, loopIndex, curve2dIndex, 0, BrepTrimType.Boundary, edge.IsFlippedOnFace(edgeSide),-1,-1);
             var sTrimIndex = trimIndex;
             loopTrimIndices.Add(sTrimIndex);
 

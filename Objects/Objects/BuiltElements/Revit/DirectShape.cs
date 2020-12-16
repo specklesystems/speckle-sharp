@@ -13,10 +13,15 @@ namespace Objects.BuiltElements.Revit
     public RevitCategory category { get; set; }
 
     public Mesh baseGeometry { get; set; }
-
+    
+    public Brep solidGeometry { get; set; }
+    
     public Dictionary<string, object> parameters { get; set; }
+    
     public string elementId { get; set; }
 
+    public bool isSolid => solidGeometry != null;
+    
     public DirectShape()
     { }
 
@@ -28,6 +33,7 @@ namespace Objects.BuiltElements.Revit
       this.baseGeometry = baseGeometry;
       this.parameters = parameters;
     }
+
   }
 
 }
