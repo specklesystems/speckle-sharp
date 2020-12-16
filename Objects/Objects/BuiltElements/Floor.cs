@@ -42,7 +42,7 @@ namespace Objects.BuiltElements.Revit
     }
 
     [SchemaInfo("RevitFloor", "Creates a Revit floor by outline and level")]
-    public RevitFloor(ICurve outline, string family, string type,
+    public RevitFloor(string family, string type, ICurve outline,
        Level level, bool structural = false, List<ICurve> voids = null,
       [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null,
       List<Parameter> parameters = null)
