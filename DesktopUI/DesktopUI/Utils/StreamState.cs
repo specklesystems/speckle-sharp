@@ -25,6 +25,7 @@ namespace Speckle.DesktopUI.Utils
   public partial class StreamState : PropertyChangedBase, IHandle<UpdateSelectionCountEvent>
   {
     private Client _client;
+
     public Client Client
     {
       get => _client;
@@ -217,6 +218,7 @@ namespace Speckle.DesktopUI.Utils
     }
 
     private ISelectionFilter _filter;
+
     [JsonProperty]
     public ISelectionFilter Filter
     {
@@ -457,7 +459,7 @@ namespace Speckle.DesktopUI.Utils
     public StreamState(string accountId)
     {
       var account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId) ??
-                    AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == ServerUrl);
+        AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == ServerUrl);
       if (account == null)
       {
         // TODO : Notify error!
@@ -533,14 +535,14 @@ namespace Speckle.DesktopUI.Utils
         });
         Branch = Stream.branches.items.Last();
 
-        NotifyOfPropertyChange(nameof(BranchContextMenuItem));
         Globals.Notify($"Created branch {Branch.name} and switched to it.");
         return;
       }
 
       Branch = branch;
       Globals.Notify($"Switched active branch to {Branch.name}.");
-      NotifyOfPropertyChange(nameof(BranchContextMenuItem));
+
+      NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       Globals.HostBindings.PersistAndUpdateStreamInFile(this);
     }
 
@@ -636,6 +638,7 @@ namespace Speckle.DesktopUI.Utils
     public void SwapState()
     {
       IsSenderCard = !IsSenderCard;
+      NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       Globals.HostBindings.PersistAndUpdateStreamInFile(this);
     }
 
@@ -721,7 +724,7 @@ namespace Speckle.DesktopUI.Utils
 
     #endregion
 
-    #region application events 
+    #region application events
 
     private void HandleStreamUpdated(object sender, StreamInfo info)
     {
@@ -752,6 +755,8 @@ namespace Speckle.DesktopUI.Utils
       {
         Branch = binfo;
       }
+
+      NotifyOfPropertyChange(nameof(CommitContextMenuItems));
 
       ServerUpdateSummary = $"{cinfo.authorName} sent new data on branch {info.branchName}: {info.message}";
 
@@ -814,7 +819,6 @@ namespace Speckle.DesktopUI.Utils
     }
 
     #endregion
-
   }
 
   /// <summary>
@@ -833,7 +837,6 @@ namespace Speckle.DesktopUI.Utils
       public Branch Branch { get; set; }
     }
   }
-
 
   /// <summary>
   /// Class used for handling actions around the context menu of the commit switcher (receiver).
