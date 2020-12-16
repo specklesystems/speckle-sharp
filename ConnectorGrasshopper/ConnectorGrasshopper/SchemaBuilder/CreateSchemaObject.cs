@@ -341,36 +341,41 @@ namespace ConnectorGrasshopper
       if (value == null || typeOfValue == type || type.IsAssignableFrom(typeOfValue))
         return value;
 
+      //needs to be before IsSimpleType
+      if (type.IsEnum)
+      {
+        try
+        {
+          return Enum.Parse(type, value.ToString());
+        }
+        catch { }
+      }
+
       // int, doubles, etc
       if (Speckle.Core.Models.Utilities.IsSimpleType(value.GetType()))
       {
         return Convert.ChangeType(value, type);
       }
 
-     
-        if (Converter.CanConvertToSpeckle(value))
-        {
-          var converted = Converter.ConvertToSpeckle(value);
-          //in some situations the converted type is not exactly the type needed by the constructor
-          //even if an implicit casting is defined, invoking the constructor will fail because the type is boxed
-          //to convert the boxed type, it seems the only valid solution is to use Convert.ChangeType
-          //currently, this is to support conversion of Polyline to Polycurve in Objects
-          if (converted.GetType() != type && !type.IsAssignableFrom(converted.GetType()))
-          {
-            return Convert.ChangeType(converted, type);
-          }
-          return converted;
-        }
-        else
-        {
-          // Log conversion error?
-        }
-      
-      try
+      if (Converter.CanConvertToSpeckle(value))
       {
-        return Enum.Parse(type, value.ToString());
+        var converted = Converter.ConvertToSpeckle(value);
+        //in some situations the converted type is not exactly the type needed by the constructor
+        //even if an implicit casting is defined, invoking the constructor will fail because the type is boxed
+        //to convert the boxed type, it seems the only valid solution is to use Convert.ChangeType
+        //currently, this is to support conversion of Polyline to Polycurve in Objects
+        if (converted.GetType() != type && !type.IsAssignableFrom(converted.GetType()))
+        {
+          return Convert.ChangeType(converted, type);
+        }
+        return converted;
       }
-      catch { }
+      else
+      {
+        // Log conversion error?
+      }
+
+
 
       //tries an explicit casting, given that the required type is a variable, we need to use reflection
       //not really sure this method is needed
