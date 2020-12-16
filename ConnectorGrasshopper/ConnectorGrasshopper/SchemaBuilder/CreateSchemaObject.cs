@@ -341,55 +341,59 @@ namespace ConnectorGrasshopper
       if (value == null || typeOfValue == type || type.IsAssignableFrom(typeOfValue))
         return value;
 
+      //needs to be before IsSimpleType
+      if (type.IsEnum)
+      {
+        try
+        {
+          return Enum.Parse(type, value.ToString());
+        }
+        catch { }
+      }
+
       // int, doubles, etc
       if (Speckle.Core.Models.Utilities.IsSimpleType(value.GetType()))
       {
         return Convert.ChangeType(value, type);
       }
 
-      if (typeOfValue.Namespace.ToLowerInvariant().Contains("rhino.geometry"))
+      if (Converter.CanConvertToSpeckle(value))
       {
-        if (Converter.CanConvertToSpeckle(value))
+        var converted = Converter.ConvertToSpeckle(value);
+        //in some situations the converted type is not exactly the type needed by the constructor
+        //even if an implicit casting is defined, invoking the constructor will fail because the type is boxed
+        //to convert the boxed type, it seems the only valid solution is to use Convert.ChangeType
+        //currently, this is to support conversion of Polyline to Polycurve in Objects
+        if (converted.GetType() != type && !type.IsAssignableFrom(converted.GetType()))
         {
-          return Converter.ConvertToSpeckle(value);
+          return Convert.ChangeType(converted, type);
         }
-        else
-        {
-          // Log conversion error?
-        }
+        return converted;
       }
-      //try
-      //{
-      //  return Convert.ChangeType(value, type);
-      //}
-      //catch { }
+      else
+      {
+        // Log conversion error?
+      }
+
+
+
+      //tries an explicit casting, given that the required type is a variable, we need to use reflection
+      //not really sure this method is needed
       try
       {
-        return Enum.Parse(type, value.ToString());
+        MethodInfo castIntoMethod = this.GetType().GetMethod("CastObject").MakeGenericMethod(type);
+        return castIntoMethod.Invoke(null, new[] { value });
       }
       catch { }
 
-      //try
-      //{
-      //  if (Converter.CanConvertToSpeckle(value))
-      //  {
-      //    return Converter.ConvertToSpeckle(value);
-      //  }
-      //}
-      //catch { }
-
-      //try
-      //{
-      //  var deserialised = Operations.Deserialize((string)value);
-      //  if (Converter.CanConvertToSpeckle(deserialised))
-      //  {
-      //    return Converter.ConvertToSpeckle(deserialised);
-      //  }
-      //}
-      //catch { }
-
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");
       throw new Exception($"Could not covert object to {type}");
+    }
+
+    //keep public so it can be picked by reflection
+    public static T CastObject<T>(object input)
+    {
+      return (T)input;
     }
 
     public bool CanInsertParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;

@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Models;
+﻿using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -24,6 +25,15 @@ namespace Objects.BuiltElements.Revit
     /// </summary>
     public bool isTypeParameter { get; set; } = false;
 
+    public Parameter() { }
 
+    [SchemaInfo("Parameter", "A Revit instance parameter to set on an element")]
+    public Parameter(string name, object value,
+      [SchemaParamInfo("The Revit BuiltInParameter name or GUID (for shared parameters), if defined it will prevail over the name")] string internalName = "")
+    {
+      this.name = name;
+      this.value = value;
+      this.applicationId = internalName;
+    }
   }
 }

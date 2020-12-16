@@ -158,16 +158,21 @@ namespace Objects.Converter.Revit
       // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
       // Parameters most likely contains extra (garbage) stuff that we don't need to set anyways
       // so it's a much faster conversion. If we find that's not the case, we might need to change it in the future
-      // We also turn that into a dictionary for faster (I guess) lookup
-      var revitParameters = revitElement.ParametersMap.Cast<DB.Parameter>().Where(x => x != null && !x.IsReadOnly)
-        .ToDictionary(x => GetParamInternalName(x), x => x);
+      var revitParameters = revitElement.ParametersMap.Cast<DB.Parameter>().Where(x => x != null && !x.IsReadOnly);
 
-      //only loop params we can set and exist on the revit element
-      var filteredSpeckleParameters = speckleParameters.Where(x => !x.isReadOnly && revitParameters.ContainsKey(x.applicationId));
+      // Here we are creating two  dictionaries for faster lookup
+      // one uses the BuiltInName / GUID the other the name as Key
+      // we need both to support parameter set by Schema Builder, that might be generated with one or the other
+      var revitParameterById = revitParameters.ToDictionary(x => GetParamInternalName(x), x => x);
+      var revitParameterByName = revitParameters.ToDictionary(x => x.Definition.Name, x => x);
+
+      //only loop params we can set and that actually exist on the revit element
+      var filteredSpeckleParameters = speckleParameters.Where(x => !x.isReadOnly &&
+      (revitParameterById.ContainsKey(x.applicationId) || revitParameterByName.ContainsKey(x.name)));
 
       foreach (var sp in filteredSpeckleParameters)
       {
-        var rp = revitParameters[sp.applicationId];
+        var rp = revitParameterById.ContainsKey(sp.applicationId) ? revitParameterById[sp.applicationId] : revitParameterByName[sp.name];
         try
         {
           switch (rp.StorageType)

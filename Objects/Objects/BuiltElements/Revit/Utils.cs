@@ -4,47 +4,6 @@ namespace Objects.BuiltElements.Revit
 {
   public static class RevitUtils
   {
-    public enum RevitCategory
-    {
-      Casework,
-      Ceilings,
-      Columns,
-      CurtainPanels,
-      CurtainSystems,
-      CurtainWallMullions,
-      Doors,
-      Entourage,
-      Fascias,
-      Floors,
-      Furniture,
-      FurnitureSystems,
-      GenericModels,
-      Gutters,
-      Landings,
-      Mass,
-      Railings,
-      Ramps,
-      Roads,
-      RoofSoffits,
-      Roofs,
-      Runs,
-      Site,
-      SpecialtyEquipment,
-      Stairs,
-      StructuralAreaReinforcement,
-      StructuralBeamSystems,
-      StructuralColumns,
-      StructuralConnections,
-      StructuralFoundations,
-      StructuralFraming,
-      StructuralRebar,
-      StructuralStiffeners,
-      StructuralTrusses,
-      Supports,
-      Walls,
-      Windows
-    }
-
     public static RevitCategory GetCategory(string builtInCategory)
     {
       return (RevitCategory)List.IndexOf(builtInCategory);
@@ -95,5 +54,46 @@ namespace Objects.BuiltElements.Revit
       "OST_Walls",
       "OST_Windows"
     };
+  }
+
+  public enum RevitCategory
+  {
+    Casework,
+    Ceilings,
+    Columns,
+    CurtainPanels,
+    CurtainSystems,
+    CurtainWallMullions,
+    Doors,
+    Entourage,
+    Fascias,
+    Floors,
+    Furniture,
+    FurnitureSystems,
+    GenericModels,
+    Gutters,
+    Landings,
+    Mass,
+    Railings,
+    Ramps,
+    Roads,
+    RoofSoffits,
+    Roofs,
+    Runs,
+    Site,
+    SpecialtyEquipment,
+    Stairs,
+    StructuralAreaReinforcement,
+    StructuralBeamSystems,
+    StructuralColumns,
+    StructuralConnections,
+    StructuralFoundations,
+    StructuralFraming,
+    StructuralRebar,
+    StructuralStiffeners,
+    StructuralTrusses,
+    Supports,
+    Walls,
+    Windows
   }
 }

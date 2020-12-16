@@ -55,7 +55,7 @@ namespace Objects.Converter.Revit
       revitDs.ApplicationId = speckleDs.applicationId;
       revitDs.ApplicationDataId = Guid.NewGuid().ToString();
       revitDs.SetShape(mesh);
-      revitDs.Name = speckleDs.type;
+      revitDs.Name = speckleDs.name;
 
       SetInstanceParameters(revitDs, speckleDs);
 
@@ -65,7 +65,7 @@ namespace Objects.Converter.Revit
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
     {
       var speckleAc = new DirectShape();
-      speckleAc.type = revitAc.Name;
+      speckleAc.name = revitAc.Name;
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
       speckleAc.category = RevitUtils.GetCategory(cat);
       speckleAc["@displayMesh"] = GetElementMesh(revitAc);

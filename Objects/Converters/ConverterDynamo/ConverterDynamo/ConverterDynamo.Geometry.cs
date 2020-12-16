@@ -470,8 +470,14 @@ namespace Objects.Converter.Dynamo
         }
       }
 
-      var polyCrv = PolyCurve.ByJoinedCurves(curves);
-      return polyCrv.SetDynamoProperties<PolyCurve>(GetDynamicMembersFromBase(polycurve));
+      PolyCurve polyCrv = null;
+      if (curves.Any())
+      {
+        polyCrv = PolyCurve.ByJoinedCurves(curves);
+        polyCrv = polyCrv.SetDynamoProperties<PolyCurve>(GetDynamicMembersFromBase(polycurve));
+      }
+        
+      return polyCrv;
     }
 
     public Base CurveToSpeckle(DS.Curve curve)

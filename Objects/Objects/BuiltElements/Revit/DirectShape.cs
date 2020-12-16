@@ -8,7 +8,7 @@ namespace Objects.BuiltElements.Revit
 {
   public class DirectShape : Base
   {
-    public string type { get; set; }
+    public string name { get; set; }
 
     public RevitCategory category { get; set; }
 
@@ -26,9 +26,9 @@ namespace Objects.BuiltElements.Revit
     { }
 
     [SchemaInfo("DirectShape by mesh", "Creates a Revit DirectShape by mesh")]
-    public DirectShape(string type, RevitCategory category, Mesh baseGeometry, List<Parameter> parameters = null)
+    public DirectShape(string name, RevitCategory category, Mesh baseGeometry, List<Parameter> parameters = null)
     {
-      this.type = type;
+      this.name = name;
       this.category = category;
       this.baseGeometry = baseGeometry;
       this.parameters = parameters;
