@@ -34,6 +34,7 @@ namespace Objects.BuiltElements.Revit
 
   public class RevitDuct : Duct
   {
+    public string family { get; set; }
     public string type { get; set; }
     public string systemName { get; set; }
     public string systemType { get; set; }
@@ -46,9 +47,10 @@ namespace Objects.BuiltElements.Revit
     }
 
     [SchemaInfo("RevitDuct", "Creates a Revit duct")]
-    public RevitDuct(Line baseLine, string type, string systemName, string systemType, Level level, double width, double height, double diameter, double velocity = 0, List<Parameter> parameters = null)
+    public RevitDuct(string family, string type, Line baseLine, string systemName, string systemType, Level level, double width, double height, double diameter, double velocity = 0, List<Parameter> parameters = null)
     {
       this.baseLine = baseLine;
+      this.family = family;
       this.type = type;
       this.width = width;
       this.height = height;
