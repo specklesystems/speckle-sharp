@@ -160,12 +160,9 @@ namespace Speckle.DesktopUI.Utils
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
-      ISelectionFilter filter;
-      filter = serializer.Deserialize<ListSelectionFilter>(reader) ?? (ISelectionFilter)serializer.Deserialize<PropertySelectionFilter>(reader);
-      if (filter != null)
-        return filter;
+      var filter = serializer.Deserialize<ListSelectionFilter>(reader) ?? (ISelectionFilter)serializer.Deserialize<PropertySelectionFilter>(reader);
 
-      throw new NotSupportedException($"Type {objectType} unrecognised and could not be deserialised.");
+      return filter;
     }
 
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
