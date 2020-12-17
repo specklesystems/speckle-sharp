@@ -16,7 +16,9 @@ namespace Objects.Converter.Revit
     public ModelCurve ModelCurveToSpeckle(DB.ModelCurve revitCurve)
     {
       var speckleCurve = new ModelCurve(CurveToSpeckle(revitCurve.GeometryCurve), revitCurve.LineStyle.Name);
-
+      speckleCurve.elementId = revitCurve.Id.ToString();
+      speckleCurve.applicationId = revitCurve.UniqueId;
+      speckleCurve.units = ModelUnits;
       return speckleCurve;
     }
 
@@ -49,6 +51,9 @@ namespace Objects.Converter.Revit
     public DetailCurve DetailCurveToSpeckle(DB.DetailCurve revitCurve)
     {
       var speckleCurve = new DetailCurve(CurveToSpeckle(revitCurve.GeometryCurve), revitCurve.LineStyle.Name);
+      speckleCurve.elementId = revitCurve.Id.ToString();
+      speckleCurve.applicationId = revitCurve.UniqueId;
+      speckleCurve.units = ModelUnits;
       return speckleCurve;
     }
 
@@ -89,7 +94,9 @@ namespace Objects.Converter.Revit
     public RoomBoundaryLine RoomBoundaryLineToSpeckle(DB.ModelCurve revitCurve)
     {
       var speckleCurve = new RoomBoundaryLine(CurveToSpeckle(revitCurve.GeometryCurve));
-
+      speckleCurve.elementId = revitCurve.Id.ToString();
+      speckleCurve.applicationId = revitCurve.UniqueId;
+      speckleCurve.units = ModelUnits;
       return speckleCurve;
     }
 
@@ -171,7 +178,6 @@ namespace Objects.Converter.Revit
 
       return SketchPlane.Create(Doc, plane);
     }
-
     private DB.Plane CreatePlane(XYZ basis, XYZ startPoint)
     {
       return DB.Plane.CreateByNormalAndOrigin(basis, startPoint);

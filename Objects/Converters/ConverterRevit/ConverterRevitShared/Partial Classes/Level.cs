@@ -106,8 +106,10 @@ namespace Objects.Converter.Revit
       return collector.FirstOrDefault();
     }
 
-    private RevitLevel ConvertAndCacheLevel(DB.Parameter param)
+    private RevitLevel ConvertAndCacheLevel(DB.Element elem, BuiltInParameter bip)
     {
+      var param = elem.get_Parameter(bip);
+
       if (param == null || param.StorageType != StorageType.ElementId)
       {
         return null;

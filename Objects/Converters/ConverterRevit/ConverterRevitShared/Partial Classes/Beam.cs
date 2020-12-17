@@ -75,7 +75,7 @@ namespace Objects.Converter.Revit
       }
 
       //reference level, only for beams
-      TrySetElementParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
+      TrySetParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
 
       if (speckleRevitBeam != null)
       {
@@ -99,12 +99,10 @@ namespace Objects.Converter.Revit
         throw new Exception("Only line based Beams are currently supported.");
       }
 
-      var baseLevelParam = revitBeam.get_Parameter(BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
-
       var speckleBeam = new RevitBeam();
       speckleBeam.type = Doc.GetElement(revitBeam.GetTypeId()).Name;
       speckleBeam.baseLine = baseLine;
-      speckleBeam.level = ConvertAndCacheLevel(baseLevelParam);
+      speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
       speckleBeam["@displayMesh"] = GetElementMesh(revitBeam);
 
       GetRevitParameters(speckleBeam, revitBeam);

@@ -12,7 +12,6 @@ namespace Objects.Converter.Revit
   {
     public BuiltElements.Room RoomToSpeckle(DB.Room revitRoom)
     {
-      var baseLevelParam = revitRoom.get_Parameter(BuiltInParameter.ROOM_LEVEL_ID);
       var profiles = GetProfiles(revitRoom);
 
       var speckleRoom = new Room();
@@ -20,7 +19,7 @@ namespace Objects.Converter.Revit
       speckleRoom.name = revitRoom.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
       speckleRoom.number = revitRoom.Number;
       speckleRoom.center = (Point)LocationToSpeckle(revitRoom);
-      speckleRoom.level = ConvertAndCacheLevel(baseLevelParam);
+      speckleRoom.level = ConvertAndCacheLevel(revitRoom, BuiltInParameter.ROOM_LEVEL_ID);
       speckleRoom.outline = profiles[0];
       if (profiles.Count > 1)
       {

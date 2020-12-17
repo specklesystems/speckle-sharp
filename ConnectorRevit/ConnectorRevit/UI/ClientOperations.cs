@@ -172,16 +172,20 @@ namespace Speckle.ConnectorRevit.UI
 
           convertedCount++;
 
-          var category = $"@{revitElement.Category.Name}";
-          if (commitObject[category] == null)
-          {
-            commitObject[category] = new List<Base>();
-          }
+
 
           //hosted elements will be returned as `null` by the ConvertToSpeckle method 
           //since they are handled when converting their parents
           if (conversionResult != null)
-            ((List<Base>)commitObject[category]).Add(conversionResult);
+          {
+            var category = $"@{revitElement.Category.Name}";
+            if (commitObject[category] == null)
+            {
+              commitObject[category] = new List<Base>();
+            }
+             ((List<Base>)commitObject[category]).Add(conversionResult);
+          }
+
         }
         catch (Exception e)
         {

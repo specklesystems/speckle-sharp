@@ -67,7 +67,7 @@ namespace Objects.Converter.Revit
         var offsetLine = baseCurve.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, z)));
         ((LocationCurve)revitWall.Location).Curve = offsetLine;
 
-        TrySetElementParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
+        TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
       }
 
       if (speckleWall is RevitWall spklRevitWall)
@@ -80,34 +80,20 @@ namespace Objects.Converter.Revit
         if (spklRevitWall.topLevel != null)
         {
           var topLevel = LevelToNative(spklRevitWall.topLevel);
-          TrySetElementParam(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE, topLevel);
+          TrySetParam(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE, topLevel);
         }
         else
         {
-          var heightParam = revitWall.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM);
-          heightParam.Set(ScaleToNative(speckleWall.height, speckleWall.units));
+          TrySetParam(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM, speckleWall.height, speckleWall.units);
         }
 
-        var currentBaseOffset = (double)ParameterToSpeckle(revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET)).value;
-        if (spklRevitWall.baseOffset != currentBaseOffset)
-        {
-          var boffsetparam = revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET);
-          boffsetparam.Set(0);
-          boffsetparam.Set(ScaleToNative(spklRevitWall.baseOffset, speckleWall.units));
-        }
+        TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, spklRevitWall.baseOffset, speckleWall.units);
+        TrySetParam(revitWall, BuiltInParameter.WALL_TOP_OFFSET, spklRevitWall.topOffset, speckleWall.units);
 
-        var currentTopOffset = (double)ParameterToSpeckle(revitWall.get_Parameter(BuiltInParameter.WALL_TOP_OFFSET)).value;
-        if (spklRevitWall.topOffset != currentTopOffset)
-        {
-          var toffsetParam = revitWall.get_Parameter(BuiltInParameter.WALL_TOP_OFFSET);
-          toffsetParam.Set(0);
-          toffsetParam.Set(ScaleToNative(spklRevitWall.topOffset, speckleWall.units));
-        }
       }
       else // Set wall unconnected height.
       {
-        var heightParam = revitWall.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM);
-        heightParam.Set(ScaleToNative(speckleWall.height, speckleWall.units));
+        TrySetParam(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM, speckleWall.height, speckleWall.units);
       }
 
       SetInstanceParameters(revitWall, speckleWall);
@@ -127,20 +113,8 @@ namespace Objects.Converter.Revit
 
     public RevitWall WallToSpeckle(DB.Wall revitWall)
     {
-      //REVIT PARAMS > SPECKLE PROPS
-      var heightParam = revitWall.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM);
-
-      var baseOffsetParam = revitWall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET);
-      var topOffsetParam = revitWall.get_Parameter(BuiltInParameter.WALL_TOP_OFFSET);
-      var baseLevelParam = revitWall.get_Parameter(BuiltInParameter.WALL_BASE_CONSTRAINT);
-      var topLevelParam = revitWall.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE);
-      var structural = revitWall.get_Parameter(BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT); ;
 
       var baseGeometry = LocationToSpeckle(revitWall);
-      var height = (double)ParameterToSpeckle(heightParam).value;
-      var level = ConvertAndCacheLevel(baseLevelParam);
-      var topLevel = ConvertAndCacheLevel(topLevelParam);
-
       if (baseGeometry is Geometry.Point)
       {
         ConversionErrors.Add(new Error { message = "Failed to convert wall by point. Currently not supported." });
@@ -151,12 +125,12 @@ namespace Objects.Converter.Revit
       speckleWall.family = revitWall.WallType.FamilyName;
       speckleWall.type = revitWall.WallType.Name;
       speckleWall.baseLine = (ICurve)baseGeometry;
-      speckleWall.level = level;
-      speckleWall.topLevel = topLevel;
-      speckleWall.height = height;
-      speckleWall.baseOffset = (double)ParameterToSpeckle(baseOffsetParam).value;
-      speckleWall.topOffset = (double)ParameterToSpeckle(topOffsetParam).value;
-      speckleWall.structural = (bool)ParameterToSpeckle(structural).value;
+      speckleWall.level = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT);
+      speckleWall.topLevel = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE);
+      speckleWall.height = GetParamValue<double>(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
+      speckleWall.baseOffset = GetParamValue<double>(revitWall, BuiltInParameter.WALL_BASE_OFFSET);
+      speckleWall.topOffset = GetParamValue<double>(revitWall, BuiltInParameter.WALL_TOP_OFFSET);
+      speckleWall.structural = GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
       speckleWall.flipped = revitWall.Flipped;
 
       speckleWall["@displayMesh"] = GetWallDisplayMesh(revitWall);

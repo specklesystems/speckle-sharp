@@ -18,9 +18,6 @@ namespace Objects.Converter.Revit
 
     private RevitCeiling CeilingToSpeckle(DB.Ceiling revitCeiling)
     {
-      var baseLevelParam = revitCeiling.get_Parameter(BuiltInParameter.LEVEL_PARAM);
-      var offsetParam = revitCeiling.get_Parameter(BuiltInParameter.CEILING_HEIGHTABOVELEVEL_PARAM);
-
       var profiles = GetProfiles(revitCeiling);
 
       var speckleCeiling = new RevitCeiling();
@@ -30,8 +27,8 @@ namespace Objects.Converter.Revit
       {
         speckleCeiling.voids = profiles.Skip(1).ToList();
       }
-      speckleCeiling.offset = (double)ParameterToSpeckle(offsetParam).value;
-      speckleCeiling.level = ConvertAndCacheLevel(baseLevelParam);
+      speckleCeiling.offset = GetParamValue<double>(revitCeiling, BuiltInParameter.CEILING_HEIGHTABOVELEVEL_PARAM);
+      speckleCeiling.level = ConvertAndCacheLevel(revitCeiling, BuiltInParameter.LEVEL_PARAM);
 
       GetRevitParameters(speckleCeiling, revitCeiling, new List<string> { "LEVEL_PARAM", "CEILING_HEIGHTABOVELEVEL_PARAM" });
 

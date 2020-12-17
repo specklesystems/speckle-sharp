@@ -82,9 +82,6 @@ namespace Objects.Converter.Revit
 
       #endregion
 
-      //REVIT PARAMS > SPECKLE PROPS
-      var baseLevelParam = revitOpening.get_Parameter(BuiltInParameter.WALL_BASE_CONSTRAINT);
-      var topLevelParam = revitOpening.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE);
       var heightParam = revitOpening.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM);
 
       RevitOpening speckleOpening;
@@ -115,11 +112,11 @@ namespace Objects.Converter.Revit
         else
         {
           speckleOpening = new RevitShaft();
-          if (topLevelParam != null)
+          if (revitOpening.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE) != null)
           {
-            ((RevitShaft)speckleOpening).topLevel = ConvertAndCacheLevel(topLevelParam);
-            ((RevitShaft)speckleOpening).bottomLevel = ConvertAndCacheLevel(baseLevelParam);
-            ((RevitShaft)speckleOpening).height = (double)ParameterToSpeckle(heightParam).value;
+            ((RevitShaft)speckleOpening).topLevel = ConvertAndCacheLevel(revitOpening, BuiltInParameter.WALL_HEIGHT_TYPE);
+            ((RevitShaft)speckleOpening).bottomLevel = ConvertAndCacheLevel(revitOpening, BuiltInParameter.WALL_BASE_CONSTRAINT);
+            ((RevitShaft)speckleOpening).height = GetParamValue<double>(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
           }
         }
 

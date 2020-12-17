@@ -46,7 +46,7 @@ namespace Objects.Converter.Revit
       if (isUpdate)
       {
         revitRailing.SetPath(baseCurve);
-        TrySetElementParam(revitRailing, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
+        TrySetParam(revitRailing, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
       }
 
 
@@ -72,13 +72,12 @@ namespace Objects.Converter.Revit
     //TODO: host railings, where possible
     private RevitRailing RailingToSpeckle(Railing revitRailing)
     {
-      var baseLevelParam = revitRailing.get_Parameter(BuiltInParameter.STAIRS_RAILING_BASE_LEVEL_PARAM);
 
       var railingType = Doc.GetElement(revitRailing.GetTypeId()) as RailingType;
       var speckleRailing = new RevitRailing();
       //speckleRailing.family = railingType.FamilyName;
       speckleRailing.type = railingType.Name;
-      speckleRailing.level = ConvertAndCacheLevel(baseLevelParam);
+      speckleRailing.level = ConvertAndCacheLevel(revitRailing, BuiltInParameter.STAIRS_RAILING_BASE_LEVEL_PARAM);
       speckleRailing.path = CurveListToSpeckle(revitRailing.GetPath());
 
       GetRevitParameters(speckleRailing, revitRailing, new List<string> { "STAIRS_RAILING_BASE_LEVEL_PARAM" });

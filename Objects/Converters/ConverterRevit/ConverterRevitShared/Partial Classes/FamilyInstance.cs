@@ -44,7 +44,7 @@ namespace Objects.Converter.Revit
             //to avoid this behavior we're always setting the previous location Z coordinate when updating an element
             //this means the Z coord of an element will only be set by its Level 
             //and by additional parameters as sill height, base offset etc
-            (familyInstance.Location as LocationPoint).Point = new XYZ(basePoint.X, basePoint.Y, (familyInstance.Location as LocationPoint).Point.Z) ;
+            (familyInstance.Location as LocationPoint).Point = new XYZ(basePoint.X, basePoint.Y, (familyInstance.Location as LocationPoint).Point.Z);
 
             // check for a type change
             if (speckleFi.type != null && speckleFi.type != revitType.Name)
@@ -52,8 +52,8 @@ namespace Objects.Converter.Revit
               familyInstance.ChangeTypeId(familySymbol.Id);
             }
 
-            TrySetElementParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
-            TrySetElementParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
+            TrySetParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
+            TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
           }
         }
         catch
@@ -168,9 +168,8 @@ namespace Objects.Converter.Revit
         throw new Exception("Only point based Family Instances are currently supported.");
       }
 
-      //anything else
-      var baseLevelParam = revitFi.get_Parameter(BuiltInParameter.FAMILY_LEVEL_PARAM);
-      var baseLevelParam2 = revitFi.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
+      var lev1 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_LEVEL_PARAM);
+      var lev2 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
 
       var symbol = Doc.GetElement(revitFi.GetTypeId()) as FamilySymbol;
 
@@ -180,7 +179,7 @@ namespace Objects.Converter.Revit
       speckleFi.type = symbol.Name;
       speckleFi.facingFlipped = revitFi.FacingFlipped;
       speckleFi.handFlipped = revitFi.HandFlipped;
-      speckleFi.level = ConvertAndCacheLevel(baseLevelParam);
+      speckleFi.level = lev1 != null ? lev1 : lev2;
 
       if (revitFi.Location is LocationPoint)
       {

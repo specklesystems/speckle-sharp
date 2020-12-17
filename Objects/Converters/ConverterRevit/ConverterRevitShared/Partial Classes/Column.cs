@@ -113,8 +113,8 @@ namespace Objects.Converter.Revit
         return null;
       }
 
-      TrySetElementParam(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
-      TrySetElementParam(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM, topLevel);
+      TrySetParam(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
+      TrySetParam(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM, topLevel);
 
       if (speckleRevitColumn != null)
       {
@@ -156,8 +156,8 @@ namespace Objects.Converter.Revit
         return;
       }
 
-      var baseOffset = UnitUtils.ConvertToInternalUnits(speckleRevitColumn.baseOffset, baseOffsetParam.DisplayUnitType);
-      var topOffset = UnitUtils.ConvertToInternalUnits(speckleRevitColumn.topOffset, baseOffsetParam.DisplayUnitType);
+      var baseOffset = ScaleToNative(speckleRevitColumn.baseOffset, speckleRevitColumn.units);
+      var topOffset = ScaleToNative(speckleRevitColumn.topOffset, speckleRevitColumn.units);
 
       //these have been set previously
       DB.Level level = Doc.GetElement(baseLevelParam.AsElementId()) as DB.Level;
@@ -179,18 +179,12 @@ namespace Objects.Converter.Revit
 
     public RevitColumn ColumnToSpeckle(DB.FamilyInstance revitColumn)
     {
-      //REVIT PARAMS > SPECKLE PROPS
-      var baseLevelParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
-      var topLevelParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
-      var baseOffsetParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
-      var topOffsetParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
-
       var speckleColumn = new RevitColumn();
       speckleColumn.type = Doc.GetElement(revitColumn.GetTypeId()).Name;
-      speckleColumn.level = ConvertAndCacheLevel(baseLevelParam);
-      speckleColumn.topLevel = ConvertAndCacheLevel(topLevelParam);
-      speckleColumn.baseOffset = (double)ParameterToSpeckle(baseOffsetParam).value;
-      speckleColumn.topOffset = (double)ParameterToSpeckle(topOffsetParam).value;
+      speckleColumn.level = ConvertAndCacheLevel(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
+      speckleColumn.topLevel = ConvertAndCacheLevel(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
+      speckleColumn.baseOffset = GetParamValue<double>(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
+      speckleColumn.topOffset = GetParamValue<double>(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
       speckleColumn.facingFlipped = revitColumn.FacingFlipped;
       speckleColumn.handFlipped = revitColumn.HandFlipped;
       speckleColumn.isSlanted = revitColumn.IsSlantedColumn;
@@ -203,6 +197,7 @@ namespace Objects.Converter.Revit
       //make line from point and height
       if (baseLine == null && baseGeometry is Point basePoint)
       {
+        var topLevelParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
         var elevation = (double)((RevitLevel)ParameterToSpeckle(topLevelParam).value).elevation;
         baseLine = new Line(basePoint, new Point(basePoint.x, basePoint.y, elevation + speckleColumn.topOffset, ModelUnits), ModelUnits);
       }

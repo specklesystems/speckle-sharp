@@ -87,8 +87,6 @@ namespace Objects.Converter.Revit
 
     private RevitFloor FloorToSpeckle(DB.Floor revitFloor)
     {
-      var baseLevelParam = revitFloor.get_Parameter(BuiltInParameter.LEVEL_PARAM);
-      var structuralParam = revitFloor.get_Parameter(BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);
       var profiles = GetProfiles(revitFloor);
 
       var speckleFloor = new RevitFloor();
@@ -99,8 +97,8 @@ namespace Objects.Converter.Revit
         speckleFloor.voids = profiles.Skip(1).ToList();
       }
 
-      speckleFloor.level = ConvertAndCacheLevel(baseLevelParam);
-      speckleFloor.structural = (bool)ParameterToSpeckle(structuralParam).value;
+      speckleFloor.level = ConvertAndCacheLevel(revitFloor, BuiltInParameter.LEVEL_PARAM);
+      speckleFloor.structural = GetParamValue<bool>(revitFloor, BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);
 
       GetRevitParameters(speckleFloor, revitFloor, new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL" });
 

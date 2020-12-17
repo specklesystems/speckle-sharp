@@ -177,7 +177,16 @@ namespace Objects.Converter.Revit
       return speckleParameters.OrderBy(x => x.name).ToList();
     }
 
+    private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip)
+    {
+      var rp = elem.get_Parameter(bip);
 
+      if (rp == null)
+        return default;
+
+      return (T)ParameterToSpeckle(rp).value;
+
+    }
 
     private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false)
     {
@@ -315,7 +324,7 @@ namespace Objects.Converter.Revit
         return (rp.Definition as InternalDefinition).BuiltInParameter.ToString();
     }
 
-    private void TrySetElementParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
+    private void TrySetParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
     {
       var param = elem.get_Parameter(bip);
       if (param != null && value != null && !param.IsReadOnly)
@@ -323,14 +332,16 @@ namespace Objects.Converter.Revit
         param.Set(value.Id);
       }
     }
-    private void TryGetElementParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
+
+    private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units)
     {
       var param = elem.get_Parameter(bip);
-      if (param != null && value != null && !param.IsReadOnly)
+      if (param != null && !param.IsReadOnly)
       {
-        param.Set(value.Id);
+        param.Set(ScaleToNative(value, units));
       }
     }
+
 
 
     #endregion
@@ -413,37 +424,34 @@ namespace Objects.Converter.Revit
 
       ElementType match = null;
 
-      if (family == null && type == null)
-      {
-        match = types.First();
-      }
+      //if (family == null && type == null)
+      //{
+      //  match = types.First();
+      //}
 
       if (family != null && type != null)
       {
         match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
       }
 
-      if (match == null && type != null) // try and match the type only
+      //some elements only have one family so we didn't add such prop our schema
+      if (match == null && family == null && type != null)
       {
-        if (element is Duct)
-        {
-          match = types.FirstOrDefault(x => x.FamilyName == type);
-        }
-        else
-        {
-          match = types.FirstOrDefault(x => x.Name == type);
-        }
+        match = types.FirstOrDefault(x => x.Name == type);
       }
 
       if (match == null && family != null) // try and match the family only.
       {
         match = types.FirstOrDefault(x => x.FamilyName == family);
+        if (match != null) //inform user that the type is different!
+          ConversionErrors.Add(new Error($"Missing type. Family: {family} Type: {type}", $"Type was replaced with: {match.FamilyName}, {match.Name}"));
+
       }
 
       if (match == null) // okay, try something!
       {
         match = types.First();
-        ConversionErrors.Add(new Error($"Missing type. Family: {family} Type:{type}", $"Type was replaced with: {match.FamilyName}, {match.Name}"));
+        ConversionErrors.Add(new Error($"Missing type. Family: {family} Type: {type}", $"Type was replaced with: {match.FamilyName}, {match.Name}"));
       }
 
       if (match is FamilySymbol fs && !fs.IsActive)

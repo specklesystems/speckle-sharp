@@ -16,15 +16,12 @@ namespace Objects.Converter.Revit
     //a ToNative method might come later on!
     private RevitStair StairToSpeckle(Stairs revitStair)
     {
-      var baseLevelParam = revitStair.get_Parameter(BuiltInParameter.STAIRS_BASE_LEVEL_PARAM);
-      var topLevelParam = revitStair.get_Parameter(BuiltInParameter.STAIRS_TOP_LEVEL_PARAM);
-
       var stairType = Doc.GetElement(revitStair.GetTypeId()) as StairsType;
       var speckleStair = new RevitStair();
       speckleStair.family = stairType.FamilyName;
       speckleStair.type = stairType.Name;
-      speckleStair.level = ConvertAndCacheLevel(baseLevelParam);
-      speckleStair.topLevel = ConvertAndCacheLevel(topLevelParam);
+      speckleStair.level = ConvertAndCacheLevel(revitStair, BuiltInParameter.STAIRS_BASE_LEVEL_PARAM);
+      speckleStair.topLevel = ConvertAndCacheLevel(revitStair, BuiltInParameter.STAIRS_TOP_LEVEL_PARAM);
       speckleStair.riserHeight = ScaleToSpeckle(revitStair.ActualRiserHeight);
       speckleStair.risersNumber = revitStair.ActualRisersNumber;
       speckleStair.treradDepth = ScaleToSpeckle(revitStair.ActualTreadDepth);

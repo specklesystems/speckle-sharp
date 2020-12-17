@@ -83,11 +83,11 @@ namespace Objects.Converter.Revit
       speckleDuct.type = revitDuct.DuctType.Name;
       speckleDuct.baseLine = baseLine;
 
-      speckleDuct.diameter = TryGetParameter<double>(revitDuct, BuiltInParameter.RBS_CURVE_DIAMETER_PARAM);
-      speckleDuct.height = TryGetParameter<double>(revitDuct, BuiltInParameter.RBS_CURVE_HEIGHT_PARAM);
-      speckleDuct.width = TryGetParameter<double>(revitDuct, BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
-      speckleDuct.length = TryGetParameter<double>(revitDuct, BuiltInParameter.CURVE_ELEM_LENGTH);
-      speckleDuct.velocity = TryGetParameter<double>(revitDuct, BuiltInParameter.RBS_VELOCITY);
+      speckleDuct.diameter = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_CURVE_DIAMETER_PARAM);
+      speckleDuct.height = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_CURVE_HEIGHT_PARAM);
+      speckleDuct.width = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
+      speckleDuct.length = GetParamValue<double>(revitDuct, BuiltInParameter.CURVE_ELEM_LENGTH);
+      speckleDuct.velocity = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_VELOCITY);
       speckleDuct.level = ConvertAndCacheLevel(revitDuct, BuiltInParameter.RBS_START_LEVEL_PARAM);
 
       var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());

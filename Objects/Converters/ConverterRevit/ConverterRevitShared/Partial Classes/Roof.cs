@@ -85,7 +85,7 @@ namespace Objects.Converter.Revit
             if (speckleFootprintRoof.cutOffLevel != null)
             {
               var cutOffLevel = LevelToNative(speckleFootprintRoof.cutOffLevel);
-              TrySetElementParam(revitFootprintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM, cutOffLevel);
+              TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM, cutOffLevel);
             }
 
             revitRoof = revitFootprintRoof;
@@ -142,12 +142,10 @@ namespace Objects.Converter.Revit
         //assigning correct type for when going back in Revit
         case FootPrintRoof footPrintRoof:
           {
-            var baseLevelParam = footPrintRoof.get_Parameter(BuiltInParameter.ROOF_BASE_LEVEL_PARAM);
-            var cutOffLevelParam = footPrintRoof.get_Parameter(BuiltInParameter.ROOF_UPTO_LEVEL_PARAM);
             var speckleFootprintRoof = new RevitFootprintRoof
             {
-              level = ConvertAndCacheLevel(baseLevelParam),
-              cutOffLevel = ConvertAndCacheLevel(cutOffLevelParam)
+              level = ConvertAndCacheLevel(footPrintRoof, BuiltInParameter.ROOF_BASE_LEVEL_PARAM),
+              cutOffLevel = ConvertAndCacheLevel(footPrintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM)
             };
 
             speckleRoof = speckleFootprintRoof;
@@ -157,14 +155,14 @@ namespace Objects.Converter.Revit
           {
             var speckleExtrusionRoof = new RevitExtrusionRoof
             {
-              start = (double)ParameterToSpeckle(
-                revitExtrusionRoof.get_Parameter(BuiltInParameter.EXTRUSION_START_PARAM)).value,
-              end = (double)ParameterToSpeckle(revitExtrusionRoof.get_Parameter(BuiltInParameter.EXTRUSION_END_PARAM)).value
+              start = GetParamValue<double>(revitExtrusionRoof, BuiltInParameter.EXTRUSION_START_PARAM),
+
+              end = GetParamValue<double>(revitExtrusionRoof, BuiltInParameter.EXTRUSION_END_PARAM)
             };
             var plane = revitExtrusionRoof.GetProfile().get_Item(0).SketchPlane.GetPlane();
-            speckleExtrusionRoof.referenceLine = new Line(PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate())), PointToSpeckle(plane.Origin), ModelUnits); //TODO: test!
-            var baseLevelParam = revitExtrusionRoof.get_Parameter(BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM);
-            speckleExtrusionRoof.level = ConvertAndCacheLevel(baseLevelParam);
+            speckleExtrusionRoof.referenceLine =
+              new Line(PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate())), PointToSpeckle(plane.Origin), ModelUnits); //TODO: test!
+            speckleExtrusionRoof.level = ConvertAndCacheLevel(revitExtrusionRoof, BuiltInParameter.ROOF_BASE_LEVEL_PARAM);
             speckleRoof = speckleExtrusionRoof;
             break;
           }

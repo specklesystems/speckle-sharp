@@ -15,7 +15,6 @@ namespace Objects.Converter.Revit
     //NOTE: BuildingPad cannot be created from the API AFAIK
     private BuildingPad BuildingPadToSpeckle(DB.BuildingPad revitPad)
     {
-      var baseLevelParam = revitPad.get_Parameter(BuiltInParameter.LEVEL_PARAM);
       var profiles = GetProfiles(revitPad);
 
       var specklePad = new BuildingPad();
@@ -26,7 +25,7 @@ namespace Objects.Converter.Revit
         specklePad.voids = profiles.Skip(1).ToList();
       }
 
-      specklePad.level = ConvertAndCacheLevel(baseLevelParam);
+      specklePad.level = ConvertAndCacheLevel(revitPad, BuiltInParameter.LEVEL_PARAM);
 
       GetRevitParameters(specklePad, revitPad, new List<string> { "LEVEL_PARAM" });
 
