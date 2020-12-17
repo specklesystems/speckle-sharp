@@ -586,6 +586,7 @@ namespace Speckle.DesktopUI.Utils
       CancellationTokenSource = new CancellationTokenSource();
 
       await Task.Run(() => Globals.Repo.ConvertAndSend(this));
+      await RefreshStream();
 
       ShowProgressBar = false;
       Progress.ResetProgress();
@@ -810,8 +811,10 @@ namespace Speckle.DesktopUI.Utils
       try
       {
         var updatedStream = await Client.StreamGet(Stream.id);
-        Stream = updatedStream;
+        Stream.name = updatedStream.name;
+        Stream.description = updatedStream.description;
         Branches = updatedStream.branches.items;
+        NotifyOfPropertyChange(nameof(Stream));
       }
       catch (Exception)
       {

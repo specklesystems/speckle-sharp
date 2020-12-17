@@ -110,7 +110,11 @@ namespace Speckle.DesktopUI.Streams
       await DialogHost.Show(view, "RootDialogHost");
     }
 
-    public async void Send(StreamState state) => state.Send();
+    public async void Send(StreamState state)
+    {
+      state.Send();
+      StreamList.Refresh();
+    }
 
     public async void Receive(StreamState state) => state.Receive();
 
