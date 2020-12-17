@@ -42,11 +42,6 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
       if (docObj != null)
       {
-        //SubTransaction transTemp = new SubTransaction(Doc);
-        //transTemp.Start(); 
-        //ICollection<ElementId> ids = Doc.Delete(docObj.Id);
-        //transTemp.RollBack();
-
         Doc.Delete(docObj.Id);
       }
 
@@ -75,7 +70,8 @@ namespace Objects.Converter.Revit
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleFloor.applicationId, ApplicationGeneratedId = revitFloor.UniqueId, NativeObject = revitFloor } };
 
-      // TODO: nested elements.
+      var hostedElements = SetHostedElements(speckleFloor, revitFloor);
+      placeholders.AddRange(hostedElements);
 
       return placeholders;
     }
@@ -113,8 +109,7 @@ namespace Objects.Converter.Revit
 
       speckleFloor["@displayMesh"] = mesh;
 
-      // TODO
-      var hostedElements = revitFloor.FindInserts(true, true, true, true);
+      GetHostedElements(speckleFloor, revitFloor);
 
       return speckleFloor;
     }

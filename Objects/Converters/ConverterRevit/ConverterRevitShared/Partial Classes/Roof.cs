@@ -115,7 +115,9 @@ namespace Objects.Converter.Revit
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitRoof.applicationId, ApplicationGeneratedId = revitRoof.UniqueId, NativeObject = revitRoof } };
 
-      // TODO: nested elements.
+
+      var hostedElements = SetHostedElements(speckleRoof, revitRoof);
+      placeholders.AddRange(hostedElements);
 
       return placeholders;
     }
@@ -186,8 +188,7 @@ namespace Objects.Converter.Revit
       (displayMesh.faces, displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       speckleRoof["@displayMesh"] = displayMesh;
 
-      // TODO
-      var hostedElements = revitRoof.FindInserts(true, true, true, true);
+      GetHostedElements(speckleRoof, revitRoof);
 
       return speckleRoof;
     }

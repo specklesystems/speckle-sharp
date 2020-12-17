@@ -14,6 +14,104 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+
+    #region hosted elements
+
+    /// <summary>
+    /// Gets the hosted element of a host and adds the to a Base object
+    /// </summary>
+    /// <param name="host"></param>
+    /// <param name="base"></param>
+    public void GetHostedElements(Base @base, HostObject host)
+    {
+      var hostedElementIds = host.FindInserts(true, true, true, true);
+      var convertedHostedElements = new List<Base>();
+
+      if (hostedElementIds != null)
+      {
+        var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId);
+        if (elementIndex != -1)
+        {
+          ContextObjects.RemoveAt(elementIndex);
+        }
+
+        foreach (var elemId in hostedElementIds)
+        {
+          var element = Doc.GetElement(elemId);
+          var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
+
+          if (isSelectedInContextObjects == -1)
+          {
+            continue;
+          }
+
+          ContextObjects.RemoveAt(isSelectedInContextObjects);
+
+          if (CanConvertToSpeckle(element))
+          {
+            var obj = ConvertToSpeckle(element);
+
+            if (obj != null)
+            {
+              convertedHostedElements.Add(obj);
+              ConvertedObjectsList.Add(obj.applicationId);
+            }
+          }
+        }
+
+        if (convertedHostedElements.Any())
+        {
+          @base["elements"] = convertedHostedElements;
+        }
+      }
+    }
+
+    public List<ApplicationPlaceholderObject> SetHostedElements(Base @base, HostObject host)
+    {
+      var placeholders = new List<ApplicationPlaceholderObject>();
+      if (@base["elements"] != null && @base["elements"] is List<Base> elements)
+      {
+        CurrentHostElement = host;
+
+        foreach (var obj in elements)
+        {
+          if (obj == null)
+          {
+            continue;
+          }
+
+          if (!CanConvertToSpeckle(obj))
+          {
+            ConversionErrors.Add(new Error { message = $"Skipping {obj.speckle_type}, not supported" });
+            continue;
+          }
+
+          try
+          {
+            var res = ConvertToNative(obj);
+            if (res is ApplicationPlaceholderObject apl)
+            {
+              placeholders.Add(apl);
+            }
+            else if (res is List<ApplicationPlaceholderObject> apls)
+            {
+              placeholders.AddRange(apls);
+            }
+          }
+          catch
+          {
+            ConversionErrors.Add(new Error { message = $"Failed to create hosted element {obj.speckle_type} in {@base.applicationId}." });
+          }
+        }
+
+        CurrentHostElement = null; // unset the current host element.
+      }
+      return placeholders;
+    }
+
+    #endregion
+
+
     #region parameters
 
     #region ToSpeckle

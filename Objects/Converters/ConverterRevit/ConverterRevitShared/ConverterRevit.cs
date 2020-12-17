@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
-    public Element CurrentHostElement { get; set; }
+    public HostObject CurrentHostElement { get; set; }
 
     /// <summary>
     /// Used when sending; keeps track of all the converted objects so far. Child elements first check in here if they should convert themselves again (they may have been converted as part of a parent's hosted elements).

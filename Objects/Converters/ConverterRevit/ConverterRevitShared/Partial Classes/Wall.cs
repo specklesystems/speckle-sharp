@@ -119,43 +119,8 @@ namespace Objects.Converter.Revit
         NativeObject = revitWall
       } };
 
-      #region hosted elements creation
-
-      if (speckleWall.elements != null)
-      {
-        CurrentHostElement = revitWall; // set the wall as the current host element.
-
-        foreach (var obj in speckleWall.elements)
-        {
-          if (obj == null)
-          {
-            continue;
-          }
-
-          try
-          {
-            var res = ConvertToNative(obj);
-            if (res is ApplicationPlaceholderObject apl)
-            {
-              placeholders.Add(apl);
-            }
-            else if (res is List<ApplicationPlaceholderObject> apls)
-            {
-              placeholders.AddRange(apls);
-            }
-          }
-          catch
-          {
-            ConversionErrors.Add(new Error { message = $"Failed to create host element {obj.speckle_type} in {speckleWall.applicationId}." });
-          }
-        }
-
-        CurrentHostElement = null; // unset the current host element.
-      }
-
-      #endregion
-
-      Doc.Regenerate();
+      var hostedElements = SetHostedElements(speckleWall, revitWall);
+      placeholders.AddRange(hostedElements);
 
       return placeholders;
     }
@@ -199,51 +164,7 @@ namespace Objects.Converter.Revit
       GetRevitParameters(speckleWall, revitWall, new List<string> { "WALL_USER_HEIGHT_PARAM", "WALL_BASE_OFFSET", "WALL_TOP_OFFSET", "WALL_BASE_CONSTRAINT",
       "WALL_HEIGHT_TYPE", "WALL_STRUCTURAL_SIGNIFICANT"});
 
-      #region hosted elements capture
-
-      // TODO: perhaps move to generic method once patterns emerge (re other hosts).
-      var hostedElementIds = revitWall.FindInserts(true, true, true, true);
-      var convertedHostedElements = new List<Base>();
-
-      if (hostedElementIds != null)
-      {
-        var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == revitWall.UniqueId);
-        if (elementIndex != -1)
-        {
-          ContextObjects.RemoveAt(elementIndex);
-        }
-
-        foreach (var elemId in hostedElementIds)
-        {
-          var element = Doc.GetElement(elemId);
-          var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
-
-          if (isSelectedInContextObjects == -1)
-          {
-            continue;
-          }
-
-          ContextObjects.RemoveAt(isSelectedInContextObjects);
-
-          if (CanConvertToSpeckle(element))
-          {
-            var obj = ConvertToSpeckle(element);
-
-            if (obj != null)
-            {
-              convertedHostedElements.Add(obj);
-              ConvertedObjectsList.Add(obj.applicationId);
-            }
-          }
-        }
-
-        if (convertedHostedElements.Any())
-        {
-          speckleWall.elements = convertedHostedElements;
-        }
-      }
-
-      #endregion
+      GetHostedElements(speckleWall, revitWall);
 
       return speckleWall;
     }
