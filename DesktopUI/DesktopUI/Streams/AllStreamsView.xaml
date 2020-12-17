@@ -59,7 +59,7 @@
             <local:BindingProxy x:Key="Proxy" Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext}" />
           </Button.Resources>
           <Button.ContextMenu>
-            <ContextMenu FontSize="12" ItemsSource="{Binding BranchContextMenuItems, Mode=OneWay}">
+            <ContextMenu FontSize="12" ItemsSource="{Binding BranchContextMenuItems, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
               <ContextMenu.ItemTemplate>
                 <DataTemplate DataType="re">
                   <Grid Background="Transparent" ToolTip="{Binding Tooltip}">
@@ -272,7 +272,7 @@
             <local:BindingProxy x:Key="Proxy" Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext}" />
           </Button.Resources>
           <Button.ContextMenu>
-            <ContextMenu FontSize="12" ItemsSource="{Binding CommitContextMenuItems, Mode=OneWay}">
+            <ContextMenu FontSize="12" ItemsSource="{Binding CommitContextMenuItems, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
               <ContextMenu.ItemTemplate>
                 <DataTemplate>
                   <StackPanel>
@@ -408,7 +408,7 @@
                         Command="{s:Action ShowStreamInfo}"
                         CommandParameter="{Binding}"
                         ToolTip="Open stream details page.">
-                        <TextBlock FontSize="20" Text="{Binding Stream.name}" />
+                        <TextBlock FontSize="20" Text="{Binding Stream.name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                       </Hyperlink>
                     </TextBlock>
                   </WrapPanel>
