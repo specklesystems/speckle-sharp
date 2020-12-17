@@ -272,7 +272,7 @@
             <local:BindingProxy x:Key="Proxy" Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext}" />
           </Button.Resources>
           <Button.ContextMenu>
-            <ContextMenu FontSize="12" ItemsSource="{Binding CommitContextMenuItems, Mode=OneWay}">
+            <ContextMenu FontSize="12" ItemsSource="{Binding CommitContextMenuItems, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
               <ContextMenu.ItemTemplate>
                 <DataTemplate>
                   <StackPanel>
