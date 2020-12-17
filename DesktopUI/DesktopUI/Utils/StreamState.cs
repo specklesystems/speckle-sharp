@@ -586,7 +586,6 @@ namespace Speckle.DesktopUI.Utils
       CancellationTokenSource = new CancellationTokenSource();
 
       await Task.Run(() => Globals.Repo.ConvertAndSend(this));
-      await RefreshStream();
 
       ShowProgressBar = false;
       Progress.ResetProgress();
@@ -744,13 +743,11 @@ namespace Speckle.DesktopUI.Utils
 
     private async void HandleCommitCreated(object sender, CommitInfo info)
     {
-      if (IsSenderCard)
-      {
-        return;
-      }
-
       var updatedStream = await Client.StreamGet(Stream.id);
       Branches = updatedStream.branches.items;
+
+      if (IsReceiverCard) return;
+
 
       var binfo = Branches.FirstOrDefault(b => b.name == info.branchName);
       var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
@@ -760,10 +757,7 @@ namespace Speckle.DesktopUI.Utils
         Branch = binfo;
       }
 
-      NotifyOfPropertyChange(nameof(CommitContextMenuItems));
-
       ServerUpdateSummary = $"{cinfo.authorName} sent new data on branch {info.branchName}: {info.message}";
-
       ServerUpdates = true;
     }
 
