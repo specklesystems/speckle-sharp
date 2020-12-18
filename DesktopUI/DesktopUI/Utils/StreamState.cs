@@ -527,20 +527,6 @@ namespace Speckle.DesktopUI.Utils
 
     public void SwitchBranch(Branch branch)
     {
-      if (branch == null)
-      {
-        Stream.branches.items.Add(new Branch
-        {
-          name = "TODO_" + rnd.Next(1, 10).ToString(),
-          id = rnd.Next(1, 1000000).ToString(),
-          commits = new Commits { items = new List<Commit>() }
-        });
-        Branch = Stream.branches.items.Last();
-
-        Globals.Notify($"Created branch {Branch.name} and switched to it.");
-        return;
-      }
-
       Branch = branch;
       Globals.Notify($"Switched active branch to {Branch.name}.");
 
