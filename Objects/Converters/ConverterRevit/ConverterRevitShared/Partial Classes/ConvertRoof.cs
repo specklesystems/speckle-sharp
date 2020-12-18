@@ -121,13 +121,15 @@ namespace Objects.Converter.Revit
 
       Doc.Regenerate();
 
+      Doc.Regenerate();
+
       try
       {
-        MakeOpeningsInRoof(revitRoof, speckleRoof.voids.ToList());
+        CreateVoids(revitRoof, speckleRoof);
       }
       catch (Exception ex)
       {
-        ConversionErrors.Add(new Error("Could not create holes in roof", ex.Message));
+        ConversionErrors.Add(new Error($"Could not create openings in floor {speckleRoof.applicationId}", ex.Message));
       }
 
       if (speckleRevitRoof != null)
@@ -144,14 +146,7 @@ namespace Objects.Converter.Revit
       return placeholders;
     }
 
-    private void MakeOpeningsInRoof(DB.RoofBase roof, List<ICurve> holes)
-    {
-      foreach (var hole in holes)
-      {
-        var curveArray = CurveToNative(hole);
-        Doc.Create.NewOpening(roof, curveArray, true);
-      }
-    }
+
 
     private Roof RoofToSpeckle(DB.RoofBase revitRoof)
     {
