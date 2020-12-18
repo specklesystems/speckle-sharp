@@ -51,43 +51,44 @@ namespace Objects.Converter.Revit
       var hostedElementIds = host.FindInserts(true, true, true, true);
       var convertedHostedElements = new List<Base>();
 
-      if (hostedElementIds != null)
+      if (!hostedElementIds.Any())
+        return;
+
+      var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId);
+      if (elementIndex != -1)
       {
-        var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId);
-        if (elementIndex != -1)
+        ContextObjects.RemoveAt(elementIndex);
+      }
+
+      foreach (var elemId in hostedElementIds)
+      {
+        var element = Doc.GetElement(elemId);
+        var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
+
+        if (isSelectedInContextObjects == -1)
         {
-          ContextObjects.RemoveAt(elementIndex);
+          continue;
         }
 
-        foreach (var elemId in hostedElementIds)
+        ContextObjects.RemoveAt(isSelectedInContextObjects);
+
+        if (CanConvertToSpeckle(element))
         {
-          var element = Doc.GetElement(elemId);
-          var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
+          var obj = ConvertToSpeckle(element);
 
-          if (isSelectedInContextObjects == -1)
+          if (obj != null)
           {
-            continue;
+            convertedHostedElements.Add(obj);
+            ConvertedObjectsList.Add(obj.applicationId);
           }
-
-          ContextObjects.RemoveAt(isSelectedInContextObjects);
-
-          if (CanConvertToSpeckle(element))
-          {
-            var obj = ConvertToSpeckle(element);
-
-            if (obj != null)
-            {
-              convertedHostedElements.Add(obj);
-              ConvertedObjectsList.Add(obj.applicationId);
-            }
-          }
-        }
-
-        if (convertedHostedElements.Any())
-        {
-          @base["elements"] = convertedHostedElements;
         }
       }
+
+      if (convertedHostedElements.Any())
+      {
+        @base["elements"] = convertedHostedElements;
+      }
+
     }
 
     public List<ApplicationPlaceholderObject> SetHostedElements(Base @base, HostObject host)
@@ -550,7 +551,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public DB.Element GetExistingElementByApplicationId(string applicationId)
     {
-      var @ref = ContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
+      var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
 
       if (@ref == null)
       {

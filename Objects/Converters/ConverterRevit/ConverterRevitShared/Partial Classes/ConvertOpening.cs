@@ -96,7 +96,9 @@ namespace Objects.Converter.Revit
       {
         if (revitOpening.Host != null)
         {
-          speckleOpening = new RevitVerticalOpening();
+          //we can ignore vertical openings because they will be created when we try re-create voids in the roof / ceiling / floor outline
+          return null;
+          //speckleOpening = new RevitVerticalOpening();
         }
         else
         {

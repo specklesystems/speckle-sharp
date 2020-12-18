@@ -2,11 +2,14 @@
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Objects.BuiltElements;
+using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
+using Opening = Objects.BuiltElements.Opening;
 
 namespace Objects.Converter.Revit
 {
@@ -22,7 +25,7 @@ namespace Objects.Converter.Revit
       bool structural = false;
       var outline = CurveToNative(speckleFloor.outline);
 
-      Level level;
+      DB.Level level;
 
       if (speckleFloor is RevitFloor speckleRevitFloor)
       {
@@ -45,7 +48,7 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
       }
 
-      Floor revitFloor;
+      DB.Floor revitFloor;
       if (floorType == null)
       {
         revitFloor = Doc.Create.NewFloor(outline, structural);
@@ -59,7 +62,7 @@ namespace Objects.Converter.Revit
 
       try
       {
-        CreateOpenings(revitFloor, speckleFloor.voids);
+        CreateVoids(revitFloor, speckleFloor);
       }
       catch (Exception ex)
       {
@@ -76,14 +79,78 @@ namespace Objects.Converter.Revit
       return placeholders;
     }
 
-    private void CreateOpenings(DB.Floor floor, List<ICurve> holes)
+    //a floor outline can have "voids/holes" for 3 reasons:
+    // - there is a shaft cutting through it > we don't need to create an opening (the shaft will be created on its own)
+    // - there is a vertical opening cutting through it > we don't need to create an opening (the opening will be created on its own)
+    // - the floor profile was modeled with holes > we need to create an openeing as the Revit API doesn't let us generate it with holes!
+    private void CreateVoids(DB.Floor floor, Base speckleElement)
     {
-      foreach (var hole in holes)
+      if (speckleElement["voids"] == null || !(speckleElement["voids"] is List<ICurve>))
+        return;
+
+      //list of openings hosted in this speckle element
+      var openings = new List<RevitOpening>();
+      if (speckleElement["elements"] != null && (speckleElement["elements"] is List<Base> elements))
+        openings.AddRange(elements.Where(x => x is RevitVerticalOpening).Cast<RevitVerticalOpening>());
+
+      //list of shafts part of this conversion set
+      openings.AddRange(ContextObjects.Where(x => x.NativeObject is RevitShaft).Select(x => x.NativeObject).Cast<RevitShaft>());
+
+      foreach (var @void in speckleElement["voids"] as List<ICurve>)
       {
-        var curveArray = CurveToNative(hole);
+        if (HasOverlappingOpening(@void, openings))
+          continue;
+
+        var curveArray = CurveToNative(@void);
         Doc.Create.NewOpening(floor, curveArray, true);
       }
     }
+
+    private bool HasOverlappingOpening(ICurve @void, List<RevitOpening> openings)
+    {
+      foreach (RevitOpening opening in openings)
+      {
+        if (CurvesOverlap(@void, opening.outline))
+          return true;
+      }
+      return false;
+
+    }
+
+    private bool CurvesOverlap(ICurve icurveA, ICurve icurveB)
+    {
+      var curveArrayA = CurveToNative(icurveA).Cast<DB.Curve>().ToList();
+      var curveArrayB = CurveToNative(icurveB).Cast<DB.Curve>().ToList();
+
+      //we need to account for various scenarios, eg a shaft might be made of multiple shapes
+      //while the resulting cut in the floor will only be made on a single shape, so we need to cross check them all
+      foreach (var curveA in curveArrayA)
+      {
+        //move curves to Z = 0, needed for shafts!
+        curveA.MakeBound(0, 1);
+        var z = curveA.GetEndPoint(0).Z;
+        var cA = curveA.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, -z)));
+
+        foreach (var curveB in curveArrayB)
+        {
+          //move curves to Z = 0, needed for shafts!
+          curveB.MakeBound(0, 1);
+          z = curveB.GetEndPoint(0).Z;
+          var cB = curveB.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, -z)));
+
+          var result = cA.Intersect(cB);
+          if (result != SetComparisonResult.BothEmpty && result != SetComparisonResult.Disjoint)
+            return true;
+
+        }
+      }
+
+      return false;
+    }
+
+
+
+
 
     private RevitFloor FloorToSpeckle(DB.Floor revitFloor)
     {

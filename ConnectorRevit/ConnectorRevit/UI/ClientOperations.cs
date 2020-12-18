@@ -345,7 +345,11 @@ namespace Speckle.ConnectorRevit.UI
       // Bake the new ones.
       Queue.Add(() =>
       {
-        converter.SetContextObjects(state.ReceivedObjects); // needs to be set for editing to work
+        // needs to be set for editing to work
+        converter.SetPreviousContextObjects(state.ReceivedObjects);
+
+        //TODO: flatten stream and add its stuff here
+        //converter.SetContextObjects(state.ReceivedObjects);
 
         using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.Stream.name}"))
         {
