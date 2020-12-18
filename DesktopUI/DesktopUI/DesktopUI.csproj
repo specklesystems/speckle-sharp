@@ -98,6 +98,7 @@
       <DependentUpon>AllStreamsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Streams\AllStreamsViewModel.cs" />
+    <Compile Include="Streams\Dialogs\BranchCreateDialogViewModel.cs" />
     <Compile Include="Streams\Dialogs\FilterViews\CategoryFilterView.xaml.cs">
       <DependentUpon>CategoryFilterView.xaml</DependentUpon>
     </Compile>
@@ -136,6 +137,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Streams\Dialogs\BranchCreateDialogView.xaml" />
     <Page Include="Streams\Dialogs\FilterViews\CategoryFilterView.xaml" />
     <Page Include="Streams\Dialogs\FilterViews\ParameterFilterView.xaml" />
     <Page Include="Streams\Dialogs\ShareStreamDialogView.xaml" />
