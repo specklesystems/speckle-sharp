@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -7,7 +7,6 @@ using System.Windows.Input;
 using MaterialDesignThemes.Wpf;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
-using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -22,9 +21,10 @@ namespace Speckle.DesktopUI.Utils
   /// account information so a `Client` can be recreated.
   /// </summary>
   [JsonObject(MemberSerialization.OptIn)]
-  public partial class StreamState : PropertyChangedBase, IHandle<UpdateSelectionCountEvent>
+  public partial class StreamState : PropertyChangedBase
   {
     private Client _client;
+
     public Client Client
     {
       get => _client;
@@ -217,7 +217,9 @@ namespace Speckle.DesktopUI.Utils
     }
 
     private ISelectionFilter _filter;
+
     [JsonProperty]
+    [JsonConverter(typeof(SelectionFilterConverter))]
     public ISelectionFilter Filter
     {
       get => _filter;
@@ -457,7 +459,7 @@ namespace Speckle.DesktopUI.Utils
     public StreamState(string accountId)
     {
       var account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId) ??
-                    AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == ServerUrl);
+        AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == ServerUrl);
       if (account == null)
       {
         // TODO : Notify error!
@@ -473,16 +475,25 @@ namespace Speckle.DesktopUI.Utils
       {
         return;
       }
+      // refresh after deserialisation
+      Task.Run(() => RefreshStream());
 
       Client.SubscribeStreamUpdated(Stream.id);
       Client.SubscribeCommitCreated(Stream.id);
       Client.SubscribeCommitUpdated(Stream.id);
       Client.SubscribeCommitDeleted(Stream.id);
+      Client.SubscribeBranchCreated(Stream.id);
+      Client.SubscribeBranchUpdated(Stream.id);
+      Client.SubscribeBranchDeleted(Stream.id);
 
       Client.OnStreamUpdated += HandleStreamUpdated;
       Client.OnCommitCreated += HandleCommitCreated;
       Client.OnCommitDeleted += HandleCommitCreated;
-      Client.OnCommitUpdated += HandleCommitChanged;
+      Client.OnCommitUpdated += HandleCommitUpdated;
+      // BUG: due to subs bug, these all have to be handled by fetching new list from server
+      Client.OnBranchCreated += HandleBranchCreated;
+      Client.OnBranchUpdated += HandleBranchCreated;
+      Client.OnBranchUpdated += HandleBranchCreated;
 
       if (Branch == null)
       {
@@ -526,14 +537,14 @@ namespace Speckle.DesktopUI.Utils
         });
         Branch = Stream.branches.items.Last();
 
-        NotifyOfPropertyChange(nameof(BranchContextMenuItem));
         Globals.Notify($"Created branch {Branch.name} and switched to it.");
         return;
       }
 
       Branch = branch;
       Globals.Notify($"Switched active branch to {Branch.name}.");
-      NotifyOfPropertyChange(nameof(BranchContextMenuItem));
+
+      NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       Globals.HostBindings.PersistAndUpdateStreamInFile(this);
     }
 
@@ -629,6 +640,7 @@ namespace Speckle.DesktopUI.Utils
     public void SwapState()
     {
       IsSenderCard = !IsSenderCard;
+      NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       Globals.HostBindings.PersistAndUpdateStreamInFile(this);
     }
 
@@ -645,146 +657,6 @@ namespace Speckle.DesktopUI.Utils
     }
 
     #endregion
-
-    #region Selection events
-
-    public void SetObjectSelection()
-    {
-      var objIds = Globals.HostBindings.GetSelectedObjects();
-      if (objIds == null || objIds.Count == 0)
-      {
-        Globals.Notify("Could not get object selection.");
-        return;
-      }
-
-      Objects = objIds.Select(id => new Base { applicationId = id }).ToList();
-
-      Globals.Notify("Object selection set.");
-      Filter = null;
-    }
-
-    public void AddObjectSelection()
-    {
-      var objIds = Globals.HostBindings.GetSelectedObjects();
-      if (objIds == null || objIds.Count == 0)
-      {
-        Globals.Notify("Could not get object selection.");
-        return;
-      }
-
-      objIds.ForEach(id =>
-      {
-        if (Objects.FirstOrDefault(b => b.applicationId == id) == null)
-        {
-          Objects.Add(new Base { applicationId = id });
-        }
-      });
-
-      Globals.Notify("Object added.");
-      Filter = null;
-    }
-
-    public void RemoveObjectSelection()
-    {
-      var objIds = Globals.HostBindings.GetSelectedObjects();
-      if (objIds == null || objIds.Count == 0)
-      {
-        Globals.Notify("Could not get object selection.");
-        return;
-      }
-
-      var filtered = Objects.Where(o => objIds.IndexOf(o.applicationId) == -1).ToList();
-
-      if (filtered.Count == Objects.Count)
-      {
-        Globals.Notify("No objects removed.");
-        return;
-      }
-
-      Globals.Notify($"{Objects.Count - filtered.Count} objects removed.");
-      Objects = filtered;
-    }
-
-    public void ClearObjectSelection()
-    {
-      Objects = new List<Base>();
-      Filter = null;
-      Globals.Notify($"Selection cleared.");
-    }
-
-    #endregion
-
-    #region application events 
-
-    private void HandleStreamUpdated(object sender, StreamInfo info)
-    {
-      Stream.name = info.name;
-      Stream.description = info.description;
-      NotifyOfPropertyChange(nameof(Stream));
-    }
-
-    public void Handle(UpdateSelectionCountEvent message)
-    {
-      SelectionCount = message.SelectionCount;
-    }
-
-    private async void HandleCommitCreated(object sender, CommitInfo info)
-    {
-      if (IsSenderCard)
-      {
-        return;
-      }
-
-      var updatedStream = await Client.StreamGet(Stream.id);
-      Branches = updatedStream.branches.items;
-
-      var binfo = Branches.FirstOrDefault(b => b.name == info.branchName);
-      var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
-
-      if (Branch.name == info.branchName)
-      {
-        Branch = binfo;
-      }
-
-      ServerUpdateSummary = $"{cinfo.authorName} sent new data on branch {info.branchName}: {info.message}";
-
-      ServerUpdates = true;
-    }
-
-    private void HandleCommitChanged(object sender, CommitInfo info)
-    {
-      var branch = Stream.branches.items.FirstOrDefault(b => b.name == info.branchName);
-      var commit = branch?.commits.items.FirstOrDefault(c => c.id == info.id);
-      if (commit == null)
-      {
-        // something went wrong, but notify the user there were changes anyway
-        // ((look like this sub isn't returning a branch name?))
-        ServerUpdates = true;
-        return;
-      }
-
-      commit.message = info.message;
-      NotifyOfPropertyChange(nameof(Stream));
-    }
-
-    public async Task<bool> RefreshStream()
-    {
-      try
-      {
-        var updatedStream = await Client.StreamGet(Stream.id);
-        Stream = updatedStream;
-        Branches = updatedStream.branches.items;
-      }
-      catch (Exception)
-      {
-        return false;
-      }
-
-      return true;
-    }
-
-    #endregion
-
   }
 
   /// <summary>
@@ -803,7 +675,6 @@ namespace Speckle.DesktopUI.Utils
       public Branch Branch { get; set; }
     }
   }
-
 
   /// <summary>
   /// Class used for handling actions around the context menu of the commit switcher (receiver).

@@ -115,6 +115,7 @@
     <Compile Include="Utils\Helpers.cs" />
     <Compile Include="Utils\StreamDialogBase.cs" />
     <Compile Include="Utils\StreamState.cs" />
+    <Compile Include="Utils\StreamState.Events.cs" />
     <Compile Include="Utils\ViewModelFactories.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\SelectionFilter.cs" />
