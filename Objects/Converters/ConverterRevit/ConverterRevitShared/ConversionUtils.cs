@@ -17,6 +17,30 @@ namespace Objects.Converter.Revit
 
     #region hosted elements
 
+
+
+    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host)
+    {
+      #region host handling
+      //doesn't have a host, go ahead and convert
+      if (host == null)
+        return true;
+
+      // has been converted before (from a parent host), skip it
+      if (ConvertedObjectsList.IndexOf(element.UniqueId) != -1)
+      {
+        return false;
+      }
+
+      // the parent is in our selection list,skip it, as this element will be converted by the host element
+      if (ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId) != -1)
+      {
+        return false;
+      }
+      return true;
+
+      #endregion
+    }
     /// <summary>
     /// Gets the hosted element of a host and adds the to a Base object
     /// </summary>

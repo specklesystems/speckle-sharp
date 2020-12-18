@@ -15,11 +15,9 @@ namespace Objects.Converter.Revit
   {
     public ApplicationPlaceholderObject OpeningToNative(BuiltElements.Opening speckleOpening)
     {
-
-
       var baseCurves = CurveToNative(speckleOpening.outline);
 
-      var docObj = GetExistingElementByApplicationId(((Base)speckleOpening).applicationId);
+      var docObj = GetExistingElementByApplicationId(speckleOpening.applicationId);
       if (docObj != null)
       {
         Doc.Delete(docObj.Id);
@@ -31,6 +29,8 @@ namespace Objects.Converter.Revit
       {
         case RevitWallOpening rwo:
           {
+            if (CurrentHostElement as Wall == null)
+              throw new Exception($"Hosted wall openings require a host wall");
             var points = (rwo.outline as Polyline).points.Select(x => PointToNative(x)).ToList();
             revitOpening = Doc.Create.NewOpening(CurrentHostElement as Wall, points[0], points[2]);
             break;
@@ -38,6 +38,8 @@ namespace Objects.Converter.Revit
 
         case RevitVerticalOpening rvo:
           {
+            if (CurrentHostElement == null)
+              throw new Exception($"Hosted vertical openings require a host family");
             revitOpening = Doc.Create.NewOpening(CurrentHostElement, baseCurves, true);
             break;
           }
@@ -47,6 +49,8 @@ namespace Objects.Converter.Revit
             var bottomLevel = LevelToNative(rs.bottomLevel);
             var topLevel = LevelToNative(rs.topLevel);
             revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
+            TrySetParam(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM, rs.height);
+
             break;
           }
 
@@ -66,23 +70,8 @@ namespace Objects.Converter.Revit
 
     public BuiltElements.Opening OpeningToSpeckle(DB.Opening revitOpening)
     {
-      #region host handling
-
-      // Check if it's been converted previously - from a parent host.
-      if (ConvertedObjectsList.IndexOf(revitOpening.UniqueId) != -1)
-      {
+      if (!ShouldConvertHostedElement(revitOpening, revitOpening.Host))
         return null;
-      }
-
-      // If the parent is in our selection list, back off, as this element will be converted by the host element.
-      if (revitOpening.Host != null && ContextObjects.FindIndex(obj => obj.applicationId == revitOpening.Host.UniqueId) != -1)
-      {
-        return null;
-      }
-
-      #endregion
-
-      var heightParam = revitOpening.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM);
 
       RevitOpening speckleOpening;
       if (revitOpening.IsRectBoundary)

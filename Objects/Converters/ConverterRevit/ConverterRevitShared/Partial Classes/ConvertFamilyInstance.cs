@@ -115,21 +115,8 @@ namespace Objects.Converter.Revit
     public Base FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
     {
 
-      #region host handling
-
-      // Check if it's been converted previously - from a parent host.
-      if (ConvertedObjectsList.IndexOf(revitFi.UniqueId) != -1)
-      {
+      if (!ShouldConvertHostedElement(revitFi, revitFi.Host))
         return null;
-      }
-
-      // If the parent is in our selection list, back off, as this element will be converted by the host element.
-      if (revitFi.Host != null && ContextObjects.FindIndex(obj => obj.applicationId == revitFi.Host.UniqueId) != -1)
-      {
-        return null;
-      }
-
-      #endregion
 
       //adaptive components
       if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(revitFi))
