@@ -181,13 +181,15 @@ namespace Objects.Converter.Revit
     {
       var rp = elem.get_Parameter(bip);
 
-      if (rp == null)
+      if (rp == null || !rp.HasValue)
         return default;
 
       return (T)ParameterToSpeckle(rp).value;
 
     }
 
+
+    //rp must HaveValue
     private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false)
     {
       var sp = new Parameter
@@ -333,12 +335,21 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units)
+    private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units = "")
     {
       var param = elem.get_Parameter(bip);
       if (param != null && !param.IsReadOnly)
       {
-        param.Set(ScaleToNative(value, units));
+        //for angles, we use the default conversion (degrees > radians)
+        if (string.IsNullOrEmpty(units))
+        {
+          param.Set(ScaleToNative(value, param.DisplayUnitType));
+        }
+        else
+        {
+          param.Set(ScaleToNative(value, units));
+        }
+
       }
     }
 

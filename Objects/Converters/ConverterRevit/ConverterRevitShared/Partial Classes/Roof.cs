@@ -55,7 +55,9 @@ namespace Objects.Converter.Revit
               norm,
               Doc.ActiveView);
             //create floor without a type
-            revitRoof = Doc.Create.NewExtrusionRoof(outline, plane, level, roofType, speckleExtrusionRoof.start, speckleExtrusionRoof.end);
+            var start = ScaleToNative(speckleExtrusionRoof.start, speckleExtrusionRoof.units);
+            var end = ScaleToNative(speckleExtrusionRoof.end, speckleExtrusionRoof.units);
+            revitRoof = Doc.Create.NewExtrusionRoof(outline, plane, level, roofType, start, end);
             break;
           }
 
@@ -64,23 +66,43 @@ namespace Objects.Converter.Revit
             ModelCurveArray curveArray = new ModelCurveArray();
             var revitFootprintRoof = Doc.Create.NewFootPrintRoof(outline, level, roofType, out curveArray);
             var poly = speckleFootprintRoof.outline as Polycurve;
+            bool hasSlopedSide = false;
             if (poly != null)
             {
               for (var i = 0; i < curveArray.Size; i++)
               {
                 var isSloped = ((Base)poly.segments[i])["isSloped"] as bool?;
-                revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), isSloped == true);
-
-                try
-                {
-                  var slopeAngle = ((Base)poly.segments[i])["slopeAngle"] as double?;
-                  revitFootprintRoof.set_SlopeAngle(curveArray.get_Item(i), (double)slopeAngle);
-                }
-                catch { }
+                var slopeAngle = ((Base)poly.segments[i])["slopeAngle"] as double?;
                 var offset = ((Base)poly.segments[i])["offset"] as double?;
-                revitFootprintRoof.set_Offset(curveArray.get_Item(i), (double)offset);
+
+                if (isSloped != null)
+                {
+                  revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), isSloped == true);
+                  if (slopeAngle != null && isSloped == true)
+                  {
+                    revitFootprintRoof.set_SlopeAngle(curveArray.get_Item(i), (double)slopeAngle);
+                    hasSlopedSide = true;
+                  }
+
+                }
+
+                if (offset != null)
+                  revitFootprintRoof.set_Offset(curveArray.get_Item(i), (double)offset);
               }
             }
+
+            //this is for schema builder specifically
+            //if no roof edge has a slope defined but a slope angle is defined on the roof
+            //set each edge to have that slope
+            if (!hasSlopedSide && speckleFootprintRoof.slope != null)
+            {
+              for (var i = 0; i < curveArray.Size; i++)
+              {
+                revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), true);
+              }
+              TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_SLOPE, (double)speckleFootprintRoof.slope);
+            }
+
 
             if (speckleFootprintRoof.cutOffLevel != null)
             {
@@ -145,7 +167,8 @@ namespace Objects.Converter.Revit
             var speckleFootprintRoof = new RevitFootprintRoof
             {
               level = ConvertAndCacheLevel(footPrintRoof, BuiltInParameter.ROOF_BASE_LEVEL_PARAM),
-              cutOffLevel = ConvertAndCacheLevel(footPrintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM)
+              cutOffLevel = ConvertAndCacheLevel(footPrintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM),
+              slope = GetParamValue<double?>(footPrintRoof, BuiltInParameter.ROOF_SLOPE) //NOTE: can be null if the sides have different slopes
             };
 
             speckleRoof = speckleFootprintRoof;
@@ -162,7 +185,7 @@ namespace Objects.Converter.Revit
             var plane = revitExtrusionRoof.GetProfile().get_Item(0).SketchPlane.GetPlane();
             speckleExtrusionRoof.referenceLine =
               new Line(PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate())), PointToSpeckle(plane.Origin), ModelUnits); //TODO: test!
-            speckleExtrusionRoof.level = ConvertAndCacheLevel(revitExtrusionRoof, BuiltInParameter.ROOF_BASE_LEVEL_PARAM);
+            speckleExtrusionRoof.level = ConvertAndCacheLevel(revitExtrusionRoof, BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM);
             speckleRoof = speckleExtrusionRoof;
             break;
           }
@@ -180,7 +203,8 @@ namespace Objects.Converter.Revit
         }
       }
 
-      GetRevitParameters(speckleRoof, revitRoof, new List<string> { "ROOF_BASE_LEVEL_PARAM", "ROOF_UPTO_LEVEL_PARAM", "EXTRUSION_START_PARAM", "EXTRUSION_END_PARAM" });
+      GetRevitParameters(speckleRoof, revitRoof,
+        new List<string> { "ROOF_CONSTRAINT_LEVEL_PARAM", "ROOF_BASE_LEVEL_PARAM", "ROOF_UPTO_LEVEL_PARAM", "EXTRUSION_START_PARAM", "EXTRUSION_END_PARAM" });
 
       var displayMesh = new Geometry.Mesh();
       (displayMesh.faces, displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
@@ -214,10 +238,10 @@ namespace Objects.Converter.Revit
                   continue;
                 }
 
-                var segment = CurveToSpeckle(curve.GeometryCurve) as Base; //it's a safe casting, should be improved tho...
-                segment["slopeAngle"] = ParameterToSpeckle(curve.get_Parameter(BuiltInParameter.ROOF_SLOPE));
-                segment["isSloped"] = ParameterToSpeckle(curve.get_Parameter(BuiltInParameter.ROOF_CURVE_IS_SLOPE_DEFINING));
-                segment["offset"] = ParameterToSpeckle(curve.get_Parameter(BuiltInParameter.ROOF_CURVE_HEIGHT_OFFSET));
+                var segment = CurveToSpeckle(curve.GeometryCurve) as Base; //it's a safe casting
+                segment["slopeAngle"] = GetParamValue<double>(curve, BuiltInParameter.ROOF_SLOPE);
+                segment["isSloped"] = GetParamValue<bool>(curve, BuiltInParameter.ROOF_CURVE_IS_SLOPE_DEFINING);
+                segment["offset"] = GetParamValue<double>(curve, BuiltInParameter.ROOF_CURVE_HEIGHT_OFFSET);
                 poly.segments.Add(segment as ICurve);
 
                 //roud profiles are returned duplicated!

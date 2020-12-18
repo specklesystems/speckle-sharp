@@ -90,7 +90,16 @@ namespace ConverterRevitTests
       {
         foreach (var el in spkElems)
         {
-          var res = converter.ConvertToNative(el);
+          object res = null;
+          try
+          {
+            res = converter.ConvertToNative(el);
+          }
+          catch (Exception e)
+          {
+            converter.ConversionErrors.Add(new Error(e.Message, e.StackTrace));
+          }
+
           if (res is List<ApplicationPlaceholderObject> apls)
           {
             resEls.AddRange(apls);
