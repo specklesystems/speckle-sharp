@@ -242,7 +242,7 @@ namespace Objects.Converter.Revit
         }
 
       }
-      catch (Exception)
+      catch (Exception e)
       {
         return null;
       }
@@ -523,7 +523,7 @@ namespace Objects.Converter.Revit
       // TODO: Trim curve with domain. Unsure if this is necessary as all our curves are converted to NURBS on Rhino output.
 
       var nativeCurveArray = CurveToNative(edge.Curve);
-      bool isTrimmed = edge.Curve.domain != null &&
+      bool isTrimmed = edge.Curve.domain != null && edge.Domain != null &&
                        (edge.Curve.domain.start != edge.Domain.start 
                         || edge.Curve.domain.end != edge.Domain.end);
       if (nativeCurveArray.Size == 1)
@@ -535,10 +535,13 @@ namespace Objects.Converter.Revit
 
         if (nativeCurve == null)
           return new List<BRepBuilderEdgeGeometry>();
-        
+        if (isTrimmed)
+        {
+          nativeCurve.MakeBound(edge.Domain.start ?? 0, edge.Domain.end ?? 1);
+        }
         if (!nativeCurve.IsBound)
           nativeCurve.MakeBound(0, nativeCurve.Period);
-
+      
         var endPoint = nativeCurve.GetEndPoint(0);
         var source = nativeCurve.GetEndPoint(1);
         var distanceTo = endPoint.DistanceTo(source);
@@ -701,7 +704,8 @@ namespace Objects.Converter.Revit
             {
               // First time we see this edge, convert it and add
               edgeIds = brepEdges[trim.EdgeIndex] = new List<BRepBuilderGeometryId>();
-              edgeIds.AddRange(BrepEdgeToNative(trim.Edge).Select(edge => builder.AddEdge(edge)));
+              var bRepBuilderGeometryIds = BrepEdgeToNative(trim.Edge).Select(edge => builder.AddEdge(edge));
+              edgeIds.AddRange(bRepBuilderGeometryIds);
             }
 
             var trimReversed = face.OrientationReversed ? !trim.IsReversed : trim.IsReversed;
@@ -709,13 +713,12 @@ namespace Objects.Converter.Revit
             {
               for (int e = edgeIds.Count - 1; e >= 0; --e)
                 builder.AddCoEdge(loopId, edgeIds[e], true);
+
             }
             else
             {
               for (int e = 0; e < edgeIds.Count; ++e)
-              {
                 builder.AddCoEdge(loopId, edgeIds[e], false);
-              }
             }
           }
 
@@ -724,9 +727,10 @@ namespace Objects.Converter.Revit
         builder.FinishFace(faceId);
       }
 
+      var removedFace = builder.RemovedSomeFaces();
       var bRepBuilderOutcome = builder.Finish();
       if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
-
+      
       var isResultAvailable = builder.IsResultAvailable();
       if (!isResultAvailable) return null;
       var result = builder.GetResult();

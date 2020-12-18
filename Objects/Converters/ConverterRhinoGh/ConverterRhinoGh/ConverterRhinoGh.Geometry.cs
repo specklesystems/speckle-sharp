@@ -418,7 +418,10 @@ namespace Objects.Converter.RhinoGh
 
         case Line line:
           return LineToNative(line);
-
+        
+        case Polycurve polycurve:
+          return PolycurveToNative(polycurve);
+        
         default:
           return null;
       }
@@ -612,11 +615,11 @@ namespace Objects.Converter.RhinoGh
     public Brep BrepToSpeckle(RH.Brep brep)
     {
       //brep.Repair(0.0); //should maybe use ModelAbsoluteTolerance ?
-      
-      brep.MakeValidForV2();
       var joinedMesh = new RH.Mesh();
       var mySettings = new MeshingParameters(0);
-
+      //brep.Compact();
+      brep.Trims.MatchEnds();
+      
       RH.Mesh.CreateFromBrep(brep, mySettings).All(meshPart =>
       {
         joinedMesh.Append(meshPart);
@@ -625,28 +628,32 @@ namespace Objects.Converter.RhinoGh
 
       var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh),
         provenance: Speckle.Core.Kits.Applications.Rhino, units: ModelUnits);
-
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices
         .Select(vertex => PointToSpeckle(vertex)).ToList();
-      spcklBrep.Curve3D = brep.Edges
+      spcklBrep.Curve3D = brep.Curves3D
         .Select(edge =>
         {
-          var nurbsCurve = edge.EdgeCurve.ToNurbsCurve();
-          // Nurbs curves of degree 2 have weird support in Revit, so we up everything to degree 3.
-          if (nurbsCurve.Degree < 3)
-            nurbsCurve.IncreaseDegree(3);
-          // Check for invalid multiplicity in the curves. This is also to better support Revit.
-          var invalid = HasInvalidMultiplicity(nurbsCurve);
+          Rhino.Geometry.Curve crv = edge;
+          if (crv is NurbsCurve nurbsCurve)
+          {
+            // Nurbs curves of degree 2 have weird support in Revit, so we up everything to degree 3.
+            if (nurbsCurve.Degree < 3)
+              nurbsCurve.IncreaseDegree(3);
+            // Check for invalid multiplicity in the curves. This is also to better support Revit.
+            var invalid = HasInvalidMultiplicity(nurbsCurve);
           
-          // If the curve has invalid multiplicity and is not closed, rebuild with same number of points and degree.
-          // TODO: Figure out why closed curves don't like this hack?
-          if (invalid && !nurbsCurve.IsClosed)
-            nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count,nurbsCurve.Degree,true);
+            // If the curve has invalid multiplicity and is not closed, rebuild with same number of points and degree.
+            // TODO: Figure out why closed curves don't like this hack?
+            if (invalid && !nurbsCurve.IsClosed)
+              nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count,nurbsCurve.Degree,true);
+            nurbsCurve.Domain = edge.Domain;
+            crv = nurbsCurve;
+          }
+          var icrv=  ConvertToSpeckle(crv) as ICurve;
+          return icrv;
 
-          nurbsCurve.Domain = edge.EdgeCurve.Domain;
           // And finally convert to speckle
-          return CurveToSpeckle(nurbsCurve);
         }).ToList();
       spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c =>
       {

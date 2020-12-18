@@ -96,16 +96,16 @@ namespace Objects.Converter.RhinoGh
 
         case RH.Polyline o:
           return PolylineToSpeckle(o) as Base;
+        
+        case NurbsCurve o:
+          return CurveToSpeckle(o) as Base;
 
         case PolylineCurve o:
           return PolylineToSpeckle(o);
 
         case PolyCurve o:
           return PolycurveToSpeckle(o);
-
-        case NurbsCurve o:
-          return CurveToSpeckle(o) as Base;
-
+        
         case RH.Box o:
           return BoxToSpeckle(o);
 
