@@ -196,7 +196,7 @@ namespace Objects.Converter.Revit
         }
       }
 
-      GetRevitParameters(speckleRoof, revitRoof,
+      GetAllRevitParamsAndIds(speckleRoof, revitRoof,
         new List<string> { "ROOF_CONSTRAINT_LEVEL_PARAM", "ROOF_BASE_LEVEL_PARAM", "ROOF_UPTO_LEVEL_PARAM", "EXTRUSION_START_PARAM", "EXTRUSION_END_PARAM" });
 
       var displayMesh = new Geometry.Mesh();

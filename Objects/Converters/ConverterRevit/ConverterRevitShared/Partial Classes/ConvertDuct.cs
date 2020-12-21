@@ -93,7 +93,7 @@ namespace Objects.Converter.Revit
       var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());
       speckleDuct.systemName = typeElem.Name;
 
-      GetRevitParameters(speckleDuct, revitDuct,
+      GetAllRevitParamsAndIds(speckleDuct, revitDuct,
         new List<string> { "RBS_CURVE_HEIGHT_PARAM", "RBS_CURVE_WIDTH_PARAM", "RBS_CURVE_DIAMETER_PARAM", "CURVE_ELEM_LENGTH", "RBS_START_LEVEL_PARAM", "RBS_VELOCITY" });
 
       return speckleDuct;

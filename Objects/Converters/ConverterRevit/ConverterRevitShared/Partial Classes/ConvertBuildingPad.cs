@@ -27,7 +27,7 @@ namespace Objects.Converter.Revit
 
       specklePad.level = ConvertAndCacheLevel(revitPad, BuiltInParameter.LEVEL_PARAM);
 
-      GetRevitParameters(specklePad, revitPad, new List<string> { "LEVEL_PARAM" });
+      GetAllRevitParamsAndIds(specklePad, revitPad, new List<string> { "LEVEL_PARAM" });
 
       var mesh = new Geometry.Mesh();
       (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitPad, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });

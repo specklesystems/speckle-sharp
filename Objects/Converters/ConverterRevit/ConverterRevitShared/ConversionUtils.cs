@@ -21,7 +21,6 @@ namespace Objects.Converter.Revit
 
     private bool ShouldConvertHostedElement(DB.Element element, DB.Element host)
     {
-      #region host handling
       //doesn't have a host, go ahead and convert
       if (host == null)
         return true;
@@ -38,8 +37,6 @@ namespace Objects.Converter.Revit
         return false;
       }
       return true;
-
-      #endregion
     }
     /// <summary>
     /// Gets the hosted element of a host and adds the to a Base object
@@ -105,7 +102,7 @@ namespace Objects.Converter.Revit
             continue;
           }
 
-          if (!CanConvertToSpeckle(obj))
+          if (!CanConvertToNative(obj))
           {
             ConversionErrors.Add(new Error { message = $"Skipping {obj.speckle_type}, not supported" });
             continue;
@@ -123,9 +120,9 @@ namespace Objects.Converter.Revit
               placeholders.AddRange(apls);
             }
           }
-          catch
+          catch (Exception e)
           {
-            ConversionErrors.Add(new Error { message = $"Failed to create hosted element {obj.speckle_type} in {@base.applicationId}." });
+            ConversionErrors.Add(new Error { message = $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}" });
           }
         }
 
@@ -148,7 +145,7 @@ namespace Objects.Converter.Revit
     /// <param name="exclusions">List of BuiltInParameters or GUIDs used to indicate what parameters NOT to get,
     /// we exclude all params already defined on the top level object to avoid duplication and 
     /// potential conflicts when setting them back on the element</param>
-    private void GetRevitParameters(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
+    private void GetAllRevitParamsAndIds(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
     {
       var parms = GetInstanceParams(revitElement, exclusions);
       if (parms != null)
@@ -174,7 +171,7 @@ namespace Objects.Converter.Revit
     //  "ELEM_CATEGORY_PARAM" };
     private List<Parameter> GetInstanceParams(DB.Element element, List<string> exclusions)
     {
-      return GetParams(element, false, exclusions);
+      return GetElementParams(element, false, exclusions);
     }
     private List<Parameter> GetTypeParams(DB.Element element)
     {
@@ -184,11 +181,11 @@ namespace Objects.Converter.Revit
       {
         return new List<Parameter>();
       }
-      return GetParams(elementType, true);
+      return GetElementParams(elementType, true);
 
     }
 
-    private List<Parameter> GetParams(DB.Element element, bool isTypeParameter = false, List<string> exclusions = null)
+    private List<Parameter> GetElementParams(DB.Element element, bool isTypeParameter = false, List<string> exclusions = null)
     {
       exclusions = (exclusions != null) ? exclusions : new List<string>();
 
@@ -297,6 +294,7 @@ namespace Objects.Converter.Revit
       // Here we are creating two  dictionaries for faster lookup
       // one uses the BuiltInName / GUID the other the name as Key
       // we need both to support parameter set by Schema Builder, that might be generated with one or the other
+      // Also, custom parameters that are not Shared, will have an INVALID BuiltInParameter name and no GUID, then we need to use their name
       var revitParameterById = revitParameters.ToDictionary(x => GetParamInternalName(x), x => x);
       var revitParameterByName = revitParameters.ToDictionary(x => x.Definition.Name, x => x);
 
@@ -341,15 +339,28 @@ namespace Objects.Converter.Revit
 
     }
 
+    //Shared parameters use a GUID to be uniquely identified
+    //Other parameters use a BuiltInParameter enum
     private string GetParamInternalName(DB.Parameter rp)
     {
-      //Shared parameters use a GUID to be uniquely identified
-      //Other parameters use a BuiltInParameter enum
       if (rp.IsShared)
         return rp.GUID.ToString();
       else
-        return (rp.Definition as InternalDefinition).BuiltInParameter.ToString();
+      {
+        var def = rp.Definition as InternalDefinition;
+        if (def.BuiltInParameter == BuiltInParameter.INVALID)
+          return def.Name;
+        return def.BuiltInParameter.ToString();
+      }
     }
+
+    //private bool IsValid(DB.Parameter rp)
+    //{
+    //  if (rp.IsShared)
+    //    return true;
+    //  else
+    //    return (rp.Definition as InternalDefinition).BuiltInParameter != ;
+    //}
 
     private void TrySetParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
     {
@@ -529,9 +540,9 @@ namespace Objects.Converter.Revit
       else
       {
         //try get category from the parameters
-        if (element["parameters"] != null && element["parameters"] is Dictionary<string, object> dic && dic.ContainsKey("Category"))
+        if (element["category"] != null)
         {
-          var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == dic["Category"].ToString());
+          var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == element["category"].ToString());
           if (cat != null)
             filter = new ElementMulticategoryFilter(new List<ElementId> { cat.Id });
         }

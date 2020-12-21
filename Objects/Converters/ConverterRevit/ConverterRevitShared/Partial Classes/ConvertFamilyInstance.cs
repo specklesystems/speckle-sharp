@@ -77,6 +77,9 @@ namespace Objects.Converter.Revit
         }
       }
 
+      //required for face flipping to work!
+      Doc.Regenerate();
+
       if (familyInstance.CanFlipHand && speckleFi.handFlipped != familyInstance.HandFlipped)
       {
         familyInstance.flipHand();
@@ -87,7 +90,8 @@ namespace Objects.Converter.Revit
         familyInstance.flipFacing();
       }
 
-      if (familyInstance.CanRotate && speckleFi.rotation != (familyInstance.Location as LocationPoint).Rotation)
+      //NOTE: do not check for the CanRotate prop as it doesn't work!
+      if (speckleFi.rotation != (familyInstance.Location as LocationPoint).Rotation)
       {
         var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
         (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
@@ -164,6 +168,7 @@ namespace Objects.Converter.Revit
       speckleFi.basePoint = basePoint;
       speckleFi.family = symbol.FamilyName;
       speckleFi.type = symbol.Name;
+      speckleFi.category = revitFi.Category.Name;
       speckleFi.facingFlipped = revitFi.FacingFlipped;
       speckleFi.handFlipped = revitFi.HandFlipped;
       speckleFi.level = lev1 != null ? lev1 : lev2;
@@ -175,7 +180,7 @@ namespace Objects.Converter.Revit
 
       speckleFi["@displayMesh"] = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
 
-      GetRevitParameters(speckleFi, revitFi);
+      GetAllRevitParamsAndIds(speckleFi, revitFi);
 
       #region sub elements capture
 

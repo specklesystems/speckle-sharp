@@ -80,7 +80,7 @@ namespace Objects.Converter.Revit
       speckleRailing.level = ConvertAndCacheLevel(revitRailing, BuiltInParameter.STAIRS_RAILING_BASE_LEVEL_PARAM);
       speckleRailing.path = CurveListToSpeckle(revitRailing.GetPath());
 
-      GetRevitParameters(speckleRailing, revitRailing, new List<string> { "STAIRS_RAILING_BASE_LEVEL_PARAM" });
+      GetAllRevitParamsAndIds(speckleRailing, revitRailing, new List<string> { "STAIRS_RAILING_BASE_LEVEL_PARAM" });
 
       var mesh = new Geometry.Mesh();
       (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitRailing, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });

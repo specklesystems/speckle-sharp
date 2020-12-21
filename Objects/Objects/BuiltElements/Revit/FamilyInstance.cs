@@ -13,6 +13,7 @@ namespace Objects.BuiltElements.Revit
     public string family { get; set; }
 
     public string type { get; set; }
+    public string category { get; set; }
     public Level level { get; set; }
 
     public double rotation { get; set; }

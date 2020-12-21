@@ -125,7 +125,7 @@ namespace Objects.Converter.Revit
 
       //speckleOpening.type = revitOpening.Name;
 
-      GetRevitParameters(speckleOpening, revitOpening, new List<string> { "WALL_BASE_CONSTRAINT", "WALL_HEIGHT_TYPE", "WALL_USER_HEIGHT_PARAM" });
+      GetAllRevitParamsAndIds(speckleOpening, revitOpening, new List<string> { "WALL_BASE_CONSTRAINT", "WALL_HEIGHT_TYPE", "WALL_USER_HEIGHT_PARAM" });
 
       return speckleOpening;
     }

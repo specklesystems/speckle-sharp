@@ -135,7 +135,7 @@ namespace Objects.Converter.Revit
 
       speckleWall["@displayMesh"] = GetWallDisplayMesh(revitWall);
 
-      GetRevitParameters(speckleWall, revitWall, new List<string> { "WALL_USER_HEIGHT_PARAM", "WALL_BASE_OFFSET", "WALL_TOP_OFFSET", "WALL_BASE_CONSTRAINT",
+      GetAllRevitParamsAndIds(speckleWall, revitWall, new List<string> { "WALL_USER_HEIGHT_PARAM", "WALL_BASE_OFFSET", "WALL_TOP_OFFSET", "WALL_BASE_CONSTRAINT",
       "WALL_HEIGHT_TYPE", "WALL_STRUCTURAL_SIGNIFICANT"});
 
       GetHostedElements(speckleWall, revitWall);

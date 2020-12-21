@@ -35,7 +35,7 @@ namespace Objects.Converter.Revit
       speckleStair.landings = revitStair.GetStairsLandings().Select(x => StairLandingToSpeckle(Doc.GetElement(x) as StairsLanding)).ToList();
       speckleStair.supports = revitStair.GetStairsSupports().Select(x => StairSupportToSpeckle(Doc.GetElement(x))).ToList();
 
-      GetRevitParameters(speckleStair, revitStair, new List<string> { "STAIRS_BASE_LEVEL_PARAM", "STAIRS_TOP_LEVEL_PARAM" });
+      GetAllRevitParamsAndIds(speckleStair, revitStair, new List<string> { "STAIRS_BASE_LEVEL_PARAM", "STAIRS_TOP_LEVEL_PARAM" });
 
       var mesh = new Geometry.Mesh();
       (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitStair, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
@@ -66,7 +66,7 @@ namespace Objects.Converter.Revit
       run.path = CurveLoopToSpeckle(revitStairRun.GetStairsPath());
       run.outline = CurveLoopToSpeckle(revitStairRun.GetFootprintBoundary());
 
-      GetRevitParameters(run, revitStairRun);
+      GetAllRevitParamsAndIds(run, revitStairRun);
       return run;
     }
 
@@ -82,7 +82,7 @@ namespace Objects.Converter.Revit
       landing.units = ModelUnits;
       landing.outline = CurveLoopToSpeckle(revitStairLanding.GetFootprintBoundary());
 
-      GetRevitParameters(landing, revitStairLanding);
+      GetAllRevitParamsAndIds(landing, revitStairLanding);
       return landing;
     }
 
@@ -93,7 +93,7 @@ namespace Objects.Converter.Revit
       support.family = stairType.FamilyName;
       support.type = stairType.Name;
 
-      GetRevitParameters(support, revitStairSupport);
+      GetAllRevitParamsAndIds(support, revitStairSupport);
       return support;
     }
   }
