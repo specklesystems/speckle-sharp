@@ -24,6 +24,7 @@ namespace Speckle.DesktopUI
       Tracker.TrackPageview(Tracker.SESSION_START);
       InitializeMaterialDesign();
       LoadThemeResources();
+      Stylet.Logging.LogManager.Enabled = true;
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -72,7 +73,7 @@ namespace Speckle.DesktopUI
       Application.Current.Resources.MergedDictionaries.Add(
         Application.LoadComponent(
           new Uri("SpeckleDesktopUI;component/Themes/Generic.xaml", UriKind.Relative)
-        )as ResourceDictionary);
+        ) as ResourceDictionary);
     }
 
   }

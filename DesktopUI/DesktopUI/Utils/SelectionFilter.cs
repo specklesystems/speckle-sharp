@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using Speckle.Core.Logging;
+using System.Linq;
+using Newtonsoft.Json;
 using Stylet;
 
 namespace Speckle.DesktopUI.Utils
 {
+
   public interface ISelectionFilter
   {
     string Name { get; set; }
@@ -51,7 +52,8 @@ namespace Speckle.DesktopUI.Utils
         if (Selection.Count != 0)
         {
           return string.Join(", ", Selection);
-        } else
+        }
+        else
         {
           return "Not set.";
         }
@@ -61,12 +63,11 @@ namespace Speckle.DesktopUI.Utils
 
   public class PropertySelectionFilter : ISelectionFilter
   {
-    public string Type => typeof(ListSelectionFilter).ToString();
+    public string Type => typeof(PropertySelectionFilter).ToString();
 
     public string Name { get; set; }
     public string Icon { get; set; }
     public string Description { get; set; }
-
 
     public List<string> Selection { get; set; } = new List<string>();
 
@@ -101,13 +102,12 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _listItem, value);
-        if (value == null) return;
-        if (ListItems.Contains(ListItem)) return;
-        ListItems.Add(ListItem);
+        //if (ListItem == null || ListItems.Contains(ListItem)) return;
+        //ListItems.Add(ListItem);
+        //SearchResults.Remove(ListItem);
       }
     }
-
-    public BindableCollection<string> ListItems { get; } = new BindableCollection<string>();
+    public BindableCollection<string> ListItems { get; set; } = new BindableCollection<string>();
 
     public FilterTab(ISelectionFilter filter)
     {
@@ -120,14 +120,54 @@ namespace Speckle.DesktopUI.Utils
           break;
         case ListSelectionFilter f:
           FilterView = Activator.CreateInstance(Type.GetType($"Speckle.DesktopUI.Streams.Dialogs.FilterViews.CategoryFilterView"));
+          _valuesList = SearchResults = new BindableCollection<string>(f.Values);
           break;
       }
     }
+
+    private string _searchQuery;
+    public string SearchQuery
+    {
+      get => _searchQuery;
+      set
+      {
+        SetAndNotify(ref _searchQuery, value);
+        searchSourceChanged = true;
+        SearchResults = new BindableCollection<string>(_valuesList.Where(v => v.ToLower().Contains(SearchQuery.ToLower())).ToList());
+        NotifyOfPropertyChange(nameof(SearchResults));
+      }
+    }
+
+    public BindableCollection<string> SearchResults { get; set; } = new BindableCollection<string>();
+    public bool searchSourceChanged { get; set; } = false;
+    private BindableCollection<string> _valuesList { get; }
 
     public void RemoveListItem(string name)
     {
       ListItem = null;
       ListItems.Remove(name);
+      if (SearchQuery != null && !name.Contains(SearchQuery))return;
+      SearchResults.Add(name);
+    }
+  }
+
+  public class SelectionFilterConverter : JsonConverter
+  {
+    public override bool CanConvert(Type objectType)
+    {
+      return objectType == typeof(ISelectionFilter);
+    }
+
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    {
+      var filter = serializer.Deserialize<ListSelectionFilter>(reader) ?? (ISelectionFilter)serializer.Deserialize<PropertySelectionFilter>(reader);
+
+      return filter;
+    }
+
+    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    {
+      serializer.Serialize(writer, value);
     }
   }
 }

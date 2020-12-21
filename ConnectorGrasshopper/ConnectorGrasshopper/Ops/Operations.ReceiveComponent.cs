@@ -56,7 +56,7 @@ namespace ConnectorGrasshopper.Ops
 
     private Client ApiClient { get; set; }
 
-    public ReceiveComponent() : base("Receive", "Receive", "Receives Speckle data.", "Speckle 2", "   Send/Receive")
+    public ReceiveComponent() : base("Receive", "Receive", "Receive data from a Speckle server", "Speckle 2", "   Send/Receive")
     {
       BaseWorker = new ReceiveComponentWorker(this);
       Attributes = new ReceiveComponentAttributes(this);
@@ -119,14 +119,15 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("Stream", "S",
-        "The Speckle Stream you want to receive data from. You can also input the Stream ID or it's URL as text.",
+      var streamInputIndex = pManager.AddGenericParameter("Stream", "S",
+        "The Speckle Stream to receive data from. You can also input the Stream ID or it's URL as text.",
         GH_ParamAccess.tree);
+      pManager[streamInputIndex].Optional = true;
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("Data", "D", "The data.", GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Data", "D", "Data received.", GH_ParamAccess.tree);
       pManager.AddTextParameter("Info", "I", "Commit information.", GH_ParamAccess.item);
     }
 
@@ -242,8 +243,13 @@ namespace ConnectorGrasshopper.Ops
 
     public void ParseInput(IGH_DataAccess DA)
     {
-      DA.GetDataTree(0, out GH_Structure<IGH_Goo> DataInput);
-
+      var check = DA.GetDataTree(0, out GH_Structure<IGH_Goo> DataInput);
+      if (DataInput.IsEmpty)
+      {
+        StreamWrapper = null;
+        TriggerAutoSave();
+        return;
+      }
       var ghGoo = DataInput.get_DataItem(0);
       if (ghGoo == null)
       {
@@ -367,6 +373,8 @@ namespace ConnectorGrasshopper.Ops
       ErrorAction = (transportName, exception) =>
       {
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
+        var asyncParent = (GH_AsyncComponent) Parent;
+        asyncParent.CancellationSources.ForEach(source => source.Cancel());
       };
 
       var client = new Client(InputWrapper?.GetAccount());

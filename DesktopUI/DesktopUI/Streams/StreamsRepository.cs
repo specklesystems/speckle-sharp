@@ -35,7 +35,9 @@ namespace Speckle.DesktopUI.Streams
 
       var streamInput = new StreamCreateInput()
       {
-        name = stream.name, description = stream.description, isPublic = stream.isPublic
+        name = stream.name,
+        description = stream.description,
+        isPublic = stream.isPublic
       };
 
       return client.StreamCreate(streamInput);
@@ -52,7 +54,7 @@ namespace Speckle.DesktopUI.Streams
       try
       {
         var res = await _bindings.SendStream(state);
-        if ( res == null )
+        if (res == null)
         {
           _bindings.RaiseNotification("Send cancelled");
           return null;
@@ -60,7 +62,7 @@ namespace Speckle.DesktopUI.Streams
 
         state = res;
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         Log.CaptureException(e);
         _bindings.RaiseNotification($"Error: {e.Message}");
@@ -76,7 +78,7 @@ namespace Speckle.DesktopUI.Streams
       try
       {
         var res = await _bindings.ReceiveStream(state);
-        if ( res == null )
+        if (res == null)
         {
           _bindings.RaiseNotification("Receive cancelled");
           return null;
@@ -85,7 +87,7 @@ namespace Speckle.DesktopUI.Streams
         state = res;
         state.ServerUpdates = false;
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         Log.CaptureException(e);
         state.Errors.Add(e);
@@ -101,10 +103,10 @@ namespace Speckle.DesktopUI.Streams
       try
       {
         var deleted = await state.Client.StreamDelete(state.Stream.id);
-        if ( !deleted ) return false;
+        if (!deleted)return false;
         _bindings.RemoveStreamFromFile(state.Stream.id);
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         Log.CaptureException(e);
         state.Errors.Add(e);
@@ -119,9 +121,9 @@ namespace Speckle.DesktopUI.Streams
     {
       var roles = new List<StreamRole>()
       {
-        new StreamRole("reviewer", "Can only view."),
-        new StreamRole("contributor", "Can edit, push and pull."),
-        new StreamRole("owner", "Has full access, including deletion rights & access control.")
+        new StreamRole("Contributor", "Can edit, push and pull."),
+        new StreamRole("Reviewer", "Can only view."),
+        new StreamRole("Owner", "Has full access, including deletion rights & access control.")
       };
       return roles;
     }

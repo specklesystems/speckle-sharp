@@ -7,7 +7,7 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
   public static class Conversion
   {
     /// <summary>
-    /// Convert data from Dynamo to Speckle's Base object
+    /// Convert data from Dynamo to their Speckle Base equivalent.
     /// </summary>
     /// <param name="data">Dynamo data</param>
     /// <returns name="base">Base object</returns>
@@ -19,7 +19,7 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
     }
 
     /// <summary>
-    /// Convert data from Speckle's Base object to Dynamo
+    /// Convert data from Speckle's Base object to it`s Dynamo equivalent.
     /// </summary>
     /// <param name="base">Base object</param>
     /// <returns name="data">Dynamo data</returns>

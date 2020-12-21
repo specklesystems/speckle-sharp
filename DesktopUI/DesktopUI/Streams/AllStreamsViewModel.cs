@@ -29,7 +29,7 @@ namespace Speckle.DesktopUI.Streams
     public BindableCollection<StreamState> StreamList
     {
       get => _streamList;
-      set 
+      set
       {
         SetAndNotify(ref _streamList, value);
         NotifyOfPropertyChange(nameof(EmptyState));
@@ -90,7 +90,22 @@ namespace Speckle.DesktopUI.Streams
       ((RootViewModel)Parent).GoToStreamViewPage(item);
     }
 
-    public void SwitchBranch(BranchContextMenuItem.BranchSwitchCommandArgument args) => args.RootStreamState.SwitchBranch(args.Branch);
+    public async void SwitchBranch(BranchContextMenuItem.BranchSwitchCommandArgument args)
+    {
+      if (args.Branch != null)
+      {
+        args.RootStreamState.SwitchBranch(args.Branch);
+        return;
+      }
+
+      var viewmodel = _dialogFactory.CreateBranchCreateDialogViewModel();
+      viewmodel.StreamState = args.RootStreamState;
+
+      var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
+      var res = await DialogHost.Show(view, "RootDialogHost");
+      if (res == null) return;
+      args.RootStreamState.SwitchBranch((Branch)res);
+    }
 
     public void SwitchCommit(CommitContextMenuItem.CommitSwitchCommandArgument args) => args.RootStreamState.SwitchCommit(args.Commit);
 
@@ -181,7 +196,7 @@ namespace Speckle.DesktopUI.Streams
           StreamList.Clear();
           StreamList = new BindableCollection<StreamState>(message.DynamicInfo);
           StreamList.Refresh();
-          foreach(var state in StreamList)
+          foreach (var state in StreamList)
           {
             state.RefreshStream();
           }

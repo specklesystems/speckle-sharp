@@ -1,10 +1,43 @@
 version: 2.1
 
 orbs:
+  # Swissknife is the orb that handles per-project change detection
   swissknife: roopakv/swissknife@0.54.0
+  # jq is required to be installed to use some swissknife functions.
   jq: circleci/jq@2.2.0
+  # Using windows for builds
   win: circleci/windows@2.2.0
 
+
+# Parameters of our pipeline. Most of them are booleans that indicate which project to build/test with the pattern 'run_{PROJECT_NAME}'
+parameters:
+  # This parameter is initially set to true to run the 'ci' workflow. After first execution, the parameter will be set to false, preventing multiple executions of the selective-ci job on the same commit.
+  run_trigger_workflow:
+    type: boolean
+    default: true
+
+  # Per project flag parameters
+  run_core:
+    type: boolean
+    default: false
+  run_objects:
+    type: boolean
+    default: false
+  run_connector_gh:
+    type: boolean
+    default: false
+  run_connector_revit:
+    type: boolean
+    default: false
+  run_connector_dynamo:
+    type: boolean
+    default: false
+  run_connector_rhino:
+    type: boolean
+    default: false
+
+
+# Each project will have individual jobs for each specific task it has to execute (build, release...)
 jobs:
   # The job that selects which job to run
   selective-ci:
@@ -24,7 +57,6 @@ jobs:
             {"regex": "ConnectorRhino/.*", "param_name": "run_connector_rhino"}
           ]'
   
-  # Core build/test
   build-core:
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
@@ -39,7 +71,9 @@ jobs:
       - run: 
           name: Test Core
           command: dotnet test Core/Tests/TestsUnit.csproj --no-restore --no-build
-  # Objects build/test each proj independently.
+
+  # TODO: And transfer it into the knowledge base.
+  # TODO: Test the RevitSharedProject build.
   build-objects:
     executor:
       name: win/default
@@ -76,12 +110,6 @@ jobs:
       shell: powershell.exe
     steps:
       - checkout
-      - run: 
-          name: Clone GH Connector dependencies
-          command: git clone https://github.com/specklesystems/GrasshopperAsyncComponent.git ../GrasshopperAsyncComponent/
-      - run: 
-          name: Restore GH Connector dependencies
-          command: nuget restore ../GrasshopperAsyncComponent/GrasshopperAsyncComponent/GrasshopperAsyncComponent.sln
       - run: 
           name: Restore GH Connector
           command: nuget restore ConnectorGrasshopper/ConnectorGrasshopper.sln
@@ -130,20 +158,6 @@ jobs:
       - run: 
           name: Build Rhino Connector
           command: msbuild ConnectorRhino/ConnectorRhino.sln /p:Configuration=Release
-    
-  # The unit tests.
-  unit-tests:
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
-    steps:
-      - checkout
-      - run:
-          name: "Pull core submodules"
-          command: |
-            git submodule init
-            git submodule update --remote
-      - run: dotnet restore Core/Core.sln
-      - run: dotnet test Core/Tests/TestsUnit.csproj < /dev/null
 
   # The integration tests. Spins up a full blown speckle server.
   integration-tests:
@@ -206,7 +220,10 @@ jobs:
           command: dotnet test Core/IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true"
 
 # The main workflows for our monorepo pipeline.
+# The main workflow is called 'ci': It is the workflow responsible of determining which projects to build/test.
+# There should be at least one workflow per project in the monorepo. Each workflow should be run only when a boolean parameter is passed that corresponds to the pattern 'run_{PROJECT_NAME}'. These parameters are set by the 'selective-ci' job.
 workflows:
+  # Main workflow. Must be conditioned to the 'run_trigger_workflow' parameter to prevent recursive execution of the job.
   ci:
     when: << pipeline.parameters.run_trigger_workflow >>
     jobs:
@@ -216,57 +233,42 @@ workflows:
               only:  # only branches matching the below regex filters will run
                 - master
                 - /ci\/.*/
+  # Objects - Build/Test
   objects:
     when: << pipeline.parameters.run_objects >>
     jobs:
       - build-objects
+  
+  # Core - Build/Test
   core:
     when: << pipeline.parameters.run_core >>
     jobs:
       - build-core
+      - integration-tests:
+          requires:
+            - "build-core"
+  
+  # Grasshopper connector - Build/Test
   connector_grasshopper:
     when: << pipeline.parameters.run_connector_gh >>
     jobs:
       - build-connector-gh
+  
+  # Rhino connector - Build/Test
   connector_rhino:
     when: << pipeline.parameters.run_connector_rhino >>
     jobs:
       - build-connector-rhino
+
+  # Dynamo connector - Build/Test
   connector_dynamo:
     when: << pipeline.parameters.run_connector_dynamo >>
     jobs:
       - build-connector-dynamo
+  
+  # Revit Connector - Build/Test
   connector_revit:
     when: << pipeline.parameters.run_connector_revit >>
     jobs:
       - build-connector-revit
 
-  # test:
-  #   when: << pipeline.parameters.run_trigger_workflow >>
-  #   jobs:
-  #     - integration-tests
-  #     - unit-tests
-
-# Parameters of our pipeline. Most of them are booleans that indicate which project to build/test.
-parameters:
-  run_core:
-    type: boolean
-    default: false
-  run_objects:
-    type: boolean
-    default: false
-  run_connector_gh:
-    type: boolean
-    default: false
-  run_connector_revit:
-    type: boolean
-    default: false
-  run_connector_dynamo:
-    type: boolean
-    default: false
-  run_connector_rhino:
-    type: boolean
-    default: false
-  run_trigger_workflow:
-    type: boolean
-    default: true

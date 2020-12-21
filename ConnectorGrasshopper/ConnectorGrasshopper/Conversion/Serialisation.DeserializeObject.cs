@@ -18,19 +18,19 @@ namespace ConnectorGrasshopper.Conversion
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public DeserializeObject() : base("Deserialize", "Deserialize", "Deserializes a JSON string to a Speckle object.", "Speckle 2 Dev", "Conversion")
+    public DeserializeObject() : base("Deserialize", "Deserialize", "Deserializes a JSON string to a Speckle Base object.", "Speckle 2 Dev", "Conversion")
     {
       BaseWorker = new DeserializeWorker(this);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddTextParameter("O", "O", "Speckle objects you want to serialize.", GH_ParamAccess.tree);
+      pManager.AddTextParameter("S", "S", "Serialized objects in JSON format.", GH_ParamAccess.tree);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("S", "S", "Serialized objects.", GH_ParamAccess.tree);
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Deserialized Speckle Base objects.", GH_ParamAccess.tree));
     }
 
     protected override void BeforeSolveInstance()
@@ -65,13 +65,13 @@ namespace ConnectorGrasshopper.Conversion
 
           try
           {
-            var deserialised = Operations.Deserialize(item.Value);
-            ConvertedObjects.Append(new GH_SpeckleBase() { Value = deserialised }, Objects.Paths[branchIndex]);
+            var deserialized = Operations.Deserialize(item.Value);
+            ConvertedObjects.Append(new GH_SpeckleBase { Value = deserialized }, path);
           }
           catch (Exception e)
           {
-            ConvertedObjects.Append(new GH_SpeckleBase() { Value = null }, Objects.Paths[branchIndex]);
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Object at {Objects.Paths[branchIndex]} is not a Speckle object. Exception: {e.Message}.");
+            ConvertedObjects.Append(new GH_SpeckleBase { Value = null }, path);
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Object at {path} is not a Speckle object. Exception: {e.Message}.");
           }
 
           ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
@@ -98,7 +98,7 @@ namespace ConnectorGrasshopper.Conversion
         var path = _objects.Paths[branchIndex];
         foreach (var item in list)
         {
-          Objects.Append(item, _objects.Paths[branchIndex]);
+          Objects.Append(item,path);
         }
         branchIndex++;
       }

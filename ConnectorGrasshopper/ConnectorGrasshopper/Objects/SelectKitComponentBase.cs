@@ -20,7 +20,9 @@ namespace ConnectorGrasshopper.Objects
 
     public SelectKitComponentBase(string name, string nickname, string description, string category, string subCategory) : base(name, nickname, description, category, subCategory)
     {
-      Kit = KitManager.GetDefaultKit();
+      var key = "Speckle2:kit.default.name";
+      var n = Grasshopper.Instances.Settings.GetValue(key,"Objects");
+      Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino).FirstOrDefault(kit => kit.Name == n);
       try
       {
         Converter = Kit.LoadConverter(Applications.Rhino);
