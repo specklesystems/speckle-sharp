@@ -37,23 +37,27 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Eto, Version=2.5.0.0, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
-      <HintPath>..\packages\RhinoCommon.6.29.20238.11501\lib\net45\Eto.dll</HintPath>
+      <HintPath>..\..\packages\RhinoCommon.6.31.20315.17001\lib\net45\Eto.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="GH_IO, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=6a29997d2e6b4f97, processorArchitecture=MSIL">
-      <HintPath>..\packages\Grasshopper.6.29.20238.11501\lib\net45\GH_IO.dll</HintPath>
+    <Reference Include="GH_IO, Version=6.31.20315.17000, Culture=neutral, PublicKeyToken=6a29997d2e6b4f97, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Grasshopper.6.31.20315.17001\lib\net45\GH_IO.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="Grasshopper, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=dda4f5ec2cd80803, processorArchitecture=MSIL">
-      <HintPath>..\packages\Grasshopper.6.29.20238.11501\lib\net45\Grasshopper.dll</HintPath>
+    <Reference Include="Grasshopper, Version=6.31.20315.17000, Culture=neutral, PublicKeyToken=dda4f5ec2cd80803, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Grasshopper.6.31.20315.17001\lib\net45\Grasshopper.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="GrasshopperAsyncComponent, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\GrasshopperAsyncComponent.0.2.0\lib\net45\GrasshopperAsyncComponent.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="GrasshopperAsyncComponent, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\GrasshopperAsyncComponent.0.2.0\lib\net45\GrasshopperAsyncComponent.dll</HintPath>
     </Reference>
-    <Reference Include="Rhino.UI, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
-      <HintPath>..\packages\RhinoCommon.6.29.20238.11501\lib\net45\Rhino.UI.dll</HintPath>
+    <Reference Include="Rhino.UI, Version=6.31.20315.17000, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\RhinoCommon.6.31.20315.17001\lib\net45\Rhino.UI.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="RhinoCommon, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
-      <HintPath>..\packages\RhinoCommon.6.29.20238.11501\lib\net45\RhinoCommon.dll</HintPath>
+    <Reference Include="RhinoCommon, Version=6.31.20315.17000, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\RhinoCommon.6.31.20315.17001\lib\net45\RhinoCommon.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -130,10 +134,6 @@
     <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
       <Project>{8008f635-7ded-473c-88df-12833f599d75}</Project>
       <Name>ServerTransport</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGh\ConverterRhinoGh.csproj">
-      <Project>{a987e5e1-8605-46ba-9476-1d8d28502273}</Project>
-      <Name>ConverterRhinoGh</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -251,7 +251,11 @@
     <Error Condition="!Exists('..\packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets'))" />
     <Error Condition="!Exists('..\packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets'))" />
     <Error Condition="!Exists('..\packages\Grasshopper.6.29.20238.11501\build\net45\Grasshopper.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Grasshopper.6.29.20238.11501\build\net45\Grasshopper.targets'))" />
+    <Error Condition="!Exists('..\..\packages\RhinoCommon.6.31.20315.17001\build\net45\RhinoCommon.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\RhinoCommon.6.31.20315.17001\build\net45\RhinoCommon.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Grasshopper.6.31.20315.17001\build\net45\Grasshopper.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Grasshopper.6.31.20315.17001\build\net45\Grasshopper.targets'))" />
   </Target>
   <Import Project="..\packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets" Condition="Exists('..\packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets')" />
   <Import Project="..\packages\Grasshopper.6.29.20238.11501\build\net45\Grasshopper.targets" Condition="Exists('..\packages\Grasshopper.6.29.20238.11501\build\net45\Grasshopper.targets')" />
+  <Import Project="..\..\packages\RhinoCommon.6.31.20315.17001\build\net45\RhinoCommon.targets" Condition="Exists('..\..\packages\RhinoCommon.6.31.20315.17001\build\net45\RhinoCommon.targets')" />
+  <Import Project="..\..\packages\Grasshopper.6.31.20315.17001\build\net45\Grasshopper.targets" Condition="Exists('..\..\packages\Grasshopper.6.31.20315.17001\build\net45\Grasshopper.targets')" />
 </Project>

@@ -79,9 +79,10 @@
   <ItemGroup>
     <PackageReference Include="DynamoVisualProgramming.Core">
       <ExcludeAssets>runtime</ExcludeAssets>
-      <Version>2.7.0.9206</Version>
+      <Version>2.8.0.2471</Version>
+      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.7.0.9206">
+    <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.8.0.2471">
       <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>runtime</ExcludeAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -91,7 +92,7 @@
       <ExcludeAssets>runtime</ExcludeAssets>
       <Version>2.8.0.2471</Version>
     </PackageReference>
-    <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.7.0.9206">
+    <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.8.0.2471">
       <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>runtime</ExcludeAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -220,19 +221,19 @@
     <AL SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" TargetType="library" EmbedResources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" OutputAssembly="$(OutDir)SpeckleConnectorDynamo.customization.dll" Version="%(AssemblyInfo.Version)" />
     <!-- Icons stuff end -->
     <ItemGroup>
-      <Dlls Include="$(OutDir)*.dll" />
-      <Pdbs Include="$(OutDir)*.pdb" />
+      <Dlls Include="$(OutDir)\**\*.*" />
+      <!--<Pdbs Include="$(OutDir)*.pdb" />-->
       <SourceExtension Include="$(OutDir)*Extension_ViewExtensionDefinition.xml" />
-      <XML Include="$(OutDir)*.xml" />
+      <!--<XML Include="$(OutDir)*.xml" />-->
       <PackageJson Include="$(ProjectDir)pkg.json" />
     </ItemGroup>
     <MakeDir Directories="$(ExtraFolder)" Condition="!Exists($(ExtraFolder))">
     </MakeDir>
     <MakeDir Directories="$(DyfFolder)" Condition="!Exists($(DyfFolder))">
     </MakeDir>
-    <Copy SourceFiles="@(Dlls)" DestinationFolder="$(BinFolder)" />
-    <Copy SourceFiles="@(Pdbs)" DestinationFolder="$(BinFolder)" />
-    <Copy SourceFiles="@(XML)" DestinationFolder="$(BinFolder)" />
+    <Copy SourceFiles="@(Dlls)" DestinationFolder="$(BinFolder)\%(RecursiveDir)" />
+    <!--<Copy SourceFiles="@(Pdbs)" DestinationFolder="$(BinFolder)" />-->
+    <!--<Copy SourceFiles="@(XML)" DestinationFolder="$(BinFolder)" />-->
     <Copy SourceFiles="@(PackageJson)" DestinationFolder="$(PackageFolder)" />
     <Copy SourceFiles="@(SourceExtension)" DestinationFolder="$(ExtraFolder)" />
     <!--<CallTarget Condition="'$(Configuration)' == 'Debug'" Targets="PackageDeploy" />-->
