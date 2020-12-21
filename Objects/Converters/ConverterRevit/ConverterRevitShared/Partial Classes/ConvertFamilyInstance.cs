@@ -90,12 +90,17 @@ namespace Objects.Converter.Revit
         familyInstance.flipFacing();
       }
 
-      //NOTE: do not check for the CanRotate prop as it doesn't work!
-      if (speckleFi.rotation != (familyInstance.Location as LocationPoint).Rotation)
+      // NOTE: do not check for the CanRotate prop as it doesn't work (at least on some families I tried)!
+      // some point based families don't have a rotation, so keep this in a try catch
+      try
       {
-        var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
-        (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
+        if (speckleFi.rotation != (familyInstance.Location as LocationPoint).Rotation)
+        {
+          var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
+          (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
+        }
       }
+      catch { }
 
 
       SetInstanceParameters(familyInstance, speckleFi);
