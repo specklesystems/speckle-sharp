@@ -382,6 +382,28 @@ namespace Objects.Converter.Revit
       return curveArray;
     }
 
+    public Mesh MeshToSpeckle(DB.Mesh mesh)
+    {
+      var speckleMesh = new Mesh();
+      foreach (var vert in mesh.Vertices)
+      {
+        speckleMesh.vertices.AddRange(new double[] { ScaleToSpeckle(vert.X), ScaleToSpeckle(vert.Y), ScaleToSpeckle(vert.Z) });
+      }
+      
+      for (int i = 0; i < mesh.NumTriangles; i++)
+      {
+        var triangle = mesh.get_Triangle(i);
+        var A = triangle.get_Index(0);
+        var B = triangle.get_Index(1);
+        var C = triangle.get_Index(2);
+        speckleMesh.faces.Add(0);
+        speckleMesh.faces.AddRange(new int[] { (int)A, (int)B, (int)C });
+      }
+
+      speckleMesh.units = ModelUnits;
+      return speckleMesh;
+    }
+    
     // Insipred by
     // https://github.com/DynamoDS/DynamoRevit/blob/master/src/Libraries/RevitNodes/GeometryConversion/ProtoToRevitMesh.cs
     public IList<GeometryObject> MeshToNative(Mesh mesh)
@@ -836,6 +858,9 @@ namespace Objects.Converter.Revit
         surfaceIndex++;
       }
 
+      var mesh = new Mesh();
+      (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(new List<Solid>{ solid });
+      mesh.units = ModelUnits;
       // TODO: Revit has no brep vertices. Must call 'brep.SetVertices()' in rhino when provenance is revit.
       // TODO: Set tolerances and flags in rhino when provenance is revit.
       brep.Faces = speckleFaces.Values.ToList();
@@ -844,7 +869,7 @@ namespace Objects.Converter.Revit
       brep.Trims = speckleTrims;
       brep.Edges = speckleEdges.Values.ToList();
       brep.Loops = speckleLoops;
-
+      brep.displayValue = mesh;
       return brep;
 #else
       throw new Exception("Converting BREPs to Speckle is currently only supported in Revit 2021.");

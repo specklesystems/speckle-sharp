@@ -9,6 +9,7 @@ using Objects.Primitive;
 using Speckle.Core.Kits;
 using static Speckle.Core.Models.Utilities;
 
+
 namespace Objects.Geometry
 {
   public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox
