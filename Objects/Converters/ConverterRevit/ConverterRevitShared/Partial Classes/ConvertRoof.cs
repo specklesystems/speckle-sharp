@@ -121,15 +121,13 @@ namespace Objects.Converter.Revit
 
       Doc.Regenerate();
 
-      Doc.Regenerate();
-
       try
       {
         CreateVoids(revitRoof, speckleRoof);
       }
       catch (Exception ex)
       {
-        ConversionErrors.Add(new Error($"Could not create openings in floor {speckleRoof.applicationId}", ex.Message));
+        ConversionErrors.Add(new Error($"Could not create openings in roof {speckleRoof.applicationId}", ex.Message));
       }
 
       if (speckleRevitRoof != null)

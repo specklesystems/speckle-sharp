@@ -257,7 +257,7 @@ namespace Speckle.ConnectorRevit.UI
         streamId = streamId,
         objectId = objectId,
         branchName = state.Branch.name,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Sent {convertedCount} objs from {ConnectorRevitUtils.RevitAppName}."
+        message = state.CommitMessage != null ? state.CommitMessage : $"Sent {convertedCount} objects from {ConnectorRevitUtils.RevitAppName}."
       };
 
       if (state.PreviousCommitId != null) { actualCommit.previousCommitIds = new List<string>() { state.PreviousCommitId }; }
@@ -296,6 +296,7 @@ namespace Speckle.ConnectorRevit.UI
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
       converter.SetContextDocument(CurrentDoc.Document);
+      var previouslyReceiveObjects = state.ReceivedObjects;
 
       var transport = new ServerTransport(state.Client.Account, state.Stream.id);
 
@@ -345,30 +346,18 @@ namespace Speckle.ConnectorRevit.UI
       // Bake the new ones.
       Queue.Add(() =>
       {
-        // needs to be set for editing to work
-        converter.SetPreviousContextObjects(state.ReceivedObjects);
-
-        //TODO: flatten stream and add its stuff here
-        //converter.SetContextObjects(state.ReceivedObjects);
-
         using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.Stream.name}"))
         {
           t.Start();
 
-          var newPlaceholderObjects = HandleAndConvertToNative(commitObject, converter, state);
+          var flattenedObjects = FlattenCommitObject(commitObject, converter);
+          // needs to be set for editing to work 
+          converter.SetPreviousContextObjects(previouslyReceiveObjects);
+          // needs to be set for openings in floors and roofs to work
+          converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
+          var newPlaceholderObjects = ConvertReceivedObjects(flattenedObjects, converter, state);
 
-          foreach (var obj in state.ReceivedObjects)
-          {
-            var indexInNew = newPlaceholderObjects.FindIndex(x => x.applicationId == obj.applicationId);
-            if (indexInNew == -1)
-            {
-              var existing = CurrentDoc.Document.GetElement(obj.ApplicationGeneratedId);
-              if (existing != null)
-              {
-                CurrentDoc.Document.Delete(existing.Id);
-              }
-            }
-          }
+          DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
 
           state.ReceivedObjects = newPlaceholderObjects;
           state.Errors.AddRange(converter.ConversionErrors.Select(e => new Exception($"{e.message}: {e.details}")));
@@ -398,58 +387,75 @@ namespace Speckle.ConnectorRevit.UI
       return state;
     }
 
+    //delete previously sent object that are no more in this stream
+    private void DeleteObjects(List<ApplicationPlaceholderObject> previouslyReceiveObjects, List<ApplicationPlaceholderObject> newPlaceholderObjects)
+    {
+      foreach (var obj in previouslyReceiveObjects)
+      {
+        if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+          continue;
+
+        var element = CurrentDoc.Document.GetElement(obj.ApplicationGeneratedId);
+        if (element != null)
+        {
+          CurrentDoc.Document.Delete(element.Id);
+        }
+
+      }
+    }
+
+    private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state)
+    {
+      var placeholders = new List<ApplicationPlaceholderObject>();
+
+      foreach (var @base in objects)
+      {
+        try
+        {
+          var convRes = converter.ConvertToNative(@base);
+          if (convRes is ApplicationPlaceholderObject placeholder)
+          {
+            placeholders.Add(placeholder);
+          }
+          else if (convRes is List<ApplicationPlaceholderObject> placeholderList)
+          {
+            placeholders.AddRange(placeholderList);
+          }
+        }
+        catch (Exception e)
+        {
+          state.Errors.Add(e);
+        }
+      }
+
+      return placeholders;
+    }
+
     /// <summary>
-    /// Recurses through the commit object and converts objects as it goes though them. 
+    /// Recurses through the commit object and flattens it. 
     /// </summary>
     /// <param name="obj"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    private List<ApplicationPlaceholderObject> HandleAndConvertToNative(object obj, ISpeckleConverter converter, StreamState state)
+    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
     {
-      HashSet<string> appIds = new HashSet<string>();
       List<Base> objects = new List<Base>();
 
-      List<ApplicationPlaceholderObject> placeholders = new List<ApplicationPlaceholderObject>();
-
-      if (obj is Base baseItem)
+      if (obj is Base @base)
       {
-        if (converter.CanConvertToNative(baseItem))
+        if (converter.CanConvertToNative(@base))
         {
-          if (baseItem.applicationId != null)
-          {
-            appIds.Add(baseItem.applicationId);
-          }
+          objects.Add(@base);
 
-          objects.Add(baseItem);
-
-          try
-          {
-
-            // --> return a list of ApplicationPlaceholderObject so we can do deletion afterwards
-            var convRes = converter.ConvertToNative(baseItem);
-            if (convRes is ApplicationPlaceholderObject placeholder)
-            {
-              placeholders.Add(placeholder);
-            }
-            else if (convRes is List<ApplicationPlaceholderObject> placeholderList)
-            {
-              placeholders.AddRange(placeholderList);
-            }
-          }
-          catch (Exception e)
-          {
-            state.Errors.Add(e);
-          }
-
-          return placeholders;
+          return objects;
         }
         else
         {
-          foreach (var prop in baseItem.GetDynamicMembers())
+          foreach (var prop in @base.GetDynamicMembers())
           {
-            placeholders.AddRange(HandleAndConvertToNative(baseItem[prop], converter, state));
+            objects.AddRange(FlattenCommitObject(@base[prop], converter));
           }
-          return placeholders;
+          return objects;
         }
       }
 
@@ -457,21 +463,21 @@ namespace Speckle.ConnectorRevit.UI
       {
         foreach (var listObj in list)
         {
-          placeholders.AddRange(HandleAndConvertToNative(listObj, converter, state));
+          objects.AddRange(FlattenCommitObject(listObj, converter));
         }
-        return placeholders;
+        return objects;
       }
 
       if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
         {
-          placeholders.AddRange(HandleAndConvertToNative(kvp.Value, converter, state));
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
         }
-        return placeholders;
+        return objects;
       }
 
-      return placeholders;
+      return objects;
     }
 
     private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
