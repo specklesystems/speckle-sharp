@@ -24,6 +24,11 @@
     <RevitVersion>2019</RevitVersion>
     <PlatformTarget>x64</PlatformTarget>
     <TargetFrameworkProfile />
+    <!--these four make so that the SQLite.Interop.dll is copied in the after build target-->
+    <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
+    <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
+    <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
+    <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
