@@ -49,7 +49,8 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="GrasshopperAsyncComponent, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\GrasshopperAsyncComponent.0.2.0\lib\net45\GrasshopperAsyncComponent.dll</HintPath>
+      <HintPath>..\packages\GrasshopperAsyncComponent.0.2.0\lib\net45\GrasshopperAsyncComponent.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Rhino.UI, Version=6.31.20315.17000, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
       <HintPath>..\..\packages\RhinoCommon.6.31.20315.17001\lib\net45\Rhino.UI.dll</HintPath>
@@ -244,18 +245,4 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets'))" />
-    <Error Condition="!Exists('..\packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets'))" />
-    <Error Condition="!Exists('..\packages\Grasshopper.6.29.20238.11501\build\net45\Grasshopper.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Grasshopper.6.29.20238.11501\build\net45\Grasshopper.targets'))" />
-    <Error Condition="!Exists('..\..\packages\RhinoCommon.6.31.20315.17001\build\net45\RhinoCommon.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\RhinoCommon.6.31.20315.17001\build\net45\RhinoCommon.targets'))" />
-    <Error Condition="!Exists('..\..\packages\Grasshopper.6.31.20315.17001\build\net45\Grasshopper.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Grasshopper.6.31.20315.17001\build\net45\Grasshopper.targets'))" />
-  </Target>
-  <Import Project="..\packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets" Condition="Exists('..\packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets')" />
-  <Import Project="..\packages\Grasshopper.6.29.20238.11501\build\net45\Grasshopper.targets" Condition="Exists('..\packages\Grasshopper.6.29.20238.11501\build\net45\Grasshopper.targets')" />
-  <Import Project="..\..\packages\RhinoCommon.6.31.20315.17001\build\net45\RhinoCommon.targets" Condition="Exists('..\..\packages\RhinoCommon.6.31.20315.17001\build\net45\RhinoCommon.targets')" />
-  <Import Project="..\..\packages\Grasshopper.6.31.20315.17001\build\net45\Grasshopper.targets" Condition="Exists('..\..\packages\Grasshopper.6.31.20315.17001\build\net45\Grasshopper.targets')" />
 </Project>
