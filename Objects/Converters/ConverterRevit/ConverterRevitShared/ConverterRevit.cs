@@ -34,16 +34,21 @@ namespace Objects.Converter.Revit
     public Document Doc { get; private set; }
 
     /// <summary>
-    /// <para>When receiving, we keep track of previously received objects from a given stream in here. If possible, conversions routines
-    /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
-    /// <para>When sending, we keep track in here of all the selected objects that will need conversions. Elements that have children use this to determine wether they should send their children out or not.</para>
+    /// <para>To know which other objects are being converted, in order to sort relationships between them.
+    /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
     /// </summary>
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
     /// <summary>
+    /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
+    /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
+    /// </summary>
+    public List<ApplicationPlaceholderObject> PreviousContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+
+    /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
-    public Element CurrentHostElement { get; set; }
+    public HostObject CurrentHostElement { get; set; }
 
     /// <summary>
     /// Used when sending; keeps track of all the converted objects so far. Child elements first check in here if they should convert themselves again (they may have been converted as part of a parent's hosted elements).
@@ -59,6 +64,7 @@ namespace Objects.Converter.Revit
     public void SetContextDocument(object doc) => Doc = (Document)doc;
 
     public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
+    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => PreviousContextObjects = objects;
 
     public Base ConvertToSpeckle(object @object)
     {
@@ -127,6 +133,9 @@ namespace Objects.Converter.Revit
 
         case DB.Architecture.TopRail o:
           return null;
+
+        case DB.Ceiling o:
+          return CeilingToSpeckle(o);
 
         default:
           ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Speckle"));
@@ -258,6 +267,9 @@ namespace Objects.Converter.Revit
           return true;
 
         case DB.Architecture.TopRail _:
+          return true;
+
+        case DB.Ceiling _:
           return true;
 
         default:

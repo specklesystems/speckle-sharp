@@ -73,13 +73,14 @@ namespace Objects.BuiltElements.Revit.RevitRoof
   public class RevitFootprintRoof : RevitRoof
   {
     public RevitLevel cutOffLevel { get; set; }
+    public double? slope { get; set; }
 
     public RevitFootprintRoof()
     {
 
     }
     [SchemaInfo("RevitFootprintRoof", "Creates a Revit roof by outline")]
-    public RevitFootprintRoof(ICurve outline, string family, string type, Level level, RevitLevel cutOffLevel = null, List<ICurve> voids = null,
+    public RevitFootprintRoof(ICurve outline, string family, string type, Level level, RevitLevel cutOffLevel = null, double slope = 0, List<ICurve> voids = null,
       List<Base> elements = null,
       List<Parameter> parameters = null)
     {
@@ -87,6 +88,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
       this.voids = voids;
       this.family = family;
       this.type = type;
+      this.slope = slope;
       this.parameters = parameters;
       this.level = level;
       this.cutOffLevel = cutOffLevel;

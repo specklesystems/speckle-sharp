@@ -35,7 +35,7 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Roof", "ToNative")]
-    public void FloorToNative()
+    public void RoofToNative()
     {
       SpeckleToNative<DB.RoofBase>(AssertRoofEqual);
     }

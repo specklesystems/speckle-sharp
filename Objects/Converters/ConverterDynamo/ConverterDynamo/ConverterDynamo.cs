@@ -42,6 +42,8 @@ namespace Objects.Converter.Dynamo
 
     public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
 
+    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => throw new NotImplementedException();
+
     public Base ConvertToSpeckle(object @object)
     {
       switch (@object)

@@ -80,7 +80,10 @@ namespace ConverterRevitTests
       converter.SetContextDocument(fixture.NewDoc);
       //setting context objects for update routine
       if (appPlaceholders != null)
-        converter.SetContextObjects(appPlaceholders);
+        converter.SetPreviousContextObjects(appPlaceholders);
+
+      converter.SetContextObjects(spkElems.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject=x }).ToList());
+
 
       var resEls = new List<object>();
       //used to associate th nested Base objects with eh flat revit ones
@@ -90,7 +93,16 @@ namespace ConverterRevitTests
       {
         foreach (var el in spkElems)
         {
-          var res = converter.ConvertToNative(el);
+          object res = null;
+          try
+          {
+            res = converter.ConvertToNative(el);
+          }
+          catch (Exception e)
+          {
+            converter.ConversionErrors.Add(new Error(e.Message, e.StackTrace));
+          }
+
           if (res is List<ApplicationPlaceholderObject> apls)
           {
             resEls.AddRange(apls);

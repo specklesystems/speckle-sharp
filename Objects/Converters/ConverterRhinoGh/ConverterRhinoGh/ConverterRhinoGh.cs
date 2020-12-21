@@ -46,6 +46,8 @@ namespace Objects.Converter.RhinoGh
 
     public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
 
+    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => throw new NotImplementedException();
+
     public void SetContextDocument(object doc)
     {
       Doc = (RhinoDoc)doc;

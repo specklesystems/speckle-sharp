@@ -17,7 +17,7 @@
   <Choose>
     <When Condition="$([MSBuild]::IsOsPlatform('Windows')) Or $([MSBuild]::IsOsPlatform('Linux')) ">
       <ItemGroup>
-        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
+        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.6" />
       </ItemGroup>
     </When>
     <When Condition="$([MSBuild]::IsOsPlatform('OSX'))">

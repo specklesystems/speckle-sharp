@@ -85,9 +85,15 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
 
+
+      if (sourceElem is FamilyInstance fi && fi.Host != null && destElem is FamilyInstance fi2)
+      {
+        Assert.Equal(fi.Host.Name, fi2.Host.Name);
+      }
+
       //rotation
       //for some reasons, rotation of hosted families stopped working in 2021.1 ...?
-      if (sourceElem.Location is LocationPoint && sourceElem is FamilyInstance fi && fi.Host == null)
+      if (sourceElem.Location is LocationPoint && sourceElem is FamilyInstance fi3 && fi3.Host == null)
         Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation);
 
 
