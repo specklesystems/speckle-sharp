@@ -28,5 +28,6 @@ namespace Speckle.DesktopUI.Utils
     StreamCreateDialogViewModel CreateStreamCreateDialog();
     StreamUpdateObjectsDialogViewModel StreamUpdateObjectsDialogView();
     ShareStreamDialogViewModel CreateShareStreamDialogViewModel();
+    BranchCreateDialogViewModel CreateBranchCreateDialogViewModel();
   }
 }
