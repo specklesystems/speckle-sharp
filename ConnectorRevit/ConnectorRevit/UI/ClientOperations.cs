@@ -33,7 +33,8 @@ namespace Speckle.ConnectorRevit.UI
 
     public override List<StreamState> GetStreamsInFile()
     {
-      DocumentStreams = StreamStateManager.ReadState(CurrentDoc.Document);
+      if(CurrentDoc!=null)
+        DocumentStreams = StreamStateManager.ReadState(CurrentDoc.Document);
       return DocumentStreams;
     }
 

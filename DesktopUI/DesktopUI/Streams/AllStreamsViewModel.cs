@@ -184,6 +184,7 @@ namespace Speckle.DesktopUI.Streams
         case ApplicationEvent.EventType.DocumentClosed:
           {
             StreamList.Clear();
+
             break;
           }
         case ApplicationEvent.EventType.DocumentModified:
