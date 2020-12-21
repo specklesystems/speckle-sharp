@@ -12,12 +12,18 @@ namespace Objects.BuiltElements.Revit
 
     public RevitCategory category { get; set; }
 
-    public IEnumerable<Base> baseGeometries { get; set; }
+    public List<Base> baseGeometries { get; set; }
 
     public List<Parameter> parameters { get; set; }
     
     public string elementId { get; set; }
 
+
+    public DirectShape()
+    {
+      
+    }
+    
     /// <summary>
     ///  Constructs a new <see cref="DirectShape"/> instance given a list of <see cref="Base"/> objects.
     /// </summary>

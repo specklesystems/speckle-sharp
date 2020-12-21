@@ -521,7 +521,7 @@ namespace Objects.Converter.RhinoGh
         nurbsCurve.Knots[j] = curve.knots[j];
       }
 
-      nurbsCurve.Domain = IntervalToNative(curve.domain);
+      nurbsCurve.Domain = IntervalToNative(curve.domain ?? new Interval(0,1));
       return nurbsCurve;
     }
 
@@ -737,9 +737,9 @@ namespace Objects.Converter.RhinoGh
       try
       {
         // TODO: Provenance exception is meaningless now, must change for provenance build checks.
-        if (brep.provenance != Speckle.Core.Kits.Applications.Rhino)
-          throw new Exception("Unknown brep provenance: " + brep.provenance +
-                              ". Don't know how to convert from one to the other.");
+        // if (brep.provenance != Speckle.Core.Kits.Applications.Rhino)
+        //   throw new Exception("Unknown brep provenance: " + brep.provenance +
+        //                       ". Don't know how to convert from one to the other.");
 
         var newBrep = new RH.Brep();
         brep.Curve3D.ForEach(crv => newBrep.AddEdgeCurve(CurveToNative(crv)));
@@ -749,7 +749,7 @@ namespace Objects.Converter.RhinoGh
         brep.Edges.ForEach(edge =>
         {
           if (edge.Domain == null || (edge.Domain.start == edge.Curve.domain.start && edge.Domain.end == edge.Curve.domain.end))
-            newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, tol);
+            newBrep.Edges.Add(edge.Curve3dIndex);
           else
             newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, IntervalToNative(edge.Domain), tol);
         });
@@ -785,7 +785,7 @@ namespace Objects.Converter.RhinoGh
         
         return newBrep;
       }
-      catch
+      catch (Exception e)
       {
         System.Diagnostics.Debug.WriteLine("Failed to deserialize brep");
         return null;
@@ -994,7 +994,7 @@ namespace Objects.Converter.RhinoGh
     public NurbsSurface SurfaceToNative(Geometry.Surface surface)
     {
       // Create rhino surface
-      var points = surface.GetControlPoints().Select(l => l.Select(p => p =
+      var points = surface.GetControlPoints().Select(l => l.Select(p =>
         new ControlPoint(
           ScaleToNative(p.x, p.units),
           ScaleToNative(p.y, p.units),

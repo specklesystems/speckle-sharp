@@ -526,11 +526,11 @@ namespace Objects.Converter.Revit
           if (surface.IsRational)
           {
             var w = weights[uOffset + v];
-            row.Add(new ControlPoint(extPt.X, extPt.Y, extPt.Z, w, ModelUnits));
+            row.Add(new ControlPoint(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), w, ModelUnits));
           }
           else
           {
-            row.Add(new ControlPoint(extPt.X, extPt.Y, extPt.Z, ModelUnits));
+            row.Add(new ControlPoint(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), ModelUnits));
           }
         }
         points.Add(row);
