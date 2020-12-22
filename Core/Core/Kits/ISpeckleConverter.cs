@@ -70,9 +70,15 @@ namespace Speckle.Core.Kits
     public void SetContextDocument(object doc);
 
     /// <summary>
-    /// Some converters need to know which objects have been set before (ie, Revit). Use this method to set them.
+    /// Some converters need to know which other objects are being converted, in order to sort relationships between them (ie, Revit). Use this method to set them.
     /// </summary>
     /// <param name="objects"></param>
     public void SetContextObjects(List<ApplicationPlaceholderObject> objects);
+
+    /// <summary>
+    /// Some converters need to know which objects have been converted before in order to update them (ie, Revit). Use this method to set them.
+    /// </summary>
+    /// <param name="objects"></param>
+    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects);
   }
 }

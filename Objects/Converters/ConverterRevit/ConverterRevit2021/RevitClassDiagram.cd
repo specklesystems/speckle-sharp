@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Speckle.Core.Models.Base" Collapsed="true">
+    <Position X="6.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Speckle.Core.Models.DynamicBase" Collapsed="true">
+    <Position X="6.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Objects.BuiltElements.Beam" Collapsed="true">
+    <Position X="9" Y="4" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Objects.BuiltElements.Revit.RevitBeam" Collapsed="true">
+    <Position X="9" Y="5.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Objects.BuiltElements.Brace" Collapsed="true">
+    <Position X="6.5" Y="4" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Objects.BuiltElements.Revit.RevitBrace" Collapsed="true">
+    <Position X="6.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Objects.BuiltElements.Ceiling" Collapsed="true">
+    <Position X="11.25" Y="4" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Objects.BuiltElements.Revit.RevitCeiling" Collapsed="true">
+    <Position X="11.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Objects.BuiltElements.Wall" Collapsed="true">
+    <Position X="4" Y="4" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Objects.BuiltElements.Revit.RevitWall" Collapsed="true">
+    <Position X="4" Y="5.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Objects.BuiltElements.Revit.AdaptiveComponent" Collapsed="true">
+    <Position X="2" Y="5.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.HostObject" Collapsed="true">
+    <Position X="15.5" Y="13.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.Wall" Collapsed="true">
+    <Position X="18.25" Y="14.75" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.BeamSystem" Collapsed="true">
+    <Position X="9.5" Y="13.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.Ceiling" Collapsed="true">
+    <Position X="15.75" Y="16.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.CeilingAndFloor" Collapsed="true">
+    <Position X="14.75" Y="14.75" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.CurtainGrid" Collapsed="true">
+    <Position X="22.5" Y="15.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.CurtainSystem" Collapsed="true">
+    <Position X="20" Y="15.75" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.DirectShape" Collapsed="true">
+    <Position X="4.25" Y="13.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.Document" Collapsed="true">
+    <Position X="8.75" Y="9" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.Element" Collapsed="true">
+    <Position X="7.75" Y="11.75" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.FamilyInstance" Collapsed="true">
+    <Position X="11.25" Y="14.75" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.Instance" Collapsed="true">
+    <Position X="11.25" Y="13.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.FamilySymbol" Collapsed="true">
+    <Position X="2.5" Y="15.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.InsertableObject" Collapsed="true">
+    <Position X="2.5" Y="14.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.ElementType" Collapsed="true">
+    <Position X="2.5" Y="13.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.FamilyType" Collapsed="true">
+    <Position X="24.5" Y="15.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.APIObject" Collapsed="true">
+    <Position X="23.5" Y="13.75" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="System.Object" Collapsed="true">
+    <Position X="23.5" Y="12.75" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.Floor" Collapsed="true">
+    <Position X="13.75" Y="16.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.Form" Collapsed="true">
+    <Position X="7.75" Y="15.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.Opening" Collapsed="true">
+    <Position X="6" Y="13.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.RoofBase" Collapsed="true">
+    <Position X="16.5" Y="14.75" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.CurtainSystemBase" Collapsed="true">
+    <Position X="20" Y="14.75" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.GenericForm" Collapsed="true">
+    <Position X="7.75" Y="14.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Autodesk.Revit.DB.CombinableElement" Collapsed="true">
+    <Position X="7.75" Y="13.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

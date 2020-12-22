@@ -55,56 +55,60 @@
       <HintPath>..\packages\ModPlus.Revit.API.2021.1.0.0\lib\AdWindows.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="CoreNodeModels, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.WpfUILibrary.2.7.0.9206\lib\net48\CoreNodeModels.dll</HintPath>
+    <Reference Include="CoreNodeModels, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.WpfUILibrary.2.8.0.2471\lib\net48\CoreNodeModels.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="CoreNodeModelsWpf, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.WpfUILibrary.2.7.0.9206\lib\net48\CoreNodeModelsWpf.dll</HintPath>
+    <Reference Include="CoreNodeModelsWpf, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.WpfUILibrary.2.8.0.2471\lib\net48\CoreNodeModelsWpf.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DesignScriptBuiltin, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.Core.2.7.0.9206\lib\net48\DesignScriptBuiltin.dll</HintPath>
+    <Reference Include="DesignScriptBuiltin, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.Core.2.8.0.2471\lib\net48\DesignScriptBuiltin.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DSIronPython, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.Core.2.7.0.9206\lib\net48\DSIronPython.dll</HintPath>
+    <Reference Include="DSCPython, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.Core.2.8.0.2471\lib\net48\DSCPython.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DynamoApplications, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.Core.2.7.0.9206\lib\net48\DynamoApplications.dll</HintPath>
+    <Reference Include="DSIronPython, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.Core.2.8.0.2471\lib\net48\DSIronPython.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DynamoCore, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.Core.2.7.0.9206\lib\net48\DynamoCore.dll</HintPath>
+    <Reference Include="DynamoApplications, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.Core.2.8.0.2471\lib\net48\DynamoApplications.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DynamoCoreWpf, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.WpfUILibrary.2.7.0.9206\lib\net48\DynamoCoreWpf.dll</HintPath>
+    <Reference Include="DynamoCore, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.Core.2.8.0.2471\lib\net48\DynamoCore.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DynamoInstallDetective, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.Core.2.7.0.9206\lib\net48\DynamoInstallDetective.dll</HintPath>
+    <Reference Include="DynamoCoreWpf, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.WpfUILibrary.2.8.0.2471\lib\net48\DynamoCoreWpf.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DynamoInstallDetective, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.Core.2.8.0.2471\lib\net48\DynamoInstallDetective.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="DynamoRevitDS-2.5.0">
       <HintPath>..\DynamoRevitDS-2.5.0.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DynamoServices, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.DynamoServices.2.7.0.9206\lib\net48\DynamoServices.dll</HintPath>
+    <Reference Include="DynamoServices, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.DynamoServices.2.8.0.2471\lib\net48\DynamoServices.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DynamoShapeManager, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.Core.2.7.0.9206\lib\net48\DynamoShapeManager.dll</HintPath>
+    <Reference Include="DynamoShapeManager, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.Core.2.8.0.2471\lib\net48\DynamoShapeManager.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DynamoUnits, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.ZeroTouchLibrary.2.7.0.9206\lib\net48\DynamoUnits.dll</HintPath>
+    <Reference Include="DynamoUnits, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.ZeroTouchLibrary.2.8.0.2471\lib\net48\DynamoUnits.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DynamoUtilities, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.Core.2.7.0.9206\lib\net48\DynamoUtilities.dll</HintPath>
+    <Reference Include="DynamoUtilities, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.Core.2.8.0.2471\lib\net48\DynamoUtilities.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Expression.Interactions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -133,12 +137,12 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="ProtoCore, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.Core.2.7.0.9206\lib\net48\ProtoCore.dll</HintPath>
+    <Reference Include="ProtoCore, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.Core.2.8.0.2471\lib\net48\ProtoCore.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="ProtoGeometry, Version=2.7.0.8935, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\DynamoVisualProgramming.ZeroTouchLibrary.2.7.0.9206\lib\net48\ProtoGeometry.dll</HintPath>
+    <Reference Include="ProtoGeometry, Version=2.8.0.2374, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\..\packages\DynamoVisualProgramming.ZeroTouchLibrary.2.8.0.2471\lib\net48\ProtoGeometry.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="RevitAddInUtility, Version=21.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -203,8 +207,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="VMDataBridge, Version=2.7.0.9206, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamoVisualProgramming.Core.2.7.0.9206\lib\net48\VMDataBridge.dll</HintPath>
+    <Reference Include="VMDataBridge, Version=2.8.0.2471, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamoVisualProgramming.Core.2.8.0.2471\lib\net48\VMDataBridge.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="WindowsBase" />

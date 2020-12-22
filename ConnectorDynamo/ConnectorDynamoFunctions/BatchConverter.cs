@@ -22,6 +22,8 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       var kit = KitManager.GetDefaultKit();
       _converter = kit.LoadConverter(Applications.Dynamo);
+      if (_converter == null)
+        throw new Exception("Cannot find the Dynamo converter, has it been copied to the Kit folder?");
 #if REVIT
       _converter.SetContextDocument(Globals.RevitDocument);
 #endif

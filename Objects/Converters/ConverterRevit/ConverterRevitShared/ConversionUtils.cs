@@ -14,6 +14,126 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+
+    #region hosted elements
+
+
+
+    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host)
+    {
+      //doesn't have a host, go ahead and convert
+      if (host == null)
+        return true;
+
+      // has been converted before (from a parent host), skip it
+      if (ConvertedObjectsList.IndexOf(element.UniqueId) != -1)
+      {
+        return false;
+      }
+
+      // the parent is in our selection list,skip it, as this element will be converted by the host element
+      if (ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId) != -1)
+      {
+        return false;
+      }
+      return true;
+    }
+    /// <summary>
+    /// Gets the hosted element of a host and adds the to a Base object
+    /// </summary>
+    /// <param name="host"></param>
+    /// <param name="base"></param>
+    public void GetHostedElements(Base @base, HostObject host)
+    {
+      var hostedElementIds = host.FindInserts(true, true, true, true);
+      var convertedHostedElements = new List<Base>();
+
+      if (!hostedElementIds.Any())
+        return;
+
+      var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId);
+      if (elementIndex != -1)
+      {
+        ContextObjects.RemoveAt(elementIndex);
+      }
+
+      foreach (var elemId in hostedElementIds)
+      {
+        var element = Doc.GetElement(elemId);
+        var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
+
+        if (isSelectedInContextObjects == -1)
+        {
+          continue;
+        }
+
+        ContextObjects.RemoveAt(isSelectedInContextObjects);
+
+        if (CanConvertToSpeckle(element))
+        {
+          var obj = ConvertToSpeckle(element);
+
+          if (obj != null)
+          {
+            convertedHostedElements.Add(obj);
+            ConvertedObjectsList.Add(obj.applicationId);
+          }
+        }
+      }
+
+      if (convertedHostedElements.Any())
+      {
+        @base["elements"] = convertedHostedElements;
+      }
+
+    }
+
+    public List<ApplicationPlaceholderObject> SetHostedElements(Base @base, HostObject host)
+    {
+      var placeholders = new List<ApplicationPlaceholderObject>();
+      if (@base["elements"] != null && @base["elements"] is List<Base> elements)
+      {
+        CurrentHostElement = host;
+
+        foreach (var obj in elements)
+        {
+          if (obj == null)
+          {
+            continue;
+          }
+
+          if (!CanConvertToNative(obj))
+          {
+            ConversionErrors.Add(new Error { message = $"Skipping {obj.speckle_type}, not supported" });
+            continue;
+          }
+
+          try
+          {
+            var res = ConvertToNative(obj);
+            if (res is ApplicationPlaceholderObject apl)
+            {
+              placeholders.Add(apl);
+            }
+            else if (res is List<ApplicationPlaceholderObject> apls)
+            {
+              placeholders.AddRange(apls);
+            }
+          }
+          catch (Exception e)
+          {
+            ConversionErrors.Add(new Error { message = $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}" });
+          }
+        }
+
+        CurrentHostElement = null; // unset the current host element.
+      }
+      return placeholders;
+    }
+
+    #endregion
+
+
     #region parameters
 
     #region ToSpeckle
@@ -25,7 +145,7 @@ namespace Objects.Converter.Revit
     /// <param name="exclusions">List of BuiltInParameters or GUIDs used to indicate what parameters NOT to get,
     /// we exclude all params already defined on the top level object to avoid duplication and 
     /// potential conflicts when setting them back on the element</param>
-    private void GetRevitParameters(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
+    private void GetAllRevitParamsAndIds(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
     {
       var parms = GetInstanceParams(revitElement, exclusions);
       if (parms != null)
@@ -51,7 +171,7 @@ namespace Objects.Converter.Revit
     //  "ELEM_CATEGORY_PARAM" };
     private List<Parameter> GetInstanceParams(DB.Element element, List<string> exclusions)
     {
-      return GetParams(element, false, exclusions);
+      return GetElementParams(element, false, exclusions);
     }
     private List<Parameter> GetTypeParams(DB.Element element)
     {
@@ -61,11 +181,11 @@ namespace Objects.Converter.Revit
       {
         return new List<Parameter>();
       }
-      return GetParams(elementType, true);
+      return GetElementParams(elementType, true);
 
     }
 
-    private List<Parameter> GetParams(DB.Element element, bool isTypeParameter = false, List<string> exclusions = null)
+    private List<Parameter> GetElementParams(DB.Element element, bool isTypeParameter = false, List<string> exclusions = null)
     {
       exclusions = (exclusions != null) ? exclusions : new List<string>();
 
@@ -79,8 +199,19 @@ namespace Objects.Converter.Revit
       return speckleParameters.OrderBy(x => x.name).ToList();
     }
 
+    private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip)
+    {
+      var rp = elem.get_Parameter(bip);
+
+      if (rp == null || !rp.HasValue)
+        return default;
+
+      return (T)ParameterToSpeckle(rp).value;
+
+    }
 
 
+    //rp must HaveValue
     private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false)
     {
       var sp = new Parameter
@@ -163,6 +294,7 @@ namespace Objects.Converter.Revit
       // Here we are creating two  dictionaries for faster lookup
       // one uses the BuiltInName / GUID the other the name as Key
       // we need both to support parameter set by Schema Builder, that might be generated with one or the other
+      // Also, custom parameters that are not Shared, will have an INVALID BuiltInParameter name and no GUID, then we need to use their name
       var revitParameterById = revitParameters.ToDictionary(x => GetParamInternalName(x), x => x);
       var revitParameterByName = revitParameters.ToDictionary(x => x.Definition.Name, x => x);
 
@@ -207,17 +339,30 @@ namespace Objects.Converter.Revit
 
     }
 
+    //Shared parameters use a GUID to be uniquely identified
+    //Other parameters use a BuiltInParameter enum
     private string GetParamInternalName(DB.Parameter rp)
     {
-      //Shared parameters use a GUID to be uniquely identified
-      //Other parameters use a BuiltInParameter enum
       if (rp.IsShared)
         return rp.GUID.ToString();
       else
-        return (rp.Definition as InternalDefinition).BuiltInParameter.ToString();
+      {
+        var def = rp.Definition as InternalDefinition;
+        if (def.BuiltInParameter == BuiltInParameter.INVALID)
+          return def.Name;
+        return def.BuiltInParameter.ToString();
+      }
     }
 
-    private void TrySetElementParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
+    //private bool IsValid(DB.Parameter rp)
+    //{
+    //  if (rp.IsShared)
+    //    return true;
+    //  else
+    //    return (rp.Definition as InternalDefinition).BuiltInParameter != ;
+    //}
+
+    private void TrySetParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
     {
       var param = elem.get_Parameter(bip);
       if (param != null && value != null && !param.IsReadOnly)
@@ -225,14 +370,25 @@ namespace Objects.Converter.Revit
         param.Set(value.Id);
       }
     }
-    private void TryGetElementParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
+
+    private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units = "")
     {
       var param = elem.get_Parameter(bip);
-      if (param != null && value != null && !param.IsReadOnly)
+      if (param != null && !param.IsReadOnly)
       {
-        param.Set(value.Id);
+        //for angles, we use the default conversion (degrees > radians)
+        if (string.IsNullOrEmpty(units))
+        {
+          param.Set(ScaleToNative(value, param.DisplayUnitType));
+        }
+        else
+        {
+          param.Set(ScaleToNative(value, units));
+        }
+
       }
     }
+
 
 
     #endregion
@@ -315,37 +471,34 @@ namespace Objects.Converter.Revit
 
       ElementType match = null;
 
-      if (family == null && type == null)
-      {
-        match = types.First();
-      }
+      //if (family == null && type == null)
+      //{
+      //  match = types.First();
+      //}
 
       if (family != null && type != null)
       {
         match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
       }
 
-      if (match == null && type != null) // try and match the type only
+      //some elements only have one family so we didn't add such prop our schema
+      if (match == null && family == null && type != null)
       {
-        if (element is Duct)
-        {
-          match = types.FirstOrDefault(x => x.FamilyName == type);
-        }
-        else
-        {
-          match = types.FirstOrDefault(x => x.Name == type);
-        }
+        match = types.FirstOrDefault(x => x.Name == type);
       }
 
       if (match == null && family != null) // try and match the family only.
       {
         match = types.FirstOrDefault(x => x.FamilyName == family);
+        if (match != null) //inform user that the type is different!
+          ConversionErrors.Add(new Error($"Missing type. Family: {family} Type: {type}", $"Type was replaced with: {match.FamilyName}, {match.Name}"));
+
       }
 
       if (match == null) // okay, try something!
       {
         match = types.First();
-        ConversionErrors.Add(new Error($"Missing type. Family: {family} Type:{type}", $"Type was replaced with: {match.FamilyName}, {match.Name}"));
+        ConversionErrors.Add(new Error($"Missing type. Family: {family} Type: {type}", $"Type was replaced with: {match.FamilyName}, {match.Name}"));
       }
 
       if (match is FamilySymbol fs && !fs.IsActive)
@@ -387,9 +540,9 @@ namespace Objects.Converter.Revit
       else
       {
         //try get category from the parameters
-        if (element["parameters"] != null && element["parameters"] is Dictionary<string, object> dic && dic.ContainsKey("Category"))
+        if (element["category"] != null)
         {
-          var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == dic["Category"].ToString());
+          var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == element["category"].ToString());
           if (cat != null)
             filter = new ElementMulticategoryFilter(new List<ElementId> { cat.Id });
         }
@@ -409,7 +562,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public DB.Element GetExistingElementByApplicationId(string applicationId)
     {
-      var @ref = ContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
+      var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
 
       if (@ref == null)
       {
@@ -515,6 +668,82 @@ namespace Objects.Converter.Revit
 
       return newP;
     }
+    #endregion
+
+
+    #region Floor/ceiling/roof openings
+
+
+    //a floor/roof/ceiling outline can have "voids/holes" for 3 reasons:
+    // - there is a shaft cutting through it > we don't need to create an opening (the shaft will be created on its own)
+    // - there is a vertical opening cutting through it > we don't need to create an opening (the opening will be created on its own)
+    // - the floor profile was modeled with holes > we need to create an openeing as the Revit API doesn't let us generate it with holes!
+    private void CreateVoids(DB.Element host, Base speckleElement)
+    {
+      if (speckleElement["voids"] == null || !(speckleElement["voids"] is List<ICurve>))
+        return;
+
+      //list of openings hosted in this speckle element
+      var openings = new List<RevitOpening>();
+      if (speckleElement["elements"] != null && (speckleElement["elements"] is List<Base> elements))
+        openings.AddRange(elements.Where(x => x is RevitVerticalOpening).Cast<RevitVerticalOpening>());
+
+      //list of shafts part of this conversion set
+      openings.AddRange(ContextObjects.Where(x => x.NativeObject is RevitShaft).Select(x => x.NativeObject).Cast<RevitShaft>());
+
+      foreach (var @void in speckleElement["voids"] as List<ICurve>)
+      {
+        if (HasOverlappingOpening(@void, openings))
+          continue;
+
+        var curveArray = CurveToNative(@void);
+        Doc.Create.NewOpening(host, curveArray, false);
+      }
+    }
+
+    private bool HasOverlappingOpening(ICurve @void, List<RevitOpening> openings)
+    {
+      foreach (RevitOpening opening in openings)
+      {
+        if (CurvesOverlap(@void, opening.outline))
+          return true;
+      }
+      return false;
+
+    }
+
+    private bool CurvesOverlap(ICurve icurveA, ICurve icurveB)
+    {
+      var curveArrayA = CurveToNative(icurveA).Cast<DB.Curve>().ToList();
+      var curveArrayB = CurveToNative(icurveB).Cast<DB.Curve>().ToList();
+
+      //we need to account for various scenarios, eg a shaft might be made of multiple shapes
+      //while the resulting cut in the floor will only be made on a single shape, so we need to cross check them all
+      foreach (var curveA in curveArrayA)
+      {
+        //move curves to Z = 0, needed for shafts!
+        curveA.MakeBound(0, 1);
+        var z = curveA.GetEndPoint(0).Z;
+        var cA = curveA.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, -z)));
+
+        foreach (var curveB in curveArrayB)
+        {
+          //move curves to Z = 0, needed for shafts!
+          curveB.MakeBound(0, 1);
+          z = curveB.GetEndPoint(0).Z;
+          var cB = curveB.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, -z)));
+
+          var result = cA.Intersect(cB);
+          if (result != SetComparisonResult.BothEmpty && result != SetComparisonResult.Disjoint)
+            return true;
+
+        }
+      }
+
+      return false;
+    }
+
+
     #endregion
   }
 }
