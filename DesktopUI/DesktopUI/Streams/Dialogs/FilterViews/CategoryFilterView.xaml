@@ -1,31 +1,31 @@
-﻿<UserControl x:Class="Speckle.DesktopUI.Streams.Dialogs.FilterViews.CategoryFilterView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:Speckle.DesktopUI.Streams.Dialogs.FilterViews"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:s="https://github.com/canton7/Stylet"
-             d:DesignHeight="300"
-             d:DesignWidth="300"
-             mc:Ignorable="d">
+﻿<UserControl
+  x:Class="Speckle.DesktopUI.Streams.Dialogs.FilterViews.CategoryFilterView"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:local="clr-namespace:Speckle.DesktopUI.Streams.Dialogs.FilterViews"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:s="https://github.com/canton7/Stylet"
+  d:DesignHeight="300"
+  d:DesignWidth="300"
+  mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
       <DataTemplate x:Key="CategoryChipTemplate">
-        <md:Chip Margin="0,0,6,6"
-                 Content="{Binding}"
-                 DeleteCommand="{s:Action RemoveFilterItem}"
-                 DeleteCommandParameter="{Binding}"
-                 IsDeletable="True" />
+        <md:Chip
+          Margin="0,0,6,6"
+          Content="{Binding}"
+          DeleteCommand="{s:Action RemoveFilterItem}"
+          DeleteCommandParameter="{Binding}"
+          IsDeletable="True" />
       </DataTemplate>
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
 
     <StackPanel>
-      <TextBlock Text="{Binding Filter.Description}"
-                 TextWrapping="Wrap" />
-
+      <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
       <Grid Margin="0,8">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
@@ -34,19 +34,21 @@
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <md:PackIcon Grid.Row="0"
-                     Margin="10,0"
-                     VerticalAlignment="Center"
-                     Foreground="{Binding ElementName=SearchTextBox, Path=BorderBrush}"
-                     Kind="Search" />
-        <TextBox x:Name="SearchTextBox"
-                 Grid.Row="0"
-                 VerticalContentAlignment="Center"
-                 md:TextFieldAssist.PrefixText="     "
-                 FontSize="14"
-                 GotKeyboardFocus="{s:Action OpenDropdown}"
-                 Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
-                 Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        <md:PackIcon
+          Grid.Row="0"
+          Margin="10,0"
+          VerticalAlignment="Center"
+          Foreground="{Binding ElementName=SearchTextBox, Path=BorderBrush}"
+          Kind="Search" />
+        <TextBox
+          x:Name="SearchTextBox"
+          Grid.Row="0"
+          VerticalContentAlignment="Center"
+          md:TextFieldAssist.PrefixText="     "
+          FontSize="14"
+          GotKeyboardFocus="{s:Action OpenDropdown}"
+          Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+          Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         <!--<Button
           Width="45"
           Height="Auto"
@@ -61,24 +63,25 @@
           Foreground="{DynamicResource PrimaryHueMidBrush}" />-->
       </Grid>
 
-      <ScrollViewer MaxHeight="180"
-                    VerticalScrollBarVisibility="Auto">
-        <ListBox x:Name="ItemsListBox"
-                 Margin="0,0,0,8"
-                 ItemsSource="{Binding SearchResults}"
-                 ScrollViewer.CanContentScroll="True"
-                 SelectedItem="{Binding ListItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 SelectionChanged="{s:Action HandleSelectionChanged}"
-                 SelectionMode="Multiple"
-                 Style="{StaticResource MaterialDesignFilterChipOutlineListBox}"
-                 Visibility="{Binding RelativeSource={RelativeSource AncestorLevel=2, AncestorType={x:Type UserControl}}, Path=DataContext.DropdownState, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+      <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto">
+        <ListBox
+          x:Name="ItemsListBox"
+          Margin="0,0,0,8"
+          ItemsSource="{Binding SearchResults}"
+          ScrollViewer.CanContentScroll="True"
+          SelectedItem="{Binding ListItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+          SelectionChanged="{s:Action HandleSelectionChanged}"
+          SelectionMode="Multiple"
+          Style="{StaticResource MaterialDesignFilterChipOutlineListBox}"
+          Visibility="{Binding RelativeSource={RelativeSource AncestorLevel=2, AncestorType={x:Type UserControl}}, Path=DataContext.DropdownState, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
       </ScrollViewer>
 
 
-      <TextBlock Margin="0,12,0,8"
-                 FontSize="14"
-                 FontWeight="Medium"
-                 Text="Current selection:" />
+      <TextBlock
+        Margin="0,12,0,8"
+        FontSize="14"
+        FontWeight="Medium"
+        Text="Current selection:" />
       <ItemsControl ItemsSource="{Binding ListItems}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>

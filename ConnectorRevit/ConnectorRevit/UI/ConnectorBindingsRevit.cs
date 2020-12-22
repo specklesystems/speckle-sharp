@@ -78,34 +78,7 @@ namespace Speckle.ConnectorRevit.UI
 
     public override string GetFileName() => CurrentDoc.Document.Title;
 
-    public override List<ISelectionFilter> GetSelectionFilters()
-    {
-      var categories = new List<string>();
-      var parameters = new List<string>();
-      var views = new List<string>();
 
-      if (CurrentDoc != null)
-      {
-        //selectionCount = CurrentDoc.Selection.GetElementIds().Count();
-        categories = ConnectorRevitUtils.GetCategoryNames(CurrentDoc.Document);
-        parameters = ConnectorRevitUtils.GetParameterNames(CurrentDoc.Document);
-        views = ConnectorRevitUtils.GetViewNames(CurrentDoc.Document);
-      }
-
-      return new List<ISelectionFilter>
-      {
-        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = categories},
-        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = views},
-        new PropertySelectionFilter
-        {
-          Name = "Parameter",
-          Icon = "FilterList",
-          HasCustomProperty = false,
-          Values = parameters,
-          Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
-        }
-      };
-    }
 
     public override void SelectClientObjects(string args)
     {
@@ -143,7 +116,7 @@ namespace Speckle.ConnectorRevit.UI
       NotifyUi(appEvent);
     }
 
-    // this method seem to never get triggered!
+    // this method is triggered when there are changes in the active document
     private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
     {
     }

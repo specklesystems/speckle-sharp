@@ -22,7 +22,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExternalEventHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ClientOperations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Selection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Receive.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Send.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.ClientOperations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.cs" />
   </ItemGroup>
   <ItemGroup>

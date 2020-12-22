@@ -131,11 +131,17 @@ namespace Objects.Converter.Revit
         case DB.Architecture.Railing o:
           return RailingToSpeckle(o);
 
-        case DB.Architecture.TopRail o:
+        case DB.Architecture.TopRail _:
           return null;
 
         case DB.Ceiling o:
           return CeilingToSpeckle(o);
+
+        case DB.ProjectInfo o:
+          return ProjectInfoToSpeckle(o);
+
+        case DB.ElementType o:
+          return ElementTypeToSpeckle(o);
 
         default:
           ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Speckle"));
@@ -276,6 +282,12 @@ namespace Objects.Converter.Revit
           return true;
 
         case DB.Group _:
+          return true;
+
+        case DB.ProjectInfo _:
+          return true;
+
+        case DB.ElementType _:
           return true;
 
         default:

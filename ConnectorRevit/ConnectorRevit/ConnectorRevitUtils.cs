@@ -31,8 +31,9 @@ namespace Speckle.ConnectorRevit
       if (_categories == null)
       {
         _categories = new Dictionary<string, Category>();
-        foreach (Category category in doc.Settings.Categories)
+        foreach (var bic in SupportedBuiltInCategories)
         {
+          var category = Category.GetCategory(doc, bic);
           _categories.Add(category.Name, category);
         }
       }
@@ -66,7 +67,7 @@ namespace Speckle.ConnectorRevit
     }
 
     /// <summary>
-    /// Each time it's called the cached parameters are return, and a new copy is cached
+    /// Each time it's called the cached parameters are returned, and a new copy is cached
     /// </summary>
     /// <param name="doc"></param>
     /// <returns></returns>
@@ -118,5 +119,30 @@ namespace Speckle.ConnectorRevit
       if (((BuiltInCategory)e.Category.Id.IntegerValue) == BuiltInCategory.OST_HVAC_Zones) return false;
       return e.Category.CategoryType == CategoryType.Model && e.Category.CanAddSubcategory;
     }
+
+
+    //list of currently supported Categories
+    private static List<BuiltInCategory> SupportedBuiltInCategories = new List<BuiltInCategory>{
+
+      BuiltInCategory.OST_Ceilings,
+      BuiltInCategory.OST_Columns,
+      BuiltInCategory.OST_CurtaSystem,
+      BuiltInCategory.OST_Doors,
+      BuiltInCategory.OST_Floors,
+      BuiltInCategory.OST_Furniture,
+      BuiltInCategory.OST_GenericModel,
+      BuiltInCategory.OST_Levels,
+      BuiltInCategory.OST_Mass,
+      BuiltInCategory.OST_Ramps,
+      BuiltInCategory.OST_Roofs,
+      BuiltInCategory.OST_SpecialityEquipment,
+      BuiltInCategory.OST_Stairs,
+      BuiltInCategory.OST_StructuralColumns,
+      BuiltInCategory.OST_StructuralFoundation,
+      BuiltInCategory.OST_StructuralFraming,
+      BuiltInCategory.OST_StructuralTruss,
+      BuiltInCategory.OST_Walls,
+      BuiltInCategory.OST_Windows
+      };
   }
 }
