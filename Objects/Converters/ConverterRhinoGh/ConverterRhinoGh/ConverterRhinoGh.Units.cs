@@ -40,8 +40,8 @@ namespace Objects.Converter.RhinoGh
     {
       switch (us)
       {
-        //case UnitSystem.None:
-        //  break;
+        case UnitSystem.None:
+          return Units.Meters;
         //case UnitSystem.Angstroms:
         //  break;
         //case UnitSystem.Nanometers:
@@ -92,8 +92,8 @@ namespace Objects.Converter.RhinoGh
         //  break;
         //case UnitSystem.CustomUnits:
         //  break;
-        //case UnitSystem.Unset:
-        //  break;
+        case UnitSystem.Unset:
+          return Units.Meters;
         default:
           throw new System.Exception("The current Unit System is unsupported.");
       }

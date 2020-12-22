@@ -4,6 +4,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Objects.Primitive;
 
 namespace Objects
 {
@@ -27,6 +28,7 @@ namespace Objects
   public interface ICurve
   {
     double length { get; set; }
+    Interval domain { get; set; }
   }
 
   #endregion

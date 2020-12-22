@@ -12,22 +12,39 @@ namespace Objects.BuiltElements.Revit
 
     public RevitCategory category { get; set; }
 
-    public Mesh baseGeometry { get; set; }
+    public List<Base> baseGeometries { get; set; }
 
     public List<Parameter> parameters { get; set; }
+    
     public string elementId { get; set; }
 
-    public DirectShape()
-    { }
 
-    [SchemaInfo("DirectShape by mesh", "Creates a Revit DirectShape by mesh")]
-    public DirectShape(string name, RevitCategory category, Mesh baseGeometry, List<Parameter> parameters = null)
+    public DirectShape()
+    {
+      
+    }
+    
+    /// <summary>
+    ///  Constructs a new <see cref="DirectShape"/> instance given a list of <see cref="Base"/> objects.
+    /// </summary>
+    /// <param name="name">The name of the <see cref="DirectShape"/></param>
+    /// <param name="category">The <see cref="RevitCategory"/> of this instance.</param>
+    /// <param name="baseGeometries">A list of base classes to represent the direct shape (only mesh and brep are allowed, anything else will be ignored.)</param>
+    /// <param name="parameters">Optional Parameters for this instance.</param>
+    [SchemaInfo("DirectShape by base geometries", "Creates a Revit DirectShape using a list of base geometry objects.")]
+    public DirectShape(string name, RevitCategory category, List<Base> baseGeometries, List<Parameter> parameters = null)
     {
       this.name = name;
       this.category = category;
-      this.baseGeometry = baseGeometry;
+      this.baseGeometries = baseGeometries.FindAll(IsValidObject);
       this.parameters = parameters;
     }
+
+    public bool IsValidObject(Base @base) =>
+      @base is Point 
+      || @base is ICurve 
+      || @base is Mesh 
+      || @base is Brep;
   }
 
 }

@@ -17,5 +17,10 @@ namespace Objects.Primitive
       this.start = start;
       this.end = end;
     }
+
+    public override string ToString()
+    {
+      return base.ToString() + $"[{this.start}, {this.end}]";
+    }
   }
 }

@@ -98,16 +98,16 @@ namespace Objects.Converter.RhinoGh
 
         case RH.Polyline o:
           return PolylineToSpeckle(o) as Base;
+        
+        case NurbsCurve o:
+          return CurveToSpeckle(o) as Base;
 
         case PolylineCurve o:
           return PolylineToSpeckle(o);
 
         case PolyCurve o:
           return PolycurveToSpeckle(o);
-
-        case NurbsCurve o:
-          return CurveToSpeckle(o) as Base;
-
+        
         case RH.Box o:
           return BoxToSpeckle(o);
 
@@ -118,14 +118,6 @@ namespace Objects.Converter.RhinoGh
           return BrepToSpeckle(o);
 
         case RH.Brep o:
-          if (o.IsSurface)
-          {
-            // If a brep 'isSurface' means it only has one face and the trim is the boundary.
-            // Basically... it's a nurbs surface! Flip the brep for the nurbs in `@object` before trying to convert.
-            // TODO: This might also be a revSurface or other type... converting all to nurbs for now.
-            var list = o.Surfaces.ToList();
-            return SurfaceToSpeckle(list[0].ToNurbsSurface());
-          }
           return BrepToSpeckle(o);
 
         case NurbsSurface o:
