@@ -103,6 +103,11 @@ namespace ConnectorGrasshopper.Extras
         return GH_Convert.ToGoo(value);
       }
 
+      if (value is Enum)
+      {
+        var i = (Enum) value;
+        return new GH_ObjectWrapper(){Value = i};
+      }
       return null;
     }
 

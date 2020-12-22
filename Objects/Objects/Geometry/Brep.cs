@@ -5,7 +5,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
+using Objects.Primitive;
+using Speckle.Core.Kits;
 using static Speckle.Core.Models.Utilities;
+
 
 namespace Objects.Geometry
 {
@@ -204,19 +207,24 @@ namespace Objects.Geometry
   {
     [JsonIgnore] public Brep Brep { get; set; }
     public int EdgeIndex { get; set; }
+    
+    public int StartIndex { get; set; }
+    public int EndIndex { get; set; }
     public int FaceIndex { get; set; }
     public int LoopIndex { get; set; }
     public int CurveIndex { get; set; }
     public int IsoStatus { get; set; }
     public BrepTrimType TrimType { get; set; }
     public bool IsReversed { get; set; }
-
+    
+    public Interval Domain { get; set; }
+    
     public BrepTrim()
     {
     }
 
     public BrepTrim(Brep brep, int edgeIndex, int faceIndex, int loopIndex, int curveIndex, int isoStatus,
-      BrepTrimType trimType, bool reversed)
+      BrepTrimType trimType, bool reversed, int startIndex, int endIndex)
     {
       Brep = brep;
       EdgeIndex = edgeIndex;
@@ -227,7 +235,7 @@ namespace Objects.Geometry
       TrimType = trimType;
       IsReversed = reversed;
     }
-
+  
     [JsonIgnore] public BrepFace Face => Brep.Faces[FaceIndex];
 
     [JsonIgnore] public BrepLoop Loop => Brep.Loops[LoopIndex];
@@ -246,16 +254,17 @@ namespace Objects.Geometry
     public int Curve3dIndex { get; set; }
     public int[] TrimIndices { get; set; }
     public int StartIndex { get; set; }
-    public int EndIndex { get; set; }
-
+    public int EndIndex { get; set; } 
+    
     public bool ProxyCurveIsReversed { get; set; }
-
+    
+    public Interval Domain { get; set; }
     public BrepEdge()
     {
     }
 
     public BrepEdge(Brep brep, int curve3dIndex, int[] trimIndices, int startIndex, int endIndex,
-      bool proxyCurvedIsReversed)
+      bool proxyCurvedIsReversed, Interval domain)
     {
       Brep = brep;
       Curve3dIndex = curve3dIndex;
@@ -263,6 +272,7 @@ namespace Objects.Geometry
       StartIndex = startIndex;
       EndIndex = endIndex;
       ProxyCurveIsReversed = proxyCurvedIsReversed;
+      Domain = domain;
     }
 
     [JsonIgnore] public Point StartVertex => Brep.Vertices[StartIndex];

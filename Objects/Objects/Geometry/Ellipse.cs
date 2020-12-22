@@ -63,7 +63,7 @@ namespace Objects.Geometry
     /// <param name="radius2">Second radius of the ellipse.</param>
     /// <param name="applicationId">Application ID, defaults to null.</param>
     public Ellipse(Plane plane, double radius1, double radius2, string units = Units.Meters, string applicationId = null)
-      : this(plane, radius1, radius2, new Interval(0, 2 * Math.PI), null, units)
+      : this(plane, radius1, radius2, new Interval(0, 1), null, units)
     {
     }
 
