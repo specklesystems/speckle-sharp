@@ -734,13 +734,15 @@ namespace Objects.Converter.Revit
             if (trimReversed)
             {
               for (int e = edgeIds.Count - 1; e >= 0; --e)
-                builder.AddCoEdge(loopId, edgeIds[e], true);
+                if(builder.IsValidEdgeId(edgeIds[e]))
+                  builder.AddCoEdge(loopId, edgeIds[e], true);
 
             }
             else
             {
               for (int e = 0; e < edgeIds.Count; ++e)
-                builder.AddCoEdge(loopId, edgeIds[e], false);
+                if(builder.IsValidEdgeId(edgeIds[e]))
+                  builder.AddCoEdge(loopId, edgeIds[e], false);
             }
           }
 

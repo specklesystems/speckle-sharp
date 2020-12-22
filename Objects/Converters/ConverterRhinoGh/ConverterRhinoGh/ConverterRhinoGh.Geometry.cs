@@ -632,9 +632,9 @@ namespace Objects.Converter.RhinoGh
       spcklBrep.Vertices = brep.Vertices
         .Select(vertex => PointToSpeckle(vertex)).ToList();
       spcklBrep.Curve3D = brep.Curves3D
-        .Select(edge =>
+        .Select(curve3d =>
         {
-          Rhino.Geometry.Curve crv = edge;
+          Rhino.Geometry.Curve crv = curve3d;
           if (crv is NurbsCurve nurbsCurve)
           {
             // Nurbs curves of degree 2 have weird support in Revit, so we up everything to degree 3.
@@ -647,7 +647,7 @@ namespace Objects.Converter.RhinoGh
             // TODO: Figure out why closed curves don't like this hack?
             if (invalid && !nurbsCurve.IsClosed)
               nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count,nurbsCurve.Degree,true);
-            nurbsCurve.Domain = edge.Domain;
+            nurbsCurve.Domain = curve3d.Domain;
             crv = nurbsCurve;
           }
           var icrv=  ConvertToSpeckle(crv) as ICurve;
