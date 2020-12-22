@@ -779,6 +779,7 @@ namespace Objects.Converter.Revit
 
       var speckleFaces = new Dictionary<Face, BrepFace>();
       var speckleEdges = new Dictionary<Edge, BrepEdge>();
+      var speckleEdgeIndexes = new Dictionary<Edge, int>();
       var speckle3dCurves = new ICurve[solid.Edges.Size];
       var speckle2dCurves = new List<ICurve>();
       var speckleLoops = new List<BrepLoop>();
@@ -801,7 +802,6 @@ namespace Objects.Converter.Revit
             // Each edge should create a 2d curve, a 3d curve, a BrepTrim and a BrepEdge.
             var edge = loopIterator.Current as Edge;
             var faceA = edge.GetFace(0);
-            var faceB = edge.GetFace(1);
 
             // Determine what face side are we currently on.
             var edgeSide = face == faceA ? 0 : 1;
@@ -830,12 +830,16 @@ namespace Objects.Converter.Revit
               // Create a trim with just one of the trimIndices set, the second one will be set on the opposite condition.
               var sEdge = new BrepEdge(brep, sCurveIndex, new[] { sTrimIndex }, -1, -1, edge.IsFlippedOnFace(face), null);
               speckleEdges.Add(edge, sEdge);
+              speckleEdgeIndexes.Add(edge, edgeIndex);
               edgeIndex++;
             }
             else
             {
               // Already visited this edge, skip curve 3d
               var sEdge = speckleEdges[edge];
+              var sEdgeIndex = speckleEdgeIndexes[edge];
+              sTrim.EdgeIndex = sEdgeIndex;
+              
               // Update trim indices with new item.
               // TODO: Make this better.
               var trimIndices = sEdge.TrimIndices.ToList();
