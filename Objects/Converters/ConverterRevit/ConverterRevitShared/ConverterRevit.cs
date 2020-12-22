@@ -189,6 +189,9 @@ namespace Objects.Converter.Revit
         case BE.Topography o:
           return TopographyToNative(o);
 
+        case BER.RevitFaceWall o:
+          return FaceWallToNative(o);
+
         case BE.Wall o:
           return WallToNative(o);
 
@@ -272,6 +275,9 @@ namespace Objects.Converter.Revit
         case DB.Ceiling _:
           return true;
 
+        case DB.Group _:
+          return true;
+
         default:
           return false;
       }
@@ -323,8 +329,12 @@ namespace Objects.Converter.Revit
         case BE.Topography _:
           return true;
 
+        case BER.RevitFaceWall _:
+          return true;
+
         case BE.Wall _:
           return true;
+
 
         case BE.Duct _:
           return true;

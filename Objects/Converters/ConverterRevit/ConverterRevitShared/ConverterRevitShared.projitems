@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBeam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBrace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCeiling.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRailing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertStair.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertColumn.cs" />
@@ -33,6 +34,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRoof.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRoom.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertTopography.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFaceWall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Units.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />

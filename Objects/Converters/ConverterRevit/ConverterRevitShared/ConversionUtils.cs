@@ -745,5 +745,21 @@ namespace Objects.Converter.Revit
 
 
     #endregion
+
+
+    public WallLocationLine GetWallLocationLine(LocationLine location)
+    {
+      switch (location)
+      {
+        case LocationLine.Centerline:
+          return WallLocationLine.WallCenterline;
+        case LocationLine.Exterior:
+          return WallLocationLine.FinishFaceExterior;
+        case LocationLine.Interior:
+          return WallLocationLine.FinishFaceInterior;
+        default:
+          return WallLocationLine.FinishFaceInterior;
+      }
+    }
   }
 }
