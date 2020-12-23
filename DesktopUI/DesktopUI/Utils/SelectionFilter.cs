@@ -110,6 +110,27 @@ namespace Speckle.DesktopUI.Utils
       set => SetAndNotify(ref _listItems, value);
     }
 
+    private BindableCollection<string> _selectedListItems = new BindableCollection<string>();
+
+    public BindableCollection<string> SelectedListItems
+    {
+      get => _selectedListItems;
+      set
+      {
+        SetAndNotify(ref _selectedListItems, value);
+        NotifyOfPropertyChange("Summary");
+      }
+    }
+
+    public string Summary
+    {
+      get
+      {
+        return string.Join(", ", SelectedListItems.ToArray());
+      }
+    }
+
+
     public FilterTab(ISelectionFilter filter)
     {
       Filter = filter;

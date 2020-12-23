@@ -90,32 +90,33 @@ namespace Speckle.DesktopUI.Streams
     public void HandleSelectionChanged(ListBox sender, SelectionChangedEventArgs e)
     {
 
-      //if (e.AddedItems.Count == 1)
-      //{
-      //  var toAdd = (string)e.AddedItems[0];
-      //  if (SelectedFilterTab.ListItems.Contains(toAdd)) return;
-      //  SelectedFilterTab.ListItems.Add(toAdd);
-      //}
+      if (e.AddedItems.Count == 1)
+      {
+        var toAdd = (string)e.AddedItems[0];
+        if (SelectedFilterTab.SelectedListItems.Contains(toAdd)) return;
+        SelectedFilterTab.SelectedListItems.Add(toAdd);
+      }
 
-      // select current selection (ListItems) when the search resuslts change
-      //if (SelectedFilterTab.searchSourceChanged)
-      //{
-      //  SelectedFilterTab.searchSourceChanged = false;
-      //  foreach (var item in SelectedFilterTab.ListItems)
-      //  {
-      //    sender.SelectedItems.Add(item);
-      //  }
-      //  return;
-      //}
+      //select current selection(ListItems) when the search resuslts change
+      if (SelectedFilterTab.searchSourceChanged)
+      {
+        SelectedFilterTab.searchSourceChanged = false;
+        foreach (var item in SelectedFilterTab.ListItems)
+        {
+          sender.SelectedItems.Add(item);
+        }
+        return;
+      }
 
-      //if (e.RemovedItems.Count == 1)
-      //{
-      //  var toRemove = (string)e.RemovedItems[0];
-      //  if (!SelectedFilterTab.ListItems.Contains(toRemove)) return;
-      //  SelectedFilterTab.ListItems.Remove(toRemove);
-      //}
-
-      //e.Handled = true;
+      if (e.RemovedItems.Count == 1)
+      {
+        var toRemove = (string)e.RemovedItems[0];
+        if (!SelectedFilterTab.SelectedListItems.Contains(toRemove)) return;
+        SelectedFilterTab.SelectedListItems.Remove(toRemove);
+      }
+      //this is to trigger the binding, the Text property doesn't react to INotifyCollectionChanged events!
+      SelectedFilterTab.SelectedListItems = SelectedFilterTab.SelectedListItems;
+      e.Handled = true;
     }
 
     public void ClearSelected()
@@ -129,7 +130,7 @@ namespace Speckle.DesktopUI.Streams
       Tracker.TrackPageview("stream", "objects-changed");
       var filter = SelectedFilterTab.Filter;
 
-      filter.Selection = SelectedFilterTab.ListItems.ToList();
+      filter.Selection = SelectedFilterTab.SelectedListItems.ToList();
 
       StreamState.Filter = filter;
       Bindings.PersistAndUpdateStreamInFile(StreamState);
@@ -143,7 +144,7 @@ namespace Speckle.DesktopUI.Streams
       UpdateButtonLoading = true;
       Tracker.TrackPageview("stream", "from-selection");
       SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
-      SelectedFilterTab.ListItems.Clear();
+      SelectedFilterTab.SelectedListItems.Clear();
       SelectedFilterTab.Filter.Selection = Bindings.GetSelectedObjects();
 
       UpdateStreamObjects();

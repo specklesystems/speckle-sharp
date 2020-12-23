@@ -85,7 +85,7 @@
         FontSize="14"
         FontWeight="Medium"
         Text="Current selection:" />
-      <TextBlock Text="{Binding ListItems, Converter={StaticResource ListToStringConverter}}" />
+      <TextBlock Text="{Binding Summary}" />
 
     </StackPanel>
   </Grid>
