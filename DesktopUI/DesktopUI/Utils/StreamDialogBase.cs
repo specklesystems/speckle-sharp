@@ -70,8 +70,8 @@ namespace Speckle.DesktopUI.Utils
 
     public void AddToSelection()
     {
-      var newIds = Bindings.GetSelectedObjects().Except(SelectedFilterTab.ListItems);
-      SelectedFilterTab.ListItems.AddRange(newIds);
+      //var newIds = Bindings.GetSelectedObjects().Except(SelectedFilterTab.ListItems);
+      //SelectedFilterTab.ListItems.AddRange(newIds);
     }
 
     public void ClearSelection()

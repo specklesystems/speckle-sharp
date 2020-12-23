@@ -39,13 +39,13 @@ namespace Speckle.ConnectorRevit.UI
 
       return new List<ISelectionFilter>
       {
-        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = categories, Description="Add objects to the stream by Category"},
-        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = views, Description="Add objects to the stream by View" },
-        new ListSelectionFilter {Name = "Project Info", Icon = "Information", Values = projectInfo, Description="Add project information such as levels and family names to the stream"},
+        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = categories, Description="Adds all objects belonging to the selected categories"},
+        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = views, Description="Adds all objects visible in the selected views" },
+        new ListSelectionFilter {Name = "Project Info", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels and family names to the stream"},
         new PropertySelectionFilter
         {
           Name = "Parameter",
-          Description="Add objects to this stream by parameter",
+          Description="Adds  all objects satisfying the selected parameter",
           Icon = "FilterList",
           HasCustomProperty = false,
           Values = parameters,
@@ -152,7 +152,7 @@ namespace Speckle.ConnectorRevit.UI
           if (projectInfoFilter.Selection.Contains("Families & Types"))
           {
             //get all the elementtypes of the categories we support
-            var allCategoryFilter = new LogicalOrFilter((IList<ElementFilter>)ConnectorRevitUtils.GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).ToList());
+            var allCategoryFilter = new LogicalOrFilter(ConnectorRevitUtils.GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList());
 
             selection.AddRange(new FilteredElementCollector(doc)
             .WhereElementIsElementType()

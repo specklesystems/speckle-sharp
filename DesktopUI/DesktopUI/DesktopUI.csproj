@@ -99,8 +99,8 @@
     </Compile>
     <Compile Include="Streams\AllStreamsViewModel.cs" />
     <Compile Include="Streams\Dialogs\BranchCreateDialogViewModel.cs" />
-    <Compile Include="Streams\Dialogs\FilterViews\CategoryFilterView.xaml.cs">
-      <DependentUpon>CategoryFilterView.xaml</DependentUpon>
+    <Compile Include="Streams\Dialogs\FilterViews\ListFilterView.xaml.cs">
+      <DependentUpon>ListFilterView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Streams\Dialogs\FilterViews\ParameterFilterView.xaml.cs">
       <DependentUpon>ParameterFilterView.xaml</DependentUpon>
@@ -138,7 +138,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Streams\Dialogs\BranchCreateDialogView.xaml" />
-    <Page Include="Streams\Dialogs\FilterViews\CategoryFilterView.xaml" />
+    <Page Include="Streams\Dialogs\FilterViews\ListFilterView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Streams\Dialogs\FilterViews\ParameterFilterView.xaml" />
     <Page Include="Streams\Dialogs\ShareStreamDialogView.xaml" />
     <Page Include="Streams\StreamCreateDialogView.xaml">
