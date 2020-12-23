@@ -87,7 +87,7 @@
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Loader.cs" />
-    <Compile Include="Ops\Operations.LocalReceiveComponent.cs" />
+    <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
     <Compile Include="Ops\Operations.SendLocalComponent.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObjectDialog.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObject.cs" />
@@ -219,6 +219,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\LocalReceiver.png" />
+    <None Include="Resources\LocalSender.png" />
+    <None Include="Resources\SchemaBuilder.png" />
     <Content Include="Resources\speckle-logo-bw.png" />
     <Content Include="Resources\speckle-logo.png" />
   </ItemGroup>

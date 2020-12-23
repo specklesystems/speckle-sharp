@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
@@ -8,9 +9,9 @@ using Speckle.Core.Api;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class LocalReceiveComponent : SelectKitComponentBase
+  public class ReceiveLocalComponent : SelectKitComponentBase
   {
-    public LocalReceiveComponent() : base("Local Receive", "LR",
+    public ReceiveLocalComponent() : base("Local Receive", "LR",
       "Receives data locally, without the need of a Speckle Server. NOTE: updates will not be automatically received.",
       "Speckle 2", "   Send/Receive")
     {
@@ -52,5 +53,6 @@ namespace ConnectorGrasshopper.Ops
     }
 
     public override Guid ComponentGuid => new Guid("D690C3C5-B18A-4A7B-B6FC-A4FFF9A55046");
+    protected override Bitmap Icon => Properties.Resources.LocalReceiver;
   }
 }

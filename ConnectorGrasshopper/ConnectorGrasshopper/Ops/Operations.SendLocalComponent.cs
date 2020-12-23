@@ -2,6 +2,7 @@
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Models;
 using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Objects;
 using Grasshopper.Kernel.Data;
@@ -17,7 +18,8 @@ namespace ConnectorGrasshopper.Ops
     }
 
     public override Guid ComponentGuid => new Guid("6E03AC48-B9E9-48D4-886F-1197F71E4ED2");
-    
+    protected override Bitmap Icon => Properties.Resources.LocalSender;
+
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddGenericParameter("Data", "D", "Data to send.", GH_ParamAccess.tree);
