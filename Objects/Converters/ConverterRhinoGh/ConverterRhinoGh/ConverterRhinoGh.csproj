@@ -60,11 +60,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="6.31.20315.17001">
+    <PackageReference Include="Grasshopper" Version="6.32.20340.21001">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="RhinoCommon" Version="6.31.20315.17001">
+    <PackageReference Include="RhinoCommon" Version="6.32.20340.21001">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
