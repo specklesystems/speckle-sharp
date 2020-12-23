@@ -154,14 +154,25 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _searchQuery, value);
-        searchSourceChanged = true;
+        RestoreSelectedItems();
         SearchResults = new BindableCollection<string>(_valuesList.Where(v => v.ToLower().Contains(SearchQuery.ToLower())).ToList());
         NotifyOfPropertyChange(nameof(SearchResults));
+
+      }
+    }
+
+    // searching will change data source and remove selected items in the ListBox, 
+    // restore them as the query is cleared
+    private void RestoreSelectedItems()
+    {
+      foreach (var item in SelectedListItems)
+      {
+        if (!ListItems.Contains(item))
+          ListItems.Add(item);
       }
     }
 
     public BindableCollection<string> SearchResults { get; set; } = new BindableCollection<string>();
-    public bool searchSourceChanged { get; set; } = false;
     private BindableCollection<string> _valuesList { get; }
 
     public void RemoveListItem(string name)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
@@ -87,31 +88,32 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _updateButtonLoading, value);
     }
 
+
+    public void HandleDataChanged(ListBox sender, DependencyPropertyChangedEventArgs e)
+    {
+
+
+
+
+    }
+
     public void HandleSelectionChanged(ListBox sender, SelectionChangedEventArgs e)
     {
 
       if (e.AddedItems.Count == 1)
       {
         var toAdd = (string)e.AddedItems[0];
-        if (SelectedFilterTab.SelectedListItems.Contains(toAdd)) return;
+        if (SelectedFilterTab.SelectedListItems.Contains(toAdd))
+          return;
         SelectedFilterTab.SelectedListItems.Add(toAdd);
-      }
-
-      //select current selection(ListItems) when the search resuslts change
-      if (SelectedFilterTab.searchSourceChanged)
-      {
-        SelectedFilterTab.searchSourceChanged = false;
-        foreach (var item in SelectedFilterTab.ListItems)
-        {
-          sender.SelectedItems.Add(item);
-        }
-        return;
       }
 
       if (e.RemovedItems.Count == 1)
       {
         var toRemove = (string)e.RemovedItems[0];
-        if (!SelectedFilterTab.SelectedListItems.Contains(toRemove)) return;
+        //if it was removed as a result of a search query change, don't actually remove it from our selected list
+        if (!SelectedFilterTab.SelectedListItems.Contains(toRemove) || SelectedFilterTab.ListItems.Contains(toRemove))
+          return;
         SelectedFilterTab.SelectedListItems.Remove(toRemove);
       }
       //this is to trigger the binding, the Text property doesn't react to INotifyCollectionChanged events!
