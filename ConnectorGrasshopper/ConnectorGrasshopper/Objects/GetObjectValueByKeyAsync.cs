@@ -16,7 +16,7 @@ namespace ConnectorGrasshopper.Objects
     public ISpeckleConverter Converter;
     public ISpeckleKit Kit;
 
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override GH_Exposure Exposure => GH_Exposure.primary;
     protected override Bitmap Icon => Properties.Resources.GetObjectValueByKey;
 
     public override Guid ComponentGuid => new Guid("050B24D3-CCEA-466A-B52C-25CB4DA39981");

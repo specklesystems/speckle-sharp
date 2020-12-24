@@ -22,7 +22,7 @@ namespace ConnectorGrasshopper.Objects
     public List<string> outputList = new List<string>();
 
     public override Guid ComponentGuid => new Guid("A33BB8DF-A9C1-4CD1-855F-D6A8B277102B");
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override GH_Exposure Exposure => GH_Exposure.primary;
     protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
 
     public ExpandSpeckleObjectAsync() : base("Expand Speckle Object Async", "ESOA",
