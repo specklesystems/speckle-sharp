@@ -24,7 +24,8 @@ namespace ConnectorGrasshopper.Objects
 
     public override Guid ComponentGuid => new Guid("75B07031-0180-4A1F-9AC9-3AAA81E11E05");
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override bool Obsolete => true;
 
     protected override Bitmap Icon => Properties.Resources.CreateSpeckleObjectByKeyValue;
 
