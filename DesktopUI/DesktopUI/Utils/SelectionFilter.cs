@@ -163,7 +163,7 @@ namespace Speckle.DesktopUI.Utils
 
     // searching will change data source and remove selected items in the ListBox, 
     // restore them as the query is cleared
-    private void RestoreSelectedItems()
+    public void RestoreSelectedItems()
     {
       foreach (var item in SelectedListItems)
       {
@@ -175,12 +175,6 @@ namespace Speckle.DesktopUI.Utils
     public BindableCollection<string> SearchResults { get; set; } = new BindableCollection<string>();
     private BindableCollection<string> _valuesList { get; }
 
-    public void RemoveListItem(string name)
-    {
-      ListItems.Remove(name);
-      if (SearchQuery != null && !name.Contains(SearchQuery)) return;
-      SearchResults.Add(name);
-    }
   }
 
   public class SelectionFilterConverter : JsonConverter
@@ -203,6 +197,8 @@ namespace Speckle.DesktopUI.Utils
     }
   }
 
+  // Custom behavior for a list box to allow a two way binding of the SelectedItems property
+  // we use it to set the previous value of a filter when it's edited
   // adapted from: https://tyrrrz.me/blog/wpf-listbox-selecteditems-twoway-binding
   public class MyObjectListBoxSelectionBehavior : ListBoxSelectionBehavior
   {

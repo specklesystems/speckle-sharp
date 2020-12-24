@@ -65,24 +65,12 @@ namespace Speckle.DesktopUI.Utils
     public FilterTab SelectedFilterTab
     {
       get => _selectedFilterTab;
-      set { SetAndNotify(ref _selectedFilterTab, value); }
+      set {
+        SetAndNotify(ref _selectedFilterTab, value);
+        _selectedFilterTab.RestoreSelectedItems();
+      }
     }
 
-    public void AddToSelection()
-    {
-      //var newIds = Bindings.GetSelectedObjects().Except(SelectedFilterTab.ListItems);
-      //SelectedFilterTab.ListItems.AddRange(newIds);
-    }
-
-    public void ClearSelection()
-    {
-      SelectedFilterTab.ListItems.Clear();
-    }
-
-    public void RemoveFilterItem(string name)
-    {
-      SelectedFilterTab.RemoveListItem(name);
-    }
 
     #region Adding Collaborators
 

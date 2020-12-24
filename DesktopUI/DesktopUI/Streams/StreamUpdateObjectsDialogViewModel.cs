@@ -89,14 +89,6 @@ namespace Speckle.DesktopUI.Streams
     }
 
 
-    public void HandleDataChanged(ListBox sender, DependencyPropertyChangedEventArgs e)
-    {
-
-
-
-
-    }
-
     public void HandleSelectionChanged(ListBox sender, SelectionChangedEventArgs e)
     {
 
