@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -73,6 +74,8 @@ namespace Speckle.DesktopUI.Streams
       _events.Subscribe(this);
 
       Globals.Repo = _repo;
+
+      var ass = AppDomain.CurrentDomain.GetAssemblies().Where(x => x.FullName.ToLowerInvariant().Contains("xaml")).ToList();
     }
 
     private BindableCollection<StreamState> LoadStreams()

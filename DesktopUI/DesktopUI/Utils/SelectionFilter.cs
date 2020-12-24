@@ -5,8 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Interactivity;
+using Microsoft.Xaml.Behaviors;
 using Newtonsoft.Json;
 using Speckle.DesktopUI.Streams.Dialogs.FilterViews;
 using Stylet;
@@ -200,20 +199,20 @@ namespace Speckle.DesktopUI.Utils
   // Custom behavior for a list box to allow a two way binding of the SelectedItems property
   // we use it to set the previous value of a filter when it's edited
   // adapted from: https://tyrrrz.me/blog/wpf-listbox-selecteditems-twoway-binding
-  public class MyObjectListBoxSelectionBehavior : ListBoxSelectionBehavior
+  public class ListFilterSelectionBehavior : ListBoxSelectionBehavior<string>
   {
   }
-  public class ListBoxSelectionBehavior : Behavior<ListBox>
+  public class ListBoxSelectionBehavior<T> : Behavior<ListBox>
   {
     public static readonly DependencyProperty SelectedItemsProperty =
         DependencyProperty.Register(nameof(SelectedItems), typeof(IList),
-            typeof(ListBoxSelectionBehavior),
+            typeof(ListBoxSelectionBehavior<T>),
             new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                 OnSelectedItemsChanged));
 
     private static void OnSelectedItemsChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
     {
-      var behavior = (ListBoxSelectionBehavior)sender;
+      var behavior = (ListBoxSelectionBehavior<T>)sender;
       if (behavior._modelHandled) return;
 
       if (behavior.AssociatedObject == null)
@@ -227,9 +226,9 @@ namespace Speckle.DesktopUI.Utils
     private bool _viewHandled;
     private bool _modelHandled;
 
-    public BindableCollection<string> SelectedItems
+    public BindableCollection<T> SelectedItems
     {
-      get => (BindableCollection<string>)GetValue(SelectedItemsProperty);
+      get => (BindableCollection<T>)GetValue(SelectedItemsProperty);
       set => SetValue(SelectedItemsProperty, value);
     }
 
@@ -252,7 +251,7 @@ namespace Speckle.DesktopUI.Utils
       if (_viewHandled) return;
       if (AssociatedObject.Items.SourceCollection == null) return;
 
-      SelectedItems = new BindableCollection<string>(AssociatedObject.SelectedItems.OfType<string>());
+      SelectedItems = new BindableCollection<T>(AssociatedObject.SelectedItems.OfType<T>());
     }
 
     // Re-select items when the set of items changes

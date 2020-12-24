@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
+using Microsoft.Xaml.Behaviors;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.DesktopUI.Accounts;
@@ -70,6 +71,7 @@ namespace Speckle.DesktopUI
 
     private void LoadThemeResources()
     {
+      Behavior b = null; //force loading of behaviors reference
       Application.Current.Resources.MergedDictionaries.Add(
         Application.LoadComponent(
           new Uri("SpeckleDesktopUI;component/Themes/Generic.xaml", UriKind.Relative)
