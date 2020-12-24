@@ -21,8 +21,9 @@ namespace ConnectorGrasshopper.Objects
     {
     }
     protected override Bitmap Icon => Properties.Resources.GetObjectValueByKey;
+    public override bool Obsolete => true;
 
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     public override Guid ComponentGuid => new Guid("5750B5B2-FB1E-4A1C-9DBE-025D6615D64E");
 

@@ -14,61 +14,17 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class ExtendSpeckleObjectAsync : GH_AsyncComponent
+  public class ExtendSpeckleObjectAsync : SelectKitAsyncComponentBase
   {
-    public ISpeckleConverter Converter;
-
-    public ISpeckleKit Kit;
-
     public override Guid ComponentGuid => new Guid("00287364-F725-466E-9E38-FDAD270D87D3");
     protected override Bitmap Icon => Properties.Resources.ExtendSpeckleObject;
 
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public ExtendSpeckleObjectAsync() : base("Extend Speckle Object Async", "ESOA",
-      "Extend a current object with key/value pairs", "Speckle 2 Dev", "Async Object Management")
+    public ExtendSpeckleObjectAsync() : base("Extend Speckle Object", "ESO",
+      "Extend a current object with key/value pairs", "Speckle 2", "Object Management")
     {
-      Kit = KitManager.GetDefaultKit();
-      try
-      {
-        Converter = Kit.LoadConverter(Applications.Rhino);
-        BaseWorker = new ExtendSpeckleObjectWorker(this, Converter);
-        Message = $"{Kit.Name} Kit";
-      }
-      catch
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-      }
-    }
-
-    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
-    {
-      Menu_AppendSeparator(menu);
-      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:");
-      menuItem.Enabled = false;
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-
-      foreach (var kit in kits)
-      {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
-          kit.Name == Kit.Name);
-      }
-
-      Menu_AppendSeparator(menu);
-    }
-
-    public void SetConverterFromKit(string kitName)
-    {
-      if (kitName == Kit.Name)
-      {
-        return;
-      }
-
-      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino);
       BaseWorker = new ExtendSpeckleObjectWorker(this, Converter);
-      Message = $"Using the {Kit.Name} Converter";
-      ExpireSolution(true);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -122,6 +78,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
+      Parent.Message = "Extending...";
       var path = new GH_Path(iteration);
       if (valueTree.PathExists(path))
       {
@@ -184,6 +141,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
+      DA.DisableGapLogic();
       GH_SpeckleBase ghBase = null;
       DA.GetData(0, ref ghBase);
       DA.GetDataList(1, keys);

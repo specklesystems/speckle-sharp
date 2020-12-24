@@ -1,4 +1,4 @@
-﻿using ConnectorGrasshopper.Extras;
+using ConnectorGrasshopper.Extras;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -166,13 +166,14 @@ namespace ConnectorGrasshopper.Conversion
     public override void SetData(IGH_DataAccess DA)
     {
       if (CancellationToken.IsCancellationRequested) return;
+
       DA.SetDataTree(0, ConvertedObjects);
     }
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
       if (CancellationToken.IsCancellationRequested) return;
-
+      DA.DisableGapLogic();
       GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);
 
