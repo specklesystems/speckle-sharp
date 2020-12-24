@@ -87,6 +87,7 @@
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Loader.cs" />
+    <Compile Include="Objects\SelectKitAsyncComponentBase.cs" />
     <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
     <Compile Include="Ops\Operations.SendLocalComponent.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObjectDialog.cs" />
