@@ -3,22 +3,31 @@ using Grasshopper.Kernel.Types;
 using Speckle.Core.Models;
 using System;
 using System.Drawing;
-using System.Threading.Tasks;
-using ConnectorGrasshopper.Objects;
+using System.Linq;
+using System.Windows.Forms;
 using Grasshopper.Kernel.Data;
+using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
+using Speckle.Core.Kits;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class SendLocalComponent : SelectKitComponentBase
+  public class SendLocalComponent : GH_AsyncComponent
   {
-    public SendLocalComponent() : base("Local Send", "LS", "Sends data locally, without the need of a Speckle server", "Speckle 2", "   Send/Receive")
+    
+    public ISpeckleConverter Converter;
+
+    public ISpeckleKit Kit;
+    public SendLocalComponent() : base("Local send async", "LSA", "Local async sender", "Speckle 2", "    Send/Receive")
     {
+      BaseWorker = new SendLocalWorker(this);
+      SetDefaultKitAndConverter();
     }
 
-    public override Guid ComponentGuid => new Guid("6E03AC48-B9E9-48D4-886F-1197F71E4ED2");
     protected override Bitmap Icon => Properties.Resources.LocalSender;
+
+    public override Guid ComponentGuid => new Guid("80AC1649-FF36-4B8B-A5B4-320E9D88F8BF");
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -29,33 +38,82 @@ namespace ConnectorGrasshopper.Ops
     {
       pManager.AddGenericParameter("localDataId", "id", "ID of the local data sent.", GH_ParamAccess.item);
     }
-
-    private bool hasSentObject;
-    private string sentObjectId;
-    protected override void SolveInstance(IGH_DataAccess DA)
+    
+    
+    protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
-      if (!hasSentObject)
+      Menu_AppendSeparator(menu);
+      Menu_AppendItem(menu, "Select the converter you want to use:");
+      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+
+      foreach (var kit in kits)
       {
-        GH_Structure<IGH_Goo> data;
-        if (!DA.GetDataTree(0, out data)) return;
-      
-        Task.Run(() =>
-        {
-          Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-          var converted = Utilities.DataTreeToNestedLists(data, Converter);
-          var ObjectToSend = new Base();
-          ObjectToSend["@data"] = converted;
-          sentObjectId = Operations.Send(ObjectToSend).Result;
-          hasSentObject = true;
-          Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { ExpireSolution(true); });
-        });
+        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
+          kit.Name == Kit.Name);
       }
-      else
+
+      base.AppendAdditionalComponentMenuItems(menu);
+    }
+
+    public void SetConverterFromKit(string kitName)
+    {
+      if (kitName == Kit.Name) return;
+
+      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
+      Converter = Kit.LoadConverter(Applications.Rhino);
+
+      Message = $"Using the {Kit.Name} Converter";
+      ExpireSolution(true);
+    }
+
+    private void SetDefaultKitAndConverter()
+    {
+      Kit = KitManager.GetDefaultKit();
+      try
       {
-        DA.SetData(0, sentObjectId);
-        sentObjectId = null;
-        hasSentObject = false;
+        Converter = Kit.LoadConverter(Applications.Rhino);
+        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
       }
+      catch
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+      }
+    }
+
+  }
+  
+  public class SendLocalWorker : WorkerInstance
+  {
+    private GH_Structure<IGH_Goo> data;
+    private string sentObjectId;
+    public SendLocalWorker(GH_Component _parent) : base(_parent)
+    {
+    }
+
+    public override WorkerInstance Duplicate() => new SendLocalWorker(Parent);
+
+    public override void DoWork(Action<string, double> ReportProgress, Action Done)
+    {
+      Parent.Message = "Sending...";
+      var converter = (Parent as SendLocalComponent)?.Converter;
+      converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      var converted = Utilities.DataTreeToNestedLists(data, converter);
+      var ObjectToSend = new Base();
+      ObjectToSend["@data"] = converted;
+      sentObjectId = Operations.Send(ObjectToSend).Result;
+      Done();
+    }
+
+    public override void SetData(IGH_DataAccess DA)
+    {
+      DA.SetData(0, sentObjectId);
+      data = null;
+    }
+
+    public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
+    {
+      DA.GetDataTree(0, out data);
+      sentObjectId = null;
     }
   }
 }
