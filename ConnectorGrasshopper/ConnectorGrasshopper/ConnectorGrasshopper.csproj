@@ -36,29 +36,29 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Eto, Version=2.5.0.0, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RhinoCommon.6.31.20315.17001\lib\net45\Eto.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Eto, Version=2.5.0.0, Culture=neutral, PublicKeyToken=552281e97c755530">
+      <HintPath>..\packages\RhinoCommon.6.32.20340.21001\lib\net45\Eto.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="GH_IO, Version=6.31.20315.17000, Culture=neutral, PublicKeyToken=6a29997d2e6b4f97, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Grasshopper.6.31.20315.17001\lib\net45\GH_IO.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="GH_IO, Version=6.32.20340.21000, Culture=neutral, PublicKeyToken=6a29997d2e6b4f97">
+      <HintPath>..\packages\Grasshopper.6.32.20340.21001\lib\net45\GH_IO.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Grasshopper, Version=6.31.20315.17000, Culture=neutral, PublicKeyToken=dda4f5ec2cd80803, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Grasshopper.6.31.20315.17001\lib\net45\Grasshopper.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Grasshopper, Version=6.32.20340.21000, Culture=neutral, PublicKeyToken=dda4f5ec2cd80803">
+      <HintPath>..\packages\Grasshopper.6.32.20340.21001\lib\net45\Grasshopper.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="GrasshopperAsyncComponent, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\GrasshopperAsyncComponent.0.2.0\lib\net45\GrasshopperAsyncComponent.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Rhino.UI, Version=6.31.20315.17000, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RhinoCommon.6.31.20315.17001\lib\net45\Rhino.UI.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Rhino.UI, Version=6.32.20340.21000, Culture=neutral, PublicKeyToken=552281e97c755530">
+      <HintPath>..\packages\RhinoCommon.6.32.20340.21001\lib\net45\Rhino.UI.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="RhinoCommon, Version=6.31.20315.17000, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RhinoCommon.6.31.20315.17001\lib\net45\RhinoCommon.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="RhinoCommon, Version=6.32.20340.21000, Culture=neutral, PublicKeyToken=552281e97c755530">
+      <HintPath>..\packages\RhinoCommon.6.32.20340.21001\lib\net45\RhinoCommon.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -87,6 +87,8 @@
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Loader.cs" />
+    <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
+    <Compile Include="Ops\Operations.SendLocalComponent.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObjectDialog.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObject.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
@@ -217,6 +219,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\LocalReceiver.png" />
+    <None Include="Resources\LocalSender.png" />
+    <None Include="Resources\SchemaBuilder.png" />
     <Content Include="Resources\speckle-logo-bw.png" />
     <Content Include="Resources\speckle-logo.png" />
   </ItemGroup>
@@ -245,4 +250,13 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets')" />
+  <Import Project="..\packages\RhinoCommon.6.32.20340.21001\build\net45\RhinoCommon.targets" Condition="Exists('..\packages\RhinoCommon.6.32.20340.21001\build\net45\RhinoCommon.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\RhinoCommon.6.32.20340.21001\build\net45\RhinoCommon.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\RhinoCommon.6.32.20340.21001\build\net45\RhinoCommon.targets'))" />
+    <Error Condition="!Exists('..\packages\Grasshopper.6.32.20340.21001\build\net45\Grasshopper.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Grasshopper.6.32.20340.21001\build\net45\Grasshopper.targets'))" />
+  </Target>
+  <Import Project="..\packages\Grasshopper.6.32.20340.21001\build\net45\Grasshopper.targets" Condition="Exists('..\packages\Grasshopper.6.32.20340.21001\build\net45\Grasshopper.targets')" />
 </Project>

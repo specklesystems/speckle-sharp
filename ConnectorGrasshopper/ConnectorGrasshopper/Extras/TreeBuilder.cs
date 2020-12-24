@@ -18,10 +18,10 @@ namespace ConnectorGrasshopper.Extras
       _converter = converter;
     }
 
-    public DataTree<IGH_Goo> Build(object data)
+    public GH_Structure<IGH_Goo> Build(object data)
     {
       _path = new List<int>();
-      var tree = new DataTree<IGH_Goo>();
+      var tree = new GH_Structure<IGH_Goo>();
       if (data == null)
         return tree;
 
@@ -29,7 +29,7 @@ namespace ConnectorGrasshopper.Extras
       return tree;
     }
 
-    private void RecurseNestedLists(object data, DataTree<IGH_Goo> tree)
+    private void RecurseNestedLists(object data, GH_Structure<IGH_Goo> tree)
     {
       if (data is List<object> list)
       {
@@ -65,14 +65,14 @@ namespace ConnectorGrasshopper.Extras
       }
     }
 
-    private void AddLeaf(object data, DataTree<IGH_Goo> tree)
+    private void AddLeaf(object data, GH_Structure<IGH_Goo> tree)
     {
       //paths must have at least one element
       if (!_path.Any())
         _path.Add(0);
 
       var path = new GH_Path(_path.ToArray());
-      tree.Add(Utilities.TryConvertItemToNative(data, _converter), path);
+      tree.Append(Utilities.TryConvertItemToNative(data, _converter), path);
     }
   }
 }

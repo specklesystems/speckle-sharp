@@ -163,6 +163,26 @@ namespace ConnectorGrasshopper.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap LocalReceiver {
+            get {
+                object obj = ResourceManager.GetObject("LocalReceiver", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap LocalSender {
+            get {
+                object obj = ResourceManager.GetObject("LocalSender", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap MemoryTransport {
             get {
                 object obj = ResourceManager.GetObject("MemoryTransport", resourceCulture);
@@ -176,6 +196,16 @@ namespace ConnectorGrasshopper.Properties {
         internal static System.Drawing.Bitmap Receiver {
             get {
                 object obj = ResourceManager.GetObject("Receiver", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SchemaBuilder {
+            get {
+                object obj = ResourceManager.GetObject("SchemaBuilder", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
