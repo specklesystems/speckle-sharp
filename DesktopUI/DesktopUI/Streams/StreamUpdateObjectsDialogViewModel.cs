@@ -43,13 +43,13 @@ namespace Speckle.DesktopUI.Streams
         SelectedFilterTab = FilterTabs.First(x => x.Name == StreamState.Filter.Name);
         SelectedFilterTab.ListItems = new BindableCollection<string>(StreamState.Filter.Selection);
 
-        if(StreamState.Filter is PropertySelectionFilter stateFilter && SelectedFilterTab.Filter is PropertySelectionFilter selectedFilter)
+        if (StreamState.Filter is PropertySelectionFilter stateFilter && SelectedFilterTab.Filter is PropertySelectionFilter selectedFilter)
         {
           selectedFilter.PropertyName = stateFilter.PropertyName;
           selectedFilter.PropertyOperator = stateFilter.PropertyOperator;
           selectedFilter.PropertyValue = stateFilter.PropertyValue;
         }
-        
+
       }
     }
 
@@ -234,7 +234,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamState.Objects = message.Objects.ToList();
+      StreamState.SelectedObjectIds = message.Objects.Select(x => x.applicationId).ToList();
     }
 
     public void Handle(UpdateSelectionCountEvent message)

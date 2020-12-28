@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -247,7 +247,7 @@ namespace Speckle.DesktopUI.Utils
 
     public bool SendEnabled
     {
-      get => Objects.Count != 0 || Filter != null;
+      get => SelectedObjectIds.Count != 0 || Filter != null;
     }
 
     public bool SendDisabled
@@ -273,7 +273,7 @@ namespace Speckle.DesktopUI.Utils
         {
           return $"{Filter.Summary}";
         }
-        return $"{Objects.Count} objects";
+        return $"{SelectedObjectIds.Count} objects";
       }
     }
 
@@ -287,7 +287,7 @@ namespace Speckle.DesktopUI.Utils
         }
         else
         {
-          return $"Current object selection: {Objects.Count}.";
+          return $"Current object selection: {SelectedObjectIds.Count}.";
         }
       }
     }
@@ -300,7 +300,7 @@ namespace Speckle.DesktopUI.Utils
         {
           return new PackIcon { Kind = (PackIconKind)Enum.Parse(typeof(PackIconKind), Filter.Icon) };
         }
-        else if (Objects.Count == 0)
+        else if (SelectedObjectIds.Count == 0)
         {
           return new PackIcon { Kind = PackIconKind.CubeOutline };
         }
@@ -311,14 +311,17 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
-    private List<Base> _objects = new List<Base>();
+    private List<string> _selectedObjectIds = new List<string>();
+
+    //List of uniqueids of the currently selected objects
+    //if selection is by filter, the values are updated only upon sending
     [JsonProperty]
-    public List<Base> Objects
+    public List<string> SelectedObjectIds
     {
-      get => _objects;
+      get => _selectedObjectIds;
       set
       {
-        SetAndNotify(ref _objects, value);
+        SetAndNotify(ref _selectedObjectIds, value);
         NotifyOfPropertyChange(nameof(ObjectSelectionTooltipText));
         NotifyOfPropertyChange(nameof(ObjectSelectionButtonText));
         NotifyOfPropertyChange(nameof(SelectionCount));

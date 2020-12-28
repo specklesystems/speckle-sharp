@@ -78,7 +78,6 @@ namespace Speckle.ConnectorRevit.UI
       return elementIds;
     }
 
-
     /// <summary>
     /// Given the filter in use by a stream returns the document elements that match it.
     /// </summary>

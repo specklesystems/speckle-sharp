@@ -42,10 +42,15 @@ namespace Speckle.ConnectorRevit.UI
       if (state.Filter != null)
       {
         selectedObjects = GetSelectionFilterObjects(state.Filter);
-        state.Objects = selectedObjects.Select(x => new Base { applicationId = x.UniqueId }).ToList();
+        state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
+      }
+      else //selection was by cursor
+      {
+        selectedObjects = state.SelectedObjectIds.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null).ToList();
       }
 
-      if (!state.Objects.Any())
+
+      if (!selectedObjects.Any())
       {
         state.Errors.Add(new Exception("There are zero objects to send. Please use a filter, or set some via selection."));
         return state;
@@ -57,7 +62,7 @@ namespace Speckle.ConnectorRevit.UI
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
-      Execute.PostToUIThread(() => state.Progress.Maximum = state.Objects.Count());
+      Execute.PostToUIThread(() => state.Progress.Maximum = selectedObjects.Count());
       var convertedCount = 0;
 
       var placeholders = new List<Base>();

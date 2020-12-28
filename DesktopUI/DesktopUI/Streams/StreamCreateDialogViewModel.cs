@@ -287,7 +287,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamState.Objects = message.Objects.ToList();
+      StreamState.SelectedObjectIds = message.Objects.Select(x => x.applicationId).ToList();
     }
 
     public void Handle(ApplicationEvent message)
