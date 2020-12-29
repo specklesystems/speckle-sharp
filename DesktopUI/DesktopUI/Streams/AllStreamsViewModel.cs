@@ -115,7 +115,7 @@ namespace Speckle.DesktopUI.Streams
     public void SwapState(StreamState state)
     {
       state.SwapState();
-      StreamList.Refresh();
+      state.Refresh();
     }
 
     public async void ShowStreamUpdateObjectsDialog(StreamState state)

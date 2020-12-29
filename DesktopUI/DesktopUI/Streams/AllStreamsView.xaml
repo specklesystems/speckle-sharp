@@ -351,6 +351,7 @@
               </StackPanel>
             </Border>
           </Grid>
+
           <md:Card
             Grid.Row="0"
             Width="Auto"
@@ -393,8 +394,8 @@
                 <Grid Name="StreamCardTitle" Grid.Row="0">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="56" />
-                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
                   </Grid.ColumnDefinitions>
 
                   <WrapPanel Grid.Column="0">
@@ -412,8 +413,35 @@
                     </TextBlock>
                   </WrapPanel>
 
-                  <Button
+                  <ToggleButton
                     Grid.Column="2"
+                    Width="28"
+                    Height="28"
+                    Command="{s:Action SwapState}"
+                    CommandParameter="{Binding}"
+                    Style="{StaticResource MaterialDesignWhiteToggleButton}">
+                    <ToggleButton.ToolTip>
+                      <StackPanel Orientation="Vertical">
+                        <TextBlock Visibility="{Binding IsSenderCard, Converter={StaticResource BooleanToVisibilityConverter}}">
+                          <Run>Swaps the type of this stream card.</Run>
+                          <Run FontWeight="Bold">Click to make it a receiver!</Run>
+                        </TextBlock>
+                        <TextBlock Visibility="{Binding IsReceiverCard, Converter={StaticResource BooleanToVisibilityConverter}}">
+                          <Run>Swaps the type of this stream card.</Run>
+                          <Run FontWeight="Bold">Click to make it a sender!</Run>
+                        </TextBlock>
+                      </StackPanel>
+                    </ToggleButton.ToolTip>
+                    <ToggleButton.Content>
+                      <md:PackIcon Kind="SwapHorizontal" />
+                    </ToggleButton.Content>
+                    <md:ToggleButtonAssist.OnContent>
+                      <md:PackIcon Kind="SwapHorizontal" />
+                    </md:ToggleButtonAssist.OnContent>
+                  </ToggleButton>
+
+                  <Button
+                    Grid.Column="1"
                     Width="28"
                     Height="28"
                     HorizontalAlignment="Right"
@@ -424,6 +452,8 @@
                                           Size=16}"
                     Style="{StaticResource MaterialDesignIconButton}"
                     ToolTip="Open this stream in the browser" />
+
+
                 </Grid>
                 <!--#endregion-->
 
@@ -439,7 +469,6 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="30" />
                   </Grid.ColumnDefinitions>
 
                   <!--  The branch button  -->
@@ -462,7 +491,7 @@
                     IsEnabled="{Binding SendEnabled}">
                     <Button.ToolTip>
                       <TextBlock>
-                        <Run>Send to Specke: either the selected objects, or the ones picked up by the selected filter.</Run>
+                        <Run>Send to Specke: either the selected objects, or the ones picked up by the filter.</Run>
                         <LineBreak />
                         <Run FontWeight="Bold">Right click this button to set a commit message before sending.</Run>
                       </TextBlock>
@@ -517,26 +546,6 @@
                         Text="Send  " />
                     </Grid>
                   </Button>
-
-                  <!--  The state swapper button  -->
-                  <Button
-                    x:Name="SwapStateButton"
-                    Grid.Column="3"
-                    Width="30"
-                    Margin="5,0,0,0"
-                    md:ButtonAssist.CornerRadius="3"
-                    Command="{s:Action SwapState}"
-                    CommandParameter="{Binding}"
-                    Content="{md:PackIcon Kind=SwapHorizontal,
-                                          Size=20}"
-                    Style="{StaticResource MaterialDesignToolForegroundButton}">
-                    <Button.ToolTip>
-                      <TextBlock>
-                        <Run>Swaps the type of this stream card.</Run>
-                        <Run FontWeight="Bold">Click to make it a receiver!</Run>
-                      </TextBlock>
-                    </Button.ToolTip>
-                  </Button>
                 </Grid>
                 <!--#endregion-->
 
@@ -552,11 +561,12 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="30" />
                   </Grid.ColumnDefinitions>
-                  <Control Template="{StaticResource BranchButton}" />
 
                   <!--  The branch button  -->
+                  <Control Template="{StaticResource BranchButton}" />
+
+                  <!--  The commit button  -->
                   <Control Grid.Column="1" Template="{StaticResource CommitSwappingButton}" />
 
                   <Button
@@ -583,24 +593,6 @@
                         HorizontalAlignment="Center"
                         Text="Receive  " />
                     </Grid>
-                  </Button>
-                  <Button
-                    x:Name="SwapStateButton2"
-                    Grid.Column="3"
-                    Width="30"
-                    Margin="5,0,0,0"
-                    md:ButtonAssist.CornerRadius="3"
-                    Command="{s:Action SwapState}"
-                    CommandParameter="{Binding}"
-                    Content="{md:PackIcon Kind=SwapHorizontal,
-                                          Size=20}"
-                    Style="{StaticResource MaterialDesignToolForegroundButton}">
-                    <Button.ToolTip>
-                      <TextBlock>
-                        <Run>Swaps the type of this stream card.</Run>
-                        <Run FontWeight="Bold">Click to make it a sender!</Run>
-                      </TextBlock>
-                    </Button.ToolTip>
                   </Button>
                 </Grid>
                 <!--#endregion-->
