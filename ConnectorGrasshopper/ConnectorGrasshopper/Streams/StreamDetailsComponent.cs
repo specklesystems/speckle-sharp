@@ -142,7 +142,7 @@ namespace ConnectorGrasshopper.Streams
             "Input data has too many items. Only the first 20 streams will be fetched.");
           tooManyItems = false;
         }
-        var id = new GH_Structure<GH_ObjectWrapper>();
+        var id = new GH_Structure<IGH_Goo>();
         var name = new GH_Structure<IGH_Goo>();
         var description = new GH_Structure<IGH_Goo>();
         var createdAt = new GH_Structure<IGH_Goo>();
@@ -153,14 +153,14 @@ namespace ConnectorGrasshopper.Streams
         
         streams.AsEnumerable()?.ToList().ForEach(pair =>
         {
-          id.Append(new GH_ObjectWrapper(pair.Value.id), pair.Key);
-          name.Append(new GH_ObjectWrapper(pair.Value.name), pair.Key);
-          description.Append(new GH_ObjectWrapper(pair.Value.description), pair.Key);
-          createdAt.Append(new GH_ObjectWrapper(pair.Value.createdAt), pair.Key);
-          updatedAt.Append(new GH_ObjectWrapper(pair.Value.updatedAt), pair.Key);
+          id.Append(GH_Convert.ToGoo(pair.Value.id), pair.Key);
+          name.Append(GH_Convert.ToGoo(pair.Value.name), pair.Key);
+          description.Append(GH_Convert.ToGoo(pair.Value.description), pair.Key);
+          createdAt.Append(GH_Convert.ToGoo(pair.Value.createdAt), pair.Key);
+          updatedAt.Append(GH_Convert.ToGoo(pair.Value.updatedAt), pair.Key);
           isPublic.Append(new GH_Boolean(pair.Value.isPublic), pair.Key);
-          collaborators.AppendRange(pair.Value.collaborators.Select(item => new GH_ObjectWrapper(item)).ToList(), pair.Key);
-          branches.AppendRange(pair.Value.branches.items.Select(item => new GH_ObjectWrapper(item)), pair.Key);
+          collaborators.AppendRange(pair.Value.collaborators.Select(GH_Convert.ToGoo).ToList(), pair.Key);
+          branches.AppendRange(pair.Value.branches.items.Select(GH_Convert.ToGoo), pair.Key);
         });
         
         Message = "Done";

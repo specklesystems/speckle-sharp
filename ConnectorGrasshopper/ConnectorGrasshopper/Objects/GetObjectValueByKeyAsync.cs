@@ -90,11 +90,11 @@ namespace ConnectorGrasshopper.Objects
           break;
         case List<object> list:
         {
-          DA.SetDataList(0, list.Select(item => new GH_ObjectWrapper(item)).ToList());
+          DA.SetDataList(0, list.Select(GH_Convert.ToGoo).ToList());
           break;
         }
         default:
-          DA.SetData(0, new GH_ObjectWrapper(value));
+          DA.SetData(0, GH_Convert.ToGoo(value));
           break;
       }
     }
