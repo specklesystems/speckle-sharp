@@ -424,10 +424,12 @@
                       <StackPanel Orientation="Vertical">
                         <TextBlock Visibility="{Binding IsSenderCard, Converter={StaticResource BooleanToVisibilityConverter}}">
                           <Run>Swaps the type of this stream card.</Run>
+                          <LineBreak />
                           <Run FontWeight="Bold">Click to make it a receiver!</Run>
                         </TextBlock>
                         <TextBlock Visibility="{Binding IsReceiverCard, Converter={StaticResource BooleanToVisibilityConverter}}">
                           <Run>Swaps the type of this stream card.</Run>
+                          <LineBreak />
                           <Run FontWeight="Bold">Click to make it a sender!</Run>
                         </TextBlock>
                       </StackPanel>
@@ -458,7 +460,6 @@
                 <!--#endregion-->
 
                 <!--  Stream Card Sender Actions  -->
-
                 <Grid
                   Name="StreamCardSenderActions"
                   Grid.Row="1"
@@ -469,6 +470,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
                   </Grid.ColumnDefinitions>
 
                   <!--  The branch button  -->
@@ -492,14 +494,14 @@
                     <Button.ToolTip>
                       <TextBlock>
                         <Run>Send to Specke: either the selected objects, or the ones picked up by the filter.</Run>
-                        <LineBreak />
-                        <Run FontWeight="Bold">Right click this button to set a commit message before sending.</Run>
+                        <!--<LineBreak />
+                        <Run FontWeight="Bold">Right click this button to set a commit message before sending.</Run>-->
                       </TextBlock>
                     </Button.ToolTip>
                     <Button.Resources>
                       <local:BindingProxy x:Key="Proxy" Data="{Binding}" />
                     </Button.Resources>
-                    <Button.ContextMenu>
+                    <!--<Button.ContextMenu>
                       <ContextMenu>
                         <MenuItem>
                           <MenuItem.Template>
@@ -529,7 +531,7 @@
                           </MenuItem.Template>
                         </MenuItem>
                       </ContextMenu>
-                    </Button.ContextMenu>
+                    </Button.ContextMenu>-->
                     <Grid>
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -546,11 +548,51 @@
                         Text="Send  " />
                     </Grid>
                   </Button>
+
+                  <md:PopupBox
+                    Grid.Column="3"
+                    IsEnabled="{Binding SendEnabled}"
+                    StaysOpen="True">
+                    <md:PopupBox.ToolTip>
+                      <TextBlock>
+                        <Run>Send data with a commit message.</Run>
+                      </TextBlock>
+                    </md:PopupBox.ToolTip>
+                    <MenuItem Margin="10">
+                      <MenuItem.Resources>
+                        <local:BindingProxy x:Key="Proxy" Data="{Binding}" />
+                      </MenuItem.Resources>
+                      <MenuItem.Template>
+                        <ControlTemplate>
+                          <Grid>
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="*" />
+                              <ColumnDefinition Width="30" />
+                            </Grid.ColumnDefinitions>
+                            <md:PackIcon
+                              Grid.Column="1"
+                              Margin="0,10,0,10"
+                              Kind="MessageAdd"
+                              Opacity="0.5" />
+                            <TextBox
+                              Grid.Column="0"
+                              Width="200"
+                              Margin="4"
+                              md:HintAssist.HelperText="Commit message (press enter to send)"
+                              md:TextBlockAssist.AutoToolTip="False"
+                              s:View.ActionTarget="{Binding Data, Source={StaticResource Proxy}}"
+                              PreviewKeyDown="{s:Action SendWithCommitMessage}"
+                              Text="{Binding Path=Data.CommitMessage, Source={StaticResource Proxy}}"
+                              ToolTip="A commit message helps keep track of the changes made, and the reasons behind them." />
+                          </Grid>
+                        </ControlTemplate>
+                      </MenuItem.Template>
+                    </MenuItem>
+                  </md:PopupBox>
                 </Grid>
                 <!--#endregion-->
 
                 <!--#region Stream Card Receiver Actions-->
-
                 <Grid
                   x:Name="StreamCardReceiverActions"
                   Grid.Row="1"
