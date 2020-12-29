@@ -457,7 +457,7 @@
                 </Grid>
                 <!--#endregion-->
 
-                <!--#region Stream Card Sender Actions-->
+                <!--  Stream Card Sender Actions  -->
 
                 <Grid
                   Name="StreamCardSenderActions"
@@ -611,16 +611,13 @@
                   Height="12"
                   Margin="0,0"
                   VerticalAlignment="Center"
+                  md:TransitionAssist.DisableTransitions="True"
                   BorderBrush="Transparent"
                   BorderThickness="0"
                   IsIndeterminate="{Binding Path=DataContext.ProgressBarIsIndeterminate, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
                   Maximum="{Binding Path=DataContext.Progress.Maximum, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
                   Minimum="0"
-                  Value="{Binding Path=DataContext.Progress.Value, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}">
-                  <!--<i:Interaction.Behaviors>
-                    <utils:ProgresBarAnimateBehavior x:Name="AnimateBehavior" />
-                  </i:Interaction.Behaviors>-->
-                </ProgressBar>
+                  Value="{Binding Path=DataContext.Progress.Value, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
                 <TextBlock
                   Grid.Column="0"
                   Height="10"
