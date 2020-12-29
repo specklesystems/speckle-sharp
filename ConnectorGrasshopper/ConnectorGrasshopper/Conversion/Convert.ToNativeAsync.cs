@@ -129,7 +129,7 @@ namespace ConnectorGrasshopper.Conversion
   public class ToNativeWorker : WorkerInstance
   {
     GH_Structure<GH_SpeckleBase> Objects;
-    GH_Structure<GH_ObjectWrapper> ConvertedObjects;
+    GH_Structure<IGH_Goo> ConvertedObjects;
 
     public ISpeckleConverter Converter { get; set; }
 
@@ -137,7 +137,7 @@ namespace ConnectorGrasshopper.Conversion
     {
       Converter = _Converter;
       Objects = new GH_Structure<GH_SpeckleBase>();
-      ConvertedObjects = new GH_Structure<GH_ObjectWrapper>();
+      ConvertedObjects = new GH_Structure<IGH_Goo>();
     }
 
     public override WorkerInstance Duplicate() => new ToNativeWorker(Converter);
@@ -161,7 +161,7 @@ namespace ConnectorGrasshopper.Conversion
           }
 
           var converted = Utilities.TryConvertItemToNative(item?.Value, Converter);
-          ConvertedObjects.Append(new GH_ObjectWrapper() { Value = converted }, path);
+          ConvertedObjects.Append(converted, path);
           ReportProgress(Id, (completed++ + 1) / (double)Objects.Count());
         }
 

@@ -88,6 +88,9 @@ namespace ConnectorGrasshopper.Extras
       if (value is Base @base && converter.CanConvertToNative(@base))
       {
         var converted = converter.ConvertToNative(@base);
+        var geomgoo = GH_Convert.ToGoo(converted);
+        if (geomgoo != null) 
+          return geomgoo;
         var goo = new GH_ObjectWrapper { Value = converted };
         return goo;
       }
@@ -106,7 +109,7 @@ namespace ConnectorGrasshopper.Extras
       if (value is Enum)
       {
         var i = (Enum) value;
-        return new GH_ObjectWrapper(){Value = i};
+        return new GH_ObjectWrapper {Value = i};
       }
       return null;
     }

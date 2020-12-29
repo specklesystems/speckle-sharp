@@ -128,7 +128,7 @@ namespace ConnectorGrasshopper.Objects
     public ISpeckleConverter Converter;
     public GH_Structure<GH_SpeckleBase> speckleObjects;
 
-    public Dictionary<string, GH_Structure<GH_ObjectWrapper>> outputDict;
+    public Dictionary<string, GH_Structure<IGH_Goo>> outputDict;
     private List<string> outputList = new List<string>();
     public GH_ComponentParamServer Params;
 
@@ -193,10 +193,10 @@ namespace ConnectorGrasshopper.Objects
       return fullProps;
     }
     
-    private Dictionary<string, GH_Structure<GH_ObjectWrapper>> CreateOutputDictionary()
+    private Dictionary<string, GH_Structure<IGH_Goo>> CreateOutputDictionary()
     {
       // Create empty data tree placeholders for output.
-      var outputDict = outputList.ToDictionary(outParam => outParam, _ => new GH_Structure<GH_ObjectWrapper>());
+      var outputDict = outputList.ToDictionary(outParam => outParam, _ => new GH_Structure<IGH_Goo>());
 
       // Assign all values to it's corresponding dictionary entry and branch path.
       foreach (var path in speckleObjects.Paths)
@@ -222,8 +222,7 @@ namespace ConnectorGrasshopper.Objects
               var index = 0;
               foreach (var x in list)
               {
-                var wrapper = new GH_ObjectWrapper();
-                wrapper.Value = Utilities.TryConvertItemToNative(x, Converter);
+                var wrapper = Utilities.TryConvertItemToNative(x, Converter);
                 outputDict[prop.Key].Append(wrapper, path);
                 index++;
               }
@@ -234,17 +233,18 @@ namespace ConnectorGrasshopper.Objects
             case Dictionary<string, List<Base>> dict:
               foreach (var kvp in dict)
               {
-                var wrapper = new GH_ObjectWrapper();
+                
+                IGH_Goo wrapper = new GH_ObjectWrapper();
                 foreach (var b in kvp.Value)
                 {
-                  wrapper.Value = Utilities.TryConvertItemToNative(b, Converter);
+                  wrapper = Utilities.TryConvertItemToNative(b, Converter);
                 }
                 outputDict[prop.Key].Append(wrapper, path);
               }
               break;
             default:
               outputDict[prop.Key].Append(
-                new GH_ObjectWrapper(Utilities.TryConvertItemToNative(obj[prop.Key], Converter)),
+                Utilities.TryConvertItemToNative(obj[prop.Key], Converter),
                 path);
               break;
           }
