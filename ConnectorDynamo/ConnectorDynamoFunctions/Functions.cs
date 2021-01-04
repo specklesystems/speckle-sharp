@@ -49,16 +49,26 @@ namespace Speckle.ConnectorDynamo.Functions
       {
         var branchName = branchNames == null ? "main" : branchNames[i];
         var client = new Client(accounts[i]);
-        var res = client.CommitCreate(cancellationToken,
-          new CommitCreateInput
-          {
-            streamId = streams[i].StreamId,
-            branchName = branchName,
-            objectId = objectId,
-            message = message
-          }).Result;
 
-        responses.Add(res);
+        try
+        {
+          var res = client.CommitCreate(cancellationToken,
+         new CommitCreateInput
+         {
+           streamId = streams[i].StreamId,
+           branchName = branchName,
+           objectId = objectId,
+           message = message
+         }).Result;
+
+          responses.Add(res);
+        }
+        catch (Exception ex)
+        {
+          Utils.HandleApiExeption(ex);
+          return null;
+        }
+
       }
 
       return responses;
@@ -88,23 +98,33 @@ namespace Speckle.ConnectorDynamo.Functions
 
       var client = new Client(account);
       Commit commit = null;
-      if (string.IsNullOrEmpty(stream.CommitId))
+      try
       {
-        var res = client.StreamGet(cancellationToken, stream.StreamId).Result;
-        var mainBranch = res.branches.items.FirstOrDefault(b => b.name == stream.BranchName);
-        if (mainBranch == null)
+        if (string.IsNullOrEmpty(stream.CommitId))
         {
-          Log.CaptureAndThrow(new Exception("No branch found with name " + stream.BranchName));
+
+          var res = client.StreamGet(cancellationToken, stream.StreamId).Result;
+          var mainBranch = res.branches.items.FirstOrDefault(b => b.name == stream.BranchName);
+
+          if (mainBranch == null)
+          {
+            Log.CaptureAndThrow(new Exception("No branch found with name " + stream.BranchName));
+          }
+
+          if (!mainBranch.commits.items.Any())
+            throw new Exception("No commits found.");
+
+          commit = mainBranch.commits.items[0];
         }
-
-        if (!mainBranch.commits.items.Any())
-          throw new Exception("No commits found.");
-
-        commit = mainBranch.commits.items[0];
+        else
+        {
+          commit = client.CommitGet(cancellationToken, stream.StreamId, stream.CommitId).Result;
+        }
       }
-      else
+      catch (Exception ex)
       {
-        commit = client.CommitGet(cancellationToken, stream.StreamId, stream.CommitId).Result;
+        Utils.HandleApiExeption(ex);
+        return null;
       }
 
       if (commit == null)

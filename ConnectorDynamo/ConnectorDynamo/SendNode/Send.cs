@@ -277,12 +277,12 @@ namespace Speckle.ConnectorDynamo.SendNode
       }
       catch (Exception e)
       {
-        _cancellationToken.Cancel();
-        Message = e.InnerException != null ? e.InnerException.Message : e.Message;
-        //temp exclusion of core bug
-        if (!(e.InnerException != null && e.InnerException.Message ==
-          "Cannot resolve reference. The provided transport could not find it."))
+        if (!_cancellationToken.IsCancellationRequested)
+        {
+          _cancellationToken.Cancel();
+          Message = e.Message;
           Core.Logging.Log.CaptureAndThrow(e);
+        }
       }
       finally
       {

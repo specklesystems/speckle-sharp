@@ -226,7 +226,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
     private void AddInputs()
     {
-      var defaultBranchValue = new StringNode {Value = "main"};
+      var defaultBranchValue = new StringNode { Value = "main" };
 
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream", "The stream to receive from")));
       InPorts.Add(new PortModel(PortType.Input, this,
@@ -299,7 +299,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
         if (!hasErrors && data != null)
         {
-          LastCommitId = ((Commit) data["commit"]).id;
+          LastCommitId = ((Commit)data["commit"]).id;
 
           InMemoryCache.Set(LastCommitId, data);
           Message = "";
@@ -310,11 +310,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         if (!_cancellationToken.IsCancellationRequested)
         {
           _cancellationToken.Cancel();
-          Message = e.InnerException != null ? e.InnerException.Message : e.Message;
-          //temp exclusion of core bug
-          if (!(e.InnerException != null && e.InnerException.Message ==
-            "Cannot resolve reference. The provided transport could not find it."))
-            Core.Logging.Log.CaptureAndThrow(e);
+          Message = e.Message;
+          Core.Logging.Log.CaptureAndThrow(e);
         }
       }
       finally
@@ -347,7 +344,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         //avoid editing upstream stream!
         newStream = new StreamWrapper(inputStream.StreamId, inputStream.AccountId, inputStream.ServerUrl)
         {
-          BranchName = inputStream.BranchName, CommitId = inputStream.CommitId
+          BranchName = inputStream.BranchName,
+          CommitId = inputStream.CommitId
         };
       }
       catch
@@ -447,7 +445,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
       var data = inputMirror.GetData();
 
-      return (T) data.Data;
+      return (T)data.Data;
     }
 
 
@@ -586,11 +584,11 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       var primitiveNode = AstFactory.BuildStringNode(LastCommitId);
       var dataFunctionCall = AstFactory.BuildFunctionCall(
         new Func<string, object>(Functions.Functions.ReceiveData),
-        new List<AssociativeNode> {primitiveNode});
+        new List<AssociativeNode> { primitiveNode });
 
       var infoFunctionCall = AstFactory.BuildFunctionCall(
         new Func<string, string>(Functions.Functions.ReceiveInfo),
-        new List<AssociativeNode> {primitiveNode});
+        new List<AssociativeNode> { primitiveNode });
 
       associativeNodes.Add(AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), dataFunctionCall));
       associativeNodes.Add(AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(1), infoFunctionCall));
