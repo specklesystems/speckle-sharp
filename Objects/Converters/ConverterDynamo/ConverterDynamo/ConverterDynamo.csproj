@@ -19,6 +19,7 @@
     <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.8.0.2471" />
     <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.8.0.2471">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
