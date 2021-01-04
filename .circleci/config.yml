@@ -193,13 +193,13 @@ jobs:
           name: "Checkout server"
           command: "git clone https://github.com/specklesystems/Server.git server"
       - run:
-          working_directory: server
+          working_directory: server/packages/server
           name: "Install deps"
           command: "npm install"
       - run:
           name: "Start server"
-          working_directory: server
-          command: "npm run dev:server"
+          working_directory: server/packages/server
+          command: "npm run dev"
           background: true
       - checkout:
           path: core
