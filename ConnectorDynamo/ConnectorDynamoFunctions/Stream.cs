@@ -23,7 +23,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="account">Speckle account to get the Stream as</param>
     /// <returns name="stream">A Stream</returns>
     [NodeCategory("Create")]
-    public static object GetAs([ArbitraryDimensionArrayImport] object stream, Core.Credentials.Account account = null)
+    public static object GetWithAccount([ArbitraryDimensionArrayImport] object stream, Core.Credentials.Account account = null)
     {
       Tracker.TrackPageview(Tracker.STREAM_GET);
 
@@ -48,14 +48,9 @@ namespace Speckle.ConnectorDynamo.Functions
           s.AccountId = account.id;
         }
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        if (e.InnerException != null)
-        {
-          if (e.InnerException is HttpRequestException)
-            throw new Exception("Could not reach the server, is it online?");
-          throw e.InnerException;
-        }
+        Utils.HandleApiExeption(ex);
       }
 
 
@@ -71,10 +66,20 @@ namespace Speckle.ConnectorDynamo.Functions
       var account = AccountManager.GetAccounts().FirstOrDefault(x => x.id == accountId);
       var client = new Client(account);
 
-      //Exists?
-      Core.Api.Stream res = client.StreamGet(streamId).Result;
 
-      return new StreamWrapper(res.id, account.id, account.serverInfo.url);
+      try
+      {
+        //Exists?
+        Core.Api.Stream res = client.StreamGet(streamId).Result;
+        return new StreamWrapper(res.id, account.id, account.serverInfo.url);
+      }
+      catch (Exception ex)
+      {
+        Utils.HandleApiExeption(ex);
+      }
+
+      return null;
+
     }
 
 
@@ -104,7 +109,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
       var client = new Client(account);
 
-      var input = new StreamUpdateInput {id = stream.StreamId};
+      var input = new StreamUpdateInput { id = stream.StreamId };
 
       if (name != null)
         input.name = name;
@@ -113,13 +118,20 @@ namespace Speckle.ConnectorDynamo.Functions
         input.description = description;
 
       if (isPublic != null)
-        input.isPublic = (bool) isPublic;
+        input.isPublic = (bool)isPublic;
 
+      try
+      {
+        var res = client.StreamUpdate(input).Result;
 
-      var res = client.StreamUpdate(input).Result;
+        if (res)
+          return stream;
+      }
+      catch (Exception ex)
+      {
+        Utils.HandleApiExeption(ex);
+      }
 
-      if (res)
-        return stream;
 
       return null;
     }
@@ -156,9 +168,11 @@ namespace Speckle.ConnectorDynamo.Functions
 
         var client = new Client(account);
 
-        Core.Api.Stream res = client.StreamGet(streamWrapper.StreamId).Result;
+        try
+        {
+          Core.Api.Stream res = client.StreamGet(streamWrapper.StreamId).Result;
 
-        details.Add(new Dictionary<string, object>
+          details.Add(new Dictionary<string, object>
         {
           {"id", res.id},
           {"name", res.name},
@@ -169,6 +183,14 @@ namespace Speckle.ConnectorDynamo.Functions
           {"collaborators", res.collaborators},
           {"branches", res.branches?.items}
         });
+        }
+        catch (Exception ex)
+        {
+          Utils.HandleApiExeption(ex);
+          return details;
+        }
+
+
       }
 
       if (details.Count() == 1)
@@ -193,10 +215,17 @@ namespace Speckle.ConnectorDynamo.Functions
         account = AccountManager.GetDefaultAccount();
 
       var client = new Client(account);
-      var res = client.StreamsGet(limit).Result;
-
       var streamWrappers = new List<StreamWrapper>();
-      res.ForEach(x => { streamWrappers.Add(new StreamWrapper(x.id, account.id, account.serverInfo.url)); });
+
+      try
+      {
+        var res = client.StreamsGet(limit).Result;
+        res.ForEach(x => { streamWrappers.Add(new StreamWrapper(x.id, account.id, account.serverInfo.url)); });
+      }
+      catch (Exception ex)
+      {
+        Utils.HandleApiExeption(ex);
+      }
 
       return streamWrappers;
     }

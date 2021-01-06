@@ -555,10 +555,22 @@ namespace ConnectorGrasshopper.Ops
 
   public class SendComponentAttributes : GH_ComponentAttributes
   {
+    private bool _selected;
     Rectangle ButtonBounds { get; set; }
 
     public SendComponentAttributes(GH_Component owner) : base(owner)
     {
+    }
+
+    public override bool Selected
+    {
+      get {
+         return _selected;
+      }
+      set {
+        Owner.Params.ToList().ForEach(p => p.Attributes.Selected = value);
+         _selected = value;
+      }
     }
 
     protected override void Layout()

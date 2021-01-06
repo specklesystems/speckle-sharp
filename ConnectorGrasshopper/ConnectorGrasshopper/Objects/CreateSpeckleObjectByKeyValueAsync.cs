@@ -1,10 +1,8 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel.Data;
@@ -16,63 +14,20 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class CreateSpeckleObjectByKeyValueAsync : GH_AsyncComponent
+  public class CreateSpeckleObjectByKeyValueAsync : SelectKitAsyncComponentBase
   {
-    public ISpeckleConverter Converter;
+    public override Guid ComponentGuid => new Guid("C8D4DBEB-7CC5-45C0-AF5D-F374FA5DBFBB");
 
-    public ISpeckleKit Kit;
-
-    public override Guid ComponentGuid
-    {
-      get => new Guid("C8D4DBEB-7CC5-45C0-AF5D-F374FA5DBFBB");
-    }
-
-    protected override System.Drawing.Bitmap Icon => Properties.Resources.CreateSpeckleObjectByKeyValue;
+    protected override Bitmap Icon => Properties.Resources.CreateSpeckleObjectByKeyValue;
     
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    public CreateSpeckleObjectByKeyValueAsync() : base("Create Speckle Object by Key/Value Async", "K/V Async",
-      "Creates a speckle object from key value pairs", "Speckle 2 Dev", "Async Object Management")
+    public CreateSpeckleObjectByKeyValueAsync() : base("Create Speckle Object by Key/Value", "K/V",
+      "Creates a speckle object from key value pairs", "Speckle 2", "Object Management")
     {
-      Kit = KitManager.GetDefaultKit();
-      try
-      {
-        Converter = Kit.LoadConverter(Applications.Rhino);
-        BaseWorker = new CreateSpeckleObjectByKeyValueWorker(this,Converter);
-        Message = $"{Kit.Name} Kit";
-      }
-      catch
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-      }
+      BaseWorker = new CreateSpeckleObjectByKeyValueWorker(this,Converter);
     }
 
-    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
-    {
-      Menu_AppendSeparator(menu);
-      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:");
-      menuItem.Enabled = false;
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-
-      foreach (var kit in kits)
-      {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
-      }
-
-      Menu_AppendSeparator(menu);
-    }
-
-    public void SetConverterFromKit(string kitName)
-    {
-      if (kitName == Kit.Name) return;
-
-      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino);
-      BaseWorker = new CreateSpeckleObjectByKeyValueWorker(this, Converter);
-      Message = $"Using the {Kit.Name} Converter";
-      ExpireSolution(true);
-    }
-    
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddTextParameter("Keys", "K", "List of keys", GH_ParamAccess.list);
@@ -102,15 +57,12 @@ namespace ConnectorGrasshopper.Objects
     {
       // 👉 Checking for cancellation!
       if (CancellationToken.IsCancellationRequested) return;
-
-
-      // Do something here!
-
+      Parent.Message = "Creating...";
       // Create a path from the current iteration
       var searchPath = new GH_Path(iteration);
 
       // Grab the corresponding subtree from the value input tree.
-      var subTree = GetSubTree(valueTree, searchPath);
+      var subTree = Utilities.GetSubTree(valueTree, searchPath);
       speckleObj = new Base();
       // Find the list or subtree belonging to that path
       if (valueTree.PathExists(searchPath) || valueTree.Paths.Count == 1)
@@ -153,11 +105,7 @@ namespace ConnectorGrasshopper.Objects
       }
       // --> Report progress if necessary
       // ReportProgress(Id, percentage);
-
-
-      // Set the data in the worker props before finishing.
-
-
+      
       // Call Done() to signal it's finished.
       Done();
     }
@@ -166,6 +114,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
+      DA.DisableGapLogic();
       // Use DA.GetData as usual...
       DA.GetDataList(0, keys);
       DA.GetDataTree(1, out valueTree);
@@ -179,27 +128,6 @@ namespace ConnectorGrasshopper.Objects
 
       // Use DA.SetData as usual...
       DA.SetData(0, new GH_SpeckleBase {Value = speckleObj});
-    }
-    
-    private static GH_Structure<IGH_Goo> GetSubTree(GH_Structure<IGH_Goo> valueTree, GH_Path searchPath)
-    {
-      var subTree = new GH_Structure<IGH_Goo>();
-      var gen = 0;
-      foreach (var path in valueTree.Paths)
-      {
-        var branch = valueTree.get_Branch(path) as IEnumerable<IGH_Goo>;
-        if (path.IsAncestor(searchPath, ref gen))
-        {
-          subTree.AppendRange(branch, path);
-        }
-        else if (path.IsCoincident(searchPath))
-        {
-          subTree.AppendRange(branch, path);
-          break;
-        }
-      }
-      subTree.Simplify(GH_SimplificationMode.CollapseLeadingOverlaps);
-      return subTree;
     }
   }
 }

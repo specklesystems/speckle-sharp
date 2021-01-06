@@ -541,6 +541,17 @@ namespace ConnectorGrasshopper.Ops
     {
     }
 
+    private bool _selected;
+    public override bool Selected
+    {
+      get {
+        return _selected;
+      }
+      set {
+        Owner.Params.ToList().ForEach(p => p.Attributes.Selected = value);
+        _selected = value;
+      }
+    }
     protected override void Layout()
     {
       base.Layout();

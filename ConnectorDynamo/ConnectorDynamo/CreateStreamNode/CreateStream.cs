@@ -135,20 +135,40 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
 
     internal void DoCreateStream()
     {
+      ClearErrorsAndWarnings();
+
       if (SelectedAccount == null)
-        throw new Exception("An account must be selected.");
+      {
+        Error("An account must be selected.");
+        return;
+      }
 
       Tracker.TrackPageview(Tracker.STREAM_CREATE);
 
       var client = new Client(SelectedAccount);
-      var res = client.StreamCreate(new StreamCreateInput()).Result;
+      try
+      {
+        var res = client.StreamCreate(new StreamCreateInput()).Result;
 
-      Stream = new StreamWrapper(res, SelectedAccount.id, SelectedAccount.serverInfo.url);
-      CreateEnabled = false;
-      SelectedAccountId = SelectedAccount.id;
+        Stream = new StreamWrapper(res, SelectedAccount.id, SelectedAccount.serverInfo.url);
+        CreateEnabled = false;
+        SelectedAccountId = SelectedAccount.id;
 
-      this.Name = "Stream Created";
-      OnNodeModified(true);
+        this.Name = "Stream Created";
+        OnNodeModified(true);
+      }
+      catch(Exception ex)
+      {
+        //someone improve this pls :)
+        if(ex.InnerException !=null && ex.InnerException.InnerException !=null)
+          Error(ex.InnerException.InnerException.Message);
+        if (ex.InnerException != null)
+          Error(ex.InnerException.Message);
+        else
+          Error(ex.Message);
+
+      }
+
     }
 
 
@@ -173,7 +193,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
           AstFactory.BuildStringNode(Stream.StreamId), AstFactory.BuildStringNode(Stream.AccountId)
         });
 
-      return new[] {AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall)};
+      return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall) };
     }
 
     #endregion
