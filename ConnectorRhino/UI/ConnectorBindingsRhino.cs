@@ -200,7 +200,7 @@ namespace SpeckleRhino
         onErrorAction: (message, exception) => { Exceptions.Add(exception); }
         );
 
-      if(Exceptions.Count != 0)
+      if (Exceptions.Count != 0)
       {
         RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
       }
@@ -209,7 +209,7 @@ namespace SpeckleRhino
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
-      Execute.PostToUIThread(() => state.Progress.Maximum = state.Objects.Count());
+      Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
 
       Action updateProgressAction = () =>
       {
@@ -291,7 +291,7 @@ namespace SpeckleRhino
         else
         {
           var index = Doc.Layers.Add(layer);
-          if(index == -1) // it means it exists already, and we're returning to a previously created higher level layer.
+          if (index == -1) // it means it exists already, and we're returning to a previously created higher level layer.
           {
             var fullPath = "";
             if (layer.ParentLayerId != null)
@@ -301,7 +301,8 @@ namespace SpeckleRhino
             }
             var existingLayerIndex = Doc.Layers.FindByFullPath(fullPath, true);
             layer.Index = Doc.Layers.FindIndex(existingLayerIndex).Index;
-          } else
+          }
+          else
           {
             layer.Index = index;
           }
@@ -318,7 +319,8 @@ namespace SpeckleRhino
           if (converted != null)
           {
             Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = layer.Index });
-          } else
+          }
+          else
           {
             state.Errors.Add(new Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
           }
@@ -390,10 +392,10 @@ namespace SpeckleRhino
       // TODO: check for filters and trawl the doc.
       if (state.Filter != null)
       {
-        state.Objects = GetObjectsFromFilter(state.Filter);
+        state.SelectedObjectIds = GetObjectsFromFilter(state.Filter);
       }
 
-      if (state.Objects.Count == 0)
+      if (state.SelectedObjectIds.Count == 0)
       {
         RaiseNotification("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
         return state;
@@ -401,26 +403,26 @@ namespace SpeckleRhino
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
-      Execute.PostToUIThread(() => state.Progress.Maximum = state.Objects.Count());
+      Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
 
-      foreach (var placeholder in state.Objects)
+      foreach (var applicationId in state.SelectedObjectIds)
       {
         if (state.CancellationTokenSource.Token.IsCancellationRequested)
         {
           return null;
         }
 
-        var obj = Doc.Objects.FindId(new Guid(placeholder.applicationId));
+        var obj = Doc.Objects.FindId(new Guid(applicationId));
         if (obj == null)
         {
-          state.Errors.Add(new Exception($"Failed to find local object ${placeholder.applicationId}."));
+          state.Errors.Add(new Exception($"Failed to find local object ${applicationId}."));
           continue;
         }
 
         var converted = converter.ConvertToSpeckle(obj.Geometry);
         if (converted == null)
         {
-          state.Errors.Add(new Exception($"Failed to find convert object ${placeholder.applicationId} of type ${obj.Geometry.ObjectType.ToString()}."));
+          state.Errors.Add(new Exception($"Failed to find convert object ${applicationId} of type ${obj.Geometry.ObjectType.ToString()}."));
           continue;
         }
 
@@ -428,7 +430,7 @@ namespace SpeckleRhino
         UpdateProgress(conversionProgressDict, state.Progress);
 
         // TODO: potentially get more info from the object: materials and other rhino specific stuff?
-        converted.applicationId = placeholder.applicationId;
+        converted.applicationId = applicationId;
 
         foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
         {
@@ -495,8 +497,8 @@ namespace SpeckleRhino
 
         PersistAndUpdateStreamInFile(state);
         RaiseNotification($"{objCount} objects sent to {state.Stream.name}.");
-      } 
-      catch(Exception e)
+      }
+      catch (Exception e)
       {
         Globals.Notify($"Failed to create commit.\n{e.Message}");
         state.Errors.Add(e);
@@ -505,21 +507,21 @@ namespace SpeckleRhino
       return state;
     }
 
-    private List<Base> GetObjectsFromFilter(ISelectionFilter filter)
+    private List<string> GetObjectsFromFilter(ISelectionFilter filter)
     {
       switch (filter)
       {
         case ListSelectionFilter f:
-          List<Base> objs = new List<Base>();
+          List<string> objs = new List<string>();
           foreach (var layerName in f.Selection)
           {
-            var docObjs = Doc.Objects.FindByLayer(layerName).Select(o => new Base { applicationId = o.Id.ToString() });
+            var docObjs = Doc.Objects.FindByLayer(layerName).Select(o => o.Id.ToString());
             objs.AddRange(docObjs);
           }
           return objs;
         default:
           RaiseNotification("Filter type is not supported in this app. Why did the developer implement it in the first place?");
-          return new List<Base>();
+          return new List<string>();
       }
     }
 
