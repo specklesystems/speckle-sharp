@@ -5,9 +5,9 @@ using System.Windows.Input;
 
 namespace Speckle.DesktopUI.Streams.Dialogs.FilterViews
 {
-  public partial class CategoryFilterView : UserControl
+  public partial class ListFilterView : UserControl
   {
-    public CategoryFilterView()
+    public ListFilterView()
     {
       InitializeComponent();
     }
@@ -17,7 +17,7 @@ namespace Speckle.DesktopUI.Streams.Dialogs.FilterViews
       if (e.Key.Equals(Key.Down))
       {
         var element = sender as UIElement;
-        if (element != null)element.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+        if (element != null) element.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
       }
     }
   }

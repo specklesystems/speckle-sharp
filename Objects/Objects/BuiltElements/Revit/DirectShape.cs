@@ -2,7 +2,6 @@
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
-using static Objects.BuiltElements.Revit.RevitUtils;
 
 namespace Objects.BuiltElements.Revit
 {
@@ -15,15 +14,15 @@ namespace Objects.BuiltElements.Revit
     public List<Base> baseGeometries { get; set; }
 
     public List<Parameter> parameters { get; set; }
-    
+
     public string elementId { get; set; }
 
 
     public DirectShape()
     {
-      
+
     }
-    
+
     /// <summary>
     ///  Constructs a new <see cref="DirectShape"/> instance given a list of <see cref="Base"/> objects.
     /// </summary>
@@ -41,9 +40,9 @@ namespace Objects.BuiltElements.Revit
     }
 
     public bool IsValidObject(Base @base) =>
-      @base is Point 
-      || @base is ICurve 
-      || @base is Mesh 
+      @base is Point
+      || @base is ICurve
+      || @base is Mesh
       || @base is Brep;
   }
 

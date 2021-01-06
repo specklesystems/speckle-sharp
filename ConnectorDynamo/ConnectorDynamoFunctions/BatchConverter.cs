@@ -132,6 +132,9 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <returns></returns>
     public object ConvertRecursivelyToNative(Base @base)
     {
+      if (@base == null)
+        return null;
+      
       // case 1: it's an item that has a direct conversion method, eg a point
       if (_converter.CanConvertToNative(@base))
         return TryConvertItemToNative(@base);

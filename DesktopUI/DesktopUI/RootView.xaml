@@ -1,74 +1,77 @@
-﻿<Window x:Class="Speckle.DesktopUI.RootView"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:local="clr-namespace:Speckle.DesktopUI"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-        xmlns:s="https://github.com/canton7/Stylet"
-        xmlns:settings="[settings ]clr-namespace:Speckle.DesktopUI.Settings"
-        xmlns:stylet="clr-namespace:Stylet;assembly=Stylet"
-        xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
-        x:Name="RootWindow"
-        Title="Speckle"
-        Width="470"
-        MinWidth="470"
-        Height="800"
-        MinHeight="300"
-        MaxWidth="800"
-        Background="{DynamicResource MaterialDesignPaper}"
-        Closing="{s:Action OnClosing}"
-        FontFamily="{md:MaterialDesignFont}"
-        Icon="Resources/s2block.ico"
-        TextElement.FontSize="13"
-        TextElement.FontWeight="Normal"
-        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-        TextOptions.TextFormattingMode="Ideal"
-        TextOptions.TextRenderingMode="Auto"
-        mc:Ignorable="d">
+﻿<Window
+  x:Class="Speckle.DesktopUI.RootView"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:local="clr-namespace:Speckle.DesktopUI"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:s="https://github.com/canton7/Stylet"
+  xmlns:settings="[settings ]clr-namespace:Speckle.DesktopUI.Settings"
+  xmlns:stylet="clr-namespace:Stylet;assembly=Stylet"
+  xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
+  x:Name="RootWindow"
+  Title="Speckle"
+  Width="505"
+  Height="800"
+  MinWidth="505"
+  MinHeight="300"
+  MaxWidth="800"
+  Background="{DynamicResource MaterialDesignPaper}"
+  Closing="{s:Action OnClosing}"
+  FontFamily="{md:MaterialDesignFont}"
+  Icon="Resources/s2block.ico"
+  TextElement.FontSize="13"
+  TextElement.FontWeight="Normal"
+  TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+  TextOptions.TextFormattingMode="Ideal"
+  TextOptions.TextRenderingMode="Auto"
+  mc:Ignorable="d">
   <Window.Resources>
     <utils:StringToUpperConverter x:Key="StringToUpperConverter" />
   </Window.Resources>
-  <md:DialogHost CloseOnClickAway="True"
-                 DialogTheme="Inherit"
-                 Identifier="RootDialogHost"
-                 Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
+  <md:DialogHost
+    CloseOnClickAway="True"
+    DialogTheme="Inherit"
+    Identifier="RootDialogHost"
+    Style="{StaticResource MaterialDesignEmbeddedDialogHost}">
     <DockPanel x:Name="TopLevelDockPanel">
 
       <!--#region Top Menu Bar-->
-      <md:Card Padding="0,12,10,12"
-               Panel.ZIndex="2"
-               md:ShadowAssist.ShadowDepth="Depth1"
-               Background="{DynamicResource MaterialDesignCardBackground}"
-               DockPanel.Dock="Top">
+      <md:Card
+        Padding="0,12,10,12"
+        Panel.ZIndex="2"
+        md:ShadowAssist.ShadowDepth="Depth1"
+        Background="{DynamicResource MaterialDesignCardBackground}"
+        DockPanel.Dock="Top">
         <DockPanel>
-          <ToggleButton x:Name="MenuToggleButton"
-                        Width="40"
-                        Height="40"
-                        Margin="12,0,0,0"
-                        HorizontalAlignment="Right"
-                        Background="Transparent"
-                        BorderBrush="Transparent"
-                        md:ShadowAssist.ShadowDepth="Depth0"
-                        Command="{s:Action GoToSettingsOrBack}"
-                        Content="{Binding MainButtonIcon}"
-                        IsChecked="{Binding MainButton_Checked}"
-                        Style="{StaticResource MaterialDesignFloatingActionDarkButton}" />
-          <TextBlock Margin="12,0,0,0"
-                     VerticalAlignment="Center"
-                     FontSize="20"
-                     Style="{StaticResource MaterialDesignHeadline3TextBlock}"
-                     Text="{Binding ViewName, Converter={StaticResource StringToUpperConverter}}" />
+          <ToggleButton
+            x:Name="MenuToggleButton"
+            Width="40"
+            Height="40"
+            Margin="12,0,0,0"
+            HorizontalAlignment="Right"
+            md:ShadowAssist.ShadowDepth="Depth0"
+            Background="Transparent"
+            BorderBrush="Transparent"
+            Command="{s:Action GoToSettingsOrBack}"
+            Content="{Binding MainButtonIcon}"
+            IsChecked="{Binding MainButton_Checked}"
+            Style="{StaticResource MaterialDesignFloatingActionDarkButton}" />
+          <TextBlock
+            Margin="12,0,0,0"
+            VerticalAlignment="Center"
+            FontSize="20"
+            Style="{StaticResource MaterialDesignHeadline3TextBlock}"
+            Text="{Binding ViewName, Converter={StaticResource StringToUpperConverter}}" />
 
         </DockPanel>
       </md:Card>
       <!--#endregion-->
 
-      <Grid x:Name="MainContent"
-            Margin="0">
+      <Grid x:Name="MainContent" Margin="0">
         <ContentControl s:View.Model="{Binding ActiveItem}" />
-        <md:Snackbar x:Name="MainWindowSnackbar"
-                     MessageQueue="{Binding Notifications}" />
+        <md:Snackbar x:Name="MainWindowSnackbar" MessageQueue="{Binding Notifications}" />
       </Grid>
     </DockPanel>
   </md:DialogHost>

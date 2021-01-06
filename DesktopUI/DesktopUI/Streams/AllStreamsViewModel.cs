@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -73,6 +74,8 @@ namespace Speckle.DesktopUI.Streams
       _events.Subscribe(this);
 
       Globals.Repo = _repo;
+
+      var ass = AppDomain.CurrentDomain.GetAssemblies().Where(x => x.FullName.ToLowerInvariant().Contains("xaml")).ToList();
     }
 
     private BindableCollection<StreamState> LoadStreams()
@@ -112,14 +115,14 @@ namespace Speckle.DesktopUI.Streams
     public void SwapState(StreamState state)
     {
       state.SwapState();
-      StreamList.Refresh();
+      state.Refresh();
     }
 
     public async void ShowStreamUpdateObjectsDialog(StreamState state)
     {
       Tracker.TrackPageview("stream", "dialog-update");
       var viewmodel = _dialogFactory.StreamUpdateObjectsDialogView();
-      viewmodel.StreamState = state;
+      viewmodel.SetState(state);
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
 
       await DialogHost.Show(view, "RootDialogHost");
@@ -184,6 +187,7 @@ namespace Speckle.DesktopUI.Streams
         case ApplicationEvent.EventType.DocumentClosed:
           {
             StreamList.Clear();
+
             break;
           }
         case ApplicationEvent.EventType.DocumentModified:

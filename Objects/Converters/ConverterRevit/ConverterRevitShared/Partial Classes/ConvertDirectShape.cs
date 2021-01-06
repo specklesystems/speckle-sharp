@@ -1,5 +1,4 @@
 ﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,7 @@ using DB = Autodesk.Revit.DB;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Mesh = Objects.Geometry.Mesh;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
-using Point = Objects.Geometry.Point;
+
 
 namespace Objects.Converter.Revit
 {
@@ -25,9 +24,9 @@ namespace Objects.Converter.Revit
       {
         Doc.Delete(docObj.Id);
       }
-  
+
       var converted = new List<GeometryObject>();
-      
+
       speckleDs.baseGeometries.ToList().ForEach(b =>
       {
         switch (b)
@@ -54,9 +53,9 @@ namespace Objects.Converter.Revit
             break;
         }
       });
-      
+
       BuiltInCategory cat;
-      var bic = RevitUtils.GetBuiltInCategory(speckleDs.category);
+      var bic = Categories.GetBuiltInCategory(speckleDs.category);
       BuiltInCategory.TryParse(bic, out cat);
       var catId = Doc.Settings.Categories.get_Item(cat).Id;
 
@@ -73,21 +72,21 @@ namespace Objects.Converter.Revit
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
     {
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
-      var category = RevitUtils.GetCategory(cat);
+      var category = Categories.GetCategory(cat);
       var element = revitAc.get_Geometry(new Options());
-      var geometries = element.ToList().Select<GeometryObject,Base>(obj =>
-      {
-        return obj switch
-        {
-          DB.Mesh mesh => MeshToSpeckle(mesh),
-          Solid solid => BrepToSpeckle(solid),
-          _ => null
-        };
-      });
+      var geometries = element.ToList().Select<GeometryObject, Base>(obj =>
+       {
+         return obj switch
+         {
+           DB.Mesh mesh => MeshToSpeckle(mesh),
+           Solid solid => BrepToSpeckle(solid),
+           _ => null
+         };
+       });
       var speckleAc = new DirectShape(
-        revitAc.Name, 
-        category, 
-        geometries.ToList(), 
+        revitAc.Name,
+        category,
+        geometries.ToList(),
         new List<Parameter>()
         );
       GetAllRevitParamsAndIds(speckleAc, revitAc);

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
+using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
@@ -745,5 +746,21 @@ namespace Objects.Converter.Revit
 
 
     #endregion
+
+
+    public WallLocationLine GetWallLocationLine(LocationLine location)
+    {
+      switch (location)
+      {
+        case LocationLine.Centerline:
+          return WallLocationLine.WallCenterline;
+        case LocationLine.Exterior:
+          return WallLocationLine.FinishFaceExterior;
+        case LocationLine.Interior:
+          return WallLocationLine.FinishFaceInterior;
+        default:
+          return WallLocationLine.FinishFaceInterior;
+      }
+    }
   }
 }

@@ -1,6 +1,7 @@
-﻿using Autodesk.Revit.ApplicationServices;
-using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.UI;
 using Speckle.ConnectorRevit.Storage;
+using Speckle.ConnectorRevit.UI;
+using Speckle.DesktopUI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -23,7 +25,8 @@ namespace Speckle.ConnectorRevit.Entry
     public Result OnStartup(UIControlledApplication application)
     {
       UICtrlApp = application;
-      UICtrlApp.Idling += Initialise; // Fires an init event, where we can get the UIApp
+      // Fires an init event, where we can get the UIApp
+      UICtrlApp.Idling += Initialise;
 
       var SpecklePanel = application.CreateRibbonPanel("Speckle 2");
       var SpeckleButton = SpecklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
@@ -46,7 +49,13 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling -= Initialise;
       AppInstance = sender as UIApplication;
 
-      AppInstance.Application.DocumentOpened += CheckForStreamsAndOpenSpeckle; // Adds an event on doc open to check for streams and launch/focus speckle if any are present.
+      // Adds an event on doc open to check for streams and launch/focus speckle if any are present.
+      AppInstance.Application.DocumentOpened += CheckForStreamsAndOpenSpeckle;
+
+      // Set up bindings now as they subscribe to some document events and it's better to do it now
+      SpeckleRevitCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
+      var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
+      SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
     }
 
     private void CheckForStreamsAndOpenSpeckle(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)

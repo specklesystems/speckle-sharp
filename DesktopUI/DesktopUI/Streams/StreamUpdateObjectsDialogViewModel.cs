@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
@@ -24,10 +26,31 @@ namespace Speckle.DesktopUI.Streams
       _events = events;
       _streamsRepo = streamsRepo;
       Bindings = bindings;
+
       Roles = new BindableCollection<StreamRole>(_streamsRepo.GetRoles());
       FilterTabs = new BindableCollection<FilterTab>(Bindings.GetSelectionFilters().Select(f => new FilterTab(f)));
 
       _events.Subscribe(this);
+    }
+
+    public void SetState(StreamState state)
+    {
+      StreamState = state;
+
+      //set previous selection
+      if (StreamState.Filter != null)
+      {
+        SelectedFilterTab = FilterTabs.First(x => x.Name == StreamState.Filter.Name);
+        SelectedFilterTab.ListItems = new BindableCollection<string>(StreamState.Filter.Selection);
+
+        if (StreamState.Filter is PropertySelectionFilter stateFilter && SelectedFilterTab.Filter is PropertySelectionFilter selectedFilter)
+        {
+          selectedFilter.PropertyName = stateFilter.PropertyName;
+          selectedFilter.PropertyOperator = stateFilter.PropertyOperator;
+          selectedFilter.PropertyValue = stateFilter.PropertyValue;
+        }
+
+      }
     }
 
     public bool EditingDetails
@@ -64,23 +87,6 @@ namespace Speckle.DesktopUI.Streams
       }
     }
 
-    private bool _dropdownState = false;
-
-    public bool DropdownState
-    {
-      get => _dropdownState;
-      set { SetAndNotify(ref _dropdownState, value); }
-    }
-
-    // toggle filter dropdown
-    public void ToggleDropdown()
-    {
-      DropdownState = !DropdownState;
-    }
-    public void OpenDropdown()
-    {
-      DropdownState = true;
-    }
 
     private bool _updateButtonLoading;
 
@@ -90,40 +96,34 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _updateButtonLoading, value);
     }
 
+
     public void HandleSelectionChanged(ListBox sender, SelectionChangedEventArgs e)
     {
+
       if (e.AddedItems.Count == 1)
       {
         var toAdd = (string)e.AddedItems[0];
-        if (SelectedFilterTab.ListItems.Contains(toAdd)) return;
-        SelectedFilterTab.ListItems.Add(toAdd);
-      }
-
-      // select current selection (ListItems) when the search resuslts change
-      if (SelectedFilterTab.searchSourceChanged)
-      {
-        SelectedFilterTab.searchSourceChanged = false;
-        foreach (var item in SelectedFilterTab.ListItems)
-        {
-          sender.SelectedItems.Add(item);
-        }
-        return;
+        if (SelectedFilterTab.SelectedListItems.Contains(toAdd))
+          return;
+        SelectedFilterTab.SelectedListItems.Add(toAdd);
       }
 
       if (e.RemovedItems.Count == 1)
       {
         var toRemove = (string)e.RemovedItems[0];
-        if (!SelectedFilterTab.ListItems.Contains(toRemove)) return;
-        SelectedFilterTab.ListItems.Remove(toRemove);
+        //if it was removed as a result of a search query change, don't actually remove it from our selected list
+        if (!SelectedFilterTab.SelectedListItems.Contains(toRemove) || SelectedFilterTab.ListItems.Contains(toRemove))
+          return;
+        SelectedFilterTab.SelectedListItems.Remove(toRemove);
       }
-
+      //this is to trigger the binding, the Text property doesn't react to INotifyCollectionChanged events!
+      SelectedFilterTab.SelectedListItems = SelectedFilterTab.SelectedListItems;
       e.Handled = true;
     }
 
     public void ClearSelected()
     {
       SelectedFilterTab.ListItems?.Clear();
-      SelectedFilterTab.ListItem = null;
     }
 
     public async void UpdateStreamObjects()
@@ -131,17 +131,8 @@ namespace Speckle.DesktopUI.Streams
       UpdateButtonLoading = true;
       Tracker.TrackPageview("stream", "objects-changed");
       var filter = SelectedFilterTab.Filter;
-      switch (filter.Name)
-      {
-        case "View":
-        case "Category":
-        case "Layers":
-        case "Object Types":
-        case "Selection"
-          when SelectedFilterTab.ListItems.Any():
-          filter.Selection = SelectedFilterTab.ListItems.ToList();
-          break;
-      }
+
+      filter.Selection = SelectedFilterTab.SelectedListItems.ToList();
 
       StreamState.Filter = filter;
       Bindings.PersistAndUpdateStreamInFile(StreamState);
@@ -155,7 +146,7 @@ namespace Speckle.DesktopUI.Streams
       UpdateButtonLoading = true;
       Tracker.TrackPageview("stream", "from-selection");
       SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
-      SelectedFilterTab.ListItems.Clear();
+      SelectedFilterTab.SelectedListItems.Clear();
       SelectedFilterTab.Filter.Selection = Bindings.GetSelectedObjects();
 
       UpdateStreamObjects();
@@ -243,7 +234,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(RetrievedFilteredObjectsEvent message)
     {
-      StreamState.Objects = message.Objects.ToList();
+      StreamState.SelectedObjectIds = message.Objects.Select(x => x.applicationId).ToList();
     }
 
     public void Handle(UpdateSelectionCountEvent message)

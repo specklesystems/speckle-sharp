@@ -4,6 +4,7 @@
   xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf">
   <ResourceDictionary.MergedDictionaries>
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/materialdesigntheme.button.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/materialdesigntheme.togglebutton.xaml" />
   </ResourceDictionary.MergedDictionaries>
 
   <Style
@@ -67,5 +68,19 @@
     BasedOn="{StaticResource MaterialDesignFloatingActionAccentButton}"
     TargetType="ButtonBase">
     <Setter Property="md:ShadowAssist.ShadowDepth" Value="Depth0" />
+  </Style>
+
+
+  <Style
+    x:Key="MaterialDesignWhiteToggleButton"
+    BasedOn="{StaticResource MaterialDesignActionLightToggleButton}"
+    TargetType="ToggleButton">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}" />
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignToolBackground}" />
+      </Trigger>
+    </Style.Triggers>
   </Style>
 </ResourceDictionary>
