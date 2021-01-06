@@ -1,11 +1,6 @@
-
-
 # Connector Dynamo
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works)
-[![Slack Invite](https://img.shields.io/badge/-slack-grey?style=flat-square&logo=slack)](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
-
-
+[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
 
 ## Introduction
 
@@ -17,13 +12,9 @@ The connector is structured in 3 c# projects:
 - ConnectorDynamoExtension: contains a Dynamo extension, currently doesn't do much but it's scaffolded
 - ConnectorDynamoFunctions: contains the ZeroTouch nodes and functions invoked by the NodeModel nodes
 
-
-
 ## Developing & Debugging
 
 We encourage everyone interested to debug / hack /contribute / give feedback to this project.
-
-
 
 ### Requirements
 
@@ -31,12 +22,9 @@ We encourage everyone interested to debug / hack /contribute / give feedback to 
 - A Speckle Server running (more on this below)
 - Speckle Manager (more on this below)
 
-
-
 ### Getting Started 🏁
 
 Following instructions on how to get started debugging and contributing to this connector.
-
 
 #### Server
 
@@ -44,7 +32,7 @@ In order to test Speckle in all its glory you'll need a server running, you can 
 
 - https://github.com/specklesystems/Server
 
-If you're facing any errors make sure Postgress and Redis are up and running. 
+If you're facing any errors make sure Postgress and Redis are up and running.
 
 #### Accounts
 
@@ -53,8 +41,6 @@ The connector itself doesn't have features to manage your Speckle accounts, this
 You can install an alpha version of it from: [https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe](https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe)
 
 After installing it, you can use it to add/create an account on the Server.
-
-
 
 ### Debugging
 
@@ -65,8 +51,6 @@ After setting up dependencies, server and accounts you're good to go. Just make 
 
 ![image](https://user-images.githubusercontent.com/2679513/100000736-ea6ace80-2db9-11eb-8b04-10588e15e4b9.png)
 
-
-
 - the Solution builds fine in your IDE
 - you IDE is set to start the correct version of Dynamo or Revit on Debug
   ![image](https://user-images.githubusercontent.com/2679513/97479008-a666e400-1949-11eb-983a-3fccc066b597.png)
@@ -75,28 +59,20 @@ The first time you run Dynamo after having built the project, you need to add th
 
 - Click on `Settings` > `Manage Node and Package Paths...`
   ![image](https://user-images.githubusercontent.com/2679513/97480730-baabe080-194b-11eb-92e8-0655a9765b3a.png)
-- Add the `dist\Revit` or `dist\Sandbox` folder in your `repo folder\ConnectorDynamo\ConnectorDynamo\dist\Revit` 
+- Add the `dist\Revit` or `dist\Sandbox` folder in your `repo folder\ConnectorDynamo\ConnectorDynamo\dist\Revit`
   ![image](https://user-images.githubusercontent.com/2679513/97480369-35c0c700-194b-11eb-994a-3f03ee55ebee.png)
-
-
 
 And voila', the Speckle packages should now show in the library:
 
 ![image](https://user-images.githubusercontent.com/2679513/97480950-03639980-194c-11eb-8474-7d14a427ecc0.png)
 
-
-
 #### Dynamo Sandbox
 
 You don't need to run Revit to debug Dynamo, you can just use the [Sandbox version](https://dynamobim.org/download/).
 
-
-
 ## How to use
 
 Using this connector is pretty much similar to using the 1.x one, but there are a few key differences. Below a visual guide of the main features.
-
-
 
 ### Accounts
 
@@ -112,13 +88,9 @@ If you only add one account in the Manager, **that will also be your default acc
 
 ![image](https://user-images.githubusercontent.com/2679513/97778543-c4159280-1b6f-11eb-924e-04b3fb1ed3e0.png)
 
-
-
 Some nodes accept an optional "account" input, **if not provided the default account will be used.**
 
 ![image-20201031111912748](https://user-images.githubusercontent.com/2679513/97778555-da235300-1b6f-11eb-9c24-aa50908fcacf.png)
-
-
 
 ### Streams
 
@@ -140,17 +112,13 @@ You can retrieve a previously created stream or streams in 2 ways.
 
 ![image](https://user-images.githubusercontent.com/2679513/97777656-9af20380-1b69-11eb-91c8-b543d8837e6a.png)
 
-
-
-**Using Stream.List** 
+**Using Stream.List**
 
 ![image-20201031111912748](https://user-images.githubusercontent.com/2679513/97778555-da235300-1b6f-11eb-9c24-aa50908fcacf.png)
 
-
-
 #### Sending & Receiving 📩
 
-Sending and receiving is pretty straightforward. 
+Sending and receiving is pretty straightforward.
 
 - each time you send something, a new "Commit" is created with the data sent
 - sending is manual only (need to click on the button)
@@ -170,36 +138,20 @@ The Dynamo UI, doesn't let us copy text (c'mon Dynamo team), so we have made a n
 
 - if using a stream pointing to a specific commit, the commit page will be opened
 
-  
-
 ![view-stream](https://user-images.githubusercontent.com/2679513/97778366-a136ae80-1b6e-11eb-8123-b7701ab6678c.gif)
-
-
 
 ### Questions and Feedback 💬
 
-Hey, this is an alpha release, I'm sure you'll have plenty of feedback, and we want to hear all about it! Get in touch with us on [the forum](https://discourse.speckle.works)! 
-
-
+Hey, this is an alpha release, I'm sure you'll have plenty of feedback, and we want to hear all about it! Get in touch with us on [the forum](https://discourse.speckle.works)!
 
 ## Contributing
 
 Please make sure you read the [contribution guidelines](.github/CONTRIBUTING.md) for an overview of the best practices we try to follow.
 
-
-
 ## Community
 
-The Speckle Community hangs out in two main places, usually:
-
-- on [the forum](https://discourse.speckle.works)
-- on [the chat](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI)
-
-Do join and introduce yourself!
-
-
+The Speckle Community hangs out on [the forum](https://discourse.speckle.works), do join and introduce yourself & feel free to ask us questions!
 
 ## License
 
 Unless otherwise described, the code in this repository is licensed under the Apache-2.0 License. Please note that some modules, extensions or code herein might be otherwise licensed. This is indicated either in the root of the containing folder under a different license file, or in the respective file's header. If you have any questions, don't hesitate to get in touch with us via [email](mailto:hello@speckle.systems).
-

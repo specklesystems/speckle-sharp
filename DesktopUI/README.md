@@ -1,7 +1,6 @@
 # Speckle Desktop UI
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works)
-[![Slack Invite](https://img.shields.io/badge/-slack-grey?style=flat-square&logo=slack)](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
+[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
 
 ## Introduction
 
@@ -14,13 +13,15 @@ This project on its own is just a WPF application that doesn't do a whole lot. T
 This UI is currently in ⚠ALPHA⚠ and is a bit rough around the edges -- please use at your own risk! Play with it, break some stuff, and come back to us with feedback comments, suggestions, etc ✨
 
 ## Trying it out
+
 The UI will run on it's own, but it won't do much beyond creating and adding empty streams. You can have a look around though to get a feel for it. It uses `DummyBindings` which you can edit to try implementing some of the intended functionality.
 
 ### Requirements
+
 - A Speckle Server running (more on this below)
 - Speckle Manager (more on this below)
 
-### Getting Started 
+### Getting Started
 
 To get the UI running, all you need to do is hit debug in your IDE. There are however a few things you'll need to set up beforehand.
 
@@ -67,12 +68,7 @@ Please make sure you read the [contribution guidelines](.github/CONTRIBUTING.md)
 
 ## Community
 
-The Speckle Community hangs out in two main places, usually:
-
-- on [the forum](https://discourse.speckle.works)
-- on [the chat](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI)
-
-Do join and introduce yourself!
+The Speckle Community hangs out on [the forum](https://discourse.speckle.works), do join and introduce yourself & feel free to ask us questions!
 
 ## License
 
