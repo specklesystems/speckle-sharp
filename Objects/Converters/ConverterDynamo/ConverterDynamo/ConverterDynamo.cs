@@ -113,6 +113,9 @@ namespace Objects.Converter.Dynamo
 
         case Line o:
           return LineToNative(o);
+        
+        case Polyline o:
+          return PolylineToNative(o);
 
         case Polycurve o:
           return PolycurveToNative(o);
@@ -218,6 +221,9 @@ namespace Objects.Converter.Dynamo
           return true;
 
         case Line _:
+          return true;
+        
+        case Polyline _:
           return true;
 
         case Polycurve _:
