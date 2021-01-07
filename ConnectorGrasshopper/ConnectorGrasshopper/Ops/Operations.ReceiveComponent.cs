@@ -122,7 +122,7 @@ namespace ConnectorGrasshopper.Ops
       var streamInputIndex = pManager.AddGenericParameter("Stream", "S",
         "The Speckle Stream to receive data from. You can also input the Stream ID or it's URL as text.",
         GH_ParamAccess.tree);
-      pManager[streamInputIndex].Optional = true;
+      //pManager[streamInputIndex].Optional = true;
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
