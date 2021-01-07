@@ -607,7 +607,7 @@ namespace ConnectorGrasshopper.Ops
         }
         else
         {
-          var palette = state == "expired" ? GH_Palette.Black : GH_Palette.Transparent;
+          var palette = (state == "expired" || state == "up_to_date") ? GH_Palette.Black : GH_Palette.Transparent;
           var text = state == "sending" ? $"{((SendComponent)Owner).OverallProgress:0.00%}" : "Send";
 
           var button = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, palette, text, 2,
@@ -624,10 +624,21 @@ namespace ConnectorGrasshopper.Ops
       {
         if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
         {
-          if (((SendComponent)Owner).AutoSend || ((SendComponent)Owner).CurrentComponentState != "expired")
+          if (((SendComponent)Owner).AutoSend)
+          {
+            ((SendComponent)Owner).AutoSend = false;
+            Owner.OnDisplayExpired(true);
+            return GH_ObjectResponse.Handled;
+          }
+          if (((SendComponent)Owner).CurrentComponentState == "sending")
           {
             return GH_ObjectResponse.Handled;
           }
+          
+          // if (((SendComponent)Owner).CurrentComponentState != "expired")
+          // {
+          //   return GH_ObjectResponse.Handled;
+          // }
 
           ((SendComponent)Owner).CurrentComponentState = "primed_to_send";
           Owner.ExpireSolution(true);
@@ -638,7 +649,7 @@ namespace ConnectorGrasshopper.Ops
       return base.RespondToMouseDown(sender, e);
     }
 
-    public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
+    /*public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
     {
       // Double clicking the send button, even if the state is up to date, will do a "force send"
       if (e.Button == MouseButtons.Left)
@@ -664,6 +675,6 @@ namespace ConnectorGrasshopper.Ops
       }
 
       return base.RespondToMouseDown(sender, e);
-    }
+    }*/
   }
 }
