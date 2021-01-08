@@ -227,12 +227,7 @@ workflows:
   ci:
     when: << pipeline.parameters.run_trigger_workflow >>
     jobs:
-      - selective-ci:
-          filters:  # using regex filters requires the entire branch to match
-            branches:
-              only:  # only branches matching the below regex filters will run
-                - master
-                - /ci\/.*/
+      - selective-ci
   # Objects - Build/Test
   objects:
     when: << pipeline.parameters.run_objects >>
