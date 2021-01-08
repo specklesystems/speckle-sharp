@@ -8,6 +8,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Rhino.DocObjects;
 using Rhino.Geometry;
+using System.Collections;
 
 namespace SpeckleRhino
 {
@@ -27,6 +28,7 @@ namespace SpeckleRhino
         private string SpeckleAUTValue;
         private List<Type> ValidTypes;
         private ConstructorInfo SchemaConstructor;
+        private Rhino.RhinoDoc ActiveDoc;
 
         public ISpeckleConverter Converter;
         public ISpeckleKit Kit;
@@ -41,6 +43,7 @@ namespace SpeckleRhino
         public SchemaConverter(RhinoObject inputObject)
         {
             DocObject = inputObject;
+            ActiveDoc = Rhino.RhinoDoc.ActiveDoc;
             ValidTypes = GetValidTypes();
         }
         #endregion
@@ -73,7 +76,7 @@ namespace SpeckleRhino
         {
             Kit = KitManager.GetDefaultKit();
             Converter = Kit.LoadConverter(Applications.Rhino);
-            Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+            Converter.SetContextDocument(ActiveDoc);
 
             SchemaObject = null;
 
@@ -108,42 +111,86 @@ namespace SpeckleRhino
                 string propName = param.Name;
 
                 // try to match param to value in prop dict and do a direct add if its a simple type (namely, string or double)
-                if (properties.ContainsKey(propName) && propType.IsSimpleType())
+                if (properties == null)
                 {
-                    outputSchemaValues.Add(properties[propName]);
-                }
-                // try to match param to value in prop dict by using value as a constructor
-                else if (properties.ContainsKey(propName))
-                {
-                    ConstructorInfo propConstructor = GetValidConstr(propType).First();
-                    object propObject = propConstructor.Invoke((object[])properties[propName]);
-                    if (propObject != null)
+                    if (!param.IsOptional)
                     {
-                        outputSchemaValues.Add(propObject);
+                        if (ExtractValueFromGeometry(propType, out object propObject))
+                        {
+                            outputSchemaValues.Add(propObject);
+                        }
+                        else
+                        {
+                            Rhino.RhinoApp.WriteLine(DocObject.Id + ": Speckle Schema required value could not be extracted!");
+                            return false;
+                        }
                     }
-                }
-                // try to extract required value from the rhino object geom
-                // may not catch required bools - think about making all speckle object constructor bools set to default value?
-                else if (!param.IsOptional)
-                {
-                    if (ExtractValueFromGeometry(propType, out object propObject))
+                    else
                     {
-                        outputSchemaValues.Add(propObject);
+                        if (ExtractValueFromGeometry(propType, out object propObject))
+                        {
+                            outputSchemaValues.Add(propObject);
+                        }
+                        else
+                        {
+                            outputSchemaValues.Add(null);
+                        }
                     }
                 }
                 else
                 {
-                    // if the prop dict didn't contain a necessary param and the necessary param could not be extracted from the rhino object
-                    Rhino.RhinoApp.WriteLine(DocObject.Id + ": Speckle Schema values is invalid!");
-                    return false;
+                    if (properties.ContainsKey(propName) && propType.IsSimpleType())
+                    {
+                        outputSchemaValues.Add(properties[propName]);
+                    }
+                    // try to match param to value in prop dict by using value as a constructor
+                    else if (properties.ContainsKey(propName))
+                    {
+                        ConstructorInfo propConstructor = GetValidConstr(propType).First();
+                        object propObject = propConstructor.Invoke((object[])properties[propName]);
+                        if (propObject != null)
+                        {
+                            outputSchemaValues.Add(propObject);
+                        }
+                        else
+                        {
+                            Rhino.RhinoApp.WriteLine(DocObject.Id + ": Speckle Schema values is missing a required value!");
+                            return false;
+                        }
+                    }
+                    // try to extract required value from the rhino object geom
+                    // may not catch required bools - think about making all speckle object constructor bools set to default value?
+                    else if (!param.IsOptional)
+                    {
+                        if (ExtractValueFromGeometry(propType, out object propObject))
+                        {
+                            outputSchemaValues.Add(propObject);
+                        }
+                        else
+                        {
+                            Rhino.RhinoApp.WriteLine(DocObject.Id + ": Speckle Schema required value could not be extracted!");
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // if the prop dict didn't contain a necessary param and the necessary param could not be extracted from the rhino object
+                        Rhino.RhinoApp.WriteLine(DocObject.Id + ": Speckle Schema values is invalid!");
+                        return false;
+                    }
                 }
             }
 
             // get all the output schema values to construct a speckle base object
-            var outputObject = SchemaConstructor.Invoke(outputSchemaValues.ToArray());
-            ((Base)outputObject).applicationId = $"{SchemaConstructor.Name}-{DocObject.Id}";
-            ((Base)outputObject).units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
-            SchemaObject = outputObject as Base;
+            try
+            {
+                var outputObject = SchemaConstructor.Invoke(outputSchemaValues.ToArray());
+                SchemaObject = outputObject as Base;
+            }
+            catch(Exception ex)
+            {
+                Rhino.RhinoApp.WriteLine(ex.Message);
+            }
 
             return true;
         }
@@ -193,17 +240,30 @@ namespace SpeckleRhino
             if (!string.IsNullOrEmpty(propertiesString))
             {
                 string[] propertyStrings = propertiesString.Split(PropertyDelimiter);
+                schemaProperties = new Dictionary<string, object>();
                 foreach (string property in propertyStrings)
                 {
                     try
                     {
-                        string propertyName = property.Split(PropertyValueDelimiter)[0];
-                        object propertyValue = property.Split(PropertyValueDelimiter)[1];
-                        if (Double.TryParse(propertyValue as string, out double propertyValueDouble))
+                        string[] pieces = property.Split(PropertyValueDelimiter);
+                        string propertyName = pieces[0];
+                        object propertyValue = null;
+                        if (pieces.Length == 2) { propertyValue = pieces[1]; }
+                        else
                         {
-                            propertyValue = propertyValueDouble;
+                            var propertyValueList = new List<object>();
+                            for (int j = 1; j < pieces.Length; j++)
+                            {
+                                object proppiece = pieces[j];
+                                if (Double.TryParse(proppiece as string, out double propertyValueDouble))
+                                {
+                                    proppiece = propertyValueDouble;
+                                }
+                                propertyValueList.Add(proppiece);
+                            }
+                            propertyValue = propertyValueList;
                         }
-                        schemaProperties.Add(propertyName, propertyValueDouble);
+                        schemaProperties.Add(propertyName, propertyValue);
                     }
                     catch
                     {
@@ -225,7 +285,7 @@ namespace SpeckleRhino
                     Surface srf = DocObject.Geometry as Surface;
                     switch (t.Name)
                     {
-                        case "Curve": 
+                        case "ICurve": 
                             break;
                         default: break;
                     }
@@ -234,9 +294,23 @@ namespace SpeckleRhino
                     Brep brp = DocObject.Geometry as Brep;
                     switch (t.Name)
                     {
-                        case "Curve":
-                            obj = brp.Curves2D[0].ToNurbsCurve();
+                        case "ICurve": // assumes this is the boundary curve
+                            Curve extCurve = DuplicateEdgesFromBrep(brp, false)[0];
+                            obj = Converter.ConvertToSpeckle(extCurve);
                             if (obj != null) return true;
+                            break;
+                        case "List`1": // assumes these are interior curves
+                            if (t.FullName.Contains("ICurve"))
+                            {
+                                List<Curve> intCurves = DuplicateEdgesFromBrep(brp, true);
+                                var list = (IList)Activator.CreateInstance(t);
+                                foreach (Curve intCurve in intCurves)
+                                {
+                                    list.Add(Converter.ConvertToSpeckle(intCurve));
+                                }
+                                obj = list;
+                                if (obj != null) return true;
+                            }
                             break;
                         default: break;
                     }
@@ -244,6 +318,23 @@ namespace SpeckleRhino
                 default: break;
             }
             return false;
+        }
+
+        private List<Curve> DuplicateEdgesFromBrep(Brep brep, bool getInterior)
+        {
+            double tol = ActiveDoc.ModelAbsoluteTolerance * 1;
+
+            Curve[] outputCurves = null;
+            if (getInterior)
+            {
+                outputCurves = brep.DuplicateNakedEdgeCurves(false, true);
+            }
+            else
+            {
+                outputCurves = brep.DuplicateNakedEdgeCurves(true, false);
+            }
+            outputCurves = Curve.JoinCurves(outputCurves, tol);
+            return outputCurves.ToList();
         }
 
         private object GetObjectProp(object value, Type t)

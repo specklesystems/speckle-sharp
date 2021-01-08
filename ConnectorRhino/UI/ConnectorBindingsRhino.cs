@@ -443,7 +443,7 @@ namespace SpeckleRhino
 
         foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
         {
-          // check if this is a SchemaBuilder key and omit if so
+          // TODO: check if this is a SchemaBuilder key and maybe omit?
           converted[key] = obj.Attributes.GetUserString(key);
         }
 
