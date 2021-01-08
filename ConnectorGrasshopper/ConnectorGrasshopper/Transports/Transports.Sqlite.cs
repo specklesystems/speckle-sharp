@@ -18,11 +18,9 @@ namespace ConnectorGrasshopper.Transports
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddTextParameter("base path", "P", "The root folder where you want the sqlite db to be stored. Defaults to `%appdata%`.", GH_ParamAccess.item);
-      pManager.AddTextParameter("application name", "N", "The subfolder you want the sqlite db to be stored. Defaults to `Speckle`.", GH_ParamAccess.item);
-      pManager.AddTextParameter("database name", "D", "The name of the actual database file. Defaults to `Custom Speckle Sqlite Db`.", GH_ParamAccess.item, "Custom Speckle Sqlite Db");
-
-      Params.Input.ForEach(p => p.Optional = true);
+      pManager.AddTextParameter("Base Path", "P", "The root folder where you want the sqlite db to be stored. Defaults to `%appdata%`.", GH_ParamAccess.item, Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+      pManager.AddTextParameter("Application Name", "N", "The subfolder you want the sqlite db to be stored. Defaults to `Speckle`.", GH_ParamAccess.item, "Speckle");
+      pManager.AddTextParameter("Database Name", "D", "The name of the actual database file. Defaults to `UserLocalDefaultDb`.", GH_ParamAccess.item, "UserLocalDefaultDb");
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
