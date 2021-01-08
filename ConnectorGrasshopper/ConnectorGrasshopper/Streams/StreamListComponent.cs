@@ -69,6 +69,12 @@ namespace ConnectorGrasshopper.Streams
           return;
         }
 
+        if (account == null)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find default account in this machine. Use the Speckle Manager to add an account.");
+          return;
+        }
+
         Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.id);
 
         Task.Run(async () =>

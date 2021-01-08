@@ -77,7 +77,12 @@ namespace ConnectorGrasshopper.Streams
                       ? AccountManager.GetDefaultAccount()
                       : AccountManager.GetAccounts().FirstOrDefault(a => a.id == streamWrapper.AccountId);
 
-          
+          if (account == null)
+          {
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find the specified account in this machine. Use the Speckle Manager to add an account, or modify the input stream with your credentials.");
+            return;
+          }
+
           var client = new Client(account);
           var input = new StreamUpdateInput();
           try
