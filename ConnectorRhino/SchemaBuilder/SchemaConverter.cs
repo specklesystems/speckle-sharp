@@ -23,6 +23,8 @@ namespace SpeckleRhino
     /// </remarks>
     public class SchemaConverter
     {
+        private List<string> SupportedSchemas = new List<string>() { "Floor", "Wall", "Roof", "Ceiling" };
+
         #region Properties
         private RhinoObject DocObject;
         private string SpeckleAUTValue;
@@ -53,9 +55,23 @@ namespace SpeckleRhino
         /// Creates a AUT schema entry for the Rhino Object
         /// </summary>
         /// <param name="inputType">the Speckle type to use</param>
-        public bool CreateSchema(Type inputType)
+        public bool CreateSchema(string schema)
         {
-            if (!ValidTypes.Contains(inputType)) return false;
+            Type schemaType = KitManager.Types.Where(o => o.Name == schema).FirstOrDefault();
+            if (!ValidTypes.Contains(schemaType)) return false;
+
+            //// get the constructors for this schema 
+            //// NOTE: SKIP FOR NOW
+            //ConstructorInfo schemaConstructor = GetValidConstr(schemaType).First();
+            //foreach (var par in schemaConstructor.GetParameters())
+            //{
+            //    if (!par.IsOptional)
+            //    {
+            //    }
+            //}
+
+            DocObject.Attributes.SetUserString(SpeckleUATKey, schema + "{}");
+
             return true;
         }
 
@@ -72,6 +88,9 @@ namespace SpeckleRhino
         /// Gets the Speckle base object from the Rhino Object's AUT entry
         /// </summary>
         /// <returns></returns>
+        /// <remarks>
+        /// This doesn't handle any children yet (eg if one floor surface is actually a planar brep with multiple faces)
+        /// </remarks>
         public bool GetSchemaObject(out Base SchemaObject)
         {
             Kit = KitManager.GetDefaultKit();
@@ -115,7 +134,7 @@ namespace SpeckleRhino
                 {
                     if (!param.IsOptional)
                     {
-                        if (ExtractValueFromGeometry(propType, out object propObject))
+                        if (ExtractValueFromGeometry(propType, schema.Name, out object propObject))
                         {
                             outputSchemaValues.Add(propObject);
                         }
@@ -127,7 +146,7 @@ namespace SpeckleRhino
                     }
                     else
                     {
-                        if (ExtractValueFromGeometry(propType, out object propObject))
+                        if (ExtractValueFromGeometry(propType, schema.Name, out object propObject))
                         {
                             outputSchemaValues.Add(propObject);
                         }
@@ -162,7 +181,7 @@ namespace SpeckleRhino
                     // may not catch required bools - think about making all speckle object constructor bools set to default value?
                     else if (!param.IsOptional)
                     {
-                        if (ExtractValueFromGeometry(propType, out object propObject))
+                        if (ExtractValueFromGeometry(propType, schema.Name, out object propObject))
                         {
                             outputSchemaValues.Add(propObject);
                         }
@@ -276,7 +295,7 @@ namespace SpeckleRhino
         }
 
         // process geometry type to extract relevant schema properties
-        private bool ExtractValueFromGeometry(Type t, out object obj)
+        private bool ExtractValueFromGeometry(Type t, string supportedType, out object obj)
         {
             obj = null;
             switch (DocObject.ObjectType)
@@ -294,15 +313,33 @@ namespace SpeckleRhino
                     Brep brp = DocObject.Geometry as Brep;
                     switch (t.Name)
                     {
-                        case "ICurve": // assumes this is the boundary curve
-                            Curve extCurve = DuplicateEdgesFromBrep(brp, false)[0];
-                            obj = Converter.ConvertToSpeckle(extCurve);
-                            if (obj != null) return true;
+                        case "double": // assumes this is wall height
+                            double height = GetBrepHeight(brp);
+                            obj = height;
+                            if (height > 0) return true;
                             break;
-                        case "List`1": // assumes these are interior curves
+                        case "ICurve": 
+                            switch(supportedType)
+                            {
+                                case "Floor": case "Ceiling": case "Roof": // assumes this is the boundary curve
+                                    Curve extCurve = DuplicateOutlineEdgesFromBrep(brp, false)[0];
+                                    obj = Converter.ConvertToSpeckle(extCurve);
+                                    if (obj != null) return true;
+                                    break;
+                                case "Wall": // assumes this is the base curve
+                                    Curve bottomCurve = DuplicateBottomEdgeFromBrep(brp);
+                                    obj = Converter.ConvertToSpeckle(bottomCurve);
+                                    if (obj != null) return true;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                            
+                        case "List`1": // assumes these are interior curves for floor / ceiling / roof
                             if (t.FullName.Contains("ICurve"))
                             {
-                                List<Curve> intCurves = DuplicateEdgesFromBrep(brp, true);
+                                List<Curve> intCurves = DuplicateOutlineEdgesFromBrep(brp, true);
                                 var list = (IList)Activator.CreateInstance(t);
                                 foreach (Curve intCurve in intCurves)
                                 {
@@ -320,7 +357,7 @@ namespace SpeckleRhino
             return false;
         }
 
-        private List<Curve> DuplicateEdgesFromBrep(Brep brep, bool getInterior)
+        private List<Curve> DuplicateOutlineEdgesFromBrep(Brep brep, bool getInterior)
         {
             double tol = ActiveDoc.ModelAbsoluteTolerance * 1;
 
@@ -335,6 +372,27 @@ namespace SpeckleRhino
             }
             outputCurves = Curve.JoinCurves(outputCurves, tol);
             return outputCurves.ToList();
+        }
+
+        // assumes planar bottom edge
+        private Curve DuplicateBottomEdgeFromBrep(Brep brep)
+        {
+            double tol = ActiveDoc.ModelAbsoluteTolerance * 1;
+
+            // get lowest edge curves
+            Curve[] brepEdges = brep.DuplicateNakedEdgeCurves(true, false);
+            double lowestPt = brepEdges.Min(o => o.PointAtStart.Z);
+            Curve[] lowestCrvs = brepEdges.Where(o => o.PointAt(0.5).Z == lowestPt).ToArray();
+
+            // join lowest edge curves
+            lowestCrvs = Curve.JoinCurves(lowestCrvs, tol);
+            return lowestCrvs[0];
+        }
+
+        private double GetBrepHeight(Brep brep)
+        {
+            BoundingBox brepBox = brep.GetBoundingBox(false);
+            return brepBox.Max.Z - brepBox.Min.Z;
         }
 
         private object GetObjectProp(object value, Type t)
