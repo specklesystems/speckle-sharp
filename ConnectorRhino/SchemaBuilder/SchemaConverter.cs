@@ -28,7 +28,6 @@ namespace SpeckleRhino
         #region Properties
         private RhinoObject DocObject;
         private string SpeckleAUTValue;
-        private List<Type> ValidTypes;
         private ConstructorInfo SchemaConstructor;
         private Rhino.RhinoDoc ActiveDoc;
 
@@ -46,7 +45,6 @@ namespace SpeckleRhino
         {
             DocObject = inputObject;
             ActiveDoc = Rhino.RhinoDoc.ActiveDoc;
-            ValidTypes = GetValidTypes();
         }
         #endregion
 
@@ -55,10 +53,9 @@ namespace SpeckleRhino
         /// Creates a AUT schema entry for the Rhino Object
         /// </summary>
         /// <param name="inputType">the Speckle type to use</param>
-        public bool CreateSchema(string schema)
+        public void CreateSchema(string schema)
         {
             Type schemaType = KitManager.Types.Where(o => o.Name == schema).FirstOrDefault();
-            if (!ValidTypes.Contains(schemaType)) return false;
 
             //// get the constructors for this schema 
             //// NOTE: SKIP FOR NOW
@@ -71,17 +68,6 @@ namespace SpeckleRhino
             //}
 
             DocObject.Attributes.SetUserString(SpeckleUATKey, schema + "{}");
-
-            return true;
-        }
-
-        /// <summary>
-        /// Return method for valid schemas
-        /// </summary>
-        /// <returns></returns>
-        public List<Type> GetValidSchemas()
-        {
-            return ValidTypes;
         }
 
         /// <summary>
@@ -247,7 +233,7 @@ namespace SpeckleRhino
             try
             {
                 string typeString = SpeckleAUTValue.Substring(0, SpeckleAUTValue.IndexOf('{'));
-                schemaType = ValidTypes.First(o => o.Name == typeString);
+                schemaType = GetValidTypes().First(o => o.Name == typeString);
             }
             catch
             {
@@ -313,7 +299,7 @@ namespace SpeckleRhino
                     Brep brp = DocObject.Geometry as Brep;
                     switch (t.Name)
                     {
-                        case "double": // assumes this is wall height
+                        case "Double": // assumes this is wall height
                             double height = GetBrepHeight(brp);
                             obj = height;
                             if (height > 0) return true;
@@ -374,7 +360,7 @@ namespace SpeckleRhino
             return outputCurves.ToList();
         }
 
-        // assumes planar bottom edge
+        // assumes planar bottom edges
         private Curve DuplicateBottomEdgeFromBrep(Brep brep)
         {
             double tol = ActiveDoc.ModelAbsoluteTolerance * 1;
