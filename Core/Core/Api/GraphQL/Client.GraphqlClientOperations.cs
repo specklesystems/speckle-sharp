@@ -170,9 +170,12 @@ namespace Speckle.Core.Api
                             items {{
                               id,
                               referencedObject,
+                              totalChildrenCount,
+                              sourceApplication,
                               message,
                               authorName,
                               authorId,
+                              parents,
                               createdAt
                             }}
                           }}
@@ -636,9 +639,12 @@ namespace Speckle.Core.Api
                             items {{
                               id,
                               referencedObject,
+                              sourceApplication,
+                              totalChildrenCount,
                               message,
                               authorName,
                               authorId,
+                              parents,
                               createdAt
                             }}
                           }}
@@ -782,8 +788,11 @@ namespace Speckle.Core.Api
                         commit(id: $commitId){{
                           id,
                           message,
+                          sourceApplication,
+                          totalChildrenCount,
                           referencedObject,
                           createdAt,
+                          parents,
                           authorName
                         }}                       
                       }}
