@@ -6,6 +6,7 @@ using System.Threading;
 using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -58,7 +59,9 @@ namespace Speckle.ConnectorDynamo.Functions
            streamId = streams[i].StreamId,
            branchName = branchName,
            objectId = objectId,
-           message = message
+           message = message,
+           sourceApplication = Applications.Dynamo,
+           parents = new List<string>() {streams[i].CommitId}
          }).Result;
 
           responses.Add(res);

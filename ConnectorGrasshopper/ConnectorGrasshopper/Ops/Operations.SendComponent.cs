@@ -466,6 +466,7 @@ namespace ConnectorGrasshopper.Ops
               message = message,
               objectId = BaseId,
               streamId = ((ServerTransport)transport).StreamId,
+              sourceApplication = Applications.Grasshopper
             };
 
             // Check to see if we have a previous commit; if so set it.
@@ -473,7 +474,7 @@ namespace ConnectorGrasshopper.Ops
               c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId);
             if (prevCommit != null)
             {
-              commitCreateInput.previousCommitIds = new List<string>() { prevCommit.CommitId };
+              commitCreateInput.parents = new List<string>() { prevCommit.CommitId };
             }
 
             var commitId = await client.CommitCreate(CancellationToken, commitCreateInput);

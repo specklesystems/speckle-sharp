@@ -481,10 +481,11 @@ namespace SpeckleRhino
         streamId = streamId,
         objectId = commitObjId,
         branchName = state.Branch.name,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from Rhino."
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from Rhino.",
+        sourceApplication = Applications.Rhino
       };
 
-      if (state.PreviousCommitId != null) { actualCommit.previousCommitIds = new List<string>() { state.PreviousCommitId }; }
+      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
       try
       {
