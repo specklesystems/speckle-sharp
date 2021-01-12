@@ -489,12 +489,13 @@ namespace SpeckleRhino
 
       try
       {
-        var res = await client.CommitCreate(actualCommit);
+        var commitId = await client.CommitCreate(actualCommit);
 
         var updatedStream = await client.StreamGet(streamId);
         state.Branches = updatedStream.branches.items;
         state.Stream.name = updatedStream.name;
         state.Stream.description = updatedStream.description;
+        state.PreviousCommitId = commitId;
 
         PersistAndUpdateStreamInFile(state);
         RaiseNotification($"{objCount} objects sent to {state.Stream.name}.");
