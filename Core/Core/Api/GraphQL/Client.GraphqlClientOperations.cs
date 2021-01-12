@@ -150,6 +150,7 @@ namespace Speckle.Core.Api
                         name
                         description
                         isPublic
+                        role
                         createdAt
                         updatedAt
                         collaborators {{
@@ -243,6 +244,7 @@ namespace Speckle.Core.Api
                             name,
                             description,
                             isPublic,
+                            role,
                             createdAt,
                             updatedAt,
                             collaborators {{
@@ -302,6 +304,7 @@ namespace Speckle.Core.Api
                           name,
                           description,
                           isPublic,
+                          role,
                           createdAt,
                           updatedAt,
                           collaborators {
