@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -563,6 +563,76 @@ namespace Speckle.Core.Api
     #endregion
 
     #region branches
+
+    /// <summary>
+    /// Get branches from a given stream
+    /// </summary>
+    /// <param name="streamId"></param>
+    /// <param name="branchesLimit"></param>
+    /// <param name="commitsLimit"></param>
+    /// <returns></returns>
+    public Task<List<Branch>> StreamGetBranches(string streamId,  int branchesLimit = 10, int commitsLimit = 10)
+    {
+      return StreamGetBranches(CancellationToken.None, streamId, branchesLimit, commitsLimit);
+    }
+
+    /// <summary>
+    /// Get branches from a given stream
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="streamId"></param>
+    /// <param name="branchesLimit"></param>
+    /// <param name="commitsLimit"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public async Task<List<Branch>> StreamGetBranches(CancellationToken cancellationToken, string streamId,
+      int branchesLimit = 10, int commitsLimit = 10)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = $@"query Stream ($streamId: String!) {{
+                      stream(id: $streamId) {{
+                        branches(limit: {branchesLimit}) {{
+                          items {{
+                            id
+                            name
+                            description
+                            commits (limit: {commitsLimit}) {{
+                              totalCount
+                              cursor
+                              items {{
+                                id
+                                referencedObject
+                                sourceApplication
+                                message
+                                authorName
+                                authorId
+                                parents
+                                createdAt
+                              }}
+                            }}
+                          }}
+                        }}                       
+                      }}
+                    }}",
+          Variables = new {streamId}
+        };
+
+        var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
+
+        if ( res.Errors != null && res.Errors.Any() )
+          Log.CaptureAndThrow(new GraphQLException(res.Errors[ 0 ].Message), res.Errors);
+
+        return res.Data.stream.branches.items;
+      }
+      catch ( Exception e )
+      {
+        Log.CaptureException(e);
+        throw e;
+      }
+    }
 
     /// <summary>
     /// Creates a branch on a stream.
