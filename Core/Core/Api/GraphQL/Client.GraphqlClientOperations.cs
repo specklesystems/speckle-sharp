@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -821,6 +821,65 @@ namespace Speckle.Core.Api
       }
     }
 
+    /// <summary>
+    /// Gets the latest commits from a stream
+    /// </summary>
+    /// <param name="streamId"></param>
+    /// <param name="limit"></param>
+    /// <returns></returns>
+    public Task<List<Commit>> StreamGetCommits(string streamId, int limit = 10)
+    {
+      return StreamGetCommits(CancellationToken.None, streamId, limit);
+    }
+
+    /// <summary>
+    /// Gets the latest commits from a stream
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="streamId"></param>
+    /// <param name="limit"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public async Task<List<Commit>> StreamGetCommits(CancellationToken cancellationToken, string streamId, int limit = 10)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query Stream($streamId: String!, $limit: Int!) {
+                      stream(id: $streamId) {
+                        commits(limit: $limit) {
+                          items {
+                            id,
+                            message,
+                            sourceApplication,
+                            totalChildrenCount,
+                            referencedObject,
+                            createdAt,
+                            parents,
+                            authorName,
+                            authorId,
+                            authorAvatar
+                          }
+                        }                     
+                      }
+                    }",
+          Variables = new {streamId, limit}
+        };
+
+        var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
+
+        if ( res.Errors != null && res.Errors.Any() )
+          Log.CaptureAndThrow(new GraphQLException(res.Errors[ 0 ].Message), res.Errors);
+
+        return res.Data.stream.commits.items;
+      }
+      catch ( Exception e )
+      {
+        Log.CaptureException(e);
+        throw e;
+      }
+    }
 
     /// <summary>
     /// Creates a commit on a branch.

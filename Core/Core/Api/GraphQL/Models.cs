@@ -107,6 +107,11 @@ namespace Speckle.Core.Api
     /// </summary>
     public Commit commit { get; set; }
 
+    /// <summary>
+    /// Set only in the case that you've requested this through <see cref="Client.StreamGetCommits(System.Threading.CancellationToken, string, int)"/>
+    /// </summary>
+    public Commits commits { get; set; }
+
     public Object @object { get; set; }
 
     public override string ToString()
