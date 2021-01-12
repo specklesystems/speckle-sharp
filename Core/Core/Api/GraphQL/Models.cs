@@ -90,7 +90,7 @@ namespace Speckle.Core.Api
     public string description { get; set; }
 
     public bool isPublic { get; set; }
-
+    public string role { get; set; }
     public string createdAt { get; set; }
     public string updatedAt { get; set; }
 
