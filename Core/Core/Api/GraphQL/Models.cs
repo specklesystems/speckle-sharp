@@ -60,6 +60,11 @@ namespace Speckle.Core.Api
     public string branchName { get; set; }
     public string objectId { get; set; }
     public string message { get; set; }
+    public string sourceApplication { get; set; }
+    public string totalChildrenCount { get; set; }
+    public List<string> parents { get; set; }
+
+    [Obsolete("Please use the parents property. This property will be removed in later versions")]
     public List<string> previousCommitIds { get; set; }
   }
 
@@ -145,8 +150,11 @@ namespace Speckle.Core.Api
     public string authorId { get; set; }
     public string authorAvatar { get; set; }
     public string createdAt { get; set; }
+    public string sourceApplication { get; set; }
 
     public string referencedObject { get; set; }
+    public int totalChildrenCount { get; set; }
+    public List<string> parents { get; set; }
 
     public override string ToString()
     {
@@ -163,7 +171,6 @@ namespace Speckle.Core.Api
     public string createdAt { get; set; }
   }
 
-
   public class Branch
   {
     public string id { get; set; }
@@ -176,7 +183,6 @@ namespace Speckle.Core.Api
       return $"Branch ({name} | {id})";
     }
   }
-
 
   public class Streams
   {
