@@ -112,8 +112,8 @@ namespace Speckle.DesktopUI.Utils
 
     private async void HandleCommitCreated(object sender, CommitInfo info)
     {
-      var updatedStream = await Client.StreamGet(Stream.id);
-      Branches = updatedStream.branches.items;
+      var updatedBranches = await Client.StreamGetBranches(Stream.id);
+      Branches = updatedBranches;
 
       if (IsSenderCard) return;
 
@@ -147,8 +147,8 @@ namespace Speckle.DesktopUI.Utils
 
     private async void HandleBranchCreated(object sender, BranchInfo info)
     {
-      var updatedStream = await Client.StreamGet(Stream.id);
-      Branches = updatedStream.branches.items;
+      var updatedBranches = await Client.StreamGetBranches(Stream.id);
+      Branches = updatedBranches;
     }
 
     private void HandleBranchUpdated(object sender, BranchInfo info)
