@@ -252,6 +252,7 @@ namespace Speckle.DesktopUI.Streams
       StreamToCreate = await client.StreamGet(SelectedStream.id);
 
       StreamState = new StreamState(client, StreamToCreate);
+      StreamState.Branches = await client.StreamGetBranches(StreamState.Stream.id);
 
       StreamState.IsSenderCard = false; // Assume we're creating a receiver
 

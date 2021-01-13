@@ -492,7 +492,7 @@ namespace SpeckleRhino
         var commitId = await client.CommitCreate(actualCommit);
 
         var updatedStream = await client.StreamGet(streamId);
-        state.Branches = updatedStream.branches.items;
+        state.Branches = await client.StreamGetBranches(streamId);
         state.Stream.name = updatedStream.name;
         state.Stream.description = updatedStream.description;
         state.PreviousCommitId = commitId;

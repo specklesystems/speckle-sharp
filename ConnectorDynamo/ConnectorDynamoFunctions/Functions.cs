@@ -106,8 +106,8 @@ namespace Speckle.ConnectorDynamo.Functions
         if (string.IsNullOrEmpty(stream.CommitId))
         {
 
-          var res = client.StreamGet(cancellationToken, stream.StreamId).Result;
-          var mainBranch = res.branches.items.FirstOrDefault(b => b.name == stream.BranchName);
+          var branches = client.StreamGetBranches(cancellationToken, stream.StreamId).Result;
+          var mainBranch = branches.FirstOrDefault(b => b.name == stream.BranchName);
 
           if (mainBranch == null)
           {

@@ -109,7 +109,7 @@ namespace Speckle.ConnectorRevit.UI
       try
       {
         var updatedStream = await state.Client.StreamGet(state.Stream.id);
-        state.Branches = updatedStream.branches.items;
+        state.Branches = await state.Client.StreamGetBranches(state.Stream.id);
         state.Stream.name = updatedStream.name;
         state.Stream.description = updatedStream.description;
 

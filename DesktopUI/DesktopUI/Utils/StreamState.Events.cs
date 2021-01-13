@@ -17,7 +17,7 @@ namespace Speckle.DesktopUI.Utils
         var updatedStream = await Client.StreamGet(Stream.id);
         Stream.name = updatedStream.name;
         Stream.description = updatedStream.description;
-        Branches = updatedStream.branches.items;
+        Branches = await Client.StreamGetBranches(Stream.id);
         NotifyOfPropertyChange(nameof(Stream));
       }
       catch (Exception)
