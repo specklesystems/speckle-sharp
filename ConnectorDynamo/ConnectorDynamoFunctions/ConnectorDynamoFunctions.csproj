@@ -94,6 +94,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stream.cs" />
     <Compile Include="BatchConverter.cs" />
+    <Compile Include="Transport.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -108,6 +109,10 @@
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{3f02e475-e777-4dfd-8ae9-8065edd092dc}</Project>
       <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj">
+      <Project>{941aac33-a406-4ae7-9930-67ffdb746d9d}</Project>
+      <Name>DiskTransport</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
       <Project>{82f74946-6c04-4ae3-bfb9-f09e68cdfe12}</Project>

@@ -24,6 +24,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects", "..\Objects\Objec
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamo", "..\Objects\Converters\ConverterDynamo\ConverterDynamo\ConverterDynamo.csproj", "{F74DC6A9-7B8C-47CD-BA69-44529A70ABC1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiskTransport", "..\Core\Transports\DiskTransport\DiskTransport.csproj", "{941AAC33-A406-4AE7-9930-67FFDB746D9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDBTransport", "..\Core\Transports\MongoDBTransport\MongoDBTransport.csproj", "{28A6FE92-8E90-48FC-B655-EB0321750CCF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		DebugRevit|Any CPU = DebugRevit|Any CPU
@@ -88,6 +92,22 @@ Global
 		{F74DC6A9-7B8C-47CD-BA69-44529A70ABC1}.ReleaseRevit|Any CPU.Build.0 = ReleaseRevit|Any CPU
 		{F74DC6A9-7B8C-47CD-BA69-44529A70ABC1}.ReleaseSandbox|Any CPU.ActiveCfg = ReleaseSandbox|Any CPU
 		{F74DC6A9-7B8C-47CD-BA69-44529A70ABC1}.ReleaseSandbox|Any CPU.Build.0 = ReleaseSandbox|Any CPU
+		{941AAC33-A406-4AE7-9930-67FFDB746D9D}.DebugRevit|Any CPU.ActiveCfg = Debug|Any CPU
+		{941AAC33-A406-4AE7-9930-67FFDB746D9D}.DebugRevit|Any CPU.Build.0 = Debug|Any CPU
+		{941AAC33-A406-4AE7-9930-67FFDB746D9D}.DebugSandbox|Any CPU.ActiveCfg = Debug|Any CPU
+		{941AAC33-A406-4AE7-9930-67FFDB746D9D}.DebugSandbox|Any CPU.Build.0 = Debug|Any CPU
+		{941AAC33-A406-4AE7-9930-67FFDB746D9D}.ReleaseRevit|Any CPU.ActiveCfg = Debug|Any CPU
+		{941AAC33-A406-4AE7-9930-67FFDB746D9D}.ReleaseRevit|Any CPU.Build.0 = Debug|Any CPU
+		{941AAC33-A406-4AE7-9930-67FFDB746D9D}.ReleaseSandbox|Any CPU.ActiveCfg = Debug|Any CPU
+		{941AAC33-A406-4AE7-9930-67FFDB746D9D}.ReleaseSandbox|Any CPU.Build.0 = Debug|Any CPU
+		{28A6FE92-8E90-48FC-B655-EB0321750CCF}.DebugRevit|Any CPU.ActiveCfg = Debug|Any CPU
+		{28A6FE92-8E90-48FC-B655-EB0321750CCF}.DebugRevit|Any CPU.Build.0 = Debug|Any CPU
+		{28A6FE92-8E90-48FC-B655-EB0321750CCF}.DebugSandbox|Any CPU.ActiveCfg = Debug|Any CPU
+		{28A6FE92-8E90-48FC-B655-EB0321750CCF}.DebugSandbox|Any CPU.Build.0 = Debug|Any CPU
+		{28A6FE92-8E90-48FC-B655-EB0321750CCF}.ReleaseRevit|Any CPU.ActiveCfg = Debug|Any CPU
+		{28A6FE92-8E90-48FC-B655-EB0321750CCF}.ReleaseRevit|Any CPU.Build.0 = Debug|Any CPU
+		{28A6FE92-8E90-48FC-B655-EB0321750CCF}.ReleaseSandbox|Any CPU.ActiveCfg = Debug|Any CPU
+		{28A6FE92-8E90-48FC-B655-EB0321750CCF}.ReleaseSandbox|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,6 +117,8 @@ Global
 		{3F02E475-E777-4DFD-8AE9-8065EDD092DC} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
 		{1E11C8CC-F56D-4474-883C-F55E9614C417} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
 		{F74DC6A9-7B8C-47CD-BA69-44529A70ABC1} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
+		{941AAC33-A406-4AE7-9930-67FFDB746D9D} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
+		{28A6FE92-8E90-48FC-B655-EB0321750CCF} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
