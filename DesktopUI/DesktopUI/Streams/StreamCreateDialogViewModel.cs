@@ -25,14 +25,11 @@ namespace Speckle.DesktopUI.Streams
       _events = events;
       Bindings = bindings;
       FilterTabs = new BindableCollection<FilterTab>(Bindings.GetSelectionFilters().Select(f => new FilterTab(f)));
-      _streamsRepo = streamsRepo;
       _acctRepo = acctsRepo;
 
       SelectionCount = Bindings.GetSelectedObjects().Count;
       _events.Subscribe(this);
     }
-
-    private readonly StreamsRepository _streamsRepo;
 
     private readonly AccountsRepository _acctRepo;
 
@@ -200,7 +197,10 @@ namespace Speckle.DesktopUI.Streams
       var client = new Client(AccountToSendFrom);
       try
       {
-        var streamId = await _streamsRepo.CreateStream(StreamToCreate, AccountToSendFrom);
+        var streamId = await client.StreamCreate(new StreamCreateInput()
+        {
+          name = StreamToCreate.name, description = StreamToCreate.description, isPublic = StreamToCreate.isPublic
+        });
 
         if (Collaborators.Any())
         {
@@ -217,7 +217,7 @@ namespace Speckle.DesktopUI.Streams
           });
         }
 
-        StreamToCreate = await _streamsRepo.GetStream(streamId, AccountToSendFrom);
+        StreamToCreate = await client.StreamGet(streamId);
 
         StreamState = new StreamState(client, StreamToCreate);
         Bindings.AddNewStream(StreamState);
