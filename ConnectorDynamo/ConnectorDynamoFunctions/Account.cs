@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Autodesk.DesignScript.Runtime;
 using Dynamo.Graph.Nodes;
@@ -15,7 +16,8 @@ namespace Speckle.ConnectorDynamo.Functions
     [IsVisibleInDynamoLibrary(false)]
     public static Core.Credentials.Account GetById(string id)
     {
-      return AccountManager.GetAccounts().FirstOrDefault(x => x.id == id);
+      var acc =  AccountManager.GetAccounts().FirstOrDefault(x => x.id == id);
+      return acc;
     }
 
     /// <summary>
@@ -26,7 +28,11 @@ namespace Speckle.ConnectorDynamo.Functions
     public static Dictionary<string, object> Details(Core.Credentials.Account account)
     {
       Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
-
+      if(account == null)
+      {
+        
+        Utils.HandleApiExeption(new WarningException("Provided account was invalid."));
+      }
       return new Dictionary<string, object>
       {
         {"id", account.id},
