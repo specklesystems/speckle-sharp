@@ -14,39 +14,11 @@ namespace Speckle.DesktopUI.Streams
 {
   public class StreamsRepository
   {
-    private AccountsRepository _acctsRepo;
     private readonly ConnectorBindings _bindings;
 
-    public StreamsRepository(AccountsRepository acctsRepo, ConnectorBindings bindings)
+    public StreamsRepository(ConnectorBindings bindings)
     {
-      _acctsRepo = acctsRepo;
       _bindings = bindings;
-    }
-
-    public Branch GetMainBranch(List<Branch> branches)
-    {
-      Branch main = branches.Find(branch => branch.name == "main");
-      return main;
-    }
-
-    public Task<string> CreateStream(Stream stream, Account account)
-    {
-      var client = new Client(account);
-
-      var streamInput = new StreamCreateInput()
-      {
-        name = stream.name,
-        description = stream.description,
-        isPublic = stream.isPublic
-      };
-
-      return client.StreamCreate(streamInput);
-    }
-
-    public Task<Stream> GetStream(string streamId, Account account)
-    {
-      var client = new Client(account);
-      return client.StreamGet(streamId);
     }
 
     public async Task<StreamState> ConvertAndSend(StreamState state)

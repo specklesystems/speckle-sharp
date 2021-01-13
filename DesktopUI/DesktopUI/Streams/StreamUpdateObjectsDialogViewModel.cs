@@ -198,7 +198,7 @@ namespace Speckle.DesktopUI.Streams
         return;
       }
 
-      StreamState.Stream = await StreamState.Client.StreamGet(StreamState.Stream.id);
+      await StreamState.RefreshStream();
       Collaborators.Clear();
       _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
       Notifications.Enqueue($"Added {success} collaborators to this stream");

@@ -174,10 +174,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         var commitId = await client.CommitCreate(actualCommit);
 
-        var updatedStream = await client.StreamGet(streamId);
-        state.Branches = updatedStream.branches.items;
-        state.Stream.name = updatedStream.name;
-        state.Stream.description = updatedStream.description;
+        await state.RefreshStream();
         state.PreviousCommitId = commitId;
 
         WriteStateToFile();

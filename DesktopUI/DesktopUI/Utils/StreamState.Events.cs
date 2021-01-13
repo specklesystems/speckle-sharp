@@ -17,7 +17,9 @@ namespace Speckle.DesktopUI.Utils
         var updatedStream = await Client.StreamGet(Stream.id);
         Stream.name = updatedStream.name;
         Stream.description = updatedStream.description;
-        Branches = updatedStream.branches.items;
+        Stream.isPublic = updatedStream.isPublic;
+        Stream.collaborators = updatedStream.collaborators;
+        Branches = await Client.StreamGetBranches(Stream.id);
         NotifyOfPropertyChange(nameof(Stream));
       }
       catch (Exception)
@@ -112,8 +114,7 @@ namespace Speckle.DesktopUI.Utils
 
     private async void HandleCommitCreated(object sender, CommitInfo info)
     {
-      var updatedStream = await Client.StreamGet(Stream.id);
-      Branches = updatedStream.branches.items;
+      Branches = await Client.StreamGetBranches(Stream.id);
 
       if (IsSenderCard) return;
 
@@ -147,8 +148,8 @@ namespace Speckle.DesktopUI.Utils
 
     private async void HandleBranchCreated(object sender, BranchInfo info)
     {
-      var updatedStream = await Client.StreamGet(Stream.id);
-      Branches = updatedStream.branches.items;
+      var updatedBranches = await Client.StreamGetBranches(Stream.id);
+      Branches = updatedBranches;
     }
 
     private void HandleBranchUpdated(object sender, BranchInfo info)
