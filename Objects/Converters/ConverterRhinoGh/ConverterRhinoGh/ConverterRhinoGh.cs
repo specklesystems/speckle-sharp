@@ -3,6 +3,7 @@ using Objects.Geometry;
 using Objects.Primitive;
 using Rhino;
 using Rhino.Geometry;
+using Rhino.DocObjects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -57,6 +58,9 @@ namespace Objects.Converter.RhinoGh
     {
       switch (@object)
       {
+        case RhinoObject o:
+          return ObjectToSpeckle(o);
+
         case Point3d o:
           return PointToSpeckle(o);
 

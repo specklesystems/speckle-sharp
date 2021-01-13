@@ -3,10 +3,13 @@ using Objects.Geometry;
 using Objects.Primitive;
 using Rhino.Geometry;
 using Rhino.Geometry.Collections;
+using Rhino.DocObjects;
 using Speckle.Core.Models;
+using Speckle.Core.Kits;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Rhino;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -37,6 +40,10 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
+    // speckle user string for custom schemas
+    // TODO: address consistency weak point, since SpeckleApplySchema command in the connector needs to match this exact string!!!
+    string SpeckleUSKey = "SpeckleSchema";
+
     // Convenience methods point:
     public double[] PointToArray(Point3d pt)
     {
@@ -724,7 +731,128 @@ namespace Objects.Converter.RhinoGh
 
       return spcklBrep;
     }
-    
+
+    /// <summary>
+    /// Converts a Rhino <see cref="Rhino.DocObjects.RhinoObject"/> instance to a Speckle <see cref="Base"/>
+    /// </summary>
+    /// <param name="obj">RhinoObject to be converted.</param>
+    /// <returns></returns>
+    public Base ObjectToSpeckle(RhinoObject obj)
+    {
+      // check for a Speckle User String: if this exists, try to convert input rhinoobject to this BuiltElements schema
+      string objSchema = obj.Attributes.GetUserStrings()[SpeckleUSKey];
+      if (!string.IsNullOrEmpty(objSchema))
+      {
+        Type schema = null;
+        try
+        {
+          schema = KitManager.Types.Where(o => o.Name == objSchema).First();
+        }
+        catch (Exception e)
+        {
+          System.Diagnostics.Debug.WriteLine("User string schema not found");
+        }
+
+        if (schema != null)
+        {
+          switch (obj.ObjectType)
+          {
+            case ObjectType.Brep:
+              RH.Brep brep = obj.Geometry as RH.Brep;
+              if (GetSchemaGeometryFromBrep(brep, schema, out Base schemaObj))
+                return schemaObj; 
+              break;
+            default:
+              break;
+          }
+        }
+      }
+      return ConvertToSpeckle(obj.Geometry);
+    }
+
+    // process geometry type to extract relevant schema properties
+    private bool GetSchemaGeometryFromBrep(RH.Brep brep, Type schema, out Base schemaObj)
+    {
+      schemaObj = null;
+      var schemaParamObjs = new List<object>();
+
+      switch (schema.Name)
+      {
+        case "Ceiling":
+        case "Roof":
+        case "Floor":
+          // extract boundary curve
+          Base extCurve = GetBrepEdges(brep, getExterior: true)[0];
+          if (extCurve != null) 
+             schemaParamObjs.Add(extCurve);
+          else 
+             return false;
+          // extract any inner curves
+          List<Base> intCurves = GetBrepEdges(brep, getInterior: true);
+          if (intCurves != null) 
+            schemaParamObjs.Add(intCurves); 
+          else 
+            schemaParamObjs.Add(null);
+          break;
+
+        case "Wall":
+          // extract wall height
+          BoundingBox brepBox = brep.GetBoundingBox(false);
+          double height = brepBox.Max.Z - brepBox.Min.Z;
+          if (height > 0)
+            schemaParamObjs.Add(height);
+          else 
+            return false;
+          // extract the bottom edge curve
+          Base bottomCurve = GetBrepEdges(brep, getBottom: true)[0];
+          if (bottomCurve != null)
+            schemaParamObjs.Add(bottomCurve);
+          else
+            return false;
+          break;
+
+        default: 
+          return false;
+      }
+
+      try
+      {
+        ConstructorInfo schemaConstructor = schema.GetConstructors().Where(o => o.GetCustomAttribute<SchemaInfo>() != null).First();
+        schemaObj = schemaConstructor.Invoke(schemaParamObjs.ToArray()) as Base;
+        return true;
+      }
+      catch (Exception ex)
+      {
+        System.Diagnostics.Debug.WriteLine("Rhino object could not be converted to Speckle schema");
+        return false;
+      }
+    }
+
+    // assumes all planar edges
+    private List<Base> GetBrepEdges(RH.Brep brep, bool getExterior = true, bool getInterior = false, bool getBottom = false)
+    {
+      double tol = Doc.ModelAbsoluteTolerance * 1;
+
+      RH.Curve[] brpCurves = null;
+      if (getInterior)
+      {
+        brpCurves = brep.DuplicateNakedEdgeCurves(false, true);
+      }
+      else
+      {
+        brpCurves = brep.DuplicateNakedEdgeCurves(true, false);
+        if (getBottom)
+        {
+          double lowestPt = brpCurves.Min(o => o.PointAtStart.Z);
+          RH.Curve[] bottomCrvs = brpCurves.Where(o => o.PointAt(0.5).Z == lowestPt).ToArray();
+          brpCurves = bottomCrvs;
+        }
+      }
+      brpCurves = RH.Curve.JoinCurves(brpCurves, tol);
+      var outCurves = brpCurves.Select(o => ConvertToSpeckle(o));
+      return outCurves.ToList();
+    }
+
     /// <summary>
     /// Converts a Speckle <see cref="Brep"/> instance to a Rhino <see cref="Rhino.Geometry.Brep"/>
     /// </summary>

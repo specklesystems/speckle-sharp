@@ -13,6 +13,10 @@ namespace SpeckleRhino
 {
     public class SchemaBuilderCommand : Command
     {
+        // speckle user string for custom schemas
+        // TODO: address consistency weak point, since this string needs to match exactly in ConverterRhinoGH.Geometry.cs!!!
+        string SpeckleUSKey = "SpeckleSchema";
+
         RhinoDoc ActiveDoc = null;
 
         public SchemaBuilderCommand()
@@ -44,8 +48,7 @@ namespace SpeckleRhino
             {
                 foreach (RhinoObject obj in schemaDictionary[schema])
                 {
-                    SchemaConverter objConverter = new SchemaConverter(obj);
-                    objConverter.CreateSchema(schema);
+                    obj.Attributes.SetUserString(SpeckleUSKey, schema);
                 }
             }
 

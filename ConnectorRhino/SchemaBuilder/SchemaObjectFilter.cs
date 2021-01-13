@@ -12,6 +12,9 @@ using System.Collections;
 
 namespace SpeckleRhino
 {
+    /// <summary>
+    /// Handles QA/QC for determining whether RhinoObjects can be converted to supported Speckle schemas
+    /// </summary>
     public class SchemaObjectFilter
     {
         private List<string> SupportedSchemas = new List<string>() { "Floor", "Wall", "Roof", "Ceiling" };

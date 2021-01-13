@@ -420,15 +420,7 @@ namespace SpeckleRhino
         }
 
         // this is where the rhino geometry gets converted
-        Base converted;
-        SchemaConverter objConverter = new SchemaConverter(obj);
-        var AttributeUserText = obj.Attributes.GetUserStrings();
-        if (objConverter.GetSchemaObject(out converted)) { }
-        else
-        {
-          converted = converter.ConvertToSpeckle(obj.Geometry);
-        }
-
+        Base converted = converter.ConvertToSpeckle(obj);
         if (converted == null)
         {
           state.Errors.Add(new Exception($"Failed to find convert object ${applicationId} of type ${obj.Geometry.ObjectType.ToString()}."));
