@@ -124,11 +124,10 @@ namespace Speckle.Core.Api
     /// </summary>
     /// <param name="id">Id of the stream to get</param>
     /// <param name="branchesLimit">Max number of branches to retrieve</param>
-    /// <param name="commitsLimit">Max number of commits per branch to retrieve</param>
     /// <returns></returns>
-    public Task<Stream> StreamGet(string id, int branchesLimit = 10, int commitsLimit = 10)
+    public Task<Stream> StreamGet(string id, int branchesLimit = 10)
     {
-      return StreamGet(CancellationToken.None, id, branchesLimit, commitsLimit);
+      return StreamGet(CancellationToken.None, id, branchesLimit);
     }
 
     /// <summary>
@@ -136,9 +135,8 @@ namespace Speckle.Core.Api
     /// </summary>
     /// <param name="id">Id of the stream to get</param>
     /// <param name="branchesLimit">Max number of branches to retrieve</param>
-    /// <param name="commitsLimit">Max number of commits per branch to retrieve</param>
     /// <returns></returns>
-    public async Task<Stream> StreamGet(CancellationToken cancellationToken, string id, int branchesLimit = 10, int commitsLimit = 10)
+    public async Task<Stream> StreamGet(CancellationToken cancellationToken, string id, int branchesLimit = 10)
     {
       try
       {
@@ -162,26 +160,13 @@ namespace Speckle.Core.Api
                           totalCount,
                           cursor,
                           items {{
-                          id,
-                          name,
-                          description,
-                          commits (limit: {commitsLimit}) {{
-                            totalCount,
-                            cursor,
-                            items {{
-                              id,
-                              referencedObject,
-                              totalChildrenCount,
-                              sourceApplication,
-                              message,
-                              authorName,
-                              authorId,
-                              branchName,
-                              parents,
-                              createdAt
+                            id,
+                            name,
+                            description,
+                            commits {{
+                              totalCount
                             }}
                           }}
-                        }}
                         }}
                       }}
                     }}",
