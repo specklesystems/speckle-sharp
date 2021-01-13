@@ -176,6 +176,7 @@ namespace Speckle.Core.Api
                               message,
                               authorName,
                               authorId,
+                              branchName,
                               parents,
                               createdAt
                             }}
@@ -609,6 +610,7 @@ namespace Speckle.Core.Api
                                 message
                                 authorName
                                 authorId
+                                branchName
                                 parents
                                 createdAt
                               }}
@@ -717,6 +719,7 @@ namespace Speckle.Core.Api
                               message,
                               authorName,
                               authorId,
+                              branchName,
                               parents,
                               createdAt
                             }}
@@ -864,6 +867,7 @@ namespace Speckle.Core.Api
                           sourceApplication,
                           totalChildrenCount,
                           referencedObject,
+                          branchName,
                           createdAt,
                           parents,
                           authorName
@@ -922,6 +926,7 @@ namespace Speckle.Core.Api
                           items {
                             id,
                             message,
+                            branchName,
                             sourceApplication,
                             totalChildrenCount,
                             referencedObject,

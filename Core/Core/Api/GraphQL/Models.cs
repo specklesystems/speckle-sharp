@@ -151,6 +151,7 @@ namespace Speckle.Core.Api
   {
     public string id { get; set; }
     public string message { get; set; }
+    public string branchName { get; set; }
     public string authorName { get; set; }
     public string authorId { get; set; }
     public string authorAvatar { get; set; }
