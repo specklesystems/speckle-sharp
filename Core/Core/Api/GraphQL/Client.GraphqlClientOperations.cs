@@ -120,7 +120,8 @@ namespace Speckle.Core.Api
     #region streams
 
     /// <summary>
-    /// Gets a stream by id, includes commits and branches
+    /// Gets a stream by id including basic branch info (id, name, description, and total commit count).
+    /// For detailed commit and branch info, use StreamGetCommits and StreamGetBranches respectively.
     /// </summary>
     /// <param name="id">Id of the stream to get</param>
     /// <param name="branchesLimit">Max number of branches to retrieve</param>
@@ -131,7 +132,8 @@ namespace Speckle.Core.Api
     }
 
     /// <summary>
-    /// Gets a stream by id, includes commits and branches
+    /// Gets a stream by id including basic branch info (id, name, description, and total commit count).
+    /// For detailed commit and branch info, use StreamGetCommits and StreamGetBranches respectively.
     /// </summary>
     /// <param name="id">Id of the stream to get</param>
     /// <param name="branchesLimit">Max number of branches to retrieve</param>
@@ -409,7 +411,7 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Deletes a stream.
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="id">Id of the stream to be deleted</param>
     /// <returns></returns>
     public Task<bool> StreamDelete(string id)
     {
@@ -419,7 +421,7 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Deletes a stream.
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="id">Id of the stream to be deleted</param>
     /// <returns></returns>
     public async Task<bool> StreamDelete(CancellationToken cancellationToken, string id)
     {
@@ -452,9 +454,9 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Grants permissions to a user on a given stream.
     /// </summary>
-    /// <param name="streamId"></param>
-    /// <param name="userId"></param>
-    /// <param name="role"></param>
+    /// <param name="streamId">Id of the stream to grant permissions to</param>
+    /// <param name="userId">Id of the user to grant permissions to</param>
+    /// <param name="role">Role to give the user on this stream</param>
     /// <returns></returns>
     public Task<bool> StreamGrantPermission(StreamGrantPermissionInput permissionInput)
     {
@@ -464,9 +466,9 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Grants permissions to a user on a given stream.
     /// </summary>
-    /// <param name="streamId"></param>
-    /// <param name="userId"></param>
-    /// <param name="role"></param>
+    /// <param name="streamId">Id of the stream to grant permissions to</param>
+    /// <param name="userId">Id of the user to grant permissions to</param>
+    /// <param name="role">Role to give the user on this stream</param>
     /// <returns></returns>
     public async Task<bool> StreamGrantPermission(CancellationToken cancellationToken, StreamGrantPermissionInput permissionInput)
     {
@@ -502,8 +504,8 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Revokes permissions of a user on a given stream.
     /// </summary>
-    /// <param name="streamId"></param>
-    /// <param name="userId"></param>
+    /// <param name="streamId">Id of the stream to revoke permissions from</param>
+    /// <param name="userId">Id of the user to revoke permissions from</param>
     /// <returns></returns>
     public Task<bool> StreamRevokePermission(StreamRevokePermissionInput permissionInput)
     {
@@ -513,8 +515,8 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Revokes permissions of a user on a given stream.
     /// </summary>
-    /// <param name="streamId"></param>
-    /// <param name="userId"></param>
+    /// <param name="streamId">Id of the stream to revoke permissions from</param>
+    /// <param name="userId">Id of the user to revoke permissions from</param>
     /// <returns></returns>
     public async Task<bool> StreamRevokePermission(CancellationToken cancellationToken, StreamRevokePermissionInput permissionInput)
     {
@@ -553,9 +555,9 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Get branches from a given stream
     /// </summary>
-    /// <param name="streamId"></param>
-    /// <param name="branchesLimit"></param>
-    /// <param name="commitsLimit"></param>
+    /// <param name="streamId">Id of the stream to get the branches from</param>
+    /// <param name="branchesLimit">Max number of branches to retrieve</param>
+    /// <param name="commitsLimit">Max number of commits to retrieve</param>
     /// <returns></returns>
     public Task<List<Branch>> StreamGetBranches(string streamId,  int branchesLimit = 10, int commitsLimit = 10)
     {
@@ -566,9 +568,9 @@ namespace Speckle.Core.Api
     /// Get branches from a given stream
     /// </summary>
     /// <param name="cancellationToken"></param>
-    /// <param name="streamId"></param>
-    /// <param name="branchesLimit"></param>
-    /// <param name="commitsLimit"></param>
+    /// <param name="streamId">Id of the stream to get the branches from</param>
+    /// <param name="branchesLimit">Max number of branches to retrieve</param>
+    /// <param name="commitsLimit">Max number of commits to retrieve</param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
     public async Task<List<Branch>> StreamGetBranches(CancellationToken cancellationToken, string streamId,
@@ -666,8 +668,8 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Gets a given branch from a stream.
     /// </summary>
-    /// <param name="streamId"></param>
-    /// <param name="branchName"></param>
+    /// <param name="streamId">Id of the stream to get the branch from</param>
+    /// <param name="branchName">Name of the branch to get</param>
     /// <returns></returns>
     public Task<Branch> BranchGet(string streamId, string branchName, int commitsLimit = 10)
     {
@@ -678,8 +680,8 @@ namespace Speckle.Core.Api
     /// Gets a given branch from a stream.
     /// </summary>
     /// <param name="cancellationToken"></param>
-    /// <param name="streamId"></param>
-    /// <param name="branchName"></param>
+    /// <param name="streamId">Id of the stream to get the branch from</param>
+    /// <param name="branchName">Name of the branch to get</param>
     /// <returns></returns>
     public async Task<Branch> BranchGet(CancellationToken cancellationToken, string streamId, string branchName, int commitsLimit = 10)
     {
@@ -823,8 +825,8 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Gets a given commit from a stream.
     /// </summary>
-    /// <param name="streamId"></param>
-    /// <param name="commitId"></param>
+    /// <param name="streamId">Id of the stream to get the commit from</param>
+    /// <param name="commitId">Id of the commit to get</param>
     /// <returns></returns>
     public Task<Commit> CommitGet(string streamId, string commitId)
     {
@@ -835,8 +837,8 @@ namespace Speckle.Core.Api
     /// Gets a given commit from a stream.
     /// </summary>
     /// <param name="cancellationToken"></param>
-    /// <param name="streamId"></param>
-    /// <param name="commitId"></param>
+    /// <param name="streamId">Id of the stream to get the commit from</param>
+    /// <param name="commitId">Id of the commit to get</param>
     /// <returns></returns>
     public async Task<Commit> CommitGet(CancellationToken cancellationToken, string streamId, string commitId)
     {
@@ -883,8 +885,8 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Gets the latest commits from a stream
     /// </summary>
-    /// <param name="streamId"></param>
-    /// <param name="limit"></param>
+    /// <param name="streamId">Id of the stream to get the commits from</param>
+    /// <param name="limit">Max number of commits to get</param>
     /// <returns></returns>
     public Task<List<Commit>> StreamGetCommits(string streamId, int limit = 10)
     {
@@ -895,8 +897,8 @@ namespace Speckle.Core.Api
     /// Gets the latest commits from a stream
     /// </summary>
     /// <param name="cancellationToken"></param>
-    /// <param name="streamId"></param>
-    /// <param name="limit"></param>
+    /// <param name="streamId">Id of the stream to get the commits from</param>
+    /// <param name="limit">Max number of commits to get</param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
     public async Task<List<Commit>> StreamGetCommits(CancellationToken cancellationToken, string streamId, int limit = 10)
@@ -1074,8 +1076,8 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Gets a given object from a stream.
     /// </summary>
-    /// <param name="streamId"></param> 
-    /// <param name="objectId"></param>
+    /// <param name="streamId">Id of the stream to get the object from</param> 
+    /// <param name="objectId">Id of the object to get</param>
     /// <returns></returns>
     public Task<Object> ObjectGet(string streamId, string objectId)
     {
@@ -1086,8 +1088,8 @@ namespace Speckle.Core.Api
     /// Gets a given object from a stream.
     /// </summary>
     /// <param name="cancellationToken"></param>
-    /// <param name="streamId"></param>
-    /// <param name="objectId"></param>
+    /// <param name="streamId">Id of the stream to get the object from</param>
+    /// <param name="objectId">Id of the object to get</param>
     /// <returns></returns>
     public async Task<Object> ObjectGet(CancellationToken cancellationToken, string streamId, string objectId)
     {
