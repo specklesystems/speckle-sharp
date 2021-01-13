@@ -169,6 +169,15 @@ namespace TestsIntegration
       Assert.AreEqual("this is a sample branch", res.description);
     }
 
+    [Test, Order(43)]
+    public async Task StreamGetBranches()
+    {
+      var res = await myClient.StreamGetBranches(streamId);
+
+      Assert.NotNull(res);
+      Assert.AreEqual("sample-branch", res[0].name);
+    }
+
     #region commit
 
     [Test, Order(43)]
@@ -202,6 +211,15 @@ namespace TestsIntegration
 
       Assert.NotNull(res);
       Assert.AreEqual("MATT0E IS THE B3ST", res.message);
+    }
+
+    [Test, Order(45)]
+    public async Task StreamGetCommits()
+    {
+      var res = await myClient.StreamGetCommits(streamId);
+      
+      Assert.NotNull(res);
+      Assert.AreEqual(commitId, res[0].id);
     }
 
     #region object
