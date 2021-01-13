@@ -455,9 +455,9 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         return;
       try
       {
-        var res = Client.StreamGet(Stream.StreamId).Result;
+        var branches = Client.StreamGetBranches(Stream.StreamId).Result;
         var branchName = string.IsNullOrEmpty(Stream.BranchName) ? "main" : Stream.BranchName;
-        var mainBranch = res.branches.items.FirstOrDefault(b => b.name == branchName);
+        var mainBranch = branches.FirstOrDefault(b => b.name == branchName);
         if (mainBranch == null || !mainBranch.commits.items.Any())
         {
           Message = "Empty Stream";

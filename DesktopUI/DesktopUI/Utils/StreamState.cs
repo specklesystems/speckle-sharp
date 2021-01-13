@@ -119,6 +119,7 @@ namespace Speckle.DesktopUI.Utils
         }
 
         NotifyOfPropertyChange(nameof(BranchContextMenuItems));
+        NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       }
     }
 
@@ -501,14 +502,7 @@ namespace Speckle.DesktopUI.Utils
       if (Branch == null)
       {
         var tempBranch = Stream.branches.items.FirstOrDefault(b => b.name == "main");
-        if (tempBranch == null)
-        {
-          Branch = Stream.branches.items[0];
-        }
-        else
-        {
-          Branch = tempBranch;
-        }
+        Branch = tempBranch ?? Stream.branches.items[0];
       }
 
       if (Branch.commits != null && Branch.commits.items != null && Branch.commits.items.Count != 0)

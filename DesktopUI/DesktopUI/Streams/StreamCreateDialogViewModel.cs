@@ -220,6 +220,7 @@ namespace Speckle.DesktopUI.Streams
         StreamToCreate = await client.StreamGet(streamId);
 
         StreamState = new StreamState(client, StreamToCreate);
+        StreamState.Branches = await client.StreamGetBranches(streamId);
         Bindings.AddNewStream(StreamState);
 
         _events.Publish(new StreamAddedEvent() { NewStream = StreamState });
