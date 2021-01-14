@@ -42,11 +42,11 @@ namespace SpeckleRhino
     {
       ActiveDoc = doc;
 
-      const ObjectType geometryFilter = ObjectType.Surface | ObjectType.PolysrfFilter;
+      const ObjectType geometryFilter = ObjectType.Curve | ObjectType.Surface | ObjectType.PolysrfFilter;
       OptionToggle toggle = new OptionToggle(true, "Remove", "Apply");
 
       GetObject go = new GetObject();
-      go.SetCommandPrompt("Select surfaces or polysurfaces");
+      go.SetCommandPrompt("Select curves, surfaces, or polysurfaces");
       go.GeometryFilter = geometryFilter;
       go.AddOptionToggle("BuiltElements", ref toggle);
       go.GroupSelect = true;

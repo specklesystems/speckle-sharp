@@ -17,7 +17,7 @@ namespace SpeckleRhino
   /// </summary>
   public class SchemaObjectFilter
   {
-    enum SupportedSchema { Floor, Wall, Roof, Ceiling };
+    enum SupportedSchema { Floor, Wall, Roof, Ceiling, Column, Beam };
 
     #region Properties
     private Rhino.RhinoDoc Doc;
@@ -95,27 +95,55 @@ namespace SpeckleRhino
         foreach (RhinoObject obj in filterDictionary[schema])
           if (IsViableObject(schema,obj))
             SchemaDictionary[schema.ToString()].Add(obj);
-      ProcessSurfaceObjects(objsToBeFiltered);
+
+      // test viability for all other brep, surface, and curve objects
+      foreach (RhinoObject obj in objsToBeFiltered)
+      {
+        switch (obj.ObjectType)
+        {
+          case ObjectType.Brep:
+          case ObjectType.Surface:
+          case ObjectType.PolysrfFilter:
+            ProcessSurfaceObject(obj);
+            break;
+          case ObjectType.Curve:
+            ProcessCurveObject(obj);
+            break;
+        }
+      }
+    }
+
+    // this will add supported schemas for Curve objects
+    private void ProcessCurveObject(RhinoObject obj)
+    {
+      Curve crv = obj.Geometry as Curve;
+      if (crv.IsLinear()) // test for linearity
+      {
+        if (IsViableObject(SupportedSchema.Column, obj))
+          SchemaDictionary[SupportedSchema.Column.ToString()].Add(obj);
+        else if (IsViableObject(SupportedSchema.Beam, obj))
+          SchemaDictionary[SupportedSchema.Beam.ToString()].Add(obj);
+      }
+      else
+      {
+      }
     }
 
     // this will output a dictionary with supported schemas for surface objects
-    private void ProcessSurfaceObjects(List<RhinoObject> objs)
+    private void ProcessSurfaceObject(RhinoObject obj)
     {
-      foreach (RhinoObject obj in objs)
+      Brep brp = obj.Geometry as Brep;
+      if (brp.Surfaces.Count == 1) // test as floor first and then wall if this is a single face brp
       {
-        Brep brp = obj.Geometry as Brep;
-        if (brp.Surfaces.Count == 1) // test as floor first and then wall if this is a single face brp
-        {
-          if (IsViableObject(SupportedSchema.Floor, obj))
-            SchemaDictionary[SupportedSchema.Floor.ToString()].Add(obj);
-          else if (IsViableObject(SupportedSchema.Wall, obj))
-            SchemaDictionary[SupportedSchema.Wall.ToString()].Add(obj);
-        }
-        else // if multi surface, test if it may be a wall
-        {
-          if (IsViableObject(SupportedSchema.Wall, obj))
-            SchemaDictionary[SupportedSchema.Wall.ToString()].Add(obj);
-        }
+        if (IsViableObject(SupportedSchema.Floor, obj))
+          SchemaDictionary[SupportedSchema.Floor.ToString()].Add(obj);
+        else if (IsViableObject(SupportedSchema.Wall, obj))
+          SchemaDictionary[SupportedSchema.Wall.ToString()].Add(obj);
+      }
+      else // if multi surface, test if it may be a wall
+      {
+        if (IsViableObject(SupportedSchema.Wall, obj))
+          SchemaDictionary[SupportedSchema.Wall.ToString()].Add(obj);
       }
     }
 
@@ -123,11 +151,30 @@ namespace SpeckleRhino
     {
       switch (schema)
       {
+        case SupportedSchema.Column:
+          try // assumes non xy linear curve
+          {
+            Curve crv = obj.Geometry as Curve;
+            if (crv.IsLinear())
+              if (crv.PointAtStart.Z < crv.PointAtEnd.Z)
+                return true;
+          }
+          catch { }
+          break;
+        case SupportedSchema.Beam:
+          try // assumes xy linear curve
+          {
+            Curve crv = obj.Geometry as Curve;
+            if (crv.IsLinear())
+              if (crv.PointAtStart.Z == crv.PointAtEnd.Z)
+                return true;
+          }
+          catch { }
+          break;
         case SupportedSchema.Floor:
         case SupportedSchema.Ceiling:
         case SupportedSchema.Roof:
-          // assumes xy planar single surface
-          try
+          try // assumes xy planar single surface
           {
             Brep brp = obj.Geometry as Brep;
             if (brp.Surfaces.Count > 1) { return false; }
@@ -135,14 +182,10 @@ namespace SpeckleRhino
               if (singleH)
                   return true;
           }
-          catch
-          {
-              return false;
-          }
+          catch { }
           break;
         case SupportedSchema.Wall:
-          // assumes all vertical planar surfaces
-          try
+          try // assumes all vertical planar surfaces
           {
             Brep brp = obj.Geometry as Brep;
             bool allV = true;
@@ -150,15 +193,12 @@ namespace SpeckleRhino
             {
               if (IsPlanar(srf, out bool isH, out bool isV))
                 if (!isV)
-                    allV = false; break;
+                  allV = false; break;
             }
-            if (allV) 
+            if (allV)
               return true;
           }
-          catch
-          {
-              return false;
-          }
+          catch { }
           break;
         default:
           return false;

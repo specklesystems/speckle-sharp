@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Rhino;
+using Column = Objects.BuiltElements.Column;
+using Beam = Objects.BuiltElements.Beam;
 using Wall = Objects.BuiltElements.Wall;
 using Floor = Objects.BuiltElements.Floor;
 using Ceiling = Objects.BuiltElements.Ceiling;
@@ -21,6 +23,15 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
+    public Column CurveToSpeckleColumn(RH.Curve curve)
+    {
+      return new Column((ICurve)ConvertToSpeckle(curve));
+    }
+    public Beam CurveToSpeckleBeam(RH.Curve curve)
+    {
+      return new Beam((ICurve)ConvertToSpeckle(curve));
+    }
+
     public Wall BrepToSpeckleWall(RH.Brep brep)
     {
       Wall wall = null;

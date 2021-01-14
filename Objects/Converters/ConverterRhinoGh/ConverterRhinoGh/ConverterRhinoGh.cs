@@ -148,13 +148,29 @@ namespace Objects.Converter.RhinoGh
     }
 
     // NOTE: is there a way of retrieving class name from BuiltElements class directly? using hardcoded strings atm
-    public Base ConvertToSpeckleBE(object @object, string schema)
+    public Base ConvertToSpeckleBE(object @object, string schema = null)
     {
+      if (schema == null) 
+        return null;
+
       switch (@object)
       {
         case RhinoObject o:
           schema = o.Attributes.GetUserString(SpeckleSchemaKey);
           return ConvertToSpeckleBE(o.Geometry, schema);
+
+        case RH.Curve o:
+          switch (schema)
+          {
+            case "Column":
+              return CurveToSpeckleColumn(o);
+
+            case "Beam":
+              return CurveToSpeckleBeam(o);
+
+            default:
+              throw new NotSupportedException();
+          }
 
         case RH.Brep o:
           switch(schema)
