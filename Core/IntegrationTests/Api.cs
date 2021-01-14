@@ -39,7 +39,7 @@ namespace TestsIntegration
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
+      testServer = new ServerInfo { url = "https://testing.speckle.dev", name = "TestServer" };
 
       firstUserAccount = Fixtures.SeedUser(testServer);
       secondUserAccount = Fixtures.SeedUser(testServer);

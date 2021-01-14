@@ -22,7 +22,7 @@ namespace TestsIntegration
       user["password"] = "12ABC3456789DEF0GHO";
       user["name"] = $"{seed.Substring(0, 5)} Name";
 
-      var registerRequest = (HttpWebRequest)WebRequest.Create("http://127.0.0.1:3000/auth/local/register?challenge=challengingchallenge");
+      var registerRequest = (HttpWebRequest)WebRequest.Create($"{server.url}/auth/local/register?challenge=challengingchallenge");
       registerRequest.Method = "POST";
       registerRequest.ContentType = "application/json";
       registerRequest.AllowAutoRedirect = false;
@@ -55,7 +55,7 @@ namespace TestsIntegration
         }
       }
 
-      var tokenRequest = (HttpWebRequest)WebRequest.Create("http://127.0.0.1:3000/auth/token");
+      var tokenRequest = (HttpWebRequest)WebRequest.Create($"{server.url}/auth/token");
       tokenRequest.Method = "POST";
       tokenRequest.ContentType = "application/json";
 

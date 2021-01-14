@@ -29,7 +29,7 @@ namespace TestsIntegration.Subscriptions
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
+      testServer = new ServerInfo { url = "https://testing.speckle.dev", name = "TestServer" };
       testUserAccount = Fixtures.SeedUser(testServer);
       client = new Client(testUserAccount);
       myServerTransport = new ServerTransport(testUserAccount, null);
@@ -62,7 +62,7 @@ namespace TestsIntegration.Subscriptions
       client.SubscribeCommitCreated(streamId);
       client.OnCommitCreated += Client_OnCommitCreated;
 
-      Thread.Sleep(100); //let server catch-up
+      Thread.Sleep(1000); //let server catch-up
 
       var myObject = new Base();
       var ptsList = new List<Point>();
@@ -90,7 +90,7 @@ namespace TestsIntegration.Subscriptions
 
       await Task.Run(() =>
       {
-        Thread.Sleep(300); //let client catch-up
+        Thread.Sleep(2000); //let client catch-up
         Assert.NotNull(CommitCreatedInfo);
         Assert.AreEqual(commitInput.message, CommitCreatedInfo.message);
       });
@@ -107,7 +107,7 @@ namespace TestsIntegration.Subscriptions
       client.SubscribeCommitUpdated(streamId);
       client.OnCommitUpdated += Client_OnCommitUpdated;
 
-      Thread.Sleep(100); //let server catch-up
+      Thread.Sleep(1000); //let server catch-up
 
       var commitInput = new CommitUpdateInput
       {
@@ -121,7 +121,7 @@ namespace TestsIntegration.Subscriptions
 
       await Task.Run(() =>
       {
-        Thread.Sleep(100); //let client catch-up
+        Thread.Sleep(2000); //let client catch-up
         Assert.NotNull(CommitUpdatedInfo);
         Assert.AreEqual(commitInput.message, CommitUpdatedInfo.message);
       });
@@ -138,7 +138,7 @@ namespace TestsIntegration.Subscriptions
       client.SubscribeCommitDeleted(streamId);
       client.OnCommitDeleted += Client_OnCommitDeleted;
 
-      Thread.Sleep(100); //let server catch-up
+      Thread.Sleep(1000); //let server catch-up
 
       var commitInput = new CommitDeleteInput
       {
@@ -151,7 +151,7 @@ namespace TestsIntegration.Subscriptions
 
       await Task.Run(() =>
       {
-        Thread.Sleep(100); //let client catch-up
+        Thread.Sleep(2000); //let client catch-up
         Assert.NotNull(CommitDeletedInfo);
         Assert.AreEqual(commitId, CommitDeletedInfo.id);
       });
