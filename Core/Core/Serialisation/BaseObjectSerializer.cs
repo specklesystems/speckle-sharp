@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -171,7 +172,7 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference, no transport is defined."), level: Sentry.Protocol.SentryLevel.Warning);
+          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference, no transport is defined."), level : Sentry.Protocol.SentryLevel.Warning);
         }
 
         if (str != null && str != "")
@@ -181,7 +182,7 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference. The provided transport could not find it."), level: Sentry.Protocol.SentryLevel.Warning);
+          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference. The provided transport could not find it."), level : Sentry.Protocol.SentryLevel.Warning);
         }
       }
 
@@ -362,7 +363,6 @@ namespace Speckle.Core.Serialisation
             continue;
           }
 
-
           // Ignore nulls
           object propValue = obj[prop];
           if (propValue == null)
@@ -398,6 +398,17 @@ namespace Speckle.Core.Serialisation
           else if (prop.StartsWith("@")) // Convention check for dynamically added properties.
           {
             DetachLineage.Add(true);
+
+            var chunkSyntax = new Regex(@"^@\((\d*)\)");
+            
+            if (chunkSyntax.IsMatch(prop))
+            {
+              int chunkSize;
+              var match = chunkSyntax.Match(prop);
+              int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
+              serializer.Context = new StreamingContext(StreamingContextStates.Other,
+                chunkSize > 0 ? new Chunkable(chunkSize) : new Chunkable());
+            }
           }
           else
           {
