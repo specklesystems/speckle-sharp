@@ -4,16 +4,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Objects.Converter.Dynamo</RootNamespace>
     <Version>0.0.1</Version>
-    <AssemblyName>Objects.Converter.Dynamo</AssemblyName>
-    <Configurations>DebugSandbox;ReleaseSandbox;DebugRevit;ReleaseRevit</Configurations>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)' == 'DebugSandbox' OR '$(Configuration)' == 'ReleaseSandbox'">
-    <DefineConstants>$(DefineConstants);SANDBOX</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'DebugRevit' OR '$(Configuration)' == 'ReleaseRevit'">
+    <AssemblyName>Objects.Converter.DynamoRevit</AssemblyName>
+    <Configurations>Debug;Release</Configurations>
     <DefineConstants>$(DefineConstants);REVIT</DefineConstants>
   </PropertyGroup>
+
 
   <ItemGroup>
     <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471">
@@ -32,12 +27,14 @@
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
   </ItemGroup>
-    
+
   <PropertyGroup>
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
   </PropertyGroup>
-  
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
     <Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
   </Target>
+
+  <Import Project="..\ConverterDynamoShared\ConverterDynamoShared.projitems" Label="Shared" />
 </Project>

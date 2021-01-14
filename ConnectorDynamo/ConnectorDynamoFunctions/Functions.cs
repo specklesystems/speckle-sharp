@@ -60,8 +60,8 @@ namespace Speckle.ConnectorDynamo.Functions
            branchName = branchName,
            objectId = objectId,
            message = message,
-           sourceApplication = Applications.Dynamo,
-           parents = new List<string>() {streams[i].CommitId}
+           sourceApplication = (Globals.RevitDocument != null) ? Applications.DynamoRevit : Applications.DynamoSandbox,
+           parents = new List<string>() { streams[i].CommitId }
          }).Result;
 
           responses.Add(res);
