@@ -90,7 +90,7 @@ namespace TestsIntegration.Subscriptions
 
       await Task.Run(() =>
       {
-        Thread.Sleep(100); //let client catch-up
+        Thread.Sleep(300); //let client catch-up
         Assert.NotNull(CommitCreatedInfo);
         Assert.AreEqual(commitInput.message, CommitCreatedInfo.message);
       });

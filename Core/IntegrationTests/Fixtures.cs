@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -39,13 +40,18 @@ namespace TestsIntegration
       try
       {
         response = registerRequest.GetResponse();
+        redirectUrl = response.Headers[HttpResponseHeader.Location];
+        Debug.WriteLine(redirectUrl);
       }
       catch (WebException e)
       {
         if (e.Message.Contains("302"))
         {
+          Debug.WriteLine("We are redirected!");
           response = e.Response;
           redirectUrl = e.Response.Headers[HttpResponseHeader.Location];
+          Debug.WriteLine("We are redirected; but in an error.");
+          Debug.WriteLine(redirectUrl);
         }
       }
 
