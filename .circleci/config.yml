@@ -177,6 +177,7 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       NODE_ENV: test
       DATABASE_URL: "postgres://speckle:speckle@localhost:5432/speckle2_dev"
+      POSTGRES_URL: "postgres://speckle:speckle@localhost:5432/speckle2_dev"
       PGDATABASE: speckle2_dev
       PGUSER: speckle
       SESSION_SECRET: "keyboard cat"
