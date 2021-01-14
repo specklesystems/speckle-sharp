@@ -47,17 +47,20 @@ namespace TestsIntegration
       {
         if (e.Message.Contains("302"))
         {
-          Debug.WriteLine("We are redirected!");
+          Console.WriteLine("We are redirected!");
           response = e.Response;
           redirectUrl = e.Response.Headers[HttpResponseHeader.Location];
-          Debug.WriteLine("We are redirected; but in an error.");
-          Debug.WriteLine(redirectUrl);
+          Console.WriteLine("We are redirected; but in an error.");
+          Console.WriteLine(redirectUrl);
         }
       }
 
       var tokenRequest = (HttpWebRequest)WebRequest.Create("http://127.0.0.1:3000/auth/token");
       tokenRequest.Method = "POST";
       tokenRequest.ContentType = "application/json";
+
+      Console.WriteLine(redirectUrl);
+      Console.WriteLine("Why do the tests pass locally?");
       var accessCode = redirectUrl.Split("?access_code=")[1];
       var tokenBody = new Dictionary<string, string>()
       {
