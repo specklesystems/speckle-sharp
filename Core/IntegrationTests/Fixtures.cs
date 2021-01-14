@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Net;
 using System.Text;
 using Newtonsoft.Json;
@@ -13,19 +15,74 @@ namespace TestsIntegration
   {
     public static Account SeedUser(ServerInfo server)
     {
-      using (var client = new WebClient())
+      var seed = Guid.NewGuid().ToString().ToLower();
+      var user = new Dictionary<string, string>();
+      user["email"] = $"{seed.Substring(0, 7)}@acme.com";
+      user["password"] = "12ABC3456789DEF0GHO";
+      user["name"] = $"{seed.Substring(0, 5)} Name";
+
+      var registerRequest = (HttpWebRequest)WebRequest.Create("http://127.0.0.1:3000/auth/local/register?challenge=challengingchallenge");
+      registerRequest.Method = "POST";
+      registerRequest.ContentType = "application/json";
+      registerRequest.AllowAutoRedirect = false;
+
+
+      using (var streamWriter = new StreamWriter(registerRequest.GetRequestStream()))
       {
-        var seed = Guid.NewGuid().ToString().ToLower();
-        var user = new NameValueCollection();
-        user["email"] = $"{seed.Substring(0, 7)}@acme.com";
-        user["password"] = "12ABC3456789DEF0GHO";
-        user["name"] = $"{seed.Substring(0, 5)} Name";
-
-        var raw = client.UploadValues("http://127.0.0.1:3000/auth/local/register", "POST", user);
-        var info = JsonConvert.DeserializeObject<UserIdResponse>(Encoding.UTF8.GetString(raw));
-
-        return new Account { token = info.apiToken, userInfo = new UserInfo { id = info.userId, email = user["email"] }, serverInfo = server };
+        string json = JsonConvert.SerializeObject(user);
+        streamWriter.Write(json);
+        streamWriter.Flush();
       }
+
+      WebResponse response;
+      string redirectUrl = null;
+      try
+      {
+        response = registerRequest.GetResponse();
+      }
+      catch (WebException e)
+      {
+        if (e.Message.Contains("302"))
+        {
+          response = e.Response;
+          redirectUrl = e.Response.Headers[HttpResponseHeader.Location];
+        }
+      }
+
+      var tokenRequest = (HttpWebRequest)WebRequest.Create("http://127.0.0.1:3000/auth/token");
+      tokenRequest.Method = "POST";
+      tokenRequest.ContentType = "application/json";
+      var accessCode = redirectUrl.Split("?access_code=")[1];
+      var tokenBody = new Dictionary<string, string>()
+      {
+        ["accessCode"] = accessCode,
+        ["appId"] = "spklwebapp",
+        ["appSecret"] = "spklwebapp",
+        ["challenge"] = "challengingchallenge"
+      };
+
+      using (var streamWriter = new StreamWriter(tokenRequest.GetRequestStream()))
+      {
+        string json = JsonConvert.SerializeObject(tokenBody);
+        streamWriter.Write(json);
+        streamWriter.Flush();
+      }
+
+      var tokenResponse = tokenRequest.GetResponse();
+      var deserialised = new Dictionary<string, string>();
+      using(var streamReader = new StreamReader(tokenResponse.GetResponseStream()))
+      {
+        var text = streamReader.ReadToEnd();
+        deserialised = JsonConvert.DeserializeObject<Dictionary<string, string>>(text);
+      }
+
+      var acc = new Account { token = deserialised["token"], userInfo = new UserInfo { id = user["name"], email = user["email"] }, serverInfo = server };
+      var client = new Speckle.Core.Api.Client(acc);
+
+      var user1 = client.UserGet().Result;
+      acc.userInfo.id = user1.id;
+
+      return acc;
     }
   }
 
