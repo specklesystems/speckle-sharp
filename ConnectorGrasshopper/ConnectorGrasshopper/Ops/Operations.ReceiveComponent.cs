@@ -119,10 +119,9 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      var streamInputIndex = pManager.AddGenericParameter("Stream", "S",
+      pManager.AddGenericParameter("Stream", "S",
         "The Speckle Stream to receive data from. You can also input the Stream ID or it's URL as text.",
         GH_ParamAccess.tree);
-      //pManager[streamInputIndex].Optional = true;
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -258,42 +257,53 @@ namespace ConnectorGrasshopper.Ops
 
       var input = ghGoo.GetType().GetProperty("Value")?.GetValue(ghGoo);
 
-      var inputType = "Stream";
+      var inputType = "Invalid";
       StreamWrapper newWrapper = null;
 
-      if (input is StreamWrapper)
+      if (input is StreamWrapper wrapper)
       {
-        newWrapper = input as StreamWrapper;
+        newWrapper = wrapper;
       }
       else if (input is string s)
       {
         newWrapper = new StreamWrapper(s);
       }
 
-      if (newWrapper?.CommitId != null)
+      switch (newWrapper?.Type)
       {
-        inputType = "Commit";
-      }
-
-      Message = inputType;
-      HandleInputType(inputType, newWrapper);
-    }
-
-    public void HandleInputType(string inputType, StreamWrapper wrapper)
-    {
-      if (inputType != InputType)
-      {
+        case StreamWrapperType.Undefined:
+          inputType = "Invalid";
+          break;
+        case StreamWrapperType.Stream:
+          inputType = "Stream";
+          break;
+        case StreamWrapperType.Commit:
+          inputType = "Commit";
+          break;
+        case StreamWrapperType.Branch:
+          inputType = "Branch";
+          break;
       }
 
       InputType = inputType;
+      Message = inputType;
+      HandleInputType(newWrapper);
+    }
 
-      if (inputType == "Commit")
+    public void HandleInputType(StreamWrapper wrapper)
+    {
+      if (wrapper.Type == StreamWrapperType.Commit)
       {
         AutoReceive = false;
         StreamWrapper = wrapper;
         return;
       }
 
+      if (wrapper.Type == StreamWrapperType.Branch)
+      {
+        // TODO: 
+      }
+      
       if (StreamWrapper != null && wrapper.StreamId == StreamWrapper.StreamId && !JustPastedIn)
       {
         return;
@@ -303,12 +313,14 @@ namespace ConnectorGrasshopper.Ops
 
       ApiClient = new Client(wrapper.GetAccount());
       ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
-
       ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
     }
 
     private void ApiClient_OnCommitCreated(object sender, Speckle.Core.Api.SubscriptionModels.CommitInfo e)
     {
+      // Break if wrapper is branch type and branch name is not equal.
+      if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName) return;
+      
       Message = "Expired";
       CurrentComponentState = "expired";
       AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"There is a newer commit available for this {InputType}");
@@ -409,7 +421,7 @@ namespace ConnectorGrasshopper.Ops
 
       Task.Run(async () =>
       {
-        Commit myCommit = null;
+        Commit myCommit;
         if (InputWrapper.CommitId != null)
         {
           try
@@ -529,7 +541,6 @@ namespace ConnectorGrasshopper.Ops
 
 
       DA.SetData(0, new GH_SpeckleBase() { Value = ReceivedObject });
-      return;
     }
   }
 
