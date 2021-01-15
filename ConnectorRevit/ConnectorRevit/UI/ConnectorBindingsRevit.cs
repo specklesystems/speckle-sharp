@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Timers;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Speckle.Core.Models;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
-using Speckle.ConnectorRevit.Storage;
-using Speckle.Core.Kits;
 using Speckle.ConnectorRevit.Entry;
 
 namespace Speckle.ConnectorRevit.UI
