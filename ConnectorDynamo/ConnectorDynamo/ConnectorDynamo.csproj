@@ -175,7 +175,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PackageName>ConnectorDynamo</PackageName>
+    <PackageName>SpeckleDynamo2</PackageName>
     <PackageFolder>$(ProjectDir)dist\$(PackageName)\</PackageFolder>
     <BinFolder>$(PackageFolder)bin\</BinFolder>
     <ExtraFolder>$(PackageFolder)extra\</ExtraFolder>

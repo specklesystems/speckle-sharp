@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Objects.Converter.Dynamo</RootNamespace>
-    <Version>0.0.1</Version>
+    <Version>2.0.0</Version>
     <AssemblyName>Objects.Converter.DynamoRevit</AssemblyName>
     <Configurations>Debug;Release</Configurations>
     <DefineConstants>$(DefineConstants);REVIT</DefineConstants>
@@ -30,6 +30,9 @@
 
   <PropertyGroup>
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+    <Authors>Speckle</Authors>
+    <Company>SpeckleSpeckle</Company>
+    <PackageProjectUrl>https://github.com/specklesystems/speckle-sharp</PackageProjectUrl>
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
