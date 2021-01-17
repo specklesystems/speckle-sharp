@@ -68,11 +68,11 @@ namespace Speckle.Core.Api.SubscriptionModels
     public string authorId { get; set; }
     public string message { get; set; }
     public string sourceApplication { get; set; }
-    public int totalChildrenCount { get; set; }
-    public string[ ] parents { get; set; }
+    public int? totalChildrenCount { get; set; }
+    public string[] parents { get; set; }
 
     [Obsolete("Please use the parents property. This property will be removed in later versions")]
-    public string[ ] previousCommitIds { get; set; }
+    public string[] previousCommitIds { get; set; }
 
   }
 
