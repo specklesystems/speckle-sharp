@@ -36,7 +36,7 @@ namespace TestsIntegration.Subscriptions
     }
 
     [Test, Order(0)]
-    [Ignore("Ironically, it fails.")]
+    //[Ignore("Ironically, it fails.")]
     public async Task SubscribeCommitCreated()
     {
       var streamInput = new StreamCreateInput
@@ -83,7 +83,9 @@ namespace TestsIntegration.Subscriptions
         streamId = streamId,
         branchName = "awesome-features",
         objectId = objectId,
-        message = "sending some test points"
+        message = "sending some test points",
+        sourceApplication = "Tests",
+        totalChildrenCount = 20
       };
 
       commitId = await client.CommitCreate(commitInput);
@@ -103,7 +105,7 @@ namespace TestsIntegration.Subscriptions
     }
 
     [Test, Order(1)]
-    [Ignore("Ironically, it fails.")]
+    //[Ignore("Ironically, it fails.")]
     public async Task SubscribeCommitUpdated()
     {
       client.SubscribeCommitUpdated(streamId);
@@ -135,7 +137,7 @@ namespace TestsIntegration.Subscriptions
     }
 
     [Test, Order(3)]
-    [Ignore("Ironically, it fails.")]
+    //[Ignore("Ironically, it fails.")]
     public async Task SubscribeCommitDeleted()
     {
       client.SubscribeCommitDeleted(streamId);
