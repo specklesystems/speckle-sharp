@@ -18,7 +18,7 @@ namespace Objects.Other
   {
     public string name { get; set; }
 
-    public double opacity { get; set; } = 0;
+    public double opacity { get; set; } = 1;
 
     public double metalness { get; set; } = 0;
 
@@ -27,5 +27,7 @@ namespace Objects.Other
     public int diffuse { get; set; } = Color.LightGray.ToArgb();
 
     public int emissive { get; set; } = Color.Black.ToArgb();
+
+    public RenderMaterial() { }
   }
 }
