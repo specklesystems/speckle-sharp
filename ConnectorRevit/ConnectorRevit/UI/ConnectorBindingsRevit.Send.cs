@@ -90,8 +90,6 @@ namespace Speckle.ConnectorRevit.UI
 
           convertedCount++;
 
-
-
           //hosted elements will be returned as `null` by the ConvertToSpeckle method 
           //since they are handled when converting their parents
           if (conversionResult != null)

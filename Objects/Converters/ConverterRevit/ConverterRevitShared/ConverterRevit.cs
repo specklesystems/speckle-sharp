@@ -68,85 +68,97 @@ namespace Objects.Converter.Revit
 
     public Base ConvertToSpeckle(object @object)
     {
+      Base returnObject = null;
       switch (@object)
       {
         case DB.DetailCurve o:
-          return DetailCurveToSpeckle(o);
-
+          returnObject = DetailCurveToSpeckle(o);
+          break;
         case DB.DirectShape o:
-          return DirectShapeToSpeckle(o);
-
+          returnObject = DirectShapeToSpeckle(o);
+          break;
         case DB.FamilyInstance o:
-          return FamilyInstanceToSpeckle(o);
-
+          returnObject = FamilyInstanceToSpeckle(o);
+          break;
         case DB.Floor o:
-          return FloorToSpeckle(o);
-
+          returnObject = FloorToSpeckle(o);
+          break;
         case DB.Level o:
-          return LevelToSpeckle(o);
-
+          returnObject = LevelToSpeckle(o);
+          break;
         case DB.ModelCurve o:
+
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
           {
-            return RoomBoundaryLineToSpeckle(o);
+            returnObject = RoomBoundaryLineToSpeckle(o);
           }
-
-          return ModelCurveToSpeckle(o);
-
+          else
+          {
+            returnObject = ModelCurveToSpeckle(o);
+          }
+          break;
         case DB.Opening o:
-          return OpeningToSpeckle(o);
-
+          returnObject = OpeningToSpeckle(o);
+          break;
         case DB.RoofBase o:
-          return RoofToSpeckle(o);
-
+          returnObject = RoofToSpeckle(o);
+          break;
         case DB.Architecture.Room o:
-          return RoomToSpeckle(o);
-
+          returnObject = RoomToSpeckle(o);
+          break;
         case DB.Architecture.TopographySurface o:
-          return TopographyToSpeckle(o);
-
+          returnObject = TopographyToSpeckle(o);
+          break;
         case DB.Wall o:
-          return WallToSpeckle(o);
-
+          returnObject = WallToSpeckle(o);
+          break;
         case DB.Mechanical.Duct o:
-          return DuctToSpeckle(o);
-
+          returnObject = DuctToSpeckle(o);
+          break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
-          return null;
-
+          returnObject = null;
+          break;
         case DB.Architecture.BuildingPad o:
-          return BuildingPadToSpeckle(o);
-
+          returnObject = BuildingPadToSpeckle(o);
+          break;
         case DB.Architecture.Stairs o:
-          return StairToSpeckle(o);
-
+          returnObject = StairToSpeckle(o);
+          break;
         //these are handled by Stairs
         case DB.Architecture.StairsRun _:
-          return null;
-
+          returnObject = null;
+          break;
         case DB.Architecture.StairsLanding _:
-          return null;
-
+          returnObject = null;
+          break;
         case DB.Architecture.Railing o:
-          return RailingToSpeckle(o);
-
+          returnObject = RailingToSpeckle(o);
+          break;
         case DB.Architecture.TopRail _:
-          return null;
-
+          returnObject = null;
+          break;
         case DB.Ceiling o:
-          return CeilingToSpeckle(o);
-
+          returnObject = CeilingToSpeckle(o);
+          break;
         case DB.ProjectInfo o:
-          return ProjectInfoToSpeckle(o);
-
+          returnObject = ProjectInfoToSpeckle(o);
+          break;
         case DB.ElementType o:
-          return ElementTypeToSpeckle(o);
-
+          returnObject = ElementTypeToSpeckle(o);
+          break;
         default:
           ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Speckle"));
-          return null;
+          returnObject = null;
+          break;
       }
+
+      if (returnObject["renderMaterial"] == null)
+      {
+        var material = GetElementRenderMaterial(@object as DB.Element);
+        returnObject["renderMaterial"] = material;
+      }
+      return returnObject;
     }
 
     public object ConvertToNative(Base @object)

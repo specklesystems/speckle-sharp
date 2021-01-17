@@ -143,7 +143,7 @@ namespace Objects.Converter.Revit
       return speckleWall;
     }
 
-    private Mesh GetWallDisplayMesh(DB.Wall wall)
+    private object GetWallDisplayMesh(DB.Wall wall)
     {
       var grid = wall.CurtainGrid;
       var mesh = new Mesh();
@@ -151,23 +151,36 @@ namespace Objects.Converter.Revit
       // meshing for walls in case they are curtain grids
       if (grid != null)
       {
-        var mySolids = new List<Solid>();
+        var meshPanels = new Mesh();
+        var meshMullions = new Mesh();
+
+        var panels = new List<Solid>();
+        var mullions = new List<Solid>();
         foreach (ElementId panelId in grid.GetPanelIds())
         {
-          mySolids.AddRange(GetElementSolids(Doc.GetElement(panelId)));
+          panels.AddRange(GetElementSolids(Doc.GetElement(panelId)));
         }
         foreach (ElementId mullionId in grid.GetMullionIds())
         {
-          mySolids.AddRange(GetElementSolids(Doc.GetElement(mullionId)));
+          mullions.AddRange(GetElementSolids(Doc.GetElement(mullionId)));
         }
-        (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(mySolids);
+        (meshPanels.faces, meshPanels.vertices) = GetFaceVertexArrFromSolids(panels);
+        (meshMullions.faces, meshMullions.vertices) = GetFaceVertexArrFromSolids(mullions);
+
+        meshPanels["renderMaterial"] = new Other.RenderMaterial() { opacity = 0.2, diffuse = System.Drawing.Color.AliceBlue.ToArgb() };
+
+        meshMullions["renderMaterial"] = new Other.RenderMaterial() { diffuse = System.Drawing.Color.DarkGray.ToArgb() };
+
+        meshPanels.units = ModelUnits;
+        meshMullions.units = ModelUnits;
+        return new List<Base>() { meshPanels, meshMullions };
       }
       else
       {
         (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(wall, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+        mesh.units = ModelUnits;
+        return mesh;
       }
-
-      return mesh;
     }
 
   }
