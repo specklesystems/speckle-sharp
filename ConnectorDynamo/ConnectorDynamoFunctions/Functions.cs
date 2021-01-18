@@ -26,14 +26,14 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="data">Data to send</param>
     /// <param name="transports">Transports to send the data to</param>
     /// <returns name="log">Log</returns>
-    public static List<StreamWrapper> Send(Base data, List<ITransport> transports, CancellationToken cancellationToken,
+    public static List<string> Send(Base data, List<ITransport> transports, CancellationToken cancellationToken,
       Dictionary<ITransport,string> branchNames = null, string message = "",
       Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
     {
-      var commitWrappers = new List<StreamWrapper>();
+      var commitWrappers = new List<string>();
       var responses = new List<string>();
       
-      var objectId = Operations.Send(data, cancellationToken, transports, true,
+      var objectId = Operations.Send(data, cancellationToken, new List<ITransport>(transports), true,
         onProgressAction, onErrorAction).Result;
 
       if (cancellationToken.IsCancellationRequested)
@@ -42,8 +42,11 @@ namespace Speckle.ConnectorDynamo.Functions
       foreach (var t in transports)
       {
         // Only create commits on ServerTransport instances (for now)
-        if (!(t is ServerTransport serverTransport)) continue;
-        
+        if (!(t is ServerTransport serverTransport))
+        {
+          commitWrappers.Add(t + objectId);
+          continue;
+        }
         var branchName = branchNames == null ? "main" : branchNames[t];
         var client = new Client(serverTransport.Account);
         try
@@ -65,7 +68,7 @@ namespace Speckle.ConnectorDynamo.Functions
             {
               CommitId = res
             };
-          commitWrappers.Add(wrapper);
+          commitWrappers.Add(wrapper.ToString());
         }
         catch (Exception ex)
         {
@@ -80,7 +83,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
     public static object SendData(string output)
     {
-      var commits = output.Split('|').Select(x => new StreamWrapper(x)).ToList();
+      var commits = output.Split('|').ToList();
       if (commits.Count == 1)
         return commits[0];
       

@@ -187,7 +187,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     [DNJ.JsonConstructor]
     private Receive(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
-      if (inPorts.Count() == 2)
+      if (inPorts.Count() == 1)
       {
         //blocker: https://github.com/DynamoDS/Dynamo/issues/11118
         //inPorts.ElementAt(1).DefaultValue = endPortDefaultValue;
@@ -204,7 +204,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
       ArgumentLacing = LacingStrategy.Disabled;
 
-      this.PropertyChanged += HandlePropertyChanged;
+      PropertyChanged += HandlePropertyChanged;
     }
 
     /// <summary>

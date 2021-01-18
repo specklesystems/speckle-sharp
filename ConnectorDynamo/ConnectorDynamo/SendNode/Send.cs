@@ -141,7 +141,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     [DNJ.JsonConstructor]
     private Send(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
-      if (inPorts.Count() == 4)
+      if (inPorts.Count() == 3)
       {
         //blocker: https://github.com/DynamoDS/Dynamo/issues/11118
         //inPorts.ElementAt(1).DefaultValue = endPortDefaultValue;

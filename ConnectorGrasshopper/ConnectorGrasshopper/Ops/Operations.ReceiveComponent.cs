@@ -263,12 +263,23 @@ namespace ConnectorGrasshopper.Ops
       if (input is StreamWrapper wrapper)
       {
         newWrapper = wrapper;
+        inputType = GetStreamTypeMessage(newWrapper);
       }
       else if (input is string s)
       {
         newWrapper = new StreamWrapper(s);
+        inputType = GetStreamTypeMessage(newWrapper);
       }
+      
 
+      InputType = inputType;
+      Message = inputType;
+      HandleInputType(newWrapper);
+    }
+
+    private string GetStreamTypeMessage(StreamWrapper newWrapper)
+    {
+      string inputType = null;
       switch (newWrapper?.Type)
       {
         case StreamWrapperType.Undefined:
@@ -284,10 +295,7 @@ namespace ConnectorGrasshopper.Ops
           inputType = "Branch";
           break;
       }
-
-      InputType = inputType;
-      Message = inputType;
-      HandleInputType(newWrapper);
+      return inputType;
     }
 
     public void HandleInputType(StreamWrapper wrapper)
