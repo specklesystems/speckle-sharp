@@ -3,10 +3,13 @@ using Objects.Geometry;
 using Objects.Primitive;
 using Rhino.Geometry;
 using Rhino.Geometry.Collections;
+using Rhino.DocObjects;
 using Speckle.Core.Models;
+using Speckle.Core.Kits;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Rhino;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -37,6 +40,8 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
+    
+
     // Convenience methods point:
     public double[] PointToArray(Point3d pt)
     {
@@ -724,7 +729,17 @@ namespace Objects.Converter.RhinoGh
 
       return spcklBrep;
     }
-    
+
+    /// <summary>
+    /// Converts a Rhino <see cref="Rhino.DocObjects.RhinoObject"/> instance to a Speckle <see cref="Base"/>
+    /// </summary>
+    /// <param name="obj">RhinoObject to be converted.</param>
+    /// <returns></returns>
+    public Base ObjectToSpeckle(RhinoObject obj)
+    {
+      return ConvertToSpeckle(obj.Geometry);
+    }
+
     /// <summary>
     /// Converts a Speckle <see cref="Brep"/> instance to a Rhino <see cref="Rhino.Geometry.Brep"/>
     /// </summary>

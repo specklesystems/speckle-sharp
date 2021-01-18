@@ -39,7 +39,7 @@ namespace TestsIntegration
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
+      testServer = new ServerInfo { url = "https://testing.speckle.dev", name = "TestServer" };
 
       firstUserAccount = Fixtures.SeedUser(testServer);
       secondUserAccount = Fixtures.SeedUser(testServer);
@@ -197,11 +197,27 @@ namespace TestsIntegration
         streamId = streamId,
         branchName = branchName,
         objectId = objectId,
-        message = "MATT0E IS THE B3ST"
+        message = "Fibber Fibbo",
+        sourceApplication = "Tests",
+        totalChildrenCount = 100,
       });
 
       Assert.NotNull(res);
       commitId = res;
+
+      var res2 = await myClient.CommitCreate(new CommitCreateInput
+      {
+        streamId = streamId,
+        branchName = branchName,
+        objectId = objectId,
+        message = "Fabber Fabbo",
+        sourceApplication = "Tests",
+        totalChildrenCount = 100,
+        parents = new List<string>() { commitId }
+      });
+
+      Assert.NotNull(res2);
+      commitId = res2;
     }
 
     [Test, Order(44)]
@@ -210,7 +226,7 @@ namespace TestsIntegration
       var res = await myClient.CommitGet(streamId, commitId);
 
       Assert.NotNull(res);
-      Assert.AreEqual("MATT0E IS THE B3ST", res.message);
+      Assert.AreEqual("Fabber Fabbo", res.message);
     }
 
     [Test, Order(45)]

@@ -61,7 +61,7 @@ namespace Speckle.Core.Api
     public string objectId { get; set; }
     public string message { get; set; }
     public string sourceApplication { get; set; }
-    public string totalChildrenCount { get; set; }
+    public int totalChildrenCount { get; set; }
     public List<string> parents { get; set; }
 
     [Obsolete("Please use the parents property. This property will be removed in later versions")]
