@@ -539,6 +539,32 @@ namespace Objects.Converter.Revit
       return result;
     }
 
+    public Face BrepFaceToNative(BrepFace face)
+    {
+      
+      var brep = BrepToNative(face.Brep);
+      var faceIndex = face.SurfaceIndex;
+
+      /*
+      BRepBuilder builder = new BRepBuilder(BRepType.Solid);
+      BRepBuilderGeometryId faceId = builder.AddFace(SurfaceToNative(face.Surface), false);
+      BRepBuilderGeometryId loopId = builder.AddLoop(face.OuterLoop, faceId);
+      builder.FinishLoop(loopId);
+      builder.FinishFace(faceId);
+      DB.BRepBuilderEdgeGeometry edgeLoop = BRepBuilderEdgeGeometry.Create(face.OuterLoop);
+      BRepBuilderGeometryId edgeLoopID = builder.AddEdge(edgeLoop);
+      builder.AddCoEdge(loopId, edgeLoopID,true);
+
+      var bRepBuilderOutcome = builder.Finish();
+      if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
+
+      var isResultAvailable = builder.IsResultAvailable();
+      if (!isResultAvailable) return null;
+      var result = builder.GetResult();
+      */
+
+      return brep.Faces.get_Item(faceIndex);
+    }
 
     public List<BRepBuilderEdgeGeometry> BrepEdgeToNative(BrepEdge edge)
     {
@@ -659,9 +685,8 @@ namespace Objects.Converter.Revit
       return knots;
     }
 
-    public BRepBuilderSurfaceGeometry BrepFaceToNative(BrepFace face)
+    public BRepBuilderSurfaceGeometry SurfaceToNative(Surface surface)
     {
-      var surface = face.Surface;
       var uvBox = new DB.BoundingBoxUV(surface.knotsU[0], surface.knotsV[0], surface.knotsU[surface.knotsU.Count - 1], surface.knotsV[surface.knotsV.Count - 1]);
       var surfPts = surface.GetControlPoints();
       var uKnots = SurfaceKnotsToNative(surface.knotsU);
@@ -706,7 +731,7 @@ namespace Objects.Converter.Revit
       var brepEdges = new List<DB.BRepBuilderGeometryId>[brep.Edges.Count];
       foreach (var face in brep.Faces)
       {
-        var faceId = builder.AddFace(BrepFaceToNative(face), face.OrientationReversed);
+        var faceId = builder.AddFace(SurfaceToNative(face.Surface), face.OrientationReversed);
 
         foreach (var loop in face.Loops)
         {
