@@ -88,8 +88,6 @@
   <PropertyGroup>
     <PostBuildEvent>if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (
 
-
-
 xcopy /Y /S "$(TargetDir)$(AssemblyName).dll" "$(AppData)\Speckle\Kits\Objects\"
 
 )</PostBuildEvent>

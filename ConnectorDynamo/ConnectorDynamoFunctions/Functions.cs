@@ -27,12 +27,12 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="transports">Transports to send the data to</param>
     /// <returns name="log">Log</returns>
     public static List<string> Send(Base data, List<ITransport> transports, CancellationToken cancellationToken,
-      Dictionary<ITransport,string> branchNames = null, string message = "",
+      Dictionary<ITransport, string> branchNames = null, string message = "",
       Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
     {
       var commitWrappers = new List<string>();
       var responses = new List<string>();
-      
+
       var objectId = Operations.Send(data, cancellationToken, new List<ITransport>(transports), true,
         onProgressAction, onErrorAction).Result;
 
@@ -58,8 +58,8 @@ namespace Speckle.ConnectorDynamo.Functions
               branchName = branchName,
               objectId = objectId,
               message = message,
-              sourceApplication = Applications.Dynamo,
-              parents = new List<string> {serverTransport.StreamId}
+              sourceApplication = (Globals.RevitDocument != null) ? Applications.DynamoRevit : Applications.DynamoSandbox,
+              parents = new List<string> { serverTransport.StreamId }
             }).Result;
 
           responses.Add(res);
@@ -86,7 +86,7 @@ namespace Speckle.ConnectorDynamo.Functions
       var commits = output.Split('|').ToList();
       if (commits.Count == 1)
         return commits[0];
-      
+
       return commits;
     }
 

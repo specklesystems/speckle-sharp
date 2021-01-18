@@ -45,6 +45,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectorRhinoCommand.cs" />
+    <Compile Include="SchemaBuilder\SchemaBuilderCommand.cs" />
+    <Compile Include="SchemaBuilder\SchemaObjectFilter.cs" />
     <Compile Include="UI\ConnectorBindingsRhino.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
