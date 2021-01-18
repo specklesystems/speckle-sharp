@@ -541,28 +541,8 @@ namespace Objects.Converter.Revit
 
     public Face BrepFaceToNative(BrepFace face)
     {
-      
       var brep = BrepToNative(face.Brep);
       var faceIndex = face.SurfaceIndex;
-
-      /*
-      BRepBuilder builder = new BRepBuilder(BRepType.Solid);
-      BRepBuilderGeometryId faceId = builder.AddFace(SurfaceToNative(face.Surface), false);
-      BRepBuilderGeometryId loopId = builder.AddLoop(face.OuterLoop, faceId);
-      builder.FinishLoop(loopId);
-      builder.FinishFace(faceId);
-      DB.BRepBuilderEdgeGeometry edgeLoop = BRepBuilderEdgeGeometry.Create(face.OuterLoop);
-      BRepBuilderGeometryId edgeLoopID = builder.AddEdge(edgeLoop);
-      builder.AddCoEdge(loopId, edgeLoopID,true);
-
-      var bRepBuilderOutcome = builder.Finish();
-      if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
-
-      var isResultAvailable = builder.IsResultAvailable();
-      if (!isResultAvailable) return null;
-      var result = builder.GetResult();
-      */
-
       return brep.Faces.get_Item(faceIndex);
     }
 
