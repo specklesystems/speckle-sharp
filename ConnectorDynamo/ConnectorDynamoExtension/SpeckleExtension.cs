@@ -17,18 +17,17 @@ namespace Speckle.ConnectorDynamo.Extension
 
     public void Loaded(ViewLoadedParams viewLoadedParams)
     {
-      //initialize telemetry and logging
-      Setup.Init(Applications.Dynamo);
+
 
       try
       {
         var dynamoViewModel = viewLoadedParams.DynamoWindow.DataContext as DynamoViewModel;
-        var speckleWatchHandler = new SpeckleWatchHandler(dynamoViewModel.PreferenceSettings);
+        //var speckleWatchHandler = new SpeckleWatchHandler(dynamoViewModel.PreferenceSettings);
 
         if (dynamoViewModel.Model is RevitDynamoModel rdm)
         {
           rdm.RevitDocumentChanged += Rdm_RevitDocumentChanged;
-          Globals.RevitDocument = DocumentManager.Instance.CurrentDBDocument;
+          Globals.RevitDocument = DocumentManager.Instance.GetType().GetProperty("CurrentDBDocument").GetValue(DocumentManager.Instance);
         }
         //sets a read-only property using reflection WatchHandler
         //typeof(DynamoViewModel).GetProperty("WatchHandler").SetValue(dynamoViewModel, speckleWatchHandler);
@@ -38,12 +37,18 @@ namespace Speckle.ConnectorDynamo.Extension
       {
 
       }
+
+      //initialize telemetry and logging
+      if (Globals.RevitDocument != null)
+        Setup.Init(Applications.DynamoRevit);
+      else
+        Setup.Init(Applications.DynamoSandbox);
     }
 
     private void Rdm_RevitDocumentChanged(object sender, EventArgs e)
     {
 
-      Globals.RevitDocument = DocumentManager.Instance.CurrentDBDocument;
+      Globals.RevitDocument = DocumentManager.Instance.GetType().GetProperty("CurrentDBDocument").GetValue(DocumentManager.Instance);
     }
 
     public void Dispose() { }

@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30621.155
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local Dependencies", "{1E404CB8-22F1-439D-B58E-C23B14A45158}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRhino", "ConnectorRhino.csproj", "{8DD5F30B-A13D-4A24-ABDC-3E05C8C87143}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRhino", "ConnectorRhino\ConnectorRhino.csproj", "{8DD5F30B-A13D-4A24-ABDC-3E05C8C87143}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\Core\Core\Core.csproj", "{6321CA2D-5275-42A3-A034-170A0040E19E}"
 EndProject

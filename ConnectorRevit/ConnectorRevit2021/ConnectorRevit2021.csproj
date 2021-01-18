@@ -77,11 +77,6 @@
       <Name>DesktopUI</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Converters\ConverterRevit\ConverterRevit2021\ConverterRevit2021.csproj">
-      <Project>{cfbd9a83-5aa2-4849-8735-28d4f73f4f56}</Project>
-      <Name>ConverterRevit2021</Name>
-      <Private>False</Private>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -93,8 +88,8 @@
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
   </PropertyGroup>
   <!-- POST BUILD EVENTS START -->
-  <Target Name="AfterBuild"  Condition="'$(IsDesktopBuild)' == true">
-    <CallTarget Condition="'$(Configuration)' == 'Debug'" Targets="AfterBuildDebug" />
+  <Target Name="AfterBuild">
+    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
     <CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />
   </Target>
   <Target Name="AfterBuildDebug">
@@ -105,7 +100,7 @@
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
   </Target>
-  <Target Name="AfterBuildRelease" >
+  <Target Name="AfterBuildRelease">
     <ItemGroup>
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
       <SourceManifest Include="$(TargetDir)*.addin" />

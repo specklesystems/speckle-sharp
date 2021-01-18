@@ -39,7 +39,7 @@ namespace TestsIntegration
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
+      testServer = new ServerInfo { url = "https://testing.speckle.dev", name = "TestServer" };
 
       firstUserAccount = Fixtures.SeedUser(testServer);
       secondUserAccount = Fixtures.SeedUser(testServer);
@@ -169,6 +169,15 @@ namespace TestsIntegration
       Assert.AreEqual("this is a sample branch", res.description);
     }
 
+    [Test, Order(43)]
+    public async Task StreamGetBranches()
+    {
+      var res = await myClient.StreamGetBranches(streamId);
+
+      Assert.NotNull(res);
+      Assert.AreEqual("sample-branch", res[0].name);
+    }
+
     #region commit
 
     [Test, Order(43)]
@@ -188,11 +197,27 @@ namespace TestsIntegration
         streamId = streamId,
         branchName = branchName,
         objectId = objectId,
-        message = "MATT0E IS THE B3ST"
+        message = "Fibber Fibbo",
+        sourceApplication = "Tests",
+        totalChildrenCount = 100,
       });
 
       Assert.NotNull(res);
       commitId = res;
+
+      var res2 = await myClient.CommitCreate(new CommitCreateInput
+      {
+        streamId = streamId,
+        branchName = branchName,
+        objectId = objectId,
+        message = "Fabber Fabbo",
+        sourceApplication = "Tests",
+        totalChildrenCount = 100,
+        parents = new List<string>() { commitId }
+      });
+
+      Assert.NotNull(res2);
+      commitId = res2;
     }
 
     [Test, Order(44)]
@@ -201,7 +226,16 @@ namespace TestsIntegration
       var res = await myClient.CommitGet(streamId, commitId);
 
       Assert.NotNull(res);
-      Assert.AreEqual("MATT0E IS THE B3ST", res.message);
+      Assert.AreEqual("Fabber Fabbo", res.message);
+    }
+
+    [Test, Order(45)]
+    public async Task StreamGetCommits()
+    {
+      var res = await myClient.StreamGetCommits(streamId);
+      
+      Assert.NotNull(res);
+      Assert.AreEqual(commitId, res[0].id);
     }
 
     #region object

@@ -13,8 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRhinoGh", "Converters\ConverterRhinoGh\ConverterRhinoGh\ConverterRhinoGh.csproj", "{A987E5E1-8605-46BA-9476-1D8D28502273}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamo", "Converters\ConverterDynamo\ConverterDynamo\ConverterDynamo.csproj", "{21A0F179-07D0-4018-93B2-C483F2E47D3E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRevitTests", "Converters\ConverterRevit\ConverterRevitTests\ConverterRevitTests.csproj", "{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterRevit", "ConverterRevit", "{1987848E-D753-4791-B89E-F74EDF136CB3}"
@@ -27,10 +25,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2021", "Conve
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterRevitShared", "Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.shproj", "{2DCD648D-DCA5-4D2A-8B14-AD2CB85D24B0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterDynamo", "ConverterDynamo", "{B4364C50-AF61-4796-9AEA-70A4287452A9}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterDynamoShared", "Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.shproj", "{5BAB09DC-B0FC-4004-9FD5-6496A9634071}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamoRevit", "Converters\ConverterDynamo\ConverterDynamoRevit\ConverterDynamoRevit.csproj", "{4F16A993-7D11-4565-A2A5-910899919E00}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamoSandbox", "Converters\ConverterDynamo\ConverterDynamoSandbox\ConverterDynamoSandbox.csproj", "{BC110327-3C61-4C15-AE4C-DAAE7CA82A7B}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{0bcb32cf-a3cf-4a6a-a9f8-dfe5d85d608c}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
+		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{4f16a993-7d11-4565-a2a5-910899919e00}*SharedItemsImports = 5
+		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{5bab09dc-b0fc-4004-9fd5-6496a9634071}*SharedItemsImports = 13
+		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{bc110327-3c61-4c15-ae4c-daae7ca82a7b}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{bf5515b4-c97c-4fb9-9f93-1740d2b615b3}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{e4006179-462f-4133-9481-219279138b93}*SharedItemsImports = 5
 	EndGlobalSection
@@ -51,10 +60,6 @@ Global
 		{A987E5E1-8605-46BA-9476-1D8D28502273}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A987E5E1-8605-46BA-9476-1D8D28502273}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A987E5E1-8605-46BA-9476-1D8D28502273}.Release|Any CPU.Build.0 = Release|Any CPU
-		{21A0F179-07D0-4018-93B2-C483F2E47D3E}.Debug|Any CPU.ActiveCfg = DebugSandbox|Any CPU
-		{21A0F179-07D0-4018-93B2-C483F2E47D3E}.Debug|Any CPU.Build.0 = DebugSandbox|Any CPU
-		{21A0F179-07D0-4018-93B2-C483F2E47D3E}.Release|Any CPU.ActiveCfg = ReleaseSandbox|Any CPU
-		{21A0F179-07D0-4018-93B2-C483F2E47D3E}.Release|Any CPU.Build.0 = ReleaseSandbox|Any CPU
 		{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -71,6 +76,14 @@ Global
 		{BF5515B4-C97C-4FB9-9F93-1740D2B615B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF5515B4-C97C-4FB9-9F93-1740D2B615B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF5515B4-C97C-4FB9-9F93-1740D2B615B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F16A993-7D11-4565-A2A5-910899919E00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F16A993-7D11-4565-A2A5-910899919E00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F16A993-7D11-4565-A2A5-910899919E00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F16A993-7D11-4565-A2A5-910899919E00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC110327-3C61-4C15-AE4C-DAAE7CA82A7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC110327-3C61-4C15-AE4C-DAAE7CA82A7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC110327-3C61-4C15-AE4C-DAAE7CA82A7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC110327-3C61-4C15-AE4C-DAAE7CA82A7B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -78,13 +91,16 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{7EF0C96C-1FD9-42B2-85CE-BFD9B10DAC06} = {986B7226-6A4C-4881-8481-ADAFD0EC70B0}
 		{A987E5E1-8605-46BA-9476-1D8D28502273} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
-		{21A0F179-07D0-4018-93B2-C483F2E47D3E} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 		{D9C88135-B4B3-4C6C-A9D9-01A59A00BC0C} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 		{1987848E-D753-4791-B89E-F74EDF136CB3} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 		{0BCB32CF-A3CF-4A6A-A9F8-DFE5D85D608C} = {1987848E-D753-4791-B89E-F74EDF136CB3}
 		{E4006179-462F-4133-9481-219279138B93} = {1987848E-D753-4791-B89E-F74EDF136CB3}
 		{BF5515B4-C97C-4FB9-9F93-1740D2B615B3} = {1987848E-D753-4791-B89E-F74EDF136CB3}
 		{2DCD648D-DCA5-4D2A-8B14-AD2CB85D24B0} = {1987848E-D753-4791-B89E-F74EDF136CB3}
+		{B4364C50-AF61-4796-9AEA-70A4287452A9} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
+		{5BAB09DC-B0FC-4004-9FD5-6496A9634071} = {B4364C50-AF61-4796-9AEA-70A4287452A9}
+		{4F16A993-7D11-4565-A2A5-910899919E00} = {B4364C50-AF61-4796-9AEA-70A4287452A9}
+		{BC110327-3C61-4C15-AE4C-DAAE7CA82A7B} = {B4364C50-AF61-4796-9AEA-70A4287452A9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}

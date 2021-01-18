@@ -213,6 +213,12 @@ namespace Speckle.ConnectorDynamo.Functions
 
       if (account == null)
         account = AccountManager.GetDefaultAccount();
+      
+      if(account == null)
+      {
+        Utils.HandleApiExeption(new Exception("No accounts found. Please use the Speckle Manager to manage your accounts on this computer."));
+      }
+
 
       var client = new Client(account);
       var streamWrappers = new List<StreamWrapper>();

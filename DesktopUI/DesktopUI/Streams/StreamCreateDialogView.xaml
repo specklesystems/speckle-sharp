@@ -31,6 +31,8 @@
             <TextBlock FontSize="10"
                        Text="{Binding createdAt}" />
             <TextBlock FontSize="10"
+                       Text="{Binding role, StringFormat='Role: {0}'}" />
+            <TextBlock FontSize="10"
                        Text="{Binding description}" />
           </StackPanel>
 

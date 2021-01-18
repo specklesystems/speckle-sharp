@@ -483,19 +483,18 @@ namespace SpeckleRhino
         streamId = streamId,
         objectId = commitObjId,
         branchName = state.Branch.name,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from Rhino."
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from Rhino.",
+        sourceApplication = Applications.Rhino
       };
 
-      if (state.PreviousCommitId != null) { actualCommit.previousCommitIds = new List<string>() { state.PreviousCommitId }; }
+      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
       try
       {
-        var res = await client.CommitCreate(actualCommit);
+        var commitId = await client.CommitCreate(actualCommit);
 
-        var updatedStream = await client.StreamGet(streamId);
-        state.Branches = updatedStream.branches.items;
-        state.Stream.name = updatedStream.name;
-        state.Stream.description = updatedStream.description;
+        await state.RefreshStream();
+        state.PreviousCommitId = commitId;
 
         PersistAndUpdateStreamInFile(state);
         RaiseNotification($"{objCount} objects sent to {state.Stream.name}.");

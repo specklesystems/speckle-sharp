@@ -82,7 +82,7 @@ namespace ConverterRevitTests
       if (appPlaceholders != null)
         converter.SetPreviousContextObjects(appPlaceholders);
 
-      converter.SetContextObjects(spkElems.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject=x }).ToList());
+      converter.SetContextObjects(spkElems.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
 
 
       var resEls = new List<object>();

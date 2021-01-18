@@ -60,6 +60,11 @@ namespace Speckle.Core.Api
     public string branchName { get; set; }
     public string objectId { get; set; }
     public string message { get; set; }
+    public string sourceApplication { get; set; }
+    public int totalChildrenCount { get; set; }
+    public List<string> parents { get; set; }
+
+    [Obsolete("Please use the parents property. This property will be removed in later versions")]
     public List<string> previousCommitIds { get; set; }
   }
 
@@ -85,7 +90,7 @@ namespace Speckle.Core.Api
     public string description { get; set; }
 
     public bool isPublic { get; set; }
-
+    public string role { get; set; }
     public string createdAt { get; set; }
     public string updatedAt { get; set; }
 
@@ -101,6 +106,11 @@ namespace Speckle.Core.Api
     /// Set only in the case that you've requested this through <see cref="Client.CommitGet(System.Threading.CancellationToken, string, string)"/>.
     /// </summary>
     public Commit commit { get; set; }
+
+    /// <summary>
+    /// Set only in the case that you've requested this through <see cref="Client.StreamGetCommits(System.Threading.CancellationToken, string, int)"/>
+    /// </summary>
+    public Commits commits { get; set; }
 
     public Object @object { get; set; }
 
@@ -141,12 +151,16 @@ namespace Speckle.Core.Api
   {
     public string id { get; set; }
     public string message { get; set; }
+    public string branchName { get; set; }
     public string authorName { get; set; }
     public string authorId { get; set; }
     public string authorAvatar { get; set; }
     public string createdAt { get; set; }
+    public string sourceApplication { get; set; }
 
     public string referencedObject { get; set; }
+    public int totalChildrenCount { get; set; }
+    public List<string> parents { get; set; }
 
     public override string ToString()
     {
@@ -163,7 +177,6 @@ namespace Speckle.Core.Api
     public string createdAt { get; set; }
   }
 
-
   public class Branch
   {
     public string id { get; set; }
@@ -176,7 +189,6 @@ namespace Speckle.Core.Api
       return $"Branch ({name} | {id})";
     }
   }
-
 
   public class Streams
   {

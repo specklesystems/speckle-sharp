@@ -164,19 +164,18 @@ namespace Speckle.ConnectorRevit.UI
         streamId = streamId,
         objectId = objectId,
         branchName = state.Branch.name,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Sent {convertedCount} objects from {ConnectorRevitUtils.RevitAppName}."
+        message = state.CommitMessage != null ? state.CommitMessage : $"Sent {convertedCount} objects from {ConnectorRevitUtils.RevitAppName}.",
+        sourceApplication = ConnectorRevitUtils.RevitAppName,
       };
 
-      if (state.PreviousCommitId != null) { actualCommit.previousCommitIds = new List<string>() { state.PreviousCommitId }; }
+      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
       try
       {
-        var res = await client.CommitCreate(actualCommit);
+        var commitId = await client.CommitCreate(actualCommit);
 
-        var updatedStream = await client.StreamGet(streamId);
-        state.Branches = updatedStream.branches.items;
-        state.Stream.name = updatedStream.name;
-        state.Stream.description = updatedStream.description;
+        await state.RefreshStream();
+        state.PreviousCommitId = commitId;
 
         WriteStateToFile();
         RaiseNotification($"{convertedCount} objects sent to Speckle 🚀");

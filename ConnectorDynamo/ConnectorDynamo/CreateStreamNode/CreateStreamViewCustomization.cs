@@ -1,4 +1,5 @@
-﻿using Dynamo.Configuration;
+﻿using System;
+using Dynamo.Configuration;
 using Dynamo.Controls;
 using Dynamo.Models;
 using Dynamo.Scheduler;
@@ -33,6 +34,13 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
       ui.DataContext = model;
       ui.Loaded += Loaded;
       ui.CreateStreamButton.Click += CreateStreamButtonClick;
+      ui.AccountsComboBox.DropDownOpened += AccountsComboBoxOnDropDownOpened;
+    }
+
+    private void AccountsComboBoxOnDropDownOpened(object sender, EventArgs e)
+    {
+      accountsNode.ClearErrorsAndWarnings();
+      accountsNode.RestoreSelection();
     }
 
     private void Loaded(object o, RoutedEventArgs a)

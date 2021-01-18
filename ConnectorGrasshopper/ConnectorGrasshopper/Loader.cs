@@ -5,8 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Timers;
 using System.Windows.Forms;
-using Grasshopper.GUI;
-using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -41,7 +39,7 @@ namespace ConnectorGrasshopper
 
     private void HandleKitSelectedEvent(object sender, EventArgs args)
     {
-      var clickedItem = (ToolStripMenuItem) sender;
+      var clickedItem = (ToolStripMenuItem)sender;
 
       // Update the selected kit
       selectedKit = loadedKits.First(kit => clickedItem.Text.Trim() == kit.Name);
@@ -52,7 +50,7 @@ namespace ConnectorGrasshopper
       // Update the check status of all
       foreach (var item in kitMenuItems)
       {
-        if(item is ToolStripMenuItem menuItem)
+        if (item is ToolStripMenuItem menuItem)
           menuItem.CheckState =
             clickedItem.Text.Trim() == selectedKit.Name
               ? CheckState.Checked
@@ -70,17 +68,17 @@ namespace ConnectorGrasshopper
       kitHeader.Enabled = false;
 
       loadedKits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-      
+
       var kitItems = new List<ToolStripItem>();
       loadedKits.ToList().ForEach(kit =>
       {
         var item = speckleMenu.DropDown.Items.Add("  " + kit.Name);
-        
+
         item.Click += HandleKitSelectedEvent;
         kitItems.Add(item);
       });
       kitMenuItems = kitItems;
-      
+
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
 
       speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo);
