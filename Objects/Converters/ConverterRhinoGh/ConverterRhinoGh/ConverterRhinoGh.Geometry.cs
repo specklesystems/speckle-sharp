@@ -178,17 +178,24 @@ namespace Objects.Converter.RhinoGh
     public Line LineToSpeckle(RH.Line line)
     {
       var sLine =  new Line(PointsToFlatArray(new Point3d[] { line.From, line.To }), ModelUnits);
-
+      sLine.length = line.Length;
+      var box = new RH.Box(line.BoundingBox);
+      sLine.bbox = BoxToSpeckle(box);
       return sLine;
     }
 
     // Rh Line capture
     public Line LineToSpeckle(LineCurve line)
     {
-      return new Line(PointsToFlatArray(new Point3d[] { line.PointAtStart, line.PointAtEnd }), ModelUnits)
+      var sLine =  new Line(PointsToFlatArray(new Point3d[] { line.PointAtStart, line.PointAtEnd }), ModelUnits)
       {
         domain = IntervalToSpeckle(line.Domain)
       };
+      sLine.length = line.GetLength();
+      var box = new RH.Box(line.GetBoundingBox(true));
+      sLine.bbox = BoxToSpeckle(box);
+
+      return sLine;
     }
 
     // Back again only to LINECURVES because we hate grasshopper and its dealings with rhinocommon
@@ -205,9 +212,16 @@ namespace Objects.Converter.RhinoGh
     // Rectangles now and forever forward will become polylines
     public Polyline PolylineToSpeckle(Rectangle3d rect)
     {
-      return new Polyline(
+      var sPoly = new Polyline(
         PointsToFlatArray(new Point3d[] { rect.Corner(0), rect.Corner(1), rect.Corner(2), rect.Corner(3) }), ModelUnits)
-      { closed = true };
+      {
+        closed = true,
+        area = rect.Area,
+        bbox = BoxToSpeckle(new RH.Box(rect.BoundingBox)),
+        length = rect.Height * 2 + rect.Width * 2
+      };
+
+      return sPoly;
     }
 
     // Circle
@@ -216,6 +230,9 @@ namespace Objects.Converter.RhinoGh
     {
       var circle = new Circle(PlaneToSpeckle(circ.Plane), circ.Radius, ModelUnits);
       circle.domain = new Interval(0, 1);
+      circle.length = 2 * Math.PI * circ.Radius;
+      circle.area = Math.PI * circ.Radius * circ.Radius;
+      
       return circle;
     }
 
@@ -240,7 +257,8 @@ namespace Objects.Converter.RhinoGh
         a.TryGetCircle(out preCircle);
         Circle myCircle = CircleToSpeckle(preCircle);
         myCircle.domain = IntervalToSpeckle(a.Domain);
-
+        myCircle.length = a.GetLength();
+        myCircle.bbox = BoxToSpeckle(new RH.Box(a.GetBoundingBox(true)));
         return myCircle;
       }
       else
@@ -249,7 +267,8 @@ namespace Objects.Converter.RhinoGh
         a.TryGetArc(out preArc);
         Arc myArc = ArcToSpeckle(preArc);
         myArc.domain = IntervalToSpeckle(a.Domain);
-
+        myArc.length = a.GetLength();
+        myArc.bbox = BoxToSpeckle(new RH.Box(a.GetBoundingBox(true)));
         return myArc;
       }
     }
@@ -262,6 +281,8 @@ namespace Objects.Converter.RhinoGh
       arc.startPoint = PointToSpeckle(a.StartPoint);
       arc.midPoint = PointToSpeckle(a.MidPoint);
       arc.domain = new Interval(0,1);
+      arc.length = a.Length;
+      arc.bbox = BoxToSpeckle(new RH.Box(a.BoundingBox()));
       return arc;
     }
 
@@ -286,6 +307,8 @@ namespace Objects.Converter.RhinoGh
       
       var el =  new Ellipse(PlaneToSpeckle(e.Plane), e.Radius1, e.Radius2, ModelUnits);
       el.domain = new Interval(0,1);
+      el.length = e.ToNurbsCurve().GetLength();
+      el.bbox = BoxToSpeckle(new RH.Box(e.ToNurbsCurve().GetBoundingBox(true)));
       return el;
     }
 
