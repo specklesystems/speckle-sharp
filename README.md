@@ -10,6 +10,10 @@
 
 </details>
 
+**Status**
+
+[![.NET Core](https://circleci.com/gh/specklesystems/speckle-sharp.svg?style=svg)](https://circleci.com/gh/specklesystems/speckle-sharp)
+
 ## Introduction
 
 This monorepo is the home to our Speckle 2.0 C# projects. The [Speckle Server](https://github.com/specklesystems/Server) is providing all the web-facing functionality and can be found [here](https://github.com/specklesystems/Server).

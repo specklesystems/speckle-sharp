@@ -102,7 +102,11 @@ namespace ConnectorGrasshopper.Streams
                 var account = item.Value.AccountId == null
                   ? AccountManager.GetDefaultAccount()
                   : AccountManager.GetAccounts().FirstOrDefault(a => a.id == item.Value.AccountId);
-
+                if (account == null)
+                {
+                  AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find default account in this machine. Use the Speckle Manager to add an account.");
+                  return;
+                }
                 var client = new Client(account);
                 
                 var task = client.StreamGet(item.Value?.StreamId);

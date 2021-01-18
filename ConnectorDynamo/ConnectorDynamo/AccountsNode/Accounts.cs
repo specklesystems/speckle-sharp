@@ -101,15 +101,17 @@ namespace Speckle.ConnectorDynamo.AccountsNode
     internal void RestoreSelection()
     {
       AccountList = new ObservableCollection<Account>(AccountManager.GetAccounts());
-
-        if (!string.IsNullOrEmpty(SelectedAccountId))
-        {
-          SelectedAccount = AccountList.FirstOrDefault(x => x.id == SelectedAccountId);
-        }
-        else
-        {
-          SelectedAccount = AccountList.FirstOrDefault(x => x.isDefault);
-        }
+      if (AccountList.Count == 0)
+      {
+        Warning("No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
+        SelectedAccount = null;
+        SelectedAccountId = "";
+        return;
+      }
+      
+      SelectedAccount = !string.IsNullOrEmpty(SelectedAccountId) 
+        ? AccountList.FirstOrDefault(x => x.id == SelectedAccountId) 
+        : AccountList.FirstOrDefault(x => x.isDefault);
     }
 
     internal void SelectionChanged(Account account)

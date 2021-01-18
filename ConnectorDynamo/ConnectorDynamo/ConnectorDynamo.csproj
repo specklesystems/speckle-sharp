@@ -20,47 +20,25 @@
     <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
     <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugSandbox|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\DebugSandbox\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;SANDBOX</DefineConstants>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\SpeckleConnectorDynamo.xml</DocumentationFile>
     <PlatformTarget>x64</PlatformTarget>
     <StartProgram>C:\Program Files\Dynamo\Dynamo Core\2.7\DynamoSandbox.exe</StartProgram>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseSandbox|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\ReleaseSandbox\</OutputPath>
-    <DefineConstants>TRACE;SANDBOX</DefineConstants>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugRevit|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\DebugRevit\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;REVIT</DefineConstants>
-    <DocumentationFile>bin\Debug\SpeckleConnectorDynamo.xml</DocumentationFile>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <StartProgram>C:\Program Files\Autodesk\Revit 2021\Revit.exe</StartProgram>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseRevit|AnyCPU'">
-    <OutputPath>bin\ReleaseRevit\</OutputPath>
-    <DefineConstants>TRACE;REVIT</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json-8.0.3">
@@ -112,6 +90,10 @@
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{3f02e475-e777-4dfd-8ae9-8065edd092dc}</Project>
       <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
+      <Project>{82f74946-6c04-4ae3-bfb9-f09e68cdfe12}</Project>
+      <Name>ServerTransport</Name>
     </ProjectReference>
     <ProjectReference Include="..\ConnectorDynamoExtension\ConnectorDynamoExtension.csproj">
       <Project>{b494fd40-5e59-4d5e-87b0-80aac8bdcd5a}</Project>
@@ -196,16 +178,9 @@
   <Target Name="BeforeBuild">
   </Target>
   -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseSandbox' OR  '$(Configuration)' == 'DebugSandbox'">
-    <PackageName>ConnectorDynamo</PackageName>
-    <PackageFolder>$(ProjectDir)dist\Sandbox\$(PackageName)\</PackageFolder>
-    <BinFolder>$(PackageFolder)bin\</BinFolder>
-    <ExtraFolder>$(PackageFolder)extra\</ExtraFolder>
-    <DyfFolder>$(PackageFolder)dyf\</DyfFolder>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseRevit' OR  '$(Configuration)' == 'DebugRevit'">
-    <PackageName>ConnectorDynamo</PackageName>
-    <PackageFolder>$(ProjectDir)dist\Revit\$(PackageName)\</PackageFolder>
+  <PropertyGroup>
+    <PackageName>SpeckleDynamo2</PackageName>
+    <PackageFolder>$(ProjectDir)dist\$(PackageName)\</PackageFolder>
     <BinFolder>$(PackageFolder)bin\</BinFolder>
     <ExtraFolder>$(PackageFolder)extra\</ExtraFolder>
     <DyfFolder>$(PackageFolder)dyf\</DyfFolder>

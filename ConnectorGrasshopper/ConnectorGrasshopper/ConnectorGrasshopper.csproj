@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ConnectorGrasshopper</RootNamespace>
-    <AssemblyName>ConnectorGrasshopper</AssemblyName>
+    <AssemblyName>SpeckleConnectorGrasshopper</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -217,12 +217,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
-    <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(ProjectName).gha"</PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
-    <PostBuildEvent>cp "$(TargetPath)" "$(TargetDir)$(ProjectName).gha"</PostBuildEvent>
-  </PropertyGroup>
+
   <PropertyGroup>
     <FallbackCulture>en-US</FallbackCulture>
   </PropertyGroup>
@@ -234,4 +229,10 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets')" />
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(TargetName).gha"</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
+    <PostBuildEvent>cp "$(TargetPath)" "$(TargetDir)$(TargetName).gha"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

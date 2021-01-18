@@ -201,17 +201,24 @@ namespace Tests
     {
       int MAX_NUM = 2020;
       var mesh = new FakeMesh();
-      
+
       mesh.ArrayOfDoubles = new double[MAX_NUM];
       mesh.ArrayOfLegs = new TableLeg[MAX_NUM];
+      var customChunk = new List<double>();
+      var defaultChunk = new List<double>();
 
       for (int i = 0; i < MAX_NUM; i++)
       {
         mesh.Vertices.Add(i / 2);
+        customChunk.Add(i / 2);
+        defaultChunk.Add(i / 2);
         mesh.Tables.Add(new Tabletop { length = 2000 });
         mesh.ArrayOfDoubles[i] = i * 3.3;
         mesh.ArrayOfLegs[i] = new TableLeg { height = 2 + i };
       }
+      
+      mesh["@(800)CustomChunk"] = customChunk;
+      mesh["@()DefaultChunk"] = defaultChunk;
 
       var serialised = Operations.Serialize(mesh);
       var deserialised = Operations.Deserialize(serialised);

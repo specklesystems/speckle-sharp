@@ -108,10 +108,7 @@ namespace Speckle.ConnectorRevit.UI
 
       try
       {
-        var updatedStream = await state.Client.StreamGet(state.Stream.id);
-        state.Branches = updatedStream.branches.items;
-        state.Stream.name = updatedStream.name;
-        state.Stream.description = updatedStream.description;
+        await state.RefreshStream();
 
         WriteStateToFile();
       }
