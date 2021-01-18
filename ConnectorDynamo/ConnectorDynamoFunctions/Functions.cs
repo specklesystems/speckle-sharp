@@ -44,7 +44,7 @@ namespace Speckle.ConnectorDynamo.Functions
         // Only create commits on ServerTransport instances (for now)
         if (!(t is ServerTransport serverTransport))
         {
-          commitWrappers.Add(t + objectId);
+          //commitWrappers.Add(t + objectId);
           continue;
         }
         var branchName = branchNames == null ? "main" : branchNames[t];
