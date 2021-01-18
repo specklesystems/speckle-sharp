@@ -3,6 +3,7 @@ using Objects.Geometry;
 using Objects.Primitive;
 using Rhino;
 using Rhino.Geometry;
+using Rhino.DocObjects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -53,10 +54,23 @@ namespace Objects.Converter.RhinoGh
       Doc = (RhinoDoc)doc;
     }
 
+    // speckle user string for custom schemas
+    // TODO: address consistency weak point, since SpeckleApplySchema command in the connector needs to match this exact string!!!
+    string SpeckleSchemaKey = "SpeckleSchema";
+
     public Base ConvertToSpeckle(object @object)
     {
       switch (@object)
       {
+        case RhinoObject o:
+          // TODO: add materials bullshit
+
+          // Tries to convert to BuiltElements schema first
+          Base convertedBE = ConvertToSpeckleBE(o.Geometry, o.Attributes.GetUserString(SpeckleSchemaKey));
+          if (convertedBE != null)
+            return convertedBE;
+          return ObjectToSpeckle(o);
+
         case Point3d o:
           return PointToSpeckle(o);
 
@@ -131,6 +145,55 @@ namespace Objects.Converter.RhinoGh
     public List<Base> ConvertToSpeckle(List<object> objects)
     {
       return objects.Select(x => ConvertToSpeckle(x)).ToList();
+    }
+
+    // NOTE: is there a way of retrieving class name from BuiltElements class directly? using hardcoded strings atm
+    public Base ConvertToSpeckleBE(object @object, string schema = null)
+    {
+      if (schema == null) 
+        return null;
+
+      switch (@object)
+      {
+        case RhinoObject o:
+          schema = o.Attributes.GetUserString(SpeckleSchemaKey);
+          return ConvertToSpeckleBE(o.Geometry, schema);
+
+        case RH.Curve o:
+          switch (schema)
+          {
+            case "Column":
+              return CurveToSpeckleColumn(o);
+
+            case "Beam":
+              return CurveToSpeckleBeam(o);
+
+            default:
+              throw new NotSupportedException();
+          }
+
+        case RH.Brep o:
+          switch(schema)
+          {
+            case "Floor":
+              return BrepToSpeckleFloor(o);
+
+            case "Ceiling":
+              return BrepToSpeckleCeiling(o);
+
+            case "Roof":
+              return BrepToSpeckleRoof(o);
+
+            case "Wall":
+              return BrepToSpeckleWall(o);
+
+            default:
+              throw new NotSupportedException();
+          }
+
+        default:
+          throw new NotSupportedException();
+      }
     }
 
     public object ConvertToNative(Base @object)

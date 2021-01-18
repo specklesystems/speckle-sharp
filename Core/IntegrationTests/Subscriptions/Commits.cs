@@ -29,13 +29,14 @@ namespace TestsIntegration.Subscriptions
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
+      testServer = new ServerInfo { url = "https://testing.speckle.dev", name = "TestServer" };
       testUserAccount = Fixtures.SeedUser(testServer);
       client = new Client(testUserAccount);
       myServerTransport = new ServerTransport(testUserAccount, null);
     }
 
     [Test, Order(0)]
+    //[Ignore("Ironically, it fails.")]
     public async Task SubscribeCommitCreated()
     {
       var streamInput = new StreamCreateInput
@@ -62,7 +63,7 @@ namespace TestsIntegration.Subscriptions
       client.SubscribeCommitCreated(streamId);
       client.OnCommitCreated += Client_OnCommitCreated;
 
-      Thread.Sleep(100); //let server catch-up
+      Thread.Sleep(1000); //let server catch-up
 
       var myObject = new Base();
       var ptsList = new List<Point>();
@@ -82,7 +83,9 @@ namespace TestsIntegration.Subscriptions
         streamId = streamId,
         branchName = "awesome-features",
         objectId = objectId,
-        message = "sending some test points"
+        message = "sending some test points",
+        sourceApplication = "Tests",
+        totalChildrenCount = 20
       };
 
       commitId = await client.CommitCreate(commitInput);
@@ -90,7 +93,7 @@ namespace TestsIntegration.Subscriptions
 
       await Task.Run(() =>
       {
-        Thread.Sleep(100); //let client catch-up
+        Thread.Sleep(2000); //let client catch-up
         Assert.NotNull(CommitCreatedInfo);
         Assert.AreEqual(commitInput.message, CommitCreatedInfo.message);
       });
@@ -102,12 +105,13 @@ namespace TestsIntegration.Subscriptions
     }
 
     [Test, Order(1)]
+    //[Ignore("Ironically, it fails.")]
     public async Task SubscribeCommitUpdated()
     {
       client.SubscribeCommitUpdated(streamId);
       client.OnCommitUpdated += Client_OnCommitUpdated;
 
-      Thread.Sleep(100); //let server catch-up
+      Thread.Sleep(1000); //let server catch-up
 
       var commitInput = new CommitUpdateInput
       {
@@ -121,7 +125,7 @@ namespace TestsIntegration.Subscriptions
 
       await Task.Run(() =>
       {
-        Thread.Sleep(100); //let client catch-up
+        Thread.Sleep(2000); //let client catch-up
         Assert.NotNull(CommitUpdatedInfo);
         Assert.AreEqual(commitInput.message, CommitUpdatedInfo.message);
       });
@@ -133,12 +137,13 @@ namespace TestsIntegration.Subscriptions
     }
 
     [Test, Order(3)]
+    //[Ignore("Ironically, it fails.")]
     public async Task SubscribeCommitDeleted()
     {
       client.SubscribeCommitDeleted(streamId);
       client.OnCommitDeleted += Client_OnCommitDeleted;
 
-      Thread.Sleep(100); //let server catch-up
+      Thread.Sleep(1000); //let server catch-up
 
       var commitInput = new CommitDeleteInput
       {
@@ -151,7 +156,7 @@ namespace TestsIntegration.Subscriptions
 
       await Task.Run(() =>
       {
-        Thread.Sleep(100); //let client catch-up
+        Thread.Sleep(2000); //let client catch-up
         Assert.NotNull(CommitDeletedInfo);
         Assert.AreEqual(commitId, CommitDeletedInfo.id);
       });
