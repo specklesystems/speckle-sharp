@@ -85,4 +85,11 @@
     <PostBuildEvent>mkdir -p $HOME/.config/Speckle/Kits/Objects</PostBuildEvent>
     <PostBuildEvent>cp '$(TargetDir)$(AssemblyName).dll' $HOME/.config/Speckle/Kits/Objects/</PostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (
+
+xcopy /Y /S "$(TargetDir)$(AssemblyName).dll" "$(AppData)\Speckle\Kits\Objects\"
+
+)</PostBuildEvent>
+  </PropertyGroup>
 </Project>

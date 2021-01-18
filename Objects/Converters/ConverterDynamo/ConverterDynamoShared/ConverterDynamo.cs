@@ -30,7 +30,7 @@ namespace Objects.Converter.Dynamo
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
 
-    public IEnumerable<string> GetServicedApplications() => new string[] { Applications.Dynamo };
+    public IEnumerable<string> GetServicedApplications() => new string[] { Applications.DynamoRevit, Applications.DynamoSandbox };
 
     public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
 
@@ -113,7 +113,7 @@ namespace Objects.Converter.Dynamo
 
         case Line o:
           return LineToNative(o);
-        
+
         case Polyline o:
           return PolylineToNative(o);
 
@@ -222,7 +222,7 @@ namespace Objects.Converter.Dynamo
 
         case Line _:
           return true;
-        
+
         case Polyline _:
           return true;
 
