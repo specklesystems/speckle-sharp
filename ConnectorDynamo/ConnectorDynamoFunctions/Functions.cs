@@ -24,47 +24,48 @@ namespace Speckle.ConnectorDynamo.Functions
     /// Sends data to a Speckle Server by creating a commit on the master branch of a Stream
     /// </summary>
     /// <param name="data">Data to send</param>
-    /// <param name="stream">Stream to send the data to</param>
+    /// <param name="transports">Transports to send the data to</param>
     /// <returns name="log">Log</returns>
-    public static List<string> Send(Base data, List<StreamWrapper> streams, CancellationToken cancellationToken,
-      List<string> branchNames = null, string message = "",
+    public static List<StreamWrapper> Send(Base data, List<ITransport> transports, CancellationToken cancellationToken,
+      Dictionary<ITransport,string> branchNames = null, string message = "",
       Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
     {
+      var commitWrappers = new List<StreamWrapper>();
       var responses = new List<string>();
-      var transports = new List<ITransport>();
-      var accounts = new List<Core.Credentials.Account>();
-      foreach (var stream in streams)
-      {
-        var account = stream.GetAccount();
-        accounts.Add(account); //cached here
-        transports.Add(new ServerTransport(account, stream.StreamId));
-      }
-
+      
       var objectId = Operations.Send(data, cancellationToken, transports, true,
         onProgressAction, onErrorAction).Result;
 
       if (cancellationToken.IsCancellationRequested)
         return null;
 
-      for (int i = 0; i < streams.Count; i++)
+      foreach (var t in transports)
       {
-        var branchName = branchNames == null ? "main" : branchNames[i];
-        var client = new Client(accounts[i]);
-
+        // Only create commits on ServerTransport instances (for now)
+        if (!(t is ServerTransport serverTransport)) continue;
+        
+        var branchName = branchNames == null ? "main" : branchNames[t];
+        var client = new Client(serverTransport.Account);
         try
         {
           var res = client.CommitCreate(cancellationToken,
-         new CommitCreateInput
-         {
-           streamId = streams[i].StreamId,
-           branchName = branchName,
-           objectId = objectId,
-           message = message,
-           sourceApplication = Applications.Dynamo,
-           parents = new List<string>() {streams[i].CommitId}
-         }).Result;
+            new CommitCreateInput
+            {
+              streamId = serverTransport.StreamId,
+              branchName = branchName,
+              objectId = objectId,
+              message = message,
+              sourceApplication = Applications.Dynamo,
+              parents = new List<string> {serverTransport.StreamId}
+            }).Result;
 
           responses.Add(res);
+          var wrapper =
+            new StreamWrapper(serverTransport.StreamId, serverTransport.Account.id, serverTransport.BaseUri)
+            {
+              CommitId = res
+            };
+          commitWrappers.Add(wrapper);
         }
         catch (Exception ex)
         {
@@ -74,16 +75,16 @@ namespace Speckle.ConnectorDynamo.Functions
 
       }
 
-      return responses;
+      return commitWrappers;
     }
 
     public static object SendData(string output)
     {
       var commits = output.Split('|').Select(x => new StreamWrapper(x)).ToList();
-      if (commits.Count() == 1)
+      if (commits.Count == 1)
         return commits[0];
-      else
-        return commits;
+      
+      return commits;
     }
 
     /// <summary>
@@ -96,11 +97,11 @@ namespace Speckle.ConnectorDynamo.Functions
       Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null,
       Action<int> onTotalChildrenCountKnown = null)
     {
-      Core.Credentials.Account account = stream.GetAccount();
+      var account = stream.GetAccount();
       stream.BranchName = string.IsNullOrEmpty(stream.BranchName) ? "main" : stream.BranchName;
 
       var client = new Client(account);
-      Commit commit = null;
+      Commit commit;
       try
       {
         if (string.IsNullOrEmpty(stream.CommitId))
