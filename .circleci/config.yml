@@ -116,22 +116,25 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Build << parameters.connectorname >>
           command: msbuild << parameters.connectorname >>/<< parameters.connectorname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
       - run: 
-          name: Check if is deploy
-          command: if (-Not [System.Convert]::ToBoolean('<< parameters.installer >>') ) { circleci-agent step halt } # stop job if installer == false
+          name: Deploy?
+          command: | # stop job if not triggered by deployment workflow (parameters.installer == false)
+            if (-Not [System.Convert]::ToBoolean('<< parameters.installer >>') ) { 
+            circleci-agent step halt 
+            Write-Host "Job stopped gracefully"
+            } else { Write-Host "Job continuing" }
       - attach_workspace:
           at: ./
       - run: # Patches the main assemblies
           name: Patch
-          command: | # If no tag, use 0.0.0 (for testing only!)
+          command: | # If no tag, use 0.0.0.1 and don't make any YML (for testing only!)
             $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.0.1" } else { $env:CIRCLE_TAG }
             $version =  $tag.replace("<< parameters.slug >>/","").replace("all/","")  
             speckle-sharp-ci-tools/Patch/Patcher.exe << parameters.connectorname >>/ *<< parameters.connectorname >>* $version
+            # only create the yml if we have a tag
+            if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/latest.yml" -ItemType File -Value "version: $version.0" }
       - run: # Creates the inno installer
           name: InnoSetup
-          command: speckle-sharp-ci-tools/InnoSetup/ISCC.exe speckle-sharp-ci-tools/<< parameters.slug >>.iss
-      - run: # only create the yml if we have a tag
-          name: Create yml manifest
-          command: 'if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/latest.yml" -ItemType File -Value "version: $version.0" }'       
+          command: speckle-sharp-ci-tools/InnoSetup/ISCC.exe speckle-sharp-ci-tools/<< parameters.slug >>.iss     
       - persist_to_workspace:
           root: ./
           paths:
