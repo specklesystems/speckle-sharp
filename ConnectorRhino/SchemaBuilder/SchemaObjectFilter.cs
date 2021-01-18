@@ -17,7 +17,7 @@ namespace SpeckleRhino
   /// </summary>
   public class SchemaObjectFilter
   {
-    enum SupportedSchema { Floor, Wall, Roof, Ceiling, Column, Beam };
+    enum SupportedSchema { Floor, Wall, Roof, Ceiling, Column, Beam, none };
 
     #region Properties
     private Rhino.RhinoDoc Doc;
@@ -46,45 +46,34 @@ namespace SpeckleRhino
     #endregion
 
     #region Internal Methods
-    // check layer path and object name for all supported schemas
+    // check object name and then layer path for all supported schemas
     private void ApplyNamingFilter()
     {
       for (int j = objsToBeFiltered.Count - 1; j >= 0; j--)
       {
-        bool applied = false; 
-
         RhinoObject obj = objsToBeFiltered[j];
         string objName = obj.Attributes.Name;
         string objPath = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
 
-        if (objName != null)
+        SupportedSchema foundSchema = SupportedSchema.none;
+        foreach (SupportedSchema schema in Enum.GetValues(typeof(SupportedSchema)))
         {
-          foreach (SupportedSchema schema in Enum.GetValues(typeof(SupportedSchema)))
-          {
-            if (objName.Contains(schema.ToString()))
-            {
-                // add to filter dic and remove from filter list
-                filterDictionary[schema].Add(obj);
-                objsToBeFiltered.RemoveAt(j);
-                applied = true;
-                break;
-            }
-          }
+          if (objName != null && objName.Contains(schema.ToString()))
+          { foundSchema = schema; break; }
         }
-        if (!applied)
-        {
+        if (foundSchema == SupportedSchema.none)
           foreach (SupportedSchema schema in Enum.GetValues(typeof(SupportedSchema)))
           {
             if (objPath.Contains(schema.ToString()))
-            {
-                // add to filter dic and remove from filter list
-                filterDictionary[schema].Add(obj);
-                objsToBeFiltered.RemoveAt(j);
-                applied = true;
-                break;
-            }
+            { foundSchema = schema; break; }
           }
+        if (foundSchema != SupportedSchema.none)
+        {
+          // add to filter dict and remove from filter list
+          filterDictionary[foundSchema].Add(obj);
+          objsToBeFiltered.RemoveAt(j);
         }
+        
       }
     }
 
@@ -113,7 +102,6 @@ namespace SpeckleRhino
       }
     }
 
-    // this will add supported schemas for Curve objects
     private void ProcessCurveObject(RhinoObject obj)
     {
       Curve crv = obj.Geometry as Curve;
@@ -124,12 +112,8 @@ namespace SpeckleRhino
         else if (IsViableObject(SupportedSchema.Beam, obj))
           SchemaDictionary[SupportedSchema.Beam.ToString()].Add(obj);
       }
-      else
-      {
-      }
     }
 
-    // this will output a dictionary with supported schemas for surface objects
     private void ProcessSurfaceObject(RhinoObject obj)
     {
       Brep brp = obj.Geometry as Brep;
@@ -185,18 +169,13 @@ namespace SpeckleRhino
           catch { }
           break;
         case SupportedSchema.Wall:
-          try // assumes all vertical planar surfaces
+          try // assumes z vertical planar single surface
           {
             Brep brp = obj.Geometry as Brep;
-            bool allV = true;
-            foreach (Surface srf in brp.Surfaces)
-            {
-              if (IsPlanar(srf, out bool isH, out bool isV))
-                if (!isV)
-                  allV = false; break;
-            }
-            if (allV)
-              return true;
+            if (brp.Surfaces.Count > 1) { return false; }
+            if (IsPlanar(brp.Surfaces.First(), out bool singleH, out bool singleV))
+              if (singleV)
+                return true;
           }
           catch { }
           break;

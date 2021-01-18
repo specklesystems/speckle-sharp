@@ -9,7 +9,6 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
@@ -63,8 +62,6 @@ namespace Objects.Converter.RhinoGh
       switch (@object)
       {
         case RhinoObject o:
-          // TODO: add materials bullshit
-
           // Tries to convert to BuiltElements schema first
           Base convertedBE = ConvertToSpeckleBE(o.Geometry, o.Attributes.GetUserString(SpeckleSchemaKey));
           if (convertedBE != null)
