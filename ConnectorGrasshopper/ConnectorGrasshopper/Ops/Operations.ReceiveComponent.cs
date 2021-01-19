@@ -31,6 +31,40 @@ namespace ConnectorGrasshopper.Ops
     protected override Bitmap Icon => Properties.Resources.Receiver;
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
+    {
+      if (context == GH_DocumentContext.Open && StreamWrapper != null)
+      {
+        Task.Run(() =>
+        {      
+          ApiClient = new Client(StreamWrapper.GetAccount());
+          // Check if there are newer commits in this receiver.
+          var b = ApiClient.BranchGet(StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
+          if(b.commits.items[0].referencedObject != ReceivedObjectId)
+            HandleNewCommit();
+        });
+      }
+      base.DocumentContextChanged(document, context);
+    }
+
+    private void HandleNewCommit()
+    {
+      Message = "Expired";
+      CurrentComponentState = "expired";
+      AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"There is a newer commit available for this {InputType}");
+
+      Rhino.RhinoApp.InvokeOnUiThread((Action) delegate
+      {
+        if (AutoReceive)
+        {
+          ExpireSolution(true);
+        }
+        else
+        {
+          OnDisplayExpired(true);
+        }
+      });
+    }
 
     public bool AutoReceive { get; set; } = false;
 
@@ -61,6 +95,7 @@ namespace ConnectorGrasshopper.Ops
       BaseWorker = new ReceiveComponentWorker(this);
       Attributes = new ReceiveComponentAttributes(this);
       SetDefaultKitAndConverter();
+      
     }
 
     public override bool Write(GH_IWriter writer)
@@ -322,28 +357,14 @@ namespace ConnectorGrasshopper.Ops
       ApiClient = new Client(wrapper.GetAccount());
       ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
       ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
+      
     }
 
     private void ApiClient_OnCommitCreated(object sender, Speckle.Core.Api.SubscriptionModels.CommitInfo e)
     {
       // Break if wrapper is branch type and branch name is not equal.
       if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName) return;
-      
-      Message = "Expired";
-      CurrentComponentState = "expired";
-      AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"There is a newer commit available for this {InputType}");
-
-      Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
-     {
-       if (AutoReceive)
-       {
-         ExpireSolution(true);
-       }
-       else
-       {
-         OnDisplayExpired(true);
-       }
-     });
+      HandleNewCommit();
     }
 
     protected override void BeforeSolveInstance()
@@ -550,6 +571,7 @@ namespace ConnectorGrasshopper.Ops
 
       DA.SetData(0, new GH_SpeckleBase() { Value = ReceivedObject });
     }
+    
   }
 
   public class ReceiveComponentAttributes : GH_ComponentAttributes
