@@ -27,6 +27,7 @@ using RH = Rhino.Geometry;
 
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
+using Objects.Other;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -63,14 +64,15 @@ namespace Objects.Converter.RhinoGh
       switch (@object)
       {
         case RhinoObject o:
-          // TODO: add materials bullshit
-
           // Tries to convert to BuiltElements schema first
-          Base convertedBE = ConvertToSpeckleBE(o.Geometry, o.Attributes.GetUserString(SpeckleSchemaKey));
-          if (convertedBE != null)
-            return convertedBE;
-          return ObjectToSpeckle(o);
+          Base conversionResult = ConvertToSpeckleBE(o.Geometry, o.Attributes.GetUserString(SpeckleSchemaKey));
+          
+          if (conversionResult == null)
+            conversionResult = ObjectToSpeckle(o);
 
+          conversionResult["renderMaterial"] = GetMaterial(o);
+
+          return conversionResult;
         case Point3d o:
           return PointToSpeckle(o);
 
@@ -388,6 +390,34 @@ namespace Objects.Converter.RhinoGh
         default:
           return false;
       }
+    }
+
+    private RenderMaterial GetMaterial(RhinoObject o)
+    {
+      var material = o.GetMaterial(true);
+      var renderMaterial = new RenderMaterial();
+
+      // If it's a default material use the display color.
+      if (!material.HasId)
+      {
+        renderMaterial.diffuse = o.Attributes.DrawColor(Doc).ToArgb();
+        return renderMaterial;
+      }
+
+      // Otherwise, extract what properties we can. 
+      renderMaterial.name = material.Name;
+      renderMaterial.diffuse = material.DiffuseColor.ToArgb();
+      renderMaterial.emissive = material.EmissionColor.ToArgb();
+
+      renderMaterial.opacity = 1 - material.Transparency;
+      renderMaterial.metalness = material.Reflectivity;
+
+      if (material.Name.ToLower().Contains("glass") && renderMaterial.opacity == 0) 
+      {
+        renderMaterial.opacity = 0.3;
+      }
+
+      return renderMaterial;
     }
   }
 }
