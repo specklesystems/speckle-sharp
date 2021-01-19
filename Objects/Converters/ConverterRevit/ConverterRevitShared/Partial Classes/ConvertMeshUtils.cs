@@ -65,7 +65,10 @@ namespace Objects.Converter.Revit
         return null;
       }
       if (null == opt)
+      {
         opt = new Options();
+      }
+
       List<Solid> solids = new List<Solid>();
       GeometryElement gElem = null;
       try
@@ -80,7 +83,10 @@ namespace Objects.Converter.Revit
             gElem = gElem.GetTransformed(trf);
         }
         else
+        {
           gElem = elem.get_Geometry(opt);
+        }
+
         if (null == gElem)
         {
           return null;
