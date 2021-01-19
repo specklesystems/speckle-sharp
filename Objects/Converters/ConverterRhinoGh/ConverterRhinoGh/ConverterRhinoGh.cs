@@ -9,7 +9,6 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
@@ -196,6 +195,11 @@ namespace Objects.Converter.RhinoGh
         default:
           throw new NotSupportedException();
       }
+    }
+
+    public List<Base> ConvertToSpeckleBE(List<object> objects)
+    {
+      return objects.Select(x => ConvertToSpeckleBE(x)).ToList();
     }
 
     public object ConvertToNative(Base @object)
