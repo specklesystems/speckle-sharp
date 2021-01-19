@@ -11,6 +11,24 @@ namespace Speckle.Core.Credentials
     public string CommitId { get; set; }
     public string BranchName { get; set; } // To be used later! 
 
+    /// <summary>
+    /// Determines if the current stream wrapper contains a valid stream.
+    /// </summary>
+    public bool IsValid => Type != StreamWrapperType.Undefined;
+    
+    public StreamWrapperType Type
+    {
+      // Quick solution to determine whether a wrapper points to a branch, commit or stream.
+      get
+      {
+        if (!string.IsNullOrEmpty(BranchName)) return StreamWrapperType.Branch;
+        if (!string.IsNullOrEmpty(CommitId)) return StreamWrapperType.Commit;
+        if (!string.IsNullOrEmpty(StreamId)) return StreamWrapperType.Stream;
+        // If we reach here, it means that the stream is invalid for some reason.
+        return StreamWrapperType.Undefined;
+      }
+    }
+    
     public StreamWrapper()
     {
     }
@@ -22,8 +40,8 @@ namespace Speckle.Core.Credentials
     /// <exception cref="Exception"></exception>
     public StreamWrapper(string streamUrl)
     {
-      Account account = null;
-      Uri uri = null;
+      Account account;
+      Uri uri;
       if (streamUrl.Contains("?u="))
       {
         uri = new Uri(streamUrl.Split(new string[] {"?u="}, StringSplitOptions.None)[0]);
@@ -142,5 +160,13 @@ namespace Speckle.Core.Credentials
     {
       return GetAccountForServer(AccountId);
     }
+  }
+  
+  public enum StreamWrapperType
+  {
+    Undefined,
+    Stream,
+    Commit,
+    Branch
   }
 }

@@ -187,7 +187,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     [DNJ.JsonConstructor]
     private Receive(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
-      if (inPorts.Count() == 2)
+      if (inPorts.Count() == 1)
       {
         //blocker: https://github.com/DynamoDS/Dynamo/issues/11118
         //inPorts.ElementAt(1).DefaultValue = endPortDefaultValue;
@@ -204,7 +204,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
       ArgumentLacing = LacingStrategy.Disabled;
 
-      this.PropertyChanged += HandlePropertyChanged;
+      PropertyChanged += HandlePropertyChanged;
     }
 
     /// <summary>
@@ -220,17 +220,13 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       RegisterAllPorts();
       ArgumentLacing = LacingStrategy.Disabled;
 
-      this.PropertyChanged += HandlePropertyChanged;
+      PropertyChanged += HandlePropertyChanged;
     }
 
 
     private void AddInputs()
     {
-      var defaultBranchValue = new StringNode { Value = "main" };
-
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream", "The stream to receive from")));
-      InPorts.Add(new PortModel(PortType.Input, this,
-        new PortData("branchName", "The branch to use to", defaultBranchValue)));
     }
 
     private void AddOutputs()
@@ -374,23 +370,10 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         Message = "Stream is invalid";
         return;
       }
-
-      if (string.IsNullOrEmpty(newStream.BranchName))
-      {
+      
+      if(newStream.Type != StreamWrapperType.Branch)
         newStream.BranchName = "main";
-        try
-        {
-          newStream.BranchName = InPorts[1].Connectors.Any()
-            ? GetInputAs<string>(engine, 1)
-            : "main"; //IsConnected not working because has default value
-        }
-        catch
-        {
-          Message = "Branch name is invalid, will use `main`";
-        }
-      }
-
-
+      
       //no need to re-subscribe. it's the same stream
       if (oldStream != null && newStream.ToString() == oldStream.ToString())
         return;
@@ -400,18 +383,17 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       ReceiveEnabled = true;
 
       //StreamWrapper points to a Stream
-      if (string.IsNullOrEmpty(Stream.CommitId))
+      if (newStream.Type == StreamWrapperType.Commit)
       {
-        this.Name = "Receive";
-        AutoUpdateEnabled = true;
-        InitializeReceiver();
-      }
-      //StreamWrapper points to a Commit, disable AutoUpdate
-      else
-      {
-        this.Name = "Receive Commit";
+        Name = "Receive Commit";
         AutoUpdate = false;
         AutoUpdateEnabled = false;
+      }
+      else
+      {
+        Name = "Receive";
+        AutoUpdateEnabled = true;
+        InitializeReceiver();
       }
     }
 
@@ -422,14 +404,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
       var account = Stream.GetAccount();
       Client = new Client(account);
-
       Client.SubscribeCommitCreated(Stream.StreamId);
-      Client.SubscribeCommitDeleted(Stream.StreamId);
-      Client.SubscribeCommitUpdated(Stream.StreamId);
-
       Client.OnCommitCreated += OnCommitChange;
-      Client.OnCommitDeleted += OnCommitChange;
-      Client.OnCommitUpdated += OnCommitChange;
 
       CheckIfBehind();
     }
@@ -520,7 +496,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       _hasOutput = false;
       if (hardReset)
       {
-        this.Name = "Receive";
+        Name = "Receive";
         Stream = null;
         ReceiveEnabled = false;
         Message = "";

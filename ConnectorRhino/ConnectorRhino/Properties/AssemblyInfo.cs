@@ -1,17 +1,24 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Rhino.PlugIns;
+
+// Plug-in Description Attributes - all of these are optional
+// These will show in Rhino's option dialog, in the tab Plug-in
+[assembly: PlugInDescription(DescriptionType.Email, "hello@speckle.systems")]
+[assembly: PlugInDescription(DescriptionType.Organization, "Speckle")]
+[assembly: PlugInDescription(DescriptionType.WebSite, "https://speckle.systems")]
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ConnectorDynamoFunctions")]
+[assembly: AssemblyTitle("SpeckleRhino2")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ConnectorDynamoFunctions")]
+[assembly: AssemblyCompany("AEC SYSTEMS LTD")]
+[assembly: AssemblyProduct("SpeckleRhino2")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyTrademark("Speckle")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -20,7 +27,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("8f4d907b-a2df-4b40-8ea6-d79f9ed6d906")]
+[assembly: Guid("8dd5f30b-a13d-4a24-abdc-3e05c8c87143")]
 
 // Version information for an assembly consists of the following four values:
 //

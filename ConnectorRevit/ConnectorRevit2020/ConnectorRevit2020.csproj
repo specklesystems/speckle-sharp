@@ -84,12 +84,9 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <PropertyGroup>
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-  </PropertyGroup>
   <!-- POST BUILD EVENTS START -->
-  <Target Name="AfterBuild" Condition="'$(IsDesktopBuild)' == true">
-    <CallTarget Condition="'$(Configuration)' == 'Debug'" Targets="AfterBuildDebug" />
+  <Target Name="AfterBuild">
+    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
     <CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />
   </Target>
   <Target Name="AfterBuildDebug">

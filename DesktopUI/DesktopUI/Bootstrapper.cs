@@ -67,11 +67,11 @@ namespace Speckle.DesktopUI
       // https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit/issues/1249
       var card = new Card();
       var hue = new Hue("Dummy", Colors.Black, Colors.White);
+      var behavior = new Microsoft.Xaml.Behaviors.Media.PlaySoundAction(); //force loading of behaviors reference
     }
 
     private void LoadThemeResources()
     {
-      Behavior b = null; //force loading of behaviors reference
       Application.Current.Resources.MergedDictionaries.Add(
         Application.LoadComponent(
           new Uri("SpeckleDesktopUI;component/Themes/Generic.xaml", UriKind.Relative)
