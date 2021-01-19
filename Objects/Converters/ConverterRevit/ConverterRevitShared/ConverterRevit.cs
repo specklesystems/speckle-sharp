@@ -153,11 +153,14 @@ namespace Objects.Converter.Revit
           break;
       }
 
+      // NOTE: Only try generic method assignment if there is no existing render material from conversions;
+      // we might want to try later on to capture it more intelligently from inside conversion routines.
       if (returnObject["renderMaterial"] == null)
       {
         var material = GetElementRenderMaterial(@object as DB.Element);
         returnObject["renderMaterial"] = material;
       }
+
       return returnObject;
     }
 
