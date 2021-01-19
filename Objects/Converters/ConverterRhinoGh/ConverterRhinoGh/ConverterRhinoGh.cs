@@ -196,6 +196,11 @@ namespace Objects.Converter.RhinoGh
       }
     }
 
+    public List<Base> ConvertToSpeckleBE(List<object> objects)
+    {
+      return objects.Select(x => ConvertToSpeckleBE(x)).ToList();
+    }
+
     public object ConvertToNative(Base @object)
     {
       switch (@object)
