@@ -31,22 +31,39 @@ namespace ConnectorGrasshopper.Ops
     protected override Bitmap Icon => Properties.Resources.Receiver;
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
+    
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
     {
-      if (context == GH_DocumentContext.Open && StreamWrapper != null)
+      switch (context)
       {
-        Task.Run(() =>
-        {      
-          ApiClient = new Client(StreamWrapper.GetAccount());
-          // Check if there are newer commits in this receiver.
-          var b = ApiClient.BranchGet(StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
-          if(b.commits.items[0].referencedObject != ReceivedObjectId)
-            HandleNewCommit();
-        });
+        case GH_DocumentContext.Loaded:
+        {
+          // Will execute every time a document becomes active (from background or opening file.).
+          if(StreamWrapper != null)
+            Task.Run(() =>
+            {
+              // Ensure fresh instance of client.
+              ResetApiClient(StreamWrapper);
+              
+              // Get last commit from the branch
+              var b = ApiClient.BranchGet(StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
+            
+              // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
+              if(b.commits.items[0].id != ReceivedCommitId)
+                HandleNewCommit();
+            });
+          break;
+        }
+        case GH_DocumentContext.Unloaded:
+          // Will execute every time a document becomes inactive (in background or closing file.)
+          //Correctly dispose of the client when changing documents to prevent subscription handlers being called in background.
+          CleanApiClient();
+          break;
       }
+
       base.DocumentContextChanged(document, context);
     }
-
+  
     private void HandleNewCommit()
     {
       Message = "Expired";
@@ -79,7 +96,9 @@ namespace ConnectorGrasshopper.Ops
     public string LastCommitDate { get; set; }
 
     public string ReceivedObjectId { get; set; }
-
+    
+    public string ReceivedCommitId { get; set; }
+    
     public string InputType { get; set; }
 
     public StreamWrapper StreamWrapper { get; set; }
@@ -105,6 +124,7 @@ namespace ConnectorGrasshopper.Ops
       writer.SetString("LastInfoMessage", LastInfoMessage);
       writer.SetString("LastCommitDate", LastCommitDate);
       writer.SetString("ReceivedObjectId", ReceivedObjectId);
+      writer.SetString("ReceivedCommitId", ReceivedCommitId);
       writer.SetString("KitName", Kit.Name);
       var streamUrl = StreamWrapper != null ? StreamWrapper.ToString() : "";
       writer.SetString("StreamWrapper", streamUrl);
@@ -119,6 +139,7 @@ namespace ConnectorGrasshopper.Ops
       LastInfoMessage = reader.GetString("LastInfoMessage");
       LastCommitDate = reader.GetString("LastCommitDate");
       ReceivedObjectId = reader.GetString("ReceivedObjectId");
+      ReceivedCommitId = reader.GetString("ReceivedCommitId");
 
       var swString = reader.GetString("StreamWrapper");
       if (!string.IsNullOrEmpty(swString))
@@ -275,6 +296,12 @@ namespace ConnectorGrasshopper.Ops
       Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { OnDisplayExpired(true); });
     }
 
+    public override void RemovedFromDocument(GH_Document document)
+    {
+      CleanApiClient();
+      base.RemovedFromDocument(document);
+    }
+
     public void ParseInput(IGH_DataAccess DA)
     {
       var check = DA.GetDataTree(0, out GH_Structure<IGH_Goo> DataInput);
@@ -353,11 +380,23 @@ namespace ConnectorGrasshopper.Ops
       }
 
       StreamWrapper = wrapper;
+      
+      ResetApiClient(wrapper);
+    }
 
+    private void ResetApiClient(StreamWrapper wrapper)
+    {
+      CleanApiClient();
       ApiClient = new Client(wrapper.GetAccount());
       ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
       ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
-      
+    }
+
+    private void CleanApiClient()
+    {
+      if (ApiClient == null) return;
+      ApiClient.OnCommitCreated -= ApiClient_OnCommitCreated;
+      ApiClient.Dispose();
     }
 
     private void ApiClient_OnCommitCreated(object sender, Speckle.Core.Api.SubscriptionModels.CommitInfo e)
@@ -422,7 +461,7 @@ namespace ConnectorGrasshopper.Ops
       var remoteTransport = new ServerTransport(InputWrapper?.GetAccount(), InputWrapper?.StreamId);
       remoteTransport.TransportName = "R";
 
-      if (((ReceiveComponent)Parent).JustPastedIn && ((ReceiveComponent)Parent).ReceivedObjectId != null)
+      if (((ReceiveComponent)Parent).JustPastedIn && !string.IsNullOrEmpty(((ReceiveComponent)Parent).ReceivedObjectId))
       {
         Task.Run(async () =>
         {
@@ -525,6 +564,9 @@ namespace ConnectorGrasshopper.Ops
       {
         ((ReceiveComponent)Parent).LastInfoMessage =
           $"{ReceivedCommit.authorName} @ {ReceivedCommit.createdAt}: {ReceivedCommit.message} (id:{ReceivedCommit.id})";
+        
+        ((ReceiveComponent)Parent).ReceivedCommitId = ReceivedCommit.id;
+
       }
 
       ((ReceiveComponent)Parent).JustPastedIn = false;
