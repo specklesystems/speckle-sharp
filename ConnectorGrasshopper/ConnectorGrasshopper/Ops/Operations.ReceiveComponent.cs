@@ -84,7 +84,7 @@ namespace ConnectorGrasshopper.Ops
               ResetApiClient(StreamWrapper);
 
               // Get last commit from the branch
-              var b = ApiClient.BranchGet(StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
+              var b = ApiClient.BranchGet(BaseWorker.CancellationToken , StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
 
               // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
               if (b.commits.items[0].id != ReceivedCommitId)
@@ -379,9 +379,7 @@ namespace ConnectorGrasshopper.Ops
 
     private void CleanApiClient()
     {
-      if (ApiClient == null) return;
-      ApiClient.OnCommitCreated -= ApiClient_OnCommitCreated;
-      ApiClient.Dispose();
+      ApiClient?.Dispose();
     }
 
     private void ApiClient_OnCommitCreated(object sender, CommitInfo e)
