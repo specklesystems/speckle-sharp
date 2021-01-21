@@ -36,7 +36,7 @@ namespace Speckle.Core.Api
             Log.CaptureAndThrow(new GraphQLException("Could not subscribe to commitCreated"), response.Errors);
 
           if (response.Data != null)
-            OnCommitCreated(this, response.Data.commitCreated);
+            OnCommitCreated?.Invoke(this, response.Data.commitCreated);
         });
 
       }
