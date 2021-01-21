@@ -232,7 +232,6 @@ namespace Objects.Converter.RhinoGh
       circle.domain = new Interval(0, 1);
       circle.length = 2 * Math.PI * circ.Radius;
       circle.area = Math.PI * circ.Radius * circ.Radius;
-      
       return circle;
     }
 
@@ -309,6 +308,7 @@ namespace Objects.Converter.RhinoGh
       el.domain = new Interval(0,1);
       el.length = e.ToNurbsCurve().GetLength();
       el.bbox = BoxToSpeckle(new RH.Box(e.ToNurbsCurve().GetBoundingBox(true)));
+      el.area = Math.PI * e.Radius1 * e.Radius2; // Manual area computing, could not find the Rhino way...
       return el;
     }
 
@@ -338,7 +338,7 @@ namespace Objects.Converter.RhinoGh
         l.domain = domain;
         return l;
       }
-
+      
       var myPoly = new Polyline(PointsToFlatArray(poly), ModelUnits);
       myPoly.closed = poly.IsClosed;
 
@@ -346,6 +346,9 @@ namespace Objects.Converter.RhinoGh
         myPoly.value.RemoveRange(myPoly.value.Count - 3, 3);
 
       myPoly.domain = domain;
+      myPoly.bbox = BoxToSpeckle(new RH.Box(poly.BoundingBox));
+      myPoly.length = poly.Length;
+      // TODO: Area of 3d polyline cannot be resolved...
       return myPoly;
     }
 
@@ -366,7 +369,8 @@ namespace Objects.Converter.RhinoGh
           myPoly.value.RemoveRange(myPoly.value.Count - 3, 3);
 
         myPoly.domain = IntervalToSpeckle(poly.Domain);
-
+        myPoly.bbox = BoxToSpeckle(new RH.Box(poly.GetBoundingBox(true)));
+        myPoly.length = poly.GetLength();
         return myPoly;
       }
 
@@ -382,7 +386,7 @@ namespace Objects.Converter.RhinoGh
       var myPoly = new PolylineCurve(points);
       if (poly.domain != null)
         myPoly.Domain = IntervalToNative(poly.domain);
-
+      
       return myPoly;
     }
 
@@ -393,7 +397,9 @@ namespace Objects.Converter.RhinoGh
       var myPoly = new Polycurve();
       myPoly.closed = p.IsClosed;
       myPoly.domain = IntervalToSpeckle(p.Domain);
-
+      myPoly.length = p.GetLength();
+      myPoly.bbox = BoxToSpeckle(new RH.Box(p.GetBoundingBox(true)));
+      
       var segments = new List<RH.Curve>();
       CurveSegments(segments, p, true);
 
@@ -529,7 +535,9 @@ namespace Objects.Converter.RhinoGh
       myCurve.rational = nurbsCurve.IsRational;
       myCurve.domain = IntervalToSpeckle(nurbsCurve.Domain);
       myCurve.closed = nurbsCurve.IsClosed;
-
+      myCurve.length = nurbsCurve.GetLength();
+      myCurve.bbox = BoxToSpeckle(new RH.Box(nurbsCurve.GetBoundingBox(true)));
+      
       return myCurve;
     }
 
@@ -557,6 +565,9 @@ namespace Objects.Converter.RhinoGh
     public Box BoxToSpeckle(RH.Box box)
     {
       var speckleBox = new Box(PlaneToSpeckle(box.Plane), IntervalToSpeckle(box.X), IntervalToSpeckle(box.Y), IntervalToSpeckle(box.Z), ModelUnits);
+      speckleBox.area = box.Area;
+      speckleBox.volume = box.Volume;
+      
       return speckleBox;
     }
 
@@ -578,7 +589,11 @@ namespace Objects.Converter.RhinoGh
 
       var Colors = mesh.VertexColors.Select(cl => cl.ToArgb()).ToArray();
 
-      return new Mesh(verts, Faces, Colors, null, ModelUnits);
+      var speckleMesh = new Mesh(verts, Faces, Colors, null, ModelUnits);
+      speckleMesh.volume = mesh.Volume();
+      speckleMesh.bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)));
+      
+      return speckleMesh;
     }
 
     public RH.Mesh MeshToNative(Mesh mesh)
@@ -749,7 +764,9 @@ namespace Objects.Converter.RhinoGh
           return t;
         })
         .ToList();
-
+      spcklBrep.volume = brep.GetVolume();
+      spcklBrep.bbox = BoxToSpeckle(new RH.Box(brep.GetBoundingBox(true)));
+      spcklBrep.area = brep.GetArea();
       return spcklBrep;
     }
 
@@ -1030,44 +1047,44 @@ namespace Objects.Converter.RhinoGh
     }
 
     public NurbsSurface SurfaceToNative(Geometry.Surface surface)
-    {
-      // Create rhino surface
-      var points = surface.GetControlPoints().Select(l => l.Select(p =>
-        new ControlPoint(
-          ScaleToNative(p.x, p.units),
-          ScaleToNative(p.y, p.units),
-          ScaleToNative(p.z, p.units),
-          p.weight,
-          p.units)).ToList()).ToList();
-
-      var result = NurbsSurface.Create(3, surface.rational, surface.degreeU + 1, surface.degreeV + 1,
-        points.Count, points[0].Count);
-
-      // Set knot vectors
-      for (int i = 0; i < surface.knotsU.Count; i++)
       {
-        result.KnotsU[i] = surface.knotsU[i];
-      }
+        // Create rhino surface
+        var points = surface.GetControlPoints().Select(l => l.Select(p =>
+          new ControlPoint(
+            ScaleToNative(p.x, p.units),
+            ScaleToNative(p.y, p.units),
+            ScaleToNative(p.z, p.units),
+            p.weight,
+            p.units)).ToList()).ToList();
 
-      for (int i = 0; i < surface.knotsV.Count; i++)
-      {
-        result.KnotsV[i] = surface.knotsV[i];
-      }
+        var result = NurbsSurface.Create(3, surface.rational, surface.degreeU + 1, surface.degreeV + 1,
+          points.Count, points[0].Count);
 
-      // Set control points
-      for (var i = 0; i < points.Count; i++)
-      {
-        for (var j = 0; j < points[i].Count; j++)
+        // Set knot vectors
+        for (int i = 0; i < surface.knotsU.Count; i++)
         {
-          var pt = points[i][j];
-          result.Points.SetPoint(i, j, pt.x * pt.weight, pt.y * pt.weight, pt.z * pt.weight);
-          result.Points.SetWeight(i, j, pt.weight);
+          result.KnotsU[i] = surface.knotsU[i];
         }
-      }
 
-      // Return surface
-      return result;
-    }
+        for (int i = 0; i < surface.knotsV.Count; i++)
+        {
+          result.KnotsV[i] = surface.knotsV[i];
+        }
+
+        // Set control points
+        for (var i = 0; i < points.Count; i++)
+        {
+          for (var j = 0; j < points[i].Count; j++)
+          {
+            var pt = points[i][j];
+            result.Points.SetPoint(i, j, pt.x * pt.weight, pt.y * pt.weight, pt.z * pt.weight);
+            result.Points.SetWeight(i, j, pt.weight);
+          }
+        }
+      
+        // Return surface
+        return result;
+      }
 
     public List<List<ControlPoint>> ControlPointsToSpeckle(NurbsSurfacePointList controlPoints)
     {
@@ -1105,6 +1122,8 @@ namespace Objects.Converter.RhinoGh
       result.units = ModelUnits;
 
       result.SetControlPoints(ControlPointsToSpeckle(surface.Points));
+      result.bbox = BoxToSpeckle(new RH.Box(surface.GetBoundingBox(true)));
+
       return result;
     }
   }
