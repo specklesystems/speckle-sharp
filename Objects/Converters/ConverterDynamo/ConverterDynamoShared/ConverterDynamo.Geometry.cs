@@ -732,8 +732,9 @@ namespace Objects.Converter.Dynamo
     public Box BoxToSpeckle(Cuboid box)
     {
       var plane = PlaneToSpeckle(box.ContextCoordinateSystem.XYPlane);
+      
       // Todo: Check for cubes that are offset from the plane origin to ensure correct positioning.
-      return new Box(plane, new Interval(0, box.Width), new Interval(0, box.Length), new Interval(0, box.Height));
+      return new Box(plane, new Interval(-box.Width/2, box.Width/2), new Interval(-box.Length/2, box.Length/2), new Interval(-box.Height/2, box.Height/2));
     }
     
     public NurbsSurface SurfaceToNative(Surface surface)

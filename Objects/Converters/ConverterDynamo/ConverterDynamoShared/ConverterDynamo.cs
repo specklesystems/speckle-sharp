@@ -207,7 +207,9 @@ namespace Objects.Converter.Dynamo
 
         case DS.Mesh _:
           return true;
-
+        
+        case DS.Cuboid _:
+          return true;
         default:
           return false;
       }
@@ -252,7 +254,9 @@ namespace Objects.Converter.Dynamo
 
         case Mesh _:
           return true;
-
+        
+        case Box _:
+          return true;
         default:
           return false;
       }
