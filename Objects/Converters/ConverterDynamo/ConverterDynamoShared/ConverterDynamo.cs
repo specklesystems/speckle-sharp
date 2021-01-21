@@ -92,7 +92,10 @@ namespace Objects.Converter.Dynamo
 
         case DS.Mesh o:
           return MeshToSpeckle(o);
-
+        
+        case DS.Cuboid o:
+          return BoxToSpeckle(o);
+        
         default:
           throw new NotSupportedException();
       }
@@ -137,7 +140,10 @@ namespace Objects.Converter.Dynamo
 
         case Mesh o:
           return MeshToNative(o);
-
+        
+        case Box o:
+          return BoxToNative(o);
+        
         default:
           throw new NotSupportedException();
       }
