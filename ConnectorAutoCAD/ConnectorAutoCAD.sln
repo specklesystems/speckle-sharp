@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorAutoCAD2021", "ConnectorAutoCAD2021\ConnectorAutoCAD2021.csproj", "{58A88F1A-7489-46D2-949D-2FC3F68C8D84}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorAutoCADShared", "ConnectorAutoCADShared\ConnectorAutoCADShared.shproj", "{B47492D9-2EDA-4016-A930-7FA708C85C3D}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutoCADVersionProjects", "AutoCADVersionProjects", "{A07071D5-E197-487D-B543-28639AC3C719}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local Dependencies", "{31CF26D2-2744-4A51-AA93-7F28408A006F}"
@@ -25,11 +23,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAutoCAD2021", "..\
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterAutoCADShared", "..\Objects\Converters\ConverterAutoCAD\ConverterAutoCADShared\ConverterAutoCADShared.shproj", "{2D0F9F8A-2E89-4780-978A-CD92D6D7B843}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorAutoCADShared", "ConnectorAutoCAD\ConnectorAutoCADShared.shproj", "{B47492D9-2EDA-4016-A930-7FA708C85C3D}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\Objects\Converters\ConverterAutoCAD\ConverterAutoCADShared\ConverterAutoCADShared.projitems*{2d0f9f8a-2e89-4780-978a-cd92d6d7b843}*SharedItemsImports = 13
+		ConnectorAutoCAD\ConnectorAutoCADShared.projitems*{58a88f1a-7489-46d2-949d-2fc3f68c8d84}*SharedItemsImports = 4
 		..\Objects\Converters\ConverterAutoCAD\ConverterAutoCADShared\ConverterAutoCADShared.projitems*{8cfc7609-f640-4683-bf13-fe144d3dc50b}*SharedItemsImports = 5
-		ConnectorAutoCADShared\ConnectorAutoCADShared.projitems*{b47492d9-2eda-4016-a930-7fa708c85c3d}*SharedItemsImports = 13
+		ConnectorAutoCAD\ConnectorAutoCADShared.projitems*{b47492d9-2eda-4016-a930-7fa708c85c3d}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
