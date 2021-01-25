@@ -177,4 +177,6 @@ namespace Speckle.ConnectorAutoCAD
       Doc.UserData[SpeckleKey] = streams;
     }
   }
+
+  // layer and block transaction wrappers
 }

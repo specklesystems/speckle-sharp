@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.Runtime;
 
 using Speckle.Core.Models;
@@ -157,6 +158,7 @@ namespace Speckle.ConnectorAutoCAD.UI
           layers.Add(lyrTblRec.Name);
         }
         tr.Commit();
+        tr.Dispose();
       }
       return new List<ISelectionFilter>()
       {
@@ -217,8 +219,6 @@ namespace Speckle.ConnectorAutoCAD.UI
         RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
       }
 
-      // var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {myStream.name}"); history tracking, maybe use transaction wrapper?
-
       using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
         var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -234,8 +234,15 @@ namespace Speckle.ConnectorAutoCAD.UI
         var layerName = $"{myStream.name}: {state.Branch.name} @ {commit.id}";
         layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty); // emits emojis
 
+        // see if there is already an existing layer with this name
         LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
-        //var existingLayer = lyrTbl.FindName(layerName);
+        LayerTableRecord existingLayer = null;
+        foreach (ObjectId layerId in lyrTbl)
+        {
+          LayerTableRecord currentLayer = tr.GetObject(layerId, OpenMode.ForWrite) as LayerTableRecord;
+          if (currentLayer.Name == layerName)
+            existingLayer = currentLayer; break;
+        }
 
         //if (existingLayer != null)
         //{
@@ -245,8 +252,8 @@ namespace Speckle.ConnectorAutoCAD.UI
 
         //if (layerIndex == -1)
         //{
-        //  RaiseNotification($"Coould not create layer {layerName} to bake objects into.");
-        //  state.Errors.Add(new Exception($"Coould not create layer {layerName} to bake objects into."));
+        //  RaiseNotification($"Could not create layer {layerName} to bake objects into.");
+        //  state.Errors.Add(new Exception($"Could not create layer {layerName} to bake objects into."));
         //  return state;
         //}
         //currentRootLayerName = layerName;
@@ -254,9 +261,11 @@ namespace Speckle.ConnectorAutoCAD.UI
 
         //Doc.Views.Redraw();
 
+        if (false)
+          tr.Abort();
+
         tr.Commit();
       }
-      //Doc.EndUndoRecord(undoRecord);
 
       return state;
     }
@@ -291,7 +300,7 @@ namespace Speckle.ConnectorAutoCAD.UI
           {
             if (converter.CanConvertToNative(baseItem))
             {
-              var converted = converter.ConvertToNative(baseItem) as Autodesk.AutoCAD.Geometry;
+              var converted = converter.ConvertToNative(baseItem) as Entity;
               if (converted != null)
               {
                 // Open the Block table for read
@@ -300,12 +309,12 @@ namespace Speckle.ConnectorAutoCAD.UI
                 // Open the Block table record Model space for write
                 BlockTableRecord blkTblRec = tr.GetObject(blkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
 
-                // Create a new object base item
-                Autodesk.AutoCAD.Geometry obj = new Autodesk.AutoCAD.Geometry();
-                obj.Layer = layer;
+                // set object layer
+                converted.Layer = layer;
 
-                blkTblRec.AppendEntity(obj);
-                tr.AddNewlyCreatedDBObject(obj, true);
+                // append
+                blkTblRec.AppendEntity(converted);
+                tr.AddNewlyCreatedDBObject(converted, true);
               }
               else
               {
@@ -316,19 +325,7 @@ namespace Speckle.ConnectorAutoCAD.UI
             }
             else
             {
-              foreach (var prop in baseItem.GetDynamicMembers())
-              {
-                var value = baseItem[prop];
-                string layerName;
-                if (prop.StartsWith("@"))
-                  layerName = prop.Remove(0, 1);
-                else
-                  layerName = prop;
-
-                //var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = $"{layerName}" };
-                HandleAndConvert(value, converter, subLayer, state, updateProgressAction);
-              }
-              return;
+              
             }
           }
 
@@ -346,6 +343,8 @@ namespace Speckle.ConnectorAutoCAD.UI
             return;
           }
         }
+        tr.Commit();
+        tr.Dispose();
       }
     }
 
@@ -362,7 +361,8 @@ namespace Speckle.ConnectorAutoCAD.UI
 
       var commitObj = new Base();
 
-      var units = Units.GetUnitsFromString();
+      //var units = Units.GetUnitsFromString();
+      var units = Units.Centimeters;
       commitObj["units"] = units;
 
       int objCount = 0;
@@ -389,11 +389,20 @@ namespace Speckle.ConnectorAutoCAD.UI
         {
           return null;
         }
+        // create a handle from the application id string
+        Handle hn = new Handle(Convert.ToInt64(applicationId, 16));
+        ObjectId id = Doc.Database.GetObjectId(false, hn, 0);
 
-        var obj = Doc.Objects.FindId(new Guid(applicationId));
+        // get the entity object NOTE: This is a db object, not a geometry object!! Need to figure out geometry object inheritance later
+        Entity obj = null;
+        using (Transaction tr = Doc.TransactionManager.StartTransaction())
+        {
+          obj = (Entity)id.GetObject(OpenMode.ForRead);
+          tr.Commit();
+        }
         if (obj == null)
         {
-          state.Errors.Add(new Exception($"Failed to find local object ${applicationId}."));
+          state.Errors.Add(new System.Exception($"Failed to find local object ${applicationId}."));
           continue;
         }
 
@@ -401,23 +410,23 @@ namespace Speckle.ConnectorAutoCAD.UI
         Base converted = converter.ConvertToSpeckle(obj);
         if (converted == null)
         {
-          state.Errors.Add(new Exception($"Failed to find convert object ${applicationId} of type ${obj.Geometry.ObjectType.ToString()}."));
+          state.Errors.Add(new System.Exception($"Failed to find convert object ${applicationId} of type ${obj.AcadObject.GetType()}."));
           continue;
         }
 
         conversionProgressDict["Conversion"]++;
         UpdateProgress(conversionProgressDict, state.Progress);
 
-        // TODO: potentially get more info from the object: materials and other rhino specific stuff?
         converted.applicationId = applicationId;
 
-        foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
+        /* TODO: adding tne extension dictionary per object 
+        foreach (var key in obj.ExtensionDictionary)
         {
-          // TODO: check if this is a SchemaBuilder key and maybe omit?
-          converted[key] = obj.Attributes.GetUserString(key);
+          converted[key] = obj.ExtensionDictionary.GetUserString(key);
         }
+        */
 
-        var layerName = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
+        var layerName = obj.Layer;
 
         if (commitObj[$"@{layerName}"] == null)
         {
@@ -446,7 +455,6 @@ namespace Speckle.ConnectorAutoCAD.UI
         state.CancellationTokenSource.Token,
         transports,
         onProgressAction: dict => UpdateProgress(dict, state.Progress),
-        /* TODO: a wee bit nicer handling here; plus request cancellation! */
         onErrorAction: (err, exception) => { Exceptions.Add(exception); }
         );
 
@@ -461,7 +469,7 @@ namespace Speckle.ConnectorAutoCAD.UI
         streamId = streamId,
         objectId = commitObjId,
         branchName = state.Branch.name,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from Rhino.",
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from AutoCAD.",
         sourceApplication = Applications.Rhino
       };
 
@@ -494,8 +502,10 @@ namespace Speckle.ConnectorAutoCAD.UI
           List<string> objs = new List<string>();
           foreach (var layerName in f.Selection)
           {
-            var docObjs = Doc.Objects.FindByLayer(layerName).Select(o => o.Id.ToString());
-            objs.AddRange(docObjs);
+            TypedValue[] layerType = new TypedValue[1] { new TypedValue((int)DxfCode.LayerName, layerName)};
+            PromptSelectionResult prompt = Doc.Editor.SelectAll(new SelectionFilter(layerType));
+            if (prompt.Status == PromptStatus.OK)
+              objs.AddRange(prompt.Value.GetObjectIds().Select(o => o.ToString()).ToList());
           }
           return objs;
         default:

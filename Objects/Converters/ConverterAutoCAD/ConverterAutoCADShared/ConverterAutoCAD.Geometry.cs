@@ -85,6 +85,25 @@ namespace Objects.Converter.AutoCAD
       return nativePt;
     }
 
+    public List<List<ControlPoint>> ControlPointsToSpeckle(Point3dCollection points, DoubleCollection weights)
+    {
+      var _weights = new List<double>();
+      var _points = new List<Point3d>();
+      foreach (var point in points)
+        _points.Add((AC.Point3d)point);
+      foreach (var weight in weights)
+        _weights.Add((double)weight);
+
+      var controlPoints = new List<List<ControlPoint>>();
+      /* TODO: Figure out how collections are structured (do we lose UV info?)
+      for (int i = 0; i < _points.Count; i++)
+      {
+        controlPoints.Add(new ControlPoint(_points[i].X, _points[i].Y, _points[i].Z, _weights[i], ModelUnits));
+      }
+      */
+      return controlPoints;
+    }
+
     // Vectors
     public Vector VectorToSpeckle(Vector3d pt)
     {
@@ -138,7 +157,7 @@ namespace Objects.Converter.AutoCAD
       return null;
     }
 
-    public Polyline PolylineToSpeckle(AC.PolylineCurve3d polyline)
+    public Polyline PolylineToSpeckle(AC.PolylineCurve3d polyline, Interval interval = null)
     {
       return null;
     }
@@ -183,35 +202,15 @@ namespace Objects.Converter.AutoCAD
     {
       if (curve.IsPlanar(out AC.Plane pln))
       {
-        if (curve.IsPeriodic(tolerance) && curve.IsClosed)
+        if (curve.IsPeriodic(out double period) && curve.IsClosed())
         {
-          curve.TryGetCircle(out var getObj, tolerance);
-          var cir = CircleToSpeckle(getObj);
-          cir.domain = IntervalToSpeckle(curve.Domain);
-          return cir;
         }
 
-        if (curve.IsArc(tolerance))
+        if (curve.IsLinear(out Line3d line)) // defaults to polyline
         {
-          curve.TryGetArc(out var getObj, tolerance);
-          var arc = ArcToSpeckle(getObj);
-          arc.domain = IntervalToSpeckle(curve.Domain);
-          return arc;
-        }
-
-        if (curve.IsEllipse(tolerance) && curve.IsClosed)
-        {
-          curve.TryGetEllipse(pln, out var getObj, tolerance);
-          var ellipse = EllipseToSpeckle(getObj);
-          ellipse.domain = IntervalToSpeckle(curve.Domain);
-        }
-
-        if (curve.IsLinear(tolerance) || curve.IsPolyline()) // defaults to polyline
-        {
-          curve.TryGetPolyline(out var getObj);
-          if (null != getObj)
+          if (null != line)
           {
-            return PolylineToSpeckle(getObj, IntervalToSpeckle(curve.Domain));
+            return LineToSpeckle(line);
           }
         }
       }
@@ -221,46 +220,20 @@ namespace Objects.Converter.AutoCAD
 
     public Curve NurbsToSpeckle(AC.NurbCurve3d curve)
     {
-      var tolerance = 0.0;
-
-      curve.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
-
-      Polyline displayValue;
-
-      if (poly.Count == 2)
-      {
-        displayValue = new Polyline();
-        displayValue.value = new List<double> { poly[0].X, poly[0].Y, poly[0].Z, poly[1].X, poly[1].Y, poly[1].Z };
-      }
-      else
-      {
-        displayValue = PolylineToSpeckle(poly) as Polyline;
-      }
-
-      var myCurve = new Curve(displayValue, ModelUnits);
-      var nurbsCurve = curve.ToNurbsCurve();
-
-      myCurve.weights = nurbsCurve.Points.Select(ctp => ctp.Weight).ToList();
-      myCurve.points = PointsToFlatArray(nurbsCurve.Points.Select(ctp => ctp.Location)).ToList();
-      myCurve.knots = nurbsCurve.Knots.ToList();
-      myCurve.degree = nurbsCurve.Degree;
-      myCurve.periodic = nurbsCurve.IsPeriodic;
-      myCurve.rational = nurbsCurve.IsRational;
-      myCurve.domain = IntervalToSpeckle(nurbsCurve.Domain);
-      myCurve.closed = nurbsCurve.IsClosed;
-
-      return myCurve;
+      return null;
     }
 
     public NurbCurve3d NurbsToNative(Curve curve)
     {
       var ptsList = PointListToNative(curve.points, curve.units);
 
-      var nurbsCurve = NurbCurve3d.Create(false, curve.degree, ptsList);
+      IntPtr newUnmanaged = new IntPtr(); // check this!!
+      var nurbsCurve = NurbCurve3d.Create(newUnmanaged, true);
 
-      for (int j = 0; j < nurbsCurve.Points.Count; j++)
+      for (int j = 0; j < ptsList.Length; j++)
       {
-        nurbsCurve.Points.SetPoint(j, ptsList[j], curve.weights[j]);
+        nurbsCurve.SetFitPointAt(j, ptsList[j]);
+        nurbsCurve.SetWeightAt(j, curve.weights[j]);
       }
 
       for (int j = 0; j < nurbsCurve.Knots.Count; j++)
@@ -268,7 +241,7 @@ namespace Objects.Converter.AutoCAD
         nurbsCurve.Knots[j] = curve.knots[j];
       }
 
-      nurbsCurve.Domain = IntervalToNative(curve.domain ?? new Interval(0, 1));
+      nurbsCurve.SetInterval(IntervalToNative(curve.domain ?? new Interval(0, 1)));
       return nurbsCurve;
     }
 
@@ -283,30 +256,36 @@ namespace Objects.Converter.AutoCAD
           p.weight,
           p.units)).ToList()).ToList();
 
-      var result = AC.NurbSurface.Create(3, surface.rational, surface.degreeU + 1, surface.degreeV + 1,
-        points.Count, points[0].Count);
+      var result = AC.NurbSurface.Create(new IntPtr(), true); // check what new unmanaged pointer does!!
 
-      // Set knot vectors
-      for (int i = 0; i < surface.knotsU.Count; i++)
-      {
-        result.KnotsU[i] = surface.knotsU[i];
-      }
-
-      for (int i = 0; i < surface.knotsV.Count; i++)
-      {
-        result.KnotsV[i] = surface.knotsV[i];
-      }
-
-      // Set control points
+      // Get control points
+      Point3dCollection controlPoints = new Point3dCollection();
+      DoubleCollection weights = new DoubleCollection();
       for (var i = 0; i < points.Count; i++)
       {
         for (var j = 0; j < points[i].Count; j++)
         {
           var pt = points[i][j];
-          result.Points.SetPoint(i, j, pt.x * pt.weight, pt.y * pt.weight, pt.z * pt.weight);
-          result.Points.SetWeight(i, j, pt.weight);
+          controlPoints.Add(PointToNative(pt));
+          weights.Add(pt.weight);
         }
       }
+
+      // Get knot vectors
+      KnotCollection UKnots = new KnotCollection();
+      KnotCollection VKnots = new KnotCollection();
+      for (int i = 0; i < surface.knotsU.Count; i++)
+      {
+        UKnots.Add(surface.knotsU[i]);
+      }
+
+      for (int i = 0; i < surface.knotsV.Count; i++)
+      {
+        VKnots.Add(surface.knotsV[i]);
+      }
+
+      // Set surface info
+      result.Set(surface.degreeU, surface.degreeV, 0, 0, surface.countU, surface.countV, controlPoints, weights, UKnots, VKnots);
 
       // Return surface
       return result;
@@ -314,21 +293,30 @@ namespace Objects.Converter.AutoCAD
 
     public Geometry.Surface SurfaceToSpeckle(AC.NurbSurface surface)
     {
+      List<double> Uknots = new List<double>();
+      List<double> Vknots = new List<double>();
+      foreach (var knot in surface.UKnots)
+      {
+        Uknots.Add((double)knot);
+      }
+      foreach (var knot in surface.VKnots)
+      {
+        Vknots.Add((double)knot);
+      }
       var result = new Geometry.Surface
       {
-        degreeU = surface.OrderU - 1,
-        degreeV = surface.OrderV - 1,
-        rational = surface.IsRational,
-        closedU = surface.IsClosed(0),
-        closedV = surface.IsClosed(1),
-        domainU = IntervalToSpeckle(surface.Domain(0)),
-        domainV = IntervalToSpeckle(surface.Domain(1)),
-        knotsU = surface.KnotsU.ToList(),
-        knotsV = surface.KnotsV.ToList()
+        degreeU = surface.DegreeInU,
+        degreeV = surface.DegreeInV,
+        rational = surface.IsRationalInU && surface.IsRationalInV,
+        closedU = surface.IsClosedInU(),
+        closedV = surface.IsClosedInV(),
+        domainU = IntervalToSpeckle(surface.GetEnvelope()[0]),
+        domainV = IntervalToSpeckle(surface.GetEnvelope()[1]),
+        knotsU = Uknots,
+        knotsV = Vknots
       };
       result.units = ModelUnits;
-
-      result.SetControlPoints(ControlPointsToSpeckle(surface.Points));
+      result.SetControlPoints(ControlPointsToSpeckle(surface.ControlPoints, surface.Weights));
       return result;
     }
   }
