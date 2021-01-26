@@ -16,14 +16,21 @@ namespace Objects.Geometry
 
     public bool rational { get; set; }
 
+    [DetachProperty]
+    [Chunkable(20000)]
     public List<double> points { get; set; }
-
+    
+    [DetachProperty]
+    [Chunkable(20000)]
     public List<double> weights { get; set; }
 
+    [DetachProperty]
+    [Chunkable(20000)]
     public List<double> knots { get; set; }
 
     public Interval domain { get; set; }
 
+    
     public Polyline displayValue { get; set; }
 
     public bool closed { get; set; }
