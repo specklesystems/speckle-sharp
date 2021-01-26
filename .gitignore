@@ -361,7 +361,3 @@ ConnectorDynamo/ConnectorDynamo/GPUCache/
 ConnectorDynamo/ConnectorDynamo/dist/
 *.3dmbak
 *.rhl
-
-speckle-sharp-ci-tools/
-
-ConnectorGrasshopper/ConnectorGrasshopper/SpeckleGrasshoppper.zip
