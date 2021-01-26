@@ -1,9 +1,10 @@
-﻿using System;
+﻿extern alias Newtonsoft12;
+using Newtonsoft12::Newtonsoft.Json;
+using Newtonsoft12::Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Transports;

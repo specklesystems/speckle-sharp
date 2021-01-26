@@ -1,8 +1,9 @@
-﻿using System;
+﻿extern alias Newtonsoft12;
+using Newtonsoft12::Newtonsoft.Json;
+using Newtonsoft12::Newtonsoft.Json.Serialization;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Speckle.Core.Serialisation;
 
 namespace Speckle.Core.Api
@@ -26,7 +27,7 @@ namespace Speckle.Core.Api
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
         Formatting = Formatting.None,
         ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-        Converters = new List<Newtonsoft.Json.JsonConverter> { serializer }
+        Converters = new List<JsonConverter> { serializer }
       };
 
       return (serializer, settings);

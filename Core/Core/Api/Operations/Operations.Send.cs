@@ -1,11 +1,12 @@
-﻿using System;
+﻿extern alias Newtonsoft12;
+using Newtonsoft12::Newtonsoft.Json;
+using Newtonsoft12::Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Sentry;
 using Sentry.Protocol;
 using Speckle.Core.Logging;

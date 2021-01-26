@@ -1,6 +1,7 @@
-﻿using System;
+﻿extern alias Newtonsoft12;
+using Newtonsoft12::Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace Speckle.Core.Models
 {
