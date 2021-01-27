@@ -1,22 +1,14 @@
-﻿extern alias DynamoNewtonsoft;
-using DNJ = DynamoNewtonsoft::Newtonsoft.Json;
-using Dynamo.Graph.Nodes;
+﻿using Dynamo.Graph.Nodes;
 using ProtoCore.AST.AssociativeAST;
-using Speckle.ConnectorDynamo.Functions;
-using Speckle.Core.Credentials;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Logging;
 using Dynamo.Engine;
-using ProtoCore.Mirror;
-using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Threading;
 using Dynamo.Utilities;
-using Speckle.Core.Api;
-using Speckle.Core.Models;
+using Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.ViewNode
 {
@@ -37,7 +29,7 @@ namespace Speckle.ConnectorDynamo.ViewNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public bool ViewEnabled
     {
       get => _viewEnabled;
@@ -54,7 +46,7 @@ namespace Speckle.ConnectorDynamo.ViewNode
     /// </summary>
     /// <param name="inPorts"></param>
     /// <param name="outPorts"></param>
-    [DNJ.JsonConstructor]
+    [JsonConstructor]
     private View(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
       if (inPorts.Count() == 1)

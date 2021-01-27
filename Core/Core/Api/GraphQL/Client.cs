@@ -1,14 +1,13 @@
-﻿using System;
+﻿using Speckle.Newtonsoft.Json;
+using System;
 using System.Collections.Specialized;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using GraphQL.Client.Http;
-using GraphQL.Client.Serializer.Newtonsoft;
-using Newtonsoft.Json;
-using Sentry.Protocol;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
+using Speckle.Core.Api.GraphQL.Serializer;
 
 namespace Speckle.Core.Api
 {

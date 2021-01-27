@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Speckle.Newtonsoft.Json;
+using System;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using System.Collections.Concurrent;
@@ -93,7 +93,7 @@ namespace Speckle.Core.Api
 
       Log.AddBreadcrumb("RemoteHit");
       objString = await remoteTransport.CopyObjectAndChildren(objectId, localTransport, onTotalChildrenCountKnown);
-      
+
       // Wait for the local transport to finish "writing" - in this case, it signifies that the remote transport has done pushing copying objects into it. (TODO: I can see some scenarios where latency can screw things up, and we should rather wait on the remote transport).
       await localTransport.WriteComplete();
 
