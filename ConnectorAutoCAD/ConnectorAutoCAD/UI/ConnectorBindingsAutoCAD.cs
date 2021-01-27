@@ -139,11 +139,17 @@ namespace Speckle.ConnectorAutoCAD.UI
     public override List<string> GetSelectedObjects()
     {
       // TODO: this prompts user to select items: need to set to preselect?? UNSOLVED ISSUE
+      /*
       List<string> objs = null;
       var entRes = Doc.Editor.GetSelection();
       if (entRes.Status == PromptStatus.OK)
         objs = entRes.Value.GetObjectIds().Select(o => o.ToString()).ToList();
       return objs;
+      */
+
+      // trying a command instead to get selection
+      // Doc.SendStringToExecute("SpeckleSelection", false, false, true);
+      return new List<string>();
     }
 
     public override List<ISelectionFilter> GetSelectionFilters()

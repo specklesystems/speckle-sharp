@@ -1,21 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.Civil.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.DesktopUI;
 using Speckle.ConnectorAutoCAD.UI;
+using Autodesk.AutoCAD.EditorInput;
 
+[assembly: CommandClass(typeof(Speckle.ConnectorAutoCAD.Entry.SpeckleAutoCADCommand))]
 namespace Speckle.ConnectorAutoCAD.Entry
 {
   public class SpeckleAutoCADCommand
   {
     public static Bootstrapper Bootstrapper { get; set; }
     public static ConnectorBindingsAutoCAD Bindings { get; set; }
+    public static Document Doc => Application.DocumentManager.MdiActiveDocument;
 
 
     [CommandMethod("Speckle")]
-    public static void Speckle()
+    public static void SpeckleCommand()
     {
       try
       {
@@ -27,31 +33,30 @@ namespace Speckle.ConnectorAutoCAD.Entry
 
         Bootstrapper = new Bootstrapper()
         {
-          Bindings = new ConnectorBindingsAutoCAD()
+          Bindings = Bindings
         };
 
-        Bootstrapper.Setup(System.Windows.Application.Current);
-        Bootstrapper.Start(new string[] { });
+        Bootstrapper.Setup(System.Windows.Application.Current != null ? System.Windows.Application.Current : new System.Windows.Application());
 
-        Bootstrapper.Application.MainWindow.Initialized += (o, e) =>
+        Bootstrapper.Application.Startup += (o, e) =>
         {
-          ((ConnectorBindingsAutoCAD)Bootstrapper.Bindings).GetFileContextAndNotifyUI();
+          var helper = new System.Windows.Interop.WindowInteropHelper(Bootstrapper.Application.MainWindow);
+          helper.Owner = Autodesk.AutoCAD.ApplicationServices.Application.MainWindow.Handle;
         };
-
-        Bootstrapper.Application.MainWindow.Closing += (object sender, System.ComponentModel.CancelEventArgs e) =>
-        {
-          Bootstrapper.Application.MainWindow.Hide();
-          e.Cancel = true;
-        };
-
-        var helper = new System.Windows.Interop.WindowInteropHelper(Bootstrapper.Application.MainWindow);
-        helper.Owner = Application.MainWindow.Handle;
-
       }
       catch (System.Exception e)
       {
 
       }
+    }
+
+    [CommandMethod("SpeckleSelection", CommandFlags.UsePickSet)]
+    public static List<string> GetSelection()
+    {
+      List<string> objs = null;
+      PromptSelectionResult psr = Doc.Editor.GetSelection();
+      objs = psr.Value.GetObjectIds().Select(o => o.ToString()).ToList();
+      return objs;
     }
   }
 }
