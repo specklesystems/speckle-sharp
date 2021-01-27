@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Speckle.Core.Models
 {
@@ -26,7 +27,8 @@ namespace Speckle.Core.Models
     {
 
     }
-
+    
+    
     /// <summary>
     /// Gets properties via the dot syntax.
     /// <para><pre>((dynamic)myObject).superProperty;</pre></para>
@@ -48,10 +50,32 @@ namespace Speckle.Core.Models
     /// <returns></returns>
     public override bool TrySetMember(SetMemberBinder binder, object value)
     {
-      properties[binder.Name] = value;
-      return true;
+      var valid = IsPropNameValid(binder.Name);
+      if (valid)
+        properties[binder.Name] = value;
+      return valid;
     }
-
+    
+    private bool IsPropNameValid(string name)
+    {
+      // Regex rules
+      var manyLeadingAtChars = new Regex(@"^@{2,}");
+      var invalidChars = new Regex(@"[\.\/]");
+      
+      // Existing members
+      var members = GetInstanceMembersNames();
+      
+      
+      // Checks: will return true if INVALID
+      var hasLeading = manyLeadingAtChars.IsMatch(name);
+      var hasInvalidChars = invalidChars.IsMatch(name);
+      var isProtected = members.Contains(name);
+      
+      // Prop name is valid if none of the checks are true
+      return !hasLeading && !hasInvalidChars && !isProtected;
+    }
+    
+    
     /// <summary>
     /// Sets and gets properties using the key accessor pattern. E.g.:
     /// <para><pre>((dynamic)myObject)["superProperty"] = 42;</pre></para>
@@ -75,6 +99,8 @@ namespace Speckle.Core.Models
       }
       set
       {
+        var valid = IsPropNameValid(key);
+        if (!valid) throw new Exception("Invalid prop name");
         if (properties.ContainsKey(key))
         {
           properties[key] = value;
