@@ -1,5 +1,4 @@
-﻿extern alias SpeckleNewtonsoft;
-using SpeckleNewtonsoft::Newtonsoft.Json;
+﻿using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Specialized;
 using System.Net.Http;

@@ -1,6 +1,5 @@
 ﻿
-extern alias SpeckleNewtonsoft;
-using SpeckleNewtonsoft::Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
