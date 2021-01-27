@@ -11,15 +11,15 @@ namespace TestsUnit
     public void CanValidatePropNames()
     {
       dynamic @base = new Base();
-      @base["@something"] = "A";
+      
+      // Word chars are OK
       @base["something"] = "B";
 
-      var value = @base["@something"];
-      
-      // Multiple @
+      // Only single leading @ allowed
+      @base["@something"] = "A";
       Assert.Throws<Exception>(() => { @base["@@@something"] = "Testing"; });
       
-      // Invalid chars
+      // Invalid chars:  ./
       Assert.Throws<Exception>(() => { @base["some.thing"] = "Testing"; });
       Assert.Throws<Exception>(() => { @base["some/thing"] = "Testing"; });
       

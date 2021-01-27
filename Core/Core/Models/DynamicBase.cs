@@ -59,20 +59,36 @@ namespace Speckle.Core.Models
     private bool IsPropNameValid(string name)
     {
       // Regex rules
+      
+      // Rule for multiple leading @.
       var manyLeadingAtChars = new Regex(@"^@{2,}");
+      // Rule for invalid chars.
       var invalidChars = new Regex(@"[\.\/]");
       
       // Existing members
       var members = GetInstanceMembersNames();
       
+      // TODO: Check for detached/non-detached duplicate names? i.e: '@something' vs 'something'
+      // TODO: Instance members will not be overwritten, this may cause issues.
       
       // Checks: will return true if INVALID
-      var hasLeading = manyLeadingAtChars.IsMatch(name);
-      var hasInvalidChars = invalidChars.IsMatch(name);
-      var isProtected = members.Contains(name);
       
+      var hasLeading = manyLeadingAtChars.IsMatch(name);
+      // Checks for invalid chars
+      var hasInvalidChars = invalidChars.IsMatch(name);
+      // Checks if you are trying to change a member property
+      var isProtected = members.Contains(name);
+      var checks = new List<bool>
+      {
+        // Checks for multiple leading @
+        !manyLeadingAtChars.IsMatch(name),
+        // Checks for invalid chars
+        !invalidChars.IsMatch(name), 
+        // Checks if you are trying to change a member property
+        !members.Contains(name)
+      };
       // Prop name is valid if none of the checks are true
-      return !hasLeading && !hasInvalidChars && !isProtected;
+      return checks.TrueForAll(v => v);
     }
     
     
