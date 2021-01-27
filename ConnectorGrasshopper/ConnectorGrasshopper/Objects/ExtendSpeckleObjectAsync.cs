@@ -72,7 +72,14 @@ namespace ConnectorGrasshopper.Objects
           Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Object {b.id} - Property {key} has been overwritten");
         }
 
-        b[key] = Utilities.TryConvertItemToSpeckle(values[index++], Converter);
+        try
+        {
+          b[key] = Utilities.TryConvertItemToSpeckle(values[index++], Converter);
+        }
+        catch (Exception e)
+        {
+          Console.WriteLine(e);
+        }
       });
     }
 
@@ -118,7 +125,14 @@ namespace ConnectorGrasshopper.Objects
             var list = subTree.get_Branch(subPath) as List<IGH_Goo>;
             if (list?.Count > 0)
             {
-              @base[key] = list.Select(goo => Utilities.TryConvertItemToSpeckle(goo, Converter)).ToList();
+              try
+              {
+                @base[key] = list.Select(goo => Utilities.TryConvertItemToSpeckle(goo, Converter)).ToList();
+              }
+              catch (Exception e)
+              {
+                Console.WriteLine(e);
+              }
             };
           }
           else

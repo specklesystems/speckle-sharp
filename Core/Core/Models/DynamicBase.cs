@@ -50,45 +50,45 @@ namespace Speckle.Core.Models
     /// <returns></returns>
     public override bool TrySetMember(SetMemberBinder binder, object value)
     {
-      var valid = IsPropNameValid(binder.Name);
+      var valid = IsPropNameValid(binder.Name, out _);
       if (valid)
         properties[binder.Name] = value;
       return valid;
     }
     
-    private bool IsPropNameValid(string name)
+    public bool IsPropNameValid(string name, out string reason)
     {
       // Regex rules
-      
       // Rule for multiple leading @.
       var manyLeadingAtChars = new Regex(@"^@{2,}");
       // Rule for invalid chars.
       var invalidChars = new Regex(@"[\.\/]");
-      
       // Existing members
       var members = GetInstanceMembersNames();
       
       // TODO: Check for detached/non-detached duplicate names? i.e: '@something' vs 'something'
       // TODO: Instance members will not be overwritten, this may cause issues.
       
-      // Checks: will return true if INVALID
-      
-      var hasLeading = manyLeadingAtChars.IsMatch(name);
-      // Checks for invalid chars
-      var hasInvalidChars = invalidChars.IsMatch(name);
-      // Checks if you are trying to change a member property
-      var isProtected = members.Contains(name);
-      var checks = new List<bool>
+      var checks = new List<(bool,string)>
       {
         // Checks for multiple leading @
-        !manyLeadingAtChars.IsMatch(name),
+        (!manyLeadingAtChars.IsMatch(name), "Only one leading '@' char is allowed. This signals the property value should be detached."),
         // Checks for invalid chars
-        !invalidChars.IsMatch(name), 
+        (!invalidChars.IsMatch(name), $"Prop with name '{name}' contains invalid characters. The following characters are not allowed: ./"), 
         // Checks if you are trying to change a member property
-        !members.Contains(name)
+        (!members.Contains(name), "Modifying the value of instance member properties is not allowed.")
       };
+
+      var r = "";
       // Prop name is valid if none of the checks are true
-      return checks.TrueForAll(v => v);
+      var isValid =  checks.TrueForAll(v =>
+      {
+        if (!v.Item1) r = v.Item2;
+        return v.Item1;
+      });
+
+      reason = r;
+      return isValid;
     }
     
     
@@ -115,8 +115,8 @@ namespace Speckle.Core.Models
       }
       set
       {
-        var valid = IsPropNameValid(key);
-        if (!valid) throw new Exception("Invalid prop name");
+        if (!IsPropNameValid(key, out string reason)) Log.CaptureAndThrow(new Exception("Invalid prop name: " + reason));
+        
         if (properties.ContainsKey(key))
         {
           properties[key] = value;

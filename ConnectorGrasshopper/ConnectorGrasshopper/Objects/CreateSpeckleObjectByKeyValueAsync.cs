@@ -70,12 +70,24 @@ namespace ConnectorGrasshopper.Objects
         var list = valueTree.Paths.Count == 1 ? valueTree.Branches[0] : valueTree.get_Branch(searchPath);
         // We got a list of values
         var ind = 0;
+        var hasErrors = false;
         keys.ForEach(key =>
         {
           if (ind < list.Count)
-            speckleObj[key] = Utilities.TryConvertItemToSpeckle(list[ind], Converter);
+            try
+            {
+              speckleObj[key] = Utilities.TryConvertItemToSpeckle(list[ind], Converter);
+            }
+            catch (Exception e)
+            {
+              Console.WriteLine(e);
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
+              Parent.Message = "Error";
+              hasErrors = true;
+            }
           ind++;
         });
+        if (hasErrors) return;
       }
       else
       {
@@ -97,7 +109,16 @@ namespace ConnectorGrasshopper.Objects
             }
 
             if (objs.Count > 0)
-              speckleObj[key] = objs;
+              try
+              {
+                speckleObj[key] = objs;
+              }
+              catch (Exception e)
+              {
+                Console.WriteLine(e);
+                Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
+                return;
+              }
           }
 
           index++;

@@ -26,6 +26,19 @@ namespace ConnectorGrasshopper.Objects
       "Speckle 2", "Object Management")
     {
         BaseWorker = new CreateSpeckleObjectWorker(this,Converter);
+        Params.ParameterNickNameChanged += (sender, args) =>
+        {
+          Console.WriteLine("nickname changed!");
+        };
+        Params.ParameterChanged += (sender, args) =>
+        {
+          if (args.OriginalArguments.Type == GH_ObjectEventType.NickName ||
+              args.OriginalArguments.Type == GH_ObjectEventType.NickNameAccepted)
+          {
+            Console.WriteLine("nickname changed!");
+            args.Parameter.Name = args.Parameter.NickName;
+          }
+        };
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -52,8 +65,7 @@ namespace ConnectorGrasshopper.Objects
       };
 
       myParam.NickName = myParam.Name;
-      myParam.ObjectChanged += (sender, e) => { };
-
+      myParam.ObjectChanged += (sender, e) => {};
       return myParam;
     }
 
@@ -64,6 +76,7 @@ namespace ConnectorGrasshopper.Objects
 
     public void VariableParameterMaintenance()
     {
+      Console.WriteLine("parameter maintenance!");
     }
   }
 
@@ -89,22 +102,39 @@ namespace ConnectorGrasshopper.Objects
         var value = inputData[key];
         if (value == null)
         {
+          Done();
         }
         else if (value is List<object> list)
         {
           // Value is a list of items, iterate and convert.
           var converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
-          @base[key] = converted;
+          try
+          {
+            @base[key] = converted;
+            Done();
+          }
+          catch (Exception e)
+          {
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.Message}");
+            Parent.Message = "Error";
+          }
         }
         else
         {
           // If value is not list, it is a single item.
-          var obj = Utilities.TryConvertItemToSpeckle(value, Converter);
-          @base[key] = obj;
+          try
+          {
+            var obj = Utilities.TryConvertItemToSpeckle(value, Converter);
+            @base[key] = obj;
+            Done();
+          }
+          catch (Exception e)
+          {
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.Message}");
+            Parent.Message = "Error";
+          }        
         }
       });
-
-      Done();
     }
 
     public override void SetData(IGH_DataAccess DA)
