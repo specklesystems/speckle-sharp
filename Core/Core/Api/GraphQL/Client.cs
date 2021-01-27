@@ -5,9 +5,9 @@ using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using GraphQL.Client.Http;
-using GraphQL.Client.Serializer.Newtonsoft;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
+using Speckle.Core.Api.GraphQL.Serializer;
 
 namespace Speckle.Core.Api
 {

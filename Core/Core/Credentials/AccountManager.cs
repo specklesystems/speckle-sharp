@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 using Speckle.Core.Transports;
 using System.Collections.Generic;
 using GraphQL;
-using GraphQL.Client.Serializer.Newtonsoft;
 using GraphQL.Client.Http;
 using System.Linq;
 using Speckle.Core.Logging;
-using Sentry;
+using Speckle.Core.Api.GraphQL.Serializer;
 
 namespace Speckle.Core.Credentials
 {

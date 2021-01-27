@@ -2,10 +2,10 @@
 using System.Threading.Tasks;
 using GraphQL.Client.Http;
 using GraphQL;
-using GraphQL.Client.Serializer.Newtonsoft;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Speckle.Core.Logging;
+using Speckle.Core.Api.GraphQL.Serializer;
 
 namespace Speckle.Core.Credentials
 {
