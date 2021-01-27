@@ -1,5 +1,5 @@
-﻿extern alias Newtonsoft12;
-using Newtonsoft12::Newtonsoft.Json;
+﻿extern alias SpeckleNewtonsoft;
+using SpeckleNewtonsoft::Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using System;

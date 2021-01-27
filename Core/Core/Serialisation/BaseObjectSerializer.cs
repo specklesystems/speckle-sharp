@@ -1,7 +1,7 @@
-﻿extern alias Newtonsoft12;
-using Newtonsoft12::Newtonsoft.Json;
-using Newtonsoft12::Newtonsoft.Json.Serialization;
-using Newtonsoft12::Newtonsoft.Json.Linq;
+﻿extern alias SpeckleNewtonsoft;
+using SpeckleNewtonsoft::Newtonsoft.Json;
+using SpeckleNewtonsoft::Newtonsoft.Json.Serialization;
+using SpeckleNewtonsoft::Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;

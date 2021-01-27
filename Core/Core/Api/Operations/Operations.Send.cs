@@ -1,6 +1,6 @@
-﻿extern alias Newtonsoft12;
-using Newtonsoft12::Newtonsoft.Json;
-using Newtonsoft12::Newtonsoft.Json.Linq;
+﻿extern alias SpeckleNewtonsoft;
+using SpeckleNewtonsoft::Newtonsoft.Json;
+using SpeckleNewtonsoft::Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
