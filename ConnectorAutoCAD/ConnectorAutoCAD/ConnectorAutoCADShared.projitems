@@ -15,8 +15,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutoCAD.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)Assets\logo.png" />
-    <Content Include="$(MSBuildThisFileDirectory)Assets\logo16.png" />
-    <Content Include="$(MSBuildThisFileDirectory)Assets\logo32.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo32.png" />
   </ItemGroup>
 </Project>
