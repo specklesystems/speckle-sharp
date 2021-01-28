@@ -53,34 +53,44 @@ namespace ConnectorGrasshopper.Conversion
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      if (CancellationToken.IsCancellationRequested) return;
-
-      int branchIndex = 0, completed = 0;
-      foreach (var list in Objects.Branches)
+      try
       {
-        var path = Objects.Paths[branchIndex];
-        foreach (var item in list)
+        if (CancellationToken.IsCancellationRequested) return;
+
+        int branchIndex = 0, completed = 0;
+        foreach (var list in Objects.Branches)
         {
-          if (CancellationToken.IsCancellationRequested) return;
-
-          try
+          var path = Objects.Paths[branchIndex];
+          foreach (var item in list)
           {
-            var deserialized = Operations.Deserialize(item.Value);
-            ConvertedObjects.Append(new GH_SpeckleBase { Value = deserialized }, path);
-          }
-          catch (Exception e)
-          {
-            ConvertedObjects.Append(new GH_SpeckleBase { Value = null }, path);
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Object at {path} is not a Speckle object. Exception: {e.Message}.");
+            if (CancellationToken.IsCancellationRequested) return;
+
+            try
+            {
+              var deserialized = Operations.Deserialize(item.Value);
+              ConvertedObjects.Append(new GH_SpeckleBase { Value = deserialized }, path);
+            }
+            catch (Exception e)
+            {
+              ConvertedObjects.Append(new GH_SpeckleBase { Value = null }, path);
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Object at {path} is not a Speckle object. Exception: {e.Message}.");
+            }
+
+            ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
           }
 
-          ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
+          branchIndex++;
         }
 
-        branchIndex++;
+        Done();
       }
-
-      Done();
+      catch (Exception e)
+      {
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        Parent.Message = "Error";
+      }
     }
 
     public override WorkerInstance Duplicate() => new DeserializeWorker(Parent);

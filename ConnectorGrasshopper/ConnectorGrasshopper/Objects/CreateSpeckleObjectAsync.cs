@@ -7,6 +7,7 @@ using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -95,46 +96,57 @@ namespace ConnectorGrasshopper.Objects
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      Parent.Message = "Creating...";
-      @base = new Base();
-      inputData.Keys.ToList().ForEach(key =>
+      try
       {
-        var value = inputData[key];
-        if (value == null)
+        Parent.Message = "Creating...";
+        @base = new Base();
+        inputData.Keys.ToList().ForEach(key =>
         {
-          Done();
-        }
-        else if (value is List<object> list)
-        {
-          // Value is a list of items, iterate and convert.
-          var converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
-          try
+          var value = inputData[key];
+          if (value == null)
           {
-            @base[key] = converted;
             Done();
           }
-          catch (Exception e)
+          else if (value is List<object> list)
           {
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.Message}");
-            Parent.Message = "Error";
+            // Value is a list of items, iterate and convert.
+            var converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
+            try
+            {
+              @base[key] = converted;
+              Done();
+            }
+            catch (Exception e)
+            {
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.Message}");
+              Parent.Message = "Error";
+            }
           }
-        }
-        else
-        {
-          // If value is not list, it is a single item.
-          try
+          else
           {
-            var obj = Utilities.TryConvertItemToSpeckle(value, Converter);
-            @base[key] = obj;
-            Done();
+            // If value is not list, it is a single item.
+            try
+            {
+              var obj = Utilities.TryConvertItemToSpeckle(value, Converter);
+              @base[key] = obj;
+              Done();
+            }
+            catch (Exception e)
+            {
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.Message}");
+              Parent.Message = "Error";
+            }        
           }
-          catch (Exception e)
-          {
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.Message}");
-            Parent.Message = "Error";
-          }        
-        }
-      });
+        });
+      }
+      catch (Exception e)
+      {
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        Parent.Message = "Error";
+      }
+
     }
 
     public override void SetData(IGH_DataAccess DA)

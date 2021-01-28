@@ -11,6 +11,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Conversion
 {
@@ -142,25 +143,35 @@ namespace ConnectorGrasshopper.Conversion
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      if (CancellationToken.IsCancellationRequested) return;
-
-      int branchIndex = 0, completed = 0;
-      foreach (var list in Objects.Branches)
+      try
       {
-        var path = Objects.Paths[branchIndex];
-        foreach (var item in list)
-        {
-          if (CancellationToken.IsCancellationRequested) return;
+        if (CancellationToken.IsCancellationRequested) return;
 
-          var converted = Extras.Utilities.TryConvertItemToSpeckle(item, Converter) as Base;
-          ConvertedObjects.Append(new GH_SpeckleBase { Value = converted }, Objects.Paths[branchIndex]);
-          ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
+        int branchIndex = 0, completed = 0;
+        foreach (var list in Objects.Branches)
+        {
+          var path = Objects.Paths[branchIndex];
+          foreach (var item in list)
+          {
+            if (CancellationToken.IsCancellationRequested) return;
+
+            var converted = Utilities.TryConvertItemToSpeckle(item, Converter) as Base;
+            ConvertedObjects.Append(new GH_SpeckleBase { Value = converted }, Objects.Paths[branchIndex]);
+            ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
+          }
+
+          branchIndex++;
         }
 
-        branchIndex++;
+        Done();
       }
-
-      Done();
+      catch (Exception e)
+      {
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        Parent.Message = "Error";
+      }
     }
 
     public override void SetData(IGH_DataAccess DA)
