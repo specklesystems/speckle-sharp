@@ -11,6 +11,7 @@ using Autodesk.AutoCAD.Runtime;
 
 namespace Speckle.ConnectorAutoCAD
 {
+  /* DEPRECATED - using user data instead of named object dictionary for storing streams ... keep code just in case we need this infor later (eg object xdata for revit direct conversions)
   public static class ConnectorAutoCADUtils
   {
     public static Document Doc => Application.DocumentManager.MdiActiveDocument;
@@ -103,8 +104,8 @@ namespace Speckle.ConnectorAutoCAD
       }
     }
   }
+  */
 
-  //ALTERNATE - USER DATA 
   public class UserDataClass
   {
     public static Document Doc => Application.DocumentManager.MdiActiveDocument;
@@ -143,7 +144,7 @@ namespace Speckle.ConnectorAutoCAD
     {
       SpeckleStreams streams = Doc.UserData[SpeckleKey] as SpeckleStreams;
       if (streams == null)
-        return null;
+        return new List<string>();
       else
         return streams.Streams.Values.ToList();
     }

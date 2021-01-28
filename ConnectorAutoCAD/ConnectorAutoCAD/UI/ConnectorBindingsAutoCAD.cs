@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.Runtime;
 
@@ -24,13 +25,14 @@ using Stylet;
 using System.Text.RegularExpressions;
 using Autodesk.AutoCAD.Colors;
 using System.Collections;
+using Autodesk.Windows;
 
 namespace Speckle.ConnectorAutoCAD.UI
 {
   public partial class ConnectorBindingsAutoCAD : ConnectorBindings
   {
 
-    public static Document Doc => Application.DocumentManager.MdiActiveDocument;
+    public Document Doc => Application.DocumentManager.MdiActiveDocument;
 
     public Timer SelectionTimer;
 
@@ -138,23 +140,26 @@ namespace Speckle.ConnectorAutoCAD.UI
 
     public override List<string> GetSelectedObjects()
     {
+
+      // intialize this as an empty list upon first startup! otherwise threading issues will cause a crash
+     // if (Speckle.ConnectorAutoCAD.Entry.App.ComponentManager_ItemInitialized)
+
       // TODO: this prompts user to select items: need to set to preselect?? UNSOLVED ISSUE
-      /*
       List<string> objs = null;
       var entRes = Doc.Editor.GetSelection();
       if (entRes.Status == PromptStatus.OK)
         objs = entRes.Value.GetObjectIds().Select(o => o.ToString()).ToList();
       return objs;
-      */
+
 
       // trying a command instead to get selection
       // Doc.SendStringToExecute("SpeckleSelection", false, false, true);
-      return new List<string>();
+      // return new List<string>();
     }
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
-      List<string> layers = null;
+      List<string> layers = new List<string>();
       using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
         LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;

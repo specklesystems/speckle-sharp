@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Reflection;
 using System.IO;
 using System.Windows.Media.Imaging;
+using Speckle.ConnectorAutoCAD.UI;
 
 namespace Speckle.ConnectorAutoCAD.Entry
 {
@@ -37,9 +38,12 @@ namespace Speckle.ConnectorAutoCAD.Entry
         Create();
         Application.SystemVariableChanged += TrapWSCurrentChange;
       }
+
+      // set up bindings here? possible to subscribe to document events?
+      SpeckleAutoCADCommand.Bindings = new ConnectorBindingsAutoCAD();
     }
 
-    private void ComponentManager_ItemInitialized(object sender, RibbonItemEventArgs e)
+    public void ComponentManager_ItemInitialized(object sender, RibbonItemEventArgs e)
     {
       //now one Ribbon item is initialized, but the Ribbon control
       //may not be available yet, so check if before
@@ -120,7 +124,8 @@ namespace Speckle.ConnectorAutoCAD.Entry
       button.ShowText = true;
       button.Size = RibbonItemSize.Large;
       button.Orientation = Orientation.Vertical;
-      button.LargeImage = LoadPngImgSource("Speckle.ConnectorAutoCAD.Resources.logo32.png", path); ;
+      button.Image = LoadPngImgSource("Speckle.ConnectorAutoCAD.Resources.logo16.png", path);
+      button.LargeImage = LoadPngImgSource("Speckle.ConnectorAutoCAD.Resources.logo32.png", path);
 
       // add command to the button
       button.CommandHandler = new ButtonCommandHandler();
@@ -135,12 +140,13 @@ namespace Speckle.ConnectorAutoCAD.Entry
     {
       public event System.EventHandler CanExecuteChanged;
 
+      // the command parameter includes an extra space at the end to simulate pressing "enter"
       public void Execute(object parameter)
       {
         RibbonButton btn = parameter as RibbonButton;
         if (btn != null)
           Application.DocumentManager.MdiActiveDocument.SendStringToExecute(
-            (string)btn.CommandParameter, true, false, true);
+            (string)btn.CommandParameter + " ", true, false, true);
       }
 
       public bool CanExecute(object parameter)
