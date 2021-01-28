@@ -63,11 +63,18 @@ namespace ConnectorGrasshopper.Conversion
         foreach (var item in list)
         {
           if (CancellationToken.IsCancellationRequested) return;
-          
+
           if (item != null)
           {
-            var serialised = Operations.Serialize(item.Value);
-            ConvertedObjects.Append(new GH_String { Value = serialised }, path);
+            try
+            {
+              var serialised = Operations.Serialize(item.Value);
+              ConvertedObjects.Append(new GH_String { Value = serialised }, path);
+            }
+            catch (Exception e)
+            {
+
+            }
           }
           else
           {
@@ -104,6 +111,7 @@ namespace ConnectorGrasshopper.Conversion
         branchIndex++;
       }
     }
+
 
     public override void SetData(IGH_DataAccess DA)
     {

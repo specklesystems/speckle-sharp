@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Speckle.Newtonsoft.Json;
+using Speckle.Newtonsoft.Json.Serialization;
+using Speckle.Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.CSharp.RuntimeBinder;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -70,7 +71,7 @@ namespace Speckle.Core.Serialisation
 
     #region Value handling
 
-    internal static object HandleValue(JToken value, Newtonsoft.Json.JsonSerializer serializer, CancellationToken CancellationToken, JsonProperty jsonProperty = null, string TypeDiscriminator = "speckle_type")
+    internal static object HandleValue(JToken value, JsonSerializer serializer, CancellationToken CancellationToken, JsonProperty jsonProperty = null, string TypeDiscriminator = "speckle_type")
     {
       if (CancellationToken.IsCancellationRequested)
       {
@@ -282,7 +283,7 @@ namespace Speckle.Core.Serialisation
 
     private static Dictionary<string, Type> cachedAbstractTypes = new Dictionary<string, Type>();
 
-    internal static object HandleAbstractOriginalValue(JToken jToken, string assemblyQualifiedName, Newtonsoft.Json.JsonSerializer serializer)
+    internal static object HandleAbstractOriginalValue(JToken jToken, string assemblyQualifiedName, JsonSerializer serializer)
     {
       if (cachedAbstractTypes.ContainsKey(assemblyQualifiedName))
       {

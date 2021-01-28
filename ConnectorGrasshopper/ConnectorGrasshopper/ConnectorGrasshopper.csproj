@@ -217,7 +217,6 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-
   <PropertyGroup>
     <FallbackCulture>en-US</FallbackCulture>
   </PropertyGroup>

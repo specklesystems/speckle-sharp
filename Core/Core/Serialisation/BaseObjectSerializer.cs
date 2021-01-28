@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Speckle.Newtonsoft.Json;
+using Speckle.Newtonsoft.Json.Serialization;
+using Speckle.Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -17,7 +17,7 @@ namespace Speckle.Core.Serialisation
   /// Json converter that handles base speckle objects. Enables detachment &
   /// simultaneous transport (persistence) of objects. 
   /// </summary>
-  public class BaseObjectSerializer : Newtonsoft.Json.JsonConverter
+  public class BaseObjectSerializer : JsonConverter
   {
 
     /// <summary>
@@ -88,7 +88,7 @@ namespace Speckle.Core.Serialisation
 
     #region Read Json
 
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
 
       if (CancellationToken.IsCancellationRequested)
@@ -172,7 +172,7 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference, no transport is defined."), level : Sentry.Protocol.SentryLevel.Warning);
+          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference, no transport is defined."), level: Sentry.Protocol.SentryLevel.Warning);
         }
 
         if (str != null && str != "")
@@ -182,7 +182,7 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference. The provided transport could not find it."), level : Sentry.Protocol.SentryLevel.Warning);
+          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference. The provided transport could not find it."), level: Sentry.Protocol.SentryLevel.Warning);
         }
       }
 
@@ -400,7 +400,7 @@ namespace Speckle.Core.Serialisation
             DetachLineage.Add(true);
 
             var chunkSyntax = new Regex(@"^@\((\d*)\)");
-            
+
             if (chunkSyntax.IsMatch(prop))
             {
               int chunkSize;
