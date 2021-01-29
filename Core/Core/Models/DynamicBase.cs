@@ -1,4 +1,4 @@
-﻿using Speckle.Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using System;
@@ -68,9 +68,9 @@ namespace Speckle.Core.Models
       
       // TODO: Check for detached/non-detached duplicate names? i.e: '@something' vs 'something'
       // TODO: Instance members will not be overwritten, this may cause issues.
-      
       var checks = new List<(bool,string)>
       {
+        (!(string.IsNullOrEmpty(name) || name == "@"), "Found empty prop name"),
         // Checks for multiple leading @
         (!manyLeadingAtChars.IsMatch(name), "Only one leading '@' char is allowed. This signals the property value should be detached."),
         // Checks for invalid chars
