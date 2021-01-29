@@ -430,11 +430,12 @@ namespace ConnectorGrasshopper.Ops
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
+      var receiveComponent = ((ReceiveComponent) Parent);
       try
       {
         InternalProgressAction = dict =>
         {
-          foreach (var kvp in dict) ReportProgress(kvp.Key, (double) kvp.Value / TotalObjectCount);
+          foreach (var kvp in dict) ReportProgress(kvp.Key, (double) kvp.Value / (TotalObjectCount + 1));
         };
 
         ErrorAction = (transportName, exception) =>
@@ -448,13 +449,13 @@ namespace ConnectorGrasshopper.Ops
         var remoteTransport = new ServerTransport(InputWrapper?.GetAccount(), InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 
-        if (((ReceiveComponent) Parent).JustPastedIn &&
-            !string.IsNullOrEmpty(((ReceiveComponent) Parent).ReceivedObjectId))
+        if (receiveComponent.JustPastedIn &&
+            !string.IsNullOrEmpty(receiveComponent.ReceivedObjectId))
         {
-          Task.Run(async () =>
+          var task = Task.Run(async () =>
           {
             ReceivedObject = await Operations.Receive(
-              ((ReceiveComponent) Parent).ReceivedObjectId,
+              receiveComponent.ReceivedObjectId,
               CancellationToken,
               remoteTransport,
               new SQLiteTransport {TransportName = "LC"}, // Local cache!
@@ -465,17 +466,18 @@ namespace ConnectorGrasshopper.Ops
 
             Done();
           });
+          task.Wait();
           return;
         }
 
         // Means it's a copy paste of an empty non-init component; set the record and exit fast.
-        if (((ReceiveComponent) Parent).JustPastedIn)
+        if (receiveComponent.JustPastedIn)
         {
-          ((ReceiveComponent) Parent).JustPastedIn = false;
+          receiveComponent.JustPastedIn = false;
           return;
         }
 
-        Task.Run(async () =>
+        var t = Task.Run(async () =>
         {
           Commit myCommit;
           if (InputWrapper.CommitId != null)
@@ -522,6 +524,7 @@ namespace ConnectorGrasshopper.Ops
 
           Done();
         });
+        t.Wait();
       }
       catch (Exception e)
       {
@@ -529,7 +532,9 @@ namespace ConnectorGrasshopper.Ops
         Log.CaptureException(e);
         Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
         Parent.Message = "Error";
-        ((ReceiveComponent) Parent).CurrentComponentState = "expired";
+        receiveComponent.CurrentComponentState = "up_to_date";
+        receiveComponent.JustPastedIn = false;
+        RhinoApp.InvokeOnUiThread(new Action(()=> receiveComponent.OnDisplayExpired(true)));
       }
     }
 
