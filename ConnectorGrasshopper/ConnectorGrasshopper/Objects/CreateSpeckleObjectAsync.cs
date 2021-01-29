@@ -66,6 +66,7 @@ namespace ConnectorGrasshopper.Objects
       };
 
       myParam.NickName = myParam.Name;
+      myParam.Optional = false;
       myParam.ObjectChanged += (sender, e) => {};
       return myParam;
     }
@@ -100,13 +101,13 @@ namespace ConnectorGrasshopper.Objects
       {
         Parent.Message = "Creating...";
         @base = new Base();
+        var hasErrors = false;
         inputData.Keys.ToList().ForEach(key =>
         {
           var value = inputData[key];
           if (value == null)
-          {
             Done();
-          }
+          
           else if (value is List<object> list)
           {
             // Value is a list of items, iterate and convert.
@@ -114,12 +115,13 @@ namespace ConnectorGrasshopper.Objects
             try
             {
               @base[key] = converted;
-              Done();
             }
             catch (Exception e)
             {
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.Message}");
+              Log.CaptureException(e);
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
               Parent.Message = "Error";
+              hasErrors = true;
             }
           }
           else
@@ -129,15 +131,18 @@ namespace ConnectorGrasshopper.Objects
             {
               var obj = Utilities.TryConvertItemToSpeckle(value, Converter);
               @base[key] = obj;
-              Done();
             }
             catch (Exception e)
             {
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.Message}");
+              Log.CaptureException(e);
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
               Parent.Message = "Error";
+              hasErrors = true;
             }        
           }
         });
+        if (!hasErrors) 
+          Done();
       }
       catch (Exception e)
       {
