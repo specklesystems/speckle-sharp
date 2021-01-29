@@ -227,10 +227,21 @@ namespace Speckle.ConnectorDynamo.SendNode
         if (_data == null)
           Core.Logging.Log.CaptureAndThrow(new Exception("The data provided is invalid"));
 
-
+        long totalCount = 0;
+        Base @base = null;
         var converter = new BatchConverter();
-        var @base = converter.ConvertRecursivelyToSpeckle(_data);
-        var totalCount = @base.GetTotalChildrenCount();
+        try
+        {
+          @base = converter.ConvertRecursivelyToSpeckle(_data);
+          totalCount = @base.GetTotalChildrenCount();
+        }
+        catch (Exception e)
+        {
+          Message = "Conversion error";
+          Warning(e.Message);
+          Core.Logging.Log.CaptureAndThrow(new Exception("Conversion error", e));
+        }
+        
         Message = "Sending...";
 
         void ProgressAction(ConcurrentDictionary<string, int> dict)
@@ -303,6 +314,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         _objectCount = 0;
         SendEnabled = false;
         Message = "";
+        ClearErrorsAndWarnings();
       }
     }
 
@@ -381,6 +393,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       {
         ResetNode(true);
         Message = "Stream is invalid";
+        Warning("Input was neither a transport nor a stream.");
         return;
       }
 

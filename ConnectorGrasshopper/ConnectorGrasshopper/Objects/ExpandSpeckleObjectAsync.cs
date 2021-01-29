@@ -9,6 +9,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -141,17 +142,27 @@ namespace ConnectorGrasshopper.Objects
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      Parent.Message = "Expanding...";
-      if (speckleObjects.DataCount == 0)
+      try
       {
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"Input was empty!");
-        Parent.Message = "Done";
+        Parent.Message = "Expanding...";
+        if (speckleObjects.DataCount == 0)
+        {
+          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"Input was empty!");
+          Parent.Message = "Done";
+        }
+        outputList = GetOutputList();
+        (Parent as ExpandSpeckleObjectAsync).outputList = outputList;
+        outputDict = CreateOutputDictionary();
+        (Parent as ExpandSpeckleObjectAsync).State = 1;
+        Done();
       }
-      outputList = GetOutputList();
-      (Parent as ExpandSpeckleObjectAsync).outputList = outputList;
-      outputDict = CreateOutputDictionary();
-      (Parent as ExpandSpeckleObjectAsync).State = 1;
-      Done();
+      catch (Exception e)
+      {
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        Parent.Message = "Error";
+      }
     }
 
     public override void SetData(IGH_DataAccess DA)

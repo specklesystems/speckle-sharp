@@ -8,6 +8,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Objects
 {
@@ -52,33 +53,44 @@ namespace ConnectorGrasshopper.Objects
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      Parent.Message = "Working";
-      
-      if (CancellationToken.IsCancellationRequested)
+      try
       {
-        Done();
-        Parent.Message = "Cancelled";
-        return;
-      }
+        Parent.Message = "Working";
       
-      var obj = @base[key] ?? @base["@" + key];
-      switch (obj)
-      {
-        case null:
-          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Key not found in object: " + key);
-          break;
-        case List<object> list:
+        if (CancellationToken.IsCancellationRequested)
         {
-          value = list.Select(
-            item => Utilities.TryConvertItemToNative(item, Converter)).ToList();
-          break;
+          Done();
+          Parent.Message = "Cancelled";
+          return;
         }
-        default:
-          value = Utilities.TryConvertItemToNative(obj, Converter);
-          break;
-      }
+      
+        var obj = @base[key] ?? @base["@" + key];
+        switch (obj)
+        {
+          case null:
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Key not found in object: " + key);
+            break;
+          case List<object> list:
+          {
+            value = list.Select(
+              item => Utilities.TryConvertItemToNative(item, Converter)).ToList();
+            break;
+          }
+          default:
+            value = Utilities.TryConvertItemToNative(obj, Converter);
+            break;
+        }
 
-      Done();
+        Done();
+      }
+      catch (Exception e)
+      {
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        Parent.Message = "Error";
+
+      }
     }
 
     public override void SetData(IGH_DataAccess DA)

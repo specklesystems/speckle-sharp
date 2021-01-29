@@ -10,6 +10,7 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -96,28 +97,39 @@ namespace ConnectorGrasshopper.Ops
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      Parent.Message = "Receiving...";
-      var Converter = (Parent as ReceiveLocalComponent).Converter;
-      var @base = Operations.Receive(localDataId).Result;
+      try
+      {
+        Parent.Message = "Receiving...";
+        var Converter = (Parent as ReceiveLocalComponent).Converter;
+        var @base = Operations.Receive(localDataId).Result;
       
-      if (Converter.CanConvertToNative(@base))
-      {
-        var converted = Converter.ConvertToNative(@base);
-        data = new GH_Structure<IGH_Goo>();
-        data.Append(Utilities.TryConvertItemToNative(converted, Converter));
+        if (Converter.CanConvertToNative(@base))
+        {
+          var converted = Converter.ConvertToNative(@base);
+          data = new GH_Structure<IGH_Goo>();
+          data.Append(Utilities.TryConvertItemToNative(converted, Converter));
+        }
+        else if (@base.GetDynamicMembers().Count() == 1)
+        {
+          var treeBuilder = new TreeBuilder(Converter);
+          var tree = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);
+          data = tree;
+        }
+        else
+        {
+          data = new GH_Structure<IGH_Goo>();
+          data.Append(new GH_SpeckleBase(@base));
+        }
+        Done();
       }
-      else if (@base.GetDynamicMembers().Count() == 1)
+      catch (Exception e)
       {
-        var treeBuilder = new TreeBuilder(Converter);
-        var tree = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);
-        data = tree;
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        Parent.Message = "Error";
+        Done();
       }
-      else
-      {
-        data = new GH_Structure<IGH_Goo>();
-        data.Append(new GH_SpeckleBase(@base));
-      }
-      Done();
     }
 
     public override void SetData(IGH_DataAccess DA)

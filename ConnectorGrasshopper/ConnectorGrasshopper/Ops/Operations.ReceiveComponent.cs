@@ -430,29 +430,88 @@ namespace ConnectorGrasshopper.Ops
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      InternalProgressAction = dict =>
+      var receiveComponent = ((ReceiveComponent) Parent);
+      try
       {
-        foreach (var kvp in dict) ReportProgress(kvp.Key, (double) kvp.Value / TotalObjectCount);
-      };
-
-      ErrorAction = (transportName, exception) =>
-      {
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
-        var asyncParent = (GH_AsyncComponent) Parent;
-        asyncParent.CancellationSources.ForEach(source => source.Cancel());
-      };
-
-      var client = new Client(InputWrapper?.GetAccount());
-      var remoteTransport = new ServerTransport(InputWrapper?.GetAccount(), InputWrapper?.StreamId);
-      remoteTransport.TransportName = "R";
-
-      if (((ReceiveComponent) Parent).JustPastedIn &&
-          !string.IsNullOrEmpty(((ReceiveComponent) Parent).ReceivedObjectId))
-      {
-        Task.Run(async () =>
+        InternalProgressAction = dict =>
         {
+          foreach (var kvp in dict) ReportProgress(kvp.Key, (double) kvp.Value / (TotalObjectCount + 1));
+        };
+
+        ErrorAction = (transportName, exception) =>
+        {
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
+          var asyncParent = (GH_AsyncComponent) Parent;
+          asyncParent.CancellationSources.ForEach(source => source.Cancel());
+        };
+
+        var client = new Client(InputWrapper?.GetAccount());
+        var remoteTransport = new ServerTransport(InputWrapper?.GetAccount(), InputWrapper?.StreamId);
+        remoteTransport.TransportName = "R";
+
+        if (receiveComponent.JustPastedIn &&
+            !string.IsNullOrEmpty(receiveComponent.ReceivedObjectId))
+        {
+          var task = Task.Run(async () =>
+          {
+            ReceivedObject = await Operations.Receive(
+              receiveComponent.ReceivedObjectId,
+              CancellationToken,
+              remoteTransport,
+              new SQLiteTransport {TransportName = "LC"}, // Local cache!
+              InternalProgressAction,
+              ErrorAction,
+              count => TotalObjectCount = count
+            );
+
+            Done();
+          });
+          task.Wait();
+          return;
+        }
+
+        // Means it's a copy paste of an empty non-init component; set the record and exit fast.
+        if (receiveComponent.JustPastedIn)
+        {
+          receiveComponent.JustPastedIn = false;
+          return;
+        }
+
+        var t = Task.Run(async () =>
+        {
+          Commit myCommit;
+          if (InputWrapper.CommitId != null)
+            try
+            {
+              myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
+            }
+            catch (Exception e)
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+              Done();
+              return;
+            }
+          else
+            try
+            {
+              var branches = await client.StreamGetBranches(InputWrapper.StreamId);
+              var mainBranch = branches.FirstOrDefault(b => b.name == (InputWrapper.BranchName ?? "main"));
+              myCommit = mainBranch.commits.items[0];
+            }
+            catch (Exception e)
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
+                "Could not get any commits from the stream's \"main\" branch."));
+              Done();
+              return;
+            }
+
+          ReceivedCommit = myCommit;
+
+          if (CancellationToken.IsCancellationRequested) return;
+
           ReceivedObject = await Operations.Receive(
-            ((ReceiveComponent) Parent).ReceivedObjectId,
+            myCommit.referencedObject,
             CancellationToken,
             remoteTransport,
             new SQLiteTransport {TransportName = "LC"}, // Local cache!
@@ -461,65 +520,22 @@ namespace ConnectorGrasshopper.Ops
             count => TotalObjectCount = count
           );
 
+          if (CancellationToken.IsCancellationRequested) return;
+
           Done();
         });
-        return;
+        t.Wait();
       }
-
-      // Means it's a copy paste of an empty non-init component; set the record and exit fast.
-      if (((ReceiveComponent) Parent).JustPastedIn)
+      catch (Exception e)
       {
-        ((ReceiveComponent) Parent).JustPastedIn = false;
-        return;
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        Parent.Message = "Error";
+        receiveComponent.CurrentComponentState = "up_to_date";
+        receiveComponent.JustPastedIn = false;
+        RhinoApp.InvokeOnUiThread(new Action(()=> receiveComponent.OnDisplayExpired(true)));
       }
-
-      Task.Run(async () =>
-      {
-        Commit myCommit;
-        if (InputWrapper.CommitId != null)
-          try
-          {
-            myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
-          }
-          catch (Exception e)
-          {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
-            Done();
-            return;
-          }
-        else
-          try
-          {
-            var branches = await client.StreamGetBranches(InputWrapper.StreamId);
-            var mainBranch = branches.FirstOrDefault(b => b.name == (InputWrapper.BranchName ?? "main"));
-            myCommit = mainBranch.commits.items[0];
-          }
-          catch (Exception e)
-          {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
-              "Could not get any commits from the stream's \"main\" branch."));
-            Done();
-            return;
-          }
-
-        ReceivedCommit = myCommit;
-
-        if (CancellationToken.IsCancellationRequested) return;
-
-        ReceivedObject = await Operations.Receive(
-          myCommit.referencedObject,
-          CancellationToken,
-          remoteTransport,
-          new SQLiteTransport {TransportName = "LC"}, // Local cache!
-          InternalProgressAction,
-          ErrorAction,
-          count => TotalObjectCount = count
-        );
-
-        if (CancellationToken.IsCancellationRequested) return;
-
-        Done();
-      });
     }
 
     public override void SetData(IGH_DataAccess DA)
