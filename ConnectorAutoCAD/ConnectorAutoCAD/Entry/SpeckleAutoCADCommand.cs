@@ -57,7 +57,7 @@ namespace Speckle.ConnectorAutoCAD.Entry
       PromptSelectionResult selection = Doc.Editor.SelectImplied(); // don't use get selection as this will prompt user to select if nothing is selected already
       if (selection.Status != PromptStatus.Error)
         objs = selection.Value.GetObjectIds().Select(o => o.ToString()).ToList();
-      UserDataClass.UpdateSelectionInSpeckleDict(UserDataClass.SelectionState.Current, objs);
+      UserDataClass.UpdateSpeckleSelection(objs);
     }
   }
 }

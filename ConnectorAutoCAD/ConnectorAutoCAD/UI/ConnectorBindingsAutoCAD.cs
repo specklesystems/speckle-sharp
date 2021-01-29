@@ -43,20 +43,6 @@ namespace Speckle.ConnectorAutoCAD.UI
 
     public ConnectorBindingsAutoCAD() : base()
     {
-      SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
-      SelectionTimer.Elapsed += SelectionTimer_Elapsed;
-      SelectionTimer.Start();
-    }
-
-    private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
-    {
-      if (Doc == null)
-        return;
-
-      var selectedObjects = GetSelectedObjects();
-
-      NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selectedObjects.Count });
-      NotifyUi(new UpdateSelectionEvent() { ObjectIds = selectedObjects });
     }
 
     #region local streams 
@@ -75,22 +61,22 @@ namespace Speckle.ConnectorAutoCAD.UI
 
     public override void AddNewStream(StreamState state)
     {
-      UserDataClass.AddStreamToSpeckleDict(state.Stream.id, JsonConvert.SerializeObject(state));
+      UserDataClass.AddOrUpdateSpeckleStream(state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
     public override void RemoveStreamFromFile(string streamId)
     {
-      UserDataClass.RemoveStreamFromSpeckleDict(streamId);
+      UserDataClass.RemoveSpeckleStream(streamId);
     }
 
     public override void PersistAndUpdateStreamInFile(StreamState state)
     {
-      UserDataClass.UpdateStreamInSpeckleDict(state.Stream.id, JsonConvert.SerializeObject(state));
+      UserDataClass.AddOrUpdateSpeckleStream(state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
     public override List<StreamState> GetStreamsInFile()
     {
-      List<string> strings = UserDataClass.GetSpeckleDictStreams();
+      List<string> strings = UserDataClass.GetSpeckleStreams();
       return strings.Select(s => JsonConvert.DeserializeObject<StreamState>(s)).ToList();
     }
     #endregion
@@ -152,7 +138,7 @@ namespace Speckle.ConnectorAutoCAD.UI
       // trying a command instead to get selection
       // TODO: use enums or props to capture command names, none of this string chasing bs
       Doc.SendStringToExecute("SpeckleSelection ", false, false, true);
-      var objs = UserDataClass.GetSpeckleDictSelection(UserDataClass.SelectionState.Current);
+      var objs = UserDataClass.GetSpeckleSelection;
       return objs;
     }
 
@@ -365,13 +351,13 @@ namespace Speckle.ConnectorAutoCAD.UI
     public override async Task<StreamState> SendStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.Rhino);
+      var converter = kit.LoadConverter(Applications.AutoCAD2021);
       converter.SetContextDocument(Doc);
       Exceptions.Clear();
 
       var commitObj = new Base();
 
-      //var units = Units.GetUnitsFromString();
+      //var units = Units.GetUnitsFromString(); // TODO: FIGURE OUT UNIT STUFF LATER
       var units = Units.Centimeters;
       commitObj["units"] = units;
 

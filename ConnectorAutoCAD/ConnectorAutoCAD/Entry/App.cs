@@ -45,21 +45,21 @@ namespace Speckle.ConnectorAutoCAD.Entry
 
     public void ComponentManager_ItemInitialized(object sender, RibbonItemEventArgs e)
     {
-      //now one Ribbon item is initialized, but the Ribbon control
-      //may not be available yet, so check if before
+      // now one Ribbon item is initialized, but the Ribbon control
+      // may not be available yet, so check if before
       ribbon = ComponentManager.Ribbon;
       if (ribbon != null)
       {
-        //create Ribbon
+        // create Ribbon
         Create();
-        //and remove the event handler
+        // and remove the event handler
         ComponentManager.ItemInitialized -=
             new System.EventHandler<RibbonItemEventArgs>
               (ComponentManager_ItemInitialized);
       }
     }
 
-    //solving workspace changing
+    // solving workspace changing
     public void TrapWSCurrentChange(object sender, SystemVariableChangedEventArgs e)
     {
       if (e.Name.Equals("WSCURRENT"))
@@ -85,7 +85,6 @@ namespace Speckle.ConnectorAutoCAD.Entry
 
     private RibbonTab FindOrMakeTab(string str)
     {
-
       // check to see if tab exists
       RibbonTab tab = ribbon.FindTab(str);
 
@@ -149,10 +148,7 @@ namespace Speckle.ConnectorAutoCAD.Entry
             (string)btn.CommandParameter + " ", true, false, true);
       }
 
-      public bool CanExecute(object parameter)
-      {
-        return true;
-      }
+      public bool CanExecute(object parameter) => true;
     }
 
     private ImageSource LoadPngImgSource(string sourceName, string path)

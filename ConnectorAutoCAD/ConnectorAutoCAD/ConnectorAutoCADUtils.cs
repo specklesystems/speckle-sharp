@@ -112,22 +112,21 @@ namespace Speckle.ConnectorAutoCAD
 
     // Specify a key under which we want to store our custom data
     const string StreamKey = "SpeckleStreams";
-    const string SelectionKey = "SpeckleSelection";
-    public enum SelectionState { Current, Previous, None};
+    const string SelectionKey = "SpeckleSelection"; 
+
+    // public enum SelectionState { Current, Previous, None}; // add this back later if we need to keep track of various selection states, and change to dict if so
 
     #region streams
-    // Define a class for our custom data
     public class SpeckleStreams
     {
       public Dictionary<string, string> Streams;
-      public SpeckleStreams(Dictionary<string, string> inputDict = null)
+      public SpeckleStreams()
       {
-        if (inputDict != null)
-          Streams = inputDict;
-        else
-          Streams = new Dictionary<string, string>();
+        // intialize userdata dict entry if it doesnt already exist
+        if (Doc.UserData[StreamKey] == null)
+          Doc.UserData[StreamKey] = new Dictionary<string, string>();
+        Streams = Doc.UserData[StreamKey] as Dictionary<string,string>;
       }
-
       public void AddOrUpdateEntry(string id, string stream)
       {
         if (Streams.ContainsKey(id))
@@ -143,131 +142,60 @@ namespace Speckle.ConnectorAutoCAD
       }
     }
 
-    public static List<string> GetSpeckleDictStreams()
+    public static List<string> GetSpeckleStreams() => new SpeckleStreams().Streams.Values.ToList();
+
+    public static void AddOrUpdateSpeckleStream(string id, string stream)
     {
-      SpeckleStreams streams = Doc.UserData[StreamKey] as SpeckleStreams;
-      if (streams == null)
-        return new List<string>();
-      else
-        return streams.Streams.Values.ToList();
+      SpeckleStreams streams = new SpeckleStreams();
+      streams.AddOrUpdateEntry(id, stream);
+      Doc.UserData[StreamKey] = streams.Streams;
     }
 
-    public static void AddStreamToSpeckleDict(string id, string stream)
+    public static void RemoveSpeckleStream(string id)
     {
-      SpeckleStreams streams = Doc.UserData[StreamKey] as SpeckleStreams;
-      if (streams == null)
-      {
-        streams = new SpeckleStreams(new Dictionary<string, string>() { { id, stream }, });
-        Doc.UserData.Add(StreamKey, streams);
-      }
-      else
-      {
-        streams.AddOrUpdateEntry(id, stream);
-        Doc.UserData[StreamKey] = streams;
-      }
-    }
-
-    public static void RemoveStreamFromSpeckleDict(string id)
-    {
-      SpeckleStreams streams = Doc.UserData[StreamKey] as SpeckleStreams;
-      if (streams != null)
-      {
-        streams.RemoveEntry(id);
-        Doc.UserData[StreamKey] = streams;
-      }
-    }
-
-    public static void UpdateStreamInSpeckleDict(string id, string stream)
-    {
-      SpeckleStreams streams = Doc.UserData[StreamKey] as SpeckleStreams;
-      if (streams != null)
-      {
-        streams.AddOrUpdateEntry(id, stream);
-        Doc.UserData[StreamKey] = streams;
-      }
+      SpeckleStreams streams = new SpeckleStreams();
+      streams.RemoveEntry(id);
+      Doc.UserData[StreamKey] = streams;
     }
     #endregion
 
     #region selection
-
-    // currently the replace existing bool isn't used - placeholder functionality in case this is needed later, remove during refactoring if not
-    // right now, the only "state" in use is "current", and remove method isn't implemented either. just keeping it in for CRUD consistency with stream class, cleanup later if not used.
-    public class SpeckleSelections
+    public class SpeckleSelection
     {
-      public Dictionary<string, List<string>> Selections;
-      public SpeckleSelections(Dictionary<string, List<string>> inputDict = null)
+      public List<string> Selection;
+      public SpeckleSelection()
       {
-        if (inputDict != null)
-          Selections = inputDict;
-        else
-          Selections = new Dictionary<string, List<string>>();
+        // intialize userdata dict entry if it doesnt already exist
+        if (Doc.UserData[SelectionKey] == null)
+          Doc.UserData[SelectionKey] = new List<string>();
+        Selection = Doc.UserData[SelectionKey] as List<string>;
       }
 
-      public void AddOrUpdateEntry(string state, List<string> objectIds, bool replaceExisting)
+      public void UpdateSelection(List<string> objectIds)
       {
-        if (Selections.ContainsKey(state))
-          if (replaceExisting)
-            Selections[state] = objectIds;
-          else
-          {
-            List<string> stateIds = Selections[state];
-            List<string> idsToAdd = objectIds.Where(o => !Selections[state].Contains(o)).ToList();
-            stateIds.AddRange(idsToAdd);
-            Selections[state] = stateIds;
-          }
-        else
-          Selections.Add(state, objectIds);
+        Selection = objectIds;
       }
 
-      public void RemoveEntry(string state)
+      public void RemoveSelectionObjects(List<string> objectIds)
       {
-        if (Selections.ContainsKey(state))
-          Selections.Remove(state);
+        Selection = Selection.Where(o => !objectIds.Contains(o)).ToList();
       }
     }
 
-    public static List<string> GetSpeckleDictSelection(SelectionState state)
+    public static List<string> GetSpeckleSelection => new SpeckleSelection().Selection;
+
+    public static void UpdateSpeckleSelection(List<string> objectIds)
     {
-      SpeckleSelections selections = Doc.UserData[SelectionKey] as SpeckleSelections;
-      if (selections == null)
-        return new List<string>();
-      else
-        return selections.Selections[state.ToString()].ToList();
+      SpeckleSelection sel = new SpeckleSelection();
+      sel.UpdateSelection(objectIds);
+      Doc.UserData[SelectionKey] = sel.Selection;
     }
 
-    public static void AddSelectionToSpeckleDict(SelectionState state, List<string> objectIds, bool replaceExisting = true)
+    public static void RemoveFromSpeckleSelection(List<string> objectIds)
     {
-      SpeckleSelections selections = Doc.UserData[SelectionKey] as SpeckleSelections;
-      if (selections == null)
-      {
-        selections = new SpeckleSelections(new Dictionary<string, List<string>>() { { state.ToString(), objectIds }, });
-        Doc.UserData.Add(SelectionKey, selections);
-      }
-      else
-      {
-        selections.AddOrUpdateEntry(state.ToString(), objectIds, replaceExisting);
-        Doc.UserData[SelectionKey] = selections;
-      }
-    }
-
-    public static void RemoveSelectionFromSpeckleDict(SelectionState state)
-    {
-      SpeckleSelections selections = Doc.UserData[SelectionKey] as SpeckleSelections;
-      if (selections != null)
-      {
-        selections.RemoveEntry(state.ToString());
-        Doc.UserData[SelectionKey] = selections;
-      }
-    }
-
-    public static void UpdateSelectionInSpeckleDict(SelectionState state, List<string> objectIds, bool replaceExisting = true)
-    {
-      SpeckleSelections selections = Doc.UserData[SelectionKey] as SpeckleSelections;
-      if (selections != null)
-      {
-        selections.AddOrUpdateEntry(state.ToString(), objectIds, replaceExisting);
-        Doc.UserData[SelectionKey] = selections;
-      }
+      SpeckleSelection sel = new SpeckleSelection();
+      sel.RemoveSelectionObjects(objectIds);
+      Doc.UserData[SelectionKey] = sel.Selection;
     }
     #endregion
   }
