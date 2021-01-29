@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using Speckle.Newtonsoft.Json;
 
 namespace Objects.Geometry
 {
