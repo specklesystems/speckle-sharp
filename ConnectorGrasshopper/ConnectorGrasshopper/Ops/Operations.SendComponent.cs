@@ -427,7 +427,7 @@ namespace ConnectorGrasshopper.Ops
 
         // Part 3: actually send stuff!
 
-        Task.Run(async () =>
+        var task = Task.Run(async () =>
         {
           if (CancellationToken.IsCancellationRequested)
           {
@@ -512,6 +512,7 @@ namespace ConnectorGrasshopper.Ops
 
           Done();
         }, CancellationToken);
+        task.Wait();
       }
       catch (Exception e)
       {
