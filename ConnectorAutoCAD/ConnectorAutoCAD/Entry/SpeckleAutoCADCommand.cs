@@ -50,13 +50,14 @@ namespace Speckle.ConnectorAutoCAD.Entry
       }
     }
 
-    [CommandMethod("SpeckleSelection", CommandFlags.UsePickSet)]
-    public static List<string> GetSelection()
+    [CommandMethod("SpeckleSelection", CommandFlags.UsePickSet | CommandFlags.Transparent)]
+    public static void GetSelection()
     {
-      List<string> objs = null;
-      PromptSelectionResult psr = Doc.Editor.GetSelection();
-      objs = psr.Value.GetObjectIds().Select(o => o.ToString()).ToList();
-      return objs;
+      List<string> objs = new List<string>();
+      PromptSelectionResult selection = Doc.Editor.SelectImplied(); // don't use get selection as this will prompt user to select if nothing is selected already
+      if (selection.Status != PromptStatus.Error)
+        objs = selection.Value.GetObjectIds().Select(o => o.ToString()).ToList();
+      UserDataClass.UpdateSelectionInSpeckleDict(UserDataClass.SelectionState.Current, objs);
     }
   }
 }
