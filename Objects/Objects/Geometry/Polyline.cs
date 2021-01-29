@@ -11,6 +11,8 @@ namespace Objects.Geometry
 {
   public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible
   {
+    [DetachProperty]
+    [Chunkable(20000)]
     public List<double> value { get; set; } = new List<double>();
     public bool closed { get; set; }
     public Interval domain { get; set; }

@@ -1,7 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using Microsoft.Xaml.Behaviors;
 using Newtonsoft.Json;
+using Speckle.DesktopUI.Streams.Dialogs.FilterViews;
 using Stylet;
 
 namespace Speckle.DesktopUI.Utils
@@ -95,19 +101,34 @@ namespace Speckle.DesktopUI.Utils
 
     public object FilterView { get; private set; }
 
-    private string _listItem;
-    public string ListItem
+    private BindableCollection<string> _listItems = new BindableCollection<string>();
+
+    public BindableCollection<string> ListItems
     {
-      get => _listItem;
+      get => _listItems;
+      set => SetAndNotify(ref _listItems, value);
+    }
+
+    private BindableCollection<string> _selectedListItems = new BindableCollection<string>();
+
+    public BindableCollection<string> SelectedListItems
+    {
+      get => _selectedListItems;
       set
       {
-        SetAndNotify(ref _listItem, value);
-        //if (ListItem == null || ListItems.Contains(ListItem)) return;
-        //ListItems.Add(ListItem);
-        //SearchResults.Remove(ListItem);
+        SetAndNotify(ref _selectedListItems, value);
+        NotifyOfPropertyChange("Summary");
       }
     }
-    public BindableCollection<string> ListItems { get; set; } = new BindableCollection<string>();
+
+    public string Summary
+    {
+      get
+      {
+        return string.Join(", ", SelectedListItems.ToArray());
+      }
+    }
+
 
     public FilterTab(ISelectionFilter filter)
     {
@@ -116,10 +137,10 @@ namespace Speckle.DesktopUI.Utils
       switch (filter)
       {
         case PropertySelectionFilter f:
-          FilterView = Activator.CreateInstance(Type.GetType($"Speckle.DesktopUI.Streams.Dialogs.FilterViews.ParameterFilterView"));
+          FilterView = new ParameterFilterView();
           break;
         case ListSelectionFilter f:
-          FilterView = Activator.CreateInstance(Type.GetType($"Speckle.DesktopUI.Streams.Dialogs.FilterViews.CategoryFilterView"));
+          FilterView = new ListFilterView();
           _valuesList = SearchResults = new BindableCollection<string>(f.Values);
           break;
       }
@@ -132,23 +153,27 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _searchQuery, value);
-        searchSourceChanged = true;
+        RestoreSelectedItems();
         SearchResults = new BindableCollection<string>(_valuesList.Where(v => v.ToLower().Contains(SearchQuery.ToLower())).ToList());
         NotifyOfPropertyChange(nameof(SearchResults));
+
+      }
+    }
+
+    // searching will change data source and remove selected items in the ListBox, 
+    // restore them as the query is cleared
+    public void RestoreSelectedItems()
+    {
+      foreach (var item in SelectedListItems)
+      {
+        if (!ListItems.Contains(item))
+          ListItems.Add(item);
       }
     }
 
     public BindableCollection<string> SearchResults { get; set; } = new BindableCollection<string>();
-    public bool searchSourceChanged { get; set; } = false;
     private BindableCollection<string> _valuesList { get; }
 
-    public void RemoveListItem(string name)
-    {
-      ListItem = null;
-      ListItems.Remove(name);
-      if (SearchQuery != null && !name.Contains(SearchQuery))return;
-      SearchResults.Add(name);
-    }
   }
 
   public class SelectionFilterConverter : JsonConverter
@@ -168,6 +193,94 @@ namespace Speckle.DesktopUI.Utils
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
     {
       serializer.Serialize(writer, value);
+    }
+  }
+
+  // Custom behavior for a list box to allow a two way binding of the SelectedItems property
+  // we use it to set the previous value of a filter when it's edited
+  // adapted from: https://tyrrrz.me/blog/wpf-listbox-selecteditems-twoway-binding
+  public class ListFilterSelectionBehavior : ListBoxSelectionBehavior<string>
+  {
+  }
+  public class ListBoxSelectionBehavior<T> : Behavior<ListBox>
+  {
+    public static readonly DependencyProperty SelectedItemsProperty =
+        DependencyProperty.Register(nameof(SelectedItems), typeof(IList),
+            typeof(ListBoxSelectionBehavior<T>),
+            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+                OnSelectedItemsChanged));
+
+    private static void OnSelectedItemsChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+    {
+      var behavior = (ListBoxSelectionBehavior<T>)sender;
+      if (behavior._modelHandled) return;
+
+      if (behavior.AssociatedObject == null)
+        return;
+
+      behavior._modelHandled = true;
+      behavior.SelectItems();
+      behavior._modelHandled = false;
+    }
+
+    private bool _viewHandled;
+    private bool _modelHandled;
+
+    public BindableCollection<T> SelectedItems
+    {
+      get => (BindableCollection<T>)GetValue(SelectedItemsProperty);
+      set => SetValue(SelectedItemsProperty, value);
+    }
+
+    // Propagate selected items from model to view
+    private void SelectItems()
+    {
+      _viewHandled = true;
+      AssociatedObject.SelectedItems.Clear();
+      if (SelectedItems != null)
+      {
+        foreach (var item in SelectedItems)
+          AssociatedObject.SelectedItems.Add(item);
+      }
+      _viewHandled = false;
+    }
+
+    // Propagate selected items from view to model
+    private void OnListBoxSelectionChanged(object sender, SelectionChangedEventArgs args)
+    {
+      if (_viewHandled) return;
+      if (AssociatedObject.Items.SourceCollection == null) return;
+
+      SelectedItems = new BindableCollection<T>(AssociatedObject.SelectedItems.OfType<T>());
+    }
+
+    // Re-select items when the set of items changes
+    private void OnListBoxItemsChanged(object sender, NotifyCollectionChangedEventArgs args)
+    {
+      if (_viewHandled) return;
+      if (AssociatedObject.Items.SourceCollection == null) return;
+
+      SelectItems();
+    }
+
+    protected override void OnAttached()
+    {
+      base.OnAttached();
+
+      AssociatedObject.SelectionChanged += OnListBoxSelectionChanged;
+      ((INotifyCollectionChanged)AssociatedObject.Items).CollectionChanged += OnListBoxItemsChanged;
+    }
+
+    /// <inheritdoc />
+    protected override void OnDetaching()
+    {
+      base.OnDetaching();
+
+      if (AssociatedObject != null)
+      {
+        AssociatedObject.SelectionChanged -= OnListBoxSelectionChanged;
+        ((INotifyCollectionChanged)AssociatedObject.Items).CollectionChanged -= OnListBoxItemsChanged;
+      }
     }
   }
 }

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Timers;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Speckle.Core.Models;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
-using Speckle.ConnectorRevit.Storage;
-using Speckle.Core.Kits;
+using Speckle.ConnectorRevit.Entry;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -42,7 +40,7 @@ namespace Speckle.ConnectorRevit.UI
       Executor = eventHandler;
 
       // LOCAL STATE
-      GetStreamsInFile();
+      // GetStreamsInFile();
 
       //// GLOBAL EVENT HANDLERS
       RevitApp.ViewActivated += RevitApp_ViewActivated;
@@ -77,34 +75,7 @@ namespace Speckle.ConnectorRevit.UI
 
     public override string GetFileName() => CurrentDoc.Document.Title;
 
-    public override List<ISelectionFilter> GetSelectionFilters()
-    {
-      var categories = new List<string>();
-      var parameters = new List<string>();
-      var views = new List<string>();
 
-      if (CurrentDoc != null)
-      {
-        //selectionCount = CurrentDoc.Selection.GetElementIds().Count();
-        categories = ConnectorRevitUtils.GetCategoryNames(CurrentDoc.Document);
-        parameters = ConnectorRevitUtils.GetParameterNames(CurrentDoc.Document);
-        views = ConnectorRevitUtils.GetViewNames(CurrentDoc.Document);
-      }
-
-      return new List<ISelectionFilter>
-      {
-        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = categories},
-        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = views},
-        new PropertySelectionFilter
-        {
-          Name = "Parameter",
-          Icon = "FilterList",
-          HasCustomProperty = false,
-          Values = parameters,
-          Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
-        }
-      };
-    }
 
     public override void SelectClientObjects(string args)
     {
@@ -113,10 +84,11 @@ namespace Speckle.ConnectorRevit.UI
 
     #region app events
 
+    //checks whether to refresh the stream list in case the user changes active view and selects a different document
     private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
     {
 
-      if (e.Document == null || GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView?.Document))
+      if (e.Document == null || e.PreviousActiveView == null || GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView.Document))
         return;
 
       var appEvent = new ApplicationEvent()
@@ -129,20 +101,21 @@ namespace Speckle.ConnectorRevit.UI
 
     private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
     {
+      // the DocumentClosed event is triggered AFTER ViewActivated
+      // is both doc A and B are open and B is closed, this would result in wiping the list of streams retrieved for A
+      // only proceed if it's the last document open (the current is null)
+      if (CurrentDoc != null)
+        return;
+
+      SpeckleRevitCommand.Bootstrapper.Application.MainWindow.Hide();
+
       var appEvent = new ApplicationEvent() { Type = ApplicationEvent.EventType.DocumentClosed };
       NotifyUi(appEvent);
     }
 
+    // this method is triggered when there are changes in the active document
     private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
     {
-
-      //var streamStates = GetStreamsInFile();
-      //var appEvent = new ApplicationEvent()
-      //{
-      //  Type = ApplicationEvent.EventType.DocumentOpened, DynamicInfo = streamStates
-      //};
-
-      //NotifyUi(appEvent);
     }
 
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)

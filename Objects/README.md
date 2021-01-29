@@ -1,21 +1,21 @@
 # Objects
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works)
-[![Slack Invite](https://img.shields.io/badge/-slack-grey?style=flat-square&logo=slack)](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
+[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
 
 **Status**
 
 ![.NET Core](https://github.com/specklesystems/Objects/workflows/.NET%20Core/badge.svg)
 
 ## Disclaimer
+
 This is an early alpha release, not meant for use in production! We're working to stabilise the 2.0 API, and until then there will be breaking changes. You have been warned!
 
 ## Introduction
 
-Before venturing any further please make sure to check the following: 
+Before venturing any further please make sure to check the following:
 
-- [Code of Conduct](CODE_OF_CONDUCT.md), 
-- [Contribution Guidelines](CONTRIBUTING.md), 
+- [Code of Conduct](CODE_OF_CONDUCT.md),
+- [Contribution Guidelines](CONTRIBUTING.md),
 - [License](LICENSE)
 
 ### Objects
@@ -46,16 +46,10 @@ For example, you'll see a `\Revit` folder. That contains a series of classes tha
 
 Please make sure you read the [contribution guidelines](CONTRIBUTING.md) for an overview of the best practices we try to follow.
 
-## Community 
+## Community
 
-The Speckle Community hangs out in two main places, usually: 
-
-- on [the forum](https://discourse.speckle.works)
-- on [the chat](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI) 
-
-Do join and introduce yourself! 
+The Speckle Community hangs out on [the forum](https://discourse.speckle.works), do join and introduce yourself & feel free to ask us questions!
 
 ## License
 
 Unless otherwise described, the code in this repository is licensed under the Apache-2.0 license.
-

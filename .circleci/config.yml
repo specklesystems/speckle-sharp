@@ -7,7 +7,8 @@ orbs:
   jq: circleci/jq@2.2.0
   # Using windows for builds
   win: circleci/windows@2.2.0
-
+  # Upload artifacts to s3
+  aws-s3: circleci/aws-s3@2.0.0
 
 # Parameters of our pipeline. Most of them are booleans that indicate which project to build/test with the pattern 'run_{PROJECT_NAME}'
 parameters:
@@ -37,13 +38,21 @@ parameters:
     default: false
 
 
-# Each project will have individual jobs for each specific task it has to execute (build, release...)
-jobs:
-  # The job that selects which job to run
-  selective-ci:
+jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
+  
+  selective-ci: # The job that selects which job to run
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
     steps:
+      - run:
+          name: Check for PR or master
+          command: |
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              if [ "$CIRCLE_BRANCH" != "master" ]; then
+                echo "Not a PR or master, halting"
+                circleci step halt
+              fi
+            fi
       - checkout
       - jq/install
       - swissknife/trigger-workflows-for-all-modified:
@@ -72,8 +81,6 @@ jobs:
           name: Test Core
           command: dotnet test Core/Tests/TestsUnit.csproj --no-restore --no-build
 
-  # TODO: And transfer it into the knowledge base.
-  # TODO: Test the RevitSharedProject build.
   build-objects:
     executor:
       name: win/default
@@ -82,133 +89,95 @@ jobs:
       - checkout
       - run:
           name: Restore Objects Packages
-          command: dotnet restore Objects/Objects.sln -p:IsDesktopBuild=false
+          command: nuget restore Objects/Objects.sln 
       - run: 
           name: Build Objects
-          command: dotnet build Objects/Objects/Objects.csproj -p:IsDesktopBuild=false
-      - run: 
-          name: Build Dynamo Converter
-          command: dotnet build Objects/Converters/ConverterDynamo/ConverterDynamo/ConverterDynamo.csproj -p:IsDesktopBuild=false
-      - run: 
-          name: Build Revit 2019 Converter
-          command: dotnet build Objects/Converters/ConverterRevit/ConverterRevit2019/ConverterRevit2019.csproj -p:IsDesktopBuild=false
-      - run: 
-          name: Build Revit 2020 Converter
-          command: dotnet build Objects/Converters/ConverterRevit/ConverterRevit2020/ConverterRevit2020.csproj -p:IsDesktopBuild=false
-      - run: 
-          name: Build Revit 2021 Converter
-          command: dotnet build Objects/Converters/ConverterRevit/ConverterRevit2021/ConverterRevit2021.csproj -p:IsDesktopBuild=false
-      - run: 
-          name: Build Restore GH Converter
-          command: nuget restore Objects/Converters/ConverterRhinoGh/ConverterRhinoGh/ConverterRhinoGh.csproj
-      - run: 
-          name: Build GH Converter
-          command: msbuild Objects/Converters/ConverterRhinoGh/ConverterRhinoGh/ConverterRhinoGh.csproj /p:Configuration=Release /p:PreBuildEvent= /p:PostBuildEvent=
-  build-connector-gh:
-    executor:
-      name: win/default
-      shell: powershell.exe
-    steps:
-      - checkout
-      - run: 
-          name: Restore GH Connector
-          command: nuget restore ConnectorGrasshopper/ConnectorGrasshopper.sln
-      - run: 
-          name: Build GH Connector
-          command: msbuild ConnectorGrasshopper/ConnectorGrasshopper.sln /p:Configuration=Release
-  build-connector-dynamo:
-    executor:
-      name: win/default
-      shell: powershell.exe
-    steps:
-      - checkout
-      - run: 
-          name: Restore Dynamo Connector
-          command: nuget restore ConnectorDynamo/ConnectorDynamo.sln
-      - run: 
-          name: Build Dynamo Connector
-          command: msbuild ConnectorDynamo/ConnectorDynamo.sln
-  build-connector-revit:
-    executor:
-      name: win/default
-      shell: powershell.exe
-    steps:
-      - checkout
-      - run: 
-          name: Restore Revit Connector
-          command: nuget restore ConnectorRevit/ConnectorRevit.sln
-      - run: 
-          name: Build Revit 2021 Connector
-          command: msbuild ConnectorRevit/ConnectorRevit2021/ConnectorRevit2021.csproj /p:Configuration=Release /p:PreBuildEvent= /p:PostBuildEvent= /p:AfterBuildRelease= /p:IsDesktopBuild=false
-      - run: 
-          name: Build Revit 2020 Connector
-          command: msbuild ConnectorRevit/ConnectorRevit2020/ConnectorRevit2020.csproj /p:Configuration=Release /p:PreBuildEvent= /p:PostBuildEvent= /p:AfterBuildRelease= /p:IsDesktopBuild=false
-      - run: 
-          name: Build Revit 2019 Connector
-          command: msbuild ConnectorRevit/ConnectorRevit2019/ConnectorRevit2019.csproj /p:Configuration=Release /p:PreBuildEvent= /p:PostBuildEvent= /p:AfterBuildRelease= /p:IsDesktopBuild=false
-  build-connector-rhino:
-    executor:
-      name: win/default
-      shell: powershell.exe
-    steps:
-      - checkout
-      - run: 
-          name: Restore Rhino Connector
-          command: nuget restore ConnectorRhino/ConnectorRhino.sln
-      - run: 
-          name: Build Rhino Connector
-          command: msbuild ConnectorRhino/ConnectorRhino.sln /p:Configuration=Release
+          command: msbuild Objects/Objects.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
 
-  # The integration tests. Spins up a full blown speckle server.
-  integration-tests:
+  build-connector: # Reusable job for basic connectors
+    executor:
+      name: win/default
+      shell: powershell.exe
+    parameters:
+      connectorname:
+        type: string
+      slug:
+        type: string
+        default: ''
+      installer:
+        type: boolean
+        default: false
+    steps:
+      - checkout
+      - run: 
+          name: Restore << parameters.connectorname >>
+          command: nuget restore << parameters.connectorname >>/<< parameters.connectorname >>.sln
+      - run: 
+          name: Build << parameters.connectorname >>
+          command: msbuild << parameters.connectorname >>/<< parameters.connectorname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+      - run: 
+          name: Deploy?
+          command: | # stop job if not triggered by deployment workflow (parameters.installer == false)
+            if (-Not [System.Convert]::ToBoolean('<< parameters.installer >>') ) { 
+            circleci-agent step halt 
+            Write-Host "Job stopped gracefully"
+            } else { Write-Host "Job continuing" }
+      - attach_workspace:
+          at: ./
+      - run: # Patches the main assemblies
+          name: Patch
+          command: | # If no tag, use 0.0.0.1 and don't make any YML (for testing only!)
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.0.1" } else { $env:CIRCLE_TAG }
+            $version =  $tag.replace("<< parameters.slug >>/","").replace("all/","")  
+            speckle-sharp-ci-tools/Patch/Patcher.exe << parameters.connectorname >>/ *<< parameters.connectorname >>* $version
+            # only create the yml if we have a tag
+            if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/latest.yml" -ItemType File -Value "version: $version.0" }
+      - run: # Creates the inno installer
+          name: InnoSetup
+          command: speckle-sharp-ci-tools/InnoSetup/ISCC.exe speckle-sharp-ci-tools/<< parameters.slug >>.iss     
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - speckle-sharp-ci-tools/Installers
+
+  get-ci-tools: # Clones our ci tools and persists them to the workspace
+    docker:
+      - image: cimg/base:2021.01
+    steps:
+      - run: # Could not get ssh to work, so using a personal token 
+          name: Clone
+          command: git clone https://$GITHUB_TOKEN@github.com/specklesystems/speckle-sharp-ci-tools.git speckle-sharp-ci-tools
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - speckle-sharp-ci-tools
+
+  deploy: # Uploads all installers found to S3
+    docker:
+      - image: cimg/base:2021.01
+    steps:    
+      - attach_workspace:
+          at: ./
+      - run: 
+          name: List contents
+          command: ls -R speckle-sharp-ci-tools/Installers
+      - aws-s3/copy:
+          arguments: '--recursive --endpoint=https://$SPACES_REGION.digitaloceanspaces.com --acl public-read'
+          aws-access-key-id: SPACES_KEY
+          aws-region: SPACES_REGION
+          aws-secret-access-key: SPACES_SECRET
+          from: '"speckle-sharp-ci-tools/Installers/"'
+          to: s3://speckle-releases/installers/
+
+  integration-tests: # The integration tests. Spins up a full blown speckle server.
     working_directory: /temp
 
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
-      - image: "circleci/redis:6"
-      - image: "circleci/postgres:12"
-        environment:
-          POSTGRES_DB: speckle2_dev
-          POSTGRES_PASSWORD: speckle
-          POSTGRES_USER: speckle
-
-    environment:
-      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      NODE_ENV: test
-      DATABASE_URL: "postgres://speckle:speckle@localhost:5432/speckle2_dev"
-      PGDATABASE: speckle2_dev
-      PGUSER: speckle
-      SESSION_SECRET: "keyboard cat"
-      STRATEGY_LOCAL: true
-      CANONICAL_URL: "http://localhost:3000"
 
     steps:
-      - run:
-          name: "Install node"
-          command: |
-            curl -sL https://deb.nodesource.com/setup_lts.x | bash -
-            apt-get install -y nodejs
-      - run:
-          name: "Checkout server"
-          command: "git clone https://github.com/specklesystems/Server.git server"
-      - run:
-          working_directory: server
-          name: "Install deps"
-          command: "npm install"
-      - run:
-          name: "Start server"
-          working_directory: server
-          command: "npm run dev:server"
-          background: true
       - checkout:
           path: core
-      - run:
-          working_directory: core
-          name: "Pull core submodules"
-          command: |
-            git submodule init
-            git submodule update --remote
       - run:
           working_directory: core
           command: dotnet restore Core/Core.sln
@@ -219,20 +188,18 @@ jobs:
           working_directory: core
           command: dotnet test Core/IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true"
 
+
 # The main workflows for our monorepo pipeline.
 # The main workflow is called 'ci': It is the workflow responsible of determining which projects to build/test.
-# There should be at least one workflow per project in the monorepo. Each workflow should be run only when a boolean parameter is passed that corresponds to the pattern 'run_{PROJECT_NAME}'. These parameters are set by the 'selective-ci' job.
+# There should be at least one workflow per project in the monorepo. Each workflow should be run only when a boolean parameter is passed that corresponds to the pattern 'run_{PROJECT_NAME}'. 
+# These parameters are set by the 'selective-ci' job.
 workflows:
   # Main workflow. Must be conditioned to the 'run_trigger_workflow' parameter to prevent recursive execution of the job.
   ci:
     when: << pipeline.parameters.run_trigger_workflow >>
     jobs:
-      - selective-ci:
-          filters:  # using regex filters requires the entire branch to match
-            branches:
-              only:  # only branches matching the below regex filters will run
-                - master
-                - /ci\/.*/
+      # This job will only run on PRs
+      - selective-ci
   # Objects - Build/Test
   objects:
     when: << pipeline.parameters.run_objects >>
@@ -246,29 +213,115 @@ workflows:
       - build-core
       - integration-tests:
           requires:
-            - "build-core"
+            - build-core
   
   # Grasshopper connector - Build/Test
   connector_grasshopper:
     when: << pipeline.parameters.run_connector_gh >>
     jobs:
-      - build-connector-gh
+      - build-connector:
+          connectorname: ConnectorGrasshopper
   
   # Rhino connector - Build/Test
   connector_rhino:
     when: << pipeline.parameters.run_connector_rhino >>
     jobs:
-      - build-connector-rhino
+      - build-connector:
+          connectorname: ConnectorRhino
 
   # Dynamo connector - Build/Test
   connector_dynamo:
     when: << pipeline.parameters.run_connector_dynamo >>
     jobs:
-      - build-connector-dynamo
+      - build-connector:
+          connectorname: ConnectorDynamo
   
   # Revit Connector - Build/Test
   connector_revit:
     when: << pipeline.parameters.run_connector_revit >>
     jobs:
-      - build-connector-revit
+      - build-connector:
+          connectorname: ConnectorRevit
+      
+  # Makes installers based on which tag is provided
+  # Tag has to be provided in the format "appname/1.0.0"
+  # If the tag is in the format "all/1.0.0", all connectors will be deployed with the same version number
+  deployment:
+    jobs:
+      - get-ci-tools:
+          filters:
+            branches:
+              only: /ci\/.*/ # For testing only! We can use branches like ci/test so won't need to tag
+            tags:
+              # runs on any tag in the format "word/1.0.0"
+              only: /^\w*\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
 
+      # DYNAMO Build&Deploy
+      - build-connector:
+          name: build-connector-dynamo
+          connectorname: ConnectorDynamo 
+          slug: dynamo
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              only: /ci\/.*/ # For testing only!
+            tags:
+              only: /^(dynamo|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+
+      # REVIT Build&Deploy
+      - build-connector:
+          name: build-connector-revit
+          connectorname: ConnectorRevit 
+          slug: revit
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              only: /ci\/.*/ # For testing only!
+            tags:
+              only: /^(revit|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+
+
+      # GRASSHOPPER Build&Deploy
+      - build-connector:
+          name: build-connector-grasshopper
+          connectorname: ConnectorGrasshopper
+          slug: grasshopper
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              only: /ci\/.*/ # For testing only!
+            tags:
+              only: /^(grasshopper|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+
+
+      # RHINO Build&Deploy
+      - build-connector:
+          name: build-connector-rhino
+          connectorname: ConnectorRhino 
+          slug: rhino
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              only: /ci\/.*/ # For testing only!
+            tags:
+              only: /^(rhino|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+     
+      # DEPLOY ALL CONNECTORS
+      - deploy: # Will run if all the triggered workflows succeed
+          requires: 
+            - get-ci-tools
+            - build-connector-dynamo
+            - build-connector-revit
+            - build-connector-grasshopper
+            - build-connector-rhino
+          filters:
+            tags: # runs on any tag in the format "word/1.0.0"
+              only: /^\w*\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/

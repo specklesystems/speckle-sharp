@@ -48,6 +48,15 @@ namespace ConnectorGrasshopper.Accounts
       var accounts = AccountManager.GetAccounts();
       var defaultAccount = AccountManager.GetDefaultAccount();
       int index = 0, defaultAccountIndex = 0;
+
+      if(accounts.ToList().Count == 0)
+      {
+        ListItems.Add(new GH_ValueListItem("No accounts where found on this machine. Right-click for more options.",""));
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
+        SelectItem(0);
+        return;
+      }
+
       foreach (var account in accounts)
       {
         if (defaultAccount != null && account.id == defaultAccount.id)

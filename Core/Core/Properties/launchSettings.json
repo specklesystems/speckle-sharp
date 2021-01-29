@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "Core": {
+      "commandName": "Executable"
+    }
+  }
+}

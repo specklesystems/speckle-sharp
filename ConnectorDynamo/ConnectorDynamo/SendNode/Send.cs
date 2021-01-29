@@ -1,6 +1,4 @@
-﻿extern alias DynamoNewtonsoft;
-using DNJ = DynamoNewtonsoft::Newtonsoft.Json;
-using Dynamo.Graph.Nodes;
+﻿using Dynamo.Graph.Nodes;
 using ProtoCore.AST.AssociativeAST;
 using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Credentials;
@@ -17,6 +15,8 @@ using System.Threading;
 using Dynamo.Utilities;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
+using Speckle.Core.Transports;
+using Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.SendNode
 {
@@ -47,8 +47,8 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     //cached inputs
     private object _data { get; set; }
-    private List<StreamWrapper> _streams { get; set; }
-    private List<string> _branchNames { get; set; }
+    private List<ITransport> _streams { get; set; }
+    private Dictionary<ITransport, string> _branchNames { get; set; }
     private string _commitMessage { get; set; }
 
     #endregion
@@ -61,7 +61,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public bool Transmitting
     {
       get => _transmitting;
@@ -75,7 +75,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public string Message
     {
       get => _message;
@@ -89,7 +89,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public double Progress
     {
       get => _progress;
@@ -103,7 +103,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public bool SendEnabled
     {
       get => _sendEnabled;
@@ -137,10 +137,10 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// </summary>
     /// <param name="inPorts"></param>
     /// <param name="outPorts"></param>
-    [DNJ.JsonConstructor]
+    [JsonConstructor]
     private Send(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
-      if (inPorts.Count() == 4)
+      if (inPorts.Count() == 3)
       {
         //blocker: https://github.com/DynamoDS/Dynamo/issues/11118
         //inPorts.ElementAt(1).DefaultValue = endPortDefaultValue;
@@ -176,23 +176,18 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     private void AddInputs()
     {
-      StringNode defaultBranchValue = new StringNode();
-      StringNode defaultMessageValue = new StringNode();
-
-      defaultBranchValue.Value = "main";
-      defaultMessageValue.Value = "Automatic commit from Dynamo";
+      var defaultMessageValue = new StringNode { Value = "Automatic commit from Dynamo" };
 
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("data", "The data to send")));
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream", "The stream or streams to send to")));
-      InPorts.Add(new PortModel(PortType.Input, this,
-        new PortData("branchName", "The branch you want your commit associated with.", defaultBranchValue)));
       InPorts.Add(new PortModel(PortType.Input, this,
         new PortData("message", "Commit message. If left blank, one will be generated for you.", defaultMessageValue)));
     }
 
     private void AddOutputs()
     {
-      OutPorts.Add(new PortModel(PortType.Output, this, new PortData("stream", "Stream or streams pointing to the created commit")));
+      OutPorts.Add(new PortModel(PortType.Output, this,
+        new PortData("stream", "Stream or streams pointing to the created commit")));
     }
 
 
@@ -266,23 +261,18 @@ namespace Speckle.ConnectorDynamo.SendNode
 
         if (!hasErrors && commitIds != null)
         {
-          for (int i = 0; i < _streams.Count; i++)
-          {
-            _streams[i].CommitId = commitIds[i];
-          }
-
-          _outputInfo = string.Join("|", _streams.Select(x => x.ToString()));
+          _outputInfo = string.Join("|", commitIds.Select(x => x.ToString()));
           Message = "";
         }
       }
       catch (Exception e)
       {
-        _cancellationToken.Cancel();
-        Message = e.InnerException != null ? e.InnerException.Message : e.Message;
-        //temp exclusion of core bug
-        if (!(e.InnerException != null && e.InnerException.Message ==
-          "Cannot resolve reference. The provided transport could not find it."))
+        if (!_cancellationToken.IsCancellationRequested)
+        {
+          _cancellationToken.Cancel();
+          Message = e.Message;
           Core.Logging.Log.CaptureAndThrow(e);
+        }
       }
       finally
       {
@@ -336,45 +326,51 @@ namespace Speckle.ConnectorDynamo.SendNode
         return;
       }
 
-      //this port accepts:
-      //a stream wrapper, a url, a list of stream wrappers or a list of urls
-      try
+      Dictionary<ITransport, string> TryConvertInputToTransport(object o)
       {
-        _streams = new List<StreamWrapper>();
-        var inputStream = GetInputAs<object>(engine, 1);
-        switch (inputStream)
+        var defaultBranch = "main";
+        var transports = new Dictionary<ITransport, string>();
+        switch (o)
         {
           case StreamWrapper s:
-            _streams.Add(new StreamWrapper(s.StreamId, s.AccountId, s.ServerUrl));
+            var wrapperTransport = new ServerTransport(s.GetAccount(), s.StreamId);
+            var branch = s.BranchName ?? defaultBranch;
+            transports.Add(wrapperTransport, branch);
             break;
           case string s:
-            _streams.Add(new StreamWrapper(s));
+            var streamWrapper = new StreamWrapper(s);
+            var transport = new ServerTransport(streamWrapper.GetAccount(), streamWrapper.StreamId);
+            var b = streamWrapper.BranchName ?? defaultBranch;
+            transports.Add(transport, b);
+            break;
+          case ITransport t:
+            transports.Add(t, defaultBranch);
             break;
           case List<object> s:
-            try
-            {
-              var ss = s.Cast<StreamWrapper>();
-              _streams.AddRange(ss.Select(x => new StreamWrapper(x.StreamId, x.AccountId, x.ServerUrl)));
-              break;
-            }
-            catch
-            {
-              //ignored
-            }
-
-            try
-            {
-              var ss = s.Cast<string>();
-              _streams.AddRange(ss.Select(x => new StreamWrapper(x)));
-              break;
-            }
-            catch
-            {
-              //ignored
-            }
-
+            transports = s
+              .Select(TryConvertInputToTransport)
+              .Aggregate(transports, (current, t) => new List<Dictionary<ITransport, string>> { current, t }
+                .SelectMany(dict => dict)
+                .ToDictionary(pair => pair.Key, pair => pair.Value));
+            break;
+          default:
+            Warning("Input was neither a transport nor a stream.");
             break;
         }
+
+        return transports;
+      }
+
+      try
+      {
+        _streams = new List<ITransport>();
+
+        //this port accepts:
+        //a stream wrapper, a url, a list of stream wrappers or a list of urls
+        var inputTransport = GetInputAs<object>(engine, 1);
+        var transportsDict = TryConvertInputToTransport(inputTransport);
+        _streams = transportsDict.Keys.ToList();
+        _branchNames = transportsDict;
       }
       catch
       {
@@ -388,40 +384,10 @@ namespace Speckle.ConnectorDynamo.SendNode
         return;
       }
 
-      //get branch name/s
-      if (InPorts[2].Connectors.Any())
-      {
-        try
-        {
-          _branchNames = new List<string>();
-          var branch = GetInputAs<object>(engine, 2);
-          switch (branch)
-          {
-            case string b:
-              _branchNames.Add(b);
-              break;
-            case List<string> b:
-              _branchNames.AddRange(b);
-              break;
-          }
-
-          if (_streams.Count != _branchNames.Count)
-          {
-            Message = "Branch count is invalid, will use `main`";
-            _branchNames = null;
-          }
-        }
-        catch
-        {
-          Message = "Branch name is invalid, will use `main`";
-          _branchNames = null;
-        }
-      }
-
       try
       {
         _commitMessage =
-          InPorts[3].Connectors.Any()
+          InPorts[2].Connectors.Any()
             ? GetInputAs<string>(engine, 3)
             : ""; //IsConnected not working because has default value
       }

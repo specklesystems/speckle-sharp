@@ -189,7 +189,7 @@ namespace Speckle.DesktopUI.Utils
         collection.Add(new StreamState(client, stream));
       }
 
-      collection[0].Objects.Add(new Core.Models.Base() { id = "random_obj" });
+      collection[0].SelectedObjectIds.Add("random_obj");
 
       return collection;
     }
@@ -218,7 +218,7 @@ namespace Speckle.DesktopUI.Utils
 
     public override async Task<StreamState> SendStream(StreamState state)
     {
-      state.Objects.AddRange(state.Objects);
+      state.SelectedObjectIds.AddRange(state.SelectedObjectIds);
       // Let's fake some progress barsssss
 
       state.Progress.Maximum = 100;

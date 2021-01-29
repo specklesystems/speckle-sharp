@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Kits;
+﻿using Objects.Geometry;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 
@@ -83,9 +84,40 @@ namespace Objects.BuiltElements.Revit
       this.elements = elements;
       this.parameters = parameters;
     }
+  }
 
+  public class RevitFaceWall : Wall
+  {
+    public string family { get; set; }
+    public string type { get; set; }
 
+    public Surface face { get; set; }
+    public Level level { get; set; }
 
+    public LocationLine locationLine { get; set; }
+
+    public List<Parameter> parameters { get; set; }
+    public string elementId { get; set; }
+
+    public RevitFaceWall()
+    {
+
+    }
+
+    [SchemaInfo("Wall by face", "Creates a Revit wall with a top and base level.")]
+    public RevitFaceWall(string family, string type,
+      Surface face, Level level, LocationLine locationLine = LocationLine.Interior,
+      [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
+      List<Parameter> parameters = null)
+    {
+      this.family = family;
+      this.type = type;
+      this.face = face;
+      this.locationLine = locationLine;
+      this.level = level;
+      this.elements = elements;
+      this.parameters = parameters;
+    }
   }
 
 

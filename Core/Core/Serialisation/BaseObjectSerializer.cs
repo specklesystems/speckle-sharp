@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Speckle.Newtonsoft.Json;
+using Speckle.Newtonsoft.Json.Serialization;
+using Speckle.Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -16,7 +17,7 @@ namespace Speckle.Core.Serialisation
   /// Json converter that handles base speckle objects. Enables detachment &
   /// simultaneous transport (persistence) of objects. 
   /// </summary>
-  public class BaseObjectSerializer : Newtonsoft.Json.JsonConverter
+  public class BaseObjectSerializer : JsonConverter
   {
 
     /// <summary>
@@ -87,7 +88,7 @@ namespace Speckle.Core.Serialisation
 
     #region Read Json
 
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
 
       if (CancellationToken.IsCancellationRequested)
@@ -362,7 +363,6 @@ namespace Speckle.Core.Serialisation
             continue;
           }
 
-
           // Ignore nulls
           object propValue = obj[prop];
           if (propValue == null)
@@ -398,6 +398,17 @@ namespace Speckle.Core.Serialisation
           else if (prop.StartsWith("@")) // Convention check for dynamically added properties.
           {
             DetachLineage.Add(true);
+
+            var chunkSyntax = new Regex(@"^@\((\d*)\)");
+
+            if (chunkSyntax.IsMatch(prop))
+            {
+              int chunkSize;
+              var match = chunkSyntax.Match(prop);
+              int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
+              serializer.Context = new StreamingContext(StreamingContextStates.Other,
+                chunkSize > 0 ? new Chunkable(chunkSize) : new Chunkable());
+            }
           }
           else
           {

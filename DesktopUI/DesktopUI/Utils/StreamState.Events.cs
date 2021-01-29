@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,10 +17,12 @@ namespace Speckle.DesktopUI.Utils
         var updatedStream = await Client.StreamGet(Stream.id);
         Stream.name = updatedStream.name;
         Stream.description = updatedStream.description;
-        Branches = updatedStream.branches.items;
+        Stream.isPublic = updatedStream.isPublic;
+        Stream.collaborators = updatedStream.collaborators;
+        Branches = await Client.StreamGetBranches(Stream.id);
         NotifyOfPropertyChange(nameof(Stream));
       }
-      catch ( Exception )
+      catch (Exception)
       {
         return false;
       }
@@ -33,13 +35,13 @@ namespace Speckle.DesktopUI.Utils
     public void SetObjectSelection()
     {
       var objIds = Globals.HostBindings.GetSelectedObjects();
-      if ( objIds == null || objIds.Count == 0 )
+      if (objIds == null || objIds.Count == 0)
       {
         Globals.Notify("Could not get object selection.");
         return;
       }
 
-      Objects = objIds.Select(id => new Base {applicationId = id}).ToList();
+      SelectedObjectIds = objIds;
 
       Globals.Notify("Object selection set.");
       Filter = null;
@@ -48,7 +50,7 @@ namespace Speckle.DesktopUI.Utils
     public void AddObjectSelection()
     {
       var objIds = Globals.HostBindings.GetSelectedObjects();
-      if ( objIds == null || objIds.Count == 0 )
+      if (objIds == null || objIds.Count == 0)
       {
         Globals.Notify("Could not get object selection.");
         return;
@@ -56,9 +58,9 @@ namespace Speckle.DesktopUI.Utils
 
       objIds.ForEach(id =>
       {
-        if ( Objects.FirstOrDefault(b => b.applicationId == id) == null )
+        if (SelectedObjectIds.FirstOrDefault(x => x == id) == null)
         {
-          Objects.Add(new Base {applicationId = id});
+          SelectedObjectIds.Add(id);
         }
       });
 
@@ -69,27 +71,27 @@ namespace Speckle.DesktopUI.Utils
     public void RemoveObjectSelection()
     {
       var objIds = Globals.HostBindings.GetSelectedObjects();
-      if ( objIds == null || objIds.Count == 0 )
+      if (objIds == null || objIds.Count == 0)
       {
         Globals.Notify("Could not get object selection.");
         return;
       }
 
-      var filtered = Objects.Where(o => objIds.IndexOf(o.applicationId) == -1).ToList();
+      var filtered = SelectedObjectIds.Where(o => objIds.IndexOf(o) == -1).ToList();
 
-      if ( filtered.Count == Objects.Count )
+      if (filtered.Count == SelectedObjectIds.Count)
       {
         Globals.Notify("No objects removed.");
         return;
       }
 
-      Globals.Notify($"{Objects.Count - filtered.Count} objects removed.");
-      Objects = filtered;
+      Globals.Notify($"{SelectedObjectIds.Count - filtered.Count} objects removed.");
+      SelectedObjectIds = filtered;
     }
 
     public void ClearObjectSelection()
     {
-      Objects = new List<Base>();
+      SelectedObjectIds = new List<string>();
       Filter = null;
       Globals.Notify($"Selection cleared.");
     }
@@ -112,15 +114,14 @@ namespace Speckle.DesktopUI.Utils
 
     private async void HandleCommitCreated(object sender, CommitInfo info)
     {
-      var updatedStream = await Client.StreamGet(Stream.id);
-      Branches = updatedStream.branches.items;
+      Branches = await Client.StreamGetBranches(Stream.id);
 
-      if ( IsSenderCard ) return;
+      if (IsSenderCard) return;
 
       var binfo = Branches.FirstOrDefault(b => b.name == info.branchName);
       var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
 
-      if ( Branch.name == info.branchName )
+      if (Branch.name == info.branchName)
       {
         Branch = binfo;
       }
@@ -133,7 +134,7 @@ namespace Speckle.DesktopUI.Utils
     {
       var branch = Stream.branches.items.FirstOrDefault(b => b.name == info.branchName);
       var commit = branch?.commits.items.FirstOrDefault(c => c.id == info.id);
-      if ( commit == null )
+      if (commit == null)
       {
         // something went wrong, but notify the user there were changes anyway
         // ((look like this sub isn't returning a branch name?))
@@ -147,14 +148,14 @@ namespace Speckle.DesktopUI.Utils
 
     private async void HandleBranchCreated(object sender, BranchInfo info)
     {
-      var updatedStream = await Client.StreamGet(Stream.id);
-      Branches = updatedStream.branches.items;
+      var updatedBranches = await Client.StreamGetBranches(Stream.id);
+      Branches = updatedBranches;
     }
 
     private void HandleBranchUpdated(object sender, BranchInfo info)
     {
       var branch = Branches.FirstOrDefault(b => b.id == info.id);
-      if ( branch == null ) return;
+      if (branch == null) return;
       branch.name = info.name;
       branch.description = info.description;
       NotifyOfPropertyChange(nameof(BranchContextMenuItems));
@@ -163,7 +164,7 @@ namespace Speckle.DesktopUI.Utils
     private void HandleBranchDeleted(object sender, BranchInfo info)
     {
       var branch = Branches.FirstOrDefault(b => b.id == info.id);
-      if ( branch == null ) return;
+      if (branch == null) return;
       Stream.branches.items.Remove(branch);
       NotifyOfPropertyChange(nameof(BranchContextMenuItems));
     }

@@ -39,7 +39,7 @@ namespace Objects.Converter.Revit
           throw new Exception("Cannot convert Curve of type " + geom.GetType());
       }
     }
-    
+
     public XYZ PointToNative(Point pt)
     {
       var revitPoint = new XYZ(ScaleToNative(pt.value[0], pt.units), ScaleToNative(pt.value[1], pt.units), ScaleToNative(pt.value[2], pt.units));
@@ -389,7 +389,7 @@ namespace Objects.Converter.Revit
       {
         speckleMesh.vertices.AddRange(new double[] { ScaleToSpeckle(vert.X), ScaleToSpeckle(vert.Y), ScaleToSpeckle(vert.Z) });
       }
-      
+
       for (int i = 0; i < mesh.NumTriangles; i++)
       {
         var triangle = mesh.get_Triangle(i);
@@ -403,7 +403,7 @@ namespace Objects.Converter.Revit
       speckleMesh.units = ModelUnits;
       return speckleMesh;
     }
-    
+
     // Insipred by
     // https://github.com/DynamoDS/DynamoRevit/blob/master/src/Libraries/RevitNodes/GeometryConversion/ProtoToRevitMesh.cs
     public IList<GeometryObject> MeshToNative(Mesh mesh)
@@ -546,12 +546,12 @@ namespace Objects.Converter.Revit
 
       var nativeCurveArray = CurveToNative(edge.Curve);
       bool isTrimmed = edge.Curve.domain != null && edge.Domain != null &&
-                       (edge.Curve.domain.start != edge.Domain.start 
+                       (edge.Curve.domain.start != edge.Domain.start
                         || edge.Curve.domain.end != edge.Domain.end);
       if (nativeCurveArray.Size == 1)
       {
         var nativeCurve = nativeCurveArray.get_Item(0);
-        
+
         if (edge.ProxyCurveIsReversed)
           nativeCurve = nativeCurve.CreateReversed();
 
@@ -563,7 +563,7 @@ namespace Objects.Converter.Revit
         }
         if (!nativeCurve.IsBound)
           nativeCurve.MakeBound(0, nativeCurve.Period);
-      
+
         var endPoint = nativeCurve.GetEndPoint(0);
         var source = nativeCurve.GetEndPoint(1);
         var distanceTo = endPoint.DistanceTo(source);
@@ -680,6 +680,7 @@ namespace Objects.Converter.Revit
         result = DB.BRepBuilderSurfaceGeometry.CreateNURBSSurface(surface.degreeU, surface.degreeV, uKnots,
           vKnots, cPts, weights, false, uvBox);
       }
+
       return result;
     }
 
@@ -734,14 +735,14 @@ namespace Objects.Converter.Revit
             if (trimReversed)
             {
               for (int e = edgeIds.Count - 1; e >= 0; --e)
-                if(builder.IsValidEdgeId(edgeIds[e]))
+                if (builder.IsValidEdgeId(edgeIds[e]))
                   builder.AddCoEdge(loopId, edgeIds[e], true);
 
             }
             else
             {
               for (int e = 0; e < edgeIds.Count; ++e)
-                if(builder.IsValidEdgeId(edgeIds[e]))
+                if (builder.IsValidEdgeId(edgeIds[e]))
                   builder.AddCoEdge(loopId, edgeIds[e], false);
             }
           }
@@ -754,7 +755,7 @@ namespace Objects.Converter.Revit
       var removedFace = builder.RemovedSomeFaces();
       var bRepBuilderOutcome = builder.Finish();
       if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
-      
+
       var isResultAvailable = builder.IsResultAvailable();
       if (!isResultAvailable) return null;
       var result = builder.GetResult();
@@ -810,7 +811,7 @@ namespace Objects.Converter.Revit
 
             // Get curve, create trim and save index
             var trim = edge.GetCurveUV(edgeSide);
-            var sTrim = new BrepTrim(brep, edgeIndex, faceIndex, loopIndex, curve2dIndex, 0, BrepTrimType.Boundary, edge.IsFlippedOnFace(edgeSide),-1,-1);
+            var sTrim = new BrepTrim(brep, edgeIndex, faceIndex, loopIndex, curve2dIndex, 0, BrepTrimType.Boundary, edge.IsFlippedOnFace(edgeSide), -1, -1);
             var sTrimIndex = trimIndex;
             loopTrimIndices.Add(sTrimIndex);
 
@@ -841,7 +842,7 @@ namespace Objects.Converter.Revit
               var sEdge = speckleEdges[edge];
               var sEdgeIndex = speckleEdgeIndexes[edge];
               sTrim.EdgeIndex = sEdgeIndex;
-              
+
               // Update trim indices with new item.
               // TODO: Make this better.
               var trimIndices = sEdge.TrimIndices.ToList();
@@ -865,7 +866,7 @@ namespace Objects.Converter.Revit
       }
 
       var mesh = new Mesh();
-      (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(new List<Solid>{ solid });
+      (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(new List<Solid> { solid });
       mesh.units = ModelUnits;
       // TODO: Revit has no brep vertices. Must call 'brep.SetVertices()' in rhino when provenance is revit.
       // TODO: Set tolerances and flags in rhino when provenance is revit.

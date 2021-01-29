@@ -23,7 +23,7 @@ namespace TestsIntegration.Subscriptions
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo { url = "http://127.0.0.1:3000", name = "TestServer" };
+      testServer = new ServerInfo { url = "https://testing.speckle.dev", name = "TestServer" };
       testUserAccount = Fixtures.SeedUser(testServer);
       client = new Client(testUserAccount);
     }
@@ -43,7 +43,7 @@ namespace TestsIntegration.Subscriptions
       client.SubscribeBranchCreated(streamId);
       client.OnBranchCreated += Client_OnBranchCreated;
 
-      Thread.Sleep(100); //let server catch-up
+      Thread.Sleep(1000); //let server catch-up
 
       var branchInput = new BranchCreateInput
       {
@@ -56,7 +56,7 @@ namespace TestsIntegration.Subscriptions
       Assert.NotNull(branchId);
 
       await Task.Run(() => {
-        Thread.Sleep(100); //let client catch-up
+        Thread.Sleep(1000); //let client catch-up
         Assert.NotNull(BranchCreatedInfo);
         Assert.AreEqual(branchInput.name, BranchCreatedInfo.name);
       });
@@ -73,7 +73,7 @@ namespace TestsIntegration.Subscriptions
       client.SubscribeBranchUpdated(streamId);
       client.OnBranchUpdated += Client_OnBranchUpdated;
 
-      Thread.Sleep(100); //let server catch-up
+      Thread.Sleep(1000); //let server catch-up
 
       var branchInput = new BranchUpdateInput
       {
@@ -87,7 +87,7 @@ namespace TestsIntegration.Subscriptions
       Assert.True(res);
 
       await Task.Run(() => {
-        Thread.Sleep(100); //let client catch-up
+        Thread.Sleep(1000); //let client catch-up
         Assert.NotNull(BranchUpdatedInfo);
         Assert.AreEqual(branchInput.name, BranchUpdatedInfo.name);
       });
@@ -104,7 +104,7 @@ namespace TestsIntegration.Subscriptions
       client.SubscribeBranchDeleted(streamId);
       client.OnBranchDeleted += Client_OnBranchDeleted;
 
-      Thread.Sleep(100); //let server catch-up
+      Thread.Sleep(1000); //let server catch-up
 
       var branchInput = new BranchDeleteInput
       {
@@ -116,7 +116,7 @@ namespace TestsIntegration.Subscriptions
       Assert.True(res);
 
       await Task.Run(() => {
-        Thread.Sleep(100); //let client catch-up
+        Thread.Sleep(1000); //let client catch-up
         Assert.NotNull(BranchDeletedInfo);
         Assert.AreEqual(branchId, BranchDeletedInfo.id);
       });

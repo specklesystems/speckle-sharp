@@ -21,12 +21,19 @@ namespace Speckle.ConnectorDynamo.Functions
     public BatchConverter()
     {
       var kit = KitManager.GetDefaultKit();
-      _converter = kit.LoadConverter(Applications.Dynamo);
+
+      if (Globals.RevitDocument != null)
+        _converter = kit.LoadConverter(Applications.DynamoRevit);
+      else
+        _converter = kit.LoadConverter(Applications.DynamoSandbox);
+
       if (_converter == null)
         throw new Exception("Cannot find the Dynamo converter, has it been copied to the Kit folder?");
-#if REVIT
-      _converter.SetContextDocument(Globals.RevitDocument);
-#endif
+
+      // if in Revit, we have a doc, injected by the Extension
+      if (Globals.RevitDocument != null)
+        _converter.SetContextDocument(Globals.RevitDocument);
+
     }
 
 
@@ -132,6 +139,9 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <returns></returns>
     public object ConvertRecursivelyToNative(Base @base)
     {
+      if (@base == null)
+        return null;
+
       // case 1: it's an item that has a direct conversion method, eg a point
       if (_converter.CanConvertToNative(@base))
         return TryConvertItemToNative(@base);

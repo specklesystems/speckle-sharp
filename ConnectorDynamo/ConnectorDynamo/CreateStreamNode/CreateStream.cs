@@ -1,25 +1,16 @@
-﻿extern alias DynamoNewtonsoft;
-using DNJ = DynamoNewtonsoft::Newtonsoft.Json;
-using Dynamo.Graph.Nodes;
+﻿using Dynamo.Graph.Nodes;
 using ProtoCore.AST.AssociativeAST;
-using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Credentials;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Logging;
-using Dynamo.Engine;
-using ProtoCore.Mirror;
-using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Reactive.Linq;
-using System.Threading;
-using System.Windows;
 using Dynamo.Utilities;
 using Speckle.Core.Api;
-using Speckle.Core.Models;
 using Account = Speckle.Core.Credentials.Account;
+using Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.CreateStreamNode
 {
@@ -48,7 +39,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public ObservableCollection<Core.Credentials.Account> AccountList
     {
       get => _accountList;
@@ -64,7 +55,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public Account SelectedAccount
     {
       get => _selectedAccount;
@@ -94,7 +85,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
     /// </summary>
     /// <param name="inPorts"></param>
     /// <param name="outPorts"></param>
-    [DNJ.JsonConstructor]
+    [JsonConstructor]
     private CreateStream(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
       if (outPorts.Count() == 0)
@@ -122,33 +113,55 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
     internal void RestoreSelection()
     {
       AccountList = new ObservableCollection<Account>(AccountManager.GetAccounts());
+      if (AccountList.Count == 0)
+      {
+        Warning("No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
+        SelectedAccount = null;
+        SelectedAccountId = "";
+        return;
+      }
 
-      if (!string.IsNullOrEmpty(SelectedAccountId))
-      {
-        SelectedAccount = AccountList.FirstOrDefault(x => x.id == SelectedAccountId);
-      }
-      else
-      {
-        SelectedAccount = AccountList.FirstOrDefault(x => x.isDefault);
-      }
+      SelectedAccount = !string.IsNullOrEmpty(SelectedAccountId)
+        ? AccountList.FirstOrDefault(x => x.id == SelectedAccountId)
+        : AccountList.FirstOrDefault(x => x.isDefault);
     }
 
     internal void DoCreateStream()
     {
+      ClearErrorsAndWarnings();
+
       if (SelectedAccount == null)
-        throw new Exception("An account must be selected.");
+      {
+        Error("An account must be selected.");
+        return;
+      }
 
       Tracker.TrackPageview(Tracker.STREAM_CREATE);
 
       var client = new Client(SelectedAccount);
-      var res = client.StreamCreate(new StreamCreateInput()).Result;
+      try
+      {
+        var res = client.StreamCreate(new StreamCreateInput()).Result;
 
-      Stream = new StreamWrapper(res, SelectedAccount.id, SelectedAccount.serverInfo.url);
-      CreateEnabled = false;
-      SelectedAccountId = SelectedAccount.id;
+        Stream = new StreamWrapper(res, SelectedAccount.id, SelectedAccount.serverInfo.url);
+        CreateEnabled = false;
+        SelectedAccountId = SelectedAccount.id;
 
-      this.Name = "Stream Created";
-      OnNodeModified(true);
+        this.Name = "Stream Created";
+        OnNodeModified(true);
+      }
+      catch (Exception ex)
+      {
+        //someone improve this pls :)
+        if (ex.InnerException != null && ex.InnerException.InnerException != null)
+          Error(ex.InnerException.InnerException.Message);
+        if (ex.InnerException != null)
+          Error(ex.InnerException.Message);
+        else
+          Error(ex.Message);
+
+      }
+
     }
 
 
@@ -173,7 +186,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
           AstFactory.BuildStringNode(Stream.StreamId), AstFactory.BuildStringNode(Stream.AccountId)
         });
 
-      return new[] {AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall)};
+      return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall) };
     }
 
     #endregion

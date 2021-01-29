@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConverterRhinoGh.BuiltElements.cs" />
     <Compile Include="ConverterRhinoGh.Geometry.cs" />
     <Compile Include="ConverterRhinoGh.Units.cs" />
     <Compile Include="ConverterRhinoGh.cs" />
@@ -63,7 +64,6 @@
     <PackageReference Include="Grasshopper" Version="6.32.20340.21001">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="RhinoCommon" Version="6.32.20340.21001">
       <ExcludeAssets>runtime</ExcludeAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -84,5 +84,12 @@
   <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
     <PostBuildEvent>mkdir -p $HOME/.config/Speckle/Kits/Objects</PostBuildEvent>
     <PostBuildEvent>cp '$(TargetDir)$(AssemblyName).dll' $HOME/.config/Speckle/Kits/Objects/</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (
+
+xcopy /Y /S "$(TargetDir)$(AssemblyName).dll" "$(AppData)\Speckle\Kits\Objects\"
+
+)</PostBuildEvent>
   </PropertyGroup>
 </Project>

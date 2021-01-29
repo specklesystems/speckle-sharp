@@ -1,24 +1,14 @@
-﻿extern alias DynamoNewtonsoft;
-using DNJ = DynamoNewtonsoft::Newtonsoft.Json;
-using Dynamo.Graph.Nodes;
+﻿using Dynamo.Graph.Nodes;
 using ProtoCore.AST.AssociativeAST;
-using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Credentials;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Logging;
-using Dynamo.Engine;
-using ProtoCore.Mirror;
-using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Reactive.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using Speckle.Core.Models;
 using Account = Speckle.Core.Credentials.Account;
+using Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.AccountsNode
 {
@@ -38,7 +28,7 @@ namespace Speckle.ConnectorDynamo.AccountsNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public ObservableCollection<Core.Credentials.Account> AccountList
     {
       get => _accountList;
@@ -54,7 +44,7 @@ namespace Speckle.ConnectorDynamo.AccountsNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public Account SelectedAccount
     {
       get => _selectedAccount;
@@ -71,7 +61,7 @@ namespace Speckle.ConnectorDynamo.AccountsNode
     /// </summary>
     /// <param name="inPorts"></param>
     /// <param name="outPorts"></param>
-    [DNJ.JsonConstructor]
+    [JsonConstructor]
     private Accounts(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
       if (outPorts.Count() == 0)
@@ -101,15 +91,17 @@ namespace Speckle.ConnectorDynamo.AccountsNode
     internal void RestoreSelection()
     {
       AccountList = new ObservableCollection<Account>(AccountManager.GetAccounts());
+      if (AccountList.Count == 0)
+      {
+        Warning("No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
+        SelectedAccount = null;
+        SelectedAccountId = "";
+        return;
+      }
 
-        if (!string.IsNullOrEmpty(SelectedAccountId))
-        {
-          SelectedAccount = AccountList.FirstOrDefault(x => x.id == SelectedAccountId);
-        }
-        else
-        {
-          SelectedAccount = AccountList.FirstOrDefault(x => x.isDefault);
-        }
+      SelectedAccount = !string.IsNullOrEmpty(SelectedAccountId)
+        ? AccountList.FirstOrDefault(x => x.id == SelectedAccountId)
+        : AccountList.FirstOrDefault(x => x.isDefault);
     }
 
     internal void SelectionChanged(Account account)
@@ -132,9 +124,9 @@ namespace Speckle.ConnectorDynamo.AccountsNode
       var id = SelectedAccountId ?? "";
       var functionCall = AstFactory.BuildFunctionCall(
         new Func<string, Account>(Functions.Account.GetById),
-        new List<AssociativeNode> {AstFactory.BuildStringNode(id)});
+        new List<AssociativeNode> { AstFactory.BuildStringNode(id) });
 
-      return new[] {AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall)};
+      return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall) };
     }
 
     #endregion

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using Speckle.Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using System;

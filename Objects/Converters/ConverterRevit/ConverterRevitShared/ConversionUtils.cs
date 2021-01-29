@@ -1,11 +1,13 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
+using Objects.Other;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
+using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
@@ -745,5 +747,40 @@ namespace Objects.Converter.Revit
 
 
     #endregion
+
+
+    public WallLocationLine GetWallLocationLine(LocationLine location)
+    {
+      switch (location)
+      {
+        case LocationLine.Centerline:
+          return WallLocationLine.WallCenterline;
+        case LocationLine.Exterior:
+          return WallLocationLine.FinishFaceExterior;
+        case LocationLine.Interior:
+          return WallLocationLine.FinishFaceInterior;
+        default:
+          return WallLocationLine.FinishFaceInterior;
+      }
+    }
+
+    public RenderMaterial GetElementRenderMaterial(DB.Element element)
+    {
+      RenderMaterial material = null;
+      var matId = element.GetMaterialIds(false).FirstOrDefault();
+      
+      if(matId == null)
+      {
+        // TODO: Fallback to display color or something? 
+        return material;
+      }
+
+      var revitMaterial = Doc.GetElement(matId) as Material;
+      material = new RenderMaterial();
+      material.opacity = 1 - revitMaterial.Transparency / 100f;
+      material.diffuse = System.Drawing.Color.FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue).ToArgb();
+      
+      return material;
+    }
   }
 }

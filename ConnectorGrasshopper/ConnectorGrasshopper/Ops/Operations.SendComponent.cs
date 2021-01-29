@@ -126,22 +126,16 @@ namespace ConnectorGrasshopper.Ops
       pManager.AddGenericParameter("Data", "D", "The data to send.",
         GH_ParamAccess.tree);
       pManager.AddGenericParameter("Stream", "S", "Stream(s) and/or transports to send to.", GH_ParamAccess.tree);
-      pManager.AddTextParameter("Branch", "B", "The branch you want your commit associated with.", GH_ParamAccess.tree,
-        "main");
       pManager.AddTextParameter("Message", "M", "Commit message. If left blank, one will be generated for you.",
         GH_ParamAccess.tree, "");
 
       Params.Input[2].Optional = true;
-      Params.Input[3].Optional = true;
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      // TODO:  Ouptut of dynamo is just a "stream", but we have several outputs here, should I kill them?
       pManager.AddGenericParameter("Stream", "S",
         "Stream or streams pointing to the created commit", GH_ParamAccess.list);
-      //pManager.AddTextParameter("Object Id", "O", "The object id (hash) of the sent data.", GH_ParamAccess.list);
-      //pManager.AddGenericParameter("Data", "D", "The actual sent object.", GH_ParamAccess.list);
     }
 
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
@@ -269,7 +263,6 @@ namespace ConnectorGrasshopper.Ops
   {
     GH_Structure<IGH_Goo> DataInput;
     GH_Structure<IGH_Goo> _TransportsInput;
-    GH_Structure<GH_String> _BranchNameInput;
     GH_Structure<GH_String> _MessageInput;
 
     string InputState;
@@ -302,8 +295,7 @@ namespace ConnectorGrasshopper.Ops
     {
       DA.GetDataTree(0, out DataInput);
       DA.GetDataTree(1, out _TransportsInput);
-      DA.GetDataTree(2, out _BranchNameInput);
-      DA.GetDataTree(3, out _MessageInput);
+      DA.GetDataTree(2, out _MessageInput);
 
       OutputWrappers = new List<StreamWrapper>();
 
@@ -349,25 +341,39 @@ namespace ConnectorGrasshopper.Ops
         // TODO: Set default account + "default" user stream
       }
 
+      var transportBranches = new Dictionary<ITransport, string>();
       int t = 0;
       foreach (var data in _TransportsInput)
       {
         var transport = data.GetType().GetProperty("Value").GetValue(data);
 
-        if (transport is string)
+        if (transport is string s)
         {
           try
           {
-            transport = new StreamWrapper(transport as string);
+            transport = new StreamWrapper(s);
           }
-          catch
+          catch(Exception e)
           {
-            /*we should not do this */
+            // TODO: Check this with team.
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.Message);
           }
         }
 
         if (transport is StreamWrapper sw)
         {
+          if (sw.Type == StreamWrapperType.Undefined)
+          {
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Input stream is invalid.");
+            continue;
+          }
+
+          if (sw.Type == StreamWrapperType.Commit)
+          {
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot push to a specific commit stream url.");
+            continue;
+          }
+          
           var acc = sw.GetAccount();
           if (acc == null)
           {
@@ -375,8 +381,9 @@ namespace ConnectorGrasshopper.Ops
             continue;
           }
 
-          Transports.Add(new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" });
-          ;
+          var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
+          transportBranches.Add(serverTransport, sw.BranchName ?? "main");
+          Transports.Add(serverTransport);
         }
         else if (transport is ITransport otherTransport)
         {
@@ -460,12 +467,15 @@ namespace ConnectorGrasshopper.Ops
           try
           {
             var client = new Client(((ServerTransport)transport).Account);
+            var branch = transportBranches.ContainsKey(transport) ? transportBranches[transport] : "main";
+            
             var commitCreateInput = new CommitCreateInput
             {
-              branchName = _BranchNameInput.get_FirstItem(true).Value,
+              branchName = branch,
               message = message,
               objectId = BaseId,
               streamId = ((ServerTransport)transport).StreamId,
+              sourceApplication = Applications.Grasshopper
             };
 
             // Check to see if we have a previous commit; if so set it.
@@ -473,7 +483,7 @@ namespace ConnectorGrasshopper.Ops
               c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId);
             if (prevCommit != null)
             {
-              commitCreateInput.previousCommitIds = new List<string>() { prevCommit.CommitId };
+              commitCreateInput.parents = new List<string>() { prevCommit.CommitId };
             }
 
             var commitId = await client.CommitCreate(CancellationToken, commitCreateInput);
@@ -607,7 +617,7 @@ namespace ConnectorGrasshopper.Ops
         }
         else
         {
-          var palette = state == "expired" ? GH_Palette.Black : GH_Palette.Transparent;
+          var palette = (state == "expired" || state == "up_to_date") ? GH_Palette.Black : GH_Palette.Transparent;
           var text = state == "sending" ? $"{((SendComponent)Owner).OverallProgress:0.00%}" : "Send";
 
           var button = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, palette, text, 2,
@@ -624,10 +634,21 @@ namespace ConnectorGrasshopper.Ops
       {
         if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
         {
-          if (((SendComponent)Owner).AutoSend || ((SendComponent)Owner).CurrentComponentState != "expired")
+          if (((SendComponent)Owner).AutoSend)
+          {
+            ((SendComponent)Owner).AutoSend = false;
+            Owner.OnDisplayExpired(true);
+            return GH_ObjectResponse.Handled;
+          }
+          if (((SendComponent)Owner).CurrentComponentState == "sending")
           {
             return GH_ObjectResponse.Handled;
           }
+          
+          // if (((SendComponent)Owner).CurrentComponentState != "expired")
+          // {
+          //   return GH_ObjectResponse.Handled;
+          // }
 
           ((SendComponent)Owner).CurrentComponentState = "primed_to_send";
           Owner.ExpireSolution(true);
@@ -638,7 +659,7 @@ namespace ConnectorGrasshopper.Ops
       return base.RespondToMouseDown(sender, e);
     }
 
-    public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
+    /*public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
     {
       // Double clicking the send button, even if the state is up to date, will do a "force send"
       if (e.Button == MouseButtons.Left)
@@ -664,6 +685,6 @@ namespace ConnectorGrasshopper.Ops
       }
 
       return base.RespondToMouseDown(sender, e);
-    }
+    }*/
   }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Credentials;
@@ -65,6 +66,17 @@ namespace Speckle.ConnectorDynamo.Functions
       }
 
       return null;
+    }
+
+
+    internal static void HandleApiExeption(Exception ex)
+    {
+      if (ex.InnerException != null && ex.InnerException.InnerException != null)
+        throw (ex.InnerException.InnerException);
+      if (ex.InnerException != null)
+        throw (ex.InnerException);
+      else
+        throw (ex);
     }
   }
 }
