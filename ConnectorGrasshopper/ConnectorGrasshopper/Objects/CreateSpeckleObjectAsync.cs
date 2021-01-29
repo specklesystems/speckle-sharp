@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using GrasshopperAsyncComponent;
+using Rhino;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -20,16 +21,18 @@ namespace ConnectorGrasshopper.Objects
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public override Guid ComponentGuid => new Guid("FC2EF86F-2C12-4DC2-B216-33BFA409A0FC");
-
-
+    
     public CreateSpeckleObjectAsync() : base("Create Speckle Object", "CSO",
       "Allows you to create a Speckle object by setting its keys and values.",
       "Speckle 2", "Object Management")
     {
+        
         BaseWorker = new CreateSpeckleObjectWorker(this,Converter);
         Params.ParameterNickNameChanged += (sender, args) =>
         {
           Console.WriteLine("nickname changed!");
+          args.Parameter.Name = args.Parameter.NickName;
+          ExpireSolution(true);
         };
         Params.ParameterChanged += (sender, args) =>
         {
@@ -38,6 +41,7 @@ namespace ConnectorGrasshopper.Objects
           {
             Console.WriteLine("nickname changed!");
             args.Parameter.Name = args.Parameter.NickName;
+            ExpireSolution(true);
           }
         };
     }
@@ -121,6 +125,7 @@ namespace ConnectorGrasshopper.Objects
               Log.CaptureException(e);
               Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
               Parent.Message = "Error";
+              RhinoApp.InvokeOnUiThread(new Action(()=> Parent.OnDisplayExpired(true)));
               hasErrors = true;
             }
           }
@@ -137,6 +142,7 @@ namespace ConnectorGrasshopper.Objects
               Log.CaptureException(e);
               Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
               Parent.Message = "Error";
+              RhinoApp.InvokeOnUiThread(new Action(()=> Parent.OnDisplayExpired(true)));
               hasErrors = true;
             }        
           }
