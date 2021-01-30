@@ -5,27 +5,25 @@ using System.Timers;
 using System.Linq;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
+using System.Collections;
 using Newtonsoft.Json;
 
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Geometry;
-using Autodesk.AutoCAD.Runtime;
 
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using Speckle.Core.Api;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
-using Speckle.ConnectorAutoCAD.Entry;
+using Speckle.ConnectorAutoCAD;
 using Speckle.Core.Transports;
 using Stylet;
-using System.Text.RegularExpressions;
-using Autodesk.AutoCAD.Colors;
-using System.Collections;
-using Autodesk.Windows;
 
 namespace Speckle.ConnectorAutoCAD.UI
 {
@@ -61,22 +59,22 @@ namespace Speckle.ConnectorAutoCAD.UI
 
     public override void AddNewStream(StreamState state)
     {
-      UserDataClass.AddOrUpdateSpeckleStream(state.Stream.id, JsonConvert.SerializeObject(state));
+      SpeckleStream.AddSpeckleStream(state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
     public override void RemoveStreamFromFile(string streamId)
     {
-      UserDataClass.RemoveSpeckleStream(streamId);
+      SpeckleStream.RemoveSpeckleStream(streamId);
     }
 
     public override void PersistAndUpdateStreamInFile(StreamState state)
     {
-      UserDataClass.AddOrUpdateSpeckleStream(state.Stream.id, JsonConvert.SerializeObject(state));
+      SpeckleStream.UpdateSpeckleStream(state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
     public override List<StreamState> GetStreamsInFile()
     {
-      List<string> strings = UserDataClass.GetSpeckleStreams();
+      List<string> strings = SpeckleStream.GetSpeckleStreams();
       return strings.Select(s => JsonConvert.DeserializeObject<StreamState>(s)).ToList();
     }
     #endregion
@@ -104,7 +102,7 @@ namespace Speckle.ConnectorAutoCAD.UI
             var blckRef = (BlockReference)dbObj; // skip block references for now
           }
           else 
-            objs.Add(id.ToString());
+            objs.Add(dbObj.Handle.ToString());
         }
         // TODO: this returns all the doc objects. Need to check for visibility later.
         tr.Commit();
@@ -126,19 +124,9 @@ namespace Speckle.ConnectorAutoCAD.UI
 
     public override List<string> GetSelectedObjects()
     {
-      /*
-      // TODO: this prompts user to select items: need to set to preselect?? UNSOLVED ISSUE
-      List<string> objs = null;
-      var entRes = Doc.Editor.GetSelection();
-      if (entRes.Status == PromptStatus.OK)
-        objs = entRes.Value.GetObjectIds().Select(o => o.ToString()).ToList();
-      return objs;
-      */
-
-      // trying a command instead to get selection
       // TODO: use enums or props to capture command names, none of this string chasing bs
       Doc.SendStringToExecute("SpeckleSelection ", false, false, true);
-      var objs = UserDataClass.GetSpeckleSelection;
+      var objs = UserData.GetSpeckleSelection;
       return objs;
     }
 
@@ -154,7 +142,6 @@ namespace Speckle.ConnectorAutoCAD.UI
           layers.Add(lyrTblRec.Name);
         }
         tr.Commit();
-        tr.Dispose();
       }
       return new List<ISelectionFilter>()
       {
@@ -390,23 +377,27 @@ namespace Speckle.ConnectorAutoCAD.UI
         ObjectId id = Doc.Database.GetObjectId(false, hn, 0);
 
         // get the entity object NOTE: This is a db object, not a geometry object!! Need to figure out geometry object inheritance later
-        Entity obj = null;
+        Base converted = null;
+        Entity objEntity = null;
         using (Transaction tr = Doc.TransactionManager.StartTransaction())
         {
-          obj = (Entity)id.GetObject(OpenMode.ForRead);
+          DBObject obj = tr.GetObject(id, OpenMode.ForRead);
+          if (obj == null)
+          {
+            state.Errors.Add(new System.Exception($"Failed to find local object ${applicationId}."));
+            continue;
+          }
+
+          objEntity = obj as Entity;
+
+          // this is where the geometry gets converted
+          converted = converter.ConvertToSpeckle(obj);
           tr.Commit();
         }
-        if (obj == null)
-        {
-          state.Errors.Add(new System.Exception($"Failed to find local object ${applicationId}."));
-          continue;
-        }
 
-        // this is where the geometry gets converted
-        Base converted = converter.ConvertToSpeckle(obj);
         if (converted == null)
         {
-          state.Errors.Add(new System.Exception($"Failed to find convert object ${applicationId} of type ${obj.AcadObject.GetType()}."));
+          state.Errors.Add(new System.Exception($"Failed to find convert object ${applicationId} of type ${objEntity.AcadObject.GetType()}."));
           continue;
         }
 
@@ -421,8 +412,7 @@ namespace Speckle.ConnectorAutoCAD.UI
           converted[key] = obj.ExtensionDictionary.GetUserString(key);
         }
         */
-
-        var layerName = obj.Layer;
+        string layerName = objEntity.Layer;
 
         if (commitObj[$"@{layerName}"] == null)
         {
@@ -501,7 +491,7 @@ namespace Speckle.ConnectorAutoCAD.UI
             TypedValue[] layerType = new TypedValue[1] { new TypedValue((int)DxfCode.LayerName, layerName)};
             PromptSelectionResult prompt = Doc.Editor.SelectAll(new SelectionFilter(layerType));
             if (prompt.Status == PromptStatus.OK)
-              objs.AddRange(prompt.Value.GetObjectIds().Select(o => o.ToString()).ToList());
+              objs.AddRange(prompt.Value.GetHandles());
           }
           return objs;
         default:

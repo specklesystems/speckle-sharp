@@ -7,6 +7,7 @@ using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.Civil.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.DesktopUI;
+using Speckle.ConnectorAutoCAD;
 using Speckle.ConnectorAutoCAD.UI;
 using Autodesk.AutoCAD.EditorInput;
 
@@ -55,9 +56,9 @@ namespace Speckle.ConnectorAutoCAD.Entry
     {
       List<string> objs = new List<string>();
       PromptSelectionResult selection = Doc.Editor.SelectImplied(); // don't use get selection as this will prompt user to select if nothing is selected already
-      if (selection.Status != PromptStatus.Error)
-        objs = selection.Value.GetObjectIds().Select(o => o.ToString()).ToList();
-      UserDataClass.UpdateSpeckleSelection(objs);
+      if (selection.Status == PromptStatus.OK)
+        objs = selection.Value.GetHandles();
+      UserData.UpdateSpeckleSelection(objs);
     }
   }
 }
