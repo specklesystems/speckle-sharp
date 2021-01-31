@@ -76,7 +76,7 @@ namespace Speckle.Core.Models
         // Checks for invalid chars
         (!invalidChars.IsMatch(name), $"Prop with name '{name}' contains invalid characters. The following characters are not allowed: ./"), 
         // Checks if you are trying to change a member property
-        (!members.Contains(name), "Modifying the value of instance member properties is not allowed.")
+        //(!members.Contains(name), "Modifying the value of instance member properties is not allowed.")
       };
 
       var r = "";
