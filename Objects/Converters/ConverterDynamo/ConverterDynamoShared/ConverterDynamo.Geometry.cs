@@ -190,6 +190,8 @@ namespace Objects.Converter.Dynamo
         ModelUnits);
 
       CopyProperties(l, line);
+      l.length = line.Length;
+      l.bbox = BoxToSpeckle(line.BoundingBox.ToCuboid());
       return l;
     }
 
@@ -220,7 +222,8 @@ namespace Objects.Converter.Dynamo
         closed = true,
       };
       CopyProperties(poly, polygon);
-
+      poly.length = polygon.Length;
+      poly.bbox = BoxToSpeckle(polygon.BoundingBox.ToCuboid());
       return poly;
     }
 
@@ -270,6 +273,8 @@ namespace Objects.Converter.Dynamo
       {
         var myCircle = new Circle(PlaneToSpeckle(plane), circ.Radius, ModelUnits);
         CopyProperties(myCircle, circ);
+        myCircle.length = circ.Length;
+        myCircle.bbox = BoxToSpeckle(circ.BoundingBox.ToCuboid());
         return myCircle;
       }
     }
@@ -313,7 +318,8 @@ namespace Objects.Converter.Dynamo
         );
 
         CopyProperties(arc, a);
-
+        arc.length = a.Length;
+        arc.bbox = BoxToSpeckle(a.BoundingBox.ToCuboid());
         return arc;
       }
     }
@@ -356,6 +362,10 @@ namespace Objects.Converter.Dynamo
           ModelUnits);
 
         CopyProperties(ellipse, e);
+
+        ellipse.length = e.Length;
+        ellipse.bbox = BoxToSpeckle(e.BoundingBox.ToCuboid());
+        
         return ellipse;
       }
     }
@@ -407,6 +417,10 @@ namespace Objects.Converter.Dynamo
         ModelUnits);
 
       CopyProperties(ellipArc, arc);
+
+      ellipArc.length = arc.Length;
+      ellipArc.bbox = BoxToSpeckle(arc.BoundingBox.ToCuboid());
+      
       return ellipArc;
     }
 
@@ -426,6 +440,9 @@ namespace Objects.Converter.Dynamo
         var poly = new Polyline(points, ModelUnits);
 
         CopyProperties(poly, polycurve);
+        poly.length = polycurve.Length;
+        poly.bbox = BoxToSpeckle(polycurve.BoundingBox.ToCuboid());
+        
         return poly;
       }
       else
@@ -434,6 +451,9 @@ namespace Objects.Converter.Dynamo
         CopyProperties(spkPolycurve, polycurve);
 
         spkPolycurve.segments = polycurve.Curves().Select(c => (ICurve)CurveToSpeckle(c)).ToList();
+        
+        spkPolycurve.length = polycurve.Length;
+        spkPolycurve.bbox = BoxToSpeckle(polycurve.BoundingBox.ToCuboid());
 
         return spkPolycurve;
       }
@@ -476,7 +496,7 @@ namespace Objects.Converter.Dynamo
         polyCrv = PolyCurve.ByJoinedCurves(curves);
         polyCrv = polyCrv.SetDynamoProperties<PolyCurve>(GetDynamicMembersFromBase(polycurve));
       }
-        
+
       return polyCrv;
     }
 
@@ -594,7 +614,9 @@ namespace Objects.Converter.Dynamo
         //spkCurve.Properties
 
         //spkCurve.GenerateHash();
-
+        spkCurve.length = curve.Length;
+        spkCurve.bbox = BoxToSpeckle(curve.BoundingBox.ToCuboid());
+        
         speckleCurve = spkCurve;
       }
 
@@ -620,7 +642,8 @@ namespace Objects.Converter.Dynamo
     {
       if (brep.displayValue != null)
       {
-        return MeshToNative(brep.displayValue);
+        var meshToNative = MeshToNative(brep.displayValue);
+        return meshToNative;
       }
 
       return null;
@@ -657,7 +680,30 @@ namespace Objects.Converter.Dynamo
       var speckleMesh = new Mesh(vertices, faces, colors, units: ModelUnits);
 
       CopyProperties(speckleMesh, mesh);
+
+      using (var box = ComputeMeshBoundingBox(mesh))
+        speckleMesh.bbox = BoxToSpeckle(box);
+
       return speckleMesh;
+    }
+
+    private DS.Cuboid ComputeMeshBoundingBox(DS.Mesh mesh)
+    {
+      double lowX = double.PositiveInfinity, lowY = double.PositiveInfinity, lowZ = double.PositiveInfinity;
+      double highX = double.NegativeInfinity, highY = double.NegativeInfinity, highZ = double.NegativeInfinity;
+      mesh.VertexPositions.ForEach(pos =>
+      {
+        if (pos.X < lowX) lowX = pos.X;
+        if (pos.Y < lowY) lowY = pos.Y;
+        if (pos.Z < lowZ) lowZ = pos.Z;
+        if (pos.X > highX) highX = pos.X;
+        if (pos.Y > highY) highY = pos.Y;
+        if (pos.Z > highZ) highZ = pos.Z;
+      });
+
+      using (var low = DS.Point.ByCoordinates(lowX, lowY, lowZ))
+      using (var high = DS.Point.ByCoordinates(highX, highY, highZ))
+        return DS.Cuboid.ByCorners(low, high);
     }
 
     public DS.Mesh MeshToNative(Mesh mesh)
@@ -694,6 +740,26 @@ namespace Objects.Converter.Dynamo
 
     #endregion
 
+
+    public Cuboid BoxToNative(Box box)
+    {
+      using (var coordinateSystem = PlaneToNative(box.basePlane).ToCoordinateSystem())
+        using (var cLow = DS.Point.ByCartesianCoordinates(coordinateSystem, box.xSize.start ?? 0, box.ySize.start ?? 0, box.zSize.start ?? 0))
+          using (var cHigh = DS.Point.ByCartesianCoordinates(coordinateSystem, box.xSize.end ?? 0, box.ySize.end ?? 0, box.zSize.end ?? 0))
+            return Cuboid.ByCorners(cLow, cHigh);
+    }
+
+    public Box BoxToSpeckle(Cuboid box)
+    {
+      var plane = PlaneToSpeckle(box.ContextCoordinateSystem.XYPlane);
+      
+      // Todo: Check for cubes that are offset from the plane origin to ensure correct positioning.
+      var boxToSpeckle = new Box(plane, new Interval(-box.Width/2, box.Width/2), new Interval(-box.Length/2, box.Length/2), new Interval(-box.Height/2, box.Height/2));
+      boxToSpeckle.volume = box.Volume;
+      boxToSpeckle.area = box.Area;
+      return boxToSpeckle;
+    }
+    
     public NurbsSurface SurfaceToNative(Surface surface)
     {
       var points = new DS.Point[][] { };
@@ -759,6 +825,9 @@ namespace Objects.Converter.Dynamo
       result.closedU = surface.ClosedInU;
       result.closedV = surface.ClosedInV;
 
+      result.area = surface.Area;
+      result.bbox = BoxToSpeckle(surface.BoundingBox.ToCuboid());
+      
       return result;
     }
 
