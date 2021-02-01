@@ -87,6 +87,7 @@ namespace Objects.Converter.Revit
       var l = new Line() { value = new List<double>(), units = ModelUnits };
       l.value.AddRange(PointToSpeckle(line.GetEndPoint(0)).value);
       l.value.AddRange(PointToSpeckle(line.GetEndPoint(1)).value);
+      l.length = line.Length;
       return l;
     }
 
@@ -96,6 +97,7 @@ namespace Objects.Converter.Revit
       var arcPlane = DB.Plane.CreateByNormalAndOrigin(arc.Normal, arc.Center);
 
       var c = new Circle(PlaneToSpeckle(arcPlane), ScaleToSpeckle(arc.Radius), ModelUnits);
+      c.length = arc.Length;
       return c;
     }
 
@@ -146,6 +148,8 @@ namespace Objects.Converter.Revit
       a.endPoint = PointToSpeckle(end);
       a.startPoint = PointToSpeckle(start);
       a.midPoint = PointToSpeckle(mid);
+      a.length = arc.Length;
+      
       return a;
     }
 
@@ -175,13 +179,15 @@ namespace Objects.Converter.Revit
       {
         var trim = ellipse.IsBound ? new Interval(ellipse.GetEndParameter(0), ellipse.GetEndParameter(1)) : null;
 
-        return new Ellipse(
+        var ellipseToSpeckle = new Ellipse(
           PlaneToSpeckle(basePlane),
           ScaleToSpeckle(ellipse.RadiusX),
           ScaleToSpeckle(ellipse.RadiusY),
           new Interval(0, 2 * Math.PI),
           trim,
           ModelUnits);
+        ellipseToSpeckle.length = ellipse.Length;
+        return ellipseToSpeckle;
       }
     }
 
@@ -203,7 +209,8 @@ namespace Objects.Converter.Revit
       speckleCurve.closed = RevitVersionHelper.IsCurveClosed(revitCurve);
       speckleCurve.units = ModelUnits;
       //speckleCurve.domain = new Interval(revitCurve.StartParameter(), revitCurve.EndParameter());
-
+      speckleCurve.length = revitCurve.Length;
+      
       return speckleCurve;
     }
 
@@ -333,7 +340,6 @@ namespace Objects.Converter.Revit
       polycurve.units = ModelUnits;
       polycurve.closed = loop.First().GetEndPoint(0).DistanceTo(loop.Last().GetEndPoint(1)) < 0.0164042; //5mm
       polycurve.length = loop.Sum(x => x.Length);
-
       polycurve.segments.AddRange(loop.Select(x => CurveToSpeckle(x)));
       return polycurve;
     }
@@ -364,12 +370,11 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        List<Point> pts = polyline.points;
+        var pts = polyline.points;
 
-        for (int i = 1; i < pts.Count; i++)
+        for (var i = 1; i < pts.Count; i++)
         {
           var speckleLine = new Line(new double[] { pts[i - 1].value[0], pts[i - 1].value[1], pts[i - 1].value[2], pts[i].value[0], pts[i].value[1], pts[i].value[2] }, polyline.units);
-
           curveArray.Append(LineToNative(speckleLine));
         }
 
@@ -401,6 +406,7 @@ namespace Objects.Converter.Revit
       }
 
       speckleMesh.units = ModelUnits;
+      
       return speckleMesh;
     }
 
@@ -487,7 +493,6 @@ namespace Objects.Converter.Revit
 #else
       var surf = DB.ExportUtils.GetNurbsSurfaceDataForFace(face);
 #endif
-
       var spcklSurface = NurbsSurfaceToSpeckle(surf, face.GetBoundingBox());
       return spcklSurface;
     }
@@ -535,7 +540,9 @@ namespace Objects.Converter.Revit
         }
         points.Add(row);
       }
+      
       result.SetControlPoints(points);
+      
       return result;
     }
 
