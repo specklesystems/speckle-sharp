@@ -50,6 +50,8 @@ namespace Objects.Converter.AutoCAD
           return Units.Meters;
         case (int)DistanceUnitFormat.Engineering:
           return Units.Millimeters;
+        case (int)DistanceUnitFormat.Decimal:
+          return Units.Millimeters;
         default:
           throw new System.Exception("The current Unit System is unsupported.");
       }

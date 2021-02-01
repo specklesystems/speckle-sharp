@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autodesk.AutoCAD.Geometry;
+using Autodesk.AutoCAD.DatabaseServices;
 using Arc = Objects.Geometry.Arc;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
@@ -318,6 +319,27 @@ namespace Objects.Converter.AutoCAD
       result.units = ModelUnits;
       result.SetControlPoints(ControlPointsToSpeckle(surface.ControlPoints, surface.Weights));
       return result;
+    }
+
+    /// <summary>
+    /// Converts a DB Entity <see cref="Entity"/> instance to a Speckle <see cref="Base"/>
+    /// </summary>
+    /// <param name="obj">Entity to be converted.</param>
+    /// <returns></returns>
+    public Base ObjectToSpeckle(DBObject obj)
+    {
+      object geo = null;
+      if (obj is DBPoint)
+      {
+        DBPoint pt = obj as DBPoint;
+        geo = pt.Position;
+      }
+      else if (obj is Circle)
+      {
+        Autodesk.AutoCAD.DatabaseServices.Circle circle = obj as Autodesk.AutoCAD.DatabaseServices.Circle;
+        geo = circle.GetGeCurve();
+      }
+      return ConvertToSpeckle(geo);
     }
   }
 }

@@ -95,7 +95,6 @@ namespace Speckle.ConnectorAutoCAD.UI
         BlockTableRecord blckTblRcrd = tr.GetObject(blckTbl[BlockTableRecord.ModelSpace], OpenMode.ForRead) as BlockTableRecord;
         foreach (ObjectId id in blckTblRcrd)
         {
-          // Note: Checking the type from ObjectId.ObjectClass is cheaper than opening the object before checking its type?
           var dbObj = tr.GetObject(id, OpenMode.ForRead);
           if (dbObj is BlockReference)
           {
@@ -338,9 +337,21 @@ namespace Speckle.ConnectorAutoCAD.UI
     public override async Task<StreamState> SendStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.AutoCAD2021);
+      var converter = kit.LoadConverter(ConnectorAutoCADUtils.AutoCADAppName);
       converter.SetContextDocument(Doc);
-      Exceptions.Clear();
+
+      var streamId = state.Stream.id;
+      var client = state.Client;
+
+      if (state.Filter != null)
+      {
+        state.SelectedObjectIds = GetObjectsFromFilter(state.Filter);
+      }
+      if (state.SelectedObjectIds.Count == 0)
+      {
+        RaiseNotification("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
+        return state;
+      }
 
       var commitObj = new Base();
 
@@ -348,63 +359,39 @@ namespace Speckle.ConnectorAutoCAD.UI
       var units = Units.Centimeters;
       commitObj["units"] = units;
 
-      int objCount = 0;
-
-      // TODO: check for filters and trawl the doc.
-      if (state.Filter != null)
-      {
-        state.SelectedObjectIds = GetObjectsFromFilter(state.Filter);
-      }
-
-      if (state.SelectedObjectIds.Count == 0)
-      {
-        RaiseNotification("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
-        return state;
-      }
-
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
       Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
+      int convertedCount = 0;
 
-      foreach (var applicationId in state.SelectedObjectIds)
+      foreach (var autocadObjectHandle in state.SelectedObjectIds)
       {
         if (state.CancellationTokenSource.Token.IsCancellationRequested)
         {
           return null;
         }
-        // create a handle from the application id string
-        Handle hn = new Handle(Convert.ToInt64(applicationId, 16));
-        ObjectId id = Doc.Database.GetObjectId(false, hn, 0);
 
-        // get the entity object NOTE: This is a db object, not a geometry object!! Need to figure out geometry object inheritance later
-        Base converted = null;
-        Entity objEntity = null;
-        using (Transaction tr = Doc.TransactionManager.StartTransaction())
+        // get the db object from id NOTE: This is a db object, not a geometry object!! Need to pass the geo object to converter
+        object geo = GetGeoFromHandle(autocadObjectHandle, out string type, out string layer);
+        if (geo == null)
         {
-          DBObject obj = tr.GetObject(id, OpenMode.ForRead);
-          if (obj == null)
-          {
-            state.Errors.Add(new System.Exception($"Failed to find local object ${applicationId}."));
-            continue;
-          }
-
-          objEntity = obj as Entity;
-
-          // this is where the geometry gets converted
-          converted = converter.ConvertToSpeckle(obj);
-          tr.Commit();
+          state.Errors.Add(new System.Exception($"Failed to find local object ${autocadObjectHandle}."));
+          continue;
         }
+
+        // convert geo to speckle base
+        Base converted = converter.ConvertToSpeckle(geo);
 
         if (converted == null)
         {
-          state.Errors.Add(new System.Exception($"Failed to find convert object ${applicationId} of type ${objEntity.AcadObject.GetType()}."));
+          state.Errors.Add(new System.Exception($"Failed to find convert object ${autocadObjectHandle} of type ${type}."));
           continue;
         }
 
         conversionProgressDict["Conversion"]++;
         UpdateProgress(conversionProgressDict, state.Progress);
 
-        converted.applicationId = applicationId;
+        converted.applicationId = autocadObjectHandle;
 
         /* TODO: adding tne extension dictionary per object 
         foreach (var key in obj.ExtensionDictionary)
@@ -412,16 +399,15 @@ namespace Speckle.ConnectorAutoCAD.UI
           converted[key] = obj.ExtensionDictionary.GetUserString(key);
         }
         */
-        string layerName = objEntity.Layer;
 
-        if (commitObj[$"@{layerName}"] == null)
+        if (commitObj[$"@{layer}"] == null)
         {
-          commitObj[$"@{layerName}"] = new List<Base>();
+          commitObj[$"@{layer}"] = new List<Base>();
         }
 
-        ((List<Base>)commitObj[$"@{layerName}"]).Add(converted);
+        ((List<Base>)commitObj[$"@{layer}"]).Add(converted);
 
-        objCount++;
+        convertedCount++;
       }
 
       if (state.CancellationTokenSource.Token.IsCancellationRequested)
@@ -429,10 +415,7 @@ namespace Speckle.ConnectorAutoCAD.UI
         return null;
       }
 
-      Execute.PostToUIThread(() => state.Progress.Maximum = objCount);
-
-      var streamId = state.Stream.id;
-      var client = state.Client;
+      Execute.PostToUIThread(() => state.Progress.Maximum = convertedCount);
 
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
@@ -455,8 +438,8 @@ namespace Speckle.ConnectorAutoCAD.UI
         streamId = streamId,
         objectId = commitObjId,
         branchName = state.Branch.name,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from AutoCAD.",
-        sourceApplication = Applications.Rhino
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from AutoCAD.",
+        sourceApplication = ConnectorAutoCADUtils.AutoCADAppName
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
@@ -469,7 +452,7 @@ namespace Speckle.ConnectorAutoCAD.UI
         state.PreviousCommitId = commitId;
 
         PersistAndUpdateStreamInFile(state);
-        RaiseNotification($"{objCount} objects sent to {state.Stream.name}.");
+        RaiseNotification($"{convertedCount} objects sent to {state.Stream.name}.");
       }
       catch (System.Exception e)
       {
@@ -498,6 +481,52 @@ namespace Speckle.ConnectorAutoCAD.UI
           RaiseNotification("Filter type is not supported in this app. Why did the developer implement it in the first place?");
           return new List<string>();
       }
+    }
+
+    /// <summary>
+    /// Used to retrieve AC.Geometry object from DB handle
+    /// </summary>
+    /// <param name="handle">Object handle as string</param>
+    /// <param name="type">Object class dxf name</param>
+    /// <param name="layer">Object layer name</param>
+    /// <returns></returns>
+    private object GetGeoFromHandle(string handle, out string type, out string layer)
+    {
+      // get the handle and objectId
+      Handle hn = new Handle(Convert.ToInt64(handle, 16));
+      ObjectId id = Doc.Database.GetObjectId(false, hn, 0);
+
+      // get the db object from id NOTE: This is a db object, not a geometry object!! Need to pass the geo object to converter
+      object geo = new object();
+      type = null;
+      layer = null;
+      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      {
+        DBObject obj = tr.GetObject(id, OpenMode.ForRead);
+        if (obj == null)
+          return null;
+        Entity objEntity = obj as Entity;
+        type = id.ObjectClass.DxfName;
+        layer = objEntity.Layer;
+
+        // this is the tricky part - getting the ac.geometry object from the ac.database object. 
+        // based on https://spiderinnet1.typepad.com/blog/2012/04/various-ways-to-check-object-types-in-autocad-net.html
+        // fastes way is to check object class dxf name ... but more readable would be using "is" keyword
+        switch (type)
+        {
+          case "POINT":
+            DBPoint pt = obj as DBPoint;
+            geo = pt.Position;
+            break;
+          case "CIRCLE":
+            Circle circle = obj as Circle;
+            geo = circle.GetGeCurve();
+            break;
+        }
+        tr.Commit();
+      }
+
+      return geo;
     }
 
     #endregion

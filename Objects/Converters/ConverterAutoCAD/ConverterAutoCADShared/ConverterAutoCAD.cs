@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.Geometry;
+using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Arc = Objects.Geometry.Arc;
@@ -59,25 +59,29 @@ namespace Objects.Converter.AutoCAD
     {
       switch (@object)
       {
-        case Point3d o:
+        case Entity o:
+          // add color info and etc here
+          return ObjectToSpeckle(o);
+
+        case AC.Point3d o:
           return PointToSpeckle(o);
 
-        case Vector3d o:
+        case AC.Vector3d o:
           return VectorToSpeckle(o);
 
-        case Line3d o:
+        case AC.Line3d o:
           return LineToSpeckle(o);
 
         case AC.Plane o:
           return PlaneToSpeckle(o);
 
-        case PolylineCurve3d o:
+        case AC.PolylineCurve3d o:
           return PolylineToSpeckle(o) as Base;
 
-        case Curve3d o:
+        case AC.Curve3d o:
           return CurveToSpeckle(o) as Base;
 
-        case NurbSurface o:
+        case AC.NurbSurface o:
           return SurfaceToSpeckle(o);
 
         default:
@@ -123,7 +127,7 @@ namespace Objects.Converter.AutoCAD
     {
       switch (@object)
       {
-        case Point3d _:
+        case AC.Point3d _:
           return true;
 
         default:

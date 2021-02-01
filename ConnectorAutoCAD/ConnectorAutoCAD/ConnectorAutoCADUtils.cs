@@ -9,8 +9,45 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Runtime;
 
+using Speckle.Core.Kits;
+
 namespace Speckle.ConnectorAutoCAD
 {
+  public static class ConnectorAutoCADUtils
+  {
+#if AUTOCAD2021
+    public static string AutoCADAppName = Applications.AutoCAD2021;
+#else
+      public static string AutoCADAppName = Applications.AutoCAD2020;
+#endif
+
+    #region extension methods
+    // this is in place because for whatever reason, autocad ObjectId.ToString() method returns "(idstring)" instead of "idstring".
+    public static List<string> ToStrings(this ObjectId[] ids) => ids.Select(o => o.ToString().Trim(new char[] { '(', ')' })).ToList();
+
+    // we are using handles instead of objectIds because handles persist and are saved with each file.
+    // ObjectIds are unique to an application session (to assist with multipple document operations) but are recreated upon new sessions, not suitable for retrieving objects later.
+    public static List<string> GetHandles(this SelectionSet selection)
+    {
+      Document Doc = Application.DocumentManager.MdiActiveDocument;
+      List<string> handles = new List<string>();
+      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      {
+        foreach (SelectedObject obj in selection)
+        {
+          if (obj != null)
+          {
+            Entity objEntity = tr.GetObject(obj.ObjectId, OpenMode.ForWrite) as Entity;
+            if (objEntity != null)
+              handles.Add(objEntity.Handle.ToString());
+          }
+        }
+        tr.Commit();
+      }
+      return handles;
+    }
+    #endregion
+  }
 
   // this is used to store stream data - namedobjectdictionary persists after application is closed!
   public static class SpeckleStream
@@ -107,6 +144,7 @@ namespace Speckle.ConnectorAutoCAD
       {
         using (Transaction tr = db.TransactionManager.StartTransaction())
         {
+
           DBDictionary NOD = (DBDictionary)tr.GetObject(db.NamedObjectsDictionaryId, OpenMode.ForRead);
           if (NOD.Contains(SpeckleExtensionDictionary))
           {
@@ -124,12 +162,12 @@ namespace Speckle.ConnectorAutoCAD
 
   // this is for storing selection information - doc.userdata does NOT persist after application is closed!
   // stores the database entity handle NOT objectId! ObjectID does not persist once database leaves memory.
-  public class UserData
+  public static class UserData
   {
     public static Document Doc => Application.DocumentManager.MdiActiveDocument;
 
     // Specify a key under which we want to store our custom data
-    const string SelectionKey = "Speckle"; 
+    const string SelectionKey = "Speckle";
 
     // public enum SelectionState { Current, Previous, None}; // add this back later if we need to keep track of various selection states, and change to dict if so
 
@@ -169,34 +207,6 @@ namespace Speckle.ConnectorAutoCAD
       SpeckleSelection sel = new SpeckleSelection();
       sel.RemoveSelectionObjects(handles);
       Doc.UserData[SelectionKey] = sel.Selection;
-    }
-  }
-
-  public static class ExtensionMethods
-  {
-    // this is in place because for whatever reason, autocad ObjectId.ToString() method returns "(idstring)" instead of "idstring".
-    public static List<string> ToStrings(this ObjectId[] ids) => ids.Select(o => o.ToString().Trim(new char[] { '(', ')' })).ToList();
-
-    // we are using handles instead of objectIds because handles persist and are saved with each file.
-    // ObjectIds are unique to an application session (to assist with multipple document operations) but are recreated upon new sessions, not suitable for retrieving objects later.
-    public static List<string> GetHandles(this SelectionSet selection)
-    {
-      Document Doc = Application.DocumentManager.MdiActiveDocument;
-      List<string> handles = new List<string>();
-      using (Transaction tr = Doc.TransactionManager.StartTransaction())
-      {
-        foreach (SelectedObject obj in selection)
-        {
-          if (obj != null)
-          {
-            Entity objEntity = tr.GetObject(obj.ObjectId, OpenMode.ForWrite) as Entity;
-            if (objEntity != null)
-              handles.Add(objEntity.Handle.ToString());
-          }
-        }
-        tr.Commit();
-      }
-      return handles;
     }
   }
 }
