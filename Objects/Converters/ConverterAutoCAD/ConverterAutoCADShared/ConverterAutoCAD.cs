@@ -99,7 +99,7 @@ namespace Objects.Converter.AutoCAD
       switch (@object)
       {
         case Point o:
-          return PointToNative(o);
+          return NativeToDBObject(PointToNative(o));
 
         case Interval o:
           return IntervalToNative(o);

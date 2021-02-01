@@ -341,5 +341,23 @@ namespace Objects.Converter.AutoCAD
       }
       return ConvertToSpeckle(geo);
     }
+
+    /// <summary>
+    /// Converts a native AC geometry object into a AC DB object
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    /// <remarks>This is necessary to bake converted Speckle objects to model space</remarks>
+    public DBObject NativeToDBObject(object obj)
+    {
+      DBObject dbObj = null;
+
+      if (obj is Point3d)
+      {
+        dbObj = new DBPoint((Point3d)obj);
+      }
+
+      return dbObj;
+    }
   }
 }

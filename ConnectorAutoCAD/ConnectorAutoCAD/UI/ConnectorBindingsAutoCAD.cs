@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Collections;
+using System.Drawing;
 using Newtonsoft.Json;
 
 using Autodesk.AutoCAD.ApplicationServices;
@@ -174,7 +175,7 @@ namespace Speckle.ConnectorAutoCAD.UI
     public override async Task<StreamState> ReceiveStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.AutoCAD2021);
+      var converter = kit.LoadConverter(ConnectorAutoCADUtils.AutoCADAppName);
       converter.SetContextDocument(Doc);
 
       var myStream = await state.Client.StreamGet(state.Stream.id);
@@ -201,89 +202,58 @@ namespace Speckle.ConnectorAutoCAD.UI
         RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
       }
 
-      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      // add rollback here?
+
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 0;
+      Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
+
+      Action updateProgressAction = () =>
       {
-        var conversionProgressDict = new ConcurrentDictionary<string, int>();
-        conversionProgressDict["Conversion"] = 0;
-        Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
+        conversionProgressDict["Conversion"]++;
+        UpdateProgress(conversionProgressDict, state.Progress);
+      };
 
-        Action updateProgressAction = () =>
-        {
-          conversionProgressDict["Conversion"]++;
-          UpdateProgress(conversionProgressDict, state.Progress);
-        };
+      // create a layer prefix hash: this is to prevent geometry from being imported into original layers (too confusing)
+      // since autocad doesn't have nested layers, use the standard import syntax of "layer$sublayer" when importing from apps that have nested layers
+      var layerPrefix = $"{myStream.name}[{state.Branch.name}@{commit.id}]";
+      layerPrefix = Regex.Replace(layerPrefix, @"[^\u0000-\u007F]+", string.Empty); // emits emojis
 
-        var layerName = $"{myStream.name}: {state.Branch.name} @ {commit.id}";
-        layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty); // emits emojis
+      // see if there is already an existing layer with this prefix - if there is then this commit has already been recieved?
+      DeleteLayersWithPrefix(layerPrefix);
 
-        // see if there is already an existing layer with this name
-        LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
-        LayerTableRecord existingLayer = null;
-        foreach (ObjectId layerId in lyrTbl)
-        {
-          LayerTableRecord currentLayer = tr.GetObject(layerId, OpenMode.ForWrite) as LayerTableRecord;
-          if (currentLayer.Name == layerName)
-            existingLayer = currentLayer; break;
-        }
-
-        //if (existingLayer != null)
-        //{
-        //  Doc.Layers.Purge(existingLayer.Id, false);
-        //}
-        //var layerIndex = Doc.Layers.Add(layerName, System.Drawing.Color.Blue);
-
-        //if (layerIndex == -1)
-        //{
-        //  RaiseNotification($"Could not create layer {layerName} to bake objects into.");
-        //  state.Errors.Add(new Exception($"Could not create layer {layerName} to bake objects into."));
-        //  return state;
-        //}
-        //currentRootLayerName = layerName;
-        //HandleAndConvert(commitObject, converter, Doc.Layers.FindIndex(layerIndex), state);
-
-        //Doc.Views.Redraw();
-
-        if (false)
-          tr.Abort();
-
-        tr.Commit();
-      }
+      // try and import geo
+      HandleAndConvert(commitObject, converter, layerPrefix, state);
 
       return state;
     }
+   
 
-    /// <summary>
-    /// Used to hold in state for the handle and convert function below.
-    /// </summary>
-    private string currentRootLayerName;
-
-    private void HandleAndConvert(object obj, ISpeckleConverter converter, string layer, StreamState state, Action updateProgressAction = null)
+    private void HandleAndConvert(object obj, ISpeckleConverter converter, string layerPrefix, StreamState state, Action updateProgressAction = null)
     {
-      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      if (obj is Base baseItem)
       {
-        LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
-        if (!lyrTbl.Has(layer))
+        if (converter.CanConvertToNative(baseItem))
         {
-          LayerTableRecord lyrTblRec = new LayerTableRecord();
-
-          // Assign the layer the ACI color 1 and a name
-          lyrTblRec.Color = Color.FromColorIndex(ColorMethod.ByAci, 1);
-          lyrTblRec.Name = layer;
-
-          // Upgrade the Layer table for write
-          lyrTblRec.UpgradeOpen();
-
-          // Append the new layer to the Layer table and the transaction
-          lyrTbl.Add(lyrTblRec);
-          tr.AddNewlyCreatedDBObject(lyrTblRec, true);
-
-          // handle types of objs
-          if (obj is Base baseItem)
+          // create the ac layer if it doesn't already exist
+          LayerTableRecord objLayer = GetOrMakeLayer(layerPrefix);
+          if (objLayer == null)
           {
-            if (converter.CanConvertToNative(baseItem))
+            RaiseNotification($"could not create layer {layerPrefix} to bake objects into.");
+            state.Errors.Add(new System.Exception($"could not create layer {layerPrefix} to bake objects into."));
+            updateProgressAction?.Invoke();
+            return;
+          }
+
+          // convert geo to native
+          var converted = converter.ConvertToNative(baseItem) as Entity;
+
+          // add geo to doc
+          if (converted != null)
+          {
+            using (DocumentLock l = Doc.LockDocument())
             {
-              var converted = converter.ConvertToNative(baseItem) as Entity;
-              if (converted != null)
+              using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
               {
                 // Open the Block table for read
                 BlockTable blkTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
@@ -292,42 +262,142 @@ namespace Speckle.ConnectorAutoCAD.UI
                 BlockTableRecord blkTblRec = tr.GetObject(blkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
 
                 // set object layer
-                converted.Layer = layer;
+                converted.Layer = layerPrefix;
 
                 // append
                 blkTblRec.AppendEntity(converted);
                 tr.AddNewlyCreatedDBObject(converted, true);
+                tr.Commit();
               }
-              else
-              {
-                state.Errors.Add(new System.Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
-              }
+            }
+          }
+          else
+          {
+            state.Errors.Add(new System.Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
+          }
+          updateProgressAction?.Invoke();
+          return;
+        }
+        else
+        {
+          foreach (var prop in baseItem.GetDynamicMembers())
+          {
+            var value = baseItem[prop];
+            string objLayerName;
+            if (prop.StartsWith("@"))
+              objLayerName = prop.Remove(0, 1);
+            else
+              objLayerName = prop;
+
+            // create the ac layer if it doesn't already exist
+            string acLayerName = $"{layerPrefix}${objLayerName}";
+            LayerTableRecord objLayer = GetOrMakeLayer(acLayerName);
+            if (objLayer == null)
+            {
+              RaiseNotification($"could not create layer {acLayerName} to bake objects into.");
+              state.Errors.Add(new System.Exception($"could not create layer {acLayerName} to bake objects into."));
               updateProgressAction?.Invoke();
               return;
             }
-            else
-            {
-              
-            }
-          }
-
-          if (obj is List<object> list)
-          {
-            foreach (var listObj in list)
-              HandleAndConvert(listObj, converter, layer, state, updateProgressAction);
-            return;
-          }
-
-          if (obj is IDictionary dict)
-          {
-            foreach (DictionaryEntry kvp in dict)
-              HandleAndConvert(kvp.Value, converter, layer, state, updateProgressAction);
-            return;
+            HandleAndConvert(value, converter, acLayerName, state, updateProgressAction);
           }
         }
-        tr.Commit();
-        tr.Dispose();
       }
+
+      if (obj is List<object> list)
+      {
+        foreach (var listObj in list)
+          HandleAndConvert(listObj, converter, layerPrefix, state, updateProgressAction);
+        return;
+      }
+
+      if (obj is IDictionary dict)
+      {
+        foreach (DictionaryEntry kvp in dict)
+          HandleAndConvert(kvp.Value, converter, layerPrefix, state, updateProgressAction);
+        return;
+      }
+      
+    }
+
+    private void DeleteLayersWithPrefix(string prefix)
+    {
+      using (DocumentLock l = Doc.LockDocument())
+      {
+        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        {
+          // Open the Layer table for read
+          LayerTable lyrTbl;
+          lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
+          foreach (ObjectId layerId in lyrTbl)
+          {
+            LayerTableRecord layer = (LayerTableRecord)tr.GetObject(layerId, OpenMode.ForRead);
+            string layerName = layer.Name;
+            if (layerName.StartsWith(prefix))
+            {
+              layer.UpgradeOpen();
+              if (Doc.Database.Clayer == layerId)
+              {
+                var defaultLayerID = lyrTbl["0"];
+                Doc.Database.Clayer = defaultLayerID;
+              }
+              layer.IsLocked = false;
+
+              // delete all objects on this layer .. todo: this is inefficient! find better way to deleting obs instea dof looping through each one
+              var blockTable = (BlockTable)tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead);
+              foreach (var btrId in blockTable)
+              {
+                var block = (BlockTableRecord)tr.GetObject(btrId, OpenMode.ForRead);
+                foreach (var entId in block)
+                {
+                  var ent = (Entity)tr.GetObject(entId, OpenMode.ForRead);
+                  if (ent.Layer == layerName)
+                  {
+                    ent.UpgradeOpen();
+                    ent.Erase();
+                  }
+                }
+              }
+              layer.Erase();
+            }
+          }
+          tr.Commit();
+        }
+      }
+    }
+
+    private LayerTableRecord GetOrMakeLayer(string layerName)
+    {
+      LayerTableRecord _layer = null;
+      using (DocumentLock l = Doc.LockDocument())
+      {
+        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        {
+          LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
+          if (lyrTbl.Has(layerName))
+          {
+            _layer = (LayerTableRecord)tr.GetObject(lyrTbl[layerName], OpenMode.ForRead);
+          }
+          else
+          {
+            lyrTbl.UpgradeOpen();
+
+            // make a new layer
+            LayerTableRecord layer = new LayerTableRecord();
+
+            // Assign the layer properties
+            layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(System.Drawing.Color.Blue);
+            layer.Name = layerName;
+
+            // Append the new layer to the Layer table and the transaction
+            lyrTbl.Add(layer);
+            tr.AddNewlyCreatedDBObject(layer, true);
+            _layer = layer;
+          }
+          tr.Commit();
+        }
+      }
+      return _layer;
     }
 
     #endregion
