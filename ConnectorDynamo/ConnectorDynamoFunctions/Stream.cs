@@ -17,13 +17,13 @@ namespace Speckle.ConnectorDynamo.Functions
   public static class Stream
   {
     /// <summary>
-    /// Get an existing Stream with a specific Account
+    /// Get an existing Stream
     /// </summary>
     /// <param name="stream">Stream to get with the specified account</param>
-    /// <param name="account">Speckle account to get the Stream as</param>
+    /// <param name="account">Optional Speckle account to get the Stream with</param>
     /// <returns name="stream">A Stream</returns>
     [NodeCategory("Create")]
-    public static object GetWithAccount([ArbitraryDimensionArrayImport] object stream, Core.Credentials.Account account = null)
+    public static object Get([ArbitraryDimensionArrayImport] object stream, [DefaultArgument("null")] Core.Credentials.Account account)
     {
       Tracker.TrackPageview(Tracker.STREAM_GET);
 
@@ -40,12 +40,22 @@ namespace Speckle.ConnectorDynamo.Functions
 
       try
       {
-        var client = new Client(account);
+
         foreach (var s in streams)
         {
+          //lets ppl override the account for the specified stream
+          Core.Credentials.Account accountToUse = null;
+          if (account != null)
+            accountToUse = account;
+          else
+            accountToUse = s.GetAccount();
+
+
+          var client = new Client(accountToUse);
+
           //Exists?
           Core.Api.Stream res = client.StreamGet(s.StreamId).Result;
-          s.AccountId = account.id;
+          s.AccountId = accountToUse.id;
         }
       }
       catch (Exception ex)
@@ -60,27 +70,25 @@ namespace Speckle.ConnectorDynamo.Functions
       return streams;
     }
 
-    [IsVisibleInDynamoLibrary(false)]
-    public static StreamWrapper GetByStreamAndAccountId(string streamId, string accountId)
-    {
-      var account = AccountManager.GetAccounts().FirstOrDefault(x => x.id == accountId);
-      var client = new Client(account);
+    //Used by the CreateStream node
+    //[IsVisibleInDynamoLibrary(false)]
+    //public static StreamWrapper GetByStreamAndAccountId(string streamId, string accountId)
+    //{
+    //  var account = AccountManager.GetAccounts().FirstOrDefault(x => x.id == accountId);
+    //  try
+    //  {
+    //    return new StreamWrapper(streamId, account.id, account.serverInfo.url);
+    //  }
+    //  catch (Exception ex)
+    //  {
+    //    Utils.HandleApiExeption(ex);
+    //  }
+
+    //  return null;
+
+    //}
 
 
-      try
-      {
-        //Exists?
-        Core.Api.Stream res = client.StreamGet(streamId).Result;
-        return new StreamWrapper(res.id, account.id, account.serverInfo.url);
-      }
-      catch (Exception ex)
-      {
-        Utils.HandleApiExeption(ex);
-      }
-
-      return null;
-
-    }
 
 
     /// <summary>
@@ -213,8 +221,8 @@ namespace Speckle.ConnectorDynamo.Functions
 
       if (account == null)
         account = AccountManager.GetDefaultAccount();
-      
-      if(account == null)
+
+      if (account == null)
       {
         Utils.HandleApiExeption(new Exception("No accounts found. Please use the Speckle Manager to manage your accounts on this computer."));
       }

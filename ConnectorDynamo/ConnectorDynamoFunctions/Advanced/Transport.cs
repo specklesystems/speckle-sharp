@@ -9,7 +9,7 @@ using Speckle.Core.Transports;
 namespace Speckle.ConnectorDynamo.Functions.Advanced
 {
   public static class Transport
-  { 
+  {
     /// <summary>
     /// Creates a Disk Transport.
     /// </summary>
@@ -24,29 +24,29 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
       Tracker.TrackPageview("transports", "disk");
       return new DiskTransport.DiskTransport(basePath);
     }
-    
+
     /// <summary>
     /// Creates an Memory Transport.
     /// </summary>
     /// <param name="name">The name of this Memory Transport.</param>
     /// <returns name="transport">The Memory Transport you have created.</returns>
     [NodeCategory("Transports")]
-    public static object MemoryTransport(string name)
+    public static object MemoryTransport(string name = "Memory")
     {
       Tracker.TrackPageview("transports", "memory");
-      return new MemoryTransport {TransportName = name};
+      return new MemoryTransport { TransportName = name };
     }
-    
+
     /// <summary>
     /// Creates a Server Transport.
     /// </summary>
-    /// <param name="streamWrapper">The Stream you want to send data to.</param>
+    /// <param name="stream">The Stream you want to send data to.</param>
     /// <returns name="transport">The Server Transport you have created.</returns>
     [NodeCategory("Transports")]
-    public static object ServerTransport(StreamWrapper streamWrapper)
+    public static object ServerTransport(StreamWrapper stream)
     {
       Tracker.TrackPageview("transports", "server");
-      var accountId = streamWrapper.AccountId;
+      var accountId = stream.AccountId;
       Core.Credentials.Account account;
 
       account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
@@ -54,20 +54,20 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
       if (account == null)
       {
         // Get the default account
-        account = AccountManager.GetAccounts(streamWrapper.ServerUrl).FirstOrDefault();
+        account = AccountManager.GetAccounts(stream.ServerUrl).FirstOrDefault();
         error = new WarningException(
           "Original account not found. Please make sure you have permissions to access this stream!");
         if (account == null)
         {
           // No default
           error = new WarningException(
-            $"No account found for {streamWrapper.ServerUrl}.");
+            $"No account found for {stream.ServerUrl}.");
         }
       }
 
       if (error != null) throw error;
-      
-      return new ServerTransport(account, streamWrapper.StreamId);
+
+      return new ServerTransport(account, stream.StreamId);
     }
 
     /// <summary>
@@ -82,11 +82,11 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
     {
       if (string.IsNullOrEmpty(basePath))
         basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-      if (string.IsNullOrEmpty(applicationName)) 
+      if (string.IsNullOrEmpty(applicationName))
         applicationName = "Speckle";
-      if (string.IsNullOrEmpty(scope)) 
+      if (string.IsNullOrEmpty(scope))
         scope = "UserLocalDefaultDb";
-      
+
       Tracker.TrackPageview("transports", "server");
       return new SQLiteTransport(basePath, applicationName, scope);
     }
