@@ -30,12 +30,15 @@
       HorizontalAlignment="Center"
       HorizontalContentAlignment="Center"
       md:ShadowAssist.ShadowDepth="Depth0"
-      Content="{md:PackIcon Kind=CloudDownload,
-                            Size=20}"
       IsEnabled="{Binding ReceiveEnabled}"
-      Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
+      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
       ToolTip="Receive objects from Speckle"
-      Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}, ConverterParameter='opposite'}" />
+      Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}, ConverterParameter='opposite'}">
+      <Image
+        Width="32"
+        Height="32"
+        Source="/SpeckleConnectorDynamo;Component/Assets/Receiver@32.png" />
+    </Button>
     <Button
       x:Name="CancelReceiveStreamButton"
       Margin="10,22,10,0"
@@ -47,7 +50,7 @@
       md:ShadowAssist.ShadowDepth="Depth0"
       Content="{md:PackIcon Kind=Stop,
                             Size=20}"
-      Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
+      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
       ToolTip="Cancel"
       Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}}" />
     <md:Badged
