@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Speckle.Core.Api;
 
 namespace Speckle.Core.Credentials
 {
@@ -15,7 +16,7 @@ namespace Speckle.Core.Credentials
     /// Determines if the current stream wrapper contains a valid stream.
     /// </summary>
     public bool IsValid => Type != StreamWrapperType.Undefined;
-    
+
     public StreamWrapperType Type
     {
       // Quick solution to determine whether a wrapper points to a branch, commit or stream.
@@ -28,26 +29,69 @@ namespace Speckle.Core.Credentials
         return StreamWrapperType.Undefined;
       }
     }
-    
+
     public StreamWrapper()
     {
     }
 
     /// <summary>
-    /// Creates a StreamWrapper from a stream url
+    /// Creates a StreamWrapper from a stream url or a stream id
     /// </summary>
-    /// <param name="streamUrl">Stream Url eg: http://speckle.server/streams/8fecc9aa6d/commits/76a23d7179</param>
+    /// <param name="streamUrlOrId">Stream Url eg: http://speckle.server/streams/8fecc9aa6d/commits/76a23d7179  or stream ID eg: 8fecc9aa6d</param>
     /// <exception cref="Exception"></exception>
-    public StreamWrapper(string streamUrl)
+    public StreamWrapper(string streamUrlOrId)
+    {
+      Uri uri;
+
+      if (!Uri.TryCreate(streamUrlOrId, UriKind.Absolute, out uri))
+      {
+        StreamWrapperFromId(streamUrlOrId);
+      }
+      else
+      {
+        StreamWrapperFromUrl(streamUrlOrId);
+      }
+    }
+
+    private void StreamWrapperFromId(string streamId)
+    {
+      Account account = AccountManager.GetDefaultAccount();
+
+      if (account == null)
+      {
+        throw new Exception(
+          $"You do not have any account. Please create one or add it to the Speckle Manager.");
+      }
+
+      try
+      {
+        //Exists?
+        var client = new Client(account);
+        var res = client.StreamGet(streamId).Result;
+        ServerUrl = account.serverInfo.url;
+        AccountId = account.id;
+        StreamId = res.id;
+
+      }
+      catch (Exception ex)
+      {
+        throw new Exception(
+          $"Stream {streamId} does not exist on server {account.serverInfo.url}.");
+      }
+
+
+    }
+
+    private void StreamWrapperFromUrl(string streamUrl)
     {
       Account account;
       Uri uri;
       if (streamUrl.Contains("?u="))
       {
-        uri = new Uri(streamUrl.Split(new string[] {"?u="}, StringSplitOptions.None)[0]);
+        uri = new Uri(streamUrl.Split(new string[] { "?u=" }, StringSplitOptions.None)[0]);
         ServerUrl = uri.GetLeftPart(UriPartial.Authority);
 
-        AccountId = streamUrl.Split(new string[] {"?u="}, StringSplitOptions.None)[1];
+        AccountId = streamUrl.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
         account = GetAccountForServer(AccountId);
       }
       else
@@ -161,7 +205,7 @@ namespace Speckle.Core.Credentials
       return GetAccountForServer(AccountId);
     }
   }
-  
+
   public enum StreamWrapperType
   {
     Undefined,
