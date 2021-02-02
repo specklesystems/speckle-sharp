@@ -2,21 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.Runtime;
+using Autodesk.AutoCAD.ApplicationServices;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Objects.Converter.AutoCAD
 {
-  public enum DistanceUnitFormat
-  {
-    Current = -1,
-    Scientific = 1,
-    Decimal = 2,
-    Engineering = 3,
-    Architectural = 4,
-    Fractional = 5
-  }
-
   public partial class ConverterAutoCAD
   {
     private string _modelUnits;
@@ -26,7 +18,7 @@ namespace Objects.Converter.AutoCAD
       {
         if (string.IsNullOrEmpty(_modelUnits))
         {
-          _modelUnits = UnitToSpeckle(Doc.Database.Lunits);
+          _modelUnits = UnitToSpeckle(Doc.Database.Insunits);
         }
         return _modelUnits;
       }
@@ -42,16 +34,26 @@ namespace Objects.Converter.AutoCAD
       return value * f;
     }
 
-    private string UnitToSpeckle(int units)
+    private string UnitToSpeckle(UnitsValue units)
     {
       switch (units)
       {
-        case (int)DistanceUnitFormat.Architectural:
+        case UnitsValue.Millimeters:
+          return Units.Millimeters;
+        case UnitsValue.Centimeters:
+          return Units.Centimeters;
+        case UnitsValue.Meters:
           return Units.Meters;
-        case (int)DistanceUnitFormat.Engineering:
-          return Units.Millimeters;
-        case (int)DistanceUnitFormat.Decimal:
-          return Units.Millimeters;
+        case UnitsValue.Kilometers:
+          return Units.Kilometers;
+        case UnitsValue.Inches:
+          return Units.Inches;
+        case UnitsValue.Feet:
+          return Units.Feet;
+        case UnitsValue.Yards:
+          return Units.Yards;
+        case UnitsValue.Miles:
+          return Units.Miles;
         default:
           throw new System.Exception("The current Unit System is unsupported.");
       }

@@ -19,7 +19,7 @@ using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
 using Vector = Objects.Geometry.Vector;
-using AC = Autodesk.AutoCAD.Geometry;
+using AC = Autodesk.AutoCAD;
 
 namespace Objects.Converter.AutoCAD
 {
@@ -78,9 +78,9 @@ namespace Objects.Converter.AutoCAD
       return new Point(pt.X, pt.Y, pt.Z, ModelUnits);
     }
 
-    public AC.Point3d PointToNative(Point pt)
+    public Point3d PointToNative(Point pt)
     {
-      var nativePt = new AC.Point3d(ScaleToNative(pt.value[0], pt.units),
+      var nativePt = new Point3d(ScaleToNative(pt.value[0], pt.units),
         ScaleToNative(pt.value[1], pt.units),
         ScaleToNative(pt.value[2], pt.units));
       return nativePt;
@@ -91,7 +91,7 @@ namespace Objects.Converter.AutoCAD
       var _weights = new List<double>();
       var _points = new List<Point3d>();
       foreach (var point in points)
-        _points.Add((AC.Point3d)point);
+        _points.Add((Point3d)point);
       foreach (var weight in weights)
         _weights.Add((double)weight);
 
@@ -120,56 +120,75 @@ namespace Objects.Converter.AutoCAD
     }
 
     // Interval
-    public Interval IntervalToSpeckle(AC.Interval interval)
+    public Interval IntervalToSpeckle(AC.Geometry.Interval interval)
     {
       var speckleInterval = new Interval(interval.LowerBound, interval.UpperBound);
       return speckleInterval;
     }
 
-    public AC.Interval IntervalToNative(Interval interval)
+    public AC.Geometry.Interval IntervalToNative(Interval interval)
     {
-      return new AC.Interval((double)interval.start, (double)interval.end, tolerance);
+      return new AC.Geometry.Interval((double)interval.start, (double)interval.end, tolerance);
     }
 
     // Plane
-    public Plane PlaneToSpeckle(AC.Plane plane)
+    public Plane PlaneToSpeckle(AC.Geometry.Plane plane)
     {
       // TODO: get x and y axis form coefficients
       var xAxis = new Vector();
       var yAxis = new Vector();
-      return new Plane(PointToSpeckle(plane.PointOnPlane), VectorToSpeckle(plane.Normal), yAxis,
+      return new Plane(PointToSpeckle(plane.PointOnPlane), VectorToSpeckle(plane.Normal), xAxis,
         yAxis, ModelUnits);
     }
 
-    public AC.Plane PlaneToNative(Plane plane)
+    public AC.Geometry.Plane PlaneToNative(Plane plane)
     {
-      return new AC.Plane(PointToNative(plane.origin), VectorToNative(plane.normal));
+      return new AC.Geometry.Plane(PointToNative(plane.origin), VectorToNative(plane.normal));
     }
 
     // Line
-    public Line LineToSpeckle(AC.Line3d line)
+    public Line LineToSpeckle(Line3d line)
     {
-      var sLine = new Line(PointsToFlatArray(new Point3d[] { line.StartPoint, line.EndPoint }), ModelUnits);
+      var _line = new Line(PointsToFlatArray(new Point3d[] { line.StartPoint, line.EndPoint }), ModelUnits);
 
-      return sLine;
+      return _line;
     }
-    public AC.Line3d LineToNative(Line line)
+    public Line3d LineToNative(Line line)
     {
-      return null;
+      var pts = PointListToNative(line.value, line.units);
+      var _line = new Line3d(pts[0], pts[1]);
+      if (line.domain != null)
+        _line.SetInterval(IntervalToNative(line.domain));
+      return _line;
     }
 
-    public Polyline PolylineToSpeckle(AC.PolylineCurve3d polyline, Interval interval = null)
+    public Polycurve PolycurveToSpeckle(PolylineCurve3d polycurve, Interval interval = null)
     {
-      return null;
+      var _polycurve = new Polycurve();
+      _polycurve.closed = polycurve.IsClosed();
+      _polycurve.domain = IntervalToSpeckle(polycurve.GetInterval());
+
+      var segments = new List<Curve3d>();
+      CurveSegments(segments, p, true);
+
+      //let the converter pick the best type of curve
+      _polycurve.segments = segments.Select(s => (ICurve)ConvertToSpeckle(s)).ToList();
+
+      return _polycurve;
     }
 
     public PolylineCurve3d PolylineToNative(Polyline polyline)
     {
-      return null;
+      var points = PointListToNative(polyline.value, polyline.units).ToList();
+      if (polyline.closed) points.Add(points[0]);
+      var _polyline = new PolylineCurve3d(new Point3dCollection(points.ToArray()));
+      if (polyline.domain != null)
+        _polyline.SetInterval(IntervalToNative(polyline.domain));
+      return _polyline;
     }
 
     // Curve
-    public AC.Curve3d CurveToNative(ICurve curve)
+    public Curve3d CurveToNative(ICurve curve)
     {
       switch (curve)
       {
@@ -199,9 +218,9 @@ namespace Objects.Converter.AutoCAD
       }
     }
 
-    public ICurve CurveToSpeckle(AC.Curve3d curve)
+    public ICurve CurveToSpeckle(Curve3d curve)
     {
-      if (curve.IsPlanar(out AC.Plane pln))
+      if (curve.IsPlanar(out AC.Geometry.Plane pln))
       {
         if (curve.IsPeriodic(out double period) && curve.IsClosed())
         {
@@ -219,7 +238,7 @@ namespace Objects.Converter.AutoCAD
       return NurbsToSpeckle(curve as NurbCurve3d);
     }
 
-    public Curve NurbsToSpeckle(AC.NurbCurve3d curve)
+    public Curve NurbsToSpeckle(NurbCurve3d curve)
     {
       return null;
     }
@@ -246,7 +265,7 @@ namespace Objects.Converter.AutoCAD
       return nurbsCurve;
     }
 
-    public AC.NurbSurface SurfaceToNative(Geometry.Surface surface)
+    public AC.Geometry.NurbSurface SurfaceToNative(Geometry.Surface surface)
     {
       // Create ac surface
       var points = surface.GetControlPoints().Select(l => l.Select(p =>
@@ -257,7 +276,7 @@ namespace Objects.Converter.AutoCAD
           p.weight,
           p.units)).ToList()).ToList();
 
-      var result = AC.NurbSurface.Create(new IntPtr(), true); // check what new unmanaged pointer does!!
+      var result = AC.Geometry.NurbSurface.Create(new IntPtr(), true); // check what new unmanaged pointer does!!
 
       // Get control points
       Point3dCollection controlPoints = new Point3dCollection();
@@ -292,7 +311,7 @@ namespace Objects.Converter.AutoCAD
       return result;
     }
 
-    public Geometry.Surface SurfaceToSpeckle(AC.NurbSurface surface)
+    public Geometry.Surface SurfaceToSpeckle(AC.Geometry.NurbSurface surface)
     {
       List<double> Uknots = new List<double>();
       List<double> Vknots = new List<double>();
@@ -334,12 +353,73 @@ namespace Objects.Converter.AutoCAD
         DBPoint pt = obj as DBPoint;
         geo = pt.Position;
       }
-      else if (obj is Circle)
+      else if (obj is AC.DatabaseServices.Circle)
       {
-        Autodesk.AutoCAD.DatabaseServices.Circle circle = obj as Autodesk.AutoCAD.DatabaseServices.Circle;
+        AC.DatabaseServices.Circle circle = obj as AC.DatabaseServices.Circle;
         geo = circle.GetGeCurve();
       }
       return ConvertToSpeckle(geo);
+    }
+
+    public bool CurveSegments(List<Curve3d> L, Curve3d crv, bool recursive)
+    {
+      if (crv == null)
+        return false;
+
+      PolylineCurve3d polycurve = crv as PolylineCurve3d;
+
+      if (polycurve != null)
+      {
+        Curve3d[] segments = polycurve.Explode(polycurve.GetInterval());
+        if (segments == null || segments.Length == 0)
+          return false;
+        foreach (Curve3d S in segments)
+          L.Add(S.Clone() as Curve3d);
+        return true;
+      }
+
+      //Nothing else worked, lets assume it's a nurbs curve and go from there...
+      var nurbs = crv as NurbCurve3d;
+
+      if (nurbs == null)
+        return false;
+
+      double t0 = nurbs.GetInterval().LowerBound;
+      double t1 = nurbs.GetInterval().UpperBound;
+      double t;
+
+      int LN = L.Count;
+
+      do
+      {
+        if (!nurbs(Continuity.C1_locus_continuous, t0, t1, out t))
+        {
+          break;
+        }
+
+        var trim = new AC.Geometry.Interval(t0, t, tolerance);
+        if (trim.Length < 1e-10)
+        {
+          t0 = t;
+          continue;
+        }
+
+        var M = nurbs.DuplicateCurve();
+        M = M.Trim(trim);
+        if (M.IsValid)
+        {
+          L.Add(M);
+        }
+
+        t0 = t;
+      } while (true);
+
+      if (L.Count == LN)
+      {
+        L.Add(nurbs);
+      }
+
+      return true;
     }
 
     /// <summary>
@@ -355,6 +435,22 @@ namespace Objects.Converter.AutoCAD
       if (obj is Point3d)
       {
         dbObj = new DBPoint((Point3d)obj);
+      }
+      else if (obj is Line3d)
+      {
+        Line3d line = (Line3d)obj;
+        dbObj = new AC.DatabaseServices.Line(line.StartPoint, line.EndPoint);
+      }
+      else if (obj is PolylineCurve3d)
+      {
+        PolylineCurve3d polyline = (PolylineCurve3d)obj;
+        Poly3dType type = (Poly3dType)polyline.Degree;
+        dbObj = new Polyline3d(type, polyline.vertex ,polyline.IsClosed());
+      }
+      else if (obj is Curve3d)
+      {
+        Curve3d curve = (Curve3d)obj;
+        dbObj = AC.DatabaseServices.Curve.CreateFromGeCurve(curve);
       }
 
       return dbObj;

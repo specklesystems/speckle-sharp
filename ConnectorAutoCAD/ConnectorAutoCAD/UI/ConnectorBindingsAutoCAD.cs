@@ -16,6 +16,7 @@ using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Geometry;
+using Autodesk.Civil.ApplicationServices;
 
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
@@ -32,6 +33,7 @@ namespace Speckle.ConnectorAutoCAD.UI
   {
 
     public Document Doc => Application.DocumentManager.MdiActiveDocument;
+    public CivilDocument DocC3D => CivilApplication.ActiveDocument;
 
     public Timer SelectionTimer;
 
@@ -425,8 +427,7 @@ namespace Speckle.ConnectorAutoCAD.UI
 
       var commitObj = new Base();
 
-      //var units = Units.GetUnitsFromString(); // TODO: FIGURE OUT UNIT STUFF LATER
-      var units = Units.Centimeters;
+      var units = Units.GetUnitsFromString(Doc.Database.Insunits.ToString());
       commitObj["units"] = units;
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -463,7 +464,7 @@ namespace Speckle.ConnectorAutoCAD.UI
 
         converted.applicationId = autocadObjectHandle;
 
-        /* TODO: adding tne extension dictionary per object 
+        /* TODO: adding the extension dictionary / xdata per object 
         foreach (var key in obj.ExtensionDictionary)
         {
           converted[key] = obj.ExtensionDictionary.GetUserString(key);

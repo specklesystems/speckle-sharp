@@ -19,6 +19,7 @@ namespace Speckle.ConnectorAutoCAD.Entry
     public static Bootstrapper Bootstrapper { get; set; }
     public static ConnectorBindingsAutoCAD Bindings { get; set; }
     public static Document Doc => Application.DocumentManager.MdiActiveDocument;
+    public static CivilDocument DocC3D => CivilApplication.ActiveDocument;
 
 
     [CommandMethod("Speckle")]
