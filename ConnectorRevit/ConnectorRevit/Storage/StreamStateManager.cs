@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 using Speckle.DesktopUI.Utils;
 
 namespace Speckle.ConnectorRevit.Storage
@@ -48,7 +48,7 @@ namespace Speckle.ConnectorRevit.Storage
       var streamStatesEntity = new Entity(StreamStateListSchema.GetSchema());
 
       streamStatesEntity.Set("StreamStates", JsonConvert.SerializeObject(streamStates) as string);
-      
+
       var idEntity = new Entity(DSUniqueSchemaStreamStateStorage.GetSchema());
       idEntity.Set("Id", ID);
 
