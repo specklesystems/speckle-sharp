@@ -44,15 +44,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
     steps:
-      - run:
-          name: Check for PR or master
-          command: |
-            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
-              if [ "$CIRCLE_BRANCH" != "master" ]; then
-                echo "Not a PR or master, halting"
-                circleci step halt
-              fi
-            fi
       - checkout
       - jq/install
       - swissknife/trigger-workflows-for-all-modified:
