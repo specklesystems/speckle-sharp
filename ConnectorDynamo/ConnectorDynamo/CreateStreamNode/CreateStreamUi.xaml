@@ -28,11 +28,14 @@
       HorizontalAlignment="Center"
       HorizontalContentAlignment="Center"
       md:ShadowAssist.ShadowDepth="Depth0"
-      Content="{md:PackIcon Kind=Plus,
-                            Size=20}"
       IsEnabled="{Binding CreateEnabled}"
-      Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-      ToolTip="Create a new stream (this is a one time operation)" />
+      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+      ToolTip="Create a new stream (this is a one time operation)">
+      <Image
+        Width="32"
+        Height="32"
+        Source="/SpeckleConnectorDynamo;Component/Assets/CreateStream@32.png" />
+    </Button>
 
     <ComboBox
       Name="AccountsComboBox"

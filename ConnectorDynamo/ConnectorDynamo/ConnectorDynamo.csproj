@@ -145,7 +145,7 @@
     <Content Include="Assets\CreateSpeckleObjectByKeyValue%40128.png" />
     <Content Include="Assets\CreateSpeckleObjectByKeyValue%4032.png" />
     <Content Include="Assets\CreateStream%40128.png" />
-    <Content Include="Assets\CreateStream%4032.png" />
+    <Resource Include="Assets\CreateStream%4032.png" />
     <Content Include="Assets\Deserialize%40128.png" />
     <Content Include="Assets\Deserialize%4032.png" />
     <Content Include="Assets\DiskTransport%40128.png" />
@@ -167,11 +167,11 @@
     <Content Include="Assets\MemoryTransport%40128.png" />
     <Content Include="Assets\MemoryTransport%4032.png" />
     <Content Include="Assets\Receiver%40128.png" />
-    <Content Include="Assets\Receiver%4032.png" />
+    <Resource Include="Assets\Receiver%4032.png" />
     <Content Include="Assets\SchemaBuilder%40128.png" />
     <Content Include="Assets\SchemaBuilder%4032.png" />
     <Content Include="Assets\Sender%40128.png" />
-    <Content Include="Assets\Sender%4032.png" />
+    <Resource Include="Assets\Sender%4032.png" />
     <Content Include="Assets\Serialize%40128.png" />
     <Content Include="Assets\Serialize%4032.png" />
     <Content Include="Assets\ServerTransport%40128.png" />
@@ -189,7 +189,7 @@
     <Content Include="Assets\StreamUpdate%40128.png" />
     <Content Include="Assets\StreamUpdate%4032.png" />
     <Content Include="Assets\StreamView%40128.png" />
-    <Content Include="Assets\StreamView%4032.png" />
+    <Resource Include="Assets\StreamView%4032.png" />
     <Content Include="Assets\ToNative%40128.png" />
     <Content Include="Assets\ToNative%4032.png" />
     <Content Include="Assets\ToSpeckle%40128.png" />

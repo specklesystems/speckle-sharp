@@ -25,20 +25,23 @@
       x:Name="ViewStreamButton"
       Margin="10"
       HorizontalAlignment="Center"
-      md:ShadowAssist.ShadowDepth="Depth0"
       HorizontalContentAlignment="Center"
-      Content="{md:PackIcon Kind=OpenInNew,
-                            Size=20}"
+      md:ShadowAssist.ShadowDepth="Depth0"
       IsEnabled="{Binding ViewEnabled}"
-      Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-      ToolTip="Open in Web Browser" />
-    <!-- -->
-    <!-- <Label -->
-    <!--   Grid.Row="1" -->
-    <!--   HorizontalAlignment="Center" -->
-    <!--   HorizontalContentAlignment="Center" -->
-    <!--   Content="{Binding Message}" -->
-    <!--   FontSize="10" -->
-    <!--   Foreground="OrangeRed" /> -->
+      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+      ToolTip="Open in Web Browser">
+      <Image
+        Width="32"
+        Height="32"
+        Source="/SpeckleConnectorDynamo;Component/Assets/StreamView@32.png" />
+    </Button>
+    <!--    -->
+    <!--  <Label  -->
+    <!--  Grid.Row="1"  -->
+    <!--  HorizontalAlignment="Center"  -->
+    <!--  HorizontalContentAlignment="Center"  -->
+    <!--  Content="{Binding Message}"  -->
+    <!--  FontSize="10"  -->
+    <!--  Foreground="OrangeRed" />  -->
   </Grid>
 </UserControl>

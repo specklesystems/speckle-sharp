@@ -179,14 +179,9 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
         return OutPorts.Enumerate().Select(output =>
           AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
 
-      var functionCall = AstFactory.BuildFunctionCall(
-        new Func<string, string, StreamWrapper>(Functions.Stream.GetByStreamAndAccountId),
-        new List<AssociativeNode>
-        {
-          AstFactory.BuildStringNode(Stream.StreamId), AstFactory.BuildStringNode(Stream.AccountId)
-        });
+      var sw = AstFactory.BuildStringNode(Stream.ToString());
 
-      return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall) };
+      return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), sw) };
     }
 
     #endregion

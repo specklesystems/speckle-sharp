@@ -24,9 +24,9 @@
 
       <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="{StaticResource Primary400}" />
       <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="{StaticResource Primary400Foreground}" />
-      <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#047EFB" />
+      <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#0480FB" />
       <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="#FDFDFD" />
-      <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="#313BCF" />
+      <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="#0A2948" />
       <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="{StaticResource Primary800Foreground}" />
     </ResourceDictionary>
 
