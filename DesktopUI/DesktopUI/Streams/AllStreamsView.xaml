@@ -483,7 +483,7 @@
                   <Button
                     x:Name="SendButton"
                     Grid.Column="2"
-                    Width="110"
+                    Width="120"
                     HorizontalAlignment="Right"
                     md:ButtonAssist.CornerRadius="3"
                     md:ShadowAssist.ShadowDepth="Depth3"
@@ -535,17 +535,21 @@
                     <Grid>
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
                       </Grid.ColumnDefinitions>
-                      <md:PackIcon
-                        Grid.Column="1"
-                        HorizontalAlignment="Right"
-                        Kind="CloudUpload" />
-
-                      <TextBlock
+                      <Image
                         Grid.Column="0"
+                        Width="32"
+                        Height="32"
+                        Margin="-10,0,5,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Source="/SpeckleDesktopUI;Component/Resources/SenderWhite@32.png" />
+                      <TextBlock
+                        Grid.Column="1"
                         HorizontalAlignment="Center"
-                        Text="Send  " />
+                        VerticalAlignment="Center"
+                        Text="Send" />
                     </Grid>
                   </Button>
 
@@ -614,25 +618,31 @@
                   <Button
                     x:Name="ReceiveButton"
                     Grid.Column="2"
-                    Width="110"
+                    Width="120"
                     HorizontalAlignment="Right"
                     md:ButtonAssist.CornerRadius="3"
                     Command="{s:Action Receive}"
                     CommandParameter="{Binding}"
                     IsEnabled="{Binding ReceiveEnabled}"
-                    Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                    Style="{StaticResource MaterialDesignRaisedButton}"
                     ToolTip="Edit/Change Objects">
                     <Grid>
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                       </Grid.ColumnDefinitions>
-                      <md:PackIcon Grid.Column="1" Kind="CloudDownload" />
+                      <Image
+                        Grid.Column="0"
+                        Width="32"
+                        Height="32"
+                        Margin="0,0,5,0"
+                        VerticalAlignment="Center"
+                        Source="/SpeckleDesktopUI;Component/Resources/ReceiverWhite@32.png" />
 
                       <TextBlock
-                        Grid.Column="0"
+                        Grid.Column="1"
                         HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
                         Text="Receive  " />
                     </Grid>
                   </Button>
@@ -686,7 +696,7 @@
                   Command="{s:Action CancelSendOrReceive}"
                   Content="{md:PackIcon Kind=Close,
                                         Size=12}"
-                  Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
+                  Style="{StaticResource MaterialDesignFloatingActionButton}"
                   ToolTip="Cancel" />
               </Grid>
               <!--#endregion-->
@@ -870,12 +880,15 @@
           VerticalAlignment="Bottom"
           md:ShadowAssist.ShadowDepth="Depth3"
           Command="{s:Action ShowStreamCreateDialog}"
-          Content="{md:PackIcon Kind=Plus,
-                                Size=24}"
           DockPanel.Dock="Bottom"
           Style="{StaticResource FlatFloatingActionButton}"
           ToolTip="Add a stream"
-          ToolTipService.Placement="Left" />
+          ToolTipService.Placement="Left">
+          <Image
+            Width="32"
+            Height="32"
+            Source="/SpeckleDesktopUI;Component/Resources/CreateStreamWhite@32.png" />
+        </Button>
       </Canvas>
       <!--#endregion-->
     </Grid>

@@ -76,10 +76,13 @@
             md:ButtonProgressAssist.Value="-1"
             Command="{s:Action ConvertAndSendObjects}"
             CommandParameter="{Binding}"
-            Content="{md:PackIcon Kind=CloudUpload,
-                                  Size=20}"
             Style="{StaticResource FlatFloatingActionMiniButton}"
-            ToolTip="Send objects to Speckle" />
+            ToolTip="Send objects to Speckle">
+            <Image
+              Width="32"
+              Height="32"
+              Source="/SpeckleDesktopUI;Component/Resources/SenderWhite@32.png" />
+          </Button>
           <md:Badged
             Grid.Column="1"
             Margin="48,5,0,0"
@@ -97,10 +100,13 @@
             md:ButtonProgressAssist.Value="-1"
             Command="{s:Action ConvertAndReceiveObjects}"
             CommandParameter="{Binding}"
-            Content="{md:PackIcon Kind=CloudDownload,
-                                  Size=20}"
             Style="{StaticResource FlatFloatingActionMiniButton}"
-            ToolTip="Receive changes from Speckle" />
+            ToolTip="Receive changes from Speckle">
+            <Image
+              Width="32"
+              Height="32"
+              Source="/SpeckleDesktopUI;Component/Resources/ReceiverWhite@32.png" />
+          </Button>
           <md:Badged
             Grid.Column="2"
             Margin="48,5,0,0"
