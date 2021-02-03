@@ -64,7 +64,7 @@
       HorizontalAlignment="Center"
       IsChecked="{Binding AutoUpdate}"
       IsEnabled="{Binding AutoUpdateEnabled}"
-      Style="{StaticResource MaterialDesignSwitchDarkToggleButton}"
+      Style="{StaticResource MaterialDesignSwitchToggleButton}"
       ToolTip="Toggle auto receiving" />
     <TextBlock
       Grid.Row="2"

@@ -45,8 +45,16 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     private void InputsChanged()
     {
-      debounceTimer.Debounce(300, 
-        () => { Task.Run(async () => { sendNode.LoadInputs(dynamoModel.EngineController); }); });
+      debounceTimer.Debounce(300,
+        () =>
+        {
+          Task.Run(async () =>
+          {
+            sendNode.LoadInputs(dynamoModel.EngineController);
+            if (sendNode.AutoUpdate)
+              sendNode.DoSend(dynamoModel.EngineController);
+          });
+        });
     }
 
     private void SendStreamButtonClick(object sender, RoutedEventArgs e)
