@@ -61,7 +61,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="6.32.20340.21001">
+    <PackageReference Include="Grasshopper" Version="6.33.20343.16431">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="RhinoCommon" Version="6.32.20340.21001">
