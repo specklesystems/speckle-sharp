@@ -67,9 +67,7 @@ namespace Speckle.DesktopUI.Utils
     }
 
     private Stream _stream;
-    /// <summary>
-    /// Setting this property will re-initialise this class.
-    /// </summary>
+
     [JsonProperty]
     public Stream Stream
     {
@@ -77,7 +75,6 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _stream, value);
-        Initialise();
       }
     }
 
@@ -89,6 +86,7 @@ namespace Speckle.DesktopUI.Utils
       }
       set
       {
+        UpdateBranch();
         Stream.branches.items = value;
         NotifyOfPropertyChange(nameof(BranchContextMenuItems));
         NotifyOfPropertyChange(nameof(CommitContextMenuItems));
@@ -104,7 +102,7 @@ namespace Speckle.DesktopUI.Utils
       {
         SetAndNotify(ref _Branch, value);
 
-        if (Commit != null && !string.IsNullOrEmpty(Commit.id))
+        if (Commit != null && !string.IsNullOrEmpty(Commit.id) && Commit.id!=  "No Commits")
         {
           //do nothing, it means the current commit is either "latest" or a previous commitId, 
           //in which case we don't want to switch it automatically
@@ -115,7 +113,7 @@ namespace Speckle.DesktopUI.Utils
         }
         else
         {
-          Commit = new Commit { id = "Empty Branch" };
+          Commit = new Commit { id = "No Commits" };
         }
 
         NotifyOfPropertyChange(nameof(BranchContextMenuItems));
@@ -258,7 +256,7 @@ namespace Speckle.DesktopUI.Utils
 
     public bool ReceiveEnabled
     {
-      get => Commit != null && Commit.id != "Empty Branch";
+      get => Commit != null && Commit.id != "No Commits";
     }
 
     public bool ReceiveDisabled
@@ -452,6 +450,7 @@ namespace Speckle.DesktopUI.Utils
     {
       Client = client;
       Stream = stream;
+      Initialise();
     }
 
     /// <summary>
@@ -498,6 +497,7 @@ namespace Speckle.DesktopUI.Utils
       Client.OnBranchCreated += HandleBranchCreated;
       Client.OnBranchUpdated += HandleBranchCreated;
       Client.OnBranchUpdated += HandleBranchCreated;
+
 
       if (Branch == null)
       {
@@ -640,6 +640,19 @@ namespace Speckle.DesktopUI.Utils
     }
 
     #endregion
+
+    // makes sure updates to Branches are propagated to the selected Branch
+    private void UpdateBranch()
+    {
+      if (Branch == null || Branches == null)
+        return;
+
+      var updatedBranch = Branches.FirstOrDefault(x => x.name == Branch.name);
+      if (updatedBranch == null)
+        updatedBranch = Branches.FirstOrDefault(b => b.name == "main");
+
+      Branch = updatedBranch;
+    }
   }
 
   /// <summary>
