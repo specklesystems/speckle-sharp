@@ -69,6 +69,65 @@ namespace Objects.Converter.Revit
       return new ApplicationPlaceholderObject { applicationId = speckleDs.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
+    public ApplicationPlaceholderObject DirectShapeToNative(Brep brep)
+    {
+      var docObj = GetExistingElementByApplicationId(brep.applicationId);
+
+      //just create new one 
+      if (docObj != null)
+      {
+        Doc.Delete(docObj.Id);
+      }
+
+      var converted = new List<GeometryObject>();
+
+      try
+      {
+        var solid = BrepToNative(brep);
+        converted.Add(solid);
+      }
+      catch (Exception e)
+      {
+        var mesh = MeshToNative(brep.displayValue);
+        converted.AddRange(mesh);
+      }
+
+      var catId = Doc.Settings.Categories.get_Item(BuiltInCategory.OST_GenericModel).Id;
+
+      var revitDs = DB.DirectShape.CreateElement(Doc, catId);
+      revitDs.ApplicationId = brep.applicationId;
+      revitDs.ApplicationDataId = Guid.NewGuid().ToString();
+      revitDs.SetShape(converted);
+      revitDs.Name = "Brep " + brep.applicationId;
+
+      return new ApplicationPlaceholderObject { applicationId = brep.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
+    }
+
+    public ApplicationPlaceholderObject DirectShapeToNative(Mesh mesh)
+    {
+      var docObj = GetExistingElementByApplicationId(mesh.applicationId);
+
+      //just create new one 
+      if (docObj != null)
+      {
+        Doc.Delete(docObj.Id);
+      }
+
+      var converted = new List<GeometryObject>();
+      var rMesh = MeshToNative(mesh);
+      converted.AddRange(rMesh);
+
+      var catId = Doc.Settings.Categories.get_Item(BuiltInCategory.OST_GenericModel).Id;
+
+      var revitDs = DB.DirectShape.CreateElement(Doc, catId);
+      revitDs.ApplicationId = mesh.applicationId;
+      revitDs.ApplicationDataId = Guid.NewGuid().ToString();
+      revitDs.SetShape(converted);
+      revitDs.Name = "Mesh " + mesh.applicationId;
+
+      return new ApplicationPlaceholderObject { applicationId = mesh.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
+    }
+
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
     {
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
