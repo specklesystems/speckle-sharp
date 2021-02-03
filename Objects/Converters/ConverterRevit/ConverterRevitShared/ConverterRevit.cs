@@ -325,6 +325,17 @@ namespace Objects.Converter.Revit
     {
       switch (@object)
       {
+        //geometry
+        case ICurve _:
+          return true;
+
+        case Geometry.Brep _:
+          return true;
+
+        case Geometry.Mesh _:
+          return true;
+
+        //built elems
         case BER.AdaptiveComponent _:
           return true;
 

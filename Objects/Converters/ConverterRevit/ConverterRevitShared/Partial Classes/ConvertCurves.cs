@@ -50,6 +50,10 @@ namespace Objects.Converter.Revit
 
     public ApplicationPlaceholderObject ModelCurveToNative(ICurve speckleLine)
     {
+      //comes from GH and doesn't have an id
+      if ((speckleLine as Base).applicationId == null)
+        (speckleLine as Base).applicationId = Guid.NewGuid().ToString();
+
       var docObj = GetExistingElementByApplicationId((speckleLine as Base).applicationId);
       var baseCurve = CurveToNative(speckleLine).get_Item(0);
 

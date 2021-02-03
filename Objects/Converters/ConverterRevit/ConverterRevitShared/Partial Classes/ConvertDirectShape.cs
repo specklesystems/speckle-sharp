@@ -71,6 +71,10 @@ namespace Objects.Converter.Revit
 
     public ApplicationPlaceholderObject DirectShapeToNative(Brep brep)
     {
+      //comes from GH and doesn't have an id
+      if (brep.applicationId == null)
+        brep.applicationId = Guid.NewGuid().ToString();
+
       var docObj = GetExistingElementByApplicationId(brep.applicationId);
 
       //just create new one 
@@ -105,6 +109,9 @@ namespace Objects.Converter.Revit
 
     public ApplicationPlaceholderObject DirectShapeToNative(Mesh mesh)
     {
+      //comes from GH and doesn't have an id
+      if (mesh.applicationId == null)
+        mesh.applicationId = Guid.NewGuid().ToString();
       var docObj = GetExistingElementByApplicationId(mesh.applicationId);
 
       //just create new one 
