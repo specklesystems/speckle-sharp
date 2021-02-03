@@ -168,6 +168,17 @@ namespace Objects.Converter.Revit
     {
       switch (@object)
       {
+        //geometry
+        case ICurve o:
+          return ModelCurveToNative(o);
+
+        //case Geometry.Brep o:
+        //  return DirectShapeToNative(o);
+
+        //case Geometry.Mesh o:
+        //  return DirectShapeToNative(o);
+
+        //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
 

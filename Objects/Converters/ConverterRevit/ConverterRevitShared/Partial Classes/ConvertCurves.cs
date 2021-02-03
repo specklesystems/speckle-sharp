@@ -48,6 +48,20 @@ namespace Objects.Converter.Revit
       return new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve };
     }
 
+    public ApplicationPlaceholderObject ModelCurveToNative(ICurve speckleLine)
+    {
+      var docObj = GetExistingElementByApplicationId((speckleLine as Base).applicationId);
+      var baseCurve = CurveToNative(speckleLine).get_Item(0);
+
+      if (docObj != null)
+      {
+        Doc.Delete(docObj.Id);
+      }
+
+      DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(baseCurve, NewSketchPlaneFromCurve(baseCurve));
+      return new ApplicationPlaceholderObject() { applicationId = (speckleLine as Base).applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve };
+    }
+
     public DetailCurve DetailCurveToSpeckle(DB.DetailCurve revitCurve)
     {
       var speckleCurve = new DetailCurve(CurveToSpeckle(revitCurve.GeometryCurve), revitCurve.LineStyle.Name);
