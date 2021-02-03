@@ -116,7 +116,7 @@ namespace Objects.Converter.Revit
         if (!(bool)elem["isSlanted"] || IsVertical(curve))
         {
           var baseLine = elem["baseLine"] as Line;
-          var point = new Point(baseLine.value[0], baseLine.value[1], baseLine.value[3] - (double) offset, ModelUnits);
+          var point = new Point(baseLine.start.x, baseLine.start.y, baseLine.start.z - (double) offset, ModelUnits);
 
           return PointToNative(point);
         }
