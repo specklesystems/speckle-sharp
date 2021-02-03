@@ -362,7 +362,6 @@ namespace Objects.Converter.Revit
         case BE.Wall _:
           return true;
 
-
         case BE.Duct _:
           return true;
 
