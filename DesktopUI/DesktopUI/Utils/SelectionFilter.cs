@@ -6,7 +6,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Xaml.Behaviors;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 using Speckle.DesktopUI.Streams.Dialogs.FilterViews;
 using Stylet;
 

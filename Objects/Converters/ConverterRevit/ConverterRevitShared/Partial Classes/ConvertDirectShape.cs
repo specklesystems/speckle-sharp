@@ -90,6 +90,7 @@ namespace Objects.Converter.Revit
         new List<Parameter>()
         );
       GetAllRevitParamsAndIds(speckleAc, revitAc);
+      speckleAc["type"] = revitAc.Name;
       return speckleAc;
     }
 

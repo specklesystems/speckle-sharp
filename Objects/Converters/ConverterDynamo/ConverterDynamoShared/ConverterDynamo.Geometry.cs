@@ -53,7 +53,7 @@ namespace Objects.Converter.Dynamo
     public DS.Point PointToNative(Point pt)
     {
       var point = DS.Point.ByCoordinates(
-        ScaleToNative(pt.value[0], pt.units), ScaleToNative(pt.value[1], pt.units), ScaleToNative(pt.value[2], pt.units));
+        ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
 
       return point.SetDynamoProperties<DS.Point>(GetDynamicMembersFromBase(pt));
     }
@@ -113,9 +113,9 @@ namespace Objects.Converter.Dynamo
     public DS.Vector VectorToNative(Vector vc)
     {
       return DS.Vector.ByCoordinates(
-        ScaleToNative(vc.value[0], vc.units),
-        ScaleToNative(vc.value[1], vc.units),
-        ScaleToNative(vc.value[2], vc.units));
+        ScaleToNative(vc.x, vc.units),
+        ScaleToNative(vc.y, vc.units),
+        ScaleToNative(vc.z, vc.units));
     }
 
     /// <summary>
@@ -202,11 +202,14 @@ namespace Objects.Converter.Dynamo
     /// <returns></returns>
     public DS.Line LineToNative(Line line)
     {
-      var pts = ArrayToPointList(line.value, line.units);
-      var ln = DS.Line.ByStartPointEndPoint(pts[0], pts[1]);
-
-      pts.ForEach(pt => pt.Dispose());
-
+      var ptStart = PointToNative(line.start);
+      var ptEnd = PointToNative(line.end);
+     
+      var ln = DS.Line.ByStartPointEndPoint(ptStart,ptEnd);
+      
+      ptStart.Dispose();
+      ptEnd.Dispose();
+      
       return ln.SetDynamoProperties<DS.Line>(GetDynamicMembersFromBase(line));
     }
 

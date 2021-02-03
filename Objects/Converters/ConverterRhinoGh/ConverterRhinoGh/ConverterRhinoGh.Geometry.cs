@@ -107,9 +107,9 @@ namespace Objects.Converter.RhinoGh
     public Rhino.Geometry.Point PointToNative(Point pt)
     {
       var myPoint = new Rhino.Geometry.Point(new Point3d(
-        ScaleToNative(pt.value[0], pt.units),
-        ScaleToNative(pt.value[1], pt.units),
-        ScaleToNative(pt.value[2], pt.units)));
+        ScaleToNative(pt.x, pt.units),
+        ScaleToNative(pt.y, pt.units),
+        ScaleToNative(pt.z, pt.units)));
 
       return myPoint;
     }
@@ -128,9 +128,9 @@ namespace Objects.Converter.RhinoGh
     public Vector3d VectorToNative(Vector pt)
     {
       return new Vector3d(
-        ScaleToNative(pt.value[0], pt.units),
-        ScaleToNative(pt.value[1], pt.units),
-        ScaleToNative(pt.value[2], pt.units));
+        ScaleToNative(pt.x, pt.units),
+        ScaleToNative(pt.y, pt.units),
+        ScaleToNative(pt.z, pt.units));
     }
 
     // Interval
@@ -201,8 +201,7 @@ namespace Objects.Converter.RhinoGh
     // Back again only to LINECURVES because we hate grasshopper and its dealings with rhinocommon
     public LineCurve LineToNative(Line line)
     {
-      var pts = PointListToNative(line.value, line.units);
-      var myLine = new LineCurve(pts[0], pts[1]);
+      var myLine = new LineCurve(PointToNative(line.start).Location, PointToNative(line.end).Location);
       if (line.domain != null)
         myLine.Domain = IntervalToNative(line.domain);
 
