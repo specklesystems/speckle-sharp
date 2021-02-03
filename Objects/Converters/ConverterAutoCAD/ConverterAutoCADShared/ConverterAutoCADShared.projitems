@@ -10,7 +10,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Converter.AutoCAD.Units.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterAutoCAD.Civil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutoCAD.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterAutoCAD.DBObjects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutoCAD.Geometry.cs" />
   </ItemGroup>
 </Project>

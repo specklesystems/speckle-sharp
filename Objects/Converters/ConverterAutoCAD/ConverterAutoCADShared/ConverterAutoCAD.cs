@@ -14,10 +14,11 @@ using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
+using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
-using AC = Autodesk.AutoCAD.Geometry;
+using AC = Autodesk.AutoCAD;
 
 namespace Objects.Converter.AutoCAD
 {
@@ -59,29 +60,32 @@ namespace Objects.Converter.AutoCAD
     {
       switch (@object)
       {
-        case Entity o:
+        case DBObject o:
           // add color info and etc here
           return ObjectToSpeckle(o);
 
-        case AC.Point3d o:
+        case AC.Geometry.Point3d o:
           return PointToSpeckle(o);
 
-        case AC.Vector3d o:
+        case AC.Geometry.Vector3d o:
           return VectorToSpeckle(o);
 
-        case AC.Line3d o:
+        case AC.Geometry.Line3d o:
           return LineToSpeckle(o);
 
-        case AC.Plane o:
+        case AC.Geometry.LineSegment3d o:
+          return LineToSpeckle(o);
+
+        case AC.Geometry.CircularArc3d o:
+          return ArcToSpeckle(o);
+
+        case AC.Geometry.Plane o:
           return PlaneToSpeckle(o);
 
-        case AC.PolylineCurve3d o:
-          return PolylineToSpeckle(o) as Base;
-
-        case AC.Curve3d o:
+        case AC.Geometry.Curve3d o:
           return CurveToSpeckle(o) as Base;
 
-        case AC.NurbSurface o:
+        case AC.Geometry.NurbSurface o:
           return SurfaceToSpeckle(o);
 
         default:
@@ -94,12 +98,32 @@ namespace Objects.Converter.AutoCAD
       return objects.Select(x => ConvertToSpeckle(x)).ToList();
     }
 
+    // note: currently this returns the DB object, NOT the AC.Geometry object!!! In order to bake into AC.
+    // ask about this later, should there be an option to toggle between the two?
     public object ConvertToNative(Base @object)
     {
       switch (@object)
       {
         case Point o:
-          return NativeToDBObject(PointToNative(o));
+          return PointToNativeDB(o);
+
+        case Line o:
+          return LineToNativeDB(o);
+
+        case Arc o:
+          return ArcToNativeDB(o);
+
+        case Circle o:
+          return CircleToNativeDB(o);
+
+        case Ellipse o:
+          return EllipseToNativeDB(o);
+
+        case Polyline o:
+          return PolylineToNativeDB(o);
+
+        case Polycurve o:
+          return PolycurveToNativeDB(o);
 
         case Interval o:
           return IntervalToNative(o);
@@ -108,7 +132,7 @@ namespace Objects.Converter.AutoCAD
           return PlaneToNative(o);
 
         case Curve o:
-          return CurveToNative(o);
+          return CurveToNativeDB(o);
 
         case Surface o:
           return SurfaceToNative(o);
@@ -127,7 +151,43 @@ namespace Objects.Converter.AutoCAD
     {
       switch (@object)
       {
-        case AC.Point3d _:
+        case DBObject _:
+          return CanConvertToSpeckle(@object as DBObject);
+
+        case AC.Geometry.Point3d _:
+          return true;
+
+        case AC.Geometry.Plane _:
+          return true;
+
+        case AC.Geometry.Line3d _:
+          return true;
+
+        default:
+          return false;
+      }
+    }
+
+    public bool CanConvertToSpeckle(DBObject @object)
+    {
+      switch (@object)
+      {
+        case DBPoint _:
+          return true;
+
+        case AC.DatabaseServices.Line _:
+          return true;
+
+        case AC.DatabaseServices.Arc _:
+          return true;
+
+        case AC.DatabaseServices.Circle _:
+          return true;
+
+        case AC.DatabaseServices.Ellipse _:
+          return true;
+
+        case AC.DatabaseServices.Polyline _:
           return true;
 
         default:
@@ -142,8 +202,33 @@ namespace Objects.Converter.AutoCAD
         case Point _:
           return true;
 
+        case Line _:
+          return true;
+
+        case Polycurve _:
+          return true;
+
+        case Curve _:
+          return true;
+
         default:
           return false;
+      }
+    }
+
+    public void AddObjectToBlockTableRecord(Entity obj)
+    {
+      using (DocumentLock l = Doc.LockDocument())
+      {
+        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        {
+          BlockTable blkTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+          BlockTableRecord blkTblRec = tr.GetObject(blkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
+          blkTblRec.AppendEntity(obj);
+          tr.AddNewlyCreatedDBObject(obj, true);
+
+          tr.Commit();
+        }
       }
     }
   }

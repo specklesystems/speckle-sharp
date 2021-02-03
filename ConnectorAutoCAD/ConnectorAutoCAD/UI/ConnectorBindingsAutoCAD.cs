@@ -10,13 +10,14 @@ using System.Collections;
 using System.Drawing;
 using Newtonsoft.Json;
 
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.DatabaseServices;
+using AcadApp = Autodesk.AutoCAD.ApplicationServices;
+using AcadDb = Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Geometry;
-using Autodesk.Civil.ApplicationServices;
+using CivilApp = Autodesk.Civil.ApplicationServices;
+using CivilDb = Autodesk.Civil.DatabaseServices;
 
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
@@ -32,8 +33,8 @@ namespace Speckle.ConnectorAutoCAD.UI
   public partial class ConnectorBindingsAutoCAD : ConnectorBindings
   {
 
-    public Document Doc => Application.DocumentManager.MdiActiveDocument;
-    public CivilDocument DocC3D => CivilApplication.ActiveDocument;
+    public AcadApp.Document Doc => AcadApp.Application.DocumentManager.MdiActiveDocument;
+    public CivilApp.CivilDocument DocCivil => CivilApp.CivilApplication.ActiveDocument;
 
     public Timer SelectionTimer;
 
@@ -92,16 +93,16 @@ namespace Speckle.ConnectorAutoCAD.UI
     public override List<string> GetObjectsInView()
     {
       var objs = new List<string>();
-      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
-        BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-        BlockTableRecord blckTblRcrd = tr.GetObject(blckTbl[BlockTableRecord.ModelSpace], OpenMode.ForRead) as BlockTableRecord;
-        foreach (ObjectId id in blckTblRcrd)
+        AcadDb.BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, AcadDb.OpenMode.ForRead) as AcadDb.BlockTable;
+        AcadDb.BlockTableRecord blckTblRcrd = tr.GetObject(blckTbl[AcadDb.BlockTableRecord.ModelSpace], AcadDb.OpenMode.ForRead) as AcadDb.BlockTableRecord;
+        foreach (AcadDb.ObjectId id in blckTblRcrd)
         {
-          var dbObj = tr.GetObject(id, OpenMode.ForRead);
-          if (dbObj is BlockReference)
+          var dbObj = tr.GetObject(id, AcadDb.OpenMode.ForRead);
+          if (dbObj is AcadDb.BlockReference)
           {
-            var blckRef = (BlockReference)dbObj; // skip block references for now
+            var blckRef = (AcadDb.BlockReference)dbObj; // skip block references for now
           }
           else 
             objs.Add(dbObj.Handle.ToString());
@@ -116,11 +117,11 @@ namespace Speckle.ConnectorAutoCAD.UI
 
     public override string GetDocumentId()
     {
-      string path = HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, FindFileHint.Default);
+      string path = AcadDb.HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, AcadDb.FindFileHint.Default);
       return Speckle.Core.Models.Utilities.hashString("X" + path + Doc?.Name, Speckle.Core.Models.Utilities.HashingFuctions.MD5);
     }
 
-    public override string GetDocumentLocation() => HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, FindFileHint.Default);
+    public override string GetDocumentLocation() => AcadDb.HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, AcadDb.FindFileHint.Default);
 
     public override string GetFileName() => Doc?.Name;
 
@@ -135,12 +136,12 @@ namespace Speckle.ConnectorAutoCAD.UI
     public override List<ISelectionFilter> GetSelectionFilters()
     {
       List<string> layers = new List<string>();
-      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
-        LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
-        foreach (ObjectId objId in lyrTbl)
+        AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
+        foreach (AcadDb.ObjectId objId in lyrTbl)
         {
-          LayerTableRecord lyrTblRec = tr.GetObject(objId, OpenMode.ForRead) as LayerTableRecord;
+          AcadDb.LayerTableRecord lyrTblRec = tr.GetObject(objId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTableRecord;
           layers.Add(lyrTblRec.Name);
         }
         tr.Commit();
@@ -238,7 +239,7 @@ namespace Speckle.ConnectorAutoCAD.UI
         if (converter.CanConvertToNative(baseItem))
         {
           // create the ac layer if it doesn't already exist
-          LayerTableRecord objLayer = GetOrMakeLayer(layerPrefix);
+          AcadDb.LayerTableRecord objLayer = GetOrMakeLayer(layerPrefix);
           if (objLayer == null)
           {
             RaiseNotification($"could not create layer {layerPrefix} to bake objects into.");
@@ -248,30 +249,13 @@ namespace Speckle.ConnectorAutoCAD.UI
           }
 
           // convert geo to native
-          var converted = converter.ConvertToNative(baseItem) as Entity;
+          var converted = converter.ConvertToNative(baseItem) as AcadDb.Entity;
 
           // add geo to doc
           if (converted != null)
           {
-            using (DocumentLock l = Doc.LockDocument())
-            {
-              using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
-              {
-                // Open the Block table for read
-                BlockTable blkTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-
-                // Open the Block table record Model space for write
-                BlockTableRecord blkTblRec = tr.GetObject(blkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-
-                // set object layer
-                converted.Layer = layerPrefix;
-
-                // append
-                blkTblRec.AppendEntity(converted);
-                tr.AddNewlyCreatedDBObject(converted, true);
-                tr.Commit();
-              }
-            }
+            converted.Append();
+            //converted.Dispose();
           }
           else
           {
@@ -293,7 +277,7 @@ namespace Speckle.ConnectorAutoCAD.UI
 
             // create the ac layer if it doesn't already exist
             string acLayerName = $"{layerPrefix}${objLayerName}";
-            LayerTableRecord objLayer = GetOrMakeLayer(acLayerName);
+            AcadDb.LayerTableRecord objLayer = GetOrMakeLayer(acLayerName);
             if (objLayer == null)
             {
               RaiseNotification($"could not create layer {acLayerName} to bake objects into.");
@@ -324,16 +308,16 @@ namespace Speckle.ConnectorAutoCAD.UI
 
     private void DeleteLayersWithPrefix(string prefix)
     {
-      using (DocumentLock l = Doc.LockDocument())
+      using (AcadApp.DocumentLock l = Doc.LockDocument())
       {
-        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
         {
           // Open the Layer table for read
-          LayerTable lyrTbl;
-          lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
-          foreach (ObjectId layerId in lyrTbl)
+          AcadDb.LayerTable lyrTbl;
+          lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
+          foreach (AcadDb.ObjectId layerId in lyrTbl)
           {
-            LayerTableRecord layer = (LayerTableRecord)tr.GetObject(layerId, OpenMode.ForRead);
+            AcadDb.LayerTableRecord layer = (AcadDb.LayerTableRecord)tr.GetObject(layerId, AcadDb.OpenMode.ForRead);
             string layerName = layer.Name;
             if (layerName.StartsWith(prefix))
             {
@@ -346,13 +330,13 @@ namespace Speckle.ConnectorAutoCAD.UI
               layer.IsLocked = false;
 
               // delete all objects on this layer .. todo: this is inefficient! find better way to deleting obs instea dof looping through each one
-              var blockTable = (BlockTable)tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead);
+              var blockTable = (AcadDb.BlockTable)tr.GetObject(Doc.Database.BlockTableId, AcadDb.OpenMode.ForRead);
               foreach (var btrId in blockTable)
               {
-                var block = (BlockTableRecord)tr.GetObject(btrId, OpenMode.ForRead);
+                var block = (AcadDb.BlockTableRecord)tr.GetObject(btrId, AcadDb.OpenMode.ForRead);
                 foreach (var entId in block)
                 {
-                  var ent = (Entity)tr.GetObject(entId, OpenMode.ForRead);
+                  var ent = (AcadDb.Entity)tr.GetObject(entId, AcadDb.OpenMode.ForRead);
                   if (ent.Layer == layerName)
                   {
                     ent.UpgradeOpen();
@@ -368,24 +352,24 @@ namespace Speckle.ConnectorAutoCAD.UI
       }
     }
 
-    private LayerTableRecord GetOrMakeLayer(string layerName)
+    private AcadDb.LayerTableRecord GetOrMakeLayer(string layerName)
     {
-      LayerTableRecord _layer = null;
-      using (DocumentLock l = Doc.LockDocument())
+      AcadDb.LayerTableRecord _layer = null;
+      using (AcadApp.DocumentLock l = Doc.LockDocument())
       {
-        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
         {
-          LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
+          AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
           if (lyrTbl.Has(layerName))
           {
-            _layer = (LayerTableRecord)tr.GetObject(lyrTbl[layerName], OpenMode.ForRead);
+            _layer = (AcadDb.LayerTableRecord)tr.GetObject(lyrTbl[layerName], AcadDb.OpenMode.ForRead);
           }
           else
           {
             lyrTbl.UpgradeOpen();
 
             // make a new layer
-            LayerTableRecord layer = new LayerTableRecord();
+            AcadDb.LayerTableRecord layer = new AcadDb.LayerTableRecord();
 
             // Assign the layer properties
             layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(System.Drawing.Color.Blue);
@@ -443,15 +427,16 @@ namespace Speckle.ConnectorAutoCAD.UI
         }
 
         // get the db object from id NOTE: This is a db object, not a geometry object!! Need to pass the geo object to converter
-        object geo = GetGeoFromHandle(autocadObjectHandle, out string type, out string layer);
-        if (geo == null)
+        AcadDb.Handle hn = new AcadDb.Handle(Convert.ToInt64(autocadObjectHandle, 16));
+        AcadDb.DBObject obj = hn.GetObject(out string type, out string layer);
+        if (obj == null)
         {
           state.Errors.Add(new System.Exception($"Failed to find local object ${autocadObjectHandle}."));
           continue;
         }
 
         // convert geo to speckle base
-        Base converted = converter.ConvertToSpeckle(geo);
+        Base converted = converter.ConvertToSpeckle(obj as AcadDb.DBObject);
 
         if (converted == null)
         {
@@ -542,7 +527,7 @@ namespace Speckle.ConnectorAutoCAD.UI
           List<string> objs = new List<string>();
           foreach (var layerName in f.Selection)
           {
-            TypedValue[] layerType = new TypedValue[1] { new TypedValue((int)DxfCode.LayerName, layerName)};
+            AcadDb.TypedValue[] layerType = new AcadDb.TypedValue[1] { new AcadDb.TypedValue((int)AcadDb.DxfCode.LayerName, layerName)};
             PromptSelectionResult prompt = Doc.Editor.SelectAll(new SelectionFilter(layerType));
             if (prompt.Status == PromptStatus.OK)
               objs.AddRange(prompt.Value.GetHandles());
@@ -554,51 +539,7 @@ namespace Speckle.ConnectorAutoCAD.UI
       }
     }
 
-    /// <summary>
-    /// Used to retrieve AC.Geometry object from DB handle
-    /// </summary>
-    /// <param name="handle">Object handle as string</param>
-    /// <param name="type">Object class dxf name</param>
-    /// <param name="layer">Object layer name</param>
-    /// <returns></returns>
-    private object GetGeoFromHandle(string handle, out string type, out string layer)
-    {
-      // get the handle and objectId
-      Handle hn = new Handle(Convert.ToInt64(handle, 16));
-      ObjectId id = Doc.Database.GetObjectId(false, hn, 0);
-
-      // get the db object from id NOTE: This is a db object, not a geometry object!! Need to pass the geo object to converter
-      object geo = new object();
-      type = null;
-      layer = null;
-      using (Transaction tr = Doc.TransactionManager.StartTransaction())
-      {
-        DBObject obj = tr.GetObject(id, OpenMode.ForRead);
-        if (obj == null)
-          return null;
-        Entity objEntity = obj as Entity;
-        type = id.ObjectClass.DxfName;
-        layer = objEntity.Layer;
-
-        // this is the tricky part - getting the ac.geometry object from the ac.database object. 
-        // based on https://spiderinnet1.typepad.com/blog/2012/04/various-ways-to-check-object-types-in-autocad-net.html
-        // fastes way is to check object class dxf name ... but more readable would be using "is" keyword
-        switch (type)
-        {
-          case "POINT":
-            DBPoint pt = obj as DBPoint;
-            geo = pt.Position;
-            break;
-          case "CIRCLE":
-            Circle circle = obj as Circle;
-            geo = circle.GetGeCurve();
-            break;
-        }
-        tr.Commit();
-      }
-
-      return geo;
-    }
+    
 
     #endregion
 

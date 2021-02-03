@@ -37,7 +37,7 @@ namespace Speckle.ConnectorAutoCAD
         {
           if (obj != null)
           {
-            Entity objEntity = tr.GetObject(obj.ObjectId, OpenMode.ForWrite) as Entity;
+            Entity objEntity = tr.GetObject(obj.ObjectId, OpenMode.ForRead) as Entity;
             if (objEntity != null)
               handles.Add(objEntity.Handle.ToString());
           }
@@ -45,6 +45,58 @@ namespace Speckle.ConnectorAutoCAD
         tr.Commit();
       }
       return handles;
+    }
+
+    // appends an entity to the autocad database block table
+    public static void Append(this Entity entity)
+    {
+      Document Doc = Application.DocumentManager.MdiActiveDocument;
+
+      using (DocumentLock l = Doc.LockDocument())
+      {
+        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        {
+          BlockTable blkTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+          BlockTableRecord blkTblRec = tr.GetObject(blkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
+          blkTblRec.AppendEntity(entity);
+          tr.AddNewlyCreatedDBObject(entity, true);
+
+          tr.Commit();
+        }
+      }
+    }
+
+    /// <summary>
+    /// Used to retrieve DB Object from handle
+    /// </summary>
+    /// <param name="handle">Object handle as string</param>
+    /// <param name="type">Object class dxf name</param>
+    /// <param name="layer">Object layer name</param>
+    /// <returns></returns>
+    public static DBObject GetObject(this Handle handle, out string type, out string layer)
+    {
+      Document Doc = Application.DocumentManager.MdiActiveDocument;
+
+      // get objectId
+      ObjectId id = Doc.Database.GetObjectId(false, handle, 0);
+
+      // get the db object from id
+      DBObject obj = null;
+      type = null;
+      layer = null;
+      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      {
+        obj = tr.GetObject(id, OpenMode.ForRead);
+        if (obj != null)
+        {
+          Entity objEntity = obj as Entity;
+          type = id.ObjectClass.DxfName;
+          layer = objEntity.Layer;
+        }
+        tr.Commit();
+      }
+
+      return obj;
     }
     #endregion
   }
