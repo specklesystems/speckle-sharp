@@ -31,7 +31,7 @@ namespace ConnectorGrasshopper.Extras
     }
 
     protected override Bitmap Icon => Properties.Resources.StreamParam;
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     public override Guid ComponentGuid => new Guid("FB436A31-1CE9-413C-B524-8A574C0F842D");
 
   }

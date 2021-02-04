@@ -12,16 +12,16 @@ using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
-  public class AccountDetails : GH_Component
+  public class AccountDetailsComponent : GH_Component
   {
-    public AccountDetails() : base("Account Details", "AccDet", "Gets the details from a specific account", "Speckle 2",
+    public AccountDetailsComponent() : base("Account Details", "AccDet", "Gets the details from a specific account", "Speckle 2",
       "Accounts")
     {
     }
 
     public override Guid ComponentGuid => new Guid("04822A33-777A-457B-BEF3-E54044322DB0");
 
-    protected override Bitmap Icon => null;
+    protected override Bitmap Icon => Properties.Resources.AccountDetails;
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
