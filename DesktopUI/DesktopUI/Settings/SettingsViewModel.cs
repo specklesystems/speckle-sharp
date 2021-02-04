@@ -28,13 +28,10 @@ namespace Speckle.DesktopUI.Settings
 
     public List<HelpLink> HelpLinks { get; set; }
 
-    public RelayCommand<string> ManageAccountsCommand { get; set; }
-
     public SettingsViewModel()
     {
       DisplayName = "Settings";
       DefaultAccount = _repo.GetDefault();
-      ManageAccountsCommand = new RelayCommand<string>(OnManageAccountsCommand);
 
       _darkMode = Properties.Settings.Default.Theme == BaseTheme.Dark;
       ToggleTheme();
@@ -63,11 +60,6 @@ namespace Speckle.DesktopUI.Settings
         icon = "Forum"
         }
       };
-    }
-
-    private void OnManageAccountsCommand(string arg)
-    {
-      //TODO open Manager app with speckle://
     }
 
     public void OpenHelpLink(string url)
