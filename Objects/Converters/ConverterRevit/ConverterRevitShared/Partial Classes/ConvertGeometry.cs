@@ -42,7 +42,7 @@ namespace Objects.Converter.Revit
 
     public XYZ PointToNative(Point pt)
     {
-      var revitPoint = new XYZ(ScaleToNative(pt.value[0], pt.units), ScaleToNative(pt.value[1], pt.units), ScaleToNative(pt.value[2], pt.units));
+      var revitPoint = new XYZ(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
       var intPt = ToInternalCoordinates(revitPoint);
       return intPt;
     }
@@ -50,12 +50,13 @@ namespace Objects.Converter.Revit
     public Point PointToSpeckle(XYZ pt)
     {
       var extPt = ToExternalCoordinates(pt);
-      return new Point(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), ModelUnits);
+      var pointToSpeckle = new Point(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), ModelUnits);
+      return pointToSpeckle;
     }
 
     public XYZ VectorToNative(Vector pt)
     {
-      var revitVector = new XYZ(ScaleToNative(pt.value[0], pt.units), ScaleToNative(pt.value[1], pt.units), ScaleToNative(pt.value[2], pt.units));
+      var revitVector = new XYZ(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
       var intV = ToInternalCoordinates(revitVector);
       return intV;
     }
@@ -78,15 +79,16 @@ namespace Objects.Converter.Revit
     public DB.Line LineToNative(Line line)
     {
       return DB.Line.CreateBound(
-        new XYZ(ScaleToNative(line.value[0], line.units), ScaleToNative(line.value[1], line.units), ScaleToNative(line.value[2], line.units)),
-        new XYZ(ScaleToNative(line.value[3], line.units), ScaleToNative(line.value[4], line.units), ScaleToNative(line.value[5], line.units)));
+        PointToNative(line.start),
+        PointToNative(line.end));
     }
 
     public Line LineToSpeckle(DB.Line line)
     {
-      var l = new Line() { value = new List<double>(), units = ModelUnits };
-      l.value.AddRange(PointToSpeckle(line.GetEndPoint(0)).value);
-      l.value.AddRange(PointToSpeckle(line.GetEndPoint(1)).value);
+      var l = new Line { units = ModelUnits };
+      l.start = PointToSpeckle(line.GetEndPoint(0));
+      l.end = PointToSpeckle(line.GetEndPoint(1));
+      
       l.length = line.Length;
       return l;
     }
@@ -196,7 +198,7 @@ namespace Objects.Converter.Revit
       var points = new List<double>();
       foreach (var p in revitCurve.CtrlPoints)
       {
-        points.AddRange(PointToSpeckle(p).value);
+        points.AddRange(new List<double>{ScaleToSpeckle(p.X),ScaleToSpeckle(p.Y),ScaleToSpeckle(p.Z)});
       }
 
       Curve speckleCurve = new Curve();
@@ -374,13 +376,13 @@ namespace Objects.Converter.Revit
 
         for (var i = 1; i < pts.Count; i++)
         {
-          var speckleLine = new Line(new double[] { pts[i - 1].value[0], pts[i - 1].value[1], pts[i - 1].value[2], pts[i].value[0], pts[i].value[1], pts[i].value[2] }, polyline.units);
+          var speckleLine = new Line(new double[] { pts[i - 1].x, pts[i - 1].y, pts[i - 1].z, pts[i].x, pts[i].y, pts[i].z }, polyline.units);
           curveArray.Append(LineToNative(speckleLine));
         }
 
         if (polyline.closed)
         {
-          var speckleLine = new Line(new double[] { pts[pts.Count - 1].value[0], pts[pts.Count - 1].value[1], pts[pts.Count - 1].value[2], pts[0].value[0], pts[0].value[1], pts[0].value[2] }, polyline.units);
+          var speckleLine = new Line(new double[] { pts[pts.Count - 1].x, pts[pts.Count - 1].y, pts[pts.Count - 1].z, pts[0].x, pts[0].y, pts[0].z }, polyline.units);
           curveArray.Append(LineToNative(speckleLine));
         }
       }
@@ -546,6 +548,12 @@ namespace Objects.Converter.Revit
       return result;
     }
 
+    public Face BrepFaceToNative(BrepFace face)
+    {
+      var brep = BrepToNative(face.Brep);
+      var faceIndex = face.SurfaceIndex;
+      return brep.Faces.get_Item(faceIndex);
+    }
 
     public List<BRepBuilderEdgeGeometry> BrepEdgeToNative(BrepEdge edge)
     {
@@ -666,9 +674,8 @@ namespace Objects.Converter.Revit
       return knots;
     }
 
-    public BRepBuilderSurfaceGeometry BrepFaceToNative(BrepFace face)
+    public BRepBuilderSurfaceGeometry SurfaceToNative(Surface surface)
     {
-      var surface = face.Surface;
       var uvBox = new DB.BoundingBoxUV(surface.knotsU[0], surface.knotsV[0], surface.knotsU[surface.knotsU.Count - 1], surface.knotsV[surface.knotsV.Count - 1]);
       var surfPts = surface.GetControlPoints();
       var uKnots = SurfaceKnotsToNative(surface.knotsU);
@@ -713,7 +720,7 @@ namespace Objects.Converter.Revit
       var brepEdges = new List<DB.BRepBuilderGeometryId>[brep.Edges.Count];
       foreach (var face in brep.Faces)
       {
-        var faceId = builder.AddFace(BrepFaceToNative(face), face.OrientationReversed);
+        var faceId = builder.AddFace(SurfaceToNative(face.Surface), face.OrientationReversed);
 
         foreach (var loop in face.Loops)
         {

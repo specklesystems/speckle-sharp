@@ -55,8 +55,17 @@ namespace Objects.Converter.Revit
           }
 
         default:
-          ConversionErrors.Add(new Error("Cannot create Opening", "Opening type not supported"));
-          throw new Exception("Opening type not supported");
+          if (CurrentHostElement as Wall != null)
+          {
+            var points = (speckleOpening.outline as Polyline).points.Select(x => PointToNative(x)).ToList();
+            revitOpening = Doc.Create.NewOpening(CurrentHostElement as Wall, points[0], points[2]);
+          }
+          else
+          {
+            ConversionErrors.Add(new Error("Cannot create Opening", "Opening type not supported"));
+            throw new Exception("Opening type not supported");
+          }
+          break;
       }
 
 
@@ -84,11 +93,11 @@ namespace Objects.Converter.Revit
         //2 points: bottom left and top right
         var btmLeft = PointToSpeckle(revitOpening.BoundaryRect[0]);
         var topRight = PointToSpeckle(revitOpening.BoundaryRect[1]);
-        poly.value.AddRange(btmLeft.value);
-        poly.value.AddRange(new Point(btmLeft.value[0], btmLeft.value[1], topRight.value[2], ModelUnits).value);
-        poly.value.AddRange(topRight.value);
-        poly.value.AddRange(new Point(topRight.value[0], topRight.value[1], btmLeft.value[2], ModelUnits).value);
-        poly.value.AddRange(btmLeft.value);
+        poly.value.AddRange(btmLeft.ToList());
+        poly.value.AddRange(new Point(btmLeft.x, btmLeft.y, topRight.z, ModelUnits).ToList());
+        poly.value.AddRange(topRight.ToList());
+        poly.value.AddRange(new Point(topRight.x, topRight.y, btmLeft.z, ModelUnits).ToList());
+        poly.value.AddRange(btmLeft.ToList());
         poly.units = ModelUnits;
         speckleOpening.outline = poly;
       }
@@ -123,7 +132,7 @@ namespace Objects.Converter.Revit
         speckleOpening.outline = poly;
       }
 
-      //speckleOpening.type = revitOpening.Name;
+      speckleOpening["type"] = revitOpening.Name;
 
       GetAllRevitParamsAndIds(speckleOpening, revitOpening, new List<string> { "WALL_BASE_CONSTRAINT", "WALL_HEIGHT_TYPE", "WALL_USER_HEIGHT_PARAM" });
 
