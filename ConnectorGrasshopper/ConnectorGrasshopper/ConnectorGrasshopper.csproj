@@ -200,10 +200,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Grasshopper">
-      <Version>6.32.20340.21001</Version>
+      <Version>6.33.20343.16431</Version>
     </PackageReference>
     <PackageReference Include="GrasshopperAsyncComponent">
-      <Version>0.2.0</Version>
+      <Version>0.2.1</Version>
     </PackageReference>
     <PackageReference Include="System.ComponentModel.Annotations">
       <Version>4.7.0</Version>
