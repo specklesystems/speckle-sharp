@@ -25,7 +25,7 @@ namespace ConnectorGrasshopper.Objects
     public int State = 0;
     public ExpandSpeckleObjectAsync() : base("Expand Speckle Object", "ESO",
       "Allows you to decompose a Speckle object in its constituent parts.",
-      "Speckle 2", "Object Management")
+      ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
       BaseWorker = new ExpandSpeckleObjectWorker(this, Converter);
     }

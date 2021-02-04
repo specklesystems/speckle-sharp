@@ -24,10 +24,10 @@ namespace ConnectorGrasshopper.Objects
     
     public CreateSpeckleObjectAsync() : base("Create Speckle Object", "CSO",
       "Allows you to create a Speckle object by setting its keys and values.",
-      "Speckle 2", "Object Management")
+      ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
         
-        BaseWorker = new CreateSpeckleObjectWorker(this,Converter);
+        BaseWorker = new CreateSpeckleObjectWorker(this, Converter);
         Params.ParameterNickNameChanged += (sender, args) =>
         {
           Console.WriteLine("nickname changed!");
@@ -106,6 +106,7 @@ namespace ConnectorGrasshopper.Objects
         Parent.Message = "Creating...";
         @base = new Base();
         var hasErrors = false;
+
         inputData.Keys.ToList().ForEach(key =>
         {
           var value = inputData[key];
@@ -122,7 +123,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception e)
             {
-              Log.CaptureException(e);
+              Log.CaptureAndThrow(e);
               Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
               Parent.Message = "Error";
               RhinoApp.InvokeOnUiThread(new Action(()=> Parent.OnDisplayExpired(true)));
@@ -139,7 +140,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception e)
             {
-              Log.CaptureException(e);
+              Log.CaptureAndThrow(e);
               Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
               Parent.Message = "Error";
               RhinoApp.InvokeOnUiThread(new Action(()=> Parent.OnDisplayExpired(true)));
@@ -147,8 +148,6 @@ namespace ConnectorGrasshopper.Objects
             }        
           }
         });
-        if (!hasErrors) 
-          Done();
       }
       catch (Exception e)
       {
@@ -158,6 +157,8 @@ namespace ConnectorGrasshopper.Objects
         Parent.Message = "Error";
       }
 
+      // Let's always call done!
+      Done();
     }
 
     public override void SetData(IGH_DataAccess DA)

@@ -13,8 +13,8 @@ namespace ConnectorGrasshopper.Streams
 {
   public class StreamUpdateComponent : GH_Component
   {
-    public StreamUpdateComponent() : base("Stream Update", "sUp", "Updates a stream with new details", "Speckle 2",
-        "Streams")
+    public StreamUpdateComponent() : base("Stream Update", "sUp", "Updates a stream with new details", ComponentCategories.PRIMARY_RIBBON,
+         ComponentCategories.STREAMS)
     { }
     public override Guid ComponentGuid => new Guid("F83B9956-1A5C-4844-B7F6-87A956105831");
 

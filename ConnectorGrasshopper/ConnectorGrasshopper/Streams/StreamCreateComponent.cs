@@ -21,8 +21,8 @@ namespace ConnectorGrasshopper.Streams
 
     public StreamWrapper stream { get; set; } = null;
 
-    public StreamCreateComponent() : base("Create Stream", "sCreate", "Create a new speckle stream.", "Speckle 2",
-        "Streams")
+    public StreamCreateComponent() : base("Create Stream", "sCreate", "Create a new speckle stream.", ComponentCategories.PRIMARY_RIBBON,
+       ComponentCategories.STREAMS)
     { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)

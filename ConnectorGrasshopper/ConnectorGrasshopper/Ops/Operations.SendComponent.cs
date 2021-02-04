@@ -52,8 +52,8 @@ namespace ConnectorGrasshopper.Ops
 
     public ISpeckleKit Kit;
 
-    public SendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", "Speckle 2",
-      "   Send/Receive")
+    public SendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", ComponentCategories.PRIMARY_RIBBON,
+      ComponentCategories.SEND_RECEIVE)
     {
       BaseWorker = new SendComponentWorker(this);
       Attributes = new SendComponentAttributes(this);

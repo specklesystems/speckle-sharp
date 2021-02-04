@@ -14,8 +14,8 @@ namespace ConnectorGrasshopper.Streams
 {
   public class StreamGetComponent : GH_Component
   {
-    public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account", "Speckle 2",
-      "Streams")
+    public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account", ComponentCategories.PRIMARY_RIBBON,
+       ComponentCategories.STREAMS)
     {
     }
 

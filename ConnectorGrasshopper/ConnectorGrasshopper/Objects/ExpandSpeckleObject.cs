@@ -30,7 +30,7 @@ namespace ConnectorGrasshopper.Objects
     public ExpandSpeckleObject()
       : base("Expand Speckle Object", "ESO",
           "Allows you to decompose a Speckle object in its constituent parts.\nKeys will be sorted in alphabetical order.\nIf a key is removed from the object, it's output will be automatically deleted; unless the output had existing connections.",
-          "Speckle 2", "Object Management")
+          ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }
 

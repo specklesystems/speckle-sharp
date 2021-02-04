@@ -19,7 +19,7 @@ namespace ConnectorGrasshopper.Conversion
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle Base object to JSON", "Speckle 2 Dev", "Conversion")
+    public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle Base object to JSON", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
       BaseWorker = new SerializeWorker(this);
     }

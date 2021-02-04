@@ -18,12 +18,14 @@ namespace ConnectorGrasshopper.Ops
 {
   public class ReceiveLocalComponent : GH_AsyncComponent
   {
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
+
     public ISpeckleConverter Converter;
 
     public ISpeckleKit Kit;
     public ReceiveLocalComponent() : base("Local Receive", "LR",
       "Receives data locally, without the need of a Speckle Server. NOTE: updates will not be automatically received.",
-      "Speckle 2", "   Send/Receive")
+      ComponentCategories.PRIMARY_RIBBON, ComponentCategories.SEND_RECEIVE)
     {
       BaseWorker = new ReceiveLocalWorker(this);
       SetDefaultKitAndConverter();
