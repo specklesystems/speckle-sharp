@@ -55,8 +55,17 @@ namespace Objects.Converter.Revit
           }
 
         default:
-          ConversionErrors.Add(new Error("Cannot create Opening", "Opening type not supported"));
-          throw new Exception("Opening type not supported");
+          if (CurrentHostElement as Wall != null)
+          {
+            var points = (speckleOpening.outline as Polyline).points.Select(x => PointToNative(x)).ToList();
+            revitOpening = Doc.Create.NewOpening(CurrentHostElement as Wall, points[0], points[2]);
+          }
+          else
+          {
+            ConversionErrors.Add(new Error("Cannot create Opening", "Opening type not supported"));
+            throw new Exception("Opening type not supported");
+          }
+          break;
       }
 
 
