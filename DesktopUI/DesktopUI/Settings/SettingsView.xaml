@@ -15,6 +15,7 @@
   mc:Ignorable="d"
   >
   <UserControl.Resources>
+    <utils:NullAvatarToRobotConverter x:Key="NullAvatarToRobotConverter" />
     <utils:StringToUpperConverter x:Key="StringToUpperConverter" />
     <DataTemplate x:Key="LinkItemTemplate">
       <Grid>
@@ -34,7 +35,6 @@
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="50" />
             </Grid.ColumnDefinitions>
-            <!--  TODO get avatar link and show here  -->
             <md:PackIcon
               Grid.Column="0"
               Width="24"
@@ -50,7 +50,7 @@
           </Grid>
         </Button>
         <TextBlock
-          Grid.Column="2"
+          Grid.Column="1"
           Margin="8,4"
           VerticalAlignment="Center"
           Foreground="{DynamicResource MaterialDesignColumnHeader}"
@@ -84,13 +84,16 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <md:PackIcon
-            Grid.Column="0"
-            Width="48"
-            Height="48"
-            Margin="16,8"
-            Foreground="{DynamicResource MaterialDesignBodyLight}"
-            Kind="AccountCircle" />
+              <Ellipse Grid.Column="0"
+                       Width="56"
+                       Height="56"
+                       Margin="0,0,16,0"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Center">
+                <Ellipse.Fill>
+                  <ImageBrush ImageSource="{Binding DefaultAccount, Converter={StaticResource NullAvatarToRobotConverter}}" />
+                </Ellipse.Fill>
+              </Ellipse>
               <StackPanel Grid.Column="1" VerticalAlignment="Center">
                 <TextBlock
               Margin="0,0,0,4"
