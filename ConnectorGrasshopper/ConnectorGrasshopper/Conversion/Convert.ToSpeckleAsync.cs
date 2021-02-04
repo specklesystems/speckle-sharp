@@ -109,12 +109,12 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter("Objects", "O", "Objects to convert to Speckle Base.", GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Data", "D", "Data to convert to Speckle Base objects.", GH_ParamAccess.tree);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Speckle Objects", "O", "Converted Speckle objects.", GH_ParamAccess.item));
+      pManager.AddParameter(new SpeckleBaseParam("Base", "B", "Converted Base Speckle objects.", GH_ParamAccess.item));
     }
 
     protected override void BeforeSolveInstance()

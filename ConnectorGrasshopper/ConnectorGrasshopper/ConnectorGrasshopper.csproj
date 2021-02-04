@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Accounts\Accounts.ListAccounts.cs" />
+    <Compile Include="Accounts\AccountDetails.cs" />
     <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
     <Compile Include="Conversion\Serialisation.SerialiseObject.cs" />
     <Compile Include="Extras\GenericAccessParam.cs" />
@@ -195,6 +196,7 @@
     <None Include="Resources\LocalReceiver.png" />
     <None Include="Resources\LocalSender.png" />
     <None Include="Resources\SchemaBuilder.png" />
+    <None Include="Resources\AccountDetails.png" />
     <Content Include="Resources\speckle-logo-bw.png" />
     <Content Include="Resources\speckle-logo.png" />
   </ItemGroup>

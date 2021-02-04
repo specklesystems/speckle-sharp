@@ -384,7 +384,13 @@ namespace ConnectorGrasshopper.Ops
               continue;
             }
 
-            var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
+            if (!sw.ExistsInServer())
+            {
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The provided stream ID does not exist in the server.");
+              continue;
+
+            }
+              var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");
             Transports.Add(serverTransport);
           }

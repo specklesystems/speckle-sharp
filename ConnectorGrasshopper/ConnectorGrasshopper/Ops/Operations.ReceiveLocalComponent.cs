@@ -23,7 +23,7 @@ namespace ConnectorGrasshopper.Ops
     public ISpeckleKit Kit;
     public ReceiveLocalComponent() : base("Local Receive", "LR",
       "Receives data locally, without the need of a Speckle Server. NOTE: updates will not be automatically received.",
-      "Speckle 2", "   Send/Receive")
+      "Speckle 2 Dev", "Local")
     {
       BaseWorker = new ReceiveLocalWorker(this);
       SetDefaultKitAndConverter();

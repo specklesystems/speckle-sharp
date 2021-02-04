@@ -658,7 +658,8 @@ namespace Objects.Converter.RhinoGh
     {
       //brep.Repair(0.0); //should maybe use ModelAbsoluteTolerance ?
       var joinedMesh = new RH.Mesh();
-      var mySettings = new MeshingParameters(0);
+      var mySettings = MeshingParameters.FastRenderMesh;
+      
       //brep.Compact();
       brep.Trims.MatchEnds();
       
