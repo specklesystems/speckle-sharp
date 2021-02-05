@@ -46,6 +46,7 @@ namespace Speckle.ConnectorRevit
 
       if ( RevitBindings.Queue.Count != 0 )
         RevitBindings.Executor.Raise();
+
     }
 
     public string GetName()
