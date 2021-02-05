@@ -17,7 +17,7 @@ namespace ConnectorGrasshopper.Objects
 {
   public class GetObjectValueByKey : SelectKitComponentBase
   {
-    public GetObjectValueByKey() : base("Speckle Object Value by Key", "Object K/V", "Gets the value of a specific key in a Speckle object.", "Speckle 2", "Object Management")
+    public GetObjectValueByKey() : base("Speckle Object Value by Key", "Object K/V", "Gets the value of a specific key in a Speckle object.", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }
     protected override Bitmap Icon => Properties.Resources.GetObjectValueByKey;

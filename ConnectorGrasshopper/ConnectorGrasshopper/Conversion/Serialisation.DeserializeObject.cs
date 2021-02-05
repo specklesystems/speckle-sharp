@@ -18,7 +18,7 @@ namespace ConnectorGrasshopper.Conversion
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public DeserializeObject() : base("Deserialize", "Deserialize", "Deserializes a JSON string to a Speckle Base object.", "Speckle 2 Dev", "Conversion")
+    public DeserializeObject() : base("Deserialize", "Deserialize", "Deserializes a JSON string to a Speckle Base object.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
       BaseWorker = new DeserializeWorker(this);
     }

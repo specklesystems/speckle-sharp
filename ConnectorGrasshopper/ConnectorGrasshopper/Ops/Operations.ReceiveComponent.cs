@@ -34,8 +34,8 @@ namespace ConnectorGrasshopper.Ops
 
     public ISpeckleKit Kit;
 
-    public ReceiveComponent() : base("Receive", "Receive", "Receive data from a Speckle server", "Speckle 2",
-      "   Send/Receive")
+    public ReceiveComponent() : base("Receive", "Receive", "Receive data from a Speckle server", ComponentCategories.PRIMARY_RIBBON,
+      ComponentCategories.SEND_RECEIVE)
     {
       BaseWorker = new ReceiveComponentWorker(this);
       Attributes = new ReceiveComponentAttributes(this);

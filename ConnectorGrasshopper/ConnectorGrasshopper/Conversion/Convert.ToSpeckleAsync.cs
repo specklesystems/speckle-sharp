@@ -1,4 +1,4 @@
-using ConnectorGrasshopper.Extras;
+﻿using ConnectorGrasshopper.Extras;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -27,7 +27,7 @@ namespace ConnectorGrasshopper.Conversion
 
     private ISpeckleKit Kit;
 
-    public ToSpeckleConverterAsync() : base("To Speckle", "To Speckle", "Convert data from Rhino to their Speckle Base equivalent.", "Speckle 2 Dev", "Conversion")
+    public ToSpeckleConverterAsync() : base("To Speckle", "To Speckle", "Convert data from Rhino to their Speckle Base equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
       SetDefaultKitAndConverter();
       BaseWorker = new ToSpeckleWorker(Converter);

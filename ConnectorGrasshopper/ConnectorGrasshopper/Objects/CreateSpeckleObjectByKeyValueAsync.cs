@@ -24,7 +24,7 @@ namespace ConnectorGrasshopper.Objects
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public CreateSpeckleObjectByKeyValueAsync() : base("Create Speckle Object by Key/Value", "K/V",
-      "Creates a speckle object from key value pairs", "Speckle 2", "Object Management")
+      "Creates a speckle object from key value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
       BaseWorker = new CreateSpeckleObjectByKeyValueWorker(this, Converter);
     }
