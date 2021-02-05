@@ -17,6 +17,6 @@ namespace ConnectorGrasshopper
     public static string TRANSPORTS   = " [Dev/Transports]";
 
     public static string PRIMARY_RIBBON   = "Speckle 2";
-    public static string SECONDARY_RIBBON = "Speckle 2";
+    public static string SECONDARY_RIBBON = "Speckle 2"; 
   }
 }

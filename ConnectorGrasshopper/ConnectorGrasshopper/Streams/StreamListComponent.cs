@@ -56,17 +56,14 @@ namespace ConnectorGrasshopper.Streams
         string accountId = null;
         var limit = 10;
 
+        DA.GetData(0, ref accountId);
         DA.GetData(1, ref limit); // Has default value so will never be empty.
-
-        var account = !DA.GetData(0, ref accountId)
-          ? AccountManager.GetDefaultAccount()
+        var account = string.IsNullOrEmpty(accountId)  ? AccountManager.GetDefaultAccount()
           : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
 
         if (accountId == null)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No account ID was provided");
-          Message = null;
-          return;
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account was provided, using default.");
         }
 
         if (account == null)

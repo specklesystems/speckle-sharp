@@ -63,6 +63,16 @@ namespace ConnectorGrasshopper.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap AccountDetails {
+            get {
+                object obj = ResourceManager.GetObject("AccountDetails", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Accounts {
             get {
                 object obj = ResourceManager.GetObject("Accounts", resourceCulture);
