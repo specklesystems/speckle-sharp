@@ -38,14 +38,11 @@ namespace Objects.Converter.AutoCAD
     // Lines
     public Line LineToSpeckle(AC.Line line)
     {
-      return new Line(PointsToFlatArray(new Point3d[] { line.StartPoint, line.EndPoint }), ModelUnits);
+      return new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint));
     }
     public AC.Line LineToNativeDB(Line line)
     {
-      var pts = PointListToNative(line.value, line.units);
-      var _line = new AC.Line(pts[0], pts[1]);
-      //_line.SetDatabaseDefaults();
-      return _line;
+      return new AC.Line(PointToNative(line.start), PointToNative(line.end));
     }
 
     // Arcs
@@ -152,10 +149,7 @@ namespace Objects.Converter.AutoCAD
       var vertices = new Point3dCollection();
       for (int i = 0; i < polyline.points.Count; i++)
         vertices.Add(PointToNative(polyline.points[i]));
-
-      // create the polyline: need using because polyline needs to be registered in db before vertices can be appended
       Polyline3d _polyline = new Polyline3d(Poly3dType.SimplePoly, vertices, polyline.closed);
-
       return _polyline;
     }
     public Polycurve PolycurveToSpeckle(Polyline2d polyline) // AC polyline2d are really polycurves with linear, circlular, or elliptical segments!
@@ -200,49 +194,34 @@ namespace Objects.Converter.AutoCAD
     public AC.Polyline PolycurveToNativeDB(Polycurve polycurve) //polylines can only support curve segments of type circular arc
     {
       AC.Polyline polyline = new AC.Polyline();
+      var plane = new Autodesk.AutoCAD.Geometry.Plane(Point3d.Origin, Vector3d.ZAxis.TransformBy(Doc.Editor.CurrentUserCoordinateSystem)); // TODO: check this 
 
-      // add polyline to document block table record: this is necessary before adding vertices
-      //Append(polyline);
-
-      //join curve method
-      var segments = new List<AC.Curve>();
-      foreach (var segment in polycurve.segments)
-      {
-        segments.Add((AC.Curve)ConvertToNative((Base)segment));
-      }
-      
-
+      // add all vertices
       for (int i = 0; i < polycurve.segments.Count; i++)
       {
-        var segment = (AC.Curve)ConvertToNative((Base)polycurve.segments[i]);
-
-        // get segment bulge (tan(total angle in radians * 0.25)). line is of bulge 0.
-        double bulge = 0;
+        var segment = polycurve.segments[i];
         switch (segment)
         {
-          case AC.Arc o:
-            var arc = segment as AC.Arc;
-            bulge = Math.Tan(arc.TotalAngle / 4);
+          case Line o:
+            polyline.AddVertexAt(i, PointToNative(o.start).Convert2d(plane), 0, 0, 0);
+            if (!polycurve.closed && i == polycurve.segments.Count - 1)
+              polyline.AddVertexAt(i+1, PointToNative(o.end).Convert2d(plane), 0, 0, 0);
             break;
-          case AC.Line o:
+          case Arc o:
+            polyline.AddVertexAt(i, PointToNative(o.startPoint).Convert2d(plane), 0, 0, 0);
+            polyline.SetBulgeAt(i, Math.Tan((double)(o.endAngle - o.startAngle) / 4)); // bulge defined as tan(quarter total angle)
+            if (!polycurve.closed && i == polycurve.segments.Count - 1)
+              polyline.AddVertexAt(i+1, PointToNative(o.endPoint).Convert2d(plane), 0, 0, 0);
+            break;
           default:
-            break;
+            throw new Exception("Polycurve segment is not a line or arc!");
         }
-
-        // get 2d startpoint of the segment
-        var startPoint = segment.StartPoint.Convert2d(segment.GetPlane());
-        
-        // add vertex
-        polyline.AddVertexAt(i, startPoint, bulge, 0, 0); 
-
-        // if polycurve is closed and this is last segment, also add endpoint
-        if (polycurve.closed && i == polycurve.segments.Count - 1)
-        {
-          var endpoint = segment.EndPoint.Convert2d(segment.GetPlane());
-          polyline.AddVertexAt(i + 1, endpoint, 0, 0, 0);
-        }
-        segment.Dispose();
       }
+
+      // check for closure
+      if (polycurve.closed)
+        polyline.Closed = true;
+
       return polyline;
     }
 
@@ -277,6 +256,5 @@ namespace Objects.Converter.AutoCAD
           return null;
       }
     }
-
   }
 }

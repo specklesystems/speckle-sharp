@@ -45,7 +45,6 @@ namespace Objects.Converter.AutoCAD
 
     public Document Doc { get; private set; }
     public Transaction Trans { get; private set; }
-    public BlockTableRecord BTRec{ get; private set; }
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
@@ -57,9 +56,6 @@ namespace Objects.Converter.AutoCAD
     {
       Doc = (Document)doc;
       Trans = Doc.TransactionManager.TopTransaction; // set the stream transaction here! make sure it is the top level transaction
-      // open blocktable record for editing
-      BlockTable bt = Trans.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-      BTRec = Trans.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
     }
 
     public Base ConvertToSpeckle(object @object)
@@ -256,6 +252,9 @@ namespace Objects.Converter.AutoCAD
           return true;
 
         case Polyline _:
+          return true;
+
+        case Arc _:
           return true;
 
         case Polycurve _:

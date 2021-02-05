@@ -60,17 +60,6 @@ namespace Objects.Converter.AutoCAD
       return points.SelectMany(pt => PointToArray(pt)).ToArray();
     }
 
-    // Convenience methods vector:
-    public double[] VectorToArray(Vector3d vc)
-    {
-      return new double[] { vc.X, vc.Y, vc.Z };
-    }
-
-    public Vector3d ArrayToVector(double[] arr)
-    {
-      return new Vector3d(arr[0], arr[1], arr[2]);
-    }
-
     // Points
     public Point PointToSpeckle(Point3d pt)
     {
@@ -78,9 +67,9 @@ namespace Objects.Converter.AutoCAD
     }
     public Point3d PointToNative(Point pt)
     {
-      var nativePt = new Point3d(ScaleToNative(pt.value[0], pt.units),
-        ScaleToNative(pt.value[1], pt.units),
-        ScaleToNative(pt.value[2], pt.units));
+      var nativePt = new Point3d(ScaleToNative(pt.x, pt.units),
+        ScaleToNative(pt.y, pt.units),
+        ScaleToNative(pt.z, pt.units));
       return nativePt;
     }
 
@@ -104,16 +93,16 @@ namespace Objects.Converter.AutoCAD
     }
 
     // Vectors
-    public Vector VectorToSpeckle(Vector3d pt)
+    public Vector VectorToSpeckle(Vector3d vector)
     {
-      return new Vector(pt.X, pt.Y, pt.Z, ModelUnits);
+      return new Vector(vector.X, vector.Y, vector.Z, ModelUnits);
     }
-    public Vector3d VectorToNative(Vector pt)
+    public Vector3d VectorToNative(Vector vector)
     {
       return new Vector3d(
-        ScaleToNative(pt.value[0], pt.units),
-        ScaleToNative(pt.value[1], pt.units),
-        ScaleToNative(pt.value[2], pt.units));
+        ScaleToNative(vector.x, vector.units),
+        ScaleToNative(vector.y, vector.units),
+        ScaleToNative(vector.z, vector.units));
     }
 
     // Interval

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Collections;
 using System.Drawing;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 
 using AcadApp = Autodesk.AutoCAD.ApplicationServices;
 using AcadDb = Autodesk.AutoCAD.DatabaseServices;
