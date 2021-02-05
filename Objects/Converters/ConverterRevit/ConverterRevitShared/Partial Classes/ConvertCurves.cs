@@ -48,11 +48,12 @@ namespace Objects.Converter.Revit
       return new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve };
     }
 
+    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
     public ApplicationPlaceholderObject ModelCurveToNative(ICurve speckleLine)
     {
-      //comes from GH and doesn't have an id
+      // if it comes from GH it doesn't have an applicationId, the use the hash id
       if ((speckleLine as Base).applicationId == null)
-        (speckleLine as Base).applicationId = Guid.NewGuid().ToString();
+        (speckleLine as Base).applicationId = (speckleLine as Base).id;
 
       var docObj = GetExistingElementByApplicationId((speckleLine as Base).applicationId);
       var baseCurve = CurveToNative(speckleLine).get_Item(0);

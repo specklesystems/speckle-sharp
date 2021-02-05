@@ -69,11 +69,12 @@ namespace Objects.Converter.Revit
       return new ApplicationPlaceholderObject { applicationId = speckleDs.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
-    public ApplicationPlaceholderObject DirectShapeToNative(Brep brep)
+    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
+    public ApplicationPlaceholderObject DirectShapeToNative(Brep brep, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
     {
-      //comes from GH and doesn't have an id
+      // if it comes from GH it doesn't have an applicationId, the use the hash id
       if (brep.applicationId == null)
-        brep.applicationId = Guid.NewGuid().ToString();
+        brep.applicationId = brep.id;
 
       var docObj = GetExistingElementByApplicationId(brep.applicationId);
 
@@ -96,7 +97,7 @@ namespace Objects.Converter.Revit
         converted.AddRange(mesh);
       }
 
-      var catId = Doc.Settings.Categories.get_Item(BuiltInCategory.OST_GenericModel).Id;
+      var catId = Doc.Settings.Categories.get_Item(cat).Id;
 
       var revitDs = DB.DirectShape.CreateElement(Doc, catId);
       revitDs.ApplicationId = brep.applicationId;
@@ -107,11 +108,13 @@ namespace Objects.Converter.Revit
       return new ApplicationPlaceholderObject { applicationId = brep.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
-    public ApplicationPlaceholderObject DirectShapeToNative(Mesh mesh)
+    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
+    public ApplicationPlaceholderObject DirectShapeToNative(Mesh mesh, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
     {
-      //comes from GH and doesn't have an id
+      // if it comes from GH it doesn't have an applicationId, the use the hash id
       if (mesh.applicationId == null)
-        mesh.applicationId = Guid.NewGuid().ToString();
+        mesh.applicationId = mesh.id;
+
       var docObj = GetExistingElementByApplicationId(mesh.applicationId);
 
       //just create new one 
@@ -124,7 +127,7 @@ namespace Objects.Converter.Revit
       var rMesh = MeshToNative(mesh);
       converted.AddRange(rMesh);
 
-      var catId = Doc.Settings.Categories.get_Item(BuiltInCategory.OST_GenericModel).Id;
+      var catId = Doc.Settings.Categories.get_Item(cat).Id;
 
       var revitDs = DB.DirectShape.CreateElement(Doc, catId);
       revitDs.ApplicationId = mesh.applicationId;
