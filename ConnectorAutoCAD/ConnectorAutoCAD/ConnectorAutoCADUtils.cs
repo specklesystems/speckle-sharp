@@ -48,22 +48,15 @@ namespace Speckle.ConnectorAutoCAD
     }
 
     // appends an entity to the autocad database block table
-    public static void Append(this Entity entity)
+    public static void Append(this Entity entity, Transaction tr)
     {
       Document Doc = Application.DocumentManager.MdiActiveDocument;
 
-      using (DocumentLock l = Doc.LockDocument())
-      {
-        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
-        {
-          BlockTable blkTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-          BlockTableRecord blkTblRec = tr.GetObject(blkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-          blkTblRec.AppendEntity(entity);
-          tr.AddNewlyCreatedDBObject(entity, true);
+      // open blocktable record for editing
+      BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
 
-          tr.Commit();
-        }
-      }
+      btr.AppendEntity(entity);
+      tr.AddNewlyCreatedDBObject(entity, true);
     }
 
     /// <summary>

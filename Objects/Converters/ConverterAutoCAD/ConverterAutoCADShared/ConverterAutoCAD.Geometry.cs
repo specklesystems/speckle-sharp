@@ -168,6 +168,10 @@ namespace Objects.Converter.AutoCAD
       _arc.domain = IntervalToSpeckle(arc.GetInterval());
       return _arc;
     }
+    public CircularArc3d ArcToNative(Arc arc)
+    {
+      return new CircularArc3d(PointToNative(arc.startPoint), PointToNative(arc.midPoint), PointToNative(arc.endPoint));
+    }
 
     public PolylineCurve3d PolylineToNative(Polyline polyline)
     {

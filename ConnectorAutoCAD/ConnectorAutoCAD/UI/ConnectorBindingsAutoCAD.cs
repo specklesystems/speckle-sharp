@@ -179,8 +179,6 @@ namespace Speckle.ConnectorAutoCAD.UI
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(ConnectorAutoCADUtils.AutoCADAppName);
-      converter.SetContextDocument(Doc);
-
       var myStream = await state.Client.StreamGet(state.Stream.id);
       var commit = state.Commit;
 
@@ -205,41 +203,53 @@ namespace Speckle.ConnectorAutoCAD.UI
         RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
       }
 
-      // add rollback here?
-
-      var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 0;
-      Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
-
-      Action updateProgressAction = () =>
+      using (AcadApp.DocumentLock l = Doc.LockDocument())
       {
-        conversionProgressDict["Conversion"]++;
-        UpdateProgress(conversionProgressDict, state.Progress);
-      };
+        using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        {
+          // set the context doc for conversion - this is set inside the transaction loop because the converter retrieves this transaction for all db editing when the context doc is set!
+          converter.SetContextDocument(Doc);
 
-      // create a layer prefix hash: this is to prevent geometry from being imported into original layers (too confusing)
-      // since autocad doesn't have nested layers, use the standard import syntax of "layer$sublayer" when importing from apps that have nested layers
-      var layerPrefix = $"{myStream.name}[{state.Branch.name}@{commit.id}]";
-      layerPrefix = Regex.Replace(layerPrefix, @"[^\u0000-\u007F]+", string.Empty); // emits emojis
+          // keep track of conversion progress here
+          var conversionProgressDict = new ConcurrentDictionary<string, int>();
+          conversionProgressDict["Conversion"] = 0;
+          Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
 
-      // see if there is already an existing layer with this prefix - if there is then this commit has already been recieved?
-      DeleteLayersWithPrefix(layerPrefix);
+          Action updateProgressAction = () =>
+          {
+            conversionProgressDict["Conversion"]++;
+            UpdateProgress(conversionProgressDict, state.Progress);
+          };
 
-      // try and import geo
-      HandleAndConvert(commitObject, converter, layerPrefix, state);
+          // create a layer prefix hash: this is to prevent geometry from being imported into original layers (too confusing)
+          // since autocad doesn't have nested layers, use the standard import syntax of "layer$sublayer" when importing from apps that have nested layers
+          var layerPrefix = $"{myStream.name}[{state.Branch.name}@{commit.id}]";
+          layerPrefix = Regex.Replace(layerPrefix, @"[^\u0000-\u007F]+", string.Empty); // emits emojis
+
+          // see if there is already an existing layer with this prefix - if there is then this commit has already been recieved?
+          DeleteLayersWithPrefix(layerPrefix, tr); // todo: this should be its own transaction
+
+          // try and import geo
+          HandleAndConvert(commitObject, tr, converter, layerPrefix, state);
+
+          // 
+
+          tr.Commit();
+        }
+      }
 
       return state;
     }
    
 
-    private void HandleAndConvert(object obj, ISpeckleConverter converter, string layerPrefix, StreamState state, Action updateProgressAction = null)
+    private void HandleAndConvert(object obj, AcadDb.Transaction tr, ISpeckleConverter converter, string layerPrefix, StreamState state, Action updateProgressAction = null)
     {
       if (obj is Base baseItem)
       {
         if (converter.CanConvertToNative(baseItem))
         {
           // create the ac layer if it doesn't already exist
-          AcadDb.LayerTableRecord objLayer = GetOrMakeLayer(layerPrefix);
+          AcadDb.LayerTableRecord objLayer = GetOrMakeLayer(layerPrefix, tr);
           if (objLayer == null)
           {
             RaiseNotification($"could not create layer {layerPrefix} to bake objects into.");
@@ -254,7 +264,9 @@ namespace Speckle.ConnectorAutoCAD.UI
           // add geo to doc
           if (converted != null)
           {
-            converted.Append();
+            // check if converted has already been appended (for some geos like polylines, they are appended during creation
+            if (converted.IsNewObject)
+              converted.Append(tr);
             //converted.Dispose();
           }
           else
@@ -277,7 +289,7 @@ namespace Speckle.ConnectorAutoCAD.UI
 
             // create the ac layer if it doesn't already exist
             string acLayerName = $"{layerPrefix}${objLayerName}";
-            AcadDb.LayerTableRecord objLayer = GetOrMakeLayer(acLayerName);
+            AcadDb.LayerTableRecord objLayer = GetOrMakeLayer(acLayerName, tr);
             if (objLayer == null)
             {
               RaiseNotification($"could not create layer {acLayerName} to bake objects into.");
@@ -285,7 +297,7 @@ namespace Speckle.ConnectorAutoCAD.UI
               updateProgressAction?.Invoke();
               return;
             }
-            HandleAndConvert(value, converter, acLayerName, state, updateProgressAction);
+            HandleAndConvert(value, tr, converter, acLayerName, state, updateProgressAction);
           }
         }
       }
@@ -293,96 +305,87 @@ namespace Speckle.ConnectorAutoCAD.UI
       if (obj is List<object> list)
       {
         foreach (var listObj in list)
-          HandleAndConvert(listObj, converter, layerPrefix, state, updateProgressAction);
+          HandleAndConvert(listObj, tr, converter, layerPrefix, state, updateProgressAction);
         return;
       }
 
       if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
-          HandleAndConvert(kvp.Value, converter, layerPrefix, state, updateProgressAction);
+          HandleAndConvert(kvp.Value, tr, converter, layerPrefix, state, updateProgressAction);
         return;
       }
       
     }
 
-    private void DeleteLayersWithPrefix(string prefix)
+    private void DeleteLayersWithPrefix(string prefix, AcadDb.Transaction tr)
     {
-      using (AcadApp.DocumentLock l = Doc.LockDocument())
+      // Open the Layer table for read
+      AcadDb.LayerTable lyrTbl;
+      lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
+      foreach (AcadDb.ObjectId layerId in lyrTbl)
       {
-        using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        AcadDb.LayerTableRecord layer = (AcadDb.LayerTableRecord)tr.GetObject(layerId, AcadDb.OpenMode.ForRead);
+        string layerName = layer.Name;
+        if (layerName.StartsWith(prefix))
         {
-          // Open the Layer table for read
-          AcadDb.LayerTable lyrTbl;
-          lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
-          foreach (AcadDb.ObjectId layerId in lyrTbl)
+          layer.UpgradeOpen();
+          if (Doc.Database.Clayer == layerId)
           {
-            AcadDb.LayerTableRecord layer = (AcadDb.LayerTableRecord)tr.GetObject(layerId, AcadDb.OpenMode.ForRead);
-            string layerName = layer.Name;
-            if (layerName.StartsWith(prefix))
-            {
-              layer.UpgradeOpen();
-              if (Doc.Database.Clayer == layerId)
-              {
-                var defaultLayerID = lyrTbl["0"];
-                Doc.Database.Clayer = defaultLayerID;
-              }
-              layer.IsLocked = false;
+            var defaultLayerID = lyrTbl["0"];
+            Doc.Database.Clayer = defaultLayerID;
+          }
+          layer.IsLocked = false;
 
-              // delete all objects on this layer .. todo: this is inefficient! find better way to deleting obs instea dof looping through each one
-              var blockTable = (AcadDb.BlockTable)tr.GetObject(Doc.Database.BlockTableId, AcadDb.OpenMode.ForRead);
-              foreach (var btrId in blockTable)
+          // open btr for read
+          AcadDb.BlockTable bt = tr.GetObject(Doc.Database.BlockTableId, AcadDb.OpenMode.ForRead) as AcadDb.BlockTable;
+          AcadDb.BlockTableRecord btr = tr.GetObject(bt[AcadDb.BlockTableRecord.ModelSpace], AcadDb.OpenMode.ForRead) as AcadDb.BlockTableRecord;
+
+          // delete all objects on this layer .. todo: this is inefficient! find better way to deleting obs instea dof looping through each one
+          foreach (var btrId in btr)
+          {
+            var block = (AcadDb.BlockTableRecord)tr.GetObject(btrId, AcadDb.OpenMode.ForRead);
+            foreach (var entId in block)
+            {
+              var ent = (AcadDb.Entity)tr.GetObject(entId, AcadDb.OpenMode.ForRead);
+              if (ent.Layer == layerName)
               {
-                var block = (AcadDb.BlockTableRecord)tr.GetObject(btrId, AcadDb.OpenMode.ForRead);
-                foreach (var entId in block)
-                {
-                  var ent = (AcadDb.Entity)tr.GetObject(entId, AcadDb.OpenMode.ForRead);
-                  if (ent.Layer == layerName)
-                  {
-                    ent.UpgradeOpen();
-                    ent.Erase();
-                  }
-                }
+                ent.UpgradeOpen();
+                ent.Erase();
               }
-              layer.Erase();
             }
           }
-          tr.Commit();
+          layer.Erase();
         }
       }
     }
 
-    private AcadDb.LayerTableRecord GetOrMakeLayer(string layerName)
+    private AcadDb.LayerTableRecord GetOrMakeLayer(string layerName, AcadDb.Transaction tr)
     {
       AcadDb.LayerTableRecord _layer = null;
-      using (AcadApp.DocumentLock l = Doc.LockDocument())
+
+      AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
+      if (lyrTbl.Has(layerName))
       {
-        using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
-        {
-          AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
-          if (lyrTbl.Has(layerName))
-          {
-            _layer = (AcadDb.LayerTableRecord)tr.GetObject(lyrTbl[layerName], AcadDb.OpenMode.ForRead);
-          }
-          else
-          {
-            lyrTbl.UpgradeOpen();
-
-            // make a new layer
-            AcadDb.LayerTableRecord layer = new AcadDb.LayerTableRecord();
-
-            // Assign the layer properties
-            layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(System.Drawing.Color.Blue);
-            layer.Name = layerName;
-
-            // Append the new layer to the Layer table and the transaction
-            lyrTbl.Add(layer);
-            tr.AddNewlyCreatedDBObject(layer, true);
-            _layer = layer;
-          }
-          tr.Commit();
-        }
+        _layer = (AcadDb.LayerTableRecord)tr.GetObject(lyrTbl[layerName], AcadDb.OpenMode.ForRead);
       }
+      else
+      {
+        lyrTbl.UpgradeOpen();
+
+        // make a new layer
+        AcadDb.LayerTableRecord layer = new AcadDb.LayerTableRecord();
+
+        // Assign the layer properties
+        layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(System.Drawing.Color.Blue);
+        layer.Name = layerName;
+
+        // Append the new layer to the Layer table and the transaction
+        lyrTbl.Add(layer);
+        tr.AddNewlyCreatedDBObject(layer, true);
+        _layer = layer;
+      }
+
       return _layer;
     }
 
@@ -436,7 +439,7 @@ namespace Speckle.ConnectorAutoCAD.UI
         }
 
         // convert geo to speckle base
-        Base converted = converter.ConvertToSpeckle(obj as AcadDb.DBObject);
+        Base converted = converter.ConvertToSpeckle(obj);
 
         if (converted == null)
         {

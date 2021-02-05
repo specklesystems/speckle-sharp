@@ -31,7 +31,8 @@ namespace Objects.Converter.AutoCAD
     }
     public DBPoint PointToNativeDB(Point point)
     {
-      return new DBPoint(PointToNative(point));
+      var _point = new DBPoint(PointToNative(point));
+      return _point;
     }
 
     // Lines
@@ -43,6 +44,7 @@ namespace Objects.Converter.AutoCAD
     {
       var pts = PointListToNative(line.value, line.units);
       var _line = new AC.Line(pts[0], pts[1]);
+      //_line.SetDatabaseDefaults();
       return _line;
     }
 
@@ -60,8 +62,6 @@ namespace Objects.Converter.AutoCAD
       var center = PointToNative(arc.plane.origin);
       var radius = ScaleToNative((double)arc.radius, arc.units);
       var _arc = new AC.Arc(center, radius, (double)arc.startAngle, (double)arc.endAngle);
-      _arc.StartPoint = PointToNative(arc.startPoint);
-      _arc.EndPoint = PointToNative(arc.endPoint);
       return _arc;
     }
 
@@ -139,7 +139,7 @@ namespace Objects.Converter.AutoCAD
     
 
     // PolyCurves
-    public Polyline PolylineToSpeckle(AC.Polyline polyline) // AC polylines can have curved segments, this is the method will convert all segments to lines
+    public Polyline PolylineToSpeckle(AC.Polyline polyline) // AC polylines can have arc segments, this treats all segments as lines
     {
       bool isClosed = polyline.Closed;
       List<Point3d> vertices = new List<Point3d>();
@@ -152,14 +152,9 @@ namespace Objects.Converter.AutoCAD
       var vertices = new Point3dCollection();
       for (int i = 0; i < polyline.points.Count; i++)
         vertices.Add(PointToNative(polyline.points[i]));
+
+      // create the polyline: need using because polyline needs to be registered in db before vertices can be appended
       Polyline3d _polyline = new Polyline3d(Poly3dType.SimplePoly, vertices, polyline.closed);
-
-      // add polyline to document block table record: this is necessary before adding vertices
-      AddObjectToBlockTableRecord(_polyline);
-
-      // add vertices
-      foreach (Point3d vertex in _polyline)
-        _polyline.AppendVertex(new PolylineVertex3d(vertex));
 
       return _polyline;
     }
@@ -202,17 +197,50 @@ namespace Objects.Converter.AutoCAD
       return polycurve;
     }
 
-    public AC.Polyline PolycurveToNativeDB(Polycurve polycurve)
+    public AC.Polyline PolycurveToNativeDB(Polycurve polycurve) //polylines can only support curve segments of type circular arc
     {
       AC.Polyline polyline = new AC.Polyline();
 
       // add polyline to document block table record: this is necessary before adding vertices
-      //AddObjectToBlockTableRecord(polyline);
+      //Append(polyline);
+
+      //join curve method
+      var segments = new List<AC.Curve>();
+      foreach (var segment in polycurve.segments)
+      {
+        segments.Add((AC.Curve)ConvertToNative((Base)segment));
+      }
+      
 
       for (int i = 0; i < polycurve.segments.Count; i++)
       {
         var segment = (AC.Curve)ConvertToNative((Base)polycurve.segments[i]);
-        polyline.AddVertexAt(i, segment.StartPoint.Convert2d(segment.GetPlane()), 0, 0, 0); // TODO: calculate bulge
+
+        // get segment bulge (tan(total angle in radians * 0.25)). line is of bulge 0.
+        double bulge = 0;
+        switch (segment)
+        {
+          case AC.Arc o:
+            var arc = segment as AC.Arc;
+            bulge = Math.Tan(arc.TotalAngle / 4);
+            break;
+          case AC.Line o:
+          default:
+            break;
+        }
+
+        // get 2d startpoint of the segment
+        var startPoint = segment.StartPoint.Convert2d(segment.GetPlane());
+        
+        // add vertex
+        polyline.AddVertexAt(i, startPoint, bulge, 0, 0); 
+
+        // if polycurve is closed and this is last segment, also add endpoint
+        if (polycurve.closed && i == polycurve.segments.Count - 1)
+        {
+          var endpoint = segment.EndPoint.Convert2d(segment.GetPlane());
+          polyline.AddVertexAt(i + 1, endpoint, 0, 0, 0);
+        }
         segment.Dispose();
       }
       return polyline;
@@ -250,64 +278,5 @@ namespace Objects.Converter.AutoCAD
       }
     }
 
-
-    /// <summary>
-    /// Converts a DB Object <see cref="DBObject"/> instance to a Speckle <see cref="Base"/>
-    /// </summary>
-    /// <param name="obj">DB Object to be converted.</param>
-    /// <returns></returns>
-    /// <remarks>
-    /// faster way but less readable method is to check object class name string: obj.ObjectId.ObjectClass.DxfName
-    /// https://spiderinnet1.typepad.com/blog/2012/04/various-ways-to-check-object-types-in-autocad-net.html
-    /// </remarks>
-    public Base ObjectToSpeckle(DBObject obj)
-    {
-      switch (obj)
-      {
-        case DBPoint o:
-          return PointToSpeckle(o);
-        case AC.Line o:
-          return LineToSpeckle(o);
-        case AC.Arc o:
-          return ArcToSpeckle(o);
-        case AC.Circle o:
-          return CircleToSpeckle(o);
-        case AC.Ellipse o:
-          return EllipseToSpeckle(o);
-        case AC.Spline o:
-          return SplineToSpeckle(o);
-        case AC.Polyline o:
-          return PolycurveToSpeckle(o);
-        case AC.Polyline2d o:
-          return PolycurveToSpeckle(o);
-        default:
-          return null;
-      }
-    }
-
-    /*
-    /// <summary>
-    /// Converts a native AC geometry object into a AC DBObject
-    /// </summary>
-    /// <param name="obj"></param>
-    /// <returns></returns>
-    /// <remarks>This is necessary to bake converted Speckle objects to model space</remarks>
-    public DBObject NativeToDBObject(object obj)
-    {
-      switch (obj)
-      {
-        case Point3d _:
-          return new DBPoint((Point3d)obj);
-        case Line3d _:
-          Line3d line = (Line3d)obj;
-          return new AC.Line(line.StartPoint, line.EndPoint);
-        case Curve3d _:
-          var curve = (Curve3d)obj;
-          return AC.Curve.CreateFromGeCurve(curve);
-        default:
-          return null;
-      }
-    }
-    */
   }
 }

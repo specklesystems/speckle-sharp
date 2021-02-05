@@ -44,6 +44,8 @@ namespace Objects.Converter.AutoCAD
     #endregion ISpeckleConverter props
 
     public Document Doc { get; private set; }
+    public Transaction Trans { get; private set; }
+    public BlockTableRecord BTRec{ get; private set; }
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
@@ -54,6 +56,10 @@ namespace Objects.Converter.AutoCAD
     public void SetContextDocument(object doc)
     {
       Doc = (Document)doc;
+      Trans = Doc.TransactionManager.TopTransaction; // set the stream transaction here! make sure it is the top level transaction
+      // open blocktable record for editing
+      BlockTable bt = Trans.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+      BTRec = Trans.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
     }
 
     public Base ConvertToSpeckle(object @object)
@@ -61,7 +67,10 @@ namespace Objects.Converter.AutoCAD
       switch (@object)
       {
         case DBObject o:
-          // add color info and etc here
+          // check for speckle schema xdata
+          //string schema = GetSpeckleSchema(o.XData);
+          //if (schema != null)
+            //return ObjectToSpeckleBuiltElement(o);
           return ObjectToSpeckle(o);
 
         case AC.Geometry.Point3d o:
@@ -91,6 +100,11 @@ namespace Objects.Converter.AutoCAD
         default:
           throw new NotSupportedException();
       }
+    }
+
+    private Base ObjectToSpeckleBuiltElement(DBObject o)
+    {
+      throw new NotImplementedException();
     }
 
     public List<Base> ConvertToSpeckle(List<object> objects)
@@ -145,6 +159,42 @@ namespace Objects.Converter.AutoCAD
     public List<object> ConvertToNative(List<Base> objects)
     {
       return objects.Select(x => ConvertToNative(x)).ToList();
+    }
+
+    /// <summary>
+    /// Converts a DB Object <see cref="DBObject"/> instance to a Speckle <see cref="Base"/>
+    /// </summary>
+    /// <param name="obj">DB Object to be converted.</param>
+    /// <returns></returns>
+    /// <remarks>
+    /// faster way but less readable method is to check object class name string: obj.ObjectId.ObjectClass.DxfName
+    /// https://spiderinnet1.typepad.com/blog/2012/04/various-ways-to-check-object-types-in-autocad-net.html
+    /// </remarks>
+    public Base ObjectToSpeckle(DBObject obj)
+    {
+      switch (obj)
+      {
+        case DBPoint o:
+          return PointToSpeckle(o);
+        case AC.DatabaseServices.Line o:
+          return LineToSpeckle(o);
+        case AC.DatabaseServices.Arc o:
+          return ArcToSpeckle(o);
+        case AC.DatabaseServices.Circle o:
+          return CircleToSpeckle(o);
+        case AC.DatabaseServices.Ellipse o:
+          return EllipseToSpeckle(o);
+        case AC.DatabaseServices.Spline o:
+          return SplineToSpeckle(o);
+        case AC.DatabaseServices.Polyline o:
+          if (o.IsOnlyLines) // db polylines can have arc segmenets, decide between polycurve or polyline conversion
+            return PolylineToSpeckle(o);
+          return PolycurveToSpeckle(o);
+        case AC.DatabaseServices.Polyline2d o:
+          return PolycurveToSpeckle(o);
+        default:
+          return null;
+      }
     }
 
     public bool CanConvertToSpeckle(object @object)
@@ -205,6 +255,9 @@ namespace Objects.Converter.AutoCAD
         case Line _:
           return true;
 
+        case Polyline _:
+          return true;
+
         case Polycurve _:
           return true;
 
@@ -216,19 +269,18 @@ namespace Objects.Converter.AutoCAD
       }
     }
 
-    public void AddObjectToBlockTableRecord(Entity obj)
+    public void Append(Entity obj)
     {
-      using (DocumentLock l = Doc.LockDocument())
+      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
-        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
-        {
-          BlockTable blkTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-          BlockTableRecord blkTblRec = tr.GetObject(blkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-          blkTblRec.AppendEntity(obj);
-          tr.AddNewlyCreatedDBObject(obj, true);
+        // open blocktable record for editing
+        BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
 
-          tr.Commit();
-        }
+        // add entity
+        btr.AppendEntity(obj);
+        tr.AddNewlyCreatedDBObject(obj, true);
+
+        tr.Commit();
       }
     }
   }

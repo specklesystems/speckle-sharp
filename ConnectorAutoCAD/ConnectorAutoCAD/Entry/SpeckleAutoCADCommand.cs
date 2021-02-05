@@ -5,7 +5,6 @@ using System.Linq;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.Civil.ApplicationServices;
-using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.DesktopUI;
 using Speckle.ConnectorAutoCAD;
 using Speckle.ConnectorAutoCAD.UI;
@@ -43,7 +42,7 @@ namespace Speckle.ConnectorAutoCAD.Entry
         Bootstrapper.Application.Startup += (o, e) =>
         {
           var helper = new System.Windows.Interop.WindowInteropHelper(Bootstrapper.Application.MainWindow);
-          helper.Owner = Autodesk.AutoCAD.ApplicationServices.Application.MainWindow.Handle;
+          helper.Owner = Application.MainWindow.Handle;
         };
       }
       catch (System.Exception e)
@@ -61,5 +60,37 @@ namespace Speckle.ConnectorAutoCAD.Entry
         objs = selection.Value.GetHandles();
       UserData.UpdateSpeckleSelection(objs);
     }
+
+    /*
+    [CommandMethod("SpeckleSchema", CommandFlags.UsePickSet | CommandFlags.Transparent)]
+    public static void SetSchema()
+    {
+      var ids = new List<ObjectId>();
+      PromptSelectionResult selection = Doc.Editor.GetSelection();
+      if (selection.Status == PromptStatus.OK)
+        ids = selection.Value.GetObjectIds().ToList();
+      foreach (var id in ids)
+      {
+        // decide schema here, assumption or user input.
+        string schema = "";
+        switch (id.ObjectClass.DxfName)
+        {
+          case "LINE":
+            schema = "Column";
+            break;
+        }
+
+        // add schema to object XData
+        using (Transaction tr = Doc.TransactionManager.StartTransaction())
+        {
+          DBObject obj = tr.GetObject(id, OpenMode.ForWrite);
+          if (obj.XData == null)
+            obj.XData = new ResultBuffer(new TypedValue(Convert.ToInt32(DxfCode.Text), schema));
+          else
+            obj.XData.Add(new TypedValue(Convert.ToInt32(DxfCode.Text), schema));
+        }
+      }
+    }
+    */
   }
 }
