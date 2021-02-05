@@ -17,8 +17,7 @@ namespace SpeckleRhino
   public class SchemaBuilderCommand : Command
   {
     // speckle user string for custom schemas
-    // TODO: address consistency weak point, since this string needs to match exactly in ConverterRhinoGH.Geometry.cs!!!
-    // TODO: Add a remove schema command option!
+    // TODO: address consistency weak point, since this string needs to match exactly in ConverterRhinoGH.Geometry.cs!
     string SpeckleSchemaKey = "SpeckleSchema";
 
     RhinoDoc ActiveDoc = null;
@@ -42,11 +41,11 @@ namespace SpeckleRhino
     {
       ActiveDoc = doc;
 
-      const ObjectType geometryFilter = ObjectType.Curve | ObjectType.Surface | ObjectType.PolysrfFilter;
+      const ObjectType geometryFilter = ObjectType.Curve | ObjectType.Surface;
       OptionToggle toggle = new OptionToggle(true, "Remove", "Apply");
 
       GetObject go = new GetObject();
-      go.SetCommandPrompt("Select curves, surfaces, or polysurfaces");
+      go.SetCommandPrompt("Select curves or surfaces");
       go.GeometryFilter = geometryFilter;
       go.AddOptionToggle("BuiltElements", ref toggle);
       go.GroupSelect = true;
@@ -66,7 +65,6 @@ namespace SpeckleRhino
           go.EnablePreSelect(false, true);
           continue;
         }
-
         else if (res != GetResult.Object)
           return Result.Cancel;
 
@@ -76,7 +74,6 @@ namespace SpeckleRhino
           go.EnablePreSelect(false, true);
           continue;
         }
-
         break;
       }
 
@@ -84,15 +81,12 @@ namespace SpeckleRhino
       {
         // Normally, pre-selected objects will remain selected, when a
         // command finishes, and post-selected objects will be unselected.
-        // Thus it is possible to have a combination of pre-selected and
-        // post-selected. So, to make sure everything "looks the same"
-        // after command execution, unselect everything before finishing command
-
+        // Currently, leave everything selected post command.
         for (int i = 0; i < go.ObjectCount; i++)
         {
           RhinoObject rhinoObject = go.Object(i).Object();
           if (null != rhinoObject)
-            rhinoObject.Select(false);
+            rhinoObject.Select(true);
         }
         doc.Views.Redraw();
       }

@@ -24,6 +24,8 @@ namespace ConnectorGrasshopper.Accounts
 
     public override string Name { get => "Accounts"; }
 
+    public override GH_Exposure Exposure => GH_Exposure.primary;
+
     public AccountListComponent() : base()
     {
       MutableNickName = false;

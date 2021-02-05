@@ -1,6 +1,4 @@
-﻿extern alias DynamoNewtonsoft;
-using DNJ = DynamoNewtonsoft::Newtonsoft.Json;
-using Dynamo.Graph.Nodes;
+﻿using Dynamo.Graph.Nodes;
 using ProtoCore.AST.AssociativeAST;
 using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Credentials;
@@ -18,6 +16,7 @@ using Dynamo.Utilities;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.SendNode
 {
@@ -62,7 +61,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public bool Transmitting
     {
       get => _transmitting;
@@ -76,7 +75,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public string Message
     {
       get => _message;
@@ -90,7 +89,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public double Progress
     {
       get => _progress;
@@ -104,7 +103,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public bool SendEnabled
     {
       get => _sendEnabled;
@@ -138,7 +137,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// </summary>
     /// <param name="inPorts"></param>
     /// <param name="outPorts"></param>
-    [DNJ.JsonConstructor]
+    [JsonConstructor]
     private Send(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
       if (inPorts.Count() == 3)
@@ -177,7 +176,7 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     private void AddInputs()
     {
-      var defaultMessageValue = new StringNode {Value = "Automatic commit from Dynamo"};
+      var defaultMessageValue = new StringNode { Value = "Automatic commit from Dynamo" };
 
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("data", "The data to send")));
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream", "The stream or streams to send to")));
@@ -228,15 +227,26 @@ namespace Speckle.ConnectorDynamo.SendNode
         if (_data == null)
           Core.Logging.Log.CaptureAndThrow(new Exception("The data provided is invalid"));
 
-
+        long totalCount = 0;
+        Base @base = null;
         var converter = new BatchConverter();
-        var @base = converter.ConvertRecursivelyToSpeckle(_data);
-        var totalCount = @base.GetTotalChildrenCount();
+        try
+        {
+          @base = converter.ConvertRecursivelyToSpeckle(_data);
+          totalCount = @base.GetTotalChildrenCount();
+        }
+        catch (Exception e)
+        {
+          Message = "Conversion error";
+          Warning(e.Message);
+          Core.Logging.Log.CaptureAndThrow(new Exception("Conversion error", e));
+        }
+        
         Message = "Sending...";
 
         void ProgressAction(ConcurrentDictionary<string, int> dict)
         {
-          var val = (double) dict.Values.Average() / totalCount;
+          var val = (double)dict.Values.Average() / totalCount;
           Message = val.ToString("0%");
           Progress = val * 100;
         }
@@ -304,6 +314,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         _objectCount = 0;
         SendEnabled = false;
         Message = "";
+        ClearErrorsAndWarnings();
       }
     }
 
@@ -350,7 +361,7 @@ namespace Speckle.ConnectorDynamo.SendNode
           case List<object> s:
             transports = s
               .Select(TryConvertInputToTransport)
-              .Aggregate(transports, (current, t) => new List<Dictionary<ITransport, string>> {current, t}
+              .Aggregate(transports, (current, t) => new List<Dictionary<ITransport, string>> { current, t }
                 .SelectMany(dict => dict)
                 .ToDictionary(pair => pair.Key, pair => pair.Value));
             break;
@@ -382,6 +393,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       {
         ResetNode(true);
         Message = "Stream is invalid";
+        Warning("Input was neither a transport nor a stream.");
         return;
       }
 
@@ -409,7 +421,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       {
         //_objectCount is updated when the RecurseInput function loops through the data, not ideal but it works
         //if we're dealing with a single Base (preconverted obj) use GetTotalChildrenCount to count its children
-        _objectCount = (int) @base.GetTotalChildrenCount();
+        _objectCount = (int)@base.GetTotalChildrenCount();
         //exclude wrapper obj.... this is a bit of a hack...
         if (_objectCount > 1) _objectCount--;
       }
@@ -433,7 +445,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       var data = inputMirror.GetData();
       var value = RecurseInput(data, count);
 
-      return (T) value;
+      return (T)value;
     }
 
     private object RecurseInput(MirrorData data, bool count)
@@ -522,9 +534,9 @@ namespace Speckle.ConnectorDynamo.SendNode
 
       var dataFunctionCall = AstFactory.BuildFunctionCall(
         new Func<string, object>(Functions.Functions.SendData),
-        new List<AssociativeNode> {AstFactory.BuildStringNode(_outputInfo)});
+        new List<AssociativeNode> { AstFactory.BuildStringNode(_outputInfo) });
 
-      return new[] {AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), dataFunctionCall)};
+      return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), dataFunctionCall) };
     }
 
     #endregion

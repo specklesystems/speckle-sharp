@@ -1,10 +1,6 @@
 ﻿using Objects.Primitive;
 using Speckle.Core.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
 using Speckle.Core.Kits;
 
 namespace Objects.Geometry

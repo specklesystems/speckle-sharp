@@ -9,6 +9,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -72,66 +73,90 @@ namespace ConnectorGrasshopper.Objects
           Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Object {b.id} - Property {key} has been overwritten");
         }
 
-        b[key] = Utilities.TryConvertItemToSpeckle(values[index++], Converter);
+        try
+        {
+          b[key] = Utilities.TryConvertItemToSpeckle(values[index++], Converter);
+        }
+        catch (Exception e)
+        {
+          Console.WriteLine(e);
+        }
       });
     }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      Parent.Message = "Extending...";
-      var path = new GH_Path(iteration);
-      if (valueTree.PathExists(path))
+      try
       {
-        var values = valueTree.get_Branch(path) as List<IGH_Goo>;
-        // Input is a list of values. Assign them directly
-        if (keys.Count != values?.Count)
+        Parent.Message = "Extending...";
+        var path = new GH_Path(iteration);
+        if (valueTree.PathExists(path))
         {
-          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Key and Value lists are not the same length.");
-          Done();
-        }
-
-        AssignToObject(@base, keys, values);
-      }
-      else if (valueTree.Branches.Count == 1)
-      {
-        var values = valueTree.Branches[0];
-        if (keys.Count != values.Count)
-        {
-          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Key and Value lists are not the same length.");
-          Done();
-        }
-
-        // Input is just one list, so use it.
-        AssignToObject(@base, keys, values);
-      }
-      else
-      {
-        // Input is a tree, meaning it's values are either lists or trees.
-        var subTree = Utilities.GetSubTree(valueTree, path);
-        var index = 0;
-        keys.ForEach(key =>
-        {
-          var subPath = new GH_Path(index);
-          if (subTree.PathExists(subPath))
+          var values = valueTree.get_Branch(path) as List<IGH_Goo>;
+          // Input is a list of values. Assign them directly
+          if (keys.Count != values?.Count)
           {
-            // Value is a list, convert and assign.
-            var list = subTree.get_Branch(subPath) as List<IGH_Goo>;
-            if (list?.Count > 0)
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Key and Value lists are not the same length.");
+            Done();
+          }
+
+          AssignToObject(@base, keys, values);
+        }
+        else if (valueTree.Branches.Count == 1)
+        {
+          var values = valueTree.Branches[0];
+          if (keys.Count != values.Count)
+          {
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Key and Value lists are not the same length.");
+            Done();
+          }
+
+          // Input is just one list, so use it.
+          AssignToObject(@base, keys, values);
+        }
+        else
+        {
+          // Input is a tree, meaning it's values are either lists or trees.
+          var subTree = Utilities.GetSubTree(valueTree, path);
+          var index = 0;
+          keys.ForEach(key =>
+          {
+            var subPath = new GH_Path(index);
+            if (subTree.PathExists(subPath))
             {
-              @base[key] = list.Select(goo => Utilities.TryConvertItemToSpeckle(goo, Converter)).ToList();
-            };
-          }
-          else
-          {
-            // TODO: Handle tree conversions
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot handle trees yet");
-          }
+              // Value is a list, convert and assign.
+              var list = subTree.get_Branch(subPath) as List<IGH_Goo>;
+              if (list?.Count > 0)
+              {
+                try
+                {
+                  @base[key] = list.Select(goo => Utilities.TryConvertItemToSpeckle(goo, Converter)).ToList();
+                }
+                catch (Exception e)
+                {
+                  Console.WriteLine(e);
+                }
+              };
+            }
+            else
+            {
+              // TODO: Handle tree conversions
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot handle trees yet");
+            }
 
-          index++;
-        });
+            index++;
+          });
+        }
+
+        Done();
       }
-
-      Done();
+      catch (Exception e)
+      {
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        Parent.Message = "Error";
+      }
     }
 
     public override void SetData(IGH_DataAccess DA)

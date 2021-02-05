@@ -19,7 +19,7 @@ namespace ConnectorGrasshopper.Ops
     public ISpeckleConverter Converter;
 
     public ISpeckleKit Kit;
-    public SendLocalComponent() : base("Local sender", "LS", "Sends data locally, without the need of a Speckle Server.", "Speckle 2", "   Send/Receive")
+    public SendLocalComponent() : base("Local sender", "LS", "Sends data locally, without the need of a Speckle Server.", "Speckle 2 Dev", "Local")
     {
       BaseWorker = new SendLocalWorker(this);
       SetDefaultKitAndConverter();

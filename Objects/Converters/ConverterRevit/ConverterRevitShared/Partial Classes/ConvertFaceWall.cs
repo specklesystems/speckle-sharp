@@ -22,9 +22,7 @@ namespace Objects.Converter.Revit
 
 
       var wallType = GetElementType<WallType>(speckleWall);
-
-      //TODO: Convert speckle surface to face
-      Face f = null;
+      Face f = BrepFaceToNative(speckleWall.face);
 
       var revitWall = DB.FaceWall.Create(Doc, wallType.Id, GetWallLocationLine(speckleWall.locationLine), f.Reference);
 

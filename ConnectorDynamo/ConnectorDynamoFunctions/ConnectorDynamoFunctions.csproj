@@ -40,6 +40,7 @@
     <Reference Include="System.Core">
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics">
       <Private>False</Private>
     </Reference>
@@ -73,7 +74,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stream.cs" />
     <Compile Include="BatchConverter.cs" />
-    <Compile Include="Transport.cs" />
+    <Compile Include="Advanced\Transport.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -105,5 +106,33 @@
       <Version>2.8.0.2471</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SpeckleConnectorDynamoFunctionsImages.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\accountdetails%40128.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\accountdetails%4032.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="AfterBuild">
+    <!-- Icons stuff -->
+    <!-- Get System.Drawing.dll -->
+    <GetReferenceAssemblyPaths TargetFrameworkMoniker=".NETFramework, Version=v4.7">
+      <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="FrameworkAssembliesPath" />
+    </GetReferenceAssemblyPaths>
+    <!-- Get assembly -->
+    <GetAssemblyIdentity AssemblyFiles="$(OutDir)$(TargetName).dll">
+      <Output TaskParameter="Assemblies" ItemName="AssemblyInfo" />
+    </GetAssemblyIdentity>
+    <!-- Generate customization dll -->
+    <GenerateResource SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" UseSourcePath="true" Sources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resx" OutputResources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resources" References="$(FrameworkAssembliesPath)System.Drawing.dll" />
+    <AL SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" TargetType="library" EmbedResources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resources" OutputAssembly="$(OutDir)SpeckleConnectorDynamoFunctions.customization.dll" Version="%(AssemblyInfo.Version)" />
+    <!-- Icons stuff end -->
+    <ItemGroup>
+      <Dll Include="$(OutDir)SpeckleConnectorDynamoFunctions.customization.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(Dll)" DestinationFolder="$(ProjectDir)\..\ConnectorDynamo\bin\$(ConfigurationName)" />
+  </Target>
 </Project>

@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Accounts\Accounts.ListAccounts.cs" />
+    <Compile Include="Accounts\AccountDetails.cs" />
     <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
     <Compile Include="Conversion\Serialisation.SerialiseObject.cs" />
     <Compile Include="Extras\GenericAccessParam.cs" />
@@ -195,15 +196,16 @@
     <None Include="Resources\LocalReceiver.png" />
     <None Include="Resources\LocalSender.png" />
     <None Include="Resources\SchemaBuilder.png" />
+    <None Include="Resources\AccountDetails.png" />
     <Content Include="Resources\speckle-logo-bw.png" />
     <Content Include="Resources\speckle-logo.png" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Grasshopper">
-      <Version>6.32.20340.21001</Version>
+      <Version>6.33.20343.16431</Version>
     </PackageReference>
     <PackageReference Include="GrasshopperAsyncComponent">
-      <Version>0.2.0</Version>
+      <Version>0.2.1</Version>
     </PackageReference>
     <PackageReference Include="System.ComponentModel.Annotations">
       <Version>4.7.0</Version>
@@ -217,7 +219,6 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-
   <PropertyGroup>
     <FallbackCulture>en-US</FallbackCulture>
   </PropertyGroup>

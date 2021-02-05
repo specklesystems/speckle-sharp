@@ -15,7 +15,8 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class CreateSpeckleObjectByKeyValue : SelectKitComponentBase
+  public class 
+    CreateSpeckleObjectByKeyValue : SelectKitComponentBase
   {
     public CreateSpeckleObjectByKeyValue() : base("Create object by key/value", "K/V",
       "Create an Speckle object by key/value pairs.\nALPHA: Currently supports passing items as lists of keys (1 branch = 1 object), and values as a list of items or as a tree where each branch will be a list of values for each key.", "Speckle 2", "Object Management")

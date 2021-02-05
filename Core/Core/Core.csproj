@@ -28,12 +28,13 @@
     </When>
   </Choose>
   <ItemGroup>
-    <PackageReference Include="GraphQL.Client" Version="3.2.0" />
-    <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="3.2.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="GraphQL.Client" Version="3.2.1" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Piwik.Tracker" Version="3.0.0" />
-    <PackageReference Include="Sentry" Version="2.1.6" />
+    <PackageReference Include="Sentry" Version="2.1.8" />
+    <PackageReference Include="Speckle.Newtonsoft.Json" Version="12.0.3.1">
+      <Aliases></Aliases>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Serialisation\" />

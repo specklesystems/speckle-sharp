@@ -1,7 +1,8 @@
-﻿using Rhino;
+﻿﻿using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
 using Speckle.DesktopUI;
+using Speckle.DesktopUI.Utils;
 using System.Windows;
 
 namespace SpeckleRhino
@@ -20,7 +21,9 @@ namespace SpeckleRhino
     private void RhinoApp_Idle(object sender, System.EventArgs e)
     {
       RhinoApp.Idle -= RhinoApp_Idle;
-      RhinoApp.RunScript("_Speckle", false);
+      var bindings = new ConnectorBindingsRhino();
+      if (bindings.GetStreamsInFile().Count > 0)
+        RhinoApp.RunScript("_Speckle", false);
     }
 
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;

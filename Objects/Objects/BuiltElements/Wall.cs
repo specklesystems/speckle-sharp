@@ -91,7 +91,7 @@ namespace Objects.BuiltElements.Revit
     public string family { get; set; }
     public string type { get; set; }
 
-    public Surface face { get; set; }
+    public BrepFace face { get; set; }
     public Level level { get; set; }
 
     public LocationLine locationLine { get; set; }
@@ -106,7 +106,7 @@ namespace Objects.BuiltElements.Revit
 
     [SchemaInfo("Wall by face", "Creates a Revit wall with a top and base level.")]
     public RevitFaceWall(string family, string type,
-      Surface face, Level level, LocationLine locationLine = LocationLine.Interior,
+      BrepFace face, Level level, LocationLine locationLine = LocationLine.Interior,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
       List<Parameter> parameters = null)
     {

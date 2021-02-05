@@ -1,6 +1,4 @@
-﻿extern alias DynamoNewtonsoft;
-using DNJ = DynamoNewtonsoft::Newtonsoft.Json;
-using Dynamo.Engine;
+﻿using Dynamo.Engine;
 using Dynamo.Graph.Nodes;
 using ProtoCore.AST.AssociativeAST;
 using Speckle.Core.Api;
@@ -16,6 +14,7 @@ using Dynamo.Utilities;
 using Speckle.ConnectorDynamo.Functions;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.ReceiveNode
 {
@@ -82,7 +81,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public bool Transmitting
     {
       get => _transmitting;
@@ -96,7 +95,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public string Message
     {
       get => _message;
@@ -110,7 +109,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// <summary>
     /// UI Binding
     /// </summary>
-    [DNJ.JsonIgnore]
+    [JsonIgnore]
     public double Progress
     {
       get => _progress;
@@ -184,7 +183,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// </summary>
     /// <param name="inPorts"></param>
     /// <param name="outPorts"></param>
-    [DNJ.JsonConstructor]
+    [JsonConstructor]
     private Receive(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
     {
       if (inPorts.Count() == 1)
@@ -370,10 +369,10 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         Message = "Stream is invalid";
         return;
       }
-      
-      if(newStream.Type != StreamWrapperType.Branch)
+
+      if (newStream.Type != StreamWrapperType.Branch)
         newStream.BranchName = "main";
-      
+
       //no need to re-subscribe. it's the same stream
       if (oldStream != null && newStream.ToString() == oldStream.ToString())
         return;

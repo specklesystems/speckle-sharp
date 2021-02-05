@@ -9,6 +9,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -19,13 +20,13 @@ namespace ConnectorGrasshopper.Objects
     public override Guid ComponentGuid => new Guid("C8D4DBEB-7CC5-45C0-AF5D-F374FA5DBFBB");
 
     protected override Bitmap Icon => Properties.Resources.CreateSpeckleObjectByKeyValue;
-    
+
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public CreateSpeckleObjectByKeyValueAsync() : base("Create Speckle Object by Key/Value", "K/V",
       "Creates a speckle object from key value pairs", "Speckle 2", "Object Management")
     {
-      BaseWorker = new CreateSpeckleObjectByKeyValueWorker(this,Converter);
+      BaseWorker = new CreateSpeckleObjectByKeyValueWorker(this, Converter);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -55,59 +56,91 @@ namespace ConnectorGrasshopper.Objects
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      // 👉 Checking for cancellation!
-      if (CancellationToken.IsCancellationRequested) return;
-      Parent.Message = "Creating...";
-      // Create a path from the current iteration
-      var searchPath = new GH_Path(iteration);
-
-      // Grab the corresponding subtree from the value input tree.
-      var subTree = Utilities.GetSubTree(valueTree, searchPath);
-      speckleObj = new Base();
-      // Find the list or subtree belonging to that path
-      if (valueTree.PathExists(searchPath) || valueTree.Paths.Count == 1)
+      try
       {
-        var list = valueTree.Paths.Count == 1 ? valueTree.Branches[0] : valueTree.get_Branch(searchPath);
-        // We got a list of values
-        var ind = 0;
-        keys.ForEach(key =>
-        {
-          if (ind < list.Count)
-            speckleObj[key] = Utilities.TryConvertItemToSpeckle(list[ind], Converter);
-          ind++;
-        });
-      }
-      else
-      {
-        // We got a tree of values
+        // 👉 Checking for cancellation!
+        if (CancellationToken.IsCancellationRequested) return;
+        Parent.Message = "Creating...";
+        // Create a path from the current iteration
+        var searchPath = new GH_Path(iteration);
 
-        // Create the speckle object with the specified keys
-        var index = 0;
-        keys.ForEach(key =>
+        // Grab the corresponding subtree from the value input tree.
+        var subTree = Utilities.GetSubTree(valueTree, searchPath);
+        speckleObj = new Base();
+        // Find the list or subtree belonging to that path
+        if (valueTree.PathExists(searchPath) || valueTree.Paths.Count == 1)
         {
-          var itemPath = new GH_Path(index);
-          
-          var branch = subTree.get_Branch(itemPath);
-          if (branch != null)
+          var list = valueTree.Paths.Count == 1 ? valueTree.Branches[0] : valueTree.get_Branch(searchPath);
+          // We got a list of values
+          var ind = 0;
+          var hasErrors = false;
+          keys.ForEach(key =>
           {
-            var objs = new List<object>();
-            foreach (var goo in branch)
+            if (ind < list.Count)
+              try
+              {
+                speckleObj[key] = Utilities.TryConvertItemToSpeckle(list[ind], Converter);
+              }
+              catch (Exception e)
+              {
+                Console.WriteLine(e);
+                Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
+                Parent.Message = "Error";
+                hasErrors = true;
+              }
+
+            ind++;
+          });
+          if (hasErrors) return;
+        }
+        else
+        {
+          // We got a tree of values
+
+          // Create the speckle object with the specified keys
+          var index = 0;
+          keys.ForEach(key =>
+          {
+            var itemPath = new GH_Path(index);
+
+            var branch = subTree.get_Branch(itemPath);
+            if (branch != null)
             {
-              objs.Add(Utilities.TryConvertItemToSpeckle(goo, Converter));
+              var objs = new List<object>();
+              foreach (var goo in branch)
+              {
+                objs.Add(Utilities.TryConvertItemToSpeckle(goo, Converter));
+              }
+
+              if (objs.Count > 0)
+                try
+                {
+                  speckleObj[key] = objs;
+                }
+                catch (Exception e)
+                {
+                  Console.WriteLine(e);
+                  Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
+                  return;
+                }
             }
 
-            if (objs.Count > 0)
-              speckleObj[key] = objs;
-          }
+            index++;
+          });
+        }
+        // --> Report progress if necessary
+        // ReportProgress(Id, percentage);
 
-          index++;
-        });
+        // Call Done() to signal it's finished.
+        Done();
       }
-      // --> Report progress if necessary
-      // ReportProgress(Id, percentage);
-      
-      // Call Done() to signal it's finished.
-      Done();
+      catch (Exception e)
+      {
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        Parent.Message = "Error";
+      }
     }
 
     public override WorkerInstance Duplicate() => new CreateSpeckleObjectByKeyValueWorker(Parent, Converter);

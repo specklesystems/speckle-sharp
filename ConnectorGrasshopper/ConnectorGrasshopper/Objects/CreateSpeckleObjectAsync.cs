@@ -6,7 +6,9 @@ using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using GrasshopperAsyncComponent;
+using Rhino;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -19,13 +21,29 @@ namespace ConnectorGrasshopper.Objects
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public override Guid ComponentGuid => new Guid("FC2EF86F-2C12-4DC2-B216-33BFA409A0FC");
-
-
+    
     public CreateSpeckleObjectAsync() : base("Create Speckle Object", "CSO",
       "Allows you to create a Speckle object by setting its keys and values.",
       "Speckle 2", "Object Management")
     {
+        
         BaseWorker = new CreateSpeckleObjectWorker(this,Converter);
+        Params.ParameterNickNameChanged += (sender, args) =>
+        {
+          Console.WriteLine("nickname changed!");
+          args.Parameter.Name = args.Parameter.NickName;
+          ExpireSolution(true);
+        };
+        Params.ParameterChanged += (sender, args) =>
+        {
+          if (args.OriginalArguments.Type == GH_ObjectEventType.NickName ||
+              args.OriginalArguments.Type == GH_ObjectEventType.NickNameAccepted)
+          {
+            Console.WriteLine("nickname changed!");
+            args.Parameter.Name = args.Parameter.NickName;
+            ExpireSolution(true);
+          }
+        };
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -52,8 +70,8 @@ namespace ConnectorGrasshopper.Objects
       };
 
       myParam.NickName = myParam.Name;
-      myParam.ObjectChanged += (sender, e) => { };
-
+      myParam.Optional = false;
+      myParam.ObjectChanged += (sender, e) => {};
       return myParam;
     }
 
@@ -64,6 +82,7 @@ namespace ConnectorGrasshopper.Objects
 
     public void VariableParameterMaintenance()
     {
+      Console.WriteLine("parameter maintenance!");
     }
   }
 
@@ -82,29 +101,63 @@ namespace ConnectorGrasshopper.Objects
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      Parent.Message = "Creating...";
-      @base = new Base();
-      inputData.Keys.ToList().ForEach(key =>
+      try
       {
-        var value = inputData[key];
-        if (value == null)
+        Parent.Message = "Creating...";
+        @base = new Base();
+        var hasErrors = false;
+        inputData.Keys.ToList().ForEach(key =>
         {
-        }
-        else if (value is List<object> list)
-        {
-          // Value is a list of items, iterate and convert.
-          var converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
-          @base[key] = converted;
-        }
-        else
-        {
-          // If value is not list, it is a single item.
-          var obj = Utilities.TryConvertItemToSpeckle(value, Converter);
-          @base[key] = obj;
-        }
-      });
+          var value = inputData[key];
+          if (value == null)
+            Done();
+          
+          else if (value is List<object> list)
+          {
+            // Value is a list of items, iterate and convert.
+            var converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
+            try
+            {
+              @base[key] = converted;
+            }
+            catch (Exception e)
+            {
+              Log.CaptureException(e);
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
+              Parent.Message = "Error";
+              RhinoApp.InvokeOnUiThread(new Action(()=> Parent.OnDisplayExpired(true)));
+              hasErrors = true;
+            }
+          }
+          else
+          {
+            // If value is not list, it is a single item.
+            try
+            {
+              var obj = Utilities.TryConvertItemToSpeckle(value, Converter);
+              @base[key] = obj;
+            }
+            catch (Exception e)
+            {
+              Log.CaptureException(e);
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
+              Parent.Message = "Error";
+              RhinoApp.InvokeOnUiThread(new Action(()=> Parent.OnDisplayExpired(true)));
+              hasErrors = true;
+            }        
+          }
+        });
+        if (!hasErrors) 
+          Done();
+      }
+      catch (Exception e)
+      {
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        Parent.Message = "Error";
+      }
 
-      Done();
     }
 
     public override void SetData(IGH_DataAccess DA)
