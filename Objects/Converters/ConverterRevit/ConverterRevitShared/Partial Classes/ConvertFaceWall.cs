@@ -24,6 +24,14 @@ namespace Objects.Converter.Revit
         throw new Exception("Only surface based FaceWalls are currently supported.");
       }
 
+
+      // Cannot update revit wall to new mass face
+      FaceWall revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.FaceWall;
+      if (revitWall != null)
+      {
+        Doc.Delete(revitWall.Id);
+      }
+
       var famPath = Path.Combine(Doc.Application.FamilyTemplatePath, @"Conceptual Mass\Metric Mass.rft");
       if (!File.Exists(famPath))
       {
@@ -31,11 +39,20 @@ namespace Objects.Converter.Revit
         return null;
       }
 
-      var tempMassFamilyPath = CreateMassFamily(famPath, speckleWall.surface);
+      var tempMassFamilyPath = CreateMassFamily(famPath, speckleWall.surface, speckleWall.applicationId);
       Family fam;
       Doc.LoadFamily(tempMassFamilyPath, new FamilyLoadOption(), out fam);
       var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;
       symbol.Activate();
+
+      try
+      {
+        File.Delete(tempMassFamilyPath);
+      }
+      catch 
+      {
+
+      }
 
 
       var mass = Doc.Create.NewFamilyInstance(XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
@@ -59,7 +76,7 @@ namespace Objects.Converter.Revit
         return null;
       }
 
-      FaceWall revitWall = null;
+      revitWall = null;  
       try
       {
         revitWall = DB.FaceWall.Create(Doc, wallType.Id, GetWallLocationLine(speckleWall.locationLine), faceRef);
@@ -67,6 +84,8 @@ namespace Objects.Converter.Revit
       catch (Exception e)
       {
       }
+      
+     
 
 
       if (revitWall == null)
@@ -74,6 +93,8 @@ namespace Objects.Converter.Revit
         ConversionErrors.Add(new Error { message = $"Failed to create face wall ${speckleWall.applicationId}." });
         return null;
       }
+
+      Doc.Delete(mass.Id);
 
       SetInstanceParameters(revitWall, speckleWall);
 
@@ -120,7 +141,7 @@ namespace Objects.Converter.Revit
       return null;
     }
 
-    private string CreateMassFamily(string famPath, Geometry.Surface surface)
+    private string CreateMassFamily(string famPath, Geometry.Surface surface, string name)
     {
       var famDoc = Doc.Application.NewFamilyDocument(famPath);
 
@@ -159,7 +180,7 @@ namespace Objects.Converter.Revit
         t.Commit();
 
       }
-      var famName = "SpeckleMass_1" + surface.id;
+      var famName = "SpeckleMass_" + name;
       string tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
       SaveAsOptions so = new SaveAsOptions();
       so.OverwriteExistingFile = true;
