@@ -31,7 +31,7 @@ namespace ConnectorGrasshopper.Conversion
     private ISpeckleKit Kit;
 
     public ToNativeConverterAsync() : base("To Native", "To Native",
-      "Convert data from Speckle's Base object to it`s Dynamo equivalent.", "Speckle 2 Dev", "Conversion")
+      "Convert data from Speckle's Base object to it`s Dynamo equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
       SetDefaultKitAndConverter();
       BaseWorker = new ToNativeWorker(Converter);
@@ -117,13 +117,13 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Speckle Objects", "O",
+      pManager.AddParameter(new SpeckleBaseParam("Base", "B",
         "Speckle Base objects to convert to Grasshopper.", GH_ParamAccess.tree));
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("Converted", "C", "Converted objects.", GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Data", "D", "Converted data in GH native format.", GH_ParamAccess.tree);
     }
 
     protected override void BeforeSolveInstance()

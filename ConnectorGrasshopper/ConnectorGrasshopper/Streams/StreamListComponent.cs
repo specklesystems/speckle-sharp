@@ -14,8 +14,8 @@ namespace ConnectorGrasshopper.Streams
 {
   public class StreamListComponent : GH_Component
   {
-    public StreamListComponent() : base("Stream List", "sList", "Lists all the streams for this account", "Speckle 2",
-      "Streams")
+    public StreamListComponent() : base("Stream List", "sList", "Lists all the streams for this account", ComponentCategories.PRIMARY_RIBBON,
+       ComponentCategories.STREAMS)
     {
     }
 
@@ -28,7 +28,7 @@ namespace ConnectorGrasshopper.Streams
     {
       var acc = pManager.AddTextParameter("Account", "A", "Account to get streams from", GH_ParamAccess.item);
       pManager.AddIntegerParameter("Limit", "L", "Max number of streams to fetch", GH_ParamAccess.item, 10);
-      
+
       Params.Input[acc].Optional = true;
     }
 
@@ -56,17 +56,14 @@ namespace ConnectorGrasshopper.Streams
         string accountId = null;
         var limit = 10;
 
+        DA.GetData(0, ref accountId);
         DA.GetData(1, ref limit); // Has default value so will never be empty.
-
-        var account = !DA.GetData(0, ref accountId)
-          ? AccountManager.GetDefaultAccount()
+        var account = string.IsNullOrEmpty(accountId)  ? AccountManager.GetDefaultAccount()
           : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
 
         if (accountId == null)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No account ID was provided");
-          Message = null;
-          return;
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account was provided, using default.");
         }
 
         if (account == null)
@@ -102,7 +99,10 @@ namespace ConnectorGrasshopper.Streams
       {
         Message = "Done";
         if (streams != null)
+        {
           DA.SetDataList(0, streams.Select(item => new GH_SpeckleStream(item)));
+        }
+
         streams = null;
       }
     }

@@ -19,19 +19,19 @@ namespace ConnectorGrasshopper.Conversion
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle Base object to JSON", "Speckle 2 Dev", "Conversion")
+    public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle Base object to JSON", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
       BaseWorker = new SerializeWorker(this);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Speckle objects to serialize.", GH_ParamAccess.tree));
+      pManager.AddParameter(new SpeckleBaseParam("Base", "B", "Speckle base objects to serialize.", GH_ParamAccess.tree));
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddTextParameter("S", "S", "Serialized objects in JSON format.", GH_ParamAccess.tree);
+      pManager.AddTextParameter("Json", "J", "Serialized objects in JSON format.", GH_ParamAccess.tree);
     }
 
     protected override void BeforeSolveInstance()

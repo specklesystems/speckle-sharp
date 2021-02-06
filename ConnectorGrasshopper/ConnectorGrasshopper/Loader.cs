@@ -24,10 +24,10 @@ namespace ConnectorGrasshopper
     {
       Setup.Init(Applications.Grasshopper);
       Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
-      Grasshopper.Instances.ComponentServer.AddCategoryIcon("Speckle 2", Properties.Resources.speckle_logo);
-      Grasshopper.Instances.ComponentServer.AddCategorySymbolName("Speckle 2", 'S');
-      Grasshopper.Instances.ComponentServer.AddCategoryIcon("Speckle 2 Dev", Properties.Resources.speckle_logo);
-      Grasshopper.Instances.ComponentServer.AddCategorySymbolName("Speckle 2 Dev", 'S');
+      Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.PRIMARY_RIBBON, Properties.Resources.speckle_logo);
+      Grasshopper.Instances.ComponentServer.AddCategorySymbolName(ComponentCategories.PRIMARY_RIBBON, 'S');
+      Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.SECONDARY_RIBBON, Properties.Resources.speckle_logo);
+      Grasshopper.Instances.ComponentServer.AddCategorySymbolName(ComponentCategories.SECONDARY_RIBBON, 'S');
 
       return GH_LoadingInstruction.Proceed;
     }

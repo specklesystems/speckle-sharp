@@ -20,7 +20,7 @@ namespace ConnectorGrasshopper.Objects
     public override Guid ComponentGuid => new Guid("050B24D3-CCEA-466A-B52C-25CB4DA39981");
 
     public GetObjectValueByKeyAsync() : base("Speckle Object Value by Key", "Object K/V",
-      "Gets the value of a specific key in a Speckle object.", "Speckle 2", "Object Management")
+      "Gets the value of a specific key in a Speckle object.", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
       BaseWorker = new GetObjectValueByKeyWorker(this, Converter);
     }

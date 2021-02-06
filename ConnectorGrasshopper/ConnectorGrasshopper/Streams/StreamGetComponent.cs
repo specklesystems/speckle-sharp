@@ -14,8 +14,8 @@ namespace ConnectorGrasshopper.Streams
 {
   public class StreamGetComponent : GH_Component
   {
-    public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account", "Speckle 2",
-      "Streams")
+    public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account", ComponentCategories.PRIMARY_RIBBON,
+       ComponentCategories.STREAMS)
     {
     }
 
@@ -27,7 +27,8 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddTextParameter("Stream ID", "ID", "Stream ID to fetch stream from the server", GH_ParamAccess.item);
+      pManager.AddParameter(new SpeckleStreamParam("Stream ID/URL", "ID/URL", "Speckle stream ID or URL",
+        GH_ParamAccess.item));
       var acc = pManager.AddTextParameter("Account", "A", "Account to get stream with.", GH_ParamAccess.item);
 
       Params.Input[acc].Optional = true;
@@ -53,13 +54,14 @@ namespace ConnectorGrasshopper.Streams
       }
 
       string accountId = null;
-      string id = null;
+      GH_SpeckleStream ghIdWrapper = null;
       DA.DisableGapLogic();
-      DA.GetData(0, ref id);
-      var account = !DA.GetData(1, ref accountId)
-        ? AccountManager.GetDefaultAccount()
+      DA.GetData(0, ref ghIdWrapper);
+      DA.GetData(1, ref accountId);
+      var account = string.IsNullOrEmpty(accountId)  ? AccountManager.GetDefaultAccount()
         : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
 
+      var idWrapper = ghIdWrapper.Value;
       if(account == null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find default account in this machine. Use the Speckle Manager to add an account.");
@@ -80,7 +82,7 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         // Validation
         string errorMessage = null;
-        if (!ValidateInput(account, id, ref errorMessage))
+        if (!ValidateInput(account, idWrapper.StreamId, ref errorMessage))
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, errorMessage);
           return;
@@ -93,7 +95,7 @@ namespace ConnectorGrasshopper.Streams
           {
             //Exists?
             var client = new Client(account);
-            var result = await client.StreamGet(id);
+            var result = await client.StreamGet(idWrapper.StreamId);
             stream = new StreamWrapper(result.id, account.id, account.serverInfo.url);
           }
           catch (Exception e)

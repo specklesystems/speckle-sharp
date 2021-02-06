@@ -1,4 +1,12 @@
-﻿using ConnectorGrasshopper.Extras;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Timers;
+using System.Windows.Forms;
 using GH_IO.Serialization;
 using Grasshopper.GUI;
 using Grasshopper.GUI.Canvas;
@@ -7,21 +15,13 @@ using Grasshopper.Kernel.Attributes;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
+using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Timers;
-using System.Windows.Forms;
-using Rhino;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
@@ -52,8 +52,8 @@ namespace ConnectorGrasshopper.Ops
 
     public ISpeckleKit Kit;
 
-    public SendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", "Speckle 2",
-      "   Send/Receive")
+    public SendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", ComponentCategories.PRIMARY_RIBBON,
+      ComponentCategories.SEND_RECEIVE)
     {
       BaseWorker = new SendComponentWorker(this);
       Attributes = new SendComponentAttributes(this);
@@ -107,7 +107,7 @@ namespace ConnectorGrasshopper.Ops
         {
           SetConverterFromKit(kitName);
         }
-        catch (Exception e)
+        catch (Exception)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
             $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
@@ -182,7 +182,10 @@ namespace ConnectorGrasshopper.Ops
 
     public void SetConverterFromKit(string kitName)
     {
-      if (kitName == Kit.Name) return;
+      if (kitName == Kit.Name)
+      {
+        return;
+      }
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
@@ -322,10 +325,16 @@ namespace ConnectorGrasshopper.Ops
 
         //the active document may have changed
         ((SendComponent)Parent).Converter.SetContextDocument(RhinoDoc.ActiveDoc);
-        var converted = Utilities.DataTreeToNestedLists(DataInput, ((SendComponent)Parent).Converter);
+
+        // Note: this method actually converts the objects to speckle too
+        int convertedCount = 0;
+        var converted = Utilities.DataTreeToNestedLists(DataInput, ((SendComponent)Parent).Converter, () =>
+        {
+          ReportProgress("Conversion", convertedCount++ / (double)DataInput.DataCount);
+        });
+
         ObjectToSend = new Base();
         ObjectToSend["@data"] = converted;
-
 
         TotalObjectCount = ObjectToSend.GetTotalChildrenCount();
 
@@ -356,7 +365,7 @@ namespace ConnectorGrasshopper.Ops
             {
               transport = new StreamWrapper(s);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
               // TODO: Check this with team.
               Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.Message);
@@ -376,7 +385,7 @@ namespace ConnectorGrasshopper.Ops
               Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot push to a specific commit stream url.");
               continue;
             }
-          
+
             var acc = sw.GetAccount();
             if (acc == null)
             {
@@ -384,7 +393,13 @@ namespace ConnectorGrasshopper.Ops
               continue;
             }
 
-            var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
+            if (!sw.ExistsInServer())
+            {
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The provided stream ID does not exist in the server.");
+              continue;
+
+            }
+              var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");
             Transports.Add(serverTransport);
           }
@@ -415,7 +430,7 @@ namespace ConnectorGrasshopper.Ops
         ErrorAction = (transportName, exception) =>
         {
           RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
-          var asyncParent = (GH_AsyncComponent) Parent;
+          var asyncParent = (GH_AsyncComponent)Parent;
           asyncParent.CancellationSources.ForEach(source => source.Cancel());
         };
 
@@ -471,7 +486,7 @@ namespace ConnectorGrasshopper.Ops
             {
               var client = new Client(((ServerTransport)transport).Account);
               var branch = transportBranches.ContainsKey(transport) ? transportBranches[transport] : "main";
-            
+
               var commitCreateInput = new CommitCreateInput
               {
                 branchName = branch,
@@ -520,7 +535,7 @@ namespace ConnectorGrasshopper.Ops
         Log.CaptureException(e);
         Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
         Parent.Message = "Error";
-        ((SendComponent) Parent).CurrentComponentState = "expired";
+        ((SendComponent)Parent).CurrentComponentState = "expired";
       }
     }
 
@@ -567,7 +582,11 @@ namespace ConnectorGrasshopper.Ops
           $"Send duration: {stopwatch.ElapsedMilliseconds / 1000f}s");
         foreach (var t in Transports)
         {
-          if (!(t is ServerTransport st)) continue;
+          if (!(t is ServerTransport st))
+          {
+            continue;
+          }
+
           var mb = st.TotalSentBytes / 1e6;
           Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
             $"{t.TransportName} avg {(mb / (stopwatch.ElapsedMilliseconds / 1000f)):0.00} MB/s");
@@ -587,12 +606,14 @@ namespace ConnectorGrasshopper.Ops
 
     public override bool Selected
     {
-      get {
-         return _selected;
+      get
+      {
+        return _selected;
       }
-      set {
+      set
+      {
         Owner.Params.ToList().ForEach(p => p.Attributes.Selected = value);
-         _selected = value;
+        _selected = value;
       }
     }
 
@@ -657,7 +678,7 @@ namespace ConnectorGrasshopper.Ops
           {
             return GH_ObjectResponse.Handled;
           }
-          
+
           // if (((SendComponent)Owner).CurrentComponentState != "expired")
           // {
           //   return GH_ObjectResponse.Handled;
