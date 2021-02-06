@@ -102,7 +102,7 @@ namespace Speckle.DesktopUI.Utils
       {
         SetAndNotify(ref _Branch, value);
 
-        if (Commit != null && !string.IsNullOrEmpty(Commit.id) && Commit.id!=  "No Commits")
+        if (Commit != null && !string.IsNullOrEmpty(Commit.id) && Commit.id != "No Commits")
         {
           //do nothing, it means the current commit is either "latest" or a previous commitId, 
           //in which case we don't want to switch it automatically
@@ -472,14 +472,15 @@ namespace Speckle.DesktopUI.Utils
       Client = new Client(account);
     }
 
-    internal void Initialise()
+    public void Initialise(bool refresh = false)
     {
       if (Stream == null || Client?.AccountId == null)
       {
         return;
       }
-      // refresh after deserialisation
-      Task.Run(() => RefreshStream());
+
+      if (refresh) //only need to refresh after de-serialization
+        Task.Run(() => RefreshStream());
 
       Client.SubscribeStreamUpdated(Stream.id);
       Client.SubscribeCommitCreated(Stream.id);

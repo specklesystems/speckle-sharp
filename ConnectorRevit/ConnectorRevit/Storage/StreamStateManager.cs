@@ -23,14 +23,26 @@ namespace Speckle.ConnectorRevit.Storage
     /// <returns></returns>
     public static List<StreamState> ReadState(Document doc)
     {
-      var streamStatesEntity = GetSpeckleEntity(doc);
-      if (streamStatesEntity == null || !streamStatesEntity.IsValid())
+      try
+      {
+        var streamStatesEntity = GetSpeckleEntity(doc);
+        if (streamStatesEntity == null || !streamStatesEntity.IsValid())
+          return new List<StreamState>();
+
+        var str = streamStatesEntity.Get<string>("StreamStates");
+        var states = JsonConvert.DeserializeObject<List<StreamState>>(str);
+
+        if (states != null)
+        {
+          states.ForEach(x => x.Initialise(true));
+        }
+
+        return states;
+      }
+      catch (Exception e)
+      {
         return new List<StreamState>();
-
-      var str = streamStatesEntity.Get<string>("StreamStates");
-      var states = JsonConvert.DeserializeObject<List<StreamState>>(str);
-
-      return states;
+      }
     }
 
     /// <summary>
