@@ -14,7 +14,7 @@ using Dynamo.Utilities;
 using Speckle.ConnectorDynamo.Functions;
 using System.Threading;
 using System.Threading.Tasks;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.ReceiveNode
 {

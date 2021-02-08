@@ -8,7 +8,7 @@ using Speckle.Core.Logging;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using Account = Speckle.Core.Credentials.Account;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.AccountsNode
 {
