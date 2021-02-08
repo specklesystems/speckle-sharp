@@ -1,5 +1,5 @@
 ﻿using Autodesk.DesignScript.Runtime;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 using ProtoCore.Lang;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;

@@ -8,7 +8,7 @@ using Dynamo.Engine;
 using System.ComponentModel;
 using System.Diagnostics;
 using Dynamo.Utilities;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.ViewNode
 {
