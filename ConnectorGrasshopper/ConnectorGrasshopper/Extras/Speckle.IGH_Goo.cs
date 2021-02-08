@@ -56,9 +56,23 @@ namespace ConnectorGrasshopper.Extras
 
     public override bool CastFrom(object source)
     {
-      var @base = (source as GH_SpeckleBase)?.Value;
-      if (@base == null)
+      Base @base = null;
+      if (source is Base _base)
+      {
+        @base = _base;
+      }
+      else if (source is GH_SpeckleBase speckleBase)
+      {
+        @base = speckleBase.Value;
+      }
+      else if (source is GH_Goo<Base> goo)
+      {
+        @base = goo.Value;
+      }
+      
+      if (source == null)
         return false;
+      
       Value = @base;
       return true;
     }
