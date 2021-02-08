@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 using StyletIoC;

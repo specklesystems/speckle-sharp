@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.Primitive
 {

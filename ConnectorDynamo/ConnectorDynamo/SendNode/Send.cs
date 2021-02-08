@@ -16,7 +16,7 @@ using Dynamo.Utilities;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.SendNode
 {

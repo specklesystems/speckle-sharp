@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 using Speckle.DesktopUI.Utils;
 
 namespace Speckle.ConnectorRevit.Storage

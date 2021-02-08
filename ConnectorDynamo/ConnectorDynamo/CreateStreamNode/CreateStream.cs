@@ -10,7 +10,7 @@ using System.Reactive.Linq;
 using Dynamo.Utilities;
 using Speckle.Core.Api;
 using Account = Speckle.Core.Credentials.Account;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.CreateStreamNode
 {
