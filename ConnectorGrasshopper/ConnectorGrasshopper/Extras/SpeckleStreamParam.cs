@@ -98,6 +98,11 @@ namespace ConnectorGrasshopper.Extras
         }
       }
 
+      if (source is StreamWrapper strWrapper)
+      {
+        Value = strWrapper;
+        return true;
+      }
       var stream = (source as GH_SpeckleStream)?.Value;
       if (stream == null) return false;
       Value = stream;
