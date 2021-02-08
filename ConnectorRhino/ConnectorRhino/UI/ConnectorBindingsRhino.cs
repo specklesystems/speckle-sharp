@@ -85,7 +85,6 @@ namespace SpeckleRhino
 
     public override void AddNewStream(StreamState state)
     {
-      var stateee = JsonConvert.SerializeObject(state);
       Doc.Strings.SetString("speckle", state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
