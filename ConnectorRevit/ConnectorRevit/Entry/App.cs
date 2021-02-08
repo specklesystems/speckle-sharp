@@ -49,23 +49,12 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling -= Initialise;
       AppInstance = sender as UIApplication;
 
-      // Adds an event on doc open to check for streams and launch/focus speckle if any are present.
-      AppInstance.Application.DocumentOpened += CheckForStreamsAndOpenSpeckle;
-
       // Set up bindings now as they subscribe to some document events and it's better to do it now
       SpeckleRevitCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
       var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
       SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
     }
 
-    private void CheckForStreamsAndOpenSpeckle(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
-    {
-      var streams = StreamStateManager.ReadState(e.Document);
-      if (streams != null && streams.Count != 0)
-      {
-        SpeckleRevitCommand.OpenOrFocusSpeckle(AppInstance);
-      }
-    }
 
     public Result OnShutdown(UIControlledApplication application)
     {

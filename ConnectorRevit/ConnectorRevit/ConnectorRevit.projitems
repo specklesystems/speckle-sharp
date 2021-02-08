@@ -20,7 +20,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\CmdAvailabilityViews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Revit\ErrorEater.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExternalEventHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Revit\FamilyLoadOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Selection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Receive.cs" />

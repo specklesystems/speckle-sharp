@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using ConnectorRevit;
+using ConnectorRevit.Revit;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -87,6 +89,10 @@ namespace Speckle.ConnectorRevit.UI
         using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.Stream.name}"))
         {
           t.Start();
+          var failOpts = t.GetFailureHandlingOptions();
+          failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
+          t.SetFailureHandlingOptions(failOpts);
+
 
           var flattenedObjects = FlattenCommitObject(commitObject, converter);
           // needs to be set for editing to work 
@@ -105,6 +111,8 @@ namespace Speckle.ConnectorRevit.UI
       });
 
       Executor.Raise();
+
+      
 
       try
       {

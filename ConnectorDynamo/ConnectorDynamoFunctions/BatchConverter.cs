@@ -22,13 +22,16 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       var kit = KitManager.GetDefaultKit();
 
+      if (kit == null)
+        throw new Exception("Cannot find the Dynamo converter, has it been copied to the Kits folder?");
+
       if (Globals.RevitDocument != null)
         _converter = kit.LoadConverter(Applications.DynamoRevit);
       else
         _converter = kit.LoadConverter(Applications.DynamoSandbox);
 
       if (_converter == null)
-        throw new Exception("Cannot find the Dynamo converter, has it been copied to the Kit folder?");
+        throw new Exception("Cannot find the Dynamo converter, has it been copied to the Kits folder?");
 
       // if in Revit, we have a doc, injected by the Extension
       if (Globals.RevitDocument != null)

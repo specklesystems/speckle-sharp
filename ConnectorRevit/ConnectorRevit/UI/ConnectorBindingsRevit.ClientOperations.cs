@@ -35,6 +35,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       if (CurrentDoc != null)
         DocumentStreams = StreamStateManager.ReadState(CurrentDoc.Document);
+
       return DocumentStreams;
     }
 
