@@ -13,10 +13,13 @@ using Speckle.Core.Api;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
 using Speckle.Core.Transports;
+using Speckle.ConnectorAutoCAD.Entry;
+using Speckle.ConnectorAutoCAD.Storage;
 
 using AcadApp = Autodesk.AutoCAD.ApplicationServices;
 using AcadDb = Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.ApplicationServices;
 using CivilApp = Autodesk.Civil.ApplicationServices;
 using CivilDb = Autodesk.Civil.DatabaseServices;
 
@@ -26,49 +29,43 @@ namespace Speckle.ConnectorAutoCAD.UI
 {
   public partial class ConnectorBindingsAutoCAD : ConnectorBindings
   {
-
-    public AcadApp.Document Doc => AcadApp.Application.DocumentManager.MdiActiveDocument;
-    public CivilApp.CivilDocument DocCivil => CivilApp.CivilApplication.ActiveDocument;
+    public Document Doc => Application.DocumentManager.MdiActiveDocument;
 
     /// <summary>
     /// TODO: Any errors thrown should be stored here and passed to the ui state
     /// </summary>
-    public List<System.Exception> Exceptions { get; set; } = new List<System.Exception>();
+    public List<Exception> Exceptions { get; set; } = new List<Exception>();
 
     public ConnectorBindingsAutoCAD() : base()
     {
     }
 
-    #region local streams 
-    public void GetFileContextAndNotifyUI()
+    public void SetExecutorAndInit()
     {
-      var streamStates = GetStreamsInFile();
-      var appEvent = new ApplicationEvent()
-      {
-        Type = ApplicationEvent.EventType.DocumentOpened,
-        DynamicInfo = streamStates
-      };
-      NotifyUi(appEvent);
+      Application.DocumentManager.DocumentActivated += Application_DocumentActivated;
+      Doc.BeginDocumentClose += Application_DocumentClosed;
     }
+
+    #region local streams 
 
     public override void AddNewStream(StreamState state)
     {
-      SpeckleStream.AddSpeckleStream(state.Stream.id, JsonConvert.SerializeObject(state));
+      SpeckleStreamManager.AddSpeckleStream(state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
     public override void RemoveStreamFromFile(string streamId)
     {
-      SpeckleStream.RemoveSpeckleStream(streamId);
+      SpeckleStreamManager.RemoveSpeckleStream(streamId);
     }
 
     public override void PersistAndUpdateStreamInFile(StreamState state)
     {
-      SpeckleStream.UpdateSpeckleStream(state.Stream.id, JsonConvert.SerializeObject(state));
+      SpeckleStreamManager.UpdateSpeckleStream(state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
     public override List<StreamState> GetStreamsInFile()
     {
-      List<string> strings = SpeckleStream.GetSpeckleStreams();
+      List<string> strings = SpeckleStreamManager.GetSpeckleStreams();
       return strings.Select(s => JsonConvert.DeserializeObject<StreamState>(s)).ToList();
     }
     #endregion
@@ -117,9 +114,10 @@ namespace Speckle.ConnectorAutoCAD.UI
 
     public override List<string> GetSelectedObjects()
     {
-      // TODO: use enums or props to capture command names, none of this string chasing bs
-      Doc.SendStringToExecute("SpeckleSelection ", false, false, true);
-      var objs = UserData.GetSpeckleSelection;
+      var objs = new List<string>();
+      PromptSelectionResult selection = Doc.Editor.SelectImplied();
+      if (selection.Status == PromptStatus.OK)
+        objs = selection.Value.GetHandles();
       return objs;
     }
 
@@ -193,7 +191,7 @@ namespace Speckle.ConnectorAutoCAD.UI
         RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
       }
 
-      using (AcadApp.DocumentLock l = Doc.LockDocument())
+      using (DocumentLock l = Doc.LockDocument())
       {
         using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
         {
@@ -215,8 +213,8 @@ namespace Speckle.ConnectorAutoCAD.UI
           var layerPrefix = $"{myStream.name}[{state.Branch.name}@{commit.id}]";
           layerPrefix = Regex.Replace(layerPrefix, @"[^\u0000-\u007F]+", string.Empty); // emits emojis
 
-          // see if there is already an existing layer with this prefix - if there is then this commit has already been recieved?
-          DeleteLayersWithPrefix(layerPrefix, tr); // todo: this should be its own transaction
+          // delete existing commit layers
+          DeleteLayersWithPrefix(layerPrefix, tr);
 
           // try and import geo
           HandleAndConvert(commitObject, tr, converter, layerPrefix, state);
@@ -228,7 +226,7 @@ namespace Speckle.ConnectorAutoCAD.UI
       return state;
     }
 
-    private void HandleAndConvert(object obj, AcadDb.Transaction tr, ISpeckleConverter converter, string layerPrefix, StreamState state, Action updateProgressAction = null)
+    private void HandleAndConvert(object obj, AcadDb.Transaction tr, ISpeckleConverter converter, string layer, StreamState state, Action updateProgressAction = null)
     {
       if (obj is Base baseItem)
       {
@@ -241,11 +239,11 @@ namespace Speckle.ConnectorAutoCAD.UI
           if (converted != null)
           {
             if (converted.IsNewObject)
-              converted.Append(tr);
+              converted.Append(layer, tr);
           }
           else
           {
-            state.Errors.Add(new System.Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
+            state.Errors.Add(new Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
           }
           updateProgressAction?.Invoke();
           return;
@@ -262,7 +260,7 @@ namespace Speckle.ConnectorAutoCAD.UI
               objLayerName = prop;
 
             // create the ac layer if it doesn't already exist
-            string acLayerName = $"{layerPrefix}${objLayerName}";
+            string acLayerName = $"{layer}${objLayerName}";
             AcadDb.LayerTableRecord objLayer = GetOrMakeLayer(acLayerName, tr);
             if (objLayer == null)
             {
@@ -279,24 +277,22 @@ namespace Speckle.ConnectorAutoCAD.UI
       if (obj is List<object> list)
       {
         foreach (var listObj in list)
-          HandleAndConvert(listObj, tr, converter, layerPrefix, state, updateProgressAction);
+          HandleAndConvert(listObj, tr, converter, layer, state, updateProgressAction);
         return;
       }
 
       if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
-          HandleAndConvert(kvp.Value, tr, converter, layerPrefix, state, updateProgressAction);
+          HandleAndConvert(kvp.Value, tr, converter, layer, state, updateProgressAction);
         return;
       }
     }
 
-    // TODO: this throws a transaction error when deleting, need to debug to check for memory access
     private void DeleteLayersWithPrefix(string prefix, AcadDb.Transaction tr)
     {
       // Open the Layer table for read
-      AcadDb.LayerTable lyrTbl;
-      lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
+      var lyrTbl = (AcadDb.LayerTable)tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead);
       foreach (AcadDb.ObjectId layerId in lyrTbl)
       {
         AcadDb.LayerTableRecord layer = (AcadDb.LayerTableRecord)tr.GetObject(layerId, AcadDb.OpenMode.ForRead);
@@ -304,21 +300,21 @@ namespace Speckle.ConnectorAutoCAD.UI
         if (layerName.StartsWith(prefix))
         {
           layer.UpgradeOpen();
+
+          // cannot delete current layer: swap current layer to default layer "0" if current layer is to be deleted
           if (Doc.Database.Clayer == layerId)
           {
             var defaultLayerID = lyrTbl["0"];
             Doc.Database.Clayer = defaultLayerID;
           }
           layer.IsLocked = false;
-
-          // open btr for read
-          AcadDb.BlockTable bt = tr.GetObject(Doc.Database.BlockTableId, AcadDb.OpenMode.ForRead) as AcadDb.BlockTable;
-          AcadDb.BlockTableRecord btr = tr.GetObject(bt[AcadDb.BlockTableRecord.ModelSpace], AcadDb.OpenMode.ForRead) as AcadDb.BlockTableRecord;
-
-          // delete all objects on this layer .. todo: this is inefficient! find better way to deleting objs instead of looping through each one
-          foreach (var btrId in btr)
+          
+          // delete all objects on this layer
+          // TODO: this is ugly! is there a better way to delete layer objs instead of looping through each one?
+          var bt = (AcadDb.BlockTable)tr.GetObject(Doc.Database.BlockTableId, AcadDb.OpenMode.ForRead);
+          foreach (var btId in bt)
           {
-            var block = (AcadDb.BlockTableRecord)tr.GetObject(btrId, AcadDb.OpenMode.ForRead);
+            var block = (AcadDb.BlockTableRecord)tr.GetObject(btId, AcadDb.OpenMode.ForRead);
             foreach (var entId in block)
             {
               var ent = (AcadDb.Entity)tr.GetObject(entId, AcadDb.OpenMode.ForRead);
@@ -329,6 +325,7 @@ namespace Speckle.ConnectorAutoCAD.UI
               }
             }
           }
+
           layer.Erase();
         }
       }
@@ -408,7 +405,7 @@ namespace Speckle.ConnectorAutoCAD.UI
         AcadDb.DBObject obj = hn.GetObject(out string type, out string layer);
         if (obj == null)
         {
-          state.Errors.Add(new System.Exception($"Failed to find local object ${autocadObjectHandle}."));
+          state.Errors.Add(new Exception($"Failed to find local object ${autocadObjectHandle}."));
           continue;
         }
 
@@ -417,7 +414,7 @@ namespace Speckle.ConnectorAutoCAD.UI
 
         if (converted == null)
         {
-          state.Errors.Add(new System.Exception($"Failed to find convert object ${autocadObjectHandle} of type ${type}."));
+          state.Errors.Add(new Exception($"Failed to find convert object ${autocadObjectHandle} of type ${type}."));
           continue;
         }
 
@@ -484,7 +481,7 @@ namespace Speckle.ConnectorAutoCAD.UI
         PersistAndUpdateStreamInFile(state);
         RaiseNotification($"{convertedCount} objects sent to {state.Stream.name}.");
       }
-      catch (System.Exception e)
+      catch (Exception e)
       {
         Globals.Notify($"Failed to create commit.\n{e.Message}");
         state.Errors.Add(e);
@@ -513,6 +510,33 @@ namespace Speckle.ConnectorAutoCAD.UI
       }
     }
 
+    #endregion
+
+    #region events
+
+    private void Application_DocumentClosed(object sender, DocumentBeginCloseEventArgs e)
+    {
+      // Triggered just after a request is received to close a drawing.
+      if (Doc != null)
+        return;
+
+      SpeckleAutoCADCommand.Bootstrapper.Application.MainWindow.Hide();
+
+      var appEvent = new ApplicationEvent() { Type = ApplicationEvent.EventType.DocumentClosed };
+      NotifyUi(appEvent);
+    }
+
+    private void Application_DocumentActivated(object sender, DocumentCollectionEventArgs e)
+    {
+      // Triggered when a document window is activated. This will happen automatically if a document is newly created or opened.
+      var appEvent = new ApplicationEvent()
+      {
+        Type = ApplicationEvent.EventType.DocumentOpened,
+        DynamicInfo = GetStreamsInFile()
+      };
+
+      NotifyUi(appEvent);
+    }
     #endregion
   }
 }

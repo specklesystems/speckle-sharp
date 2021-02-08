@@ -3,6 +3,7 @@ using System.Windows.Media;
 using System.Reflection;
 using System.IO;
 using System.Windows.Media.Imaging;
+using System.Linq;
 
 using Speckle.ConnectorAutoCAD.UI;
 
@@ -34,6 +35,7 @@ namespace Speckle.ConnectorAutoCAD.Entry
 
       // set up bindings here? possible to subscribe to document events?
       SpeckleAutoCADCommand.Bindings = new ConnectorBindingsAutoCAD();
+      SpeckleAutoCADCommand.Bindings.SetExecutorAndInit();
     }
 
     public void ComponentManager_ItemInitialized(object sender, RibbonItemEventArgs e)
@@ -57,33 +59,34 @@ namespace Speckle.ConnectorAutoCAD.Entry
 
     public void Create()
     {
-      RibbonTab tab = FindOrMakeTab("Speckle Systems");
-      if (tab != null)
+      RibbonTab tab = FindOrMakeTab("Add-ins"); // add to Add-Ins tab
+      if (tab == null)
         return;
-      RibbonPanelSource panel = CreateButtonPanel("2.0", tab);
+      RibbonPanelSource panel = CreateButtonPanel("Speckle 2", tab);
       if (panel == null)
         return;
-      RibbonButton button = CreateButton("AutoCAD connector", "Speckle", panel);
+      RibbonButton button = CreateButton("Acad Connector", "Speckle", panel);
     }
 
     public void Terminate()
     {
     }
 
-    private RibbonTab FindOrMakeTab(string str)
+    private RibbonTab FindOrMakeTab(string name)
     {
       // check to see if tab exists
-      RibbonTab tab = ribbon.FindTab(str);
+      RibbonTab tab = ribbon.Tabs.Where(o => o.Title.Equals(name)).FirstOrDefault();
 
       // if not, create a new one
       if (tab == null)
       {
         tab = new RibbonTab();
-        tab.Title = str;
-        tab.Id = str;
+        tab.Title = name;
+        tab.Id = name;
         ribbon.Tabs.Add(tab);
-        tab.IsActive = true; // optional: set ribbon tab active
       }
+
+      tab.IsActive = true; // optional debug: set ribbon tab active
       return tab;
     }
 
@@ -105,6 +108,7 @@ namespace Speckle.ConnectorAutoCAD.Entry
       button.CommandParameter = CommandParameter;
       button.ShowImage = true;
       button.ShowText = true;
+      button.ToolTip = "Speckle Connector for AutoCAD Civil3D";
       button.Size = RibbonItemSize.Large;
       button.Orientation = Orientation.Vertical;
       button.Image = LoadPngImgSource("Speckle.ConnectorAutoCAD.Resources.logo16.png");

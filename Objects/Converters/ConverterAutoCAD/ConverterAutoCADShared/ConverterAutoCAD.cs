@@ -4,7 +4,10 @@ using System.Linq;
 
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-using AC = Autodesk.AutoCAD;
+using Acad = Autodesk.AutoCAD;
+using Civil = Autodesk.Civil;
+using AcadDB = Autodesk.AutoCAD.DatabaseServices;
+using CivilDB = Autodesk.Civil.DatabaseServices;
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -73,28 +76,28 @@ namespace Objects.Converter.AutoCAD
           */
           return ObjectToSpeckle(o);
 
-        case AC.Geometry.Point3d o:
+        case Acad.Geometry.Point3d o:
           return PointToSpeckle(o);
 
-        case AC.Geometry.Vector3d o:
+        case Acad.Geometry.Vector3d o:
           return VectorToSpeckle(o);
 
-        case AC.Geometry.Line3d o:
+        case Acad.Geometry.Line3d o:
           return LineToSpeckle(o);
 
-        case AC.Geometry.LineSegment3d o:
+        case Acad.Geometry.LineSegment3d o:
           return LineToSpeckle(o);
 
-        case AC.Geometry.CircularArc3d o:
+        case Acad.Geometry.CircularArc3d o:
           return ArcToSpeckle(o);
 
-        case AC.Geometry.Plane o:
+        case Acad.Geometry.Plane o:
           return PlaneToSpeckle(o);
 
-        case AC.Geometry.Curve3d o:
+        case Acad.Geometry.Curve3d o:
           return CurveToSpeckle(o) as Base;
 
-        case AC.Geometry.NurbSurface o:
+        case Acad.Geometry.NurbSurface o:
           return SurfaceToSpeckle(o);
 
         default:
@@ -112,8 +115,6 @@ namespace Objects.Converter.AutoCAD
       return objects.Select(x => ConvertToSpeckle(x)).ToList();
     }
 
-    // note: currently this returns the DB object, NOT the AC.Geometry object!!! In order to bake into AC.
-    // ask about this later, should there be an option to toggle between the two?
     public object ConvertToNative(Base @object)
     {
       switch (@object)
@@ -177,28 +178,31 @@ namespace Objects.Converter.AutoCAD
         case DBPoint o:
           return PointToSpeckle(o);
 
-        case AC.DatabaseServices.Line o:
+        case AcadDB.Line o:
           return LineToSpeckle(o);
 
-        case AC.DatabaseServices.Arc o:
+        case AcadDB.Arc o:
           return ArcToSpeckle(o);
 
-        case AC.DatabaseServices.Circle o:
+        case AcadDB.Circle o:
           return CircleToSpeckle(o);
 
-        case AC.DatabaseServices.Ellipse o:
+        case AcadDB.Ellipse o:
           return EllipseToSpeckle(o);
 
-        case AC.DatabaseServices.Spline o:
+        case AcadDB.Spline o:
           return SplineToSpeckle(o);
 
-        case AC.DatabaseServices.Polyline o:
+        case AcadDB.Polyline o:
           if (o.IsOnlyLines) // db polylines can have arc segments, decide between polycurve or polyline conversion
             return PolylineToSpeckle(o);
           else return PolycurveToSpeckle(o);
 
-        case AC.DatabaseServices.Polyline2d o:
+        case AcadDB.Polyline2d o:
           return PolycurveToSpeckle(o);
+
+        case CivilDB.FeatureLine o:
+          return FeatureLineToSpeckle(o);
 
         default:
           return null;
@@ -212,13 +216,13 @@ namespace Objects.Converter.AutoCAD
         case DBObject o:
           return CanConvertToSpeckle(o);
 
-        case AC.Geometry.Point3d _:
+        case Acad.Geometry.Point3d _:
           return true;
 
-        case AC.Geometry.Plane _:
+        case Acad.Geometry.Plane _:
           return true;
 
-        case AC.Geometry.Line3d _:
+        case Acad.Geometry.Line3d _:
           return true;
 
         default:
@@ -233,19 +237,19 @@ namespace Objects.Converter.AutoCAD
         case DBPoint _:
           return true;
 
-        case AC.DatabaseServices.Line _:
+        case AcadDB.Line _:
           return true;
 
-        case AC.DatabaseServices.Arc _:
+        case AcadDB.Arc _:
           return true;
 
-        case AC.DatabaseServices.Circle _:
+        case AcadDB.Circle _:
           return true;
 
-        case AC.DatabaseServices.Ellipse _:
+        case AcadDB.Ellipse _:
           return true;
 
-        case AC.DatabaseServices.Polyline _:
+        case AcadDB.Polyline _:
           return true;
 
         default:

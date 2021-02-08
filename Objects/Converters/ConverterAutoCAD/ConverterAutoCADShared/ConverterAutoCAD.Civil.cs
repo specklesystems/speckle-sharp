@@ -15,7 +15,7 @@ using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.Civil.ApplicationServices;
-using AC = Autodesk.Civil.DatabaseServices;
+using CivilDB = Autodesk.Civil.DatabaseServices;
 
 using Polycurve = Objects.Geometry.Polycurve;
 
@@ -24,11 +24,21 @@ namespace Objects.Converter.AutoCAD
   public partial class ConverterAutoCAD
   {
     // featurelines
-    public Polycurve FeatureLineToSpeckle(AC.FeatureLine featureLine)
+    public Polycurve FeatureLineToSpeckle(CivilDB.FeatureLine featureLine)
     {
-      return null;
+      var polycurve = new Polycurve() { closed = featureLine.Closed };
+
+      // extract segment curves
+      var segments = new List<ICurve>();
+      var exploded = new DBObjectCollection();
+      featureLine.Explode(exploded);
+      for (int i = 0; i < exploded.Count; i++)
+        segments.Add((ICurve)ConvertToSpeckle(exploded[i]));
+      polycurve.segments = segments;
+
+      return polycurve;
     }
-    public AC.FeatureLine FeatureLineToNative(Polycurve polycurve)
+    public CivilDB.FeatureLine FeatureLineToNative(Polycurve polycurve)
     {
       return null;
     }

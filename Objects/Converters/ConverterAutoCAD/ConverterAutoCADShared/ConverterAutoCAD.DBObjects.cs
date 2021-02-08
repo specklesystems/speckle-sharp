@@ -4,7 +4,7 @@ using System.Linq;
 
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.DatabaseServices;
-using AC = Autodesk.AutoCAD.DatabaseServices;
+using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 
 using Arc = Objects.Geometry.Arc;
 using Circle = Objects.Geometry.Circle;
@@ -32,17 +32,17 @@ namespace Objects.Converter.AutoCAD
     }
 
     // Lines
-    public Line LineToSpeckle(AC.Line line)
+    public Line LineToSpeckle(AcadDB.Line line)
     {
       return new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint));
     }
-    public AC.Line LineToNativeDB(Line line)
+    public AcadDB.Line LineToNativeDB(Line line)
     {
-      return new AC.Line(PointToNative(line.start), PointToNative(line.end));
+      return new AcadDB.Line(PointToNative(line.start), PointToNative(line.end));
     }
 
     // Arcs
-    public Arc ArcToSpeckle(AC.Arc arc)
+    public Arc ArcToSpeckle(AcadDB.Arc arc)
     {
       var _arc = new Arc(PlaneToSpeckle(arc.GetPlane()), arc.Radius, arc.StartAngle, arc.EndAngle, arc.TotalAngle, ModelUnits);
       _arc.startPoint = PointToSpeckle(arc.StartPoint);
@@ -50,42 +50,42 @@ namespace Objects.Converter.AutoCAD
       _arc.domain = new Interval(0, 1);
       return _arc;
     }
-    public AC.Arc ArcToNativeDB(Arc arc)
+    public AcadDB.Arc ArcToNativeDB(Arc arc)
     {
       var center = PointToNative(arc.plane.origin);
       var radius = ScaleToNative((double)arc.radius, arc.units);
-      return new AC.Arc(center, radius, (double)arc.startAngle, (double)arc.endAngle);
+      return new AcadDB.Arc(center, radius, (double)arc.startAngle, (double)arc.endAngle);
     }
 
     // Circles
-    public Circle CircleToSpeckle(AC.Circle circle)
+    public Circle CircleToSpeckle(AcadDB.Circle circle)
     {
       var _circle = new Circle(PlaneToSpeckle(circle.GetPlane()), circle.Radius, ModelUnits);
       _circle.center = PointToSpeckle(circle.Center); // This is essential on send, otherwise recieve will throw null point exception! Fix this by adding req constructor arg?
       return _circle;
 
     }
-    public AC.Circle CircleToNativeDB(Circle circle)
+    public AcadDB.Circle CircleToNativeDB(Circle circle)
     {
       var normal = VectorToNative(circle.plane.normal);
       var radius = ScaleToNative((double)circle.radius, circle.units);
-      return new AC.Circle(PointToNative(circle.center), normal, radius);
+      return new AcadDB.Circle(PointToNative(circle.center), normal, radius);
     }
 
     // Ellipses
-    public Ellipse EllipseToSpeckle(AC.Ellipse ellipse)
+    public Ellipse EllipseToSpeckle(AcadDB.Ellipse ellipse)
     {
       var _ellipse = new Ellipse(PlaneToSpeckle(ellipse.GetPlane()), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits);
       _ellipse.center = PointToSpeckle(ellipse.Center); // This is essential on send, otherwise recieve will throw null point exception! Fix this by adding req constructor arg?
       _ellipse.domain = new Interval(0, 1);
       return _ellipse;
     }
-    public AC.Ellipse EllipseToNativeDB(Ellipse ellipse)
+    public AcadDB.Ellipse EllipseToNativeDB(Ellipse ellipse)
     {
       var normal = VectorToNative(ellipse.plane.normal);
       var majorAxis = ScaleToNative((double)ellipse.firstRadius, ellipse.units) * VectorToNative(ellipse.plane.xdir);
       var radiusRatio =(double)ellipse.secondRadius / (double)ellipse.firstRadius;
-      return new AC.Ellipse(PointToNative(ellipse.center), normal, majorAxis, radiusRatio, 0, 2 * Math.PI);
+      return new AcadDB.Ellipse(PointToNative(ellipse.center), normal, majorAxis, radiusRatio, 0, 2 * Math.PI);
     }
 
     // Rectangles
@@ -96,7 +96,7 @@ namespace Objects.Converter.AutoCAD
     }
 
     // PolyCurves
-    public Polyline PolylineToSpeckle(AC.Polyline polyline) // AC polylines can have arc segments, this treats all segments as lines
+    public Polyline PolylineToSpeckle(AcadDB.Polyline polyline) // AC polylines can have arc segments, this treats all segments as lines
     {
       List<Point3d> vertices = new List<Point3d>();
       for (int i = 0; i < polyline.NumberOfVertices; i++)
@@ -124,7 +124,7 @@ namespace Objects.Converter.AutoCAD
 
       return polycurve;
     }
-    public Polycurve PolycurveToSpeckle(AC.Polyline polyline) // AC polylines are really polycurves with linear, circlular, or elliptical segments!
+    public Polycurve PolycurveToSpeckle(AcadDB.Polyline polyline) // AC polylines are really polycurves with linear, circlular, or elliptical segments!
     {
       var polycurve = new Polycurve() { closed = polyline.Closed };
 
@@ -147,9 +147,9 @@ namespace Objects.Converter.AutoCAD
 
       return polycurve;
     }
-    public AC.Polyline PolycurveToNativeDB(Polycurve polycurve) //polylines can only support curve segments of type circular arc
+    public AcadDB.Polyline PolycurveToNativeDB(Polycurve polycurve) //polylines can only support curve segments of type circular arc
     {
-      AC.Polyline polyline = new AC.Polyline() { Closed = polycurve.closed };
+      AcadDB.Polyline polyline = new AcadDB.Polyline() { Closed = polycurve.closed };
       var plane = new Autodesk.AutoCAD.Geometry.Plane(Point3d.Origin, Vector3d.ZAxis.TransformBy(Doc.Editor.CurrentUserCoordinateSystem)); // TODO: check this 
 
       // add all vertices
@@ -215,7 +215,7 @@ namespace Objects.Converter.AutoCAD
     }
 
     // Curves
-    public AC.Curve CurveToNativeDB(ICurve icurve)
+    public AcadDB.Curve CurveToNativeDB(ICurve icurve)
     {
       switch (icurve)
       {
@@ -246,11 +246,11 @@ namespace Objects.Converter.AutoCAD
     }
 
     // Surfaces
-    public Surface SurfaceToSpeckle(AC.Surface surface)
+    public Surface SurfaceToSpeckle(AcadDB.Surface surface)
     {
       return null;
     }
-    public AC.Surface SurfaceToNativeDB(Surface surface)
+    public AcadDB.Surface SurfaceToNativeDB(Surface surface)
     {
       return null;
     }

@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConnectorAutoCADUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleAutoCADCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutoCAD.cs" />
   </ItemGroup>
   <ItemGroup>
