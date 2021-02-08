@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Collections;
 using System.Linq;
+
+using Speckle.Core.Kits;
 
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
-using Autodesk.AutoCAD.Runtime;
-
-using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorAutoCAD
 {
@@ -22,15 +19,15 @@ namespace Speckle.ConnectorAutoCAD
 #endif
 
     #region extension methods
-    // this is in place because for whatever reason, autocad ObjectId.ToString() method returns "(idstring)" instead of "idstring".
+    // this is in place because for whatever reason, autocad ObjectId.ToString() method returns "(id)" instead of "id".
     public static List<string> ToStrings(this ObjectId[] ids) => ids.Select(o => o.ToString().Trim(new char[] { '(', ')' })).ToList();
 
     // we are using handles instead of objectIds because handles persist and are saved with each file.
-    // ObjectIds are unique to an application session (to assist with multipple document operations) but are recreated upon new sessions, not suitable for retrieving objects later.
+    // ObjectIds are unique to an application session (to assist with multiple document operations) but are recreated upon new sessions, not suitable for retrieving objects later.
     public static List<string> GetHandles(this SelectionSet selection)
     {
       Document Doc = Application.DocumentManager.MdiActiveDocument;
-      List<string> handles = new List<string>();
+      var handles = new List<string>();
       using (Transaction tr = Doc.TransactionManager.StartTransaction())
       {
         foreach (SelectedObject obj in selection)
@@ -100,7 +97,6 @@ namespace Speckle.ConnectorAutoCAD
     public static Document Doc => Application.DocumentManager.MdiActiveDocument;
     private static string SpeckleExtensionDictionary = "Speckle";
 
-
     // AutoCAD ogranizes information in the Named Object Dictionary (NOD) which is the root level dictionary
     // Users can create child dictionaries in the Named Object Dictionary for custom data.
     // Custom data is stored as XRecord key value entries of type (string, ResultBuffer).
@@ -110,18 +106,18 @@ namespace Speckle.ConnectorAutoCAD
     public static List<string> GetSpeckleStreams()
     {
       Database db = Doc.Database;
-      List<string> streams = new List<string>();
+      var streams = new List<string>();
       using (Transaction tr = db.TransactionManager.StartTransaction())
       {
-        DBDictionary NOD = (DBDictionary)tr.GetObject(db.NamedObjectsDictionaryId, OpenMode.ForRead);
+        var NOD = (DBDictionary)tr.GetObject(db.NamedObjectsDictionaryId, OpenMode.ForRead);
         if (NOD.Contains(SpeckleExtensionDictionary))
         {
-          DBDictionary speckleDict = tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForRead) as DBDictionary;
+          var speckleDict = tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForRead) as DBDictionary;
           if (speckleDict != null && speckleDict.Count > 0)
           {
             foreach (DBDictionaryEntry entry in speckleDict)
             {
-              Xrecord value = tr.GetObject(entry.Value, OpenMode.ForRead) as Xrecord;
+              var value = tr.GetObject(entry.Value, OpenMode.ForRead) as Xrecord;
               streams.Add(value.Data.AsArray()[0].Value as string);
             }
           }
@@ -140,7 +136,7 @@ namespace Speckle.ConnectorAutoCAD
       {
         using (Transaction tr = db.TransactionManager.StartTransaction())
         {
-          DBDictionary NOD = (DBDictionary)tr.GetObject(db.NamedObjectsDictionaryId, OpenMode.ForRead);
+          var NOD = (DBDictionary)tr.GetObject(db.NamedObjectsDictionaryId, OpenMode.ForRead);
           DBDictionary speckleDict;
           if (NOD.Contains(SpeckleExtensionDictionary))
           {
@@ -153,7 +149,7 @@ namespace Speckle.ConnectorAutoCAD
             NOD.SetAt(SpeckleExtensionDictionary, speckleDict);
             tr.AddNewlyCreatedDBObject(speckleDict, true);
           }
-          Xrecord xRec = new Xrecord();
+          var xRec = new Xrecord();
           xRec.Data = new ResultBuffer(new TypedValue(Convert.ToInt32(DxfCode.Text), stream));
           speckleDict.SetAt(id, xRec);
           tr.AddNewlyCreatedDBObject(xRec, true);
@@ -170,10 +166,10 @@ namespace Speckle.ConnectorAutoCAD
       {
         using (Transaction tr = db.TransactionManager.StartTransaction())
         {
-          DBDictionary NOD = (DBDictionary)tr.GetObject(db.NamedObjectsDictionaryId, OpenMode.ForRead);
+          var NOD = (DBDictionary)tr.GetObject(db.NamedObjectsDictionaryId, OpenMode.ForRead);
           if (NOD.Contains(SpeckleExtensionDictionary))
           {
-            DBDictionary speckleDict = (DBDictionary)tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForWrite);
+            var speckleDict = (DBDictionary)tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForWrite);
             speckleDict.Remove(id);
           }
           tr.Commit();
@@ -189,12 +185,11 @@ namespace Speckle.ConnectorAutoCAD
       {
         using (Transaction tr = db.TransactionManager.StartTransaction())
         {
-
-          DBDictionary NOD = (DBDictionary)tr.GetObject(db.NamedObjectsDictionaryId, OpenMode.ForRead);
+          var NOD = (DBDictionary)tr.GetObject(db.NamedObjectsDictionaryId, OpenMode.ForRead);
           if (NOD.Contains(SpeckleExtensionDictionary))
           {
-            DBDictionary speckleDict = (DBDictionary)tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForWrite);
-            Xrecord xRec = new Xrecord();
+            var speckleDict = (DBDictionary)tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForWrite);
+            var xRec = new Xrecord();
             xRec.Data = new ResultBuffer(new TypedValue(Convert.ToInt32(DxfCode.Text), stream));
             speckleDict.SetAt(id, xRec);
             tr.AddNewlyCreatedDBObject(xRec, true);
@@ -242,14 +237,14 @@ namespace Speckle.ConnectorAutoCAD
 
     public static void UpdateSpeckleSelection(List<string> handles)
     {
-      SpeckleSelection sel = new SpeckleSelection();
+      var sel = new SpeckleSelection();
       sel.UpdateSelection(handles);
       Doc.UserData[SelectionKey] = sel.Selection;
     }
 
     public static void RemoveFromSpeckleSelection(List<string> handles)
     {
-      SpeckleSelection sel = new SpeckleSelection();
+      var sel = new SpeckleSelection();
       sel.RemoveSelectionObjects(handles);
       Doc.UserData[SelectionKey] = sel.Selection;
     }

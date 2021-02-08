@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
+﻿using System.Collections.Generic;
+
+using Speckle.DesktopUI;
+using Speckle.ConnectorAutoCAD.UI;
+
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.Civil.ApplicationServices;
-using Speckle.DesktopUI;
-using Speckle.ConnectorAutoCAD;
-using Speckle.ConnectorAutoCAD.UI;
 using Autodesk.AutoCAD.EditorInput;
+using Autodesk.Civil.ApplicationServices;
 
 [assembly: CommandClass(typeof(Speckle.ConnectorAutoCAD.Entry.SpeckleAutoCADCommand))]
 namespace Speckle.ConnectorAutoCAD.Entry
@@ -20,7 +18,7 @@ namespace Speckle.ConnectorAutoCAD.Entry
     public static Document Doc => Application.DocumentManager.MdiActiveDocument;
     public static CivilDocument DocC3D => CivilApplication.ActiveDocument;
 
-
+    // TODO: add file switch handling
     [CommandMethod("Speckle")]
     public static void SpeckleCommand()
     {
@@ -55,7 +53,7 @@ namespace Speckle.ConnectorAutoCAD.Entry
     public static void GetSelection()
     {
       List<string> objs = new List<string>();
-      PromptSelectionResult selection = Doc.Editor.SelectImplied(); // don't use get selection as this will prompt user to select if nothing is selected already
+      PromptSelectionResult selection = Doc.Editor.SelectImplied();
       if (selection.Status == PromptStatus.OK)
         objs = selection.Value.GetHandles();
       UserData.UpdateSpeckleSelection(objs);

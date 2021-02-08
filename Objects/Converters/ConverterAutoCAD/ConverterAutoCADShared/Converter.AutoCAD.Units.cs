@@ -17,9 +17,7 @@ namespace Objects.Converter.AutoCAD
       get
       {
         if (string.IsNullOrEmpty(_modelUnits))
-        {
           _modelUnits = UnitToSpeckle(Doc.Database.Insunits);
-        }
         return _modelUnits;
       }
     }

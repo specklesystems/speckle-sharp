@@ -1,12 +1,10 @@
-﻿using Objects.Geometry;
-using Objects.Primitive;
-using Speckle.Core.Models;
-using Speckle.Core.Kits;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+
 using Autodesk.AutoCAD.Geometry;
+using AC = Autodesk.AutoCAD.Geometry;
+
 using Arc = Objects.Geometry.Arc;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
@@ -16,9 +14,9 @@ using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
+using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Vector = Objects.Geometry.Vector;
-using AC = Autodesk.AutoCAD.Geometry;
 
 namespace Objects.Converter.AutoCAD
 {
@@ -27,18 +25,12 @@ namespace Objects.Converter.AutoCAD
     // tolerance for geometry:
     public double tolerance = 0.00;
 
-    // Convenience methods point:
+    // Convenience methods:
+    // TODO: Deprecate once these have been added to Objects.sln
     public double[] PointToArray(Point3d pt)
     {
       return new double[] { pt.X, pt.Y, pt.Z };
     }
-
-    public double[] PointToArray(Point2d pt)
-    {
-      return new double[] { pt.X, pt.Y };
-    }
-
-    // Mass point converter
     public Point3d[] PointListToNative(IEnumerable<double> arr, string units)
     {
       var enumerable = arr.ToList();
@@ -54,26 +46,24 @@ namespace Objects.Converter.AutoCAD
 
       return points;
     }
-
     public double[] PointsToFlatArray(IEnumerable<Point3d> points)
     {
       return points.SelectMany(pt => PointToArray(pt)).ToArray();
     }
 
     // Points
-    public Point PointToSpeckle(Point3d pt)
+    public Point PointToSpeckle(Point3d point)
     {
-      return new Point(pt.X, pt.Y, pt.Z, ModelUnits);
+      return new Point(point.X, point.Y, point.Z, ModelUnits);
     }
-    public Point3d PointToNative(Point pt)
+    public Point3d PointToNative(Point point)
     {
-      var nativePt = new Point3d(ScaleToNative(pt.x, pt.units),
-        ScaleToNative(pt.y, pt.units),
-        ScaleToNative(pt.z, pt.units));
-      return nativePt;
+      var _point = new Point3d(ScaleToNative(point.x, point.units),
+        ScaleToNative(point.y, point.units),
+        ScaleToNative(point.z, point.units));
+      return _point;
     }
-
-    public List<List<ControlPoint>> ControlPointsToSpeckle(Point3dCollection points, DoubleCollection weights)
+    public List<List<ControlPoint>> ControlPointsToSpeckle(Point3dCollection points, DoubleCollection weights) // TODO: NOT TESTED
     {
       var _weights = new List<double>();
       var _points = new List<Point3d>();
@@ -85,9 +75,7 @@ namespace Objects.Converter.AutoCAD
       var controlPoints = new List<List<ControlPoint>>();
       /* TODO: Figure out how collections are structured (do we lose UV info?)
       for (int i = 0; i < _points.Count; i++)
-      {
         controlPoints.Add(new ControlPoint(_points[i].X, _points[i].Y, _points[i].Z, _weights[i], ModelUnits));
-      }
       */
       return controlPoints;
     }
@@ -108,15 +96,15 @@ namespace Objects.Converter.AutoCAD
     // Interval
     public Interval IntervalToSpeckle(AC.Interval interval)
     {
-      var speckleInterval = new Interval(interval.LowerBound, interval.UpperBound);
-      return speckleInterval;
+      return new Interval(interval.LowerBound, interval.UpperBound);
     }
     public AC.Interval IntervalToNative(Interval interval)
     {
       return new AC.Interval((double)interval.start, (double)interval.end, tolerance);
     }
 
-    // Plane
+    // Plane 
+    // TODO: NOT TESTED
     public Plane PlaneToSpeckle(AC.Plane plane)
     {
       Vector xAxis = VectorToSpeckle(plane.GetCoordinateSystem().Xaxis);
@@ -133,16 +121,15 @@ namespace Objects.Converter.AutoCAD
     // Line
     public Line LineToSpeckle(Line3d line)
     {
-      return new Line(PointsToFlatArray(new Point3d[] { line.StartPoint, line.EndPoint }), ModelUnits);
+      return new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
     }
     public Line LineToSpeckle(LineSegment3d line)
     {
-      return new Line(PointsToFlatArray(new Point3d[] { line.StartPoint, line.EndPoint }), ModelUnits);
+      return new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
     }
     public Line3d LineToNative(Line line)
     {
-      var pts = PointListToNative(line.value, line.units);
-      var _line = new Line3d(pts[0], pts[1]);
+      var _line = new Line3d(PointToNative(line.start), PointToNative(line.end));
       if (line.domain != null)
         _line.SetInterval(IntervalToNative(line.domain));
       return _line;
@@ -162,6 +149,8 @@ namespace Objects.Converter.AutoCAD
       return new CircularArc3d(PointToNative(arc.startPoint), PointToNative(arc.midPoint), PointToNative(arc.endPoint));
     }
 
+    // Polycurve
+    // TODO: NOT TESTED FROM HERE DOWN
     public PolylineCurve3d PolylineToNative(Polyline polyline)
     {
       var points = PointListToNative(polyline.value, polyline.units).ToList();
@@ -173,9 +162,9 @@ namespace Objects.Converter.AutoCAD
     }
 
     // Curve
-    public Curve3d CurveToNative(ICurve curve)
+    public Curve3d CurveToNative(ICurve icurve)
     {
-      switch (curve)
+      switch (icurve)
       {
         case Circle circle:
           return null;
@@ -186,8 +175,8 @@ namespace Objects.Converter.AutoCAD
         case Ellipse ellipse:
           return null;
 
-        case Curve crv:
-          return NurbsToNative(crv);
+        case Curve curve:
+          return NurbsToNative(curve);
 
         case Polyline polyline:
           return PolylineToNative(polyline);
@@ -242,9 +231,7 @@ namespace Objects.Converter.AutoCAD
       }
 
       for (int j = 0; j < nurbsCurve.Knots.Count; j++)
-      {
         nurbsCurve.Knots[j] = curve.knots[j];
-      }
 
       nurbsCurve.SetInterval(IntervalToNative(curve.domain ?? new Interval(0, 1)));
       return nurbsCurve;
@@ -252,7 +239,7 @@ namespace Objects.Converter.AutoCAD
 
     public AC.NurbSurface SurfaceToNative(Geometry.Surface surface)
     {
-      // Create ac surface
+      // Get control points
       var points = surface.GetControlPoints().Select(l => l.Select(p =>
         new ControlPoint(
           ScaleToNative(p.x, p.units),
@@ -261,9 +248,9 @@ namespace Objects.Converter.AutoCAD
           p.weight,
           p.units)).ToList()).ToList();
 
-      var result = AC.NurbSurface.Create(new IntPtr(), true); // check what new unmanaged pointer does!!
+      var _surface = AC.NurbSurface.Create(new IntPtr(), true); // check what new unmanaged pointer does!!
 
-      // Get control points
+      // Set control points
       Point3dCollection controlPoints = new Point3dCollection();
       DoubleCollection weights = new DoubleCollection();
       for (var i = 0; i < points.Count; i++)
@@ -280,20 +267,14 @@ namespace Objects.Converter.AutoCAD
       KnotCollection UKnots = new KnotCollection();
       KnotCollection VKnots = new KnotCollection();
       for (int i = 0; i < surface.knotsU.Count; i++)
-      {
         UKnots.Add(surface.knotsU[i]);
-      }
-
       for (int i = 0; i < surface.knotsV.Count; i++)
-      {
         VKnots.Add(surface.knotsV[i]);
-      }
 
       // Set surface info
-      result.Set(surface.degreeU, surface.degreeV, 0, 0, surface.countU, surface.countV, controlPoints, weights, UKnots, VKnots);
+      _surface.Set(surface.degreeU, surface.degreeV, 0, 0, surface.countU, surface.countV, controlPoints, weights, UKnots, VKnots);
 
-      // Return surface
-      return result;
+      return _surface;
     }
 
     public Geometry.Surface SurfaceToSpeckle(AC.NurbSurface surface)
@@ -301,14 +282,11 @@ namespace Objects.Converter.AutoCAD
       List<double> Uknots = new List<double>();
       List<double> Vknots = new List<double>();
       foreach (var knot in surface.UKnots)
-      {
         Uknots.Add((double)knot);
-      }
       foreach (var knot in surface.VKnots)
-      {
         Vknots.Add((double)knot);
-      }
-      var result = new Geometry.Surface
+
+      var _surface = new Geometry.Surface
       {
         degreeU = surface.DegreeInU,
         degreeV = surface.DegreeInV,
@@ -320,9 +298,9 @@ namespace Objects.Converter.AutoCAD
         knotsU = Uknots,
         knotsV = Vknots
       };
-      result.units = ModelUnits;
-      result.SetControlPoints(ControlPointsToSpeckle(surface.ControlPoints, surface.Weights));
-      return result;
+      _surface.units = ModelUnits;
+      _surface.SetControlPoints(ControlPointsToSpeckle(surface.ControlPoints, surface.Weights));
+      return _surface;
     }
   }
 }

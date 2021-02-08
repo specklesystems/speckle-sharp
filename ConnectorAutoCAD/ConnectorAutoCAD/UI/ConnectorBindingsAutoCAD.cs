@@ -1,31 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Timers;
 using System.Linq;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Collections;
-using System.Drawing;
+
 using Speckle.Newtonsoft.Json;
-
-using AcadApp = Autodesk.AutoCAD.ApplicationServices;
-using AcadDb = Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.EditorInput;
-using Autodesk.AutoCAD.Colors;
-using Autodesk.AutoCAD.Runtime;
-using Autodesk.AutoCAD.Geometry;
-using CivilApp = Autodesk.Civil.ApplicationServices;
-using CivilDb = Autodesk.Civil.DatabaseServices;
-
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using Speckle.Core.Api;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
-using Speckle.ConnectorAutoCAD;
 using Speckle.Core.Transports;
+
+using AcadApp = Autodesk.AutoCAD.ApplicationServices;
+using AcadDb = Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
+using CivilApp = Autodesk.Civil.ApplicationServices;
+using CivilDb = Autodesk.Civil.DatabaseServices;
+
 using Stylet;
 
 namespace Speckle.ConnectorAutoCAD.UI
@@ -35,8 +29,6 @@ namespace Speckle.ConnectorAutoCAD.UI
 
     public AcadApp.Document Doc => AcadApp.Application.DocumentManager.MdiActiveDocument;
     public CivilApp.CivilDocument DocCivil => CivilApp.CivilApplication.ActiveDocument;
-
-    public Timer SelectionTimer;
 
     /// <summary>
     /// TODO: Any errors thrown should be stored here and passed to the ui state
@@ -51,13 +43,11 @@ namespace Speckle.ConnectorAutoCAD.UI
     public void GetFileContextAndNotifyUI()
     {
       var streamStates = GetStreamsInFile();
-
       var appEvent = new ApplicationEvent()
       {
         Type = ApplicationEvent.EventType.DocumentOpened,
         DynamicInfo = streamStates
       };
-
       NotifyUi(appEvent);
     }
 
@@ -118,7 +108,7 @@ namespace Speckle.ConnectorAutoCAD.UI
     public override string GetDocumentId()
     {
       string path = AcadDb.HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, AcadDb.FindFileHint.Default);
-      return Speckle.Core.Models.Utilities.hashString("X" + path + Doc?.Name, Speckle.Core.Models.Utilities.HashingFuctions.MD5);
+      return Speckle.Core.Models.Utilities.hashString("X" + path + Doc?.Name, Speckle.Core.Models.Utilities.HashingFuctions.MD5); // what is the "X" prefix for?
     }
 
     public override string GetDocumentLocation() => AcadDb.HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, AcadDb.FindFileHint.Default);
@@ -135,7 +125,7 @@ namespace Speckle.ConnectorAutoCAD.UI
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
-      List<string> layers = new List<string>();
+      var layers = new List<string>();
       using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
         AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
@@ -214,7 +204,6 @@ namespace Speckle.ConnectorAutoCAD.UI
           var conversionProgressDict = new ConcurrentDictionary<string, int>();
           conversionProgressDict["Conversion"] = 0;
           Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
-
           Action updateProgressAction = () =>
           {
             conversionProgressDict["Conversion"]++;
@@ -232,15 +221,12 @@ namespace Speckle.ConnectorAutoCAD.UI
           // try and import geo
           HandleAndConvert(commitObject, tr, converter, layerPrefix, state);
 
-          // 
-
           tr.Commit();
         }
       }
 
       return state;
     }
-   
 
     private void HandleAndConvert(object obj, AcadDb.Transaction tr, ISpeckleConverter converter, string layerPrefix, StreamState state, Action updateProgressAction = null)
     {
@@ -248,26 +234,14 @@ namespace Speckle.ConnectorAutoCAD.UI
       {
         if (converter.CanConvertToNative(baseItem))
         {
-          // create the ac layer if it doesn't already exist
-          AcadDb.LayerTableRecord objLayer = GetOrMakeLayer(layerPrefix, tr);
-          if (objLayer == null)
-          {
-            RaiseNotification($"could not create layer {layerPrefix} to bake objects into.");
-            state.Errors.Add(new System.Exception($"could not create layer {layerPrefix} to bake objects into."));
-            updateProgressAction?.Invoke();
-            return;
-          }
-
           // convert geo to native
           var converted = converter.ConvertToNative(baseItem) as AcadDb.Entity;
 
           // add geo to doc
           if (converted != null)
           {
-            // check if converted has already been appended (for some geos like polylines, they are appended during creation
             if (converted.IsNewObject)
               converted.Append(tr);
-            //converted.Dispose();
           }
           else
           {
@@ -276,7 +250,7 @@ namespace Speckle.ConnectorAutoCAD.UI
           updateProgressAction?.Invoke();
           return;
         }
-        else
+        else // this is in place to handle the top level commit base item
         {
           foreach (var prop in baseItem.GetDynamicMembers())
           {
@@ -293,7 +267,7 @@ namespace Speckle.ConnectorAutoCAD.UI
             if (objLayer == null)
             {
               RaiseNotification($"could not create layer {acLayerName} to bake objects into.");
-              state.Errors.Add(new System.Exception($"could not create layer {acLayerName} to bake objects into."));
+              state.Errors.Add(new Exception($"could not create layer {acLayerName} to bake objects into."));
               updateProgressAction?.Invoke();
               return;
             }
@@ -315,9 +289,9 @@ namespace Speckle.ConnectorAutoCAD.UI
           HandleAndConvert(kvp.Value, tr, converter, layerPrefix, state, updateProgressAction);
         return;
       }
-      
     }
 
+    // TODO: this throws a transaction error when deleting, need to debug to check for memory access
     private void DeleteLayersWithPrefix(string prefix, AcadDb.Transaction tr)
     {
       // Open the Layer table for read
@@ -341,7 +315,7 @@ namespace Speckle.ConnectorAutoCAD.UI
           AcadDb.BlockTable bt = tr.GetObject(Doc.Database.BlockTableId, AcadDb.OpenMode.ForRead) as AcadDb.BlockTable;
           AcadDb.BlockTableRecord btr = tr.GetObject(bt[AcadDb.BlockTableRecord.ModelSpace], AcadDb.OpenMode.ForRead) as AcadDb.BlockTableRecord;
 
-          // delete all objects on this layer .. todo: this is inefficient! find better way to deleting obs instea dof looping through each one
+          // delete all objects on this layer .. todo: this is inefficient! find better way to deleting objs instead of looping through each one
           foreach (var btrId in btr)
           {
             var block = (AcadDb.BlockTableRecord)tr.GetObject(btrId, AcadDb.OpenMode.ForRead);
@@ -362,31 +336,31 @@ namespace Speckle.ConnectorAutoCAD.UI
 
     private AcadDb.LayerTableRecord GetOrMakeLayer(string layerName, AcadDb.Transaction tr)
     {
-      AcadDb.LayerTableRecord _layer = null;
+      AcadDb.LayerTableRecord layer = null;
 
       AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
       if (lyrTbl.Has(layerName))
       {
-        _layer = (AcadDb.LayerTableRecord)tr.GetObject(lyrTbl[layerName], AcadDb.OpenMode.ForRead);
+        layer = (AcadDb.LayerTableRecord)tr.GetObject(lyrTbl[layerName], AcadDb.OpenMode.ForRead);
       }
       else
       {
         lyrTbl.UpgradeOpen();
 
         // make a new layer
-        AcadDb.LayerTableRecord layer = new AcadDb.LayerTableRecord();
+        var _layer = new AcadDb.LayerTableRecord();
 
         // Assign the layer properties
-        layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(System.Drawing.Color.Blue);
-        layer.Name = layerName;
+        _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(System.Drawing.Color.Blue);
+        _layer.Name = layerName;
 
-        // Append the new layer to the Layer table and the transaction
-        lyrTbl.Add(layer);
-        tr.AddNewlyCreatedDBObject(layer, true);
-        _layer = layer;
+        // Append the new layer to the layer table and the transaction
+        lyrTbl.Add(_layer);
+        tr.AddNewlyCreatedDBObject(_layer, true);
+        layer = _layer;
       }
 
-      return _layer;
+      return layer;
     }
 
     #endregion
@@ -429,7 +403,7 @@ namespace Speckle.ConnectorAutoCAD.UI
           return null;
         }
 
-        // get the db object from id NOTE: This is a db object, not a geometry object!! Need to pass the geo object to converter
+        // get the db object from id
         AcadDb.Handle hn = new AcadDb.Handle(Convert.ToInt64(autocadObjectHandle, 16));
         AcadDb.DBObject obj = hn.GetObject(out string type, out string layer);
         if (obj == null)
@@ -460,12 +434,9 @@ namespace Speckle.ConnectorAutoCAD.UI
         */
 
         if (commitObj[$"@{layer}"] == null)
-        {
           commitObj[$"@{layer}"] = new List<Base>();
-        }
 
         ((List<Base>)commitObj[$"@{layer}"]).Add(converted);
-
         convertedCount++;
       }
 
@@ -527,7 +498,7 @@ namespace Speckle.ConnectorAutoCAD.UI
       switch (filter)
       {
         case ListSelectionFilter f:
-          List<string> objs = new List<string>();
+          var objs = new List<string>();
           foreach (var layerName in f.Selection)
           {
             AcadDb.TypedValue[] layerType = new AcadDb.TypedValue[1] { new AcadDb.TypedValue((int)AcadDb.DxfCode.LayerName, layerName)};
@@ -542,9 +513,6 @@ namespace Speckle.ConnectorAutoCAD.UI
       }
     }
 
-    
-
     #endregion
-
   }
 }

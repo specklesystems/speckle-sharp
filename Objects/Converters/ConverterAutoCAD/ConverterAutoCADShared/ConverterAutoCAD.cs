@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
+using AC = Autodesk.AutoCAD;
+
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Arc = Objects.Geometry.Arc;
@@ -18,7 +20,7 @@ using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
-using AC = Autodesk.AutoCAD;
+
 
 namespace Objects.Converter.AutoCAD
 {
@@ -44,7 +46,7 @@ namespace Objects.Converter.AutoCAD
     #endregion ISpeckleConverter props
 
     public Document Doc { get; private set; }
-    public Transaction Trans { get; private set; }
+    public Transaction Trans { get; private set; } // TODO: evaluate if this should be here
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
@@ -63,10 +65,12 @@ namespace Objects.Converter.AutoCAD
       switch (@object)
       {
         case DBObject o:
+          /*
           // check for speckle schema xdata
-          //string schema = GetSpeckleSchema(o.XData);
-          //if (schema != null)
-            //return ObjectToSpeckleBuiltElement(o);
+          string schema = GetSpeckleSchema(o.XData);
+          if (schema != null)
+            return ObjectToSpeckleBuiltElement(o);
+          */
           return ObjectToSpeckle(o);
 
         case AC.Geometry.Point3d o:
@@ -135,16 +139,16 @@ namespace Objects.Converter.AutoCAD
         case Polycurve o:
           return PolycurveToNativeDB(o);
 
-        case Interval o:
+        case Interval o: // TODO: NOT TESTED
           return IntervalToNative(o);
 
-        case Plane o:
+        case Plane o: // TODO: NOT TESTED
           return PlaneToNative(o);
 
-        case Curve o:
+        case Curve o: // TODO: SPLINES AND NURBS NOT TESTED
           return CurveToNativeDB(o);
 
-        case Surface o:
+        case Surface o: // TODO: NOT TESTED
           return SurfaceToNative(o);
 
         default:
@@ -172,22 +176,30 @@ namespace Objects.Converter.AutoCAD
       {
         case DBPoint o:
           return PointToSpeckle(o);
+
         case AC.DatabaseServices.Line o:
           return LineToSpeckle(o);
+
         case AC.DatabaseServices.Arc o:
           return ArcToSpeckle(o);
+
         case AC.DatabaseServices.Circle o:
           return CircleToSpeckle(o);
+
         case AC.DatabaseServices.Ellipse o:
           return EllipseToSpeckle(o);
+
         case AC.DatabaseServices.Spline o:
           return SplineToSpeckle(o);
+
         case AC.DatabaseServices.Polyline o:
-          if (o.IsOnlyLines) // db polylines can have arc segmenets, decide between polycurve or polyline conversion
+          if (o.IsOnlyLines) // db polylines can have arc segments, decide between polycurve or polyline conversion
             return PolylineToSpeckle(o);
-          return PolycurveToSpeckle(o);
+          else return PolycurveToSpeckle(o);
+
         case AC.DatabaseServices.Polyline2d o:
           return PolycurveToSpeckle(o);
+
         default:
           return null;
       }
@@ -197,8 +209,8 @@ namespace Objects.Converter.AutoCAD
     {
       switch (@object)
       {
-        case DBObject _:
-          return CanConvertToSpeckle(@object as DBObject);
+        case DBObject o:
+          return CanConvertToSpeckle(o);
 
         case AC.Geometry.Point3d _:
           return true;
@@ -257,6 +269,12 @@ namespace Objects.Converter.AutoCAD
         case Arc _:
           return true;
 
+        case Circle _:
+          return true;
+
+        case Ellipse _:
+          return true;
+
         case Polycurve _:
           return true;
 
@@ -265,21 +283,6 @@ namespace Objects.Converter.AutoCAD
 
         default:
           return false;
-      }
-    }
-
-    public void Append(Entity obj)
-    {
-      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
-      {
-        // open blocktable record for editing
-        BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
-
-        // add entity
-        btr.AppendEntity(obj);
-        tr.AddNewlyCreatedDBObject(obj, true);
-
-        tr.Commit();
       }
     }
   }

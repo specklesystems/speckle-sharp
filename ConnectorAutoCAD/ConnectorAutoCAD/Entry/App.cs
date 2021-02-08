@@ -1,13 +1,14 @@
-﻿using Autodesk.AutoCAD.Runtime;
-using Autodesk.Windows;
-using Autodesk.AutoCAD.EditorInput;
-using Autodesk.AutoCAD.ApplicationServices;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Media;
 using System.Reflection;
 using System.IO;
 using System.Windows.Media.Imaging;
+
 using Speckle.ConnectorAutoCAD.UI;
+
+using Autodesk.AutoCAD.Runtime;
+using Autodesk.Windows;
+using Autodesk.AutoCAD.ApplicationServices;
 
 namespace Speckle.ConnectorAutoCAD.Entry
 {
@@ -19,22 +20,14 @@ namespace Speckle.ConnectorAutoCAD.Entry
     public void Initialize()
     {
       ribbon = ComponentManager.Ribbon;
-      //throw new notimplementedexception(); 
-      if (ribbon != null)
+      if (ribbon != null) //the assembly was loaded using netload
       {
-        //the assembly was loaded using netload, so the ribbon
-        //is available and we just create the ribbon
         Create();
       }
       else
       {
-        //load the custom ribbon on startup, but at this point
-        //the ribbon control is not available, so register for
-        //an event and wait
-        ComponentManager.ItemInitialized +=
-            new System.EventHandler<RibbonItemEventArgs>
-              (ComponentManager_ItemInitialized);
-
+        // load the custom ribbon on startup, but wait for ribbon control to be created
+        ComponentManager.ItemInitialized += new System.EventHandler<RibbonItemEventArgs>(ComponentManager_ItemInitialized);
         Create();
         Application.SystemVariableChanged += TrapWSCurrentChange;
       }
@@ -45,17 +38,13 @@ namespace Speckle.ConnectorAutoCAD.Entry
 
     public void ComponentManager_ItemInitialized(object sender, RibbonItemEventArgs e)
     {
-      // now one Ribbon item is initialized, but the Ribbon control
-      // may not be available yet, so check if before
+      // one Ribbon item is initialized, check for Ribbon control
       ribbon = ComponentManager.Ribbon;
       if (ribbon != null)
       {
-        // create Ribbon
         Create();
-        // and remove the event handler
-        ComponentManager.ItemInitialized -=
-            new System.EventHandler<RibbonItemEventArgs>
-              (ComponentManager_ItemInitialized);
+        // remove the event handler
+        ComponentManager.ItemInitialized -= new System.EventHandler<RibbonItemEventArgs>(ComponentManager_ItemInitialized);
       }
     }
 
@@ -69,18 +58,16 @@ namespace Speckle.ConnectorAutoCAD.Entry
     public void Create()
     {
       RibbonTab tab = FindOrMakeTab("Speckle Systems");
-      if (tab == null)
+      if (tab != null)
         return;
-      RibbonPanelSource panel = CreateButtonPannel("Speckle", tab);
+      RibbonPanelSource panel = CreateButtonPanel("2.0", tab);
       if (panel == null)
         return;
-      RibbonButton button = CreateButton("2.0", "Speckle", "Speckle.ConnectorAutoCAD.Assets.logo32.png", panel);
+      RibbonButton button = CreateButton("AutoCAD connector", "Speckle", panel);
     }
-
 
     public void Terminate()
     {
-      //throw new NotImplementedException();
     }
 
     private RibbonTab FindOrMakeTab(string str)
@@ -100,41 +87,53 @@ namespace Speckle.ConnectorAutoCAD.Entry
       return tab;
     }
 
-    private RibbonPanelSource CreateButtonPannel(string name, RibbonTab tab)
+    private RibbonPanelSource CreateButtonPanel(string name, RibbonTab tab)
     {
-      RibbonPanelSource source = new RibbonPanelSource();
-      source.Title = name;
-      RibbonPanel panel = new RibbonPanel();
-      panel.Source = source;
+      var source = new RibbonPanelSource() { Title = name };
+      var panel = new RibbonPanel() { Source = source };
       tab.Panels.Add(panel);
       return source;
     }
 
-    private RibbonButton CreateButton(string name, string CommandParameter, string pngFile, RibbonPanelSource source)
+    private RibbonButton CreateButton(string name, string CommandParameter, RibbonPanelSource source)
     {
-      RibbonButton button = new RibbonButton();
-      string path = typeof(App).Assembly.Location;
+      var button = new RibbonButton();
 
       // ribbon panel source info assignment
       button.Text = name;
       button.Id = name;
-      button.CommandParameter = CommandParameter; // name of the command
+      button.CommandParameter = CommandParameter;
       button.ShowImage = true;
       button.ShowText = true;
       button.Size = RibbonItemSize.Large;
       button.Orientation = Orientation.Vertical;
-      button.Image = LoadPngImgSource("Speckle.ConnectorAutoCAD.Resources.logo16.png", path);
-      button.LargeImage = LoadPngImgSource("Speckle.ConnectorAutoCAD.Resources.logo32.png", path);
+      button.Image = LoadPngImgSource("Speckle.ConnectorAutoCAD.Resources.logo16.png");
+      button.LargeImage = LoadPngImgSource("Speckle.ConnectorAutoCAD.Resources.logo32.png");
 
       // add command to the button
       button.CommandHandler = new ButtonCommandHandler();
 
-      // add ribbon button pannel to the ribbon pannel source
+      // add ribbon button pannel to the ribbon panel source
       source.Items.Add(button);
       return button;
     }
 
+    private ImageSource LoadPngImgSource(string sourceName)
+    {
+      try
+      {
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        Stream stream = assembly.GetManifestResourceStream(sourceName);
+        PngBitmapDecoder decoder = new PngBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
+        ImageSource source = decoder.Frames[0];
+        return source;
+      }
+      catch { }
+      return null;
+    }
+
     #endregion 
+
     public class ButtonCommandHandler : System.Windows.Input.ICommand
     {
       public event System.EventHandler CanExecuteChanged;
@@ -149,21 +148,6 @@ namespace Speckle.ConnectorAutoCAD.Entry
       }
 
       public bool CanExecute(object parameter) => true;
-    }
-
-    private ImageSource LoadPngImgSource(string sourceName, string path)
-    {
-      try
-      {
-        Assembly assembly = Assembly.GetExecutingAssembly();
-        Stream stream = assembly.GetManifestResourceStream(sourceName);
-        PngBitmapDecoder decoder = new PngBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
-        ImageSource source = decoder.Frames[0];
-        return (source);
-      }
-      catch { }
-
-      return null;
     }
   }
 }

@@ -16,19 +16,21 @@ using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.Civil.ApplicationServices;
 using AC = Autodesk.Civil.DatabaseServices;
-using Beam = Objects.BuiltElements.Beam;
-// using Pipe = Objects.BuiltElements.Civil.CivilPipe;
+
+using Polycurve = Objects.Geometry.Polycurve;
 
 namespace Objects.Converter.AutoCAD
 {
   public partial class ConverterAutoCAD
   {
-    /*
-    // pipes
-    public Pipe PipeToSpeckle(AC.Pipe pipe)
+    // featurelines
+    public Polycurve FeatureLineToSpeckle(AC.FeatureLine featureLine)
     {
       return null;
     }
-    */
+    public AC.FeatureLine FeatureLineToNative(Polycurve polycurve)
+    {
+      return null;
+    }
   }
 }
