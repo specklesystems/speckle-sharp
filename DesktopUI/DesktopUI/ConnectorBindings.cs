@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Speckle.Newtonsoft.Json;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 using StyletIoC;
@@ -23,7 +24,7 @@ namespace Speckle.DesktopUI
     public virtual void NotifyUi(EventBase notifyEvent)
     {
       //TODO: checked why it's null sometimes
-      if (_events != null)
+      if(_events!=null)
         _events.PublishOnUIThread(notifyEvent);
     }
 
