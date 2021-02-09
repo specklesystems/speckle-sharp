@@ -165,22 +165,35 @@ namespace Speckle.ConnectorAutoCAD.UI
 
     public override async Task<StreamState> ReceiveStream(StreamState state)
     {
+      Exceptions.Clear();
+
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(ConnectorAutoCADUtils.AutoCADAppName);
+      var transport = new ServerTransport(state.Client.Account, state.Stream.id);
+
       var myStream = await state.Client.StreamGet(state.Stream.id);
-      var commit = state.Commit;
 
       if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return null;
       }
 
-      Exceptions.Clear();
+      string referencedObject = state.Commit.referencedObject;
+
+      //if "latest", always make sure we get the latest commit when the user clicks "receive"
+      if (state.Commit.id == "latest")
+      {
+        
+        var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
+        referencedObject = res.commits.items.FirstOrDefault().referencedObject;
+      }
+
+      var commit = state.Commit;
 
       var commitObject = await Operations.Receive(
-        commit.referencedObject,
+        referencedObject,
         state.CancellationTokenSource.Token,
-        new ServerTransport(state.Client.Account, state.Stream.id),
+        transport,
         onProgressAction: d => UpdateProgress(d, state.Progress),
         onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => state.Progress.Maximum = num),
         onErrorAction: (message, exception) => { Exceptions.Add(exception); }
@@ -188,7 +201,7 @@ namespace Speckle.ConnectorAutoCAD.UI
 
       if (Exceptions.Count != 0)
       {
-        RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
+        RaiseNotification($"Encountered error: {Exceptions.Last().Message}");
       }
 
       using (DocumentLock l = Doc.LockDocument())
