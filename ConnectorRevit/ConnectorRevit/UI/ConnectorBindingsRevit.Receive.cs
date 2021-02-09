@@ -42,6 +42,11 @@ namespace Speckle.ConnectorRevit.UI
 
       string referencedObject = state.Commit.referencedObject;
 
+      if (state.CancellationTokenSource.Token.IsCancellationRequested)
+      {
+        return null;
+      }
+
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
       if (state.Commit.id == "latest")
       {
@@ -51,10 +56,7 @@ namespace Speckle.ConnectorRevit.UI
 
       var commit = state.Commit;
 
-      if (state.CancellationTokenSource.Token.IsCancellationRequested)
-      {
-        return null;
-      }
+
 
       var commitObject = await Operations.Receive(
           referencedObject,
@@ -112,7 +114,7 @@ namespace Speckle.ConnectorRevit.UI
 
       Executor.Raise();
 
-      
+
 
       try
       {
