@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 
-namespace Speckle.ConnectorAutoCAD.Storage
+namespace Speckle.ConnectorAutocadCivil.Storage
 {
   /// <summary>
   /// Manages streams stored in an autocad document

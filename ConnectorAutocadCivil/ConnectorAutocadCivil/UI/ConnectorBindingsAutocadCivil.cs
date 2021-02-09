@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Collections;
+using System.Drawing;
 
 using Speckle.Newtonsoft.Json;
 using Speckle.Core.Models;
@@ -13,21 +14,19 @@ using Speckle.Core.Api;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
 using Speckle.Core.Transports;
-using Speckle.ConnectorAutoCAD.Entry;
-using Speckle.ConnectorAutoCAD.Storage;
+using Speckle.ConnectorAutocadCivil.Entry;
+using Speckle.ConnectorAutocadCivil.Storage;
 
 using AcadApp = Autodesk.AutoCAD.ApplicationServices;
 using AcadDb = Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.ApplicationServices;
-using CivilApp = Autodesk.Civil.ApplicationServices;
-using CivilDb = Autodesk.Civil.DatabaseServices;
 
 using Stylet;
 
-namespace Speckle.ConnectorAutoCAD.UI
+namespace Speckle.ConnectorAutocadCivil.UI
 {
-  public partial class ConnectorBindingsAutoCAD : ConnectorBindings
+  public partial class ConnectorBindingsAutocad : ConnectorBindings
   {
     public Document Doc => Application.DocumentManager.MdiActiveDocument;
 
@@ -36,7 +35,7 @@ namespace Speckle.ConnectorAutoCAD.UI
     /// </summary>
     public List<Exception> Exceptions { get; set; } = new List<Exception>();
 
-    public ConnectorBindingsAutoCAD() : base()
+    public ConnectorBindingsAutocad() : base()
     {
     }
 
@@ -100,7 +99,7 @@ namespace Speckle.ConnectorAutoCAD.UI
       return objs;
     }
 
-    public override string GetHostAppName() => Applications.AutoCAD2021;
+    public override string GetHostAppName() => Utils.AutocadAppName;
 
     public override string GetDocumentId()
     {
@@ -168,7 +167,7 @@ namespace Speckle.ConnectorAutoCAD.UI
       Exceptions.Clear();
 
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(ConnectorAutoCADUtils.AutoCADAppName);
+      var converter = kit.LoadConverter(Utils.AutocadAppName);
       var transport = new ServerTransport(state.Client.Account, state.Stream.id);
 
       var myStream = await state.Client.StreamGet(state.Stream.id);
@@ -361,7 +360,7 @@ namespace Speckle.ConnectorAutoCAD.UI
         var _layer = new AcadDb.LayerTableRecord();
 
         // Assign the layer properties
-        _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(System.Drawing.Color.Blue);
+        _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(Color.Blue);
         _layer.Name = layerName;
 
         // Append the new layer to the layer table and the transaction
@@ -380,7 +379,7 @@ namespace Speckle.ConnectorAutoCAD.UI
     public override async Task<StreamState> SendStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(ConnectorAutoCADUtils.AutoCADAppName);
+      var converter = kit.LoadConverter(Utils.AutocadAppName);
       converter.SetContextDocument(Doc);
 
       var streamId = state.Stream.id;
@@ -479,7 +478,7 @@ namespace Speckle.ConnectorAutoCAD.UI
         objectId = commitObjId,
         branchName = state.Branch.name,
         message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from AutoCAD.",
-        sourceApplication = ConnectorAutoCADUtils.AutoCADAppName
+        sourceApplication = Utils.AutocadAppName
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
@@ -533,7 +532,7 @@ namespace Speckle.ConnectorAutoCAD.UI
       if (Doc != null)
         return;
 
-      SpeckleAutoCADCommand.Bootstrapper.Application.MainWindow.Hide();
+      SpeckleAutocadCommand.Bootstrapper.Application.MainWindow.Hide();
 
       var appEvent = new ApplicationEvent() { Type = ApplicationEvent.EventType.DocumentClosed };
       NotifyUi(appEvent);

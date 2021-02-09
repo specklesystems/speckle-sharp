@@ -1,27 +1,15 @@
-﻿using System;
+﻿#if CIVIL2021
 using System.Collections.Generic;
-using System.Text;
-using System.Timers;
-using System.Linq;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using System.Collections;
 
-using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.EditorInput;
-using Autodesk.AutoCAD.Colors;
-using Autodesk.AutoCAD.Runtime;
-using Autodesk.AutoCAD.Geometry;
 using Autodesk.Civil.ApplicationServices;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 
 using Polycurve = Objects.Geometry.Polycurve;
 
-namespace Objects.Converter.AutoCAD
+namespace Objects.Converter.AutocadCivil
 {
-  public partial class ConverterAutoCAD
+  public partial class ConverterAutocadCivil
   {
     // featurelines
     public Polycurve FeatureLineToSpeckle(CivilDB.FeatureLine featureLine)
@@ -44,3 +32,4 @@ namespace Objects.Converter.AutoCAD
     }
   }
 }
+#endif

@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
 
 using Speckle.DesktopUI;
-using Speckle.ConnectorAutoCAD.UI;
+using Speckle.ConnectorAutocadCivil.UI;
 
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.ApplicationServices;
 
-[assembly: CommandClass(typeof(Speckle.ConnectorAutoCAD.Entry.SpeckleAutoCADCommand))]
-namespace Speckle.ConnectorAutoCAD.Entry
+[assembly: CommandClass(typeof(Speckle.ConnectorAutocadCivil.Entry.SpeckleAutocadCommand))]
+namespace Speckle.ConnectorAutocadCivil.Entry
 {
-  public class SpeckleAutoCADCommand
+  public class SpeckleAutocadCommand
   {
     public static Bootstrapper Bootstrapper { get; set; }
-    public static ConnectorBindingsAutoCAD Bindings { get; set; }
+    public static ConnectorBindingsAutocad Bindings { get; set; }
 
     /// <summary>
     /// Main command to initialize Speckle Connector

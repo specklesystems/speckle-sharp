@@ -7,14 +7,15 @@ using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 
-namespace Speckle.ConnectorAutoCAD
+namespace Speckle.ConnectorAutocadCivil
 {
-  public static class ConnectorAutoCADUtils
+  public static class Utils
   {
+
 #if AUTOCAD2021
-    public static string AutoCADAppName = Applications.AutoCAD2021;
-#else
-      public static string AutoCADAppName = Applications.AutoCAD2020;
+    public static string AutocadAppName = Applications.Autocad2021;
+#elif CIVIL2021
+    public static string AutocadAppName = Applications.Civil2021;
 #endif
 
     #region extension methods

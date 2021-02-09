@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.Runtime;
-using Autodesk.AutoCAD.ApplicationServices;
-using Speckle.Core.Kits;
+﻿using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Objects.Converter.AutoCAD
+using Autodesk.AutoCAD.DatabaseServices;
+
+namespace Objects.Converter.AutocadCivil
 {
-  public partial class ConverterAutoCAD
+  public partial class ConverterAutocadCivil
   {
     private string _modelUnits;
     public string ModelUnits

@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Objects.Converter.AutoCAD2021</AssemblyName>
-    <RootNamespace>Objects.Converter.AutoCAD</RootNamespace>
+    <AssemblyName>Objects.Converter.Autocad2021</AssemblyName>
+    <RootNamespace>Objects.Converter.Autocad</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -15,7 +15,6 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Civil3D2021.Base" Version="1.0.0" />
     <PackageReference Include="ModPlus.AutoCAD.API.2021" Version="1.0.0" />
   </ItemGroup>
 
@@ -24,6 +23,6 @@
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
   </ItemGroup>
 
-  <Import Project="..\ConverterAutoCADShared\ConverterAutoCADShared.projitems" Label="Shared" />
+  <Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems" Label="Shared" />
 
 </Project>

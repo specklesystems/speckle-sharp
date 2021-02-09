@@ -18,9 +18,9 @@ using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Vector = Objects.Geometry.Vector;
 
-namespace Objects.Converter.AutoCAD
+namespace Objects.Converter.AutocadCivil
 {
-  public partial class ConverterAutoCAD
+  public partial class ConverterAutocadCivil
   {
     // tolerance for geometry:
     public double tolerance = 0.00;

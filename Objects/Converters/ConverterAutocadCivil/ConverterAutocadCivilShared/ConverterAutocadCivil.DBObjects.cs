@@ -17,9 +17,9 @@ using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 
-namespace Objects.Converter.AutoCAD
+namespace Objects.Converter.AutocadCivil
 {
-  public partial class ConverterAutoCAD
+  public partial class ConverterAutocadCivil
   {
     // Points
     public Point PointToSpeckle(DBPoint point)

@@ -5,13 +5,13 @@ using System.IO;
 using System.Windows.Media.Imaging;
 using System.Linq;
 
-using Speckle.ConnectorAutoCAD.UI;
+using Speckle.ConnectorAutocadCivil.UI;
 
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.Windows;
 using Autodesk.AutoCAD.ApplicationServices;
 
-namespace Speckle.ConnectorAutoCAD.Entry
+namespace Speckle.ConnectorAutocadCivil.Entry
 {
   public class App : IExtensionApplication
   {
@@ -34,8 +34,8 @@ namespace Speckle.ConnectorAutoCAD.Entry
       }
 
       // set up bindings here? possible to subscribe to document events?
-      SpeckleAutoCADCommand.Bindings = new ConnectorBindingsAutoCAD();
-      SpeckleAutoCADCommand.Bindings.SetExecutorAndInit();
+      SpeckleAutocadCommand.Bindings = new ConnectorBindingsAutocad();
+      SpeckleAutocadCommand.Bindings.SetExecutorAndInit();
     }
 
     public void ComponentManager_ItemInitialized(object sender, RibbonItemEventArgs e)
@@ -65,7 +65,7 @@ namespace Speckle.ConnectorAutoCAD.Entry
       RibbonPanelSource panel = CreateButtonPanel("Speckle 2", tab);
       if (panel == null)
         return;
-      RibbonButton button = CreateButton("Acad Connector", "Speckle", panel);
+      RibbonButton button = CreateButton("Connector", "Speckle", panel);
     }
 
     public void Terminate()

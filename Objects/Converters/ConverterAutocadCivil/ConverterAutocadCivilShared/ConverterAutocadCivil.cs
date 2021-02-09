@@ -2,13 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.DatabaseServices;
-using Acad = Autodesk.AutoCAD;
-using Civil = Autodesk.Civil;
-using AcadDB = Autodesk.AutoCAD.DatabaseServices;
-using CivilDB = Autodesk.Civil.DatabaseServices;
-
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Arc = Objects.Geometry.Arc;
@@ -24,25 +17,34 @@ using Polyline = Objects.Geometry.Polyline;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
 
+using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
+using Acad = Autodesk.AutoCAD;
+using AcadDB = Autodesk.AutoCAD.DatabaseServices;
+#if CIVIL2021
+using Civil = Autodesk.Civil;
+using CivilDB = Autodesk.Civil.DatabaseServices;
+#endif
 
-namespace Objects.Converter.AutoCAD
+
+namespace Objects.Converter.AutocadCivil
 {
-  public partial class ConverterAutoCAD : ISpeckleConverter
+  public partial class ConverterAutocadCivil : ISpeckleConverter
   {
 #if AUTOCAD2021
-    public static string AutoCADAppName = Applications.AutoCAD2021;
-#else
-    public static string AutoCADAppName = Applications.AutoCAD2021;
+    public static string AutocadAppName = Applications.Autocad2021;
+#elif CIVIL2021
+    public static string AutocadAppName = Applications.Civil2021;
 #endif
 
     #region ISpeckleConverter props
 
     public string Description => "Default Speckle Kit for AutoCAD";
-    public string Name => nameof(ConverterAutoCAD);
+    public string Name => nameof(ConverterAutocadCivil);
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
 
-    public IEnumerable<string> GetServicedApplications() => new string[] { AutoCADAppName };
+    public IEnumerable<string> GetServicedApplications() => new string[] { AutocadAppName };
 
     public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
 
@@ -201,8 +203,10 @@ namespace Objects.Converter.AutoCAD
         case AcadDB.Polyline2d o:
           return PolycurveToSpeckle(o);
 
+        #if CIVIL2021
         case CivilDB.FeatureLine o:
           return FeatureLineToSpeckle(o);
+        #endif
 
         default:
           return null;

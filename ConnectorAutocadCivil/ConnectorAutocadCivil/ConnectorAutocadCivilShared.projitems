@@ -9,11 +9,11 @@
     <Import_RootNamespace>ConnectorAutoCADShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ConnectorAutoCADUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleAutoCADCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleAutocadCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutoCAD.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo32.png" />
