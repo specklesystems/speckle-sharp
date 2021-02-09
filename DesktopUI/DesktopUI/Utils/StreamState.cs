@@ -67,9 +67,7 @@ namespace Speckle.DesktopUI.Utils
     }
 
     private Stream _stream;
-    /// <summary>
-    /// Setting this property will re-initialise this class.
-    /// </summary>
+
     [JsonProperty]
     public Stream Stream
     {
@@ -77,7 +75,6 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _stream, value);
-        Initialise();
       }
     }
 
@@ -90,6 +87,15 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         Stream.branches.items = value;
+        // makes sure updates to Branches are propagated to the selected Branch
+        if (Branch != null && Branches != null)
+        {
+          var updatedBranch = Branches.FirstOrDefault(x => x.name == Branch.name);
+          if (updatedBranch == null)
+            updatedBranch = Branches.FirstOrDefault(b => b.name == "main");
+
+          Branch = updatedBranch;
+        }
         NotifyOfPropertyChange(nameof(BranchContextMenuItems));
         NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       }
@@ -104,23 +110,29 @@ namespace Speckle.DesktopUI.Utils
       {
         SetAndNotify(ref _Branch, value);
 
-        if (Commit != null && !string.IsNullOrEmpty(Commit.id))
+        //make sure the current commit exists in this branch
+        if (Commit != null && HasCommits(value) && value.commits.items.Any(x=>x.id == Commit.id))
         {
           //do nothing, it means the current commit is either "latest" or a previous commitId, 
           //in which case we don't want to switch it automatically
         }
-        else if (value.commits != null && value.commits.items != null && value.commits.items.Count != 0)
+        else if (HasCommits(value))
         {
           Commit = new Commit { id = "latest" };
         }
         else
         {
-          Commit = new Commit { id = "Empty Branch" };
+          Commit = new Commit { id = "No Commits" };
         }
 
         NotifyOfPropertyChange(nameof(BranchContextMenuItems));
         NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       }
+    }
+
+    private bool HasCommits(Branch branch)
+    {
+      return branch.commits != null && branch.commits.items != null && branch.commits.items.Count != 0;
     }
 
     public BindableCollection<BranchContextMenuItem> BranchContextMenuItems
@@ -258,7 +270,7 @@ namespace Speckle.DesktopUI.Utils
 
     public bool ReceiveEnabled
     {
-      get => Commit != null && Commit.id != "Empty Branch";
+      get => Commit != null && Commit.id != "No Commits";
     }
 
     public bool ReceiveDisabled
@@ -452,6 +464,7 @@ namespace Speckle.DesktopUI.Utils
     {
       Client = client;
       Stream = stream;
+      Initialise();
     }
 
     /// <summary>
@@ -473,14 +486,15 @@ namespace Speckle.DesktopUI.Utils
       Client = new Client(account);
     }
 
-    internal void Initialise()
+    public void Initialise(bool refresh = false)
     {
       if (Stream == null || Client?.AccountId == null)
       {
         return;
       }
-      // refresh after deserialisation
-      Task.Run(() => RefreshStream());
+
+      if (refresh) //only need to refresh after de-serialization
+        Task.Run(() => RefreshStream());
 
       Client.SubscribeStreamUpdated(Stream.id);
       Client.SubscribeCommitCreated(Stream.id);
@@ -498,6 +512,7 @@ namespace Speckle.DesktopUI.Utils
       Client.OnBranchCreated += HandleBranchCreated;
       Client.OnBranchUpdated += HandleBranchCreated;
       Client.OnBranchUpdated += HandleBranchCreated;
+
 
       if (Branch == null)
       {
@@ -640,6 +655,7 @@ namespace Speckle.DesktopUI.Utils
     }
 
     #endregion
+
   }
 
   /// <summary>

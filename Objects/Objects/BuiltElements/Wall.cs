@@ -91,7 +91,7 @@ namespace Objects.BuiltElements.Revit
     public string family { get; set; }
     public string type { get; set; }
 
-    public BrepFace face { get; set; }
+    public Surface surface { get; set; }
     public Level level { get; set; }
 
     public LocationLine locationLine { get; set; }
@@ -104,15 +104,16 @@ namespace Objects.BuiltElements.Revit
 
     }
 
-    [SchemaInfo("Wall by face", "Creates a Revit wall with a top and base level.")]
+    [SchemaInfo("Wall by face", "Creates a Revit wall from a surface.")]
     public RevitFaceWall(string family, string type,
-      BrepFace face, Level level, LocationLine locationLine = LocationLine.Interior,
+      [SchemaParamInfo("Surface or single face Brep to use")] Brep surface,
+      Level level, LocationLine locationLine = LocationLine.Interior,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
       List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
-      this.face = face;
+      this.surface = surface.Surfaces[0];
       this.locationLine = locationLine;
       this.level = level;
       this.elements = elements;

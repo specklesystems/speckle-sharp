@@ -42,7 +42,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     private int _objectCount = 0;
     private bool _hasOutput = false;
     private string _outputInfo = "";
-    private bool _firstRun = true;
+    private bool _autoUpdate = false;
     private CancellationTokenSource _cancellationToken;
 
     //cached inputs
@@ -111,6 +111,19 @@ namespace Speckle.ConnectorDynamo.SendNode
       {
         _sendEnabled = value;
         RaisePropertyChanged("SendEnabled");
+      }
+    }
+
+    /// <summary>
+    /// UI Binding
+    /// </summary>
+    public bool AutoUpdate
+    {
+      get => _autoUpdate;
+      set
+      {
+        _autoUpdate = value;
+        RaisePropertyChanged("AutoUpdate");
       }
     }
 
@@ -241,7 +254,7 @@ namespace Speckle.ConnectorDynamo.SendNode
           Warning(e.Message);
           Core.Logging.Log.CaptureAndThrow(new Exception("Conversion error", e));
         }
-        
+
         Message = "Sending...";
 
         void ProgressAction(ConcurrentDictionary<string, int> dict)

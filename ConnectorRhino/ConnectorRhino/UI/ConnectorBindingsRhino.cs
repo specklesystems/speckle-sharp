@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using Speckle.Newtonsoft.Json;
 using Rhino;
 using Rhino.DocObjects;
 using Speckle.Core.Api;
@@ -85,7 +85,6 @@ namespace SpeckleRhino
 
     public override void AddNewStream(StreamState state)
     {
-      var stateee = JsonConvert.SerializeObject(state);
       Doc.Strings.SetString("speckle", state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
@@ -182,19 +181,32 @@ namespace SpeckleRhino
       converter.SetContextDocument(Doc);
 
       var myStream = await state.Client.StreamGet(state.Stream.id);
-      var commit = state.Commit;
 
       if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return null;
       }
 
+      var transport = new ServerTransport(state.Client.Account, state.Stream.id);
+
       Exceptions.Clear();
 
+      string referencedObject = state.Commit.referencedObject;
+
+      //if "latest", always make sure we get the latest commit when the user clicks "receive"
+      if (state.Commit.id == "latest")
+      {
+        var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
+        referencedObject = res.commits.items.FirstOrDefault().referencedObject;
+      }
+
+      var commit = state.Commit;
+
+
       var commitObject = await Operations.Receive(
-        commit.referencedObject,
+        referencedObject,
         state.CancellationTokenSource.Token,
-        new ServerTransport(state.Client.Account, state.Stream.id),
+        transport,
         onProgressAction: d => UpdateProgress(d, state.Progress),
         onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => state.Progress.Maximum = num),
         onErrorAction: (message, exception) => { Exceptions.Add(exception); }

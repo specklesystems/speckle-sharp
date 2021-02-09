@@ -69,6 +69,75 @@ namespace Objects.Converter.Revit
       return new ApplicationPlaceholderObject { applicationId = speckleDs.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
+    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
+    public ApplicationPlaceholderObject DirectShapeToNative(Brep brep, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    {
+      // if it comes from GH it doesn't have an applicationId, the use the hash id
+      if (brep.applicationId == null)
+        brep.applicationId = brep.id;
+
+      var docObj = GetExistingElementByApplicationId(brep.applicationId);
+
+      //just create new one 
+      if (docObj != null)
+      {
+        Doc.Delete(docObj.Id);
+      }
+
+      var converted = new List<GeometryObject>();
+
+      try
+      {
+        var solid = BrepToNative(brep);
+        converted.Add(solid);
+      }
+      catch (Exception e)
+      {
+        var mesh = MeshToNative(brep.displayValue);
+        converted.AddRange(mesh);
+      }
+
+      var catId = Doc.Settings.Categories.get_Item(cat).Id;
+
+      var revitDs = DB.DirectShape.CreateElement(Doc, catId);
+      revitDs.ApplicationId = brep.applicationId;
+      revitDs.ApplicationDataId = Guid.NewGuid().ToString();
+      revitDs.SetShape(converted);
+      revitDs.Name = "Brep " + brep.applicationId;
+
+      return new ApplicationPlaceholderObject { applicationId = brep.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
+    }
+
+    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
+    public ApplicationPlaceholderObject DirectShapeToNative(Mesh mesh, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    {
+      // if it comes from GH it doesn't have an applicationId, the use the hash id
+      if (mesh.applicationId == null)
+        mesh.applicationId = mesh.id;
+
+      var docObj = GetExistingElementByApplicationId(mesh.applicationId);
+
+      //just create new one 
+      if (docObj != null)
+      {
+        Doc.Delete(docObj.Id);
+      }
+
+      var converted = new List<GeometryObject>();
+      var rMesh = MeshToNative(mesh);
+      converted.AddRange(rMesh);
+
+      var catId = Doc.Settings.Categories.get_Item(cat).Id;
+
+      var revitDs = DB.DirectShape.CreateElement(Doc, catId);
+      revitDs.ApplicationId = mesh.applicationId;
+      revitDs.ApplicationDataId = Guid.NewGuid().ToString();
+      revitDs.SetShape(converted);
+      revitDs.Name = "Mesh " + mesh.applicationId;
+
+      return new ApplicationPlaceholderObject { applicationId = mesh.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
+    }
+
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
     {
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();

@@ -39,5 +39,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Units.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Revit\FamilyLoadOptions.cs" />
   </ItemGroup>
 </Project>

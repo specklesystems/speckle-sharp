@@ -23,20 +23,20 @@ namespace ConnectorGrasshopper
 {
   public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterComponent
   {
+    public override GH_Exposure Exposure => GH_Exposure.tertiary;
+
     private ConstructorInfo SelectedConstructor;
     private GH_Document _document;
 
     public override Guid ComponentGuid => new Guid("4dc285e3-810d-47db-bfb5-cd96fe459fdd");
     protected override Bitmap Icon => Properties.Resources.SchemaBuilder;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
-
     public string Seed;
 
     public CreateSchemaObject()
       : base("Create Schema Object", "CsO",
           "Allows you to create a Speckle object from a schema class.",
-          "Speckle 2", "Object Management")
+          ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
       Kit = KitManager.GetDefaultKit();
       try

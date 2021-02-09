@@ -88,7 +88,7 @@ namespace Objects.Converter.Revit
       var l = new Line { units = ModelUnits };
       l.start = PointToSpeckle(line.GetEndPoint(0));
       l.end = PointToSpeckle(line.GetEndPoint(1));
-      
+
       l.length = line.Length;
       return l;
     }
@@ -151,7 +151,7 @@ namespace Objects.Converter.Revit
       a.startPoint = PointToSpeckle(start);
       a.midPoint = PointToSpeckle(mid);
       a.length = arc.Length;
-      
+
       return a;
     }
 
@@ -198,7 +198,7 @@ namespace Objects.Converter.Revit
       var points = new List<double>();
       foreach (var p in revitCurve.CtrlPoints)
       {
-        points.AddRange(new List<double>{ScaleToSpeckle(p.X),ScaleToSpeckle(p.Y),ScaleToSpeckle(p.Z)});
+        points.AddRange(new List<double> { ScaleToSpeckle(p.X), ScaleToSpeckle(p.Y), ScaleToSpeckle(p.Z) });
       }
 
       Curve speckleCurve = new Curve();
@@ -212,7 +212,7 @@ namespace Objects.Converter.Revit
       speckleCurve.units = ModelUnits;
       //speckleCurve.domain = new Interval(revitCurve.StartParameter(), revitCurve.EndParameter());
       speckleCurve.length = revitCurve.Length;
-      
+
       return speckleCurve;
     }
 
@@ -408,7 +408,7 @@ namespace Objects.Converter.Revit
       }
 
       speckleMesh.units = ModelUnits;
-      
+
       return speckleMesh;
     }
 
@@ -542,17 +542,10 @@ namespace Objects.Converter.Revit
         }
         points.Add(row);
       }
-      
-      result.SetControlPoints(points);
-      
-      return result;
-    }
 
-    public Face BrepFaceToNative(BrepFace face)
-    {
-      var brep = BrepToNative(face.Brep);
-      var faceIndex = face.SurfaceIndex;
-      return brep.Faces.get_Item(faceIndex);
+      result.SetControlPoints(points);
+
+      return result;
     }
 
     public List<BRepBuilderEdgeGeometry> BrepEdgeToNative(BrepEdge edge)
@@ -701,6 +694,9 @@ namespace Objects.Converter.Revit
 
     public Solid BrepToNative(Brep brep)
     {
+      //Make sure face references are calculated by revit
+
+
       var bRepType = BRepType.OpenShell;
       switch (brep.Orientation)
       {

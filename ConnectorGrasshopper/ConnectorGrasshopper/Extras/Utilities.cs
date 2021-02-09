@@ -16,13 +16,20 @@ namespace ConnectorGrasshopper.Extras
 {
   public static class Utilities
   {
-    public static List<object> DataTreeToNestedLists(GH_Structure<IGH_Goo> dataInput, ISpeckleConverter converter)
+    public static List<object> DataTreeToNestedLists(GH_Structure<IGH_Goo> dataInput, ISpeckleConverter converter, Action OnConversionProgress = null)
     {
       var output = new List<object>();
       for (var i = 0; i < dataInput.Branches.Count; i++)
       {
         var path = dataInput.Paths[i].Indices.ToList();
-        var leaves = dataInput.Branches[i].Select(goo => TryConvertItemToSpeckle(goo, converter)).ToList();
+        var leaves = new List<object>(); 
+        
+        foreach(var goo in dataInput.Branches[i])
+        {
+          OnConversionProgress?.Invoke();
+          leaves.Add(TryConvertItemToSpeckle(goo, converter));
+        }
+
         RecurseTreeToList(output, path, 0, leaves);
       }
 

@@ -16,9 +16,9 @@ namespace ConnectorGrasshopper.Accounts
 
     public override Guid ComponentGuid => new Guid("734C6CB6-2430-40B3-BE2F-255B27302131");
 
-    public override string Category { get => "Speckle 2"; }
+    public override string Category { get => ComponentCategories.SECONDARY_RIBBON; }
 
-    public override string SubCategory { get => "Accounts"; }
+    public override string SubCategory { get => ComponentCategories.STREAMS; }
 
     public override string Description { get => "A dropdown list of your existing Speckle accounts."; }
 

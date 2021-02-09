@@ -23,7 +23,7 @@ namespace ConnectorGrasshopper.Objects
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
     public ExtendSpeckleObjectAsync() : base("Extend Speckle Object", "ESO",
-      "Extend a current object with key/value pairs", "Speckle 2", "Object Management")
+      "Extend a current object with key/value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
       BaseWorker = new ExtendSpeckleObjectWorker(this, Converter);
     }
@@ -96,8 +96,9 @@ namespace ConnectorGrasshopper.Objects
           // Input is a list of values. Assign them directly
           if (keys.Count != values?.Count)
           {
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Key and Value lists are not the same length.");
-            Done();
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Key and Value lists are not the same length.");
+            Parent.Message = "Error";
+            return;
           }
 
           AssignToObject(@base, keys, values);
@@ -107,8 +108,9 @@ namespace ConnectorGrasshopper.Objects
           var values = valueTree.Branches[0];
           if (keys.Count != values.Count)
           {
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Key and Value lists are not the same length.");
-            Done();
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Key and Value lists are not the same length.");
+            Parent.Message = "Error";
+            return;
           }
 
           // Input is just one list, so use it.
@@ -119,6 +121,7 @@ namespace ConnectorGrasshopper.Objects
           // Input is a tree, meaning it's values are either lists or trees.
           var subTree = Utilities.GetSubTree(valueTree, path);
           var index = 0;
+          var foundTree = false;
           keys.ForEach(key =>
           {
             var subPath = new GH_Path(index);
@@ -140,12 +143,18 @@ namespace ConnectorGrasshopper.Objects
             }
             else
             {
-              // TODO: Handle tree conversions
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot handle trees yet");
+              foundTree = true;
             }
 
             index++;
           });
+
+          if (foundTree)
+          {
+            // TODO: Handle tree conversions
+            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot handle trees yet");
+            Parent.Message = "Error";
+          }
         }
 
         Done();

@@ -11,7 +11,7 @@ namespace ConnectorGrasshopper.Extras
         public override GH_Exposure Exposure => GH_Exposure.hidden;
         
         public SpeckleBaseParam(string name, string nickname, string description, GH_ParamAccess access): 
-            this(name,nickname,description,"Speckle 2", "Params",access){}
+            this(name,nickname,description,ComponentCategories.PRIMARY_RIBBON, "Params",access){}
         
         
         public SpeckleBaseParam(string name, string nickname, string description, string category, string subcategory, GH_ParamAccess access) : base(name, nickname, description, category, subcategory, access)
@@ -22,5 +22,6 @@ namespace ConnectorGrasshopper.Extras
         {
             
         }
+        
     }
 }

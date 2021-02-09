@@ -211,6 +211,7 @@ workflows:
     when: << pipeline.parameters.run_connector_gh >>
     jobs:
       - build-connector:
+          name: build-connector-grasshopper
           connectorname: ConnectorGrasshopper
   
   # Rhino connector - Build/Test
@@ -218,6 +219,7 @@ workflows:
     when: << pipeline.parameters.run_connector_rhino >>
     jobs:
       - build-connector:
+          name: build-connector-rhino
           connectorname: ConnectorRhino
 
   # Dynamo connector - Build/Test
@@ -225,6 +227,7 @@ workflows:
     when: << pipeline.parameters.run_connector_dynamo >>
     jobs:
       - build-connector:
+          name: build-connector-dynamo
           connectorname: ConnectorDynamo
   
   # Revit Connector - Build/Test
@@ -232,6 +235,7 @@ workflows:
     when: << pipeline.parameters.run_connector_revit >>
     jobs:
       - build-connector:
+          name: build-connector-revit
           connectorname: ConnectorRevit
       
   # Makes installers based on which tag is provided

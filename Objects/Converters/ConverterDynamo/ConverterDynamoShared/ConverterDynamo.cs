@@ -23,7 +23,6 @@ namespace Objects.Converter.Dynamo
 {
   public partial class ConverterDynamo : ISpeckleConverter
   {
-    #region implemented methods
 
     public string Description => "Default Speckle Kit for Dynamo";
     public string Name => nameof(ConverterDynamo);
@@ -92,10 +91,10 @@ namespace Objects.Converter.Dynamo
 
         case DS.Mesh o:
           return MeshToSpeckle(o);
-        
+
         case DS.Cuboid o:
           return BoxToSpeckle(o);
-        
+
         default:
           throw new NotSupportedException();
       }
@@ -140,10 +139,10 @@ namespace Objects.Converter.Dynamo
 
         case Mesh o:
           return MeshToNative(o);
-        
+
         case Box o:
           return BoxToNative(o);
-        
+
         default:
           throw new NotSupportedException();
       }
@@ -207,7 +206,7 @@ namespace Objects.Converter.Dynamo
 
         case DS.Mesh _:
           return true;
-        
+
         case DS.Cuboid _:
           return true;
         default:
@@ -254,7 +253,7 @@ namespace Objects.Converter.Dynamo
 
         case Mesh _:
           return true;
-        
+
         case Box _:
           return true;
         default:
@@ -270,6 +269,5 @@ namespace Objects.Converter.Dynamo
 #endif
     }
 
-    #endregion implemented methods
   }
 }

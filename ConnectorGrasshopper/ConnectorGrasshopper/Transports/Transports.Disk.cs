@@ -13,7 +13,7 @@ namespace ConnectorGrasshopper.Transports
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public DiskTransportComponent() : base("Disk Transport", "Disk", "Creates a Disk Transport.", "Speckle 2 Dev", "Transports") { }
+    public DiskTransportComponent() : base("Disk Transport", "Disk", "Creates a Disk Transport.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {

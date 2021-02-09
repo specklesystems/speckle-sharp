@@ -22,7 +22,7 @@ namespace ConnectorGrasshopper.Objects
     public override GH_Exposure Exposure => GH_Exposure.hidden;
     public override bool Obsolete => true;
 
-    public ExtendSpeckleObject() : base("Extend Speckle Object", "ESO", "Extend a current object with key/value pairs.\nALPHA: Currently supports passing values as a list of items (one item per key) or as a tree where each branch will be a list of values for each key (one branch per key).", "Speckle 2", "Object Management")
+    public ExtendSpeckleObject() : base("Extend Speckle Object", "ESO", "Extend a current object with key/value pairs.\nALPHA: Currently supports passing values as a list of items (one item per key) or as a tree where each branch will be a list of values for each key (one branch per key).", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }
 

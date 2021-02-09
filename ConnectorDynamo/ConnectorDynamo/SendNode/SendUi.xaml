@@ -28,6 +28,7 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
     <Button
@@ -65,6 +66,13 @@
       Badge="{Binding ExpiredCount}"
       BadgeColorZoneMode="Accent"
       ToolTip="Has new data to send" />
+    <ToggleButton
+      Grid.Row="1"
+      Margin="0,5"
+      HorizontalAlignment="Center"
+      IsChecked="{Binding AutoUpdate}"
+      Style="{StaticResource MaterialDesignSwitchToggleButton}"
+      ToolTip="Toggle auto sending" />
     <TextBlock
       Grid.Row="2"
       Width="130"
