@@ -27,7 +27,7 @@ The connector itself doesn't have features to manage your Speckle account - this
 
 ### Debugging
 
-We are currently exploring ways of streamlining AutoCAD add-in loading, but follow the steps below on every debug session:
+We are currently exploring ways of streamlining AutoCAD add-in loading: for now, follow the steps below on *every* debug session ಠ_ಠ :
 
 - Start a Visual Studio debug session, and wait for your AutoCAD, Civil3D, or Civil3D as AutoCAD application to open
 - Enter `NETLOAD` in the command prompt
