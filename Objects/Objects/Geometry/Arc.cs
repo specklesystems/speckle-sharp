@@ -17,12 +17,18 @@ namespace Objects.Geometry
 
     public double? angleRadians { get; set; }
 
+    /// <summary>
+    /// Gets or sets the plane of the <see cref="Arc"/>. The plane origin is the <see cref="Arc"/> center.
+    /// </summary>
     public Plane plane { get; set; }
 
     public Interval domain { get; set; }
 
     public Point startPoint { get; set; }
 
+    /// <summary>
+    /// Gets or sets the point at 0.5 length.
+    /// </summary>
     public Point midPoint { get; set; }
 
     public Point endPoint { get; set; }

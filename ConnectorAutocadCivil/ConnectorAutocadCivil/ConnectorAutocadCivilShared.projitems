@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>b47492d9-2eda-4016-a930-7fa708c85c3d</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ConnectorAutoCADShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleAutocadCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="$(MSBuildThisFileDirectory)Resources\logo16.png" />
+  </ItemGroup>
+</Project>

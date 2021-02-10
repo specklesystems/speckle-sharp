@@ -36,6 +36,7 @@ The Speckle Connectors are plugins that embed with an application and provide th
 - [Dynamo](ConnectorDynamo)
 - [Revit](ConnectorRevit)
 - [Rhino](ConnectorRhino)
+- [AutocadCivil](ConnectorAutocadCivil)
 
 ### ➡️ [DesktopUI](DesktopUI)
 
