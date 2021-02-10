@@ -72,10 +72,29 @@ namespace Speckle.Core.Models
       foreach (var prop in typedProps)
       {
         var detachAttribute = prop.GetCustomAttribute<DetachProperty>(true);
-        if (detachAttribute != null && detachAttribute.Detachable)
-        {
-          object value = prop.GetValue(@base);
+        var chunkAttribute = prop.GetCustomAttribute<Chunkable>(true);
+        
+        object value = prop.GetValue(@base);
+
+        if (detachAttribute != null && detachAttribute.Detachable && chunkAttribute == null)
+        {  
           count += HandleObjectCount(value, parsed);
+        } 
+        else if (detachAttribute != null && detachAttribute.Detachable && chunkAttribute != null)
+        {
+          // Simplified chunking count handling.
+          var asList = value as IList;
+          if(asList!=null)
+          {
+            count += asList.Count / chunkAttribute.MaxObjCountPerChunk;
+            continue;
+          }
+          var asArray = value as Array;
+          if(asArray!=null)
+          {
+            count += asArray.Length / chunkAttribute.MaxObjCountPerChunk;
+            continue;
+          }
         }
       }
 
