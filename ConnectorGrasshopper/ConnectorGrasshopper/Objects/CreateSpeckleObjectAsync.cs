@@ -110,10 +110,9 @@ namespace ConnectorGrasshopper.Objects
         inputData.Keys.ToList().ForEach(key =>
         {
           var value = inputData[key];
-          if (value == null)
-            Done();
+
           
-          else if (value is List<object> list)
+          if (value is List<object> list)
           {
             // Value is a list of items, iterate and convert.
             var converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
@@ -140,7 +139,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception e)
             {
-              Log.CaptureAndThrow(e);
+              Log.CaptureException(e);
               Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
               Parent.Message = "Error";
               RhinoApp.InvokeOnUiThread(new Action(()=> Parent.OnDisplayExpired(true)));
@@ -148,6 +147,11 @@ namespace ConnectorGrasshopper.Objects
             }        
           }
         });
+
+        if (hasErrors)
+        {
+          return;
+        }
       }
       catch (Exception e)
       {
@@ -155,8 +159,9 @@ namespace ConnectorGrasshopper.Objects
         Log.CaptureException(e);
         Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
         Parent.Message = "Error";
+        return;
       }
-
+      
       // Let's always call done!
       Done();
     }
