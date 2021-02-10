@@ -86,8 +86,16 @@ namespace Speckle.DesktopUI.Utils
       }
       set
       {
-        UpdateBranch();
         Stream.branches.items = value;
+        // makes sure updates to Branches are propagated to the selected Branch
+        if (Branch != null && Branches != null)
+        {
+          var updatedBranch = Branches.FirstOrDefault(x => x.name == Branch.name);
+          if (updatedBranch == null)
+            updatedBranch = Branches.FirstOrDefault(b => b.name == "main");
+
+          Branch = updatedBranch;
+        }
         NotifyOfPropertyChange(nameof(BranchContextMenuItems));
         NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       }
@@ -102,12 +110,13 @@ namespace Speckle.DesktopUI.Utils
       {
         SetAndNotify(ref _Branch, value);
 
-        if (Commit != null && !string.IsNullOrEmpty(Commit.id) && Commit.id != "No Commits")
+        //make sure the current commit exists in this branch
+        if (Commit != null && HasCommits(value) && value.commits.items.Any(x=>x.id == Commit.id))
         {
           //do nothing, it means the current commit is either "latest" or a previous commitId, 
           //in which case we don't want to switch it automatically
         }
-        else if (value.commits != null && value.commits.items != null && value.commits.items.Count != 0)
+        else if (HasCommits(value))
         {
           Commit = new Commit { id = "latest" };
         }
@@ -119,6 +128,11 @@ namespace Speckle.DesktopUI.Utils
         NotifyOfPropertyChange(nameof(BranchContextMenuItems));
         NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       }
+    }
+
+    private bool HasCommits(Branch branch)
+    {
+      return branch.commits != null && branch.commits.items != null && branch.commits.items.Count != 0;
     }
 
     public BindableCollection<BranchContextMenuItem> BranchContextMenuItems
@@ -642,18 +656,6 @@ namespace Speckle.DesktopUI.Utils
 
     #endregion
 
-    // makes sure updates to Branches are propagated to the selected Branch
-    private void UpdateBranch()
-    {
-      if (Branch == null || Branches == null)
-        return;
-
-      var updatedBranch = Branches.FirstOrDefault(x => x.name == Branch.name);
-      if (updatedBranch == null)
-        updatedBranch = Branches.FirstOrDefault(b => b.name == "main");
-
-      Branch = updatedBranch;
-    }
   }
 
   /// <summary>

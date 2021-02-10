@@ -157,6 +157,7 @@ namespace Speckle.Core.Api
                           id
                           name
                           role
+                          avatar
                         }},
                         branches (limit: {branchesLimit}){{
                           totalCount,
@@ -238,7 +239,8 @@ namespace Speckle.Core.Api
                             collaborators {{
                               id,
                               name,
-                              role
+                              role,
+                              avatar
                             }}
                           }}
                         }}
