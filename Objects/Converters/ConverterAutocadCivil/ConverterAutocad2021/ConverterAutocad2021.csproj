@@ -4,10 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Objects.Converter.Autocad2021</AssemblyName>
     <RootNamespace>Objects.Converter.Autocad</RootNamespace>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;AUTOCAD2021</DefineConstants>
+    <DefineConstants>$(DefineConstants);AUTOCAD2021</DefineConstants>
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
