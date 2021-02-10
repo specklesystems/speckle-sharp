@@ -9,6 +9,7 @@ using Speckle.Core.Models;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using System.Collections;
+using SB = SpeckleRhino.SchemaBuilder;
 
 namespace SpeckleRhino
 {
@@ -17,14 +18,13 @@ namespace SpeckleRhino
   /// </summary>
   public class SchemaObjectFilter
   {
-    enum SupportedSchema { Floor, Wall, Roof, Ceiling, Column, Beam, none };
 
     #region Properties
     private Rhino.RhinoDoc Doc;
     public Dictionary<string, List<RhinoObject>> SchemaDictionary = new Dictionary<string, List<RhinoObject>>();
 
     // internal vars for processing doc objects
-    private Dictionary<SupportedSchema, List<RhinoObject>> filterDictionary = new Dictionary<SupportedSchema, List<RhinoObject>>();
+    private Dictionary<SB.SupportedSchema, List<RhinoObject>> filterDictionary = new Dictionary<SB.SupportedSchema, List<RhinoObject>>();
     private List<RhinoObject> objsToBeFiltered;
     #endregion
 
@@ -33,7 +33,7 @@ namespace SpeckleRhino
     {
       Doc = doc;
 
-      foreach (SupportedSchema schema in Enum.GetValues(typeof(SupportedSchema)))
+      foreach (SB.SupportedSchema schema in Enum.GetValues(typeof(SB.SupportedSchema)))
       {
         filterDictionary.Add(schema, new List<RhinoObject>());
         SchemaDictionary.Add(schema.ToString(), new List<RhinoObject>());
@@ -55,19 +55,19 @@ namespace SpeckleRhino
         string objName = obj.Attributes.Name;
         string objPath = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
 
-        SupportedSchema foundSchema = SupportedSchema.none;
-        foreach (SupportedSchema schema in Enum.GetValues(typeof(SupportedSchema)))
+        SB.SupportedSchema foundSchema = SB.SupportedSchema.none;
+        foreach (SB.SupportedSchema schema in Enum.GetValues(typeof(SB.SupportedSchema)))
         {
           if (objName != null && objName.Contains(schema.ToString()))
           { foundSchema = schema; break; }
         }
-        if (foundSchema == SupportedSchema.none)
-          foreach (SupportedSchema schema in Enum.GetValues(typeof(SupportedSchema)))
+        if (foundSchema == SB.SupportedSchema.none)
+          foreach (SB.SupportedSchema schema in Enum.GetValues(typeof(SB.SupportedSchema)))
           {
             if (objPath.Contains(schema.ToString()))
             { foundSchema = schema; break; }
           }
-        if (foundSchema != SupportedSchema.none)
+        if (foundSchema != SB.SupportedSchema.none)
         {
           // add to filter dict and remove from filter list
           filterDictionary[foundSchema].Add(obj);
@@ -80,7 +80,7 @@ namespace SpeckleRhino
     private void ApplyGeomFilter()
     {
       // process the filter dictionary first and add all viable geom to the output dict
-      foreach (SupportedSchema schema in filterDictionary.Keys)
+      foreach (SB.SupportedSchema schema in filterDictionary.Keys)
         foreach (RhinoObject obj in filterDictionary[schema])
           if (IsViableObject(schema,obj))
             SchemaDictionary[schema.ToString()].Add(obj);
@@ -107,10 +107,10 @@ namespace SpeckleRhino
       Curve crv = obj.Geometry as Curve;
       if (crv.IsLinear()) // test for linearity
       {
-        if (IsViableObject(SupportedSchema.Column, obj))
-          SchemaDictionary[SupportedSchema.Column.ToString()].Add(obj);
-        else if (IsViableObject(SupportedSchema.Beam, obj))
-          SchemaDictionary[SupportedSchema.Beam.ToString()].Add(obj);
+        if (IsViableObject(SB.SupportedSchema.Column, obj))
+          SchemaDictionary[SB.SupportedSchema.Column.ToString()].Add(obj);
+        else if (IsViableObject(SB.SupportedSchema.Beam, obj))
+          SchemaDictionary[SB.SupportedSchema.Beam.ToString()].Add(obj);
       }
     }
 
@@ -119,23 +119,23 @@ namespace SpeckleRhino
       Brep brp = obj.Geometry as Brep;
       if (brp.Surfaces.Count == 1) // test as floor first and then wall if this is a single face brp
       {
-        if (IsViableObject(SupportedSchema.Floor, obj))
-          SchemaDictionary[SupportedSchema.Floor.ToString()].Add(obj);
-        else if (IsViableObject(SupportedSchema.Wall, obj))
-          SchemaDictionary[SupportedSchema.Wall.ToString()].Add(obj);
+        if (IsViableObject(SB.SupportedSchema.Floor, obj))
+          SchemaDictionary[SB.SupportedSchema.Floor.ToString()].Add(obj);
+        else if (IsViableObject(SB.SupportedSchema.Wall, obj))
+          SchemaDictionary[SB.SupportedSchema.Wall.ToString()].Add(obj);
       }
       else // if multi surface, test if it may be a wall
       {
-        if (IsViableObject(SupportedSchema.Wall, obj))
-          SchemaDictionary[SupportedSchema.Wall.ToString()].Add(obj);
+        if (IsViableObject(SB.SupportedSchema.Wall, obj))
+          SchemaDictionary[SB.SupportedSchema.Wall.ToString()].Add(obj);
       }
     }
 
-    private bool IsViableObject(SupportedSchema schema, RhinoObject obj)
+    private bool IsViableObject(SB.SupportedSchema schema, RhinoObject obj)
     {
       switch (schema)
       {
-        case SupportedSchema.Column:
+        case SB.SupportedSchema.Column:
           try // assumes non xy linear curve
           {
             Curve crv = obj.Geometry as Curve;
@@ -145,7 +145,7 @@ namespace SpeckleRhino
           }
           catch { }
           break;
-        case SupportedSchema.Beam:
+        case SB.SupportedSchema.Beam:
           try // assumes xy linear curve
           {
             Curve crv = obj.Geometry as Curve;
@@ -155,9 +155,9 @@ namespace SpeckleRhino
           }
           catch { }
           break;
-        case SupportedSchema.Floor:
-        case SupportedSchema.Ceiling:
-        case SupportedSchema.Roof:
+        case SB.SupportedSchema.Floor:
+        case SB.SupportedSchema.Ceiling:
+        case SB.SupportedSchema.Roof:
           try // assumes xy planar single surface
           {
             Brep brp = obj.Geometry as Brep;
@@ -168,7 +168,7 @@ namespace SpeckleRhino
           }
           catch { }
           break;
-        case SupportedSchema.Wall:
+        case SB.SupportedSchema.Wall:
           try // assumes z vertical planar single surface
           {
             Brep brp = obj.Geometry as Brep;
