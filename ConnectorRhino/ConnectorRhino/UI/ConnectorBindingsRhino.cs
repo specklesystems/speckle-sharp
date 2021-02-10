@@ -242,8 +242,8 @@ namespace SpeckleRhino
 
       if (layerIndex == -1)
       {
-        RaiseNotification($"Coould not create layer {layerName} to bake objects into.");
-        state.Errors.Add(new Exception($"Coould not create layer {layerName} to bake objects into."));
+        RaiseNotification($"Could not create layer {layerName} to bake objects into.");
+        state.Errors.Add(new Exception($"Could not create layer {layerName} to bake objects into."));
         return state;
       }
       currentRootLayerName = layerName;

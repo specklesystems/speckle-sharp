@@ -16,7 +16,8 @@ namespace Speckle.Core.Kits
     public const string Excel = "Excel";
     public const string Tekla = "Tekla";
     public const string GSA = "GSA";
-    public const string Civil3d = "Civil3d";
+    public const string Civil2021 = "Civil2021";
+    public const string Autocad2021 = "AutoCAD2021";
 
     public const string Script = "Script";
     public const string Other = "Other";
