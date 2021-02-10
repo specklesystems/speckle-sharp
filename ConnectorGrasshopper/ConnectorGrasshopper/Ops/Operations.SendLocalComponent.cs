@@ -20,7 +20,7 @@ namespace ConnectorGrasshopper.Ops
     public ISpeckleConverter Converter;
 
     public ISpeckleKit Kit;
-    public SendLocalComponent() : base("Local sender", "LS", "Sends data locally, without the need of a Speckle Server.", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.SEND_RECEIVE)
+    public SendLocalComponent() : base("Local sender", "LS", "Sends data locally, without the need of a Speckle Server.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.LOCAL)
     {
       BaseWorker = new SendLocalWorker(this);
       SetDefaultKitAndConverter();
@@ -39,8 +39,8 @@ namespace ConnectorGrasshopper.Ops
     {
       pManager.AddGenericParameter("localDataId", "id", "ID of the local data sent.", GH_ParamAccess.item);
     }
-    
-    
+
+
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
@@ -82,7 +82,7 @@ namespace ConnectorGrasshopper.Ops
     }
 
   }
-  
+
   public class SendLocalWorker : WorkerInstance
   {
     private GH_Structure<IGH_Goo> data;
