@@ -64,7 +64,7 @@ namespace Objects.Converter.RhinoGh
       {
         case RhinoObject o:
           // Tries to convert to BuiltElements schema first
-          Base conversionResult = ConvertToSpeckleBE(o.Geometry, o.Attributes.GetUserString(SpeckleSchemaKey));
+          Base conversionResult = ConvertToSpeckleBE(o.Geometry);
           
           if (conversionResult == null)
             conversionResult = ObjectToSpeckle(o);
@@ -149,16 +149,16 @@ namespace Objects.Converter.RhinoGh
     }
 
     // NOTE: is there a way of retrieving class name from BuiltElements class directly? using hardcoded strings atm
-    public Base ConvertToSpeckleBE(object @object, string schema = null)
+    public Base ConvertToSpeckleBE(object @object)
     {
+      string schema = GetSchema(@object as RhinoObject, out string[] args);
       if (schema == null) 
         return null;
 
       switch (@object)
       {
         case RhinoObject o:
-          schema = o.Attributes.GetUserString(SpeckleSchemaKey);
-          return ConvertToSpeckleBE(o.Geometry, schema);
+          return ConvertToSpeckleBE(o.Geometry);
 
         case RH.Curve o:
           switch (schema)
@@ -187,6 +187,19 @@ namespace Objects.Converter.RhinoGh
 
             case "Wall":
               return BrepToSpeckleWall(o);
+
+            case "DirectShape":
+              return BrepToDirectShape(o, args);
+
+            default:
+              throw new NotSupportedException();
+          }
+
+        case RH.Mesh o:
+          switch (schema)
+          {
+            case "DirectShape":
+              return MeshToDirectShape(o, args);
 
             default:
               throw new NotSupportedException();
@@ -422,6 +435,25 @@ namespace Objects.Converter.RhinoGh
       }
 
       return renderMaterial;
+    }
+
+    private string GetSchema(RhinoObject obj, out string[] args)
+    {
+      args = null;
+
+      // user string has format "DirectShape{[family], [type]}" if it is a directshape conversion
+      // otherwise, it is just the schema type name
+      string schema = obj.Attributes.GetUserString(SpeckleSchemaKey);
+
+      if (schema == null)
+        return null;
+
+      string[] parsedSchema = schema.Split(new char[] { '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
+      if (parsedSchema.Length > 2) // there is incorrect formatting in the schema string!
+        return null;
+      if (parsedSchema.Length == 2)
+        args = parsedSchema[1].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim()).ToArray();
+      return parsedSchema[0].Trim();
     }
   }
 }

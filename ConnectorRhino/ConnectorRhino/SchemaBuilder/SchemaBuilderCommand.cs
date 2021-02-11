@@ -122,22 +122,24 @@ namespace SpeckleRhino
         var schemaDictionary = schemaFilter.SchemaDictionary;
         foreach (string schema in schemaDictionary.Keys)
           foreach (RhinoObject obj in schemaDictionary[schema])
-            obj.Attributes.SetUserString(SpeckleSchemaKey, schema);
+            WriteUserString(obj, schema);
       }
 
       // This is the manual method
       protected void ApplySchema(List<RhinoObject> objs, string schema, bool asDirectShape = false)
       {
-        // test for firect shape - apply user string directly as long as objs are breps and meshes
+        // test for direct shape - apply user string as long as objs are breps and meshes
         if (asDirectShape)
         {
-
+          foreach (RhinoObject obj in objs)
+            if (obj.ObjectType == ObjectType.Brep || obj.ObjectType == ObjectType.Mesh)
+              WriteUserString(obj, schema, true);
         }
         else
         {
           var schemaFilter = new SchemaObjectFilter(objs, ActiveDoc, schema);
           foreach (RhinoObject obj in schemaFilter.SchemaDictionary[schema])
-              obj.Attributes.SetUserString(SpeckleSchemaKey, schema);
+            WriteUserString(obj, schema);
         }
       }
     }
@@ -208,6 +210,14 @@ namespace SpeckleRhino
           obj.Attributes.DeleteUserString(SpeckleSchemaKey);
         return Result.Success;
       }
+    }
+
+    public static void WriteUserString(RhinoObject obj, string schema, bool asDirectShape = false)
+    {
+      string value = schema;
+      if (asDirectShape)
+        value = $"{DirectShapeKey}({schema},DirectShapeName)";
+      obj.Attributes.SetUserString(SpeckleSchemaKey, value);
     }
   }
   
