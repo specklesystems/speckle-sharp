@@ -48,7 +48,7 @@ namespace Speckle.ConnectorDynamo.Functions
           if (account != null)
             accountToUse = account;
           else
-            accountToUse = s.GetAccount();
+            accountToUse = s.GetAccount().Result;
 
 
           var client = new Client(accountToUse);
@@ -113,7 +113,7 @@ namespace Speckle.ConnectorDynamo.Functions
       if (name == null && description == null && isPublic == null)
         return null;
 
-      var account = stream.GetAccount();
+      var account = stream.GetAccount().Result;
 
       var client = new Client(account);
 
@@ -172,7 +172,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
       foreach (var streamWrapper in streams)
       {
-        var account = streamWrapper.GetAccount();
+        var account = streamWrapper.GetAccount().Result;
 
         var client = new Client(account);
 

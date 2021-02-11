@@ -100,7 +100,7 @@ namespace Speckle.ConnectorDynamo.Functions
       Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null,
       Action<int> onTotalChildrenCountKnown = null)
     {
-      var account = stream.GetAccount();
+      var account = stream.GetAccount().Result;
       stream.BranchName = string.IsNullOrEmpty(stream.BranchName) ? "main" : stream.BranchName;
 
       var client = new Client(account);

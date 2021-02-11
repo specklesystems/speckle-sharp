@@ -50,7 +50,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       {
         if (_client == null && Stream != null)
         {
-          var account = Stream.GetAccount();
+          var account = Stream.GetAccount().Result;
           _client = new Client(account);
         }
 
@@ -401,7 +401,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       if (Stream == null)
         return;
 
-      var account = Stream.GetAccount();
+      var account = Stream.GetAccount().Result;
       Client = new Client(account);
       Client.SubscribeCommitCreated(Stream.StreamId);
       Client.OnCommitCreated += OnCommitChange;

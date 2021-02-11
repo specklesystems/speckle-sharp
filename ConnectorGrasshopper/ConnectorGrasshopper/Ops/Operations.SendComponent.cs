@@ -386,20 +386,17 @@ namespace ConnectorGrasshopper.Ops
               continue;
             }
 
-            var acc = sw.GetAccount();
-            if (acc == null)
+            Account acc;
+            try
             {
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Could not get an account for {sw}");
+              acc = sw.GetAccount().Result;
+            } catch(Exception e)
+            {
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
               continue;
             }
-
-            if (!sw.ExistsInServer())
-            {
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The provided stream ID does not exist in the server.");
-              continue;
-
-            }
-              var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
+            
+            var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");
             Transports.Add(serverTransport);
           }
