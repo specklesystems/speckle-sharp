@@ -71,7 +71,6 @@ namespace Tests
       var num = @base.GetTotalChildrenCount();
       var actualNum = 1 + MAX_NUM / 300 + MAX_NUM / 1000;
       Assert.AreEqual(actualNum, num);
-      var ttt = num;
     }
 
     public class SampleObject : Base
