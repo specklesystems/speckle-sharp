@@ -22,8 +22,6 @@ namespace SpeckleRhino
     static string DirectShapeKey = "DirectShape";
     public RhinoDoc ActiveDoc = null;
 
-    public enum SupportedSchema { Floor, Wall, Roof, Ceiling, Column, Beam, none };
-
     public class ApplySpeckleSchema : Command
     {
       RhinoDoc ActiveDoc = null;
@@ -50,7 +48,8 @@ namespace SpeckleRhino
         // Command variables
         var selectedObjects = new List<RhinoObject>();
         string selectedSchema = "";
-        bool AsDirectShape = false;
+        bool automatic = true;
+        bool directShape = false;
 
         // Construct an objects getter
         // This includes an option toggle for "Automatic" (true means automagic schema application, no directshapes)
@@ -83,9 +82,10 @@ namespace SpeckleRhino
           break;
         }
         selectedObjects = getObj.Objects().Select(o => o.Object()).ToList();
+        automatic = toggleAutomatic.CurrentValue;
 
         // Construct an options getter if "Automatic" was set to "off"
-        if (toggleAutomatic.CurrentValue == false)
+        if (!automatic)
         {
           // Construct an options getter for schema options
           // This includes an option toggle for "DirectShape" (true will asign selected schema as the family)
@@ -94,7 +94,7 @@ namespace SpeckleRhino
           getOpt.SetCommandPrompt("Select schema options. Press Enter when done");
           var toggleDirectShape = new OptionToggle(false, "Off", "On");
           var directShapeIndex = getOpt.AddOptionToggle("DirectShape", ref toggleDirectShape);
-          List<string> schemas = Enum.GetNames(typeof(SupportedSchema)).ToList();
+          List<string> schemas = Enum.GetNames(typeof(SchemaObjectFilter.SupportedSchema)).ToList();
           int schemaListOptionIndex = getOpt.AddOptionList("Schema", schemas, 0);
 
           // Get options
@@ -103,83 +103,42 @@ namespace SpeckleRhino
             if (getOpt.OptionIndex() == schemaListOptionIndex)
               selectedSchema = schemas[getOpt.Option().CurrentListOptionIndex];
             if (getOpt.OptionIndex() == directShapeIndex)
-              AsDirectShape = toggleDirectShape.CurrentValue;
+              directShape = toggleDirectShape.CurrentValue;
           }
         }
 
-        // run the corresponding methods based on command info
-        if (toggleAutomatic.CurrentValue == true)
+        // Apply schemas
+        if (automatic)
           ApplySchemas(selectedObjects);
         else
-          ApplySchema(selectedObjects, selectedSchema, AsDirectShape);
+          ApplySchema(selectedObjects, selectedSchema, directShape);
         return Result.Success;
       }
-      protected void ApplySchemas(List<RhinoObject> objs) // this is the automatic option
+      
+      // This is the automagic method
+      protected void ApplySchemas(List<RhinoObject> objs)
       {
-        SchemaObjectFilter schemaFilter = new SchemaObjectFilter(objs, ActiveDoc);
+        var schemaFilter = new SchemaObjectFilter(objs, ActiveDoc);
         var schemaDictionary = schemaFilter.SchemaDictionary;
         foreach (string schema in schemaDictionary.Keys)
           foreach (RhinoObject obj in schemaDictionary[schema])
             obj.Attributes.SetUserString(SpeckleSchemaKey, schema);
       }
-      protected void ApplySchema(List<RhinoObject> objs, string schema, bool asNative = true)
-      {
-        foreach (RhinoObject obj in objs)
-        {
-          if (asNative)
-            obj.Attributes.SetUserString(SpeckleSchemaKey, schema);
-          else
-            obj.Attributes.SetUserString(SpeckleSchemaKey, DirectShapeKey+":"+schema);
-        }
-      }
-      protected ObjectType GetCustomObjectType(ObjRef obj) // in place just to handle single surface brep -> srf
-      {
-        switch (obj.Object().ObjectType)
-        {
-          case ObjectType.Brep:
-            Rhino.Geometry.Brep brep = obj.Brep();
-            if (brep.Faces.Count == 1)
-              return ObjectType.Surface;
-            else return obj.Object().ObjectType;
-          case ObjectType.Curve:
-          case ObjectType.Surface:
-          case ObjectType.Mesh:
-          default:
-            return obj.Object().ObjectType;
-        }
-      }
-      protected Dictionary<string, int> GetValidSchemas(ObjRef[] objs) // this returns a dictionary of schema string and its index
-      {
-        string[] validSchemas = null;
-        var objTypes = objs.Select(o => GetCustomObjectType(o)).Distinct().ToList();
-        if (objTypes.Count == 1)
-        {
-          switch (objTypes[0])
-          {
-            case ObjectType.Curve:
-              validSchemas = new string[] {
-              SupportedSchema.Beam.ToString(),
-              SupportedSchema.Column.ToString() }; break;
-            case ObjectType.Surface:
-              validSchemas = new string[] {
-              SupportedSchema.Ceiling.ToString(),
-              SupportedSchema.Floor.ToString(),
-              SupportedSchema.Wall.ToString(),
-              SupportedSchema.Roof.ToString() }; break;
-            case ObjectType.Brep:
-            case ObjectType.Mesh:
-              break;
-            default:
-              break;
-          }
-        }
 
-        var schemaDict = new Dictionary<string, int>();
-        if (validSchemas != null)
-          for (int i = 0; i < validSchemas.Length; i++)
-            schemaDict.Add(validSchemas[i], i);
+      // This is the manual method
+      protected void ApplySchema(List<RhinoObject> objs, string schema, bool asDirectShape = false)
+      {
+        // test for firect shape - apply user string directly as long as objs are breps and meshes
+        if (asDirectShape)
+        {
 
-        return schemaDict;
+        }
+        else
+        {
+          var schemaFilter = new SchemaObjectFilter(objs, ActiveDoc, schema);
+          foreach (RhinoObject obj in schemaFilter.SchemaDictionary[schema])
+              obj.Attributes.SetUserString(SpeckleSchemaKey, schema);
+        }
       }
     }
 

@@ -9,7 +9,6 @@ using Speckle.Core.Models;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using System.Collections;
-using SB = SpeckleRhino.SchemaBuilder;
 
 namespace SpeckleRhino
 {
@@ -18,161 +17,141 @@ namespace SpeckleRhino
   /// </summary>
   public class SchemaObjectFilter
   {
-
     #region Properties
+    public enum SupportedSchema { Floor, Wall, Roof, Ceiling, Column, Beam, none };
     private Rhino.RhinoDoc Doc;
     public Dictionary<string, List<RhinoObject>> SchemaDictionary = new Dictionary<string, List<RhinoObject>>();
-
-    // internal vars for processing doc objects
-    private Dictionary<SB.SupportedSchema, List<RhinoObject>> filterDictionary = new Dictionary<SB.SupportedSchema, List<RhinoObject>>();
-    private List<RhinoObject> objsToBeFiltered;
     #endregion
 
     #region Constructors
-    public SchemaObjectFilter (List<RhinoObject> docObjects, Rhino.RhinoDoc doc)
+    public SchemaObjectFilter (List<RhinoObject> docObjects, Rhino.RhinoDoc doc, string inputSchema = null)
     {
       Doc = doc;
 
-      foreach (SB.SupportedSchema schema in Enum.GetValues(typeof(SB.SupportedSchema)))
-      {
-        filterDictionary.Add(schema, new List<RhinoObject>());
+      // add all supported enums to schema dict
+      foreach (SupportedSchema schema in Enum.GetValues(typeof(SupportedSchema)))
         SchemaDictionary.Add(schema.ToString(), new List<RhinoObject>());
-      }
-      objsToBeFiltered = docObjects;
 
-      ApplyNamingFilter();
-      ApplyGeomFilter();
+      if (inputSchema == null) // no schema means automagic processing
+      {
+        ApplyNamingFilter(docObjects, out List<RhinoObject> unfilteredObjs);
+        ApplyGeomFilter(unfilteredObjs);
+      }
+      else
+      {
+        ApplyGeomFilter(docObjects, inputSchema);
+      }
     }
     #endregion
 
     #region Internal Methods
-    // check object name and then layer path for all supported schemas
-    private void ApplyNamingFilter()
+
+    // check object name and then layer path for all supported schema strings
+    private void ApplyNamingFilter(List<RhinoObject> objs, out List<RhinoObject> unfilteredObjs)
     {
-      for (int j = objsToBeFiltered.Count - 1; j >= 0; j--)
+      // create temp filter dictionary
+      var filterDictionary = new Dictionary<SupportedSchema, List<RhinoObject>>();
+      foreach (SupportedSchema schema in Enum.GetValues(typeof(SupportedSchema)))
+        filterDictionary.Add(schema, new List<RhinoObject>());
+
+      unfilteredObjs = objs;
+      for (int j = unfilteredObjs.Count - 1; j >= 0; j--)
       {
-        RhinoObject obj = objsToBeFiltered[j];
+        RhinoObject obj = unfilteredObjs[j];
         string objName = obj.Attributes.Name;
         string objPath = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
 
-        SB.SupportedSchema foundSchema = SB.SupportedSchema.none;
-        foreach (SB.SupportedSchema schema in Enum.GetValues(typeof(SB.SupportedSchema)))
+        SupportedSchema foundSchema = SupportedSchema.none;
+        foreach (SupportedSchema schema in Enum.GetValues(typeof(SupportedSchema)))
         {
           if (objName != null && objName.Contains(schema.ToString()))
           { foundSchema = schema; break; }
         }
-        if (foundSchema == SB.SupportedSchema.none)
-          foreach (SB.SupportedSchema schema in Enum.GetValues(typeof(SB.SupportedSchema)))
+        if (foundSchema == SupportedSchema.none)
+          foreach (SupportedSchema schema in Enum.GetValues(typeof(SupportedSchema)))
           {
             if (objPath.Contains(schema.ToString()))
             { foundSchema = schema; break; }
           }
-        if (foundSchema != SB.SupportedSchema.none)
+        if (foundSchema != SupportedSchema.none)
         {
           // add to filter dict and remove from filter list
           filterDictionary[foundSchema].Add(obj);
-          objsToBeFiltered.RemoveAt(j);
+          unfilteredObjs.RemoveAt(j);
         }
-        
       }
-    }
 
-    private void ApplyGeomFilter()
-    {
-      // process the filter dictionary first and add all viable geom to the output dict
-      foreach (SB.SupportedSchema schema in filterDictionary.Keys)
+      // process the filter dictionary and add all viable geom to the output dict
+      foreach (SupportedSchema schema in filterDictionary.Keys)
         foreach (RhinoObject obj in filterDictionary[schema])
-          if (IsViableObject(schema,obj))
+          if (IsViableSchemaObject(schema, obj))
             SchemaDictionary[schema.ToString()].Add(obj);
+    }
 
-      // test viability for all other brep, surface, and curve objects
-      foreach (RhinoObject obj in objsToBeFiltered)
+    private void ApplyGeomFilter(List<RhinoObject> objs, string inputSchema = null)
+    {
+      if ( inputSchema != null)
       {
-        switch (obj.ObjectType)
+        if (Enum.TryParse<SupportedSchema>(inputSchema, out SupportedSchema schema))
+          foreach (RhinoObject obj in objs)
+            if (IsViableSchemaObject(schema, obj))
+              SchemaDictionary[inputSchema.ToString()].Add(obj);
+      }
+      else
+      {
+        foreach (RhinoObject obj in objs)
         {
-          case ObjectType.Brep:
-          case ObjectType.Surface:
-          case ObjectType.PolysrfFilter:
-            ProcessSurfaceObject(obj);
-            break;
-          case ObjectType.Curve:
-            ProcessCurveObject(obj);
-            break;
+          // get viable schemas for this object
+          List<SupportedSchema> schemasToTest = GetValidSchemas(obj);
+          foreach (var testSchema in schemasToTest)
+            if (IsViableSchemaObject(testSchema, obj))
+            {
+              SchemaDictionary[testSchema.ToString()].Add(obj); break;
+            }
         }
       }
     }
 
-    private void ProcessCurveObject(RhinoObject obj)
-    {
-      Curve crv = obj.Geometry as Curve;
-      if (crv.IsLinear()) // test for linearity
-      {
-        if (IsViableObject(SB.SupportedSchema.Column, obj))
-          SchemaDictionary[SB.SupportedSchema.Column.ToString()].Add(obj);
-        else if (IsViableObject(SB.SupportedSchema.Beam, obj))
-          SchemaDictionary[SB.SupportedSchema.Beam.ToString()].Add(obj);
-      }
-    }
-
-    private void ProcessSurfaceObject(RhinoObject obj)
-    {
-      Brep brp = obj.Geometry as Brep;
-      if (brp.Surfaces.Count == 1) // test as floor first and then wall if this is a single face brp
-      {
-        if (IsViableObject(SB.SupportedSchema.Floor, obj))
-          SchemaDictionary[SB.SupportedSchema.Floor.ToString()].Add(obj);
-        else if (IsViableObject(SB.SupportedSchema.Wall, obj))
-          SchemaDictionary[SB.SupportedSchema.Wall.ToString()].Add(obj);
-      }
-      else // if multi surface, test if it may be a wall
-      {
-        if (IsViableObject(SB.SupportedSchema.Wall, obj))
-          SchemaDictionary[SB.SupportedSchema.Wall.ToString()].Add(obj);
-      }
-    }
-
-    private bool IsViableObject(SB.SupportedSchema schema, RhinoObject obj)
+    private bool IsViableSchemaObject(SupportedSchema schema, RhinoObject obj)
     {
       switch (schema)
       {
-        case SB.SupportedSchema.Column:
-          try // assumes non xy linear curve
+        case SupportedSchema.Column:
+          try // assumes non xy linear curve > 45 deg
           {
-            Curve crv = obj.Geometry as Curve;
-            if (crv.IsLinear())
-              if (crv.PointAtStart.Z < crv.PointAtEnd.Z)
-                return true;
+            Curve crv = obj.Geometry as Curve; // assumes this has already been filtered for linearity
+            double angleRad = Vector3d.VectorAngle(crv.PointAtEnd - crv.PointAtStart, Vector3d.ZAxis);
+            if (angleRad < Math.PI/4)
+              return true;
           }
           catch { }
           break;
-        case SB.SupportedSchema.Beam:
-          try // assumes xy linear curve
+        case SupportedSchema.Beam:
+          try // assumes xy linear curve of angle =< 45 deg
           {
-            Curve crv = obj.Geometry as Curve;
-            if (crv.IsLinear())
-              if (crv.PointAtStart.Z == crv.PointAtEnd.Z)
-                return true;
+            Curve crv = obj.Geometry as Curve; // assumes this has already been filtered for linearity
+            double angleRad = Vector3d.VectorAngle(crv.PointAtEnd - crv.PointAtStart, Vector3d.ZAxis);
+            if (angleRad >= Math.PI / 4)
+              return true;
           }
           catch { }
           break;
-        case SB.SupportedSchema.Floor:
-        case SB.SupportedSchema.Ceiling:
-        case SB.SupportedSchema.Roof:
+        case SupportedSchema.Floor:
+        case SupportedSchema.Ceiling:
+        case SupportedSchema.Roof:
           try // assumes xy planar single surface
           {
-            Brep brp = obj.Geometry as Brep;
-            if (brp.Surfaces.Count > 1) { return false; }
+            Brep brp = obj.Geometry as Brep; // assumes this has already been filtered for single surface
             if (IsPlanar(brp.Surfaces.First(), out bool singleH, out bool singleV))
               if (singleH)
                   return true;
           }
           catch { }
           break;
-        case SB.SupportedSchema.Wall:
+        case SupportedSchema.Wall:
           try // assumes z vertical planar single surface
           {
-            Brep brp = obj.Geometry as Brep;
-            if (brp.Surfaces.Count > 1) { return false; }
+            Brep brp = obj.Geometry as Brep; // assumes this has already been filtered for single surface
             if (IsPlanar(brp.Surfaces.First(), out bool singleH, out bool singleV))
               if (singleV)
                 return true;
@@ -189,9 +168,8 @@ namespace SpeckleRhino
     {
       isHorizontal = false;
       isVertical = false;
-      Plane p = new Plane();
 
-      if (srf.TryGetPlane(out p))
+      if (srf.TryGetPlane(out Plane p))
       {
         Vector3d normal = p.Normal;
         if (normal.Unitize())
@@ -206,6 +184,60 @@ namespace SpeckleRhino
 
       return false;
     }
+
+    protected List<SupportedSchema> GetValidSchemas(RhinoObject obj)
+    {
+      var objSchemas = new List<SupportedSchema>();
+      var type = GetCustomObjectType(obj);
+      switch (type)
+      {
+        case ObjectType.Curve:
+          Curve crv = obj.Geometry as Curve;
+          if (crv.IsLinear()) // test for linearity
+            objSchemas = new List<SupportedSchema> {
+              SupportedSchema.Beam,
+              SupportedSchema.Column }; 
+          break;
+        case ObjectType.Surface:
+          objSchemas = new List<SupportedSchema> {
+            SupportedSchema.Floor,
+            SupportedSchema.Wall,
+            SupportedSchema.Ceiling,
+            SupportedSchema.Roof };
+          break;
+        case ObjectType.PolysrfFilter:
+          objSchemas = new List<SupportedSchema> {
+            SupportedSchema.Wall };
+          break;
+        case ObjectType.Brep:
+        case ObjectType.Mesh:
+          break;
+        default:
+          break;
+      }
+      return objSchemas;
+    }
+
+    // in place just to handle brep differentiation to srfs and polysrfs
+    protected ObjectType GetCustomObjectType(RhinoObject obj)
+    {
+      switch (obj.ObjectType)
+      {
+        case ObjectType.Brep:
+          Brep brp = obj.Geometry as Brep;
+          if (brp.IsSurface)
+            return ObjectType.Surface;
+          else if (!brp.IsSolid && brp.IsManifold)
+            return ObjectType.PolysrfFilter;
+          else return obj.ObjectType;
+        case ObjectType.Curve:
+        case ObjectType.Surface:
+        case ObjectType.Mesh:
+        default:
+          return obj.ObjectType;
+      }
+    }
+
     #endregion
   }
 }
