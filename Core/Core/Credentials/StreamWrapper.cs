@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Speckle.Core.Api;
 
 namespace Speckle.Core.Credentials
 {
   public class StreamWrapper
   {
+    private string originalInput; 
+
     public string AccountId { get; set; }
     public string ServerUrl { get; set; }
     public string StreamId { get; set; }
@@ -23,10 +26,25 @@ namespace Speckle.Core.Credentials
       // Quick solution to determine whether a wrapper points to a branch, commit or stream.
       get
       {
-        if (!string.IsNullOrEmpty(ObjectId)) return StreamWrapperType.Object;
-        if (!string.IsNullOrEmpty(BranchName)) return StreamWrapperType.Branch;
-        if (!string.IsNullOrEmpty(CommitId)) return StreamWrapperType.Commit;
-        if (!string.IsNullOrEmpty(StreamId)) return StreamWrapperType.Stream;
+        if (!string.IsNullOrEmpty(ObjectId))
+        {
+          return StreamWrapperType.Object;
+        }
+
+        if (!string.IsNullOrEmpty(BranchName))
+        {
+          return StreamWrapperType.Branch;
+        }
+
+        if (!string.IsNullOrEmpty(CommitId))
+        {
+          return StreamWrapperType.Commit;
+        }
+
+        if (!string.IsNullOrEmpty(StreamId))
+        {
+          return StreamWrapperType.Stream;
+        }
         // If we reach here, it means that the stream is invalid for some reason.
         return StreamWrapperType.Undefined;
       }
@@ -43,6 +61,8 @@ namespace Speckle.Core.Credentials
     /// <exception cref="Exception"></exception>
     public StreamWrapper(string streamUrlOrId)
     {
+      originalInput = streamUrlOrId;
+
       Uri uri;
       try
       {
@@ -75,48 +95,12 @@ namespace Speckle.Core.Credentials
       ServerUrl = account.serverInfo.url;
       AccountId = account.id;
       StreamId = streamId;
-
-    }
-
-    public bool ExistsInServer()
-    {
-      try
-      {
-        //Exists?
-        var client = new Client(GetAccount());
-        var res = client.StreamGet(StreamId).Result;
-        return true;
-      }
-      catch (Exception ex)
-      {
-        return false;
-      }
     }
 
     private void StreamWrapperFromUrl(string streamUrl)
     {
-      Account account;
-      Uri uri;
-      if (streamUrl.Contains("?u="))
-      {
-        uri = new Uri(streamUrl.Split(new string[] { "?u=" }, StringSplitOptions.None)[0]);
-        ServerUrl = uri.GetLeftPart(UriPartial.Authority);
-
-        AccountId = streamUrl.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
-        account = GetAccountForServer(AccountId);
-      }
-      else
-      {
-        uri = new Uri(streamUrl);
-        ServerUrl = uri.GetLeftPart(UriPartial.Authority);
-        account = GetAccountForServer();
-      }
-
-      if (account == null)
-      {
-        throw new Exception(
-          $"You do not have an account for {ServerUrl}. Please create one or add it to the Speckle Manager.");
-      }
+      Uri uri = new Uri(streamUrl);
+      ServerUrl = uri.GetLeftPart(UriPartial.Authority);
 
       if (uri.Segments.Length < 3)
       {
@@ -161,40 +145,36 @@ namespace Speckle.Core.Credentials
       }
     }
 
+    private Account _Account;
+
     /// <summary>
-    /// Tries to find the best matching account for a stream url
-    /// If the default account is on that server returns that, otherwise it picks the first account on that server it finds
+    /// Gets a valid account for this stream wrapper. 
+    /// <para>Note: this method ensures that the stream exists and/or that the user has an account which has access to that stream.</para>
     /// </summary>
     /// <returns></returns>
-    private Account GetAccountForServer(string accountId = null)
+    public async Task<Account> GetAccount()
     {
-      var accounts = AccountManager.GetAccounts(ServerUrl);
+      if (_Account != null) return _Account;
 
-      //get by id
-      if (!string.IsNullOrEmpty(accountId))
+      var accs = AccountManager.GetAccounts(ServerUrl);
+      if(accs.Count() == 0) 
       {
-        var matchingAccount = accounts.FirstOrDefault(x => x.id == accountId);
-        if (matchingAccount != null)
-          return matchingAccount;
+        throw new Exception($"You don't have any accounts for ${ServerUrl}.");
+      }
+      
+      foreach (var acc in accs)
+      {
+        try
+        {
+          var client = new Client(acc);
+          var res = await client.StreamGet(StreamId);
+          _Account = acc;
+          return acc;
+        }
+        catch { }
       }
 
-      //get default account, if on this server
-      var defaultAccount = accounts.FirstOrDefault(x => x.isDefault);
-      var account = defaultAccount;
-
-      //get first account on this server
-      if (account == null)
-      {
-        account = accounts.FirstOrDefault();
-      }
-
-      //store Id to avoid further guessing
-      if (account != null)
-      {
-        AccountId = account.id;
-      }
-
-      return account;
+      throw new Exception($"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.");
     }
 
     /// <summary>
@@ -214,11 +194,6 @@ namespace Speckle.Core.Credentials
     {
       return
         $"{ServerUrl}/streams/{StreamId}{(CommitId != null ? "/commits/" + CommitId : "")}{(AccountId != null ? "?u=" + AccountId : "")}";
-    }
-
-    public Account GetAccount()
-    {
-      return GetAccountForServer(AccountId);
     }
   }
 
