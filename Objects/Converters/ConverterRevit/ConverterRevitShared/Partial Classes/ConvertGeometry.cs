@@ -989,7 +989,7 @@ namespace Objects.Converter.Revit
       {
         var mesh = MeshToNative(brep.displayValue);
         revitDs.SetShape(mesh);
-        ConversionErrors.Add(new Error(e.Message, e.InnerException?.Message ?? "No details available."));
+        ConversionErrors.Add(new Error($"Failed to convert BREP with id {brep.id}, using display mesh value instead.",e.Message));
       }
       return revitDs;
     }
