@@ -47,77 +47,71 @@ namespace SpeckleRhino
       {
         ActiveDoc = doc;
 
-        // set option toggle variables
-        var toggleAutomatic = new OptionToggle(true, "Off", "On");
-        var toggleDirectShape = new OptionToggle(false, "Off", "On");
+        // Command variables
+        var selectedObjects = new List<RhinoObject>();
+        string selectedSchema = "";
+        bool AsDirectShape = false;
 
         // Construct an objects getter
+        // This includes an option toggle for "Automatic" (true means automagic schema application, no directshapes)
         var getObj = new GetObject();
         getObj.SetCommandPrompt("Select geometry");
+        var toggleAutomatic = new OptionToggle(true, "Off", "On");
+        getObj.AddOptionToggle("Automatic", ref toggleAutomatic);
+        getObj.GroupSelect = true;
+        getObj.SubObjectSelect = false;
+        getObj.EnableClearObjectsOnEntry(false);
+        getObj.EnableUnselectObjectsOnExit(false);
+        getObj.DeselectAllBeforePostSelect = false;
 
-        // set up options
-        List<string> options = new List<string>();
-        GetOption option = new GetOption();
-        option.AddOptionToggle("Automatic", ref toggleAutomatic);
-
-        // determine if user selects objects or options
-        bool hasPreselected = false;
-        string selectedSchema = null;
+        // Get objects
         for (; ; )
         {
           GetResult res = getObj.GetMultiple(1, 0);
-
           if (res == GetResult.Option)
           {
-            if (toggleAutomatic.CurrentValue == false && getObj.ObjectCount > 0)
-            {
-              // Construct an options picker for the supported schemas
-              var getSchema = new GetOption();
-              getSchema.SetCommandPrompt("Schema");
-              var schemaDict = GetValidSchemas(getObj.Objects());
-
-              int indexList = getSchema.AddOptionList("schema", schemaDict.Keys.ToList(), 0);
-              while (getSchema.Get() == GetResult.Option)
-              {
-                selectedSchema = getSchema.Option().StringOptionValue;
-              }
-            }
             getObj.EnablePreSelect(false, true);
             continue;
           }
           else if (res != GetResult.Object)
             return Result.Cancel;
-
           if (getObj.ObjectsWerePreselected)
           {
-            hasPreselected = true;
             getObj.EnablePreSelect(false, true);
             continue;
           }
           break;
         }
+        selectedObjects = getObj.Objects().Select(o => o.Object()).ToList();
 
-        if (hasPreselected)
+        // Construct an options getter if "Automatic" was set to "off"
+        if (toggleAutomatic.CurrentValue == false)
         {
-          // Normally, pre-selected objects will remain selected, when a
-          // command finishes, and post-selected objects will be unselected.
-          // Currently, leave everything selected post command.
-          for (int i = 0; i < getObj.ObjectCount; i++)
+          // Construct an options getter for schema options
+          // This includes an option toggle for "DirectShape" (true will asign selected schema as the family)
+          // Also includes an option list of supported schemas
+          var getOpt = new GetOption();
+          getOpt.SetCommandPrompt("Select schema options. Press Enter when done");
+          var toggleDirectShape = new OptionToggle(false, "Off", "On");
+          var directShapeIndex = getOpt.AddOptionToggle("DirectShape", ref toggleDirectShape);
+          List<string> schemas = Enum.GetNames(typeof(SupportedSchema)).ToList();
+          int schemaListOptionIndex = getOpt.AddOptionList("Schema", schemas, 0);
+
+          // Get options
+          while (getOpt.Get() == GetResult.Option)
           {
-            RhinoObject rhinoObject = getObj.Object(i).Object();
-            if (null != rhinoObject)
-              rhinoObject.Select(true);
+            if (getOpt.OptionIndex() == schemaListOptionIndex)
+              selectedSchema = schemas[getOpt.Option().CurrentListOptionIndex];
+            if (getOpt.OptionIndex() == directShapeIndex)
+              AsDirectShape = toggleDirectShape.CurrentValue;
           }
-          doc.Views.Redraw();
         }
 
-        List<RhinoObject> commandObjs = getObj.Objects().Select(o => o.Object()).ToList();
+        // run the corresponding methods based on command info
         if (toggleAutomatic.CurrentValue == true)
-          ApplySchemas(commandObjs);
+          ApplySchemas(selectedObjects);
         else
-        {
-          ApplySchema(commandObjs, options[getObj.OptionIndex()]);
-        }
+          ApplySchema(selectedObjects, selectedSchema, AsDirectShape);
         return Result.Success;
       }
       protected void ApplySchemas(List<RhinoObject> objs) // this is the automatic option
@@ -138,10 +132,26 @@ namespace SpeckleRhino
             obj.Attributes.SetUserString(SpeckleSchemaKey, DirectShapeKey+":"+schema);
         }
       }
+      protected ObjectType GetCustomObjectType(ObjRef obj) // in place just to handle single surface brep -> srf
+      {
+        switch (obj.Object().ObjectType)
+        {
+          case ObjectType.Brep:
+            Rhino.Geometry.Brep brep = obj.Brep();
+            if (brep.Faces.Count == 1)
+              return ObjectType.Surface;
+            else return obj.Object().ObjectType;
+          case ObjectType.Curve:
+          case ObjectType.Surface:
+          case ObjectType.Mesh:
+          default:
+            return obj.Object().ObjectType;
+        }
+      }
       protected Dictionary<string, int> GetValidSchemas(ObjRef[] objs) // this returns a dictionary of schema string and its index
       {
         string[] validSchemas = null;
-        var objTypes = objs.Select(o => o.Object().ObjectType).Distinct().ToList();
+        var objTypes = objs.Select(o => GetCustomObjectType(o)).Distinct().ToList();
         if (objTypes.Count == 1)
         {
           switch (objTypes[0])
@@ -156,7 +166,8 @@ namespace SpeckleRhino
               SupportedSchema.Floor.ToString(),
               SupportedSchema.Wall.ToString(),
               SupportedSchema.Roof.ToString() }; break;
-            case ObjectType.Brep | ObjectType.Mesh:
+            case ObjectType.Brep:
+            case ObjectType.Mesh:
               break;
             default:
               break;
