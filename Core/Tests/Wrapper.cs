@@ -10,18 +10,18 @@ namespace Tests
     [Test]
     public void ParseStream()
     {
-      var wrapper = new StreamWrapper("https://staging.speckle.dev/streams/a75ab4f10f");
+      var wrapper = new StreamWrapper("https://testing.speckle.dev/streams/a75ab4f10f");
       Assert.AreEqual(StreamWrapperType.Stream, wrapper.Type);
     }
 
     [Test]
     public void ParseBranch()
     {
-      var wrapperCrazy = new StreamWrapper("https://staging.speckle.dev/streams/4c3ce1459c/branches/%F0%9F%8D%95%E2%AC%85%F0%9F%8C%9F%20you%20wat%3F");
+      var wrapperCrazy = new StreamWrapper("https://testing.speckle.dev/streams/4c3ce1459c/branches/%F0%9F%8D%95%E2%AC%85%F0%9F%8C%9F%20you%20wat%3F");
       Assert.AreEqual(wrapperCrazy.BranchName, "🍕⬅🌟 you wat?");
       Assert.AreEqual(StreamWrapperType.Branch, wrapperCrazy.Type);
 
-      wrapperCrazy = new StreamWrapper("https://staging.speckle.dev/streams/4c3ce1459c/branches/next%20level");
+      wrapperCrazy = new StreamWrapper("https://testing.speckle.dev/streams/4c3ce1459c/branches/next%20level");
       Assert.AreEqual(wrapperCrazy.BranchName, "next level");
       Assert.AreEqual(StreamWrapperType.Branch, wrapperCrazy.Type);
     }
@@ -29,14 +29,14 @@ namespace Tests
     [Test]
     public void ParseObject()
     {
-      var wrapper = new StreamWrapper("https://staging.speckle.dev/streams/a75ab4f10f/objects/5530363e6d51c904903dafc3ea1d2ec6");
+      var wrapper = new StreamWrapper("https://testing.speckle.dev/streams/a75ab4f10f/objects/5530363e6d51c904903dafc3ea1d2ec6");
       Assert.AreEqual(StreamWrapperType.Object, wrapper.Type);
     }
 
     [Test]
     public void ParseCommit()
     {
-      var wrapper = new StreamWrapper("https://staging.speckle.dev/streams/4c3ce1459c/commits/8b9b831792");
+      var wrapper = new StreamWrapper("https://testing.speckle.dev/streams/4c3ce1459c/commits/8b9b831792");
       Assert.AreEqual(StreamWrapperType.Commit, wrapper.Type);
     }
 
