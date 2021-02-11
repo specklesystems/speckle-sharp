@@ -10,7 +10,8 @@ namespace Speckle.Core.Credentials
     public string ServerUrl { get; set; }
     public string StreamId { get; set; }
     public string CommitId { get; set; }
-    public string BranchName { get; set; } // To be used later! 
+    public string BranchName { get; set; } 
+    public string ObjectId { get; set; }
 
     /// <summary>
     /// Determines if the current stream wrapper contains a valid stream.
@@ -22,6 +23,7 @@ namespace Speckle.Core.Credentials
       // Quick solution to determine whether a wrapper points to a branch, commit or stream.
       get
       {
+        if (!string.IsNullOrEmpty(ObjectId)) return StreamWrapperType.Object;
         if (!string.IsNullOrEmpty(BranchName)) return StreamWrapperType.Branch;
         if (!string.IsNullOrEmpty(CommitId)) return StreamWrapperType.Commit;
         if (!string.IsNullOrEmpty(StreamId)) return StreamWrapperType.Stream;
@@ -143,7 +145,12 @@ namespace Speckle.Core.Credentials
           else if (uri.Segments[3].ToLowerInvariant() == "branches/")
           {
             StreamId = uri.Segments[2].Replace("/", "");
-            BranchName = uri.Segments[4].Replace("/", "");
+            BranchName = Uri.UnescapeDataString( uri.Segments[4].Replace("/", ""));
+          }
+          else if (uri.Segments[3].ToLowerInvariant() == "objects/")
+          {
+            StreamId = uri.Segments[2].Replace("/", "");
+            ObjectId = uri.Segments[4].Replace("/", "");
           }
           else
           {
@@ -220,6 +227,7 @@ namespace Speckle.Core.Credentials
     Undefined,
     Stream,
     Commit,
-    Branch
+    Branch,
+    Object
   }
 }

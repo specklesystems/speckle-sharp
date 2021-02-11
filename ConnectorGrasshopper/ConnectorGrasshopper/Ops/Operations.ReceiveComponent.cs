@@ -343,6 +343,9 @@ namespace ConnectorGrasshopper.Ops
         case StreamWrapperType.Branch:
           inputType = "Branch";
           break;
+        case StreamWrapperType.Object:
+          inputType = "Object";
+          break;
       }
 
       return inputType;
@@ -491,6 +494,10 @@ namespace ConnectorGrasshopper.Ops
               Done();
               return;
             }
+          if(InputWrapper.ObjectId != null)
+          {
+            myCommit = new Commit() { referencedObject = InputWrapper.ObjectId };
+          }
           else
             try
             {
@@ -501,7 +508,7 @@ namespace ConnectorGrasshopper.Ops
             catch (Exception e)
             {
               RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
-                "Could not get any commits from the stream's \"main\" branch."));
+                $"Could not get any commits from the stream's '{(InputWrapper.BranchName ?? "main")}' branch."));
               Done();
               return;
             }
