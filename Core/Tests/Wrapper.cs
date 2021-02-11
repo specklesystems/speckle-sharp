@@ -1,11 +1,33 @@
 ﻿using NUnit.Framework;
 using Speckle.Core.Credentials;
+using TestsUnit;
 
 namespace Tests
 {
   [TestFixture]
   public class WrapperTests
   {
+    [SetUp]
+    public void Setup()
+    {
+
+      var acc = new Account
+      {
+        refreshToken = "foo",
+        token = "bar",
+        serverInfo = new ServerInfo
+        {
+          url = "https://testing.speckle.dev",
+          company = "qux"
+        },
+        userInfo = new UserInfo
+        {
+          email = "three@four.com"
+        }
+      };
+
+      Fixtures.UpdateOrSaveAccount(acc);
+    }
 
     [Test]
     public void ParseStream()
