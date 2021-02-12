@@ -212,9 +212,13 @@ namespace SpeckleRhino
     {
       string value = schema;
       if (asDirectShape)
-        value = $"{DirectShapeKey}({schema},DirectShapeName)";
+      {
+        // generate placeholder unique name for revit
+        string uniqueName = $"DirectShape_{obj.Id.ToString().Substring(0,5)}";
+        value = $"{DirectShapeKey}({schema},[{uniqueName}])";
+      }
       if (schema == SchemaObjectFilter.SupportedSchema.FaceWall.ToString())
-        value = $"{schema}(DefaultFamily,DefaultType)";
+        value = $"{schema}([family],[type])";
       obj.Attributes.SetUserString(SpeckleSchemaKey, value);
     }
 

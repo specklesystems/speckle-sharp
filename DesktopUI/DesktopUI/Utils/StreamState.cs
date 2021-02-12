@@ -588,7 +588,7 @@ namespace Speckle.DesktopUI.Utils
       Progress.ResetProgress();
       CommitMessage = null;
       IsSending = false;
-      Globals.Notify($"Data uploded to {Stream.name}!");
+      Globals.Notify($"Data uploaded to {Stream.name}!");
 
       if (Errors.Count != 0)
       {

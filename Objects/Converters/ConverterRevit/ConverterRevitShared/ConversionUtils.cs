@@ -496,10 +496,12 @@ namespace Objects.Converter.Revit
           ConversionErrors.Add(new Error($"Missing type. Family: {family} Type: {type}", $"Type was replaced with: {match.FamilyName}, {match.Name}"));
 
       }
-
       if (match == null) // okay, try something!
       {
-        match = types.First();
+        if (element is BuiltElements.Wall) // specifies the basic wall sub type as default
+          match = types.Cast<WallType>().Where(o => o.Kind == WallKind.Basic).Cast<ElementType>().FirstOrDefault();
+        if (match == null)
+          match = types.First();
         ConversionErrors.Add(new Error($"Missing type. Family: {family} Type: {type}", $"Type was replaced with: {match.FamilyName}, {match.Name}"));
       }
 
