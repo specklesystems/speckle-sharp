@@ -133,7 +133,7 @@ namespace Objects.Converter.RhinoGh
           return BrepToSpeckle(o);
 
         case RH.Brep o:
-          return BrepToSpeckle(o);
+          return BrepToSpeckle(o.DuplicateBrep());
 
         case NurbsSurface o:
           return SurfaceToSpeckle(o);
