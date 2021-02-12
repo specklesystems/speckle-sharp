@@ -354,7 +354,7 @@ namespace ConnectorGrasshopper.Ops
 
     private void HandleInputType(StreamWrapper wrapper)
     {
-      if (wrapper.Type == StreamWrapperType.Commit)
+      if (wrapper.Type == StreamWrapperType.Commit || wrapper.Type == StreamWrapperType.Object)
       {
         AutoReceive = false;
         StreamWrapper = wrapper;
