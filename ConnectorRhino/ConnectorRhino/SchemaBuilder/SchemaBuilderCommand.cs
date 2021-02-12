@@ -64,6 +64,7 @@ namespace SpeckleRhino
         getObj.DeselectAllBeforePostSelect = false;
 
         // Get objects
+        bool hasPreselected = false;
         for (; ; )
         {
           GetResult res = getObj.GetMultiple(1, 0);
@@ -76,11 +77,17 @@ namespace SpeckleRhino
             return Result.Cancel;
           if (getObj.ObjectsWerePreselected)
           {
+            hasPreselected = true;
             getObj.EnablePreSelect(false, true);
             continue;
           }
           break;
         }
+
+        //This chunk just makes sure objects selected during the command stay selected afterwards. Optional.
+        if (hasPreselected)
+          SelectAllCommandObjs(getObj, doc);
+
         selectedObjects = getObj.Objects().Select(o => o.Object()).ToList();
         automatic = toggleAutomatic.CurrentValue;
 
@@ -132,7 +139,7 @@ namespace SpeckleRhino
         if (asDirectShape)
         {
           foreach (RhinoObject obj in objs)
-            if (obj.ObjectType == ObjectType.Brep || obj.ObjectType == ObjectType.Mesh)
+            if (obj.ObjectType == ObjectType.Brep || obj.ObjectType == ObjectType.Extrusion || obj.ObjectType == ObjectType.Mesh)
               WriteUserString(obj, schema, true);
         }
         else
@@ -164,61 +171,65 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        GetObject go = new GetObject();
-        go.SetCommandPrompt("Select objects for schema removal");
-        go.GroupSelect = true;
-        go.SubObjectSelect = false;
-        go.EnableClearObjectsOnEntry(false);
-        go.EnableUnselectObjectsOnExit(false);
-        go.DeselectAllBeforePostSelect = false;
+        GetObject getObjs = new GetObject();
+        getObjs.SetCommandPrompt("Select objects for schema removal");
+        getObjs.GroupSelect = true;
+        getObjs.SubObjectSelect = false;
+        getObjs.EnableClearObjectsOnEntry(false);
+        getObjs.EnableUnselectObjectsOnExit(false);
+        getObjs.DeselectAllBeforePostSelect = false;
 
         bool hasPreselected = false;
         for (; ; )
         {
-          GetResult res = go.GetMultiple(1, 0);
+          GetResult res = getObjs.GetMultiple(1, 0);
 
-          if (res == GetResult.Option)
-          {
-            go.EnablePreSelect(false, true);
-            continue;
-          }
-          else if (res != GetResult.Object)
+          if (res != GetResult.Object)
             return Result.Cancel;
 
-          if (go.ObjectsWerePreselected)
+          if (getObjs.ObjectsWerePreselected)
           {
             hasPreselected = true;
-            go.EnablePreSelect(false, true);
+            getObjs.EnablePreSelect(false, true);
             continue;
           }
           break;
         }
 
+        //This chunk just makes sure objects selected during the command stay selected afterwards. Optional.
         if (hasPreselected)
-        {
-          for (int i = 0; i < go.ObjectCount; i++)
-          {
-            RhinoObject rhinoObject = go.Object(i).Object();
-            if (null != rhinoObject)
-              rhinoObject.Select(true);
-          }
-          doc.Views.Redraw();
-        }
+          SelectAllCommandObjs(getObjs, doc);
 
-        List<RhinoObject> objs = go.Objects().Select(o => o.Object()).ToList();
+        List<RhinoObject> objs = getObjs.Objects().Select(o => o.Object()).ToList();
         foreach (RhinoObject obj in objs)
           obj.Attributes.DeleteUserString(SpeckleSchemaKey);
         return Result.Success;
       }
     }
 
-    public static void WriteUserString(RhinoObject obj, string schema, bool asDirectShape = false)
+    #region helper methods
+    private static void WriteUserString(RhinoObject obj, string schema, bool asDirectShape = false)
     {
       string value = schema;
       if (asDirectShape)
         value = $"{DirectShapeKey}({schema},DirectShapeName)";
+      if (schema == SchemaObjectFilter.SupportedSchema.FaceWall.ToString())
+        value = $"{schema}(DefaultFamily,DefaultType)";
       obj.Attributes.SetUserString(SpeckleSchemaKey, value);
     }
+
+    // This just makes sure objects selected during the command stay selected afterwards. Optional.
+    private static void SelectAllCommandObjs(GetObject command, RhinoDoc doc)
+    {
+      for (int i = 0; i < command.ObjectCount; i++)
+      {
+        RhinoObject rhinoObject = command.Object(i).Object();
+        if (null != rhinoObject)
+          rhinoObject.Select(true);
+      }
+      doc.Views.Redraw();
+    }
+    #endregion
   }
   
 }

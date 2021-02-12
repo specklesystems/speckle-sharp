@@ -64,7 +64,7 @@ namespace Objects.Converter.RhinoGh
       {
         case RhinoObject o:
           // Tries to convert to BuiltElements schema first
-          Base conversionResult = ConvertToSpeckleBE(o.Geometry);
+          Base conversionResult = ConvertToSpeckleBE(o);
           
           if (conversionResult == null)
             conversionResult = ObjectToSpeckle(o);
@@ -151,15 +151,12 @@ namespace Objects.Converter.RhinoGh
     // NOTE: is there a way of retrieving class name from BuiltElements class directly? using hardcoded strings atm
     public Base ConvertToSpeckleBE(object @object)
     {
-      string schema = GetSchema(@object as RhinoObject, out string[] args);
-      if (schema == null) 
-        return null;
+      // get schema if it exists
+      RhinoObject obj = @object as RhinoObject;
+      string schema = GetSchema(obj, out string[] args);
 
-      switch (@object)
+      switch (obj.Geometry)
       {
-        case RhinoObject o:
-          return ConvertToSpeckleBE(o.Geometry);
-
         case RH.Curve o:
           switch (schema)
           {
@@ -188,8 +185,21 @@ namespace Objects.Converter.RhinoGh
             case "Wall":
               return BrepToSpeckleWall(o);
 
+            case "FaceWall":
+              return BrepToFaceWall(o, args);
+
             case "DirectShape":
               return BrepToDirectShape(o, args);
+
+            default:
+              throw new NotSupportedException();
+          }
+
+        case RH.Extrusion o:
+          switch (schema)
+          {
+            case "DirectShape":
+              return ExtrusionToDirectShape(o, args);
 
             default:
               throw new NotSupportedException();

@@ -87,6 +87,17 @@ namespace Objects.Converter.RhinoGh
       return roof;
     }
 
+    public RV.RevitFaceWall BrepToFaceWall(RH.Brep brep, string[] args)
+    {
+      if (brep.Faces.Count > 1)
+        return null;
+      
+      string family = "Default";
+      string type = "Default";
+      try { family = args[0]; type = args[1]; } catch { }
+      return new RV.RevitFaceWall(family, type, BrepToSpeckle(brep), null);
+    }
+
     public RV.DirectShape BrepToDirectShape(RH.Brep brep, string[] args)
     {
       if (args.Length == 0)
@@ -94,9 +105,19 @@ namespace Objects.Converter.RhinoGh
       if (!Enum.TryParse($"{args[0]}s", out RV.RevitCategory category))
         return null;
       string name = "DirectShape";
-      if (args.Length > 1)
-        name = args[1];
+      try { name = args[1]; } catch { }
       return new RV.DirectShape(name, category, new List<Base>() { ConvertToSpeckle(brep) });
+    }
+
+    public RV.DirectShape ExtrusionToDirectShape(RH.Extrusion extrusion, string[] args)
+    {
+      if (args.Length == 0)
+        return null;
+      if (!Enum.TryParse($"{args[0]}s", out RV.RevitCategory category))
+        return null;
+      string name = "DirectShape";
+      try { name = args[1]; } catch { }
+      return new RV.DirectShape(name, category, new List<Base>() { ConvertToSpeckle(extrusion) });
     }
 
     public RV.DirectShape MeshToDirectShape(RH.Mesh mesh, string[] args)
@@ -106,8 +127,7 @@ namespace Objects.Converter.RhinoGh
       if (!Enum.TryParse($"{args[0]}s", out RV.RevitCategory category))
         return null;
       string name = "DirectShape";
-      if (args.Length > 1)
-        name = args[1];
+      try { name = args[1]; } catch { }
       return new RV.DirectShape(name, category, new List<Base>() { ConvertToSpeckle(mesh) });
     }
 

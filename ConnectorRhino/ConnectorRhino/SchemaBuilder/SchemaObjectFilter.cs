@@ -18,7 +18,7 @@ namespace SpeckleRhino
   public class SchemaObjectFilter
   {
     #region Properties
-    public enum SupportedSchema { Floor, Wall, Roof, Ceiling, Column, Beam, none };
+    public enum SupportedSchema { Floor, Wall, Roof, Ceiling, Column, Beam, FaceWall, none };
     private Rhino.RhinoDoc Doc;
     public Dictionary<string, List<RhinoObject>> SchemaDictionary = new Dictionary<string, List<RhinoObject>>();
     #endregion
@@ -158,6 +158,14 @@ namespace SpeckleRhino
           }
           catch { }
           break;
+        case SupportedSchema.FaceWall:
+          try
+          {
+            Brep brp = obj.Geometry as Brep; // assumes this has already been filtered for single surface
+            return true;
+          }
+          catch { }
+          break;
         default:
           return false;
       }
@@ -202,6 +210,7 @@ namespace SpeckleRhino
           objSchemas = new List<SupportedSchema> {
             SupportedSchema.Floor,
             SupportedSchema.Wall,
+            SupportedSchema.FaceWall,
             SupportedSchema.Ceiling,
             SupportedSchema.Roof };
           break;
