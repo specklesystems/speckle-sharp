@@ -59,16 +59,16 @@ namespace ConnectorGrasshopper.Streams
       }
 
       var account = string.IsNullOrEmpty(accountId)  ? AccountManager.GetDefaultAccount()
-        : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+        : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
 
       if(account == null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find default account in this machine. Use the Speckle Manager to add an account.");
         return;
       }
-      Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.id);
+      Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
-      DA.SetData(0, account.id);
+      //DA.SetData(0, account.id);
       DA.SetData(1, account.isDefault);
       DA.SetData(2, account.serverInfo.name);
       DA.SetData(3, account.serverInfo.company);

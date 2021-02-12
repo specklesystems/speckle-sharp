@@ -61,12 +61,12 @@ namespace ConnectorGrasshopper.Accounts
 
       foreach (var account in accounts)
       {
-        if (defaultAccount != null && account.id == defaultAccount.id)
+        if (defaultAccount != null && account.userInfo.id == defaultAccount.userInfo.id)
         {
           defaultAccountIndex = index;
         }
 
-        ListItems.Add(new GH_ValueListItem(account.ToString(), $"\"{account.id}\""));
+        ListItems.Add(new GH_ValueListItem(account.ToString(), $"\"{account.userInfo.id}\""));
         index++;
       }
 
@@ -103,7 +103,7 @@ namespace ConnectorGrasshopper.Accounts
     public override bool Write(GH_IWriter writer)
     {
       var selectedAccountId = SelectedItems[0].Expression.Trim(new char[] { '"' });
-      var selectedAccount = AccountManager.GetAccounts().FirstOrDefault(a => a.id == selectedAccountId);
+      var selectedAccount = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == selectedAccountId);
       if (selectedAccount != null)
       {
         writer.SetString("selectedId", selectedAccountId);

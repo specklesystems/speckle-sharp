@@ -82,6 +82,21 @@ namespace Speckle.Core.Credentials
       }
     }
 
+    /// <summary>
+    /// Creates a StreamWrapper by streamId, accountId and serverUrl
+    /// </summary>
+    /// <param name="streamId"></param>
+    /// <param name="accountId"></param>
+    /// <param name="serverUrl"></param>
+    public StreamWrapper(string streamId, string accountId, string serverUrl)
+    {
+      AccountId = accountId;
+      ServerUrl = serverUrl;
+      StreamId = streamId;
+
+      originalInput = $"{ServerUrl}/streams/{StreamId}{(AccountId != null ? "?u=" + AccountId : "")}";
+    }
+
     private void StreamWrapperFromId(string streamId)
     {
       Account account = AccountManager.GetDefaultAccount();
@@ -149,13 +164,46 @@ namespace Speckle.Core.Credentials
 
     /// <summary>
     /// Gets a valid account for this stream wrapper. 
-    /// <para>Note: this method ensures that the stream exists and/or that the user has an account which has access to that stream.</para>
+    /// <para>Note: this method ensures that the stream exists and/or that the user has an account which has access to that stream. If used in a sync manner, make sure it's not blocking.</para>
     /// </summary>
     /// <returns></returns>
     public async Task<Account> GetAccount()
     {
-      if (_Account != null) return _Account;
+      if (_Account != null)
+      {
+        return _Account;
+      }
 
+      // Step 1: check if direct account id (?u=)
+      if (originalInput.Contains("?u="))
+      {
+        var userId = originalInput.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
+        var acc = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == userId);
+        if(acc!=null)
+        {
+          try
+          {
+            var client = new Client(acc);
+            var res = await client.StreamGet(StreamId);
+            _Account = acc;
+            return acc;
+          }
+          catch { }
+        }
+      }
+
+      // Step 2: check the default
+      var defAcc = AccountManager.GetDefaultAccount();
+      try
+      {
+        var client = new Client(defAcc);
+        var res = await client.StreamGet(StreamId);
+        _Account = defAcc;
+        return defAcc;
+      }
+      catch { }
+
+      // Step 3: all the rest
       var accs = AccountManager.GetAccounts(ServerUrl);
       if(accs.Count() == 0) 
       {
@@ -177,23 +225,9 @@ namespace Speckle.Core.Credentials
       throw new Exception($"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.");
     }
 
-    /// <summary>
-    /// Creates a StreamWrapper by streamId, accountId and serverUrl
-    /// </summary>
-    /// <param name="streamId"></param>
-    /// <param name="accountId"></param>
-    /// <param name="serverUrl"></param>
-    public StreamWrapper(string streamId, string accountId, string serverUrl)
-    {
-      AccountId = accountId;
-      ServerUrl = serverUrl;
-      StreamId = streamId;
-    }
-
     public override string ToString()
     {
-      return
-        $"{ServerUrl}/streams/{StreamId}{(CommitId != null ? "/commits/" + CommitId : "")}{(AccountId != null ? "?u=" + AccountId : "")}";
+      return originalInput;
     }
   }
 

@@ -59,7 +59,7 @@ namespace ConnectorGrasshopper.Streams
       DA.GetData(0, ref ghIdWrapper);
       DA.GetData(1, ref accountId);
       var account = string.IsNullOrEmpty(accountId)  ? AccountManager.GetDefaultAccount()
-        : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+        : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
 
       var idWrapper = ghIdWrapper.Value;
       if(account == null)
@@ -68,7 +68,7 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
-      Params.Input[1].AddVolatileData(new GH_Path(0), 0, account.id);
+      Params.Input[1].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
       if (error != null)
       {
@@ -96,7 +96,7 @@ namespace ConnectorGrasshopper.Streams
             //Exists?
             var client = new Client(account);
             var result = await client.StreamGet(idWrapper.StreamId);
-            stream = new StreamWrapper(result.id, account.id, account.serverInfo.url);
+            stream = new StreamWrapper(result.id, account.userInfo.id, account.serverInfo.url);
           }
           catch (Exception e)
           {
