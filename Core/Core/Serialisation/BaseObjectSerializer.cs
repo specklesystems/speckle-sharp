@@ -355,6 +355,11 @@ namespace Speckle.Core.Serialisation
             continue;
           }
 
+          if(prop == "id")
+          {
+            continue;
+          }
+
           var property = contract.Properties.GetClosestMatchProperty(prop);
 
           // Ignore properties decorated with [JsonIgnore].
