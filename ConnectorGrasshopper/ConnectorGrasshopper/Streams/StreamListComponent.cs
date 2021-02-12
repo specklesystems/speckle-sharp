@@ -58,6 +58,13 @@ namespace ConnectorGrasshopper.Streams
 
         DA.GetData(0, ref accountId);
         DA.GetData(1, ref limit); // Has default value so will never be empty.
+
+        if (limit > 50)
+        {
+          limit = 50;
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50.");
+        }
+
         var account = string.IsNullOrEmpty(accountId)  ? AccountManager.GetDefaultAccount()
           : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
 
