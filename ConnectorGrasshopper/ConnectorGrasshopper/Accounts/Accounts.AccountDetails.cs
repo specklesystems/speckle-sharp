@@ -14,8 +14,8 @@ namespace ConnectorGrasshopper.Streams
 {
   public class AccountDetailsComponent : GH_Component
   {
-    public AccountDetailsComponent() : base("Account Details", "AccDet", "Gets the details from a specific account", "Speckle 2",
-      "Accounts")
+    public AccountDetailsComponent() : base("Account Details", "AccDet", "Gets the details from a specific account", ComponentCategories.PRIMARY_RIBBON,
+      ComponentCategories.STREAMS)
     {
     }
 
@@ -23,7 +23,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override Bitmap Icon => Properties.Resources.AccountDetails;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
