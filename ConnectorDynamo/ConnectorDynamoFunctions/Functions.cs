@@ -100,39 +100,55 @@ namespace Speckle.ConnectorDynamo.Functions
       Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null,
       Action<int> onTotalChildrenCountKnown = null)
     {
-      var account = stream.GetAccount();
+      var account = stream.GetAccount().Result;
       stream.BranchName = string.IsNullOrEmpty(stream.BranchName) ? "main" : stream.BranchName;
 
       var client = new Client(account);
-      Commit commit;
-      try
+      Commit commit = null;
+      
+      if(stream.Type == StreamWrapperType.Stream || stream.Type == StreamWrapperType.Branch)
       {
-        if (string.IsNullOrEmpty(stream.CommitId))
+        List<Branch> branches;
+        try
         {
-
-          var branches = client.StreamGetBranches(cancellationToken, stream.StreamId).Result;
-          var mainBranch = branches.FirstOrDefault(b => b.name == stream.BranchName);
-
-          if (mainBranch == null)
-          {
-            Log.CaptureAndThrow(new Exception("No branch found with name " + stream.BranchName));
-          }
-
-          if (!mainBranch.commits.items.Any())
-            throw new Exception("No commits found.");
-
-          commit = mainBranch.commits.items[0];
+          branches = client.StreamGetBranches(cancellationToken, stream.StreamId).Result;
         }
-        else
+        catch (Exception ex)
+        {
+          Utils.HandleApiExeption(ex);
+          return null;
+        }
+
+        var branch = branches.FirstOrDefault(b => b.name == stream.BranchName);
+        if (branch == null)
+        {
+          Log.CaptureAndThrow(new Exception("No branch found with name " + stream.BranchName));
+        }
+
+        if (!branch.commits.items.Any())
+        {
+          throw new Exception("No commits found.");
+        }
+
+        commit = branch.commits.items[0];
+      } 
+      else if(stream.Type == StreamWrapperType.Commit)
+      {
+        try
         {
           commit = client.CommitGet(cancellationToken, stream.StreamId, stream.CommitId).Result;
         }
-      }
-      catch (Exception ex)
+        catch (Exception ex)
+        {
+          Utils.HandleApiExeption(ex);
+          return null;
+        }
+      } 
+      else if(stream.Type == StreamWrapperType.Object)
       {
-        Utils.HandleApiExeption(ex);
-        return null;
+        commit = new Commit() { referencedObject = stream.ObjectId, id = Guid.NewGuid().ToString() };
       }
+     
 
       if (commit == null)
       {

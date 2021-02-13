@@ -48,7 +48,7 @@ namespace Speckle.ConnectorDynamo.Functions
           if (account != null)
             accountToUse = account;
           else
-            accountToUse = s.GetAccount();
+            accountToUse = s.GetAccount().Result;
 
 
           var client = new Client(accountToUse);
@@ -99,13 +99,20 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="description">Description of the Stream</param>
     /// <param name="isPublic">True if the stream is to be publicly available</param>
     /// <returns name="stream">Updated Stream object</returns>
-    public static StreamWrapper Update(StreamWrapper stream,
+    public static StreamWrapper Update([DefaultArgument("null")] object stream,
       [DefaultArgument("null")] string name,
       [DefaultArgument("null")] string description, [DefaultArgument("null")] bool? isPublic)
     {
       Tracker.TrackPageview(Tracker.STREAM_UPDATE);
 
-      if (stream == null)
+      if(stream == null)
+      {
+        return null;
+      }
+
+      var wrapper = Utils.ParseWrapper(stream);
+
+      if (wrapper == null)
       {
         Core.Logging.Log.CaptureAndThrow(new Exception("Invalid stream."));
       }
@@ -113,11 +120,11 @@ namespace Speckle.ConnectorDynamo.Functions
       if (name == null && description == null && isPublic == null)
         return null;
 
-      var account = stream.GetAccount();
+      var account = wrapper.GetAccount().Result;
 
       var client = new Client(account);
 
-      var input = new StreamUpdateInput { id = stream.StreamId };
+      var input = new StreamUpdateInput { id = wrapper.StreamId };
 
       if (name != null)
         input.name = name;
@@ -133,7 +140,7 @@ namespace Speckle.ConnectorDynamo.Functions
         var res = client.StreamUpdate(input).Result;
 
         if (res)
-          return stream;
+          return wrapper;
       }
       catch (Exception ex)
       {
@@ -172,7 +179,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
       foreach (var streamWrapper in streams)
       {
-        var account = streamWrapper.GetAccount();
+        var account = streamWrapper.GetAccount().Result;
 
         var client = new Client(account);
 

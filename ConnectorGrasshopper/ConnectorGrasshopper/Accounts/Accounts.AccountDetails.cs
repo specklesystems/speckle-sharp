@@ -34,7 +34,6 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddTextParameter("ID", "ID", "Unique ID of the account.", GH_ParamAccess.item);
       pManager.AddBooleanParameter("isDefault", "D", "Determines if the account is the default of this machine.",
         GH_ParamAccess.item);
       pManager.AddTextParameter("Server name", "SN", "Name of the server.", GH_ParamAccess.item);
@@ -59,24 +58,23 @@ namespace ConnectorGrasshopper.Streams
       }
 
       var account = string.IsNullOrEmpty(accountId)  ? AccountManager.GetDefaultAccount()
-        : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+        : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
 
       if(account == null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find default account in this machine. Use the Speckle Manager to add an account.");
         return;
       }
-      Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.id);
+      Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
-      DA.SetData(0, account.id);
-      DA.SetData(1, account.isDefault);
-      DA.SetData(2, account.serverInfo.name);
-      DA.SetData(3, account.serverInfo.company);
-      DA.SetData(4, account.serverInfo.url);
-      DA.SetData(5, account.userInfo.id);
-      DA.SetData(6, account.userInfo.name);
-      DA.SetData(7, account.userInfo.company);
-      DA.SetData(8, account.userInfo.email);
+      DA.SetData(0, account.isDefault);
+      DA.SetData(1, account.serverInfo.name);
+      DA.SetData(2, account.serverInfo.company);
+      DA.SetData(3, account.serverInfo.url);
+      DA.SetData(4, account.userInfo.id);
+      DA.SetData(5, account.userInfo.name);
+      DA.SetData(6, account.userInfo.company);
+      DA.SetData(7, account.userInfo.email);
     }
     
     protected override void BeforeSolveInstance()

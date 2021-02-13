@@ -58,8 +58,15 @@ namespace ConnectorGrasshopper.Streams
 
         DA.GetData(0, ref accountId);
         DA.GetData(1, ref limit); // Has default value so will never be empty.
+
+        if (limit > 50)
+        {
+          limit = 50;
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50.");
+        }
+
         var account = string.IsNullOrEmpty(accountId)  ? AccountManager.GetDefaultAccount()
-          : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+          : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
 
         if (accountId == null)
         {
@@ -72,7 +79,7 @@ namespace ConnectorGrasshopper.Streams
           return;
         }
 
-        Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.id);
+        Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
         Task.Run(async () =>
         {
@@ -82,7 +89,7 @@ namespace ConnectorGrasshopper.Streams
             // Save the result
             var result = await client.StreamsGet(limit);
             streams = result
-              .Select(stream => new StreamWrapper(stream.id, account.id, account.serverInfo.url))
+              .Select(stream => new StreamWrapper(stream.id, account.userInfo.id, account.serverInfo.url))
               .ToList();
           }
           catch (Exception e)

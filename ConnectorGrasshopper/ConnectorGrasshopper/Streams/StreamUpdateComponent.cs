@@ -75,7 +75,7 @@ namespace ConnectorGrasshopper.Streams
         {
           var account = streamWrapper.AccountId == null
                       ? AccountManager.GetDefaultAccount()
-                      : AccountManager.GetAccounts().FirstOrDefault(a => a.id == streamWrapper.AccountId);
+                      : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == streamWrapper.AccountId);
 
           if (account == null)
           {
