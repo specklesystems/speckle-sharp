@@ -110,7 +110,7 @@ namespace Speckle.ConnectorDynamo.Functions
         return null;
       }
 
-      var wrapper = Utils.InputToStream(stream).First();
+      var wrapper = Utils.ParseWrapper(stream);
 
       if (wrapper == null)
       {
