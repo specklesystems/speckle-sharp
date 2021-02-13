@@ -370,8 +370,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         return;
       }
 
-      if (newStream.Type != StreamWrapperType.Branch)
-        newStream.BranchName = "main";
+      //if (newStream.Type != StreamWrapperType.Branch)
+      //  newStream.BranchName = "main";
 
       //no need to re-subscribe. it's the same stream
       if (oldStream != null && newStream.ToString() == oldStream.ToString())
@@ -382,7 +382,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       ReceiveEnabled = true;
 
       //StreamWrapper points to a Stream
-      if (newStream.Type == StreamWrapperType.Commit)
+      if (newStream.Type == StreamWrapperType.Commit || newStream.Type == StreamWrapperType.Object) 
       {
         Name = "Receive Commit";
         AutoUpdate = false;

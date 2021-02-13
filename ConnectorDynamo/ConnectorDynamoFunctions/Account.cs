@@ -35,7 +35,6 @@ namespace Speckle.ConnectorDynamo.Functions
       }
       return new Dictionary<string, object>
       {
-        {"id", account.id},
         {"isDefault", account.isDefault},
         {
           "serverInfo",

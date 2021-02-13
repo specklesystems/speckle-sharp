@@ -14,7 +14,7 @@ namespace Speckle.ConnectorDynamo.Functions
       try
       {
         //it's a list
-        var array = (input as ArrayList).ToArray();
+        var array = (input as ArrayList)?.ToArray();
 
         try
         {
