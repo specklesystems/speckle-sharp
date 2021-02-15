@@ -21,11 +21,6 @@ namespace Speckle.Core.Credentials
   {
     private static SQLiteTransport AccountStorage = new SQLiteTransport(scope: "Accounts");
 
-    // NOTE: These need to be coordinated with the server.
-    internal static string APPID = "connectors";
-    internal static string SECRET = "connectors";
-    internal static int PORT = 24707;
-
     /// <summary>
     /// Gets the basic information about a server. 
     /// </summary>

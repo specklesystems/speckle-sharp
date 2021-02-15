@@ -49,6 +49,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Accounts\Accounts.AccountDetails.cs" />
     <Compile Include="Accounts\Accounts.ListAccounts.cs" />
     <Compile Include="ComponentCategories.cs" />
     <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />

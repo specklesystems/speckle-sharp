@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Objects.Geometry;
+using Speckle.Core.Logging;
 using DB = Autodesk.Revit.DB;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Mesh = Objects.Geometry.Mesh;
@@ -84,26 +85,23 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
       }
 
-      var converted = new List<GeometryObject>();
+      var catId = Doc.Settings.Categories.get_Item(cat).Id;
+      var revitDs = DB.DirectShape.CreateElement(Doc, catId);
+      revitDs.ApplicationId = brep.applicationId;
+      revitDs.ApplicationDataId = Guid.NewGuid().ToString();
+      revitDs.Name = "Brep " + brep.applicationId;
 
       try
       {
         var solid = BrepToNative(brep);
-        converted.Add(solid);
+        if (solid == null) throw new SpeckleException("Could not convert brep to native");
+        revitDs.SetShape(new List<GeometryObject>{solid});
       }
       catch (Exception e)
       {
         var mesh = MeshToNative(brep.displayValue);
-        converted.AddRange(mesh);
+        revitDs.SetShape(mesh);
       }
-
-      var catId = Doc.Settings.Categories.get_Item(cat).Id;
-
-      var revitDs = DB.DirectShape.CreateElement(Doc, catId);
-      revitDs.ApplicationId = brep.applicationId;
-      revitDs.ApplicationDataId = Guid.NewGuid().ToString();
-      revitDs.SetShape(converted);
-      revitDs.Name = "Brep " + brep.applicationId;
 
       return new ApplicationPlaceholderObject { applicationId = brep.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }

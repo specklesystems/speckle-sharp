@@ -100,13 +100,13 @@ namespace Speckle.ConnectorDynamo.AccountsNode
       }
 
       SelectedAccount = !string.IsNullOrEmpty(SelectedAccountId)
-        ? AccountList.FirstOrDefault(x => x.id == SelectedAccountId)
+        ? AccountList.FirstOrDefault(x => x.userInfo.id == SelectedAccountId)
         : AccountList.FirstOrDefault(x => x.isDefault);
     }
 
     internal void SelectionChanged(Account account)
     {
-      SelectedAccountId = account.id;
+      SelectedAccountId = account.userInfo.id;
       OnNodeModified(true);
     }
 

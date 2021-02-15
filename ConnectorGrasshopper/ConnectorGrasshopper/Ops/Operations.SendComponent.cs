@@ -386,20 +386,17 @@ namespace ConnectorGrasshopper.Ops
               continue;
             }
 
-            var acc = sw.GetAccount();
-            if (acc == null)
+            Account acc;
+            try
             {
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Could not get an account for {sw}");
+              acc = sw.GetAccount().Result;
+            } catch(Exception e)
+            {
+              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
               continue;
             }
-
-            if (!sw.ExistsInServer())
-            {
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The provided stream ID does not exist in the server.");
-              continue;
-
-            }
-              var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
+            
+            var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");
             Transports.Add(serverTransport);
           }
@@ -506,12 +503,8 @@ namespace ConnectorGrasshopper.Ops
 
               var commitId = await client.CommitCreate(CancellationToken, commitCreateInput);
 
-              OutputWrappers.Add(new StreamWrapper
-              {
-                StreamId = ((ServerTransport)transport).StreamId,
-                ServerUrl = client.ServerUrl,
-                CommitId = commitId
-              });
+              var wrapper = new StreamWrapper($"{client.Account.serverInfo.url}/streams/{((ServerTransport)transport).StreamId}/commits/{commitId}?u={client.Account.userInfo.id}");
+              OutputWrappers.Add(wrapper);
             }
             catch (Exception e)
             {
@@ -547,7 +540,6 @@ namespace ConnectorGrasshopper.Ops
       {
         ((SendComponent)Parent).JustPastedIn = false;
         DA.SetDataList(0, ((SendComponent)Parent).OutputWrappers);
-        //DA.SetData(1, ((SendComponent)Parent).BaseId);
         return;
       }
 
@@ -563,14 +555,12 @@ namespace ConnectorGrasshopper.Ops
       }
 
       DA.SetDataList(0, OutputWrappers);
-      //DA.SetData(1, BaseId);
-      //DA.SetData(2, new GH_SpeckleBase { Value = ObjectToSend });
 
       ((SendComponent)Parent).CurrentComponentState = "up_to_date";
-      ((SendComponent)Parent).OutputWrappers =
-        OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
-      ((SendComponent)Parent).BaseId =
-        BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
+      ((SendComponent)Parent).OutputWrappers = OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
+
+      ((SendComponent)Parent).BaseId = BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
+
       ((SendComponent)Parent).OverallProgress = 0;
 
       var hasWarnings = RuntimeMessages.Count > 0;
@@ -679,11 +669,6 @@ namespace ConnectorGrasshopper.Ops
             return GH_ObjectResponse.Handled;
           }
 
-          // if (((SendComponent)Owner).CurrentComponentState != "expired")
-          // {
-          //   return GH_ObjectResponse.Handled;
-          // }
-
           ((SendComponent)Owner).CurrentComponentState = "primed_to_send";
           Owner.ExpireSolution(true);
           return GH_ObjectResponse.Handled;
@@ -693,32 +678,5 @@ namespace ConnectorGrasshopper.Ops
       return base.RespondToMouseDown(sender, e);
     }
 
-    /*public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
-    {
-      // Double clicking the send button, even if the state is up to date, will do a "force send"
-      if (e.Button == MouseButtons.Left)
-      {
-        if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
-        {
-          if (((SendComponent)Owner).CurrentComponentState == "sending")
-          {
-            return GH_ObjectResponse.Handled;
-          }
-
-          if (((SendComponent)Owner).AutoSend)
-          {
-            ((SendComponent)Owner).AutoSend = false;
-            Owner.OnDisplayExpired(true);
-            return GH_ObjectResponse.Handled;
-          }
-
-          ((SendComponent)Owner).CurrentComponentState = "primed_to_send";
-          Owner.ExpireSolution(true);
-          return GH_ObjectResponse.Handled;
-        }
-      }
-
-      return base.RespondToMouseDown(sender, e);
-    }*/
   }
 }

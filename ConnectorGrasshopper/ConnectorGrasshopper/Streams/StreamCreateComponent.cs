@@ -80,7 +80,7 @@ namespace ConnectorGrasshopper.Streams
       }
       else
       {
-        account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+        account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
         if (account == null)
         {
           // Really last ditch effort - in case people delete accounts from the manager, and the selection dropdown is still using an outdated list.
@@ -89,7 +89,7 @@ namespace ConnectorGrasshopper.Streams
         }
       }
 
-      Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.id);
+      Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
       if (stream != null)
       {

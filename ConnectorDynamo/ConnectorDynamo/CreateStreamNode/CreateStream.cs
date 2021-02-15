@@ -143,9 +143,9 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
       {
         var res = client.StreamCreate(new StreamCreateInput()).Result;
 
-        Stream = new StreamWrapper(res, SelectedAccount.id, SelectedAccount.serverInfo.url);
+        Stream = new StreamWrapper(res, SelectedAccount.userInfo.id, SelectedAccount.serverInfo.url);
         CreateEnabled = false;
-        SelectedAccountId = SelectedAccount.id;
+        SelectedAccountId = SelectedAccount.userInfo.id;
 
         this.Name = "Stream Created";
         OnNodeModified(true);
@@ -163,7 +163,6 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
       }
 
     }
-
 
     #region overrides
 

@@ -358,13 +358,13 @@ namespace Speckle.ConnectorDynamo.SendNode
         switch (o)
         {
           case StreamWrapper s:
-            var wrapperTransport = new ServerTransport(s.GetAccount(), s.StreamId);
+            var wrapperTransport = new ServerTransport(s.GetAccount().Result, s.StreamId);
             var branch = s.BranchName ?? defaultBranch;
             transports.Add(wrapperTransport, branch);
             break;
           case string s:
             var streamWrapper = new StreamWrapper(s);
-            var transport = new ServerTransport(streamWrapper.GetAccount(), streamWrapper.StreamId);
+            var transport = new ServerTransport(streamWrapper.GetAccount().Result, streamWrapper.StreamId);
             var b = streamWrapper.BranchName ?? defaultBranch;
             transports.Add(transport, b);
             break;
