@@ -16,6 +16,7 @@ using Ceiling = Objects.BuiltElements.Ceiling;
 using Roof = Objects.BuiltElements.Roof;
 using Opening = Objects.BuiltElements.Opening;
 using RH = Rhino.Geometry;
+using RV = Objects.BuiltElements.Revit;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -84,6 +85,50 @@ namespace Objects.Converter.RhinoGh
       if (extCurves != null)
         roof = new Roof(extCurves[0], intCurves);
       return roof;
+    }
+
+    public RV.RevitFaceWall BrepToFaceWall(RH.Brep brep, string[] args)
+    {
+      if (brep.Faces.Count > 1)
+        return null;
+      
+      string family = "Default";
+      string type = "Default";
+      try { family = args[0]; type = args[1]; } catch { }
+      return new RV.RevitFaceWall(family, type, BrepToSpeckle(brep), null);
+    }
+
+    public RV.DirectShape BrepToDirectShape(RH.Brep brep, string[] args)
+    {
+      if (args.Length == 0)
+        return null;
+      if (!Enum.TryParse($"{args[0]}s", out RV.RevitCategory category))
+        return null;
+      string name = "DirectShape";
+      try { name = args[1]; } catch { }
+      return new RV.DirectShape(name, category, new List<Base>() { ConvertToSpeckle(brep) });
+    }
+
+    public RV.DirectShape ExtrusionToDirectShape(RH.Extrusion extrusion, string[] args)
+    {
+      if (args.Length == 0)
+        return null;
+      if (!Enum.TryParse($"{args[0]}s", out RV.RevitCategory category))
+        return null;
+      string name = "DirectShape";
+      try { name = args[1]; } catch { }
+      return new RV.DirectShape(name, category, new List<Base>() { ConvertToSpeckle(extrusion) });
+    }
+
+    public RV.DirectShape MeshToDirectShape(RH.Mesh mesh, string[] args)
+    {
+      if (args.Length == 0)
+        return null;
+      if (!Enum.TryParse($"{args[0]}s", out RV.RevitCategory category))
+        return null;
+      string name = "DirectShape";
+      try { name = args[1]; } catch { }
+      return new RV.DirectShape(name, category, new List<Base>() { ConvertToSpeckle(mesh) });
     }
 
     // edge curve convenience method

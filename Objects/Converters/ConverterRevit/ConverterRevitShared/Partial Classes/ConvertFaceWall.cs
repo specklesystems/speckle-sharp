@@ -60,16 +60,19 @@ namespace Objects.Converter.Revit
       // otherwise the wall creation will fail with "Could not create a face wall."
       var level = new FilteredElementCollector(Doc)
          .WhereElementIsNotElementType()
-         .OfCategory(BuiltInCategory.OST_Levels)
-         .ToElements().First();
+         .OfCategory(BuiltInCategory.OST_Levels) // this throws a null error if user tries to recieve stream in a file with no levels
+         .ToElements().FirstOrDefault();
+
+      if (level == null) // create a new level at 0 if no levels could be retrieved from doc
+        level = Level.Create(Doc, 0);
+
       TrySetParam(mass, BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM, level);
 
       //must regenerate before getting the elem geometry
       Doc.Regenerate();
       Reference faceRef = GetFaceRef(mass);
 
-
-      var wallType = GetElementType<WallType>(speckleWall);
+      var wallType = GetElementType<WallType>(speckleWall); 
       if (!FaceWall.IsWallTypeValidForFaceWall(Doc, wallType.Id))
       {
         ConversionErrors.Add(new Error { message = $"Wall type not valid for face wall ${speckleWall.applicationId}." });
@@ -84,9 +87,6 @@ namespace Objects.Converter.Revit
       catch (Exception e)
       {
       }
-      
-     
-
 
       if (revitWall == null)
       {
