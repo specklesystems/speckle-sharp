@@ -63,6 +63,9 @@ namespace Objects.Converter.Revit
          .OfCategory(BuiltInCategory.OST_Levels) // this throws a null error if user tries to recieve stream in a file with no levels
          .ToElements().FirstOrDefault();
 
+      if (level == null) // create a new level at 0 if no levels could be retrieved from doc
+        level = Level.Create(Doc, 0);
+
       TrySetParam(mass, BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM, level);
 
       //must regenerate before getting the elem geometry

@@ -215,7 +215,7 @@ namespace SpeckleRhino
       {
         // generate placeholder unique name for revit
         string uniqueName = $"DirectShape_{obj.Id.ToString().Substring(0,5)}";
-        value = $"{DirectShapeKey}({schema},[{uniqueName}])";
+        value = $"{DirectShapeKey}({schema},{uniqueName})";
       }
       if (schema == SchemaObjectFilter.SupportedSchema.FaceWall.ToString())
         value = $"{schema}([family],[type])";
