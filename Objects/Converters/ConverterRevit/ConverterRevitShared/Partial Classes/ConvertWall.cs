@@ -56,16 +56,19 @@ namespace Objects.Converter.Revit
 
       if (isUpdate)
       {
-        //NOTE: updating an element location is quite buggy in Revit!
+        //NOTE: updating an element location can be buggy if the baseline and level elevation don't match
         //Let's say the first time an element is created its base point/curve is @ 10m and the Level is @ 0m
         //the element will be created @ 0m
         //but when this element is updated (let's say with no changes), it will jump @ 10m (unless there is a level change)!
-        //to avoid this behavior we're always setting the previous location Z coordinate when updating an element
-        //this means the Z coord of an element will only be set by its Level 
-        //and by additional parameters as sill height, base offset etc
-        var z = ((LocationCurve)revitWall.Location).Curve.GetEndPoint(0).Z;
-        var offsetLine = baseCurve.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, z)));
-        ((LocationCurve)revitWall.Location).Curve = offsetLine;
+        //to avoid this behavior we're moving the base curve to match the level elevation
+        var newz = baseCurve.GetEndPoint(0).Z;
+        var offset = level.Elevation - newz;
+        var newCurve = baseCurve;
+        if (Math.Abs(offset) > 0.0164042) // level and curve are not at the same height
+        {
+          newCurve = baseCurve.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, offset)));
+        }
+        ((LocationCurve)revitWall.Location).Curve = newCurve;
 
         TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
       }
@@ -122,7 +125,7 @@ namespace Objects.Converter.Revit
       }
 
       RevitWall speckleWall = new RevitWall();
-      speckleWall.family = revitWall.WallType.FamilyName;
+      speckleWall.family = revitWall.WallType.FamilyName.ToString();
       speckleWall.type = revitWall.WallType.Name;
       speckleWall.baseLine = (ICurve)baseGeometry;
       speckleWall.level = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT);

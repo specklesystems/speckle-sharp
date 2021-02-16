@@ -478,18 +478,18 @@ namespace Objects.Converter.Revit
       //  match = types.First();
       //}
 
-      if (family != null && type != null)
+      if (!string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
       {
         match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
       }
 
       //some elements only have one family so we didn't add such prop our schema
-      if (match == null && family == null && type != null)
+      if (match == null && string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
       {
         match = types.FirstOrDefault(x => x.Name == type);
       }
 
-      if (match == null && family != null) // try and match the family only.
+      if (match == null && !string.IsNullOrEmpty(family)) // try and match the family only.
       {
         match = types.FirstOrDefault(x => x.FamilyName == family);
         if (match != null) //inform user that the type is different!
@@ -770,8 +770,8 @@ namespace Objects.Converter.Revit
     {
       RenderMaterial material = null;
       var matId = element.GetMaterialIds(false).FirstOrDefault();
-      
-      if(matId == null)
+
+      if (matId == null)
       {
         // TODO: Fallback to display color or something? 
         return material;
@@ -781,7 +781,7 @@ namespace Objects.Converter.Revit
       material = new RenderMaterial();
       material.opacity = 1 - revitMaterial.Transparency / 100f;
       material.diffuse = System.Drawing.Color.FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue).ToArgb();
-      
+
       return material;
     }
   }
