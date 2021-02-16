@@ -66,4 +66,21 @@
   </ItemGroup>
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- POST BUILD EVENTS START -->
+  <PropertyGroup>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+  </PropertyGroup>
+  <Target Name="AfterBuild">
+    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
+    <!--<CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />-->
+  </Target>
+  <Target Name="AfterBuildDebug">
+    <ItemGroup>
+      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+    </ItemGroup>
+    <Copy DestinationFolder="$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2021\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+  </Target>
+  <!--<Target Name="AfterBuildRelease">
+  </Target>-->
+  <!--END-->
 </Project>
