@@ -14,6 +14,7 @@ using Mesh = Objects.Geometry.Mesh;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Surface = Objects.Geometry.Surface;
+using Units = Speckle.Core.Kits.Units;
 
 namespace Objects.Converter.Revit
 {
@@ -47,10 +48,11 @@ namespace Objects.Converter.Revit
       return intPt;
     }
 
-    public Point PointToSpeckle(XYZ pt)
+    public Point PointToSpeckle(XYZ pt, string units = null)
     {
+      var u = units ?? ModelUnits;
       var extPt = ToExternalCoordinates(pt);
-      var pointToSpeckle = new Point(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), ModelUnits);
+      var pointToSpeckle = new Point(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), u);
       return pointToSpeckle;
     }
 
@@ -66,12 +68,13 @@ namespace Objects.Converter.Revit
       return DB.Plane.CreateByOriginAndBasis(PointToNative(plane.origin), VectorToNative(plane.xdir).Normalize(), VectorToNative(plane.ydir).Normalize());
     }
 
-    public Plane PlaneToSpeckle(DB.Plane plane)
+    public Plane PlaneToSpeckle(DB.Plane plane, string units = null)
     {
-      var origin = PointToSpeckle(plane.Origin);
-      var normal = new Vector(ScaleToSpeckle(plane.Normal.X), ScaleToSpeckle(plane.Normal.Y), ScaleToSpeckle(plane.Normal.Z), ModelUnits);
-      var xdir = new Vector(ScaleToSpeckle(plane.XVec.X), ScaleToSpeckle(plane.XVec.Y), ScaleToSpeckle(plane.XVec.Z), ModelUnits);
-      var ydir = new Vector(ScaleToSpeckle(plane.YVec.X), ScaleToSpeckle(plane.YVec.Y), ScaleToSpeckle(plane.YVec.Z), ModelUnits);
+      var u = units ?? ModelUnits;
+      var origin = PointToSpeckle(plane.Origin, u);
+      var normal = new Vector(ScaleToSpeckle(plane.Normal.X), ScaleToSpeckle(plane.Normal.Y), ScaleToSpeckle(plane.Normal.Z), u);
+      var xdir = new Vector(ScaleToSpeckle(plane.XVec.X), ScaleToSpeckle(plane.XVec.Y), ScaleToSpeckle(plane.XVec.Z), u);
+      var ydir = new Vector(ScaleToSpeckle(plane.YVec.X), ScaleToSpeckle(plane.YVec.Y), ScaleToSpeckle(plane.YVec.Z), u);
 
       return new Plane(origin, normal, xdir, ydir, ModelUnits);
     }
@@ -83,22 +86,24 @@ namespace Objects.Converter.Revit
         PointToNative(line.end));
     }
 
-    public Line LineToSpeckle(DB.Line line)
+    public Line LineToSpeckle(DB.Line line, string units = null)
     {
-      var l = new Line { units = ModelUnits };
-      l.start = PointToSpeckle(line.GetEndPoint(0));
-      l.end = PointToSpeckle(line.GetEndPoint(1));
+      var u = units ?? ModelUnits;
+      var l = new Line { units = u };
+      l.start = PointToSpeckle(line.GetEndPoint(0), u);
+      l.end = PointToSpeckle(line.GetEndPoint(1), u);
 
       l.length = line.Length;
       return l;
     }
 
-    public Circle CircleToSpeckle(DB.Arc arc)
+    public Circle CircleToSpeckle(DB.Arc arc, string units = null)
     {
       // see https://forums.autodesk.com/t5/revit-api-forum/how-to-retrieve-startangle-and-endangle-of-arc-object/td-p/7637128
+      var u = units ?? ModelUnits;
       var arcPlane = DB.Plane.CreateByNormalAndOrigin(arc.Normal, arc.Center);
 
-      var c = new Circle(PlaneToSpeckle(arcPlane), ScaleToSpeckle(arc.Radius), ModelUnits);
+      var c = new Circle(PlaneToSpeckle(arcPlane, u), ScaleToSpeckle(arc.Radius), ModelUnits);
       c.length = arc.Length;
       return c;
     }
@@ -127,9 +132,9 @@ namespace Objects.Converter.Revit
       //return Arc.Create( plane.Origin, (double) arc.Radius * Scale, startAngle, endAngle, plane.XVec, plane.YVec );
     }
 
-    public Arc ArcToSpeckle(DB.Arc arc)
+    public Arc ArcToSpeckle(DB.Arc arc, string units = null)
     {
-
+      var u = units ?? ModelUnits;
       // see https://forums.autodesk.com/t5/revit-api-forum/how-to-retrieve-startangle-and-endangle-of-arc-object/td-p/7637128
       var arcPlane = DB.Plane.CreateByNormalAndOrigin(arc.Normal, arc.Center);
 
@@ -146,10 +151,10 @@ namespace Objects.Converter.Revit
       double startAngle = dir0.AngleOnPlaneTo(arc.XDirection, arc.Normal);
       double endAngle = dir1.AngleOnPlaneTo(arc.XDirection, arc.Normal);
 
-      var a = new Arc(PlaneToSpeckle(arcPlane), ScaleToSpeckle(arc.Radius), startAngle, endAngle, endAngle - startAngle, ModelUnits);
-      a.endPoint = PointToSpeckle(end);
-      a.startPoint = PointToSpeckle(start);
-      a.midPoint = PointToSpeckle(mid);
+      var a = new Arc(PlaneToSpeckle(arcPlane, u), ScaleToSpeckle(arc.Radius), startAngle, endAngle, endAngle - startAngle, u);
+      a.endPoint = PointToSpeckle(end, u);
+      a.startPoint = PointToSpeckle(start, u);
+      a.midPoint = PointToSpeckle(mid, u);
       a.length = arc.Length;
 
       return a;
@@ -175,25 +180,26 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public Ellipse EllipseToSpeckle(DB.Ellipse ellipse)
+    public Ellipse EllipseToSpeckle(DB.Ellipse ellipse, string units = null)
     {
+      var u = units ?? ModelUnits;
       using (DB.Plane basePlane = DB.Plane.CreateByOriginAndBasis(ellipse.Center, ellipse.XDirection, ellipse.YDirection))
       {
         var trim = ellipse.IsBound ? new Interval(ellipse.GetEndParameter(0), ellipse.GetEndParameter(1)) : null;
 
         var ellipseToSpeckle = new Ellipse(
-          PlaneToSpeckle(basePlane),
+          PlaneToSpeckle(basePlane, u),
           ScaleToSpeckle(ellipse.RadiusX),
           ScaleToSpeckle(ellipse.RadiusY),
           new Interval(0, 2 * Math.PI),
           trim,
-          ModelUnits);
+          u);
         ellipseToSpeckle.length = ellipse.Length;
         return ellipseToSpeckle;
       }
     }
 
-    public Curve NurbsToSpeckle(DB.NurbSpline revitCurve)
+    public Curve NurbsToSpeckle(DB.NurbSpline revitCurve, string units = null)
     {
       var points = new List<double>();
       foreach (var p in revitCurve.CtrlPoints)
@@ -209,7 +215,7 @@ namespace Objects.Converter.Revit
       //speckleCurve.periodic = revitCurve.Period;
       speckleCurve.rational = revitCurve.isRational;
       speckleCurve.closed = RevitVersionHelper.IsCurveClosed(revitCurve);
-      speckleCurve.units = ModelUnits;
+      speckleCurve.units = units ?? ModelUnits;
       //speckleCurve.domain = new Interval(revitCurve.StartParameter(), revitCurve.EndParameter());
       speckleCurve.length = revitCurve.Length;
 
@@ -313,43 +319,44 @@ namespace Objects.Converter.Revit
       return loop;
     }
 
-    public ICurve CurveToSpeckle(DB.Curve curve)
+    public ICurve CurveToSpeckle(DB.Curve curve, string units = null)
     {
+      var u = units ?? ModelUnits;
       switch (curve)
       {
         case DB.Line line:
-          return LineToSpeckle(line);
+          return LineToSpeckle(line, u);
         case DB.Arc arc:
           if (!arc.IsBound)
           {
-            return (CircleToSpeckle(arc));
+            return (CircleToSpeckle(arc, u));
           }
-          return ArcToSpeckle(arc);
+          return ArcToSpeckle(arc, u);
         case DB.Ellipse ellipse:
-          return EllipseToSpeckle(ellipse);
+          return EllipseToSpeckle(ellipse, u);
         case DB.NurbSpline nurbs:
-          return NurbsToSpeckle(nurbs);
+          return NurbsToSpeckle(nurbs, u);
         case DB.HermiteSpline spline:
-          return HermiteSplineToSpeckle(spline);
+          return HermiteSplineToSpeckle(spline, u);
         default:
           throw new Exception("Cannot convert Curve of type " + curve.GetType());
       }
     }
 
-    public Polycurve CurveListToSpeckle(IList<DB.Curve> loop)
+    public Polycurve CurveListToSpeckle(IList<DB.Curve> loop, string units = null)
     {
       var polycurve = new Polycurve();
-      polycurve.units = ModelUnits;
+      polycurve.units = units ?? ModelUnits;
       polycurve.closed = loop.First().GetEndPoint(0).DistanceTo(loop.Last().GetEndPoint(1)) < 0.0164042; //5mm
       polycurve.length = loop.Sum(x => x.Length);
       polycurve.segments.AddRange(loop.Select(x => CurveToSpeckle(x)));
       return polycurve;
     }
 
-    public Polycurve CurveLoopToSpeckle(CurveLoop loop)
+    public Polycurve CurveLoopToSpeckle(CurveLoop loop, string units = null)
     {
       var polycurve = new Polycurve();
-      polycurve.units = ModelUnits;
+      polycurve.units = units ?? ModelUnits;
       polycurve.closed = !loop.IsOpen();
       polycurve.length = ScaleToSpeckle(loop.GetExactLength());
 
@@ -357,10 +364,10 @@ namespace Objects.Converter.Revit
       return polycurve;
     }
 
-    private ICurve HermiteSplineToSpeckle(HermiteSpline spline)
+    private ICurve HermiteSplineToSpeckle(HermiteSpline spline, string units = null)
     {
       var nurbs = DB.NurbSpline.Create(spline);
-      return NurbsToSpeckle(nurbs);
+      return NurbsToSpeckle(nurbs, units ?? ModelUnits);
     }
 
     public CurveArray PolylineToNative(Polyline polyline)
@@ -389,7 +396,7 @@ namespace Objects.Converter.Revit
       return curveArray;
     }
 
-    public Mesh MeshToSpeckle(DB.Mesh mesh)
+    public Mesh MeshToSpeckle(DB.Mesh mesh, string units = null)
     {
       var speckleMesh = new Mesh();
       foreach (var vert in mesh.Vertices)
@@ -407,7 +414,7 @@ namespace Objects.Converter.Revit
         speckleMesh.faces.AddRange(new int[] { (int)A, (int)B, (int)C });
       }
 
-      speckleMesh.units = ModelUnits;
+      speckleMesh.units = units ?? ModelUnits;
 
       return speckleMesh;
     }
@@ -454,7 +461,7 @@ namespace Objects.Converter.Revit
 
     }
 
-    public XYZ[] ArrayToPoints(IEnumerable<double> arr, string units)
+    public XYZ[] ArrayToPoints(IEnumerable<double> arr, string units = null)
     {
       if (arr.Count() % 3 != 0)
       {
@@ -487,7 +494,7 @@ namespace Objects.Converter.Revit
       return ixn.CrossProduct(xn).Normalize();
     }
 
-    public Geometry.Surface FaceToSpeckle(DB.Face face, DB.BoundingBoxUV uvBox)
+    public Geometry.Surface FaceToSpeckle(DB.Face face, DB.BoundingBoxUV uvBox, string units = null)
     {
 
 #if REVIT2021
@@ -495,15 +502,15 @@ namespace Objects.Converter.Revit
 #else
       var surf = DB.ExportUtils.GetNurbsSurfaceDataForFace(face);
 #endif
-      var spcklSurface = NurbsSurfaceToSpeckle(surf, face.GetBoundingBox());
+      var spcklSurface = NurbsSurfaceToSpeckle(surf, face.GetBoundingBox(), units ?? ModelUnits);
       return spcklSurface;
     }
 
-    public Surface NurbsSurfaceToSpeckle(DB.NurbsSurfaceData surface, DB.BoundingBoxUV uvBox)
+    public Surface NurbsSurfaceToSpeckle(DB.NurbsSurfaceData surface, DB.BoundingBoxUV uvBox, string units = null)
     {
       var result = new Surface();
-
-      result.units = ModelUnits;
+      var unit = units ?? ModelUnits;
+      result.units = unit;
 
       result.degreeU = surface.DegreeU;
       result.degreeV = surface.DegreeV;
@@ -533,11 +540,11 @@ namespace Objects.Converter.Revit
           if (surface.IsRational)
           {
             var w = weights[uOffset + v];
-            row.Add(new ControlPoint(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), w, ModelUnits));
+            row.Add(new ControlPoint(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), w, unit));
           }
           else
           {
-            row.Add(new ControlPoint(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), ModelUnits));
+            row.Add(new ControlPoint(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), unit));
           }
         }
         points.Add(row);
@@ -772,11 +779,11 @@ namespace Objects.Converter.Revit
       return result;
     }
 
-    public Brep BrepToSpeckle(Solid solid)
+    public Brep BrepToSpeckle(Solid solid, string units = null)
     {
 #if REVIT2021
       // TODO: Incomplete implementation!!
-
+      var u = units ?? ModelUnits;
       var brep = new Brep();
       brep.units = ModelUnits;
 
@@ -826,7 +833,7 @@ namespace Objects.Converter.Revit
             loopTrimIndices.Add(sTrimIndex);
 
             // Add curve and trim, increase index counters.
-            speckle2dCurves.Add(CurveToSpeckle(trim.As3DCurveInXYPlane()));
+            speckle2dCurves.Add(CurveToSpeckle(trim.As3DCurveInXYPlane(), Units.None));
             speckleTrims.Add(sTrim);
             curve2dIndex++;
             trimIndex++;
@@ -836,7 +843,7 @@ namespace Objects.Converter.Revit
             {
               // First time we visit this edge, add 3d curve and create new BrepEdge.
               var edgeCurve = edge.AsCurve();
-              speckle3dCurves[curve3dIndex] = CurveToSpeckle(edgeCurve);
+              speckle3dCurves[curve3dIndex] = CurveToSpeckle(edgeCurve, u);
               var sCurveIndex = curve3dIndex;
               curve3dIndex++;
 
@@ -893,40 +900,41 @@ namespace Objects.Converter.Revit
 #endif
     }
 
-    public Surface FaceToSpeckle(DB.Face face, out bool parametricOrientation, double relativeTolerance = 0.0)
+    public Surface FaceToSpeckle(DB.Face face, out bool parametricOrientation, double relativeTolerance = 0.0, string units = null)
     {
+      var u = units ?? ModelUnits;
       using (var surface = face.GetSurface())
         parametricOrientation = surface.OrientationMatchesParametricOrientation;
 
       switch (face)
       {
         case null: return null;
-        case PlanarFace planar: return FaceToSpeckle(planar, relativeTolerance);
-        case ConicalFace conical: return FaceToSpeckle(conical, relativeTolerance);
-        case CylindricalFace cylindrical: return FaceToSpeckle(cylindrical, relativeTolerance);
-        case RevolvedFace revolved: return FaceToSpeckle(revolved, relativeTolerance);
-        case RuledFace ruled: return FaceToSpeckle(ruled, relativeTolerance);
-        case HermiteFace hermite: return FaceToSpeckle(hermite, face.GetBoundingBox());
+        case PlanarFace planar: return FaceToSpeckle(planar, relativeTolerance, u);
+        case ConicalFace conical: return FaceToSpeckle(conical, relativeTolerance, u);
+        case CylindricalFace cylindrical: return FaceToSpeckle(cylindrical, relativeTolerance, u);
+        case RevolvedFace revolved: return FaceToSpeckle(revolved, relativeTolerance, u);
+        case RuledFace ruled: return FaceToSpeckle(ruled, relativeTolerance, u);
+        case HermiteFace hermite: return FaceToSpeckle(hermite, face.GetBoundingBox(), u);
         default: throw new NotImplementedException();
       }
     }
-    public Surface FaceToSpeckle(PlanarFace planarFace, double tolerance)
+    public Surface FaceToSpeckle(PlanarFace planarFace, double tolerance, string units = null)
     {
       throw new NotImplementedException();
     }
-    public Surface FaceToSpeckle(ConicalFace conicalFace, double tolerance)
+    public Surface FaceToSpeckle(ConicalFace conicalFace, double tolerance, string units = null)
     {
       throw new NotImplementedException();
     }
-    public Surface FaceToSpeckle(CylindricalFace cylindricalFace, double tolerance)
+    public Surface FaceToSpeckle(CylindricalFace cylindricalFace, double tolerance, string units = null)
     {
       throw new NotImplementedException();
     }
-    public Surface FaceToSpeckle(RevolvedFace revolvedFace, double tolerance)
+    public Surface FaceToSpeckle(RevolvedFace revolvedFace, double tolerance, string units = null)
     {
       throw new NotImplementedException();
     }
-    public Surface FaceToSpeckle(RuledFace ruledFace, double tolerance)
+    public Surface FaceToSpeckle(RuledFace ruledFace, double tolerance, string units = null)
     {
       throw new NotImplementedException();
     }
