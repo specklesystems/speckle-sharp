@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using GH_IO.Serialization;
+using Grasshopper;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
@@ -84,12 +85,11 @@ namespace ConnectorGrasshopper
 
       var dialog = new CreateSchemaObjectDialog();
       dialog.Owner = Grasshopper.Instances.EtoDocumentEditor;
-      var viewport = Grasshopper.Instances.ActiveCanvas.Viewport;
       var mouse = GH_Canvas.MousePosition;
-      dialog.Location = new Eto.Drawing.Point((int)viewport.MidPoint.X,(int)viewport.MidPoint.Y ); //approx the dialog half-size
+      dialog.Location = new Eto.Drawing.Point((int) ((mouse.X - 150) / dialog.Screen.LogicalPixelSize),(int) ((mouse.Y - 150) / dialog.Screen.LogicalPixelSize) ); //approx the dialog half-size
       
       dialog.ShowModal();
-
+    
       if (dialog.HasResult)
       {
         base.AddedToDocument(document);
