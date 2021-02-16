@@ -33,7 +33,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         Application.SystemVariableChanged += TrapWSCurrentChange;
       }
 
-      // set up bindings here? possible to subscribe to document events?
+      // set up bindings and subscribe to doument events
       SpeckleAutocadCommand.Bindings = new ConnectorBindingsAutocad();
       SpeckleAutocadCommand.Bindings.SetExecutorAndInit();
     }
@@ -111,8 +111,8 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       button.ToolTip = "Speckle Connector for AutoCAD Civil3D";
       button.Size = RibbonItemSize.Large;
       button.Orientation = Orientation.Vertical;
-      button.Image = LoadPngImgSource("Speckle.ConnectorAutoCAD.Resources.logo16.png");
-      button.LargeImage = LoadPngImgSource("Speckle.ConnectorAutoCAD.Resources.logo32.png");
+      button.Image = LoadPngImgSource("logo16.png");
+      button.LargeImage = LoadPngImgSource("logo32.png");
 
       // add command to the button
       button.CommandHandler = new ButtonCommandHandler();
@@ -126,8 +126,9 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     {
       try
       {
+        string resource = this.GetType().Assembly.GetManifestResourceNames().Where(o => o.EndsWith(sourceName)).FirstOrDefault();
         Assembly assembly = Assembly.GetExecutingAssembly();
-        Stream stream = assembly.GetManifestResourceStream(sourceName);
+        Stream stream = assembly.GetManifestResourceStream(resource);
         PngBitmapDecoder decoder = new PngBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
         ImageSource source = decoder.Frames[0];
         return source;
@@ -142,13 +143,11 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     {
       public event System.EventHandler CanExecuteChanged;
 
-      // the command parameter includes an extra space at the end to simulate pressing "enter"
       public void Execute(object parameter)
       {
         RibbonButton btn = parameter as RibbonButton;
         if (btn != null)
-          Application.DocumentManager.MdiActiveDocument.SendStringToExecute(
-            (string)btn.CommandParameter + " ", true, false, true);
+          SpeckleAutocadCommand.SpeckleCommand();
       }
 
       public bool CanExecute(object parameter) => true;

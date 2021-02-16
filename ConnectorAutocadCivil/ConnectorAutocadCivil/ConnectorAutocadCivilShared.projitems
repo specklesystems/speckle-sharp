@@ -19,6 +19,8 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo32.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="$(MSBuildThisFileDirectory)Resources\logo16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo16.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
