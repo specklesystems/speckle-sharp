@@ -242,7 +242,7 @@ workflows:
           connectorname: ConnectorRevit
 
   # AutoCAD & Civil3D Connector - Build/Test
-  connector_revit:
+  connector_autocadcivil:
     when: << pipeline.parameters.run_connector_autocadcivil >>
     jobs:
       - build-connector:
