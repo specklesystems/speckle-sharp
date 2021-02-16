@@ -6,7 +6,6 @@ using Speckle.ConnectorAutocadCivil.UI;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.ApplicationServices;
 
-[assembly: CommandClass(typeof(Speckle.ConnectorAutocadCivil.Entry.SpeckleAutocadCommand))]
 namespace Speckle.ConnectorAutocadCivil.Entry
 {
   public class SpeckleAutocadCommand
@@ -17,7 +16,6 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     /// <summary>
     /// Main command to initialize Speckle Connector
     /// </summary>
-    [CommandMethod("Speckle")]
     public static void SpeckleCommand()
     {
       try
