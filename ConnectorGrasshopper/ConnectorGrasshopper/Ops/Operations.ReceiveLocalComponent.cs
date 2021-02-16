@@ -25,7 +25,7 @@ namespace ConnectorGrasshopper.Ops
     public ISpeckleKit Kit;
     public ReceiveLocalComponent() : base("Local Receive", "LR",
       "Receives data locally, without the need of a Speckle Server. NOTE: updates will not be automatically received.",
-      ComponentCategories.PRIMARY_RIBBON, ComponentCategories.SEND_RECEIVE)
+      ComponentCategories.SECONDARY_RIBBON, ComponentCategories.LOCAL)
     {
       BaseWorker = new ReceiveLocalWorker(this);
       SetDefaultKitAndConverter();
@@ -44,8 +44,8 @@ namespace ConnectorGrasshopper.Ops
     {
       pManager.AddGenericParameter("Data", "D", "Data to send.", GH_ParamAccess.tree);
     }
-    
-    
+
+
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
@@ -104,7 +104,7 @@ namespace ConnectorGrasshopper.Ops
         Parent.Message = "Receiving...";
         var Converter = (Parent as ReceiveLocalComponent).Converter;
         var @base = Operations.Receive(localDataId).Result;
-      
+
         if (Converter.CanConvertToNative(@base))
         {
           var converted = Converter.ConvertToNative(@base);
