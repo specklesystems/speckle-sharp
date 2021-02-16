@@ -13,6 +13,7 @@ namespace Speckle.Core.Kits
     public const string Feet = "ft"; // smelly ones
     public const string Yards = "yd"; // smelly ones
     public const string Miles = "mi";
+    public const string None = "none";
 
     public static double GetConversionFactor(string from, string to)
     {
@@ -108,6 +109,8 @@ namespace Speckle.Core.Kits
             case Units.Yards: return 1759.99469184;
           }
           break;
+        case Units.None:
+          return 1;
       }
       return 1;
     }
@@ -150,6 +153,8 @@ namespace Speckle.Core.Kits
         case "mile":
         case "mi":
           return Units.Miles;
+        case "none":
+          return Units.None;
       }
       var e = new SpeckleException($"Cannot understand what unit {unit} is.");
       Log.CaptureException(e);
