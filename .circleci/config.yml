@@ -128,7 +128,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/latest.yml" -ItemType File -Value "version: $version.0" }
       - run: # Creates the inno installer
           name: InnoSetup
-          command: speckle-sharp-ci-tools/InnoSetup/ISCC.exe speckle-sharp-ci-tools/<< parameters.slug >>.iss     
+          command: speckle-sharp-ci-tools/InnoSetup/ISCC.exe speckle-sharp-ci-tools/<< parameters.slug >>.iss /Sbyparam=$p     
       - persist_to_workspace:
           root: ./
           paths:
