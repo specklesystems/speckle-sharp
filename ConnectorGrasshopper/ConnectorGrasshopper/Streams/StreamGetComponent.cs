@@ -15,8 +15,7 @@ namespace ConnectorGrasshopper.Streams
   public class StreamGetComponent : GH_Component
   {
     public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account", ComponentCategories.PRIMARY_RIBBON,
-      ComponentCategories.STREAMS)
-    { }
+      ComponentCategories.STREAMS) { }
 
     public override Guid ComponentGuid => new Guid("D66AFB58-A1BA-487C-94BF-AF0FFFBA6CE5");
 
@@ -149,7 +148,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview(Tracker.STREAM_DETAILS);
+      Tracker.TrackPageview(Tracker.STREAM_GET);
       base.BeforeSolveInstance();
     }
   }

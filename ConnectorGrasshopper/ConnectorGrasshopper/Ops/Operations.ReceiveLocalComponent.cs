@@ -45,7 +45,6 @@ namespace ConnectorGrasshopper.Ops
       pManager.AddGenericParameter("Data", "D", "Data to send.", GH_ParamAccess.tree);
     }
 
-
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
@@ -63,7 +62,7 @@ namespace ConnectorGrasshopper.Ops
 
     public void SetConverterFromKit(string kitName)
     {
-      if (kitName == Kit.Name) return;
+      if (kitName == Kit.Name)return;
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
@@ -86,14 +85,17 @@ namespace ConnectorGrasshopper.Ops
       }
     }
 
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview(Tracker.RECEIVE_LOCAL);
+      base.BeforeSolveInstance();
+    }
   }
   public class ReceiveLocalWorker : WorkerInstance
   {
     private GH_Structure<IGH_Goo> data;
     private string localDataId;
-    public ReceiveLocalWorker(GH_Component _parent) : base(_parent)
-    {
-    }
+    public ReceiveLocalWorker(GH_Component _parent) : base(_parent) { }
 
     public override WorkerInstance Duplicate() => new ReceiveLocalWorker(Parent);
 
