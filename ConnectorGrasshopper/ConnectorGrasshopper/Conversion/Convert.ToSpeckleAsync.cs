@@ -1,4 +1,8 @@
-﻿using ConnectorGrasshopper.Extras;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Windows.Forms;
+using ConnectorGrasshopper.Extras;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -7,10 +11,6 @@ using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Windows.Forms;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Conversion
@@ -65,7 +65,7 @@ namespace ConnectorGrasshopper.Conversion
 
     private void SetConverterFromKit(string kitName)
     {
-      if (kitName == Kit.Name) return;
+      if (kitName == Kit.Name)return;
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
@@ -119,7 +119,7 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("convert", "speckle");
+      Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
       base.BeforeSolveInstance();
     }
 
@@ -145,7 +145,7 @@ namespace ConnectorGrasshopper.Conversion
     {
       try
       {
-        if (CancellationToken.IsCancellationRequested) return;
+        if (CancellationToken.IsCancellationRequested)return;
 
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
@@ -153,9 +153,9 @@ namespace ConnectorGrasshopper.Conversion
           var path = Objects.Paths[branchIndex];
           foreach (var item in list)
           {
-            if (CancellationToken.IsCancellationRequested) return;
+            if (CancellationToken.IsCancellationRequested)return;
 
-            var converted = Utilities.TryConvertItemToSpeckle(item, Converter) as Base;
+            var converted = Utilities.TryConvertItemToSpeckle(item, Converter)as Base;
             ConvertedObjects.Append(new GH_SpeckleBase { Value = converted }, Objects.Paths[branchIndex]);
             ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
           }
@@ -176,14 +176,14 @@ namespace ConnectorGrasshopper.Conversion
 
     public override void SetData(IGH_DataAccess DA)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)return;
 
       DA.SetDataTree(0, ConvertedObjects);
     }
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)return;
       DA.DisableGapLogic();
       GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);

@@ -1,12 +1,12 @@
-﻿using GH_IO.Serialization;
+﻿using System;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
+using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
-using System;
-using System.Drawing;
-using System.Linq;
-using System.Windows.Forms;
 
 namespace ConnectorGrasshopper.Accounts
 {
@@ -51,9 +51,9 @@ namespace ConnectorGrasshopper.Accounts
       var defaultAccount = AccountManager.GetDefaultAccount();
       int index = 0, defaultAccountIndex = 0;
 
-      if(accounts.ToList().Count == 0)
+      if (accounts.ToList().Count == 0)
       {
-        ListItems.Add(new GH_ValueListItem("No accounts where found on this machine. Right-click for more options.",""));
+        ListItems.Add(new GH_ValueListItem("No accounts where found on this machine. Right-click for more options.", ""));
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
         SelectItem(0);
         return;
@@ -102,7 +102,7 @@ namespace ConnectorGrasshopper.Accounts
 
     public override bool Write(GH_IWriter writer)
     {
-      var selectedAccountId = SelectedItems[0].Expression.Trim(new char[] { '"' });
+      var selectedAccountId = SelectedItems[0].Expression.Trim(new char[ ] { '"' });
       var selectedAccount = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == selectedAccountId);
       if (selectedAccount != null)
       {
@@ -115,10 +115,9 @@ namespace ConnectorGrasshopper.Accounts
 
     public override void AddedToDocument(GH_Document document)
     {
-      Tracker.TrackPageview("accounts", "added");
+      Tracker.TrackPageview(Tracker.ACCOUNT_LIST);
       base.AddedToDocument(document);
     }
   }
-
 
 }

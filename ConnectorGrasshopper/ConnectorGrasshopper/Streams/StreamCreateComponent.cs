@@ -1,13 +1,13 @@
-﻿using ConnectorGrasshopper.Extras;
-using GH_IO.Serialization;
-using Grasshopper.Kernel;
-using Speckle.Core.Api;
-using Speckle.Core.Credentials;
-using System;
+﻿using System;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using ConnectorGrasshopper.Extras;
+using GH_IO.Serialization;
+using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
@@ -22,12 +22,11 @@ namespace ConnectorGrasshopper.Streams
     public StreamWrapper stream { get; set; } = null;
 
     public StreamCreateComponent() : base("Create Stream", "sCreate", "Create a new speckle stream.", ComponentCategories.PRIMARY_RIBBON,
-       ComponentCategories.STREAMS)
-    { }
+      ComponentCategories.STREAMS) { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-       pManager.AddTextParameter("Account", "A", "Account to be used when creating the stream.", GH_ParamAccess.item);
+      pManager.AddTextParameter("Account", "A", "Account to be used when creating the stream.", GH_ParamAccess.item);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -100,14 +99,13 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
-      Task.Run(async () =>
+      Task.Run(async() =>
       {
         var client = new Client(account);
         try
         {
           var streamId = await client.StreamCreate(new StreamCreateInput());
-          stream = new StreamWrapper
-          (
+          stream = new StreamWrapper(
             streamId,
             account.id,
             account.serverInfo.url
@@ -131,7 +129,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("stream", "create");
+      Tracker.TrackPageview(Tracker.STREAM_CREATE);
       base.BeforeSolveInstance();
     }
 

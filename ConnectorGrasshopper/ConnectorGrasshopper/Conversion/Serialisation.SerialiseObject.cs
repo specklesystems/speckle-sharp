@@ -1,13 +1,13 @@
-﻿using Grasshopper.Kernel;
+﻿using System;
+using System.Linq;
+using ConnectorGrasshopper.Extras;
+using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using System;
-using System.Linq;
-using ConnectorGrasshopper.Extras;
 
 namespace ConnectorGrasshopper.Conversion
 {
@@ -36,7 +36,7 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("serialization", "serialize");
+      Tracker.TrackPageview(Tracker.SERIALIZE);
       base.BeforeSolveInstance();
     }
   }
@@ -56,7 +56,7 @@ namespace ConnectorGrasshopper.Conversion
     {
       try
       {
-        if (CancellationToken.IsCancellationRequested) return;
+        if (CancellationToken.IsCancellationRequested)return;
 
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
@@ -64,7 +64,7 @@ namespace ConnectorGrasshopper.Conversion
           var path = Objects.Paths[branchIndex];
           foreach (var item in list)
           {
-            if (CancellationToken.IsCancellationRequested) return;
+            if (CancellationToken.IsCancellationRequested)return;
 
             if (item != null)
             {
@@ -105,7 +105,7 @@ namespace ConnectorGrasshopper.Conversion
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)return;
 
       GH_Structure<GH_SpeckleBase> _objects;
       DA.GetDataTree(0, out _objects);
@@ -122,10 +122,9 @@ namespace ConnectorGrasshopper.Conversion
       }
     }
 
-
     public override void SetData(IGH_DataAccess DA)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)return;
       DA.SetDataTree(0, ConvertedObjects);
     }
   }
