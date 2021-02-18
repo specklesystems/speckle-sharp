@@ -106,7 +106,14 @@ namespace SpeckleRhino
         return new List<StreamState>();
       }
 
-      return strings.Select(s => JsonConvert.DeserializeObject<StreamState>(Doc.Strings.GetValue("speckle", s))).ToList();
+      var states = strings.Select(s => JsonConvert.DeserializeObject<StreamState>(Doc.Strings.GetValue("speckle", s))).ToList();
+
+      if (states != null)
+      {
+        states.ForEach(x => x.Initialise(true));
+      }
+
+      return states;
     }
 
     #endregion
@@ -230,7 +237,7 @@ namespace SpeckleRhino
       };
 
       var layerName = $"{myStream.name}: {state.Branch.name} @ {commitId}";
-      layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty); // Rhino doesn't like emojis in layer names :( 
+      layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty).Trim(); // Rhino doesn't like emojis in layer names :( 
 
       var existingLayer = Doc.Layers.FindName(layerName);
 

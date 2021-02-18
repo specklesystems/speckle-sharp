@@ -1,4 +1,4 @@
-﻿﻿using Rhino;
+﻿using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
 using Speckle.DesktopUI;
@@ -14,17 +14,17 @@ namespace SpeckleRhino
     public SpeckleRhinoConnectorPlugin()
     {
       Instance = this;
-      RhinoApp.Idle += RhinoApp_Idle;
+      RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+      // RhinoApp.Idle += RhinoApp_Idle;
     }
 
-    // Makes speckle start on rhino startup. Perhaps this should be customisable? 
-    private void RhinoApp_Idle(object sender, System.EventArgs e)
+    private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
     {
-      RhinoApp.Idle -= RhinoApp_Idle;
       var bindings = new ConnectorBindingsRhino();
       if (bindings.GetStreamsInFile().Count > 0)
-        RhinoApp.RunScript("_Speckle", false);
+        SpeckleCommand.Instance.StartOrShowPanel();
     }
+
 
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
   }
@@ -48,7 +48,7 @@ namespace SpeckleRhino
       return Result.Success;
     }
 
-    private void StartOrShowPanel()
+    internal void StartOrShowPanel()
     {
       if (Bootstrapper != null)
       {
