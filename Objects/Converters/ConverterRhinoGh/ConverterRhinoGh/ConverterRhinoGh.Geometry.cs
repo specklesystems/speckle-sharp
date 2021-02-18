@@ -677,14 +677,11 @@ namespace Objects.Converter.RhinoGh
       var mySettings = MeshingParameters.FastRenderMesh;
       
       //brep.Compact();
-      brep.Trims.MatchEnds();
-      
-      RH.Mesh.CreateFromBrep(brep, mySettings).All(meshPart =>
-      {
-        joinedMesh.Append(meshPart);
-        return true;
-      });
-
+      //brep.Trims.MatchEnds();
+      joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
+      joinedMesh.Weld(Math.PI);
+      joinedMesh.Vertices.CombineIdentical(true,true);
+      joinedMesh.Compact();
       var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: Applications.Rhino, units: u);
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices
@@ -803,7 +800,7 @@ namespace Objects.Converter.RhinoGh
     /// <exception cref="Exception">Throws exception if the provenance is not Rhino</exception>
     public RH.Brep BrepToNative(Brep brep)
     {
-      var tol = 0.0;
+      var tol = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
       try
       {
         // TODO: Provenance exception is meaningless now, must change for provenance build checks.
