@@ -226,7 +226,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
           layerPrefix = Regex.Replace(layerPrefix, @"[^\u0000-\u007F]+", string.Empty); // emits emojis
 
           // delete existing commit layers
-          DeleteLayersWithPrefix(layerPrefix, tr);
+          try
+          {
+            DeleteLayersWithPrefix(layerPrefix, tr);
+          }
+          catch
+          {
+            RaiseNotification($"could not remove existing layers starting with {layerPrefix} before importing new geometry.");
+            state.Errors.Add(new Exception($"could not remove existing layers starting with {layerPrefix} before importing new geometry."));
+            updateProgressAction?.Invoke();
+          }
 
           // try and import geo
           HandleAndConvert(commitObject, tr, converter, layerPrefix, state);
@@ -238,6 +247,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return state;
     }
 
+   
     private void HandleAndConvert(object obj, AcadDb.Transaction tr, ISpeckleConverter converter, string layer, StreamState state, Action updateProgressAction = null)
     {
       if (obj is Base baseItem)
@@ -245,23 +255,34 @@ namespace Speckle.ConnectorAutocadCivil.UI
         if (converter.CanConvertToNative(baseItem))
         {
           // convert geo to native
-          var converted = converter.ConvertToNative(baseItem) as AcadDb.Entity;
-
-          // add geo to doc
-          if (converted != null)
+          try
           {
-            if (converted.IsNewObject)
-              converted.Append(layer, tr);
+            var converted = converter.ConvertToNative(baseItem) as AcadDb.Entity;
+            // add geo to doc
+            if (converted != null)
+            {
+              if (converted.IsNewObject)
+                converted.Append(layer, tr);
+            }
+            else
+            {
+              state.Errors.Add(new Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
+            }
           }
-          else
+
+          catch
           {
             state.Errors.Add(new Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
           }
+         
           updateProgressAction?.Invoke();
           return;
         }
-        else // this is in place to handle the top level commit base item
+        else 
         {
+          // this could be an unsupported item. send notification here if so
+
+          // this is in place to handle the top level commit base item
           foreach (var prop in baseItem.GetDynamicMembers())
           {
             var value = baseItem[prop];

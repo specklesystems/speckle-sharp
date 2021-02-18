@@ -14,7 +14,7 @@ namespace Objects.Geometry
 
     public Box bbox { get; set; }
 
-    public Point center { get; set; }
+    //public Point center { get; set; }
 
     public double area { get; set; }
 

@@ -4,6 +4,7 @@ using System.Reflection;
 using System.IO;
 using System.Windows.Media.Imaging;
 using System.Linq;
+using Forms = System.Windows.Forms;
 
 using Speckle.ConnectorAutocadCivil.UI;
 
@@ -20,21 +21,28 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     #region Initializing and termination
     public void Initialize()
     {
-      ribbon = ComponentManager.Ribbon;
-      if (ribbon != null) //the assembly was loaded using netload
+      try
       {
-        Create();
-      }
-      else
-      {
-        // load the custom ribbon on startup, but wait for ribbon control to be created
-        ComponentManager.ItemInitialized += new System.EventHandler<RibbonItemEventArgs>(ComponentManager_ItemInitialized);
-        Application.SystemVariableChanged += TrapWSCurrentChange;
-      }
+        ribbon = ComponentManager.Ribbon;
+        if (ribbon != null) //the assembly was loaded using netload
+        {
+          Create();
+        }
+        else
+        {
+          // load the custom ribbon on startup, but wait for ribbon control to be created
+          ComponentManager.ItemInitialized += new System.EventHandler<RibbonItemEventArgs>(ComponentManager_ItemInitialized);
+          Application.SystemVariableChanged += TrapWSCurrentChange;
+        }
 
-      // set up bindings and subscribe to doument events
-      SpeckleAutocadCommand.Bindings = new ConnectorBindingsAutocad();
-      SpeckleAutocadCommand.Bindings.SetExecutorAndInit();
+        // set up bindings and subscribe to doument events
+        SpeckleAutocadCommand.Bindings = new ConnectorBindingsAutocad();
+        SpeckleAutocadCommand.Bindings.SetExecutorAndInit();
+      }
+      catch(System.Exception e)
+      {
+        Forms.MessageBox.Show($"Add-in initialize context (true = application, false = doc): {Application.DocumentManager.IsApplicationContext.ToString()}. Error encountered: {e.ToString()}");
+      }
     }
 
     public void ComponentManager_ItemInitialized(object sender, RibbonItemEventArgs e)
