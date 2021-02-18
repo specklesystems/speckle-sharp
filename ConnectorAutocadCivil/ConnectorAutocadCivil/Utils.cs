@@ -14,8 +14,10 @@ namespace Speckle.ConnectorAutocadCivil
 
 #if AUTOCAD2021
     public static string AutocadAppName = Applications.Autocad2021;
+    public static string AppName = "AutoCAD";
 #elif CIVIL2021
     public static string AutocadAppName = Applications.Civil2021;
+    public static string AppName = "Civil 3D";
 #endif
 
     #region extension methods
@@ -110,5 +112,5 @@ namespace Speckle.ConnectorAutocadCivil
     }
     #endregion
   }
-  
+
 }
