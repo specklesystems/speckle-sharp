@@ -26,7 +26,7 @@ namespace Speckle.DesktopUI.Streams
       {
         SetAndNotify(ref _streamState, value);
 
-        Branch = StreamState.Stream.branches.items[ 0 ];
+        Branch = StreamState.Stream.branches.items[0];
         DisplayName = "Stream Details";
         _StreamName = StreamState.Stream.name;
         _StreamDescription = StreamState.Stream.description;
@@ -84,7 +84,7 @@ namespace Speckle.DesktopUI.Streams
     {
       try
       {
-        if ( _StreamName == "" )
+        if (_StreamName == "")
         {
           return;
         }
@@ -98,7 +98,7 @@ namespace Speckle.DesktopUI.Streams
         Globals.HostBindings.PersistAndUpdateStreamInFile(StreamState);
         Globals.Notify("Stream updated.");
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         Globals.Notify($"Failed to update stream.\nError: {e.Message}");
       }
@@ -118,7 +118,7 @@ namespace Speckle.DesktopUI.Streams
     {
       Tracker.TrackPageview("stream", "remove");
       _bindings.RemoveStreamFromFile(StreamState.Stream.id);
-      _events.Publish(new StreamRemovedEvent() {StreamId = StreamState.Stream.id});
+      _events.Publish(new StreamRemovedEvent() { StreamId = StreamState.Stream.id });
       RequestClose();
     }
 
@@ -126,13 +126,13 @@ namespace Speckle.DesktopUI.Streams
     {
       Tracker.TrackPageview("stream", "delete");
       var deleted = await _repo.DeleteStream(StreamState);
-      if ( !deleted )
+      if (!deleted)
       {
         DialogHost.CloseDialogCommand.Execute(null, null);
         return;
       }
 
-      _events.Publish(new StreamRemovedEvent() {StreamId = StreamState.Stream.id});
+      _events.Publish(new StreamRemovedEvent() { StreamId = StreamState.Stream.id });
       DialogHost.CloseDialogCommand.Execute(null, null);
       RequestClose();
     }
@@ -147,7 +147,7 @@ namespace Speckle.DesktopUI.Streams
           streamId = StreamState.Stream.id, userId = collaborator.id
         });
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         _bindings.RaiseNotification($"Error: {e.Message}");
         return;
@@ -166,20 +166,20 @@ namespace Speckle.DesktopUI.Streams
 
     public void OpenStreamInWeb(StreamState state)
     {
-      Tracker.TrackPageview("stream", "web");
+      Tracker.TrackPageview(Tracker.STREAM_VIEW);
       Link.OpenInBrowser($"{state.ServerUrl}/streams/{state.Stream.id}");
     }
 
     public void Handle(ApplicationEvent message)
     {
-      switch ( message.Type )
+      switch (message.Type)
       {
         case ApplicationEvent.EventType.DocumentOpened:
         case ApplicationEvent.EventType.DocumentClosed:
-        {
-          RequestClose();
-          break;
-        }
+          {
+            RequestClose();
+            break;
+          }
         default:
           return;
       }
@@ -187,7 +187,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void Handle(StreamUpdatedEvent message)
     {
-      if ( message.StreamId != StreamState.Stream.id ) return;
+      if (message.StreamId != StreamState.Stream.id)return;
       await StreamState.RefreshStream();
     }
   }
