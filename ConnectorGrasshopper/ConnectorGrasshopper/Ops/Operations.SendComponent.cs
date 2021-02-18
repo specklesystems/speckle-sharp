@@ -55,6 +55,8 @@ namespace ConnectorGrasshopper.Ops
     public SendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.SEND_RECEIVE)
     {
+      Tracker.TrackPageview(Tracker.SEND_ADDED);
+
       BaseWorker = new SendComponentWorker(this);
       Attributes = new SendComponentAttributes(this);
 
@@ -218,7 +220,7 @@ namespace ConnectorGrasshopper.Ops
       }
 
       if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") &&
-          !JustPastedIn)
+        !JustPastedIn)
       {
         CurrentComponentState = "sending";
 
@@ -280,7 +282,7 @@ namespace ConnectorGrasshopper.Ops
 
     Action<string, Exception> ErrorAction;
 
-    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
+    List < (GH_RuntimeMessageLevel, string) > RuntimeMessages { get; set; } = new List < (GH_RuntimeMessageLevel, string) > ();
 
     List<StreamWrapper> OutputWrappers = new List<StreamWrapper>();
 
@@ -288,7 +290,7 @@ namespace ConnectorGrasshopper.Ops
 
     public SendComponentWorker(GH_Component p) : base(p)
     {
-      RuntimeMessages = new List<(GH_RuntimeMessageLevel, string)>();
+      RuntimeMessages = new List < (GH_RuntimeMessageLevel, string) > ();
     }
 
     public override WorkerInstance Duplicate() => new SendComponentWorker(Parent);
@@ -390,12 +392,13 @@ namespace ConnectorGrasshopper.Ops
             try
             {
               acc = sw.GetAccount().Result;
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
               Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
               continue;
             }
-            
+
             var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");
             Transports.Add(serverTransport);
@@ -439,7 +442,7 @@ namespace ConnectorGrasshopper.Ops
 
         // Part 3: actually send stuff!
 
-        var task = Task.Run(async () =>
+        var task = Task.Run(async() =>
         {
           if (CancellationToken.IsCancellationRequested)
           {
@@ -453,8 +456,8 @@ namespace ConnectorGrasshopper.Ops
             CancellationToken,
             Transports,
             useDefaultCache: ((SendComponent)Parent).UseDefaultCache,
-            onProgressAction: InternalProgressAction,
-            onErrorAction: ErrorAction);
+            onProgressAction : InternalProgressAction,
+            onErrorAction : ErrorAction);
 
           // 3.2 Create commits for any server transport present
 
@@ -549,7 +552,7 @@ namespace ConnectorGrasshopper.Ops
         return;
       }
 
-      foreach (var (level, message) in RuntimeMessages)
+      foreach (var(level, message)in RuntimeMessages)
       {
         Parent.AddRuntimeMessage(level, message);
       }
@@ -590,9 +593,7 @@ namespace ConnectorGrasshopper.Ops
     private bool _selected;
     Rectangle ButtonBounds { get; set; }
 
-    public SendComponentAttributes(GH_Component owner) : base(owner)
-    {
-    }
+    public SendComponentAttributes(GH_Component owner) : base(owner) { }
 
     public override bool Selected
     {

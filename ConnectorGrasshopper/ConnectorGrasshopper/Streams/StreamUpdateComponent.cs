@@ -14,8 +14,7 @@ namespace ConnectorGrasshopper.Streams
   public class StreamUpdateComponent : GH_Component
   {
     public StreamUpdateComponent() : base("Stream Update", "sUp", "Updates a stream with new details", ComponentCategories.PRIMARY_RIBBON,
-         ComponentCategories.STREAMS)
-    { }
+      ComponentCategories.STREAMS) { }
     public override Guid ComponentGuid => new Guid("F83B9956-1A5C-4844-B7F6-87A956105831");
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -24,14 +23,14 @@ namespace ConnectorGrasshopper.Streams
       var name = pManager.AddTextParameter("Name", "N", "Name of the stream.", GH_ParamAccess.item);
       var desc = pManager.AddTextParameter("Description", "D", "Description of the stream", GH_ParamAccess.item);
       var isPublic = pManager.AddBooleanParameter("Public", "P", "True if the stream is to be publicly available.",
-          GH_ParamAccess.item);
+        GH_ParamAccess.item);
       Params.Input[name].Optional = true;
       Params.Input[desc].Optional = true;
       Params.Input[isPublic].Optional = true;
     }
-    
+
     protected override Bitmap Icon => Properties.Resources.StreamUpdate;
-    
+
     public override GH_Exposure Exposure => GH_Exposure.tertiary;
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -50,16 +49,16 @@ namespace ConnectorGrasshopper.Streams
       string description = null;
       bool isPublic = false;
 
-      if (!DA.GetData(0, ref ghSpeckleStream)) return;
+      if (!DA.GetData(0, ref ghSpeckleStream))return;
       DA.GetData(1, ref name);
       DA.GetData(2, ref description);
       DA.GetData(3, ref isPublic);
-      
+
       var streamWrapper = ghSpeckleStream.Value;
       if (error != null)
       {
         Message = null;
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error,error.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, error.Message);
         error = null;
       }
       else if (stream == null)
@@ -71,11 +70,11 @@ namespace ConnectorGrasshopper.Streams
           return;
         }
         Message = "Fetching";
-        Task.Run(async () =>
+        Task.Run(async() =>
         {
-          var account = streamWrapper.AccountId == null
-                      ? AccountManager.GetDefaultAccount()
-                      : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == streamWrapper.AccountId);
+          var account = streamWrapper.AccountId == null ?
+            AccountManager.GetDefaultAccount() :
+            AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == streamWrapper.AccountId);
 
           if (account == null)
           {
@@ -89,12 +88,12 @@ namespace ConnectorGrasshopper.Streams
           {
             stream = await client.StreamGet(streamWrapper.StreamId);
             input.id = streamWrapper.StreamId;
-            
+
             input.name = name ?? stream.name;
             input.description = description ?? stream.description;
-            
-            if (stream.isPublic != isPublic) input.isPublic = isPublic;
-            
+
+            if (stream.isPublic != isPublic)input.isPublic = isPublic;
+
             await client.StreamUpdate(input);
           }
           catch (Exception e)
@@ -103,7 +102,7 @@ namespace ConnectorGrasshopper.Streams
           }
           finally
           {
-            Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { ExpireSolution(true); });
+            Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
           }
 
         });
@@ -117,10 +116,9 @@ namespace ConnectorGrasshopper.Streams
     }
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("stream", "update");
+      Tracker.TrackPageview(Tracker.STREAM_UPDATE);
       base.BeforeSolveInstance();
     }
-
 
   }
 }

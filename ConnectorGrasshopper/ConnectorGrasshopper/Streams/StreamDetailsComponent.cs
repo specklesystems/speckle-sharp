@@ -182,7 +182,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("stream", "details");
+      Tracker.TrackPageview(Tracker.STREAM_DETAILS);
       base.BeforeSolveInstance();
     }
   }

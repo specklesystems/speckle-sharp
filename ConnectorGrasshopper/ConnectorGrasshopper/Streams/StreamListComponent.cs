@@ -15,9 +15,8 @@ namespace ConnectorGrasshopper.Streams
   public class StreamListComponent : GH_Component
   {
     public StreamListComponent() : base("Stream List", "sList", "Lists all the streams for this account", ComponentCategories.PRIMARY_RIBBON,
-       ComponentCategories.STREAMS)
-    {
-    }
+      ComponentCategories.STREAMS)
+    { }
 
     public override Guid ComponentGuid => new Guid("BE790AF4-1834-495B-BE68-922B42FD53C7");
     protected override Bitmap Icon => Properties.Resources.StreamList;
@@ -65,8 +64,8 @@ namespace ConnectorGrasshopper.Streams
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50.");
         }
 
-        var account = string.IsNullOrEmpty(accountId)  ? AccountManager.GetDefaultAccount()
-          : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
+        var account = string.IsNullOrEmpty(accountId) ? AccountManager.GetDefaultAccount() :
+          AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
 
         if (accountId == null)
         {
@@ -81,7 +80,7 @@ namespace ConnectorGrasshopper.Streams
 
         Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
-        Task.Run(async () =>
+        Task.Run(async() =>
         {
           try
           {
@@ -116,7 +115,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("stream", "list");
+      Tracker.TrackPageview(Tracker.STREAM_LIST);
       base.BeforeSolveInstance();
     }
   }

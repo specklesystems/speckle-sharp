@@ -1,4 +1,8 @@
-﻿using ConnectorGrasshopper.Extras;
+﻿using System;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
+using ConnectorGrasshopper.Extras;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -7,10 +11,6 @@ using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using System;
-using System.Drawing;
-using System.Linq;
-using System.Windows.Forms;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Conversion
@@ -78,7 +78,7 @@ namespace ConnectorGrasshopper.Conversion
       Converter = Kit.LoadConverter(Applications.Rhino);
       Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
 
-      ((ToNativeWorker) BaseWorker).Converter = Converter;
+      ((ToNativeWorker)BaseWorker).Converter = Converter;
 
       ExpireSolution(true);
     }
@@ -128,7 +128,7 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("convert", "native");
+      Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
       base.BeforeSolveInstance();
     }
   }
@@ -171,7 +171,7 @@ namespace ConnectorGrasshopper.Conversion
 
             var converted = Utilities.TryConvertItemToNative(item?.Value, Converter);
             ConvertedObjects.Append(converted, path);
-            ReportProgress(Id, (completed++ + 1) / (double) Objects.Count());
+            ReportProgress(Id, (completed++ + 1) / (double)Objects.Count());
           }
 
           branchIndex++;

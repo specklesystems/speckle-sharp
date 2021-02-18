@@ -106,7 +106,7 @@ namespace Speckle.DesktopUI.Streams
 
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
       var res = await DialogHost.Show(view, "RootDialogHost");
-      if (res == null) return;
+      if (res == null)return;
       args.RootStreamState.SwitchBranch((Branch)res);
     }
 
@@ -156,7 +156,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void OpenStreamInWeb(StreamState state)
     {
-      Tracker.TrackPageview("stream", "web");
+      Tracker.TrackPageview(Tracker.STREAM_VIEW);
       Link.OpenInBrowser($"{state.ServerUrl}/streams/{state.Stream.id}");
     }
 
@@ -241,10 +241,10 @@ namespace Speckle.DesktopUI.Streams
     }
 
     public static readonly DependencyProperty IsLeftClickEnabledProperty = DependencyProperty.RegisterAttached(
-        "IsLeftClickEnabled",
-        typeof(bool),
-        typeof(ContextMenuLeftClickBehavior),
-        new UIPropertyMetadata(false, OnIsLeftClickEnabledChanged));
+      "IsLeftClickEnabled",
+      typeof(bool),
+      typeof(ContextMenuLeftClickBehavior),
+      new UIPropertyMetadata(false, OnIsLeftClickEnabledChanged));
 
     private static void OnIsLeftClickEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
@@ -320,8 +320,7 @@ namespace Speckle.DesktopUI.Streams
     }
 
     public static readonly DependencyProperty DataProperty =
-        DependencyProperty.Register("Data", typeof(object), typeof(BindingProxy), new UIPropertyMetadata(null));
+      DependencyProperty.Register("Data", typeof(object), typeof(BindingProxy), new UIPropertyMetadata(null));
   }
-
 
 }
