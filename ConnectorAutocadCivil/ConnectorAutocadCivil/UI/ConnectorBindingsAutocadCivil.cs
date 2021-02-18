@@ -234,11 +234,39 @@ namespace Speckle.ConnectorAutocadCivil.UI
           {
             RaiseNotification($"could not remove existing layers starting with {layerPrefix} before importing new geometry.");
             state.Errors.Add(new Exception($"could not remove existing layers starting with {layerPrefix} before importing new geometry."));
-            updateProgressAction?.Invoke();
           }
 
-          // try and import geo
-          HandleAndConvert(commitObject, tr, converter, layerPrefix, state);
+          // flatten the commit object to retrieve children objs
+          var commitObjs = FlattenCommitObject(commitObject, converter, layerPrefix, state);
+
+          foreach (var commitObj in commitObjs)
+          {
+            // create the object's bake layer if it doesn't already exist
+            Base obj = commitObj.Item1;
+            string layerName = commitObj.Item2;
+
+            AcadDb.LayerTableRecord layer = GetOrMakeLayer(layerName, tr);
+            if (layer == null)
+            {
+              RaiseNotification($"could not create layer {layerName} to bake objects into.");
+              state.Errors.Add(new Exception($"could not create layer {layerName} to bake objects into."));
+            }
+
+            // convert obj and add to doc
+            // try catch to prevent memory access violation crash in case a conversion goes wrong
+            try
+            {
+              var converted = converter.ConvertToNative(obj) as AcadDb.Entity;
+              if (converted != null)
+                  converted.Append(layerName, tr);
+              else
+                state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+            }
+            catch
+            {
+              state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+            }
+          }
 
           tr.Commit();
         }
@@ -247,79 +275,63 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return state;
     }
 
-   
-    private void HandleAndConvert(object obj, AcadDb.Transaction tr, ISpeckleConverter converter, string layer, StreamState state, Action updateProgressAction = null)
+    /// <summary>
+    /// Recurses through the commit object and flattens it. 
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <param name="converter"></param>
+    /// <returns>List of Base objects with their bake layers</returns>
+    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state)
     {
-      if (obj is Base baseItem)
+      var objects = new List<Tuple<Base, string>>();
+
+      if (obj is Base @base)
       {
-        if (converter.CanConvertToNative(baseItem))
+        if (converter.CanConvertToNative(@base))
         {
-          // convert geo to native
-          try
-          {
-            var converted = converter.ConvertToNative(baseItem) as AcadDb.Entity;
-            // add geo to doc
-            if (converted != null)
-            {
-              if (converted.IsNewObject)
-                converted.Append(layer, tr);
-            }
-            else
-            {
-              state.Errors.Add(new Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
-            }
-          }
-
-          catch
-          {
-            state.Errors.Add(new Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
-          }
-         
-          updateProgressAction?.Invoke();
-          return;
+          objects.Add(new Tuple<Base, string>(@base, layer));
+          return objects;
         }
-        else 
+        else
         {
-          // this could be an unsupported item. send notification here if so
+          if (@base.GetDynamicMembers().Count() == 0) // this was an unsupported geo
+            state.Errors.Add(new Exception($"Recieving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
 
-          // this is in place to handle the top level commit base item
-          foreach (var prop in baseItem.GetDynamicMembers())
+          foreach (var prop in @base.GetDynamicMembers())
           {
-            var value = baseItem[prop];
+            // get acad bake layer name
             string objLayerName;
             if (prop.StartsWith("@"))
               objLayerName = prop.Remove(0, 1);
             else
               objLayerName = prop;
-
-            // create the ac layer if it doesn't already exist
             string acLayerName = $"{layer}${objLayerName}";
-            AcadDb.LayerTableRecord objLayer = GetOrMakeLayer(acLayerName, tr);
-            if (objLayer == null)
-            {
-              RaiseNotification($"could not create layer {acLayerName} to bake objects into.");
-              state.Errors.Add(new Exception($"could not create layer {acLayerName} to bake objects into."));
-              updateProgressAction?.Invoke();
-              return;
-            }
-            HandleAndConvert(value, tr, converter, acLayerName, state, updateProgressAction);
+
+            objects.AddRange(FlattenCommitObject(@base[prop], converter, acLayerName, state));
           }
+          return objects;
         }
       }
 
       if (obj is List<object> list)
       {
         foreach (var listObj in list)
-          HandleAndConvert(listObj, tr, converter, layer, state, updateProgressAction);
-        return;
+        {
+          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state));
+        }
+        return objects;
       }
 
       if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
-          HandleAndConvert(kvp.Value, tr, converter, layer, state, updateProgressAction);
-        return;
+        {
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter, layer, state));
+        }
+        return objects;
       }
+
+      return objects;
     }
 
     private void DeleteLayersWithPrefix(string prefix, AcadDb.Transaction tr)
@@ -368,27 +380,31 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       AcadDb.LayerTableRecord layer = null;
 
-      AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
-      if (lyrTbl.Has(layerName))
+      try
       {
-        layer = (AcadDb.LayerTableRecord)tr.GetObject(lyrTbl[layerName], AcadDb.OpenMode.ForRead);
+        AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
+        if (lyrTbl.Has(layerName))
+        {
+          layer = (AcadDb.LayerTableRecord)tr.GetObject(lyrTbl[layerName], AcadDb.OpenMode.ForRead);
+        }
+        else
+        {
+          lyrTbl.UpgradeOpen();
+
+          // make a new layer
+          var _layer = new AcadDb.LayerTableRecord();
+
+          // Assign the layer properties
+          _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(Color.Blue);
+          _layer.Name = layerName;
+
+          // Append the new layer to the layer table and the transaction
+          lyrTbl.Add(_layer);
+          tr.AddNewlyCreatedDBObject(_layer, true);
+          layer = _layer;
+        }
       }
-      else
-      {
-        lyrTbl.UpgradeOpen();
-
-        // make a new layer
-        var _layer = new AcadDb.LayerTableRecord();
-
-        // Assign the layer properties
-        _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(Color.Blue);
-        _layer.Name = layerName;
-
-        // Append the new layer to the layer table and the transaction
-        lyrTbl.Add(_layer);
-        tr.AddNewlyCreatedDBObject(_layer, true);
-        layer = _layer;
-      }
+      catch { }
 
       return layer;
     }
@@ -443,11 +459,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
 
         // convert geo to speckle base
+        if (!converter.CanConvertToSpeckle(obj))
+        {
+          state.Errors.Add(new Exception($"Skipping object {autocadObjectHandle}, {obj.GetType()} type not supported"));
+          continue;
+        }
         Base converted = converter.ConvertToSpeckle(obj);
 
         if (converted == null)
         {
-          state.Errors.Add(new Exception($"Failed to find convert object ${autocadObjectHandle} of type ${type}."));
+          state.Errors.Add(new Exception($"Failed to convert object ${autocadObjectHandle} of type ${type}."));
           continue;
         }
 

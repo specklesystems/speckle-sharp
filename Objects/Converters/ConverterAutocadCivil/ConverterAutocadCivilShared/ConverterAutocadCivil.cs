@@ -169,10 +169,6 @@ namespace Objects.Converter.AutocadCivil
     /// </summary>
     /// <param name="obj">DB Object to be converted.</param>
     /// <returns></returns>
-    /// <remarks>
-    /// faster way but less readable method is to check object class name string: obj.ObjectId.ObjectClass.DxfName
-    /// https://spiderinnet1.typepad.com/blog/2012/04/various-ways-to-check-object-types-in-autocad-net.html
-    /// </remarks>
     public Base ObjectToSpeckle(DBObject obj)
     {
       switch (obj)

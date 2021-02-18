@@ -83,8 +83,7 @@ namespace Objects.Converter.AutocadCivil
       var normal = VectorToNative(ellipse.plane.normal);
       var majorAxis = ScaleToNative((double)ellipse.firstRadius, ellipse.units) * VectorToNative(ellipse.plane.xdir);
       var radiusRatio =(double)ellipse.secondRadius / (double)ellipse.firstRadius;
-      var _ellipse = new AcadDB.Ellipse(PointToNative(ellipse.plane.origin), normal, majorAxis, radiusRatio, 0, 2 * Math.PI);
-      return _ellipse;
+      return new AcadDB.Ellipse(PointToNative(ellipse.plane.origin), normal, majorAxis, radiusRatio, 0, 2 * Math.PI);
     }
 
     // Rectangles
@@ -100,6 +99,9 @@ namespace Objects.Converter.AutocadCivil
       List<Point3d> vertices = new List<Point3d>();
       for (int i = 0; i < polyline.NumberOfVertices; i++)
         vertices.Add(polyline.GetPoint3dAt(i));
+      if (polyline.Closed)
+        vertices.Add(polyline.GetPoint3dAt(0));
+
       return new Polyline(PointsToFlatArray(vertices), ModelUnits) { closed = polyline.Closed };
     }
     public Polyline3d PolylineToNativeDB(Polyline polyline) // Polyline3d does NOT support curves
