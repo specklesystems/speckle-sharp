@@ -193,15 +193,15 @@ namespace SpeckleRhino
 
       string referencedObject = state.Commit.referencedObject;
 
+      var commitId = state.Commit.id;
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      if (state.Commit.id == "latest")
+      if (commitId == "latest")
       {
         var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
-        referencedObject = res.commits.items.FirstOrDefault().referencedObject;
+        var commit = res.commits.items.FirstOrDefault();
+        commitId = commit.id;
+        referencedObject = commit.referencedObject;
       }
-
-      var commit = state.Commit;
-
 
       var commitObject = await Operations.Receive(
         referencedObject,
@@ -229,7 +229,7 @@ namespace SpeckleRhino
         UpdateProgress(conversionProgressDict, state.Progress);
       };
 
-      var layerName = $"{myStream.name}: {state.Branch.name} @ {commit.id}";
+      var layerName = $"{myStream.name}: {state.Branch.name} @ {commitId}";
       layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty); // Rhino doesn't like emojis in layer names :( 
 
       var existingLayer = Doc.Layers.FindName(layerName);
