@@ -60,18 +60,24 @@ namespace Objects.Converter.RhinoGh
 
     public Base ConvertToSpeckle(object @object)
     {
+      if (@object is RhinoObject ro)
+      {
+        // special case for rhino objects that have a `SpeckleSchema` attribute
+        // this will change in the near future
+        if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null)
+        {
+          Base conversionResult = ConvertToSpeckleBE(ro);
+          if (conversionResult != null)
+          {
+            conversionResult["renderMaterial"] = GetMaterial(ro);
+            return conversionResult;
+          }
+        }
+        @object = ro.Geometry;
+      }
+
       switch (@object)
       {
-        case RhinoObject o:
-          // Tries to convert to BuiltElements schema first
-          Base conversionResult = ConvertToSpeckleBE(o);
-          
-          if (conversionResult == null)
-            conversionResult = ObjectToSpeckle(o);
-
-          conversionResult["renderMaterial"] = GetMaterial(o);
-
-          return conversionResult;
         case Point3d o:
           return PointToSpeckle(o);
 
@@ -113,7 +119,7 @@ namespace Objects.Converter.RhinoGh
 
         case RH.Polyline o:
           return PolylineToSpeckle(o) as Base;
-        
+
         case NurbsCurve o:
           return CurveToSpeckle(o) as Base;
 
@@ -122,7 +128,7 @@ namespace Objects.Converter.RhinoGh
 
         case PolyCurve o:
           return PolycurveToSpeckle(o);
-        
+
         case RH.Box o:
           return BoxToSpeckle(o);
 
@@ -171,7 +177,7 @@ namespace Objects.Converter.RhinoGh
           }
 
         case RH.Brep o:
-          switch(schema)
+          switch (schema)
           {
             case "Floor":
               return BrepToSpeckleFloor(o);
@@ -289,6 +295,11 @@ namespace Objects.Converter.RhinoGh
 
     public bool CanConvertToSpeckle(object @object)
     {
+      if (@object is RhinoObject ro)
+      {
+        @object = ro.Geometry;
+      }
+
       switch (@object)
       {
         case Point3d _:
@@ -439,7 +450,7 @@ namespace Objects.Converter.RhinoGh
       renderMaterial.opacity = 1 - material.Transparency;
       renderMaterial.metalness = material.Reflectivity;
 
-      if (material.Name.ToLower().Contains("glass") && renderMaterial.opacity == 0) 
+      if (material.Name.ToLower().Contains("glass") && renderMaterial.opacity == 0)
       {
         renderMaterial.opacity = 0.3;
       }

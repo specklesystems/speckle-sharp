@@ -431,6 +431,12 @@ namespace SpeckleRhino
           continue;
         }
 
+        if (!converter.CanConvertToSpeckle(obj))
+        {
+          state.Errors.Add(new Exception($"Objects of type ${obj.Geometry.ObjectType.ToString()} are not supported"));
+          continue;
+        }
+
         // this is where the rhino geometry gets converted
         Base converted = converter.ConvertToSpeckle(obj);
         if (converted == null)
