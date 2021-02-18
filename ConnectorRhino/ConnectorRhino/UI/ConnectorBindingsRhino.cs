@@ -106,7 +106,14 @@ namespace SpeckleRhino
         return new List<StreamState>();
       }
 
-      return strings.Select(s => JsonConvert.DeserializeObject<StreamState>(Doc.Strings.GetValue("speckle", s))).ToList();
+      var states = strings.Select(s => JsonConvert.DeserializeObject<StreamState>(Doc.Strings.GetValue("speckle", s))).ToList();
+
+      if (states != null)
+      {
+        states.ForEach(x => x.Initialise(true));
+      }
+
+      return states;
     }
 
     #endregion
@@ -193,15 +200,15 @@ namespace SpeckleRhino
 
       string referencedObject = state.Commit.referencedObject;
 
+      var commitId = state.Commit.id;
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      if (state.Commit.id == "latest")
+      if (commitId == "latest")
       {
         var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
-        referencedObject = res.commits.items.FirstOrDefault().referencedObject;
+        var commit = res.commits.items.FirstOrDefault();
+        commitId = commit.id;
+        referencedObject = commit.referencedObject;
       }
-
-      var commit = state.Commit;
-
 
       var commitObject = await Operations.Receive(
         referencedObject,
@@ -229,8 +236,8 @@ namespace SpeckleRhino
         UpdateProgress(conversionProgressDict, state.Progress);
       };
 
-      var layerName = $"{myStream.name}: {state.Branch.name} @ {commit.id}";
-      layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty); // Rhino doesn't like emojis in layer names :( 
+      var layerName = $"{myStream.name}: {state.Branch.name} @ {commitId}";
+      layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty).Trim(); // Rhino doesn't like emojis in layer names :( 
 
       var existingLayer = Doc.Layers.FindName(layerName);
 
