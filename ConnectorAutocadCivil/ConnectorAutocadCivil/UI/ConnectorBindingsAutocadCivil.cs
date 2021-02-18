@@ -90,7 +90,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           {
             var blckRef = (AcadDb.BlockReference)dbObj; // skip block references for now
           }
-          else 
+          else
             objs.Add(dbObj.Handle.ToString());
         }
         // TODO: this returns all the doc objects. Need to check for visibility later.
@@ -182,7 +182,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
       if (state.Commit.id == "latest")
       {
-        
+
         var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
         referencedObject = res.commits.items.FirstOrDefault().referencedObject;
       }
@@ -320,7 +320,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             Doc.Database.Clayer = defaultLayerID;
           }
           layer.IsLocked = false;
-          
+
           // delete all objects on this layer
           // TODO: this is ugly! is there a better way to delete layer objs instead of looping through each one?
           var bt = (AcadDb.BlockTable)tr.GetObject(Doc.Database.BlockTableId, AcadDb.OpenMode.ForRead);
@@ -421,6 +421,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
           continue;
         }
 
+        if (!converter.CanConvertToSpeckle(obj))
+        {
+          state.Errors.Add(new Exception($"Objects of type ${type} are not supported"));
+          continue;
+        }
+
         // convert geo to speckle base
         Base converted = converter.ConvertToSpeckle(obj);
 
@@ -510,7 +516,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var objs = new List<string>();
           foreach (var layerName in f.Selection)
           {
-            AcadDb.TypedValue[] layerType = new AcadDb.TypedValue[1] { new AcadDb.TypedValue((int)AcadDb.DxfCode.LayerName, layerName)};
+            AcadDb.TypedValue[] layerType = new AcadDb.TypedValue[1] { new AcadDb.TypedValue((int)AcadDb.DxfCode.LayerName, layerName) };
             PromptSelectionResult prompt = Doc.Editor.SelectAll(new SelectionFilter(layerType));
             if (prompt.Status == PromptStatus.OK)
               objs.AddRange(prompt.Value.GetHandles());

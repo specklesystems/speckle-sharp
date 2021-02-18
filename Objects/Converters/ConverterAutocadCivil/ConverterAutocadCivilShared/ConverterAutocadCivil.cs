@@ -142,17 +142,17 @@ namespace Objects.Converter.AutocadCivil
         case Polycurve o:
           return PolycurveToNativeDB(o);
 
-        case Interval o: // TODO: NOT TESTED
-          return IntervalToNative(o);
+        //case Interval o: // TODO: NOT TESTED
+        //  return IntervalToNative(o);
 
-        case Plane o: // TODO: NOT TESTED
-          return PlaneToNative(o);
+        //case Plane o: // TODO: NOT TESTED
+        //  return PlaneToNative(o);
 
-        case Curve o: // TODO: SPLINES AND NURBS NOT TESTED
-          return CurveToNativeDB(o);
+        //case Curve o: // TODO: SPLINES AND NURBS NOT TESTED
+        //  return CurveToNativeDB(o);
 
-        case Surface o: // TODO: NOT TESTED
-          return SurfaceToNative(o);
+        //case Surface o: // TODO: NOT TESTED
+        //  return SurfaceToNative(o);
 
         default:
           throw new NotSupportedException();
@@ -203,10 +203,10 @@ namespace Objects.Converter.AutocadCivil
         case AcadDB.Polyline2d o:
           return PolycurveToSpeckle(o);
 
-        #if CIVIL2021
+#if CIVIL2021
         case CivilDB.FeatureLine o:
           return FeatureLineToSpeckle(o);
-        #endif
+#endif
 
         default:
           return null;
@@ -218,9 +218,40 @@ namespace Objects.Converter.AutocadCivil
       switch (@object)
       {
         case DBObject o:
-          return CanConvertToSpeckle(o);
+          switch (o)
+          {
+            case DBPoint _:
+              return true;
+
+            case AcadDB.Line _:
+              return true;
+
+            case AcadDB.Arc _:
+              return true;
+
+            case AcadDB.Circle _:
+              return true;
+
+            case AcadDB.Ellipse _:
+              return true;
+
+            case AcadDB.Spline _:
+              return true;
+
+            case AcadDB.Polyline _:
+              return true;
+
+            case AcadDB.Polyline2d _:
+              return true;
+
+            default:
+              return false;
+          }
 
         case Acad.Geometry.Point3d _:
+          return true;
+
+        case Acad.Geometry.Vector3d _:
           return true;
 
         case Acad.Geometry.Plane _:
@@ -229,37 +260,24 @@ namespace Objects.Converter.AutocadCivil
         case Acad.Geometry.Line3d _:
           return true;
 
-        default:
-          return false;
-      }
-    }
-
-    public bool CanConvertToSpeckle(DBObject @object)
-    {
-      switch (@object)
-      {
-        case DBPoint _:
+        case Acad.Geometry.LineSegment3d _:
           return true;
 
-        case AcadDB.Line _:
+        case Acad.Geometry.CircularArc3d _:
           return true;
 
-        case AcadDB.Arc _:
+        case Acad.Geometry.Curve3d _:
           return true;
 
-        case AcadDB.Circle _:
-          return true;
-
-        case AcadDB.Ellipse _:
-          return true;
-
-        case AcadDB.Polyline _:
+        case Acad.Geometry.NurbSurface _:
           return true;
 
         default:
           return false;
+
       }
     }
+
 
     public bool CanConvertToNative(Base @object)
     {
@@ -271,9 +289,6 @@ namespace Objects.Converter.AutocadCivil
         case Line _:
           return true;
 
-        case Polyline _:
-          return true;
-
         case Arc _:
           return true;
 
@@ -283,11 +298,14 @@ namespace Objects.Converter.AutocadCivil
         case Ellipse _:
           return true;
 
+        case Polyline _:
+          return true;
+
         case Polycurve _:
           return true;
 
-        case Curve _:
-          return true;
+        //case Curve _:
+        //  return true;
 
         default:
           return false;
