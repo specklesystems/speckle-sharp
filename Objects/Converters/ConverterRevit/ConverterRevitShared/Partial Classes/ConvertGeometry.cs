@@ -52,7 +52,11 @@ namespace Objects.Converter.Revit
     {
       var u = units ?? ModelUnits;
       var extPt = ToExternalCoordinates(pt);
-      var pointToSpeckle = new Point(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), u);
+      var pointToSpeckle = new Point( 
+        u == Units.None ? extPt.X : ScaleToSpeckle(extPt.X),  
+        u == Units.None ? extPt.Y : ScaleToSpeckle(extPt.Y), 
+        u == Units.None ? extPt.Z :  ScaleToSpeckle(extPt.Z), 
+        u);
       return pointToSpeckle;
     }
 
@@ -76,7 +80,7 @@ namespace Objects.Converter.Revit
       var xdir = new Vector(ScaleToSpeckle(plane.XVec.X), ScaleToSpeckle(plane.XVec.Y), ScaleToSpeckle(plane.XVec.Z), u);
       var ydir = new Vector(ScaleToSpeckle(plane.YVec.X), ScaleToSpeckle(plane.YVec.Y), ScaleToSpeckle(plane.YVec.Z), u);
 
-      return new Plane(origin, normal, xdir, ydir, ModelUnits);
+      return new Plane(origin, normal, xdir, ydir, u);
     }
 
     public DB.Line LineToNative(Line line)
@@ -103,7 +107,7 @@ namespace Objects.Converter.Revit
       var u = units ?? ModelUnits;
       var arcPlane = DB.Plane.CreateByNormalAndOrigin(arc.Normal, arc.Center);
 
-      var c = new Circle(PlaneToSpeckle(arcPlane, u), ScaleToSpeckle(arc.Radius), ModelUnits);
+      var c = new Circle(PlaneToSpeckle(arcPlane, u), u == Units.None ? arc.Radius :  ScaleToSpeckle(arc.Radius), u);
       c.length = arc.Length;
       return c;
     }
@@ -151,7 +155,7 @@ namespace Objects.Converter.Revit
       double startAngle = dir0.AngleOnPlaneTo(arc.XDirection, arc.Normal);
       double endAngle = dir1.AngleOnPlaneTo(arc.XDirection, arc.Normal);
 
-      var a = new Arc(PlaneToSpeckle(arcPlane, u), ScaleToSpeckle(arc.Radius), startAngle, endAngle, endAngle - startAngle, u);
+      var a = new Arc(PlaneToSpeckle(arcPlane, u), u == Units.None ? arc.Radius : ScaleToSpeckle(arc.Radius), startAngle, endAngle, endAngle - startAngle, u);
       a.endPoint = PointToSpeckle(end, u);
       a.startPoint = PointToSpeckle(start, u);
       a.midPoint = PointToSpeckle(mid, u);
@@ -189,8 +193,8 @@ namespace Objects.Converter.Revit
 
         var ellipseToSpeckle = new Ellipse(
           PlaneToSpeckle(basePlane, u),
-          ScaleToSpeckle(ellipse.RadiusX),
-          ScaleToSpeckle(ellipse.RadiusY),
+          u == Units.None ? ellipse.RadiusX : ScaleToSpeckle(ellipse.RadiusX),
+          u == Units.None ? ellipse.RadiusY :ScaleToSpeckle(ellipse.RadiusY),
           new Interval(0, 2 * Math.PI),
           trim,
           u);
@@ -204,7 +208,10 @@ namespace Objects.Converter.Revit
       var points = new List<double>();
       foreach (var p in revitCurve.CtrlPoints)
       {
-        points.AddRange(new List<double> { ScaleToSpeckle(p.X), ScaleToSpeckle(p.Y), ScaleToSpeckle(p.Z) });
+        var x = units == Units.None ? p.X : ScaleToSpeckle(p.X);
+        var y = units == Units.None ? p.Y : ScaleToSpeckle(p.Y);
+        var z = units == Units.None ? p.Z : ScaleToSpeckle(p.Z);
+        points.AddRange(new List<double> { x, y, z });
       }
 
       Curve speckleCurve = new Curve();
@@ -358,7 +365,7 @@ namespace Objects.Converter.Revit
       var polycurve = new Polycurve();
       polycurve.units = units ?? ModelUnits;
       polycurve.closed = !loop.IsOpen();
-      polycurve.length = ScaleToSpeckle(loop.GetExactLength());
+      polycurve.length = units == Units.None ? loop.GetExactLength() : ScaleToSpeckle(loop.GetExactLength());
 
       polycurve.segments.AddRange(loop.Select(x => CurveToSpeckle(x)));
       return polycurve;
@@ -429,7 +436,7 @@ namespace Objects.Converter.Revit
 
       var tsb = new TessellatedShapeBuilder() { Fallback = fallback, Target = target, GraphicsStyleId = ElementId.InvalidElementId };
       tsb.OpenConnectedFaceSet(false);
-
+      
       var vertices = ArrayToPoints(mesh.vertices, mesh.units);
 
       int i = 0;
@@ -441,16 +448,20 @@ namespace Objects.Converter.Revit
         if (mesh.faces[i] == 0)
         { // triangle
           points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]] };
+          var face = new TessellatedFace(points, ElementId.InvalidElementId);
+          tsb.AddFace(face);
           i += 4;
         }
         else
         { // quad
-          points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]], vertices[mesh.faces[i + 4]] };
+          points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 4]] };
+          var face1 = new TessellatedFace(points, ElementId.InvalidElementId);
+          tsb.AddFace(face1);
+          points = new List<XYZ> { vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]], vertices[mesh.faces[i + 4]] };
+          var face2 = new TessellatedFace(points, ElementId.InvalidElementId);
+          tsb.AddFace(face2);
           i += 5;
         }
-
-        var face = new TessellatedFace(points, ElementId.InvalidElementId);
-        tsb.AddFace(face);
       }
 
       tsb.CloseConnectedFaceSet();
@@ -785,7 +796,7 @@ namespace Objects.Converter.Revit
       // TODO: Incomplete implementation!!
       var u = units ?? ModelUnits;
       var brep = new Brep();
-      brep.units = ModelUnits;
+      brep.units = u;
 
       if (solid is null || solid.Faces.IsEmpty) return null;
 
@@ -884,7 +895,7 @@ namespace Objects.Converter.Revit
 
       var mesh = new Mesh();
       (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(new List<Solid> { solid });
-      mesh.units = ModelUnits;
+      mesh.units = u;
       // TODO: Revit has no brep vertices. Must call 'brep.SetVertices()' in rhino when provenance is revit.
       // TODO: Set tolerances and flags in rhino when provenance is revit.
       brep.Faces = speckleFaces.Values.ToList();
