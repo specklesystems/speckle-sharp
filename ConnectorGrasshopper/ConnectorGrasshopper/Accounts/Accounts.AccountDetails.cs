@@ -45,7 +45,6 @@ namespace ConnectorGrasshopper.Streams
       pManager.AddTextParameter("User Company", "UC", "Name of the company this user belongs to", GH_ParamAccess.item);
       pManager.AddTextParameter("User Email", "UE", "Email of this account's user", GH_ParamAccess.item);
     }
-  
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
@@ -57,10 +56,10 @@ namespace ConnectorGrasshopper.Streams
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account provided. Trying with default account.");
       }
 
-      var account = string.IsNullOrEmpty(accountId)  ? AccountManager.GetDefaultAccount()
-        : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
+      var account = string.IsNullOrEmpty(accountId) ? AccountManager.GetDefaultAccount() :
+        AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
 
-      if(account == null)
+      if (account == null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find default account in this machine. Use the Speckle Manager to add an account.");
         return;
@@ -76,10 +75,10 @@ namespace ConnectorGrasshopper.Streams
       DA.SetData(6, account.userInfo.company);
       DA.SetData(7, account.userInfo.email);
     }
-    
+
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("account", "details");
+      Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
       base.BeforeSolveInstance();
     }
   }

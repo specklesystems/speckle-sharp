@@ -15,9 +15,8 @@ namespace ConnectorGrasshopper.Streams
   public class StreamGetComponent : GH_Component
   {
     public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account", ComponentCategories.PRIMARY_RIBBON,
-       ComponentCategories.STREAMS)
-    {
-    }
+      ComponentCategories.STREAMS)
+    { }
 
     public override Guid ComponentGuid => new Guid("D66AFB58-A1BA-487C-94BF-AF0FFFBA6CE5");
 
@@ -58,11 +57,11 @@ namespace ConnectorGrasshopper.Streams
       DA.DisableGapLogic();
       DA.GetData(0, ref ghIdWrapper);
       DA.GetData(1, ref accountId);
-      var account = string.IsNullOrEmpty(accountId)  ? AccountManager.GetDefaultAccount()
-        : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
+      var account = string.IsNullOrEmpty(accountId) ? AccountManager.GetDefaultAccount() :
+        AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
 
       var idWrapper = ghIdWrapper.Value;
-      if(account == null)
+      if (account == null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find default account in this machine. Use the Speckle Manager to add an account.");
         return;
@@ -89,7 +88,7 @@ namespace ConnectorGrasshopper.Streams
         }
 
         // Run
-        Task.Run(async () =>
+        Task.Run(async() =>
         {
           try
           {
@@ -150,7 +149,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("stream", "details");
+      Tracker.TrackPageview(Tracker.STREAM_DETAILS);
       base.BeforeSolveInstance();
     }
   }
