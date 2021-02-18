@@ -38,7 +38,7 @@ namespace Objects.Geometry
     public Box bbox { get; set; }
 
     /// <inheritdoc />
-    public Point center { get; set; }
+    //public Point center { get; set; }
 
     /// <inheritdoc />
     public double area { get; set; }
