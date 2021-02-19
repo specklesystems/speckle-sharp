@@ -1,11 +1,11 @@
 # Speckle Sharp: The Speckle 2.0 .NET SDK, Connectors, and Interoperability Kit
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
+[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Community forum users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square&logo=discourse&logoColor=white)](https://discourse.speckle.works) [![website](https://img.shields.io/badge/https://-speckle.systems-royalblue?style=flat-square)](https://speckle.systems) [![docs](https://img.shields.io/badge/docs-speckle.guide-orange?style=flat-square&logo=read-the-docs&logoColor=white)](https://speckle.guide/dev/)
 
 <details>
   <summary>What is Speckle?</summary>
   
-  
+
   Speckle is the Open Source Data Platform for AEC. Speckle allows you to say goodbye to files: we give you object-level control of what you share, infinite versioning history & changelogs. Read more on [our website](https://speckle.systems).
 
 </details>
@@ -41,6 +41,16 @@ The Speckle Connectors are plugins that embed with an application and provide th
 ### ➡️ [DesktopUI](DesktopUI)
 
 The DesktopUI project contains the reusable ui for all non-visual programming connectors. If you're embarking on developing a new connector, we recommend starting from here.
+
+
+
+## Documentation
+
+Comprehensive developer and user documentation can be found in our:
+
+#### 📚 [Speckle Docs website](https://speckle.guide/dev/)
+
+
 
 ## Developing & Debugging: First Step
 
