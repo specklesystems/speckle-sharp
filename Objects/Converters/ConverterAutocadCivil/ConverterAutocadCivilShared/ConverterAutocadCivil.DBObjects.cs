@@ -61,7 +61,6 @@ namespace Objects.Converter.AutocadCivil
     public Circle CircleToSpeckle(AcadDB.Circle circle)
     {
       var _circle = new Circle(PlaneToSpeckle(circle.GetPlane()), circle.Radius, ModelUnits);
-      _circle.center = PointToSpeckle(circle.Center); // This is essential on send, otherwise recieve will throw null point exception! Fix this by adding req constructor arg?
       return _circle;
 
     }
@@ -69,14 +68,13 @@ namespace Objects.Converter.AutocadCivil
     {
       var normal = VectorToNative(circle.plane.normal);
       var radius = ScaleToNative((double)circle.radius, circle.units);
-      return new AcadDB.Circle(PointToNative(circle.center), normal, radius);
+      return new AcadDB.Circle(PointToNative(circle.plane.origin), normal, radius);
     }
 
     // Ellipses
     public Ellipse EllipseToSpeckle(AcadDB.Ellipse ellipse)
     {
       var _ellipse = new Ellipse(PlaneToSpeckle(ellipse.GetPlane()), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits);
-      _ellipse.center = PointToSpeckle(ellipse.Center); // This is essential on send, otherwise recieve will throw null point exception! Fix this by adding req constructor arg?
       _ellipse.domain = new Interval(0, 1);
       return _ellipse;
     }
@@ -85,7 +83,7 @@ namespace Objects.Converter.AutocadCivil
       var normal = VectorToNative(ellipse.plane.normal);
       var majorAxis = ScaleToNative((double)ellipse.firstRadius, ellipse.units) * VectorToNative(ellipse.plane.xdir);
       var radiusRatio =(double)ellipse.secondRadius / (double)ellipse.firstRadius;
-      return new AcadDB.Ellipse(PointToNative(ellipse.center), normal, majorAxis, radiusRatio, 0, 2 * Math.PI);
+      return new AcadDB.Ellipse(PointToNative(ellipse.plane.origin), normal, majorAxis, radiusRatio, 0, 2 * Math.PI);
     }
 
     // Rectangles
@@ -101,6 +99,9 @@ namespace Objects.Converter.AutocadCivil
       List<Point3d> vertices = new List<Point3d>();
       for (int i = 0; i < polyline.NumberOfVertices; i++)
         vertices.Add(polyline.GetPoint3dAt(i));
+      if (polyline.Closed)
+        vertices.Add(polyline.GetPoint3dAt(0));
+
       return new Polyline(PointsToFlatArray(vertices), ModelUnits) { closed = polyline.Closed };
     }
     public Polyline3d PolylineToNativeDB(Polyline polyline) // Polyline3d does NOT support curves

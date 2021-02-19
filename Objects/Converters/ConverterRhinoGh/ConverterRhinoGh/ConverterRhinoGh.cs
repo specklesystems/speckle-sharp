@@ -60,87 +60,104 @@ namespace Objects.Converter.RhinoGh
 
     public Base ConvertToSpeckle(object @object)
     {
+      RenderMaterial material = null;
+      Base @base = null;
+      if (@object is RhinoObject ro)
+      {
+        material = GetMaterial(ro);
+        // special case for rhino objects that have a `SpeckleSchema` attribute
+        // this will change in the near future
+        if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null)
+        {
+          @base = ConvertToSpeckleBE(ro);
+          if (@base != null)
+          {
+            @base["renderMaterial"] = material;
+            return @base;
+          }
+        }
+        //conversion to built elem failed, revert to just send the base geom
+        @object = ro.Geometry;
+      }
+
       switch (@object)
       {
-        case RhinoObject o:
-          // Tries to convert to BuiltElements schema first
-          Base conversionResult = ConvertToSpeckleBE(o);
-          
-          if (conversionResult == null)
-            conversionResult = ObjectToSpeckle(o);
-
-          conversionResult["renderMaterial"] = GetMaterial(o);
-
-          return conversionResult;
         case Point3d o:
-          return PointToSpeckle(o);
+          @base = PointToSpeckle(o);
+          break;
 
         case Rhino.Geometry.Point o:
-          return PointToSpeckle(o);
+          @base = PointToSpeckle(o);
+          break;
 
         case Vector3d o:
-          return VectorToSpeckle(o);
-
+          @base = VectorToSpeckle(o);
+          break;
         case RH.Interval o:
-          return IntervalToSpeckle(o);
-
+          @base = IntervalToSpeckle(o);
+          break;
         case UVInterval o:
-          return Interval2dToSpeckle(o);
-
+          @base = Interval2dToSpeckle(o);
+          break;
         case RH.Line o:
-          return LineToSpeckle(o);
-
+          @base = LineToSpeckle(o);
+          break;
         case LineCurve o:
-          return LineToSpeckle(o);
-
+          @base = LineToSpeckle(o);
+          break;
         case RH.Plane o:
-          return PlaneToSpeckle(o);
-
+          @base = PlaneToSpeckle(o);
+          break;
         case Rectangle3d o:
-          return PolylineToSpeckle(o);
-
+          @base = PolylineToSpeckle(o);
+          break;
         case RH.Circle o:
-          return CircleToSpeckle(o);
-
+          @base = CircleToSpeckle(o);
+          break;
         case RH.Arc o:
-          return ArcToSpeckle(o);
-
+          @base = ArcToSpeckle(o);
+          break;
         case ArcCurve o:
-          return ArcToSpeckle(o);
-
+          @base = ArcToSpeckle(o);
+          break;
         case RH.Ellipse o:
-          return EllipseToSpeckle(o);
-
+          @base = EllipseToSpeckle(o);
+          break;
         case RH.Polyline o:
-          return PolylineToSpeckle(o) as Base;
-        
+          @base = PolylineToSpeckle(o) as Base;
+          break;
         case NurbsCurve o:
-          return CurveToSpeckle(o) as Base;
-
+          @base = CurveToSpeckle(o) as Base;
+          break;
         case PolylineCurve o:
-          return PolylineToSpeckle(o);
-
+          @base = PolylineToSpeckle(o);
+          break;
         case PolyCurve o:
-          return PolycurveToSpeckle(o);
-        
+          @base = PolycurveToSpeckle(o);
+          break;
         case RH.Box o:
-          return BoxToSpeckle(o);
-
+          @base = BoxToSpeckle(o);
+          break;
         case RH.Mesh o:
-          return MeshToSpeckle(o);
-
+          @base = MeshToSpeckle(o);
+          break;
         case RH.Extrusion o:
-          return BrepToSpeckle(o);
-
+          @base = BrepToSpeckle(o);
+          break;
         case RH.Brep o:
-          return BrepToSpeckle(o.DuplicateBrep());
-
+          @base = BrepToSpeckle(o.DuplicateBrep());
+          break;
         case NurbsSurface o:
-          return SurfaceToSpeckle(o);
-
+          @base = SurfaceToSpeckle(o);
+          break;
         default:
           throw new NotSupportedException();
       }
+
+      if (material != null)
+        @base["renderMaterial"] = material;
+
+      return @base;
     }
 
     public List<Base> ConvertToSpeckle(List<object> objects)
@@ -171,7 +188,7 @@ namespace Objects.Converter.RhinoGh
           }
 
         case RH.Brep o:
-          switch(schema)
+          switch (schema)
           {
             case "Floor":
               return BrepToSpeckleFloor(o);
@@ -289,6 +306,11 @@ namespace Objects.Converter.RhinoGh
 
     public bool CanConvertToSpeckle(object @object)
     {
+      if (@object is RhinoObject ro)
+      {
+        @object = ro.Geometry;
+      }
+
       switch (@object)
       {
         case Point3d _:
@@ -439,7 +461,7 @@ namespace Objects.Converter.RhinoGh
       renderMaterial.opacity = 1 - material.Transparency;
       renderMaterial.metalness = material.Reflectivity;
 
-      if (material.Name.ToLower().Contains("glass") && renderMaterial.opacity == 0) 
+      if (material.Name.ToLower().Contains("glass") && renderMaterial.opacity == 0)
       {
         renderMaterial.opacity = 0.3;
       }

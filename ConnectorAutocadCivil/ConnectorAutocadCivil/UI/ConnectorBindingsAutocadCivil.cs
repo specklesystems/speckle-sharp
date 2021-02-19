@@ -90,7 +90,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           {
             var blckRef = (AcadDb.BlockReference)dbObj; // skip block references for now
           }
-          else 
+          else
             objs.Add(dbObj.Handle.ToString());
         }
         // TODO: this returns all the doc objects. Need to check for visibility later.
@@ -182,7 +182,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
       if (state.Commit.id == "latest")
       {
-        
+
         var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
         referencedObject = res.commits.items.FirstOrDefault().referencedObject;
       }
@@ -226,10 +226,47 @@ namespace Speckle.ConnectorAutocadCivil.UI
           layerPrefix = Regex.Replace(layerPrefix, @"[^\u0000-\u007F]+", string.Empty); // emits emojis
 
           // delete existing commit layers
-          DeleteLayersWithPrefix(layerPrefix, tr);
+          try
+          {
+            DeleteLayersWithPrefix(layerPrefix, tr);
+          }
+          catch
+          {
+            RaiseNotification($"could not remove existing layers starting with {layerPrefix} before importing new geometry.");
+            state.Errors.Add(new Exception($"could not remove existing layers starting with {layerPrefix} before importing new geometry."));
+          }
 
-          // try and import geo
-          HandleAndConvert(commitObject, tr, converter, layerPrefix, state);
+          // flatten the commit object to retrieve children objs
+          var commitObjs = FlattenCommitObject(commitObject, converter, layerPrefix, state);
+
+          foreach (var commitObj in commitObjs)
+          {
+            // create the object's bake layer if it doesn't already exist
+            Base obj = commitObj.Item1;
+            string layerName = commitObj.Item2;
+
+            AcadDb.LayerTableRecord layer = GetOrMakeLayer(layerName, tr);
+            if (layer == null)
+            {
+              RaiseNotification($"could not create layer {layerName} to bake objects into.");
+              state.Errors.Add(new Exception($"could not create layer {layerName} to bake objects into."));
+            }
+
+            // convert obj and add to doc
+            // try catch to prevent memory access violation crash in case a conversion goes wrong
+            try
+            {
+              var converted = converter.ConvertToNative(obj) as AcadDb.Entity;
+              if (converted != null)
+                  converted.Append(layerName, tr);
+              else
+                state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+            }
+            catch
+            {
+              state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+            }
+          }
 
           tr.Commit();
         }
@@ -238,67 +275,63 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return state;
     }
 
-    private void HandleAndConvert(object obj, AcadDb.Transaction tr, ISpeckleConverter converter, string layer, StreamState state, Action updateProgressAction = null)
+    /// <summary>
+    /// Recurses through the commit object and flattens it. 
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <param name="converter"></param>
+    /// <returns>List of Base objects with their bake layers</returns>
+    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state)
     {
-      if (obj is Base baseItem)
-      {
-        if (converter.CanConvertToNative(baseItem))
-        {
-          // convert geo to native
-          var converted = converter.ConvertToNative(baseItem) as AcadDb.Entity;
+      var objects = new List<Tuple<Base, string>>();
 
-          // add geo to doc
-          if (converted != null)
-          {
-            if (converted.IsNewObject)
-              converted.Append(layer, tr);
-          }
-          else
-          {
-            state.Errors.Add(new Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
-          }
-          updateProgressAction?.Invoke();
-          return;
-        }
-        else // this is in place to handle the top level commit base item
+      if (obj is Base @base)
+      {
+        if (converter.CanConvertToNative(@base))
         {
-          foreach (var prop in baseItem.GetDynamicMembers())
+          objects.Add(new Tuple<Base, string>(@base, layer));
+          return objects;
+        }
+        else
+        {
+          if (@base.GetDynamicMembers().Count() == 0) // this was an unsupported geo
+            state.Errors.Add(new Exception($"Recieving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
+
+          foreach (var prop in @base.GetDynamicMembers())
           {
-            var value = baseItem[prop];
+            // get acad bake layer name
             string objLayerName;
             if (prop.StartsWith("@"))
               objLayerName = prop.Remove(0, 1);
             else
               objLayerName = prop;
-
-            // create the ac layer if it doesn't already exist
             string acLayerName = $"{layer}${objLayerName}";
-            AcadDb.LayerTableRecord objLayer = GetOrMakeLayer(acLayerName, tr);
-            if (objLayer == null)
-            {
-              RaiseNotification($"could not create layer {acLayerName} to bake objects into.");
-              state.Errors.Add(new Exception($"could not create layer {acLayerName} to bake objects into."));
-              updateProgressAction?.Invoke();
-              return;
-            }
-            HandleAndConvert(value, tr, converter, acLayerName, state, updateProgressAction);
+
+            objects.AddRange(FlattenCommitObject(@base[prop], converter, acLayerName, state));
           }
+          return objects;
         }
       }
 
       if (obj is List<object> list)
       {
         foreach (var listObj in list)
-          HandleAndConvert(listObj, tr, converter, layer, state, updateProgressAction);
-        return;
+        {
+          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state));
+        }
+        return objects;
       }
 
       if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
-          HandleAndConvert(kvp.Value, tr, converter, layer, state, updateProgressAction);
-        return;
+        {
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter, layer, state));
+        }
+        return objects;
       }
+
+      return objects;
     }
 
     private void DeleteLayersWithPrefix(string prefix, AcadDb.Transaction tr)
@@ -320,7 +353,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             Doc.Database.Clayer = defaultLayerID;
           }
           layer.IsLocked = false;
-          
+
           // delete all objects on this layer
           // TODO: this is ugly! is there a better way to delete layer objs instead of looping through each one?
           var bt = (AcadDb.BlockTable)tr.GetObject(Doc.Database.BlockTableId, AcadDb.OpenMode.ForRead);
@@ -347,27 +380,31 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       AcadDb.LayerTableRecord layer = null;
 
-      AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
-      if (lyrTbl.Has(layerName))
+      try
       {
-        layer = (AcadDb.LayerTableRecord)tr.GetObject(lyrTbl[layerName], AcadDb.OpenMode.ForRead);
+        AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
+        if (lyrTbl.Has(layerName))
+        {
+          layer = (AcadDb.LayerTableRecord)tr.GetObject(lyrTbl[layerName], AcadDb.OpenMode.ForRead);
+        }
+        else
+        {
+          lyrTbl.UpgradeOpen();
+
+          // make a new layer
+          var _layer = new AcadDb.LayerTableRecord();
+
+          // Assign the layer properties
+          _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(Color.Blue);
+          _layer.Name = layerName;
+
+          // Append the new layer to the layer table and the transaction
+          lyrTbl.Add(_layer);
+          tr.AddNewlyCreatedDBObject(_layer, true);
+          layer = _layer;
+        }
       }
-      else
-      {
-        lyrTbl.UpgradeOpen();
-
-        // make a new layer
-        var _layer = new AcadDb.LayerTableRecord();
-
-        // Assign the layer properties
-        _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(Color.Blue);
-        _layer.Name = layerName;
-
-        // Append the new layer to the layer table and the transaction
-        lyrTbl.Add(_layer);
-        tr.AddNewlyCreatedDBObject(_layer, true);
-        layer = _layer;
-      }
+      catch { }
 
       return layer;
     }
@@ -421,12 +458,23 @@ namespace Speckle.ConnectorAutocadCivil.UI
           continue;
         }
 
+        if (!converter.CanConvertToSpeckle(obj))
+        {
+          state.Errors.Add(new Exception($"Objects of type ${type} are not supported"));
+          continue;
+        }
+
         // convert geo to speckle base
+        if (!converter.CanConvertToSpeckle(obj))
+        {
+          state.Errors.Add(new Exception($"Skipping object {autocadObjectHandle}, {obj.GetType()} type not supported"));
+          continue;
+        }
         Base converted = converter.ConvertToSpeckle(obj);
 
         if (converted == null)
         {
-          state.Errors.Add(new Exception($"Failed to find convert object ${autocadObjectHandle} of type ${type}."));
+          state.Errors.Add(new Exception($"Failed to convert object ${autocadObjectHandle} of type ${type}."));
           continue;
         }
 
@@ -510,7 +558,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var objs = new List<string>();
           foreach (var layerName in f.Selection)
           {
-            AcadDb.TypedValue[] layerType = new AcadDb.TypedValue[1] { new AcadDb.TypedValue((int)AcadDb.DxfCode.LayerName, layerName)};
+            AcadDb.TypedValue[] layerType = new AcadDb.TypedValue[1] { new AcadDb.TypedValue((int)AcadDb.DxfCode.LayerName, layerName) };
             PromptSelectionResult prompt = Doc.Editor.SelectAll(new SelectionFilter(layerType));
             if (prompt.Status == PromptStatus.OK)
               objs.AddRange(prompt.Value.GetHandles());

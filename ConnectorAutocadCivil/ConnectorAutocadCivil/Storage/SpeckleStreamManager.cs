@@ -24,6 +24,10 @@ namespace Speckle.ConnectorAutocadCivil.Storage
     {
       Document Doc = Application.DocumentManager.MdiActiveDocument;
       var streams = new List<string>();
+
+      if (Doc == null)
+        return streams;
+
       using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
         var NOD = (DBDictionary)tr.GetObject(Doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);

@@ -40,7 +40,7 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
-    
+
 
     // Convenience methods point:
     public double[] PointToArray(Point3d pt)
@@ -394,7 +394,7 @@ namespace Objects.Converter.RhinoGh
       var myPoly = new PolylineCurve(points);
       if (poly.domain != null)
         myPoly.Domain = IntervalToNative(poly.domain);
-      
+
       return myPoly;
     }
 
@@ -461,10 +461,10 @@ namespace Objects.Converter.RhinoGh
 
         case Line line:
           return LineToNative(line);
-        
+
         case Polycurve polycurve:
           return PolycurveToNative(polycurve);
-        
+
         default:
           return null;
       }
@@ -476,7 +476,7 @@ namespace Objects.Converter.RhinoGh
       var tolerance = 0.0;
       Rhino.Geometry.Plane pln = Rhino.Geometry.Plane.Unset;
       curve.TryGetPlane(out pln, tolerance);
-      
+
       if (curve.IsCircle(tolerance) && curve.IsClosed)
       {
         curve.TryGetCircle(out var getObj,tolerance);
@@ -568,7 +568,7 @@ namespace Objects.Converter.RhinoGh
         nurbsCurve.Knots[j] = curve.knots[j];
       }
 
-      nurbsCurve.Domain = IntervalToNative(curve.domain ?? new Interval(0,1));
+      nurbsCurve.Domain = IntervalToNative(curve.domain ?? new Interval(0, 1));
       return nurbsCurve;
     }
 
@@ -579,7 +579,7 @@ namespace Objects.Converter.RhinoGh
       var speckleBox = new Box(PlaneToSpeckle(box.Plane, u), IntervalToSpeckle(box.X), IntervalToSpeckle(box.Y), IntervalToSpeckle(box.Z), u);
       speckleBox.area = box.Area;
       speckleBox.volume = box.Volume;
-      
+
       return speckleBox;
     }
 
@@ -653,12 +653,12 @@ namespace Objects.Converter.RhinoGh
     {
       var knots = curve.Knots;
       var degree = curve.Degree;
-      
+
       for (int i = degree; i < knots.Count - degree; i++)
       {
         var mult = knots.KnotMultiplicity(i);
         i += mult - 1;
-        if (mult > degree - 2) 
+        if (mult > degree - 2)
           return true;
       }
       return false;
@@ -675,15 +675,21 @@ namespace Objects.Converter.RhinoGh
       //brep.Repair(0.0); //should maybe use ModelAbsoluteTolerance ?
       var joinedMesh = new RH.Mesh();
       var mySettings = MeshingParameters.FastRenderMesh;
-      
+
       //brep.Compact();
+    
+      //brep.Trims.MatchEnds();
+      joinedMesh.Compact();
+        var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh),
+        provenance: Speckle.Core.Kits.Applications.Rhino, units: ModelUnits);
+
+      // Vertices, uv curves, 3d curves and surfaces
       //brep.Trims.MatchEnds();
       joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
       joinedMesh.Weld(Math.PI);
       joinedMesh.Vertices.CombineIdentical(true,true);
       joinedMesh.Compact();
       var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: Applications.Rhino, units: u);
-      // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices
         .Select(vertex => PointToSpeckle(vertex, u)).ToList();
       spcklBrep.Curve3D = brep.Curves3D
@@ -697,15 +703,15 @@ namespace Objects.Converter.RhinoGh
               nurbsCurve.IncreaseDegree(3);
             // Check for invalid multiplicity in the curves. This is also to better support Revit.
             var invalid = HasInvalidMultiplicity(nurbsCurve);
-          
+
             // If the curve has invalid multiplicity and is not closed, rebuild with same number of points and degree.
             // TODO: Figure out why closed curves don't like this hack?
             if (invalid && !nurbsCurve.IsClosed)
-              nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count,nurbsCurve.Degree,true);
+              nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count, nurbsCurve.Degree, true);
             nurbsCurve.Domain = curve3d.Domain;
             crv = nurbsCurve;
           }
-          var icrv=  ConvertToSpeckle(crv) as ICurve;
+          var icrv = ConvertToSpeckle(crv) as ICurve;
           return icrv;
 
           // And finally convert to speckle
@@ -765,14 +771,14 @@ namespace Objects.Converter.RhinoGh
             trim.Face.FaceIndex,
             trim.Loop.LoopIndex,
             trim.TrimCurveIndex,
-            (int) trim.IsoStatus,
-            (BrepTrimType) trim.TrimType,
+            (int)trim.IsoStatus,
+            (BrepTrimType)trim.TrimType,
             trim.IsReversed(),
             trim.StartVertex.VertexIndex,
             trim.EndVertex.VertexIndex
           );
           t.Domain = IntervalToSpeckle(trim.Domain);
-          
+
           return t;
         })
         .ToList();
@@ -780,16 +786,6 @@ namespace Objects.Converter.RhinoGh
       spcklBrep.bbox = BoxToSpeckle(new RH.Box(brep.GetBoundingBox(true)), u);
       spcklBrep.area = brep.GetArea();
       return spcklBrep;
-    }
-
-    /// <summary>
-    /// Converts a Rhino <see cref="Rhino.DocObjects.RhinoObject"/> instance to a Speckle <see cref="Base"/>
-    /// </summary>
-    /// <param name="obj">RhinoObject to be converted.</param>
-    /// <returns></returns>
-    public Base ObjectToSpeckle(RhinoObject obj)
-    {
-      return ConvertToSpeckle(obj.Geometry);
     }
 
     /// <summary>
@@ -849,7 +845,7 @@ namespace Objects.Converter.RhinoGh
         });
 
         newBrep.Repair(tol);
-        
+
         return newBrep;
       }
       catch (Exception e)
@@ -1059,44 +1055,44 @@ namespace Objects.Converter.RhinoGh
     }
 
     public NurbsSurface SurfaceToNative(Geometry.Surface surface)
+    {
+      // Create rhino surface
+      var points = surface.GetControlPoints().Select(l => l.Select(p =>
+        new ControlPoint(
+          ScaleToNative(p.x, p.units),
+          ScaleToNative(p.y, p.units),
+          ScaleToNative(p.z, p.units),
+          p.weight,
+          p.units)).ToList()).ToList();
+
+      var result = NurbsSurface.Create(3, surface.rational, surface.degreeU + 1, surface.degreeV + 1,
+        points.Count, points[0].Count);
+
+      // Set knot vectors
+      for (int i = 0; i < surface.knotsU.Count; i++)
       {
-        // Create rhino surface
-        var points = surface.GetControlPoints().Select(l => l.Select(p =>
-          new ControlPoint(
-            ScaleToNative(p.x, p.units),
-            ScaleToNative(p.y, p.units),
-            ScaleToNative(p.z, p.units),
-            p.weight,
-            p.units)).ToList()).ToList();
-
-        var result = NurbsSurface.Create(3, surface.rational, surface.degreeU + 1, surface.degreeV + 1,
-          points.Count, points[0].Count);
-
-        // Set knot vectors
-        for (int i = 0; i < surface.knotsU.Count; i++)
-        {
-          result.KnotsU[i] = surface.knotsU[i];
-        }
-
-        for (int i = 0; i < surface.knotsV.Count; i++)
-        {
-          result.KnotsV[i] = surface.knotsV[i];
-        }
-
-        // Set control points
-        for (var i = 0; i < points.Count; i++)
-        {
-          for (var j = 0; j < points[i].Count; j++)
-          {
-            var pt = points[i][j];
-            result.Points.SetPoint(i, j, pt.x * pt.weight, pt.y * pt.weight, pt.z * pt.weight);
-            result.Points.SetWeight(i, j, pt.weight);
-          }
-        }
-      
-        // Return surface
-        return result;
+        result.KnotsU[i] = surface.knotsU[i];
       }
+
+      for (int i = 0; i < surface.knotsV.Count; i++)
+      {
+        result.KnotsV[i] = surface.knotsV[i];
+      }
+
+      // Set control points
+      for (var i = 0; i < points.Count; i++)
+      {
+        for (var j = 0; j < points[i].Count; j++)
+        {
+          var pt = points[i][j];
+          result.Points.SetPoint(i, j, pt.x * pt.weight, pt.y * pt.weight, pt.z * pt.weight);
+          result.Points.SetWeight(i, j, pt.weight);
+        }
+      }
+
+      // Return surface
+      return result;
+    }
 
     public List<List<ControlPoint>> ControlPointsToSpeckle(NurbsSurfacePointList controlPoints, string units = null)
     {

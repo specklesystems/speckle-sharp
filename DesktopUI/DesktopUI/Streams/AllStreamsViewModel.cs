@@ -200,10 +200,10 @@ namespace Speckle.DesktopUI.Streams
           StreamList.Clear();
           StreamList = new BindableCollection<StreamState>(message.DynamicInfo);
           StreamList.Refresh();
-          foreach (var state in StreamList)
-          {
-            state.RefreshStream();
-          }
+          //foreach (var state in StreamList)
+          //{
+          //  state.RefreshStream();
+          //}
           break;
         case ApplicationEvent.EventType.ApplicationIdling:
           break;
