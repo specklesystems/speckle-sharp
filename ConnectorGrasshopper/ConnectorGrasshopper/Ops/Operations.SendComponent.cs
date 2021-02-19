@@ -396,8 +396,7 @@ namespace ConnectorGrasshopper.Ops
             }
             catch (Exception e)
             {
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.InnerException.Message));
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
               continue;
             }
 
@@ -416,7 +415,7 @@ namespace ConnectorGrasshopper.Ops
 
         if (Transports.Count == 0)
         {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Could not identify any valid transports to send to."));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Could not identify any valid transports to send to."));
           Done();
           return;
         }
@@ -434,6 +433,7 @@ namespace ConnectorGrasshopper.Ops
           RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
           var asyncParent = (GH_AsyncComponent)Parent;
           asyncParent.CancellationSources.ForEach(source => source.Cancel());
+          Done();
         };
 
         if (CancellationToken.IsCancellationRequested)
@@ -525,7 +525,6 @@ namespace ConnectorGrasshopper.Ops
 
           Done();
         }, CancellationToken);
-        task.Wait();
       }
       catch (Exception e)
       {
