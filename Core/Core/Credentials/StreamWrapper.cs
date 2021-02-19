@@ -7,13 +7,13 @@ namespace Speckle.Core.Credentials
 {
   public class StreamWrapper
   {
-    private string originalInput; 
+    private string originalInput;
 
     public string AccountId { get; set; }
     public string ServerUrl { get; set; }
     public string StreamId { get; set; }
     public string CommitId { get; set; }
-    public string BranchName { get; set; } 
+    public string BranchName { get; set; }
     public string ObjectId { get; set; }
 
     /// <summary>
@@ -45,6 +45,7 @@ namespace Speckle.Core.Credentials
         {
           return StreamWrapperType.Stream;
         }
+
         // If we reach here, it means that the stream is invalid for some reason.
         return StreamWrapperType.Undefined;
       }
@@ -144,7 +145,7 @@ namespace Speckle.Core.Credentials
           else if (uri.Segments[3].ToLowerInvariant() == "branches/")
           {
             StreamId = uri.Segments[2].Replace("/", "");
-            BranchName = Uri.UnescapeDataString( uri.Segments[4].Replace("/", ""));
+            BranchName = Uri.UnescapeDataString(uri.Segments[4].Replace("/", ""));
           }
           else if (uri.Segments[3].ToLowerInvariant() == "objects/")
           {
@@ -169,6 +170,8 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     public async Task<Account> GetAccount()
     {
+      Exception err = null;
+      
       if (_Account != null)
       {
         return _Account;
@@ -177,18 +180,20 @@ namespace Speckle.Core.Credentials
       // Step 1: check if direct account id (?u=)
       if (originalInput.Contains("?u="))
       {
-        var userId = originalInput.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
+        var userId = originalInput.Split(new string[] {"?u="}, StringSplitOptions.None)[1];
         var acc = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == userId);
-        if(acc!=null)
+        if (acc != null)
         {
           try
           {
-            var client = new Client(acc);
-            var res = await client.StreamGet(StreamId);
+            await ValidateWithAccount(acc);
             _Account = acc;
             return acc;
           }
-          catch { }
+          catch(Exception e)
+          {
+            err = e;
+          }
         }
       }
 
@@ -196,33 +201,58 @@ namespace Speckle.Core.Credentials
       var defAcc = AccountManager.GetDefaultAccount();
       try
       {
-        var client = new Client(defAcc);
-        var res = await client.StreamGet(StreamId);
+        await ValidateWithAccount(defAcc);
         _Account = defAcc;
         return defAcc;
       }
-      catch { }
+      catch(Exception e)
+      {
+        err = e;
+      }
 
       // Step 3: all the rest
       var accs = AccountManager.GetAccounts(ServerUrl);
-      if(accs.Count() == 0) 
+      if (accs.Count() == 0)
       {
         throw new Exception($"You don't have any accounts for ${ServerUrl}.");
       }
-      
+
       foreach (var acc in accs)
       {
         try
         {
-          var client = new Client(acc);
-          var res = await client.StreamGet(StreamId);
+          await ValidateWithAccount(acc);
           _Account = acc;
           return acc;
         }
-        catch { }
+        catch(Exception e)
+        {
+          err = e;
+        }
       }
 
-      throw new Exception($"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.");
+      throw err;
+    }
+
+
+    private async Task ValidateWithAccount(Account acc)
+    {
+      var client = new Client(acc);
+      // First check if the stream exists
+      try
+      {
+        await client.StreamGet(StreamId);
+      }
+      catch
+      {
+        throw new Exception(
+          $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.");
+      }
+      
+      // Check if the branch exists
+      if (Type == StreamWrapperType.Branch && await client.BranchGet(StreamId, BranchName, 1) == null)
+        throw new Exception(
+            $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}");
     }
 
     public override string ToString()

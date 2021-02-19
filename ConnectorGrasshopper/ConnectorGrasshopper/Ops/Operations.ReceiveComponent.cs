@@ -458,7 +458,7 @@ namespace ConnectorGrasshopper.Ops
         }
         catch (Exception e)
         {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error,e.InnerException?.Message ?? e.Message));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,e.InnerException?.Message ?? e.Message));
           Done();
           return;
         }
