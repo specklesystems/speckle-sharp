@@ -181,6 +181,7 @@ namespace Objects.Converter.RhinoGh
       var u = units ?? ModelUnits;
       var sLine =  new Line(PointsToFlatArray(new Point3d[] { line.From, line.To }), u);
       sLine.length = line.Length;
+      sLine.domain = new Interval(0, line.Length);
       var box = new RH.Box(line.BoundingBox);
       sLine.bbox = BoxToSpeckle(box, u);
       return sLine;
@@ -205,9 +206,7 @@ namespace Objects.Converter.RhinoGh
     public LineCurve LineToNative(Line line)
     {
       var myLine = new LineCurve(PointToNative(line.start).Location, PointToNative(line.end).Location);
-      if (line.domain != null)
-        myLine.Domain = IntervalToNative(line.domain);
-
+      myLine.Domain = line.domain == null ?  IntervalToNative(line.domain) : new RH.Interval(0, line.length);
       return myLine;
     }
 
@@ -215,15 +214,17 @@ namespace Objects.Converter.RhinoGh
     public Polyline PolylineToSpeckle(Rectangle3d rect, string units = null)
     {
       var u = units ?? ModelUnits;
+      var length = rect.Height * 2 + rect.Width * 2;
       var sPoly = new Polyline(
         PointsToFlatArray(new Point3d[] { rect.Corner(0), rect.Corner(1), rect.Corner(2), rect.Corner(3) }), u)
       {
         closed = true,
         area = rect.Area,
         bbox = BoxToSpeckle(new RH.Box(rect.BoundingBox), u),
-        length = rect.Height * 2 + rect.Width * 2
+        length = length,
+        domain = new Interval(0, length)
       };
-
+      
       return sPoly;
     }
 
@@ -355,7 +356,8 @@ namespace Objects.Converter.RhinoGh
       myPoly.domain = domain;
       myPoly.bbox = BoxToSpeckle(new RH.Box(poly.BoundingBox), u);
       myPoly.length = poly.Length;
-      // TODO: Area of 3d polyline cannot be resolved...
+      
+      // TODO: Area of 3d polyline cannot be resolved... 
       return myPoly;
     }
 
@@ -367,8 +369,15 @@ namespace Objects.Converter.RhinoGh
 
       if (poly.TryGetPolyline(out polyline))
       {
+        var intervalToSpeckle = IntervalToSpeckle(poly.Domain);
         if (polyline.Count == 2)
-          return new Line(PointsToFlatArray(polyline), u);
+        {
+          var polylineToSpeckle = new Line(PointsToFlatArray(polyline), u)
+          {
+            domain = intervalToSpeckle
+          };  
+          return polylineToSpeckle;
+        }
 
         var myPoly = new Polyline(PointsToFlatArray(polyline), u);
         myPoly.closed = polyline.IsClosed;
@@ -376,7 +385,7 @@ namespace Objects.Converter.RhinoGh
         if (myPoly.closed)
           myPoly.value.RemoveRange(myPoly.value.Count - 3, 3);
 
-        myPoly.domain = IntervalToSpeckle(poly.Domain);
+        myPoly.domain = intervalToSpeckle;
         myPoly.bbox = BoxToSpeckle(new RH.Box(poly.GetBoundingBox(true)), u);
         myPoly.length = poly.GetLength();
         return myPoly;
@@ -671,25 +680,23 @@ namespace Objects.Converter.RhinoGh
     /// <returns></returns>
     public Brep BrepToSpeckle(RH.Brep brep, string units = null)
     {
+      var tol = 0.0;
       var u = units ?? ModelUnits;
-      //brep.Repair(0.0); //should maybe use ModelAbsoluteTolerance ?
+      brep.Repair(tol); //should maybe use ModelAbsoluteTolerance ?
+      foreach(var f in brep.Faces){
+        f.RebuildEdges(tol, false, false);
+      }
+      // Create complex
       var joinedMesh = new RH.Mesh();
       var mySettings = MeshingParameters.FastRenderMesh;
-
-      //brep.Compact();
-    
-      //brep.Trims.MatchEnds();
-      joinedMesh.Compact();
-        var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh),
-        provenance: Speckle.Core.Kits.Applications.Rhino, units: ModelUnits);
-
-      // Vertices, uv curves, 3d curves and surfaces
-      //brep.Trims.MatchEnds();
       joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
       joinedMesh.Weld(Math.PI);
       joinedMesh.Vertices.CombineIdentical(true,true);
       joinedMesh.Compact();
+      
       var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: Applications.Rhino, units: u);
+
+      // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices
         .Select(vertex => PointToSpeckle(vertex, u)).ToList();
       spcklBrep.Curve3D = brep.Curves3D
