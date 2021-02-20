@@ -219,22 +219,19 @@ namespace Objects.Converter.AutocadCivil
 
     public NurbCurve3d NurbsToNative(Curve curve)
     {
-      var ptsList = PointListToNative(curve.points, curve.units);
+      var knots = new KnotCollection();
+      foreach (var knot in curve.knots)
+        knots.Add(knot);
 
-      IntPtr newUnmanaged = new IntPtr(); // check this!!
-      var nurbsCurve = NurbCurve3d.Create(newUnmanaged, true);
+      var pointsList = PointListToNative(curve.points, curve.units);
+      var points = new Point3dCollection(pointsList);
 
-      for (int j = 0; j < ptsList.Length; j++)
-      {
-        nurbsCurve.SetFitPointAt(j, ptsList[j]);
-        nurbsCurve.SetWeightAt(j, curve.weights[j]);
-      }
+      var weights = new DoubleCollection(curve.weights.ToArray());
+      var nurbs = new NurbCurve3d(curve.degree, knots, points, weights, curve.periodic);
+      if (curve.closed)
+        nurbs.MakeClosed();
 
-      for (int j = 0; j < nurbsCurve.Knots.Count; j++)
-        nurbsCurve.Knots[j] = curve.knots[j];
-
-      nurbsCurve.SetInterval(IntervalToNative(curve.domain ?? new Interval(0, 1)));
-      return nurbsCurve;
+      return nurbs;
     }
 
     public AC.NurbSurface SurfaceToNative(Geometry.Surface surface)

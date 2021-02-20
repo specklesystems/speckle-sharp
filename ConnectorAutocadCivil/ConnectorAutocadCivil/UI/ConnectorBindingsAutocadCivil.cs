@@ -178,16 +178,17 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
 
       string referencedObject = state.Commit.referencedObject;
+      string id = state.Commit.id;
 
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      if (state.Commit.id == "latest")
+      if (id == "latest")
       {
-
         var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
         referencedObject = res.commits.items.FirstOrDefault().referencedObject;
+        id = res.id;
       }
 
-      var commit = state.Commit;
+      //var commit = state.Commit;
 
       var commitObject = await Operations.Receive(
         referencedObject,
@@ -222,7 +223,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
           // create a layer prefix hash: this is to prevent geometry from being imported into original layers (too confusing)
           // since autocad doesn't have nested layers, use the standard import syntax of "layer$sublayer" when importing from apps that have nested layers
-          var layerPrefix = $"{myStream.name}[{state.Branch.name}@{commit.id}]";
+          // if this is latest, get the actual branchname
+          var layerPrefix = $"{myStream.name}[{state.Branch.name}@{id}]";
           layerPrefix = Regex.Replace(layerPrefix, @"[^\u0000-\u007F]+", string.Empty); // emits emojis
 
           // delete existing commit layers
@@ -245,26 +247,31 @@ namespace Speckle.ConnectorAutocadCivil.UI
             Base obj = commitObj.Item1;
             string layerName = commitObj.Item2;
 
-            AcadDb.LayerTableRecord layer = GetOrMakeLayer(layerName, tr);
-            if (layer == null)
+            if (GetOrMakeLayer(layerName, tr, out string cleanName))
+            {
+              // if the layer name has been modified, add an error
+              if (cleanName.Length<layerName.Length)
+                state.Errors.Add(new Exception($"layer {layerName} contained invalid characters: created {cleanName} instead."));
+
+              // convert obj and add to doc
+              // try catch to prevent memory access violation crash in case a conversion goes wrong
+              try
+              {
+                var converted = converter.ConvertToNative(obj) as AcadDb.Entity;
+                if (converted != null)
+                  converted.Append(cleanName, tr);
+                else
+                  state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+              }
+              catch
+              {
+                state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+              }
+            }
+            else
             {
               RaiseNotification($"could not create layer {layerName} to bake objects into.");
               state.Errors.Add(new Exception($"could not create layer {layerName} to bake objects into."));
-            }
-
-            // convert obj and add to doc
-            // try catch to prevent memory access violation crash in case a conversion goes wrong
-            try
-            {
-              var converted = converter.ConvertToNative(obj) as AcadDb.Entity;
-              if (converted != null)
-                  converted.Append(layerName, tr);
-              else
-                state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
-            }
-            catch
-            {
-              state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
             }
           }
 
@@ -376,37 +383,32 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
     }
 
-    private AcadDb.LayerTableRecord GetOrMakeLayer(string layerName, AcadDb.Transaction tr)
+    private bool GetOrMakeLayer(string layerName, AcadDb.Transaction tr, out string cleanName)
     {
-      AcadDb.LayerTableRecord layer = null;
-
+      cleanName = Utils.RemoveInvalidChars(layerName);
       try
       {
         AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
-        if (lyrTbl.Has(layerName))
+        if (lyrTbl.Has(cleanName))
         {
-          layer = (AcadDb.LayerTableRecord)tr.GetObject(lyrTbl[layerName], AcadDb.OpenMode.ForRead);
+          return true;
         }
         else
         {
           lyrTbl.UpgradeOpen();
-
-          // make a new layer
           var _layer = new AcadDb.LayerTableRecord();
 
           // Assign the layer properties
           _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(Color.Blue);
-          _layer.Name = layerName;
+          _layer.Name = cleanName;
 
           // Append the new layer to the layer table and the transaction
           lyrTbl.Add(_layer);
           tr.AddNewlyCreatedDBObject(_layer, true);
-          layer = _layer;
         }
       }
-      catch { }
-
-      return layer;
+      catch { return false; }
+      return true;
     }
 
     #endregion
