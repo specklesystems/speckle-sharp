@@ -167,7 +167,8 @@ namespace Speckle.Core.Credentials
     /// Gets a valid account for this stream wrapper. 
     /// <para>Note: this method ensures that the stream exists and/or that the user has an account which has access to that stream. If used in a sync manner, make sure it's not blocking.</para>
     /// </summary>
-    /// <returns></returns>
+    /// <exception cref="Exception">Throws exception if account fetching failed. This could be due to non-existent account or stream.</exception>
+    /// <returns>The valid account object for this stream.</returns>
     public async Task<Account> GetAccount()
     {
       Exception err = null;
