@@ -6,6 +6,7 @@ using Autodesk.AutoCAD.Geometry;
 using AC = Autodesk.AutoCAD.Geometry;
 
 using Arc = Objects.Geometry.Arc;
+using Box = Objects.Geometry.Box;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
 using Curve = Objects.Geometry.Curve;
@@ -23,7 +24,7 @@ namespace Objects.Converter.AutocadCivil
   public partial class ConverterAutocadCivil
   {
     // tolerance for geometry:
-    public double tolerance = 0.00;
+    public double tolerance = 0.000;
 
     // Convenience methods:
     // TODO: Deprecate once these have been added to Objects.sln
@@ -106,14 +107,12 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Plane 
-    // TODO: NOT TESTED
     public Plane PlaneToSpeckle(AC.Plane plane)
     {
       Vector xAxis = VectorToSpeckle(plane.GetCoordinateSystem().Xaxis);
       Vector yAxis = VectorToSpeckle(plane.GetCoordinateSystem().Yaxis);
-      Point origin = PointToSpeckle(plane.GetCoordinateSystem().Origin);
-      return new Plane(PointToSpeckle(plane.PointOnPlane), VectorToSpeckle(plane.Normal), xAxis,
-        yAxis, ModelUnits);
+      var _plane = new Plane(PointToSpeckle(plane.PointOnPlane), VectorToSpeckle(plane.Normal), xAxis, yAxis, ModelUnits);
+      return _plane;
     }
     public AC.Plane PlaneToNative(Plane plane)
     {
@@ -144,6 +143,7 @@ namespace Objects.Converter.AutocadCivil
       _arc.startPoint = PointToSpeckle(arc.StartPoint);
       _arc.endPoint = PointToSpeckle(arc.EndPoint);
       _arc.domain = IntervalToSpeckle(arc.GetInterval());
+      _arc.length = arc.GetLength(arc.GetParameterOf(arc.StartPoint), arc.GetParameterOf(arc.EndPoint), tolerance);
       return _arc;
     }
     public CircularArc3d ArcToNative(Arc arc)
@@ -152,8 +152,8 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Curve
-    // NOTE: Autocad defines spline knots differently than standard (# at start and end should match degree): acad adds extra knot at start and end of knot vector.
-    // Conversions for autocad need to add 2 knots when converting to native and remove 2 knots when converting to speckle. Important!! otherwise will cause protected mem crash.
+    // NOTE: Autocad defines spline knots  as a vector of size # control points + degree + 1. (# at start and end should match degree)
+    // Conversions for autocad need to make sure this is satisfied, otherwise will cause protected mem crash.
     public NurbCurve3d NurbcurveToNative(Curve curve)
     {
       var points = new Point3dCollection(PointListToNative(curve.points, curve.units));
@@ -161,13 +161,13 @@ namespace Objects.Converter.AutocadCivil
       for (int i = 0; i < curve.knots.Count; i++)
       {
         knots.Add(curve.knots[i]);
-        if (i == 0 || i == curve.knots.Count - 1)
-          knots.Add(curve.knots[i]);
+        if (curve.knots.Count == points.Count + curve.degree - 1)
+          if (i == 0 || i == curve.knots.Count - 1)
+            knots.Add(curve.knots[i]);
       }
       var weights = new DoubleCollection(curve.weights.ToArray());
 
       NurbCurve3d _curve = new NurbCurve3d(curve.degree, knots, points, weights, curve.periodic);
-
       if (curve.closed)
         _curve.MakeClosed();
 
@@ -175,16 +175,6 @@ namespace Objects.Converter.AutocadCivil
     }
     public Curve NurbsToSpeckle(NurbCurve3d curve)
     {
-      var tolerance = 0.0;
-
-      /*
-      // get the display polyline
-      var poly = curve.GetNewSamplePoints(curve.StartParameter, curve.EndParameter, 0); 
-      Polyline displayValue = PolylineToSpeckle(poly) as Polyline;
-
-      var _curve = new Curve(displayValue, ModelUnits);
-      */
-
       var _curve = new Curve();
 
       // get control points
@@ -192,9 +182,9 @@ namespace Objects.Converter.AutocadCivil
       for (int i = 0; i < curve.NumberOfControlPoints; i++)
         points.Add(curve.ControlPointAt(i));
 
-      // get knots (remove first and last because acad adds extra knot at start and end)
+      // get knots
       var knots = new List<double>();
-      for (int i = 1; i < curve.NumberOfKnots - 1; i++)
+      for (int i = 0; i < curve.NumberOfKnots; i++)
         knots.Add(curve.KnotAt(i));
 
       // get weights
@@ -212,6 +202,7 @@ namespace Objects.Converter.AutocadCivil
       _curve.closed = curve.IsClosed();
       _curve.length = curve.GetLength(curve.StartParameter, curve.EndParameter, tolerance);
       _curve.domain = IntervalToSpeckle(curve.GetInterval());
+      _curve.units = ModelUnits;
 
       return _curve;
     }

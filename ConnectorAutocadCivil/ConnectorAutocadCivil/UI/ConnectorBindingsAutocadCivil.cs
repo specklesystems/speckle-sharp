@@ -384,7 +384,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     private bool GetOrMakeLayer(string layerName, AcadDb.Transaction tr, out string cleanName)
     {
-      cleanName = Utils.RemoveInvalidChars(layerName);
+      cleanName = Utils.RemoveInvalidLayerChars(layerName);
       try
       {
         AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
@@ -442,6 +442,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       conversionProgressDict["Conversion"] = 0;
       Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
       int convertedCount = 0;
+      bool renamedlayers = false;
 
       foreach (var autocadObjectHandle in state.SelectedObjectIds)
       {
@@ -453,6 +454,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
         // get the db object from id
         AcadDb.Handle hn = new AcadDb.Handle(Convert.ToInt64(autocadObjectHandle, 16));
         AcadDb.DBObject obj = hn.GetObject(out string type, out string layer);
+        string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
+        if (!cleanLayerName.Equals(layer))
+          renamedlayers = true;
+
         if (obj == null)
         {
           state.Errors.Add(new Exception($"Failed to find local object ${autocadObjectHandle}."));
@@ -491,12 +496,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
         */
 
-        if (commitObj[$"@{layer}"] == null)
-          commitObj[$"@{layer}"] = new List<Base>();
+        if (commitObj[$"@{cleanLayerName}"] == null)
+          commitObj[$"@{cleanLayerName}"] = new List<Base>();
 
-        ((List<Base>)commitObj[$"@{layer}"]).Add(converted);
+        ((List<Base>)commitObj[$"@{cleanLayerName}"]).Add(converted);
         convertedCount++;
       }
+
+      if (renamedlayers)
+        RaiseNotification("Replaced illegal chars ./ with - in one or more layer names.");
 
       if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {

@@ -76,6 +76,7 @@ namespace Objects.Converter.AutocadCivil
           if (schema != null)
             return ObjectToSpeckleBuiltElement(o);
           */
+          // set test material
           return ObjectToSpeckle(o);
 
         case Acad.Geometry.Point3d o:
@@ -195,6 +196,9 @@ namespace Objects.Converter.AutocadCivil
           if (o.IsOnlyLines) // db polylines can have arc segments, decide between polycurve or polyline conversion
             return PolylineToSpeckle(o);
           else return PolycurveToSpeckle(o);
+
+        case AcadDB.Polyline3d o:
+          return PolylineToSpeckle(o);
 
         case AcadDB.Polyline2d o:
           return PolycurveToSpeckle(o);

@@ -120,7 +120,7 @@ namespace Speckle.ConnectorAutocadCivil
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
-    public static string RemoveInvalidChars(string str)
+    public static string RemoveInvalidLayerChars(string str)
     {
       // using this to handle rhino nested layer syntax
       // replace "::" layer delimiter with "$" (acad standard)
@@ -128,6 +128,12 @@ namespace Speckle.ConnectorAutocadCivil
 
       // remove all other invalid chars
       return Regex.Replace(cleanDelimiter, invalidChars, string.Empty);
+    }
+
+    public static string RemoveInvalidDynamicPropChars(string str)
+    {
+      // remove ./
+      return Regex.Replace(str, @"[./]", "-");
     }
   }
 
