@@ -63,6 +63,8 @@ namespace Objects.Converter.AutocadCivil
         ScaleToNative(point.z, point.units));
       return _point;
     }
+
+    //TODO: not tested
     public List<List<ControlPoint>> ControlPointsToSpeckle(Point3dCollection points, DoubleCollection weights) // TODO: NOT TESTED
     {
       var _weights = new List<double>();
@@ -109,7 +111,7 @@ namespace Objects.Converter.AutocadCivil
     {
       Vector xAxis = VectorToSpeckle(plane.GetCoordinateSystem().Xaxis);
       Vector yAxis = VectorToSpeckle(plane.GetCoordinateSystem().Yaxis);
-      Point origin = PointToSpeckle(plane.GetCoordinateSystem().Origin); // this may be the plane origin, not sure
+      Point origin = PointToSpeckle(plane.GetCoordinateSystem().Origin);
       return new Plane(PointToSpeckle(plane.PointOnPlane), VectorToSpeckle(plane.Normal), xAxis,
         yAxis, ModelUnits);
     }
@@ -149,6 +151,72 @@ namespace Objects.Converter.AutocadCivil
       return new CircularArc3d(PointToNative(arc.startPoint), PointToNative(arc.midPoint), PointToNative(arc.endPoint));
     }
 
+    // Curve
+    // NOTE: Autocad defines spline knots differently than standard (# at start and end should match degree): acad adds extra knot at start and end of knot vector.
+    // Conversions for autocad need to add 2 knots when converting to native and remove 2 knots when converting to speckle. Important!! otherwise will cause protected mem crash.
+    public NurbCurve3d NurbcurveToNative(Curve curve)
+    {
+      var points = new Point3dCollection(PointListToNative(curve.points, curve.units));
+      var knots = new KnotCollection();
+      for (int i = 0; i < curve.knots.Count; i++)
+      {
+        knots.Add(curve.knots[i]);
+        if (i == 0 || i == curve.knots.Count - 1)
+          knots.Add(curve.knots[i]);
+      }
+      var weights = new DoubleCollection(curve.weights.ToArray());
+
+      NurbCurve3d _curve = new NurbCurve3d(curve.degree, knots, points, weights, curve.periodic);
+
+      if (curve.closed)
+        _curve.MakeClosed();
+
+      return _curve;
+    }
+    public Curve NurbsToSpeckle(NurbCurve3d curve)
+    {
+      var tolerance = 0.0;
+
+      /*
+      // get the display polyline
+      var poly = curve.GetNewSamplePoints(curve.StartParameter, curve.EndParameter, 0); 
+      Polyline displayValue = PolylineToSpeckle(poly) as Polyline;
+
+      var _curve = new Curve(displayValue, ModelUnits);
+      */
+
+      var _curve = new Curve();
+
+      // get control points
+      var points = new List<Point3d>();
+      for (int i = 0; i < curve.NumberOfControlPoints; i++)
+        points.Add(curve.ControlPointAt(i));
+
+      // get knots (remove first and last because acad adds extra knot at start and end)
+      var knots = new List<double>();
+      for (int i = 1; i < curve.NumberOfKnots - 1; i++)
+        knots.Add(curve.KnotAt(i));
+
+      // get weights
+      var weights = new List<double>();
+      for (int i = 0; i < curve.NumWeights; i++)
+        weights.Add(curve.GetWeightAt(i));
+
+      // set nurbs curve info
+      _curve.points = PointsToFlatArray(points).ToList();
+      _curve.knots = knots;
+      _curve.weights = weights;
+      _curve.degree = curve.Degree;
+      _curve.periodic = curve.IsPeriodic(out double period);
+      _curve.rational = curve.IsRational;
+      _curve.closed = curve.IsClosed();
+      _curve.length = curve.GetLength(curve.StartParameter, curve.EndParameter, tolerance);
+      _curve.domain = IntervalToSpeckle(curve.GetInterval());
+
+      return _curve;
+    }
+
+
     // Polycurve
     // TODO: NOT TESTED FROM HERE DOWN
     public PolylineCurve3d PolylineToNative(Polyline polyline)
@@ -176,7 +244,7 @@ namespace Objects.Converter.AutocadCivil
           return null;
 
         case Curve curve:
-          return NurbsToNative(curve);
+          return NurbcurveToNative(curve);
 
         case Polyline polyline:
           return PolylineToNative(polyline);
@@ -210,28 +278,6 @@ namespace Objects.Converter.AutocadCivil
       }
 
       return NurbsToSpeckle(curve as NurbCurve3d);
-    }
-
-    public Curve NurbsToSpeckle(NurbCurve3d curve)
-    {
-      return null;
-    }
-
-    public NurbCurve3d NurbsToNative(Curve curve)
-    {
-      var knots = new KnotCollection();
-      foreach (var knot in curve.knots)
-        knots.Add(knot);
-
-      var pointsList = PointListToNative(curve.points, curve.units);
-      var points = new Point3dCollection(pointsList);
-
-      var weights = new DoubleCollection(curve.weights.ToArray());
-      var nurbs = new NurbCurve3d(curve.degree, knots, points, weights, curve.periodic);
-      if (curve.closed)
-        nurbs.MakeClosed();
-
-      return nurbs;
     }
 
     public AC.NurbSurface SurfaceToNative(Geometry.Surface surface)

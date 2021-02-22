@@ -148,8 +148,8 @@ namespace Objects.Converter.AutocadCivil
         //case Plane o: // TODO: NOT TESTED
         //  return PlaneToNative(o);
 
-        //case Curve o: // TODO: SPLINES AND NURBS NOT TESTED
-        //  return CurveToNativeDB(o);
+        case Curve o:
+          return CurveToNativeDB(o);
 
         //case Surface o: // TODO: NOT TESTED
         //  return SurfaceToNative(o);
@@ -300,8 +300,8 @@ namespace Objects.Converter.AutocadCivil
         case Polycurve _:
           return true;
 
-        //case Curve _:
-        //  return true;
+        case Curve _:
+          return true;
 
         default:
           return false;

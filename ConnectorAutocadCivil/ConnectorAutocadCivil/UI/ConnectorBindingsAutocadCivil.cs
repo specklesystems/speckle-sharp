@@ -221,9 +221,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             UpdateProgress(conversionProgressDict, state.Progress);
           };
 
-          // create a layer prefix hash: this is to prevent geometry from being imported into original layers (too confusing)
-          // since autocad doesn't have nested layers, use the standard import syntax of "layer$sublayer" when importing from apps that have nested layers
-          // if this is latest, get the actual branchname
+          // create a layer prefix hash: this is to prevent geometry from being imported into original layers
           var layerPrefix = $"{myStream.name}[{state.Branch.name}@{id}]";
           layerPrefix = Regex.Replace(layerPrefix, @"[^\u0000-\u007F]+", string.Empty); // emits emojis
 
@@ -250,6 +248,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             if (GetOrMakeLayer(layerName, tr, out string cleanName))
             {
               // if the layer name has been modified, add an error
+              // this may need to be sent as 1 message at commit level if streaming large files with many layer name changes.
               if (cleanName.Length<layerName.Length)
                 state.Errors.Add(new Exception($"layer {layerName} contained invalid characters: created {cleanName} instead."));
 

@@ -34,7 +34,7 @@ namespace Objects.Converter.AutocadCivil
     // Lines
     public Line LineToSpeckle(AcadDB.Line line)
     {
-      return new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint));
+      return new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
     }
     public AcadDB.Line LineToNativeDB(Line line)
     {
@@ -93,7 +93,7 @@ namespace Objects.Converter.AutocadCivil
       return new Polyline(PointsToFlatArray(vertices), ModelUnits) { closed = true };
     }
 
-    // PolyCurves
+    // Polycurves
     public Polyline PolylineToSpeckle(AcadDB.Polyline polyline) // AC polylines can have arc segments, this treats all segments as lines
     {
       List<Point3d> vertices = new List<Point3d>();
@@ -113,7 +113,7 @@ namespace Objects.Converter.AutocadCivil
     }
     public Polycurve PolycurveToSpeckle(Polyline2d polyline) // AC polyline2d are really polycurves with linear, circlular, or elliptical segments!
     {
-      var polycurve = new Polycurve() { closed = polyline.Closed };
+      var polycurve = new Polycurve(units: ModelUnits) { closed = polyline.Closed };
 
       // extract segment curves
       var segments = new List<ICurve>();
@@ -125,9 +125,9 @@ namespace Objects.Converter.AutocadCivil
 
       return polycurve;
     }
-    public Polycurve PolycurveToSpeckle(AcadDB.Polyline polyline) // AC polylines are really polycurves with linear, circlular, or elliptical segments!
+    public Polycurve PolycurveToSpeckle(AcadDB.Polyline polyline) // AC polylines are polycurves with linear or arc segments
     {
-      var polycurve = new Polycurve() { closed = polyline.Closed };
+      var polycurve = new Polycurve(units: ModelUnits) { closed = polyline.Closed };
 
       // extract segments
       var segments = new List<ICurve>();
@@ -179,43 +179,18 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Splines
-    // TODO: NOT TESTED
     public Curve SplineToSpeckle(Spline spline)
     {
-      var curve = new Curve();
-      var nurbs = spline.NurbsData;
-
-      // get control points
-      var points = new List<Point3d>();
-      foreach (var point in nurbs.GetControlPoints())
-        points.Add((Point3d)point);
-
-      // set nurbs curve info
-      curve.weights = nurbs.GetWeights().ToArray().ToList();
-      curve.points = PointsToFlatArray(points).ToList();
-      curve.knots = nurbs.GetKnots().ToArray().ToList();
-      curve.degree = nurbs.Degree;
-      curve.periodic = nurbs.Periodic;
-      curve.rational = nurbs.Rational;
-      curve.closed = nurbs.Closed;
-
-      return curve;
+      return NurbsToSpeckle((NurbCurve3d)spline.GetGeCurve());
     }
-    public Spline NurbsToNativeDB(Curve curve)
+
+    public AcadDB.Curve NurbsToNativeDB(Curve curve)
     {
-      var points = new Point3dCollection(PointListToNative(curve.points, curve.units));
-      var spline = new Spline(points, curve.degree, tolerance);
-
-      // add knots and weights
-      foreach (var knot in curve.knots)
-        spline.InsertKnot(knot);
-      for (int i = 0; i < curve.weights.Count; i++)
-        spline.SetWeightAt(i, curve.weights[i]);
-
-      return spline;
+      // test to see if this is polyline convertible first?
+      return AcadDB.Curve.CreateFromGeCurve(NurbcurveToNative(curve));
     }
 
-    // Curves
+    // All curves
     public AcadDB.Curve CurveToNativeDB(ICurve icurve)
     {
       switch (icurve)
@@ -238,7 +213,7 @@ namespace Objects.Converter.AutocadCivil
         case Polycurve polycurve:
           return PolycurveToNativeDB(polycurve);
 
-        case Curve curve: // TODO: NOT TESTED
+        case Curve curve:
           return NurbsToNativeDB(curve);
 
         default:
