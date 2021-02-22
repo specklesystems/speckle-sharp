@@ -451,7 +451,17 @@ namespace ConnectorGrasshopper.Ops
           asyncParent.CancellationSources.ForEach(source => source.Cancel());
         };
 
-        var client = new Client(InputWrapper?.GetAccount().Result);
+        Client client = null;
+        try
+        {
+          client = new Client(InputWrapper?.GetAccount().Result);
+        }
+        catch (Exception e)
+        {
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,e.InnerException?.Message ?? e.Message));
+          Done();
+          return;
+        }
         var remoteTransport = new ServerTransport(InputWrapper?.GetAccount().Result, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 
@@ -540,11 +550,8 @@ namespace ConnectorGrasshopper.Ops
       {
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
-        Parent.Message = "Error";
-        receiveComponent.CurrentComponentState = "up_to_date";
-        receiveComponent.JustPastedIn = false;
-        RhinoApp.InvokeOnUiThread(new Action(()=> receiveComponent.OnDisplayExpired(true)));
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.InnerException?.Message ?? e.Message));
+        Done();
       }
     }
 
