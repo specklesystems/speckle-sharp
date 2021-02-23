@@ -121,14 +121,14 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run: # Patches the main assemblies
           name: Patch
           command: | # If no tag, use 0.0.0.1 and don't make any YML (for testing only!)
-            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.0.1" } else { $env:CIRCLE_TAG }
-            $semver =  $tag.Split("/")[1]  
-            $built = $env:CIRCLE_BUILD_NUM
-            $version = "$semver.$built"
-            $versionclean = $version.Split("-")[0]  
-            speckle-sharp-ci-tools/Patch/Patcher.exe << parameters.connectorname >>/ SpeckleConnector* $versionclean
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.1" } else { $env:CIRCLE_TAG }
+            $semver = $tag.replace("-beta","").Split("/")[1]  
+            $version = "$($semver).$($env:CIRCLE_BUILD_NUM)"
+            speckle-sharp-ci-tools/Patch/Patcher.exe << parameters.connectorname >>/ *<< parameters.connectorname >>* $version
+            $channel = "latest"
+            if($tag -like "*-beta") { $channel = "beta" }
             # only create the yml if we have a tag
-            if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/latest.yml" -ItemType File -Value "version: $version" }
+            if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$channel.yml" -ItemType File -Value "version: $version" }
       - run: # Creates the inno installer
           name: InnoSetup
           command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p    
@@ -169,7 +169,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           from: '"speckle-sharp-ci-tools/Installers/"'
           to: s3://speckle-releases/installers/
 
-  integration-tests: # The integration tests. Spins up a full blown speckle server.
+  integration-tests: # The integration tests on test sevrer
     working_directory: /temp
 
     docker:
@@ -265,8 +265,8 @@ workflows:
             branches:
               only: /ci\/.*/ # For testing only! We can use branches like ci/test so won't need to tag
             tags:
-              # runs on any tag in the format "word/1.0.0"
-              only: /^\w*\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+              # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"
+              only: /^\w*\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # DYNAMO Build&Deploy
       - build-connector:
@@ -280,7 +280,7 @@ workflows:
             branches:
               only: /ci\/.*/ # For testing only!
             tags:
-              only: /^(dynamo|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+              only: /^(dynamo|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/         
 
       # REVIT Build&Deploy
       - build-connector:
@@ -294,7 +294,7 @@ workflows:
             branches:
               only: /ci\/.*/ # For testing only!
             tags:
-              only: /^(revit|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+              only: /^(revit|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
 
       # GRASSHOPPER Build&Deploy
@@ -309,7 +309,7 @@ workflows:
             branches:
               only: /ci\/.*/ # For testing only!
             tags:
-              only: /^(grasshopper|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+              only: /^(grasshopper|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
 
       # RHINO Build&Deploy
@@ -324,7 +324,7 @@ workflows:
             branches:
               only: /ci\/.*/ # For testing only!
             tags:
-              only: /^(rhino|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+              only: /^(rhino|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # AUTOCAD Build&Deploy
       - build-connector:
@@ -338,7 +338,7 @@ workflows:
             branches:
               only: /ci\/.*/ # For testing only!
             tags:
-              only: /^(autocadcivil|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+              only: /^(autocadcivil|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # CIVIL 3D Build&Deploy
       - build-connector:
@@ -352,7 +352,7 @@ workflows:
             branches:
               only: /ci\/.*/ # For testing only!
             tags:
-              only: /^(autocadcivil|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+              only: /^(autocadcivil|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
      
       # DEPLOY ALL CONNECTORS
       - deploy: # Will run if all the triggered workflows succeed
@@ -365,5 +365,5 @@ workflows:
             - build-deploy-connector-autocad
             - build-deploy-connector-civil3d
           filters:
-            tags: # runs on any tag in the format "word/1.0.0"
-              only: /^\w*\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+            tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"
+              only: /^\w*\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
