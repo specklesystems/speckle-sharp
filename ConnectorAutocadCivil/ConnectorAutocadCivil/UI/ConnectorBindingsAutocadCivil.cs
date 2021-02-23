@@ -170,7 +170,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       var converter = kit.LoadConverter(Utils.AutocadAppName);
       var transport = new ServerTransport(state.Client.Account, state.Stream.id);
 
-      var myStream = await state.Client.StreamGet(state.Stream.id);
+      var stream = await state.Client.StreamGet(state.Stream.id);
 
       if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
@@ -221,9 +221,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
             UpdateProgress(conversionProgressDict, state.Progress);
           };
 
-          // create a layer prefix hash: this is to prevent geometry from being imported into original layers
-          var layerPrefix = $"{myStream.name}[{state.Branch.name}@{id}]";
-          layerPrefix = Regex.Replace(layerPrefix, @"[^\u0000-\u007F]+", string.Empty); // emits emojis
+          // keep track of any layer name changes for notification here
+          bool changedLayerNames = false;
+
+          // create a commit layer prefix: all nested layers will be concatenated with this
+          var layerPrefix = DesktopUI.Utils.Formatting.CommitLayer(stream.name, state.Branch.name, id);
 
           // delete existing commit layers
           try
@@ -247,10 +249,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             if (GetOrMakeLayer(layerName, tr, out string cleanName))
             {
-              // if the layer name has been modified, add an error
-              // this may need to be sent as 1 message at commit level if streaming large files with many layer name changes.
-              if (cleanName.Length<layerName.Length)
-                state.Errors.Add(new Exception($"layer {layerName} contained invalid characters: created {cleanName} instead."));
+              // record if layer name has been modified
+              if (!cleanName.Equals(layerName))
+                changedLayerNames = true;
 
               // convert obj and add to doc
               // try catch to prevent memory access violation crash in case a conversion goes wrong
@@ -273,6 +274,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
               state.Errors.Add(new Exception($"could not create layer {layerName} to bake objects into."));
             }
           }
+
+          // raise any warnings from layer name modification
+          if (changedLayerNames)
+            state.Errors.Add(new Exception($"Layer names were modified: one or more layers contained invalid characters {Utils.invalidChars}"));
 
           tr.Commit();
         }
@@ -398,7 +403,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var _layer = new AcadDb.LayerTableRecord();
 
           // Assign the layer properties
-          _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(Color.Blue);
+          _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(Color.White);
           _layer.Name = cleanName;
 
           // Append the new layer to the layer table and the transaction
