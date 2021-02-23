@@ -308,6 +308,7 @@ namespace Objects.Converter.RhinoGh
     }
 
     //Ellipse
+    // TODO: handle conversions that define Radius1/Radius2 as major/minor instead of xaxis/yaxis 
     public Ellipse EllipseToSpeckle(RH.Ellipse e, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -543,13 +544,19 @@ namespace Objects.Converter.RhinoGh
       var myCurve = new Curve(displayValue, u);
       var nurbsCurve = curve.ToNurbsCurve();
 
+      // increase knot multiplicity to (# control points + degree + 1)
+      // add extra knots at start & end  because Rhino's knot multiplicity standard is (# control points + degree - 1)
+      var knots = nurbsCurve.Knots.ToList();
+      knots.Insert(0, knots[0]);
+      knots.Insert(knots.Count - 1, knots[knots.Count - 1]);
+
       // Hack: Rebuild curve to prevent interior knot multiplicities.
       //var max = Math.Min(nurbsCurve.Points.Count-1, 3);
       //nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count, max, true);
 
       myCurve.weights = nurbsCurve.Points.Select(ctp => ctp.Weight).ToList();
       myCurve.points = PointsToFlatArray(nurbsCurve.Points.Select(ctp => ctp.Location)).ToList();
-      myCurve.knots = nurbsCurve.Knots.ToList();
+      myCurve.knots = knots;
       myCurve.degree = nurbsCurve.Degree;
       myCurve.periodic = nurbsCurve.IsPeriodic;
       myCurve.rational = nurbsCurve.IsRational;
@@ -572,9 +579,15 @@ namespace Objects.Converter.RhinoGh
         nurbsCurve.Points.SetPoint(j, ptsList[j], curve.weights[j]);
       }
 
+      // check knot multiplicity to match Rhino's standard of (# control points + degree - 1)
+      // skip extra knots at start & end if knot multiplicity is (# control points + degree + 1)
+      int extraKnots = curve.knots.Count - nurbsCurve.Knots.Count;
       for (int j = 0; j < nurbsCurve.Knots.Count; j++)
       {
-        nurbsCurve.Knots[j] = curve.knots[j];
+        if (extraKnots == 2)
+          nurbsCurve.Knots[j] = curve.knots[j + 1];
+        else
+          nurbsCurve.Knots[j] = curve.knots[j];
       }
 
       nurbsCurve.Domain = IntervalToNative(curve.domain ?? new Interval(0, 1));

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Speckle.Core.Kits;
 
@@ -19,6 +20,7 @@ namespace Speckle.ConnectorAutocadCivil
     public static string AutocadAppName = Applications.Civil2021;
     public static string AppName = "Civil 3D";
 #endif
+    public static string invalidChars = @"[<>/\:;""?*|=‘]";
 
     #region extension methods
 
@@ -110,7 +112,29 @@ namespace Speckle.ConnectorAutocadCivil
 
       return obj;
     }
+
     #endregion
+
+    /// <summary>
+    /// Removes invalid characters for Autocad names
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static string RemoveInvalidLayerChars(string str)
+    {
+      // using this to handle rhino nested layer syntax
+      // replace "::" layer delimiter with "$" (acad standard)
+      string cleanDelimiter = str.Replace("::", "$");
+
+      // remove all other invalid chars
+      return Regex.Replace(cleanDelimiter, invalidChars, string.Empty);
+    }
+
+    public static string RemoveInvalidDynamicPropChars(string str)
+    {
+      // remove ./
+      return Regex.Replace(str, @"[./]", "-");
+    }
   }
 
 }

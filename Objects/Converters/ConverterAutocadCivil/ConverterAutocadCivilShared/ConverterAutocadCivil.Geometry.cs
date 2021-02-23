@@ -6,6 +6,7 @@ using Autodesk.AutoCAD.Geometry;
 using AC = Autodesk.AutoCAD.Geometry;
 
 using Arc = Objects.Geometry.Arc;
+using Box = Objects.Geometry.Box;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
 using Curve = Objects.Geometry.Curve;
@@ -23,7 +24,7 @@ namespace Objects.Converter.AutocadCivil
   public partial class ConverterAutocadCivil
   {
     // tolerance for geometry:
-    public double tolerance = 0.00;
+    public double tolerance = 0.000;
 
     // Convenience methods:
     // TODO: Deprecate once these have been added to Objects.sln
@@ -63,6 +64,8 @@ namespace Objects.Converter.AutocadCivil
         ScaleToNative(point.z, point.units));
       return _point;
     }
+
+    //TODO: not tested
     public List<List<ControlPoint>> ControlPointsToSpeckle(Point3dCollection points, DoubleCollection weights) // TODO: NOT TESTED
     {
       var _weights = new List<double>();
@@ -104,14 +107,12 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Plane 
-    // TODO: NOT TESTED
     public Plane PlaneToSpeckle(AC.Plane plane)
     {
       Vector xAxis = VectorToSpeckle(plane.GetCoordinateSystem().Xaxis);
       Vector yAxis = VectorToSpeckle(plane.GetCoordinateSystem().Yaxis);
-      Point origin = PointToSpeckle(plane.GetCoordinateSystem().Origin); // this may be the plane origin, not sure
-      return new Plane(PointToSpeckle(plane.PointOnPlane), VectorToSpeckle(plane.Normal), xAxis,
-        yAxis, ModelUnits);
+      var _plane = new Plane(PointToSpeckle(plane.PointOnPlane), VectorToSpeckle(plane.Normal), xAxis, yAxis, ModelUnits);
+      return _plane;
     }
     public AC.Plane PlaneToNative(Plane plane)
     {
@@ -121,11 +122,22 @@ namespace Objects.Converter.AutocadCivil
     // Line
     public Line LineToSpeckle(Line3d line)
     {
-      return new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      var startParam = line.GetParameterOf(line.StartPoint);
+      var endParam = line.GetParameterOf(line.EndPoint);
+      var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      _line.length = line.GetLength(startParam, endParam, tolerance);
+      _line.domain = IntervalToSpeckle(line.GetInterval());
+      _line.bbox = BoxToSpeckle(line.OrthoBoundBlock);
+      
+      return _line;
     }
     public Line LineToSpeckle(LineSegment3d line)
     {
-      return new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      _line.length = line.Length;
+      _line.domain = IntervalToSpeckle(line.GetInterval());
+      _line.bbox = BoxToSpeckle(line.OrthoBoundBlock);
+      return _line;
     }
     public Line3d LineToNative(Line line)
     {
@@ -135,6 +147,49 @@ namespace Objects.Converter.AutocadCivil
       return _line;
     }
 
+    // Box
+    public Box BoxToSpeckle(BoundBlock3d bound, bool OrientToWorldXY = false)
+    {
+      try
+      {
+        Box box = null;
+
+        var min = bound.GetMinimumPoint();
+        var max = bound.GetMaximumPoint();
+
+        // get dimension intervals
+        var xSize = new Interval(min.X, max.X);
+        var ySize = new Interval(min.Y, max.Y);
+        var zSize = new Interval(min.Z, max.Z);
+
+        // get box size info
+        double area = 2 * ((xSize.Length * ySize.Length) + (xSize.Length * zSize.Length) + (ySize.Length * zSize.Length));
+        double volume = xSize.Length * ySize.Length * zSize.Length;
+
+        if (OrientToWorldXY)
+        {
+          var origin = new Point3d(0, 0, 0);
+          var normal = new Vector3d(0, 0, 1);
+          var plane = PlaneToSpeckle(new Autodesk.AutoCAD.Geometry.Plane(origin, normal));
+          box = new Box(plane, xSize, ySize, zSize, ModelUnits) { area = area, volume = volume };
+        }
+        else
+        {
+          // get base plane
+          var corner = new Point3d(max.X, max.Y, min.Z);
+          var origin = new Point3d((corner.X + min.X) / 2, (corner.Y + min.Y) / 2, (corner.Z + min.Z) / 2);
+          var plane = PlaneToSpeckle(new Autodesk.AutoCAD.Geometry.Plane(min, origin, corner));
+          box = new Box(plane, xSize, ySize, zSize, ModelUnits) { area = area, volume = volume };
+        }
+
+        return box;
+      }
+      catch
+      {
+        return null;
+      }
+    }
+
     // Arc
     public Arc ArcToSpeckle(CircularArc3d arc)
     {
@@ -142,12 +197,72 @@ namespace Objects.Converter.AutocadCivil
       _arc.startPoint = PointToSpeckle(arc.StartPoint);
       _arc.endPoint = PointToSpeckle(arc.EndPoint);
       _arc.domain = IntervalToSpeckle(arc.GetInterval());
+      _arc.length = arc.GetLength(arc.GetParameterOf(arc.StartPoint), arc.GetParameterOf(arc.EndPoint), tolerance);
+      _arc.bbox = BoxToSpeckle(arc.OrthoBoundBlock);
       return _arc;
     }
     public CircularArc3d ArcToNative(Arc arc)
     {
       return new CircularArc3d(PointToNative(arc.startPoint), PointToNative(arc.midPoint), PointToNative(arc.endPoint));
     }
+
+    // Curve
+    // NOTE: Autocad defines spline knots  as a vector of size # control points + degree + 1. (# at start and end should match degree)
+    // Conversions for autocad need to make sure this is satisfied, otherwise will cause protected mem crash.
+    public NurbCurve3d NurbcurveToNative(Curve curve)
+    {
+      var points = new Point3dCollection(PointListToNative(curve.points, curve.units));
+      var knots = new KnotCollection();
+      for (int i = 0; i < curve.knots.Count; i++)
+      {
+        knots.Add(curve.knots[i]);
+        if (curve.knots.Count == points.Count + curve.degree - 1)
+          if (i == 0 || i == curve.knots.Count - 1)
+            knots.Add(curve.knots[i]);
+      }
+      var weights = new DoubleCollection(curve.weights.ToArray());
+
+      NurbCurve3d _curve = new NurbCurve3d(curve.degree, knots, points, weights, curve.periodic);
+      if (curve.closed)
+        _curve.MakeClosed();
+
+      return _curve;
+    }
+    public Curve NurbsToSpeckle(NurbCurve3d curve)
+    {
+      var _curve = new Curve();
+
+      // get control points
+      var points = new List<Point3d>();
+      for (int i = 0; i < curve.NumberOfControlPoints; i++)
+        points.Add(curve.ControlPointAt(i));
+
+      // get knots
+      var knots = new List<double>();
+      for (int i = 0; i < curve.NumberOfKnots; i++)
+        knots.Add(curve.KnotAt(i));
+
+      // get weights
+      var weights = new List<double>();
+      for (int i = 0; i < curve.NumWeights; i++)
+        weights.Add(curve.GetWeightAt(i));
+
+      // set nurbs curve info
+      _curve.points = PointsToFlatArray(points).ToList();
+      _curve.knots = knots;
+      _curve.weights = weights;
+      _curve.degree = curve.Degree;
+      _curve.periodic = curve.IsPeriodic(out double period);
+      _curve.rational = curve.IsRational;
+      _curve.closed = curve.IsClosed();
+      _curve.length = curve.GetLength(curve.StartParameter, curve.EndParameter, tolerance);
+      _curve.domain = IntervalToSpeckle(curve.GetInterval());
+      _curve.bbox = BoxToSpeckle(curve.OrthoBoundBlock);
+      _curve.units = ModelUnits;
+
+      return _curve;
+    }
+
 
     // Polycurve
     // TODO: NOT TESTED FROM HERE DOWN
@@ -176,7 +291,7 @@ namespace Objects.Converter.AutocadCivil
           return null;
 
         case Curve curve:
-          return NurbsToNative(curve);
+          return NurbcurveToNative(curve);
 
         case Polyline polyline:
           return PolylineToNative(polyline);
@@ -210,31 +325,6 @@ namespace Objects.Converter.AutocadCivil
       }
 
       return NurbsToSpeckle(curve as NurbCurve3d);
-    }
-
-    public Curve NurbsToSpeckle(NurbCurve3d curve)
-    {
-      return null;
-    }
-
-    public NurbCurve3d NurbsToNative(Curve curve)
-    {
-      var ptsList = PointListToNative(curve.points, curve.units);
-
-      IntPtr newUnmanaged = new IntPtr(); // check this!!
-      var nurbsCurve = NurbCurve3d.Create(newUnmanaged, true);
-
-      for (int j = 0; j < ptsList.Length; j++)
-      {
-        nurbsCurve.SetFitPointAt(j, ptsList[j]);
-        nurbsCurve.SetWeightAt(j, curve.weights[j]);
-      }
-
-      for (int j = 0; j < nurbsCurve.Knots.Count; j++)
-        nurbsCurve.Knots[j] = curve.knots[j];
-
-      nurbsCurve.SetInterval(IntervalToNative(curve.domain ?? new Interval(0, 1)));
-      return nurbsCurve;
     }
 
     public AC.NurbSurface SurfaceToNative(Geometry.Surface surface)

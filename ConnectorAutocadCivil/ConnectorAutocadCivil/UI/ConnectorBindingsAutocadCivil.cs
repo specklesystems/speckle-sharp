@@ -178,16 +178,17 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
 
       string referencedObject = state.Commit.referencedObject;
+      string id = state.Commit.id;
 
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      if (state.Commit.id == "latest")
+      if (id == "latest")
       {
-
         var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
         referencedObject = res.commits.items.FirstOrDefault().referencedObject;
+        id = res.id;
       }
 
-      var commit = state.Commit;
+      //var commit = state.Commit;
 
       var commitObject = await Operations.Receive(
         referencedObject,
@@ -220,9 +221,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
             UpdateProgress(conversionProgressDict, state.Progress);
           };
 
-          // create a layer prefix hash: this is to prevent geometry from being imported into original layers (too confusing)
-          // since autocad doesn't have nested layers, use the standard import syntax of "layer$sublayer" when importing from apps that have nested layers
-          var layerPrefix = $"{myStream.name}[{state.Branch.name}@{commit.id}]";
+          // create a layer prefix hash: this is to prevent geometry from being imported into original layers
+          var layerPrefix = $"{myStream.name}[{state.Branch.name}@{id}]";
           layerPrefix = Regex.Replace(layerPrefix, @"[^\u0000-\u007F]+", string.Empty); // emits emojis
 
           // delete existing commit layers
@@ -245,26 +245,32 @@ namespace Speckle.ConnectorAutocadCivil.UI
             Base obj = commitObj.Item1;
             string layerName = commitObj.Item2;
 
-            AcadDb.LayerTableRecord layer = GetOrMakeLayer(layerName, tr);
-            if (layer == null)
+            if (GetOrMakeLayer(layerName, tr, out string cleanName))
+            {
+              // if the layer name has been modified, add an error
+              // this may need to be sent as 1 message at commit level if streaming large files with many layer name changes.
+              if (cleanName.Length<layerName.Length)
+                state.Errors.Add(new Exception($"layer {layerName} contained invalid characters: created {cleanName} instead."));
+
+              // convert obj and add to doc
+              // try catch to prevent memory access violation crash in case a conversion goes wrong
+              try
+              {
+                var converted = converter.ConvertToNative(obj) as AcadDb.Entity;
+                if (converted != null)
+                  converted.Append(cleanName, tr);
+                else
+                  state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+              }
+              catch
+              {
+                state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+              }
+            }
+            else
             {
               RaiseNotification($"could not create layer {layerName} to bake objects into.");
               state.Errors.Add(new Exception($"could not create layer {layerName} to bake objects into."));
-            }
-
-            // convert obj and add to doc
-            // try catch to prevent memory access violation crash in case a conversion goes wrong
-            try
-            {
-              var converted = converter.ConvertToNative(obj) as AcadDb.Entity;
-              if (converted != null)
-                  converted.Append(layerName, tr);
-              else
-                state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
-            }
-            catch
-            {
-              state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
             }
           }
 
@@ -376,37 +382,32 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
     }
 
-    private AcadDb.LayerTableRecord GetOrMakeLayer(string layerName, AcadDb.Transaction tr)
+    private bool GetOrMakeLayer(string layerName, AcadDb.Transaction tr, out string cleanName)
     {
-      AcadDb.LayerTableRecord layer = null;
-
+      cleanName = Utils.RemoveInvalidLayerChars(layerName);
       try
       {
         AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
-        if (lyrTbl.Has(layerName))
+        if (lyrTbl.Has(cleanName))
         {
-          layer = (AcadDb.LayerTableRecord)tr.GetObject(lyrTbl[layerName], AcadDb.OpenMode.ForRead);
+          return true;
         }
         else
         {
           lyrTbl.UpgradeOpen();
-
-          // make a new layer
           var _layer = new AcadDb.LayerTableRecord();
 
           // Assign the layer properties
           _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(Color.Blue);
-          _layer.Name = layerName;
+          _layer.Name = cleanName;
 
           // Append the new layer to the layer table and the transaction
           lyrTbl.Add(_layer);
           tr.AddNewlyCreatedDBObject(_layer, true);
-          layer = _layer;
         }
       }
-      catch { }
-
-      return layer;
+      catch { return false; }
+      return true;
     }
 
     #endregion
@@ -441,6 +442,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       conversionProgressDict["Conversion"] = 0;
       Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
       int convertedCount = 0;
+      bool renamedlayers = false;
 
       foreach (var autocadObjectHandle in state.SelectedObjectIds)
       {
@@ -452,6 +454,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
         // get the db object from id
         AcadDb.Handle hn = new AcadDb.Handle(Convert.ToInt64(autocadObjectHandle, 16));
         AcadDb.DBObject obj = hn.GetObject(out string type, out string layer);
+        string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
+        if (!cleanLayerName.Equals(layer))
+          renamedlayers = true;
+
         if (obj == null)
         {
           state.Errors.Add(new Exception($"Failed to find local object ${autocadObjectHandle}."));
@@ -490,12 +496,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
         */
 
-        if (commitObj[$"@{layer}"] == null)
-          commitObj[$"@{layer}"] = new List<Base>();
+        if (commitObj[$"@{cleanLayerName}"] == null)
+          commitObj[$"@{cleanLayerName}"] = new List<Base>();
 
-        ((List<Base>)commitObj[$"@{layer}"]).Add(converted);
+        ((List<Base>)commitObj[$"@{cleanLayerName}"]).Add(converted);
         convertedCount++;
       }
+
+      if (renamedlayers)
+        RaiseNotification("Replaced illegal chars ./ with - in one or more layer names.");
 
       if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {

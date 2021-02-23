@@ -76,6 +76,7 @@ namespace Objects.Converter.AutocadCivil
           if (schema != null)
             return ObjectToSpeckleBuiltElement(o);
           */
+          // set test material
           return ObjectToSpeckle(o);
 
         case Acad.Geometry.Point3d o:
@@ -148,8 +149,8 @@ namespace Objects.Converter.AutocadCivil
         //case Plane o: // TODO: NOT TESTED
         //  return PlaneToNative(o);
 
-        //case Curve o: // TODO: SPLINES AND NURBS NOT TESTED
-        //  return CurveToNativeDB(o);
+        case Curve o:
+          return CurveToNativeDB(o);
 
         //case Surface o: // TODO: NOT TESTED
         //  return SurfaceToNative(o);
@@ -195,6 +196,9 @@ namespace Objects.Converter.AutocadCivil
           if (o.IsOnlyLines) // db polylines can have arc segments, decide between polycurve or polyline conversion
             return PolylineToSpeckle(o);
           else return PolycurveToSpeckle(o);
+
+        case AcadDB.Polyline3d o:
+          return PolylineToSpeckle(o);
 
         case AcadDB.Polyline2d o:
           return PolycurveToSpeckle(o);
@@ -266,7 +270,7 @@ namespace Objects.Converter.AutocadCivil
           return true;
 
         case Acad.Geometry.NurbSurface _:
-          return true;
+          return false;
 
         default:
           return false;
@@ -300,8 +304,8 @@ namespace Objects.Converter.AutocadCivil
         case Polycurve _:
           return true;
 
-        //case Curve _:
-        //  return true;
+        case Curve _:
+          return true;
 
         default:
           return false;
