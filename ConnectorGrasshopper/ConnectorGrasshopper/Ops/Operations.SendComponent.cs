@@ -388,6 +388,12 @@ namespace ConnectorGrasshopper.Ops
               RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot push to a specific commit stream url."));
               continue;
             }
+            
+            if (sw.Type == StreamWrapperType.Object)
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot push to a specific object stream url."));
+              continue;
+            }
 
             Account acc;
             try
