@@ -104,6 +104,7 @@
   <ItemGroup>
     <PackageReference Include="DynamoVisualProgramming.Core">
       <Version>2.8.0.2471</Version>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
