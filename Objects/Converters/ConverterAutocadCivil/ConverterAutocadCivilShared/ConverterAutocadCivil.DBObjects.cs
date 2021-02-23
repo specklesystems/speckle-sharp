@@ -35,7 +35,10 @@ namespace Objects.Converter.AutocadCivil
     // Lines
     public Line LineToSpeckle(AcadDB.Line line)
     {
-      return new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      _line.length = line.Length;
+      _line.bbox = BoxToSpeckle(line.GeometricExtents, true);
+      return _line;
     }
     public AcadDB.Line LineToNativeDB(Line line)
     {
@@ -89,6 +92,8 @@ namespace Objects.Converter.AutocadCivil
       _arc.startPoint = PointToSpeckle(arc.StartPoint);
       _arc.endPoint = PointToSpeckle(arc.EndPoint);
       _arc.domain = new Interval(0, 1);
+      _arc.length = arc.Length;
+      _arc.bbox = BoxToSpeckle(arc.GeometricExtents, true);
       return _arc;
     }
     public AcadDB.Arc ArcToNativeDB(Arc arc)
@@ -102,6 +107,8 @@ namespace Objects.Converter.AutocadCivil
     public Circle CircleToSpeckle(AcadDB.Circle circle)
     {
       var _circle = new Circle(PlaneToSpeckle(circle.GetPlane()), circle.Radius, ModelUnits);
+      _circle.length = circle.Circumference;
+      _circle.bbox = BoxToSpeckle(circle.GeometricExtents, true);
       return _circle;
 
     }
@@ -113,10 +120,13 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Ellipses
+    // TODO: fix major/minor vs x axis/yaxis distinction in conversions after speckle firstRadius & secondRadius def is set
     public Ellipse EllipseToSpeckle(AcadDB.Ellipse ellipse)
     {
       var _ellipse = new Ellipse(PlaneToSpeckle(ellipse.GetPlane()), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits);
       _ellipse.domain = new Interval(0, 1);
+      _ellipse.length = ellipse.GetDistanceAtParameter(ellipse.EndParam);
+      _ellipse.bbox = BoxToSpeckle(ellipse.GeometricExtents, true);
       return _ellipse;
     }
     public AcadDB.Ellipse EllipseToNativeDB(Ellipse ellipse)
@@ -184,6 +194,9 @@ namespace Objects.Converter.AutocadCivil
         segments.Add((ICurve)ConvertToSpeckle(exploded[i]));
       polycurve.segments = segments;
 
+      polycurve.length = polyline.Length;
+      polycurve.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
+
       return polycurve;
     }
     public Polycurve PolycurveToSpeckle(AcadDB.Polyline polyline) // AC polylines are polycurves with linear or arc segments
@@ -206,6 +219,9 @@ namespace Objects.Converter.AutocadCivil
         }
       }
       polycurve.segments = segments;
+
+      polycurve.length = polyline.Length;
+      polycurve.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
 
       return polycurve;
     }
@@ -257,10 +273,21 @@ namespace Objects.Converter.AutocadCivil
       }
       catch { }
 
+      // get weights: autocad assigns unweighted points a value of -1, and will return an empty list in the spline's nurbsdata if no points are weighted
+      var weights = new List<double>();
+      for (int i = 0; i < spline.NumControlPoints; i++)
+      {
+        double weight = spline.WeightAt(i);
+        if (weight < 0)
+          weights.Add(1);
+        else
+          weights.Add(weight);
+      }
+
       // set nurbs curve info
       curve.points = PointsToFlatArray(data.GetControlPoints().OfType<Point3d>().ToList()).ToList();
       curve.knots = data.GetKnots().OfType<double>().ToList();
-      curve.weights = data.GetWeights().OfType<double>().ToList();
+      curve.weights = weights;
       curve.degree = spline.Degree;
       curve.periodic = spline.IsPeriodic;
       curve.rational = spline.IsRational;

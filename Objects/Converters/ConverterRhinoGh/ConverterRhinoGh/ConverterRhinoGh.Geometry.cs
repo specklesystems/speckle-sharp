@@ -300,9 +300,9 @@ namespace Objects.Converter.RhinoGh
     }
 
     //Ellipse
+    // TODO: handle conversions that define Radius1/Radius2 as major/minor instead of xaxis/yaxis 
     public Ellipse EllipseToSpeckle(RH.Ellipse e)
     {
-
       var el = new Ellipse(PlaneToSpeckle(e.Plane), e.Radius1, e.Radius2, ModelUnits);
       el.domain = new Interval(0, 1);
       el.length = e.ToNurbsCurve().GetLength();

@@ -270,7 +270,7 @@ namespace Objects.Converter.AutocadCivil
           return true;
 
         case Acad.Geometry.NurbSurface _:
-          return true;
+          return false;
 
         default:
           return false;
