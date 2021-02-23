@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
@@ -367,7 +367,7 @@ namespace ConnectorGrasshopper.Ops
       {
         // NOTE: Handled in do work
       }
-      
+
 
 
       if (StreamWrapper != null && StreamWrapper.Equals(wrapper) && !JustPastedIn) return;
@@ -448,8 +448,17 @@ namespace ConnectorGrasshopper.Ops
         ErrorAction = (transportName, exception) =>
         {
           // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
+          var msg = exception.Message.Contains("401")
+            ? "You don't have access to this stream/transport , or it doesn't exist."
+            : exception.Message;
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: { msg }"));
+          Done();
           var asyncParent = (GH_AsyncComponent) Parent;
           asyncParent.CancellationSources.ForEach(source =>
+          {
+            if (source.Token != CancellationToken)
+              source.Cancel();
+          });
         };
 
         Client client = null;
@@ -551,7 +560,8 @@ namespace ConnectorGrasshopper.Ops
       {
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.InnerException?.Message ?? e.Message));
+        var msg = e.InnerException?.Message ?? e.Message;
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, msg));
         Done();
       }
     }

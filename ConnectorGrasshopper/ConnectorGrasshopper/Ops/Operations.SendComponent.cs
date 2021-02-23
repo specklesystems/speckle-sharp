@@ -430,9 +430,18 @@ namespace ConnectorGrasshopper.Ops
 
         ErrorAction = (transportName, exception) =>
         {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
-          var asyncParent = (GH_AsyncComponent)Parent;
-          asyncParent.CancellationSources.ForEach(source => source.Cancel());
+          // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
+          var msg = exception.Message.Contains("401")
+            ? $"You don't have access to this transport , or it doesn't exist."
+            : exception.Message;
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
+          Done();
+          var asyncParent = (GH_AsyncComponent) Parent;
+          asyncParent.CancellationSources.ForEach(source =>
+          {
+            if (source.Token != CancellationToken)
+              source.Cancel();
+          });
         };
 
         if (CancellationToken.IsCancellationRequested)
