@@ -368,9 +368,10 @@ namespace ConnectorGrasshopper.Ops
         // NOTE: Handled in do work
       }
       
-      StreamWrapper = wrapper;
 
-      if (StreamWrapper != null && wrapper.StreamId == StreamWrapper.StreamId && !JustPastedIn) return;
+
+      if (StreamWrapper != null && StreamWrapper.Equals(wrapper) && !JustPastedIn) return;
+      StreamWrapper = wrapper;
 
       //ResetApiClient(wrapper);
       Task.Run(async () =>
