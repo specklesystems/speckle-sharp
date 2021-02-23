@@ -95,6 +95,9 @@ namespace ConnectorGrasshopper.Streams
             var client = new Client(account);
             var result = await client.StreamGet(idWrapper.StreamId);
             stream = new StreamWrapper(result.id, account.userInfo.id, account.serverInfo.url);
+            stream.BranchName = idWrapper.BranchName;
+            stream.ObjectId = idWrapper.ObjectId;
+            stream.CommitId = idWrapper.CommitId;
           }
           catch (Exception e)
           {

@@ -193,7 +193,8 @@ namespace Speckle.Core.Credentials
           }
           catch(Exception e)
           {
-            err = e;
+            // If user specified account and fails, we should stop trying.
+            throw e;
           }
         }
       }
@@ -234,8 +235,20 @@ namespace Speckle.Core.Credentials
 
       throw err;
     }
-
-
+    
+    public bool Equals(StreamWrapper wrapper)
+    {
+      if (wrapper == null) return false;
+      if (Type != wrapper.Type) return false;
+      return Type == wrapper.Type
+             && ServerUrl == wrapper.ServerUrl
+             && AccountId == wrapper.AccountId
+             && StreamId == wrapper.StreamId
+             && (Type == StreamWrapperType.Branch && BranchName == wrapper.BranchName)
+             || (Type == StreamWrapperType.Object && ObjectId == wrapper.ObjectId)
+             || (Type == StreamWrapperType.Commit && CommitId == wrapper.CommitId);
+    }
+    
     private async Task ValidateWithAccount(Account acc)
     {
       var client = new Client(acc);
@@ -258,7 +271,21 @@ namespace Speckle.Core.Credentials
 
     public override string ToString()
     {
-      return originalInput;
+      var url = $"{ServerUrl}/streams/{StreamId}";
+      switch (Type)
+      {
+        case StreamWrapperType.Commit:
+          url += $"/commits/{CommitId}";
+          break;
+        case StreamWrapperType.Branch:
+          url += $"/branches/{BranchName}";
+          break;
+        case StreamWrapperType.Object:
+          url += $"/objects/{ObjectId}";
+          break;
+      }
+      var acc =  $"{(AccountId != null ? "?u=" + AccountId : "")}";
+      return url + acc;
     }
   }
 
