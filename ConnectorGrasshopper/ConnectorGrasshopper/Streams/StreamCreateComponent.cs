@@ -107,7 +107,7 @@ namespace ConnectorGrasshopper.Streams
           var streamId = await client.StreamCreate(new StreamCreateInput());
           stream = new StreamWrapper(
             streamId,
-            account.id,
+            account.userInfo.id,
             account.serverInfo.url
           );
 

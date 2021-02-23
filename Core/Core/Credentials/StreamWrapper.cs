@@ -193,7 +193,8 @@ namespace Speckle.Core.Credentials
           }
           catch(Exception e)
           {
-            err = e;
+            // If user specified account and fails, we should stop trying.
+            throw e;
           }
         }
       }
