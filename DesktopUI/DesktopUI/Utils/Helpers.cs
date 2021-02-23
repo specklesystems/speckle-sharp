@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -142,6 +143,13 @@ namespace Speckle.DesktopUI.Utils
     public static string PluralS(int num)
     {
       return num != 1 ? "s" : "";
+    }
+
+    public static string CommitLayer(string stream, string branch, string commitId)
+    {
+      string formatted = $"{stream}[ {branch} @ {commitId} ]";
+      string clean = Regex.Replace(formatted, @"[^\u0000-\u007F]+", string.Empty).Trim(); // remove emojis and trim :( 
+      return clean;
     }
   }
 

@@ -20,7 +20,7 @@ namespace Speckle.ConnectorAutocadCivil
     public static string AutocadAppName = Applications.Civil2021;
     public static string AppName = "Civil 3D";
 #endif
-    public static string invalidChars = @"[<>/\:;""?*|=‘]";
+    public static string invalidChars = @"<>/\:;""?*|=‘";
 
     #region extension methods
 
@@ -127,7 +127,7 @@ namespace Speckle.ConnectorAutocadCivil
       string cleanDelimiter = str.Replace("::", "$");
 
       // remove all other invalid chars
-      return Regex.Replace(cleanDelimiter, invalidChars, string.Empty);
+      return Regex.Replace(cleanDelimiter, $"[{invalidChars}]", string.Empty);
     }
 
     public static string RemoveInvalidDynamicPropChars(string str)
