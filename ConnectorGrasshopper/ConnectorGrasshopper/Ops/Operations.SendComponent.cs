@@ -16,6 +16,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Rhino;
+using Sentry.PlatformAbstractions;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -370,7 +371,7 @@ namespace ConnectorGrasshopper.Ops
             catch (Exception e)
             {
               // TODO: Check this with team.
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.Message);
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
             }
           }
 
@@ -378,13 +379,13 @@ namespace ConnectorGrasshopper.Ops
           {
             if (sw.Type == StreamWrapperType.Undefined)
             {
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Input stream is invalid.");
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Input stream is invalid."));
               continue;
             }
 
             if (sw.Type == StreamWrapperType.Commit)
             {
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot push to a specific commit stream url.");
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot push to a specific commit stream url."));
               continue;
             }
 
@@ -395,7 +396,7 @@ namespace ConnectorGrasshopper.Ops
             }
             catch (Exception e)
             {
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
               continue;
             }
 
@@ -414,7 +415,7 @@ namespace ConnectorGrasshopper.Ops
 
         if (Transports.Count == 0)
         {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Could not identify any valid transports to send to."));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Could not identify any valid transports to send to."));
           Done();
           return;
         }
@@ -518,20 +519,20 @@ namespace ConnectorGrasshopper.Ops
           if (CancellationToken.IsCancellationRequested)
           {
             ((SendComponent)Parent).CurrentComponentState = "expired";
-            return;
+            Done();
           }
 
           Done();
         }, CancellationToken);
-        task.Wait();
       }
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
         Parent.Message = "Error";
         ((SendComponent)Parent).CurrentComponentState = "expired";
+        Done();
       }
     }
 

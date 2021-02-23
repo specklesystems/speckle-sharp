@@ -247,6 +247,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// </summary>
     internal void DoReceive()
     {
+      ClearErrorsAndWarnings();
       //double check, but can probably remove it
       if (!InPorts[0].IsConnected)
       {
@@ -286,6 +287,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
           hasErrors = true;
           Message = e.InnerException != null ? e.InnerException.Message : e.Message;
           Message = Message.Contains("401") ? "Not authorized" : Message;
+          ReceiveEnabled = false;
           _cancellationToken.Cancel();
         }
 
@@ -306,6 +308,13 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         {
           _cancellationToken.Cancel();
           Message = e.Message;
+          if (e.InnerException != null) Warning(e.InnerException.Message);
+          if (e is AggregateException agrException)
+            agrException.InnerExceptions.ToList().ForEach(ex =>
+            {
+              Warning(ex.Message);
+              Message = ex.Message.Contains("401") || ex.Message.Contains("don't have access") ? "Not authorized" : e.Message;
+            });
           Core.Logging.Log.CaptureAndThrow(e);
         }
       }
@@ -379,7 +388,6 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
       ResetNode(true);
       Stream = newStream;
-      ReceiveEnabled = true;
 
       //StreamWrapper points to a Stream
       if (newStream.Type == StreamWrapperType.Commit || newStream.Type == StreamWrapperType.Object) 
@@ -394,19 +402,32 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         AutoUpdateEnabled = true;
         InitializeReceiver();
       }
+      ReceiveEnabled = true;
     }
 
     internal void InitializeReceiver()
     {
+      ClearErrorsAndWarnings();
       if (Stream == null)
         return;
+      try
+      {
+        var account = Stream.GetAccount().Result;
+        Client = new Client(account);
+        Client.SubscribeCommitCreated(Stream.StreamId);
+        Client.OnCommitCreated += OnCommitChange;
 
-      var account = Stream.GetAccount().Result;
-      Client = new Client(account);
-      Client.SubscribeCommitCreated(Stream.StreamId);
-      Client.OnCommitCreated += OnCommitChange;
-
-      CheckIfBehind();
+        CheckIfBehind();
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+        var exceptionMessage = e.InnerException?.Message ?? e.Message;
+        Warning(exceptionMessage);
+        Message = exceptionMessage.Contains("don't have access") ? "Not authorised" : "Error";
+        ReceiveEnabled = false;
+        throw e;
+      }
     }
 
     private T GetInputAs<T>(EngineController engine, int port)
@@ -500,6 +521,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         ReceiveEnabled = false;
         Message = "";
         Client?.Dispose();
+        ClearErrorsAndWarnings();
       }
     }
 
@@ -518,6 +540,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
     private void OnCommitChange(object sender, CommitInfo e)
     {
+      if (e.branchName != (Stream.BranchName ?? "main")) return;
+      
       Task.Run(async () => GetExpiredObjectCount(e.objectId));
       if (AutoUpdate)
         OnNewDataAvail?.Invoke();

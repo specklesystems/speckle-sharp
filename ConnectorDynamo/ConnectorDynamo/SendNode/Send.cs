@@ -397,9 +397,13 @@ namespace Speckle.ConnectorDynamo.SendNode
         _streams = transportsDict.Keys.ToList();
         _branchNames = transportsDict;
       }
-      catch
+      catch(Exception e)
       {
         //ignored
+        ResetNode(true);
+        Warning(e.InnerException?.Message ?? e.Message);
+        Message = "Not authorized";
+        return;
       }
 
       if (_streams == null || !_streams.Any())

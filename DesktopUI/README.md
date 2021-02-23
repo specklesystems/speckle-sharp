@@ -1,6 +1,6 @@
 # Speckle Desktop UI
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
+[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Community forum users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square&logo=discourse&logoColor=white)](https://discourse.speckle.works) [![website](https://img.shields.io/badge/https://-speckle.systems-royalblue?style=flat-square)](https://speckle.systems) [![docs](https://img.shields.io/badge/docs-speckle.guide-orange?style=flat-square&logo=read-the-docs&logoColor=white)](https://speckle.guide/dev/)
 
 ## Introduction
 
@@ -11,6 +11,12 @@ This is the Desktop UI for Speckle 2.0 Desktop Connectors 🎉
 This project on its own is just a WPF application that doesn't do a whole lot. The magic comes when you implement the `ConnectorBindings` to make it a functional connector for whatever software application you require! It is currently up and running in the [Revit Connector](https://github.com/specklesystems/ConnectorRevit) - take a look!
 
 This UI is currently in ⚠ALPHA⚠ and is a bit rough around the edges -- please use at your own risk! Play with it, break some stuff, and come back to us with feedback comments, suggestions, etc ✨
+
+## Documentation
+
+Comprehensive developer and user documentation can be found in our:
+
+#### 📚 [Speckle Docs website](https://speckle.guide/dev/)
 
 ## Trying it out
 

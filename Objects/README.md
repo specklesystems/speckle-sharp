@@ -1,14 +1,11 @@
 # Objects
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
+[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Community forum users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square&logo=discourse&logoColor=white)](https://discourse.speckle.works) [![website](https://img.shields.io/badge/https://-speckle.systems-royalblue?style=flat-square)](https://speckle.systems) [![docs](https://img.shields.io/badge/docs-speckle.guide-orange?style=flat-square&logo=read-the-docs&logoColor=white)](https://speckle.guide/dev/)
 
 **Status**
 
 ![.NET Core](https://github.com/specklesystems/Objects/workflows/.NET%20Core/badge.svg)
 
-## Disclaimer
-
-This is an early alpha release, not meant for use in production! We're working to stabilise the 2.0 API, and until then there will be breaking changes. You have been warned!
 
 ## Introduction
 
@@ -25,6 +22,12 @@ The Speckle 2.0 object model: geometry and element base classes. It uses .NET St
 **NOTE:** this is the default object model we ship with Speckle. You can develop your own or fork this and extend it too!
 
 More info on Objects and Kits 2.0 can be found in [this community forum thread](https://discourse.speckle.works/t/introducing-kits-2-0/710/34).
+
+## Documentation
+
+Comprehensive developer and user documentation can be found in our:
+
+#### 📚 [Speckle Docs website](https://speckle.guide/dev/)
 
 ## Developing & Debugging
 
