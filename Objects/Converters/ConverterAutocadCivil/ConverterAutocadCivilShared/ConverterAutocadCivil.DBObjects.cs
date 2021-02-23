@@ -36,6 +36,7 @@ namespace Objects.Converter.AutocadCivil
     public Line LineToSpeckle(AcadDB.Line line)
     {
       var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      _line.domain = new Interval(line.StartParam, line.EndParam);
       _line.length = line.Length;
       _line.bbox = BoxToSpeckle(line.GeometricExtents, true);
       return _line;
@@ -91,7 +92,7 @@ namespace Objects.Converter.AutocadCivil
       var _arc = new Arc(PlaneToSpeckle(arc.GetPlane()), arc.Radius, arc.StartAngle, arc.EndAngle, arc.TotalAngle, ModelUnits);
       _arc.startPoint = PointToSpeckle(arc.StartPoint);
       _arc.endPoint = PointToSpeckle(arc.EndPoint);
-      _arc.domain = new Interval(0, 1);
+      _arc.domain = new Interval(arc.StartParam, arc.EndParam);
       _arc.length = arc.Length;
       _arc.bbox = BoxToSpeckle(arc.GeometricExtents, true);
       return _arc;
@@ -124,7 +125,7 @@ namespace Objects.Converter.AutocadCivil
     public Ellipse EllipseToSpeckle(AcadDB.Ellipse ellipse)
     {
       var _ellipse = new Ellipse(PlaneToSpeckle(ellipse.GetPlane()), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits);
-      _ellipse.domain = new Interval(0, 1);
+      _ellipse.domain = new Interval(ellipse.StartParam, ellipse.EndParam);
       _ellipse.length = ellipse.GetDistanceAtParameter(ellipse.EndParam);
       _ellipse.bbox = BoxToSpeckle(ellipse.GeometricExtents, true);
       return _ellipse;

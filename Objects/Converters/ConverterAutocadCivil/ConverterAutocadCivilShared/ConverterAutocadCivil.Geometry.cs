@@ -122,11 +122,22 @@ namespace Objects.Converter.AutocadCivil
     // Line
     public Line LineToSpeckle(Line3d line)
     {
-      return new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      var startParam = line.GetParameterOf(line.StartPoint);
+      var endParam = line.GetParameterOf(line.EndPoint);
+      var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      _line.length = line.GetLength(startParam, endParam, tolerance);
+      _line.domain = IntervalToSpeckle(line.GetInterval());
+      _line.bbox = BoxToSpeckle(line.OrthoBoundBlock);
+      
+      return _line;
     }
     public Line LineToSpeckle(LineSegment3d line)
     {
-      return new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      _line.length = line.Length;
+      _line.domain = IntervalToSpeckle(line.GetInterval());
+      _line.bbox = BoxToSpeckle(line.OrthoBoundBlock);
+      return _line;
     }
     public Line3d LineToNative(Line line)
     {
@@ -134,6 +145,49 @@ namespace Objects.Converter.AutocadCivil
       if (line.domain != null)
         _line.SetInterval(IntervalToNative(line.domain));
       return _line;
+    }
+
+    // Box
+    public Box BoxToSpeckle(BoundBlock3d bound, bool OrientToWorldXY = false)
+    {
+      try
+      {
+        Box box = null;
+
+        var min = bound.GetMinimumPoint();
+        var max = bound.GetMaximumPoint();
+
+        // get dimension intervals
+        var xSize = new Interval(min.X, max.X);
+        var ySize = new Interval(min.Y, max.Y);
+        var zSize = new Interval(min.Z, max.Z);
+
+        // get box size info
+        double area = 2 * ((xSize.Length * ySize.Length) + (xSize.Length * zSize.Length) + (ySize.Length * zSize.Length));
+        double volume = xSize.Length * ySize.Length * zSize.Length;
+
+        if (OrientToWorldXY)
+        {
+          var origin = new Point3d(0, 0, 0);
+          var normal = new Vector3d(0, 0, 1);
+          var plane = PlaneToSpeckle(new Autodesk.AutoCAD.Geometry.Plane(origin, normal));
+          box = new Box(plane, xSize, ySize, zSize, ModelUnits) { area = area, volume = volume };
+        }
+        else
+        {
+          // get base plane
+          var corner = new Point3d(max.X, max.Y, min.Z);
+          var origin = new Point3d((corner.X + min.X) / 2, (corner.Y + min.Y) / 2, (corner.Z + min.Z) / 2);
+          var plane = PlaneToSpeckle(new Autodesk.AutoCAD.Geometry.Plane(min, origin, corner));
+          box = new Box(plane, xSize, ySize, zSize, ModelUnits) { area = area, volume = volume };
+        }
+
+        return box;
+      }
+      catch
+      {
+        return null;
+      }
     }
 
     // Arc
@@ -144,6 +198,7 @@ namespace Objects.Converter.AutocadCivil
       _arc.endPoint = PointToSpeckle(arc.EndPoint);
       _arc.domain = IntervalToSpeckle(arc.GetInterval());
       _arc.length = arc.GetLength(arc.GetParameterOf(arc.StartPoint), arc.GetParameterOf(arc.EndPoint), tolerance);
+      _arc.bbox = BoxToSpeckle(arc.OrthoBoundBlock);
       return _arc;
     }
     public CircularArc3d ArcToNative(Arc arc)
@@ -202,6 +257,7 @@ namespace Objects.Converter.AutocadCivil
       _curve.closed = curve.IsClosed();
       _curve.length = curve.GetLength(curve.StartParameter, curve.EndParameter, tolerance);
       _curve.domain = IntervalToSpeckle(curve.GetInterval());
+      _curve.bbox = BoxToSpeckle(curve.OrthoBoundBlock);
       _curve.units = ModelUnits;
 
       return _curve;
