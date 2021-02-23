@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
@@ -446,9 +446,9 @@ namespace ConnectorGrasshopper.Ops
 
         ErrorAction = (transportName, exception) =>
         {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
+          // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
           var asyncParent = (GH_AsyncComponent) Parent;
-          asyncParent.CancellationSources.ForEach(source => source.Cancel());
+          asyncParent.CancellationSources.ForEach(source =>
         };
 
         Client client = null;
