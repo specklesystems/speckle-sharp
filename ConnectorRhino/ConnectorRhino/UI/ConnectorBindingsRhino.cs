@@ -187,7 +187,7 @@ namespace SpeckleRhino
       var converter = kit.LoadConverter(Applications.Rhino);
       converter.SetContextDocument(Doc);
 
-      var myStream = await state.Client.StreamGet(state.Stream.id);
+      var stream = await state.Client.StreamGet(state.Stream.id);
 
       if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
@@ -224,7 +224,7 @@ namespace SpeckleRhino
         RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
       }
 
-      var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {myStream.name}");
+      var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {stream.name}");
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
@@ -236,11 +236,10 @@ namespace SpeckleRhino
         UpdateProgress(conversionProgressDict, state.Progress);
       };
 
-      var layerName = $"{myStream.name}: {state.Branch.name} @ {commitId}";
-      layerName = Regex.Replace(layerName, @"[^\u0000-\u007F]+", string.Empty).Trim(); // Rhino doesn't like emojis in layer names :( 
+      // get commit layer name 
+      var layerName = Speckle.DesktopUI.Utils.Formatting.CommitLayer(stream.name, state.Branch.name, commitId);
 
       var existingLayer = Doc.Layers.FindName(layerName);
-
       if (existingLayer != null)
       {
         Doc.Layers.Purge(existingLayer.Id, false);
@@ -407,6 +406,7 @@ namespace SpeckleRhino
       commitObj["units"] = units;
 
       int objCount = 0;
+      bool renamedlayers = false;
 
       // TODO: check for filters and trawl the doc.
       if (state.Filter != null)
@@ -465,16 +465,22 @@ namespace SpeckleRhino
         }
 
         var layerName = Doc.Layers[obj.Attributes.LayerIndex].FullPath; // sep is ::
+        string cleanLayerName = RemoveInvalidDynamicPropChars(layerName);
+        if (!cleanLayerName.Equals(layerName))
+          renamedlayers = true;
 
-        if (commitObj[$"@{layerName}"] == null)
+        if (commitObj[$"@{cleanLayerName}"] == null)
         {
-          commitObj[$"@{layerName}"] = new List<Base>();
+          commitObj[$"@{cleanLayerName}"] = new List<Base>();
         }
 
-        ((List<Base>)commitObj[$"@{layerName}"]).Add(converted);
+        ((List<Base>)commitObj[$"@{cleanLayerName}"]).Add(converted);
 
         objCount++;
       }
+
+      if (renamedlayers)
+        RaiseNotification("Replaced illegal chars ./ with - in one or more layer names.");
 
       if (state.CancellationTokenSource.Token.IsCancellationRequested)
       {
@@ -549,6 +555,12 @@ namespace SpeckleRhino
           RaiseNotification("Filter type is not supported in this app. Why did the developer implement it in the first place?");
           return new List<string>();
       }
+    }
+
+    private string RemoveInvalidDynamicPropChars(string str)
+    {
+      // remove ./
+      return Regex.Replace(str, @"[./]", "-");
     }
 
     #endregion

@@ -7,6 +7,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 
 using Arc = Objects.Geometry.Arc;
+using Box = Objects.Geometry.Box;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
 using Ellipse = Objects.Geometry.Ellipse;
@@ -34,11 +35,55 @@ namespace Objects.Converter.AutocadCivil
     // Lines
     public Line LineToSpeckle(AcadDB.Line line)
     {
-      return new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint));
+      var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      _line.domain = new Interval(line.StartParam, line.EndParam);
+      _line.length = line.Length;
+      _line.bbox = BoxToSpeckle(line.GeometricExtents, true);
+      return _line;
     }
     public AcadDB.Line LineToNativeDB(Line line)
     {
       return new AcadDB.Line(PointToNative(line.start), PointToNative(line.end));
+    }
+
+    // Boxes
+    public Box BoxToSpeckle(AcadDB.Extents3d extents, bool OrientToWorldXY = false)
+    {
+      try
+      {
+        Box box = null;
+
+        // get dimension intervals
+        var xSize = new Interval(extents.MinPoint.X, extents.MaxPoint.X);
+        var ySize = new Interval(extents.MinPoint.Y, extents.MaxPoint.Y);
+        var zSize = new Interval(extents.MinPoint.Z, extents.MaxPoint.Z);
+
+        // get box size info
+        double area = 2 * ((xSize.Length * ySize.Length) + (xSize.Length * zSize.Length) + (ySize.Length * zSize.Length));
+        double volume = xSize.Length * ySize.Length * zSize.Length;
+
+        if (OrientToWorldXY)
+        {
+          var origin = new Point3d(0, 0, 0);
+          var normal = new Vector3d(0, 0, 1);
+          var plane = PlaneToSpeckle(new Autodesk.AutoCAD.Geometry.Plane(origin, normal));
+          box = new Box(plane, xSize, ySize, zSize, ModelUnits) { area = area, volume = volume };
+        }
+        else
+        {
+          // get base plane
+          var corner = new Point3d(extents.MaxPoint.X, extents.MaxPoint.Y, extents.MinPoint.Z);
+          var origin = new Point3d((corner.X + extents.MinPoint.X) / 2, (corner.Y + extents.MinPoint.Y) / 2, (corner.Z + extents.MinPoint.Z) / 2);
+          var plane = PlaneToSpeckle(new Autodesk.AutoCAD.Geometry.Plane(extents.MinPoint, origin, corner));
+          box = new Box(plane, xSize, ySize, zSize, ModelUnits) { area = area, volume = volume };
+        }
+
+        return box;
+      }
+      catch
+      {
+        return null;
+      }
     }
 
     // Arcs
@@ -47,7 +92,9 @@ namespace Objects.Converter.AutocadCivil
       var _arc = new Arc(PlaneToSpeckle(arc.GetPlane()), arc.Radius, arc.StartAngle, arc.EndAngle, arc.TotalAngle, ModelUnits);
       _arc.startPoint = PointToSpeckle(arc.StartPoint);
       _arc.endPoint = PointToSpeckle(arc.EndPoint);
-      _arc.domain = new Interval(0, 1);
+      _arc.domain = new Interval(arc.StartParam, arc.EndParam);
+      _arc.length = arc.Length;
+      _arc.bbox = BoxToSpeckle(arc.GeometricExtents, true);
       return _arc;
     }
     public AcadDB.Arc ArcToNativeDB(Arc arc)
@@ -61,6 +108,8 @@ namespace Objects.Converter.AutocadCivil
     public Circle CircleToSpeckle(AcadDB.Circle circle)
     {
       var _circle = new Circle(PlaneToSpeckle(circle.GetPlane()), circle.Radius, ModelUnits);
+      _circle.length = circle.Circumference;
+      _circle.bbox = BoxToSpeckle(circle.GeometricExtents, true);
       return _circle;
 
     }
@@ -72,10 +121,13 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Ellipses
+    // TODO: fix major/minor vs x axis/yaxis distinction in conversions after speckle firstRadius & secondRadius def is set
     public Ellipse EllipseToSpeckle(AcadDB.Ellipse ellipse)
     {
       var _ellipse = new Ellipse(PlaneToSpeckle(ellipse.GetPlane()), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits);
-      _ellipse.domain = new Interval(0, 1);
+      _ellipse.domain = new Interval(ellipse.StartParam, ellipse.EndParam);
+      _ellipse.length = ellipse.GetDistanceAtParameter(ellipse.EndParam);
+      _ellipse.bbox = BoxToSpeckle(ellipse.GeometricExtents, true);
       return _ellipse;
     }
     public AcadDB.Ellipse EllipseToNativeDB(Ellipse ellipse)
@@ -93,7 +145,7 @@ namespace Objects.Converter.AutocadCivil
       return new Polyline(PointsToFlatArray(vertices), ModelUnits) { closed = true };
     }
 
-    // PolyCurves
+    // Polycurves
     public Polyline PolylineToSpeckle(AcadDB.Polyline polyline) // AC polylines can have arc segments, this treats all segments as lines
     {
       List<Point3d> vertices = new List<Point3d>();
@@ -102,18 +154,38 @@ namespace Objects.Converter.AutocadCivil
       if (polyline.Closed)
         vertices.Add(polyline.GetPoint3dAt(0));
 
-      return new Polyline(PointsToFlatArray(vertices), ModelUnits) { closed = polyline.Closed };
+      var _polyline = new Polyline(PointsToFlatArray(vertices), ModelUnits);
+      _polyline.closed = polyline.Closed;
+      _polyline.length = polyline.Length;
+      _polyline.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
+
+      return _polyline;
     }
-    public Polyline3d PolylineToNativeDB(Polyline polyline) // Polyline3d does NOT support curves
+    public Polyline PolylineToSpeckle(AcadDB.Polyline3d polyline) // AC polyline3d can only have linear segments
+    {
+      List<Point3d> vertices = new List<Point3d>();
+      foreach (PolylineVertex3d vertex in polyline)
+        vertices.Add(vertex.Position);
+      if (polyline.Closed)
+        vertices.Add(vertices[0]);
+
+      var _polyline = new Polyline(PointsToFlatArray(vertices), ModelUnits);
+      _polyline.closed = polyline.Closed;
+      _polyline.length = polyline.Length;
+      _polyline.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
+
+      return _polyline;
+    }
+    public Polyline3d PolylineToNativeDB(Polyline polyline) // AC polyline3d can only have linear segments
     {
       var vertices = new Point3dCollection();
       for (int i = 0; i < polyline.points.Count; i++)
         vertices.Add(PointToNative(polyline.points[i]));
       return new Polyline3d(Poly3dType.SimplePoly, vertices, polyline.closed);
     }
-    public Polycurve PolycurveToSpeckle(Polyline2d polyline) // AC polyline2d are really polycurves with linear, circlular, or elliptical segments!
+    public Polycurve PolycurveToSpeckle(Polyline2d polyline) // AC polyline2d can have linear, circlular, or elliptical segments
     {
-      var polycurve = new Polycurve() { closed = polyline.Closed };
+      var polycurve = new Polycurve(units: ModelUnits) { closed = polyline.Closed };
 
       // extract segment curves
       var segments = new List<ICurve>();
@@ -123,11 +195,14 @@ namespace Objects.Converter.AutocadCivil
         segments.Add((ICurve)ConvertToSpeckle(exploded[i]));
       polycurve.segments = segments;
 
+      polycurve.length = polyline.Length;
+      polycurve.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
+
       return polycurve;
     }
-    public Polycurve PolycurveToSpeckle(AcadDB.Polyline polyline) // AC polylines are really polycurves with linear, circlular, or elliptical segments!
+    public Polycurve PolycurveToSpeckle(AcadDB.Polyline polyline) // AC polylines are polycurves with linear or arc segments
     {
-      var polycurve = new Polycurve() { closed = polyline.Closed };
+      var polycurve = new Polycurve(units: ModelUnits) { closed = polyline.Closed };
 
       // extract segments
       var segments = new List<ICurve>();
@@ -145,6 +220,9 @@ namespace Objects.Converter.AutocadCivil
         }
       }
       polycurve.segments = segments;
+
+      polycurve.length = polyline.Length;
+      polycurve.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
 
       return polycurve;
     }
@@ -179,43 +257,57 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Splines
-    // TODO: NOT TESTED
     public Curve SplineToSpeckle(Spline spline)
     {
       var curve = new Curve();
-      var nurbs = spline.NurbsData;
 
-      // get control points
-      var points = new List<Point3d>();
-      foreach (var point in nurbs.GetControlPoints())
-        points.Add((Point3d)point);
+      // get nurbs and geo data 
+      var data = spline.NurbsData;
+      var _spline = spline.GetGeCurve() as NurbCurve3d;
+
+      // handle the display polyline
+      try
+      {
+        var poly = spline.ToPolyline(false, true);
+        Polyline displayValue = ConvertToSpeckle(poly) as Polyline;
+        curve.displayValue = displayValue;
+      }
+      catch { }
+
+      // get weights: autocad assigns unweighted points a value of -1, and will return an empty list in the spline's nurbsdata if no points are weighted
+      var weights = new List<double>();
+      for (int i = 0; i < spline.NumControlPoints; i++)
+      {
+        double weight = spline.WeightAt(i);
+        if (weight < 0)
+          weights.Add(1);
+        else
+          weights.Add(weight);
+      }
 
       // set nurbs curve info
-      curve.weights = nurbs.GetWeights().ToArray().ToList();
-      curve.points = PointsToFlatArray(points).ToList();
-      curve.knots = nurbs.GetKnots().ToArray().ToList();
-      curve.degree = nurbs.Degree;
-      curve.periodic = nurbs.Periodic;
-      curve.rational = nurbs.Rational;
-      curve.closed = nurbs.Closed;
+      curve.points = PointsToFlatArray(data.GetControlPoints().OfType<Point3d>().ToList()).ToList();
+      curve.knots = data.GetKnots().OfType<double>().ToList();
+      curve.weights = weights;
+      curve.degree = spline.Degree;
+      curve.periodic = spline.IsPeriodic;
+      curve.rational = spline.IsRational;
+      curve.closed = spline.Closed;
+      curve.length = _spline.GetLength(_spline.StartParameter, _spline.EndParameter, tolerance);
+      curve.domain = IntervalToSpeckle(_spline.GetInterval());
+      curve.bbox = BoxToSpeckle(spline.GeometricExtents, true);
+      curve.units = ModelUnits;
 
       return curve;
     }
-    public Spline NurbsToNativeDB(Curve curve)
+
+    public AcadDB.Curve NurbsToNativeDB(Curve curve)
     {
-      var points = new Point3dCollection(PointListToNative(curve.points, curve.units));
-      var spline = new Spline(points, curve.degree, tolerance);
-
-      // add knots and weights
-      foreach (var knot in curve.knots)
-        spline.InsertKnot(knot);
-      for (int i = 0; i < curve.weights.Count; i++)
-        spline.SetWeightAt(i, curve.weights[i]);
-
-      return spline;
+      // test to see if this is polyline convertible first?
+      return AcadDB.Curve.CreateFromGeCurve(NurbcurveToNative(curve));
     }
 
-    // Curves
+    // All curves
     public AcadDB.Curve CurveToNativeDB(ICurve icurve)
     {
       switch (icurve)
@@ -238,7 +330,7 @@ namespace Objects.Converter.AutocadCivil
         case Polycurve polycurve:
           return PolycurveToNativeDB(polycurve);
 
-        case Curve curve: // TODO: NOT TESTED
+        case Curve curve:
           return NurbsToNativeDB(curve);
 
         default:
