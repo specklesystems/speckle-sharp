@@ -125,7 +125,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             $version =  $tag.Split("/")[1]  
             speckle-sharp-ci-tools/Patch/Patcher.exe << parameters.connectorname >>/ SpeckleConnector* $version
             # only create the yml if we have a tag
-            if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/latest.yml" -ItemType File -Value "version: $version.0" }
+            if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/latest.yml" -ItemType File -Value "version: $version.$env:CIRCLE_BUILD_NUM" }
       - run: # Creates the inno installer
           name: InnoSetup
           command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p    
