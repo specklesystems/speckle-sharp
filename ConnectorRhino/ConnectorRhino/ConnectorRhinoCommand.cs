@@ -15,16 +15,29 @@ namespace SpeckleRhino
     {
       Instance = this;
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+      RhinoDoc.BeginSaveDocument += RhinoDoc_WriteDocument;
       // RhinoApp.Idle += RhinoApp_Idle;
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
     {
+      if (e.Merge) // this is a paste or import operation, skip binding
+      {
+        return;
+      }
       var bindings = new ConnectorBindingsRhino();
       if (bindings.GetStreamsInFile().Count > 0)
         SpeckleCommand.Instance.StartOrShowPanel();
     }
 
+    private void RhinoDoc_WriteDocument(object sender, DocumentSaveEventArgs e)
+    {
+      if (e.ExportSelected) // this is a copy or export operation, delete doc streams (otherwise will copy stream data into destination file)
+      {
+        e.Document.Strings.Delete("speckle");
+      }
+      return;
+    }
 
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
   }
