@@ -579,7 +579,8 @@ namespace Speckle.DesktopUI.Utils
       Tracker.TrackPageview(Tracker.SEND);
       IsSending = true;
       ShowProgressBar = true;
-      ProgressBarIsIndeterminate = false;
+      //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+      ProgressBarIsIndeterminate = true; 
       CancellationTokenSource = new CancellationTokenSource();
 
       await Task.Run(() => Globals.Repo.ConvertAndSend(this));
@@ -612,7 +613,8 @@ namespace Speckle.DesktopUI.Utils
 
       IsReceiving = true;
       ShowProgressBar = true;
-      ProgressBarIsIndeterminate = false;
+      //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+      ProgressBarIsIndeterminate = true;
       CancellationTokenSource = new CancellationTokenSource();
 
       await Task.Run(() => Globals.Repo.ConvertAndReceive(this));
@@ -632,6 +634,7 @@ namespace Speckle.DesktopUI.Utils
     public void CancelSendOrReceive()
     {
       CancellationTokenSource.Cancel();
+      //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
       ProgressBarIsIndeterminate = true;
     }
 
