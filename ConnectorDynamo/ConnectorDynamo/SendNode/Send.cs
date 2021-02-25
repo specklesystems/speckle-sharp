@@ -259,9 +259,18 @@ namespace Speckle.ConnectorDynamo.SendNode
 
         void ProgressAction(ConcurrentDictionary<string, int> dict)
         {
-          var val = (double)dict.Values.Average() / totalCount;
-          Message = val.ToString("0%");
-          Progress = val * 100;
+          //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+          //var val = (double)dict.Values.Average() / totalCount;
+          //Message = val.ToString("0%");
+          //Progress = val * 100;
+
+
+          //NOTE: remove when restoring % progress
+          Message = "";
+          foreach (var kvp in dict)
+          {
+            Message += $"{kvp.Key}: {kvp.Value} ";
+          }
         }
 
         var hasErrors = false;
@@ -397,7 +406,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         _streams = transportsDict.Keys.ToList();
         _branchNames = transportsDict;
       }
-      catch(Exception e)
+      catch (Exception e)
       {
         //ignored
         ResetNode(true);

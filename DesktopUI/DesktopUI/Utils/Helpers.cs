@@ -55,14 +55,14 @@ namespace Speckle.DesktopUI.Utils
         {
           ProgressSummary += $"{kvp.Key}: {kvp.Value} ";
         }
-
-        ProgressSummary += $"Total: {Maximum}";
+        //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+        //ProgressSummary += $"Total: {Maximum}";
         _ProgressDict = value;
         NotifyOfPropertyChange(nameof(ProgressSummary));
       }
     }
 
-    public string ProgressSummary { get; set; } = "?? / ??";
+    public string ProgressSummary { get; set; } = "";
 
     private int _value = 0;
     public int Value

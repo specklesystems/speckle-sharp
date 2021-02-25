@@ -185,6 +185,15 @@ namespace SpeckleRhino
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.Rhino);
+
+      if (converter == null)
+      {
+        RaiseNotification($"Could not find any Kit!");
+        state.CancellationTokenSource.Cancel();
+        return null;
+      }
+
+
       converter.SetContextDocument(Doc);
 
       var stream = await state.Client.StreamGet(state.Stream.id);

@@ -660,7 +660,7 @@
                 <ProgressBar
                   x:Name="ProgressBar"
                   Grid.Column="0"
-                  Height="12"
+                  Height="15"
                   Margin="0,0"
                   VerticalAlignment="Center"
                   md:TransitionAssist.DisableTransitions="True"

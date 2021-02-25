@@ -250,7 +250,7 @@ namespace ConnectorGrasshopper.Ops
       var total = 0.0;
       foreach (var kvp in ProgressReports)
       {
-        Message += $"{kvp.Key}: {kvp.Value:0.00%}\n";
+        Message += $"{kvp.Key}: {kvp.Value}\n";
         total += kvp.Value;
       }
 
@@ -283,7 +283,7 @@ namespace ConnectorGrasshopper.Ops
 
     Action<string, Exception> ErrorAction;
 
-    List < (GH_RuntimeMessageLevel, string) > RuntimeMessages { get; set; } = new List < (GH_RuntimeMessageLevel, string) > ();
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     List<StreamWrapper> OutputWrappers = new List<StreamWrapper>();
 
@@ -291,7 +291,7 @@ namespace ConnectorGrasshopper.Ops
 
     public SendComponentWorker(GH_Component p) : base(p)
     {
-      RuntimeMessages = new List < (GH_RuntimeMessageLevel, string) > ();
+      RuntimeMessages = new List<(GH_RuntimeMessageLevel, string)>();
     }
 
     public override WorkerInstance Duplicate() => new SendComponentWorker(Parent);
@@ -388,7 +388,7 @@ namespace ConnectorGrasshopper.Ops
               RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot push to a specific commit stream url."));
               continue;
             }
-            
+
             if (sw.Type == StreamWrapperType.Object)
             {
               RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot push to a specific object stream url."));
@@ -430,7 +430,9 @@ namespace ConnectorGrasshopper.Ops
         {
           foreach (var kvp in dict)
           {
-            ReportProgress(kvp.Key, (double)kvp.Value / TotalObjectCount);
+            //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+            //ReportProgress(kvp.Key, (double)kvp.Value / TotalObjectCount);
+            ReportProgress(kvp.Key, (double)kvp.Value);
           }
         };
 
@@ -442,7 +444,7 @@ namespace ConnectorGrasshopper.Ops
             : exception.Message;
           RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
           Done();
-          var asyncParent = (GH_AsyncComponent) Parent;
+          var asyncParent = (GH_AsyncComponent)Parent;
           asyncParent.CancellationSources.ForEach(source =>
           {
             if (source.Token != CancellationToken)
@@ -458,7 +460,7 @@ namespace ConnectorGrasshopper.Ops
 
         // Part 3: actually send stuff!
 
-        var task = Task.Run(async() =>
+        var task = Task.Run(async () =>
         {
           if (CancellationToken.IsCancellationRequested)
           {
@@ -472,8 +474,8 @@ namespace ConnectorGrasshopper.Ops
             CancellationToken,
             Transports,
             useDefaultCache: ((SendComponent)Parent).UseDefaultCache,
-            onProgressAction : InternalProgressAction,
-            onErrorAction : ErrorAction);
+            onProgressAction: InternalProgressAction,
+            onErrorAction: ErrorAction);
 
           // 3.2 Create commits for any server transport present
 
@@ -568,7 +570,7 @@ namespace ConnectorGrasshopper.Ops
         return;
       }
 
-      foreach (var(level, message)in RuntimeMessages)
+      foreach (var (level, message) in RuntimeMessages)
       {
         Parent.AddRuntimeMessage(level, message);
       }
@@ -659,7 +661,9 @@ namespace ConnectorGrasshopper.Ops
         else
         {
           var palette = (state == "expired" || state == "up_to_date") ? GH_Palette.Black : GH_Palette.Transparent;
-          var text = state == "sending" ? $"{((SendComponent)Owner).OverallProgress:0.00%}" : "Send";
+          //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+          //var text = state == "sending" ? $"{((SendComponent)Owner).OverallProgress}" : "Send";
+          var text = state == "sending" ? $"Sending..." : "Send";
 
           var button = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, palette, text, 2,
             state == "expired" ? 10 : 0);

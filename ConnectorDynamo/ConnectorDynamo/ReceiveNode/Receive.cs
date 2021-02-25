@@ -275,9 +275,17 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
         void ProgressAction(ConcurrentDictionary<string, int> dict)
         {
-          var val = dict.Values.Average() / _objectCount;
-          Message = val.ToString("0%");
-          Progress = val * 100;
+          //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+          //var val = dict.Values.Average() / _objectCount;
+          //Message = val.ToString("0%");
+          //Progress = val * 100;
+
+          //NOTE: remove when restoring % progress
+          Message = "";
+          foreach (var kvp in dict)
+          {
+            Message += $"{kvp.Key}: {kvp.Value} ";
+          }
         }
 
         var hasErrors = false;
