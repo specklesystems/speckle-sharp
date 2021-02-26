@@ -3,10 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
-using Microsoft.Xaml.Behaviors;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Streams;
 using Speckle.DesktopUI.Utils;
 using Stylet;
@@ -48,7 +45,6 @@ namespace Speckle.DesktopUI
 
       // and factory for repositories
       builder.Bind<StreamsRepository>().ToSelf();
-      builder.Bind<AccountsRepository>().ToSelf();
 
       // and finally the external bindings (eg from Revit, Rhino, etc)
       builder.Bind<ConnectorBindings>().ToFactory(container =>

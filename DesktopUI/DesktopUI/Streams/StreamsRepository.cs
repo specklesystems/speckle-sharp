@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
-using Speckle.Core.Api;
-using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
-using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
-using Stylet;
 
 namespace Speckle.DesktopUI.Streams
 {

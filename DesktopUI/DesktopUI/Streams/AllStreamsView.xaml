@@ -60,7 +60,7 @@
           <Button.ContextMenu>
             <ContextMenu FontSize="12" ItemsSource="{Binding BranchContextMenuItems, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
               <ContextMenu.ItemTemplate>
-                <DataTemplate DataType="re">
+                <DataTemplate>
                   <Grid Background="Transparent" ToolTip="{Binding Tooltip}">
                     <Grid.InputBindings>
                       <MouseBinding
