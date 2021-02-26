@@ -3,6 +3,8 @@ using Rhino.Commands;
 using Rhino.PlugIns;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 
 namespace SpeckleRhino
@@ -11,32 +13,46 @@ namespace SpeckleRhino
   {
     public static SpeckleRhinoConnectorPlugin Instance { get; private set; }
 
+    private List<string> ExistingStreams = new List<string>(); // property for tracking stream data during copy and import operations
+
+    private static string SpeckleKey = "speckle";
+
     public SpeckleRhinoConnectorPlugin()
     {
       Instance = this;
+      RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
-      RhinoDoc.BeginSaveDocument += RhinoDoc_WriteDocument;
       // RhinoApp.Idle += RhinoApp_Idle;
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
     {
-      if (e.Merge) // this is a paste or import operation, skip binding
+      if (e.Merge) // this is a paste or import event
       {
+        // get incoming streams
+        var incomingStreams = e.Document.Strings.GetEntryNames(SpeckleKey);
+
+        // remove any that don't already exist in the current active doc
+        foreach (var incomingStream in incomingStreams)
+          if (!ExistingStreams.Contains(incomingStream))
+            RhinoDoc.ActiveDoc.Strings.Delete(SpeckleKey, incomingStream);
+
+        // skip binding
         return;
       }
+
       var bindings = new ConnectorBindingsRhino();
       if (bindings.GetStreamsInFile().Count > 0)
         SpeckleCommand.Instance.StartOrShowPanel();
     }
 
-    private void RhinoDoc_WriteDocument(object sender, DocumentSaveEventArgs e)
+    private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)
     {
-      if (e.ExportSelected) // this is a copy or export operation, delete doc streams (otherwise will copy stream data into destination file)
+      if (e.Merge) // this is a paste or import event
       {
-        e.Document.Strings.Delete("speckle");
+        // get existing streams in doc before a paste or import operation to use for cleanup
+        ExistingStreams = RhinoDoc.ActiveDoc.Strings.GetEntryNames(SpeckleKey).ToList();
       }
-      return;
     }
 
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;

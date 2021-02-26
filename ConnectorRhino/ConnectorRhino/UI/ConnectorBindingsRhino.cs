@@ -26,6 +26,8 @@ namespace SpeckleRhino
 
     public Timer SelectionTimer;
 
+    private static string SpeckleKey = "speckle";
+
     /// <summary>
     /// TODO: Any errors thrown should be stored here and passed to the ui state (somehow).
     /// </summary>
@@ -85,28 +87,28 @@ namespace SpeckleRhino
 
     public override void AddNewStream(StreamState state)
     {
-      Doc.Strings.SetString("speckle", state.Stream.id, JsonConvert.SerializeObject(state));
+      Doc.Strings.SetString(SpeckleKey, state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
     public override void RemoveStreamFromFile(string streamId)
     {
-      Doc.Strings.Delete("speckle", streamId);
+      Doc.Strings.Delete(SpeckleKey, streamId);
     }
 
     public override void PersistAndUpdateStreamInFile(StreamState state)
     {
-      Doc.Strings.SetString("speckle", state.Stream.id, JsonConvert.SerializeObject(state));
+      Doc.Strings.SetString(SpeckleKey, state.Stream.id, JsonConvert.SerializeObject(state));
     }
 
     public override List<StreamState> GetStreamsInFile()
     {
-      var strings = Doc?.Strings.GetEntryNames("speckle");
+      var strings = Doc?.Strings.GetEntryNames(SpeckleKey);
       if (strings == null)
       {
         return new List<StreamState>();
       }
 
-      var states = strings.Select(s => JsonConvert.DeserializeObject<StreamState>(Doc.Strings.GetValue("speckle", s))).ToList();
+      var states = strings.Select(s => JsonConvert.DeserializeObject<StreamState>(Doc.Strings.GetValue(SpeckleKey, s))).ToList();
 
       if (states != null)
       {
