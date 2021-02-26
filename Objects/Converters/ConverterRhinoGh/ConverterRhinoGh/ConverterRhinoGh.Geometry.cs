@@ -206,7 +206,7 @@ namespace Objects.Converter.RhinoGh
     public LineCurve LineToNative(Line line)
     {
       var myLine = new LineCurve(PointToNative(line.start).Location, PointToNative(line.end).Location);
-      myLine.Domain = line.domain == null ?  IntervalToNative(line.domain) : new RH.Interval(0, line.length);
+      myLine.Domain = line.domain == null ?  new RH.Interval(0, line.length) : IntervalToNative(line.domain);
       return myLine;
     }
 

@@ -52,7 +52,7 @@
       Margin="10,22,10,0"
       HorizontalAlignment="Center"
       HorizontalContentAlignment="Center"
-      md:ButtonProgressAssist.IsIndeterminate="False"
+      md:ButtonProgressAssist.IsIndeterminate="True"
       md:ButtonProgressAssist.IsIndicatorVisible="{Binding Transmitting}"
       md:ButtonProgressAssist.Value="{Binding Progress}"
       md:ShadowAssist.ShadowDepth="Depth0"
