@@ -133,7 +133,8 @@ namespace Objects.Converter.Revit
 
     private RevitLevel LevelFromPoint(XYZ point)
     {
-      return new RevitLevel() { elevation = ScaleToSpeckle(point.Z), name = "Generated Level " + ScaleToSpeckle(point.Z), units = ModelUnits };
+      var p = PointToSpeckle(point);
+      return new RevitLevel() { elevation = p.z, name = "Generated Level " + p.z, units = ModelUnits };
     }
 
     private RevitLevel LevelFromCurve(Curve curve)
