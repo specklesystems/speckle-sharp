@@ -52,10 +52,22 @@ namespace Objects.Converter.Revit
     {
       var u = units ?? ModelUnits;
       var extPt = ToExternalCoordinates(pt);
-      var pointToSpeckle = new Point( 
-        u == Units.None ? extPt.X : ScaleToSpeckle(extPt.X),  
-        u == Units.None ? extPt.Y : ScaleToSpeckle(extPt.Y), 
-        u == Units.None ? extPt.Z :  ScaleToSpeckle(extPt.Z), 
+      var pointToSpeckle = new Point(
+        u == Units.None ? extPt.X : ScaleToSpeckle(extPt.X),
+        u == Units.None ? extPt.Y : ScaleToSpeckle(extPt.Y),
+        u == Units.None ? extPt.Z : ScaleToSpeckle(extPt.Z),
+        u);
+      return pointToSpeckle;
+    }
+
+    public Vector VectorToSpeckle(XYZ pt, string units = null)
+    {
+      var u = units ?? ModelUnits;
+      var extPt = ToExternalCoordinates(pt);
+      var pointToSpeckle = new Vector(
+        u == Units.None ? extPt.X : ScaleToSpeckle(extPt.X),
+        u == Units.None ? extPt.Y : ScaleToSpeckle(extPt.Y),
+        u == Units.None ? extPt.Z : ScaleToSpeckle(extPt.Z),
         u);
       return pointToSpeckle;
     }
@@ -76,9 +88,9 @@ namespace Objects.Converter.Revit
     {
       var u = units ?? ModelUnits;
       var origin = PointToSpeckle(plane.Origin, u);
-      var normal = new Vector(ScaleToSpeckle(plane.Normal.X), ScaleToSpeckle(plane.Normal.Y), ScaleToSpeckle(plane.Normal.Z), u);
-      var xdir = new Vector(ScaleToSpeckle(plane.XVec.X), ScaleToSpeckle(plane.XVec.Y), ScaleToSpeckle(plane.XVec.Z), u);
-      var ydir = new Vector(ScaleToSpeckle(plane.YVec.X), ScaleToSpeckle(plane.YVec.Y), ScaleToSpeckle(plane.YVec.Z), u);
+      var normal = VectorToSpeckle(plane.Normal, u);
+      var xdir = VectorToSpeckle(plane.XVec, u);
+      var ydir = VectorToSpeckle(plane.YVec, u);
 
       return new Plane(origin, normal, xdir, ydir, u);
     }
@@ -107,7 +119,7 @@ namespace Objects.Converter.Revit
       var u = units ?? ModelUnits;
       var arcPlane = DB.Plane.CreateByNormalAndOrigin(arc.Normal, arc.Center);
 
-      var c = new Circle(PlaneToSpeckle(arcPlane, u), u == Units.None ? arc.Radius :  ScaleToSpeckle(arc.Radius), u);
+      var c = new Circle(PlaneToSpeckle(arcPlane, u), u == Units.None ? arc.Radius : ScaleToSpeckle(arc.Radius), u);
       c.length = arc.Length;
       return c;
     }
@@ -194,7 +206,7 @@ namespace Objects.Converter.Revit
         var ellipseToSpeckle = new Ellipse(
           PlaneToSpeckle(basePlane, u),
           u == Units.None ? ellipse.RadiusX : ScaleToSpeckle(ellipse.RadiusX),
-          u == Units.None ? ellipse.RadiusY :ScaleToSpeckle(ellipse.RadiusY),
+          u == Units.None ? ellipse.RadiusY : ScaleToSpeckle(ellipse.RadiusY),
           new Interval(0, 2 * Math.PI),
           trim,
           u);
@@ -208,10 +220,8 @@ namespace Objects.Converter.Revit
       var points = new List<double>();
       foreach (var p in revitCurve.CtrlPoints)
       {
-        var x = units == Units.None ? p.X : ScaleToSpeckle(p.X);
-        var y = units == Units.None ? p.Y : ScaleToSpeckle(p.Y);
-        var z = units == Units.None ? p.Z : ScaleToSpeckle(p.Z);
-        points.AddRange(new List<double> { x, y, z });
+        var point = PointToSpeckle(p, units);
+        points.AddRange(new List<double> { point.x, point.y, point.z });
       }
 
       Curve speckleCurve = new Curve();
@@ -235,10 +245,9 @@ namespace Objects.Converter.Revit
       var pts = new List<XYZ>();
       for (int i = 0; i < speckleCurve.points.Count; i += 3)
       {
-        pts.Add(new XYZ(
-          ScaleToNative(speckleCurve.points[i], speckleCurve.units),
-          ScaleToNative(speckleCurve.points[i + 1], speckleCurve.units),
-          ScaleToNative(speckleCurve.points[i + 2], speckleCurve.units)));
+        //use PointToNative for conversion as that takes into account the Project Base Point
+        var point = new Point(speckleCurve.points[i], speckleCurve.points[i + 1], speckleCurve.points[i + 2], speckleCurve.units);
+        pts.Add(PointToNative(point));
       }
       try
       {
@@ -408,7 +417,8 @@ namespace Objects.Converter.Revit
       var speckleMesh = new Mesh();
       foreach (var vert in mesh.Vertices)
       {
-        speckleMesh.vertices.AddRange(new double[] { ScaleToSpeckle(vert.X), ScaleToSpeckle(vert.Y), ScaleToSpeckle(vert.Z) });
+        var vertex = PointToSpeckle(vert);
+        speckleMesh.vertices.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
       }
 
       for (int i = 0; i < mesh.NumTriangles; i++)
@@ -422,7 +432,6 @@ namespace Objects.Converter.Revit
       }
 
       speckleMesh.units = units ?? ModelUnits;
-
       return speckleMesh;
     }
 
@@ -436,7 +445,7 @@ namespace Objects.Converter.Revit
 
       var tsb = new TessellatedShapeBuilder() { Fallback = fallback, Target = target, GraphicsStyleId = ElementId.InvalidElementId };
       tsb.OpenConnectedFaceSet(false);
-      
+
       var vertices = ArrayToPoints(mesh.vertices, mesh.units);
 
       int i = 0;
@@ -483,9 +492,8 @@ namespace Objects.Converter.Revit
       var asArray = arr.ToArray();
       for (int i = 2, k = 0; i < arr.Count(); i += 3)
       {
-        var p = new XYZ(ScaleToNative(asArray[i - 2], units), ScaleToNative(asArray[i - 1], units), ScaleToNative(asArray[i], units));
-        var intP = ToInternalCoordinates(p);
-        points[k++] = intP;
+        var point = new Point(asArray[i - 2], asArray[i - 1], asArray[i], units);
+        points[k++] = PointToNative(point);
       }
 
       return points;
@@ -551,11 +559,13 @@ namespace Objects.Converter.Revit
           if (surface.IsRational)
           {
             var w = weights[uOffset + v];
-            row.Add(new ControlPoint(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), w, unit));
+            var point = PointToSpeckle(extPt, unit);
+            row.Add(new ControlPoint(point.x, point.y, point.z, w, unit));
           }
           else
           {
-            row.Add(new ControlPoint(ScaleToSpeckle(extPt.X), ScaleToSpeckle(extPt.Y), ScaleToSpeckle(extPt.Z), unit));
+            var point = PointToSpeckle(extPt, unit);
+            row.Add(new ControlPoint(point.x, point.y, point.z, unit));
           }
         }
         points.Add(row);
@@ -659,9 +669,8 @@ namespace Objects.Converter.Revit
       controlPoints.ForEach(row =>
         row.ForEach(pt =>
         {
-          var revitPt = new DB.XYZ(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
-          var intPt = ToInternalCoordinates(revitPt);
-          points[p++] = intPt;
+          var point = new Point(pt.x, pt.y, pt.z, pt.units);
+          points[p++] = PointToNative(point);
         }
          ));
 
@@ -1008,7 +1017,7 @@ namespace Objects.Converter.Revit
       {
         var mesh = MeshToNative(brep.displayValue);
         revitDs.SetShape(mesh);
-        ConversionErrors.Add(new Error($"Failed to convert BREP with id {brep.id}, using display mesh value instead.",e.Message));
+        ConversionErrors.Add(new Error($"Failed to convert BREP with id {brep.id}, using display mesh value instead.", e.Message));
       }
       return revitDs;
     }

@@ -117,7 +117,8 @@ namespace Objects.Converter.Revit
 
           foreach (var vert in mesh.Vertices)
           {
-            speckleMesh.vertices.AddRange(new double[] { ScaleToSpeckle(vert.X), ScaleToSpeckle(vert.Y), ScaleToSpeckle(vert.Z) });
+            var vertex = PointToSpeckle(vert);
+            speckleMesh.vertices.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
           }
 
           for (int i = 0; i < mesh.NumTriangles; i++)
@@ -131,6 +132,7 @@ namespace Objects.Converter.Revit
           }
         }
       }
+      speckleMesh.units = ModelUnits;
       return speckleMesh;
     }
 
@@ -189,9 +191,10 @@ namespace Objects.Converter.Revit
           var m = face.Triangulate();
           var points = m.Vertices;
 
-          foreach (var point in m.Vertices)
+          foreach (var vert in m.Vertices)
           {
-            vertexArr.AddRange(new double[] { ScaleToSpeckle(point.X), ScaleToSpeckle(point.Y), ScaleToSpeckle(point.Z) });
+            var vertex = PointToSpeckle(vert);
+            vertexArr.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
           }
 
           for (int i = 0; i < m.NumTriangles; i++)

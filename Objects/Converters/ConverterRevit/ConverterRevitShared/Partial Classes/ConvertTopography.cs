@@ -16,10 +16,8 @@ namespace Objects.Converter.Revit
       var pts = new List<XYZ>();
       for (int i = 0; i < speckleSurface.baseGeometry.vertices.Count; i += 3)
       {
-        pts.Add(new XYZ(
-          ScaleToNative(speckleSurface.baseGeometry.vertices[i], speckleSurface.baseGeometry.units),
-          ScaleToNative(speckleSurface.baseGeometry.vertices[i + 1], speckleSurface.baseGeometry.units),
-          ScaleToNative(speckleSurface.baseGeometry.vertices[i + 2], speckleSurface.baseGeometry.units)));
+        var point = new Geometry.Point(speckleSurface.baseGeometry.vertices[i], speckleSurface.baseGeometry.vertices[i + 1], speckleSurface.baseGeometry.vertices[i + 2], speckleSurface.baseGeometry.units);
+        pts.Add(PointToNative(point));
       }
 
       if (docObj != null)
