@@ -7,7 +7,6 @@ using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
-using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -19,19 +18,16 @@ namespace Speckle.DesktopUI.Streams
     private readonly IEventAggregator _events;
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
 
-    public StreamCreateDialogViewModel(IEventAggregator events, StreamsRepository streamsRepo, AccountsRepository acctsRepo, ConnectorBindings bindings)
+    public StreamCreateDialogViewModel(IEventAggregator events, StreamsRepository streamsRepo, ConnectorBindings bindings)
     {
       DisplayName = "Create Stream";
       _events = events;
       Bindings = bindings;
       FilterTabs = new BindableCollection<FilterTab>(Bindings.GetSelectionFilters().Select(f => new FilterTab(f)));
-      _acctRepo = acctsRepo;
 
       SelectionCount = Bindings.GetSelectedObjects().Count;
       _events.Subscribe(this);
     }
-
-    private readonly AccountsRepository _acctRepo;
 
     public override Account AccountToSendFrom
     {
@@ -86,10 +82,7 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _streamState, value);
     }
 
-    public ObservableCollection<Account> Accounts
-    {
-      get => _acctRepo.LoadAccounts();
-    }
+    public ObservableCollection<Account> Accounts => new BindableCollection<Account>(AccountManager.GetAccounts());
 
     private System.Windows.Visibility _AccountSelectionVisibility = System.Windows.Visibility.Collapsed;
     public System.Windows.Visibility AccountSelectionVisibility
@@ -103,6 +96,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void ToggleAccountSelection()
     {
+      NotifyOfPropertyChange(nameof(Accounts));
       AccountSelectionVisibility = AccountSelectionVisibility == System.Windows.Visibility.Visible ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
     }
 

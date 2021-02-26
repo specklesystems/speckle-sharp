@@ -119,7 +119,6 @@
     <Compile Include="Utils\ViewModelFactories.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\SelectionFilter.cs" />
-    <Compile Include="Accounts\AccountsRepository.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
