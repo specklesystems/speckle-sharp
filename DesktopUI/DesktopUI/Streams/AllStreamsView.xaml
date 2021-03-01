@@ -418,7 +418,9 @@
                     Width="28"
                     Height="28"
                     Command="{s:Action SwapState}"
+                    IsEnabled="{Binding RoleIsReviewer, Converter={StaticResource InverseBooleanConverter}}"
                     CommandParameter="{Binding}"
+                    ToolTipService.ShowOnDisabled="True"
                     Style="{StaticResource MaterialDesignWhiteToggleButton}">
                     <ToggleButton.ToolTip>
                       <StackPanel Orientation="Vertical">
@@ -431,6 +433,10 @@
                           <Run>Swaps the type of this stream card.</Run>
                           <LineBreak />
                           <Run FontWeight="Bold">Click to make it a sender!</Run>
+                        </TextBlock>
+                        <TextBlock Visibility="{Binding RoleIsReviewer, Converter={StaticResource BooleanToVisibilityConverter}}">
+                          <LineBreak />
+                          <Run FontWeight="Bold">Disabled because you do not have the required permissions.</Run>
                         </TextBlock>
                       </StackPanel>
                     </ToggleButton.ToolTip>
