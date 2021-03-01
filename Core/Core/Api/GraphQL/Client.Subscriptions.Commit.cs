@@ -33,7 +33,7 @@ namespace Speckle.Core.Api
         CommitCreatedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            Log.CaptureAndThrow(new GraphQLException("Could not subscribe to commitCreated"), response.Errors);
+            throw new GraphQLException("Could not subscribe to commitCreated", response.Errors);
 
           if (response.Data != null)
             OnCommitCreated?.Invoke(this, response.Data.commitCreated);
@@ -78,7 +78,7 @@ namespace Speckle.Core.Api
         CommitUpdatedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            Log.CaptureAndThrow(new GraphQLException("Could not subscribe to commitUpdated"), response.Errors);
+            throw new GraphQLException("Could not subscribe to commitUpdated", response.Errors);
 
           if (response.Data != null)
             OnCommitUpdated(this, response.Data.commitUpdated);
@@ -123,7 +123,7 @@ namespace Speckle.Core.Api
         CommitDeletedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            Log.CaptureAndThrow(new GraphQLException("Could not subscribe to commitDeleted"), response.Errors);
+            throw new GraphQLException("Could not subscribe to commitDeleted", response.Errors);
 
           if (response.Data != null)
             OnCommitDeleted(this, response.Data.commitDeleted);

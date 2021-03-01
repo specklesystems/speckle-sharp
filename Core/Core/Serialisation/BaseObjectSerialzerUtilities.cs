@@ -295,13 +295,13 @@ namespace Speckle.Core.Serialisation
       var myAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(ass => ass.GetName().Name == pieces[1]);
       if (myAssembly == null)
       {
-        Log.CaptureAndThrow(new SpeckleException("Could not load abstract object's assembly."), level: Sentry.Protocol.SentryLevel.Warning);
+        throw new SpeckleException("Could not load abstract object's assembly.", level: Sentry.Protocol.SentryLevel.Warning);
       }
 
       var myType = myAssembly.GetType(pieces[0]);
       if (myType == null)
       {
-        Log.CaptureAndThrow(new SpeckleException("Could not load abstract object's assembly."), level: Sentry.Protocol.SentryLevel.Warning);
+        throw new SpeckleException("Could not load abstract object's assembly.", level: Sentry.Protocol.SentryLevel.Warning);
       }
 
       cachedAbstractTypes[assemblyQualifiedName] = myType;

@@ -18,7 +18,6 @@ namespace Speckle.Core.Logging
     protected Log()
     {
 
-
       //TODO: set DSN & env in CI/CD pipeline
       SentrySdk.Init(o =>
         {
@@ -56,37 +55,9 @@ namespace Speckle.Core.Logging
     /// <param name="e">Exception to capture and throw</param>
     public static void CaptureAndThrow(Exception e)
     {
-      CaptureException(e, SentryLevel.Error);
+      CaptureException(e);
       throw e;
     }
-
-    /// <summary>
-    /// Captures and throws an exception
-    /// Unhandled exceptions are usually swallowed by host applications like Revit, Dynamo
-    /// So they need to be sent manually.
-    /// </summary>
-    /// <param name="e">Exception to capture and throw</param>
-    public static void CaptureAndThrow(Exception e, SentryLevel level)
-    {
-      CaptureException(e, level);
-      throw e;
-    }
-
-    /// <summary>
-    /// Captures and throws a GraphQL exception
-    /// </summary>
-    /// <param name="e">Exception to capture and throw</param>
-    public static void CaptureAndThrow(Exception e, GraphQLError[] errors)
-    {
-      var extra = new List<KeyValuePair<string, object>>();
-      foreach (var error in errors)
-      {
-        extra.Add(new KeyValuePair<string, object>("error", error.Message));
-      }
-      CaptureException(e, extra: extra);
-      throw e;
-    }
-
 
     //capture and make sure Sentry is initialized
     public static void CaptureException(

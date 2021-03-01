@@ -172,7 +172,7 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference, no transport is defined."), level: Sentry.Protocol.SentryLevel.Warning);
+          throw new SpeckleException("Cannot resolve reference, no transport is defined.", level: Sentry.Protocol.SentryLevel.Warning);
         }
 
         if (str != null && str != "")
@@ -182,7 +182,7 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference. The provided transport could not find it."), level: Sentry.Protocol.SentryLevel.Warning);
+          throw new SpeckleException("Cannot resolve reference. The provided transport could not find it.", level: Sentry.Protocol.SentryLevel.Warning);
         }
       }
 

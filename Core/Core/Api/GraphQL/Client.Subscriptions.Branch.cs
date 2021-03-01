@@ -33,7 +33,7 @@ namespace Speckle.Core.Api
         BranchCreatedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            Log.CaptureAndThrow(new GraphQLException("Could not subscribe to branchCreated"), response.Errors);
+            throw new GraphQLException("Could not subscribe to branchCreated", response.Errors);
 
           if (response.Data != null)
             OnBranchCreated(this, response.Data.branchCreated);
@@ -78,7 +78,7 @@ namespace Speckle.Core.Api
         BranchUpdatedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            Log.CaptureAndThrow(new GraphQLException("Could not subscribe to branchUpdated"), response.Errors);
+            throw new GraphQLException("Could not subscribe to branchUpdated", response.Errors);
 
           if (response.Data != null)
             OnBranchUpdated(this, response.Data.branchUpdated);
@@ -123,7 +123,7 @@ namespace Speckle.Core.Api
         BranchDeletedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            Log.CaptureAndThrow(new GraphQLException("Could not subscribe to branchDeleted"), response.Errors);
+            throw new GraphQLException("Could not subscribe to branchDeleted", response.Errors);
 
           if (response.Data != null)
             OnBranchDeleted(this, response.Data.branchDeleted);
