@@ -66,6 +66,8 @@ namespace Speckle.DesktopUI.Utils
       get => !_IsSender;
     }
 
+    public bool RoleIsReviewer => Stream.role == "stream:reviewer";
+
     private Stream _stream;
 
     [JsonProperty]
