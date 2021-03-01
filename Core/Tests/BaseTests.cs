@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Tests;
 
@@ -19,11 +20,11 @@ namespace Tests
 
       // Only single leading @ allowed
       @base["@something"] = "A";
-      Assert.Throws<Exception>(() => { @base["@@@something"] = "Testing"; });
+      Assert.Throws<SpeckleException>(() => { @base["@@@something"] = "Testing"; });
 
       // Invalid chars:  ./
-      Assert.Throws<Exception>(() => { @base["some.thing"] = "Testing"; });
-      Assert.Throws<Exception>(() => { @base["some/thing"] = "Testing"; });
+      Assert.Throws<SpeckleException>(() => { @base["some.thing"] = "Testing"; });
+      Assert.Throws<SpeckleException>(() => { @base["some/thing"] = "Testing"; });
 
       // Trying to change a class member value will throw exceptions.
       //Assert.Throws<Exception>(() => { @base["speckle_type"] = "Testing"; });
