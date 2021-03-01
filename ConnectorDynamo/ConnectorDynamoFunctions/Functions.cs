@@ -122,7 +122,7 @@ namespace Speckle.ConnectorDynamo.Functions
         var branch = branches.FirstOrDefault(b => b.name == stream.BranchName);
         if (branch == null)
         {
-          Log.CaptureAndThrow(new Exception("No branch found with name " + stream.BranchName));
+          throw new SpeckleException("No branch found with name " + stream.BranchName);
         }
 
         if (!branch.commits.items.Any())

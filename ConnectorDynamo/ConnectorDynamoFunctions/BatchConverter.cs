@@ -123,7 +123,7 @@ namespace Speckle.ConnectorDynamo.Functions
       }
       catch (Exception ex)
       {
-        Core.Logging.Log.CaptureAndThrow(ex);
+        throw new SpeckleException("Could not convert item to Speckle", ex);
       }
 
       return result;

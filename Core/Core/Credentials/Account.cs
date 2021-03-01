@@ -18,7 +18,7 @@ namespace Speckle.Core.Credentials
       get
       {
         if (serverInfo == null || userInfo == null)
-          Log.CaptureAndThrow(new SpeckleException("Incomplete account info: cannot generate id."));
+          throw new SpeckleException("Incomplete account info: cannot generate id.");
         return Speckle.Core.Models.Utilities.hashString(serverInfo.url + userInfo.email);
       }
     }

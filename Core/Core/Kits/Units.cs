@@ -156,9 +156,8 @@ namespace Speckle.Core.Kits
         case "none":
           return Units.None;
       }
-      var e = new SpeckleException($"Cannot understand what unit {unit} is.");
-      Log.CaptureException(e);
-      throw e;
+
+      throw new SpeckleException($"Cannot understand what unit {unit} is.");
     }
   }
 }

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
 
 namespace Speckle.Core.Transports
 {
@@ -60,10 +58,7 @@ namespace Speckle.Core.Transports
 
       if (Objects.ContainsKey(hash)) return Objects[hash];
       else
-      {
-        Log.CaptureException(new SpeckleException("No object found in this memory transport."), level: Sentry.Protocol.SentryLevel.Warning);
-        throw new SpeckleException("No object found in this memory transport.");
-      }
+        throw new SpeckleException("No object found in this memory transport.", Sentry.Protocol.SentryLevel.Warning);
     }
 
     public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)

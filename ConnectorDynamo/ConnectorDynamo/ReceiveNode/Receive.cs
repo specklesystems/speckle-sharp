@@ -271,7 +271,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       try
       {
         if (Stream == null)
-          Core.Logging.Log.CaptureAndThrow(new Exception("The stream provided is invalid"));
+          throw new SpeckleException("The stream provided is invalid");
 
         void ProgressAction(ConcurrentDictionary<string, int> dict)
         {
