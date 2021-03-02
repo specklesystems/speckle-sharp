@@ -86,6 +86,9 @@ namespace Objects.Converter.Revit
         case DB.Level o:
           returnObject = LevelToSpeckle(o);
           break;
+        case DB.View o:
+          returnObject = ViewToSpeckle(o);
+          break;
         case DB.ModelCurve o:
 
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
@@ -259,6 +262,9 @@ namespace Objects.Converter.Revit
           return true;
 
         case DB.Level _:
+          return true;
+
+        case DB.View _:
           return true;
 
         case DB.ModelCurve _:
