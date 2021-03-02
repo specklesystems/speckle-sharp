@@ -55,7 +55,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -112,7 +113,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -188,7 +190,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -257,7 +260,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -321,7 +325,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -363,7 +368,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -405,7 +411,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -448,7 +455,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -498,7 +506,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -545,7 +554,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -662,7 +672,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -732,7 +743,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -774,7 +786,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -816,7 +829,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -879,7 +893,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -982,7 +997,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -1024,7 +1040,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -1066,7 +1083,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -1121,7 +1139,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }
@@ -1169,7 +1188,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        if (!(e is SpeckleException))
+          Log.CaptureException(e);
         throw e;
       }
     }

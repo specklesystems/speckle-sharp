@@ -42,7 +42,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureAndThrow(e);
+        if (!(e is SpeckleException))
+          Log.CaptureAndThrow(e);
       }
     }
 
@@ -84,7 +85,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureAndThrow(e);
+        if (!(e is SpeckleException))
+          Log.CaptureAndThrow(e);
       }
     }
 
@@ -126,7 +128,8 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureAndThrow(e);
+        if (!(e is SpeckleException))
+          Log.CaptureAndThrow(e);
       }
     }
 
