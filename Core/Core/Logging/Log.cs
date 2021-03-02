@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using GraphQL;
 using Sentry;
 using Sentry.Protocol;
@@ -55,14 +56,15 @@ namespace Speckle.Core.Logging
     /// <param name="e">Exception to capture and throw</param>
     public static void CaptureAndThrow(Exception e)
     {
-      CaptureException(e);
+      if (!(e is TaskCanceledException))
+        CaptureException(e);
       throw e;
     }
 
     //capture and make sure Sentry is initialized
     public static void CaptureException(
       Exception e,
-      SentryLevel level = SentryLevel.Error,
+      SentryLevel level = SentryLevel.Info,
       List<KeyValuePair<string, object>> extra = null)
     {
       Instance();
