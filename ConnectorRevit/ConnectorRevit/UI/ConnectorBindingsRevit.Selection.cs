@@ -27,7 +27,7 @@ namespace Speckle.ConnectorRevit.UI
       var categories = new List<string>();
       var parameters = new List<string>();
       var views = new List<string>();
-      var projectInfo = new List<string> { "Project Info", "Levels", "Families & Types" };
+      var projectInfo = new List<string> { "Project Info", "Levels", "Views 2D", "Views 3D", "Families & Types" };
 
       if (CurrentDoc != null)
       {
@@ -41,7 +41,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         new ListSelectionFilter {Name = "Category", Icon = "Category", Values = categories, Description="Adds all objects belonging to the selected categories"},
         new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = views, Description="Adds all objects visible in the selected views" },
-        new ListSelectionFilter {Name = "Project Info", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels and family names to the stream"},
+        new ListSelectionFilter {Name = "Project Info", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels, views and family names to the stream"},
         new PropertySelectionFilter
         {
           Name = "Parameter",
@@ -139,6 +139,29 @@ namespace Speckle.ConnectorRevit.UI
           if (projectInfoFilter.Selection.Contains("Project Info"))
           {
             selection.Add(doc.ProjectInformation);
+          }
+
+          if (projectInfoFilter.Selection.Contains("Views 2D"))
+          {
+            selection.AddRange(new FilteredElementCollector(doc)
+            .WhereElementIsNotElementType()
+            .OfCategory(BuiltInCategory.OST_Views)
+            .Cast<View>()
+            .Where(x => x.ViewType == ViewType.CeilingPlan ||
+            x.ViewType == ViewType.FloorPlan ||
+            x.ViewType == ViewType.Elevation ||
+            x.ViewType == ViewType.Section)
+            .ToList());
+          }
+
+          if (projectInfoFilter.Selection.Contains("Views 3D"))
+          {
+            selection.AddRange(new FilteredElementCollector(doc)
+            .WhereElementIsNotElementType()
+            .OfCategory(BuiltInCategory.OST_Views)
+            .Cast<View>()
+            .Where(x => x.ViewType == ViewType.ThreeD)
+            .ToList());
           }
 
           if (projectInfoFilter.Selection.Contains("Levels"))

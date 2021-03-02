@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using ConnectorRevit;
 using ConnectorRevit.Revit;
+using Speckle.ConnectorRevit.Entry;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -83,7 +84,7 @@ namespace Speckle.ConnectorRevit.UI
         return null;
       }
 
-      UpdateProgress(new ConcurrentDictionary<string, int>() { ["Converting"] = 1 }, state.Progress);
+
 
       // Bake the new ones.
       Queue.Add(() =>
@@ -94,7 +95,6 @@ namespace Speckle.ConnectorRevit.UI
           var failOpts = t.GetFailureHandlingOptions();
           failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
           t.SetFailureHandlingOptions(failOpts);
-
 
           var flattenedObjects = FlattenCommitObject(commitObject, converter);
           // needs to be set for editing to work 
@@ -110,11 +110,15 @@ namespace Speckle.ConnectorRevit.UI
 
           t.Commit();
         }
+
       });
 
       Executor.Raise();
 
-
+      while (Queue.Count > 0)
+      {
+        //wait to let queue finish
+      }
 
       try
       {
@@ -152,11 +156,20 @@ namespace Speckle.ConnectorRevit.UI
     private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state)
     {
       var placeholders = new List<ApplicationPlaceholderObject>();
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 1;
 
       foreach (var @base in objects)
       {
         try
         {
+          conversionProgressDict["Conversion"]++;
+          // wrapped in a dispatcher not to block the ui
+          SpeckleRevitCommand.Bootstrapper.Application.MainWindow.Dispatcher.Invoke(() =>
+          {
+            UpdateProgress(conversionProgressDict, state.Progress);
+          }, System.Windows.Threading.DispatcherPriority.Background);
+
           var convRes = converter.ConvertToNative(@base);
           if (convRes is ApplicationPlaceholderObject placeholder)
           {

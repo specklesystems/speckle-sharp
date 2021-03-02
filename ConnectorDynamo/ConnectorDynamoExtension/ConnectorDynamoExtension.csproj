@@ -81,4 +81,8 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
+  <Target Name="Clean">
+    <RemoveDir Directories="$(TargetDir)" />
+  </Target>
 </Project>
