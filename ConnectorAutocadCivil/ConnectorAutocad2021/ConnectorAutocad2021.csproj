@@ -77,6 +77,9 @@
   <PropertyGroup>
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
   </PropertyGroup>
+  <Target Name="Clean">
+    <RemoveDir Directories="$(TargetDir);$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2021" />
+  </Target>
   <Target Name="AfterBuild">
     <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
     <!--<CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />-->

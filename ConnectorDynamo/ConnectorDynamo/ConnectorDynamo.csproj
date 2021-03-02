@@ -237,6 +237,11 @@
     <ExtraFolder>$(PackageFolder)extra\</ExtraFolder>
     <DyfFolder>$(PackageFolder)dyf\</DyfFolder>
   </PropertyGroup>
+  <Target Name="Clean">
+    <RemoveDir Directories="$(TargetDir);$(ProjectDir)\dist;$(AppData)\Dynamo\Dynamo Revit\2.7\packages\SpeckleDynamo2;$(AppData)\Dynamo\Dynamo Core\2.7\packages\SpeckleDynamo2" />
+    <RemoveDir Directories="$(AppData)\Dynamo\Dynamo Revit\2.8\packages\SpeckleDynamo2;$(AppData)\Dynamo\Dynamo Core\2.8\packages\SpeckleDynamo2" />
+    <RemoveDir Directories="$(AppData)\Dynamo\Dynamo Revit\2.9\packages\SpeckleDynamo2;$(AppData)\Dynamo\Dynamo Core\2.9\packages\SpeckleDynamo2" />
+  </Target>
   <Target Name="AfterBuild">
     <!-- Icons stuff -->
     <!-- Get System.Drawing.dll -->
@@ -267,19 +272,5 @@
     <!--<Copy SourceFiles="@(XML)" DestinationFolder="$(BinFolder)" />-->
     <Copy SourceFiles="@(PackageJson)" DestinationFolder="$(PackageFolder)" />
     <Copy SourceFiles="@(SourceExtension)" DestinationFolder="$(ExtraFolder)" />
-    <!--<CallTarget Condition="'$(Configuration)' == 'Debug'" Targets="PackageDeploy" />-->
   </Target>
-  <!--<Target Name="PackageDeploy">
-    <ItemGroup>
-      <SourcePackage Include="$(PackageFolder)**\*" />
-    </ItemGroup>
-    <PropertyGroup>
-      <DynamoCore>$(AppData)\Dynamo\Dynamo Core\2.7\packages</DynamoCore>
-      <DynamoRevit>$(AppData)\Dynamo\Dynamo Revit\2.7\packages</DynamoRevit>
-    </PropertyGroup>
-    Copying to Package Folder
-    <Copy SourceFiles="@(SourcePackage)" Condition="Exists($(DynamoCore))" DestinationFolder="$(DynamoCore)\$(PackageName)\%(RecursiveDir)" />
-    <Copy SourceFiles="@(SourcePackage)" Condition="Exists($(DynamoRevit))" DestinationFolder="$(DynamoRevit)\$(PackageName)\%(RecursiveDir)" />
-  </Target>
-  -->
 </Project>

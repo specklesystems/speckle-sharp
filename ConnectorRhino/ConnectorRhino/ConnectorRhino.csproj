@@ -76,7 +76,13 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(TargetName).rhp"
-Erase "$(TargetPath)"</PostBuildEvent>
+    <PostBuildEvent>
+      Copy "$(TargetPath)" "$(TargetDir)$(TargetName).rhp"
+      Erase "$(TargetPath)"
+    </PostBuildEvent>
   </PropertyGroup>
+
+  <Target Name="Clean">
+    <RemoveDir Directories="$(TargetDir);$(AppData)\McNeel\Rhinoceros\6.0\Plug-ins\SpeckleRhino2 (8dd5f30b-a13d-4a24-abdc-3e05c8c87143);$(AppData)\McNeel\Rhinoceros\7.0\Plug-ins\SpeckleRhino2 (8dd5f30b-a13d-4a24-abdc-3e05c8c87143)" />
+  </Target>
 </Project>
