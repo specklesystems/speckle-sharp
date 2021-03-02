@@ -189,9 +189,9 @@ namespace Speckle.Core.Kits
 
         return kitClass;
       }
-      catch (Exception e)
+      catch 
       {
-        Log.CaptureException(e);
+        // this will be a ReflectionTypeLoadException and is expected. we don't need to care!
         return null;
       }
     }
