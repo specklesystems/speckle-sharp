@@ -1,15 +1,10 @@
 ﻿using Autodesk.DesignScript.Runtime;
-using Newtonsoft.Json;
-using ProtoCore.Lang;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Speckle.ConnectorDynamo.Functions
 {
@@ -23,7 +18,7 @@ namespace Speckle.ConnectorDynamo.Functions
       var kit = KitManager.GetDefaultKit();
 
       if (kit == null)
-        throw new Exception("Cannot find the Dynamo converter, has it been copied to the Kits folder?");
+        throw new Exception("Cannot find the Objects Kit. Has it been copied to the Kits folder?");
 
       if (Globals.RevitDocument != null)
         _converter = kit.LoadConverter(Applications.DynamoRevit);
@@ -31,7 +26,7 @@ namespace Speckle.ConnectorDynamo.Functions
         _converter = kit.LoadConverter(Applications.DynamoSandbox);
 
       if (_converter == null)
-        throw new Exception("Cannot find the Dynamo converter, has it been copied to the Kits folder?");
+        throw new Exception("Cannot find the Dynamo converter. Has it been copied to the Kits folder?");
 
       // if in Revit, we have a doc, injected by the Extension
       if (Globals.RevitDocument != null)

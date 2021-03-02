@@ -490,6 +490,12 @@ namespace SpeckleRhino
         objCount++;
       }
 
+      if (objCount == 0)
+      {
+        RaiseNotification("Zero objects converted successfully. Send stopped.");
+        return state;
+      }
+
       if (renamedlayers)
         RaiseNotification("Replaced illegal chars ./ with - in one or more layer names.");
 

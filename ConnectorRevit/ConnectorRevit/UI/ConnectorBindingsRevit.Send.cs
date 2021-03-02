@@ -119,7 +119,7 @@ namespace Speckle.ConnectorRevit.UI
 
       if (convertedCount == 0)
       {
-        Globals.Notify("Failed to convert any objects. Push aborted.");
+        Globals.Notify("Zero objects converted successfully. Send stopped.");
         return state;
       }
 
