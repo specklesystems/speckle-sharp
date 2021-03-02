@@ -62,7 +62,7 @@ namespace Objects.Converter.RhinoGh
     public Point3d[] PointListToNative(IEnumerable<double> arr, string units)
     {
       var enumerable = arr.ToList();
-      if (enumerable.Count % 3 != 0) throw new Exception("Array malformed: length%3 != 0.");
+      if (enumerable.Count % 3 != 0) throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.", log: true);
 
       Point3d[] points = new Point3d[enumerable.Count / 3];
       var asArray = enumerable.ToArray();
