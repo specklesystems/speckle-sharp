@@ -62,7 +62,7 @@ namespace Objects.Geometry
     {
       var enumerable = coordinatesArray.ToList();
       if (enumerable.Count < 6)
-        throw new SpeckleException("Line from coordinate array requires 6 coordinates.");
+        throw new SpeckleException("Line from coordinate array requires 6 coordinates.", log: true);
       this.start = new Point(enumerable[0], enumerable[1], enumerable[2], units, applicationId);
       this.end = new Point(enumerable[3], enumerable[4], enumerable[5], units, applicationId);
       this.applicationId = applicationId;

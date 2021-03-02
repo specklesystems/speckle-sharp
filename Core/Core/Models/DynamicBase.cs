@@ -1,4 +1,3 @@
-using Speckle.Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using System;
@@ -115,7 +114,7 @@ namespace Speckle.Core.Models
       }
       set
       {
-        if (!IsPropNameValid(key, out string reason)) throw new SpeckleException("Invalid prop name: " + reason);
+        if (!IsPropNameValid(key, out string reason)) throw new SpeckleException("Invalid prop name: " + reason, log: true);
         
         if (properties.ContainsKey(key))
         {

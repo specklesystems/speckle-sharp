@@ -82,7 +82,7 @@ namespace Speckle.Core.Api
       }
       else if (remoteTransport == null)
       {
-        throw new SpeckleException($"Could not find specified object using the local transport, and you didn't provide a fallback remote from which to pull it.");
+        throw new SpeckleException($"Could not find specified object using the local transport, and you didn't provide a fallback remote from which to pull it.", log: true, level: SentryLevel.Error);
       }
 
       // If we've reached this stage, it means that we didn't get a local transport hit on our object, so we will proceed to get it from the provided remote transport. 

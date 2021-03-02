@@ -36,7 +36,7 @@ namespace Speckle.Core.Api
     public Client(Account account)
     {
       if (account == null)
-        throw new SpeckleException($"Provided account is null.");
+        throw new SpeckleException($"Provided account is null.", log: true);
 
       Account = account;
       AccountId = account.id;

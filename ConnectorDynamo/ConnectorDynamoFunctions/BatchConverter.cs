@@ -124,7 +124,7 @@ namespace Speckle.ConnectorDynamo.Functions
       }
       catch (Exception ex)
       {
-        throw new SpeckleException("Could not convert item to Speckle", ex);
+        throw new SpeckleException("Could not convert item to Speckle", ex, log: true);
       }
 
       return result;

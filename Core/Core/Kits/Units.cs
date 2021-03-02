@@ -157,7 +157,7 @@ namespace Speckle.Core.Kits
           return Units.None;
       }
 
-      throw new SpeckleException($"Cannot understand what unit {unit} is.");
+      throw new SpeckleException($"Cannot understand what unit {unit} is.", log: true);
     }
   }
 }

@@ -30,11 +30,11 @@ namespace Speckle.ConnectorDynamo.Functions
       var streams = Utils.InputToStream(stream);
       if (!streams.Any())
       {
-        throw new SpeckleException("Please provide one or more Stream Ids.");
+        throw new SpeckleException("Please provide one or more Stream Ids.", log: true);
       }
       else if (streams.Count > 20)
       {
-        throw new SpeckleException("Please provide less than 20 Stream Ids.");
+        throw new SpeckleException("Please provide less than 20 Stream Ids.", log: true);
       }
 
 
@@ -114,7 +114,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
       if (wrapper == null)
       {
-        throw new SpeckleException("Invalid stream.");
+        throw new SpeckleException("Invalid stream.", log: true);
       }
 
       if (name == null && description == null && isPublic == null)
@@ -167,10 +167,10 @@ namespace Speckle.ConnectorDynamo.Functions
       var streams = Utils.InputToStream(stream);
 
       if (!streams.Any())
-        throw new SpeckleException("Please provide one or more Streams.");
+        throw new SpeckleException("Please provide one or more Streams.", log: true);
 
       if (streams.Count > 20)
-        throw new SpeckleException("Please provide less than 20 Streams.");
+        throw new SpeckleException("Please provide less than 20 Streams.", log: true);
 
 
       var details = new List<Dictionary<string, object>>();

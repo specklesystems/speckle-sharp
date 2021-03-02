@@ -94,7 +94,7 @@ namespace Objects.Converter.Revit
       try
       {
         var solid = BrepToNative(brep);
-        if (solid == null) throw new SpeckleException("Could not convert brep to native");
+        if (solid == null) throw new SpeckleException("Could not convert brep to native", log: true);
         revitDs.SetShape(new List<GeometryObject>{solid});
       }
       catch (Exception e)

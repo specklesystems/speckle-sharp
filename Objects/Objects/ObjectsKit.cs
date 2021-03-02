@@ -84,7 +84,7 @@ namespace Objects
         }
         else
         {
-          throw new SpeckleException($"Converter for {app} was not found in kit {basePath}");
+          throw new SpeckleException($"Converter for {app} was not found in kit {basePath}", log: true);
         }
 
       }
