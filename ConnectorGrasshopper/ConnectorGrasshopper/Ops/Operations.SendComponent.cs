@@ -337,7 +337,7 @@ namespace ConnectorGrasshopper.Ops
         });
         if ( convertedCount == 0 )
         {
-          RuntimeMessages.Add(( GH_RuntimeMessageLevel.Error, "Zero objects were successfully converted. Send stopped." ));
+          RuntimeMessages.Add(( GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped." ));
           Done();
           return;
         }

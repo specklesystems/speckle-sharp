@@ -256,7 +256,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         }
 
         if ( totalCount == 0 )
-          throw new SpeckleException("Zero objects were successfully converted. Send stopped.");
+          throw new SpeckleException("Zero objects converted successfully. Send stopped.");
 
         Message = "Sending...";
 
