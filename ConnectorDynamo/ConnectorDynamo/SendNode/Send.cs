@@ -255,6 +255,9 @@ namespace Speckle.ConnectorDynamo.SendNode
           Core.Logging.Log.CaptureAndThrow(new Exception("Conversion error", e));
         }
 
+        if ( totalCount == 0 )
+          throw new SpeckleException("Zero objects converted successfully. Send stopped.");
+
         Message = "Sending...";
 
         void ProgressAction(ConcurrentDictionary<string, int> dict)

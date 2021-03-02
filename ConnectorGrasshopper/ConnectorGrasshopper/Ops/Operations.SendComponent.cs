@@ -335,7 +335,12 @@ namespace ConnectorGrasshopper.Ops
         {
           ReportProgress("Conversion", convertedCount++ / (double)DataInput.DataCount);
         });
-
+        if ( convertedCount == 0 )
+        {
+          RuntimeMessages.Add(( GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped." ));
+          Done();
+          return;
+        }
         ObjectToSend = new Base();
         ObjectToSend["@data"] = converted;
 
