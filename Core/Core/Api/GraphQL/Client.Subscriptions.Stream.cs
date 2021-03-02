@@ -33,7 +33,7 @@ namespace Speckle.Core.Api
         UserStreamAddedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            throw new GraphQLException("Could not subscribe to userStreamAdded", response.Errors);
+            throw new SpeckleException("Could not subscribe to userStreamAdded", response.Errors, log: true);
 
           if (response.Data != null)
             OnUserStreamAdded(this, response.Data.userStreamAdded);
@@ -76,7 +76,7 @@ namespace Speckle.Core.Api
         StreamUpdatedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            throw new GraphQLException("Could not subscribe to streamUpdated", response.Errors);
+            throw new SpeckleException("Could not subscribe to streamUpdated", response.Errors, log: true);
 
           if (response.Data != null)
             OnStreamUpdated(this, response.Data.streamUpdated);
@@ -118,7 +118,7 @@ namespace Speckle.Core.Api
         UserStreamRemovedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            throw new GraphQLException("Could not subscribe to userStreamRemoved", response.Errors);
+            throw new SpeckleException("Could not subscribe to userStreamRemoved", response.Errors, log: true);
 
           if (response.Data != null)
             OnUserStreamRemoved(this, response.Data.userStreamRemoved);

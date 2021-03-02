@@ -58,7 +58,7 @@ namespace Speckle.Core.Transports
 
       if (Objects.ContainsKey(hash)) return Objects[hash];
       else
-        throw new SpeckleException("No object found in this memory transport.", Sentry.Protocol.SentryLevel.Warning);
+        throw new SpeckleException("No object found in this memory transport.", log: true);
     }
 
     public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
