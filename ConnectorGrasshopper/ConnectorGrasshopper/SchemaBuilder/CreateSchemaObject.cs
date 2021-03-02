@@ -388,7 +388,7 @@ namespace ConnectorGrasshopper
       catch { }
 
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");
-      throw new Exception($"Could not covert object to {type}");
+      throw new SpeckleException($"Could not covert object to {type}", log: true);
     }
 
     //keep public so it can be picked by reflection

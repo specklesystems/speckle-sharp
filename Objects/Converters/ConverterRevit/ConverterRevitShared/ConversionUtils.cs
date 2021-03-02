@@ -445,7 +445,7 @@ namespace Objects.Converter.Revit
         }
       }
 
-      throw new Exception($"Could not find any family symbol to use.");
+      throw new Speckle.Core.Logging.SpeckleException($"Could not find any family symbol to use.", log: true);
     }
 
     private T GetElementType<T>(Base element)
@@ -465,7 +465,7 @@ namespace Objects.Converter.Revit
 
       if (types.Count == 0)
       {
-        throw new Exception($"Could not find any type symbol to use for family {nameof(T)}.");
+        throw new Speckle.Core.Logging.SpeckleException($"Could not find any type symbol to use for family {nameof(T)}.", log: true);
       }
 
       var family = element["family"] as string;

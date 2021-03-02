@@ -127,7 +127,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
         if (!branch.commits.items.Any())
         {
-          throw new Exception("No commits found.");
+          throw new SpeckleException("No commits found.", log: true);
         }
 
         commit = branch.commits.items[0];
@@ -152,7 +152,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
       if (commit == null)
       {
-        throw new Exception("Could not get commit.");
+        throw new SpeckleException("Could not get commit.", log: true);
       }
 
       if (cancellationToken.IsCancellationRequested)

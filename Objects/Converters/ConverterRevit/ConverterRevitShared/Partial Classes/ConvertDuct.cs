@@ -74,7 +74,7 @@ namespace Objects.Converter.Revit
       var baseLine = baseGeometry as Line;
       if (baseLine == null)
       {
-        throw new Exception("Only line base Ducts are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line base Ducts are currently supported.", log: true);
       }
 
       // SPECKLE DUCT

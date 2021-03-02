@@ -55,7 +55,7 @@ namespace Objects.Geometry
 
     public IEnumerable<Point> GetPoints()
     {
-      if (points.Count % 3 != 0) throw new Exception("Array malformed: length%3 != 0.");
+      if (points.Count % 3 != 0) throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.", log: true);
 
       Point[] pts = new Point[points.Count / 3];
       var asArray = points.ToArray();

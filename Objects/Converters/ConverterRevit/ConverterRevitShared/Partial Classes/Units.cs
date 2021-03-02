@@ -167,7 +167,7 @@ namespace Objects.Converter.Revit
         case DisplayUnitType.DUT_DECIMAL_FEET:
           return Speckle.Core.Kits.Units.Feet;
         default:
-          throw new Exception("The current Unit System is unsupported.");
+          throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.", log: true);
       }
 
     }
@@ -187,7 +187,7 @@ namespace Objects.Converter.Revit
         case Speckle.Core.Kits.Units.Feet:
           return DisplayUnitType.DUT_DECIMAL_FEET;
         default:
-          throw new Exception("The current Unit System is unsupported.");
+          throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.", log: true);
       }
     }
     //#endif

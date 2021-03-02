@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleBeam.baseLine == null)
       {
-        throw new Exception("Only line based Beams are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.", log: true);
       }
 
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
@@ -96,7 +96,7 @@ namespace Objects.Converter.Revit
       var baseLine = baseGeometry as ICurve;
       if (baseLine == null)
       {
-        throw new Exception("Only line based Beams are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.", log: true);
       }
 
       var speckleBeam = new RevitBeam();

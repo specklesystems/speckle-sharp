@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Newtonsoft.Json;
 using Speckle.Core.Transports;
+using Speckle.Core.Logging;
 
 namespace DiskTransport
 {
@@ -53,7 +54,7 @@ namespace DiskTransport
         return File.ReadAllText(filePath, Encoding.UTF8);
       }
 
-      throw new Exception($"Could not find the specified object ({filePath}).");
+      throw new SpeckleException($"Could not find the specified object ({filePath}).", log: true);
     }
 
     public void SaveObject(string id, string serializedObject)

@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleWall.surface == null)
       {
-        throw new Exception("Only surface based FaceWalls are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only surface based FaceWalls are currently supported.", log: true);
       }
 
 

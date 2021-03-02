@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Credentials
 {
@@ -104,8 +105,8 @@ namespace Speckle.Core.Credentials
 
       if (account == null)
       {
-        throw new Exception(
-          $"You do not have any account. Please create one or add it to the Speckle Manager.");
+        throw new SpeckleException(
+          $"You do not have any account. Please create one or add it to the Speckle Manager.", log: true);
       }
 
       ServerUrl = account.serverInfo.url;
@@ -120,7 +121,7 @@ namespace Speckle.Core.Credentials
 
       if (uri.Segments.Length < 3)
       {
-        throw new Exception($"Cannot parse {uri} into a stream wrapper class.");
+        throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.", log: true);
       }
 
       switch (uri.Segments.Length)
@@ -132,7 +133,7 @@ namespace Speckle.Core.Credentials
           }
           else
           {
-            throw new Exception($"Cannot parse {uri} into a stream wrapper class.");
+            throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.", log: true);
           }
 
           break;
@@ -154,7 +155,7 @@ namespace Speckle.Core.Credentials
           }
           else
           {
-            throw new Exception($"Cannot parse {uri} into a stream wrapper class.");
+            throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.", log: true);
           }
 
           break;
@@ -216,7 +217,7 @@ namespace Speckle.Core.Credentials
       var accs = AccountManager.GetAccounts(ServerUrl);
       if (accs.Count() == 0)
       {
-        throw new Exception($"You don't have any accounts for ${ServerUrl}.");
+        throw new SpeckleException($"You don't have any accounts for ${ServerUrl}.", log: true);
       }
 
       foreach (var acc in accs)
@@ -259,14 +260,14 @@ namespace Speckle.Core.Credentials
       }
       catch
       {
-        throw new Exception(
-          $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.");
+        throw new SpeckleException(
+          $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.", log: true);
       }
       
       // Check if the branch exists
       if (Type == StreamWrapperType.Branch && await client.BranchGet(StreamId, BranchName, 1) == null)
-        throw new Exception(
-            $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}");
+        throw new SpeckleException(
+            $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}", log: true);
     }
 
     public override string ToString()

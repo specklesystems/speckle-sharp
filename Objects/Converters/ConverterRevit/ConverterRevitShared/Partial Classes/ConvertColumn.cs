@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleColumn.baseLine == null)
       {
-        throw new Exception("Only line based Beams are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.", log: true);
       }
 
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn); ;
@@ -204,7 +204,7 @@ namespace Objects.Converter.Revit
 
       if (baseLine == null)
       {
-        throw new Exception("Only line based Columns are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Columns are currently supported.", log: true);
       }
 
       speckleColumn.baseLine = baseLine; //all speckle columns should be line based

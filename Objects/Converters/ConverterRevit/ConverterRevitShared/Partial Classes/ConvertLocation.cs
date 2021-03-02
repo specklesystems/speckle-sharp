@@ -101,7 +101,7 @@ namespace Objects.Converter.Revit
 
       if (elem["baseLine"] == null)
       {
-        throw new Exception("Location is null.");
+        throw new Speckle.Core.Logging.SpeckleException("Location is null.", log: true);
       }
 
       //must be a curve!?

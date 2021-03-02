@@ -19,6 +19,7 @@ using Mesh = Objects.Geometry.Mesh;
 using Objects;
 using Surface = Objects.Geometry.Surface;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.Dynamo
 {
@@ -66,7 +67,7 @@ namespace Objects.Converter.Dynamo
     /// <returns></returns>
     public DS.Point[] ArrayToPointList(IEnumerable<double> arr, string units = null)
     {
-      if (arr.Count() % 3 != 0) throw new Exception("Array malformed: length%3 != 0.");
+      if (arr.Count() % 3 != 0) throw new SpeckleException("Array malformed: length%3 != 0.", log: true);
 
       DS.Point[] points = new DS.Point[arr.Count() / 3];
       var asArray = arr.ToArray();

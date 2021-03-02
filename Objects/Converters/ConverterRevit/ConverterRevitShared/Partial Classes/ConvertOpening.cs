@@ -30,7 +30,7 @@ namespace Objects.Converter.Revit
         case RevitWallOpening rwo:
           {
             if (CurrentHostElement as Wall == null)
-              throw new Exception($"Hosted wall openings require a host wall");
+              throw new Speckle.Core.Logging.SpeckleException($"Hosted wall openings require a host wall", log: true);
             var points = (rwo.outline as Polyline).points.Select(x => PointToNative(x)).ToList();
             revitOpening = Doc.Create.NewOpening(CurrentHostElement as Wall, points[0], points[2]);
             break;
@@ -39,7 +39,7 @@ namespace Objects.Converter.Revit
         case RevitVerticalOpening rvo:
           {
             if (CurrentHostElement == null)
-              throw new Exception($"Hosted vertical openings require a host family");
+              throw new Speckle.Core.Logging.SpeckleException($"Hosted vertical openings require a host family", log: true);
             revitOpening = Doc.Create.NewOpening(CurrentHostElement, baseCurves, true);
             break;
           }
@@ -63,7 +63,7 @@ namespace Objects.Converter.Revit
           else
           {
             ConversionErrors.Add(new Error("Cannot create Opening", "Opening type not supported"));
-            throw new Exception("Opening type not supported");
+            throw new Speckle.Core.Logging.SpeckleException("Opening type not supported", log: true);
           }
           break;
       }

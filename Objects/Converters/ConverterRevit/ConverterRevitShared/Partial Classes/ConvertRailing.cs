@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleRailing.path == null)
       {
-        throw new Exception("Only line based Railings are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Railings are currently supported.", log: true);
       }
 
       var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId) as Railing;

@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleWall.baseLine == null)
       {
-        throw new Exception("Only line based Walls are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Walls are currently supported.", log: true);
       }
 
       var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;

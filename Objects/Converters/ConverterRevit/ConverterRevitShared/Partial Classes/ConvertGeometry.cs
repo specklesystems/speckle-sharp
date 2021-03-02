@@ -37,7 +37,7 @@ namespace Objects.Converter.Revit
           return VectorToNative(g);
 
         default:
-          throw new Exception("Cannot convert Curve of type " + geom.GetType());
+          throw new Speckle.Core.Logging.SpeckleException("Cannot convert Curve of type " + geom.GetType(), log: true);
       }
     }
 
@@ -321,7 +321,7 @@ namespace Objects.Converter.Revit
 
           return curveArray;
         default:
-          throw new Exception("The provided geometry is not a valid curve");
+          throw new Speckle.Core.Logging.SpeckleException("The provided geometry is not a valid curve", log: true);
       }
     }
 
@@ -355,7 +355,7 @@ namespace Objects.Converter.Revit
         case DB.HermiteSpline spline:
           return HermiteSplineToSpeckle(spline, u);
         default:
-          throw new Exception("Cannot convert Curve of type " + curve.GetType());
+          throw new Speckle.Core.Logging.SpeckleException("Cannot convert Curve of type " + curve.GetType(), log: true);
       }
     }
 
@@ -485,7 +485,7 @@ namespace Objects.Converter.Revit
     {
       if (arr.Count() % 3 != 0)
       {
-        throw new Exception("Array malformed: length%3 != 0.");
+        throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.", log: true);
       }
 
       XYZ[] points = new XYZ[arr.Count() / 3];
@@ -916,7 +916,7 @@ namespace Objects.Converter.Revit
       brep.displayValue = mesh;
       return brep;
 #else
-      throw new Exception("Converting BREPs to Speckle is currently only supported in Revit 2021.");
+      throw new Speckle.Core.Logging.SpeckleException("Converting BREPs to Speckle is currently only supported in Revit 2021.", log: true);
 #endif
     }
 
@@ -1010,7 +1010,7 @@ namespace Objects.Converter.Revit
       try
       {
         var solid = BrepToNative(brep);
-        if (solid == null) throw new Exception("Could not convert Brep to Solid");
+        if (solid == null) throw new Speckle.Core.Logging.SpeckleException("Could not convert Brep to Solid", log: true);
         revitDs.SetShape(new List<GeometryObject> { solid });
       }
       catch (Exception e)

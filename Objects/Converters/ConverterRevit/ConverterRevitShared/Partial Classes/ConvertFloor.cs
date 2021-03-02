@@ -19,7 +19,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleFloor.outline == null)
       {
-        throw new Exception("Only outline based Floor are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only outline based Floor are currently supported.", log: true);
       }
 
       bool structural = false;

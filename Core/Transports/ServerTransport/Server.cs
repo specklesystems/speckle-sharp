@@ -96,7 +96,7 @@ namespace Speckle.Core.Transports
     {
       if (!GetWriteCompletionStatus())
       {
-        throw new Exception("Transport is still writing.");
+        throw new SpeckleException("Transport is still writing.", log: true);
       }
       TotalSentBytes = 0;
       SavedObjectCount = 0;

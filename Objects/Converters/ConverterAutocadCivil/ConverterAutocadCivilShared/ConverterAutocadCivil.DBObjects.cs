@@ -249,7 +249,7 @@ namespace Objects.Converter.AutocadCivil
               polyline.AddVertexAt(i+1, PointToNative(o.endPoint).Convert2d(plane), 0, 0, 0);
             break;
           default:
-            throw new Exception("Polycurve segment is not a line or arc!");
+            throw new Speckle.Core.Logging.SpeckleException("Polycurve segment is not a line or arc!", log: true);
         }
       }
 
