@@ -321,7 +321,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
               Warning(ex.Message);
               Message = ex.Message.Contains("401") || ex.Message.Contains("don't have access") ? "Not authorized" : e.Message;
             });
-          Core.Logging.Log.CaptureAndThrow(e);
+          throw new SpeckleException(e.Message, e);
         }
       }
       finally

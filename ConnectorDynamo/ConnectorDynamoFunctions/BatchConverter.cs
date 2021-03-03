@@ -205,7 +205,7 @@ namespace Speckle.ConnectorDynamo.Functions
       }
       catch (Exception ex)
       {
-        Core.Logging.Log.CaptureAndThrow(ex);
+        throw new SpeckleException(ex.Message, ex);
       }
 
       return null;

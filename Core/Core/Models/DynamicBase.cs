@@ -131,7 +131,7 @@ namespace Speckle.Core.Models
         }
         catch (Exception ex)
         {
-          Log.CaptureAndThrow(ex);
+          throw new SpeckleException(ex.Message, ex);
         }
       }
     }

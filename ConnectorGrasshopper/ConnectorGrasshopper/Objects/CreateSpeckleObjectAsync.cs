@@ -122,11 +122,11 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception e)
             {
-              Log.CaptureAndThrow(e);
               Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
               Parent.Message = "Error";
               RhinoApp.InvokeOnUiThread(new Action(()=> Parent.OnDisplayExpired(true)));
               hasErrors = true;
+              throw new SpeckleException(e.Message, e);
             }
           }
           else

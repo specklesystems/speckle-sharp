@@ -50,14 +50,14 @@ namespace Speckle.Core.Logging
     /// If the exception is not a SpeckleException, is it wrapped in one and set as the InnerException
     /// </summary>
     /// <param name="e">Exception to capture and throw</param>
-    public static void CaptureAndThrow(Exception e)
-    {
-      if ( !( e is TaskCanceledException ) )
-        CaptureException(e);
-      if (e is SpeckleException)
-        throw e;
-      throw new SpeckleException(e.Message, e, log: false);
-    }
+    // public static void CaptureAndThrow(Exception e)
+    // {
+    //   if ( !( e is TaskCanceledException ) )
+    //     CaptureException(e);
+    //   if (e is SpeckleException)
+    //     throw e;
+    //   throw new SpeckleException(e.Message, e, log: false);
+    // }
 
     //capture and make sure Sentry is initialized
     public static void CaptureException(

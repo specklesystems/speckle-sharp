@@ -307,7 +307,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         {
           _cancellationToken.Cancel();
           Message = e.Message;
-          Core.Logging.Log.CaptureAndThrow(e);
+          throw new SpeckleException(e.Message, e);
         }
       }
       finally
