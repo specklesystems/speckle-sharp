@@ -56,7 +56,7 @@ namespace ConverterRevitTests
       var @base = Operations.Deserialize(contents);
       
       // You read the wrong file, OOOPS!!
-      if (!(@base is Brep brep)) throw new Speckle.Core.Logging.SpeckleException("Object was not a brep, did you choose the right file?");
+      if (!(@base is Brep brep)) throw new Exception("Object was not a brep, did you choose the right file?");
       DirectShape native = null;
       
       xru.RunInTransaction(() =>
@@ -83,10 +83,10 @@ namespace ConverterRevitTests
       converter.SetContextDocument(fixture.NewDoc);
 
       if(!(fixture.Selection[0] is DirectShape ds))
-        throw new Speckle.Core.Logging.SpeckleException("Selected object was not a direct shape.");
+        throw new Exception("Selected object was not a direct shape.");
       var geo = ds.get_Geometry(new Options());
       if(!(geo.First() is Solid solid))
-        throw new Speckle.Core.Logging.SpeckleException("DS was not composed of a solid.");
+        throw new Exception("DS was not composed of a solid.");
       var converted = converter.BrepToSpeckle(solid);
       var nativeconverted = converter.BrepToNative(converted);
       Assert.NotNull(nativeconverted);
