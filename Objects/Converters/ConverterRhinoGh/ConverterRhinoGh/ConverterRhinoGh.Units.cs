@@ -12,20 +12,11 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
-    private string _modelUnits;
-    
-    public string ModelUnits
-    {
-      get
-      {
-        var unitToSpeckle = UnitToSpeckle(Doc.ModelUnitSystem);
-        if (string.IsNullOrEmpty(_modelUnits) || unitToSpeckle != _modelUnits)
-        {
-          _modelUnits = unitToSpeckle;
-        }
-        return _modelUnits;
-      }
-    }
+    /// <summary>
+    /// Computes the Speckle Units of the current Document. The Rhino document is passed as a reference, so it will always be up to date.
+    /// </summary>    
+    public string ModelUnits => UnitToSpeckle(Doc.ModelUnitSystem);
+
     private void SetUnits(Base geom)
     {
       geom.units = ModelUnits;
