@@ -74,5 +74,12 @@ namespace ConnectorGrasshopper.Objects
     {
       throw new Exception("Please inherit from this class, don't use SelectKitComponentBase directly");
     }
+
+    protected override void BeforeSolveInstance()
+    {      
+      //Ensure converter document is up to date
+      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      base.BeforeSolveInstance();
+    }
   }
 }
