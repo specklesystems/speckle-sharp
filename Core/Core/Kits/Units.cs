@@ -153,6 +153,9 @@ namespace Speckle.Core.Kits
         case "mile":
         case "mi":
           return Units.Miles;
+        case "kilometers":
+        case "km":
+          return Units.Kilometers;
         case "none":
           return Units.None;
       }

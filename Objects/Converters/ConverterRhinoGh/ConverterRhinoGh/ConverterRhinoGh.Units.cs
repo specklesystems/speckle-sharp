@@ -13,13 +13,15 @@ namespace Objects.Converter.RhinoGh
   public partial class ConverterRhinoGh
   {
     private string _modelUnits;
+    
     public string ModelUnits
     {
       get
       {
-        if (string.IsNullOrEmpty(_modelUnits))
+        var unitToSpeckle = UnitToSpeckle(Doc.ModelUnitSystem);
+        if (string.IsNullOrEmpty(_modelUnits) || unitToSpeckle != _modelUnits)
         {
-          _modelUnits = UnitToSpeckle(Doc.ModelUnitSystem);
+          _modelUnits = unitToSpeckle;
         }
         return _modelUnits;
       }
