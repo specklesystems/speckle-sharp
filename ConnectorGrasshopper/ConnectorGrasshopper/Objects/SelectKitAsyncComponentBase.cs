@@ -69,12 +69,12 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly", log: true, level: SentryLevel.Error);
+      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly", log: true, level: SentryLevel.Warning);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly", log: true, level: SentryLevel.Error);
+      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly", log: true, level: SentryLevel.Warning);
     }
   }
 }
