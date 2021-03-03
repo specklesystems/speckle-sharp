@@ -46,15 +46,17 @@ namespace Speckle.Core.Logging
 
     /// <summary>
     /// Captures and throws an exception
-    /// Unhandled exceptions are usually swallowed by host applications like Revit, Dynamo
-    /// So they need to be sent manually.
+    /// Unhandled exceptions are usually swallowed by host applications like Revit, Dynamo so they need to be sent manually.
+    /// If the exception is not a SpeckleException, is it wrapped in one and set as the InnerException
     /// </summary>
     /// <param name="e">Exception to capture and throw</param>
     public static void CaptureAndThrow(Exception e)
     {
       if ( !( e is TaskCanceledException ) )
         CaptureException(e);
-      throw e;
+      if (e is SpeckleException)
+        throw e;
+      throw new SpeckleException(e.Message, e);
     }
 
     //capture and make sure Sentry is initialized
