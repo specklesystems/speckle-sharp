@@ -1,10 +1,10 @@
-﻿using Objects.Primitive;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Objects.Primitive;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace Objects.Geometry
 {
@@ -19,7 +19,7 @@ namespace Objects.Geometry
     [DetachProperty]
     [Chunkable(20000)]
     public List<double> points { get; set; }
-    
+
     [DetachProperty]
     [Chunkable(20000)]
     public List<double> weights { get; set; }
@@ -33,7 +33,6 @@ namespace Objects.Geometry
 
     public Interval domain { get; set; }
 
-    
     public Polyline displayValue { get; set; }
 
     public bool closed { get; set; }
@@ -55,9 +54,9 @@ namespace Objects.Geometry
 
     public IEnumerable<Point> GetPoints()
     {
-      if (points.Count % 3 != 0) throw new Exception("Array malformed: length%3 != 0.");
+      if (points.Count % 3 != 0)throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
 
-      Point[] pts = new Point[points.Count / 3];
+      Point[ ] pts = new Point[points.Count / 3];
       var asArray = points.ToArray();
       for (int i = 2, k = 0; i < points.Count; i += 3)
         pts[k++] = new Point(asArray[i - 2], asArray[i - 1], asArray[i], units);

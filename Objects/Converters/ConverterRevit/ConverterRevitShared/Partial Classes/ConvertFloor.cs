@@ -1,13 +1,12 @@
-﻿
-using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
-using Objects.Geometry;
-using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
+using Objects.BuiltElements;
+using Objects.BuiltElements.Revit;
+using Objects.BuiltElements.Revit;
+using Objects.Geometry;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Opening = Objects.BuiltElements.Opening;
 
@@ -19,7 +18,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleFloor.outline == null)
       {
-        throw new Exception("Only outline based Floor are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only outline based Floor are currently supported.");
       }
 
       bool structural = false;
@@ -79,10 +78,6 @@ namespace Objects.Converter.Revit
       return placeholders;
     }
 
-
-
-
-
     private RevitFloor FloorToSpeckle(DB.Floor revitFloor)
     {
       var profiles = GetProfiles(revitFloor);
@@ -115,7 +110,7 @@ namespace Objects.Converter.Revit
     {
       var profiles = new List<ICurve>();
       var faces = HostObjectUtils.GetTopFaces(floor);
-      Face face = floor.GetGeometryObjectFromReference(faces[0]) as Face;
+      Face face = floor.GetGeometryObjectFromReference(faces[0])as Face;
       var crvLoops = face.GetEdgesAsCurveLoops();
       foreach (var crvloop in crvLoops)
       {

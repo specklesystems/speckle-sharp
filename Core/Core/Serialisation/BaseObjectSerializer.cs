@@ -1,7 +1,4 @@
-﻿using Speckle.Newtonsoft.Json;
-using Speckle.Newtonsoft.Json.Serialization;
-using Speckle.Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -10,6 +7,9 @@ using System.Threading;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.Newtonsoft.Json;
+using Speckle.Newtonsoft.Json.Linq;
+using Speckle.Newtonsoft.Json.Serialization;
 
 namespace Speckle.Core.Serialisation
 {
@@ -64,7 +64,6 @@ namespace Speckle.Core.Serialisation
     public Action<string, int> OnProgressAction { get; set; }
 
     public Action<string, Exception> OnErrorAction { get; set; }
-
 
     public BaseObjectSerializer()
     {
@@ -172,7 +171,7 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference, no transport is defined."), level: Sentry.Protocol.SentryLevel.Warning);
+          throw new SpeckleException("Cannot resolve reference, no transport is defined.", level : Sentry.Protocol.SentryLevel.Error);
         }
 
         if (str != null && str != "")
@@ -182,7 +181,7 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference. The provided transport could not find it."), level: Sentry.Protocol.SentryLevel.Warning);
+          throw new SpeckleException("Cannot resolve reference. The provided transport could not find it.", level : Sentry.Protocol.SentryLevel.Error);
         }
       }
 
@@ -355,7 +354,7 @@ namespace Speckle.Core.Serialisation
             continue;
           }
 
-          if(prop == "id")
+          if (prop == "id")
           {
             continue;
           }

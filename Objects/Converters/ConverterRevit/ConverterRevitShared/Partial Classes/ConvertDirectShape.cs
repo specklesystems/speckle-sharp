@@ -1,15 +1,14 @@
-﻿using Autodesk.Revit.DB;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
 using Objects.Geometry;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Mesh = Objects.Geometry.Mesh;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
-
 
 namespace Objects.Converter.Revit
 {
@@ -94,8 +93,8 @@ namespace Objects.Converter.Revit
       try
       {
         var solid = BrepToNative(brep);
-        if (solid == null) throw new SpeckleException("Could not convert brep to native");
-        revitDs.SetShape(new List<GeometryObject>{solid});
+        if (solid == null)throw new SpeckleException("Could not convert brep to native");
+        revitDs.SetShape(new List<GeometryObject> { solid });
       }
       catch (Exception e)
       {
@@ -142,20 +141,21 @@ namespace Objects.Converter.Revit
       var category = Categories.GetCategory(cat);
       var element = revitAc.get_Geometry(new Options());
       var geometries = element.ToList().Select<GeometryObject, Base>(obj =>
-       {
-         return obj switch
-         {
-           DB.Mesh mesh => MeshToSpeckle(mesh),
-           Solid solid => BrepToSpeckle(solid),
-           _ => null
-         };
-       });
+        {
+          return obj
+          switch
+          {
+          DB.Mesh mesh => MeshToSpeckle(mesh),
+          Solid solid => BrepToSpeckle(solid),
+          _ => null
+          };
+        });
       var speckleAc = new DirectShape(
         revitAc.Name,
         category,
         geometries.ToList(),
         new List<Parameter>()
-        );
+      );
       GetAllRevitParamsAndIds(speckleAc, revitAc);
       speckleAc["type"] = revitAc.Name;
       return speckleAc;

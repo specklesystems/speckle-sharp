@@ -26,87 +26,136 @@ namespace Speckle.Core.Kits
         case Units.Millimeters:
           switch (to)
           {
-            case Units.Centimeters: return 0.1;
-            case Units.Meters: return 0.001;
-            case Units.Kilometers: return 1e-6;
-            case Units.Inches: return 0.0393701;
-            case Units.Feet: return 0.00328084;
-            case Units.Yards: return 0.00109361;
-            case Units.Miles: return 6.21371e-7;
+            case Units.Centimeters:
+              return 0.1;
+            case Units.Meters:
+              return 0.001;
+            case Units.Kilometers:
+              return 1e-6;
+            case Units.Inches:
+              return 0.0393701;
+            case Units.Feet:
+              return 0.00328084;
+            case Units.Yards:
+              return 0.00109361;
+            case Units.Miles:
+              return 6.21371e-7;
           }
           break;
         case Units.Centimeters:
           switch (to)
           {
-            case Units.Millimeters: return 10;
-            case Units.Meters: return 0.01;
-            case Units.Kilometers: return 1e-5;
-            case Units.Inches: return 0.393701;
-            case Units.Feet: return 0.0328084;
-            case Units.Yards: return 0.0109361;
-            case Units.Miles: return 6.21371e-6;
+            case Units.Millimeters:
+              return 10;
+            case Units.Meters:
+              return 0.01;
+            case Units.Kilometers:
+              return 1e-5;
+            case Units.Inches:
+              return 0.393701;
+            case Units.Feet:
+              return 0.0328084;
+            case Units.Yards:
+              return 0.0109361;
+            case Units.Miles:
+              return 6.21371e-6;
           }
           break;
         case Units.Meters:
           switch (to)
           {
-            case Units.Millimeters: return 1000;
-            case Units.Centimeters: return 100;
-            case Units.Kilometers: return 1000;
-            case Units.Inches: return 39.3701;
-            case Units.Feet: return 3.28084;
-            case Units.Yards: return 1.09361;
-            case Units.Miles: return 0.000621371;
+            case Units.Millimeters:
+              return 1000;
+            case Units.Centimeters:
+              return 100;
+            case Units.Kilometers:
+              return 1000;
+            case Units.Inches:
+              return 39.3701;
+            case Units.Feet:
+              return 3.28084;
+            case Units.Yards:
+              return 1.09361;
+            case Units.Miles:
+              return 0.000621371;
           }
           break;
         case Units.Kilometers:
           switch (to)
           {
-            case Units.Millimeters: return 1000000;
-            case Units.Centimeters: return 100000;
-            case Units.Meters: return 1000;
-            case Units.Inches: return 39370.1;
-            case Units.Feet: return 3280.84;
-            case Units.Yards: return 1093.61;
-            case Units.Miles: return 0.621371;
+            case Units.Millimeters:
+              return 1000000;
+            case Units.Centimeters:
+              return 100000;
+            case Units.Meters:
+              return 1000;
+            case Units.Inches:
+              return 39370.1;
+            case Units.Feet:
+              return 3280.84;
+            case Units.Yards:
+              return 1093.61;
+            case Units.Miles:
+              return 0.621371;
           }
           break;
 
-        // IMPERIAL
+          // IMPERIAL
         case Units.Inches:
           switch (to)
           {
-            case Units.Millimeters: return 25.4;
-            case Units.Centimeters: return 2.54;
-            case Units.Meters: return 0.0254;
-            case Units.Kilometers: return 2.54e-5;
-            case Units.Feet: return 0.0833333;
-            case Units.Yards: return 0.027777694;
-            case Units.Miles: return 1.57828e-5;
+            case Units.Millimeters:
+              return 25.4;
+            case Units.Centimeters:
+              return 2.54;
+            case Units.Meters:
+              return 0.0254;
+            case Units.Kilometers:
+              return 2.54e-5;
+            case Units.Feet:
+              return 0.0833333;
+            case Units.Yards:
+              return 0.027777694;
+            case Units.Miles:
+              return 1.57828e-5;
           }
           break;
         case Units.Feet:
           switch (to)
           {
-            case Units.Millimeters: return 304.8;
-            case Units.Centimeters: return 30.48;
-            case Units.Meters: return 0.3048;
-            case Units.Kilometers: return 0.0003048;
-            case Units.Inches: return 12;
-            case Units.Yards: return 0.333332328;
-            case Units.Miles: return 0.000189394;
+            case Units.Millimeters:
+              return 304.8;
+            case Units.Centimeters:
+              return 30.48;
+            case Units.Meters:
+              return 0.3048;
+            case Units.Kilometers:
+              return 0.0003048;
+            case Units.Inches:
+              return 12;
+            case Units.Yards:
+              return 0.333332328;
+            case Units.Miles:
+              return 0.000189394;
           }
           break;
         case Units.Miles:
           switch (to)
           {
-            case Units.Millimeters: return 1.609e+6;
-            case Units.Centimeters: return 160934;
-            case Units.Meters: return 1609.34;
-            case Units.Kilometers: return 1.60934;
-            case Units.Inches: return 63360;
-            case Units.Feet: return 5280;
-            case Units.Yards: return 1759.99469184;
+            case Units.Millimeters:
+              return 1.609e+6;
+            case Units.Centimeters:
+              return 160934;
+            case Units.Meters:
+              return 1609.34;
+            case Units.Kilometers:
+              return 1.60934;
+            case Units.Inches:
+              return 63360;
+            case Units.Feet:
+              return 5280;
+            case Units.Yards:
+              return 1759.99469184;
           }
           break;
         case Units.None:
@@ -117,7 +166,7 @@ namespace Speckle.Core.Kits
 
     public static string GetUnitsFromString(string unit)
     {
-      if (unit == null) return null;
+      if (unit == null)return null;
       switch (unit.ToLower())
       {
         case "mm":
@@ -159,9 +208,8 @@ namespace Speckle.Core.Kits
         case "none":
           return Units.None;
       }
-      var e = new SpeckleException($"Cannot understand what unit {unit} is.");
-      Log.CaptureException(e);
-      throw e;
+
+      throw new SpeckleException($"Cannot understand what unit {unit} is.");
     }
   }
 }

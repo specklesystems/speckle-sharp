@@ -9,9 +9,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using Speckle.Newtonsoft.Json;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Transports
 {
@@ -34,7 +34,7 @@ namespace Speckle.Core.Transports
 
     private HttpClient Client { get; set; }
 
-    private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
+    private ConcurrentQueue < (string, string, int) > Queue = new ConcurrentQueue < (string, string, int) > ();
 
     private System.Timers.Timer WriteTimer;
 
@@ -74,8 +74,8 @@ namespace Speckle.Core.Transports
       Client = new HttpClient(new HttpClientHandler()
       {
         AutomaticDecompression = System.Net.DecompressionMethods.GZip,
-      })
-      {
+        })
+        {
         BaseAddress = new Uri(baseUri),
         Timeout = new TimeSpan(0, 0, timeoutSeconds),
       };
@@ -96,7 +96,7 @@ namespace Speckle.Core.Transports
     {
       if (!GetWriteCompletionStatus())
       {
-        throw new Exception("Transport is still writing.");
+        throw new SpeckleException("Transport is still writing.");
       }
       TotalSentBytes = 0;
       SavedObjectCount = 0;
@@ -122,7 +122,7 @@ namespace Speckle.Core.Transports
 
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue<(string, string, int)>();
+        Queue = new ConcurrentQueue < (string, string, int) > ();
         IS_WRITING = false;
         return;
       }
@@ -141,7 +141,7 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue<(string, string, int)>();
+        Queue = new ConcurrentQueue < (string, string, int) > ();
         IS_WRITING = false;
         return;
       }
@@ -168,7 +168,7 @@ namespace Speckle.Core.Transports
       {
         if (CancellationToken.IsCancellationRequested)
         {
-          Queue = new ConcurrentQueue<(string, string, int)>();
+          Queue = new ConcurrentQueue < (string, string, int) > ();
           IS_WRITING = false;
           return;
         }
@@ -180,7 +180,7 @@ namespace Speckle.Core.Transports
         {
           if (CancellationToken.IsCancellationRequested)
           {
-            Queue = new ConcurrentQueue<(string, string, int)>();
+            Queue = new ConcurrentQueue < (string, string, int) > ();
             return;
           }
 
@@ -216,7 +216,7 @@ namespace Speckle.Core.Transports
 
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue<(string, string, int)>();
+        Queue = new ConcurrentQueue < (string, string, int) > ();
         IS_WRITING = false;
         return;
       }
@@ -231,7 +231,7 @@ namespace Speckle.Core.Transports
         IS_WRITING = false;
         OnErrorAction?.Invoke(TransportName, new Exception($"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}", e));
 
-        Queue = new ConcurrentQueue<(string, string, int)>();
+        Queue = new ConcurrentQueue < (string, string, int) > ();
         return;
       }
 
@@ -252,7 +252,7 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue<(string, string, int)>();
+        Queue = new ConcurrentQueue < (string, string, int) > ();
         IS_WRITING = false;
         return;
       }
@@ -270,7 +270,7 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue<(string, string, int)>();
+        Queue = new ConcurrentQueue < (string, string, int) > ();
         IS_WRITING = false;
         return;
       }
@@ -294,7 +294,7 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue<(string, string, int)>();
+        Queue = new ConcurrentQueue < (string, string, int) > ();
         return null;
       }
 
@@ -312,7 +312,7 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue<(string, string, int)>();
+        Queue = new ConcurrentQueue < (string, string, int) > ();
         return null;
       }
 
@@ -336,22 +336,21 @@ namespace Speckle.Core.Transports
         OnErrorAction?.Invoke(TransportName, e);
       }
 
-
       var i = 0;
-      using (var stream = await response.Content.ReadAsStreamAsync())
+      using(var stream = await response.Content.ReadAsStreamAsync())
       {
-        using (var reader = new StreamReader(stream, Encoding.UTF8))
+        using(var reader = new StreamReader(stream, Encoding.UTF8))
         {
           while (reader.Peek() > 0)
           {
             if (CancellationToken.IsCancellationRequested)
             {
-              Queue = new ConcurrentQueue<(string, string, int)>();
+              Queue = new ConcurrentQueue < (string, string, int) > ();
               return null;
             }
 
             var line = reader.ReadLine();
-            var pcs = line.Split(new char[] { '\t' }, count: 2);
+            var pcs = line.Split(new char[ ] { '\t' }, count : 2);
             targetTransport.SaveObject(pcs[0], pcs[1]);
             if (i == 0)
             {
@@ -419,7 +418,7 @@ namespace Speckle.Core.Transports
     protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
     {
       // Open a GZipStream that writes to the specified output stream.
-      using (GZipStream gzip = new GZipStream(stream, CompressionMode.Compress, true))
+      using(GZipStream gzip = new GZipStream(stream, CompressionMode.Compress, true))
       {
         // Copy all the input content to the GZip stream.
         if (content != null)

@@ -1,11 +1,11 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Other;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
@@ -18,8 +18,6 @@ namespace Objects.Converter.Revit
   {
 
     #region hosted elements
-
-
 
     private bool ShouldConvertHostedElement(DB.Element element, DB.Element host)
     {
@@ -135,7 +133,6 @@ namespace Objects.Converter.Revit
 
     #endregion
 
-
     #region parameters
 
     #region ToSpeckle
@@ -212,18 +209,17 @@ namespace Objects.Converter.Revit
 
     }
 
-
     //rp must HaveValue
     private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false)
     {
       var sp = new Parameter
       {
-        name = rp.Definition.Name,
-        applicationId = GetParamInternalName(rp),
-        isShared = rp.IsShared,
-        isReadOnly = rp.IsReadOnly,
-        isTypeParameter = isTypeParameter,
-        revitUnitType = rp.Definition.UnitType.ToString() //eg UT_Length
+      name = rp.Definition.Name,
+      applicationId = GetParamInternalName(rp),
+      isShared = rp.IsShared,
+      isReadOnly = rp.IsReadOnly,
+      isTypeParameter = isTypeParameter,
+      revitUnitType = rp.Definition.UnitType.ToString() //eg UT_Length
       };
 
       switch (rp.StorageType)
@@ -257,13 +253,13 @@ namespace Objects.Converter.Revit
           if (sp.value == null)
             sp.value = rp.AsValueString();
           break;
-        //case StorageType.ElementId:
-        //  // NOTE: if this collects too much garbage, maybe we can ignore it
-        //  var id = rp.AsElementId();
-        //  var e = Doc.GetElement(id);
-        //  if (e != null && CanConvertToSpeckle(e))
-        //    sp.value = ConvertToSpeckle(e);
-        //  break;
+          //case StorageType.ElementId:
+          //  // NOTE: if this collects too much garbage, maybe we can ignore it
+          //  var id = rp.AsElementId();
+          //  var e = Doc.GetElement(id);
+          //  if (e != null && CanConvertToSpeckle(e))
+          //    sp.value = ConvertToSpeckle(e);
+          //  break;
         default:
           return null;
           break;
@@ -282,11 +278,9 @@ namespace Objects.Converter.Revit
       if (revitElement == null)
         return;
 
-
       var speckleParameters = speckleElement["parameters"] as List<Parameter>;
       if (speckleParameters == null || !speckleParameters.Any())
         return;
-
 
       // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
       // Parameters most likely contains extra (garbage) stuff that we don't need to set anyways
@@ -302,7 +296,7 @@ namespace Objects.Converter.Revit
 
       //only loop params we can set and that actually exist on the revit element
       var filteredSpeckleParameters = speckleParameters.Where(x => !x.isReadOnly &&
-      (revitParameterById.ContainsKey(x.applicationId) || revitParameterByName.ContainsKey(x.name)));
+        (revitParameterById.ContainsKey(x.applicationId) || revitParameterByName.ContainsKey(x.name)));
 
       foreach (var sp in filteredSpeckleParameters)
       {
@@ -391,8 +385,6 @@ namespace Objects.Converter.Revit
       }
     }
 
-
-
     #endregion
 
     #region  element types
@@ -445,14 +437,13 @@ namespace Objects.Converter.Revit
         }
       }
 
-      throw new Exception($"Could not find any family symbol to use.");
+      throw new Speckle.Core.Logging.SpeckleException($"Could not find any family symbol to use.");
     }
 
     private T GetElementType<T>(Base element)
     {
       List<ElementType> types = new List<ElementType>();
       ElementFilter filter = GetCategoryFilter(element);
-
 
       if (filter != null)
       {
@@ -465,7 +456,7 @@ namespace Objects.Converter.Revit
 
       if (types.Count == 0)
       {
-        throw new Exception($"Could not find any type symbol to use for family {nameof(T)}.");
+        throw new Speckle.Core.Logging.SpeckleException($"Could not find any type symbol to use for family {nameof(T)}.");
       }
 
       var family = element["family"] as string;
@@ -512,7 +503,6 @@ namespace Objects.Converter.Revit
 
       return (T)(object)match;
     }
-
 
     private ElementFilter GetCategoryFilter(Base element)
     {
@@ -612,7 +602,6 @@ namespace Objects.Converter.Revit
     /// Rant end
     ////////////////////////////////////////////////
 
-
     private BetterBasePoint _basePoint;
     private BetterBasePoint BasePoint
     {
@@ -620,7 +609,7 @@ namespace Objects.Converter.Revit
       {
         if (_basePoint == null)
         {
-          var bp = new FilteredElementCollector(Doc).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_ProjectBasePoint)).FirstOrDefault() as BasePoint;
+          var bp = new FilteredElementCollector(Doc).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_ProjectBasePoint)).FirstOrDefault()as BasePoint;
           if (bp == null)
           {
             _basePoint = new BetterBasePoint();
@@ -674,9 +663,7 @@ namespace Objects.Converter.Revit
     }
     #endregion
 
-
     #region Floor/ceiling/roof openings
-
 
     //a floor/roof/ceiling outline can have "voids/holes" for 3 reasons:
     // - there is a shaft cutting through it > we don't need to create an opening (the shaft will be created on its own)
@@ -747,9 +734,7 @@ namespace Objects.Converter.Revit
       return false;
     }
 
-
     #endregion
-
 
     public WallLocationLine GetWallLocationLine(LocationLine location)
     {
@@ -777,7 +762,7 @@ namespace Objects.Converter.Revit
         return material;
       }
 
-      var revitMaterial = Doc.GetElement(matId) as Material;
+      var revitMaterial = Doc.GetElement(matId)as Material;
       material = new RenderMaterial();
       material.opacity = 1 - revitMaterial.Transparency / 100f;
       material.diffuse = System.Drawing.Color.FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue).ToArgb();

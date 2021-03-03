@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.Geometry;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 
 using Arc = Objects.Geometry.Arc;
@@ -134,7 +133,7 @@ namespace Objects.Converter.AutocadCivil
     {
       var normal = VectorToNative(ellipse.plane.normal);
       var majorAxis = ScaleToNative((double)ellipse.firstRadius, ellipse.units) * VectorToNative(ellipse.plane.xdir);
-      var radiusRatio =(double)ellipse.secondRadius / (double)ellipse.firstRadius;
+      var radiusRatio = (double)ellipse.secondRadius / (double)ellipse.firstRadius;
       return new AcadDB.Ellipse(PointToNative(ellipse.plane.origin), normal, majorAxis, radiusRatio, 0, 2 * Math.PI);
     }
 
@@ -191,7 +190,7 @@ namespace Objects.Converter.AutocadCivil
       var segments = new List<ICurve>();
       var exploded = new DBObjectCollection();
       polyline.Explode(exploded);
-      for(int i = 0; i < exploded.Count; i++)
+      for (int i = 0; i < exploded.Count; i++)
         segments.Add((ICurve)ConvertToSpeckle(exploded[i]));
       polycurve.segments = segments;
 
@@ -240,16 +239,16 @@ namespace Objects.Converter.AutocadCivil
           case Line o:
             polyline.AddVertexAt(i, PointToNative(o.start).Convert2d(plane), 0, 0, 0);
             if (!polycurve.closed && i == polycurve.segments.Count - 1)
-              polyline.AddVertexAt(i+1, PointToNative(o.end).Convert2d(plane), 0, 0, 0);
+              polyline.AddVertexAt(i + 1, PointToNative(o.end).Convert2d(plane), 0, 0, 0);
             break;
           case Arc o:
             var bulge = Math.Tan((double)(o.endAngle - o.startAngle) / 4); // bulge 
             polyline.AddVertexAt(i, PointToNative(o.startPoint).Convert2d(plane), bulge, 0, 0);
             if (!polycurve.closed && i == polycurve.segments.Count - 1)
-              polyline.AddVertexAt(i+1, PointToNative(o.endPoint).Convert2d(plane), 0, 0, 0);
+              polyline.AddVertexAt(i + 1, PointToNative(o.endPoint).Convert2d(plane), 0, 0, 0);
             break;
           default:
-            throw new Exception("Polycurve segment is not a line or arc!");
+            throw new Speckle.Core.Logging.SpeckleException("Polycurve segment is not a line or arc!");
         }
       }
 
@@ -263,13 +262,13 @@ namespace Objects.Converter.AutocadCivil
 
       // get nurbs and geo data 
       var data = spline.NurbsData;
-      var _spline = spline.GetGeCurve() as NurbCurve3d;
+      var _spline = spline.GetGeCurve()as NurbCurve3d;
 
       // handle the display polyline
       try
       {
         var poly = spline.ToPolyline(false, true);
-        Polyline displayValue = ConvertToSpeckle(poly) as Polyline;
+        Polyline displayValue = ConvertToSpeckle(poly)as Polyline;
         curve.displayValue = displayValue;
       }
       catch { }

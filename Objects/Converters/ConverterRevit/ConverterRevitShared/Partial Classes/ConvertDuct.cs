@@ -1,11 +1,11 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using DB = Autodesk.Revit.DB.Mechanical;
 using Line = Objects.Geometry.Line;
 
@@ -74,7 +74,7 @@ namespace Objects.Converter.Revit
       var baseLine = baseGeometry as Line;
       if (baseLine == null)
       {
-        throw new Exception("Only line base Ducts are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line base Ducts are currently supported.");
       }
 
       // SPECKLE DUCT

@@ -1,9 +1,9 @@
-﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
 
@@ -16,10 +16,10 @@ namespace Objects.Converter.Revit
     {
       if (speckleWall.baseLine == null)
       {
-        throw new Exception("Only line based Walls are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Walls are currently supported.");
       }
 
-      var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;
+      var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId)as DB.Wall;
 
       var wallType = GetElementType<WallType>(speckleWall);
       Level level = null;
@@ -101,12 +101,15 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(revitWall, speckleWall);
 
-      var placeholders = new List<ApplicationPlaceholderObject>() {new ApplicationPlaceholderObject
+      var placeholders = new List<ApplicationPlaceholderObject>()
       {
+        new ApplicationPlaceholderObject
+        {
         applicationId = speckleWall.applicationId,
         ApplicationGeneratedId = revitWall.UniqueId,
         NativeObject = revitWall
-      } };
+        }
+      };
 
       var hostedElements = SetHostedElements(speckleWall, revitWall);
       placeholders.AddRange(hostedElements);
@@ -138,8 +141,15 @@ namespace Objects.Converter.Revit
 
       speckleWall["@displayMesh"] = GetWallDisplayMesh(revitWall);
 
-      GetAllRevitParamsAndIds(speckleWall, revitWall, new List<string> { "WALL_USER_HEIGHT_PARAM", "WALL_BASE_OFFSET", "WALL_TOP_OFFSET", "WALL_BASE_CONSTRAINT",
-      "WALL_HEIGHT_TYPE", "WALL_STRUCTURAL_SIGNIFICANT"});
+      GetAllRevitParamsAndIds(speckleWall, revitWall, new List<string>
+      {
+        "WALL_USER_HEIGHT_PARAM",
+        "WALL_BASE_OFFSET",
+        "WALL_TOP_OFFSET",
+        "WALL_BASE_CONSTRAINT",
+        "WALL_HEIGHT_TYPE",
+        "WALL_STRUCTURAL_SIGNIFICANT"
+      });
 
       GetHostedElements(speckleWall, revitWall);
 

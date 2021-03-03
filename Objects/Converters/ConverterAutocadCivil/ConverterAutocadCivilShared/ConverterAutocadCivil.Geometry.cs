@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Autodesk.AutoCAD.Geometry;
 using AC = Autodesk.AutoCAD.Geometry;
 
@@ -28,16 +27,16 @@ namespace Objects.Converter.AutocadCivil
 
     // Convenience methods:
     // TODO: Deprecate once these have been added to Objects.sln
-    public double[] PointToArray(Point3d pt)
+    public double[ ] PointToArray(Point3d pt)
     {
-      return new double[] { pt.X, pt.Y, pt.Z };
+      return new double[ ] { pt.X, pt.Y, pt.Z };
     }
-    public Point3d[] PointListToNative(IEnumerable<double> arr, string units)
+    public Point3d[ ] PointListToNative(IEnumerable<double> arr, string units)
     {
       var enumerable = arr.ToList();
-      if (enumerable.Count % 3 != 0) throw new Exception("Array malformed: length%3 != 0.");
+      if (enumerable.Count % 3 != 0)throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
 
-      Point3d[] points = new Point3d[enumerable.Count / 3];
+      Point3d[ ] points = new Point3d[enumerable.Count / 3];
       var asArray = enumerable.ToArray();
       for (int i = 2, k = 0; i < enumerable.Count; i += 3)
         points[k++] = new Point3d(
@@ -47,7 +46,7 @@ namespace Objects.Converter.AutocadCivil
 
       return points;
     }
-    public double[] PointsToFlatArray(IEnumerable<Point3d> points)
+    public double[ ] PointsToFlatArray(IEnumerable<Point3d> points)
     {
       return points.SelectMany(pt => PointToArray(pt)).ToArray();
     }
@@ -128,7 +127,7 @@ namespace Objects.Converter.AutocadCivil
       _line.length = line.GetLength(startParam, endParam, tolerance);
       _line.domain = IntervalToSpeckle(line.GetInterval());
       _line.bbox = BoxToSpeckle(line.OrthoBoundBlock);
-      
+
       return _line;
     }
     public Line LineToSpeckle(LineSegment3d line)
@@ -263,13 +262,12 @@ namespace Objects.Converter.AutocadCivil
       return _curve;
     }
 
-
     // Polycurve
     // TODO: NOT TESTED FROM HERE DOWN
     public PolylineCurve3d PolylineToNative(Polyline polyline)
     {
       var points = PointListToNative(polyline.value, polyline.units).ToList();
-      if (polyline.closed) points.Add(points[0]);
+      if (polyline.closed)points.Add(points[0]);
       var _polyline = new PolylineCurve3d(new Point3dCollection(points.ToArray()));
       if (polyline.domain != null)
         _polyline.SetInterval(IntervalToNative(polyline.domain));
@@ -312,8 +310,7 @@ namespace Objects.Converter.AutocadCivil
       if (curve.IsPlanar(out AC.Plane pln))
       {
         if (curve.IsPeriodic(out double period) && curve.IsClosed())
-        {
-        }
+        { }
 
         if (curve.IsLinear(out Line3d line)) // defaults to polyline
         {

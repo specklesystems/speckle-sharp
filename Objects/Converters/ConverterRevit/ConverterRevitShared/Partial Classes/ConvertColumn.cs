@@ -1,9 +1,9 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
 using Column = Objects.BuiltElements.Column;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
@@ -17,10 +17,10 @@ namespace Objects.Converter.Revit
     {
       if (speckleColumn.baseLine == null)
       {
-        throw new Exception("Only line based Beams are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.");
       }
 
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn); ;
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn);;
       var baseLine = CurveToNative(speckleColumn.baseLine).get_Item(0);
 
       // If the start point elevation is higher than the end point elevation, reverse the line.
@@ -58,7 +58,7 @@ namespace Objects.Converter.Revit
       {
         try
         {
-          var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
+          var revitType = Doc.GetElement(docObj.GetTypeId())as ElementType;
 
           // if family changed, tough luck. delete and let us create a new one.
           if (familySymbol.FamilyName != revitType.FamilyName)
@@ -160,8 +160,8 @@ namespace Objects.Converter.Revit
       var topOffset = ScaleToNative(speckleRevitColumn.topOffset, speckleRevitColumn.units);
 
       //these have been set previously
-      DB.Level level = Doc.GetElement(baseLevelParam.AsElementId()) as DB.Level;
-      DB.Level topLevel = Doc.GetElement(topLevelParam.AsElementId()) as DB.Level;
+      DB.Level level = Doc.GetElement(baseLevelParam.AsElementId())as DB.Level;
+      DB.Level topLevel = Doc.GetElement(topLevelParam.AsElementId())as DB.Level;
 
       //checking if BASE offset needs to be set before or after TOP offset
       if (topLevel != null && topLevel.Elevation + baseOffset <= level.Elevation)
@@ -204,7 +204,7 @@ namespace Objects.Converter.Revit
 
       if (baseLine == null)
       {
-        throw new Exception("Only line based Columns are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Columns are currently supported.");
       }
 
       speckleColumn.baseLine = baseLine; //all speckle columns should be line based
@@ -221,7 +221,6 @@ namespace Objects.Converter.Revit
 
       return speckleColumn;
     }
-
 
   }
 }

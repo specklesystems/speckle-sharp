@@ -1,11 +1,11 @@
-﻿using Autodesk.Revit.DB;
-using ConverterRevitShared.Revit;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Autodesk.Revit.DB;
+using ConverterRevitShared.Revit;
+using Objects.BuiltElements.Revit;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
 
@@ -21,12 +21,11 @@ namespace Objects.Converter.Revit
     {
       if (speckleWall.surface == null)
       {
-        throw new Exception("Only surface based FaceWalls are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only surface based FaceWalls are currently supported.");
       }
 
-
       // Cannot update revit wall to new mass face
-      FaceWall revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.FaceWall;
+      FaceWall revitWall = GetExistingElementByApplicationId(speckleWall.applicationId)as DB.FaceWall;
       if (revitWall != null)
       {
         Doc.Delete(revitWall.Id);
@@ -42,26 +41,25 @@ namespace Objects.Converter.Revit
       var tempMassFamilyPath = CreateMassFamily(famPath, speckleWall.surface, speckleWall.applicationId);
       Family fam;
       Doc.LoadFamily(tempMassFamilyPath, new FamilyLoadOption(), out fam);
-      var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;
+      var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First())as FamilySymbol;
       symbol.Activate();
 
       try
       {
         File.Delete(tempMassFamilyPath);
       }
-      catch 
+      catch
       {
 
       }
-
 
       var mass = Doc.Create.NewFamilyInstance(XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
       // NOTE: must set a schedule level!
       // otherwise the wall creation will fail with "Could not create a face wall."
       var level = new FilteredElementCollector(Doc)
-         .WhereElementIsNotElementType()
-         .OfCategory(BuiltInCategory.OST_Levels) // this throws a null error if user tries to recieve stream in a file with no levels
-         .ToElements().FirstOrDefault();
+        .WhereElementIsNotElementType()
+        .OfCategory(BuiltInCategory.OST_Levels) // this throws a null error if user tries to recieve stream in a file with no levels
+        .ToElements().FirstOrDefault();
 
       if (level == null) // create a new level at 0 if no levels could be retrieved from doc
         level = Level.Create(Doc, 0);
@@ -72,21 +70,20 @@ namespace Objects.Converter.Revit
       Doc.Regenerate();
       Reference faceRef = GetFaceRef(mass);
 
-      var wallType = GetElementType<WallType>(speckleWall); 
+      var wallType = GetElementType<WallType>(speckleWall);
       if (!FaceWall.IsWallTypeValidForFaceWall(Doc, wallType.Id))
       {
         ConversionErrors.Add(new Error { message = $"Wall type not valid for face wall ${speckleWall.applicationId}." });
         return null;
       }
 
-      revitWall = null;  
+      revitWall = null;
       try
       {
         revitWall = DB.FaceWall.Create(Doc, wallType.Id, GetWallLocationLine(speckleWall.locationLine), faceRef);
       }
       catch (Exception e)
-      {
-      }
+      { }
 
       if (revitWall == null)
       {
@@ -98,12 +95,15 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(revitWall, speckleWall);
 
-      var placeholders = new List<ApplicationPlaceholderObject>() {new ApplicationPlaceholderObject
+      var placeholders = new List<ApplicationPlaceholderObject>()
       {
+        new ApplicationPlaceholderObject
+        {
         applicationId = speckleWall.applicationId,
         ApplicationGeneratedId = revitWall.UniqueId,
         NativeObject = revitWall
-      } };
+        }
+      };
 
       var hostedElements = SetHostedElements(speckleWall, revitWall);
       placeholders.AddRange(hostedElements);
@@ -118,9 +118,7 @@ namespace Objects.Converter.Revit
       geomOption.IncludeNonVisibleObjects = true;
       geomOption.DetailLevel = ViewDetailLevel.Fine;
 
-
       GeometryElement ge = e.get_Geometry(geomOption);
-
 
       foreach (GeometryObject geomObj in ge)
       {
@@ -145,8 +143,7 @@ namespace Objects.Converter.Revit
     {
       var famDoc = Doc.Application.NewFamilyDocument(famPath);
 
-
-      using (Transaction t = new Transaction(famDoc, "Create Mass"))
+      using(Transaction t = new Transaction(famDoc, "Create Mass"))
       {
         t.Start();
 
@@ -189,8 +186,6 @@ namespace Objects.Converter.Revit
 
       return tempFamilyPath;
     }
-
-
 
   }
 

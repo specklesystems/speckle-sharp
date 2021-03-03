@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.Functions
 {
@@ -18,7 +19,7 @@ namespace Speckle.ConnectorDynamo.Functions
       var kit = KitManager.GetDefaultKit();
 
       if (kit == null)
-        throw new Exception("Cannot find the Objects Kit. Has it been copied to the Kits folder?");
+        throw new SpeckleException("Cannot find the Objects Kit. Has it been copied to the Kits folder?");
 
       if (Globals.RevitDocument != null)
         _converter = kit.LoadConverter(Applications.DynamoRevit);
@@ -26,7 +27,7 @@ namespace Speckle.ConnectorDynamo.Functions
         _converter = kit.LoadConverter(Applications.DynamoSandbox);
 
       if (_converter == null)
-        throw new Exception("Cannot find the Dynamo converter. Has it been copied to the Kits folder?");
+        throw new SpeckleException("Cannot find the Dynamo converter. Has it been copied to the Kits folder?");
 
       // if in Revit, we have a doc, injected by the Extension
       if (Globals.RevitDocument != null)
@@ -44,7 +45,7 @@ namespace Speckle.ConnectorDynamo.Functions
     public Base ConvertRecursivelyToSpeckle(object @object)
     {
       if (@object is ProtoCore.DSASM.StackValue)
-        throw new Exception("Invalid input");
+        throw new SpeckleException("Invalid input");
 
       var converted = RecurseTreeToSpeckle(@object);
       var @base = new Base();
@@ -123,7 +124,7 @@ namespace Speckle.ConnectorDynamo.Functions
       }
       catch (Exception ex)
       {
-        Core.Logging.Log.CaptureAndThrow(ex);
+        throw new SpeckleException("Could not convert item to Speckle", ex);
       }
 
       return result;
@@ -204,7 +205,7 @@ namespace Speckle.ConnectorDynamo.Functions
       }
       catch (Exception ex)
       {
-        Core.Logging.Log.CaptureAndThrow(ex);
+        throw new SpeckleException(ex.Message, ex);
       }
 
       return null;

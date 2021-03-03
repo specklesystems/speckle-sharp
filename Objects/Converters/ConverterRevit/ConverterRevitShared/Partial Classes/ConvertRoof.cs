@@ -1,12 +1,12 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.BuiltElements.Revit.RevitRoof;
 using Objects.Geometry;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
@@ -19,7 +19,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleRoof.outline == null)
       {
-        throw new Exception("Only outline based Floor are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only outline based Floor are currently supported.");
       }
 
       DB.RoofBase revitRoof = null;
@@ -103,7 +103,6 @@ namespace Objects.Converter.Revit
               TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_SLOPE, (double)speckleFootprintRoof.slope);
             }
 
-
             if (speckleFootprintRoof.cutOffLevel != null)
             {
               var cutOffLevel = LevelToNative(speckleFootprintRoof.cutOffLevel);
@@ -115,7 +114,7 @@ namespace Objects.Converter.Revit
           }
         default:
           ConversionErrors.Add(new Error("Cannot create Roof", "Roof type not supported"));
-          throw new Exception("Roof type not supported");
+          throw new Speckle.Core.Logging.SpeckleException("Roof type not supported");
 
       }
 
@@ -137,14 +136,11 @@ namespace Objects.Converter.Revit
 
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitRoof.applicationId, ApplicationGeneratedId = revitRoof.UniqueId, NativeObject = revitRoof } };
 
-
       var hostedElements = SetHostedElements(speckleRoof, revitRoof);
       placeholders.AddRange(hostedElements);
 
       return placeholders;
     }
-
-
 
     private Roof RoofToSpeckle(DB.RoofBase revitRoof)
     {
@@ -177,7 +173,7 @@ namespace Objects.Converter.Revit
             };
             var plane = revitExtrusionRoof.GetProfile().get_Item(0).SketchPlane.GetPlane();
             speckleExtrusionRoof.referenceLine =
-              new Line(PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate())), PointToSpeckle(plane.Origin), ModelUnits); //TODO: test!
+            new Line(PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate())), PointToSpeckle(plane.Origin), ModelUnits); //TODO: test!
             speckleExtrusionRoof.level = ConvertAndCacheLevel(revitExtrusionRoof, BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM);
             speckleRoof = speckleExtrusionRoof;
             break;
@@ -231,7 +227,7 @@ namespace Objects.Converter.Revit
                   continue;
                 }
 
-                var segment = CurveToSpeckle(curve.GeometryCurve) as Base; //it's a safe casting
+                var segment = CurveToSpeckle(curve.GeometryCurve)as Base; //it's a safe casting
                 segment["slopeAngle"] = GetParamValue<double>(curve, BuiltInParameter.ROOF_SLOPE);
                 segment["isSloped"] = GetParamValue<bool>(curve, BuiltInParameter.ROOF_CURVE_IS_SLOPE_DEFINING);
                 segment["offset"] = GetParamValue<double>(curve, BuiltInParameter.ROOF_CURVE_HEIGHT_OFFSET);

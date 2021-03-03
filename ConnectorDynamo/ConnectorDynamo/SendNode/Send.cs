@@ -236,9 +236,9 @@ namespace Speckle.ConnectorDynamo.SendNode
       try
       {
         if (_streams == null)
-          Core.Logging.Log.CaptureAndThrow(new Exception("The stream provided is invalid"));
+          throw new SpeckleException("The stream provided is invalid");
         if (_data == null)
-          Core.Logging.Log.CaptureAndThrow(new Exception("The data provided is invalid"));
+          throw new SpeckleException("The data provided is invalid");
 
         long totalCount = 0;
         Base @base = null;
@@ -252,7 +252,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         {
           Message = "Conversion error";
           Warning(e.Message);
-          Core.Logging.Log.CaptureAndThrow(new Exception("Conversion error", e));
+          throw new SpeckleException("Conversion error", e);
         }
 
         if ( totalCount == 0 )
@@ -307,7 +307,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         {
           _cancellationToken.Cancel();
           Message = e.Message;
-          Core.Logging.Log.CaptureAndThrow(e);
+          throw new SpeckleException(e.Message, e);
         }
       }
       finally
