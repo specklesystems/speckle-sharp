@@ -1,10 +1,10 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleBeam.baseLine == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.", log: true);
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.");
       }
 
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
       {
         try
         {
-          var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
+          var revitType = Doc.GetElement(docObj.GetTypeId())as ElementType;
 
           // if family changed, tough luck. delete and let us create a new one.
           if (familySymbol.FamilyName != revitType.FamilyName)
@@ -96,7 +96,7 @@ namespace Objects.Converter.Revit
       var baseLine = baseGeometry as ICurve;
       if (baseLine == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.", log: true);
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.");
       }
 
       var speckleBeam = new RevitBeam();

@@ -1,12 +1,11 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB.Architecture;
 
 namespace Objects.Converter.Revit
 {
@@ -16,13 +15,13 @@ namespace Objects.Converter.Revit
     {
       if (speckleRailing.path == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only line based Railings are currently supported.", log: true);
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Railings are currently supported.");
       }
 
-      var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId) as Railing;
+      var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId)as Railing;
 
       var railingType = GetElementType<RailingType>(speckleRailing);
-      Level level = LevelToNative(speckleRailing.level); ;
+      Level level = LevelToNative(speckleRailing.level);;
       var baseCurve = CurveArrayToCurveLoop(CurveToNative(speckleRailing.path));
 
       //if it's a new element, we don't need to update certain properties
@@ -49,7 +48,6 @@ namespace Objects.Converter.Revit
         TrySetParam(revitRailing, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
       }
 
-
       if (speckleRailing.flipped != revitRailing.Flipped)
       {
         revitRailing.Flip();
@@ -57,12 +55,15 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(revitRailing, speckleRailing);
 
-      var placeholders = new List<ApplicationPlaceholderObject>() {new ApplicationPlaceholderObject
+      var placeholders = new List<ApplicationPlaceholderObject>()
       {
+        new ApplicationPlaceholderObject
+        {
         applicationId = speckleRailing.applicationId,
         ApplicationGeneratedId = revitRailing.UniqueId,
         NativeObject = revitRailing
-      } };
+        }
+      };
 
       Doc.Regenerate();
 
@@ -73,7 +74,7 @@ namespace Objects.Converter.Revit
     private RevitRailing RailingToSpeckle(Railing revitRailing)
     {
 
-      var railingType = Doc.GetElement(revitRailing.GetTypeId()) as RailingType;
+      var railingType = Doc.GetElement(revitRailing.GetTypeId())as RailingType;
       var speckleRailing = new RevitRailing();
       //speckleRailing.family = railingType.FamilyName;
       speckleRailing.type = railingType.Name;
@@ -89,7 +90,6 @@ namespace Objects.Converter.Revit
 
       return speckleRailing;
     }
-
 
   }
 }

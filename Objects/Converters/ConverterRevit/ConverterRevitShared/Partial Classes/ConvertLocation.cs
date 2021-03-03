@@ -1,8 +1,8 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Speckle.Core.Models;
-using System;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
@@ -17,8 +17,8 @@ namespace Objects.Converter.Revit
       if (revitElement is FamilyInstance familyInstance)
       {
         //vertical columns are point based, and the point does not reflect the actual vertical location
-        if (Categories.columnCategories.Contains(familyInstance.Category)
-             || familyInstance.StructuralType == StructuralType.Column)
+        if (Categories.columnCategories.Contains(familyInstance.Category) ||
+          familyInstance.StructuralType == StructuralType.Column)
         {
           return TryGetLocationAsCurve(familyInstance);
         }
@@ -40,13 +40,13 @@ namespace Objects.Converter.Revit
               curve = curve.CreateTransformed(tf);
             }
 
-            return CurveToSpeckle(curve) as Base;
+            return CurveToSpeckle(curve)as Base;
           }
         case LocationPoint locationPoint:
           {
             return PointToSpeckle(locationPoint.Point);
           }
-        // TODO what is the correct way to handle this?
+          // TODO what is the correct way to handle this?
         case null:
           return null;
 
@@ -68,7 +68,7 @@ namespace Objects.Converter.Revit
         var analiticalModel = familyInstance.GetAnalyticalModel();
         if (analiticalModel != null)
         {
-          return CurveToSpeckle(analiticalModel.GetCurve()) as Base;
+          return CurveToSpeckle(analiticalModel.GetCurve())as Base;
         }
       }
       var point = (familyInstance.Location as LocationPoint).Point;
@@ -101,7 +101,7 @@ namespace Objects.Converter.Revit
 
       if (elem["baseLine"] == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Location is null.", log: true);
+        throw new Speckle.Core.Logging.SpeckleException("Location is null.");
       }
 
       //must be a curve!?
@@ -116,7 +116,7 @@ namespace Objects.Converter.Revit
         if (!(bool)elem["isSlanted"] || IsVertical(curve))
         {
           var baseLine = elem["baseLine"] as Line;
-          var point = new Point(baseLine.start.x, baseLine.start.y, baseLine.start.z - (double) offset, ModelUnits);
+          var point = new Point(baseLine.start.x, baseLine.start.y, baseLine.start.z - (double)offset, ModelUnits);
 
           return PointToNative(point);
         }

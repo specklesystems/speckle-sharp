@@ -1,13 +1,13 @@
-﻿using Speckle.Newtonsoft.Json;
-using System;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Sentry.Protocol;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using System.Collections.Concurrent;
-using Speckle.Core.Logging;
-using Sentry.Protocol;
-using System.Threading;
-using System.Collections.Generic;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api
 {
@@ -34,7 +34,7 @@ namespace Speckle.Core.Api
         onProgressAction,
         onErrorAction,
         onTotalChildrenCountKnown
-        );
+      );
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ namespace Speckle.Core.Api
     {
       Log.AddBreadcrumb("Receive");
 
-      var (serializer, settings) = GetSerializerInstance();
+      var(serializer, settings) = GetSerializerInstance();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
@@ -82,7 +82,7 @@ namespace Speckle.Core.Api
       }
       else if (remoteTransport == null)
       {
-        throw new SpeckleException($"Could not find specified object using the local transport, and you didn't provide a fallback remote from which to pull it.", log: true, level: SentryLevel.Error);
+        throw new SpeckleException($"Could not find specified object using the local transport, and you didn't provide a fallback remote from which to pull it.", level : SentryLevel.Error);
       }
 
       // If we've reached this stage, it means that we didn't get a local transport hit on our object, so we will proceed to get it from the provided remote transport. 

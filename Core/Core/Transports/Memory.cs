@@ -39,10 +39,10 @@ namespace Speckle.Core.Transports
 
     public void SaveObject(string hash, string serializedObject)
     {
-      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested)return; // Check for cancellation
 
       Objects[hash] = serializedObject;
-      
+
       SavedObjectCount++;
       OnProgressAction?.Invoke(TransportName, 1);
     }
@@ -54,11 +54,11 @@ namespace Speckle.Core.Transports
 
     public string GetObject(string hash)
     {
-      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested)return null; // Check for cancellation
 
-      if (Objects.ContainsKey(hash)) return Objects[hash];
+      if (Objects.ContainsKey(hash))return Objects[hash];
       else
-        throw new SpeckleException("No object found in this memory transport.", log: true);
+        throw new SpeckleException("No object found in this memory transport.");
     }
 
     public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)

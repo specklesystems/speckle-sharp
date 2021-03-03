@@ -56,7 +56,7 @@ namespace Speckle.Core.Logging
         CaptureException(e);
       if (e is SpeckleException)
         throw e;
-      throw new SpeckleException(e.Message, e);
+      throw new SpeckleException(e.Message, e, log: false);
     }
 
     //capture and make sure Sentry is initialized

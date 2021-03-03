@@ -53,8 +53,7 @@ namespace Speckle.Core.Credentials
     }
 
     public StreamWrapper()
-    {
-    }
+    { }
 
     /// <summary>
     /// Creates a StreamWrapper from a stream url or a stream id
@@ -106,7 +105,7 @@ namespace Speckle.Core.Credentials
       if (account == null)
       {
         throw new SpeckleException(
-          $"You do not have any account. Please create one or add it to the Speckle Manager.", log: true);
+          $"You do not have any account. Please create one or add it to the Speckle Manager.");
       }
 
       ServerUrl = account.serverInfo.url;
@@ -121,7 +120,7 @@ namespace Speckle.Core.Credentials
 
       if (uri.Segments.Length < 3)
       {
-        throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.", log: true);
+        throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
       }
 
       switch (uri.Segments.Length)
@@ -133,7 +132,7 @@ namespace Speckle.Core.Credentials
           }
           else
           {
-            throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.", log: true);
+            throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
           }
 
           break;
@@ -155,7 +154,7 @@ namespace Speckle.Core.Credentials
           }
           else
           {
-            throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.", log: true);
+            throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
           }
 
           break;
@@ -173,7 +172,7 @@ namespace Speckle.Core.Credentials
     public async Task<Account> GetAccount()
     {
       Exception err = null;
-      
+
       if (_Account != null)
       {
         return _Account;
@@ -182,7 +181,7 @@ namespace Speckle.Core.Credentials
       // Step 1: check if direct account id (?u=)
       if (originalInput.Contains("?u="))
       {
-        var userId = originalInput.Split(new string[] {"?u="}, StringSplitOptions.None)[1];
+        var userId = originalInput.Split(new string[ ] { "?u=" }, StringSplitOptions.None)[1];
         var acc = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == userId);
         if (acc != null)
         {
@@ -192,7 +191,7 @@ namespace Speckle.Core.Credentials
             _Account = acc;
             return acc;
           }
-          catch(Exception e)
+          catch (Exception e)
           {
             // If user specified account and fails, we should stop trying.
             throw e;
@@ -208,7 +207,7 @@ namespace Speckle.Core.Credentials
         _Account = defAcc;
         return defAcc;
       }
-      catch(Exception e)
+      catch (Exception e)
       {
         err = e;
       }
@@ -217,7 +216,7 @@ namespace Speckle.Core.Credentials
       var accs = AccountManager.GetAccounts(ServerUrl);
       if (accs.Count() == 0)
       {
-        throw new SpeckleException($"You don't have any accounts for ${ServerUrl}.", log: true);
+        throw new SpeckleException($"You don't have any accounts for ${ServerUrl}.");
       }
 
       foreach (var acc in accs)
@@ -228,7 +227,7 @@ namespace Speckle.Core.Credentials
           _Account = acc;
           return acc;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
           err = e;
         }
@@ -236,20 +235,20 @@ namespace Speckle.Core.Credentials
 
       throw err;
     }
-    
+
     public bool Equals(StreamWrapper wrapper)
     {
-      if (wrapper == null) return false;
-      if (Type != wrapper.Type) return false;
-      return Type == wrapper.Type
-             && ServerUrl == wrapper.ServerUrl
-             && AccountId == wrapper.AccountId
-             && StreamId == wrapper.StreamId
-             && (Type == StreamWrapperType.Branch && BranchName == wrapper.BranchName)
-             || (Type == StreamWrapperType.Object && ObjectId == wrapper.ObjectId)
-             || (Type == StreamWrapperType.Commit && CommitId == wrapper.CommitId);
+      if (wrapper == null)return false;
+      if (Type != wrapper.Type)return false;
+      return Type == wrapper.Type &&
+        ServerUrl == wrapper.ServerUrl &&
+        AccountId == wrapper.AccountId &&
+        StreamId == wrapper.StreamId &&
+        (Type == StreamWrapperType.Branch && BranchName == wrapper.BranchName) ||
+        (Type == StreamWrapperType.Object && ObjectId == wrapper.ObjectId) ||
+        (Type == StreamWrapperType.Commit && CommitId == wrapper.CommitId);
     }
-    
+
     private async Task ValidateWithAccount(Account acc)
     {
       var client = new Client(acc);
@@ -261,13 +260,13 @@ namespace Speckle.Core.Credentials
       catch
       {
         throw new SpeckleException(
-          $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.", log: true);
+          $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.");
       }
-      
+
       // Check if the branch exists
       if (Type == StreamWrapperType.Branch && await client.BranchGet(StreamId, BranchName, 1) == null)
         throw new SpeckleException(
-            $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}", log: true);
+          $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}");
     }
 
     public override string ToString()
@@ -285,7 +284,7 @@ namespace Speckle.Core.Credentials
           url += $"/objects/{ObjectId}";
           break;
       }
-      var acc =  $"{(AccountId != null ? "?u=" + AccountId : "")}";
+      var acc = $"{(AccountId != null ? "?u=" + AccountId : "")}";
       return url + acc;
     }
   }

@@ -20,11 +20,11 @@ namespace ConnectorGrasshopper.Objects
     public ISpeckleConverter Converter;
 
     public ISpeckleKit Kit;
-    
+
     public SelectKitAsyncComponentBase(string name, string nickname, string description, string category, string subCategory) : base(name, nickname, description, category, subCategory)
     {
       var key = "Speckle2:kit.default.name";
-      var n = Grasshopper.Instances.Settings.GetValue(key,"Objects");
+      var n = Grasshopper.Instances.Settings.GetValue(key, "Objects");
       Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino).FirstOrDefault(kit => kit.Name == n);
       try
       {
@@ -55,7 +55,7 @@ namespace ConnectorGrasshopper.Objects
 
     public void SetConverterFromKit(string kitName)
     {
-      if (kitName == Kit.Name) return;
+      if (kitName == Kit.Name)return;
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
@@ -69,12 +69,12 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly", log: true, level: SentryLevel.Warning);
+      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly", level : SentryLevel.Warning);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly", log: true, level: SentryLevel.Warning);
+      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly", level : SentryLevel.Warning);
     }
   }
 }

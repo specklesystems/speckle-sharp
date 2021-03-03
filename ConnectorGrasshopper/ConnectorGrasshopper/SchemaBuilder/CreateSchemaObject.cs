@@ -34,10 +34,9 @@ namespace ConnectorGrasshopper
 
     public string Seed;
 
-    public CreateSchemaObject()
-      : base("Create Schema Object", "CsO",
-          "Allows you to create a Speckle object from a schema class.",
-          ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
+    public CreateSchemaObject() : base("Create Schema Object", "CsO",
+      "Allows you to create a Speckle object from a schema class.",
+      ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
       Kit = KitManager.GetDefaultKit();
       try
@@ -86,10 +85,10 @@ namespace ConnectorGrasshopper
       var dialog = new CreateSchemaObjectDialog();
       dialog.Owner = Grasshopper.Instances.EtoDocumentEditor;
       var mouse = GH_Canvas.MousePosition;
-      dialog.Location = new Eto.Drawing.Point((int) ((mouse.X - 150) / dialog.Screen.LogicalPixelSize),(int) ((mouse.Y - 150) / dialog.Screen.LogicalPixelSize) ); //approx the dialog half-size
-      
+      dialog.Location = new Eto.Drawing.Point((int)((mouse.X - 150) / dialog.Screen.LogicalPixelSize), (int)((mouse.Y - 150) / dialog.Screen.LogicalPixelSize)); //approx the dialog half-size
+
       dialog.ShowModal();
-    
+
       if (dialog.HasResult)
       {
         base.AddedToDocument(document);
@@ -226,19 +225,19 @@ namespace ConnectorGrasshopper
       return base.Write(writer);
     }
 
-    private static byte[] ObjectToByteArray(object obj)
+    private static byte[ ] ObjectToByteArray(object obj)
     {
       BinaryFormatter bf = new BinaryFormatter();
-      using (var ms = new MemoryStream())
+      using(var ms = new MemoryStream())
       {
         bf.Serialize(ms, obj);
         return ms.ToArray();
       }
     }
 
-    private static T ByteArrayToObject<T>(byte[] arrBytes)
+    private static T ByteArrayToObject<T>(byte[ ] arrBytes)
     {
-      using (var memStream = new MemoryStream())
+      using(var memStream = new MemoryStream())
       {
         var binForm = new BinaryFormatter();
         memStream.Write(arrBytes, 0, arrBytes.Length);
@@ -249,8 +248,7 @@ namespace ConnectorGrasshopper
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
-    {
-    }
+    { }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
@@ -265,7 +263,6 @@ namespace ConnectorGrasshopper
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No schema has been selected.");
         return;
       }
-
 
       List<object> cParamsValues = new List<object>();
       var cParams = SelectedConstructor.GetParameters();
@@ -313,7 +310,7 @@ namespace ConnectorGrasshopper
     //list input
     private object GetObjectListProp(IGH_Param param, List<object> values, Type t)
     {
-      if (!values.Any()) return null;
+      if (!values.Any())return null;
 
       var list = (IList)Activator.CreateInstance(t);
       var listElementType = list.GetType().GetGenericArguments().Single();
@@ -376,19 +373,17 @@ namespace ConnectorGrasshopper
         // Log conversion error?
       }
 
-
-
       //tries an explicit casting, given that the required type is a variable, we need to use reflection
       //not really sure this method is needed
       try
       {
         MethodInfo castIntoMethod = this.GetType().GetMethod("CastObject").MakeGenericMethod(type);
-        return castIntoMethod.Invoke(null, new[] { value });
+        return castIntoMethod.Invoke(null, new [ ] { value });
       }
       catch { }
 
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");
-      throw new SpeckleException($"Could not covert object to {type}", log: true);
+      throw new SpeckleException($"Could not covert object to {type}");
     }
 
     //keep public so it can be picked by reflection
@@ -422,8 +417,7 @@ namespace ConnectorGrasshopper
     }
 
     public void VariableParameterMaintenance()
-    {
-    }
+    { }
 
     protected override void BeforeSolveInstance()
     {

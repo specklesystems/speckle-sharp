@@ -95,7 +95,6 @@ namespace Objects.Converter.Revit
       }
     }
 
-
     private DisplayUnitType _revitUnitsTypeId = DisplayUnitType.DUT_UNDEFINED;
     public DisplayUnitType RevitLengthTypeId
     {
@@ -110,7 +109,6 @@ namespace Objects.Converter.Revit
       }
     }
 
-
     /// <summary>
     /// Converts Speckle length values to internal ones
     /// NOTE: use only to convert double values, not point or vector coordinates. For those use Point/VectorToNative
@@ -123,7 +121,6 @@ namespace Objects.Converter.Revit
     {
       return UnitUtils.ConvertToInternalUnits(value, UnitsToNative(units));
     }
-
 
     /// <summary>
     /// Converts Speckle length values to internal ones
@@ -167,7 +164,7 @@ namespace Objects.Converter.Revit
         case DisplayUnitType.DUT_DECIMAL_FEET:
           return Speckle.Core.Kits.Units.Feet;
         default:
-          throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.", log: true);
+          throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.");
       }
 
     }
@@ -187,10 +184,9 @@ namespace Objects.Converter.Revit
         case Speckle.Core.Kits.Units.Feet:
           return DisplayUnitType.DUT_DECIMAL_FEET;
         default:
-          throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.", log: true);
+          throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.");
       }
     }
     //#endif
   }
 }
-
