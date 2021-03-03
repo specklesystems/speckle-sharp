@@ -33,7 +33,7 @@ namespace Speckle.Core.Api
         BranchCreatedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            throw new SpeckleException("Could not subscribe to branchCreated", response.Errors, log: true);
+            throw new SpeckleException("Could not subscribe to branchCreated", response.Errors);
 
           if (response.Data != null)
             OnBranchCreated(this, response.Data.branchCreated);
@@ -42,8 +42,7 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        if (!(e is SpeckleException))
-          Log.CaptureException(e);
+        Log.CaptureAndThrow(e);
       }
     }
 
@@ -78,7 +77,7 @@ namespace Speckle.Core.Api
         BranchUpdatedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            throw new SpeckleException("Could not subscribe to branchUpdated", response.Errors, log: true);
+            throw new SpeckleException("Could not subscribe to branchUpdated", response.Errors);
 
           if (response.Data != null)
             OnBranchUpdated(this, response.Data.branchUpdated);
@@ -87,8 +86,7 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        if (!(e is SpeckleException))
-          Log.CaptureAndThrow(e);
+        Log.CaptureAndThrow(e);
       }
     }
 
@@ -123,7 +121,7 @@ namespace Speckle.Core.Api
         BranchDeletedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            throw new SpeckleException("Could not subscribe to branchDeleted", response.Errors, log: true);
+            throw new SpeckleException("Could not subscribe to branchDeleted", response.Errors);
 
           if (response.Data != null)
             OnBranchDeleted(this, response.Data.branchDeleted);
@@ -132,8 +130,7 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        if (!(e is SpeckleException))
-          Log.CaptureException(e);
+        Log.CaptureAndThrow(e);
       }
     }
 
