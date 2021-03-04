@@ -57,34 +57,18 @@
       <Grid Margin="0">
         <Grid Margin="20">
           <StackPanel>
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <md:Badged Badge="{Binding LocalAccountsCount}"
-                         BadgeForeground="{DynamicResource MaterialDesignPaper}"
-                         BadgePlacementMode="Right"
-                         ToolTip="total accounts"
-                         ToolTipService.Placement="Mouse">
+            <md:Badged Badge="{Binding LocalAccountsCount}"
+                       BadgeForeground="{DynamicResource MaterialDesignPaper}"
+                       BadgePlacementMode="Right"
+                       ToolTip="total accounts"
+                       ToolTipService.Placement="Mouse">
                 <TextBlock Margin="0,8,16,8"
                            FontSize="16"
                            Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                            Text="Default Account" />
               </md:Badged>
-              <Button Grid.Column="1"
-                      Width="28"
-                      Height="28"
-                      HorizontalAlignment="Right"
-                      md:RippleAssist.ClipToBounds="True"
-                      Command="{s:Action RefreshAccounts}"
-                      Content="{md:PackIcon Kind=Refresh,
-                                          Size=16}"
-                      Style="{StaticResource MaterialDesignIconButton}"
-                      ToolTip="Refresh accounts" />
-            </Grid>
 
-            <Grid>
+              <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
