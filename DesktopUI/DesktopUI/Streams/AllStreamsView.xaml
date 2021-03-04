@@ -411,13 +411,18 @@
 
                 <Grid Name="StreamCardTitle"
                       Grid.Row="0">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="auto" />
                   </Grid.ColumnDefinitions>
 
-                  <WrapPanel Grid.Column="0">
+                  <WrapPanel Grid.Row="0"
+                             Grid.Column="0">
                     <TextBlock Grid.Column="0"
                                VerticalAlignment="Center"
                                Style="{StaticResource MaterialDesignHeadline4TextBlock}"
@@ -431,7 +436,8 @@
                     </TextBlock>
                   </WrapPanel>
 
-                  <ToggleButton Grid.Column="2"
+                  <ToggleButton Grid.Row="0"
+                                Grid.Column="2"
                                 Width="28"
                                 Height="28"
                                 Command="{s:Action SwapState}"
@@ -468,7 +474,8 @@
                     </md:ToggleButtonAssist.OnContent>
                   </ToggleButton>
 
-                  <Button Grid.Column="1"
+                  <Button Grid.Row="0"
+                          Grid.Column="1"
                           Width="28"
                           Height="28"
                           HorizontalAlignment="Right"
@@ -479,7 +486,16 @@
                                           Size=16}"
                           Style="{StaticResource MaterialDesignIconButton}"
                           ToolTip="Open this stream in the browser" />
-
+                  <StackPanel Orientation="Horizontal"
+                              Grid.Row="1"
+                              Grid.Column="0"
+                              Grid.ColumnSpan="3"
+                              Margin="0,6 0 0">
+                    <TextBlock Margin="0 0 12 0" FontFamily="Consolas"
+                               FontSize="12"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               Text="{Binding Stream.id}" />
+                  </StackPanel>
 
                 </Grid>
                 <!--#endregion-->

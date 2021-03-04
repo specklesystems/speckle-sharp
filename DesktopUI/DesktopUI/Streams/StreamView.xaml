@@ -131,6 +131,11 @@
                      Text="Name" />
           <TextBox FontSize="25"
                    Text="{Binding StreamName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=1500}" />
+          <TextBlock FontFamily="Consolas"
+                     FontSize="12"
+                     Margin="0,6,0, 0"
+                     Foreground="{DynamicResource MaterialDesignBodyLight}"
+                     Text="{Binding StreamState.Stream.id}" />
 
           <WrapPanel MaxWidth="{Binding ActualWidth, ElementName=StreamViewStackPanel}"
                      Margin="0,20,0,0">
@@ -142,12 +147,11 @@
                      FontSize="13"
                      ToolTip="open this stream in the browser">
               <StackPanel Orientation="Horizontal">
-                <md:PackIcon
-                  Width="12"
-                  Height="12"
-                  Margin="0,0,4,0"
-                  VerticalAlignment="Center"
-                  Kind="OpenInNew" />
+                <md:PackIcon Width="12"
+                             Height="12"
+                             Margin="0,0,4,0"
+                             VerticalAlignment="Center"
+                             Kind="OpenInNew" />
                 <TextBlock Margin="0,0,4,0">Server:</TextBlock>
                 <TextBlock Text="{Binding StreamState.Client.Account.serverInfo.name}" />
                 <TextBlock Margin="4,0,0,0">(</TextBlock>
@@ -203,14 +207,6 @@
 
           <ItemsControl ItemTemplate="{StaticResource CollaboratorChipTemplate}"
                         ItemsSource="{Binding StreamState.Stream.collaborators}" />
-
-          <!--<TextBox  Margin="0,10,0,10"
-                    Grid.Column="0"
-                    Padding="2"
-                    md:HintAssist.Hint="Search for other collaborators to add"
-                    FontSize="18"
-                    Text="{Binding StreamQuery, UpdateSourceTrigger=PropertyChanged,Mode=OneWayToSource, Delay=300}">
-          </TextBox>-->
 
           <!--<Separator Margin="0,20,0,0"></Separator>-->
           <TextBlock Grid.Column="0"
