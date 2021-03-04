@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
+using Speckle.DesktopUI.Settings;
 using Speckle.DesktopUI.Streams;
 using Speckle.DesktopUI.Utils;
 using Stylet;
@@ -26,9 +27,9 @@ namespace Speckle.DesktopUI
       set => SetAndNotify(ref _viewName, value);
     }
 
-    private PackIcon BackIcon = new PackIcon { Kind = PackIconKind.ArrowLeft, Foreground = System.Windows.Media.Brushes.Gray };
+    private PackIcon BackIcon = new PackIcon { Kind = PackIconKind.ArrowLeft };
 
-    private PackIcon SettingsIcon = new PackIcon { Kind = PackIconKind.Settings, Foreground = System.Windows.Media.Brushes.Gray };
+    private PackIcon SettingsIcon = new PackIcon { Kind = PackIconKind.Settings };
 
     private PackIcon _mainButtonIcon;
     public PackIcon MainButtonIcon
@@ -111,6 +112,22 @@ namespace Speckle.DesktopUI
     public void GoToStreamViewPage( StreamViewModel streamItem)
     {
       ActivateItem(streamItem);
+    }
+
+    public void RefreshActiveView()
+    {
+      switch ( ActiveItem )
+      {
+        case SettingsViewModel settingsPage:
+          settingsPage.Refresh();
+          break;
+        case AllStreamsViewModel streamsPage:
+          streamsPage.Refresh();
+          break;
+        case StreamViewModel streamPage:
+          streamPage.Refresh();
+          break;
+      }
     }
 
     public void Handle(StreamRemovedEvent message)
