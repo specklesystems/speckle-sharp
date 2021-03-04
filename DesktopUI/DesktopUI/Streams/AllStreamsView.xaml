@@ -486,7 +486,7 @@
                                           Size=16}"
                           Style="{StaticResource MaterialDesignIconButton}"
                           ToolTip="Open this stream in the browser" />
-                  <StackPanel Orientation="Horizontal"
+                  <!--<StackPanel Orientation="Horizontal"
                               Grid.Row="1"
                               Grid.Column="0"
                               Grid.ColumnSpan="3"
@@ -495,7 +495,7 @@
                                FontSize="12"
                                Foreground="{DynamicResource MaterialDesignBodyLight}"
                                Text="{Binding Stream.id}" />
-                  </StackPanel>
+                  </StackPanel>-->
 
                 </Grid>
                 <!--#endregion-->
