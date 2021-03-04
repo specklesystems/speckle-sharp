@@ -116,8 +116,16 @@ namespace Speckle.DesktopUI.Utils
           break;
         case Account account:
           var client = new Client(account);
-          var userRes = Task.Run(async () => ( await client.UserSearch(account.userInfo.email) ).FirstOrDefault()).Result;
-          imgString = userRes.avatar ?? $"https://robohash.org/{userRes.id}";
+          User userRes = new User();
+          try
+          {
+            userRes = Task.Run(async () => ( await client.UserSearch(account.userInfo.email) ).FirstOrDefault()).Result;
+          }
+          catch ( Exception )
+          {
+            // server is offline
+          }
+          imgString = userRes.avatar ?? $"https://robohash.org/{account.userInfo.id}";
           break;
         default:
           throw new InvalidOperationException("Unrecognised type given to robot converter");
