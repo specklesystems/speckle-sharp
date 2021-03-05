@@ -154,6 +154,19 @@ namespace Speckle.DesktopUI.Streams
       var result = await DialogHost.Show(view, "RootDialogHost");
     }
 
+    public void RemoveDisabledStream(StreamState state)
+    {
+      Tracker.TrackPageview("stream", "remove", "no-account-found");
+      RemoveStream(state.Stream.id);
+    }
+
+    private void RemoveStream(string streamId)
+    {
+      var state = StreamList.First(s => s.Stream.id == streamId);
+      StreamList.Remove(state);
+      NotifyOfPropertyChange(nameof(EmptyState));
+    }
+
     public void OpenStreamInWeb(StreamState state)
     {
       Tracker.TrackPageview(Tracker.STREAM_VIEW);
@@ -175,9 +188,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(StreamRemovedEvent message)
     {
-      var state = StreamList.First(s => s.Stream.id == message.StreamId);
-      StreamList.Remove(state);
-      NotifyOfPropertyChange(nameof(EmptyState));
+      RemoveStream(message.StreamId);
     }
 
     public void Handle(ApplicationEvent message)
