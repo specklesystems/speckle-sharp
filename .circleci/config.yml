@@ -93,7 +93,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       name: win/default
       shell: powershell.exe
     parameters:
-      connectorname:
+      slnname:
+        type: string
+      dllname:
         type: string
       slug:
         type: string
@@ -104,11 +106,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     steps:
       - checkout
       - run: 
-          name: Restore << parameters.connectorname >>
-          command: nuget restore << parameters.connectorname >>/<< parameters.connectorname >>.sln
+          name: Restore << parameters.slnname >>
+          command: nuget restore << parameters.slnname >>/<< parameters.slnname >>.sln
       - run: 
-          name: Build << parameters.connectorname >>
-          command: msbuild << parameters.connectorname >>/<< parameters.connectorname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+          name: Build << parameters.slnname >>
+          command: msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
       - run: 
           name: Deploy?
           command: | # stop job if not triggered by deployment workflow (parameters.installer == false)
@@ -124,7 +126,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.1" } else { $env:CIRCLE_TAG }
             $semver = $tag.replace("-beta","").Split("/")[1]  
             $version = "$($semver).$($env:CIRCLE_BUILD_NUM)"
-            speckle-sharp-ci-tools/Patch/Patcher.exe << parameters.connectorname >>/ *<< parameters.connectorname >>* $version
+            speckle-sharp-ci-tools/Patch/Patcher.exe << parameters.slnname >>/ *<< parameters.dllname >>* $version
             $channel = "latest"
             if($tag -like "*-beta") { $channel = "beta" }
             # only create the yml if we have a tag
@@ -221,7 +223,8 @@ workflows:
     jobs:
       - build-connector:
           name: build-connector-grasshopper
-          connectorname: ConnectorGrasshopper
+          slnname: ConnectorGrasshopper
+          dllname: SpeckleConnectorGrasshopper.gha 
   
   # Rhino connector - Build/Test
   connector_rhino:
@@ -229,7 +232,8 @@ workflows:
     jobs:
       - build-connector:
           name: build-connector-rhino
-          connectorname: ConnectorRhino
+          slnname: ConnectorRhino
+          dllname: SpeckleConnectorRhino.rhp 
 
   # Dynamo connector - Build/Test
   connector_dynamo:
@@ -237,7 +241,8 @@ workflows:
     jobs:
       - build-connector:
           name: build-connector-dynamo
-          connectorname: ConnectorDynamo
+          slnname: ConnectorDynamo
+          dllname: SpeckleConnectorDynamo.dll 
   
   # Revit Connector - Build/Test
   connector_revit:
@@ -245,7 +250,8 @@ workflows:
     jobs:
       - build-connector:
           name: build-connector-revit
-          connectorname: ConnectorRevit
+          slnname: ConnectorRevit
+          dllname: SpeckleConnectorRevit.dll 
 
   # AutoCAD & Civil3D Connector - Build/Test
   connector_autocadcivil:
@@ -253,7 +259,8 @@ workflows:
     jobs:
       - build-connector:
           name: build-connector-autocadcivil
-          connectorname: ConnectorAutocadCivil
+          slnname: ConnectorAutocadCivil
+          dllname: SpeckleConnectorCivil.dll
       
   # Makes installers based on which tag is provided
   # Tag has to be provided in the format "appname/1.0.0"
@@ -271,7 +278,8 @@ workflows:
       # DYNAMO Build&Deploy
       - build-connector:
           name: build-deploy-connector-dynamo
-          connectorname: ConnectorDynamo 
+          slnname: ConnectorDynamo 
+          dllname: SpeckleConnectorDynamo.dll 
           slug: dynamo
           installer: true
           requires: 
@@ -285,7 +293,8 @@ workflows:
       # REVIT Build&Deploy
       - build-connector:
           name: build-deploy-connector-revit
-          connectorname: ConnectorRevit 
+          slnname: ConnectorRevit 
+          dllname: SpeckleConnectorRevit.dll 
           slug: revit
           installer: true
           requires: 
@@ -300,7 +309,8 @@ workflows:
       # GRASSHOPPER Build&Deploy
       - build-connector:
           name: build-deploy-connector-grasshopper
-          connectorname: ConnectorGrasshopper
+          slnname: ConnectorGrasshopper
+          dllname: SpeckleConnectorGrasshopper.gha 
           slug: grasshopper
           installer: true
           requires: 
@@ -315,7 +325,8 @@ workflows:
       # RHINO Build&Deploy
       - build-connector:
           name: build-deploy-connector-rhino
-          connectorname: ConnectorRhino 
+          slnname: ConnectorRhino 
+          dllname: SpeckleConnectorRhino.rhp 
           slug: rhino
           installer: true
           requires: 
@@ -329,7 +340,8 @@ workflows:
       # AUTOCAD Build&Deploy
       - build-connector:
           name: build-deploy-connector-autocad
-          connectorname: ConnectorAutocadCivil 
+          slnname: ConnectorAutocadCivil 
+          dllname: SpeckleConnectorAutocad.dll
           slug: autocad
           installer: true
           requires: 
@@ -343,7 +355,8 @@ workflows:
       # CIVIL 3D Build&Deploy
       - build-connector:
           name: build-deploy-connector-civil3d
-          connectorname: ConnectorAutocadCivil 
+          slnname: ConnectorAutocadCivil 
+          dllname: SpeckleConnectorCivil.dll
           slug: civil3d
           installer: true
           requires: 
