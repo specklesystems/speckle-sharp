@@ -91,11 +91,12 @@ namespace Speckle.ConnectorRevit.UI
       {
         using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.Stream.name}"))
         {
-          t.Start();
           var failOpts = t.GetFailureHandlingOptions();
           failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
+          failOpts.SetClearAfterRollback(true);
           t.SetFailureHandlingOptions(failOpts);
 
+          t.Start();
           var flattenedObjects = FlattenCommitObject(commitObject, converter);
           // needs to be set for editing to work 
           converter.SetPreviousContextObjects(previouslyReceiveObjects);
@@ -106,9 +107,10 @@ namespace Speckle.ConnectorRevit.UI
           DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
 
           state.ReceivedObjects = newPlaceholderObjects;
-          state.Errors.AddRange(converter.ConversionErrors.Select(e => new Exception($"{e.message}: {e.details}")));
 
           t.Commit();
+
+          state.Errors.AddRange(converter.ConversionErrors.Select(e => new Exception($"{e.message}: {e.details}")));
         }
 
       });
@@ -118,6 +120,12 @@ namespace Speckle.ConnectorRevit.UI
       while (Queue.Count > 0)
       {
         //wait to let queue finish
+      }
+
+      if ( converter.ConversionErrors.LastOrDefault()?.details == "Fatal Error" )
+      {
+        // the commit is being rolled back
+        return null;
       }
 
       try
