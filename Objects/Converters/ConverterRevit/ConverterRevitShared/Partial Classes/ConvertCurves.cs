@@ -25,7 +25,6 @@ namespace Objects.Converter.Revit
 
     public List<ApplicationPlaceholderObject> ModelCurveToNative(ModelCurve speckleCurve)
     {
-      var placeholders = new List<ApplicationPlaceholderObject>();
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
       //delete and re-create line
       //TODO: check if can be modified
@@ -35,6 +34,7 @@ namespace Objects.Converter.Revit
       }
 
       var curves = CurveToNative(speckleCurve.baseCurve);
+      var placeholders = new List<ApplicationPlaceholderObject>();
       var curveEnumerator = curves.GetEnumerator();
       while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
       {
@@ -54,22 +54,28 @@ namespace Objects.Converter.Revit
     }
 
     // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
-    public ApplicationPlaceholderObject ModelCurveToNative(ICurve speckleLine)
+    public List<ApplicationPlaceholderObject> ModelCurveToNative(ICurve speckleLine)
     {
       // if it comes from GH it doesn't have an applicationId, the use the hash id
       if ((speckleLine as Base).applicationId == null)
         (speckleLine as Base).applicationId = (speckleLine as Base).id;
 
       var docObj = GetExistingElementByApplicationId((speckleLine as Base).applicationId);
-      var baseCurve = CurveToNative(speckleLine).get_Item(0);
-
       if (docObj != null)
       {
         Doc.Delete(docObj.Id);
       }
 
-      DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(baseCurve, NewSketchPlaneFromCurve(baseCurve));
-      return new ApplicationPlaceholderObject() { applicationId = (speckleLine as Base).applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve };
+      var placeholders = new List<ApplicationPlaceholderObject>();
+      var curveEnumerator = CurveToNative(speckleLine).GetEnumerator();
+      while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
+      {
+        var curve = curveEnumerator.Current as DB.Curve;
+        DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve));
+        placeholders.Add(new ApplicationPlaceholderObject() { applicationId = (speckleLine as Base).applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
+      }
+
+      return placeholders;
     }
 
     public DetailCurve DetailCurveToSpeckle(DB.DetailCurve revitCurve)
@@ -81,37 +87,42 @@ namespace Objects.Converter.Revit
       return speckleCurve;
     }
 
-    public ApplicationPlaceholderObject DetailCurveToNative(DetailCurve speckleCurve)
+    public List<ApplicationPlaceholderObject> DetailCurveToNative(DetailCurve speckleCurve)
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
-
-      //TODO: support polybline/polycurve lines
-      var baseCurve = CurveToNative(speckleCurve.baseCurve).get_Item(0);
-
       //delete and re-create line
       //TODO: check if can be modified
       if (docObj != null)
       {
         Doc.Delete(docObj.Id);
       }
-      DB.DetailCurve revitCurve = null;
-      try
-      {
-        revitCurve = Doc.Create.NewDetailCurve(Doc.ActiveView, baseCurve);
-      }
-      catch (Exception)
-      {
-        ConversionErrors.Add(new Error("Detail curve creation failed", $"View is not valid for detail curve creation."));
-        throw;
-      }
 
-      var lineStyles = revitCurve.GetLineStyleIds();
-      var lineStyleId = lineStyles.FirstOrDefault(x => Doc.GetElement(x).Name == speckleCurve.lineStyle);
-      if (lineStyleId != null)
+      var placeholders = new List<ApplicationPlaceholderObject>();
+      var crvEnum = CurveToNative(speckleCurve.baseCurve).GetEnumerator();
+      while (crvEnum.MoveNext() && crvEnum.Current != null)
       {
-        revitCurve.LineStyle = Doc.GetElement(lineStyleId);
-      }
-      return new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve };
+        var baseCurve = crvEnum.Current as DB.Curve;
+        DB.DetailCurve revitCurve = null;
+        try
+        {
+          revitCurve = Doc.Create.NewDetailCurve(Doc.ActiveView, baseCurve);
+        }
+        catch (Exception)
+        {
+          ConversionErrors.Add(new Error("Detail curve creation failed", $"View is not valid for detail curve creation."));
+          throw;
+        }
+
+        var lineStyles = revitCurve.GetLineStyleIds();
+        var lineStyleId = lineStyles.FirstOrDefault(x => Doc.GetElement(x).Name == speckleCurve.lineStyle);
+        if (lineStyleId != null)
+        {
+          revitCurve.LineStyle = Doc.GetElement(lineStyleId);
+        }
+        placeholders.Add(new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
+      } 
+      
+      return placeholders;
 
     }
 
