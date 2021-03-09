@@ -314,9 +314,12 @@ namespace Objects.Converter.Revit
         case Polycurve plc:
           foreach (var seg in plc.segments)
           {
-            curveArray.Append(CurveToNative(seg).get_Item(0));
+            var enumerator = CurveToNative(seg).GetEnumerator();
+            while (enumerator.MoveNext() && enumerator.Current != null)
+            {
+              curveArray.Append(enumerator.Current as DB.Curve);
+            }
           }
-
           return curveArray;
         default:
           throw new Speckle.Core.Logging.SpeckleException("The provided geometry is not a valid curve");

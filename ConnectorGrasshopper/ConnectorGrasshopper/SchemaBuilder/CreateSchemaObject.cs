@@ -421,7 +421,7 @@ namespace ConnectorGrasshopper
 
     protected override void BeforeSolveInstance()
     {
-      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      Converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
       Tracker.TrackPageview("objects", "create", "variableinput");
       base.BeforeSolveInstance();
     }
