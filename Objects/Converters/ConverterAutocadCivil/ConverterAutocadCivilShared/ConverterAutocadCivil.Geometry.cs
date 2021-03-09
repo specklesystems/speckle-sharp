@@ -206,20 +206,40 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Curve
-    // NOTE: Autocad defines spline knots  as a vector of size # control points + degree + 1. (# at start and end should match degree)
-    // Conversions for autocad need to make sure this is satisfied, otherwise will cause protected mem crash.
     public NurbCurve3d NurbcurveToNative(Curve curve)
     {
-      var points = new Point3dCollection(PointListToNative(curve.points, curve.units));
-      var knots = new KnotCollection();
-      for (int i = 0; i < curve.knots.Count; i++)
+      // process control points
+      // NOTE: for **closed periodic** curves that have "n" control pts, curves sent from rhino will have n+degree points. 
+      // Remove extra pts for autocad.
+      var _points = PointListToNative(curve.points, curve.units).ToList();
+      if (curve.closed && curve.periodic)
+        _points = _points.GetRange(0, _points.Count - curve.degree);
+      var points = new Point3dCollection(_points.ToArray());
+
+      // process knots
+      // NOTE: Autocad defines spline knots  as a vector of size # control points + degree + 1. (# at start and end should match degree)
+      // Conversions for autocad need to make sure this is satisfied, otherwise will cause protected mem crash.
+      // NOTE: for **closed periodic** curves that have "n" control pts, # of knots should be n + 1.
+      // remove degree = 3 knots from start and end.
+      var _knots = curve.knots;
+      if (curve.knots.Count == _points.Count + curve.degree - 1) // handles rhino format curves
       {
-        knots.Add(curve.knots[i]);
-        if (curve.knots.Count == points.Count + curve.degree - 1)
-          if (i == 0 || i == curve.knots.Count - 1)
-            knots.Add(curve.knots[i]);
+        _knots.Insert(0, _knots[0]);
+        _knots.Insert(_knots.Count - 1, _knots[_knots.Count - 1]);
       }
-      var weights = new DoubleCollection(curve.weights.ToArray());
+      if (curve.closed && curve.periodic) // handles closed periodic curves
+        _knots = _knots.GetRange(curve.degree - 1, _knots.Count - curve.degree * 2);
+      var knots = new KnotCollection();
+      foreach (var _knot in _knots)
+        knots.Add(_knot);
+
+      // process weights
+      // NOTE: for closed curves that have "n" control pts, curves sent from rhino will have n+degree points. 
+      // Remove corresponding weights for autocad.
+      var _weights = curve.weights;
+      if (curve.closed && curve.periodic) // handles closed periodic curves
+        _weights = curve.weights.GetRange(0, _points.Count);
+      var weights = new DoubleCollection(_weights.ToArray());
 
       NurbCurve3d _curve = new NurbCurve3d(curve.degree, knots, points, weights, curve.periodic);
       if (curve.closed)
@@ -283,7 +303,7 @@ namespace Objects.Converter.AutocadCivil
           return null;
 
         case Arc arc:
-          return null;
+          return ArcToNative(arc);
 
         case Ellipse ellipse:
           return null;
