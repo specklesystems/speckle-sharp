@@ -225,7 +225,11 @@ namespace Objects.Converter.AutocadCivil
 
       return polycurve;
     }
-    public AcadDB.Polyline PolycurveToNativeDB(Polycurve polycurve) //polylines can only support curve segments of type circular arc
+
+    // polylines can only support curve segments of type circular arc
+    // currently, this will collapse 3d polycurves into 2d since there is no polycurve class that can contain 3d polylines with nonlinear segments
+    // TODO: to preserve 3d polycurves, will have to convert segments individually, append to the document, and join. This will convert to spline if 3d with curved segments.
+    public AcadDB.Polyline PolycurveToNativeDB(Polycurve polycurve) 
     {
       AcadDB.Polyline polyline = new AcadDB.Polyline() { Closed = polycurve.closed };
       var plane = new Autodesk.AutoCAD.Geometry.Plane(Point3d.Origin, Vector3d.ZAxis.TransformBy(Doc.Editor.CurrentUserCoordinateSystem)); // TODO: check this 
@@ -242,7 +246,7 @@ namespace Objects.Converter.AutocadCivil
               polyline.AddVertexAt(i + 1, PointToNative(o.end).Convert2d(plane), 0, 0, 0);
             break;
           case Arc o:
-            var bulge = Math.Tan((double)(o.endAngle - o.startAngle) / 4); // bulge 
+            var bulge = Math.Tan((double)(o.endAngle - o.startAngle) / 4) * BulgeDirection(o.startPoint, o.midPoint, o.endPoint); // bulge
             polyline.AddVertexAt(i, PointToNative(o.startPoint).Convert2d(plane), bulge, 0, 0);
             if (!polycurve.closed && i == polycurve.segments.Count - 1)
               polyline.AddVertexAt(i + 1, PointToNative(o.endPoint).Convert2d(plane), 0, 0, 0);
@@ -253,6 +257,21 @@ namespace Objects.Converter.AutocadCivil
       }
 
       return polyline;
+    }
+    // calculates bulge direction: (-) clockwise, (+) counterclockwise
+    int BulgeDirection(Point start, Point mid, Point end)
+    {
+      // get vectors from points
+      double[] v1 = new double[] { end.x - start.x, end.y - start.y, end.z - start.z }; // vector from start to end point
+      double[] v2 = new double[] { mid.x - start.x, mid.y - start.y, mid.z - start.z }; // vector from start to mid point
+
+      // calculate cross product z direction
+      double z = v1[0] * v2[1] - v2[0] * v1[1];
+
+      if (z > 0)
+        return -1;
+      else
+        return 1;
     }
 
     // Splines
