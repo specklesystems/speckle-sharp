@@ -61,6 +61,8 @@ namespace Speckle.DesktopUI.Streams
         return null;
       }
 
+      _bindings.RaiseNotification($"Data received from {state.Stream.name}");
+
       return state;
     }
 
