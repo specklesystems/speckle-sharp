@@ -50,6 +50,8 @@ namespace ConnectorRevit.Revit
           failedElements.AddRange(failure.GetFailingElementIds());
           _converter.ConversionErrors.Clear();
           _converter.ConversionErrors.Add(new Error { message = "Objects failed to bake due to fatal error: " + t, details = "Fatal Error"});
+          // logging the error
+          var exception = new Speckle.Core.Logging.SpeckleException("Revit commit failed: " + t, e, level: Sentry.Protocol.SentryLevel.Warning);
           return FailureProcessingResult.ProceedWithCommit;
         }
       }
