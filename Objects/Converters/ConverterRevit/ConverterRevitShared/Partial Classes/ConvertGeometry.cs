@@ -314,11 +314,10 @@ namespace Objects.Converter.Revit
         case Polycurve plc:
           foreach (var seg in plc.segments)
           {
-            var enumerator = CurveToNative(seg).GetEnumerator();
-            while (enumerator.MoveNext() && enumerator.Current != null)
-            {
-              curveArray.Append(enumerator.Current as DB.Curve);
-            }
+            // Enumerate all curves in the array to ensure polylines get fully converted.
+            var crvEnumerator = CurveToNative(seg).GetEnumerator();
+            while (crvEnumerator.MoveNext() && crvEnumerator.Current != null)
+              curveArray.Append(crvEnumerator.Current as DB.Curve);
           }
           return curveArray;
         default:

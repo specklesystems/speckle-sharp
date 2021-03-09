@@ -135,13 +135,10 @@ namespace Objects.Converter.Revit
       return speckleCurve;
     }
 
-    public List<ApplicationPlaceholderObject> RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)
+    public ApplicationPlaceholderObject RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)
     {
-      var placeholders = new List<ApplicationPlaceholderObject>();
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
-
-      //TODO: support poliline/polycurve lines
-      var baseCurve = CurveToNative(speckleCurve.baseCurve as ICurve);
+      var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
       //delete and re-create line
       //TODO: check if can be modified
@@ -153,15 +150,15 @@ namespace Objects.Converter.Revit
       try
       {
         var res = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0)), baseCurve, Doc.ActiveView).get_Item(0);
-        placeholders.Add( new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res });
-      }
+        return new ApplicationPlaceholderObject()
+          {applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res};      }
       catch (Exception)
       {
         ConversionErrors.Add(new Error("Room boundary line creation failed", $"View is not valid for room boundary line creation."));
         throw;
       }
 
-      return placeholders;
+
     }
 
     /// <summary>
