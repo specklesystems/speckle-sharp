@@ -1,8 +1,4 @@
-﻿using Autodesk.Revit.UI;
-using Speckle.ConnectorRevit.Storage;
-using Speckle.ConnectorRevit.UI;
-using Speckle.DesktopUI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +8,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
+using Speckle.ConnectorRevit.Storage;
+using Speckle.ConnectorRevit.UI;
+using Speckle.DesktopUI;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -22,6 +23,9 @@ namespace Speckle.ConnectorRevit.Entry
 
     public static UIControlledApplication UICtrlApp { get; set; }
 
+    // public static readonly FailureDefinitionId GenericFailureGuid =
+    //   new FailureDefinitionId(new Guid("bcada956-0645-4a09-b264-f2154444c677"));
+
     public Result OnStartup(UIControlledApplication application)
     {
       UICtrlApp = application;
@@ -29,7 +33,7 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling += Initialise;
 
       var SpecklePanel = application.CreateRibbonPanel("Speckle 2");
-      var SpeckleButton = SpecklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
+      var SpeckleButton = SpecklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName))as PushButton;
 
       if (SpeckleButton != null)
       {
@@ -40,6 +44,14 @@ namespace Speckle.ConnectorRevit.Entry
         SpeckleButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         SpeckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
+
+      // var failDef = FailureDefinition.CreateFailureDefinition(
+      //   GenericFailureGuid, FailureSeverity.DocumentCorruption,
+      //   "Generic Speckle failure to resolve unresolvable Revit errors");
+      // failDef.AddResolutionType(FailureResolutionType.DeleteElements, "delete elements to resolve error",
+      //   typeof(DeleteElements));
+      // failDef.SetDefaultResolutionType(FailureResolutionType.DeleteElements);
+      // var defRes = failDef.GetDefaultResolutionType();
 
       return Result.Succeeded;
     }
@@ -54,7 +66,6 @@ namespace Speckle.ConnectorRevit.Entry
       var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
       SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
     }
-
 
     public Result OnShutdown(UIControlledApplication application)
     {
