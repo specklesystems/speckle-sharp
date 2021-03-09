@@ -109,7 +109,7 @@ namespace Objects.Converter.Revit
       l.start = PointToSpeckle(line.GetEndPoint(0), u);
       l.end = PointToSpeckle(line.GetEndPoint(1), u);
 
-      l.length = line.Length;
+      l.length = ScaleToSpeckle( line.Length );
       return l;
     }
 
@@ -120,7 +120,7 @@ namespace Objects.Converter.Revit
       var arcPlane = DB.Plane.CreateByNormalAndOrigin(arc.Normal, arc.Center);
 
       var c = new Circle(PlaneToSpeckle(arcPlane, u), u == Units.None ? arc.Radius : ScaleToSpeckle(arc.Radius), u);
-      c.length = arc.Length;
+      c.length = ScaleToSpeckle( arc.Length );
       return c;
     }
 
@@ -170,7 +170,7 @@ namespace Objects.Converter.Revit
       a.endPoint = PointToSpeckle(end, u);
       a.startPoint = PointToSpeckle(start, u);
       a.midPoint = PointToSpeckle(mid, u);
-      a.length = arc.Length;
+      a.length = ScaleToSpeckle( arc.Length );
 
       return a;
     }
@@ -209,7 +209,7 @@ namespace Objects.Converter.Revit
           new Interval(0, 2 * Math.PI),
           trim,
           u);
-        ellipseToSpeckle.length = ellipse.Length;
+        ellipseToSpeckle.length = ScaleToSpeckle( ellipse.Length );
         return ellipseToSpeckle;
       }
     }
@@ -233,7 +233,7 @@ namespace Objects.Converter.Revit
       speckleCurve.closed = RevitVersionHelper.IsCurveClosed(revitCurve);
       speckleCurve.units = units ?? ModelUnits;
       //speckleCurve.domain = new Interval(revitCurve.StartParameter(), revitCurve.EndParameter());
-      speckleCurve.length = revitCurve.Length;
+      speckleCurve.length = ScaleToSpeckle( revitCurve.Length );
 
       return speckleCurve;
     }
@@ -362,7 +362,7 @@ namespace Objects.Converter.Revit
       var polycurve = new Polycurve();
       polycurve.units = units ?? ModelUnits;
       polycurve.closed = loop.First().GetEndPoint(0).DistanceTo(loop.Last().GetEndPoint(1)) < 0.0164042; //5mm
-      polycurve.length = loop.Sum(x => x.Length);
+      polycurve.length = ScaleToSpeckle( loop.Sum(x => x.Length) );
       polycurve.segments.AddRange(loop.Select(x => CurveToSpeckle(x)));
       return polycurve;
     }
