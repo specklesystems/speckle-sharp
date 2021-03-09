@@ -624,7 +624,6 @@ namespace Speckle.DesktopUI.Utils
       ShowProgressBar = false;
       Progress.ResetProgress();
       IsReceiving = false;
-      Globals.Notify($"Data received from {Stream.name}!");
 
       if (Errors.Count != 0)
       {
