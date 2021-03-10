@@ -219,8 +219,7 @@ namespace Objects.Converter.AutocadCivil
       // process knots
       // NOTE: Autocad defines spline knots  as a vector of size # control points + degree + 1. (# at start and end should match degree)
       // Conversions for autocad need to make sure this is satisfied, otherwise will cause protected mem crash.
-      // NOTE: for **closed periodic** curves that have "n" control pts, # of knots should be n + 1.
-      // remove degree = 3 knots from start and end.
+      // NOTE: for **closed periodic** curves that have "n" control pts, # of knots should be n + 1. Remove degree = 3 knots from start and end.
       var _knots = curve.knots;
       if (curve.knots.Count == _points.Count + curve.degree - 1) // handles rhino format curves
       {
@@ -228,22 +227,24 @@ namespace Objects.Converter.AutocadCivil
         _knots.Insert(_knots.Count - 1, _knots[_knots.Count - 1]);
       }
       if (curve.closed && curve.periodic) // handles closed periodic curves
-        _knots = _knots.GetRange(curve.degree - 1, _knots.Count - curve.degree * 2);
+        _knots = _knots.GetRange(curve.degree, _knots.Count - curve.degree * 2);
       var knots = new KnotCollection();
       foreach (var _knot in _knots)
         knots.Add(_knot);
 
       // process weights
-      // NOTE: for closed curves that have "n" control pts, curves sent from rhino will have n+degree points. 
-      // Remove corresponding weights for autocad.
+      // NOTE: if all weights are the same, autocad convention is to pass an empty list (this will assign them a value of -1)
+      // NOTE: for closed curves that have "n" control pts, curves sent from rhino will have n+degree points. Remove corresponding weights for autocad.
       var _weights = curve.weights;
       if (curve.closed && curve.periodic) // handles closed periodic curves
         _weights = curve.weights.GetRange(0, _points.Count);
-      var weights = new DoubleCollection(_weights.ToArray());
+      DoubleCollection weights;
+      weights = (_weights.Distinct().Count() == 1) ? new DoubleCollection() : new DoubleCollection(_weights.ToArray());
 
       NurbCurve3d _curve = new NurbCurve3d(curve.degree, knots, points, weights, curve.periodic);
       if (curve.closed)
         _curve.MakeClosed();
+      _curve.SetInterval(IntervalToNative(curve.domain));
 
       return _curve;
     }

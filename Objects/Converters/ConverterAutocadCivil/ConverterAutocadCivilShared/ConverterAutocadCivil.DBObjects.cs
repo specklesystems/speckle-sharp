@@ -163,10 +163,28 @@ namespace Objects.Converter.AutocadCivil
     public Polyline PolylineToSpeckle(AcadDB.Polyline3d polyline) // AC polyline3d can only have linear segments
     {
       List<Point3d> vertices = new List<Point3d>();
-      foreach (PolylineVertex3d vertex in polyline)
-        vertices.Add(vertex.Position);
-      if (polyline.Closed)
-        vertices.Add(vertices[0]);
+
+      // if this polyline is a new object, retrieve approximate vertices from spline nurbs data (should only be used for curve display value so far)
+      if (polyline.IsNewObject)
+      {
+        foreach (Point3d vertex in polyline.Spline.NurbsData.GetControlPoints())
+          vertices.Add(vertex);
+      }
+      // otherwise retrieve actual vertices from transaction
+      else
+      {
+        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        {
+          foreach (ObjectId id in polyline)
+          {
+            var vertex = (PolylineVertex3d)tr.GetObject(id, OpenMode.ForRead);
+            vertices.Add(vertex.Position);
+          }
+          tr.Commit();
+        }
+        if (polyline.Closed)
+          vertices.Add(vertices[0]);
+      }
 
       var _polyline = new Polyline(PointsToFlatArray(vertices), ModelUnits);
       _polyline.closed = polyline.Closed;
@@ -281,36 +299,73 @@ namespace Objects.Converter.AutocadCivil
 
       // get nurbs and geo data 
       var data = spline.NurbsData;
-      var _spline = spline.GetGeCurve()as NurbCurve3d;
+      var _spline = spline.GetGeCurve() as NurbCurve3d;
+
+      // hack: check for incorrectly closed periodic curves (this seems like acad bug, has resulted from receiving rhino curves)
+      bool periodicClosed = false;
+      if (_spline.Knots.Count < _spline.NumberOfControlPoints + _spline.Degree + 1 && spline.IsPeriodic)
+        periodicClosed = true;
 
       // handle the display polyline
       try
       {
         var poly = spline.ToPolyline(false, true);
-        Polyline displayValue = ConvertToSpeckle(poly)as Polyline;
+        Polyline displayValue = ConvertToSpeckle(poly) as Polyline;
         curve.displayValue = displayValue;
       }
       catch { }
 
-      // get weights: autocad assigns unweighted points a value of -1, and will return an empty list in the spline's nurbsdata if no points are weighted
+      // get points
+      // NOTE: for closed periodic splines, autocad does not track last #degree points. Add the first #degree control points to the list if so.
+      var points = data.GetControlPoints().OfType<Point3d>().ToList();
+      if (periodicClosed)
+        points.AddRange(points.GetRange(0, spline.Degree));
+
+      // get knots
+      // NOTE: for closed periodic splines, autocad has #control points + 1 knots. Add #degree extra knots to beginning and end with #degree - 1 multiplicity for first and last
+      var knots = data.GetKnots().OfType<double>().ToList();
+      if (periodicClosed)
+      {
+        double interval = knots[1] - knots[0]; //knot interval
+
+        for (int i = 0; i < data.Degree; i++)
+        {
+          if (i < 2)
+          {
+            knots.Insert(knots.Count, knots[knots.Count - 1] + interval);
+            knots.Insert(0, knots[0] - interval);
+          }
+          else
+          {
+            knots.Insert(knots.Count, knots[knots.Count - 1]);
+            knots.Insert(0, knots[0]);
+          }
+        }
+      }
+
+      // get weights
+      // NOTE: autocad assigns unweighted points a value of -1, and will return an empty list in the spline's nurbsdata if no points are weighted
+      // NOTE: for closed periodic splines, autocad does not track last #degree points. Add the first #degree weights to the list if so.
       var weights = new List<double>();
       for (int i = 0; i < spline.NumControlPoints; i++)
       {
         double weight = spline.WeightAt(i);
-        if (weight < 0)
+        if (weight <= 0)
           weights.Add(1);
         else
           weights.Add(weight);
       }
+      if (periodicClosed)
+        weights.AddRange(weights.GetRange(0, spline.Degree));
 
       // set nurbs curve info
-      curve.points = PointsToFlatArray(data.GetControlPoints().OfType<Point3d>().ToList()).ToList();
-      curve.knots = data.GetKnots().OfType<double>().ToList();
+      curve.points = PointsToFlatArray(points).ToList();
+      curve.knots = knots;
       curve.weights = weights;
       curve.degree = spline.Degree;
       curve.periodic = spline.IsPeriodic;
       curve.rational = spline.IsRational;
-      curve.closed = spline.Closed;
+      curve.closed = (periodicClosed) ? true : spline.Closed;
       curve.length = _spline.GetLength(_spline.StartParameter, _spline.EndParameter, tolerance);
       curve.domain = IntervalToSpeckle(_spline.GetInterval());
       curve.bbox = BoxToSpeckle(spline.GeometricExtents, true);
@@ -321,7 +376,6 @@ namespace Objects.Converter.AutocadCivil
 
     public AcadDB.Curve NurbsToNativeDB(Curve curve)
     {
-      // test to see if this is polyline convertible first?
       return AcadDB.Curve.CreateFromGeCurve(NurbcurveToNative(curve));
     }
 

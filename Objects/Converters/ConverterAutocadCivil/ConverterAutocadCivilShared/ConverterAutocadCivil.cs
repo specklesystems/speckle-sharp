@@ -244,6 +244,9 @@ namespace Objects.Converter.AutocadCivil
             case AcadDB.Polyline2d _:
               return true;
 
+            case AcadDB.Polyline3d _:
+              return true;
+
             default:
               return false;
           }
