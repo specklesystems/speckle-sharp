@@ -24,7 +24,7 @@ namespace Speckle.Core.Logging
     {
       GraphQLErrors = errors.Select(error => new KeyValuePair<string, object>("error", error.Message)).ToList();
       if (log)
-        Log.CaptureException(this, extra: GraphQLErrors);
+        Log.CaptureException(this, level, GraphQLErrors);
     }
 
     public SpeckleException(string message, Exception inner, bool log = true, SentryLevel level = SentryLevel.Info)
@@ -33,7 +33,7 @@ namespace Speckle.Core.Logging
       if (inner is SpeckleException)
         return;
       if (log)
-        Log.CaptureException(this);
+        Log.CaptureException(this, level);
     }
   }
 }
