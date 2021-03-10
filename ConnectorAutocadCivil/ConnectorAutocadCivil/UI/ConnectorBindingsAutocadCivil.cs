@@ -481,13 +481,23 @@ namespace Speckle.ConnectorAutocadCivil.UI
           state.Errors.Add(new Exception($"Skipping object {autocadObjectHandle}, {obj.GetType()} type not supported"));
           continue;
         }
-        Base converted = converter.ConvertToSpeckle(obj);
-
-        if (converted == null)
+        // convert obj
+        // try catch to prevent memory access violation crash in case a conversion goes wrong
+        Base converted = null;
+        try
         {
-          state.Errors.Add(new Exception($"Failed to convert object ${autocadObjectHandle} of type ${type}."));
-          continue;
+          converted = converter.ConvertToSpeckle(obj);
+          if (converted == null)
+          {
+            state.Errors.Add(new Exception($"Failed to convert object ${autocadObjectHandle} of type ${type}."));
+            continue;
+          }
         }
+        catch
+        {
+          state.Errors.Add(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
+          continue;
+        } 
 
         conversionProgressDict["Conversion"]++;
         UpdateProgress(conversionProgressDict, state.Progress);
@@ -534,31 +544,38 @@ namespace Speckle.ConnectorAutocadCivil.UI
         return null;
       }
 
-      var actualCommit = new CommitCreateInput
+      if (convertedCount > 0)
       {
-        streamId = streamId,
-        objectId = commitObjId,
-        branchName = state.Branch.name,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from AutoCAD.",
-        sourceApplication = Utils.AutocadAppName
-      };
+        var actualCommit = new CommitCreateInput
+        {
+          streamId = streamId,
+          objectId = commitObjId,
+          branchName = state.Branch.name,
+          message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from AutoCAD.",
+          sourceApplication = Utils.AutocadAppName
+        };
 
-      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
+        if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-      try
-      {
-        var commitId = await client.CommitCreate(actualCommit);
+        try
+        {
+          var commitId = await client.CommitCreate(actualCommit);
 
-        await state.RefreshStream();
-        state.PreviousCommitId = commitId;
+          await state.RefreshStream();
+          state.PreviousCommitId = commitId;
 
-        PersistAndUpdateStreamInFile(state);
-        RaiseNotification($"{convertedCount} objects sent to {state.Stream.name}.");
+          PersistAndUpdateStreamInFile(state);
+          RaiseNotification($"{convertedCount} objects sent to {state.Stream.name}.");
+        }
+        catch (Exception e)
+        {
+          Globals.Notify($"Failed to create commit.\n{e.Message}");
+          state.Errors.Add(e);
+        }
       }
-      catch (Exception e)
+      else
       {
-        Globals.Notify($"Failed to create commit.\n{e.Message}");
-        state.Errors.Add(e);
+        Globals.Notify($"Did not create commit: no objects could be converted.");
       }
 
       return state;
