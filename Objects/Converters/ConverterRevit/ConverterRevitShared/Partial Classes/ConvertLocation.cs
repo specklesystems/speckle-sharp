@@ -76,10 +76,11 @@ namespace Objects.Converter.Revit
       {
         //apply offset tranform and create line
         var baseOffset = familyInstance.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM).AsDouble(); //keep internal units
+        var baseLevel = ( DB.Level )Doc.GetElement(familyInstance.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM).AsElementId()); //keep internal units
         var topOffset = familyInstance.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM).AsDouble(); //keep internal units
-        var topLevel = (DB.Level)Doc.GetElement(familyInstance.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM).AsElementId()); //keep internal units
+        var topLevel = ( DB.Level )Doc.GetElement(familyInstance.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM).AsElementId()); //keep internal units
 
-        var baseLine = DB.Line.CreateBound(new XYZ(point.X, point.Y, point.Z + baseOffset), new XYZ(point.X, point.Y, topLevel.Elevation));
+        var baseLine = DB.Line.CreateBound(new XYZ(point.X, point.Y, baseLevel.Elevation + baseOffset), new XYZ(point.X, point.Y, topLevel.Elevation + topOffset));
 
         return LineToSpeckle(baseLine);
       }
