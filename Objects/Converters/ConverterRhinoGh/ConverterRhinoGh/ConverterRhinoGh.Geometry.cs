@@ -376,6 +376,9 @@ namespace Objects.Converter.RhinoGh
           {
           domain = intervalToSpeckle
           };
+          polylineToSpeckle.length = polyline.Length;
+          var box = new RH.Box(poly.GetBoundingBox(true));
+          polylineToSpeckle.bbox = BoxToSpeckle(box, u);
           return polylineToSpeckle;
         }
 
