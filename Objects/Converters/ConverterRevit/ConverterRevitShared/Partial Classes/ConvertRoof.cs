@@ -196,6 +196,7 @@ namespace Objects.Converter.Revit
         new List<string> { "ROOF_CONSTRAINT_LEVEL_PARAM", "ROOF_BASE_LEVEL_PARAM", "ROOF_UPTO_LEVEL_PARAM", "EXTRUSION_START_PARAM", "EXTRUSION_END_PARAM" });
 
       var displayMesh = new Geometry.Mesh();
+      displayMesh.units = ModelUnits;
       (displayMesh.faces, displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       speckleRoof["@displayMesh"] = displayMesh;
 
@@ -227,7 +228,7 @@ namespace Objects.Converter.Revit
                   continue;
                 }
 
-                var segment = CurveToSpeckle(curve.GeometryCurve)as Base; //it's a safe casting
+                var segment = CurveToSpeckle(curve.GeometryCurve) as Base; //it's a safe casting
                 segment["slopeAngle"] = GetParamValue<double>(curve, BuiltInParameter.ROOF_SLOPE);
                 segment["isSloped"] = GetParamValue<bool>(curve, BuiltInParameter.ROOF_CURVE_IS_SLOPE_DEFINING);
                 segment["offset"] = GetParamValue<double>(curve, BuiltInParameter.ROOF_CURVE_HEIGHT_OFFSET);
