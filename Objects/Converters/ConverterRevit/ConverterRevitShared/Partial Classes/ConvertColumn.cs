@@ -197,8 +197,7 @@ namespace Objects.Converter.Revit
       //make line from point and height
       if (baseLine == null && baseGeometry is Point basePoint)
       {
-        var topLevelParam = revitColumn.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
-        var elevation = (double)((RevitLevel)ParameterToSpeckle(topLevelParam).value).elevation;
+        var elevation = ConvertAndCacheLevel(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM).elevation;
         baseLine = new Line(basePoint, new Point(basePoint.x, basePoint.y, elevation + speckleColumn.topOffset, ModelUnits), ModelUnits);
       }
 

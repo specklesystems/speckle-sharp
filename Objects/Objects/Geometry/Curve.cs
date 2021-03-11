@@ -14,12 +14,18 @@ namespace Objects.Geometry
 
     public bool periodic { get; set; }
 
+    /// <summary>
+    /// "True" if weights differ, "False" if weights are the same.
+    /// </summary>
     public bool rational { get; set; }
 
     [DetachProperty]
     [Chunkable(20000)]
     public List<double> points { get; set; }
 
+    /// <summary>
+    /// Gets or sets the weights for this <see cref="Curve"/>. Use a default value of 1 for unweighted points.
+    /// </summary>
     [DetachProperty]
     [Chunkable(20000)]
     public List<double> weights { get; set; }

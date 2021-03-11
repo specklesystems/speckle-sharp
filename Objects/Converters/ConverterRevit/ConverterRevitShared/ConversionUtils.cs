@@ -253,16 +253,15 @@ namespace Objects.Converter.Revit
           if (sp.value == null)
             sp.value = rp.AsValueString();
           break;
-          //case StorageType.ElementId:
-          //  // NOTE: if this collects too much garbage, maybe we can ignore it
-          //  var id = rp.AsElementId();
-          //  var e = Doc.GetElement(id);
-          //  if (e != null && CanConvertToSpeckle(e))
-          //    sp.value = ConvertToSpeckle(e);
-          //  break;
+          // case StorageType.ElementId:
+          //   // NOTE: if this collects too much garbage, maybe we can ignore it
+          //   var id = rp.AsElementId();
+          //   var e = Doc.GetElement(id);
+          //   if (e != null && CanConvertToSpeckle(e))
+          //     sp.value = ConvertToSpeckle(e);
+          //   break;
         default:
           return null;
-          break;
       }
       return sp;
     }
