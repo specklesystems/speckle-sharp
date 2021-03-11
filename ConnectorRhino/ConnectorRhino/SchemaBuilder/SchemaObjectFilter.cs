@@ -238,7 +238,7 @@ namespace SpeckleRhino
       {
         case ObjectType.Brep:
           Brep brp = obj.Geometry as Brep;
-          if (brp.IsSurface)
+          if (brp.Faces.Count == 1)
             return ObjectType.Surface;
           else if (!brp.IsSolid && brp.IsManifold)
             return ObjectType.PolysrfFilter;
