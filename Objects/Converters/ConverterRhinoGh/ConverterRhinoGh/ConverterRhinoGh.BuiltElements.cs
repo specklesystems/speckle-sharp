@@ -24,22 +24,22 @@ namespace Objects.Converter.RhinoGh
   {
     public Column CurveToSpeckleColumn(RH.Curve curve)
     {
-      return new Column((ICurve)ConvertToSpeckle(curve));
+      return new Column((ICurve)ConvertToSpeckle(curve)) { units = ModelUnits };
     }
 
     public Beam CurveToSpeckleBeam(RH.Curve curve)
     {
-      return new Beam((ICurve)ConvertToSpeckle(curve));
+      return new Beam((ICurve)ConvertToSpeckle(curve)) { units = ModelUnits };
     }
 
     public Opening CurveToSpeckleOpening(RH.Curve curve)
     {
-      return new Opening((ICurve)ConvertToSpeckle(curve));
+      return new Opening((ICurve)ConvertToSpeckle(curve)) { units = ModelUnits };
     }
 
     public Floor CurveToSpeckleFloor(RH.Curve curve)
     {
-      return new Floor((ICurve)ConvertToSpeckle(curve));
+      return new Floor((ICurve)ConvertToSpeckle(curve)) { units = ModelUnits };
     }
 
     public Wall BrepToSpeckleWall(RH.Brep brep)
@@ -53,7 +53,7 @@ namespace Objects.Converter.RhinoGh
       foreach (ICurve crv in intCurves)
         openings.Add(new Opening(crv));
       if (bottomCurves != null && height > 0)
-        wall = new Wall(height, bottomCurves[0], openings);
+        wall = new Wall(height, bottomCurves[0], openings) { units = ModelUnits };
       return wall;
     }
 
@@ -63,7 +63,7 @@ namespace Objects.Converter.RhinoGh
       var extCurves = GetSurfaceBrepEdges(brep, getExterior: true); // extract outline
       var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
       if (extCurves != null)
-        floor = new Floor(extCurves[0], intCurves);
+        floor = new Floor(extCurves[0], intCurves) { units = ModelUnits };
       return floor;
     }
 
@@ -73,7 +73,7 @@ namespace Objects.Converter.RhinoGh
       var extCurves = GetSurfaceBrepEdges(brep, getExterior: true); // extract outline
       var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
       if (extCurves != null)
-        ceiling = new Ceiling(extCurves[0], intCurves);
+        ceiling = new Ceiling(extCurves[0], intCurves) { units = ModelUnits };
       return ceiling;
     }
 
@@ -83,7 +83,7 @@ namespace Objects.Converter.RhinoGh
       var extCurves = GetSurfaceBrepEdges(brep, getExterior: true); // extract outline
       var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
       if (extCurves != null)
-        roof = new Roof(extCurves[0], intCurves);
+        roof = new Roof(extCurves[0], intCurves) { units = ModelUnits };
       return roof;
     }
 
@@ -95,7 +95,7 @@ namespace Objects.Converter.RhinoGh
       string family = "Default";
       string type = "Default";
       try { family = args[0]; type = args[1]; } catch { }
-      return new RV.RevitFaceWall(family, type, BrepToSpeckle(brep), null);
+      return new RV.RevitFaceWall(family, type, BrepToSpeckle(brep), null) { units = ModelUnits };
     }
 
     public RV.DirectShape BrepToDirectShape(RH.Brep brep, string[] args)
@@ -106,7 +106,7 @@ namespace Objects.Converter.RhinoGh
         return null;
       string name = "DirectShape";
       try { name = args[1]; } catch { }
-      return new RV.DirectShape(name, category, new List<Base>() { ConvertToSpeckle(brep) });
+      return new RV.DirectShape(name, category, new List<Base>() { ConvertToSpeckle(brep) }) { units = ModelUnits };
     }
 
     public RV.DirectShape ExtrusionToDirectShape(RH.Extrusion extrusion, string[] args)
@@ -117,7 +117,7 @@ namespace Objects.Converter.RhinoGh
         return null;
       string name = "DirectShape";
       try { name = args[1]; } catch { }
-      return new RV.DirectShape(name, category, new List<Base>() { ConvertToSpeckle(extrusion) });
+      return new RV.DirectShape(name, category, new List<Base>() { ConvertToSpeckle(extrusion) }) { units = ModelUnits };
     }
 
     public RV.DirectShape MeshToDirectShape(RH.Mesh mesh, string[] args)
@@ -128,7 +128,7 @@ namespace Objects.Converter.RhinoGh
         return null;
       string name = "DirectShape";
       try { name = args[1]; } catch { }
-      return new RV.DirectShape(name, category, new List<Base>() { ConvertToSpeckle(mesh) });
+      return new RV.DirectShape(name, category, new List<Base>() { ConvertToSpeckle(mesh) }) { units = ModelUnits };
     }
 
     // edge curve convenience method

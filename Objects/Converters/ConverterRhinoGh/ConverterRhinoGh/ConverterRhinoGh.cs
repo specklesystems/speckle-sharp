@@ -165,7 +165,6 @@ namespace Objects.Converter.RhinoGh
       return objects.Select(x => ConvertToSpeckle(x)).ToList();
     }
 
-    // NOTE: is there a way of retrieving class name from BuiltElements class directly? using hardcoded strings atm
     public Base ConvertToSpeckleBE(object @object)
     {
       // get schema if it exists

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using System.Collections;
@@ -21,6 +22,7 @@ namespace SpeckleRhino
     public enum SupportedSchema { Floor, Wall, Roof, Ceiling, Column, Beam, FaceWall, none };
     private Rhino.RhinoDoc Doc;
     public Dictionary<string, List<RhinoObject>> SchemaDictionary = new Dictionary<string, List<RhinoObject>>();
+    public double minDimension = 25 * Units.GetConversionFactor(Units.Millimeters, RhinoDoc.ActiveDoc.ModelUnitSystem.ToString());
     #endregion
 
     #region Constructors
@@ -152,6 +154,8 @@ namespace SpeckleRhino
           try // assumes z vertical planar single surface
           {
             Brep brp = obj.Geometry as Brep; // assumes this has already been filtered for single surface
+            if (brp.Edges.Where(o => o.GetLength() < minDimension).Count() > 0)
+              return false;
             if (IsPlanar(brp.Surfaces.First(), out bool singleH, out bool singleV))
               if (singleV)
                 return true;
@@ -234,7 +238,7 @@ namespace SpeckleRhino
       {
         case ObjectType.Brep:
           Brep brp = obj.Geometry as Brep;
-          if (brp.IsSurface)
+          if (brp.Faces.Count == 1)
             return ObjectType.Surface;
           else if (!brp.IsSolid && brp.IsManifold)
             return ObjectType.PolysrfFilter;
