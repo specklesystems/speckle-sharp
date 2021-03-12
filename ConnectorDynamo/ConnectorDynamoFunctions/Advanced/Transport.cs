@@ -49,7 +49,7 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
       var accountId = stream.AccountId;
       Core.Credentials.Account account;
 
-      account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+      account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
       Exception error = null;
       if (account == null)
       {

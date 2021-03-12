@@ -122,7 +122,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
       }
 
       SelectedAccount = !string.IsNullOrEmpty(SelectedAccountId)
-        ? AccountList.FirstOrDefault(x => x.id == SelectedAccountId)
+        ? AccountList.FirstOrDefault(x => x.userInfo.id == SelectedAccountId)
         : AccountList.FirstOrDefault(x => x.isDefault);
     }
 
