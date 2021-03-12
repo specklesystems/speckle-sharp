@@ -780,12 +780,7 @@ namespace Objects.Converter.Dynamo
       weights = controlPoints.Select(row => row.Select(p => p.weight).ToArray()).ToArray();
 
       var knotsU = surface.knotsU;
-      knotsU.Insert(0, knotsU[0]);
-      knotsU.Add(knotsU[knotsU.Count - 1]);
-
       var knotsV = surface.knotsV;
-      knotsV.Insert(0, knotsV[0]);
-      knotsV.Add(knotsV[knotsV.Count - 1]);
 
       var result = DS.NurbsSurface.ByControlPointsWeightsKnots(points, weights, knotsU.ToArray(), surface.knotsV.ToArray(),
         surface.degreeU, surface.degreeV);
