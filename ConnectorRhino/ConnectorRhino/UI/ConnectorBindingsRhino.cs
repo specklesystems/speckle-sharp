@@ -152,7 +152,7 @@ namespace SpeckleRhino
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
-      var layers = Doc.Layers.ToList().Select(layer => layer.FullPath).ToList();
+      var layers = Doc.Layers.ToList().Where(layer => !layer.IsDeleted).Select(layer => layer.FullPath).ToList();
 
       return new List<ISelectionFilter>()
       {
@@ -566,8 +566,9 @@ namespace SpeckleRhino
           List<string> objs = new List<string>();
           foreach (var layerName in f.Selection)
           {
-            var docObjs = Doc.Objects.FindByLayer(layerName).Select(o => o.Id.ToString());
-            objs.AddRange(docObjs);
+            var docObjs = Doc.Objects.FindByLayer(layerName)?.Select(o => o.Id.ToString());
+            if (docObjs != null)
+              objs.AddRange(docObjs);
           }
           return objs;
         default:
