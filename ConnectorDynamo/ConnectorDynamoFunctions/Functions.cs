@@ -55,11 +55,11 @@ namespace Speckle.ConnectorDynamo.Functions
             new CommitCreateInput
             {
               streamId = serverTransport.StreamId,
-                branchName = branchName,
-                objectId = objectId,
-                message = message,
-                sourceApplication = (Globals.RevitDocument != null) ? Applications.DynamoRevit : Applications.DynamoSandbox,
-                parents = new List<string> { serverTransport.StreamId }
+              branchName = branchName,
+              objectId = objectId,
+              message = message,
+              sourceApplication = (Globals.RevitDocument != null) ? Applications.DynamoRevit : Applications.DynamoSandbox,
+              parents = new List<string> { serverTransport.StreamId }
             }).Result;
 
           responses.Add(res);
@@ -95,7 +95,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// </summary>
     /// <param name="stream">Stream to receive from</param>
     /// <returns></returns>
-    [MultiReturn(new [ ] { "data", "commit" })]
+    [MultiReturn(new[] { "data", "commit" })]
     public static Dictionary<string, object> Receive(StreamWrapper stream, CancellationToken cancellationToken,
       Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null,
       Action<int> onTotalChildrenCountKnown = null)
@@ -161,10 +161,10 @@ namespace Speckle.ConnectorDynamo.Functions
       var @base = Operations.Receive(
         commit.referencedObject,
         cancellationToken,
-        remoteTransport : transport,
-        onProgressAction : onProgressAction,
-        onErrorAction : onErrorAction,
-        onTotalChildrenCountKnown : onTotalChildrenCountKnown
+        remoteTransport: transport,
+        onProgressAction: onProgressAction,
+        onErrorAction: onErrorAction,
+        onTotalChildrenCountKnown: onTotalChildrenCountKnown
       ).Result;
 
       if (cancellationToken.IsCancellationRequested)

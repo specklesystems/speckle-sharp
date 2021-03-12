@@ -1,4 +1,5 @@
-﻿using Autodesk.DesignScript.Runtime;
+﻿using System.Threading.Tasks;
+using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
 
@@ -17,7 +18,7 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
 
       var converter = new BatchConverter();
       var @base = converter.ConvertRecursivelyToSpeckle(data);
-      var objectId = Operations.Send(@base).Result;
+      var objectId = Task.Run(async () => await Operations.Send(@base)).Result;
 
       return objectId;
     }
@@ -32,7 +33,7 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
     {
       Tracker.TrackPageview(Tracker.RECEIVE_LOCAL);
 
-      var @base = Operations.Receive(localDataId).Result;
+      var @base = Task.Run(async () => await Operations.Receive(localDataId)).Result;
       var converter = new BatchConverter();
       var data = converter.ConvertRecursivelyToNative(@base);
       return data;

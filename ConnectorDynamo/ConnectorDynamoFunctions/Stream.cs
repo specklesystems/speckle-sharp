@@ -47,12 +47,12 @@ namespace Speckle.ConnectorDynamo.Functions
           if (account != null)
             accountToUse = account;
           else
-            accountToUse = s.GetAccount().Result;
+            accountToUse = Task.Run(async () => await s.GetAccount()).Result;
 
           var client = new Client(accountToUse);
 
           //Exists?
-          Core.Api.Stream res = client.StreamGet(s.StreamId).Result;
+          Core.Api.Stream res = Task.Run(async () => await client.StreamGet(s.StreamId)).Result;
           s.AccountId = accountToUse.id;
         }
       }
@@ -112,7 +112,7 @@ namespace Speckle.ConnectorDynamo.Functions
       if (name == null && description == null && isPublic == null)
         return null;
 
-      var account = wrapper.GetAccount().Result;
+      var account = Task.Run(async () => await wrapper.GetAccount()).Result;
 
       var client = new Client(account);
 
@@ -129,7 +129,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
       try
       {
-        var res = client.StreamUpdate(input).Result;
+        var res = Task.Run(async () => await client.StreamUpdate(input)).Result;
 
         if (res)
           return wrapper;
@@ -147,7 +147,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// </summary>
     /// <param name="stream">Stream object</param>
     [NodeCategory("Query")]
-    [MultiReturn(new [ ]
+    [MultiReturn(new[]
     {
       "id",
       "name",
@@ -174,13 +174,13 @@ namespace Speckle.ConnectorDynamo.Functions
 
       foreach (var streamWrapper in streams)
       {
-        var account = streamWrapper.GetAccount().Result;
+        var account = Task.Run(async () => await streamWrapper.GetAccount()).Result;
 
         var client = new Client(account);
 
         try
         {
-          Core.Api.Stream res = client.StreamGet(streamWrapper.StreamId).Result;
+          Core.Api.Stream res = Task.Run(async () => await client.StreamGet(streamWrapper.StreamId)).Result;
 
           details.Add(new Dictionary<string, object>
           { { "id", res.id },
@@ -231,7 +231,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
       try
       {
-        var res = client.StreamsGet(limit).Result;
+        var res = Task.Run(async () => await client.StreamsGet(limit)).Result;
         res.ForEach(x => { streamWrappers.Add(new StreamWrapper(x.id, account.id, account.serverInfo.url)); });
       }
       catch (Exception ex)
