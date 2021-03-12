@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System;
 using System.Text.RegularExpressions;
 
 using Speckle.Core.Kits;
@@ -90,30 +91,41 @@ namespace Speckle.ConnectorAutocadCivil
     public static DBObject GetObject(this Handle handle, out string type, out string layer)
     {
       Document Doc = Application.DocumentManager.MdiActiveDocument;
-
-      // get objectId
-      ObjectId id = Doc.Database.GetObjectId(false, handle, 0);
-
-      // get the db object from id
       DBObject obj = null;
       type = null;
       layer = null;
-      using (Transaction tr = Doc.TransactionManager.StartTransaction())
-      {
-        obj = tr.GetObject(id, OpenMode.ForRead);
-        if (obj != null)
-        {
-          Entity objEntity = obj as Entity;
-          type = id.ObjectClass.DxfName;
-          layer = objEntity.Layer;
-        }
-        tr.Commit();
-      }
 
+      // get objectId
+      ObjectId id = Doc.Database.GetObjectId(false, handle, 0);
+      if (!id.IsErased && !id.IsNull)
+      {
+        // get the db object from id
+        using (Transaction tr = Doc.TransactionManager.StartTransaction())
+        {
+          obj = tr.GetObject(id, OpenMode.ForRead);
+          if (obj != null)
+          {
+            Entity objEntity = obj as Entity;
+            type = id.ObjectClass.DxfName;
+            layer = objEntity.Layer;
+          }
+          tr.Commit();
+        }
+      }
       return obj;
     }
 
     #endregion
+
+    /// <summary>
+    /// Retrieves the handle from an input string
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static Handle GetHandle(string str)
+    {
+      return new Handle(Convert.ToInt64(str, 16));
+    }
 
     /// <summary>
     /// Removes invalid characters for Autocad names
