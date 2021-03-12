@@ -432,6 +432,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         state.SelectedObjectIds = GetObjectsFromFilter(state.Filter);
       }
+
+      // remove deleted object ids
+      var deletedElements = new List<string>();
+      foreach (var handle in state.SelectedObjectIds)
+        if (Doc.Database.TryGetObjectId(Utils.GetHandle(handle), out AcadDb.ObjectId id))
+          if (id.IsErased || id.IsNull)
+            deletedElements.Add(handle);
+      state.SelectedObjectIds = state.SelectedObjectIds.Where(o => !deletedElements.Contains(o)).ToList();
+
       if (state.SelectedObjectIds.Count == 0)
       {
         RaiseNotification("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
@@ -457,11 +466,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
 
         // get the db object from id
-        AcadDb.Handle hn = new AcadDb.Handle(Convert.ToInt64(autocadObjectHandle, 16));
+        AcadDb.Handle hn = Utils.GetHandle(autocadObjectHandle);
         AcadDb.DBObject obj = hn.GetObject(out string type, out string layer);
-        string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
-        if (!cleanLayerName.Equals(layer))
-          renamedlayers = true;
 
         if (obj == null)
         {
@@ -474,6 +480,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
           state.Errors.Add(new Exception($"Objects of type ${type} are not supported"));
           continue;
         }
+
+        // remove invalid chars from layer name
+        string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
+        if (!cleanLayerName.Equals(layer))
+          renamedlayers = true;
+
 
         // convert geo to speckle base
         if (!converter.CanConvertToSpeckle(obj))

@@ -152,7 +152,7 @@ namespace SpeckleRhino
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
-      var layers = Doc.Layers.ToList().Select(layer => layer.Name).ToList();
+      var layers = Doc.Layers.ToList().Where(layer => !layer.IsDeleted).Select(layer => layer.FullPath).ToList();
 
       return new List<ISelectionFilter>()
       {
@@ -419,11 +419,13 @@ namespace SpeckleRhino
       int objCount = 0;
       bool renamedlayers = false;
 
-      // TODO: check for filters and trawl the doc.
       if (state.Filter != null)
       {
         state.SelectedObjectIds = GetObjectsFromFilter(state.Filter);
       }
+
+      // remove object ids of any objects that may have been deleted
+      state.SelectedObjectIds = state.SelectedObjectIds.Where(o => Doc.Objects.FindId(new Guid(o)) != null).ToList();
 
       if (state.SelectedObjectIds.Count == 0)
       {
@@ -564,8 +566,9 @@ namespace SpeckleRhino
           List<string> objs = new List<string>();
           foreach (var layerName in f.Selection)
           {
-            var docObjs = Doc.Objects.FindByLayer(layerName).Select(o => o.Id.ToString());
-            objs.AddRange(docObjs);
+            var docObjs = Doc.Objects.FindByLayer(layerName)?.Select(o => o.Id.ToString());
+            if (docObjs != null)
+              objs.AddRange(docObjs);
           }
           return objs;
         default:

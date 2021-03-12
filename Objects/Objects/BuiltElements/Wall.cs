@@ -17,7 +17,7 @@ namespace Objects.BuiltElements
 
     [SchemaInfo("Wall", "Creates a Speckle wall")]
     public Wall(double height, ICurve baseLine,
-      [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null)
+      [SchemaParamInfo("Any nested elements that this wall might have")] List<Base> elements = null)
     {
       this.height = height;
       this.baseLine = baseLine;

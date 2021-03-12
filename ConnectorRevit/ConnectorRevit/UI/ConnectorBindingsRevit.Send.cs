@@ -46,6 +46,7 @@ namespace Speckle.ConnectorRevit.UI
       }
       else //selection was by cursor
       {
+        // TODO: update state by removing any deleted or null object ids
         selectedObjects = state.SelectedObjectIds.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null).ToList();
       }
 
