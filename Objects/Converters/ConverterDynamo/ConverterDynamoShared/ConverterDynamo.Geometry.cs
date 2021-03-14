@@ -192,7 +192,11 @@ namespace Objects.Converter.Dynamo
 
       CopyProperties(l, line);
       l.length = line.Length;
-      l.bbox = BoxToSpeckle(line.BoundingBox.ToCuboid(), u);
+      try
+      {
+        l.bbox = BoxToSpeckle(line.BoundingBox.ToCuboid(), u);
+      }
+      catch { }
       return l;
     }
 
