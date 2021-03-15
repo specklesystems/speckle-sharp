@@ -112,20 +112,25 @@ namespace Speckle.ConnectorDynamo.Functions
     private object TryConvertItemToSpeckle(object value)
     {
       object result = null;
+      if (_converter.CanConvertToSpeckle(value))
+      {
+        try
+        {
+          return _converter.ConvertToSpeckle(value);
+        }
+        catch (Exception ex)
+        {
+          throw new SpeckleException("Could not convert "+ value.GetType()+ " to Speckle", ex);
+        }
+      }
+
 
       if (value is Base || value.GetType().IsSimpleType())
       {
         return value;
       }
 
-      try
-      {
-        return _converter.ConvertToSpeckle(value);
-      }
-      catch (Exception ex)
-      {
-        throw new SpeckleException("Could not convert item to Speckle", ex);
-      }
+     
 
       return result;
     }
