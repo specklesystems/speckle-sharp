@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -91,6 +92,7 @@ namespace ConnectorGrasshopper.Ops
   public class SendLocalWorker : WorkerInstance
   {
     private GH_Structure<IGH_Goo> data;
+    
     private string sentObjectId;
     public SendLocalWorker(GH_Component _parent) : base(_parent)
     { }
@@ -100,18 +102,33 @@ namespace ConnectorGrasshopper.Ops
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
       Parent.Message = "Sending...";
-      var converter = (Parent as SendLocalComponent)?.Converter;
-      converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-      var converted = Utilities.DataTreeToNestedLists(data, converter);
-      var ObjectToSend = new Base();
-      ObjectToSend["@data"] = converted;
-      sentObjectId = Operations.Send(ObjectToSend).Result;
+      try
+      {
+        var converter = (Parent as SendLocalComponent)?.Converter;
+        converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        var converted = Utilities.DataTreeToNestedLists(data, converter);
+        var ObjectToSend = new Base();
+        ObjectToSend["@data"] = converted;
+        sentObjectId = Operations.Send(ObjectToSend).Result;
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
+      }
+
       Done();
     }
+    
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void SetData(IGH_DataAccess DA)
     {
       DA.SetData(0, sentObjectId);
+      foreach (var (level, message) in RuntimeMessages)
+      {
+        Parent.AddRuntimeMessage(level, message);
+      }
       data = null;
     }
 
