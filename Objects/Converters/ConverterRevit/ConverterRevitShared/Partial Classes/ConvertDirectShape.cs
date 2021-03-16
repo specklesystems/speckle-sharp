@@ -39,7 +39,7 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
-              var mesh = MeshToNative(brep.displayValue);
+              var mesh = MeshToNative(brep.displayMesh);
               converted.AddRange(mesh);
             }
             break;
@@ -98,7 +98,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
-        var mesh = MeshToNative(brep.displayValue);
+        var mesh = MeshToNative(brep.displayMesh);
         revitDs.SetShape(mesh);
       }
 

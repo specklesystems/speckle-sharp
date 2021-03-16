@@ -30,7 +30,7 @@ namespace Objects.Converter.Revit
 
       var displayMesh = new Geometry.Mesh();
       (displayMesh.faces, displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoom);
-      speckleRoom["@displayMesh"] = displayMesh;
+      speckleRoom.displayMesh = displayMesh;
 
       return speckleRoom;
     }

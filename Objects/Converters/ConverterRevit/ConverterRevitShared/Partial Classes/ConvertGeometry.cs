@@ -910,7 +910,7 @@ namespace Objects.Converter.Revit
       brep.Trims = speckleTrims;
       brep.Edges = speckleEdges.Values.ToList();
       brep.Loops = speckleLoops;
-      brep.displayValue = mesh;
+      brep.displayMesh = mesh;
       return brep;
 #else
       throw new Speckle.Core.Logging.SpeckleException("Converting BREPs to Speckle is currently only supported in Revit 2021.");
@@ -1020,7 +1020,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
-        var mesh = MeshToNative(brep.displayValue);
+        var mesh = MeshToNative(brep.displayMesh);
         revitDs.SetShape(mesh);
         ConversionErrors.Add(new Error($"Failed to convert BREP with id {brep.id}, using display mesh value instead.", e.Message));
       }

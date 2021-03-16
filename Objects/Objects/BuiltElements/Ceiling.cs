@@ -1,13 +1,17 @@
-﻿using Speckle.Core.Kits;
+﻿using Objects.Geometry;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 
 namespace Objects.BuiltElements
 {
-  public class Ceiling : Base
+  public class Ceiling : Base, IDisplayMesh
   {
     public ICurve outline { get; set; }
     public List<ICurve> voids { get; set; } = new List<ICurve>();
+
+    [DetachProperty]
+    public Mesh displayMesh { get; set; }
 
     [DetachProperty]
     public List<Base> elements { get; set; }

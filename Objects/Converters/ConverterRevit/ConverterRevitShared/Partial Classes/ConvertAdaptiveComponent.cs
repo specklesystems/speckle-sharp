@@ -66,7 +66,7 @@ namespace Objects.Converter.Revit
       speckleAc.type = Doc.GetElement(revitAc.GetTypeId()).Name;
       speckleAc.basePoints = GetAdaptivePoints(revitAc);
       speckleAc.flipped = AdaptiveComponentInstanceUtils.IsInstanceFlipped(revitAc);
-      speckleAc["@displayMesh"] = GetElementMesh(revitAc);
+      speckleAc.displayMesh = GetElementMesh(revitAc);
 
       GetAllRevitParamsAndIds(speckleAc, revitAc);
 

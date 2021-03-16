@@ -7,13 +7,16 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Roof : Base
+  public class Roof : Base, IDisplayMesh
   {
     public ICurve outline { get; set; }
     public List<ICurve> voids { get; set; } = new List<ICurve>();
 
     [DetachProperty]
     public List<Base> elements { get; set; }
+
+    [DetachProperty]
+    public Mesh displayMesh { get; set; }
 
     public Roof() { }
 

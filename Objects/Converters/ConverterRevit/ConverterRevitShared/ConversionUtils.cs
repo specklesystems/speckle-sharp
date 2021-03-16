@@ -83,7 +83,10 @@ namespace Objects.Converter.Revit
 
       if (convertedHostedElements.Any())
       {
-        @base["elements"] = convertedHostedElements;
+        if (@base["elements"] == null || !(@base["elements"] is List<Base>))
+          @base["elements"] = new List<Base>();
+
+        (@base["elements"] as List<Base>).AddRange(convertedHostedElements);
       }
 
     }
@@ -214,12 +217,12 @@ namespace Objects.Converter.Revit
     {
       var sp = new Parameter
       {
-      name = rp.Definition.Name,
-      applicationId = GetParamInternalName(rp),
-      isShared = rp.IsShared,
-      isReadOnly = rp.IsReadOnly,
-      isTypeParameter = isTypeParameter,
-      revitUnitType = rp.Definition.UnitType.ToString() //eg UT_Length
+        name = rp.Definition.Name,
+        applicationId = GetParamInternalName(rp),
+        isShared = rp.IsShared,
+        isReadOnly = rp.IsReadOnly,
+        isTypeParameter = isTypeParameter,
+        revitUnitType = rp.Definition.UnitType.ToString() //eg UT_Length
       };
 
       switch (rp.StorageType)
@@ -253,13 +256,13 @@ namespace Objects.Converter.Revit
           if (sp.value == null)
             sp.value = rp.AsValueString();
           break;
-          // case StorageType.ElementId:
-          //   // NOTE: if this collects too much garbage, maybe we can ignore it
-          //   var id = rp.AsElementId();
-          //   var e = Doc.GetElement(id);
-          //   if (e != null && CanConvertToSpeckle(e))
-          //     sp.value = ConvertToSpeckle(e);
-          //   break;
+        // case StorageType.ElementId:
+        //   // NOTE: if this collects too much garbage, maybe we can ignore it
+        //   var id = rp.AsElementId();
+        //   var e = Doc.GetElement(id);
+        //   if (e != null && CanConvertToSpeckle(e))
+        //     sp.value = ConvertToSpeckle(e);
+        //   break;
         default:
           return null;
       }
@@ -608,7 +611,7 @@ namespace Objects.Converter.Revit
       {
         if (_basePoint == null)
         {
-          var bp = new FilteredElementCollector(Doc).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_ProjectBasePoint)).FirstOrDefault()as BasePoint;
+          var bp = new FilteredElementCollector(Doc).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_ProjectBasePoint)).FirstOrDefault() as BasePoint;
           if (bp == null)
           {
             _basePoint = new BetterBasePoint();
@@ -761,7 +764,7 @@ namespace Objects.Converter.Revit
         return material;
       }
 
-      var revitMaterial = Doc.GetElement(matId)as Material;
+      var revitMaterial = Doc.GetElement(matId) as Material;
       material = new RenderMaterial();
       material.opacity = 1 - revitMaterial.Transparency / 100f;
       material.diffuse = System.Drawing.Color.FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue).ToArgb();

@@ -32,7 +32,7 @@ namespace Objects.Converter.Revit
       var mesh = new Geometry.Mesh();
       (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitPad, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
-      specklePad["@displayMesh"] = mesh;
+      specklePad.displayMesh = mesh;
 
       return specklePad;
     }

@@ -19,7 +19,7 @@ namespace Objects.Converter.Revit
         throw new Speckle.Core.Logging.SpeckleException("Only line based Walls are currently supported.");
       }
 
-      var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId)as DB.Wall;
+      var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;
 
       var wallType = GetElementType<WallType>(speckleWall);
       Level level = null;
@@ -139,7 +139,22 @@ namespace Objects.Converter.Revit
       speckleWall.structural = GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
       speckleWall.flipped = revitWall.Flipped;
 
-      speckleWall["@displayMesh"] = GetWallDisplayMesh(revitWall);
+      if (revitWall.CurtainGrid == null)
+        speckleWall.displayMesh = GetWallDisplayMesh(revitWall);
+      else
+      {
+        // curtain walls have two meshes, one for panels and one for mullions
+        // adding mullions as sub-elements so they can be correctly displayed in viewers etc
+        (var panelsMesh, var mullionsMesh) = GetCurtainWallDisplayMesh(revitWall);
+        speckleWall["renderMaterial"] = new Other.RenderMaterial() { opacity = 0.2, diffuse = System.Drawing.Color.AliceBlue.ToArgb() };
+        speckleWall.displayMesh = panelsMesh;
+
+        var mullions = new Base();
+        mullions["@displayMesh"] = mullionsMesh;
+        mullions["renderMaterial"] = new Other.RenderMaterial() { diffuse = System.Drawing.Color.DarkGray.ToArgb() };
+        speckleWall.elements = new List<Base> { mullions };
+
+      }
 
       GetAllRevitParamsAndIds(speckleWall, revitWall, new List<string>
       {
@@ -156,44 +171,39 @@ namespace Objects.Converter.Revit
       return speckleWall;
     }
 
-    private object GetWallDisplayMesh(DB.Wall wall)
+    private (Mesh, Mesh) GetCurtainWallDisplayMesh(DB.Wall wall)
     {
       var grid = wall.CurtainGrid;
+
+      var meshPanels = new Mesh();
+      var meshMullions = new Mesh();
+
+      var solidPanels = new List<Solid>();
+      var solidMullions = new List<Solid>();
+      foreach (ElementId panelId in grid.GetPanelIds())
+      {
+        solidPanels.AddRange(GetElementSolids(Doc.GetElement(panelId)));
+      }
+      foreach (ElementId mullionId in grid.GetMullionIds())
+      {
+        solidMullions.AddRange(GetElementSolids(Doc.GetElement(mullionId)));
+      }
+      (meshPanels.faces, meshPanels.vertices) = GetFaceVertexArrFromSolids(solidPanels);
+      (meshMullions.faces, meshMullions.vertices) = GetFaceVertexArrFromSolids(solidMullions);
+      meshPanels.units = ModelUnits;
+      meshMullions.units = ModelUnits;
+
+
+      return (meshPanels, meshMullions);
+    }
+
+    private Mesh GetWallDisplayMesh(DB.Wall wall)
+    {
       var mesh = new Mesh();
+      (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(wall, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      mesh.units = ModelUnits;
+      return mesh;
 
-      // meshing for walls in case they are curtain grids
-      if (grid != null)
-      {
-        var meshPanels = new Mesh();
-        var meshMullions = new Mesh();
-
-        var panels = new List<Solid>();
-        var mullions = new List<Solid>();
-        foreach (ElementId panelId in grid.GetPanelIds())
-        {
-          panels.AddRange(GetElementSolids(Doc.GetElement(panelId)));
-        }
-        foreach (ElementId mullionId in grid.GetMullionIds())
-        {
-          mullions.AddRange(GetElementSolids(Doc.GetElement(mullionId)));
-        }
-        (meshPanels.faces, meshPanels.vertices) = GetFaceVertexArrFromSolids(panels);
-        (meshMullions.faces, meshMullions.vertices) = GetFaceVertexArrFromSolids(mullions);
-
-        meshPanels["renderMaterial"] = new Other.RenderMaterial() { opacity = 0.2, diffuse = System.Drawing.Color.AliceBlue.ToArgb() };
-
-        meshMullions["renderMaterial"] = new Other.RenderMaterial() { diffuse = System.Drawing.Color.DarkGray.ToArgb() };
-
-        meshPanels.units = ModelUnits;
-        meshMullions.units = ModelUnits;
-        return new List<Base>() { meshPanels, meshMullions };
-      }
-      else
-      {
-        (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(wall, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-        mesh.units = ModelUnits;
-        return mesh;
-      }
     }
 
   }

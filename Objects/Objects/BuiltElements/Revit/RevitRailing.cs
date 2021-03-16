@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class RevitRailing : Base
+  public class RevitRailing : Base, IDisplayMesh
   {
     //public string family { get; set; }
     public string type { get; set; }
@@ -16,6 +16,9 @@ namespace Objects.BuiltElements.Revit
     public string elementId { get; set; }
 
     public List<Parameter> parameters { get; set; }
+
+    [DetachProperty]
+    public Mesh displayMesh { get; set; }
 
 
     public RevitRailing() { }
