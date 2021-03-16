@@ -14,9 +14,9 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(((Base)speckleSurface).applicationId);
 
       var pts = new List<XYZ>();
-      for (int i = 0; i < speckleSurface.baseGeometry.vertices.Count; i += 3)
+      for (int i = 0; i < speckleSurface.displayMesh.vertices.Count; i += 3)
       {
-        var point = new Geometry.Point(speckleSurface.baseGeometry.vertices[i], speckleSurface.baseGeometry.vertices[i + 1], speckleSurface.baseGeometry.vertices[i + 2], speckleSurface.baseGeometry.units);
+        var point = new Geometry.Point(speckleSurface.displayMesh.vertices[i], speckleSurface.displayMesh.vertices[i + 1], speckleSurface.displayMesh.vertices[i + 2], speckleSurface.displayMesh.units);
         pts.Add(PointToNative(point));
       }
 
@@ -37,7 +37,7 @@ namespace Objects.Converter.Revit
     public RevitTopography TopographyToSpeckle(TopographySurface revitTopo)
     {
       var speckleTopo = new RevitTopography();
-      speckleTopo.baseGeometry = GetElementMesh(revitTopo);
+      speckleTopo.displayMesh = GetElementMesh(revitTopo);
       GetAllRevitParamsAndIds(speckleTopo, revitTopo);
 
       return speckleTopo;

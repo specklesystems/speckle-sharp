@@ -26,7 +26,7 @@ namespace Objects.Converter.Revit
       {
         try
         {
-          var revitType = Doc.GetElement(docObj.GetTypeId())as ElementType;
+          var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
 
           // if family changed, tough luck. delete and let us create a new one.
           if (familySymbol.FamilyName != revitType.FamilyName)
@@ -168,7 +168,7 @@ namespace Objects.Converter.Revit
       var lev1 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_LEVEL_PARAM);
       var lev2 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
 
-      var symbol = Doc.GetElement(revitFi.GetTypeId())as FamilySymbol;
+      var symbol = Doc.GetElement(revitFi.GetTypeId()) as FamilySymbol;
 
       var speckleFi = new BuiltElements.Revit.FamilyInstance();
       speckleFi.basePoint = basePoint;
@@ -184,7 +184,7 @@ namespace Objects.Converter.Revit
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
       }
 
-      speckleFi["@displayMesh"] = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
+      speckleFi.displayMesh = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
 
       GetAllRevitParamsAndIds(speckleFi, revitFi);
 

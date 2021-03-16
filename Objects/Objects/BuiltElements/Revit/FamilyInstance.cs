@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class FamilyInstance : Base
+  public class FamilyInstance : Base, IDisplayMesh
   {
     public Point basePoint { get; set; }
     public string family { get; set; }
@@ -20,6 +20,9 @@ namespace Objects.BuiltElements.Revit
 
     [DetachProperty]
     public List<Base> elements { get; set; }
+
+    [DetachProperty]
+    public Mesh displayMesh { get; set; }
 
     public FamilyInstance() { }
 

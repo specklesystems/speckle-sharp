@@ -647,9 +647,9 @@ namespace Objects.Converter.Dynamo
 
     public DS.Mesh BrepToNative(Brep brep)
     {
-      if (brep.displayValue != null)
+      if (brep.displayMesh != null)
       {
-        var meshToNative = MeshToNative(brep.displayValue);
+        var meshToNative = MeshToNative(brep.displayMesh);
         return meshToNative;
       }
 

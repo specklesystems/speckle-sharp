@@ -9,6 +9,8 @@ namespace Objects.BuiltElements.Revit
   {
     public string name { get; set; }
     public RevitCategory category { get; set; }
+
+    [DetachProperty]
     public List<Base> baseGeometries { get; set; }
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
@@ -37,5 +39,4 @@ namespace Objects.BuiltElements.Revit
       || @base is Mesh
       || @base is Brep;
   }
-
 }

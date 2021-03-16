@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class AdaptiveComponent : Base
+  public class AdaptiveComponent : Base, IDisplayMesh
   {
     public string type { get; set; }
     public string family { get; set; }
@@ -13,6 +13,9 @@ namespace Objects.BuiltElements.Revit
     public bool flipped { get; set; }
     public string elementId { get; set; }
     public List<Parameter> parameters { get; set; }
+
+    [DetachProperty]
+    public Mesh displayMesh { get; set; }
 
     public AdaptiveComponent() { }
 

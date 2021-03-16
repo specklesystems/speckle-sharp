@@ -42,6 +42,7 @@
         Margin="0,12"
         VerticalContentAlignment="Center"
         md:HintAssist.Hint="Branch name"
+        MaxLength="100"
         Style="{StaticResource MaterialDesignFilledTextFieldTextBox}"
         Text="{Binding BranchName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
       <TextBox

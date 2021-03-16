@@ -7,9 +7,12 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Beam : Base
+  public class Beam : Base, IDisplayMesh
   {
     public ICurve baseLine { get; set; }
+
+    [DetachProperty]
+    public Mesh displayMesh { get; set; }
 
     public Beam() { }
 

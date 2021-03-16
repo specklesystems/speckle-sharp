@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Room : Base, IHasArea, IHasVolume
+  public class Room : Base, IHasArea, IHasVolume, IDisplayMesh
   {
     public string name { get; set; }
     public string number { get; set; }
@@ -18,6 +18,9 @@ namespace Objects.BuiltElements
     public Point center { get; set; }
     public List<ICurve> voids { get; set; } = new List<ICurve>();
     public ICurve outline { get; set; }
+
+    [DetachProperty]
+    public Mesh displayMesh { get; set; }
 
     public Room() { }
   }

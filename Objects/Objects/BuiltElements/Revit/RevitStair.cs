@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class RevitStair : Base
+  public class RevitStair : Base, IDisplayMesh
   {
     public string family { get; set; }
     public string type { get; set; }
@@ -25,6 +25,9 @@ namespace Objects.BuiltElements.Revit
     public List<RevitStairLanding> landings { get; set; }
     public List<RevitStairSupport> supports { get; set; }
     public string elementId { get; set; }
+
+    [DetachProperty]
+    public Mesh displayMesh { get; set; }
 
     public RevitStair() { }
   }
@@ -75,7 +78,4 @@ namespace Objects.BuiltElements.Revit
 
     public RevitStairSupport() { }
   }
-
-
-
 }

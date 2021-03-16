@@ -5,13 +5,16 @@ using System.Collections.Generic;
 
 namespace Objects.BuiltElements
 {
-  public class Wall : Base
+  public class Wall : Base, IDisplayMesh
   {
     public double height { get; set; }
 
     [DetachProperty]
     public List<Base> elements { get; set; }
     public ICurve baseLine { get; set; }
+
+    [DetachProperty]
+    public Mesh displayMesh { get; set; }
 
     public Wall() { }
 

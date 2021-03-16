@@ -40,7 +40,7 @@ namespace Objects.Converter.Revit
       var mesh = new Geometry.Mesh();
       (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitStair, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
-      speckleStair["@displayMesh"] = mesh;
+      speckleStair.displayMesh = mesh;
 
       return speckleStair;
     }

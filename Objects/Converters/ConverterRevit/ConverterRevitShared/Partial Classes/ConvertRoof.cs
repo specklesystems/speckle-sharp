@@ -198,7 +198,7 @@ namespace Objects.Converter.Revit
       var displayMesh = new Geometry.Mesh();
       displayMesh.units = ModelUnits;
       (displayMesh.faces, displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-      speckleRoof["@displayMesh"] = displayMesh;
+      speckleRoof.displayMesh = displayMesh;
 
       GetHostedElements(speckleRoof, revitRoof);
 

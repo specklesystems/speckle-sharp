@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Objects.BuiltElements
 {
-  public class Duct : Base
+  public class Duct : Base, IDisplayMesh
   {
     public Line baseLine { get; set; }
     public double width { get; set; }
@@ -13,6 +13,9 @@ namespace Objects.BuiltElements
     public double diameter { get; set; }
     public double length { get; set; }
     public double velocity { get; set; }
+
+    [DetachProperty]
+    public Mesh displayMesh { get; set; }
 
     public Duct() { }
 
