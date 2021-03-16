@@ -58,17 +58,33 @@ namespace Objects.BuiltElements.Revit
     /// <param name="outline"></param>
     /// <param name="bottomLevel"></param>
     /// <param name="topLevel"></param>
-    /// <param name="height"></param>
     /// <param name="parameters"></param>
-    /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
-    [SchemaInfo("RevitShaft", "Creates a Revit shaft")]
-    public RevitShaft(ICurve outline, Level bottomLevel, Level topLevel, double height, List<Parameter> parameters = null)
+    [SchemaInfo("RevitShaft", "Creates a Revit shaft from a bottom and top level")]
+    public RevitShaft(ICurve outline, Level bottomLevel, Level topLevel, List<Parameter> parameters = null)
     {
       this.outline = outline;
       this.bottomLevel = bottomLevel;
       this.topLevel = topLevel;
+      this.parameters = parameters;
+    }
+
+    /*
+    /// <summary>
+    /// SchemaBuilder constructor for a Revit shaft
+    /// </summary>
+    /// <param name="outline"></param>
+    /// <param name="bottomLevel"></param>
+    /// <param name="height"></param>
+    /// <param name="parameters"></param>
+    /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
+    [SchemaInfo("RevitShaft", "Creates a Revit shaft from a bottom level and height")]
+    public RevitShaft(ICurve outline, Level bottomLevel, double height, List<Parameter> parameters = null)
+    {
+      this.outline = outline;
+      this.bottomLevel = bottomLevel;
       this.height = height;
       this.parameters = parameters;
     }
+    */
   }
 }
