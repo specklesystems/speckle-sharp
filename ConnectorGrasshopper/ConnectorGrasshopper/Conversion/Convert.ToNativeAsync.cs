@@ -224,7 +224,7 @@ namespace ConnectorGrasshopper.Conversion
         {
           // Only try to convert valid items and report any other invalid ones as warnings.
           if(item.IsValid) Objects.Append(item, path);
-          else RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] was not Base."));
+          else RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] is not a Base object."));
         }
 
         branchIndex++;
