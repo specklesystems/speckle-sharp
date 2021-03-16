@@ -86,19 +86,6 @@ namespace Objects.BuiltElements.Revit.RevitRoof
 
     public RevitFootprintRoof() { }
 
-    /// <summary>
-    /// SchemaBuilder constructor for a Revit footprint roof
-    /// </summary>
-    /// <param name="outline"></param>
-    /// <param name="family"></param>
-    /// <param name="type"></param>
-    /// <param name="level"></param>
-    /// <param name="cutOffLevel"></param>
-    /// <param name="slope"></param>
-    /// <param name="voids"></param>
-    /// <param name="elements"></param>
-    /// <param name="parameters"></param>
-    /// <remarks>Assign units when using this constructor due to <paramref name="slope"/> param</remarks>
     [SchemaInfo("RevitFootprintRoof", "Creates a Revit roof by outline")]
     public RevitFootprintRoof(ICurve outline, string family, string type, Level level, RevitLevel cutOffLevel = null, double slope = 0, List<ICurve> voids = null,
       List<Base> elements = null,
