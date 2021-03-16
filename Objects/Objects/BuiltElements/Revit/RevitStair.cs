@@ -13,7 +13,7 @@ namespace Objects.BuiltElements.Revit
     public Level topLevel { get; set; }
     public double riserHeight { get; set; }
     public int risersNumber { get; set; }
-    public double treradDepth { get; set; }
+    public double treadDepth { get; set; }
     public int treadsNumber { get; set; }
     public double baseElevation { get; set; }
     public double topElevation { get; set; }
@@ -26,10 +26,7 @@ namespace Objects.BuiltElements.Revit
     public List<RevitStairSupport> supports { get; set; }
     public string elementId { get; set; }
 
-
     public RevitStair() { }
-
-
   }
 
   public class RevitStairRun : Base
@@ -49,11 +46,8 @@ namespace Objects.BuiltElements.Revit
     public double extensionBelowTreadBase { get; set; }
     public double height { get; set; }
     public string runStyle { get; set; }
-
-
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
-
 
     public RevitStairRun() { }
   }
@@ -69,7 +63,6 @@ namespace Objects.BuiltElements.Revit
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
 
-
     public RevitStairLanding() { }
   }
 
@@ -79,7 +72,6 @@ namespace Objects.BuiltElements.Revit
     public string type { get; set; }
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
-
 
     public RevitStairSupport() { }
   }

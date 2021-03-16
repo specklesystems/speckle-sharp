@@ -18,7 +18,7 @@ namespace Objects.BuiltElements
     public Point center { get; set; }
     public List<ICurve> voids { get; set; } = new List<ICurve>();
     public ICurve outline { get; set; }
-    public Room() { }
 
+    public Room() { }
   }
 }

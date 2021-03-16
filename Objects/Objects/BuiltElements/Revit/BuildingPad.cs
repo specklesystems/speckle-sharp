@@ -13,7 +13,6 @@ namespace Objects.BuiltElements.Revit
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
 
-
     public BuildingPad() { }
 
 
