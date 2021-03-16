@@ -38,17 +38,10 @@ namespace Objects.BuiltElements.Revit
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
 
-
     public RevitCeiling() { }
 
-    [SchemaInfo("RevitCeiling", "Creates a Revit ceiling by level and offset.")]
-    public RevitCeiling(string family, string type, Level level, double offset, List<Parameter> parameters = null, string units = Units.Meters)
+    public RevitCeiling(string units = Units.Meters)
     {
-      this.family = family;
-      this.type = type;
-      this.level = level;
-      this.offset = offset;
-      this.parameters = parameters;
       this.units = units;
     }
   }
