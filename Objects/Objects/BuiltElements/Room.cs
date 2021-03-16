@@ -21,7 +21,7 @@ namespace Objects.BuiltElements
 
     [DetachProperty]
     public Mesh displayMesh { get; set; }
-    public Room() { }
 
+    public Room() { }
   }
 }

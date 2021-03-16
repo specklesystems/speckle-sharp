@@ -14,6 +14,12 @@ namespace Objects.BuiltElements
 
     public Level() { }
 
+    /// <summary>
+    /// SchemaBuilder constructor for a Speckle level
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="elevation"></param>
+    /// <remarks>Assign units when using this constructor due to <paramref name="elevation"/> param</remarks>
     [SchemaInfo("Level", "Creates a Speckle level")]
     public Level(string name, double elevation)
     {
@@ -25,19 +31,23 @@ namespace Objects.BuiltElements
 
 namespace Objects.BuiltElements.Revit
 {
-
   public class RevitLevel : Level
   {
     public bool createView { get; set; }
-
     public List<Parameter> parameters { get; set; }
-
     public string elementId { get; set; }
-
     public bool referenceOnly { get; set; }
 
     public RevitLevel() { }
 
+    /// <summary>
+    /// SchemaBuilder constructor for a Revit level
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="elevation"></param>
+    /// <param name="createView"></param>
+    /// <param name="parameters"></param>
+    /// <remarks>Assign units when using this constructor due to <paramref name="elevation"/> param</remarks>
     [SchemaInfo("Create level", "Creates a new Revit level unless one with the same elevation already exists")]
     public RevitLevel(
       [SchemaParamInfo("Level name. NOTE: updating level name is not supported")] string name,

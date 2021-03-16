@@ -24,7 +24,7 @@ namespace Objects.Converter.Revit
       speckleStair.topLevel = ConvertAndCacheLevel(revitStair, BuiltInParameter.STAIRS_TOP_LEVEL_PARAM);
       speckleStair.riserHeight = ScaleToSpeckle(revitStair.ActualRiserHeight);
       speckleStair.risersNumber = revitStair.ActualRisersNumber;
-      speckleStair.treradDepth = ScaleToSpeckle(revitStair.ActualTreadDepth);
+      speckleStair.treadDepth = ScaleToSpeckle(revitStair.ActualTreadDepth);
       speckleStair.treadsNumber = revitStair.ActualTreadsNumber;
       speckleStair.baseElevation = ScaleToSpeckle(revitStair.BaseElevation);
       speckleStair.topElevation = ScaleToSpeckle(revitStair.TopElevation);

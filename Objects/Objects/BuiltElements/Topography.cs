@@ -9,9 +9,11 @@ namespace Objects.BuiltElements
 {
   public class Topography : Base, IDisplayMesh
   {
+    public Mesh baseGeometry { get; set; } = new Mesh();
 
     [DetachProperty]
     public Mesh displayMesh { get; set; } = new Mesh();
+
     public Topography() { }
 
     [SchemaInfo("Topography", "Creates a Speckle topography")]
@@ -27,12 +29,9 @@ namespace Objects.BuiltElements.Revit
   public class RevitTopography : Topography
   {
     public string elementId { get; set; }
-
     public List<Parameter> parameters { get; set; }
-    public RevitTopography()
-    {
 
-    }
+    public RevitTopography() { }
 
     [SchemaInfo("RevitTopography", "Creates a Revit topography")]
     public RevitTopography(Mesh displayMesh, List<Parameter> parameters = null)
@@ -41,5 +40,4 @@ namespace Objects.BuiltElements.Revit
       this.parameters = parameters;
     }
   }
-
 }

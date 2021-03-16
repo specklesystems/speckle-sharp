@@ -8,21 +8,14 @@ namespace Objects.BuiltElements.Revit
   public class DirectShape : Base
   {
     public string name { get; set; }
-
     public RevitCategory category { get; set; }
 
     [DetachProperty]
     public List<Base> baseGeometries { get; set; }
-
     public List<Parameter> parameters { get; set; }
-
     public string elementId { get; set; }
 
-
-    public DirectShape()
-    {
-
-    }
+    public DirectShape() { }
 
     /// <summary>
     ///  Constructs a new <see cref="DirectShape"/> instance given a list of <see cref="Base"/> objects.
@@ -46,5 +39,4 @@ namespace Objects.BuiltElements.Revit
       || @base is Mesh
       || @base is Brep;
   }
-
 }

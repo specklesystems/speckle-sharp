@@ -18,7 +18,7 @@ namespace Objects.BuiltElements
 
     public Ceiling() { }
 
-    [SchemaInfo("Floor", "Creates a Speckle ceiling")]
+    [SchemaInfo("Ceiling", "Creates a Speckle ceiling")]
     public Ceiling(ICurve outline, List<ICurve> voids = null,
       [SchemaParamInfo("Any nested elements that this ceiling might have")] List<Base> elements = null)
     {
@@ -27,12 +27,10 @@ namespace Objects.BuiltElements
       this.elements = elements;
     }
   }
-
 }
 
 namespace Objects.BuiltElements.Revit
 {
-
   public class RevitCeiling : Ceiling
   {
     public string family { get; set; }
@@ -41,9 +39,7 @@ namespace Objects.BuiltElements.Revit
     public double offset { get; set; }
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
-    public RevitCeiling()
-    {
 
-    }
+    public RevitCeiling() { }
   }
 }

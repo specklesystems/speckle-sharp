@@ -12,14 +12,11 @@ namespace Objects.BuiltElements.Revit
     public Level level { get; set; }
     public Polycurve path { get; set; }
     public bool flipped { get; set; }
-
     public string elementId { get; set; }
-
     public List<Parameter> parameters { get; set; }
 
     [DetachProperty]
     public Mesh displayMesh { get; set; }
-
 
     public RevitRailing() { }
 
@@ -31,7 +28,5 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.flipped = flipped;
     }
-
-
   }
 }

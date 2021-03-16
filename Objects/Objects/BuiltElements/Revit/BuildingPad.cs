@@ -17,10 +17,6 @@ namespace Objects.BuiltElements.Revit
     [DetachProperty]
     public Mesh displayMesh { get; set; }
 
-
     public BuildingPad() { }
-
-
   }
-
 }

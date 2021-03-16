@@ -8,21 +8,14 @@ namespace Objects.BuiltElements.Revit
   public class FamilyInstance : Base, IDisplayMesh
   {
     public Point basePoint { get; set; }
-
     public string family { get; set; }
-
     public string type { get; set; }
     public string category { get; set; }
     public Level level { get; set; }
-
     public double rotation { get; set; }
-
     public bool facingFlipped { get; set; }
-
     public bool handFlipped { get; set; }
-
     public List<Parameter> parameters { get; set; }
-
     public string elementId { get; set; }
 
     [DetachProperty]
@@ -31,10 +24,7 @@ namespace Objects.BuiltElements.Revit
     [DetachProperty]
     public Mesh displayMesh { get; set; }
 
-    public FamilyInstance()
-    {
-
-    }
+    public FamilyInstance() { }
 
     [SchemaInfo("FamilyInstance", "Creates a Revit family instance")]
     public FamilyInstance(Point basePoint, string family, string type, Level level,

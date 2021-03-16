@@ -23,15 +23,11 @@ namespace Objects.BuiltElements
 
 namespace Objects.BuiltElements.Revit
 {
-
   public class RevitOpening : Opening
   {
     //public string family { get; set; }
-
     //public string type { get; set; }
-
     public List<Parameter> parameters { get; set; }
-
     public string elementId { get; set; }
 
     public RevitOpening() { }
@@ -51,14 +47,19 @@ namespace Objects.BuiltElements.Revit
   public class RevitShaft : RevitOpening
   {
     public Level bottomLevel { get; set; }
-
     public Level topLevel { get; set; }
-
     public double height { get; set; }
 
     public RevitShaft() { }
 
-    [SchemaInfo("RevitShaft", "Creates a Revit shaft")]
+    /// <summary>
+    /// SchemaBuilder constructor for a Revit shaft
+    /// </summary>
+    /// <param name="outline"></param>
+    /// <param name="bottomLevel"></param>
+    /// <param name="topLevel"></param>
+    /// <param name="parameters"></param>
+    [SchemaInfo("RevitShaft", "Creates a Revit shaft from a bottom and top level")]
     public RevitShaft(ICurve outline, Level bottomLevel, Level topLevel, List<Parameter> parameters = null)
     {
       this.outline = outline;
@@ -66,6 +67,24 @@ namespace Objects.BuiltElements.Revit
       this.topLevel = topLevel;
       this.parameters = parameters;
     }
-  }
 
+    /*
+    /// <summary>
+    /// SchemaBuilder constructor for a Revit shaft
+    /// </summary>
+    /// <param name="outline"></param>
+    /// <param name="bottomLevel"></param>
+    /// <param name="height"></param>
+    /// <param name="parameters"></param>
+    /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
+    [SchemaInfo("RevitShaft", "Creates a Revit shaft from a bottom level and height")]
+    public RevitShaft(ICurve outline, Level bottomLevel, double height, List<Parameter> parameters = null)
+    {
+      this.outline = outline;
+      this.bottomLevel = bottomLevel;
+      this.height = height;
+      this.parameters = parameters;
+    }
+    */
+  }
 }
