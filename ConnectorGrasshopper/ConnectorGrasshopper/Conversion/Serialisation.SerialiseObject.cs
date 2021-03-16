@@ -67,7 +67,7 @@ namespace ConnectorGrasshopper.Conversion
           {
             if (CancellationToken.IsCancellationRequested)return;
 
-            if (item != null)
+            if (item != null && item.Value != null)
             {
               try
               {
@@ -81,9 +81,8 @@ namespace ConnectorGrasshopper.Conversion
             }
             else
             {
-              ConvertedObjects.Append(new GH_String { Value = null }, path);
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Object at {Objects.Paths[branchIndex]} is not a Speckle object."));
-            }
+              ConvertedObjects.Append(null, path);
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] is not a Base object."));            }
 
             ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
           }
@@ -120,8 +119,7 @@ namespace ConnectorGrasshopper.Conversion
         var path = _objects.Paths[branchIndex];
         foreach (var item in list)
         {
-          if(item.IsValid) Objects.Append(item, path);
-          else RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] is not a Base object."));
+          Objects.Append(item, path);
         }
         branchIndex++;
       }
