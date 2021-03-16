@@ -7,15 +7,17 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Topography : Base
+  public class Topography : Base, IDisplayMesh
   {
-    public Mesh baseGeometry { get; set; } = new Mesh();
+
+    [DetachProperty]
+    public Mesh displayMesh { get; set; } = new Mesh();
     public Topography() { }
 
     [SchemaInfo("Topography", "Creates a Speckle topography")]
-    public Topography(Mesh baseGeometry)
+    public Topography(Mesh displayMesh)
     {
-      this.baseGeometry = baseGeometry;
+      this.displayMesh = displayMesh;
     }
   }
 }
@@ -33,9 +35,9 @@ namespace Objects.BuiltElements.Revit
     }
 
     [SchemaInfo("RevitTopography", "Creates a Revit topography")]
-    public RevitTopography(Mesh baseGeometry, List<Parameter> parameters = null)
+    public RevitTopography(Mesh displayMesh, List<Parameter> parameters = null)
     {
-      this.baseGeometry = baseGeometry;
+      this.displayMesh = displayMesh;
       this.parameters = parameters;
     }
   }

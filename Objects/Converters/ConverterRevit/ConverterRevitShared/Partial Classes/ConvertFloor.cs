@@ -98,7 +98,7 @@ namespace Objects.Converter.Revit
       var mesh = new Geometry.Mesh();
       (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
-      speckleFloor["@displayMesh"] = mesh;
+      speckleFloor.displayMesh = mesh;
 
       GetHostedElements(speckleFloor, revitFloor);
 
@@ -110,7 +110,7 @@ namespace Objects.Converter.Revit
     {
       var profiles = new List<ICurve>();
       var faces = HostObjectUtils.GetTopFaces(floor);
-      Face face = floor.GetGeometryObjectFromReference(faces[0])as Face;
+      Face face = floor.GetGeometryObjectFromReference(faces[0]) as Face;
       var crvLoops = face.GetEdgesAsCurveLoops();
       foreach (var crvloop in crvLoops)
       {

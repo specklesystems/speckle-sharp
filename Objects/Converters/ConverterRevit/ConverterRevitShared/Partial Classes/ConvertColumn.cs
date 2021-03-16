@@ -20,7 +20,7 @@ namespace Objects.Converter.Revit
         throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.");
       }
 
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn);;
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn); ;
       var baseLine = CurveToNative(speckleColumn.baseLine).get_Item(0);
 
       // If the start point elevation is higher than the end point elevation, reverse the line.
@@ -58,7 +58,7 @@ namespace Objects.Converter.Revit
       {
         try
         {
-          var revitType = Doc.GetElement(docObj.GetTypeId())as ElementType;
+          var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
 
           // if family changed, tough luck. delete and let us create a new one.
           if (familySymbol.FamilyName != revitType.FamilyName)
@@ -160,8 +160,8 @@ namespace Objects.Converter.Revit
       var topOffset = ScaleToNative(speckleRevitColumn.topOffset, speckleRevitColumn.units);
 
       //these have been set previously
-      DB.Level level = Doc.GetElement(baseLevelParam.AsElementId())as DB.Level;
-      DB.Level topLevel = Doc.GetElement(topLevelParam.AsElementId())as DB.Level;
+      DB.Level level = Doc.GetElement(baseLevelParam.AsElementId()) as DB.Level;
+      DB.Level topLevel = Doc.GetElement(topLevelParam.AsElementId()) as DB.Level;
 
       //checking if BASE offset needs to be set before or after TOP offset
       if (topLevel != null && topLevel.Elevation + baseOffset <= level.Elevation)
@@ -216,7 +216,7 @@ namespace Objects.Converter.Revit
         speckleColumn.rotation = ((LocationPoint)revitColumn.Location).Rotation;
       }
 
-      speckleColumn["@displayMesh"] = GetElementMesh(revitColumn);
+      speckleColumn.displayMesh = GetElementMesh(revitColumn);
 
       return speckleColumn;
     }

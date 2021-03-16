@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
       {
         try
         {
-          var revitType = Doc.GetElement(docObj.GetTypeId())as ElementType;
+          var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
 
           // if family changed, tough luck. delete and let us create a new one.
           if (familySymbol.FamilyName != revitType.FamilyName)
@@ -103,7 +103,7 @@ namespace Objects.Converter.Revit
       speckleBeam.type = Doc.GetElement(revitBeam.GetTypeId()).Name;
       speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
-      speckleBeam["@displayMesh"] = GetElementMesh(revitBeam);
+      speckleBeam.displayMesh = GetElementMesh(revitBeam);
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 

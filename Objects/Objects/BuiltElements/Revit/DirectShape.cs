@@ -11,6 +11,7 @@ namespace Objects.BuiltElements.Revit
 
     public RevitCategory category { get; set; }
 
+    [DetachProperty]
     public List<Base> baseGeometries { get; set; }
 
     public List<Parameter> parameters { get; set; }

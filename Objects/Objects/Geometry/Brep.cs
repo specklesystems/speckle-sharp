@@ -6,13 +6,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using Objects.Primitive;
-using Speckle.Core.Kits;
-using static Speckle.Core.Models.Utilities;
 
 
 namespace Objects.Geometry
 {
-  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox
+  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, IDisplayMesh
   {
     public string provenance { get; set; }
     public Box bbox { get; set; }
@@ -20,7 +18,7 @@ namespace Objects.Geometry
     public double volume { get; set; }
 
     [DetachProperty]
-    public Mesh displayValue { get; set; }
+    public Mesh displayMesh { get; set; }
 
     /// <summary>
     /// Gets or sets the list of surfaces in this <see cref="Brep"/> instance.
@@ -116,7 +114,7 @@ namespace Objects.Geometry
     public Brep(string provenance, Mesh displayValue, string units = Units.Meters, string applicationId = null) : this()
     {
       this.provenance = provenance;
-      this.displayValue = displayValue;
+      this.displayMesh = displayValue;
       this.applicationId = applicationId;
       this.units = units;
     }
@@ -207,7 +205,7 @@ namespace Objects.Geometry
   {
     [JsonIgnore] public Brep Brep { get; set; }
     public int EdgeIndex { get; set; }
-    
+
     public int StartIndex { get; set; }
     public int EndIndex { get; set; }
     public int FaceIndex { get; set; }
@@ -216,9 +214,9 @@ namespace Objects.Geometry
     public int IsoStatus { get; set; }
     public BrepTrimType TrimType { get; set; }
     public bool IsReversed { get; set; }
-    
+
     public Interval Domain { get; set; }
-    
+
     public BrepTrim()
     {
     }
@@ -235,7 +233,7 @@ namespace Objects.Geometry
       TrimType = trimType;
       IsReversed = reversed;
     }
-  
+
     [JsonIgnore] public BrepFace Face => Brep.Faces[FaceIndex];
 
     [JsonIgnore] public BrepLoop Loop => Brep.Loops[LoopIndex];
@@ -254,10 +252,10 @@ namespace Objects.Geometry
     public int Curve3dIndex { get; set; }
     public int[] TrimIndices { get; set; }
     public int StartIndex { get; set; }
-    public int EndIndex { get; set; } 
-    
+    public int EndIndex { get; set; }
+
     public bool ProxyCurveIsReversed { get; set; }
-    
+
     public Interval Domain { get; set; }
     public BrepEdge()
     {

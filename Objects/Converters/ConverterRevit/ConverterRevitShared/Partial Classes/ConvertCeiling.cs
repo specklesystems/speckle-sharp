@@ -37,7 +37,7 @@ namespace Objects.Converter.Revit
       var mesh = new Geometry.Mesh();
       (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
-      speckleCeiling["@displayMesh"] = mesh;
+      speckleCeiling.displayMesh = mesh;
 
       return speckleCeiling;
     }
