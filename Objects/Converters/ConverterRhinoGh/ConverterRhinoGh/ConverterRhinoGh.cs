@@ -288,7 +288,12 @@ namespace Objects.Converter.RhinoGh
           return MeshToNative(o);
 
         case Brep o:
-          return BrepToNative(o);
+          // Brep conversion should always fallback to mesh if it fails.
+          var b = BrepToNative(o);
+          if (b == null)
+            return MeshToNative(o.displayValue);
+          else
+            return b;
 
         case Surface o:
           return SurfaceToNative(o);
