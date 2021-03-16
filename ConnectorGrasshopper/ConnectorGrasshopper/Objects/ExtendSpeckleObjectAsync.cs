@@ -178,10 +178,14 @@ namespace ConnectorGrasshopper.Objects
 
     public override void SetData(IGH_DataAccess DA)
     {
+      // 👉 Checking for cancellation!
+      if (CancellationToken.IsCancellationRequested) return;
+
       foreach (var (level, message) in RuntimeMessages)
       {
         Parent.AddRuntimeMessage(level, message);
       }
+      
       DA.SetData(0, new GH_SpeckleBase { Value = @base });
     }
 
