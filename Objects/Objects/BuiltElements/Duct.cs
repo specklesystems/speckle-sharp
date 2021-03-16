@@ -11,20 +11,20 @@ namespace Objects.BuiltElements
     public double width { get; set; }
     public double height { get; set; }
     public double diameter { get; set; }
-
     public double length { get; set; }
     public double velocity { get; set; }
 
     public Duct() { }
 
     [SchemaInfo("Duct", "Creates a Speckle duct")]
-    public Duct(Line baseLine, double width, double height, double diameter, double velocity = 0)
+    public Duct(Line baseLine, double width, double height, double diameter, double velocity = 0, string units = Units.Meters)
     {
       this.baseLine = baseLine;
       this.width = width;
       this.height = height;
       this.diameter = diameter;
       this.velocity = velocity;
+      this.units = units;
     }
   }
 }
@@ -42,12 +42,13 @@ namespace Objects.BuiltElements.Revit
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
 
-    public RevitDuct()
-    {
-    }
+    public RevitDuct() { }
 
     [SchemaInfo("RevitDuct", "Creates a Revit duct")]
-    public RevitDuct(string family, string type, Line baseLine, string systemName, string systemType, Level level, double width, double height, double diameter, double velocity = 0, List<Parameter> parameters = null)
+    public RevitDuct(string family, string type, Line baseLine, 
+      string systemName, string systemType, Level level, 
+      double width, double height, double diameter, 
+      double velocity = 0, List<Parameter> parameters = null, string units = Units.Meters)
     {
       this.baseLine = baseLine;
       this.family = family;
@@ -60,6 +61,7 @@ namespace Objects.BuiltElements.Revit
       this.systemType = systemType;
       this.parameters = parameters;
       this.level = level;
+      this.units = units;
     }
   }
 

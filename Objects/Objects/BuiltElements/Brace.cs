@@ -46,7 +46,6 @@ namespace Objects.BuiltElements.Revit
       this.baseLine = baseLine;
       this.parameters = parameters;
       this.level = level;
-
     }
   }
 }

@@ -17,11 +17,12 @@ namespace Objects.BuiltElements
 
     [SchemaInfo("Wall", "Creates a Speckle wall")]
     public Wall(double height, ICurve baseLine,
-      [SchemaParamInfo("Any nested elements that this wall might have")] List<Base> elements = null)
+      [SchemaParamInfo("Any nested elements that this wall might have")] List<Base> elements = null, string units = Units.Meters)
     {
       this.height = height;
       this.baseLine = baseLine;
       this.elements = elements;
+      this.units = units;
     }
   }
 }
@@ -38,20 +39,16 @@ namespace Objects.BuiltElements.Revit
     public bool structural { get; set; }
     public Level level { get; set; }
     public Level topLevel { get; set; }
-
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
 
-    public RevitWall()
-    {
-
-    }
+    public RevitWall() { }
 
     [SchemaInfo("Wall by curve and levels", "Creates a Revit wall with a top and base level.")]
     public RevitWall(string family, string type,
       ICurve baseLine, Level level, Level topLevel, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
-      List<Parameter> parameters = null)
+      List<Parameter> parameters = null, string units = Units.Meters)
     {
       this.family = family;
       this.type = type;
@@ -64,13 +61,14 @@ namespace Objects.BuiltElements.Revit
       this.topLevel = topLevel;
       this.elements = elements;
       this.parameters = parameters;
+      this.units = units;
     }
 
     [SchemaInfo("Wall by curve and height", "Creates an unconnected Revit wall.")]
     public RevitWall(string family, string type,
       ICurve baseLine, Level level, double height, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
-      List<Parameter> parameters = null)
+      List<Parameter> parameters = null, string units = Units.Meters)
     {
       this.family = family;
       this.type = type;
@@ -83,6 +81,7 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.elements = elements;
       this.parameters = parameters;
+      this.units = units;
     }
   }
 
@@ -90,26 +89,20 @@ namespace Objects.BuiltElements.Revit
   {
     public string family { get; set; }
     public string type { get; set; }
-
     public Surface surface { get; set; }
     public Level level { get; set; }
-
     public LocationLine locationLine { get; set; }
-
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
 
-    public RevitFaceWall()
-    {
-
-    }
+    public RevitFaceWall() { }
 
     [SchemaInfo("Wall by face", "Creates a Revit wall from a surface.")]
     public RevitFaceWall(string family, string type,
       [SchemaParamInfo("Surface or single face Brep to use")] Brep surface,
       Level level, LocationLine locationLine = LocationLine.Interior,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
-      List<Parameter> parameters = null)
+      List<Parameter> parameters = null, string units = Units.Meters)
     {
       this.family = family;
       this.type = type;
@@ -118,6 +111,7 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.elements = elements;
       this.parameters = parameters;
+      this.units = units;
     }
   }
 

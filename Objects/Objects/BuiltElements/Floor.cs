@@ -37,9 +37,8 @@ namespace Objects.BuiltElements.Revit
     public bool structural { get; set; }
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
-    public RevitFloor()
-    {
-    }
+
+    public RevitFloor() { }
 
     [SchemaInfo("RevitFloor", "Creates a Revit floor by outline and level")]
     public RevitFloor(string family, string type, ICurve outline,

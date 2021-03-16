@@ -26,10 +26,13 @@ namespace Objects.BuiltElements.Revit
     public List<RevitStairSupport> supports { get; set; }
     public string elementId { get; set; }
 
-
     public RevitStair() { }
 
-
+    [SchemaInfo("RevitStair", "Creates a Revit stair")]
+    public RevitStair(string units = Units.Meters)
+    {
+      this.units = units;
+    }
   }
 
   public class RevitStairRun : Base
@@ -55,7 +58,10 @@ namespace Objects.BuiltElements.Revit
     public string elementId { get; set; }
 
 
-    public RevitStairRun() { }
+    public RevitStairRun(string units = Units.Meters) 
+    {
+      this.units = units;
+    }
   }
 
   public class RevitStairLanding : Base
@@ -69,8 +75,13 @@ namespace Objects.BuiltElements.Revit
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
 
-
     public RevitStairLanding() { }
+
+    [SchemaInfo("RevitStairLanding", "Creates a Revit stair landing")]
+    public RevitStairLanding(string units = Units.Meters)
+    {
+      this.units = units;
+    }
   }
 
   public class RevitStairSupport : Base
@@ -79,7 +90,6 @@ namespace Objects.BuiltElements.Revit
     public string type { get; set; }
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
-
 
     public RevitStairSupport() { }
   }

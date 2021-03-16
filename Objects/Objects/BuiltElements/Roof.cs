@@ -37,9 +37,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
     public string elementId { get; set; }
     public Level level { get; set; }
 
-    public RevitRoof()
-    {
-    }
+    public RevitRoof() { }
   }
 
   public class RevitExtrusionRoof : RevitRoof
@@ -48,15 +46,11 @@ namespace Objects.BuiltElements.Revit.RevitRoof
     public double end { get; set; }
     public Line referenceLine { get; set; }
 
-    public RevitExtrusionRoof()
-    {
-
-    }
+    public RevitExtrusionRoof() { }
 
     [SchemaInfo("RevitExtrusionRoof", "Creates a Revit roof by extruding a curve")]
     public RevitExtrusionRoof(string family, string type, double start, double end, Line referenceLine, Level level,
-      List<Base> elements = null,
-      List<Parameter> parameters = null)
+      List<Base> elements = null, List<Parameter> parameters = null, string units = Units.Meters)
     {
       this.family = family;
       this.type = type;
@@ -66,6 +60,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
       this.end = end;
       this.referenceLine = referenceLine;
       this.elements = elements;
+      this.units = units;
     }
 
   }
@@ -75,14 +70,11 @@ namespace Objects.BuiltElements.Revit.RevitRoof
     public RevitLevel cutOffLevel { get; set; }
     public double? slope { get; set; }
 
-    public RevitFootprintRoof()
-    {
+    public RevitFootprintRoof() { }
 
-    }
     [SchemaInfo("RevitFootprintRoof", "Creates a Revit roof by outline")]
     public RevitFootprintRoof(ICurve outline, string family, string type, Level level, RevitLevel cutOffLevel = null, double slope = 0, List<ICurve> voids = null,
-      List<Base> elements = null,
-      List<Parameter> parameters = null)
+      List<Base> elements = null, List<Parameter> parameters = null, string units = Units.Meters)
     {
       this.outline = outline;
       this.voids = voids;
@@ -93,6 +85,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
       this.level = level;
       this.cutOffLevel = cutOffLevel;
       this.elements = elements;
+      this.units = units;
     }
   }
 

@@ -18,7 +18,15 @@ namespace Objects.BuiltElements
     public Point center { get; set; }
     public List<ICurve> voids { get; set; } = new List<ICurve>();
     public ICurve outline { get; set; }
+
     public Room() { }
 
+    [SchemaInfo("Room", "Creates a Speckle room")]
+    public Room(ICurve outline, List<ICurve> voids = null, string units = Units.Meters)
+    {
+      this.outline = outline;
+      this.voids = voids;
+      this.units = units;
+    }
   }
 }
