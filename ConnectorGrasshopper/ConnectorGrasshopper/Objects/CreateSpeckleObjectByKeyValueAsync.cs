@@ -53,6 +53,7 @@ namespace ConnectorGrasshopper.Objects
     {
       Converter = converter;
     }
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
@@ -83,15 +84,16 @@ namespace ConnectorGrasshopper.Objects
               }
               catch (Exception e)
               {
-                Console.WriteLine(e);
-                Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
-                Parent.Message = "Error";
+                RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
                 hasErrors = true;
               }
 
             ind++;
           });
-          if (hasErrors) return;
+          if (hasErrors)
+          {
+            speckleObj = null;
+          }
         }
         else
         {
@@ -99,6 +101,7 @@ namespace ConnectorGrasshopper.Objects
 
           // Create the speckle object with the specified keys
           var index = 0;
+          var hasErrors = false;
           keys.ForEach(key =>
           {
             var itemPath = new GH_Path(index);
@@ -119,14 +122,18 @@ namespace ConnectorGrasshopper.Objects
                 }
                 catch (Exception e)
                 {
-                  Console.WriteLine(e);
-                  Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
-                  return;
+                  RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+                  hasErrors = true;
                 }
             }
 
             index++;
           });
+
+          if (hasErrors)
+          {
+            speckleObj = null;
+          }
         }
         // --> Report progress if necessary
         // ReportProgress(Id, percentage);
@@ -159,6 +166,11 @@ namespace ConnectorGrasshopper.Objects
       // 👉 Checking for cancellation!
       if (CancellationToken.IsCancellationRequested) return;
 
+      foreach (var (level, message) in RuntimeMessages)
+      {
+        Parent.AddRuntimeMessage(level, message);
+      }
+      
       // Use DA.SetData as usual...
       DA.SetData(0, new GH_SpeckleBase {Value = speckleObj});
     }
