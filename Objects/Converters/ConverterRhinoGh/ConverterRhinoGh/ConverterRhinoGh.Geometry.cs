@@ -10,6 +10,7 @@ using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Geometry.Collections;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -871,7 +872,7 @@ namespace Objects.Converter.RhinoGh
       }
       catch (Exception e)
       {
-        System.Diagnostics.Debug.WriteLine("Failed to deserialize brep");
+        ConversionErrors.Add(new Error("Failed to convert brep.", e.Message));
         return null;
       }
     }
