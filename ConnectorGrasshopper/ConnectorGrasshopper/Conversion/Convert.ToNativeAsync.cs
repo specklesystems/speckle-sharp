@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -34,7 +35,7 @@ namespace ConnectorGrasshopper.Conversion
       "Convert data from Speckle's Base object to it`s Dynamo equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
       SetDefaultKitAndConverter();
-      BaseWorker = new ToNativeWorker(Converter);
+      BaseWorker = new ToNativeWorker(Converter, this);
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -140,14 +141,14 @@ namespace ConnectorGrasshopper.Conversion
 
     public ISpeckleConverter Converter { get; set; }
 
-    public ToNativeWorker(ISpeckleConverter _Converter) : base(null)
+    public ToNativeWorker(ISpeckleConverter _Converter, GH_Component parent) : base(parent)
     {
       Converter = _Converter;
       Objects = new GH_Structure<GH_SpeckleBase>();
       ConvertedObjects = new GH_Structure<IGH_Goo>();
     }
 
-    public override WorkerInstance Duplicate() => new ToNativeWorker(Converter);
+    public override WorkerInstance Duplicate() => new ToNativeWorker(Converter, Parent);
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
@@ -194,9 +195,16 @@ namespace ConnectorGrasshopper.Conversion
       {
         return;
       }
-
+      
+      foreach (var (level, message) in RuntimeMessages)
+      {
+        Parent.AddRuntimeMessage(level, message);
+      }
+      
       DA.SetDataTree(0, ConvertedObjects);
     }
+    
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
@@ -214,7 +222,9 @@ namespace ConnectorGrasshopper.Conversion
         var path = _objects.Paths[branchIndex];
         foreach (var item in list)
         {
-          Objects.Append(item, path);
+          // Only try to convert valid items and report any other invalid ones as warnings.
+          if(item.IsValid) Objects.Append(item, path);
+          else RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] was not Base."));
         }
 
         branchIndex++;
