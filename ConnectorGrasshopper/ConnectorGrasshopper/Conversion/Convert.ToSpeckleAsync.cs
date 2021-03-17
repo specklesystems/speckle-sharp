@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -30,7 +31,7 @@ namespace ConnectorGrasshopper.Conversion
     public ToSpeckleConverterAsync() : base("To Speckle", "To Speckle", "Convert data from Rhino to their Speckle Base equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
       SetDefaultKitAndConverter();
-      BaseWorker = new ToSpeckleWorker(Converter);
+      BaseWorker = new ToSpeckleWorker(Converter, this);
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -132,14 +133,14 @@ namespace ConnectorGrasshopper.Conversion
 
     public ISpeckleConverter Converter { get; set; }
 
-    public ToSpeckleWorker(ISpeckleConverter _Converter) : base(null)
+    public ToSpeckleWorker(ISpeckleConverter _Converter, GH_Component parent) : base(parent)
     {
       Converter = _Converter;
       Objects = new GH_Structure<IGH_Goo>();
       ConvertedObjects = new GH_Structure<GH_SpeckleBase>();
     }
 
-    public override WorkerInstance Duplicate() => new ToSpeckleWorker(Converter);
+    public override WorkerInstance Duplicate() => new ToSpeckleWorker(Converter, Parent);
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
@@ -155,7 +156,9 @@ namespace ConnectorGrasshopper.Conversion
           {
             if (CancellationToken.IsCancellationRequested)return;
 
-            var converted = Utilities.TryConvertItemToSpeckle(item, Converter)as Base;
+            var converted = Utilities.TryConvertItemToSpeckle(item, Converter) as Base;
+            if(converted == null)
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,$"Cannot convert item at {path}[{list.IndexOf(item)}] to Speckle."));
             ConvertedObjects.Append(new GH_SpeckleBase { Value = converted }, Objects.Paths[branchIndex]);
             ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
           }
@@ -163,21 +166,29 @@ namespace ConnectorGrasshopper.Conversion
           branchIndex++;
         }
 
-        Done();
       }
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
         Parent.Message = "Error";
       }
+
+      Done();
     }
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void SetData(IGH_DataAccess DA)
     {
       if (CancellationToken.IsCancellationRequested)return;
-
+      
+      
+      foreach (var (level, message) in RuntimeMessages)
+      {
+        Parent.AddRuntimeMessage(level, message);
+      }
+      
       DA.SetDataTree(0, ConvertedObjects);
     }
 
