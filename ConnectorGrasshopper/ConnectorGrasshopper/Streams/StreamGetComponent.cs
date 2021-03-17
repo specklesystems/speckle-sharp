@@ -15,7 +15,8 @@ namespace ConnectorGrasshopper.Streams
   public class StreamGetComponent : GH_Component
   {
     public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account", ComponentCategories.PRIMARY_RIBBON,
-      ComponentCategories.STREAMS) { }
+      ComponentCategories.STREAMS)
+    { }
 
     public override Guid ComponentGuid => new Guid("D66AFB58-A1BA-487C-94BF-AF0FFFBA6CE5");
 
@@ -51,13 +52,13 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
-      string accountId = null;
+      string userId = null;
       GH_SpeckleStream ghIdWrapper = null;
       DA.DisableGapLogic();
       DA.GetData(0, ref ghIdWrapper);
-      DA.GetData(1, ref accountId);
-      var account = string.IsNullOrEmpty(accountId) ? AccountManager.GetDefaultAccount() :
-        AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
+      DA.GetData(1, ref userId);
+      var account = string.IsNullOrEmpty(userId) ? AccountManager.GetDefaultAccount() :
+        AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
 
       var idWrapper = ghIdWrapper.Value;
       if (account == null)
@@ -87,7 +88,7 @@ namespace ConnectorGrasshopper.Streams
         }
 
         // Run
-        Task.Run(async() =>
+        Task.Run(async () =>
         {
           try
           {

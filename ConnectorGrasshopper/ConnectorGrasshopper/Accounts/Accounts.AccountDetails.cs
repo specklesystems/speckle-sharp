@@ -48,16 +48,16 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      string accountId = null;
-      DA.GetData(0, ref accountId);
+      string userId = null;
+      DA.GetData(0, ref userId);
 
-      if (string.IsNullOrEmpty(accountId))
+      if (string.IsNullOrEmpty(userId))
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account provided. Trying with default account.");
       }
 
-      var account = string.IsNullOrEmpty(accountId) ? AccountManager.GetDefaultAccount() :
-        AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
+      var account = string.IsNullOrEmpty(userId) ? AccountManager.GetDefaultAccount() :
+        AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
 
       if (account == null)
       {

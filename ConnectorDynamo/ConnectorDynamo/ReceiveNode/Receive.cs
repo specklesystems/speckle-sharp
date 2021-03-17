@@ -314,7 +314,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         {
           _cancellationToken.Cancel();
           Message = e.Message;
-          if (e.InnerException != null)Warning(e.InnerException.Message);
+          if (e.InnerException != null) Warning(e.InnerException.Message);
           if (e is AggregateException agrException)
             agrException.InnerExceptions.ToList().ForEach(ex =>
             {
@@ -351,7 +351,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       {
         var inputStream = GetInputAs<StreamWrapper>(engine, 0);
         //avoid editing upstream stream!
-        newStream = new StreamWrapper(inputStream.StreamId, inputStream.AccountId, inputStream.ServerUrl)
+        newStream = new StreamWrapper(inputStream.StreamId, inputStream.UserId, inputStream.ServerUrl)
         {
           BranchName = inputStream.BranchName,
           CommitId = inputStream.CommitId
@@ -442,7 +442,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       var astId = valuesNode.GetAstIdentifierForOutputIndex(valuesIndex).Name;
       var inputMirror = engine.GetMirror(astId);
 
-      if (inputMirror?.GetData() == null)return default(T);
+      if (inputMirror?.GetData() == null) return default(T);
 
       var data = inputMirror.GetData();
 
@@ -543,9 +543,9 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
     private void OnCommitChange(object sender, CommitInfo e)
     {
-      if (e.branchName != (Stream.BranchName ?? "main"))return;
+      if (e.branchName != (Stream.BranchName ?? "main")) return;
 
-      Task.Run(async() => GetExpiredObjectCount(e.objectId));
+      Task.Run(async () => GetExpiredObjectCount(e.objectId));
       if (AutoUpdate)
         OnNewDataAvail?.Invoke();
     }

@@ -78,6 +78,12 @@ namespace Speckle.DesktopUI.Streams
       var ass = AppDomain.CurrentDomain.GetAssemblies().Where(x => x.FullName.ToLowerInvariant().Contains("xaml")).ToList();
     }
 
+    public void RefreshPage()
+    {
+      NotifyOfPropertyChange(string.Empty);
+      StreamList = LoadStreams();
+    }
+
     private BindableCollection<StreamState> LoadStreams()
     {
       var streams = new BindableCollection<StreamState>(_bindings.GetStreamsInFile());

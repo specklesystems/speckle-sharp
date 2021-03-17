@@ -48,10 +48,10 @@ namespace ConnectorGrasshopper.Transports
 
       streamWrapper = speckleStream.Value;
 
-      var accountId = streamWrapper.AccountId;
+      var userId = streamWrapper.UserId;
       Account account = null;
 
-      account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+      account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
       if (account == null)
       {
         account = AccountManager.GetAccounts(streamWrapper.ServerUrl).FirstOrDefault();
