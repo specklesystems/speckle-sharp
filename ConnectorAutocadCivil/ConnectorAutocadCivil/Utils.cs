@@ -8,6 +8,7 @@ using Speckle.Core.Kits;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
+using System.Reflection;
 
 namespace Speckle.ConnectorAutocadCivil
 {
@@ -36,7 +37,7 @@ namespace Speckle.ConnectorAutocadCivil
     public static List<string> ToStrings(this ObjectId[] ids) => ids.Select(o => o.ToString().Trim(new char[] { '(', ')' })).ToList();
 
     /// <summary>
-    /// Retrieve selection object handles
+    /// Retrieve handles of visible objects in a selection
     /// </summary>
     /// <param name="selection"></param>
     /// <returns>List of handles as strings</returns>
@@ -46,21 +47,23 @@ namespace Speckle.ConnectorAutocadCivil
     /// </remarks>
     public static List<string> GetHandles(this SelectionSet selection)
     {
-      Document Doc = Application.DocumentManager.MdiActiveDocument;
       var handles = new List<string>();
+
+      if (selection == null)
+        return handles;
+
+      Document Doc = Application.DocumentManager.MdiActiveDocument;
       using (Transaction tr = Doc.TransactionManager.StartTransaction())
       {
-        foreach (SelectedObject obj in selection)
+        foreach (SelectedObject selObj in selection)
         {
-          if (obj != null)
-          {
-            Entity objEntity = tr.GetObject(obj.ObjectId, OpenMode.ForRead) as Entity;
-            if (objEntity != null)
-              handles.Add(objEntity.Handle.ToString());
-          }
+          DBObject obj = tr.GetObject(selObj.ObjectId, OpenMode.ForRead);
+          if (obj != null && obj.Visible())
+            handles.Add(obj.Handle.ToString());
         }
         tr.Commit();
       }
+
       return handles;
     }
 
@@ -82,7 +85,7 @@ namespace Speckle.ConnectorAutocadCivil
     }
 
     /// <summary>
-    /// Used to retrieve DB Object from its handle
+    /// Used to retrieve a DB Object from its handle
     /// </summary>
     /// <param name="handle">Object handle as string</param>
     /// <param name="type">Object class dxf name</param>
@@ -115,6 +118,47 @@ namespace Speckle.ConnectorAutocadCivil
       return obj;
     }
 
+    /// <summary>
+    /// Get visibility of a DBObject
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    public static bool Visible(this DBObject obj)
+    {
+      bool isVisible = true;
+
+      PropertyInfo prop = obj.GetType().GetProperty("Visible");
+      try
+      {
+        isVisible = (bool)prop.GetValue(obj); 
+      }
+      catch { }
+      return isVisible;
+    }
+
+    /// <summary>
+    /// Gets the handles of all visible document objects that can be converted to Speckle
+    /// </summary>
+    /// <param name="doc"></param>
+    /// <param name="converter"></param>
+    /// <returns></returns>
+    public static List<string> ConvertibleObjects(this Document doc, ISpeckleConverter converter)
+    {
+      var objs = new List<string>();
+      using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+      {
+        BlockTable blckTbl = tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+        BlockTableRecord blckTblRcrd = tr.GetObject(blckTbl[BlockTableRecord.ModelSpace], OpenMode.ForRead) as BlockTableRecord;
+        foreach (ObjectId id in blckTblRcrd)
+        {
+          DBObject dbObj = tr.GetObject(id, OpenMode.ForRead);
+          if (converter.CanConvertToSpeckle(dbObj) && dbObj.Visible())
+            objs.Add(dbObj.Handle.ToString());
+        }
+        tr.Commit();
+      }
+      return objs;
+    }
     #endregion
 
     /// <summary>
@@ -147,6 +191,7 @@ namespace Speckle.ConnectorAutocadCivil
       // remove ./
       return Regex.Replace(str, @"[./]", "-");
     }
+
   }
 
 }

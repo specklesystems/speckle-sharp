@@ -41,14 +41,27 @@ namespace Speckle.ConnectorRevit
     }
 
     #region extension methods
-    public static List<Element> SupportedCategoryElements(this Document doc)
+    public static List<Element> SupportedElements(this Document doc)
     {
-      //get all the element types of the categories we support
-      var supportedCategoryFilter = new LogicalOrFilter(GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList());
+      //get element types of supported categories
+      var categoryFilter = new LogicalOrFilter(GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList());
+
+      List<Element> elements = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .WhereElementIsViewIndependent()
+        .WherePasses(categoryFilter).ToList();
+
+      return elements;
+    }
+
+    public static List<Element> SupportedTypes(this Document doc)
+    {
+      //get element types of supported categories
+      var categoryFilter = new LogicalOrFilter(GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList());
 
       List<Element> elements = new FilteredElementCollector(doc)
         .WhereElementIsElementType()
-        .WherePasses(supportedCategoryFilter).ToList();
+        .WherePasses(categoryFilter).ToList();
 
       return elements;
     }
@@ -193,6 +206,6 @@ namespace Speckle.ConnectorRevit
       BuiltInCategory.OST_StructuralTruss,
       BuiltInCategory.OST_Walls,
       BuiltInCategory.OST_Windows
-      };
+    };
   }
 }

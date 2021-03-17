@@ -93,11 +93,11 @@ namespace Speckle.ConnectorRevit.UI
       switch (filter.Name)
       {
         case "All":
+          selection.AddRange(doc.SupportedElements()); // includes levels
           selection.Add(doc.ProjectInformation);
           selection.AddRange(doc.Views2D());
           selection.AddRange(doc.Views3D());
-          selection.AddRange(doc.Levels());
-          selection.AddRange(doc.SupportedCategoryElements());
+          selection.AddRange(doc.SupportedTypes());
           return selection;
 
         case "Category":
@@ -158,7 +158,7 @@ namespace Speckle.ConnectorRevit.UI
             selection.AddRange(doc.Levels());
 
           if (projectInfoFilter.Selection.Contains("Families & Types"))
-            selection.AddRange(doc.SupportedCategoryElements());
+            selection.AddRange(doc.SupportedTypes());
 
           return selection;
 
