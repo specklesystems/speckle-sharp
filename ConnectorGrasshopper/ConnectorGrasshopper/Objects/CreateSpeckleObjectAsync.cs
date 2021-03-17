@@ -106,8 +106,12 @@ namespace ConnectorGrasshopper.Objects
         Parent.Message = "Creating...";
         @base = new Base();
         var hasErrors = false;
-
-        inputData.Keys.ToList().ForEach(key =>
+        if (inputData == null)
+        {
+          @base = null;
+        }
+        
+        inputData?.Keys.ToList().ForEach(key =>
         {
           var value = inputData[key];
 
@@ -115,34 +119,41 @@ namespace ConnectorGrasshopper.Objects
           if (value is List<object> list)
           {
             // Value is a list of items, iterate and convert.
-            var converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
+            List<object> converted = null;
+            try
+            {
+              converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
+            }
+            catch (Exception e)
+            {
+              Log.CaptureException(e);
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{e.Message}"));
+              hasErrors = true;
+            }           
             try
             {
               @base[key] = converted;
             }
             catch (Exception e)
             {
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
-              Parent.Message = "Error";
-              RhinoApp.InvokeOnUiThread(new Action(()=> Parent.OnDisplayExpired(true)));
+              Log.CaptureException(e);
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{e.Message}"));
               hasErrors = true;
-              throw new SpeckleException(e.Message, e);
             }
           }
           else
           {
             // If value is not list, it is a single item.
+            var obj = value == null ? null : Utilities.TryConvertItemToSpeckle(value, Converter);
+            
             try
             {
-              var obj = Utilities.TryConvertItemToSpeckle(value, Converter);
               @base[key] = obj;
             }
             catch (Exception e)
             {
               Log.CaptureException(e);
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
-              Parent.Message = "Error";
-              RhinoApp.InvokeOnUiThread(new Action(()=> Parent.OnDisplayExpired(true)));
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{e.Message}"));
               hasErrors = true;
             }        
           }
@@ -150,30 +161,53 @@ namespace ConnectorGrasshopper.Objects
 
         if (hasErrors)
         {
-          return;
+          @base = null;
         }
       }
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
         Parent.Message = "Error";
-        return;
       }
       
       // Let's always call done!
       Done();
     }
+    
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void SetData(IGH_DataAccess DA)
     {
-      DA.SetData(0, new GH_SpeckleBase{ Value = @base });
+      // 👉 Checking for cancellation!
+      if (CancellationToken.IsCancellationRequested) return;
+
+      foreach (var (level, message) in RuntimeMessages)
+      {
+        Parent.AddRuntimeMessage(level, message);
+      }
+
+      if(@base != null) DA.SetData(0,new GH_SpeckleBase{ Value = @base });
     }
 
+    
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
       DA.DisableGapLogic();
+      var hasErrors = false;
+      var allOptional = Params.Input.FindAll(p => p.Optional).Count == Params.Input.Count;
+      if (Params.Input.Count == 0)
+      {
+        inputData = null;
+        return;
+      }
+      if (Params.Input.Count > 0 && allOptional)
+      {
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "You cannot set all parameters as optional"));
+        inputData = null;
+        return;
+      }
       Params.Input.ForEach(ighParam =>
       {
         var param = ighParam as GenericAccessParam;
@@ -186,11 +220,31 @@ namespace ConnectorGrasshopper.Objects
           case GH_ParamAccess.item:
             object value = null;
             DA.GetData(index, ref value);
+            if (!param.Optional && value == null)
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Non-optional parameter {param.NickName} cannot be null"));
+              hasErrors = true;
+            }
             inputData[key] = value;
             break;
           case GH_ParamAccess.list:
             var values = new List<object>();
             DA.GetDataList(index, values);
+            if (!param.Optional)
+            {
+              if(values.Count == 0)
+              {
+                RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
+                  $"Non-optional parameter {param.NickName} cannot be null or empty."));
+                hasErrors = true;
+              }
+            }
+            if(values.Any(p => p == null))
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
+                $"List access parameter {param.NickName} cannot contain null values. Please clean your data tree."));
+              hasErrors = true;
+            }
             inputData[key] = values;
             break;
           case GH_ParamAccess.tree:
@@ -199,6 +253,7 @@ namespace ConnectorGrasshopper.Objects
             throw new ArgumentOutOfRangeException();
         }
       });
+      if (hasErrors) inputData = null;
     }
   }
 }

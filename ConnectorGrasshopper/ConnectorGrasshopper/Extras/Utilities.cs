@@ -125,7 +125,7 @@ namespace ConnectorGrasshopper.Extras
     {
       object result = null;
 
-      if (value is null) return null;
+      if (value is null) throw new Exception("Null values are not allowed, please clean your data tree.");
       
       if (value is IGH_Goo)
       {
