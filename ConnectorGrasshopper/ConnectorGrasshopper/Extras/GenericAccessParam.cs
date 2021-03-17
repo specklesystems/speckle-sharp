@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using GH_IO.Serialization;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
+
 
 namespace ConnectorGrasshopper.Extras
 {
@@ -24,7 +26,8 @@ namespace ConnectorGrasshopper.Extras
         {
           tags.Add(new OptionalStateTag());
         }
-        if(!Detachable)
+
+        if (!Detachable)
           tags.Add(new DetachedStateTag());
         if (Access == GH_ParamAccess.list)
           tags.Add(new ListAccesStateTag());
@@ -43,18 +46,18 @@ namespace ConnectorGrasshopper.Extras
         base.AppendAdditionalMenuItems(menu);
         return;
       }
-      
+
       Menu_AppendSeparator(menu);
 
       var listAccessToggle = Menu_AppendItem(
-        menu, 
-        "List Access", 
-        (s, e) => SetAccess(Access == GH_ParamAccess.list ? GH_ParamAccess.item : GH_ParamAccess.list), 
+        menu,
+        "List Access",
+        (s, e) => SetAccess(Access == GH_ParamAccess.list ? GH_ParamAccess.item : GH_ParamAccess.list),
         true,
         Access == GH_ParamAccess.list);
       listAccessToggle.ToolTipText = "Set this parameter as a List. If disabled, defaults to item access.";
       listAccessToggle.Image = Properties.Resources.StateTag_List;
-      
+
       var optionalToggle = Menu_AppendItem(
         menu,
         "Optional",
@@ -64,16 +67,16 @@ namespace ConnectorGrasshopper.Extras
         Optional);
       optionalToggle.ToolTipText = "Set this parameter as optional.";
       optionalToggle.Image = Properties.Resources.StateTag_Optional;
-      
+
       var detachToggle = Menu_AppendItem(
-        menu, 
-        "Do Not Detach", 
+        menu,
+        "Do Not Detach",
         (s, e) => SetDetach(!Detachable),
-        true, 
+        true,
         Detachable == false);
       detachToggle.ToolTipText = "Set this key as not detachable.";
       detachToggle.Image = Properties.Resources.StateTag_Detach;
-      
+
       Menu_AppendSeparator(menu);
 
       base.AppendAdditionalMenuItems(menu);
@@ -129,22 +132,4 @@ namespace ConnectorGrasshopper.Extras
     }
   }
 
-  public class OptionalStateTag: GH_StateTag
-  {
-    public override string Description => "Determines if a parameter is optional";
-    public override string Name => "Optional";
-    public override Bitmap Icon => Properties.Resources.StateTag_Optional_Large;
-  }
-  public class DetachedStateTag: GH_StateTag
-  {
-    public override string Description => "This property will not be detached";
-    public override string Name => "Do not detach";
-    public override Bitmap Icon => Properties.Resources.StateTag_Detach_Large;
-  }
-  public class ListAccesStateTag: GH_StateTag
-  {
-    public override string Description => "This parameter is set to List access";
-    public override string Name => "List Access";
-    public override Bitmap Icon => Properties.Resources.StateTag_List_Large;
-  }
 }
