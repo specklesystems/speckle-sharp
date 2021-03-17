@@ -156,7 +156,8 @@ namespace SpeckleRhino
 
       return new List<ISelectionFilter>()
       {
-         new ListSelectionFilter { Name = "Layers", Icon = "Filter", Description = "Selects objects based on their layers.", Values = layers }
+        new ListSelectionFilter { Name = "Layers", Icon = "Filter", Description = "Selects objects based on their layers.", Values = layers },
+        new AllSelectionFilter { Name = "All", Icon = "Filter", Description = "Selects all document objects." }
       };
     }
 
@@ -468,7 +469,6 @@ namespace SpeckleRhino
         conversionProgressDict["Conversion"]++;
         UpdateProgress(conversionProgressDict, state.Progress);
 
-        // TODO: potentially get more info from the object: materials and other rhino specific stuff?
         converted.applicationId = applicationId;
 
         foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
@@ -560,21 +560,35 @@ namespace SpeckleRhino
 
     private List<string> GetObjectsFromFilter(ISelectionFilter filter)
     {
+      var objs = new List<string>();
+
       switch (filter)
       {
+        case AllSelectionFilter a:
+          objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
+          break;
         case ListSelectionFilter f:
-          List<string> objs = new List<string>();
           foreach (var layerName in f.Selection)
           {
-            var docObjs = Doc.Objects.FindByLayer(layerName)?.Select(o => o.Id.ToString());
-            if (docObjs != null)
-              objs.AddRange(docObjs);
+            int layerIndex = Doc.Layers.FindByFullPath(layerName, -1);
+            if (layerIndex >= 0)
+            {
+              Layer layer = Doc.Layers.FindIndex(layerIndex);
+              if (layer.IsVisible)
+              {
+                var layerObjs = Doc.Objects.FindByLayer(layer)?.Select(o => o.Id.ToString());
+                if (layerObjs != null)
+                  objs.AddRange(layerObjs);
+              }
+            }
           }
-          return objs;
+          break;
         default:
           RaiseNotification("Filter type is not supported in this app. Why did the developer implement it in the first place?");
-          return new List<string>();
+          break;
       }
+
+      return objs;
     }
 
     private string RemoveInvalidDynamicPropChars(string str)

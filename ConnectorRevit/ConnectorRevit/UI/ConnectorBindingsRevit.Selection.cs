@@ -50,7 +50,8 @@ namespace Speckle.ConnectorRevit.UI
           HasCustomProperty = false,
           Values = parameters,
           Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
-        }
+        },
+        new AllSelectionFilter { Name = "All", Icon = "Filter", Description = "Selects all document objects and project information." }
       };
     }
 
@@ -91,6 +92,14 @@ namespace Speckle.ConnectorRevit.UI
 
       switch (filter.Name)
       {
+        case "All":
+          selection.Add(doc.ProjectInformation);
+          selection.AddRange(doc.Views2D());
+          selection.AddRange(doc.Views3D());
+          selection.AddRange(doc.Levels());
+          selection.AddRange(doc.SupportedCategoryElements());
+          return selection;
+
         case "Category":
           var catFilter = filter as ListSelectionFilter;
           var bics = new List<BuiltInCategory>();
@@ -137,49 +146,20 @@ namespace Speckle.ConnectorRevit.UI
           var projectInfoFilter = filter as ListSelectionFilter;
 
           if (projectInfoFilter.Selection.Contains("Project Info"))
-          {
             selection.Add(doc.ProjectInformation);
-          }
 
           if (projectInfoFilter.Selection.Contains("Views 2D"))
-          {
-            selection.AddRange(new FilteredElementCollector(doc)
-            .WhereElementIsNotElementType()
-            .OfCategory(BuiltInCategory.OST_Views)
-            .Cast<View>()
-            .Where(x => x.ViewType == ViewType.CeilingPlan ||
-            x.ViewType == ViewType.FloorPlan ||
-            x.ViewType == ViewType.Elevation ||
-            x.ViewType == ViewType.Section)
-            .ToList());
-          }
+            selection.AddRange(doc.Views2D());
 
           if (projectInfoFilter.Selection.Contains("Views 3D"))
-          {
-            selection.AddRange(new FilteredElementCollector(doc)
-            .WhereElementIsNotElementType()
-            .OfCategory(BuiltInCategory.OST_Views)
-            .Cast<View>()
-            .Where(x => x.ViewType == ViewType.ThreeD)
-            .ToList());
-          }
+            selection.AddRange(doc.Views3D());
 
           if (projectInfoFilter.Selection.Contains("Levels"))
-          {
-            selection.AddRange(new FilteredElementCollector(doc)
-            .WhereElementIsNotElementType()
-            .OfCategory(BuiltInCategory.OST_Levels).ToList());
-          }
+            selection.AddRange(doc.Levels());
 
           if (projectInfoFilter.Selection.Contains("Families & Types"))
-          {
-            //get all the elementtypes of the categories we support
-            var allCategoryFilter = new LogicalOrFilter(ConnectorRevitUtils.GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList());
+            selection.AddRange(doc.SupportedCategoryElements());
 
-            selection.AddRange(new FilteredElementCollector(doc)
-            .WhereElementIsElementType()
-            .WherePasses(allCategoryFilter).ToList());
-          }
           return selection;
 
         case "Parameter":
