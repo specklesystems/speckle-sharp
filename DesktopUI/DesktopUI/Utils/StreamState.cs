@@ -41,7 +41,11 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
-    [JsonProperty]
+    /// <summary>
+    /// Internally stored as AccountId to prevent breaking older streams that were saved using the actual AccountId
+    /// We have now standardized to use the UserId instead
+    /// </summary>
+    [JsonProperty("AccountId")]
     public string UserId { get; private set; }
 
     [JsonProperty]
@@ -475,10 +479,17 @@ namespace Speckle.DesktopUI.Utils
     /// </summary>
     /// <param name="userId"></param>
     [JsonConstructor]
-    public StreamState(string userId)
+    public StreamState(string userId, string serverUrl)
     {
-      var account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId) ??
-        AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == ServerUrl);
+      var account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId || a.id == userId);
+
+      //if the current user is not the one who created the stream, try find an account on that server, and prioritize the default if multiple are found
+      if (account == null)
+      {
+        var ordered = AccountManager.GetAccounts().OrderByDescending(x => x.isDefault);
+        account = AccountManager.GetAccounts().OrderByDescending(x => x.isDefault).FirstOrDefault(a => a.serverInfo.url == serverUrl);
+      }
+
       if (account == null)
       {
         // TODO : Notify error!
