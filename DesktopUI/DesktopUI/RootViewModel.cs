@@ -116,18 +116,11 @@ namespace Speckle.DesktopUI
 
     public void RefreshActiveView()
     {
-      switch ( ActiveItem )
-      {
-        case SettingsViewModel settingsPage:
-          settingsPage.Refresh();
-          break;
-        case AllStreamsViewModel streamsPage:
-          streamsPage.Refresh();
-          break;
-        case StreamViewModel streamPage:
-          streamPage.Refresh();
-          break;
-      }
+      ( ( SettingsViewModel ) Pages[ "settings" ] ).Refresh();
+      ( ( AllStreamsViewModel ) Pages[ "streams" ] ).RefreshPage();
+      if ( ActiveItem is StreamViewModel streamViewModel)
+        streamViewModel.Refresh();
+
     }
 
     public void Handle(StreamRemovedEvent message)

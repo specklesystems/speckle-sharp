@@ -46,10 +46,10 @@ namespace Speckle.ConnectorDynamo.Functions.Advanced
     public static object ServerTransport(StreamWrapper stream)
     {
       Tracker.TrackPageview("transports", "server");
-      var accountId = stream.AccountId;
+      var userId = stream.UserId;
       Core.Credentials.Account account;
 
-      account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
+      account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
       Exception error = null;
       if (account == null)
       {

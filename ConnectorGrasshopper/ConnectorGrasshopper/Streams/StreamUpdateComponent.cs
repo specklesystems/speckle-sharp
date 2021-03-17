@@ -14,7 +14,8 @@ namespace ConnectorGrasshopper.Streams
   public class StreamUpdateComponent : GH_Component
   {
     public StreamUpdateComponent() : base("Stream Update", "sUp", "Updates a stream with new details", ComponentCategories.PRIMARY_RIBBON,
-      ComponentCategories.STREAMS) { }
+      ComponentCategories.STREAMS)
+    { }
     public override Guid ComponentGuid => new Guid("F83B9956-1A5C-4844-B7F6-87A956105831");
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -49,7 +50,7 @@ namespace ConnectorGrasshopper.Streams
       string description = null;
       bool isPublic = false;
 
-      if (!DA.GetData(0, ref ghSpeckleStream))return;
+      if (!DA.GetData(0, ref ghSpeckleStream)) return;
       DA.GetData(1, ref name);
       DA.GetData(2, ref description);
       DA.GetData(3, ref isPublic);
@@ -70,11 +71,11 @@ namespace ConnectorGrasshopper.Streams
           return;
         }
         Message = "Fetching";
-        Task.Run(async() =>
+        Task.Run(async () =>
         {
-          var account = streamWrapper.AccountId == null ?
+          var account = streamWrapper.UserId == null ?
             AccountManager.GetDefaultAccount() :
-            AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == streamWrapper.AccountId);
+            AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == streamWrapper.UserId);
 
           if (account == null)
           {
@@ -92,7 +93,7 @@ namespace ConnectorGrasshopper.Streams
             input.name = name ?? stream.name;
             input.description = description ?? stream.description;
 
-            if (stream.isPublic != isPublic)input.isPublic = isPublic;
+            if (stream.isPublic != isPublic) input.isPublic = isPublic;
 
             await client.StreamUpdate(input);
           }

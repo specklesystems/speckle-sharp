@@ -53,7 +53,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
           //Exists?
           Core.Api.Stream res = Task.Run(async () => await client.StreamGet(s.StreamId)).Result;
-          s.AccountId = accountToUse.id;
+          s.UserId = accountToUse.userInfo.id;
         }
       }
       catch (Exception ex)
@@ -66,24 +66,6 @@ namespace Speckle.ConnectorDynamo.Functions
 
       return streams;
     }
-
-    //Used by the CreateStream node
-    //[IsVisibleInDynamoLibrary(false)]
-    //public static StreamWrapper GetByStreamAndAccountId(string streamId, string accountId)
-    //{
-    //  var account = AccountManager.GetAccounts().FirstOrDefault(x => x.id == accountId);
-    //  try
-    //  {
-    //    return new StreamWrapper(streamId, account.id, account.serverInfo.url);
-    //  }
-    //  catch (Exception ex)
-    //  {
-    //    Utils.HandleApiExeption(ex);
-    //  }
-
-    //  return null;
-
-    //}
 
     /// <summary>
     /// Update a Stream details, use is limited to 1 stream at a time
@@ -232,7 +214,7 @@ namespace Speckle.ConnectorDynamo.Functions
       try
       {
         var res = Task.Run(async () => await client.StreamsGet(limit)).Result;
-        res.ForEach(x => { streamWrappers.Add(new StreamWrapper(x.id, account.id, account.serverInfo.url)); });
+        res.ForEach(x => { streamWrappers.Add(new StreamWrapper(x.id, account.userInfo.id, account.serverInfo.url)); });
       }
       catch (Exception ex)
       {

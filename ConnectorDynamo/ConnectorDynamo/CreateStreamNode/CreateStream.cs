@@ -33,7 +33,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
     /// </summary>
     public StreamWrapper Stream { get; set; }
 
-    public string SelectedAccountId = "";
+    public string SelectedUserId = "";
 
 
     /// <summary>
@@ -117,12 +117,12 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
       {
         Warning("No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
         SelectedAccount = null;
-        SelectedAccountId = "";
+        SelectedUserId = "";
         return;
       }
 
-      SelectedAccount = !string.IsNullOrEmpty(SelectedAccountId)
-        ? AccountList.FirstOrDefault(x => x.userInfo.id == SelectedAccountId)
+      SelectedAccount = !string.IsNullOrEmpty(SelectedUserId)
+        ? AccountList.FirstOrDefault(x => x.userInfo.id == SelectedUserId)
         : AccountList.FirstOrDefault(x => x.isDefault);
     }
 
@@ -145,7 +145,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
 
         Stream = new StreamWrapper(res, SelectedAccount.userInfo.id, SelectedAccount.serverInfo.url);
         CreateEnabled = false;
-        SelectedAccountId = SelectedAccount.userInfo.id;
+        SelectedUserId = SelectedAccount.userInfo.id;
 
         this.Name = "Stream Created";
         OnNodeModified(true);

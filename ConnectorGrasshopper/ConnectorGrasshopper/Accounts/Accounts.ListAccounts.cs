@@ -76,9 +76,9 @@ namespace ConnectorGrasshopper.Accounts
     public override bool Read(GH_IReader reader)
     {
       var accounts = AccountManager.GetAccounts().ToList();
-      var selectedAccountId = reader.GetString("selectedId");
+      var selectedUserId = reader.GetString("selectedId");
 
-      var account = accounts.FirstOrDefault(a => a.id == selectedAccountId);
+      var account = accounts.FirstOrDefault(a => a.userInfo.id == selectedUserId);
       if (account != null)
       {
         var index = accounts.IndexOf(account);
@@ -102,11 +102,11 @@ namespace ConnectorGrasshopper.Accounts
 
     public override bool Write(GH_IWriter writer)
     {
-      var selectedAccountId = SelectedItems[0].Expression.Trim(new char[ ] { '"' });
-      var selectedAccount = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == selectedAccountId);
+      var selectedUserId = SelectedItems[0].Expression.Trim(new char[] { '"' });
+      var selectedAccount = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == selectedUserId);
       if (selectedAccount != null)
       {
-        writer.SetString("selectedId", selectedAccountId);
+        writer.SetString("selectedId", selectedUserId);
         writer.SetString("selectedServer", selectedAccount.serverInfo.url);
       }
 

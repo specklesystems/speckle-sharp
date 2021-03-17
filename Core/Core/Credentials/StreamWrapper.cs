@@ -10,7 +10,7 @@ namespace Speckle.Core.Credentials
   {
     private string originalInput;
 
-    public string AccountId { get; set; }
+    public string UserId { get; set; }
     public string ServerUrl { get; set; }
     public string StreamId { get; set; }
     public string CommitId { get; set; }
@@ -84,18 +84,18 @@ namespace Speckle.Core.Credentials
     }
 
     /// <summary>
-    /// Creates a StreamWrapper by streamId, accountId and serverUrl
+    /// Creates a StreamWrapper by streamId, userId and serverUrl
     /// </summary>
     /// <param name="streamId"></param>
-    /// <param name="accountId"></param>
+    /// <param name="userId"></param>
     /// <param name="serverUrl"></param>
-    public StreamWrapper(string streamId, string accountId, string serverUrl)
+    public StreamWrapper(string streamId, string userId, string serverUrl)
     {
-      AccountId = accountId;
+      UserId = userId;
       ServerUrl = serverUrl;
       StreamId = streamId;
 
-      originalInput = $"{ServerUrl}/streams/{StreamId}{(AccountId != null ? "?u=" + AccountId : "")}";
+      originalInput = $"{ServerUrl}/streams/{StreamId}{(UserId != null ? "?u=" + UserId : "")}";
     }
 
     private void StreamWrapperFromId(string streamId)
@@ -109,7 +109,7 @@ namespace Speckle.Core.Credentials
       }
 
       ServerUrl = account.serverInfo.url;
-      AccountId = account.id;
+      UserId = account.userInfo.id;
       StreamId = streamId;
     }
 
@@ -181,7 +181,7 @@ namespace Speckle.Core.Credentials
       // Step 1: check if direct account id (?u=)
       if (originalInput.Contains("?u="))
       {
-        var userId = originalInput.Split(new string[ ] { "?u=" }, StringSplitOptions.None)[1];
+        var userId = originalInput.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
         var acc = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == userId);
         if (acc != null)
         {
@@ -238,11 +238,11 @@ namespace Speckle.Core.Credentials
 
     public bool Equals(StreamWrapper wrapper)
     {
-      if (wrapper == null)return false;
-      if (Type != wrapper.Type)return false;
+      if (wrapper == null) return false;
+      if (Type != wrapper.Type) return false;
       return Type == wrapper.Type &&
         ServerUrl == wrapper.ServerUrl &&
-        AccountId == wrapper.AccountId &&
+        UserId == wrapper.UserId &&
         StreamId == wrapper.StreamId &&
         (Type == StreamWrapperType.Branch && BranchName == wrapper.BranchName) ||
         (Type == StreamWrapperType.Object && ObjectId == wrapper.ObjectId) ||
@@ -284,7 +284,7 @@ namespace Speckle.Core.Credentials
           url += $"/objects/{ObjectId}";
           break;
       }
-      var acc = $"{(AccountId != null ? "?u=" + AccountId : "")}";
+      var acc = $"{(UserId != null ? "?u=" + UserId : "")}";
       return url + acc;
     }
   }
