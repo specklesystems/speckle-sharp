@@ -126,13 +126,33 @@ namespace Speckle.ConnectorAutocadCivil
     public static bool Visible(this DBObject obj)
     {
       bool isVisible = true;
-
-      PropertyInfo prop = obj.GetType().GetProperty("Visible");
-      try
+      
+      if (obj is Entity)
       {
-        isVisible = (bool)prop.GetValue(obj); 
+        Entity ent = obj as Entity;
+
+        if (!ent.Visible)
+          return ent.Visible;
+
+        Document Doc = Application.DocumentManager.MdiActiveDocument;
+        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        {
+          LayerTableRecord lyrTblRec = tr.GetObject(ent.LayerId, OpenMode.ForRead) as LayerTableRecord;
+          if (lyrTblRec.IsOff)
+            isVisible = false;
+          tr.Commit();
+        }
       }
-      catch { }
+
+      else
+      {
+        PropertyInfo prop = obj.GetType().GetProperty("Visible");
+        try
+        {
+          isVisible = (bool)prop.GetValue(obj);
+        }
+        catch { }
+      }
       return isVisible;
     }
 
