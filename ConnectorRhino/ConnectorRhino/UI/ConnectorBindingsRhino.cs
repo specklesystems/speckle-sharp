@@ -156,8 +156,8 @@ namespace SpeckleRhino
 
       return new List<ISelectionFilter>()
       {
-        new ListSelectionFilter { Name = "Layers", Icon = "Filter", Description = "Selects objects based on their layers.", Values = layers },
-        new AllSelectionFilter { Name = "All", Icon = "Filter", Description = "Selects all document objects." }
+        new ListSelectionFilter { Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
+        new AllSelectionFilter { Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
       };
     }
 

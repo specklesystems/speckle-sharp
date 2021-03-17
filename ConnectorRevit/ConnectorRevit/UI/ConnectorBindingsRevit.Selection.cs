@@ -39,19 +39,19 @@ namespace Speckle.ConnectorRevit.UI
 
       return new List<ISelectionFilter>
       {
-        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = categories, Description="Adds all objects belonging to the selected categories"},
+        new ListSelectionFilter {Name = "Cat", Icon = "Category", Values = categories, Description="Adds all objects belonging to the selected categories"},
         new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = views, Description="Adds all objects visible in the selected views" },
-        new ListSelectionFilter {Name = "Project Info", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels, views and family names to the stream"},
+        new ListSelectionFilter {Name = "P. Info", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels, views and family names to the stream"},
         new PropertySelectionFilter
         {
-          Name = "Parameter",
+          Name = "Param",
           Description="Adds  all objects satisfying the selected parameter",
           Icon = "FilterList",
           HasCustomProperty = false,
           Values = parameters,
           Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
         },
-        new AllSelectionFilter { Name = "All", Icon = "Filter", Description = "Selects all document objects and project information." }
+        new AllSelectionFilter { Name = "All", Icon = "CubeScan", Description = "Selects all document objects and project information." }
       };
     }
 
@@ -100,7 +100,7 @@ namespace Speckle.ConnectorRevit.UI
           selection.AddRange(doc.SupportedTypes());
           return selection;
 
-        case "Category":
+        case "Cat":
           var catFilter = filter as ListSelectionFilter;
           var bics = new List<BuiltInCategory>();
           var categories = ConnectorRevitUtils.GetCategories(doc);
@@ -142,7 +142,7 @@ namespace Speckle.ConnectorRevit.UI
           }
           return selection;
 
-        case "Project Info":
+        case "P. Info":
           var projectInfoFilter = filter as ListSelectionFilter;
 
           if (projectInfoFilter.Selection.Contains("Project Info"))
@@ -162,7 +162,7 @@ namespace Speckle.ConnectorRevit.UI
 
           return selection;
 
-        case "Parameter":
+        case "Param":
           try
           {
             var propFilter = filter as PropertySelectionFilter;

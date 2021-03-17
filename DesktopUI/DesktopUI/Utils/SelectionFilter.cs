@@ -159,6 +159,9 @@ namespace Speckle.DesktopUI.Utils
           FilterView = new ListFilterView();
           _valuesList = SearchResults = new BindableCollection<string>(f.Values);
           break;
+        case AllSelectionFilter f:
+          FilterView = new AllFilterView();
+          break;
       }
     }
 

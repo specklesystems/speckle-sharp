@@ -87,7 +87,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         {
           var dbObj = tr.GetObject(id, AcadDb.OpenMode.ForRead);
           if (dbObj.Visible())
-            objs.Add(dbObj.Handle.ToString());  
+            objs.Add(dbObj.Handle.ToString());
         }
         tr.Commit();
       }
@@ -130,8 +130,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
       return new List<ISelectionFilter>()
       {
-         new ListSelectionFilter { Name = "Layers", Icon = "Filter", Description = "Selects objects based on their layers.", Values = layers },
-         new AllSelectionFilter { Name = "All", Icon = "Filter", Description = "Selects all document objects." }
+         new ListSelectionFilter { Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
+         new AllSelectionFilter { Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
       };
     }
 
@@ -505,7 +505,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         {
           state.Errors.Add(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
           continue;
-        } 
+        }
 
         conversionProgressDict["Conversion"]++;
         UpdateProgress(conversionProgressDict, state.Progress);
