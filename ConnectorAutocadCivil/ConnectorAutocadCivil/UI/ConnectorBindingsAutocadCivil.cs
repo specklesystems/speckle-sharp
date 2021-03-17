@@ -73,10 +73,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override string GetActiveViewName()
     {
-      return "Entire Document"; // Note: does autocad have views that filter objects?
+      return "Entire Document"; // TODO: handle views
     }
 
-    public override List<string> GetObjectsInView()
+    public override List<string> GetObjectsInView() // TODO: this returns all visible doc objects. handle views later.
     {
       var objs = new List<string>();
       using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
@@ -86,14 +86,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
         foreach (AcadDb.ObjectId id in blckTblRcrd)
         {
           var dbObj = tr.GetObject(id, AcadDb.OpenMode.ForRead);
-          if (dbObj is AcadDb.BlockReference)
-          {
-            var blckRef = (AcadDb.BlockReference)dbObj; // skip block references for now
-          }
-          else
+          if (dbObj.Visible())
             objs.Add(dbObj.Handle.ToString());
         }
-        // TODO: this returns all the doc objects. Need to check for visibility later.
         tr.Commit();
       }
       return objs;
@@ -135,7 +130,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
       return new List<ISelectionFilter>()
       {
-         new ListSelectionFilter { Name = "Layers", Icon = "Filter", Description = "Selects objects based on their layers.", Values = layers }
+         new ListSelectionFilter { Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
+         new AllSelectionFilter { Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
       };
     }
 
@@ -430,7 +426,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       if (state.Filter != null)
       {
-        state.SelectedObjectIds = GetObjectsFromFilter(state.Filter);
+        state.SelectedObjectIds = GetObjectsFromFilter(state.Filter, converter);
       }
 
       // remove deleted object ids
@@ -509,7 +505,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         {
           state.Errors.Add(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
           continue;
-        } 
+        }
 
         conversionProgressDict["Conversion"]++;
         UpdateProgress(conversionProgressDict, state.Progress);
@@ -593,20 +589,22 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return state;
     }
 
-    private List<string> GetObjectsFromFilter(ISelectionFilter filter)
+    private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter)
     {
       switch (filter)
       {
+        case AllSelectionFilter a:
+          return Doc.ConvertibleObjects(converter);
         case ListSelectionFilter f:
-          var objs = new List<string>();
+          var layerObjs = new List<string>();
           foreach (var layerName in f.Selection)
           {
             AcadDb.TypedValue[] layerType = new AcadDb.TypedValue[1] { new AcadDb.TypedValue((int)AcadDb.DxfCode.LayerName, layerName) };
             PromptSelectionResult prompt = Doc.Editor.SelectAll(new SelectionFilter(layerType));
             if (prompt.Status == PromptStatus.OK)
-              objs.AddRange(prompt.Value.GetHandles());
+              layerObjs.AddRange(prompt.Value.GetHandles());
           }
-          return objs;
+          return layerObjs;
         default:
           RaiseNotification("Filter type is not supported in this app. Why did the developer implement it in the first place?");
           return new List<string>();

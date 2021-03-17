@@ -101,6 +101,9 @@
     <Compile Include="Streams\Dialogs\FilterViews\ListFilterView.xaml.cs">
       <DependentUpon>ListFilterView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Streams\Dialogs\FilterViews\AllFilterView.xaml.cs">
+      <DependentUpon>AllFilterView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Streams\Dialogs\FilterViews\PropertyFilterView.xaml.cs">
       <DependentUpon>PropertyFilterView.xaml</DependentUpon>
     </Compile>
@@ -137,6 +140,9 @@
     </Page>
     <Page Include="Streams\Dialogs\BranchCreateDialogView.xaml" />
     <Page Include="Streams\Dialogs\FilterViews\ListFilterView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Streams\Dialogs\FilterViews\AllFilterView.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Streams\Dialogs\FilterViews\PropertyFilterView.xaml">

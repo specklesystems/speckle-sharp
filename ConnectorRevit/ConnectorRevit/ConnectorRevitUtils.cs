@@ -40,6 +40,69 @@ namespace Speckle.ConnectorRevit
       return _categories;
     }
 
+    #region extension methods
+    public static List<Element> SupportedElements(this Document doc)
+    {
+      //get element types of supported categories
+      var categoryFilter = new LogicalOrFilter(GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList());
+
+      List<Element> elements = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .WhereElementIsViewIndependent()
+        .WherePasses(categoryFilter).ToList();
+
+      return elements;
+    }
+
+    public static List<Element> SupportedTypes(this Document doc)
+    {
+      //get element types of supported categories
+      var categoryFilter = new LogicalOrFilter(GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList());
+
+      List<Element> elements = new FilteredElementCollector(doc)
+        .WhereElementIsElementType()
+        .WherePasses(categoryFilter).ToList();
+
+      return elements;
+    }
+
+    public static List<View> Views2D(this Document doc)
+    {
+      List<View> views = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .OfCategory(BuiltInCategory.OST_Views)
+        .Cast<View>()
+        .Where(x => x.ViewType == ViewType.CeilingPlan ||
+        x.ViewType == ViewType.FloorPlan ||
+        x.ViewType == ViewType.Elevation ||
+        x.ViewType == ViewType.Section)
+        .ToList();
+
+      return views;
+    }
+
+    public static List<View> Views3D(this Document doc)
+    {
+      List<View> views = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .OfCategory(BuiltInCategory.OST_Views)
+        .Cast<View>()
+        .Where(x => x.ViewType == ViewType.ThreeD)
+        .ToList();
+
+      return views;
+    }
+
+    public static List<Element> Levels(this Document doc)
+    {
+      List<Element> levels = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .OfCategory(BuiltInCategory.OST_Levels).ToList();
+
+      return levels;
+    }
+    #endregion
+
     public static List<string> GetCategoryNames(Document doc)
     {
       return GetCategories(doc).Keys.OrderBy(x => x).ToList();
@@ -128,21 +191,25 @@ namespace Speckle.ConnectorRevit
       BuiltInCategory.OST_Columns,
       BuiltInCategory.OST_CurtaSystem,
       BuiltInCategory.OST_Doors,
+      BuiltInCategory.OST_Entourage,
       BuiltInCategory.OST_Floors,
       BuiltInCategory.OST_Furniture,
       BuiltInCategory.OST_GenericModel,
       BuiltInCategory.OST_Levels,
       BuiltInCategory.OST_Mass,
+      BuiltInCategory.OST_Planting,
       BuiltInCategory.OST_Ramps,
       BuiltInCategory.OST_Roofs,
+      BuiltInCategory.OST_Site,
       BuiltInCategory.OST_SpecialityEquipment,
       BuiltInCategory.OST_Stairs,
       BuiltInCategory.OST_StructuralColumns,
       BuiltInCategory.OST_StructuralFoundation,
       BuiltInCategory.OST_StructuralFraming,
       BuiltInCategory.OST_StructuralTruss,
+      BuiltInCategory.OST_Topography,
       BuiltInCategory.OST_Walls,
       BuiltInCategory.OST_Windows
-      };
+    };
   }
 }

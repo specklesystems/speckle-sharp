@@ -39,18 +39,19 @@ namespace Speckle.ConnectorRevit.UI
 
       return new List<ISelectionFilter>
       {
-        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = categories, Description="Adds all objects belonging to the selected categories"},
+        new ListSelectionFilter {Name = "Cat", Icon = "Category", Values = categories, Description="Adds all objects belonging to the selected categories"},
         new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = views, Description="Adds all objects visible in the selected views" },
-        new ListSelectionFilter {Name = "Project Info", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels, views and family names to the stream"},
+        new ListSelectionFilter {Name = "P. Info", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels, views and family names to the stream"},
         new PropertySelectionFilter
         {
-          Name = "Parameter",
+          Name = "Param",
           Description="Adds  all objects satisfying the selected parameter",
           Icon = "FilterList",
           HasCustomProperty = false,
           Values = parameters,
           Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
-        }
+        },
+        new AllSelectionFilter { Name = "All", Icon = "CubeScan", Description = "Selects all document objects and project information." }
       };
     }
 
@@ -91,7 +92,15 @@ namespace Speckle.ConnectorRevit.UI
 
       switch (filter.Name)
       {
-        case "Category":
+        case "All":
+          selection.AddRange(doc.SupportedElements()); // includes levels
+          selection.Add(doc.ProjectInformation);
+          selection.AddRange(doc.Views2D());
+          selection.AddRange(doc.Views3D());
+          selection.AddRange(doc.SupportedTypes());
+          return selection;
+
+        case "Cat":
           var catFilter = filter as ListSelectionFilter;
           var bics = new List<BuiltInCategory>();
           var categories = ConnectorRevitUtils.GetCategories(doc);
@@ -133,56 +142,27 @@ namespace Speckle.ConnectorRevit.UI
           }
           return selection;
 
-        case "Project Info":
+        case "P. Info":
           var projectInfoFilter = filter as ListSelectionFilter;
 
           if (projectInfoFilter.Selection.Contains("Project Info"))
-          {
             selection.Add(doc.ProjectInformation);
-          }
 
           if (projectInfoFilter.Selection.Contains("Views 2D"))
-          {
-            selection.AddRange(new FilteredElementCollector(doc)
-            .WhereElementIsNotElementType()
-            .OfCategory(BuiltInCategory.OST_Views)
-            .Cast<View>()
-            .Where(x => x.ViewType == ViewType.CeilingPlan ||
-            x.ViewType == ViewType.FloorPlan ||
-            x.ViewType == ViewType.Elevation ||
-            x.ViewType == ViewType.Section)
-            .ToList());
-          }
+            selection.AddRange(doc.Views2D());
 
           if (projectInfoFilter.Selection.Contains("Views 3D"))
-          {
-            selection.AddRange(new FilteredElementCollector(doc)
-            .WhereElementIsNotElementType()
-            .OfCategory(BuiltInCategory.OST_Views)
-            .Cast<View>()
-            .Where(x => x.ViewType == ViewType.ThreeD)
-            .ToList());
-          }
+            selection.AddRange(doc.Views3D());
 
           if (projectInfoFilter.Selection.Contains("Levels"))
-          {
-            selection.AddRange(new FilteredElementCollector(doc)
-            .WhereElementIsNotElementType()
-            .OfCategory(BuiltInCategory.OST_Levels).ToList());
-          }
+            selection.AddRange(doc.Levels());
 
           if (projectInfoFilter.Selection.Contains("Families & Types"))
-          {
-            //get all the elementtypes of the categories we support
-            var allCategoryFilter = new LogicalOrFilter(ConnectorRevitUtils.GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList());
+            selection.AddRange(doc.SupportedTypes());
 
-            selection.AddRange(new FilteredElementCollector(doc)
-            .WhereElementIsElementType()
-            .WherePasses(allCategoryFilter).ToList());
-          }
           return selection;
 
-        case "Parameter":
+        case "Param":
           try
           {
             var propFilter = filter as PropertySelectionFilter;

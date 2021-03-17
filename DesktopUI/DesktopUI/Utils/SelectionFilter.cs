@@ -40,6 +40,22 @@ namespace Speckle.DesktopUI.Utils
     List<string> Selection { get; set; }
   }
 
+  public class AllSelectionFilter : ISelectionFilter
+  {
+    public string Type => typeof(ListSelectionFilter).ToString();
+    public string Name { get; set; }
+    public string Icon { get; set; }
+    public string Description { get; set; }
+    public List<string> Selection { get; set; } = new List<string>();
+    public string Summary
+    {
+      get
+      {
+        return "Everything";
+      }
+    }
+  }
+
   public class ListSelectionFilter : ISelectionFilter
   {
     public string Type => typeof(ListSelectionFilter).ToString();
@@ -142,6 +158,9 @@ namespace Speckle.DesktopUI.Utils
         case ListSelectionFilter f:
           FilterView = new ListFilterView();
           _valuesList = SearchResults = new BindableCollection<string>(f.Values);
+          break;
+        case AllSelectionFilter f:
+          FilterView = new AllFilterView();
           break;
       }
     }

@@ -57,10 +57,11 @@ namespace Objects.Converter.Revit
       "OST_StairsLandings",
       "OST_Mass",
       "OST_StairsRailing",
+      "OST_Planting",
       "OST_Ramps",
       "OST_Roads",
       "OST_RoofSoffit",
-      "OST_Roofs",
+      "OST_Roofs",      
       "OST_StairsRuns",
       "OST_Site",
       "OST_SpecialityEquipment",
@@ -75,6 +76,7 @@ namespace Objects.Converter.Revit
       "OST_StructuralStiffener",
       "OST_StructuralTruss",
       "OST_StairsSupports",
+      "OST_Topography",
       "OST_Walls",
       "OST_Windows"
     };
