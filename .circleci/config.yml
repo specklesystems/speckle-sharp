@@ -73,11 +73,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: dotnet build Core/Core.sln --no-restore
 
   test-core: 
-    working_directory: /temp
-
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
-
     steps:
       - run:
           command: dotnet restore Core/Core.sln
