@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
@@ -66,7 +67,7 @@ namespace ConnectorGrasshopper.Conversion
           {
             if (CancellationToken.IsCancellationRequested)return;
 
-            if (item != null)
+            if (item != null && item.Value != null)
             {
               try
               {
@@ -75,14 +76,13 @@ namespace ConnectorGrasshopper.Conversion
               }
               catch (Exception e)
               {
-                Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.Message);
+                RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
               }
             }
             else
             {
-              ConvertedObjects.Append(new GH_String { Value = null }, path);
-              Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Object at {Objects.Paths[branchIndex]} is not a Speckle object.");
-            }
+              ConvertedObjects.Append(null, path);
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] is not a Base object."));            }
 
             ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
           }
@@ -90,18 +90,21 @@ namespace ConnectorGrasshopper.Conversion
           branchIndex++;
         }
 
-        Done();
       }
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
         Parent.Message = "Error";
       }
+      // Always call done
+      Done();
     }
 
     public override WorkerInstance Duplicate() => new SerializeWorker(Parent);
+
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
@@ -125,6 +128,10 @@ namespace ConnectorGrasshopper.Conversion
     public override void SetData(IGH_DataAccess DA)
     {
       if (CancellationToken.IsCancellationRequested)return;
+      foreach (var (level, message) in RuntimeMessages)
+      {
+        Parent.AddRuntimeMessage(level, message);
+      }
       DA.SetDataTree(0, ConvertedObjects);
     }
   }

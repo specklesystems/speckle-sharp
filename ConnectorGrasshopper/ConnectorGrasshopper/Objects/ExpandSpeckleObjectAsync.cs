@@ -215,7 +215,7 @@ namespace ConnectorGrasshopper.Objects
         if (speckleObjects.get_Branch(path).Count == 0) continue;
         // Loop through all dynamic properties
         var baseGoo = speckleObjects.get_DataItem(path, 0) as GH_SpeckleBase;
-        if (baseGoo == null)
+        if (baseGoo == null || baseGoo.Value == null)
         {
           continue;
         }

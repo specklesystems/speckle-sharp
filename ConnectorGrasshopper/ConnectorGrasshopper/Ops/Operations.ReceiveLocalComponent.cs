@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -105,7 +106,19 @@ namespace ConnectorGrasshopper.Ops
       {
         Parent.Message = "Receiving...";
         var Converter = (Parent as ReceiveLocalComponent).Converter;
-        var @base = Operations.Receive(localDataId).Result;
+        
+        Base @base = null;
+
+        try
+        {
+          @base = Operations.Receive(localDataId).Result;
+        }
+        catch (Exception e)
+        {
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,"Failed to receive local data."));
+          Done();
+          return;
+        }
 
         if (Converter.CanConvertToNative(@base))
         {
@@ -124,22 +137,29 @@ namespace ConnectorGrasshopper.Ops
           data = new GH_Structure<IGH_Goo>();
           data.Append(new GH_SpeckleBase(@base));
         }
-        Done();
       }
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
         Parent.Message = "Error";
-        Done();
       }
+      Done();
     }
+
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void SetData(IGH_DataAccess DA)
     {
-      DA.SetDataTree(0, data);
-      localDataId = null;
+      if(data != null) DA.SetDataTree(0, data);
+      
+      foreach (var (level, message) in RuntimeMessages)
+      {
+        Parent.AddRuntimeMessage(level, message);
+      }
+
+      Parent.Message = "Done";
     }
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)

@@ -63,14 +63,15 @@ namespace ConnectorGrasshopper.Objects
       return new ExtendSpeckleObjectWorker(Parent, Converter);
     }
 
-    private void AssignToObject(Base b, List<string> keys, List<IGH_Goo> values)
+    private bool AssignToObject(Base b, List<string> keys, List<IGH_Goo> values)
     {
       var index = 0;
+      var hasErrors = false;
       keys.ForEach(key =>
       {
         if (b[key] != null)
         {
-          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Object {b.id} - Property {key} has been overwritten");
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark, $"Object {b.id} - Property {key} has been overwritten"));
         }
 
         try
@@ -79,9 +80,12 @@ namespace ConnectorGrasshopper.Objects
         }
         catch (Exception e)
         {
-          Console.WriteLine(e);
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+          hasErrors = true;
         }
       });
+
+      return hasErrors;
     }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
@@ -96,25 +100,28 @@ namespace ConnectorGrasshopper.Objects
           // Input is a list of values. Assign them directly
           if (keys.Count != values?.Count)
           {
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Key and Value lists are not the same length.");
-            Parent.Message = "Error";
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Key and Value lists are not the same length."));
+            @base = null;
+            Done();
             return;
           }
 
-          AssignToObject(@base, keys, values);
+          var hasErrors = AssignToObject(@base, keys, values);
+          if (hasErrors) @base = null;
         }
         else if (valueTree.Branches.Count == 1)
         {
           var values = valueTree.Branches[0];
           if (keys.Count != values.Count)
           {
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Key and Value lists are not the same length.");
-            Parent.Message = "Error";
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Key and Value lists are not the same length."));
+            Done();
             return;
           }
 
           // Input is just one list, so use it.
-          AssignToObject(@base, keys, values);
+          var hasErrors = AssignToObject(@base, keys, values);
+          if (hasErrors) @base = null;
         }
         else
         {
@@ -137,7 +144,7 @@ namespace ConnectorGrasshopper.Objects
                 }
                 catch (Exception e)
                 {
-                  Console.WriteLine(e);
+                  RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
                 }
               };
             }
@@ -152,7 +159,7 @@ namespace ConnectorGrasshopper.Objects
           if (foundTree)
           {
             // TODO: Handle tree conversions
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot handle trees yet");
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot handle trees yet"));
             Parent.Message = "Error";
           }
         }
@@ -163,13 +170,22 @@ namespace ConnectorGrasshopper.Objects
       {
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
-        Parent.Message = "Error";
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
       }
     }
 
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
+
     public override void SetData(IGH_DataAccess DA)
     {
+      // 👉 Checking for cancellation!
+      if (CancellationToken.IsCancellationRequested) return;
+
+      foreach (var (level, message) in RuntimeMessages)
+      {
+        Parent.AddRuntimeMessage(level, message);
+      }
+      
       DA.SetData(0, new GH_SpeckleBase { Value = @base });
     }
 
