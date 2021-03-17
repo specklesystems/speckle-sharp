@@ -198,6 +198,12 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\StateTag_Optional.Large.png" />
+    <None Include="Resources\StateTag_List.Large.png" />
+    <None Include="Resources\StateTag_Detach.Large.png" />
+    <None Include="Resources\StateTag_Detach.png" />
+    <None Include="Resources\StateTag_List.png" />
+    <None Include="Resources\StateTag_Optional.png" />
     <None Include="Resources\LocalReceiver.png" />
     <None Include="Resources\LocalSender.png" />
     <None Include="Resources\SchemaBuilder.png" />
