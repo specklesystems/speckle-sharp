@@ -125,7 +125,7 @@ namespace ConnectorGrasshopper.Extras
     {
       object result = null;
 
-      if (value is null) throw new Speckle.Core.Logging.SpeckleException("Null values are not supported, please clean your data tree.");
+      if (value is null) return null;
       
       if (value is IGH_Goo)
       {
@@ -141,9 +141,7 @@ namespace ConnectorGrasshopper.Extras
       {
         return converter.ConvertToSpeckle(value);
       }
-
-
-
+      
       return result;
     }
 
