@@ -84,7 +84,7 @@ namespace ConnectorGrasshopper.Streams
         if (account == null)
         {
           // Really last ditch effort - in case people delete accounts from the manager, and the selection dropdown is still using an outdated list.
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The account with an id of {userId} was not found.");
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The user with id of {userId} was not found.");
           return;
         }
       }

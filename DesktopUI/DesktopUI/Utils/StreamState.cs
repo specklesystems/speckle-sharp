@@ -486,7 +486,6 @@ namespace Speckle.DesktopUI.Utils
       //if the current user is not the one who created the stream, try find an account on that server, and prioritize the default if multiple are found
       if (account == null)
       {
-        var ordered = AccountManager.GetAccounts().OrderByDescending(x => x.isDefault);
         account = AccountManager.GetAccounts().OrderByDescending(x => x.isDefault).FirstOrDefault(a => a.serverInfo.url == serverUrl);
       }
 
