@@ -71,9 +71,22 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run: 
           name: Build Core
           command: dotnet build Core/Core.sln --no-restore
+
+  test-core: 
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    steps:
+      - checkout 
+      - run:
+          command: dotnet restore Core/Core.sln
+      - run:
+          command: dotnet build Core/Core.sln
       - run: 
-          name: Test Core
+          name: Unit Tests
           command: dotnet test Core/Tests/TestsUnit.csproj --no-restore --no-build
+      - run:
+          name: Integration Tests # The integration tests are runinng on our test sevrer
+          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true" --no-restore --no-build
 
   build-objects:
     executor:
@@ -171,24 +184,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           from: '"speckle-sharp-ci-tools/Installers/"'
           to: s3://speckle-releases/installers/
 
-  integration-tests: # The integration tests on test sevrer
-    working_directory: /temp
 
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
 
-    steps:
-      - checkout:
-          path: core
-      - run:
-          working_directory: core
-          command: dotnet restore Core/Core.sln
-      - run:
-          working_directory: core
-          command: dotnet build --configuration Release Core/Core.sln
-      - run:
-          working_directory: core
-          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true"
 
 
 # The main workflows for our monorepo pipeline.
@@ -213,7 +210,7 @@ workflows:
     when: << pipeline.parameters.run_core >>
     jobs:
       - build-core
-      - integration-tests:
+      - test-core:
           requires:
             - build-core
   
