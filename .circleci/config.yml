@@ -76,6 +76,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
     steps:
+      - checkout 
       - run:
           command: dotnet restore Core/Core.sln
       - run:
