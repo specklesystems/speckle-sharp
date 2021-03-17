@@ -64,7 +64,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
           responses.Add(res);
           var wrapper =
-            new StreamWrapper(serverTransport.StreamId, serverTransport.Account.id, serverTransport.BaseUri)
+            new StreamWrapper(serverTransport.StreamId, serverTransport.Account.userInfo.id, serverTransport.BaseUri)
             {
               CommitId = res
             };

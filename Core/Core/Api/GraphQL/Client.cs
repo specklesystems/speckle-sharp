@@ -17,8 +17,6 @@ namespace Speckle.Core.Api
 
     public string ApiToken { get => Account.token; }
 
-    public string AccountId { get; set; }
-
     [JsonIgnore]
     public Account Account { get; set; }
 
@@ -39,7 +37,6 @@ namespace Speckle.Core.Api
         throw new SpeckleException($"Provided account is null.");
 
       Account = account;
-      AccountId = account.id;
 
       HttpClient = new HttpClient();
 
@@ -56,9 +53,9 @@ namespace Speckle.Core.Api
         new GraphQLHttpClientOptions
         {
           EndPoint = new Uri(new Uri(account.serverInfo.url), "/graphql"),
-            UseWebSocketForQueriesAndMutations = false,
-            ConfigureWebSocketConnectionInitPayload = (opts) => { return new { Authorization = $"Bearer {account.token}" }; },
-            OnWebsocketConnected = OnWebSocketConnect,
+          UseWebSocketForQueriesAndMutations = false,
+          ConfigureWebSocketConnectionInitPayload = (opts) => { return new { Authorization = $"Bearer {account.token}" }; },
+          OnWebsocketConnected = OnWebSocketConnect,
         },
         new NewtonsoftJsonSerializer(),
         HttpClient);

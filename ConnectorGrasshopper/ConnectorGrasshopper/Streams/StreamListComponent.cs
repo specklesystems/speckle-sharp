@@ -52,10 +52,10 @@ namespace ConnectorGrasshopper.Streams
       else if (streams == null)
       {
         Message = "Fetching";
-        string accountId = null;
+        string userId = null;
         var limit = 10;
 
-        DA.GetData(0, ref accountId);
+        DA.GetData(0, ref userId);
         DA.GetData(1, ref limit); // Has default value so will never be empty.
 
         if (limit > 50)
@@ -64,10 +64,10 @@ namespace ConnectorGrasshopper.Streams
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50.");
         }
 
-        var account = string.IsNullOrEmpty(accountId) ? AccountManager.GetDefaultAccount() :
-          AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
+        var account = string.IsNullOrEmpty(userId) ? AccountManager.GetDefaultAccount() :
+          AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
 
-        if (accountId == null)
+        if (userId == null)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account was provided, using default.");
         }
@@ -80,7 +80,7 @@ namespace ConnectorGrasshopper.Streams
 
         Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
-        Task.Run(async() =>
+        Task.Run(async () =>
         {
           try
           {

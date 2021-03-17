@@ -30,19 +30,11 @@ namespace Speckle.DesktopUI.Utils
       get => _client;
       set
       {
-        if (value.AccountId == null)
-        {
-          return;
-        }
-
         _client = value;
-        AccountId = Client.AccountId;
         ServerUrl = Client.ServerUrl;
       }
     }
 
-    [JsonProperty]
-    public string AccountId { get; private set; }
 
     [JsonProperty]
     public string ServerUrl { get; private set; }
@@ -113,7 +105,7 @@ namespace Speckle.DesktopUI.Utils
         SetAndNotify(ref _Branch, value);
 
         //make sure the current commit exists in this branch
-        if (Commit != null && HasCommits(value) && value.commits.items.Any(x=>x.id == Commit.id))
+        if (Commit != null && HasCommits(value) && value.commits.items.Any(x => x.id == Commit.id))
         {
           //do nothing, it means the current commit is either "latest" or a previous commitId, 
           //in which case we don't want to switch it automatically
@@ -473,11 +465,11 @@ namespace Speckle.DesktopUI.Utils
     /// Recreates the client when the state is deserialised.
     /// If the account doesn't exist, it tries to find another account on the same server.
     /// </summary>
-    /// <param name="accountId"></param>
+    /// <param name="userId"></param>
     [JsonConstructor]
-    public StreamState(string accountId)
+    public StreamState(string userId)
     {
-      var account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId) ??
+      var account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId) ??
         AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == ServerUrl);
       if (account == null)
       {
@@ -490,7 +482,7 @@ namespace Speckle.DesktopUI.Utils
 
     public void Initialise(bool refresh = false)
     {
-      if (Stream == null || Client?.AccountId == null)
+      if (Stream == null || Client == null)
       {
         return;
       }
@@ -582,7 +574,7 @@ namespace Speckle.DesktopUI.Utils
       IsSending = true;
       ShowProgressBar = true;
       //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
-      ProgressBarIsIndeterminate = true; 
+      ProgressBarIsIndeterminate = true;
       CancellationTokenSource = new CancellationTokenSource();
 
       await Task.Run(() => Globals.Repo.ConvertAndSend(this));

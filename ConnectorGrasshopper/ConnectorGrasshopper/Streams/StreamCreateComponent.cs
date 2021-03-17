@@ -22,7 +22,8 @@ namespace ConnectorGrasshopper.Streams
     public StreamWrapper stream { get; set; } = null;
 
     public StreamCreateComponent() : base("Create Stream", "sCreate", "Create a new speckle stream.", ComponentCategories.PRIMARY_RIBBON,
-      ComponentCategories.STREAMS) { }
+      ComponentCategories.STREAMS)
+    { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -55,7 +56,7 @@ namespace ConnectorGrasshopper.Streams
         return base.Write(writer);
       }
 
-      var serialisedStreamWrapper = $"{stream.StreamId} {stream.ServerUrl} {stream.AccountId}";
+      var serialisedStreamWrapper = $"{stream.StreamId} {stream.ServerUrl} {stream.UserId}";
       writer.SetString("stream", serialisedStreamWrapper);
       return base.Write(writer);
     }
@@ -68,22 +69,22 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
-      string accountId = null;
+      string userId = null;
       Account account = null;
-      DA.GetData(0, ref accountId);
+      DA.GetData(0, ref userId);
 
-      if (accountId == null)
+      if (userId == null)
       {
         //account = AccountManager.GetDefaultAccount();
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using default account {account}");
       }
       else
       {
-        account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == accountId);
+        account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
         if (account == null)
         {
           // Really last ditch effort - in case people delete accounts from the manager, and the selection dropdown is still using an outdated list.
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The account with an id of {accountId} was not found.");
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The account with an id of {userId} was not found.");
           return;
         }
       }
@@ -99,7 +100,7 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
-      Task.Run(async() =>
+      Task.Run(async () =>
       {
         var client = new Client(account);
         try
