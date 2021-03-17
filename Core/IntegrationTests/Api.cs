@@ -1,7 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Speckle.Core.Api;
@@ -9,10 +6,6 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Tests;
-using System.Net;
-using System.Collections.Specialized;
-using System.Text;
-using Newtonsoft.Json;
 
 ////////////////////////////////////////////////////////////////////////////
 /// NOTE:                                                                ///
@@ -233,7 +226,7 @@ namespace TestsIntegration
     public async Task StreamGetCommits()
     {
       var res = await myClient.StreamGetCommits(streamId);
-      
+
       Assert.NotNull(res);
       Assert.AreEqual(commitId, res[0].id);
     }
