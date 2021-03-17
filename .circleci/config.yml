@@ -80,13 +80,13 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           command: dotnet restore Core/Core.sln
       - run:
-          command: dotnet build --configuration Release Core/Core.sln
+          command: dotnet build Core/Core.sln
       - run: 
           name: Unit Tests
           command: dotnet test Core/Tests/TestsUnit.csproj --no-restore --no-build
       - run:
           name: Integration Tests # The integration tests are runinng on our test sevrer
-          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true"
+          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true" --no-restore --no-build
 
   build-objects:
     executor:
