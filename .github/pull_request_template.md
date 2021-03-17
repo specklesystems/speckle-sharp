@@ -17,6 +17,6 @@
 ## Docs
 
 - No updates needed
-- Have already been upodated
+- Have already been updated
 - Will be updated ASAP
 
