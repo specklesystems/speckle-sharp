@@ -119,7 +119,17 @@ namespace ConnectorGrasshopper.Objects
           if (value is List<object> list)
           {
             // Value is a list of items, iterate and convert.
-            var converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
+            List<object> converted = null;
+            try
+            {
+              converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
+            }
+            catch (Exception e)
+            {
+              Log.CaptureException(e);
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{e.Message}"));
+              hasErrors = true;
+            }           
             try
             {
               @base[key] = converted;
@@ -134,9 +144,10 @@ namespace ConnectorGrasshopper.Objects
           else
           {
             // If value is not list, it is a single item.
+            var obj = value == null ? null : Utilities.TryConvertItemToSpeckle(value, Converter);
+            
             try
             {
-              var obj = Utilities.TryConvertItemToSpeckle(value, Converter);
               @base[key] = obj;
             }
             catch (Exception e)
@@ -177,7 +188,7 @@ namespace ConnectorGrasshopper.Objects
         Parent.AddRuntimeMessage(level, message);
       }
 
-      DA.SetData(0, @base != null ? new GH_SpeckleBase{ Value = @base } : null);
+      if(@base != null) DA.SetData(0,new GH_SpeckleBase{ Value = @base });
     }
 
     
@@ -186,7 +197,12 @@ namespace ConnectorGrasshopper.Objects
       DA.DisableGapLogic();
       var hasErrors = false;
       var allOptional = Params.Input.FindAll(p => p.Optional).Count == Params.Input.Count;
-      if (allOptional)
+      if (Params.Input.Count == 0)
+      {
+        inputData = null;
+        return;
+      }
+      if (Params.Input.Count > 0 && allOptional)
       {
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "You cannot set all parameters as optional"));
         inputData = null;
@@ -219,14 +235,15 @@ namespace ConnectorGrasshopper.Objects
               if(values.Count == 0)
               {
                 RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
-                  $"Non optional parameter {param.NickName} cannot be null or empty."));
+                  $"Non-optional parameter {param.NickName} cannot be null or empty."));
                 hasErrors = true;
               }
-              if(values.FindAll(p => p == null).Count != 0)
-              {
-                RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Non optional parameter {param.NickName} cannot contain null items."));
-                hasErrors = true; 
-              }
+            }
+            if(values.Any(p => p == null))
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
+                $"List access parameter {param.NickName} cannot contain null values. Please clean your data tree."));
+              hasErrors = true;
             }
             inputData[key] = values;
             break;
