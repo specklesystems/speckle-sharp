@@ -55,20 +55,25 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
 
       <Grid Margin="0">
-        <Grid Margin="20">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0"
+              Margin="20">
           <StackPanel>
             <md:Badged Badge="{Binding LocalAccountsCount}"
                        BadgeForeground="{DynamicResource MaterialDesignPaper}"
                        BadgePlacementMode="Right"
                        ToolTip="total accounts"
                        ToolTipService.Placement="Mouse">
-                <TextBlock Margin="0,8,16,8"
-                           FontSize="16"
-                           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                           Text="Default Account" />
-              </md:Badged>
+              <TextBlock Margin="0,8,16,8"
+                         FontSize="16"
+                         Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                         Text="Default Account" />
+            </md:Badged>
 
-              <Grid>
+            <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -181,6 +186,14 @@
                           ItemsSource="{Binding HelpLinks}" />
 
           </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1" Margin="20">
+          <TextBlock Foreground="{DynamicResource MaterialDesignBodyLight}"
+                     VerticalAlignment="Bottom"
+                     HorizontalAlignment="Center">
+            <Run Text="{Binding ConnectorName, Mode=OneTime}"></Run>
+            <Run Text="{Binding ConnectorVersion, StringFormat=' v.{0}', Mode=OneTime}"></Run>
+          </TextBlock>
         </Grid>
       </Grid>
     </ScrollViewer>

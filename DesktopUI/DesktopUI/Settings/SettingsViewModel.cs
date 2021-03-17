@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Credentials;
@@ -15,12 +14,15 @@ namespace Speckle.DesktopUI.Settings
 
     public Account DefaultAccount => AccountManager.GetDefaultAccount();
 
+    public string ConnectorVersion => Globals.HostBindings.ConnectorVersion;
+
+    public string ConnectorName => Globals.HostBindings.ConnectorName;
+
     public List<HelpLink> HelpLinks { get; }
 
     public SettingsViewModel()
     {
       DisplayName = "Settings";
-
       _darkMode = Properties.Settings.Default.Theme == BaseTheme.Dark;
       ToggleTheme();
 
