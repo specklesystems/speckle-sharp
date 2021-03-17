@@ -51,6 +51,7 @@ namespace Speckle.DesktopUI.Utils
 
   public class RetrievedFilteredObjectsEvent : EventBase
   {
+   // public string UserId { get; set; }
     public IEnumerable<Base> Objects { get; set; }
   }
 

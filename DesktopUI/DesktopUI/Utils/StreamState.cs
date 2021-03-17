@@ -30,11 +30,19 @@ namespace Speckle.DesktopUI.Utils
       get => _client;
       set
       {
+        if (value.Account == null)
+        {
+          return;
+        }
+
         _client = value;
+        UserId = Client.Account.userInfo.id;
         ServerUrl = Client.ServerUrl;
       }
     }
 
+    [JsonProperty]
+    public string UserId { get; private set; }
 
     [JsonProperty]
     public string ServerUrl { get; private set; }
