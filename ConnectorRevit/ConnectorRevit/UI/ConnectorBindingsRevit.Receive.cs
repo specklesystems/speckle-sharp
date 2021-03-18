@@ -122,7 +122,7 @@ namespace Speckle.ConnectorRevit.UI
         //wait to let queue finish
       }
 
-      if ( converter.ConversionErrors.LastOrDefault()?.details == "Fatal Error" )
+      if (converter.ConversionErrors.LastOrDefault()?.details == "Fatal Error")
       {
         // the commit is being rolled back
         return null;

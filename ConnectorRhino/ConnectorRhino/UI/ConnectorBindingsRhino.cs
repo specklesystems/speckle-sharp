@@ -156,8 +156,8 @@ namespace SpeckleRhino
 
       return new List<ISelectionFilter>()
       {
-        new ListSelectionFilter { Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
-        new AllSelectionFilter { Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
+        new ListSelectionFilter {Slug="layer",  Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
+        new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
       };
     }
 
@@ -562,13 +562,13 @@ namespace SpeckleRhino
     {
       var objs = new List<string>();
 
-      switch (filter)
+      switch (filter.Slug)
       {
-        case AllSelectionFilter a:
+        case "all":
           objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
           break;
-        case ListSelectionFilter f:
-          foreach (var layerName in f.Selection)
+        case "layer":
+          foreach (var layerName in filter.Selection)
           {
             int layerIndex = Doc.Layers.FindByFullPath(layerName, -1);
             if (layerIndex >= 0)

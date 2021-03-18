@@ -15,9 +15,22 @@ namespace Speckle.DesktopUI.Utils
 
   public interface ISelectionFilter
   {
+
+    /// <summary>
+    /// User friendly name displaied in the UI
+    /// </summary>
     string Name { get; set; }
 
+    /// <summary>
+    /// MaterialDesignIcon use the demo app from the MaterialDesignInXamlToolkit to get the correct name
+    /// </summary>
     string Icon { get; set; }
+
+
+    /// <summary>
+    /// Internal filter name 
+    /// </summary>
+    string Slug { get; set; }
 
     /// <summary>
     /// Used as the discriminator for deserialisation.
@@ -44,6 +57,7 @@ namespace Speckle.DesktopUI.Utils
   {
     public string Type => typeof(ListSelectionFilter).ToString();
     public string Name { get; set; }
+    public string Slug { get; set; }
     public string Icon { get; set; }
     public string Description { get; set; }
     public List<string> Selection { get; set; } = new List<string>();
@@ -61,6 +75,7 @@ namespace Speckle.DesktopUI.Utils
     public string Type => typeof(ListSelectionFilter).ToString();
 
     public string Name { get; set; }
+    public string Slug { get; set; }
     public string Icon { get; set; }
     public string Description { get; set; }
 
@@ -88,6 +103,8 @@ namespace Speckle.DesktopUI.Utils
     public string Type => typeof(PropertySelectionFilter).ToString();
 
     public string Name { get; set; }
+
+    public string Slug { get; set; }
     public string Icon { get; set; }
     public string Description { get; set; }
 
@@ -112,6 +129,7 @@ namespace Speckle.DesktopUI.Utils
   public class FilterTab : PropertyChangedBase
   {
     public string Name => Filter.Name;
+    public string Slug => Filter.Slug;
 
     public ISelectionFilter Filter { get; }
 
