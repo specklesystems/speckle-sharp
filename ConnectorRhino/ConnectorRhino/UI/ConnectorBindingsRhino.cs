@@ -156,8 +156,8 @@ namespace SpeckleRhino
 
       return new List<ISelectionFilter>()
       {
-        new ListSelectionFilter { Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
-        new AllSelectionFilter { Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
+        new ListSelectionFilter {Slug="layer", Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
+        new AllSelectionFilter { Slug="all", Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
       };
     }
 
@@ -261,7 +261,7 @@ namespace SpeckleRhino
       {
         Base obj = commitObj.Item1;
         string layerPath = commitObj.Item2;
-        
+
         var converted = converter.ConvertToNative(obj) as Rhino.Geometry.GeometryBase;
         if (converted != null)
         {
@@ -278,7 +278,7 @@ namespace SpeckleRhino
         {
           state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
         }
-            
+
         updateProgressAction?.Invoke();
       }
 
@@ -504,13 +504,13 @@ namespace SpeckleRhino
     {
       var objs = new List<string>();
 
-      switch (filter)
+      switch (filter.Slug)
       {
-        case AllSelectionFilter a:
+        case "all":
           objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
           break;
-        case ListSelectionFilter f:
-          foreach (var layerPath in f.Selection)
+        case "layer":
+          foreach (var layerPath in filter.Selection)
           {
             Layer layer = Doc.GetLayer(layerPath);
             if (layer != null && layer.IsVisible)

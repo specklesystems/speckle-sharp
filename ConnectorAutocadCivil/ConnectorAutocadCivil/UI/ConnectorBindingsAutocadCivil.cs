@@ -130,8 +130,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
       return new List<ISelectionFilter>()
       {
-         new ListSelectionFilter { Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
-         new AllSelectionFilter { Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
+         new ListSelectionFilter {Slug="layer",  Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
+         new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
       };
     }
 
@@ -588,13 +588,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter)
     {
-      switch (filter)
+      switch (filter.Slug)
       {
-        case AllSelectionFilter a:
+        case "all":
           return Doc.ConvertibleObjects(converter);
-        case ListSelectionFilter f:
+        case "layer":
           var layerObjs = new List<string>();
-          foreach (var layerName in f.Selection)
+          foreach (var layerName in filter.Selection)
           {
             AcadDb.TypedValue[] layerType = new AcadDb.TypedValue[1] { new AcadDb.TypedValue((int)AcadDb.DxfCode.LayerName, layerName) };
             PromptSelectionResult prompt = Doc.Editor.SelectAll(new SelectionFilter(layerType));
