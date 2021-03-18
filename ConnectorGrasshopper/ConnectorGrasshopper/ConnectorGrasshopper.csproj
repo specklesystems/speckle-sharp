@@ -58,6 +58,7 @@
     <Compile Include="Conversion\Convert.ToNativeAsync.cs" />
     <Compile Include="Extras\Speckle.IGH_Goo.cs" />
     <Compile Include="Extras\SpeckleBaseParam.cs" />
+    <Compile Include="Extras\SpeckleStateTag.cs" />
     <Compile Include="Extras\SpeckleStreamParam.cs" />
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
