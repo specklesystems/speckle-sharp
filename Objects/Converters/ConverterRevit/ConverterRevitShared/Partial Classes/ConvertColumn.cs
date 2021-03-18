@@ -113,8 +113,11 @@ namespace Objects.Converter.Revit
         return null;
       }
 
+
+
       TrySetParam(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
       TrySetParam(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM, topLevel);
+
 
       if (speckleRevitColumn != null)
       {
@@ -129,6 +132,7 @@ namespace Objects.Converter.Revit
         }
 
         SetOffsets(revitColumn, speckleRevitColumn);
+
         SetInstanceParameters(revitColumn, speckleRevitColumn);
       }
 
@@ -160,20 +164,21 @@ namespace Objects.Converter.Revit
       var topOffset = ScaleToNative(speckleRevitColumn.topOffset, speckleRevitColumn.units);
 
       //these have been set previously
-      DB.Level level = Doc.GetElement(baseLevelParam.AsElementId()) as DB.Level;
-      DB.Level topLevel = Doc.GetElement(topLevelParam.AsElementId()) as DB.Level;
+      //DB.Level level = Doc.GetElement(baseLevelParam.AsElementId()) as DB.Level;
+      //DB.Level topLevel = Doc.GetElement(topLevelParam.AsElementId()) as DB.Level;
 
       //checking if BASE offset needs to be set before or after TOP offset
-      if (topLevel != null && topLevel.Elevation + baseOffset <= level.Elevation)
-      {
-        baseOffsetParam.Set(baseOffset);
-        topOffsetParam.Set(topOffset);
-      }
-      else
-      {
-        topOffsetParam.Set(topOffset);
-        baseOffsetParam.Set(baseOffset);
-      }
+      //      if ((topLevel != null && level.Elevation + baseOffset == topLevel.Elevation) ||
+      //       (topLevel!=null && topLevel.Elevation == level.Elevation && baseOffset > 0)) //edge case
+      //    {
+      baseOffsetParam.Set(baseOffset);
+      topOffsetParam.Set(topOffset);
+      //    }
+      //    else
+      //    {
+      //       topOffsetParam.Set(topOffset);
+      //      baseOffsetParam.Set(baseOffset);
+      //    }
 
     }
 
@@ -209,7 +214,7 @@ namespace Objects.Converter.Revit
       speckleColumn.baseLine = baseLine; //all speckle columns should be line based
 
       GetAllRevitParamsAndIds(speckleColumn, revitColumn,
-        new List<string> { "FAMILY_BASE_LEVEL_PARAM", "FAMILY_TOP_LEVEL_PARAM", "FAMILY_BASE_LEVEL_OFFSET_PARAM", "FAMILY_TOP_LEVEL_OFFSET_PARAM" });
+        new List<string> { "FAMILY_BASE_LEVEL_PARAM", "FAMILY_TOP_LEVEL_PARAM", "FAMILY_BASE_LEVEL_OFFSET_PARAM", "FAMILY_TOP_LEVEL_OFFSET_PARAM", "SCHEDULE_BASE_LEVEL_OFFSET_PARAM", "SCHEDULE_TOP_LEVEL_OFFSET_PARAM" });
 
       if (revitColumn.Location is LocationPoint)
       {
