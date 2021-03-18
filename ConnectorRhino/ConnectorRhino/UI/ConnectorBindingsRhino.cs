@@ -196,7 +196,6 @@ namespace SpeckleRhino
         return null;
       }
 
-
       converter.SetContextDocument(Doc);
 
       var stream = await state.Client.StreamGet(state.Stream.id);
@@ -249,156 +248,84 @@ namespace SpeckleRhino
       };
 
       // get commit layer name 
-      var layerName = Speckle.DesktopUI.Utils.Formatting.CommitLayer(stream.name, state.Branch.name, commitId);
-
-      var existingLayer = Doc.Layers.FindName(layerName);
+      var commitLayerName = Speckle.DesktopUI.Utils.Formatting.CommitLayer(stream.name, state.Branch.name, commitId);
+      var existingLayer = Doc.Layers.FindName(commitLayerName);
       if (existingLayer != null)
-      {
         Doc.Layers.Purge(existingLayer.Id, false);
-      }
-      var layerIndex = Doc.Layers.Add(layerName, System.Drawing.Color.Blue);
 
-      if (layerIndex == -1)
+      // flatten the commit object to retrieve children objs
+      var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state);
+
+      foreach (var commitObj in commitObjs)
       {
-        RaiseNotification($"Could not create layer {layerName} to bake objects into.");
-        state.Errors.Add(new Exception($"Could not create layer {layerName} to bake objects into."));
-        return state;
+        Base obj = commitObj.Item1;
+        string layerPath = commitObj.Item2;
+        
+        var converted = converter.ConvertToNative(obj) as Rhino.Geometry.GeometryBase;
+        if (converted != null)
+        {
+          Layer bakeLayer = Doc.GetLayer(layerPath, true);
+          if (bakeLayer != null)
+            Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = bakeLayer.Index });
+          else
+            state.Errors.Add(new Exception($"could not create layer {layerPath} to bake objects into."));
+        }
+        else
+          state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+            
+        updateProgressAction?.Invoke();
       }
-      currentRootLayerName = layerName;
-      HandleAndConvert(commitObject, converter, Doc.Layers.FindIndex(layerIndex), state);
 
       Doc.Views.Redraw();
-
       Doc.EndUndoRecord(undoRecord);
 
       return state;
     }
 
-    /// <summary>
-    /// Used to hold in state for the handle and convert function below.
-    /// </summary>
-    private string currentRootLayerName;
-
-    private void HandleAndConvert(object obj, ISpeckleConverter converter, Layer layer, StreamState state, Action updateProgressAction = null)
+    // Recurses through the commit object and flattens it. Returns list of Base objects with their bake layers
+    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state)
     {
-      Layer myLayer = null;
+      var objects = new List<Tuple<Base, string>>();
 
-      // The rhino layer api is a bit sucky, hence the result below. It probably can be cleaned up and optimised.
-      if (!layer.HasIndex || layer.Index == -1)
+      if (obj is Base @base)
       {
-        // Try and recreate layer structure if coming from Rhino.
-        if (layer.Name.Contains("::") || layer.FullPath.Contains("::"))
+        if (converter.CanConvertToNative(@base))
         {
-          var layers = layer.Name.Split(new string[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
-          var ancestors = new List<Layer>();
-          var currentPath = currentRootLayerName;
-          foreach (var linkName in layers)
-          {
-            currentPath += $"::{linkName}";
-            var existingIndex = Doc.Layers.FindByFullPath(currentPath, -1);
-            if (existingIndex != -1)
-            {
-              ancestors.Add(Doc.Layers[existingIndex]);
-            }
-            else
-            {
-              var newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = linkName };
-              if (ancestors.Count != 0)
-              {
-                newLayer.ParentLayerId = ancestors.Last().Id;
-              }
-              else
-              {
-                newLayer.ParentLayerId = layer.ParentLayerId;
-              }
-              var newIndex = Doc.Layers.Add(newLayer);
-              ancestors.Add(Doc.Layers[newIndex]);
-            }
-
-            layer = ancestors.Last();
-          }
+          objects.Add(new Tuple<Base, string>(@base, layer));
+          return objects;
         }
         else
         {
-          var index = Doc.Layers.Add(layer);
-          if (index == -1) // it means it exists already, and we're returning to a previously created higher level layer.
-          {
-            var fullPath = "";
-            if (layer.ParentLayerId != null)
-            {
-              var parent = Doc.Layers.FindId(layer.ParentLayerId);
-              fullPath += parent.FullPath + "::" + layer.Name;
-            }
-            var existingLayerIndex = Doc.Layers.FindByFullPath(fullPath, true);
-            layer.Index = Doc.Layers.FindIndex(existingLayerIndex).Index;
-          }
-          else
-          {
-            layer.Index = index;
-          }
-        }
-      }
+          if (@base.GetDynamicMembers().Count() == 0) // this was an unsupported geo
+            state.Errors.Add(new Exception($"Recieving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
 
-      layer = Doc.Layers.FindIndex(layer.Index);
-
-      if (obj is Base baseItem)
-      {
-        if (converter.CanConvertToNative(baseItem))
-        {
-          var converted = converter.ConvertToNative(baseItem) as Rhino.Geometry.GeometryBase;
-          if (converted != null)
+          foreach (var prop in @base.GetDynamicMembers())
           {
-            Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = layer.Index });
-          }
-          else
-          {
-            state.Errors.Add(new Exception($"Failed to convert object {baseItem.id} of type {baseItem.speckle_type}."));
-          }
-          updateProgressAction?.Invoke();
-          return;
-        }
-        else
-        {
+            // get bake layer name
+            string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
+            string rhLayerName = $"{layer}{Layer.PathSeparator}{objLayerName}";
 
-          foreach (var prop in baseItem.GetDynamicMembers())
-          {
-            var value = baseItem[prop];
-            string layerName;
-            if (prop.StartsWith("@"))
-            {
-              layerName = prop.Remove(0, 1);
-            }
-            else
-            {
-              layerName = prop;
-            }
-
-            var subLayer = new Layer() { ParentLayerId = layer.Id, Color = System.Drawing.Color.Gray, Name = $"{layerName}" };
-            HandleAndConvert(value, converter, subLayer, state, updateProgressAction);
+            objects.AddRange(FlattenCommitObject(@base[prop], converter, rhLayerName, state));
           }
-
-          return;
+          return objects;
         }
       }
 
       if (obj is List<object> list)
       {
-
         foreach (var listObj in list)
-        {
-          HandleAndConvert(listObj, converter, layer, state, updateProgressAction);
-        }
-        return;
+          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state));
+        return objects;
       }
 
       if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
-        {
-          HandleAndConvert(kvp.Value, converter, layer, state, updateProgressAction);
-        }
-        return;
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter, layer, state));
+        return objects;
       }
+
+      return objects;
     }
 
     #endregion
@@ -477,17 +404,17 @@ namespace SpeckleRhino
           converted[key] = obj.Attributes.GetUserString(key);
         }
 
-        var layerName = Doc.Layers[obj.Attributes.LayerIndex].FullPath; // sep is ::
-        string cleanLayerName = RemoveInvalidDynamicPropChars(layerName);
-        if (!cleanLayerName.Equals(layerName))
+        var layerPath = Doc.Layers[obj.Attributes.LayerIndex].FullPath; // sep is ::
+        string cleanLayerPath = RemoveInvalidDynamicPropChars(layerPath);
+        if (!cleanLayerPath.Equals(layerPath))
           renamedlayers = true;
 
-        if (commitObj[$"@{cleanLayerName}"] == null)
+        if (commitObj[$"@{cleanLayerPath}"] == null)
         {
-          commitObj[$"@{cleanLayerName}"] = new List<Base>();
+          commitObj[$"@{cleanLayerPath}"] = new List<Base>();
         }
 
-        ((List<Base>)commitObj[$"@{cleanLayerName}"]).Add(converted);
+        ((List<Base>)commitObj[$"@{cleanLayerPath}"]).Add(converted);
 
         objCount++;
       }
@@ -568,18 +495,14 @@ namespace SpeckleRhino
           objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
           break;
         case ListSelectionFilter f:
-          foreach (var layerName in f.Selection)
+          foreach (var layerPath in f.Selection)
           {
-            int layerIndex = Doc.Layers.FindByFullPath(layerName, -1);
-            if (layerIndex >= 0)
+            Layer layer = Doc.GetLayer(layerPath);
+            if (layer != null && layer.IsVisible)
             {
-              Layer layer = Doc.Layers.FindIndex(layerIndex);
-              if (layer.IsVisible)
-              {
-                var layerObjs = Doc.Objects.FindByLayer(layer)?.Select(o => o.Id.ToString());
-                if (layerObjs != null)
-                  objs.AddRange(layerObjs);
-              }
+              var layerObjs = Doc.Objects.FindByLayer(layer)?.Select(o => o.Id.ToString());
+              if (layerObjs != null)
+                objs.AddRange(layerObjs);
             }
           }
           break;
