@@ -5,15 +5,18 @@ using System.Collections.Generic;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class DirectShape : Base
+  public class DirectShape : Base , IDisplayMesh
   {
     public string name { get; set; }
     public RevitCategory category { get; set; }
+    public List<Parameter> parameters { get; set; }
+    public string elementId { get; set; }
 
     [DetachProperty]
     public List<Base> baseGeometries { get; set; }
-    public List<Parameter> parameters { get; set; }
-    public string elementId { get; set; }
+
+    [DetachProperty]
+    public Mesh displayMesh { get; set; }
 
     public DirectShape() { }
 

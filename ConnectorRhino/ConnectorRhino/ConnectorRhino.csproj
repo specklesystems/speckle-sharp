@@ -52,6 +52,7 @@
     <Compile Include="SchemaBuilder\SchemaObjectFilter.cs" />
     <Compile Include="UI\ConnectorBindingsRhino.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
@@ -81,7 +82,6 @@
       Erase "$(TargetPath)"
     </PostBuildEvent>
   </PropertyGroup>
-
   <Target Name="Clean">
     <RemoveDir Directories="$(TargetDir);$(AppData)\McNeel\Rhinoceros\6.0\Plug-ins\SpeckleRhino2 (8dd5f30b-a13d-4a24-abdc-3e05c8c87143);$(AppData)\McNeel\Rhinoceros\7.0\Plug-ins\SpeckleRhino2 (8dd5f30b-a13d-4a24-abdc-3e05c8c87143)" />
   </Target>
