@@ -283,7 +283,7 @@ namespace SpeckleRhino
     }
 
     // Recurses through the commit object and flattens it. Returns list of Base objects with their bake layers
-    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state)
+    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state, bool foundConvertibleMember = false)
     {
       var objects = new List<Tuple<Base, string>>();
 
@@ -296,17 +296,21 @@ namespace SpeckleRhino
         }
         else
         {
-          if (@base.GetDynamicMembers().Count() == 0) // this was an unsupported geo
-            state.Errors.Add(new Exception($"Recieving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
-
           foreach (var prop in @base.GetDynamicMembers())
           {
             // get bake layer name
             string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
             string rhLayerName = $"{layer}{Layer.PathSeparator}{objLayerName}";
 
-            objects.AddRange(FlattenCommitObject(@base[prop], converter, rhLayerName, state));
+            var nestedObjects = FlattenCommitObject(@base[prop], converter, rhLayerName, state, foundConvertibleMember);
+            if (nestedObjects.Count > 0)
+            {
+              objects.AddRange(nestedObjects);
+              foundConvertibleMember = true;
+            }
           }
+          if (!foundConvertibleMember && @base.speckle_type != "Base") // this was an unsupported geo
+            state.Errors.Add(new Exception($"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
           return objects;
         }
       }

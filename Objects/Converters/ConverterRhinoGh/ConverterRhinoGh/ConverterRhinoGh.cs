@@ -14,10 +14,12 @@ using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
+using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Ellipse = Objects.Geometry.Ellipse;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;
+using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
@@ -291,12 +293,18 @@ namespace Objects.Converter.RhinoGh
           // Brep conversion should always fallback to mesh if it fails.
           var b = BrepToNative(o);
           if (b == null)
-            return MeshToNative(o.displayMesh);
+            return (o.displayMesh != null) ? MeshToNative(o.displayMesh) : null;
           else
             return b;
 
         case Surface o:
           return SurfaceToNative(o);
+
+        case ModelCurve o:
+          return CurveToNative(o.baseCurve);
+
+        case DirectShape o:
+          return (o.displayMesh != null) ? MeshToNative(o.displayMesh) : null;
 
         default:
           throw new NotSupportedException();
@@ -438,6 +446,12 @@ namespace Objects.Converter.RhinoGh
           return true;
 
         case Surface _:
+          return true;
+
+        case ModelCurve _:
+          return true;
+
+        case DirectShape _:
           return true;
 
         default:

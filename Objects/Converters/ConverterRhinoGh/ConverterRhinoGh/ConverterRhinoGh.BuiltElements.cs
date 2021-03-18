@@ -22,12 +22,6 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
-    /*
-    public RH.Curve ModelCurveToNative(RV.Curve.ModelCurve curve)
-    {
-      return new RH.Curve();
-    }
-    */
 
     public Column CurveToSpeckleColumn(RH.Curve curve)
     {
@@ -103,11 +97,6 @@ namespace Objects.Converter.RhinoGh
       string type = "Default";
       try { family = args[0]; type = args[1]; } catch { }
       return new RV.RevitFaceWall(family, type, BrepToSpeckle(brep), null) { units = ModelUnits };
-    }
-
-    public object DirectShapeToNative(RV.DirectShape shape)
-    {
-      return new object();
     }
 
     public RV.DirectShape BrepToDirectShape(RH.Brep brep, string[] args)
