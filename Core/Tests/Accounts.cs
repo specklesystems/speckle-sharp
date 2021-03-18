@@ -11,6 +11,8 @@ namespace Tests
   {
     Account TestAccount1, TestAccount2;
 
+    Account TestAccount3;
+
     [SetUp]
     public void SetUp()
     {
@@ -44,8 +46,27 @@ namespace Tests
         }
       };
 
+      TestAccount3 = new Account
+      {
+        token = "secret",
+        serverInfo = new ServerInfo
+        {
+          url = "https://sample.com",
+          name = "qux"
+        },
+        userInfo = new UserInfo
+        {
+          email = "six@five.com",
+          id = "123345",
+          name = "Test Account 3"
+        }
+      };
+
+
+
       Fixtures.UpdateOrSaveAccount(TestAccount1);
       Fixtures.UpdateOrSaveAccount(TestAccount2);
+      Fixtures.SaveLocalAccount(TestAccount3);
     }
 
     [TearDown]
@@ -53,13 +74,14 @@ namespace Tests
     {
       Fixtures.DeleteLocalAccount(TestAccount1.id);
       Fixtures.DeleteLocalAccount(TestAccount2.id);
+      Fixtures.DeleteLocalAccountFile();
     }
 
     [Test]
     public void GetAllAccounts()
     {
       var accs = AccountManager.GetAccounts();
-      Assert.GreaterOrEqual(accs.Count(), 2); // Tests are adding two accounts, you might have extra accounts on your machine when testing :D 
+      Assert.GreaterOrEqual(accs.Count(), 3); // Tests are adding three accounts, you might have extra accounts on your machine when testing :D 
     }
 
     [Test]
@@ -71,6 +93,15 @@ namespace Tests
       Assert.AreEqual("qux", accs[0].serverInfo.company);
       Assert.AreEqual("baz", accs[0].serverInfo.url);
       Assert.AreEqual("foo", accs[0].refreshToken);
+    }
+
+    [Test]
+    public void GetLocalAccount()
+    {
+      var acc = AccountManager.GetAccounts().Where(x => x.userInfo.id == "123345").FirstOrDefault();
+
+      Assert.AreEqual("https://sample.com", acc.serverInfo.url);
+      Assert.AreEqual("secret", acc.token);
     }
   }
 }

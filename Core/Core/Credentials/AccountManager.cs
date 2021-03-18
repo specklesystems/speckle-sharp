@@ -10,6 +10,7 @@ using GraphQL.Client.Http;
 using System.Linq;
 using Speckle.Core.Logging;
 using Speckle.Core.Api.GraphQL.Serializer;
+using System.IO;
 
 namespace Speckle.Core.Credentials
 {
@@ -109,11 +110,50 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     public static IEnumerable<Account> GetAccounts()
     {
-      var _accs = AccountStorage.GetAllObjects();
-      foreach (var _acc in _accs)
+      var sqlAccounts = AccountStorage.GetAllObjects().Select(x => JsonConvert.DeserializeObject<Account>(x));
+      var localAccounts = GetLocalAccounts();
+
+      var allAccounts = sqlAccounts.Concat(localAccounts);
+
+      return allAccounts;
+    }
+
+    /// <summary>
+    /// Gets the local accounts
+    /// These are accounts not handled by Manager and are stored in json format in a local directory
+    /// </summary>
+    /// <returns></returns>
+    private static IEnumerable<Account> GetLocalAccounts()
+    {
+      var accounts = new List<Account>();
+      var accountsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Accounts");
+      if (!Directory.Exists(accountsDir))
       {
-        yield return JsonConvert.DeserializeObject<Account>(_acc);
+        return accounts;
       }
+      var files = Directory.GetFiles(accountsDir, "*.json", SearchOption.AllDirectories);
+      foreach (var file in files)
+      {
+        try
+        {
+          var json = File.ReadAllText(file);
+          var account = JsonConvert.DeserializeObject<Account>(json);
+
+          if (
+            !string.IsNullOrEmpty(account.token) &&
+            !string.IsNullOrEmpty(account.userInfo.id) &&
+            !string.IsNullOrEmpty(account.userInfo.email) &&
+            !string.IsNullOrEmpty(account.userInfo.name) &&
+            !string.IsNullOrEmpty(account.serverInfo.url) &&
+            !string.IsNullOrEmpty(account.serverInfo.name)
+            )
+            accounts.Add(account);
+        }
+        catch
+        { //ignore it
+        }
+      }
+      return accounts;
     }
 
   }
