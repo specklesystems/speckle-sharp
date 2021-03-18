@@ -22,6 +22,7 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
+
     public Column CurveToSpeckleColumn(RH.Curve curve)
     {
       return new Column((ICurve)ConvertToSpeckle(curve)) { units = ModelUnits };

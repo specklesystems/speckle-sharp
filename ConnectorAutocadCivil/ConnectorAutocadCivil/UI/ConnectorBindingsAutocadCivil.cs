@@ -235,7 +235,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
           }
 
           // flatten the commit object to retrieve children objs
-          var commitObjs = FlattenCommitObject(commitObject, converter, layerPrefix, state);
+          int count = 0;
+          var commitObjs = FlattenCommitObject(commitObject, converter, layerPrefix, state, ref count);
 
           foreach (var commitObj in commitObjs)
           {
@@ -282,13 +283,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return state;
     }
 
-    /// <summary>
-    /// Recurses through the commit object and flattens it. 
-    /// </summary>
-    /// <param name="obj"></param>
-    /// <param name="converter"></param>
-    /// <returns>List of Base objects with their bake layers</returns>
-    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state)
+    // Recurses through the commit object and flattens it. Returns list of Base objects with their bake layers
+    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state, ref int count, bool foundConvertibleMember = false)
     {
       var objects = new List<Tuple<Base, string>>();
 
@@ -301,40 +297,41 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
         else
         {
-          if (@base.GetDynamicMembers().Count() == 0) // this was an unsupported geo
-            state.Errors.Add(new Exception($"Recieving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
-
+          int totalMembers = @base.GetDynamicMembers().Count();
           foreach (var prop in @base.GetDynamicMembers())
           {
-            // get acad bake layer name
-            string objLayerName;
-            if (prop.StartsWith("@"))
-              objLayerName = prop.Remove(0, 1);
-            else
-              objLayerName = prop;
+            count++;
+
+            // get bake layer name
+            string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
             string acLayerName = $"{layer}${objLayerName}";
 
-            objects.AddRange(FlattenCommitObject(@base[prop], converter, acLayerName, state));
+            var nestedObjects = FlattenCommitObject(@base[prop], converter, acLayerName, state, ref count, foundConvertibleMember);
+            if (nestedObjects.Count > 0)
+            {
+              objects.AddRange(nestedObjects);
+              foundConvertibleMember = true;
+            }
           }
+          if (!foundConvertibleMember && count == totalMembers ) // this was an unsupported geo
+            state.Errors.Add(new Exception($"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
           return objects;
         }
       }
 
       if (obj is List<object> list)
       {
+        count = 0;
         foreach (var listObj in list)
-        {
-          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state));
-        }
+          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count )) ;
         return objects;
       }
 
       if (obj is IDictionary dict)
       {
+        count = 0;
         foreach (DictionaryEntry kvp in dict)
-        {
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter, layer, state));
-        }
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter, layer, state, ref count));
         return objects;
       }
 
