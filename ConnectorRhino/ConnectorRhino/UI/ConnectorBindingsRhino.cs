@@ -254,7 +254,8 @@ namespace SpeckleRhino
         Doc.Layers.Purge(existingLayer.Id, false);
 
       // flatten the commit object to retrieve children objs
-      var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state);
+      int count = 0;
+      var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state, ref count);
 
       foreach (var commitObj in commitObjs)
       {
@@ -266,12 +267,17 @@ namespace SpeckleRhino
         {
           Layer bakeLayer = Doc.GetLayer(layerPath, true);
           if (bakeLayer != null)
-            Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = bakeLayer.Index });
+          {
+            if (Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = bakeLayer.Index }) == Guid.Empty)
+              state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
+          }
           else
-            state.Errors.Add(new Exception($"could not create layer {layerPath} to bake objects into."));
+            state.Errors.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
         }
         else
+        {
           state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+        }
             
         updateProgressAction?.Invoke();
       }
@@ -283,7 +289,7 @@ namespace SpeckleRhino
     }
 
     // Recurses through the commit object and flattens it. Returns list of Base objects with their bake layers
-    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state, bool foundConvertibleMember = false)
+    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state, ref int count, bool foundConvertibleMember = false)
     {
       var objects = new List<Tuple<Base, string>>();
 
@@ -296,20 +302,23 @@ namespace SpeckleRhino
         }
         else
         {
+          int totalMembers = @base.GetDynamicMembers().Count();
           foreach (var prop in @base.GetDynamicMembers())
           {
+            count++;
+
             // get bake layer name
             string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
             string rhLayerName = $"{layer}{Layer.PathSeparator}{objLayerName}";
 
-            var nestedObjects = FlattenCommitObject(@base[prop], converter, rhLayerName, state, foundConvertibleMember);
+            var nestedObjects = FlattenCommitObject(@base[prop], converter, rhLayerName, state, ref count, foundConvertibleMember);
             if (nestedObjects.Count > 0)
             {
               objects.AddRange(nestedObjects);
               foundConvertibleMember = true;
             }
           }
-          if (!foundConvertibleMember && @base.speckle_type != "Base") // this was an unsupported geo
+          if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
             state.Errors.Add(new Exception($"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
           return objects;
         }
@@ -317,15 +326,17 @@ namespace SpeckleRhino
 
       if (obj is List<object> list)
       {
+        count = 0;
         foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state));
+          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count));
         return objects;
       }
 
       if (obj is IDictionary dict)
       {
+        count = 0;
         foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter, layer, state));
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter, layer, state, ref count));
         return objects;
       }
 
