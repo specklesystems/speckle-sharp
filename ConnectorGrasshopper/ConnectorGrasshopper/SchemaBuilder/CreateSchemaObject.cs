@@ -288,7 +288,7 @@ namespace ConnectorGrasshopper
 
       var outputObject = SelectedConstructor.Invoke(cParamsValues.ToArray());
 
-      ((Base)outputObject).applicationId = $"{Seed}-{SelectedConstructor.Name}-{DA.Iteration}";
+      ((Base)outputObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
       ((Base)outputObject).units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
 
       DA.SetData(0, new GH_SpeckleBase() { Value = outputObject as Base });
