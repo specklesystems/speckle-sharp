@@ -128,6 +128,8 @@ namespace ConnectorGrasshopper
     {
       // get property name and value
       Type propType = param.ParameterType;
+      if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Nullable<>))
+        propType = Nullable.GetUnderlyingType(propType);
 
       string propName = param.Name;
       object propValue = param;
