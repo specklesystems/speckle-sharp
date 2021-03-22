@@ -118,11 +118,6 @@ namespace Speckle.Core.Credentials
       Uri uri = new Uri(streamUrl);
       ServerUrl = uri.GetLeftPart(UriPartial.Authority);
 
-      if (uri.Segments.Length < 3)
-      {
-        throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
-      }
-
       switch (uri.Segments.Length)
       {
         case 3: // ie http://speckle.server/streams/8fecc9aa6d
@@ -158,6 +153,9 @@ namespace Speckle.Core.Credentials
           }
 
           break;
+
+        default:
+          throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
       }
     }
 

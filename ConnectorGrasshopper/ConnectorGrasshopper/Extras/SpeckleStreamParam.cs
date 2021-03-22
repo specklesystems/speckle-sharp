@@ -70,7 +70,6 @@ namespace ConnectorGrasshopper.Extras
     public override bool CastFrom(object source)
     {
       var t = source.GetType();
-      var tt = t;
 
       if(source is GH_String ghStr)
       {
@@ -81,7 +80,7 @@ namespace ConnectorGrasshopper.Extras
         }
         catch
         {
-          return false;
+          throw;
         }
       }
 
