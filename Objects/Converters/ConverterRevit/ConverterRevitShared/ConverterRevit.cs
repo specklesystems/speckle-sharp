@@ -236,6 +236,10 @@ namespace Objects.Converter.Revit
         case BE.Revit.RevitRailing o:
           return RailingToNative(o);
 
+        case BER.ParameterUpdater o:
+          UpdateParameter(o);
+          return null;
+
         default:
           return null;
       }
@@ -394,6 +398,9 @@ namespace Objects.Converter.Revit
           return true;
 
         case BE.Revit.RevitRailing _:
+          return true;
+
+        case BER.ParameterUpdater _:
           return true;
 
         default:
