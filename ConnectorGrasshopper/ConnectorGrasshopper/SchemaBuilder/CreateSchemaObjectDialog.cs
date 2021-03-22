@@ -226,7 +226,10 @@ namespace ConnectorGrasshopper
         {
           var inputDesc = p.GetCustomAttribute<SchemaParamInfo>();
           var d = inputDesc != null ? $": {inputDesc.Description}" : "";
-          description += $"\n- {p.Name} ({p.ParameterType.Name}){d}";
+          var type = p.ParameterType;
+          if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            type = Nullable.GetUnderlyingType(type);
+          description += $"\n- {p.Name} ({type.Name}){d}";
           if (p.IsOptional)
           {
             var def = p.DefaultValue == null ? "null" : p.DefaultValue.ToString();
