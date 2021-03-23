@@ -39,16 +39,19 @@ namespace Objects.Converter.Revit
     }
 
     /// <summary>
-    /// Returns a merged face and vertex array representing the provided element, if possible.
+    /// Returns a mesh representing the provided element, if possible.
     /// </summary>
     /// <param name="elem">Element you want a mesh from.</param>
     /// <param name="opt">The view options to use</param>
     /// <param name="useOriginGeom4FamilyInstance">Whether to refer to the orignal geometry of the family (if it's a family).</param>
     /// <returns></returns>
-    public (List<int>, List<double>) GetFaceVertexArrayFromElement(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
+    public Mesh GetElementDisplayMesh(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
     {
+      var mesh = new Mesh();
+      mesh.units = ModelUnits;
       var solids = GetElementSolids(elem, opt, useOriginGeom4FamilyInstance);
-      return GetFaceVertexArrFromSolids(solids);
+      (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(solids);
+      return mesh;
     }
 
     /// <summary>

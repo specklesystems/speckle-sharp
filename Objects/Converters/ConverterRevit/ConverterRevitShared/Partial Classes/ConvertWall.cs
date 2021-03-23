@@ -140,7 +140,7 @@ namespace Objects.Converter.Revit
       speckleWall.flipped = revitWall.Flipped;
 
       if (revitWall.CurtainGrid == null)
-        speckleWall.displayMesh = GetWallDisplayMesh(revitWall);
+        speckleWall.displayMesh = GetElementDisplayMesh(revitWall, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       else
       {
         // curtain walls have two meshes, one for panels and one for mullions
@@ -195,15 +195,6 @@ namespace Objects.Converter.Revit
 
 
       return (meshPanels, meshMullions);
-    }
-
-    private Mesh GetWallDisplayMesh(DB.Wall wall)
-    {
-      var mesh = new Mesh();
-      (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(wall, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-      mesh.units = ModelUnits;
-      return mesh;
-
     }
 
   }
