@@ -100,7 +100,7 @@ namespace ConverterRevitTests
           }
           catch (Exception e)
           {
-            converter.ConversionErrors.Add(new Error(e.Message, e.StackTrace));
+            converter.ConversionErrors.Add(new Exception(e.Message, e));
           }
 
           if (res is List<ApplicationPlaceholderObject> apls)
