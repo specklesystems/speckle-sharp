@@ -518,7 +518,7 @@ namespace Speckle.DesktopUI.Utils
 
       Client.OnStreamUpdated += HandleStreamUpdated;
       Client.OnCommitCreated += HandleCommitCreated;
-      Client.OnCommitDeleted += HandleCommitCreated;
+      Client.OnCommitDeleted += HandleCommitDeleted;
       Client.OnCommitUpdated += HandleCommitUpdated;
       // BUG: due to subs bug, these all have to be handled by fetching new list from server
       Client.OnBranchCreated += HandleBranchCreated;

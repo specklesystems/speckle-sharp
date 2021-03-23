@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
-using Speckle.Core.Models;
 using Stylet;
 
 namespace Speckle.DesktopUI.Utils
@@ -121,12 +121,17 @@ namespace Speckle.DesktopUI.Utils
       var binfo = Branches.FirstOrDefault(b => b.name == info.branchName);
       var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
 
-      if (Branch.name == info.branchName)
-      {
-        Branch = binfo;
-      }
-
       ServerUpdateSummary = $"{cinfo.authorName} sent new data on branch {info.branchName}: {info.message}";
+      ServerUpdates = true;
+    }
+
+    private async void HandleCommitDeleted(object sender, CommitInfo info)
+    {
+      Branches = await Client.StreamGetBranches(Stream.id);
+
+      if ( IsSenderCard ) return;
+
+      ServerUpdateSummary = $"Commit {info.id} has been deleted";
       ServerUpdates = true;
     }
 
