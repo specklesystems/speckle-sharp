@@ -107,7 +107,7 @@ namespace Objects.Converter.Revit
 
           if (!CanConvertToNative(obj))
           {
-            ConversionErrors.Add(new Exception($"Skipping {obj.speckle_type}, not supported"));
+            ConversionErrors.Add(new Exception($"Skipping not supported type: {obj.speckle_type}"));
             continue;
           }
 

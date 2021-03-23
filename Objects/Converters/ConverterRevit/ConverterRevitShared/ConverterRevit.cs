@@ -152,7 +152,7 @@ namespace Objects.Converter.Revit
           returnObject = ElementTypeToSpeckle(o);
           break;
         default:
-          ConversionErrors.Add(new Exception("Type not supported\nCannot convert {@object.GetType()} to Speckle"));
+          ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
           returnObject = null;
           break;
       }
@@ -166,6 +166,15 @@ namespace Objects.Converter.Revit
       }
 
       return returnObject;
+    }
+
+    private string GetElemInfo(object o)
+    {
+      if (o is Element e)
+      {
+        return $", name: {e.Name}, id: {e.UniqueId}";
+      }
+      return "";
     }
 
     public object ConvertToNative(Base @object)

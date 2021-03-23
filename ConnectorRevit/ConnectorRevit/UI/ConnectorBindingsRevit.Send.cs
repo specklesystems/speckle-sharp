@@ -78,7 +78,7 @@ namespace Speckle.ConnectorRevit.UI
 
           if (!converter.CanConvertToSpeckle(revitElement))
           {
-            state.Errors.Add(new Exception($"Skipping {revitElement.GetType()} - {revitElement.Name}, not supported"));
+            state.Errors.Add(new Exception($"Skipping not supported type: {revitElement.GetType()}, name {revitElement.Name}"));
             continue;
           }
 

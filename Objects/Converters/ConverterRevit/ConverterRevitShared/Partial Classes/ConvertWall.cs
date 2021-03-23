@@ -123,7 +123,7 @@ namespace Objects.Converter.Revit
       var baseGeometry = LocationToSpeckle(revitWall);
       if (baseGeometry is Geometry.Point)
       {
-        ConversionErrors.Add(new Exception("Failed to convert wall by point. Currently not supported."));
+        ConversionErrors.Add(new Exception($"Skipping not supported wall: point based wall, name:{revitWall.Name}, id:{revitWall.Id}"));
         return null;
       }
 
