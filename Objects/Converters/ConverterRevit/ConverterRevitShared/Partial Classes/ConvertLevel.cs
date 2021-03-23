@@ -37,7 +37,7 @@ namespace Objects.Converter.Revit
           return existingLevel;
         else
         {
-          ConversionErrors.Add(new Error { message = $"Could not find level '{speckleLevel.name}' in this document." });
+          ConversionErrors.Add(new Exception($"Could not find level '{speckleLevel.name}' in this document."));
           return null;
         }
       }
@@ -101,7 +101,7 @@ namespace Objects.Converter.Revit
         return revitLevel;
       }
 
-      ConversionErrors.Add(new Error($"Could not find level `{name}`", "A default level will be used."));
+      ConversionErrors.Add(new Exception($"Could not find level `{name}`, a default level will be used."));
 
       return collector.FirstOrDefault();
     }

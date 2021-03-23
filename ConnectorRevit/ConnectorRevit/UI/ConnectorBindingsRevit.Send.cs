@@ -78,7 +78,7 @@ namespace Speckle.ConnectorRevit.UI
 
           if (!converter.CanConvertToSpeckle(revitElement))
           {
-            state.Errors.Add(new Exception($"Skipping {revitElement.GetType()} - {revitElement.Name}, not supported"));
+            state.Errors.Add(new Exception($"Skipping not supported type: {revitElement.GetType()}, name {revitElement.Name}"));
             continue;
           }
 
@@ -114,8 +114,8 @@ namespace Speckle.ConnectorRevit.UI
       if (converter.ConversionErrors.Count != 0)
       {
         // TODO: Get rid of the custom Error class. It's not needed.
-        ConversionErrors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.details}")));
-        state.Errors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.details}")));
+        ConversionErrors.AddRange(converter.ConversionErrors);
+        state.Errors.AddRange(converter.ConversionErrors);
       }
 
       if (convertedCount == 0)

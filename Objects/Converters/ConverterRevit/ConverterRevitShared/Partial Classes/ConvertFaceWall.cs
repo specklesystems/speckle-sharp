@@ -25,7 +25,7 @@ namespace Objects.Converter.Revit
       }
 
       // Cannot update revit wall to new mass face
-      FaceWall revitWall = GetExistingElementByApplicationId(speckleWall.applicationId)as DB.FaceWall;
+      FaceWall revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.FaceWall;
       if (revitWall != null)
       {
         Doc.Delete(revitWall.Id);
@@ -34,14 +34,14 @@ namespace Objects.Converter.Revit
       var famPath = Path.Combine(Doc.Application.FamilyTemplatePath, @"Conceptual Mass\Metric Mass.rft");
       if (!File.Exists(famPath))
       {
-        ConversionErrors.Add(new Error { message = $"Could not find file Metric Mass.rft" });
+        ConversionErrors.Add(new Exception($"Could not find file Metric Mass.rft"));
         return null;
       }
 
       var tempMassFamilyPath = CreateMassFamily(famPath, speckleWall.surface, speckleWall.applicationId);
       Family fam;
       Doc.LoadFamily(tempMassFamilyPath, new FamilyLoadOption(), out fam);
-      var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First())as FamilySymbol;
+      var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;
       symbol.Activate();
 
       try
@@ -73,7 +73,7 @@ namespace Objects.Converter.Revit
       var wallType = GetElementType<WallType>(speckleWall);
       if (!FaceWall.IsWallTypeValidForFaceWall(Doc, wallType.Id))
       {
-        ConversionErrors.Add(new Error { message = $"Wall type not valid for face wall ${speckleWall.applicationId}." });
+        ConversionErrors.Add(new Exception($"Wall type not valid for face wall ${speckleWall.applicationId}."));
         return null;
       }
 
@@ -87,7 +87,7 @@ namespace Objects.Converter.Revit
 
       if (revitWall == null)
       {
-        ConversionErrors.Add(new Error { message = $"Failed to create face wall ${speckleWall.applicationId}." });
+        ConversionErrors.Add(new Exception($"Failed to create face wall ${speckleWall.applicationId}."));
         return null;
       }
 
@@ -143,7 +143,7 @@ namespace Objects.Converter.Revit
     {
       var famDoc = Doc.Application.NewFamilyDocument(famPath);
 
-      using(Transaction t = new Transaction(famDoc, "Create Mass"))
+      using (Transaction t = new Transaction(famDoc, "Create Mass"))
       {
         t.Start();
 

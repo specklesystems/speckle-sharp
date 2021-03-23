@@ -65,7 +65,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception ex)
       {
-        ConversionErrors.Add(new Error($"Could not create openings in floor {speckleFloor.applicationId}", ex.Message));
+        ConversionErrors.Add(new Exception($"Could not create openings in floor {speckleFloor.applicationId}", ex));
       }
 
       SetInstanceParameters(revitFloor, speckleFloor);

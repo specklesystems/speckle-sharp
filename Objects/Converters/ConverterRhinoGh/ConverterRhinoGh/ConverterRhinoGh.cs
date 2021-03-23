@@ -41,7 +41,7 @@ namespace Objects.Converter.RhinoGh
 
     public IEnumerable<string> GetServicedApplications() => new string[] { Applications.Rhino, Applications.Grasshopper };
 
-    public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
+    public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
     public RhinoDoc Doc { get; private set; }
 

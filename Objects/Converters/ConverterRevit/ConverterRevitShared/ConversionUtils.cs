@@ -107,7 +107,7 @@ namespace Objects.Converter.Revit
 
           if (!CanConvertToNative(obj))
           {
-            ConversionErrors.Add(new Error { message = $"Skipping {obj.speckle_type}, not supported" });
+            ConversionErrors.Add(new Exception($"Skipping not supported type: {obj.speckle_type}"));
             continue;
           }
 
@@ -125,7 +125,7 @@ namespace Objects.Converter.Revit
           }
           catch (Exception e)
           {
-            ConversionErrors.Add(new Error { message = $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}" });
+            ConversionErrors.Add(new Exception($"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"));
           }
         }
 
@@ -411,7 +411,7 @@ namespace Objects.Converter.Revit
       match = types.FirstOrDefault(x => x.FamilyName == family);
       if (match != null)
       {
-        ConversionErrors.Add(new Error($"Missing type: {family} {type}", $"Type was replace with: {match.FamilyName} - {match.Name}"));
+        ConversionErrors.Add(new Exception($"Missing type: {family} {type}\nType was replace with: {match.FamilyName} - {match.Name}"));
         if (match != null)
         {
           if (match is FamilySymbol fs && !fs.IsActive)
@@ -427,7 +427,7 @@ namespace Objects.Converter.Revit
       if (types.Any())
       {
         match = types.FirstOrDefault();
-        ConversionErrors.Add(new Error($"Missing family and type", $"The following family and type were used: {match.FamilyName} - {match.Name}"));
+        ConversionErrors.Add(new Exception($"Missing family and type\nThe following family and type were used: {match.FamilyName} - {match.Name}"));
         if (match != null)
         {
           if (match is FamilySymbol fs && !fs.IsActive)
@@ -486,7 +486,7 @@ namespace Objects.Converter.Revit
       {
         match = types.FirstOrDefault(x => x.FamilyName == family);
         if (match != null) //inform user that the type is different!
-          ConversionErrors.Add(new Error($"Missing type. Family: {family} Type: {type}", $"Type was replaced with: {match.FamilyName}, {match.Name}"));
+          ConversionErrors.Add(new Exception($"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}"));
 
       }
       if (match == null) // okay, try something!
@@ -495,7 +495,7 @@ namespace Objects.Converter.Revit
           match = types.Cast<WallType>().Where(o => o.Kind == WallKind.Basic).Cast<ElementType>().FirstOrDefault();
         if (match == null)
           match = types.First();
-        ConversionErrors.Add(new Error($"Missing type. Family: {family} Type: {type}", $"Type was replaced with: {match.FamilyName}, {match.Name}"));
+        ConversionErrors.Add(new Exception($"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}"));
       }
 
       if (match is FamilySymbol fs && !fs.IsActive)

@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BE = Objects.BuiltElements;
@@ -15,7 +16,7 @@ namespace Objects.Converter.Revit
 #if REVIT2021
     public static string RevitAppName = Applications.Revit2021;
 #elif REVIT2020
-      public static string RevitAppName = Applications.Revit2020;
+    public static string RevitAppName = Applications.Revit2020;
 #else
     public static string RevitAppName = Applications.Revit2019;
 #endif
@@ -55,7 +56,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     public List<string> ConvertedObjectsList { get; set; } = new List<string>();
 
-    public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
+    public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
 
@@ -151,7 +152,7 @@ namespace Objects.Converter.Revit
           returnObject = ElementTypeToSpeckle(o);
           break;
         default:
-          ConversionErrors.Add(new Error("Type not supported", $"Cannot convert {@object.GetType()} to Speckle"));
+          ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
           returnObject = null;
           break;
       }
@@ -165,6 +166,15 @@ namespace Objects.Converter.Revit
       }
 
       return returnObject;
+    }
+
+    private string GetElemInfo(object o)
+    {
+      if (o is Element e)
+      {
+        return $", name: {e.Name}, id: {e.UniqueId}";
+      }
+      return "";
     }
 
     public object ConvertToNative(Base @object)
