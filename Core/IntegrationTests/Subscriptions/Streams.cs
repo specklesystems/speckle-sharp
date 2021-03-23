@@ -11,7 +11,6 @@ namespace TestsIntegration.Subscriptions
   public class Streams
   {
     public Client client;
-    public ServerInfo testServer;
     public Account testUserAccount;
 
     private StreamInfo StreamAddedInfo;
@@ -22,8 +21,7 @@ namespace TestsIntegration.Subscriptions
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo { url = "https://testing.speckle.dev", name = "TestServer" };
-      testUserAccount = Fixtures.SeedUser(testServer);
+      testUserAccount = Fixtures.SeedUser();
       client = new Client(testUserAccount);
     }
 

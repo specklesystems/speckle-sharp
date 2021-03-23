@@ -14,7 +14,9 @@ namespace TestsIntegration
 {
   public static class Fixtures
   {
-    public static Account SeedUser(ServerInfo server)
+    public static readonly ServerInfo Server = new ServerInfo { url = "https://latest.speckle.dev", name = "Test Server" };
+    
+    public static Account SeedUser()
     {
       var seed = Guid.NewGuid().ToString().ToLower();
       var user = new Dictionary<string, string>();
@@ -22,7 +24,7 @@ namespace TestsIntegration
       user["password"] = "12ABC3456789DEF0GHO";
       user["name"] = $"{seed.Substring(0, 5)} Name";
 
-      var registerRequest = (HttpWebRequest)WebRequest.Create($"{server.url}/auth/local/register?challenge=challengingchallenge");
+      var registerRequest = (HttpWebRequest)WebRequest.Create($"{Server.url}/auth/local/register?challenge=challengingchallenge");
       registerRequest.Method = "POST";
       registerRequest.ContentType = "application/json";
       registerRequest.AllowAutoRedirect = false;
@@ -55,7 +57,7 @@ namespace TestsIntegration
         }
       }
 
-      var tokenRequest = (HttpWebRequest)WebRequest.Create($"{server.url}/auth/token");
+      var tokenRequest = (HttpWebRequest)WebRequest.Create($"{Server.url}/auth/token");
       tokenRequest.Method = "POST";
       tokenRequest.ContentType = "application/json";
 
@@ -85,8 +87,8 @@ namespace TestsIntegration
         deserialised = JsonConvert.DeserializeObject<Dictionary<string, string>>(text);
       }
 
-      var acc = new Account { token = deserialised["token"], userInfo = new UserInfo { id = user["name"], email = user["email"] }, serverInfo = server };
-      var client = new Speckle.Core.Api.Client(acc);
+      var acc = new Account { token = deserialised["token"], userInfo = new UserInfo { id = user["name"], email = user["email"] }, serverInfo = Server };
+      var client = new Client(acc);
 
       var user1 = client.UserGet().Result;
       acc.userInfo.id = user1.id;
