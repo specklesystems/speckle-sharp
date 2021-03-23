@@ -37,10 +37,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleStair, revitStair, new List<string> { "STAIRS_BASE_LEVEL_PARAM", "STAIRS_TOP_LEVEL_PARAM" });
 
-      var mesh = new Geometry.Mesh();
-      (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitStair, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-
-      speckleStair.displayMesh = mesh;
+      speckleStair.displayMesh = GetElementDisplayMesh(revitStair, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       return speckleStair;
     }
