@@ -48,8 +48,7 @@ namespace Objects.Converter.Revit
             converted.AddRange(rMesh);
             break;
           default:
-            ConversionErrors.Add(new Error("Incompatible geometry type",
-              $"Type ${b.GetType()} is not supported in DirectShape conversions."));
+            ConversionErrors.Add(new Exception($"Incompatible geometry type: {b.GetType()} is not supported in DirectShape conversions."));
             break;
         }
       });
@@ -93,7 +92,7 @@ namespace Objects.Converter.Revit
       try
       {
         var solid = BrepToNative(brep);
-        if (solid == null)throw new SpeckleException("Could not convert brep to native");
+        if (solid == null) throw new SpeckleException("Could not convert brep to native");
         revitDs.SetShape(new List<GeometryObject> { solid });
       }
       catch (Exception e)
@@ -145,9 +144,9 @@ namespace Objects.Converter.Revit
           return obj
           switch
           {
-          DB.Mesh mesh => MeshToSpeckle(mesh),
-          Solid solid => BrepToSpeckle(solid),
-          _ => null
+            DB.Mesh mesh => MeshToSpeckle(mesh),
+            Solid solid => BrepToSpeckle(solid),
+            _ => null
           };
         });
       var speckleAc = new DirectShape(

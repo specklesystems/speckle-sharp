@@ -62,7 +62,7 @@ namespace Objects.Converter.Revit
           }
           else
           {
-            ConversionErrors.Add(new Error("Cannot create Opening", "Opening type not supported"));
+            ConversionErrors.Add(new Exception("Cannot create Opening, opening type not supported"));
             throw new Speckle.Core.Logging.SpeckleException("Opening type not supported");
           }
           break;

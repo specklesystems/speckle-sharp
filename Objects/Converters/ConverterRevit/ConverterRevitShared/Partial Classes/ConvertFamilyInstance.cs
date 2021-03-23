@@ -162,7 +162,8 @@ namespace Objects.Converter.Revit
       var basePoint = baseGeometry as Point;
       if (basePoint == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only point based Family Instances are currently supported.");
+        ConversionErrors.Add(new Exception($"Only point based Family Instances are currently supported.\nName: {revitFi.Name}, ID: {revitFi.Id}"));
+        return null;
       }
 
       var lev1 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_LEVEL_PARAM);

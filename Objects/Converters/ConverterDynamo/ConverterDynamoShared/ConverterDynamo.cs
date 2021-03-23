@@ -31,7 +31,7 @@ namespace Objects.Converter.Dynamo
 
     public IEnumerable<string> GetServicedApplications() => new string[] { Applications.DynamoRevit, Applications.DynamoSandbox };
 
-    public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
+    public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
 #if REVIT
     public Document Doc { get; private set; }

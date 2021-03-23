@@ -13,7 +13,7 @@ namespace Speckle.Core.Kits
     string Author { get; }
     string WebsiteOrEmail { get; }
 
-    public HashSet<Error> ConversionErrors { get; }
+    public HashSet<Exception> ConversionErrors { get; }
 
     /// <summary>
     /// Converts a native object to a Speckle one

@@ -109,7 +109,7 @@ namespace Objects.Converter.Revit
         }
         catch (Exception)
         {
-          ConversionErrors.Add(new Error("Detail curve creation failed", $"View is not valid for detail curve creation."));
+          ConversionErrors.Add(new Exception($"Detail curve creation failed\nView is not valid for detail curve creation."));
           throw;
         }
 
@@ -120,8 +120,8 @@ namespace Objects.Converter.Revit
           revitCurve.LineStyle = Doc.GetElement(lineStyleId);
         }
         placeholders.Add(new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
-      } 
-      
+      }
+
       return placeholders;
 
     }
@@ -151,10 +151,11 @@ namespace Objects.Converter.Revit
       {
         var res = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0)), baseCurve, Doc.ActiveView).get_Item(0);
         return new ApplicationPlaceholderObject()
-          {applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res};      }
+        { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res };
+      }
       catch (Exception)
       {
-        ConversionErrors.Add(new Error("Room boundary line creation failed", $"View is not valid for room boundary line creation."));
+        ConversionErrors.Add(new Exception("Room boundary line creation failed\nView is not valid for room boundary line creation."));
         throw;
       }
 

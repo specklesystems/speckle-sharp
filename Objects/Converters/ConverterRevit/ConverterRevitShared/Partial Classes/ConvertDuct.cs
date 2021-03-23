@@ -39,7 +39,7 @@ namespace Objects.Converter.Revit
       if (system == null)
       {
         system = types.FirstOrDefault();
-        ConversionErrors.Add(new Error { message = $"Duct type {systemFamily} not found; replaced with {system.Name}" });
+        ConversionErrors.Add(new Exception($"Duct type {systemFamily} not found; replaced with {system.Name}"));
       }
 
       var docObj = GetExistingElementByApplicationId(((Base)speckleDuct).applicationId);

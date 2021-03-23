@@ -110,7 +110,7 @@ namespace Speckle.ConnectorRevit.UI
 
           t.Commit();
 
-          state.Errors.AddRange(converter.ConversionErrors.Select(e => new Exception($"{e.message}: {e.details}")));
+          state.Errors.AddRange(converter.ConversionErrors);
         }
 
       });
@@ -122,7 +122,7 @@ namespace Speckle.ConnectorRevit.UI
         //wait to let queue finish
       }
 
-      if (converter.ConversionErrors.LastOrDefault()?.details == "Fatal Error")
+      if (converter.ConversionErrors.Any(x => x.Message.Contains("fatal error")))
       {
         // the commit is being rolled back
         return null;

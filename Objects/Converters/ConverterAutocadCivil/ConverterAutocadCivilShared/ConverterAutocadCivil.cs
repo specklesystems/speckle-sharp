@@ -46,7 +46,7 @@ namespace Objects.Converter.AutocadCivil
 
     public IEnumerable<string> GetServicedApplications() => new string[] { AutocadAppName };
 
-    public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
+    public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
     #endregion ISpeckleConverter props
 

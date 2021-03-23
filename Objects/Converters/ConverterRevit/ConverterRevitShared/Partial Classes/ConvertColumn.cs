@@ -109,7 +109,7 @@ namespace Objects.Converter.Revit
 
       if (revitColumn == null)
       {
-        ConversionErrors.Add(new Error { message = $"Failed to create column for {speckleColumn.applicationId}." });
+        ConversionErrors.Add(new Exception($"Failed to create column for {speckleColumn.applicationId}."));
         return null;
       }
 

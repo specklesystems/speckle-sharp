@@ -113,7 +113,7 @@ namespace Objects.Converter.Revit
             break;
           }
         default:
-          ConversionErrors.Add(new Error("Cannot create Roof", "Roof type not supported"));
+          ConversionErrors.Add(new Exception("Cannot create Roof: Roof type not supported"));
           throw new Speckle.Core.Logging.SpeckleException("Roof type not supported");
 
       }
@@ -126,7 +126,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception ex)
       {
-        ConversionErrors.Add(new Error($"Could not create openings in roof {speckleRoof.applicationId}", ex.Message));
+        ConversionErrors.Add(new Exception($"Could not create openings in roof {speckleRoof.applicationId}", ex));
       }
 
       if (speckleRevitRoof != null)
