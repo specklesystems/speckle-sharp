@@ -7,17 +7,10 @@ using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Tests;
 
-////////////////////////////////////////////////////////////////////////////
-/// NOTE:                                                                ///
-/// These tests don't run without a server running locally.              ///
-/// Check out https://github.com/specklesystems/server for               ///
-/// more info on the server.                                             ///
-////////////////////////////////////////////////////////////////////////////
 namespace TestsIntegration
 {
   public class Api
   {
-    public ServerInfo testServer;
     public Account firstUserAccount, secondUserAccount;
 
     public Client myClient;
@@ -32,10 +25,8 @@ namespace TestsIntegration
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo { url = "https://latest.speckle.dev", name = "TestServer" };
-
-      firstUserAccount = Fixtures.SeedUser(testServer);
-      secondUserAccount = Fixtures.SeedUser(testServer);
+      firstUserAccount = Fixtures.SeedUser();
+      secondUserAccount = Fixtures.SeedUser();
 
       myClient = new Client(firstUserAccount);
       myServerTransport = new ServerTransport(firstUserAccount, null);
