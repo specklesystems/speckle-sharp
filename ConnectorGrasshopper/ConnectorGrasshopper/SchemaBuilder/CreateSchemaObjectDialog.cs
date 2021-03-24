@@ -34,7 +34,7 @@ namespace ConnectorGrasshopper
       Padding = 5;
       Resizable = true;
 
-      types = ListAvailableTypes();
+      types = CSOUtils.ListAvailableTypes();
       typesFiltered = types;
 
       search = new SearchBox
@@ -109,7 +109,7 @@ namespace ConnectorGrasshopper
         RecurseNamespace(type.Namespace.Split('.'), tree, type);
         //treat the type name as part of the namespace, since now we are using constructors to populate
         //out tree items
-        IncreaseCounts($"{type.Namespace}.{type.Name}", GetValidConstr(type).Count());
+        IncreaseCounts($"{type.Namespace}.{type.Name}", CSOUtils.GetValidConstr(type).Count());
       }
 
       var item = new TreeGridItem();
@@ -132,7 +132,7 @@ namespace ConnectorGrasshopper
       }
       else
       {
-        var constructors = GetValidConstr(t)
+        var constructors = CSOUtils.GetValidConstr(t)
           .ToDictionary(x => x.GetCustomAttribute<SchemaInfo>().Name, x => (object)x);
         if (constructors.Values.Count > 1)
           ((Dictionary<string, object>)tree[key])[t.Name] = constructors;
@@ -183,12 +183,7 @@ namespace ConnectorGrasshopper
     }
 
 
-    private List<Type> ListAvailableTypes()
-    {
-      // exclude types that don't have any constructors with a SchemaInfo attribute
-      return KitManager.Types.Where(
-        x => GetValidConstr(x).Any()).OrderBy(x=>x.Name).ToList();
-    }
+
 
     //TODO: expand items?
     //TODO: add debounce? optimize loops?
@@ -241,10 +236,7 @@ namespace ConnectorGrasshopper
       return description;
     }
 
-    private IEnumerable<ConstructorInfo> GetValidConstr(Type type)
-    {
-      return type.GetConstructors().Where(y => y.GetCustomAttribute<SchemaInfo>() != null);
-    }
+
 
     //rtf description, not working
     //private string GetDescription(TreeGridItem t)

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using GH_IO.Serialization;
@@ -19,6 +20,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace ConnectorGrasshopper
 {
@@ -27,6 +29,7 @@ namespace ConnectorGrasshopper
     public override GH_Exposure Exposure => GH_Exposure.tertiary;
 
     private ConstructorInfo SelectedConstructor;
+    private bool readFailed = false;
     private GH_Document _document;
 
     public override Guid ComponentGuid => new Guid("4dc285e3-810d-47db-bfb5-cd96fe459fdd");
@@ -59,6 +62,9 @@ namespace ConnectorGrasshopper
 
     public override void AddedToDocument(GH_Document document)
     {
+      if (readFailed)
+        return;
+
       if (SelectedConstructor != null)
       {
         base.AddedToDocument(document);
@@ -206,9 +212,18 @@ namespace ConnectorGrasshopper
     {
       try
       {
-        SelectedConstructor = ByteArrayToObject<ConstructorInfo>(reader.GetByteArray("SelectedConstructor"));
+        var constructorName = reader.GetString("SelectedConstructorName");
+        var typeName = reader.GetString("SelectedTypeName");
+
+        SelectedConstructor = CSOUtils.FindConstructor(constructorName, typeName);
+        if (SelectedConstructor == null)
+          readFailed = true;
+
       }
-      catch { }
+      catch
+      {
+        readFailed = true;
+      }
 
       try
       {
@@ -222,34 +237,14 @@ namespace ConnectorGrasshopper
     {
       if (SelectedConstructor != null)
       {
-        writer.SetByteArray("SelectedConstructor", ObjectToByteArray(SelectedConstructor));
+        writer.SetString("SelectedConstructorName", CSOUtils.MethodFullName(SelectedConstructor));
+        writer.SetString("SelectedTypeName", SelectedConstructor.DeclaringType.FullName);
       }
 
       writer.SetString("seed", Seed);
       return base.Write(writer);
     }
 
-    private static byte[ ] ObjectToByteArray(object obj)
-    {
-      BinaryFormatter bf = new BinaryFormatter();
-      using(var ms = new MemoryStream())
-      {
-        bf.Serialize(ms, obj);
-        return ms.ToArray();
-      }
-    }
-
-    private static T ByteArrayToObject<T>(byte[ ] arrBytes)
-    {
-      using(var memStream = new MemoryStream())
-      {
-        var binForm = new BinaryFormatter();
-        memStream.Write(arrBytes, 0, arrBytes.Length);
-        memStream.Seek(0, SeekOrigin.Begin);
-        var obj = binForm.Deserialize(memStream);
-        return (T)obj;
-      }
-    }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     { }
@@ -262,6 +257,12 @@ namespace ConnectorGrasshopper
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+      if (readFailed)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "This component has changed or cannot be found, please create a new one");
+        return;
+      }
+
       if (SelectedConstructor is null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No schema has been selected.");
@@ -284,7 +285,7 @@ namespace ConnectorGrasshopper
             AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Input list `" + param.Name + "` is empty.");
             return;
           }
- 
+
           inputValues = inputValues.Select(x => ExtractRealInputValue(x)).ToList();
           cParamsValues.Add(GetObjectListProp(param, inputValues, cParam.ParameterType));
         }
@@ -320,7 +321,7 @@ namespace ConnectorGrasshopper
     //list input
     private object GetObjectListProp(IGH_Param param, List<object> values, Type t)
     {
-      if (!values.Any())return null;
+      if (!values.Any()) return null;
 
       var list = (IList)Activator.CreateInstance(t);
       var listElementType = list.GetType().GetGenericArguments().Single();
@@ -388,7 +389,7 @@ namespace ConnectorGrasshopper
       try
       {
         MethodInfo castIntoMethod = this.GetType().GetMethod("CastObject").MakeGenericMethod(type);
-        return castIntoMethod.Invoke(null, new [ ] { value });
+        return castIntoMethod.Invoke(null, new[] { value });
       }
       catch { }
 
@@ -436,4 +437,5 @@ namespace ConnectorGrasshopper
       base.BeforeSolveInstance();
     }
   }
+
 }
