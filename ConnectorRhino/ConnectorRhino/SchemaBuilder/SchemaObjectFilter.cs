@@ -19,7 +19,7 @@ namespace SpeckleRhino
   public class SchemaObjectFilter
   {
     #region Properties
-    public enum SupportedSchema { Floor, Wall, Roof, Ceiling, Column, Beam, FaceWall, none };
+    public enum SupportedSchema { Floor, Wall, Roof, Column, Beam, FaceWall, none };
     private Rhino.RhinoDoc Doc;
     public Dictionary<string, List<RhinoObject>> SchemaDictionary = new Dictionary<string, List<RhinoObject>>();
     public double minDimension = 25 * Units.GetConversionFactor(Units.Millimeters, RhinoDoc.ActiveDoc.ModelUnitSystem.ToString());
@@ -139,7 +139,6 @@ namespace SpeckleRhino
           catch { }
           break;
         case SupportedSchema.Floor:
-        case SupportedSchema.Ceiling:
         case SupportedSchema.Roof:
           try // assumes xy planar single surface
           {
@@ -215,7 +214,6 @@ namespace SpeckleRhino
             SupportedSchema.Floor,
             SupportedSchema.Wall,
             SupportedSchema.FaceWall,
-            SupportedSchema.Ceiling,
             SupportedSchema.Roof };
           break;
         case ObjectType.PolysrfFilter:

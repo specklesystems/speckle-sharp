@@ -51,8 +51,9 @@ namespace Objects.Converter.RhinoGh
       var bottomCurves = GetSurfaceBrepEdges(brep, getBottom: true); // extract baseline
       var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract openings
       List<Base> openings = new List<Base>();
-      foreach (ICurve crv in intCurves)
-        openings.Add(new Opening(crv));
+      if (intCurves != null)
+        foreach (ICurve crv in intCurves)
+          openings.Add(new Opening(crv));
       if (bottomCurves != null && height > 0)
         wall = new Wall(height, bottomCurves[0], openings) { units = ModelUnits };
       return wall;
@@ -144,13 +145,17 @@ namespace Objects.Converter.RhinoGh
         brpCurves = brep.DuplicateNakedEdgeCurves(true, false);
       if (getBottom)
       {
-        double lowestPt = brpCurves.Min(o => o.PointAtStart.Z);
-        brpCurves = brpCurves.Where(o => o.PointAt(0.5).Z == lowestPt).ToArray();
+        var bottomCrv = brpCurves.
+          Where(o => o.IsLinear())?.
+          Where(o => new Vector3d(o.PointAtEnd.X - o.PointAtStart.X, o.PointAtEnd.Y - o.PointAtStart.Y, o.PointAtEnd.Z - o.PointAtStart.Z).IsPerpendicularTo(Vector3d.ZAxis))?.
+          Aggregate((curMin, o) => curMin == null || o.PointAtStart.Z < curMin.PointAtStart.Z ? o : curMin);
+        if (bottomCrv != null)
+          brpCurves = new RH.Curve[] { bottomCrv };
       }
 
-      List<ICurve> outCurves = null;
-      if (brpCurves != null)
-        outCurves = RH.Curve.JoinCurves(brpCurves, tol).Select(o => (ICurve)ConvertToSpeckle(o)).ToList();
+      List<ICurve> outCurves = null ;
+      if (brpCurves != null && brpCurves.Count() > 0)
+        outCurves = (brpCurves.Count() == 1) ? new List<ICurve>() { (ICurve)ConvertToSpeckle(brpCurves[0]) } : RH.Curve.JoinCurves(brpCurves, tol).Select(o => (ICurve)ConvertToSpeckle(o)).ToList();
       return outCurves;
     }
   }
