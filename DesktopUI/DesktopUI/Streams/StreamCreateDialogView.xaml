@@ -30,7 +30,7 @@
             BorderBrush="LightGray"
             BorderThickness="1,0,0,0" />
 
-          <StackPanel Grid.Column="0"
+          <StackPanel Grid.Column="0" MaxHeight="75"
             HorizontalAlignment="Stretch">
             <TextBlock FontSize="16"
               FontWeight="Bold"
@@ -39,7 +39,7 @@
               Text="{Binding createdAt}" />
             <TextBlock FontSize="10"
               Text="{Binding role, StringFormat='Role: {0}'}" />
-            <TextBlock FontSize="10"
+            <TextBlock FontSize="10" TextWrapping="Wrap"
               Text="{Binding description}" />
           </StackPanel>
 
