@@ -437,12 +437,3 @@ namespace ConnectorGrasshopper
       base.BeforeSolveInstance();
     }
   }
-
-  public class FallbackConstructor
-  {
-
-    public string ConstructorName { get; set; }
-
-    public string TypeConstructorName { get; set; }
-  }
-}
