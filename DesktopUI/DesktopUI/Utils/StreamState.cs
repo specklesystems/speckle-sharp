@@ -236,9 +236,10 @@ namespace Speckle.DesktopUI.Utils
     }
 
     private ISelectionFilter _filter;
-
-    [JsonProperty]
-    [JsonConverter(typeof(SelectionFilterConverter))]
+    
+    // decided not to store these in the file - commenting out in case we change our minds 
+    // [JsonProperty]
+    // [JsonConverter(typeof(SelectionFilterConverter))]
     public ISelectionFilter Filter
     {
       get => _filter;
