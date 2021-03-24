@@ -165,9 +165,16 @@ namespace Speckle.DesktopUI.Streams
         return;
       }
 
-
       if (StreamQuery.Length <= 2)
         return;
+
+      // extract stream id if the query is a url
+      Uri uri;
+      if ( Uri.TryCreate(StreamQuery, UriKind.Absolute, out uri) )
+      {
+        if ( uri.Segments[ 1 ].ToLowerInvariant() == "streams/" )
+          StreamQuery = uri.Segments[ 2 ].Replace("/", "");
+      }
 
       try
       {
