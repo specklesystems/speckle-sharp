@@ -91,6 +91,8 @@ namespace Objects.Converter.Revit
       if (revitColumn == null && isLineBased)
       {
         revitColumn = Doc.Create.NewFamilyInstance(baseLine, familySymbol, level, structuralType);
+        StructuralFramingUtils.DisallowJoinAtEnd(revitColumn, 0);
+        StructuralFramingUtils.DisallowJoinAtEnd(revitColumn, 1);
       }
 
       //try with a point based column
