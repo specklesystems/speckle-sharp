@@ -67,7 +67,7 @@
     <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
     <Compile Include="Ops\Operations.SendLocalComponent.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObjectDialog.cs" />
-    <Compile Include="SchemaBuilder\CreateSchemaObject.cs" />
+    <Compile Include="SchemaBuilder\CreateSchemaBuilder.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
     <Compile Include="ConnectorGrasshopperInfo.cs" />
     <Compile Include="Objects\CreateSpeckleObjectAsync.cs" />
@@ -88,6 +88,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SchemaBuilder\CSOUtils.cs" />
     <Compile Include="SchemaBuilder\CSOViewModel.cs" />
     <Compile Include="Streams\StreamCreateComponent.cs" />
     <Compile Include="Streams\StreamDetailsComponent.cs" />
