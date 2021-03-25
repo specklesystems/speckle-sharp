@@ -170,17 +170,20 @@ namespace Speckle.DesktopUI.Streams
 
       // extract stream id if the query is a url
       Uri uri;
-      if ( Uri.TryCreate(StreamQuery, UriKind.Absolute, out uri) )
-      {
-        if ( uri.Segments[ 1 ].ToLowerInvariant() == "streams/" )
-          StreamQuery = uri.Segments[ 2 ].Replace("/", "");
-      }
 
       try
       {
         var client = new Client(AccountToSendFrom);
-        var streams = await client.StreamSearch(StreamQuery);
-        StreamSearchResults = new BindableCollection<Stream>(streams);
+        if ( Uri.TryCreate(StreamQuery, UriKind.Absolute, out uri) )
+        {
+          if ( uri.Segments[ 1 ].ToLowerInvariant() == "streams/" )
+          {
+            var streamId = uri.Segments[ 2 ].Replace("/", "");
+            StreamSearchResults = new BindableCollection<Stream> {await client.StreamGet(streamId)};
+            return;
+          }
+        }
+        StreamSearchResults = new BindableCollection<Stream>(await client.StreamSearch(StreamQuery));
       }
       catch (Exception)
       {
