@@ -94,7 +94,7 @@ namespace Objects.Converter.Revit
             //this is for schema builder specifically
             //if no roof edge has a slope defined but a slope angle is defined on the roof
             //set each edge to have that slope
-            if (!hasSlopedSide && speckleFootprintRoof.slope != null)
+            if (!hasSlopedSide && speckleFootprintRoof.slope != null && speckleFootprintRoof.slope!=0)
             {
               for (var i = 0; i < curveArray.Size; i++)
               {
