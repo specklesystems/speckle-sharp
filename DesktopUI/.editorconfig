@@ -15,7 +15,7 @@ resharper_space_around_arrow_op = true
 resharper_space_within_array_rank_brackets = true
 resharper_use_indent_from_vs = false
 resharper_xml_attribute_style = first_attribute_on_single_line
-resharper_xml_pi_attribute_style = first_attribute_on_single_line
+resharper_xml_attribute_indent = single_indent
 
 # Code files
 [*.{cs, csx, vb, vbx}]

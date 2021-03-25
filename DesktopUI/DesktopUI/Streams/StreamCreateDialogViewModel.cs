@@ -165,15 +165,25 @@ namespace Speckle.DesktopUI.Streams
         return;
       }
 
-
       if (StreamQuery.Length <= 2)
         return;
+
+      // extract stream id if the query is a url
+      Uri uri;
 
       try
       {
         var client = new Client(AccountToSendFrom);
-        var streams = await client.StreamSearch(StreamQuery);
-        StreamSearchResults = new BindableCollection<Stream>(streams);
+        if ( Uri.TryCreate(StreamQuery, UriKind.Absolute, out uri) )
+        {
+          if ( uri.Segments[ 1 ].ToLowerInvariant() == "streams/" )
+          {
+            var streamId = uri.Segments[ 2 ].Replace("/", "");
+            StreamSearchResults = new BindableCollection<Stream> {await client.StreamGet(streamId)};
+            return;
+          }
+        }
+        StreamSearchResults = new BindableCollection<Stream>(await client.StreamSearch(StreamQuery));
       }
       catch (Exception)
       {
