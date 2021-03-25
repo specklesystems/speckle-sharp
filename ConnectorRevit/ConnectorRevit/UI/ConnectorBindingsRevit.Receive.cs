@@ -103,6 +103,13 @@ namespace Speckle.ConnectorRevit.UI
           // needs to be set for openings in floors and roofs to work
           converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
           var newPlaceholderObjects = ConvertReceivedObjects(flattenedObjects, converter, state);
+          // receive was cancelled by user
+          if ( newPlaceholderObjects == null )
+          {
+            converter.ConversionErrors.Add(new Exception("fatal error: receive cancelled by user"));
+            t.RollBack();
+            return;
+          }
 
           DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
 
@@ -169,6 +176,12 @@ namespace Speckle.ConnectorRevit.UI
 
       foreach (var @base in objects)
       {
+        if ( state.CancellationTokenSource.Token.IsCancellationRequested )
+        {
+          placeholders = null;
+          break;
+        }
+
         try
         {
           conversionProgressDict["Conversion"]++;
