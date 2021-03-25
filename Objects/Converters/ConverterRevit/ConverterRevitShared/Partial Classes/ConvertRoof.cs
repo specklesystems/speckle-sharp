@@ -94,7 +94,7 @@ namespace Objects.Converter.Revit
             //this is for schema builder specifically
             //if no roof edge has a slope defined but a slope angle is defined on the roof
             //set each edge to have that slope
-            if (!hasSlopedSide && speckleFootprintRoof.slope != null)
+            if (!hasSlopedSide && speckleFootprintRoof.slope != null && speckleFootprintRoof.slope!=0)
             {
               for (var i = 0; i < curveArray.Size; i++)
               {
@@ -113,8 +113,8 @@ namespace Objects.Converter.Revit
             break;
           }
         default:
-          ConversionErrors.Add(new Exception("Cannot create Roof: Roof type not supported"));
-          throw new Speckle.Core.Logging.SpeckleException("Roof type not supported");
+          ConversionErrors.Add(new Exception("Roof type not supported, please try with RevitExtrusionRoof or RevitFootprintRoof"));
+          return null;
 
       }
 

@@ -15,11 +15,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAdaptiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBeam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBrace.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRevitElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\UpdateParameter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertProjectInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCeiling.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRailing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertStair.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertColumn.cs" />

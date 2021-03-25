@@ -117,14 +117,13 @@ namespace Objects.Converter.Revit
       return placeholders;
     }
 
-    public RevitWall WallToSpeckle(DB.Wall revitWall)
+    public Base WallToSpeckle(DB.Wall revitWall)
     {
 
       var baseGeometry = LocationToSpeckle(revitWall);
       if (baseGeometry is Geometry.Point)
       {
-        ConversionErrors.Add(new Exception($"Skipping not supported wall: point based wall, name:{revitWall.Name}, id:{revitWall.Id}"));
-        return null;
+        return RevitElementToSpeckle(revitWall);
       }
 
       RevitWall speckleWall = new RevitWall();

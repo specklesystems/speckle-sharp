@@ -54,7 +54,7 @@ namespace Objects.Converter.Revit
       });
 
       BuiltInCategory cat;
-      var bic = Categories.GetBuiltInCategory(speckleDs.category);
+      var bic = Categories.GetBuiltInFromSchemaBuilderCategory(speckleDs.category);
       BuiltInCategory.TryParse(bic, out cat);
       var catId = Doc.Settings.Categories.get_Item(cat).Id;
 
@@ -137,7 +137,7 @@ namespace Objects.Converter.Revit
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
     {
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
-      var category = Categories.GetCategory(cat);
+      var category = Categories.GetSchemaBuilderCategoryFromBuiltIn(cat);
       var element = revitAc.get_Geometry(new Options());
       var geometries = element.ToList().Select<GeometryObject, Base>(obj =>
         {
