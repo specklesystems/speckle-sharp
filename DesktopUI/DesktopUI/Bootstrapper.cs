@@ -27,7 +27,6 @@ namespace Speckle.DesktopUI
     protected override void OnExit(ExitEventArgs e)
     {
       base.OnExit(e);
-      Tracker.TrackPageview(Tracker.SESSION_END);
     }
 
     protected override void ConfigureIoC(IStyletIoCBuilder builder)
@@ -70,7 +69,7 @@ namespace Speckle.DesktopUI
       Application.Current.Resources.MergedDictionaries.Add(
         Application.LoadComponent(
           new Uri("SpeckleDesktopUI;component/Themes/Generic.xaml", UriKind.Relative)
-        )as ResourceDictionary);
+        ) as ResourceDictionary);
     }
 
   }
