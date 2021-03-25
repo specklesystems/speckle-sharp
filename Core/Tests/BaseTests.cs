@@ -70,6 +70,13 @@ namespace Tests
 
       Assert.AreEqual("Mirco", ((SampleProp)sample["detachedProp"]).name);
 
+      sample["crazyProp"] = "Test1";
+
+      Assert.AreEqual("Test1", sample.crazyProp);
+
+      sample["@crazyProp"] = "Test2";
+
+      Assert.AreEqual("Test2", sample.crazyProp);
 
     }
 
@@ -130,6 +137,8 @@ namespace Tests
       public SampleProp detachedProp { get; set; }
 
       public SampleProp attachedProp { get; set; }
+
+      public string @crazyProp { get; set; }
 
       public SampleObject() { }
     }
