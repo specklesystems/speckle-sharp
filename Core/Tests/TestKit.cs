@@ -98,7 +98,7 @@ namespace Tests
     [DetachProperty]
     [Chunkable(2500)]
     public List<Tabletop> Tables { get; set; } = new List<Tabletop>();
-  
+
     public FakeMesh() { }
   }
 
