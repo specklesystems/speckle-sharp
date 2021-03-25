@@ -194,9 +194,6 @@ namespace Objects.Converter.RhinoGh
             case "Floor":
               return BrepToSpeckleFloor(o);
 
-            case "Ceiling":
-              return BrepToSpeckleCeiling(o);
-
             case "Roof":
               return BrepToSpeckleRoof(o);
 
@@ -216,6 +213,9 @@ namespace Objects.Converter.RhinoGh
         case RH.Extrusion o:
           switch (schema)
           {
+            case "FaceWall":
+              return BrepToFaceWall(o.ToBrep(), args);
+
             case "DirectShape":
               return ExtrusionToDirectShape(o, args);
 
