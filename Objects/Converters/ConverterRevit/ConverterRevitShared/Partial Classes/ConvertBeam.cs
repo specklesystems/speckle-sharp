@@ -92,13 +92,13 @@ namespace Objects.Converter.Revit
       return placeholders;
     }
 
-    private RevitBeam BeamToSpeckle(DB.FamilyInstance revitBeam)
+    private Base BeamToSpeckle(DB.FamilyInstance revitBeam)
     {
       var baseGeometry = LocationToSpeckle(revitBeam);
       var baseLine = baseGeometry as ICurve;
       if (baseLine == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.");
+        return RevitElementToSpeckle(revitBeam);
       }
 
       var speckleBeam = new RevitBeam();

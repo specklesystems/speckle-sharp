@@ -184,7 +184,7 @@ namespace Objects.Converter.Revit
 
     }
 
-    public RevitColumn ColumnToSpeckle(DB.FamilyInstance revitColumn)
+    public Base ColumnToSpeckle(DB.FamilyInstance revitColumn)
     {
       var speckleColumn = new RevitColumn();
       speckleColumn.type = Doc.GetElement(revitColumn.GetTypeId()).Name;
@@ -210,7 +210,7 @@ namespace Objects.Converter.Revit
 
       if (baseLine == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only line based Columns are currently supported.");
+        return RevitElementToSpeckle(revitColumn);
       }
 
       speckleColumn.baseLine = baseLine; //all speckle columns should be line based

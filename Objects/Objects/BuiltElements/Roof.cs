@@ -64,7 +64,11 @@ namespace Objects.BuiltElements.Revit.RevitRoof
     /// <param name="parameters"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="start"/> and <paramref name="end"/> params</remarks>
     [SchemaInfo("RevitExtrusionRoof", "Creates a Revit roof by extruding a curve")]
-    public RevitExtrusionRoof(string family, string type, double start, double end, Line referenceLine, Level level,
+    public RevitExtrusionRoof(string family, string type,
+      [SchemaParamInfo("Extrusion start")] double start,
+      [SchemaParamInfo("Extrusion end")] double end,
+      [SchemaParamInfo("Profile along which to extrude the roof")] Line referenceLine,
+      Level level,
       List<Base> elements = null,
       List<Parameter> parameters = null)
     {
