@@ -69,16 +69,6 @@ namespace Objects.Converter.RhinoGh
       return floor;
     }
 
-    public Ceiling BrepToSpeckleCeiling(RH.Brep brep)
-    {
-      Ceiling ceiling = null;
-      var extCurves = GetSurfaceBrepEdges(brep, getExterior: true); // extract outline
-      var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
-      if (extCurves != null)
-        ceiling = new Ceiling(extCurves[0], intCurves) { units = ModelUnits };
-      return ceiling;
-    }
-
     public Roof BrepToSpeckleRoof(RH.Brep brep)
     {
       Roof roof = null;

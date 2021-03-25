@@ -319,7 +319,10 @@ namespace SpeckleRhino
             }
           }
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
+          {
+            // try to get displaymesh instead
             state.Errors.Add(new Exception($"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
+          }
           return objects;
         }
       }

@@ -123,7 +123,9 @@ namespace SpeckleRhino
           {
             Curve crv = obj.Geometry as Curve; // assumes this has already been filtered for linearity
             double angleRad = Vector3d.VectorAngle(crv.PointAtEnd - crv.PointAtStart, Vector3d.ZAxis);
-            if (angleRad < Math.PI/4)
+            if (angleRad > Math.PI / 2)
+              angleRad = Math.PI - angleRad;
+            if (angleRad < Math.PI / 4)
               return true;
           }
           catch { }
@@ -133,6 +135,8 @@ namespace SpeckleRhino
           {
             Curve crv = obj.Geometry as Curve; // assumes this has already been filtered for linearity
             double angleRad = Vector3d.VectorAngle(crv.PointAtEnd - crv.PointAtStart, Vector3d.ZAxis);
+            if (angleRad > Math.PI / 2)
+              angleRad = Math.PI - angleRad;
             if (angleRad >= Math.PI / 4)
               return true;
           }
