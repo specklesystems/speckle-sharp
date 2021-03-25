@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Input;
 using MaterialDesignThemes.Wpf;
 using Speckle.Newtonsoft.Json;
@@ -570,12 +571,23 @@ namespace Speckle.DesktopUI.Utils
       Globals.HostBindings.PersistAndUpdateStreamInFile(this);
     }
 
+    private bool _commitExpanderChecked;
+
+    public bool CommitExpanderChecked
+    {
+      get => _commitExpanderChecked;
+      set
+      {
+        SetAndNotify(ref _commitExpanderChecked, value);
+        NotifyOfPropertyChange(nameof(CommitExpanderChecked));
+      }
+    }
+
     public void SendWithCommitMessage(object sender, KeyEventArgs e)
     {
-      if (e.Key == Key.Enter)
-      {
-        Send();
-      }
+      if ( e.Key != Key.Enter ) return;
+      CommitMessage = ( ( TextBox ) sender ).Text;
+      Send();
     }
 
     public async void Send()
@@ -652,6 +664,7 @@ namespace Speckle.DesktopUI.Utils
 
     public void SwapState()
     {
+      CommitExpanderChecked = false;
       IsSenderCard = !IsSenderCard;
       NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       Globals.HostBindings.PersistAndUpdateStreamInFile(this);
