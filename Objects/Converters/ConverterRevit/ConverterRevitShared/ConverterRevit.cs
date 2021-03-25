@@ -152,6 +152,13 @@ namespace Objects.Converter.Revit
           returnObject = ElementTypeToSpeckle(o);
           break;
         default:
+          // if we don't have a direct conversion, still try to send this element as a generic RevitElement
+          if ((@object as Element).IsElementSupported())
+          {
+            returnObject = RevitElementToSpeckle(@object as Element);
+            break;
+          }
+
           ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
           returnObject = null;
           break;
@@ -337,7 +344,7 @@ namespace Objects.Converter.Revit
           return true;
 
         default:
-          return false;
+          return (@object as Element).IsElementSupported();
       }
     }
 

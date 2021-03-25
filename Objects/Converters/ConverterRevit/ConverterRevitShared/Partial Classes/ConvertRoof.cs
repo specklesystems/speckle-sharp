@@ -113,8 +113,8 @@ namespace Objects.Converter.Revit
             break;
           }
         default:
-          ConversionErrors.Add(new Exception("Cannot create Roof: Roof type not supported"));
-          throw new Speckle.Core.Logging.SpeckleException("Roof type not supported");
+          ConversionErrors.Add(new Exception("Roof type not supported, please try with RevitExtrusionRoof or RevitFootprintRoof"));
+          return null;
 
       }
 

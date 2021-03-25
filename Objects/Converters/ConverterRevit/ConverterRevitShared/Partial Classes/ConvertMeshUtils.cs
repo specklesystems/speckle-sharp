@@ -49,7 +49,20 @@ namespace Objects.Converter.Revit
     {
       var mesh = new Mesh();
       mesh.units = ModelUnits;
-      var solids = GetElementSolids(elem, opt, useOriginGeom4FamilyInstance);
+
+      List<Solid> solids = new List<Solid>();
+
+      if (elem is Group g)
+      {
+        foreach (var id in g.GetMemberIds())
+        {
+          solids.AddRange(GetElementSolids(Doc.GetElement(id), opt, useOriginGeom4FamilyInstance));
+        }
+      }
+      else
+        solids = GetElementSolids(elem, opt, useOriginGeom4FamilyInstance);
+
+
       (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(solids);
       return mesh;
     }
