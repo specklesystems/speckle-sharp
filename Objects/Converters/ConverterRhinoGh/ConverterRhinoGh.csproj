@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Objects.Converter.Rhino</AssemblyName>
+    <RootNamespace>Objects.Converter.RhinoGh</RootNamespace>
+    <Version>2.0.0</Version>
+    <Configurations>Debug;Release</Configurations>
+    <DefineConstants>$(DefineConstants)</DefineConstants>
+    <PackageId>Objects.Converter.RhinoGh</PackageId>
+    <Authors>Speckle</Authors>
+    <Product>Objects.Converter.RhinoGh</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grasshopper" Version="6.34.21034.7001" />
+    <PackageReference Include="RhinoCommon" Version="6.34.21034.7001" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\Objects\Objects.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (&#xA;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;)" />
+  </Target>
+
+  <!--OLD code for msbuild, to be updated for mac
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <PostBuildEvent>Copy "$(TargetDir)$(AssemblyName).dll" "$(AppData)\Speckle\Kits\Objects\"</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
+    <PostBuildEvent>mkdir -p $HOME/.config/Speckle/Kits/Objects</PostBuildEvent>
+    <PostBuildEvent>cp '$(TargetDir)$(AssemblyName).dll' $HOME/.config/Speckle/Kits/Objects/</PostBuildEvent>
+  </PropertyGroup>-->
+</Project>
