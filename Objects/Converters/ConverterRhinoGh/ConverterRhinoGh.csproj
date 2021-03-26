@@ -4,12 +4,22 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Objects.Converter.Rhino</AssemblyName>
     <RootNamespace>Objects.Converter.RhinoGh</RootNamespace>
-    <Version>2.0.0</Version>
     <Configurations>Debug;Release</Configurations>
     <DefineConstants>$(DefineConstants)</DefineConstants>
-    <PackageId>Objects.Converter.RhinoGh</PackageId>
+    <PackageId>Speckle.Objects.Converter.RhinoGh</PackageId>
     <Authors>Speckle</Authors>
+    <Company>Speckle</Company>
     <Product>Objects.Converter.RhinoGh</Product>
+    <Version>2.1.0</Version>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Description>Converter for Rhino and grasshopper</Description>
+    <PackageTags>speckle objects converter rhino grasshopper gh</PackageTags>
+    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
+    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +30,13 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\Objects\Objects.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
