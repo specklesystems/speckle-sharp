@@ -636,7 +636,7 @@
                     Opacity="0.5" />
                   <TextBox Grid.Column="0"
                     Margin="20,0,20,20"
-                    md:HintAssist.HelperText="Commit message - keep track of changes made and the reasons behind them"
+                    md:HintAssist.HelperText="Commit message - keep track of changes made. Defaults to 'Pushed X elements'"
                     md:TextBlockAssist.AutoToolTip="False"
                     s:View.ActionTarget="{Binding Data, Source={StaticResource Proxy}}"
                     PreviewKeyDown="{s:Action SendWithCommitMessage}"

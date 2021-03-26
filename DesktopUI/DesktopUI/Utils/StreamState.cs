@@ -576,11 +576,7 @@ namespace Speckle.DesktopUI.Utils
     public bool CommitExpanderChecked
     {
       get => _commitExpanderChecked;
-      set
-      {
-        SetAndNotify(ref _commitExpanderChecked, value);
-        NotifyOfPropertyChange(nameof(CommitExpanderChecked));
-      }
+      set => SetAndNotify(ref _commitExpanderChecked, value);
     }
 
     public void SendWithCommitMessage(object sender, KeyEventArgs e)
