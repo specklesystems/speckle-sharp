@@ -66,7 +66,7 @@ namespace Speckle.Core.Models
 
       // TODO: Check for detached/non-detached duplicate names? i.e: '@something' vs 'something'
       // TODO: Instance members will not be overwritten, this may cause issues.
-      var checks = new List < (bool, string) >
+      var checks = new List<(bool, string)>
       {
         (!(string.IsNullOrEmpty(name) || name == "@"), "Found empty prop name"),
         // Checks for multiple leading @
@@ -81,7 +81,7 @@ namespace Speckle.Core.Models
       // Prop name is valid if none of the checks are true
       var isValid = checks.TrueForAll(v =>
       {
-        if (!v.Item1)r = v.Item2;
+        if (!v.Item1) r = v.Item2;
         return v.Item1;
       });
 
@@ -95,31 +95,66 @@ namespace Speckle.Core.Models
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public object this [string key]
+    public object this[string key]
     {
       get
       {
+        //dynamic property - exact match
         if (properties.ContainsKey(key))
           return properties[key];
 
+        //dynamic property - accessing a non detached prop with @
+        if (key.StartsWith("@") && properties.ContainsKey(key.Substring(1)))
+          return properties[key.Substring(1)];
+
+        //dynamic property - accessing a detached prop without @
+        if (!key.StartsWith("@") && properties.ContainsKey("@" + key))
+          return properties["@" + key];
+
+        //typed property - exact match
         var prop = GetType().GetProperty(key);
+
+        //typed property - accessing a detached prop with @
+        if (prop == null && key.StartsWith("@"))
+          prop = GetType().GetProperty(key.Substring(1));
+
         if (prop == null)
-        {
           return null;
-        }
 
         return prop.GetValue(this);
       }
       set
       {
-        if (!IsPropNameValid(key, out string reason))throw new SpeckleException("Invalid prop name: " + reason);
+        if (!IsPropNameValid(key, out string reason)) throw new SpeckleException("Invalid prop name: " + reason);
 
+        //dynamic property - exact match
         if (properties.ContainsKey(key))
         {
           properties[key] = value;
           return;
         }
+
+        //dynamic property - accessing a non detached prop with @
+        if (key.StartsWith("@") && properties.ContainsKey(key.Substring(1)))
+        {
+          properties[key.Substring(1)] = value;
+          return;
+        }
+
+        //dynamic property - accessing a detached prop without @
+        if (!key.StartsWith("@") && properties.ContainsKey("@" + key))
+        {
+          properties["@" + key] = value;
+          return;
+        }
+
         var prop = this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(p => p.Name == key);
+
+        //typed property - accessing a detached prop with @
+        if (prop == null && key.StartsWith("@"))
+          prop = GetType().GetProperty(key.Substring(1));
+
+        //create new dynamic property
         if (prop == null)
         {
           properties[key] = value;
@@ -143,10 +178,10 @@ namespace Speckle.Core.Models
     public override IEnumerable<string> GetDynamicMemberNames()
     {
       var names = new List<string>();
-      foreach (var kvp in properties)names.Add(kvp.Key);
+      foreach (var kvp in properties) names.Add(kvp.Key);
 
       var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-      foreach (var pinfo in pinfos)names.Add(pinfo.Name);
+      foreach (var pinfo in pinfos) names.Add(pinfo.Name);
 
       names.Remove("Item"); // TODO: investigate why we get Item out?
       return names;
@@ -160,7 +195,7 @@ namespace Speckle.Core.Models
     {
       var names = new List<string>();
       var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-      foreach (var pinfo in pinfos)names.Add(pinfo.Name);
+      foreach (var pinfo in pinfos) names.Add(pinfo.Name);
 
       names.Remove("Item"); // TODO: investigate why we get Item out?
       return names;
@@ -176,7 +211,7 @@ namespace Speckle.Core.Models
       var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
       foreach (var pinfo in pinfos)
-        if (pinfo.Name != "Item")names.Add(pinfo);
+        if (pinfo.Name != "Item") names.Add(pinfo);
 
       return names;
     }
@@ -188,10 +223,10 @@ namespace Speckle.Core.Models
     public IEnumerable<string> GetMemberNames()
     {
       var names = new List<string>();
-      foreach (var kvp in properties)names.Add(kvp.Key);
+      foreach (var kvp in properties) names.Add(kvp.Key);
 
       var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute(typeof(SchemaIgnore)) == null && x.Name != "Item");
-      foreach (var pinfo in pinfos)names.Add(pinfo.Name);
+      foreach (var pinfo in pinfos) names.Add(pinfo.Name);
 
       return names;
     }
