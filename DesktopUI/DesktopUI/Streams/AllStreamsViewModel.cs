@@ -134,7 +134,13 @@ namespace Speckle.DesktopUI.Streams
       await DialogHost.Show(view, "RootDialogHost");
     }
 
-    public async void Send(StreamState state) => state.Send();
+    public async void Send(StreamState state)
+    {
+      if ( state.CommitExpanderChecked )
+        state.Send();
+      else
+        state.CommitExpanderChecked = true;
+    }
 
     public async void Receive(StreamState state) => state.Receive();
 
