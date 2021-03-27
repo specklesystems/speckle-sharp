@@ -279,17 +279,17 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags: # DO NOT RUN on "all" as already being pushed by objects     
-              only: /^(core)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
+              only: /^(core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
           post-steps:
             - packandpublish: 
                 projectfilepath: Core/Core/Core.csproj
       - build-objects:
-          name: nuget-deploy-objects-and-core
+          name: nuget-deploy-objects
           filters:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags:
-              only: /^(objects|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
+              only: /^(objects|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
           post-steps:
             - packandpublish: 
                 projectfilepath: Objects/Objects.sln
