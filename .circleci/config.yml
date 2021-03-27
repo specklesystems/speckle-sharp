@@ -85,8 +85,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           ]'
   
   build-core:
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    executor:
+      name: win/default
+      shell: powershell.exe
     steps:
       - checkout
       - run: 
@@ -94,16 +95,17 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: dotnet build Core/Core.sln -c Release -v q
 
   test-core: 
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    executor:
+      name: win/default
+      shell: powershell.exe
     steps:
       - checkout 
       - run: 
           name: Unit Tests
-          command: dotnet test Core/Tests/TestsUnit.csproj -c Release
+          command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q
       - run:
           name: Integration Tests # The integration tests are runinng on our test sevrer
-          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true" --no-restore --no-build
+          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q
 
   build-objects:
     executor:
@@ -279,17 +281,17 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags: # DO NOT RUN on "all" as already being pushed by objects     
-              only: /^(core)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
+              only: /^(core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
           post-steps:
             - packandpublish: 
-                projectfilepath: Core/Core/Core.csproj
+                projectfilepath: Core/Core.sln
       - build-objects:
-          name: nuget-deploy-objects-and-core
+          name: nuget-deploy-objects
           filters:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags:
-              only: /^(objects|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
+              only: /^(objects|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
           post-steps:
             - packandpublish: 
                 projectfilepath: Objects/Objects.sln
