@@ -23,8 +23,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="6.34.21034.7001" />
-    <PackageReference Include="RhinoCommon" Version="6.34.21034.7001" />
+    <PackageReference Include="Grasshopper" Version="6.33.20343.16431" />
+    <PackageReference Include="RhinoCommon" Version="6.33.20343.16431" />
   </ItemGroup>
 
   <ItemGroup>

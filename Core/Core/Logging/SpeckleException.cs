@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using GraphQL;
-using Sentry.Protocol;
+using Sentry;
 
 namespace Speckle.Core.Logging
 {
@@ -13,13 +13,13 @@ namespace Speckle.Core.Logging
     {
     }
 
-    public SpeckleException(string message, bool log = true, SentryLevel level = SentryLevel.Info ) : base(message)
+    public SpeckleException(string message, bool log = true, SentryLevel level = SentryLevel.Info) : base(message)
     {
       if (log)
         Log.CaptureException(this, level);
     }
 
-    public SpeckleException(string message, GraphQLError[ ] errors, bool log = true,
+    public SpeckleException(string message, GraphQLError[] errors, bool log = true,
       SentryLevel level = SentryLevel.Info) : base(message)
     {
       GraphQLErrors = errors.Select(error => new KeyValuePair<string, object>("error", error.Message)).ToList();

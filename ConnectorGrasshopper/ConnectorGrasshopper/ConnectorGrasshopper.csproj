@@ -215,6 +215,7 @@
   <ItemGroup>
     <PackageReference Include="Grasshopper">
       <Version>6.33.20343.16431</Version>
+      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="GrasshopperAsyncComponent">
       <Version>0.2.1</Version>

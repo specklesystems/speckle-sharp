@@ -97,7 +97,7 @@ namespace Speckle.Core.Credentials
         var firstAccount = GetAccounts().FirstOrDefault();
         if (firstAccount == null)
         {
-          Log.CaptureException(new SpeckleException("No Speckle accounts found. Visit the Speckle web app to create one."), level: Sentry.Protocol.SentryLevel.Info);
+          Log.CaptureException(new SpeckleException("No Speckle accounts found. Visit the Speckle web app to create one."), level: Sentry.SentryLevel.Info);
         }
         return firstAccount;
       }
