@@ -75,13 +75,16 @@ namespace Speckle.ConnectorAutocadCivil
     public static void Append(this Entity entity, string layer, Transaction tr)
     {
       Document Doc = Application.DocumentManager.MdiActiveDocument;
+      
+      if (entity.IsNewObject)
+      {
+        // open blocktable record for editing
+        BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
 
-      // open blocktable record for editing
-      BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
-
-      entity.Layer = layer;
-      btr.AppendEntity(entity);
-      tr.AddNewlyCreatedDBObject(entity, true);
+        entity.Layer = layer;
+        btr.AppendEntity(entity);
+        tr.AddNewlyCreatedDBObject(entity, true);
+      }
     }
 
     /// <summary>

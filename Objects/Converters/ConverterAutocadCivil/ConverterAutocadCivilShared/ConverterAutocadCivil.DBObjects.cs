@@ -4,9 +4,11 @@ using System.Linq;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
+using System.Drawing;
 
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
+using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
 using Curve = Objects.Geometry.Curve;
@@ -494,8 +496,38 @@ namespace Objects.Converter.AutocadCivil
       return points;
     }
 
+    // Breps
+    public List<AcadDB.Surface> BrepToNativeDB(Brep brep)
+    {
+      return brep.Surfaces.Select(o => SurfaceToNativeDB(o)).ToList();
+    }
+
     // Meshes
+    /* need edge & face info on polygon meshes
     public Mesh MeshToSpeckle(AcadDB.PolygonMesh mesh)
+    {
+      var _vertices = new List<Point3d>();
+      var colors = new List<int>();
+      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      {
+        foreach (ObjectId id in mesh)
+        {
+          var vertex = (PolygonMeshVertex)tr.GetObject(id, OpenMode.ForRead);
+          _vertices.Add(vertex.Position);
+          colors.Add(vertex.Color.ColorValue.ToArgb());
+        }
+        tr.Commit();
+      }
+      var vertices = PointsToFlatArray(_vertices);
+
+      var speckleMesh = new Mesh(vertices, faces, colors.ToArray(), null, ModelUnits);
+      speckleMesh.bbox = BoxToSpeckle(mesh.GeometricExtents, true);
+
+      return speckleMesh;
+    }
+    */
+    // Polyface mesh vertex indexing starts at 1. Subtract 1 from face vertex index when sending to Speckle
+    public Mesh MeshToSpeckle(AcadDB.PolyFaceMesh mesh)
     {
       var _vertices = new List<Point3d>();
       var _faces = new List<int[]>();
@@ -519,10 +551,10 @@ namespace Objects.Converter.AutocadCivil
                 if (index != 0)
                   indices.Add(index);
               }
-              if (indices.Count == 4)
-                _faces.Add(new int[] { 1, indices[0], indices[1], indices[2], indices[3] });
+              if (indices.Count == 4) // vertex index starts at 1 sigh
+                _faces.Add(new int[] { 1, indices[0] - 1, indices[1] - 1, indices[2] - 1, indices[3] - 1 });
               else
-                _faces.Add(new int[] { 0, indices[0], indices[1], indices[2] });
+                _faces.Add(new int[] { 0, indices[0] - 1, indices[1] - 1, indices[2] - 1 });
               break;
           }
         }
@@ -536,11 +568,96 @@ namespace Objects.Converter.AutocadCivil
 
       return speckleMesh;
     }
-
-    public AcadDB.PolygonMesh MeshToNative(Mesh mesh)
+    public Mesh MeshToSpeckle(AcadDB.SubDMesh mesh)
     {
-      var vertixes = PointListToNative(mesh.vertices, mesh.units);
-      return null;
+      // vertices
+      var _vertices = new List<Point3d>();
+      foreach (Point3d point in mesh.Vertices)
+        _vertices.Add(point);
+      var vertices = PointsToFlatArray(_vertices);
+
+      // faces
+      var _faces = new List<int[]>();
+      int[] faceArr = mesh.FaceArray.ToArray(); // contains vertex indices
+      int edgeCount = 0;
+      for (int i = 0; i < faceArr.Length; i = i + edgeCount + 1)
+      {
+        List<int> faceVertices = new List<int>();
+        edgeCount = faceArr[i];
+        for (int j = i + 1; j <= i + edgeCount; j++)
+          faceVertices.Add(faceArr[j]);
+        if (edgeCount == 4) // quad face
+          _faces.Add(new int[] { 1, faceVertices[0], faceVertices[1], faceVertices[2], faceVertices[3] });
+        else // triangle face
+          _faces.Add(new int[] { 0, faceVertices[0], faceVertices[1], faceVertices[2] });
+      }
+      var faces = _faces.SelectMany(o => o).ToArray();
+
+      // colors
+      var colors = mesh.VertexColorArray.Select(o => Color.FromArgb(Convert.ToInt32(o.Red), Convert.ToInt32(o.Green), Convert.ToInt32(o.Blue)).ToArgb()).ToArray();
+      
+      var speckleMesh = new Mesh(vertices, faces, colors, null, ModelUnits);
+      speckleMesh.bbox = BoxToSpeckle(mesh.GeometricExtents, true);
+
+      return speckleMesh;
+    }
+
+    // Polyface mesh vertex indexing starts at 1. Add 1 to face vertex index when converting to native
+    public AcadDB.PolyFaceMesh MeshToNativeDB(Mesh mesh)
+    {
+      // get vertex points
+      Point3d[] points = PointListToNative(mesh.vertices, mesh.units);
+
+      PolyFaceMesh _mesh = null;
+      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      {
+        _mesh = new PolyFaceMesh();
+
+        // append mesh to blocktable record - necessary before adding vertices and faces
+        BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
+        btr.AppendEntity(_mesh);
+        tr.AddNewlyCreatedDBObject(_mesh, true);
+
+        // add polyfacemesh vertices
+        for (int i = 0; i < points.Length; i++)
+        {
+          var vertex = new PolyFaceMeshVertex(points[i]);
+          try
+          {
+            Color color = Color.FromArgb(mesh.colors[i]);
+            vertex.Color = Autodesk.AutoCAD.Colors.Color.FromRgb(color.R, color.G, color.B);
+          }
+          catch { }
+          _mesh.AppendVertex(vertex);
+          tr.AddNewlyCreatedDBObject(vertex, true);
+        }
+
+        // add polyfacemesh faces. vertex index starts at 1 sigh
+        int j = 0;
+        while (j < mesh.faces.Count)
+        {
+          FaceRecord face = null;
+          if (mesh.faces[j] == 0) // triangle
+          {
+            face = new FaceRecord((short)(mesh.faces[j + 1] + 1), (short)(mesh.faces[j + 2] + 1), (short)(mesh.faces[j + 3] + 1), 0);
+            j += 4;
+          }
+          else // quad
+          {
+            face = new FaceRecord((short)(mesh.faces[j + 1] + 1), (short)(mesh.faces[j + 2] + 1), (short)(mesh.faces[j + 3] + 1), (short)(mesh.faces[j + 4] + 1));
+            j += 5;
+          }
+          if (face != null)
+          {
+            _mesh.AppendFaceRecord(face);
+            tr.AddNewlyCreatedDBObject(face, true);
+          }
+        }
+
+        tr.Commit();
+      }
+      
+      return _mesh;
     }
 
   }
