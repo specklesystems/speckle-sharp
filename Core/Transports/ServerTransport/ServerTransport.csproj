@@ -4,10 +4,29 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>8</LangVersion>
     <Version>2.0.0</Version>
+    <PackageId>Speckle.Transports.Server</PackageId>
+    <Authors>Speckle</Authors>
+    <Company>Speckle</Company>
+    <Product>ServerTransport</Product>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Description>A Speckle Server transport</Description>
+    <PackageTags>speckle server transport</PackageTags>
+    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
+    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

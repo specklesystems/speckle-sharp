@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Objects.Converter.Rhino</AssemblyName>
+    <RootNamespace>Objects.Converter.RhinoGh</RootNamespace>
+    <Configurations>Debug;Release</Configurations>
+    <DefineConstants>$(DefineConstants)</DefineConstants>
+    <PackageId>Speckle.Objects.Converter.RhinoGh</PackageId>
+    <Authors>Speckle</Authors>
+    <Company>Speckle</Company>
+    <Product>Objects.Converter.RhinoGh</Product>
+    <Version>2.1.0</Version>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Description>Converter for Rhino and grasshopper</Description>
+    <PackageTags>speckle objects converter rhino grasshopper gh</PackageTags>
+    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
+    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grasshopper" Version="6.33.20343.16431" />
+    <PackageReference Include="RhinoCommon" Version="6.33.20343.16431" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\Objects\Objects.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (&#xA;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;)" />
+  </Target>
+
+  <!--OLD code for msbuild, to be updated for mac
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <PostBuildEvent>Copy "$(TargetDir)$(AssemblyName).dll" "$(AppData)\Speckle\Kits\Objects\"</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
+    <PostBuildEvent>mkdir -p $HOME/.config/Speckle/Kits/Objects</PostBuildEvent>
+    <PostBuildEvent>cp '$(TargetDir)$(AssemblyName).dll' $HOME/.config/Speckle/Kits/Objects/</PostBuildEvent>
+  </PropertyGroup>-->
+</Project>

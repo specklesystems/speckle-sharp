@@ -59,7 +59,7 @@
       </DataTemplate>
     </ResourceDictionary>
   </UserControl.Resources>
-  <Grid Margin="24,0,24,36">
+  <Grid Margin="24 0">
     <Grid.RowDefinitions>
       <RowDefinition x:Name="CloseButtonRow"
         Height="Auto" />
@@ -183,7 +183,7 @@
           Grid.Column="1"
           Margin="8"
           HorizontalAlignment="Right"
-          md:ShadowAssist.ShadowDepth="Depth4"
+          md:ShadowAssist.ShadowDepth="Depth2"
           Command="{s:Action AddSimpleStream}"
           CommandParameter="2"
           Content="{md:PackIcon Kind=Plus,
@@ -193,10 +193,12 @@
         <Separator Grid.Row="1"
           Visibility="{Binding HasSearchResults, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
         <ItemsControl Grid.Row="2"
+          Margin="0 0 0 36"
           ItemTemplate="{StaticResource StreamCardTemplate}"
           ItemsSource="{Binding StreamSearchResults, Mode=OneWay, UpdateSourceTrigger=Default}" />
+
+        <md:Snackbar MessageQueue="{Binding Notifications}" Margin="0 0 0 -36"/>
       </Grid>
     </ScrollViewer>
-    <md:Snackbar MessageQueue="{Binding Notifications}" />
   </Grid>
 </UserControl>

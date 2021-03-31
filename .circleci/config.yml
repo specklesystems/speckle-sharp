@@ -10,6 +10,30 @@ orbs:
   # Upload artifacts to s3
   aws-s3: circleci/aws-s3@2.0.0
 
+# adapted from https://circleci.com/developer/orbs/orb/storytel/nugetpublish#commands-packandpublish
+commands:
+  packandpublish:
+    parameters:
+      projectfilepath:
+        type: string
+      nugetoutputpath:
+        type: string
+        default: output
+      nobuildonpack:
+        type: boolean
+        default: true
+    steps:
+      - run:
+          name: Publish nuget package
+          command: |
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "a/0.0.$($env:CIRCLE_BUILD_NUM)-beta" } else { $env:CIRCLE_TAG }
+            $version = $tag.Split("/")[1]  
+            dotnet pack -c Release <<#parameters.nobuildonpack>>--no-build<</parameters.nobuildonpack>> /p:Version="$version" -o $HOME/<<parameters.nugetoutputpath>> <<parameters.projectfilepath>> 
+            cd $HOME/<<parameters.nugetoutputpath>>
+            ls
+            dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
+
+
 # Parameters of our pipeline. Most of them are booleans that indicate which project to build/test with the pattern 'run_{PROJECT_NAME}'
 parameters:
   # This parameter is initially set to true to run the 'ci' workflow. After first execution, the parameter will be set to false, preventing multiple executions of the selective-ci job on the same commit.
@@ -61,32 +85,27 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           ]'
   
   build-core:
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    executor:
+      name: win/default
+      shell: powershell.exe
     steps:
       - checkout
       - run: 
-          name: Restore Core packages
-          command: dotnet restore Core/Core.sln
-      - run: 
           name: Build Core
-          command: dotnet build Core/Core.sln --no-restore
+          command: dotnet build Core/Core.sln -c Release -v q
 
   test-core: 
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+    executor:
+      name: win/default
+      shell: powershell.exe
     steps:
       - checkout 
-      - run:
-          command: dotnet restore Core/Core.sln
-      - run:
-          command: dotnet build Core/Core.sln
       - run: 
           name: Unit Tests
-          command: dotnet test Core/Tests/TestsUnit.csproj --no-restore --no-build
+          command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q
       - run:
           name: Integration Tests # The integration tests are runinng on our test sevrer
-          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj --logger:"Console;noprogress=true" --no-restore --no-build
+          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q
 
   build-objects:
     executor:
@@ -94,12 +113,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       shell: powershell.exe
     steps:
       - checkout
-      - run:
-          name: Restore Objects Packages
-          command: nuget restore Objects/Objects.sln 
       - run: 
           name: Build Objects
-          command: msbuild Objects/Objects.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+          command: dotnet build Objects/Objects.sln -c Release /p:IsDesktopBuild=false -v q
 
   build-connector: # Reusable job for basic connectors
     executor:
@@ -185,9 +201,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           to: s3://speckle-releases/installers/
 
 
-
-
-
 # The main workflows for our monorepo pipeline.
 # The main workflow is called 'ci': It is the workflow responsible of determining which projects to build/test.
 # There should be at least one workflow per project in the monorepo. Each workflow should be run only when a boolean parameter is passed that corresponds to the pattern 'run_{PROJECT_NAME}'. 
@@ -258,7 +271,31 @@ workflows:
           name: build-connector-autocadcivil
           slnname: ConnectorAutocadCivil
           dllname: SpeckleConnectorCivil.dll
-      
+
+  nuget:
+    jobs:
+      # CORE Nuget Publish        
+      - build-core:
+          name: nuget-deploy-core
+          filters:
+            branches:
+              ignore: /.*/ # For testing only: /ci\/.*/
+            tags: # DO NOT RUN on "all" as already being pushed by objects     
+              only: /^(core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
+          post-steps:
+            - packandpublish: 
+                projectfilepath: Core/Core.sln
+      - build-objects:
+          name: nuget-deploy-objects
+          filters:
+            branches:
+              ignore: /.*/ # For testing only: /ci\/.*/
+            tags:
+              only: /^(objects|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
+          post-steps:
+            - packandpublish: 
+                projectfilepath: Objects/Objects.sln
+
   # Makes installers based on which tag is provided
   # Tag has to be provided in the format "appname/1.0.0"
   # If the tag is in the format "all/1.0.0", all connectors will be deployed with the same version number
@@ -267,10 +304,9 @@ workflows:
       - get-ci-tools:
           filters:
             branches:
-              only: /ci\/.*/ # For testing only! We can use branches like ci/test so won't need to tag
-            tags:
-              # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"
-              only: /^\w*\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              ignore: /.*/ # For testing only: /ci\/.*/
+            tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"         
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # DYNAMO Build&Deploy
       - build-connector:
@@ -283,7 +319,7 @@ workflows:
             - get-ci-tools
           filters:
             branches:
-              only: /ci\/.*/ # For testing only!
+              ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(dynamo|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/         
 
@@ -298,10 +334,9 @@ workflows:
             - get-ci-tools
           filters:
             branches:
-              only: /ci\/.*/ # For testing only!
+              ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(revit|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
-
 
       # GRASSHOPPER Build&Deploy
       - build-connector:
@@ -314,10 +349,9 @@ workflows:
             - get-ci-tools
           filters:
             branches:
-              only: /ci\/.*/ # For testing only!
+              ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(grasshopper|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
-
 
       # RHINO Build&Deploy
       - build-connector:
@@ -330,7 +364,7 @@ workflows:
             - get-ci-tools
           filters:
             branches:
-              only: /ci\/.*/ # For testing only!
+              ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(rhino|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
@@ -345,7 +379,7 @@ workflows:
             - get-ci-tools
           filters:
             branches:
-              only: /ci\/.*/ # For testing only!
+              ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(autocadcivil|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
@@ -360,7 +394,7 @@ workflows:
             - get-ci-tools
           filters:
             branches:
-              only: /ci\/.*/ # For testing only!
+              ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(autocadcivil|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
      
@@ -376,4 +410,4 @@ workflows:
             - build-deploy-connector-civil3d
           filters:
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"
-              only: /^\w*\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
