@@ -15,6 +15,13 @@ namespace Speckle.DesktopUI
   {
     public ConnectorBindings Bindings = new DummyBindings();
 
+    private Window _rootWindow;
+
+    public Window RootWindow
+    {
+      get => _rootWindow ?? ( _rootWindow = ( Window ) RootViewModel.View );
+    }
+
     protected override void OnStart()
     {
       base.OnStart();
@@ -24,9 +31,15 @@ namespace Speckle.DesktopUI
       Stylet.Logging.LogManager.Enabled = true;
     }
 
-    protected override void OnExit(ExitEventArgs e)
+    public void ShowRootView()
     {
-      base.OnExit(e);
+      RootWindow.Show();
+      RootWindow.Activate();
+    }
+
+    public void CloseRootView()
+    {
+      RootViewModel.RequestClose();
     }
 
     protected override void ConfigureIoC(IStyletIoCBuilder builder)
