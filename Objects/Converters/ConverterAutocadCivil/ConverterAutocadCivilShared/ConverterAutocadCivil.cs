@@ -100,9 +100,6 @@ namespace Objects.Converter.AutocadCivil
         case Acad.Geometry.Curve3d o:
           return CurveToSpeckle(o) as Base;
 
-        case Acad.Geometry.NurbSurface o:
-          return SurfaceToSpeckle(o);
-
         default:
           throw new NotSupportedException();
       }
@@ -203,6 +200,12 @@ namespace Objects.Converter.AutocadCivil
         case AcadDB.Polyline2d o:
           return PolycurveToSpeckle(o);
 
+        case AcadDB.NurbSurface o:
+          return SurfaceToSpeckle(o);
+
+        case AcadDB.PolygonMesh o:
+          return MeshToSpeckle(o);
+
 #if CIVIL2021
         case CivilDB.FeatureLine o:
           return FeatureLineToSpeckle(o);
@@ -247,6 +250,12 @@ namespace Objects.Converter.AutocadCivil
             case AcadDB.Polyline3d _:
               return true;
 
+            case AcadDB.NurbSurface _:
+              return true;
+
+            case AcadDB.PolygonMesh _:
+              return true;
+
             default:
               return false;
           }
@@ -281,7 +290,6 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
-
     public bool CanConvertToNative(Base @object)
     {
       switch (@object)
@@ -310,9 +318,13 @@ namespace Objects.Converter.AutocadCivil
         case Curve _:
           return true;
 
+        case Surface _:
+          return true;
+
         default:
           return false;
       }
     }
+
   }
 }

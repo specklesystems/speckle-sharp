@@ -8,10 +8,12 @@ using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Circle = Objects.Geometry.Circle;
+using ControlPoint = Objects.Geometry.ControlPoint;
 using Curve = Objects.Geometry.Curve;
 using Ellipse = Objects.Geometry.Ellipse;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
+using Mesh = Objects.Geometry.Mesh;
 using Surface = Objects.Geometry.Surface;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
@@ -411,12 +413,133 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Surfaces
-    public Surface SurfaceToSpeckle(AcadDB.Surface surface)
+    public Surface SurfaceToSpeckle(AcadDB.NurbSurface surface)
     {
-      return null;
+      List<double> Uknots = new List<double>();
+      List<double> Vknots = new List<double>();
+      foreach (var knot in surface.UKnots)
+        Uknots.Add((double)knot);
+      foreach (var knot in surface.VKnots)
+        Vknots.Add((double)knot);
+
+      var _surface = new Surface
+      {
+        degreeU = surface.DegreeInU,
+        degreeV = surface.DegreeInV,
+        rational = surface.IsRational,
+        closedU = surface.IsClosedInU,
+        closedV = surface.IsClosedInV,
+        knotsU = Uknots,
+        knotsV = Vknots,
+        countU = surface.NumberOfControlPointsInU,
+        countV = surface.NumberOfControlPointsInV
+      };
+      _surface.SetControlPoints(ControlPointsToSpeckle(surface));
+      _surface.bbox = BoxToSpeckle(surface.GeometricExtents, true);
+      _surface.units = ModelUnits;
+
+      return _surface;
     }
     public AcadDB.Surface SurfaceToNativeDB(Surface surface)
     {
+      // get control points
+      Point3dCollection controlPoints = new Point3dCollection();
+      DoubleCollection weights = new DoubleCollection();
+      var points = surface.GetControlPoints();
+      for (var i = 0; i < points.Count; i++)
+      {
+        for (var j = 0; j < points[i].Count; j++)
+        {
+          var pt = points[i][j];
+          controlPoints.Add(PointToNative(pt));
+          weights.Add(pt.weight);
+        }
+      }
+
+      // get knots
+      var knotsU = new KnotCollection();
+      var knotsV = new KnotCollection();
+      foreach (var knotU in surface.knotsU)
+        knotsU.Add(knotU);
+      foreach (var knotV in surface.knotsV)
+        knotsV.Add(knotV);
+
+      var _surface = new AcadDB.NurbSurface(
+        surface.degreeU,
+        surface.degreeV,
+        surface.rational,
+        surface.countU,
+        surface.countV,
+        controlPoints,
+        weights,
+        knotsU,
+        knotsV);
+
+      return _surface;
+    }
+    public List<List<ControlPoint>> ControlPointsToSpeckle(AcadDB.NurbSurface surface)
+    {
+      var points = new List<List<ControlPoint>>();
+      for (var i = 0; i < surface.NumberOfControlPointsInU; i++)
+      {
+        var row = new List<ControlPoint>();
+        for (var j = 0; j < surface.NumberOfControlPointsInV; j++)
+        {
+          var point = surface.GetControlPointAt(i, j);
+          var weight = surface.GetWeight(i, j);
+          row.Add(new ControlPoint(point.X, point.Y, point.Z, weight, ModelUnits));
+        }
+        points.Add(row);
+      }
+      return points;
+    }
+
+    // Meshes
+    public Mesh MeshToSpeckle(AcadDB.PolygonMesh mesh)
+    {
+      var _vertices = new List<Point3d>();
+      var _faces = new List<int[]>();
+      var colors = new List<int>();
+      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      {
+        foreach (ObjectId id in mesh)
+        {
+          DBObject obj = tr.GetObject(id, OpenMode.ForRead);
+          switch (obj)
+          {
+            case PolyFaceMeshVertex o:
+              _vertices.Add(o.Position);
+              colors.Add(o.Color.ColorValue.ToArgb());
+              break;
+            case FaceRecord o:
+              var indices = new List<int>();
+              for (short i = 0; i < 4; i++)
+              {
+                short index = o.GetVertexAt(i);
+                if (index != 0)
+                  indices.Add(index);
+              }
+              if (indices.Count == 4)
+                _faces.Add(new int[] { 1, indices[0], indices[1], indices[2], indices[3] });
+              else
+                _faces.Add(new int[] { 0, indices[0], indices[1], indices[2] });
+              break;
+          }
+        }
+        tr.Commit();
+      }
+      var vertices = PointsToFlatArray(_vertices);
+      var faces = _faces.SelectMany(o => o).ToArray();
+
+      var speckleMesh = new Mesh(vertices, faces, colors.ToArray(), null, ModelUnits);
+      speckleMesh.bbox = BoxToSpeckle(mesh.GeometricExtents, true);
+
+      return speckleMesh;
+    }
+
+    public AcadDB.PolygonMesh MeshToNative(Mesh mesh)
+    {
+      var vertixes = PointListToNative(mesh.vertices, mesh.units);
       return null;
     }
 
