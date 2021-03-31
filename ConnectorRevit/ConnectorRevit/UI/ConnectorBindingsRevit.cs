@@ -125,7 +125,7 @@ namespace Speckle.ConnectorRevit.UI
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
       {
-        SpeckleRevitCommand.OpenOrFocusSpeckle(RevitApp);
+        SpeckleRevitCommand.OpenOrFocusSpeckle();
       }
 
       var appEvent = new ApplicationEvent()

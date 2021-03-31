@@ -5,52 +5,42 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Speckle.ConnectorRevit.UI;
 using Speckle.DesktopUI;
+using Stylet.Xaml;
 
 namespace Speckle.ConnectorRevit.Entry
 {
   [Transaction(TransactionMode.Manual)]
   public class SpeckleRevitCommand : IExternalCommand
   {
-
     public static Bootstrapper Bootstrapper { get; set; }
     public static ConnectorBindingsRevit Bindings { get; set; }
 
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
-      OpenOrFocusSpeckle(commandData.Application);
+      OpenOrFocusSpeckle();
       return Result.Succeeded;
     }
 
-    public static void OpenOrFocusSpeckle(UIApplication app)
+    public static void OpenOrFocusSpeckle()
     {
       try
       {
-        if (Bootstrapper != null)
+        if ( Bootstrapper != null )
         {
-          Bootstrapper.Application.MainWindow.Show();
+          Bootstrapper.ShowRootView();
           return;
         }
 
-        Bootstrapper = new Bootstrapper()
-        {
-          Bindings = Bindings
-        };
+        Bootstrapper = new Bootstrapper() {Bindings = Bindings};
 
-        Bootstrapper.Setup(Application.Current != null ? Application.Current : new Application());
+        new ApplicationLoader() {Bootstrapper = Bootstrapper};
 
-        Bootstrapper.Application.Startup += (o, e) =>
-        {
-          var helper = new System.Windows.Interop.WindowInteropHelper(Bootstrapper.Application.MainWindow);
-          helper.Owner = app.MainWindowHandle;
-        };
-
+        Bootstrapper.Start(null);
       }
-      catch (Exception e)
+      catch ( Exception e )
       {
-
+        Bootstrapper = null;
       }
     }
-
   }
-
 }
