@@ -233,7 +233,15 @@ namespace Speckle.DesktopUI.Streams
       }
       catch (Exception e)
       {
-        await client.StreamDelete(StreamToCreate.id);
+        try
+        {
+          await client.StreamDelete(StreamToCreate.id);
+        }
+        catch
+        {
+          // POKEMON! (server is prob down)
+        }
+
         Log.CaptureException(e);
         Notifications.Enqueue($"Error: {e.Message}");
       }
