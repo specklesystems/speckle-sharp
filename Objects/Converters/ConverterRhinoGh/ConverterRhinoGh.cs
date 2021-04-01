@@ -3,6 +3,7 @@ using Objects.Geometry;
 using Objects.Primitive;
 using Rhino;
 using Rhino.Geometry;
+using Rhino.Display;
 using Rhino.DocObjects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -23,6 +24,7 @@ using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
+using View3D = Objects.BuiltElements.View3D;
 
 using RH = Rhino.Geometry;
 
@@ -151,6 +153,9 @@ namespace Objects.Converter.RhinoGh
           break;
         case NurbsSurface o:
           @base = SurfaceToSpeckle(o);
+          break;
+        case ViewInfo o:
+          @base = ViewToSpeckle(o);
           break;
         default:
           throw new NotSupportedException();
@@ -306,6 +311,9 @@ namespace Objects.Converter.RhinoGh
         case DirectShape o:
           return (o.displayMesh != null) ? MeshToNative(o.displayMesh) : null;
 
+        case View3D o:
+          return ViewToNative(o);
+
         default:
           throw new NotSupportedException();
       }
@@ -452,6 +460,9 @@ namespace Objects.Converter.RhinoGh
           return true;
 
         case DirectShape _:
+          return true;
+
+        case View3D _:
           return true;
 
         default:

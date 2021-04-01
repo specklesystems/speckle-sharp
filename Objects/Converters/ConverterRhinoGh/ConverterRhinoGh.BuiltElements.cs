@@ -2,6 +2,8 @@ using Grasshopper.Kernel.Types;
 using Objects.Geometry;
 using Objects.Primitive;
 using Rhino.Geometry;
+using Rhino.Display;
+using Rhino.DocObjects;
 using Rhino.Geometry.Collections;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
@@ -15,6 +17,7 @@ using Floor = Objects.BuiltElements.Floor;
 using Ceiling = Objects.BuiltElements.Ceiling;
 using Roof = Objects.BuiltElements.Roof;
 using Opening = Objects.BuiltElements.Opening;
+using View3D = Objects.BuiltElements.View3D;
 using RH = Rhino.Geometry;
 using RV = Objects.BuiltElements.Revit;
 
@@ -22,6 +25,32 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
+    public View3D ViewToSpeckle(ViewInfo view)
+    {
+      var _view = new View3D();
+      _view.name = view.Name;
+      _view.upDirection = VectorToSpeckle(view.Viewport.CameraUp, ModelUnits);
+      _view.forwardDirection = VectorToSpeckle(view.Viewport.CameraDirection, ModelUnits);
+      _view.origin = PointToSpeckle(view.Viewport.CameraLocation, ModelUnits);
+      _view.isOrthogonal = (view.Viewport.IsParallelProjection) ? true : false;
+      _view.units = ModelUnits;
+
+      return _view;
+    }
+    public Rhino.Display.RhinoViewport ViewToNative(View3D view)
+    {
+      Doc.Views.ActiveView.ActiveViewport.ChangeToPerspectiveProjection(true, 50);
+      Rhino.Display.RhinoViewport viewport = Doc.Views.ActiveView.ActiveViewport;
+      if (view.isOrthogonal)
+        viewport.ChangeToParallelProjection(true);
+
+      viewport.SetCameraLocation(PointToNative(view.origin).Location, true);
+      viewport.SetCameraDirection(VectorToNative(view.forwardDirection), true);
+      viewport.CameraUp = VectorToNative(view.upDirection);
+      viewport.Name = view.name;
+
+      return viewport;
+    }
 
     public Column CurveToSpeckleColumn(RH.Curve curve)
     {
