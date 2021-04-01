@@ -312,8 +312,9 @@ namespace Speckle.Core.Serialisation
       if (value.GetType().IsPrimitive || value is string)
       {
         FirstEntry = false;
-        var t = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer
-        t.WriteTo(writer);
+        writer.WriteValue(value);
+        //var t = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer
+        //t.WriteTo(writer);
         return;
       }
 

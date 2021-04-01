@@ -20,21 +20,21 @@ namespace Objects.Geometry
     public bool rational { get; set; }
 
     [DetachProperty]
-    [Chunkable(20000)]
+    [Chunkable(31250)]
     public List<double> points { get; set; }
 
     /// <summary>
     /// Gets or sets the weights for this <see cref="Curve"/>. Use a default value of 1 for unweighted points.
     /// </summary>
     [DetachProperty]
-    [Chunkable(20000)]
+    [Chunkable(31250)]
     public List<double> weights { get; set; }
 
     /// <summary>
     /// Gets or sets the knots for this <see cref="Curve"/>. Count should be equal to <see cref="points"/> count + <see cref="degree"/> + 1.
     /// </summary>
     [DetachProperty]
-    [Chunkable(20000)]
+    [Chunkable(31250)]
     public List<double> knots { get; set; }
 
     public Interval domain { get; set; }

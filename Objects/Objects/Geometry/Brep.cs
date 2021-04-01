@@ -25,6 +25,8 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<Surface> Surfaces { get; set; }
+    [DetachProperty]
+    [Chunkable(31250)]
     public List<double> SurfacesValue
     {
       get
@@ -58,6 +60,8 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<ICurve> Curve3D { get; set; }
+    [DetachProperty]
+    [Chunkable(31250)]
     public List<double> Curve3DValues
     {
       get
@@ -76,6 +80,8 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<ICurve> Curve2D { get; set; }
+    [DetachProperty]
+    [Chunkable(31250)]
     public List<double> Curve2DValues
     {
       get
@@ -94,6 +100,8 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<Point> Vertices { get; set; }
+    [DetachProperty]
+    [Chunkable(31250)]
     public List<double> VerticesValue
     {
       get
@@ -136,6 +144,8 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<BrepTrim> Trims { get; set; }
+    [DetachProperty]
+    [Chunkable(62500)]
     public List<int> TrimsValue
     {
       get
