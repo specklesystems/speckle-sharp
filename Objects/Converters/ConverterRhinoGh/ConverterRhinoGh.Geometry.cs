@@ -694,7 +694,7 @@ namespace Objects.Converter.RhinoGh
     /// <returns></returns>
     public Brep BrepToSpeckle(RH.Brep brep, string units = null)
     {
-      var tol = 0.0;
+      var tol = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
       var u = units ?? ModelUnits;
       brep.Repair(tol); //should maybe use ModelAbsoluteTolerance ?
       foreach (var f in brep.Faces)
@@ -768,8 +768,8 @@ namespace Objects.Converter.RhinoGh
           spcklBrep,
           edge.EdgeCurveIndex,
           edge.TrimIndices(),
-          edge.StartVertex.VertexIndex,
-          edge.EndVertex.VertexIndex,
+          edge.StartVertex?.VertexIndex ?? -1,
+          edge.EndVertex?.VertexIndex ?? -1,
           edge.ProxyCurveIsReversed,
           IntervalToSpeckle(edge.Domain)
         )).ToList();
@@ -922,65 +922,6 @@ namespace Objects.Converter.RhinoGh
 
       return myExtrusion;
     }
-
-    //  Curve profile = null;
-    //  try
-    //  {
-    //    var toNativeMethod = extrusion.Profile.GetType().GetMethod( "ToNative" );
-    //    profile = ( Curve ) toNativeMethod.Invoke( extrusion.Profile, new object[ ] { extrusion.Profile } );
-    //    if ( new string[ ] { "Polyline", "Polycurve" }.Contains( extrusion.Profile.Type ) )
-    //      try
-    //      {
-    //        var IsClosed = extrusion.Profile.GetType().GetProperty( "IsClosed" ).GetValue( extrusion.Profile, null ) as bool?;
-    //        if ( IsClosed != true )
-    //        {
-    //          profile.Reverse();
-    //        }
-    //      }
-    //      catch { }
-
-    //    //switch ( extrusion.Profile )
-    //    //{
-    //    //  case SpeckleCore.SpeckleCurve curve:
-    //    //    profile = curve.ToNative();
-    //    //    break;
-    //    //  case SpeckleCore.SpecklePolycurve polycurve:
-    //    //    profile = polycurve.ToNative();
-    //    //    if ( !profile.IsClosed )
-    //    //      profile.Reverse();
-    //    //    break;
-    //    //  case SpeckleCore.SpecklePolyline polyline:
-    //    //    profile = polyline.ToNative();
-    //    //    if ( !profile.IsClosed )
-    //    //      profile.Reverse();
-    //    //    break;
-    //    //  case SpeckleCore.SpeckleArc arc:
-    //    //    profile = arc.ToNative();
-    //    //    break;
-    //    //  case SpeckleCore.SpeckleCircle circle:
-    //    //    profile = circle.ToNative();
-    //    //    break;
-    //    //  case SpeckleCore.SpeckleEllipse ellipse:
-    //    //    profile = ellipse.ToNative();
-    //    //    break;
-    //    //  case SpeckleCore.SpeckleLine line:
-    //    //    profile = line.ToNative();
-    //    //    break;
-    //    //  default:
-    //    //    profile = null;
-    //    //    break;
-    //    //}
-    //  }
-    //  catch { }
-    //  var x = new Extrusion();
-
-    //  if ( profile == null ) return null;
-
-    //  var myExtrusion = Extrusion.Create( profile.ToNurbsCurve(), ( double ) extrusion.Length, ( bool ) extrusion.Capped );
-
-    //  myExtrusion.UserDictionary.ReplaceContentsWith( extrusion.Properties.ToNative() );
-    //  return myExtrusion;
-    //}
 
     // Proper explosion of polycurves:
     // (C) The Rutten David https://www.grasshopper3d.com/forum/topics/explode-closed-planar-curve-using-rhinocommon

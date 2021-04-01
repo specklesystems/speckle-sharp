@@ -290,7 +290,7 @@ namespace Speckle.Core.Serialisation
     // the parent object being last. 
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
     {
-      var xxxx = serializer.ReferenceLoopHandling;
+      writer.Formatting = serializer.Formatting;
       if (CancellationToken.IsCancellationRequested)
       {
         return; // Check for cancellation
@@ -459,7 +459,7 @@ namespace Speckle.Core.Serialisation
 
         if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && WriteTransports != null && WriteTransports.Count != 0)
         {
-          var objString = jo.ToString();
+          var objString = jo.ToString(writer.Formatting);
           var objId = jo["id"].Value<string>();
 
           OnProgressAction?.Invoke("S", 1);
