@@ -216,9 +216,10 @@ namespace Speckle.Core.Serialisation
 
         // first attempt to find a settable property, otherwise fall back to a dynamic set without type
         JsonProperty property = contract.Properties.GetClosestMatchProperty(jProperty.Name);
-
-        if (property != null && property.Writable && !property.Ignored)
+        
+        if (property != null && property.Writable)
         {
+
           if (type == typeof(Abstract) && property.PropertyName == "base")
           {
             var propertyValue = SerializationUtilities.HandleAbstractOriginalValue(jProperty.Value, ((JValue)jObject.GetValue("assemblyQualifiedName")).Value as string, serializer);
