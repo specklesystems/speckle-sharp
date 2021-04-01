@@ -17,6 +17,7 @@ using Floor = Objects.BuiltElements.Floor;
 using Ceiling = Objects.BuiltElements.Ceiling;
 using Roof = Objects.BuiltElements.Roof;
 using Opening = Objects.BuiltElements.Opening;
+using Point = Objects.Geometry.Point;
 using View3D = Objects.BuiltElements.View3D;
 using RH = Rhino.Geometry;
 using RV = Objects.BuiltElements.Revit;
@@ -29,25 +30,59 @@ namespace Objects.Converter.RhinoGh
     {
       var _view = new View3D();
       _view.name = view.Name;
-      _view.upDirection = VectorToSpeckle(view.Viewport.CameraUp, ModelUnits);
-      _view.forwardDirection = VectorToSpeckle(view.Viewport.CameraDirection, ModelUnits);
-      _view.origin = PointToSpeckle(view.Viewport.CameraLocation, ModelUnits);
+      _view.upDirection = VectorToSpeckle(view.Viewport.CameraUp);
+      _view.forwardDirection = VectorToSpeckle(view.Viewport.CameraDirection);
+      _view.origin = PointToSpeckle(view.Viewport.CameraLocation);
       _view.isOrthogonal = (view.Viewport.IsParallelProjection) ? true : false;
       _view.units = ModelUnits;
 
+      // attach props
+      AttachViewParams(_view, view);
+
       return _view;
     }
-    public Rhino.Display.RhinoViewport ViewToNative(View3D view)
+    public RhinoViewport ViewToNative(View3D view)
     {
-      Doc.Views.ActiveView.ActiveViewport.ChangeToPerspectiveProjection(true, 50);
-      Rhino.Display.RhinoViewport viewport = Doc.Views.ActiveView.ActiveViewport;
+      RhinoView _view = Doc.Views.ActiveView;
+      RhinoViewport viewport = _view.ActiveViewport;
       if (view.isOrthogonal)
         viewport.ChangeToParallelProjection(true);
+      else
+        viewport.ChangeToPerspectiveProjection(true, 50);
 
       viewport.SetCameraLocation(PointToNative(view.origin).Location, true);
       viewport.SetCameraDirection(VectorToNative(view.forwardDirection), true);
       viewport.CameraUp = VectorToNative(view.upDirection);
       viewport.Name = view.name;
+
+      // set props
+      SetViewParams(viewport, view);
+
+      // reset active view
+      _view.Redraw();
+
+      return viewport;
+    }
+
+    private void AttachViewParams(Base speckleView, ViewInfo view)
+    {
+      // target
+      speckleView["target"] = PointToSpeckle(view.Viewport.TargetPoint);
+
+      // lens
+      speckleView["lens"] = view.Viewport.Camera35mmLensLength;
+    }
+    private RhinoViewport SetViewParams(RhinoViewport viewport, Base speckleView)
+    {
+      // target
+      var target = speckleView["target"] as Point;
+      if (target != null)
+        viewport.SetCameraTarget(PointToNative(target).Location, false);
+
+      // lens
+      var lens = speckleView["lens"] as double?;
+      if (lens != null)
+        viewport.Camera35mmLensLength = (double)lens;
 
       return viewport;
     }
