@@ -99,24 +99,10 @@ namespace Speckle.Core.Models
     {
       get
       {
-        //dynamic property - exact match
         if (properties.ContainsKey(key))
           return properties[key];
 
-        //dynamic property - accessing a non detached prop with @
-        if (key.StartsWith("@") && properties.ContainsKey(key.Substring(1)))
-          return properties[key.Substring(1)];
-
-        //dynamic property - accessing a detached prop without @
-        if (!key.StartsWith("@") && properties.ContainsKey("@" + key))
-          return properties["@" + key];
-
-        //typed property - exact match
         var prop = GetType().GetProperty(key);
-
-        //typed property - accessing a detached prop with @
-        if (prop == null && key.StartsWith("@"))
-          prop = GetType().GetProperty(key.Substring(1));
 
         if (prop == null)
           return null;
@@ -127,34 +113,14 @@ namespace Speckle.Core.Models
       {
         if (!IsPropNameValid(key, out string reason)) throw new SpeckleException("Invalid prop name: " + reason);
 
-        //dynamic property - exact match
         if (properties.ContainsKey(key))
         {
           properties[key] = value;
           return;
         }
 
-        //dynamic property - accessing a non detached prop with @
-        if (key.StartsWith("@") && properties.ContainsKey(key.Substring(1)))
-        {
-          properties[key.Substring(1)] = value;
-          return;
-        }
-
-        //dynamic property - accessing a detached prop without @
-        if (!key.StartsWith("@") && properties.ContainsKey("@" + key))
-        {
-          properties["@" + key] = value;
-          return;
-        }
-
         var prop = this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(p => p.Name == key);
 
-        //typed property - accessing a detached prop with @
-        if (prop == null && key.StartsWith("@"))
-          prop = GetType().GetProperty(key.Substring(1));
-
-        //create new dynamic property
         if (prop == null)
         {
           properties[key] = value;
