@@ -7,7 +7,7 @@ using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
-using Sentry.Protocol;
+using Sentry;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;

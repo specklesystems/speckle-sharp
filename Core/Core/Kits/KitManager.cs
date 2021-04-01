@@ -99,7 +99,7 @@ namespace Speckle.Core.Kits
     /// <param name="kitFolderLocation"></param>
     public static void Initialize(string kitFolderLocation)
     {
-      if (_initialized)throw new SpeckleException("The kit manager has already been initialised. Make sure you call this method earlier in your code!", level : Sentry.Protocol.SentryLevel.Warning);
+      if (_initialized)throw new SpeckleException("The kit manager has already been initialised. Make sure you call this method earlier in your code!", level : Sentry.SentryLevel.Warning);
 
       KitsFolder = kitFolderLocation;
       Load();

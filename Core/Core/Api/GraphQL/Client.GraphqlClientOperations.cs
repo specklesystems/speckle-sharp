@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
-using Sentry.Protocol;
+using Sentry;
 using Speckle.Core.Logging;
 
 namespace Speckle.Core.Api

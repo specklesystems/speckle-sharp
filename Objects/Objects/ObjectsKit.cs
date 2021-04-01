@@ -84,7 +84,7 @@ namespace Objects
         }
         else
         {
-          throw new SpeckleException($"Converter for {app} was not found in kit {basePath}", level: Sentry.Protocol.SentryLevel.Warning);
+          throw new SpeckleException($"Converter for {app} was not found in kit {basePath}", level: Sentry.SentryLevel.Warning);
         }
 
       }
