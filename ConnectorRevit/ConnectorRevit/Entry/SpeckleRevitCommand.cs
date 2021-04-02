@@ -33,9 +33,13 @@ namespace Speckle.ConnectorRevit.Entry
 
         Bootstrapper = new Bootstrapper() {Bindings = Bindings};
 
-        new ApplicationLoader() {Bootstrapper = Bootstrapper};
+        if ( Application.Current != null )
+          new StyletAppLoader() {Bootstrapper = Bootstrapper};
+        else
+          new DesktopUI.App(Bootstrapper);
 
-        Bootstrapper.Start(null);
+
+        Bootstrapper.Start(Application.Current);
       }
       catch ( Exception e )
       {
@@ -43,4 +47,5 @@ namespace Speckle.ConnectorRevit.Entry
       }
     }
   }
+
 }
