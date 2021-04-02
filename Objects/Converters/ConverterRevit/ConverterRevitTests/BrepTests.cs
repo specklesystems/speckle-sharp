@@ -29,7 +29,6 @@ namespace ConverterRevitTests
       _testOutputHelper = testOutputHelper;
       this.fixture = fixture;
     }
-    public static string TestFolder => @"Y:\Documents\Speckle\speckle-sharp\Objects\Converters\ConverterRevit\TestModels\";
     
     [Theory]
     [Trait("Brep", "ToNative")]
@@ -51,7 +50,7 @@ namespace ConverterRevitTests
     {
     
       // Read and obtain `base` object.
-      var contents = System.IO.File.ReadAllText(TestFolder + fileName);
+      var contents = System.IO.File.ReadAllText(Globals.GetTestModel(fileName));
       var converter = new ConverterRevit();
       var @base = Operations.Deserialize(contents);
       
