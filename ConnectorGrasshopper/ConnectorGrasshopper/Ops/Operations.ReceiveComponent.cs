@@ -212,11 +212,15 @@ namespace ConnectorGrasshopper.Ops
       }
 
       Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Cancel", (s, e) =>
+
+      if (CurrentComponentState == "receiving")
       {
-        CurrentComponentState = "expired";
-        RequestCancellation();
-      });
+        Menu_AppendItem(menu, "Cancel Receive", (s, e) =>
+        {
+          CurrentComponentState = "expired";
+          RequestCancellation();
+        });
+      }
 
       base.AppendAdditionalComponentMenuItems(menu);
     }

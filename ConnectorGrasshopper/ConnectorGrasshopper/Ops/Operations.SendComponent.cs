@@ -181,11 +181,14 @@ namespace ConnectorGrasshopper.Ops
       }
       Menu_AppendSeparator(menu);
 
-      Menu_AppendItem(menu, "Cancel", (s, e) =>
+      if (CurrentComponentState == "sending")
       {
-        CurrentComponentState = "expired";
-        RequestCancellation();
-      });
+        Menu_AppendItem(menu, "Cancel Send", (s, e) =>
+        {
+          CurrentComponentState = "expired";
+          RequestCancellation();
+        });
+      }
 
       base.AppendAdditionalComponentMenuItems(menu);
     }
@@ -342,6 +345,7 @@ namespace ConnectorGrasshopper.Ops
         {
           ReportProgress("Conversion", convertedCount++ / (double)DataInput.DataCount);
         });
+
         if ( convertedCount == 0 )
         {
           RuntimeMessages.Add(( GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped." ));
