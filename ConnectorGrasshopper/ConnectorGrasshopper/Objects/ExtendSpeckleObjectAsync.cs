@@ -30,7 +30,7 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Speckle object to extend.", GH_ParamAccess.item));
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Speckle object to extend.", GH_ParamAccess.list));
       pManager.AddTextParameter("Keys", "K", "List of keys", GH_ParamAccess.list);
       pManager.AddGenericParameter("Values", "V", "List of values", GH_ParamAccess.list);
     }
@@ -44,7 +44,7 @@ namespace ConnectorGrasshopper.Objects
 
   public class ExtendSpeckleObjectWorker : WorkerInstance
   {
-    private Base @base;
+    private List<Base> bases;
     private List<string> keys;
     private List<object> values;
     public ISpeckleConverter Converter;
@@ -88,26 +88,25 @@ namespace ConnectorGrasshopper.Objects
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      // TODO
-      if(keys.Count > values.Count)
-      {
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark, "more keys than values"));
-      }
+      RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark,$"Base count: {bases.Count}"));
+      RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark,$"Keys count: {keys.Count}"));
+      RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark,$"Vals count: {values.Count}"));
 
-      if(keys.Count < values.Count)
-      {
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark, "more values than keys"));
-      }
+      int max = bases.Count;
+      if (max < values.Count) max = values.Count;
+      if (max < keys.Count) max = keys.Count;
 
-      for(int i = 0; i < keys.Count; i++)
+      for(int i = 0; i< max; i++)
       {
+        var @base = i < bases.Count ? bases[i] : bases[bases.Count - 1];
+        var key = i < keys.Count ? keys[i] : keys[keys.Count - 1];
+        var value = i < values.Count ? values[i] : values[values.Count - 1];
         try
         {
-          var value = i < values.Count ? values[i] : values[values.Count - 1];
-          @base[keys[i]] = Utilities.TryConvertItemToSpeckle(value, Converter);
+          @base[key] = Utilities.TryConvertItemToSpeckle(value, Converter);
         } catch(Exception e)
         {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Failed to set prop {key}: {e.Message}"));
         }
       }
 
@@ -126,23 +125,23 @@ namespace ConnectorGrasshopper.Objects
         Parent.AddRuntimeMessage(level, message);
       }
       
-      DA.SetData(0, new GH_SpeckleBase { Value = @base });
+      DA.SetDataList(0, bases.Select(b => new GH_SpeckleBase(b)).ToList());
     }
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
       DA.DisableGapLogic();
-      GH_SpeckleBase ghBase = null;
-      DA.GetData(0, ref ghBase);
+      List<GH_SpeckleBase> ghBases = new List<GH_SpeckleBase>();
+      DA.GetDataList(0, ghBases);
       DA.GetDataList(1, keys);
       DA.GetDataList(2, values);
 
-      if (ghBase == null || keys.Count == 0 || values.Count == 0)
+      if (ghBases.Count ==0 || keys.Count == 0 || values.Count == 0)
       {
         return;
       }
 
-      @base = ghBase.Value.ShallowCopy();
+      bases = ghBases.Select(b => b.Value.ShallowCopy()).ToList();
     }
   }
 }
