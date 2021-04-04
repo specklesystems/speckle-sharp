@@ -30,32 +30,30 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O",
-        "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item));
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Speckle object to extend.", GH_ParamAccess.list));
       pManager.AddTextParameter("Keys", "K", "List of keys", GH_ParamAccess.list);
-      pManager.AddGenericParameter("Values", "V", "List of values", GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Values", "V", "List of values", GH_ParamAccess.list);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O",
-        "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item));
+        "Extended Speckle object.", GH_ParamAccess.item));
     }
   }
 
   public class ExtendSpeckleObjectWorker : WorkerInstance
   {
-    private Base @base;
+    private List<Base> bases;
     private List<string> keys;
-    private GH_Structure<IGH_Goo> valueTree;
-    private int iteration;
+    private List<object> values;
     public ISpeckleConverter Converter;
 
     public ExtendSpeckleObjectWorker(GH_Component _parent, ISpeckleConverter converter) : base(_parent)
     {
       Converter = converter;
       keys = new List<string>();
-      valueTree = new GH_Structure<IGH_Goo>();
+      values = new List<object>();
     }
 
     public override WorkerInstance Duplicate()
@@ -90,88 +88,29 @@ namespace ConnectorGrasshopper.Objects
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      try
+      RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark,$"Base count: {bases.Count}"));
+      RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark,$"Keys count: {keys.Count}"));
+      RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark,$"Vals count: {values.Count}"));
+
+      int max = bases.Count;
+      if (max < values.Count) max = values.Count;
+      if (max < keys.Count) max = keys.Count;
+
+      for(int i = 0; i< max; i++)
       {
-        Parent.Message = "Extending...";
-        var path = new GH_Path(iteration);
-        if (valueTree.PathExists(path))
+        var @base = i < bases.Count ? bases[i] : bases[bases.Count - 1];
+        var key = i < keys.Count ? keys[i] : keys[keys.Count - 1];
+        var value = i < values.Count ? values[i] : values[values.Count - 1];
+        try
         {
-          var values = valueTree.get_Branch(path) as List<IGH_Goo>;
-          // Input is a list of values. Assign them directly
-          if (keys.Count != values?.Count)
-          {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Key and Value lists are not the same length."));
-            @base = null;
-            Done();
-            return;
-          }
-
-          var hasErrors = AssignToObject(@base, keys, values);
-          if (hasErrors) @base = null;
-        }
-        else if (valueTree.Branches.Count == 1)
+          @base[key] = Utilities.TryConvertItemToSpeckle(value, Converter);
+        } catch(Exception e)
         {
-          var values = valueTree.Branches[0];
-          if (keys.Count != values.Count)
-          {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Key and Value lists are not the same length."));
-            Done();
-            return;
-          }
-
-          // Input is just one list, so use it.
-          var hasErrors = AssignToObject(@base, keys, values);
-          if (hasErrors) @base = null;
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Failed to set prop {key}: {e.Message}"));
         }
-        else
-        {
-          // Input is a tree, meaning it's values are either lists or trees.
-          var subTree = Utilities.GetSubTree(valueTree, path);
-          var index = 0;
-          var foundTree = false;
-          keys.ForEach(key =>
-          {
-            var subPath = new GH_Path(index);
-            if (subTree.PathExists(subPath))
-            {
-              // Value is a list, convert and assign.
-              var list = subTree.get_Branch(subPath) as List<IGH_Goo>;
-              if (list?.Count > 0)
-              {
-                try
-                {
-                  @base[key] = list.Select(goo => Utilities.TryConvertItemToSpeckle(goo, Converter)).ToList();
-                }
-                catch (Exception e)
-                {
-                  RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
-                }
-              };
-            }
-            else
-            {
-              foundTree = true;
-            }
-
-            index++;
-          });
-
-          if (foundTree)
-          {
-            // TODO: Handle tree conversions
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot handle trees yet"));
-            Parent.Message = "Error";
-          }
-        }
-
-        Done();
       }
-      catch (Exception e)
-      {
-        // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
-      }
+
+      Done();
     }
 
     List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
@@ -186,23 +125,23 @@ namespace ConnectorGrasshopper.Objects
         Parent.AddRuntimeMessage(level, message);
       }
       
-      DA.SetData(0, new GH_SpeckleBase { Value = @base });
+      DA.SetDataList(0, bases.Select(b => new GH_SpeckleBase(b)).ToList());
     }
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
       DA.DisableGapLogic();
-      GH_SpeckleBase ghBase = null;
-      DA.GetData(0, ref ghBase);
+      List<GH_SpeckleBase> ghBases = new List<GH_SpeckleBase>();
+      DA.GetDataList(0, ghBases);
       DA.GetDataList(1, keys);
-      DA.GetDataTree(2, out valueTree);
-      iteration = DA.Iteration;
-      if (ghBase == null)
+      DA.GetDataList(2, values);
+
+      if (ghBases.Count ==0 || keys.Count == 0 || values.Count == 0)
       {
         return;
       }
 
-      @base = ghBase.Value.ShallowCopy();
+      bases = ghBases.Select(b => b.Value.ShallowCopy()).ToList();
     }
   }
 }
