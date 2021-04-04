@@ -179,6 +179,13 @@ namespace ConnectorGrasshopper.Ops
             (s, e) => System.Diagnostics.Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}"));
         }
       }
+      Menu_AppendSeparator(menu);
+
+      Menu_AppendItem(menu, "Cancel", (s, e) =>
+      {
+        CurrentComponentState = "expired";
+        RequestCancellation();
+      });
 
       base.AppendAdditionalComponentMenuItems(menu);
     }
@@ -331,7 +338,7 @@ namespace ConnectorGrasshopper.Ops
 
         // Note: this method actually converts the objects to speckle too
         int convertedCount = 0;
-        var converted = Utilities.DataTreeToNestedLists(DataInput, ((SendComponent)Parent).Converter, () =>
+        var converted = Utilities.DataTreeToNestedLists(DataInput, ((SendComponent)Parent).Converter, CancellationToken, () =>
         {
           ReportProgress("Conversion", convertedCount++ / (double)DataInput.DataCount);
         });
