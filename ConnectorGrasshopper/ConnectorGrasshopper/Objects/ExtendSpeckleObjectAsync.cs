@@ -30,16 +30,15 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O",
-        "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item));
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Speckle object to extend.", GH_ParamAccess.item));
       pManager.AddTextParameter("Keys", "K", "List of keys", GH_ParamAccess.list);
-      pManager.AddGenericParameter("Values", "V", "List of values", GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Values", "V", "List of values", GH_ParamAccess.list);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O",
-        "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item));
+        "Extended Speckle object.", GH_ParamAccess.item));
     }
   }
 
@@ -47,15 +46,14 @@ namespace ConnectorGrasshopper.Objects
   {
     private Base @base;
     private List<string> keys;
-    private GH_Structure<IGH_Goo> valueTree;
-    private int iteration;
+    private List<object> values;
     public ISpeckleConverter Converter;
 
     public ExtendSpeckleObjectWorker(GH_Component _parent, ISpeckleConverter converter) : base(_parent)
     {
       Converter = converter;
       keys = new List<string>();
-      valueTree = new GH_Structure<IGH_Goo>();
+      values = new List<object>();
     }
 
     public override WorkerInstance Duplicate()
@@ -90,88 +88,30 @@ namespace ConnectorGrasshopper.Objects
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      try
+      // TODO
+      if(keys.Count > values.Count)
       {
-        Parent.Message = "Extending...";
-        var path = new GH_Path(iteration);
-        if (valueTree.PathExists(path))
-        {
-          var values = valueTree.get_Branch(path) as List<IGH_Goo>;
-          // Input is a list of values. Assign them directly
-          if (keys.Count != values?.Count)
-          {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Key and Value lists are not the same length."));
-            @base = null;
-            Done();
-            return;
-          }
-
-          var hasErrors = AssignToObject(@base, keys, values);
-          if (hasErrors) @base = null;
-        }
-        else if (valueTree.Branches.Count == 1)
-        {
-          var values = valueTree.Branches[0];
-          if (keys.Count != values.Count)
-          {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Key and Value lists are not the same length."));
-            Done();
-            return;
-          }
-
-          // Input is just one list, so use it.
-          var hasErrors = AssignToObject(@base, keys, values);
-          if (hasErrors) @base = null;
-        }
-        else
-        {
-          // Input is a tree, meaning it's values are either lists or trees.
-          var subTree = Utilities.GetSubTree(valueTree, path);
-          var index = 0;
-          var foundTree = false;
-          keys.ForEach(key =>
-          {
-            var subPath = new GH_Path(index);
-            if (subTree.PathExists(subPath))
-            {
-              // Value is a list, convert and assign.
-              var list = subTree.get_Branch(subPath) as List<IGH_Goo>;
-              if (list?.Count > 0)
-              {
-                try
-                {
-                  @base[key] = list.Select(goo => Utilities.TryConvertItemToSpeckle(goo, Converter)).ToList();
-                }
-                catch (Exception e)
-                {
-                  RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
-                }
-              };
-            }
-            else
-            {
-              foundTree = true;
-            }
-
-            index++;
-          });
-
-          if (foundTree)
-          {
-            // TODO: Handle tree conversions
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot handle trees yet"));
-            Parent.Message = "Error";
-          }
-        }
-
-        Done();
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark, "more keys than values"));
       }
-      catch (Exception e)
+
+      if(keys.Count < values.Count)
       {
-        // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark, "more values than keys"));
       }
+
+      for(int i = 0; i < keys.Count; i++)
+      {
+        try
+        {
+          var value = i < values.Count ? values[i] : values[values.Count - 1];
+          @base[keys[i]] = Utilities.TryConvertItemToSpeckle(value, Converter);
+        } catch(Exception e)
+        {
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
+        }
+      }
+
+      Done();
     }
 
     List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
@@ -195,9 +135,9 @@ namespace ConnectorGrasshopper.Objects
       GH_SpeckleBase ghBase = null;
       DA.GetData(0, ref ghBase);
       DA.GetDataList(1, keys);
-      DA.GetDataTree(2, out valueTree);
-      iteration = DA.Iteration;
-      if (ghBase == null)
+      DA.GetDataList(2, values);
+
+      if (ghBase == null || keys.Count == 0 || values.Count == 0)
       {
         return;
       }
