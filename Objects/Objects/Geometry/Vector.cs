@@ -47,6 +47,13 @@ namespace Objects.Geometry
       this.units = units;
     }
 
+    public List<double> ToList()
+    {
+      return new List<double>() { x, y, z };
+    }
+
+    public static Vector FromList(List<double> list) => new Vector(list[0], list[1], list[2]);
+
     public double x
     {
       get;

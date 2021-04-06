@@ -57,5 +57,35 @@ namespace Objects.Geometry
 
       return polycurve;
     }
+
+    public List<double> ToList()
+    {
+      var list = new List<double>();
+      list.Add(closed ? 1 : 0);
+      list.Add(domain.start ?? 0);
+      list.Add(domain.end ?? 1);
+
+      var crvs = CurveArrayEncodingExtensions.ToArray(segments);
+      list.Add(crvs.Count);
+      list.AddRange(crvs);
+
+      list.Add(Units.GetEncodingFromUnit(units));
+      list.Insert(0, CurveTypeEncoding.PolyCurve);
+      list.Insert(0, list.Count);
+
+      return list;
+    }
+
+    public static Polycurve FromList(List<double> list)
+    {
+      var polycurve = new Polycurve();
+      polycurve.closed = list[2] == 1;
+      polycurve.domain = new Interval(list[3], list[4]);
+
+      var temp = list.GetRange(6, (int)list[5]);
+      polycurve.segments = CurveArrayEncodingExtensions.FromArray(temp);
+      polycurve.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+      return polycurve;
+    }
   }
 }

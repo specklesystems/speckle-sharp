@@ -12,7 +12,7 @@ namespace Objects.Geometry
   public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible
   {
     [DetachProperty]
-    [Chunkable(20000)]
+    [Chunkable(31250)]
     public List<double> value { get; set; } = new List<double>();
     public bool closed { get; set; }
     public Interval domain { get; set; }
@@ -43,6 +43,32 @@ namespace Objects.Geometry
         }
         return points;
       }
+    }
+
+    public List<double> ToList()
+    {
+      var list = new List<double>();
+      list.Add(closed ? 1 : 0); // 2
+      list.Add(domain.start ?? 0); // 3
+      list.Add(domain.end ?? 1); // 4
+      list.Add(value.Count); // 5
+      list.AddRange(value); // 6 onwards
+
+      list.Add(Units.GetEncodingFromUnit(units));
+      list.Insert(0, CurveTypeEncoding.Polyline); // 1
+      list.Insert(0, list.Count); // 0
+      return list;
+    }
+
+    public static Polyline FromList(List<double> list)
+    {
+      var polyline = new Polyline();
+      polyline.closed = list[2] == 1;
+      polyline.domain = new Interval(list[3], list[4]);
+      var pointCount = (int)list[5];
+      polyline.value = list.GetRange(6, pointCount);
+      polyline.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+      return polyline;
     }
 
     object IConvertible.ToType(Type conversionType, IFormatProvider provider)

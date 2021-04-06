@@ -51,5 +51,37 @@ namespace Objects.Geometry
       this.applicationId = applicationId;
       this.units = units;
     }
+
+    public List<double> ToList()
+    {
+      var list = new List<double>();
+      list.Add(radius ?? 0);
+      list.Add(startAngle ?? 0);
+      list.Add(endAngle ?? 0);
+      list.Add(angleRadians ?? 0);
+      list.Add(domain.start ?? 0);
+      list.Add(domain.end ?? 0);
+
+      list.AddRange(plane.ToList());
+
+      list.Add(Units.GetEncodingFromUnit(units));
+      list.Insert(0, CurveTypeEncoding.Arc);
+      list.Insert(0, list.Count);
+      return list;
+    }
+
+    public static Arc FromList(List<double> list)
+    {
+      var arc = new Arc();
+
+      arc.radius = list[2];
+      arc.startAngle = list[3];
+      arc.endAngle = list[4];
+      arc.angleRadians = list[5];
+      arc.domain = new Interval(list[6], list[7]);
+      arc.plane = Plane.FromList(list.GetRange(8, 12));
+      arc.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+      return arc;
+    }
   }
 }

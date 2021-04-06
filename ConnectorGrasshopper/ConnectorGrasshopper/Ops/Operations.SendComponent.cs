@@ -179,6 +179,16 @@ namespace ConnectorGrasshopper.Ops
             (s, e) => System.Diagnostics.Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}"));
         }
       }
+      Menu_AppendSeparator(menu);
+
+      if (CurrentComponentState == "sending")
+      {
+        Menu_AppendItem(menu, "Cancel Send", (s, e) =>
+        {
+          CurrentComponentState = "expired";
+          RequestCancellation();
+        });
+      }
 
       base.AppendAdditionalComponentMenuItems(menu);
     }
@@ -331,10 +341,11 @@ namespace ConnectorGrasshopper.Ops
 
         // Note: this method actually converts the objects to speckle too
         int convertedCount = 0;
-        var converted = Utilities.DataTreeToNestedLists(DataInput, ((SendComponent)Parent).Converter, () =>
+        var converted = Utilities.DataTreeToNestedLists(DataInput, ((SendComponent)Parent).Converter, CancellationToken, () =>
         {
           ReportProgress("Conversion", convertedCount++ / (double)DataInput.DataCount);
         });
+
         if ( convertedCount == 0 )
         {
           RuntimeMessages.Add(( GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped." ));

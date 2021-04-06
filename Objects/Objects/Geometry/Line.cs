@@ -69,6 +69,27 @@ namespace Objects.Geometry
       this.units = units;
     }
 
-    public List<double> ToList() => start.ToList().Concat(end.ToList()).ToList();
+    public List<double> ToList()
+    {
+      var list = new List<double>();
+      list.AddRange(start.ToList());
+      list.AddRange(end.ToList());
+      list.Add( domain.start ?? 0);
+      list.Add(domain.end ?? 1);
+      list.Add(Units.GetEncodingFromUnit(units));
+      list.Insert(0, CurveTypeEncoding.Line);
+      list.Insert(0, list.Count);
+      return list;
+    }
+
+    public static Line FromList(List<double> list)
+    {
+      var line = new Line();
+      line.start = Point.FromList(list.GetRange(2, 3));
+      line.end = Point.FromList(list.GetRange(5, 3));
+      line.domain = new Interval(list[8], list[9]);
+      line.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+      return line;
+    }
   }
 }
