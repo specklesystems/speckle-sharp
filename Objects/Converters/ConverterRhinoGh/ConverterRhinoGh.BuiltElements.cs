@@ -2,6 +2,8 @@ using Grasshopper.Kernel.Types;
 using Objects.Geometry;
 using Objects.Primitive;
 using Rhino.Geometry;
+using Rhino.Display;
+using Rhino.DocObjects;
 using Rhino.Geometry.Collections;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
@@ -15,6 +17,8 @@ using Floor = Objects.BuiltElements.Floor;
 using Ceiling = Objects.BuiltElements.Ceiling;
 using Roof = Objects.BuiltElements.Roof;
 using Opening = Objects.BuiltElements.Opening;
+using Point = Objects.Geometry.Point;
+using View3D = Objects.BuiltElements.View3D;
 using RH = Rhino.Geometry;
 using RV = Objects.BuiltElements.Revit;
 
@@ -22,6 +26,63 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
+    public View3D ViewToSpeckle(ViewInfo view)
+    {
+      var _view = new View3D();
+      _view.name = view.Name;
+      _view.upDirection = VectorToSpeckle(view.Viewport.CameraUp);
+      _view.forwardDirection = VectorToSpeckle(view.Viewport.CameraDirection);
+      _view.origin = PointToSpeckle(view.Viewport.CameraLocation);
+      _view.target = PointToSpeckle(view.Viewport.TargetPoint);
+      _view.isOrthogonal = (view.Viewport.IsParallelProjection) ? true : false;
+      _view.units = ModelUnits;
+
+      // attach props
+      AttachViewParams(_view, view);
+
+      return _view;
+    }
+    public RhinoViewport ViewToNative(View3D view)
+    {
+      RhinoView _view = Doc.Views.ActiveView;
+      RhinoViewport viewport = _view.ActiveViewport;
+      viewport.SetProjection(DefinedViewportProjection.Perspective, null, false);
+
+      if (view.target != null)
+      {
+        viewport.SetCameraLocations(PointToNative(view.target).Location, PointToNative(view.origin).Location);
+      }
+      else
+      {
+        viewport.SetCameraLocation(PointToNative(view.origin).Location, true);
+        viewport.SetCameraDirection(VectorToNative(view.forwardDirection), true);
+        viewport.CameraUp = VectorToNative(view.upDirection);
+      }
+      viewport.Name = view.name;
+
+      // set rhino view props if available
+      SetViewParams(viewport, view);
+
+      if (view.isOrthogonal)
+        viewport.ChangeToParallelProjection(true);
+
+      return viewport;
+    }
+
+    private void AttachViewParams(Base speckleView, ViewInfo view)
+    {
+      // lens
+      speckleView["lens"] = view.Viewport.Camera35mmLensLength;
+    }
+    private RhinoViewport SetViewParams(RhinoViewport viewport, Base speckleView)
+    {
+      // lens
+      var lens = speckleView["lens"] as double?;
+      if (lens != null)
+        viewport.Camera35mmLensLength = (double)lens;
+
+      return viewport;
+    }
 
     public Column CurveToSpeckleColumn(RH.Curve curve)
     {
