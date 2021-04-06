@@ -695,6 +695,7 @@ namespace Objects.Converter.RhinoGh
     public Brep BrepToSpeckle(RH.Brep brep, string units = null)
     {
       var tol = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+      //tol = 0;
       var u = units ?? ModelUnits;
       brep.Repair(tol); //should maybe use ModelAbsoluteTolerance ?
       foreach (var f in brep.Faces)
