@@ -33,6 +33,7 @@ namespace Objects.Converter.RhinoGh
       _view.upDirection = VectorToSpeckle(view.Viewport.CameraUp);
       _view.forwardDirection = VectorToSpeckle(view.Viewport.CameraDirection);
       _view.origin = PointToSpeckle(view.Viewport.CameraLocation);
+      _view.target = PointToSpeckle(view.Viewport.TargetPoint);
       _view.isOrthogonal = (view.Viewport.IsParallelProjection) ? true : false;
       _view.units = ModelUnits;
 
@@ -52,6 +53,8 @@ namespace Objects.Converter.RhinoGh
 
       viewport.SetCameraLocation(PointToNative(view.origin).Location, true);
       viewport.SetCameraDirection(VectorToNative(view.forwardDirection), true);
+      if (view.target != null)
+        viewport.SetCameraTarget(PointToNative(view.target).Location, false);
       viewport.CameraUp = VectorToNative(view.upDirection);
       viewport.Name = view.name;
 
@@ -66,19 +69,11 @@ namespace Objects.Converter.RhinoGh
 
     private void AttachViewParams(Base speckleView, ViewInfo view)
     {
-      // target
-      speckleView["target"] = PointToSpeckle(view.Viewport.TargetPoint);
-
       // lens
       speckleView["lens"] = view.Viewport.Camera35mmLensLength;
     }
     private RhinoViewport SetViewParams(RhinoViewport viewport, Base speckleView)
     {
-      // target
-      var target = speckleView["target"] as Point;
-      if (target != null)
-        viewport.SetCameraTarget(PointToNative(target).Location, false);
-
       // lens
       var lens = speckleView["lens"] as double?;
       if (lens != null)
