@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using System.Timers;
 using Rhino.Display;
 
@@ -265,35 +266,14 @@ namespace SpeckleRhino
         Base obj = commitObj.Item1;
         string layerPath = commitObj.Item2;
 
-        var converted = converter.ConvertToNative(obj);
-        if (converted != null)
+        switch (obj.speckle_type)
         {
-          switch (converted)
-          {
-            case Rhino.Geometry.GeometryBase o:
-              Layer bakeLayer = Doc.GetLayer(layerPath, true);
-              if (bakeLayer != null)
-              {
-                if (Doc.Objects.Add(o, new ObjectAttributes { LayerIndex = bakeLayer.Index }) == Guid.Empty)
-                  state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
-              }
-              else
-                state.Errors.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
-              break;
-
-            case Rhino.Display.RhinoViewport o:
-              if (Doc.NamedViews.Add(o.Name, o.Id) < 0)
-                state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
-              break;
-
-            default:
-              state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
-              break;
-          }
-        }
-        else
-        {
-          state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+          case "Objects.BuiltElements.View:Objects.BuiltElements.View3D":
+            BakeNamedView(obj, commitLayerName, state, converter);
+            break;
+          default:
+            BakeObject(obj, layerPath, state, converter);
+            break;
         }
 
         updateProgressAction?.Invoke();
@@ -361,6 +341,47 @@ namespace SpeckleRhino
       }
 
       return objects;
+    }
+
+    // Uses dispatcher for synchronous conversion and baking of named views
+    private void BakeNamedView(Base view, string namePrefix, StreamState state, ISpeckleConverter converter)
+    {
+      App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() =>
+      {
+        var converted = converter.ConvertToNative(view) as RhinoViewport;
+        if (converted != null)
+        {
+          if (Doc.NamedViews.Add($"{namePrefix} - {converted.Name}", converted.Id) < 0)
+          {
+            state.Errors.Add(new Exception($"Failed to bake object {view.id} of type {view.speckle_type}."));
+          }
+        }
+        else
+        {
+          state.Errors.Add(new Exception($"Failed to convert object {view.id} of type {view.speckle_type}."));
+        }
+      }));
+    }
+
+    // conversion and bake for non view objects
+    private void BakeObject(Base obj, string layerPath, StreamState state, ISpeckleConverter converter)
+    {
+      var converted = converter.ConvertToNative(obj) as Rhino.Geometry.GeometryBase;
+      if (converted != null)
+      {
+        Layer bakeLayer = Doc.GetLayer(layerPath, true);
+        if (bakeLayer != null)
+        {
+          if (Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = bakeLayer.Index }) == Guid.Empty)
+            state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
+        }
+        else
+          state.Errors.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
+      }
+      else
+      {
+        state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+      }
     }
 
     #endregion

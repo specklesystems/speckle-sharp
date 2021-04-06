@@ -46,23 +46,25 @@ namespace Objects.Converter.RhinoGh
     {
       RhinoView _view = Doc.Views.ActiveView;
       RhinoViewport viewport = _view.ActiveViewport;
-      if (view.isOrthogonal)
-        viewport.ChangeToParallelProjection(true);
-      else
-        viewport.ChangeToPerspectiveProjection(true, 50);
+      viewport.SetProjection(DefinedViewportProjection.Perspective, null, false);
 
-      viewport.SetCameraLocation(PointToNative(view.origin).Location, true);
-      viewport.SetCameraDirection(VectorToNative(view.forwardDirection), true);
       if (view.target != null)
-        viewport.SetCameraTarget(PointToNative(view.target).Location, false);
-      viewport.CameraUp = VectorToNative(view.upDirection);
+      {
+        viewport.SetCameraLocations(PointToNative(view.target).Location, PointToNative(view.origin).Location);
+      }
+      else
+      {
+        viewport.SetCameraLocation(PointToNative(view.origin).Location, true);
+        viewport.SetCameraDirection(VectorToNative(view.forwardDirection), true);
+        viewport.CameraUp = VectorToNative(view.upDirection);
+      }
       viewport.Name = view.name;
 
-      // set props
+      // set rhino view props if available
       SetViewParams(viewport, view);
 
-      // reset active view
-      _view.Redraw();
+      if (view.isOrthogonal)
+        viewport.ChangeToParallelProjection(true);
 
       return viewport;
     }
