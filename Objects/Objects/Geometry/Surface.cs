@@ -90,6 +90,7 @@ namespace Objects.Geometry
       list.AddRange(knotsU);
       list.AddRange(knotsV);
 
+      list.Add(Units.GetEncodingFromUnit(units));
       list.Insert(0, list.Count);
 
       return list;
@@ -115,7 +116,9 @@ namespace Objects.Geometry
       srf.pointData = list.GetRange(14, pointCount);
       srf.knotsU = list.GetRange(14 + pointCount, knotsUCount);
       srf.knotsV = list.GetRange(14 + pointCount + knotsUCount, knotsVCount);
-
+      
+      var u = list[list.Count - 1];
+      srf.units = Units.GetUnitFromEncoding(u);
       return srf;
     }
   }
