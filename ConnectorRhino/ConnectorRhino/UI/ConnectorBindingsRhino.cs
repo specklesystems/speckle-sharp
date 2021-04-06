@@ -360,6 +360,9 @@ namespace SpeckleRhino
         {
           state.Errors.Add(new Exception($"Failed to convert object {view.id} of type {view.speckle_type}."));
         }
+
+        // reset view to perspective
+        Doc.Views.ActiveView.ActiveViewport.SetProjection(DefinedViewportProjection.Perspective, null, true);
       }));
     }
 
