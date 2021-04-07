@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Special;
 using Rhino;
 using Speckle.Core.Credentials;
@@ -99,10 +100,7 @@ namespace ConnectorGrasshopper.Accounts
       if (acc != null)
       {
         var accIndex = accounts.IndexOf(acc);
-        RhinoApp.InvokeOnUiThread((Action) delegate
-        {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Account mismatch. Using a different account for the same server.");
-        });
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Account mismatch. Using a different account for the same server.");
 
         return accIndex + 1;
       }
@@ -149,6 +147,14 @@ namespace ConnectorGrasshopper.Accounts
         Console.WriteLine(e);
       }
       return base.Write(writer);
+    }
+
+    protected override void CollectVolatileData_Custom()
+    {
+      m_data.ClearData();
+      
+      if(FirstSelectedItem.Value != null)
+        m_data.Append(this.FirstSelectedItem.Value, new GH_Path(0));
     }
 
     public override void AddedToDocument(GH_Document document)
