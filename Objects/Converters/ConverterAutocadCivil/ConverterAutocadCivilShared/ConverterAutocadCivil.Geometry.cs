@@ -12,6 +12,7 @@ using Curve = Objects.Geometry.Curve;
 using Ellipse = Objects.Geometry.Ellipse;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
+using Mesh = Objects.Geometry.Mesh;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
@@ -62,24 +63,6 @@ namespace Objects.Converter.AutocadCivil
         ScaleToNative(point.y, point.units),
         ScaleToNative(point.z, point.units));
       return _point;
-    }
-
-    //TODO: not tested
-    public List<List<ControlPoint>> ControlPointsToSpeckle(Point3dCollection points, DoubleCollection weights) // TODO: NOT TESTED
-    {
-      var _weights = new List<double>();
-      var _points = new List<Point3d>();
-      foreach (var point in points)
-        _points.Add((Point3d)point);
-      foreach (var weight in weights)
-        _weights.Add((double)weight);
-
-      var controlPoints = new List<List<ControlPoint>>();
-      /* TODO: Figure out how collections are structured (do we lose UV info?)
-      for (int i = 0; i < _points.Count; i++)
-        controlPoints.Add(new ControlPoint(_points[i].X, _points[i].Y, _points[i].Z, _weights[i], ModelUnits));
-      */
-      return controlPoints;
     }
 
     // Vectors
@@ -385,30 +368,5 @@ namespace Objects.Converter.AutocadCivil
       return _surface;
     }
 
-    public Geometry.Surface SurfaceToSpeckle(AC.NurbSurface surface)
-    {
-      List<double> Uknots = new List<double>();
-      List<double> Vknots = new List<double>();
-      foreach (var knot in surface.UKnots)
-        Uknots.Add((double)knot);
-      foreach (var knot in surface.VKnots)
-        Vknots.Add((double)knot);
-
-      var _surface = new Geometry.Surface
-      {
-        degreeU = surface.DegreeInU,
-        degreeV = surface.DegreeInV,
-        rational = surface.IsRationalInU && surface.IsRationalInV,
-        closedU = surface.IsClosedInU(),
-        closedV = surface.IsClosedInV(),
-        domainU = IntervalToSpeckle(surface.GetEnvelope()[0]),
-        domainV = IntervalToSpeckle(surface.GetEnvelope()[1]),
-        knotsU = Uknots,
-        knotsV = Vknots
-      };
-      _surface.units = ModelUnits;
-      _surface.SetControlPoints(ControlPointsToSpeckle(surface.ControlPoints, surface.Weights));
-      return _surface;
-    }
   }
 }

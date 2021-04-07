@@ -5,11 +5,13 @@ using System.Linq;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Arc = Objects.Geometry.Arc;
+using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
 using Ellipse = Objects.Geometry.Ellipse;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
+using Mesh = Objects.Geometry.Mesh;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
@@ -100,9 +102,6 @@ namespace Objects.Converter.AutocadCivil
         case Acad.Geometry.Curve3d o:
           return CurveToSpeckle(o) as Base;
 
-        case Acad.Geometry.NurbSurface o:
-          return SurfaceToSpeckle(o);
-
         default:
           throw new NotSupportedException();
       }
@@ -155,6 +154,12 @@ namespace Objects.Converter.AutocadCivil
         //case Surface o: // TODO: NOT TESTED
         //  return SurfaceToNative(o);
 
+        //case Brep o: // TODO: NOT TESTED
+        //  return BrepToNativeDB(o);
+
+        //case Mesh o: // unstable, do not use for now
+        //  return MeshToNativeDB(o);
+
         default:
           throw new NotSupportedException();
       }
@@ -203,6 +208,18 @@ namespace Objects.Converter.AutocadCivil
         case AcadDB.Polyline2d o:
           return PolycurveToSpeckle(o);
 
+        case PlaneSurface o:
+          return SurfaceToSpeckle(o);
+
+         case AcadDB.NurbSurface o:
+           return SurfaceToSpeckle(o);
+
+        case AcadDB.PolyFaceMesh o:
+          return MeshToSpeckle(o);
+
+        case SubDMesh o:
+          return MeshToSpeckle(o);
+
 #if CIVIL2021
         case CivilDB.FeatureLine o:
           return FeatureLineToSpeckle(o);
@@ -247,6 +264,18 @@ namespace Objects.Converter.AutocadCivil
             case AcadDB.Polyline3d _:
               return true;
 
+            case AcadDB.PlaneSurface _:
+              return true;
+
+            case AcadDB.NurbSurface _:
+              return true;
+
+            case AcadDB.PolyFaceMesh _:
+              return true;
+
+            case SubDMesh _:
+              return true;
+
             default:
               return false;
           }
@@ -281,7 +310,6 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
-
     public bool CanConvertToNative(Base @object)
     {
       switch (@object)
@@ -310,9 +338,19 @@ namespace Objects.Converter.AutocadCivil
         case Curve _:
           return true;
 
+        case Surface _:
+          return false;
+
+        case Brep _:
+          return false;
+
+        case Mesh _:
+          return false;
+
         default:
           return false;
       }
     }
+
   }
 }
