@@ -31,55 +31,6 @@ namespace Tests
       //Assert.Throws<Exception>(() => { @base["id"] = "Testing"; });
     }
 
-    [Test(Description = "Checks if detachable properties are set and retrieved correctly")]
-    public void DetachableProperties()
-    {
-      var sample = new SampleObject();
-
-      // New non-detached prop created 
-      sample["attached"] = "A";
-
-      // Update value of non-detached prop
-      sample["@attached"] = "B";
-
-      Assert.AreEqual("B", sample["attached"]);
-      Assert.AreEqual("B", sample["@attached"]);
-
-      // New detached prop created 
-      sample["@detached"] = "A";
-
-      // Update value of detached prop
-      sample["detached"] = "B";
-
-      Assert.AreEqual("B", sample["detached"]);
-      Assert.AreEqual("B", sample["@detached"]);
-
-      // non-detached prop set 
-      sample.attachedProp = new SampleProp { name = "Mario" };
-
-      // Update value of non-detached prop
-      ((SampleProp)sample["@attachedProp"]).name = "Giovanni";
-
-      Assert.AreEqual("Giovanni", ((SampleProp)sample["attachedProp"]).name);
-
-      // non-detached prop set 
-      sample.detachedProp = new SampleProp { name = "Luca" };
-
-      // Update value of non-detached prop
-      ((SampleProp)sample["@detachedProp"]).name = "Mirco";
-
-      Assert.AreEqual("Mirco", ((SampleProp)sample["detachedProp"]).name);
-
-      sample["crazyProp"] = "Test1";
-
-      Assert.AreEqual("Test1", sample.crazyProp);
-
-      sample["@crazyProp"] = "Test2";
-
-      Assert.AreEqual("Test2", sample.crazyProp);
-
-    }
-
     [Test]
     public void CountDynamicChunkables()
     {

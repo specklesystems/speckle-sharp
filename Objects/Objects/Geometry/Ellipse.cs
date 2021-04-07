@@ -87,5 +87,34 @@ namespace Objects.Geometry
       this.applicationId = applicationId;
       this.units = units;
     }
+
+    public List<double> ToList()
+    {
+      var list = new List<double>();
+      list.Add(firstRadius ?? 0);
+      list.Add(secondRadius ?? 0);
+      list.Add(domain.start ?? 0);
+      list.Add(domain.end ?? 0);
+
+      list.AddRange(plane.ToList());
+
+      list.Add(Units.GetEncodingFromUnit(units));
+      list.Insert(0, CurveTypeEncoding.Ellipse);
+      list.Insert(0, list.Count);
+      return list;
+    }
+
+    public static Ellipse FromList(List<double> list)
+    {
+      var ellipse = new Ellipse();
+
+      ellipse.firstRadius = list[2];
+      ellipse.secondRadius = list[3];
+      ellipse.domain = new Interval(list[4], list[5]);
+
+      ellipse.plane = Plane.FromList(list.GetRange(6, 12));
+      ellipse.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+      return ellipse;
+    }
   }
 }

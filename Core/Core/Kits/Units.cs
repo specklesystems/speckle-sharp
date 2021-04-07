@@ -211,5 +211,39 @@ namespace Speckle.Core.Kits
 
       throw new SpeckleException($"Cannot understand what unit {unit} is.");
     }
+
+    public static int GetEncodingFromUnit(string unit)
+    {
+      switch (unit)
+      {
+        case Millimeters: return 1;
+        case Centimeters: return 2;
+        case Meters: return 3;
+        case Kilometers: return 4;
+        case Inches: return 5;
+        case Feet: return 6;
+        case Yards: return 7;
+        case Miles: return 8;
+      }
+
+      return 0;
+    }
+
+    public static string GetUnitFromEncoding(double unit)
+    {
+      switch (unit)
+      {
+        case 1: return Millimeters;
+        case 2: return Centimeters;
+        case 3: return Meters;
+        case 4: return Kilometers;
+        case 5: return Inches;
+        case 6: return Feet;
+        case 7: return Yards;
+        case 8: return Miles;
+      }
+
+      return None;
+    }
   }
 }

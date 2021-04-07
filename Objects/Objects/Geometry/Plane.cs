@@ -30,5 +30,29 @@ namespace Objects.Geometry
       this.applicationId = applicationId;
       this.units = units;
     }
+
+    public List<double> ToList()
+    {
+      var list = new List<double>();
+
+      list.AddRange(origin.ToList());
+      list.AddRange(normal.ToList());
+      list.AddRange(xdir.ToList());
+      list.AddRange(ydir.ToList());
+
+      return list;
+    }
+
+    public static Plane FromList(List<double> list)
+    {
+      var plane = new Plane();
+
+      plane.origin = Point.FromList(list.GetRange(0, 3));
+      plane.normal = Vector.FromList(list.GetRange(3, 3));
+      plane.xdir = Vector.FromList(list.GetRange(6, 3));
+      plane.ydir = Vector.FromList(list.GetRange(9, 3));
+
+      return plane;
+    }
   }
 }

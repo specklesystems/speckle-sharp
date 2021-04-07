@@ -23,30 +23,109 @@ namespace Objects.Geometry
     /// <summary>
     /// Gets or sets the list of surfaces in this <see cref="Brep"/> instance.
     /// </summary>
-    [DetachProperty]
-    [Chunkable(200)]
+    [JsonIgnore]
     public List<Surface> Surfaces { get; set; }
+    [DetachProperty]
+    [Chunkable(31250)]
+    public List<double> SurfacesValue
+    {
+      get
+      {
+        var list = new List<double>();
+        foreach(var srf in Surfaces)
+        {
+          list.AddRange(srf.ToList());
+        }
+        return list;
+      }
+      set
+      {
+        if (value == null) return;
+        var list = new List<Surface>();
+        var done = false;
+        var currentIndex = 0;
+        while(!done)
+        {
+          var len = (int)value[currentIndex];
+          list.Add(Surface.FromList(value.GetRange(currentIndex + 1, len)));
+          currentIndex += len + 1;
+          done = currentIndex >= value.Count;
+        }
+        Surfaces = list;
+      }
+    }
 
     /// <summary>
     /// Gets or sets the list of 3-dimensional curves in this <see cref="Brep"/> instance.
     /// </summary>
-    [DetachProperty]
-    [Chunkable(200)]
+    [JsonIgnore]
     public List<ICurve> Curve3D { get; set; }
+    [DetachProperty]
+    [Chunkable(31250)]
+    public List<double> Curve3DValues
+    {
+      get
+      {
+        return CurveArrayEncodingExtensions.ToArray(Curve3D);
+      }
+      set
+      {
+        if (value != null)
+          Curve3D = CurveArrayEncodingExtensions.FromArray(value);
+      }
+    }
 
     /// <summary>
     /// Gets or sets the list of 2-dimensional UV curves in this <see cref="Brep"/> instance.
     /// </summary>
-    [DetachProperty]
-    [Chunkable(200)]
+    [JsonIgnore]
     public List<ICurve> Curve2D { get; set; }
+    [DetachProperty]
+    [Chunkable(31250)]
+    public List<double> Curve2DValues
+    {
+      get
+      {
+        return CurveArrayEncodingExtensions.ToArray(Curve2D);
+      }
+      set
+      {
+        if (value != null)
+          Curve2D = CurveArrayEncodingExtensions.FromArray(value);
+      }
+    }
 
     /// <summary>
     /// Gets or sets the list of vertices in this <see cref="Brep"/> instance.
     /// </summary>
-    [DetachProperty]
-    [Chunkable(5000)]
+    [JsonIgnore]
     public List<Point> Vertices { get; set; }
+    [DetachProperty]
+    [Chunkable(31250)]
+    public List<double> VerticesValue
+    {
+      get
+      {
+        var list = new List<double>();
+        list.Add(Units.GetEncodingFromUnit(units));
+        foreach (var vertex in Vertices)
+        {
+          list.AddRange(vertex.ToList());
+        }
+        return list;
+      }
+      set
+      {
+        if (value != null)
+        {
+          var units = Units.GetUnitFromEncoding(value[0]);
+          for (int i = value.Count %3 == 0 ? 0 : 1; i < value.Count; i += 3)
+          {
+            Vertices.Add(new Point(value[i], value[i + 1], value[i + 2], units));
+          }
+        }
+      }
+    }
 
     /// <summary>
     /// Gets or sets the list of edges in this <see cref="Brep"/> instance.
@@ -65,9 +144,52 @@ namespace Objects.Geometry
     /// <summary>
     /// Gets or sets the list of UV trim segments for each surface in this <see cref="Brep"/> instance.
     /// </summary>
-    [DetachProperty]
-    [Chunkable(5000)]
+    [JsonIgnore]
     public List<BrepTrim> Trims { get; set; }
+    [DetachProperty]
+    [Chunkable(62500)]
+    public List<int> TrimsValue
+    {
+      get
+      {
+        List<int> list = new List<int>();
+        foreach(var trim in Trims)
+        {
+          list.Add(trim.EdgeIndex);
+          list.Add(trim.StartIndex);
+          list.Add(trim.EndIndex);
+          list.Add(trim.FaceIndex);
+          list.Add(trim.LoopIndex);
+          list.Add(trim.CurveIndex);
+          list.Add(trim.IsoStatus);
+          list.Add((int)trim.TrimType);
+          list.Add(trim.IsReversed ? 1 : 0);
+        }
+        return list;
+      }
+      set
+      {
+        if (value == null) return;
+        var list = new List<BrepTrim>();
+        for(int i = 0; i < value.Count; i+=9)
+        {
+          var trim = new BrepTrim()
+          {
+            EdgeIndex = value[i],
+            StartIndex = value[i + 1],
+            EndIndex = value[i + 2],
+            FaceIndex = value[i + 3],
+            LoopIndex = value[i + 4],
+            CurveIndex = value[i + 5],
+            IsoStatus = value[i + 6],
+            TrimType = (BrepTrimType)value[i + 7],
+            IsReversed = value[i + 8] == 1
+          };
+          list.Add(trim);
+        }
+        Trims = list;
+      }
+    }
 
     /// <summary>
     /// Gets or sets the list of faces in this <see cref="Brep"/> instance.
@@ -123,6 +245,7 @@ namespace Objects.Geometry
     [OnDeserialized]
     internal void OnDeserialized(StreamingContext context)
     {
+      Surfaces.ForEach(s => s.units = units);
       Edges.ForEach(e => e.Brep = this);
       Loops.ForEach(l => l.Brep = this);
       Trims.ForEach(t => t.Brep = this);
@@ -205,7 +328,6 @@ namespace Objects.Geometry
   {
     [JsonIgnore] public Brep Brep { get; set; }
     public int EdgeIndex { get; set; }
-
     public int StartIndex { get; set; }
     public int EndIndex { get; set; }
     public int FaceIndex { get; set; }

@@ -11,6 +11,7 @@ using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Rhino.Geometry;
+using System.Threading;
 
 namespace ConnectorGrasshopper.Extras
 {
@@ -18,14 +19,22 @@ namespace ConnectorGrasshopper.Extras
   {
     public static List<object> DataTreeToNestedLists(GH_Structure<IGH_Goo> dataInput, ISpeckleConverter converter, Action OnConversionProgress = null)
     {
+      return DataTreeToNestedLists(dataInput, converter, CancellationToken.None, OnConversionProgress);
+    }
+
+    public static List<object> DataTreeToNestedLists(GH_Structure<IGH_Goo> dataInput, ISpeckleConverter converter, CancellationToken cancellationToken, Action OnConversionProgress = null)
+    {
       var output = new List<object>();
       for (var i = 0; i < dataInput.Branches.Count; i++)
       {
+        if (cancellationToken.IsCancellationRequested) return output;
+
         var path = dataInput.Paths[i].Indices.ToList();
         var leaves = new List<object>(); 
         
         foreach(var goo in dataInput.Branches[i])
         {
+        if (cancellationToken.IsCancellationRequested) return output;
           OnConversionProgress?.Invoke();
           leaves.Add(TryConvertItemToSpeckle(goo, converter));
         }

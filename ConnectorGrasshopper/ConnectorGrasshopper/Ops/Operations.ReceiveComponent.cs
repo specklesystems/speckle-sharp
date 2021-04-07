@@ -211,6 +211,17 @@ namespace ConnectorGrasshopper.Ops
           "To enable automatic receiving, you need to input a stream rather than a specific commit.";
       }
 
+      Menu_AppendSeparator(menu);
+
+      if (CurrentComponentState == "receiving")
+      {
+        Menu_AppendItem(menu, "Cancel Receive", (s, e) =>
+        {
+          CurrentComponentState = "expired";
+          RequestCancellation();
+        });
+      }
+
       base.AppendAdditionalComponentMenuItems(menu);
     }
 
