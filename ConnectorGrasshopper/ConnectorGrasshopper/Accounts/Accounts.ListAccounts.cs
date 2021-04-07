@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Special;
+using Rhino;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 
@@ -13,7 +16,7 @@ namespace ConnectorGrasshopper.Accounts
   public class AccountListComponent : GH_ValueList
   {
     protected override Bitmap Icon => Properties.Resources.Accounts;
-
+  
     public override Guid ComponentGuid => new Guid("734C6CB6-2430-40B3-BE2F-255B27302131");
 
     public override string Category { get => ComponentCategories.SECONDARY_RIBBON; }
@@ -29,7 +32,7 @@ namespace ConnectorGrasshopper.Accounts
     public AccountListComponent() : base()
     {
       MutableNickName = false;
-      SetAccountList();
+      //SetAccountList();
     }
 
     public override bool AppendMenuItems(ToolStripDropDown menu)
@@ -38,7 +41,6 @@ namespace ConnectorGrasshopper.Accounts
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Launch the Speckle Manager to add new accounts, or remove old ones.", (s, e) =>
       {
-        // TODO: path to actual exe
         System.Diagnostics.Process.Start("speckle://goto=accounts");
       });
       return true;
@@ -47,15 +49,15 @@ namespace ConnectorGrasshopper.Accounts
     private void SetAccountList()
     {
       ListItems.Clear();
-      var accounts = AccountManager.GetAccounts();
+      ListItems.Add(new GH_ValueListItem("No account selected", null));
+      var accounts = AccountManager.GetAccounts().ToList();
       var defaultAccount = AccountManager.GetDefaultAccount();
-      int index = 0, defaultAccountIndex = 0;
+      int index = 1, defaultAccountIndex = 0;
 
-      if (accounts.ToList().Count == 0)
+      if (accounts.Count == 0)
       {
-        ListItems.Add(new GH_ValueListItem("No accounts where found on this machine. Right-click for more options.", ""));
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
         SelectItem(0);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
         return;
       }
 
@@ -63,60 +65,103 @@ namespace ConnectorGrasshopper.Accounts
       {
         if (defaultAccount != null && account.userInfo.id == defaultAccount.userInfo.id)
         {
-          defaultAccountIndex = index;
+          defaultAccountIndex = index + 1;
         }
 
         ListItems.Add(new GH_ValueListItem(account.ToString(), $"\"{account.userInfo.id}\""));
         index++;
       }
 
-      SelectItem(defaultAccountIndex);
+      if (string.IsNullOrEmpty(selectedServerUrl) && string.IsNullOrEmpty(selectedUserId))
+      {
+        // This is a new component, use default account
+        SelectItem(defaultAccountIndex);
+        return;
+      }
+      
+      // Not a new component, should have account set.
+      var selectedIndex = GetSelectedAccountIndex(accounts);
+      SelectItem(selectedIndex != -1 ? selectedIndex : 0);
     }
 
+    private int GetSelectedAccountIndex(List<Account> accounts)
+    {
+      //TODO: Refactor this into a method
+      // Check for the specific user ID that was selected before.
+      var acc = accounts.FirstOrDefault(a => a.userInfo.id == selectedUserId);
+      if (acc != null)
+      {
+        var accIndex = accounts.IndexOf(acc);
+        return accIndex + 1;
+      }
+      
+      // If the selected account doesn't work, try with another account in the same server
+      acc = accounts.FirstOrDefault(a => a.serverInfo.url == selectedServerUrl);
+      if (acc != null)
+      {
+        var accIndex = accounts.IndexOf(acc);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Account mismatch. Using a different account for the same server.");
+
+        return accIndex + 1;
+      }
+      // If no accounts exist on the selected server, throw error in node.
+      return -1;
+    }
+    
+    private string selectedUserId;
+    private string selectedServerUrl;
+    
+        
     public override bool Read(GH_IReader reader)
     {
-      var accounts = AccountManager.GetAccounts().ToList();
-      var selectedUserId = reader.GetString("selectedId");
-
-      var account = accounts.FirstOrDefault(a => a.userInfo.id == selectedUserId);
-      if (account != null)
+      try
       {
-        var index = accounts.IndexOf(account);
-        SelectItem(index);
-        return base.Read(reader);
+        selectedUserId = reader.GetString("selectedId");
+        selectedServerUrl = reader.GetString("selectedServer");
       }
-
-      var selectedServerUrl = reader.GetString("selectedServer");
-      account = accounts.FirstOrDefault(a => a.serverInfo.url == selectedServerUrl);
-      if (account != null)
+      catch (Exception e)
       {
-        var index = accounts.IndexOf(account);
-        SelectItem(index);
-        AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Remark, "Account mismatch. Using a different account for the same server.");
-        return base.Read(reader);
       }
-
-      AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Remark, "Account mismatch. Using the default one.");
       return base.Read(reader);
     }
-
+    
     public override bool Write(GH_IWriter writer)
     {
-      var selectedUserId = SelectedItems[0].Expression.Trim(new char[] { '"' });
-      var selectedAccount = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == selectedUserId);
-      if (selectedAccount != null)
+      try
       {
-        writer.SetString("selectedId", selectedUserId);
-        writer.SetString("selectedServer", selectedAccount.serverInfo.url);
+        var selectedUserId = FirstSelectedItem.Expression?.Trim(new char[] { '"' });
+        var selectedAccount = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == selectedUserId);
+        if (selectedAccount != null)
+        {
+          writer.SetString("selectedId", selectedUserId);
+          writer.SetString("selectedServer", selectedAccount.serverInfo.url);
+        }
+        else
+        {
+          writer.SetString("selectedId", this.selectedUserId);
+          writer.SetString("selectedServer", this.selectedServerUrl);
+        }
       }
-
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+      }
       return base.Write(writer);
+    }
+
+    protected override void CollectVolatileData_Custom()
+    {
+      m_data.ClearData();
+      
+      if(FirstSelectedItem.Value != null)
+        m_data.Append(this.FirstSelectedItem.Value, new GH_Path(0));
     }
 
     public override void AddedToDocument(GH_Document document)
     {
       Tracker.TrackPageview(Tracker.ACCOUNT_LIST);
       base.AddedToDocument(document);
+      SetAccountList();
     }
   }
 
