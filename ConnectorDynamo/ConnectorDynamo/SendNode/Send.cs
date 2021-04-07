@@ -255,7 +255,7 @@ namespace Speckle.ConnectorDynamo.SendNode
           throw new SpeckleException("Conversion error", e);
         }
 
-        if ( totalCount == 0 )
+        if (totalCount == 0)
           throw new SpeckleException("Zero objects converted successfully. Send stopped.");
 
         Message = "Sending...";
@@ -430,7 +430,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       {
         _commitMessage =
           InPorts[2].Connectors.Any()
-            ? GetInputAs<string>(engine, 3)
+            ? GetInputAs<string>(engine, 2)
             : ""; //IsConnected not working because has default value
       }
       catch
