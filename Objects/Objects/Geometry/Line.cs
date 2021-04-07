@@ -84,11 +84,11 @@ namespace Objects.Geometry
 
     public static Line FromList(List<double> list)
     {
-      var line = new Line();
-      line.start = Point.FromList(list.GetRange(2, 3));
-      line.end = Point.FromList(list.GetRange(5, 3));
+      var units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+      var startPt = new Point(list[2], list[3], list[4], units);
+      var endPt = new Point(list[5], list[6], list[7], units);
+      var line = new Line(startPt, endPt, units);
       line.domain = new Interval(list[8], list[9]);
-      line.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
       return line;
     }
   }

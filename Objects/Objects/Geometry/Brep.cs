@@ -118,8 +118,8 @@ namespace Objects.Geometry
       {
         if (value != null)
         {
-          var units = Units.GetUnitFromEncoding(value[0]);
-          for (int i = value.Count %3 == 0 ? 0 : 1; i < value.Count; i += 3)
+          var units = value.Count % 3 == 0 ? Units.None : Units.GetUnitFromEncoding(value[0]);
+          for (int i = value.Count % 3 == 0 ? 0 : 1; i < value.Count; i += 3)
           {
             Vertices.Add(new Point(value[i], value[i + 1], value[i + 2], units));
           }

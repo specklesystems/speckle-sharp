@@ -17,9 +17,9 @@ namespace Objects.BuiltElements
   public class View3D : View
   {
     public Point origin { get; set; }
+    public Point target { get; set; }
     public Vector upDirection { get; set; }
     public Vector forwardDirection { get; set; }
-    //public double zoom { get; set; }
     public bool isOrthogonal { get; set; } = false;
 
     public View3D() { }

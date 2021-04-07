@@ -77,7 +77,7 @@ namespace Objects.Geometry
       list.Add(rational ? 1 : 0);
       list.Add(closedU ? 1 : 0);
       list.Add(closedV ? 1 : 0);
-      list.Add(domainU.start ?? 0);
+      list.Add(domainU.start ?? 0); // 7
       list.Add(domainU.end ?? 1);
       list.Add(domainV.start ?? 0);
       list.Add(domainV.end ?? 1); // [0] 10
