@@ -157,8 +157,8 @@ namespace Objects.Converter.AutocadCivil
         //case Brep o: // TODO: NOT TESTED
         //  return BrepToNativeDB(o);
 
-        case Mesh o:
-          return MeshToNativeDB(o);
+        //case Mesh o: // unstable, do not use for now
+        //  return MeshToNativeDB(o);
 
         default:
           throw new NotSupportedException();
@@ -208,8 +208,11 @@ namespace Objects.Converter.AutocadCivil
         case AcadDB.Polyline2d o:
           return PolycurveToSpeckle(o);
 
-        // case AcadDB.NurbSurface o: // TODO: NOT TESTED
-        //   return SurfaceToSpeckle(o);
+        case PlaneSurface o:
+          return SurfaceToSpeckle(o);
+
+         case AcadDB.NurbSurface o:
+           return SurfaceToSpeckle(o);
 
         case AcadDB.PolyFaceMesh o:
           return MeshToSpeckle(o);
@@ -261,8 +264,11 @@ namespace Objects.Converter.AutocadCivil
             case AcadDB.Polyline3d _:
               return true;
 
+            case AcadDB.PlaneSurface _:
+              return true;
+
             case AcadDB.NurbSurface _:
-              return false;
+              return true;
 
             case AcadDB.PolyFaceMesh _:
               return true;
@@ -339,7 +345,7 @@ namespace Objects.Converter.AutocadCivil
           return false;
 
         case Mesh _:
-          return true;
+          return false;
 
         default:
           return false;

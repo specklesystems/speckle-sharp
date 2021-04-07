@@ -415,6 +415,14 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Surfaces
+    public Surface SurfaceToSpeckle(AcadDB.PlaneSurface surface)
+    {
+      var nurbs = surface.ConvertToNurbSurface();
+      if (nurbs.Length > 0)
+        return SurfaceToSpeckle(nurbs[0]);
+      return null;
+    }
+
     public Surface SurfaceToSpeckle(AcadDB.NurbSurface surface)
     {
       List<double> Uknots = new List<double>();
