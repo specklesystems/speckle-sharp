@@ -144,10 +144,10 @@ namespace ConnectorGrasshopper.Objects
           else
           {
             // If value is not list, it is a single item.
-            var obj = value == null ? null : Utilities.TryConvertItemToSpeckle(value, Converter);
             
             try
             {
+              var obj = value == null ? null : Utilities.TryConvertItemToSpeckle(value, Converter);
               @base[key] = obj;
             }
             catch (Exception e)

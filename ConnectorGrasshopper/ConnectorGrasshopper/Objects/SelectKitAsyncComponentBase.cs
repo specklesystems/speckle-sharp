@@ -23,11 +23,16 @@ namespace ConnectorGrasshopper.Objects
 
     public SelectKitAsyncComponentBase(string name, string nickname, string description, string category, string subCategory) : base(name, nickname, description, category, subCategory)
     {
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document);
       var key = "Speckle2:kit.default.name";
       var n = Grasshopper.Instances.Settings.GetValue(key, "Objects");
-      Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino).FirstOrDefault(kit => kit.Name == n);
       try
       {
+        Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino).FirstOrDefault(kit => kit.Name == n);
         Converter = Kit.LoadConverter(Applications.Rhino);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         Message = $"{Kit.Name} Kit";
@@ -78,10 +83,21 @@ namespace ConnectorGrasshopper.Objects
     }
 
     protected override void BeforeSolveInstance()
-    {      
-      //Ensure converter document is up to date
-      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+    {
+      Converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
       base.BeforeSolveInstance();
+    }
+
+    protected override void SolveInstance(IGH_DataAccess DA)
+    {
+      //Ensure converter document is up to date
+      if(Converter == null)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+        return;
+      }
+      base.SolveInstance(DA);
+      
     }
   }
 }
