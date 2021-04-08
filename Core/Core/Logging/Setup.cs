@@ -17,7 +17,7 @@ namespace Speckle.Core.Logging
     {
       HostApplication = hostApplication;
 
-      Log.Instance();
+      Log.Initialize();
     }
 
     /// <summary>

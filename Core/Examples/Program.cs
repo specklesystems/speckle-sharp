@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Tests;
@@ -27,6 +28,8 @@ namespace ExampleApp
   {
     static async Task Main(string[] args)
     {
+
+      Log.CaptureException(new Exception("TEST"));
 
       await Subscriptions.SubscriptionConnection();
 
