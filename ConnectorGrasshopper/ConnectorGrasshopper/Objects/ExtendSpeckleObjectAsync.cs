@@ -25,6 +25,11 @@ namespace ConnectorGrasshopper.Objects
     public ExtendSpeckleObjectAsync() : base("Extend Speckle Object", "ESO",
       "Extend a current object with key/value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document);
       BaseWorker = new ExtendSpeckleObjectWorker(this, Converter);
     }
 

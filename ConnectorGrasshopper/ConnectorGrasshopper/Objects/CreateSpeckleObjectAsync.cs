@@ -26,24 +26,26 @@ namespace ConnectorGrasshopper.Objects
       "Allows you to create a Speckle object by setting its keys and values.",
       ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
-        
-        BaseWorker = new CreateSpeckleObjectWorker(this, Converter);
-        Params.ParameterNickNameChanged += (sender, args) =>
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document); // This would set the converter already.
+      BaseWorker = new CreateSpeckleObjectWorker(this, Converter);
+      Params.ParameterNickNameChanged += (sender, args) =>
+      {
+        args.Parameter.Name = args.Parameter.NickName;
+        ExpireSolution(true);
+      };
+      Params.ParameterChanged += (sender, args) =>
+      {
+        if (args.OriginalArguments.Type == GH_ObjectEventType.NickName ||
+            args.OriginalArguments.Type == GH_ObjectEventType.NickNameAccepted)
         {
-          Console.WriteLine("nickname changed!");
           args.Parameter.Name = args.Parameter.NickName;
           ExpireSolution(true);
-        };
-        Params.ParameterChanged += (sender, args) =>
-        {
-          if (args.OriginalArguments.Type == GH_ObjectEventType.NickName ||
-              args.OriginalArguments.Type == GH_ObjectEventType.NickNameAccepted)
-          {
-            Console.WriteLine("nickname changed!");
-            args.Parameter.Name = args.Parameter.NickName;
-            ExpireSolution(true);
-          }
-        };
+        }
+      };
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
