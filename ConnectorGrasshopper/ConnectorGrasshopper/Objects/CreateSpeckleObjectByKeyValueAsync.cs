@@ -26,6 +26,11 @@ namespace ConnectorGrasshopper.Objects
     public CreateSpeckleObjectByKeyValueAsync() : base("Create Speckle Object by Key/Value", "K/V",
       "Creates a speckle object from key value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document);
       BaseWorker = new CreateSpeckleObjectByKeyValueWorker(this, Converter);
     }
 

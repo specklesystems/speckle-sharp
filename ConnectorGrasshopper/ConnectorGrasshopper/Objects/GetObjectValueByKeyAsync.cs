@@ -22,6 +22,11 @@ namespace ConnectorGrasshopper.Objects
     public GetObjectValueByKeyAsync() : base("Speckle Object Value by Key", "Object K/V",
       "Gets the value of a specific key in a Speckle object.", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document);
       BaseWorker = new GetObjectValueByKeyWorker(this, Converter);
     }
 
