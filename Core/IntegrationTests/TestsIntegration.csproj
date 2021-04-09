@@ -15,6 +15,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\Tests\TestsUnit.csproj" />
-    <ProjectReference Include="..\Transports\ServerTransport\ServerTransport.csproj" />
   </ItemGroup>
 </Project>

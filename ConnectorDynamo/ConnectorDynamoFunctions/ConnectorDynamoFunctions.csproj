@@ -94,11 +94,6 @@
     <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
       <Project>{82f74946-6c04-4ae3-bfb9-f09e68cdfe12}</Project>
       <Name>ServerTransport</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
-      <Project>{82f74946-6c04-4ae3-bfb9-f09e68cdfe12}</Project>
-      <Name>ServerTransport</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
