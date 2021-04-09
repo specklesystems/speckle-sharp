@@ -81,7 +81,7 @@ namespace SpeckleRhino
     {
       if (Bootstrapper != null)
       {
-        Bootstrapper.Application.MainWindow.Show();
+        Bootstrapper.ShowRootView();
         return;
       }
 
@@ -95,22 +95,12 @@ namespace SpeckleRhino
         new Application();
       }
 
-      Bootstrapper.Setup(Application.Current);
-      Bootstrapper.Start(new string[] { });
+      if ( Application.Current != null )
+        new StyletAppLoader() {Bootstrapper = Bootstrapper};
+      else
+        new App(Bootstrapper);
 
-      Bootstrapper.Application.MainWindow.Initialized += (o, e) =>
-      {
-        ((ConnectorBindingsRhino)Bootstrapper.Bindings).GetFileContextAndNotifyUI();
-      };
-
-      Bootstrapper.Application.MainWindow.Closing += (object sender, System.ComponentModel.CancelEventArgs e) =>
-      {
-        Bootstrapper.Application.MainWindow.Hide();
-        e.Cancel = true;
-      };
-
-      var helper = new System.Windows.Interop.WindowInteropHelper(Bootstrapper.Application.MainWindow);
-      helper.Owner = RhinoApp.MainWindowHandle();
+      Bootstrapper.Start(Application.Current);
     }
   }
 

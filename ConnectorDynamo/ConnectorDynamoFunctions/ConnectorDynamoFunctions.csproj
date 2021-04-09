@@ -91,15 +91,6 @@
       <Project>{941aac33-a406-4ae7-9930-67ffdb746d9d}</Project>
       <Name>DiskTransport</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
-      <Project>{82f74946-6c04-4ae3-bfb9-f09e68cdfe12}</Project>
-      <Name>ServerTransport</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
-      <Project>{82f74946-6c04-4ae3-bfb9-f09e68cdfe12}</Project>
-      <Name>ServerTransport</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DynamoVisualProgramming.Core">

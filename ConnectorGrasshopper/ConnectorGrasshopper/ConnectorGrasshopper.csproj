@@ -112,10 +112,6 @@
       <Project>{8f16a9a1-dc5f-4800-821c-336e6ccf8f9c}</Project>
       <Name>DiskTransport</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
-      <Project>{8008f635-7ded-473c-88df-12833f599d75}</Project>
-      <Name>ServerTransport</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
