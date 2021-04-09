@@ -193,7 +193,7 @@ namespace Objects.Converter.Revit
           return ModelCurveToNative(o);
 
         case Geometry.Brep o:
-          return FreeformElementToNative(o);
+          return DirectShapeToNative(o);
 
         case Geometry.Mesh o:
           return DirectShapeToNative(o);
@@ -216,6 +216,9 @@ namespace Objects.Converter.Revit
 
         case BER.DirectShape o:
           return DirectShapeToNative(o);
+
+        case BER.FreeformElement o:
+          return FreeformElementToNative(o);
 
         case BER.FamilyInstance o:
           return FamilyInstanceToNative(o);
@@ -379,6 +382,9 @@ namespace Objects.Converter.Revit
           return true;
 
         case BER.DirectShape _:
+          return true;
+        
+        case BER.FreeformElement _:
           return true;
 
         case BER.FamilyInstance _:

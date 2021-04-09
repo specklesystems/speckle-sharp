@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Autodesk.Revit.DB;
+using ConverterRevitShared.Revit;
 using Objects.Geometry;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -160,26 +162,90 @@ namespace Objects.Converter.Revit
       return speckleAc;
     }
 
-    public ApplicationPlaceholderObject FreeformElementToNative(Brep brep)
+    
+    public ApplicationPlaceholderObject FreeformElementToNative(Objects.BuiltElements.Revit.FreeformElement freeformElement)
     {
-      DB.FreeFormElement freeform = null;
+      Solid solid;
       try
       {
-        var solid = BrepToNative(brep);
-        if (solid == null) throw new SpeckleException("Could not convert brep to native");
-        freeform = DB.FreeFormElement.Create(Doc, solid);
-
+        solid = BrepToNative(freeformElement.baseGeometry as Brep);
       }
       catch (Exception e)
       {
-        ConversionErrors.Add(e);
-        var mesh = MeshToNative(brep.displayMesh);
-        var tb = new DB.TessellatedShapeBuilder();
-        throw new Exception("Pending mesh to solid conversion");
+        ConversionErrors.Add(new SpeckleException("Could not convert BREP to native"));
+        return null;
       }
       
-      return new ApplicationPlaceholderObject { applicationId = brep.applicationId, ApplicationGeneratedId = freeform.UniqueId, NativeObject = freeform };
+      var famPath = Path.Combine(Doc.Application.FamilyTemplatePath, @"English\Metric Generic Model.rft");
+      if (!File.Exists(famPath))
+      {
+        ConversionErrors.Add(new Exception($"Could not find file Metric Generic Model.rft - {famPath}"));
+        return null;
+      }
 
+      var tempPath = CreateFreeformElementFamily(famPath, solid, freeformElement.id);
+      Doc.LoadFamily(tempPath, new FamilyLoadOption(), out var fam);
+      var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;
+      symbol.Activate();
+      
+      var freeform = Doc.Create.NewFamilyInstance(XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
+      
+      SetInstanceParameters(freeform, freeformElement);
+      return new ApplicationPlaceholderObject { applicationId = freeformElement.applicationId, ApplicationGeneratedId = freeform.UniqueId, NativeObject = freeform };
     }
+    
+    public ApplicationPlaceholderObject FreeformElementToNative(Brep brep)
+    {
+      Solid solid;
+      try
+      {
+        solid = BrepToNative(brep);
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException("Could not convert brep to native");
+      }
+      
+      var famPath = Path.Combine(Doc.Application.FamilyTemplatePath, @"English\Metric Generic Model.rft");
+      if (!File.Exists(famPath))
+      {
+        ConversionErrors.Add(new Exception($"Could not find file Metric Generic Model.rft - {famPath}"));
+        return null;
+      }
+
+      var tempPath = CreateFreeformElementFamily(famPath, solid, brep.id);
+      Family fam;
+      Doc.LoadFamily(tempPath, new FamilyLoadOption(), out fam);
+      var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;
+      symbol.Activate();
+      
+      
+      var freeform = Doc.Create.NewFamilyInstance(XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
+      return new ApplicationPlaceholderObject { applicationId = brep.applicationId, ApplicationGeneratedId = freeform.UniqueId, NativeObject = freeform };
+    }
+
+    private string CreateFreeformElementFamily(string famPath, Solid solid, string name)
+    {
+      
+      var famDoc = Doc.Application.NewFamilyDocument(famPath);
+      using (Transaction t = new Transaction(famDoc, "Create Freeform Element"))
+      {
+        t.Start();
+        
+        FreeFormElement.Create(famDoc, solid);
+
+        t.Commit();
+
+      }
+      var famName = "SpeckleFreeform_" + name;
+      string tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
+      SaveAsOptions so = new SaveAsOptions();
+      so.OverwriteExistingFile = true;
+      famDoc.SaveAs(tempFamilyPath, so);
+      famDoc.Close();
+
+      return tempFamilyPath;
+    }
+
   }
 }
