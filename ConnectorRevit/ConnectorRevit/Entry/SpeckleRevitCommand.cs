@@ -38,7 +38,6 @@ namespace Speckle.ConnectorRevit.Entry
         else
           new DesktopUI.App(Bootstrapper);
 
-
         Bootstrapper.Start(Application.Current);
       }
       catch ( Exception e )

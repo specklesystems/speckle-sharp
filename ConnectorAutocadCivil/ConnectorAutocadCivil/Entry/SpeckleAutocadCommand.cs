@@ -22,7 +22,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       {
         if (Bootstrapper != null)
         {
-          Bootstrapper.Application.MainWindow.Show();
+          Bootstrapper.ShowRootView();
           return;
         }
 
@@ -31,13 +31,12 @@ namespace Speckle.ConnectorAutocadCivil.Entry
           Bindings = Bindings
         };
 
-        Bootstrapper.Setup(System.Windows.Application.Current != null ? System.Windows.Application.Current : new System.Windows.Application());
+        if ( System.Windows.Application.Current != null )
+          new StyletAppLoader() {Bootstrapper = Bootstrapper};
+        else
+          new DesktopUI.App(Bootstrapper);
 
-        Bootstrapper.Application.Startup += (o, e) =>
-        {
-          var helper = new System.Windows.Interop.WindowInteropHelper(Bootstrapper.Application.MainWindow);
-          helper.Owner = Application.MainWindow.Handle;
-        };
+        Bootstrapper.Start(System.Windows.Application.Current);
       }
       catch (System.Exception e)
       {

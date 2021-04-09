@@ -89,6 +89,7 @@ namespace Speckle.DesktopUI
     public override void Start(string[ ] args)
     {
       // stop. get help.
+      // this is getting triggered from _somewhere_ so I'm overriding it to prevent it from messing things up
     }
 
     public void Start(Application app)
