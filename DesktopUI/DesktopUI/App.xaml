@@ -4,11 +4,7 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:local="clr-namespace:Speckle.DesktopUI"
   xmlns:s="https://github.com/canton7/Stylet">
+
   <Application.Resources>
-    <s:ApplicationLoader>
-      <s:ApplicationLoader.Bootstrapper>
-        <local:Bootstrapper />
-      </s:ApplicationLoader.Bootstrapper>
-    </s:ApplicationLoader>
   </Application.Resources>
 </Application>

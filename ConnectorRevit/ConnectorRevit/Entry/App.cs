@@ -23,9 +23,6 @@ namespace Speckle.ConnectorRevit.Entry
 
     public static UIControlledApplication UICtrlApp { get; set; }
 
-    // public static readonly FailureDefinitionId GenericFailureGuid =
-    //   new FailureDefinitionId(new Guid("bcada956-0645-4a09-b264-f2154444c677"));
-
     public Result OnStartup(UIControlledApplication application)
     {
       UICtrlApp = application;
@@ -44,14 +41,6 @@ namespace Speckle.ConnectorRevit.Entry
         SpeckleButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         SpeckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
-
-      // var failDef = FailureDefinition.CreateFailureDefinition(
-      //   GenericFailureGuid, FailureSeverity.DocumentCorruption,
-      //   "Generic Speckle failure to resolve unresolvable Revit errors");
-      // failDef.AddResolutionType(FailureResolutionType.DeleteElements, "delete elements to resolve error",
-      //   typeof(DeleteElements));
-      // failDef.SetDefaultResolutionType(FailureResolutionType.DeleteElements);
-      // var defRes = failDef.GetDefaultResolutionType();
 
       return Result.Succeeded;
     }
