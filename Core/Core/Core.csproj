@@ -52,7 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Serialisation\" />
-    <Folder Include="Transports\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Core\Commit.cs" />
