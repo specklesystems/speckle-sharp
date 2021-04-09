@@ -4,8 +4,10 @@ using Dynamo.Models;
 using Dynamo.Scheduler;
 using Dynamo.ViewModels;
 using Dynamo.Wpf;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 
 namespace Speckle.ConnectorDynamo.ReceiveNode
@@ -15,10 +17,13 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     private DynamoViewModel dynamoViewModel;
     private DispatcherSynchronizationContext syncContext;
     private Receive receiveNode;
+    private NodeView _nodeView;
     private DynamoModel dynamoModel;
+    private MenuItem viewStreamMenuItem;
 
     public void CustomizeView(Receive model, NodeView nodeView)
     {
+      _nodeView = nodeView;
       dynamoModel = nodeView.ViewModel.DynamoViewModel.Model;
       dynamoViewModel = nodeView.ViewModel.DynamoViewModel;
       syncContext = new DispatcherSynchronizationContext(nodeView.Dispatcher);
@@ -36,6 +41,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       ui.Loaded += Loaded;
       ui.ReceiveStreamButton.Click += ReceiveStreamButtonClick;
       ui.CancelReceiveStreamButton.Click += CancelReceiveStreamButtonClick;
+
+      nodeView.grid.ContextMenu.Items.Add(new Separator());
     }
 
     private void Loaded(object o, RoutedEventArgs a)
@@ -48,7 +55,14 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     private void InputsChanged()
     {
       debounceTimer.Debounce(300,
-        () => { Task.Run(async () => { receiveNode.LoadInputs(dynamoModel.EngineController); }); });
+        () =>
+        {
+          Task.Run(async () =>
+          {
+            receiveNode.LoadInputs(dynamoModel.EngineController);
+            UpdateContextMenu();
+          });
+        });
     }
 
 
@@ -60,6 +74,31 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     private void ReceiveStreamButtonClick(object sender, RoutedEventArgs e)
     {
       NewDataAvail();
+    }
+
+    private void UpdateContextMenu()
+    {
+      receiveNode.DispatchOnUIThread(() =>
+      {
+        if (viewStreamMenuItem != null)
+        {
+          _nodeView.grid.ContextMenu.Items.Remove(viewStreamMenuItem);
+        }
+
+        viewStreamMenuItem = null;
+
+        if (receiveNode.Stream != null)
+        {
+
+          viewStreamMenuItem = new MenuItem { Header = $"View stream {receiveNode.Stream.StreamId} @ {receiveNode.Stream.ServerUrl} online ↗" };
+          viewStreamMenuItem.Click += (a, e) =>
+          {
+            System.Diagnostics.Process.Start($"{receiveNode.Stream.ServerUrl}/streams/{receiveNode.Stream.StreamId}");
+          };
+          _nodeView.grid.ContextMenu.Items.Add(viewStreamMenuItem);
+
+        }
+      });
     }
 
     private void CancelReceiveStreamButtonClick(object sender, RoutedEventArgs e)
