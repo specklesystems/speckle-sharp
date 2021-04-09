@@ -51,6 +51,8 @@ namespace Speckle.ConnectorDynamo.SendNode
     private Dictionary<ITransport, string> _branchNames { get; set; }
     private string _commitMessage { get; set; }
 
+    internal List<StreamWrapper> _streamWrappers { get; set; }
+
     #endregion
 
     #region ui bindings
@@ -363,44 +365,10 @@ namespace Speckle.ConnectorDynamo.SendNode
         return;
       }
 
-      Dictionary<ITransport, string> TryConvertInputToTransport(object o)
-      {
-        var defaultBranch = "main";
-        var transports = new Dictionary<ITransport, string>();
-        switch (o)
-        {
-          case StreamWrapper s:
-            var wrapperTransport = new ServerTransport(s.GetAccount().Result, s.StreamId);
-            var branch = s.BranchName ?? defaultBranch;
-            transports.Add(wrapperTransport, branch);
-            break;
-          case string s:
-            var streamWrapper = new StreamWrapper(s);
-            var transport = new ServerTransport(streamWrapper.GetAccount().Result, streamWrapper.StreamId);
-            var b = streamWrapper.BranchName ?? defaultBranch;
-            transports.Add(transport, b);
-            break;
-          case ITransport t:
-            transports.Add(t, defaultBranch);
-            break;
-          case List<object> s:
-            transports = s
-              .Select(TryConvertInputToTransport)
-              .Aggregate(transports, (current, t) => new List<Dictionary<ITransport, string>> { current, t }
-                .SelectMany(dict => dict)
-                .ToDictionary(pair => pair.Key, pair => pair.Value));
-            break;
-          default:
-            Warning("Input was neither a transport nor a stream.");
-            break;
-        }
-
-        return transports;
-      }
-
       try
       {
         _streams = new List<ITransport>();
+        _streamWrappers = new List<StreamWrapper>(); // populated during TryConvertInputToTransport, not ideal but I'm lazy
 
         //this port accepts:
         //a stream wrapper, a url, a list of stream wrappers or a list of urls
@@ -440,6 +408,44 @@ namespace Speckle.ConnectorDynamo.SendNode
 
 
       InitializeSender();
+    }
+
+    private Dictionary<ITransport, string> TryConvertInputToTransport(object o)
+    {
+      var defaultBranch = "main";
+      var transports = new Dictionary<ITransport, string>();
+
+      switch (o)
+      {
+        case StreamWrapper s:
+          var wrapperTransport = new ServerTransport(s.GetAccount().Result, s.StreamId);
+          var branch = s.BranchName ?? defaultBranch;
+          transports.Add(wrapperTransport, branch);
+          _streamWrappers.Add(s);
+          break;
+        case string s:
+          var streamWrapper = new StreamWrapper(s);
+          var transport = new ServerTransport(streamWrapper.GetAccount().Result, streamWrapper.StreamId);
+          var b = streamWrapper.BranchName ?? defaultBranch;
+          transports.Add(transport, b);
+          _streamWrappers.Add(streamWrapper);
+          break;
+        case ITransport t:
+          transports.Add(t, defaultBranch);
+          break;
+        case List<object> s:
+          transports = s
+            .Select(TryConvertInputToTransport)
+            .Aggregate(transports, (current, t) => new List<Dictionary<ITransport, string>> { current, t }
+              .SelectMany(dict => dict)
+              .ToDictionary(pair => pair.Key, pair => pair.Value));
+          break;
+        default:
+          Warning("Input was neither a transport nor a stream.");
+          break;
+      }
+
+      return transports;
     }
 
     private void InitializeSender()

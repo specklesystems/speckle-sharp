@@ -29,8 +29,6 @@ namespace ExampleApp
     static async Task Main(string[] args)
     {
 
-      Log.CaptureException(new Exception("TEST"));
-
       await Subscriptions.SubscriptionConnection();
 
       Console.Clear();
