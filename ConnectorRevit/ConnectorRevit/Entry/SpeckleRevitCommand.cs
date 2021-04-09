@@ -25,22 +25,22 @@ namespace Speckle.ConnectorRevit.Entry
     {
       try
       {
-        if ( Bootstrapper != null )
+        if (Bootstrapper != null)
         {
           Bootstrapper.ShowRootView();
           return;
         }
 
-        Bootstrapper = new Bootstrapper() {Bindings = Bindings};
+        Bootstrapper = new Bootstrapper() { Bindings = Bindings };
 
-        if ( Application.Current != null )
-          new StyletAppLoader() {Bootstrapper = Bootstrapper};
+        if (Application.Current != null)
+          new StyletAppLoader() { Bootstrapper = Bootstrapper };
         else
           new DesktopUI.App(Bootstrapper);
 
         Bootstrapper.Start(Application.Current);
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         Bootstrapper = null;
       }
