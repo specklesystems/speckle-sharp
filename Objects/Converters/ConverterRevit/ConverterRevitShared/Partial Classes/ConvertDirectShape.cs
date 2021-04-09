@@ -25,7 +25,7 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
       }
 
-      var converted = new List<GeometryObject>();
+      var converted = new List<DB.GeometryObject>();
 
       speckleDs.baseGeometries.ToList().ForEach(b =>
       {
@@ -160,5 +160,26 @@ namespace Objects.Converter.Revit
       return speckleAc;
     }
 
+    public ApplicationPlaceholderObject FreeformElementToNative(Brep brep)
+    {
+      DB.FreeFormElement freeform = null;
+      try
+      {
+        var solid = BrepToNative(brep);
+        if (solid == null) throw new SpeckleException("Could not convert brep to native");
+        freeform = DB.FreeFormElement.Create(Doc, solid);
+
+      }
+      catch (Exception e)
+      {
+        ConversionErrors.Add(e);
+        var mesh = MeshToNative(brep.displayMesh);
+        var tb = new DB.TessellatedShapeBuilder();
+        throw new Exception("Pending mesh to solid conversion");
+      }
+      
+      return new ApplicationPlaceholderObject { applicationId = brep.applicationId, ApplicationGeneratedId = freeform.UniqueId, NativeObject = freeform };
+
+    }
   }
 }

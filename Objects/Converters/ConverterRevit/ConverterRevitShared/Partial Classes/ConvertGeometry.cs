@@ -438,12 +438,8 @@ namespace Objects.Converter.Revit
 
     // Insipred by
     // https://github.com/DynamoDS/DynamoRevit/blob/master/src/Libraries/RevitNodes/GeometryConversion/ProtoToRevitMesh.cs
-    public IList<GeometryObject> MeshToNative(Mesh mesh)
+    public IList<GeometryObject> MeshToNative(Mesh mesh, TessellatedShapeBuilderTarget target = TessellatedShapeBuilderTarget.Mesh, TessellatedShapeBuilderFallback fallback = TessellatedShapeBuilderFallback.Salvage)
     {
-
-      TessellatedShapeBuilderTarget target = TessellatedShapeBuilderTarget.Mesh;
-      TessellatedShapeBuilderFallback fallback = TessellatedShapeBuilderFallback.Salvage;
-
       var tsb = new TessellatedShapeBuilder() { Fallback = fallback, Target = target, GraphicsStyleId = ElementId.InvalidElementId };
       tsb.OpenConnectedFaceSet(false);
 
