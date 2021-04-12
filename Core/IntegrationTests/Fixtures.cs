@@ -14,8 +14,8 @@ namespace TestsIntegration
 {
   public static class Fixtures
   {
-    public static readonly ServerInfo Server = new ServerInfo { url = "https://latest.speckle.dev", name = "Test Server" };
-    
+    public static readonly ServerInfo Server = new ServerInfo { url = "http://localhost:3000", name = "Docker Server" };
+
     public static Account SeedUser()
     {
       var seed = Guid.NewGuid().ToString().ToLower();
@@ -81,7 +81,7 @@ namespace TestsIntegration
 
       var tokenResponse = tokenRequest.GetResponse();
       var deserialised = new Dictionary<string, string>();
-      using(var streamReader = new StreamReader(tokenResponse.GetResponseStream()))
+      using (var streamReader = new StreamReader(tokenResponse.GetResponseStream()))
       {
         var text = streamReader.ReadToEnd();
         deserialised = JsonConvert.DeserializeObject<Dictionary<string, string>>(text);
