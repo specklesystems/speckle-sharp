@@ -26,10 +26,9 @@ namespace Objects.Converter.Revit
             catch (Exception e)
             {
                 ConversionErrors.Add(new SpeckleException($"Could not convert BREP {freeformElement.id} to native, falling back to mesh representation."));
-                var mesh = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid)
+                var meshSolids = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
                     .Select(m => m as DB.Solid);
-                solids.AddRange(mesh);
-                return null;
+                solids.AddRange(meshSolids);
             }
 
             var tempPath = CreateFreeformElementFamily(solids, freeformElement.id);

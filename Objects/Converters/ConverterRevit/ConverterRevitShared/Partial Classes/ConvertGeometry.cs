@@ -442,8 +442,10 @@ namespace Objects.Converter.Revit
     public IList<GeometryObject> MeshToNative(Mesh mesh, TessellatedShapeBuilderTarget target = TessellatedShapeBuilderTarget.Mesh, TessellatedShapeBuilderFallback fallback = TessellatedShapeBuilderFallback.Salvage)
     {
       var tsb = new TessellatedShapeBuilder() { Fallback = fallback, Target = target, GraphicsStyleId = ElementId.InvalidElementId };
-      tsb.OpenConnectedFaceSet(false);
-
+      
+      var valid = tsb.AreTargetAndFallbackCompatible(target, fallback);
+      tsb.OpenConnectedFaceSet(target == TessellatedShapeBuilderTarget.Solid);
+      
       var vertices = ArrayToPoints(mesh.vertices, mesh.units);
 
       int i = 0;
@@ -456,6 +458,7 @@ namespace Objects.Converter.Revit
         { // triangle
           points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]] };
           var face = new TessellatedFace(points, ElementId.InvalidElementId);
+          var check = !tsb.DoesFaceHaveEnoughLoopsAndVertices(face);
           tsb.AddFace(face);
           i += 4;
         }
@@ -463,9 +466,12 @@ namespace Objects.Converter.Revit
         { // quad
           points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 4]] };
           var face1 = new TessellatedFace(points, ElementId.InvalidElementId);
+          var check1 = tsb.DoesFaceHaveEnoughLoopsAndVertices(face1);
           tsb.AddFace(face1);
           points = new List<XYZ> { vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]], vertices[mesh.faces[i + 4]] };
           var face2 = new TessellatedFace(points, ElementId.InvalidElementId);
+          var check2 = tsb.DoesFaceHaveEnoughLoopsAndVertices(face2);
+
           tsb.AddFace(face2);
           i += 5;
         }
@@ -1025,9 +1031,9 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
+        ConversionErrors.Add(new Exception($"Failed to convert BREP with id {brep.id}, using display mesh value instead.", e));
         var mesh = MeshToNative(brep.displayMesh);
         revitDs.SetShape(mesh);
-        ConversionErrors.Add(new Exception($"Failed to convert BREP with id {brep.id}, using display mesh value instead.", e));
       }
       return revitDs;
     }
