@@ -118,14 +118,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           WAIT_HOSTS: localhost:5432, localhost:6379
     steps:
       - checkout 
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.3.0
-      - run:
-          name: Wait for db
-          command: dockerize -wait http://localhost:3000 -timeout 2m
       - run: 
           name: Unit Tests
           command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q
