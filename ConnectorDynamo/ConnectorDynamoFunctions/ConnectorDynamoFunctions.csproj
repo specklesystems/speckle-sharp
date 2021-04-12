@@ -88,7 +88,7 @@
       <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj">
-      <Project>{941aac33-a406-4ae7-9930-67ffdb746d9d}</Project>
+      <Project>{485aacf5-f27c-427c-ad55-719062e6bd0b}</Project>
       <Name>DiskTransport</Name>
     </ProjectReference>
   </ItemGroup>
