@@ -96,7 +96,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   test-core: 
     docker:
-      - image: 'dotnet/core/sdk:2.1-focal'
+      - image: 'mcr.microsoft.com/dotnet/core/sdk:2.1-focal'
       - image: 'circleci/node:12' # TODO: Change; this is the image used for running the commands below (https://circleci.com/docs/2.0/executor-types/?section=executors-and-images#using-multiple-docker-images)
       - image: 'circleci/redis:6'
       - image: 'circleci/postgres:12'
