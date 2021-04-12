@@ -25,7 +25,7 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
-                ConversionErrors.Add(new SpeckleException($"Could not convert BREP {freeformElement.id} to native, falling back to mesh representation."));
+                ConversionErrors.Add(new SpeckleException($"Could not convert BREP {freeformElement.id} to native, falling back to mesh representation.",e));
                 var meshSolids = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
                     .Select(m => m as DB.Solid);
                 solids.AddRange(meshSolids);
@@ -35,13 +35,20 @@ namespace Objects.Converter.Revit
             Doc.LoadFamily(tempPath, new FamilyLoadOption(), out var fam);
             var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
             symbol.Activate();
-
+            try
+            {
+                File.Delete(tempPath);
+            }
+            catch
+            {
+            }
+            
             var freeform = Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
 
             SetInstanceParameters(freeform, freeformElement);
             return new ApplicationPlaceholderObject
             {
-                applicationId = freeformElement.applicationId, ApplicationGeneratedId = freeform.UniqueId,
+                applicationId = freeformElement.id, ApplicationGeneratedId = freeform.UniqueId,
                 NativeObject = freeform
             };
         }
@@ -57,20 +64,17 @@ namespace Objects.Converter.Revit
             catch (Exception e)
             {
                 var mesh = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid)
-                    .Select(m => m as DB.Solid);
+                    .Select(m => (m as DB.Solid));
                 solids.AddRange(mesh);
-                //throw new SpeckleException("Could not convert brep to native");
             }
 
             var tempPath = CreateFreeformElementFamily(solids, brep.id);
-            DB.Family fam;
-            Doc.LoadFamily(tempPath, new FamilyLoadOption(), out fam);
+            Doc.LoadFamily(tempPath, new FamilyLoadOption(), out var fam);
             var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
             symbol.Activate();
             
 
             var freeform = Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
-            
             SetInstanceParameters(freeform, brep);
             return new ApplicationPlaceholderObject
             {
@@ -94,7 +98,10 @@ namespace Objects.Converter.Revit
             {
                 t.Start();
                     
-                solids.ForEach(s => DB.FreeFormElement.Create(famDoc, s));
+                solids.ForEach(s =>
+                {
+                    DB.FreeFormElement.Create(famDoc, s);
+                });
 
                 t.Commit();
             }
