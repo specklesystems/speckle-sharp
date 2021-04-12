@@ -4,6 +4,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.Geometry;
 using Objects.Primitive;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Arc = Objects.Geometry.Arc;
 using Curve = Objects.Geometry.Curve;
@@ -471,7 +472,15 @@ namespace Objects.Converter.Revit
       }
 
       tsb.CloseConnectedFaceSet();
-      tsb.Build();
+      try
+      {
+        tsb.Build();
+      }
+      catch (Exception e)
+      {
+        ConversionErrors.Add(e);
+        return null;
+      }
       var result = tsb.GetBuildResult();
       return result.GetGeometricalObjects();
 
