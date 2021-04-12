@@ -31,14 +31,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DynamoRevitDS-2.5.0">
-      <HintPath>..\DynamoRevitDS-2.5.0.dll</HintPath>
+    <Reference Include="DynamoRevitDS-2.6.1">
+      <HintPath>..\DynamoRevitDS-2.6.1.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="RevitServices-2.5.0">
-      <HintPath>..\RevitServices-2.5.0.dll</HintPath>
+    <Reference Include="RevitServices-2.6.1">
+      <HintPath>..\RevitServices-2.6.1.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -81,7 +81,6 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-
   <Target Name="Clean">
     <RemoveDir Directories="$(TargetDir)" />
   </Target>
