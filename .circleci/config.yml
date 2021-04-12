@@ -96,8 +96,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   test-core: 
     docker:
-      - image: 'circleci/node:12' # TODO: Change; this is the image used for running the commands below (https://circleci.com/docs/2.0/executor-types/?section=executors-and-images#using-multiple-docker-images)
       - image: microsoft/dotnet:sdk
+      - image: 'circleci/node:12' # TODO: Change; this is the image used for running the commands below (https://circleci.com/docs/2.0/executor-types/?section=executors-and-images#using-multiple-docker-images)
       - image: 'circleci/redis:6'
       - image: 'circleci/postgres:12'
         environment:
@@ -118,6 +118,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           WAIT_HOSTS: localhost:5432, localhost:6379
     steps:
       - checkout 
+      - run:
+          name: Wait for server
+          command: dockerize -wait http://localhost:3000 -timeout 1m
       - run: 
           name: Unit Tests
           command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q
