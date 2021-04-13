@@ -40,25 +40,31 @@ namespace ConnectorGrasshopper.Conversion
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
-      Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Select the converter you want to use:");
-
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-
-      foreach (var kit in kits)
+      try
       {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
-          kit.Name == Kit.Name);
-      }
+        var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
 
-      Menu_AppendSeparator(menu);
+        Menu_AppendSeparator(menu);
+        Menu_AppendItem(menu, "Select the converter you want to use:");
+        foreach (var kit in kits)
+        {
+          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
+            kit.Name == Kit.Name);
+        }
+
+        Menu_AppendSeparator(menu);
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine("X");
+      }
     }
 
     private void SetDefaultKitAndConverter()
     {
-      Kit = KitManager.GetDefaultKit();
       try
       {
+        Kit = KitManager.GetDefaultKit();
         Converter = Kit.LoadConverter(Applications.Rhino);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
       }
