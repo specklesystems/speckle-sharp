@@ -7,6 +7,7 @@ using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
+using Rhino;
 using Sentry;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -22,46 +23,49 @@ namespace ConnectorGrasshopper.Objects
 
     public SelectKitComponentBase(string name, string nickname, string description, string category, string subCategory) : base(name, nickname, description, category, subCategory)
     {
-      var key = "Speckle2:kit.default.name";
-      var n = Grasshopper.Instances.Settings.GetValue(key, "Objects");
-      Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino).FirstOrDefault(kit => kit.Name == n);
-      try
-      {
-        Converter = Kit.LoadConverter(Applications.Rhino);
-        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-        Message = $"{Kit.Name} Kit";
-      }
-      catch
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-      }
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
-      Menu_AppendSeparator(menu);
-      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:");
-      menuItem.Enabled = false;
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-
-      foreach (var kit in kits)
+      try
       {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
-      }
+        var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
 
-      Menu_AppendSeparator(menu);
+        Menu_AppendSeparator(menu);
+        Menu_AppendItem(menu, "Select the converter you want to use:");
+        foreach (var kit in kits)
+        {
+          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
+            kit.Name == Kit.Name);
+        }
+
+        Menu_AppendSeparator(menu);
+      }
+      catch (Exception e)
+      {
+        // Todo: handle this
+        Console.WriteLine(e);
+      }
     }
 
     public void SetConverterFromKit(string kitName)
     {
       if (kitName == Kit.Name)return;
 
-      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino);
-      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      try
+      {
+        Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
+        Converter = Kit.LoadConverter(Applications.Rhino);
+        Converter.SetContextDocument(RhinoDoc.ActiveDoc);
 
-      Message = $"Using the {Kit.Name} Converter";
-      ExpireSolution(true);
+        Message = $"Using the {Kit.Name} Converter";
+        ExpireSolution(true);
+      }
+      catch (Exception e)
+      {
+        // TODO: handle this.
+        Console.WriteLine(e);
+      }
     }
 
     public override Guid ComponentGuid => new Guid("18E665F6-29D2-4DCF-96E1-124960AD46A7");
@@ -82,6 +86,25 @@ namespace ConnectorGrasshopper.Objects
     {
       throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly",
         level: SentryLevel.Warning);
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document);
+      var key = "Speckle2:kit.default.name";
+      var n = Grasshopper.Instances.Settings.GetValue(key, "Objects");
+      
+      try
+      {
+        Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino).FirstOrDefault(kit => kit.Name == n);
+        Converter = Kit.LoadConverter(Applications.Rhino);
+        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        Message = $"{Kit.Name} Kit";
+      }
+      catch
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+      }
     }
   }
 }
