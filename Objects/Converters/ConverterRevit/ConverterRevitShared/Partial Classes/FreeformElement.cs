@@ -17,19 +17,29 @@ namespace Objects.Converter.Revit
         {
             // 1. Convert the freeformElement geometry to native
             var solids = new List<DB.Solid>();
-            var brep = freeformElement.baseGeometry as Brep;
-            try
+            switch (freeformElement.baseGeometry)
             {
-                var solid = BrepToNative(freeformElement.baseGeometry as Brep);
-                solids.Add(solid);
+                case Brep brep:
+                    try
+                    {
+                        var solid = BrepToNative(freeformElement.baseGeometry as Brep);
+                        solids.Add(solid);
+                    }
+                    catch (Exception e)
+                    {
+                        ConversionErrors.Add(new SpeckleException($"Could not convert BREP {freeformElement.id} to native, falling back to mesh representation.",e));
+                        var brepMeshSolids = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
+                            .Select(m => m as DB.Solid);
+                        solids.AddRange(brepMeshSolids);
+                    }
+                    break;
+                case Mesh mesh:
+                    var meshSolids = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
+                        .Select(m => m as DB.Solid);
+                    solids.AddRange(meshSolids);
+                    break;
             }
-            catch (Exception e)
-            {
-                ConversionErrors.Add(new SpeckleException($"Could not convert BREP {freeformElement.id} to native, falling back to mesh representation.",e));
-                var meshSolids = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
-                    .Select(m => m as DB.Solid);
-                solids.AddRange(meshSolids);
-            }
+
 
             var tempPath = CreateFreeformElementFamily(solids, freeformElement.id);
             Doc.LoadFamily(tempPath, new FamilyLoadOption(), out var fam);
