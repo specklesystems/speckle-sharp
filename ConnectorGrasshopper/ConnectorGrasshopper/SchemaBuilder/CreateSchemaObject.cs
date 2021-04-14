@@ -286,19 +286,38 @@ namespace ConnectorGrasshopper
             return;
           }
 
-          inputValues = inputValues.Select(x => ExtractRealInputValue(x)).ToList();
-          cParamsValues.Add(GetObjectListProp(param, inputValues, cParam.ParameterType));
+          try
+          {
+            inputValues = inputValues.Select(x => ExtractRealInputValue(x)).ToList();
+            cParamsValues.Add(GetObjectListProp(param, inputValues, cParam.ParameterType));
+          }
+          catch (Exception e)
+          {
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.InnerException?.Message ?? e.Message);
+            return;
+          }
         }
         else if (param.Access == GH_ParamAccess.item)
         {
           object inputValue = null;
           DA.GetData(i, ref inputValue);
-          cParamsValues.Add(GetObjectProp(param, ExtractRealInputValue(inputValue), cParam.ParameterType));
+          var extractRealInputValue = ExtractRealInputValue(inputValue);
+          var objectProp = GetObjectProp(param, extractRealInputValue, cParam.ParameterType);
+          cParamsValues.Add(objectProp);
         }
       }
 
-      var outputObject = SelectedConstructor.Invoke(cParamsValues.ToArray());
-
+      object outputObject = null;
+      try
+      {
+        outputObject = SelectedConstructor.Invoke(cParamsValues.ToArray());
+      }
+      catch (Exception e)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.InnerException?.Message ?? e.Message);
+        return;
+      }
+      
       ((Base)outputObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
       ((Base)outputObject).units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
 
@@ -312,7 +331,10 @@ namespace ConnectorGrasshopper
 
       if (inputValue is Grasshopper.Kernel.Types.IGH_Goo)
       {
-        return inputValue.GetType().GetProperty("Value").GetValue(inputValue);
+        var type = inputValue.GetType();
+        var propertyInfo = type.GetProperty("Value");
+        var value = propertyInfo.GetValue(inputValue);
+        return value;
       }
 
       return inputValue;
@@ -363,7 +385,14 @@ namespace ConnectorGrasshopper
       // int, doubles, etc
       if (Speckle.Core.Models.Utilities.IsSimpleType(value.GetType()))
       {
-        return Convert.ChangeType(value, type);
+        try
+        {
+          return Convert.ChangeType(value, type);
+        }
+        catch (Exception e)
+        {
+          throw new Exception($"Cannot convert {value.GetType()} to {type}");
+        }      
       }
 
       if (Converter.CanConvertToSpeckle(value))
@@ -375,7 +404,14 @@ namespace ConnectorGrasshopper
         //currently, this is to support conversion of Polyline to Polycurve in Objects
         if (converted.GetType() != type && !type.IsAssignableFrom(converted.GetType()))
         {
-          return Convert.ChangeType(converted, type);
+          try
+          {
+            return Convert.ChangeType(converted, type);
+          }
+          catch (Exception e)
+          {
+            throw new Exception($"Cannot convert {converted.GetType()} to {type}");
+          }
         }
         return converted;
       }
