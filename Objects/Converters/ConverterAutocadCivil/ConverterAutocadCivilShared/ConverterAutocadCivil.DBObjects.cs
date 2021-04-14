@@ -8,6 +8,8 @@ using System.Drawing;
 
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
+using BlockInstance = Objects.Other.BlockInstance;
+using BlockDefinition = Objects.Other.BlockDefinition;
 using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
@@ -668,5 +670,51 @@ namespace Objects.Converter.AutocadCivil
       return _mesh;
     }
 
+    public BlockInstance BlockReferenceToSpeckle(AcadDB.BlockReference reference)
+    {
+      // get record
+      BlockDefinition definition = null;
+      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      {
+        BlockTableRecord btr = (BlockTableRecord)tr.GetObject(reference.BlockTableRecord, OpenMode.ForRead);
+        definition = BlockRecordToSpeckle(btr);
+        tr.Commit();
+      }
+      var geometry = definition.geometry;
+      var insertionPoint = PointToSpeckle(reference.Position);
+      var transform = reference.BlockTransform.ToArray();
+
+      var instance = new BlockInstance()
+      {
+
+      }
+      return instance;
+    }
+
+    public BlockDefinition BlockRecordToSpeckle (AcadDB.BlockTableRecord record)
+    {
+      // get geometry
+      var geo = new List<Speckle.Core.Models.Base>();
+      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      {
+        foreach (ObjectId id in record)
+        {
+          DBObject obj = tr.GetObject(id, OpenMode.ForRead);
+          var converted = ConvertToSpeckle(obj);
+          if (converted != null)
+            geo.Add(converted);
+        }
+        tr.Commit();
+      }
+
+      var definition = new BlockDefinition()
+      {
+        name = record.Name,
+        basePoint = PointToSpeckle(record.Origin),
+        geometry = geo
+      };
+
+      return definition;
+    }
   }
 }

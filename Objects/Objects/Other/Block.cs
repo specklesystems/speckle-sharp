@@ -37,11 +37,6 @@ namespace Objects.Other
     [DetachProperty]
     public BlockDefinition blockDefinition { get; set; }
 
-    [DetachProperty]
-    public List<Base> geometry { get; set; }
-
-    public Base[] displayValue { get; set; }
-
     public BlockInstance() { }
   }
 }

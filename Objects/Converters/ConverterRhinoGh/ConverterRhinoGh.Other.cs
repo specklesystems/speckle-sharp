@@ -20,13 +20,22 @@ namespace Objects.Converter.RhinoGh
   {
     public BlockDefinition BlockDefinitionToSpeckle(RH.InstanceDefinition definition)
     {
-      var geo = definition.GetObjects().Select(o => ConvertToSpeckle(o)).ToList();
+      var geometry = new List<Base>();
+      foreach (var obj in definition.GetObjects())
+      {
+        Base converted = ConvertToSpeckle(obj);
+        if (converted != null)
+        {
+          converted["Layer"] = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
+          geometry.Add(converted);
+        }
+      }
 
       var _definition = new BlockDefinition()
       {
         name = definition.Name,
         basePoint = PointToSpeckle(Point3d.Origin),
-        geometry = geo,
+        geometry = geometry,
         units = ModelUnits
       };
 
@@ -74,7 +83,6 @@ namespace Objects.Converter.RhinoGh
         insertionPoint = PointToSpeckle(instance.InsertionPoint),
         transform = transformArray,
         blockDefinition = def,
-        geometry = def.geometry,
         units = ModelUnits
       };
 

@@ -323,6 +323,7 @@ namespace Objects.Converter.RhinoGh
         case BlockInstance o:
           return BlockInstanceToNative(o);
 
+
         default:
           throw new NotSupportedException();
       }
