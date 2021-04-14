@@ -271,6 +271,9 @@ namespace SpeckleRhino
           case "Objects.BuiltElements.View:Objects.BuiltElements.View3D":
             BakeNamedView(obj, commitLayerName, state, converter);
             break;
+          case "Objects.Other.BlockInstance":
+            BakeBlock(obj, state, converter);
+            break;
           default:
             BakeObject(obj, layerPath, state, converter);
             break;
@@ -384,6 +387,16 @@ namespace SpeckleRhino
       else
       {
         state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+      }
+    }
+
+    // conversion for block instances
+    private void BakeBlock(Base instance, StreamState state, ISpeckleConverter converter)
+    {
+      var converted = converter.ConvertToNative(instance) as InstanceObject; // instance (and definition) added to doc as part of conversion
+      if (converted == null)
+      {
+        state.Errors.Add(new Exception($"Failed to convert object {instance.id} of type {instance.speckle_type}."));
       }
     }
 
