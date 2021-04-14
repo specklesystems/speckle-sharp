@@ -251,11 +251,12 @@ namespace SpeckleRhino
         UpdateProgress(conversionProgressDict, state.Progress);
       };
 
-      // get commit layer name 
+      // get commit layer name, add to doc
       var commitLayerName = Speckle.DesktopUI.Utils.Formatting.CommitLayer(stream.name, state.Branch.name, commitId);
       var existingLayer = Doc.Layers.FindName(commitLayerName);
       if (existingLayer != null)
         Doc.Layers.Purge(existingLayer.Id, false);
+      Doc.Notes = commitLayerName;
 
       // flatten the commit object to retrieve children objs
       int count = 0;
