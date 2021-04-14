@@ -81,6 +81,8 @@ namespace Objects.Converter.RhinoGh
       return Doc.InstanceDefinitions[definitionIndex];
     }
 
+    // Rhino convention seems to order the origin of the vector space last instead of first
+    // This results in a transposed transformation matrix - may need to be addressed later
     public BlockInstance BlockInstanceToSpeckle(RH.InstanceObject instance)
     {
       var t = instance.InstanceXform;
@@ -90,7 +92,7 @@ namespace Objects.Converter.RhinoGh
         t.M20, t.M21, t.M22, t.M23, 
         t.M30, t.M31, t.M32, t.M33 };
 
-      var def = BlockDefinitionToSpeckle(instance.InstanceDefinition, basePoint);
+      var def = BlockDefinitionToSpeckle(instance.InstanceDefinition);
 
       var _instance = new BlockInstance()
       {
@@ -112,22 +114,18 @@ namespace Objects.Converter.RhinoGh
       if (instance.transform.Length != 16)
         return null;
       Transform transform = new Transform();
-      transform.M00 = instance.transform[0];
-      transform.M01 = instance.transform[1];
-      transform.M02 = instance.transform[2];
-      transform.M03 = instance.transform[3];
-      transform.M10 = instance.transform[4];
-      transform.M11 = instance.transform[5];
-      transform.M12 = instance.transform[6];
-      transform.M13 = instance.transform[7];
-      transform.M20 = instance.transform[8];
-      transform.M21 = instance.transform[9];
-      transform.M22 = instance.transform[10];
-      transform.M23 = instance.transform[11];
-      transform.M30 = instance.transform[12];
-      transform.M31 = instance.transform[13];
-      transform.M32 = instance.transform[14];
-      transform.M33 = instance.transform[15];
+      int count = 0;
+      for (int i = 0; i < 4; i++)
+      {
+        for (int j = 0; j < 4; j++)
+        {
+          if (j == 3 && i != 3) // scale the delta values for translation transformations
+            transform[i, j] = ScaleToNative(instance.transform[i + count], instance.units);
+          else
+            transform[i, j] = instance.transform[i + count];
+          count++;
+        }
+      }
 
       // create the instance
       if (definition == null)
