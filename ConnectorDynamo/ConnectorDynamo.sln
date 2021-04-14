@@ -20,10 +20,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\Core\Core\Core.c
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects", "..\Objects\Objects\Objects.csproj", "{1E11C8CC-F56D-4474-883C-F55E9614C417}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiskTransport", "..\Core\Transports\DiskTransport\DiskTransport.csproj", "{941AAC33-A406-4AE7-9930-67FFDB746D9D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MongoDBTransport", "..\Core\Transports\MongoDBTransport\MongoDBTransport.csproj", "{28A6FE92-8E90-48FC-B655-EB0321750CCF}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterDynamoShared", "..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.shproj", "{5BAB09DC-B0FC-4004-9FD5-6496A9634071}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamoRevit", "..\Objects\Converters\ConverterDynamo\ConverterDynamoRevit\ConverterDynamoRevit.csproj", "{F9C3AEC5-95CF-4FBC-8C19-189597F24171}"
@@ -32,11 +28,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamoSandbox", ".
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterDynamo", "ConverterDynamo", "{6E326DD0-9617-4A93-B410-69AFFB446B1C}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterRevitShared", "..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.shproj", "{2DCD648D-DCA5-4D2A-8B14-AD2CB85D24B0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Converters", "Converters", "{9A0EDAF5-1951-4CBA-8BFB-30B7464E9381}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiskTransport", "..\Core\Transports\DiskTransport\DiskTransport.csproj", "{485AACF5-F27C-427C-AD55-719062E6BD0B}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
 		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{4fb7ca53-b611-4ba3-831b-8bb8eaa0611c}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{5bab09dc-b0fc-4004-9fd5-6496a9634071}*SharedItemsImports = 13
 		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{f9c3aec5-95cf-4fbc-8c19-189597f24171}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{f9c3aec5-95cf-4fbc-8c19-189597f24171}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,14 +67,6 @@ Global
 		{1E11C8CC-F56D-4474-883C-F55E9614C417}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E11C8CC-F56D-4474-883C-F55E9614C417}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E11C8CC-F56D-4474-883C-F55E9614C417}.Release|Any CPU.Build.0 = Release|Any CPU
-		{941AAC33-A406-4AE7-9930-67FFDB746D9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{941AAC33-A406-4AE7-9930-67FFDB746D9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{941AAC33-A406-4AE7-9930-67FFDB746D9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{941AAC33-A406-4AE7-9930-67FFDB746D9D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{28A6FE92-8E90-48FC-B655-EB0321750CCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{28A6FE92-8E90-48FC-B655-EB0321750CCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{28A6FE92-8E90-48FC-B655-EB0321750CCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{28A6FE92-8E90-48FC-B655-EB0321750CCF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F9C3AEC5-95CF-4FBC-8C19-189597F24171}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F9C3AEC5-95CF-4FBC-8C19-189597F24171}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9C3AEC5-95CF-4FBC-8C19-189597F24171}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -79,6 +75,10 @@ Global
 		{4FB7CA53-B611-4BA3-831B-8BB8EAA0611C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FB7CA53-B611-4BA3-831B-8BB8EAA0611C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FB7CA53-B611-4BA3-831B-8BB8EAA0611C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{485AACF5-F27C-427C-AD55-719062E6BD0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{485AACF5-F27C-427C-AD55-719062E6BD0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{485AACF5-F27C-427C-AD55-719062E6BD0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{485AACF5-F27C-427C-AD55-719062E6BD0B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -86,12 +86,12 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{3F02E475-E777-4DFD-8AE9-8065EDD092DC} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
 		{1E11C8CC-F56D-4474-883C-F55E9614C417} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
-		{941AAC33-A406-4AE7-9930-67FFDB746D9D} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
-		{28A6FE92-8E90-48FC-B655-EB0321750CCF} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
 		{5BAB09DC-B0FC-4004-9FD5-6496A9634071} = {6E326DD0-9617-4A93-B410-69AFFB446B1C}
 		{F9C3AEC5-95CF-4FBC-8C19-189597F24171} = {6E326DD0-9617-4A93-B410-69AFFB446B1C}
 		{4FB7CA53-B611-4BA3-831B-8BB8EAA0611C} = {6E326DD0-9617-4A93-B410-69AFFB446B1C}
-		{6E326DD0-9617-4A93-B410-69AFFB446B1C} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
+		{6E326DD0-9617-4A93-B410-69AFFB446B1C} = {9A0EDAF5-1951-4CBA-8BFB-30B7464E9381}
+		{2DCD648D-DCA5-4D2A-8B14-AD2CB85D24B0} = {9A0EDAF5-1951-4CBA-8BFB-30B7464E9381}
+		{485AACF5-F27C-427C-AD55-719062E6BD0B} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}

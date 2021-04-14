@@ -237,6 +237,7 @@
     <RemoveDir Directories="$(TargetDir);$(ProjectDir)\dist;$(AppData)\Dynamo\Dynamo Revit\2.7\packages\SpeckleDynamo2;$(AppData)\Dynamo\Dynamo Core\2.7\packages\SpeckleDynamo2" />
     <RemoveDir Directories="$(AppData)\Dynamo\Dynamo Revit\2.8\packages\SpeckleDynamo2;$(AppData)\Dynamo\Dynamo Core\2.8\packages\SpeckleDynamo2" />
     <RemoveDir Directories="$(AppData)\Dynamo\Dynamo Revit\2.9\packages\SpeckleDynamo2;$(AppData)\Dynamo\Dynamo Core\2.9\packages\SpeckleDynamo2" />
+    <RemoveDir Directories="$(AppData)\Dynamo\Dynamo Revit\2.6\packages\SpeckleDynamo2;$(AppData)\Dynamo\Dynamo Core\2.6\packages\SpeckleDynamo2" />
   </Target>
   <Target Name="AfterBuild">
     <!-- Icons stuff -->

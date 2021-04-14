@@ -20,6 +20,7 @@
     <PackageIcon>logo.png</PackageIcon>
     <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
     <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
 
@@ -59,5 +60,13 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="RevitNodes">
+      <HintPath>..\..\..\..\ConnectorDynamo\RevitNodes-2.6.1.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
   <Import Project="..\ConverterDynamoShared\ConverterDynamoShared.projitems" Label="Shared" />
+
+  <Import Project="..\..\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared" />
 </Project>

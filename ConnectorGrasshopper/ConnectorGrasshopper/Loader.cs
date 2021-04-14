@@ -13,7 +13,7 @@ namespace ConnectorGrasshopper
 {
   public class Loader : GH_AssemblyPriority
   {
-    public bool MenuHasBeenAdded = false;
+    public bool MenuHasBeenAdded;
 
     public IEnumerable<ISpeckleKit> loadedKits;
     public ISpeckleKit selectedKit;
@@ -34,9 +34,9 @@ namespace ConnectorGrasshopper
 
     private void CanvasCreatedEvent(GH_DocumentServer server, GH_Document doc)
     {
-      AddSpeckleMenu(null, null);
+        AddSpeckleMenu(null, null);
     }
-
+    
     private void HandleKitSelectedEvent(object sender, EventArgs args)
     {
       var clickedItem = (ToolStripMenuItem)sender;
@@ -57,7 +57,7 @@ namespace ConnectorGrasshopper
               : CheckState.Unchecked;
       }
     }
-
+    
     private void AddSpeckleMenu(object sender, ElapsedEventArgs e)
     {
       if (Grasshopper.Instances.DocumentEditor == null || MenuHasBeenAdded) return;
@@ -67,18 +67,27 @@ namespace ConnectorGrasshopper
       var kitHeader = speckleMenu.DropDown.Items.Add("Select the converter you want to use.");
       kitHeader.Enabled = false;
 
-      loadedKits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-
-      var kitItems = new List<ToolStripItem>();
-      loadedKits.ToList().ForEach(kit =>
+      try
       {
-        var item = speckleMenu.DropDown.Items.Add("  " + kit.Name);
+        loadedKits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
 
-        item.Click += HandleKitSelectedEvent;
-        kitItems.Add(item);
-      });
-      kitMenuItems = kitItems;
+        var kitItems = new List<ToolStripItem>();
+        loadedKits.ToList().ForEach(kit =>
+        {
+          var item = speckleMenu.DropDown.Items.Add("  " + kit.Name);
 
+          item.Click += HandleKitSelectedEvent;
+          kitItems.Add(item);
+        });
+        kitMenuItems = kitItems;
+      }
+      catch (Exception exception)
+      {
+        Log.CaptureException(exception);
+        var errItem = speckleMenu.DropDown.Items.Add("An error occurred while fetching Kits");
+        errItem.Enabled = false;
+      }
+      
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
 
       speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo);
@@ -96,12 +105,15 @@ namespace ConnectorGrasshopper
               HandleKitSelectedEvent(kitMenuItems.FirstOrDefault(k => k.Text.Trim() == "Objects"), null);
           }
         }));
-        MenuHasBeenAdded = true;
       }
       catch (Exception err)
       {
-        Debug.WriteLine(err.Message);
+        Log.CaptureException(err);
+        var errItem = speckleMenu.DropDown.Items.Add("An error occurred while fetching Kits", null);
+        errItem.Enabled = false;
       }
+      
+      MenuHasBeenAdded = true;
     }
   }
 }

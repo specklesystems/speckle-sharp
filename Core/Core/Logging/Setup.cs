@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 
 namespace Speckle.Core.Logging
@@ -16,6 +17,10 @@ namespace Speckle.Core.Logging
     public static void Init(string hostApplication)
     {
       HostApplication = hostApplication;
+
+      //needed by older .net frameworks, eg Revit 2019
+      ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
 
       Log.Initialize();
     }

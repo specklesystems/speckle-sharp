@@ -1,9 +1,11 @@
 ﻿#if REVIT
 using Autodesk.Revit.DB;
+using RD = Revit.Elements; //Dynamo for Revit nodes
+using Objects.Converter.Revit;
+
 #endif
 using Objects.Geometry;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -94,6 +96,14 @@ namespace Objects.Converter.Dynamo
 
         case DS.Cuboid o:
           return BoxToSpeckle(o);
+
+#if REVIT
+        //using the revit converter to handle Revit geometry
+        case RD.Element o:
+          var c = new ConverterRevit();
+          c.SetContextDocument(Doc);
+          return c.ConvertToSpeckle(o.InternalElement);
+#endif
 
         default:
           throw new NotSupportedException();
@@ -209,6 +219,15 @@ namespace Objects.Converter.Dynamo
 
         case DS.Cuboid _:
           return true;
+
+#if REVIT
+        //using the revit converter to handle Revit geometry
+        case RD.Element o:
+          var c = new ConverterRevit();
+          c.SetContextDocument(Doc);
+          return c.CanConvertToSpeckle(o.InternalElement);
+#endif
+
         default:
           return false;
       }
@@ -256,6 +275,7 @@ namespace Objects.Converter.Dynamo
 
         case Box _:
           return true;
+
         default:
           return false;
       }
