@@ -56,7 +56,9 @@ namespace Objects.Converter.Revit
       {
         foreach (var id in g.GetMemberIds())
         {
-          solids.AddRange(GetElementSolids(Doc.GetElement(id), opt, useOriginGeom4FamilyInstance));
+          var subSolids = GetElementSolids(Doc.GetElement(id), opt, useOriginGeom4FamilyInstance);
+          if (subSolids != null && subSolids.Any())
+            solids.AddRange(subSolids);
         }
       }
       else

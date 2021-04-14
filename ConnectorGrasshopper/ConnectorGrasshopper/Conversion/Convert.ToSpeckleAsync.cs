@@ -51,9 +51,9 @@ namespace ConnectorGrasshopper.Conversion
 
     private void SetDefaultKitAndConverter()
     {
-      Kit = KitManager.GetDefaultKit();
       try
       {
+        Kit = KitManager.GetDefaultKit();
         Converter = Kit.LoadConverter(Applications.Rhino);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         var x = Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem;

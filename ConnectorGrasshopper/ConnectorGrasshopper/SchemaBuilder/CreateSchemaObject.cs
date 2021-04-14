@@ -41,17 +41,6 @@ namespace ConnectorGrasshopper
       "Allows you to create a Speckle object from a schema class.",
       ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
-      Kit = KitManager.GetDefaultKit();
-      try
-      {
-        Converter = Kit.LoadConverter(Applications.Rhino);
-        Message = $"{Kit.Name} Kit";
-      }
-      catch
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-      }
-
       Seed = GenerateSeed();
     }
 
