@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
+using Point = Objects.Geometry.Point;
 using RH = Rhino.DocObjects;
 using Rhino;
 
@@ -35,7 +36,7 @@ namespace Objects.Converter.RhinoGh
       var _definition = new BlockDefinition()
       {
         name = definition.Name,
-        basePoint = PointToSpeckle(Point3d.Origin),
+        basePoint = PointToSpeckle(Point3d.Origin), // rhino by default sets selected block def base pt at world origin
         geometry = geometry,
         units = ModelUnits
       };
@@ -89,7 +90,7 @@ namespace Objects.Converter.RhinoGh
         t.M20, t.M21, t.M22, t.M23, 
         t.M30, t.M31, t.M32, t.M33 };
 
-      var def = BlockDefinitionToSpeckle(instance.InstanceDefinition);
+      var def = BlockDefinitionToSpeckle(instance.InstanceDefinition, basePoint);
 
       var _instance = new BlockInstance()
       {
@@ -137,48 +138,6 @@ namespace Objects.Converter.RhinoGh
         return null;
 
       return Doc.Objects.FindId(instanceId) as InstanceObject;
-    }
-
-    private static Layer GetLayer(RhinoDoc doc, string path, out int index, bool MakeIfNull = false)
-    {
-      index = doc.Layers.FindByFullPath(path, RhinoMath.UnsetIntIndex);
-      Layer layer = doc.Layers.FindIndex(index);
-      if (layer == null && MakeIfNull)
-      {
-        var layerNames = path.Split(new string[] { Layer.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
-
-        Layer parent = null;
-        string currentLayerPath = string.Empty;
-        Layer currentLayer = null;
-        for (int i = 0; i < layerNames.Length; i++)
-        {
-          currentLayerPath = (i == 0) ? layerNames[i] : $"{currentLayerPath}{Layer.PathSeparator}{layerNames[i]}";
-          currentLayer = GetLayer(doc, currentLayerPath, out index);
-          if (currentLayer == null)
-            currentLayer = MakeLayer(doc, layerNames[i], out index, parent);
-          if (currentLayer == null)
-            break;
-          parent = currentLayer;
-        }
-        layer = currentLayer;
-      }
-      return layer;
-    }
-
-    private static Layer MakeLayer(RhinoDoc doc, string name, out int index, Layer parentLayer = null)
-    {
-      index = -1;
-      Layer newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = name };
-      if (parentLayer != null)
-        newLayer.ParentLayerId = parentLayer.Id;
-      int newIndex = doc.Layers.Add(newLayer);
-      if (newIndex < 0)
-        return null;
-      else
-      {
-        index = newIndex; 
-        return doc.Layers.FindIndex(newIndex);
-      }
     }
   }
 }
