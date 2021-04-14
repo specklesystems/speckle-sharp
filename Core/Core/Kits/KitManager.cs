@@ -53,7 +53,7 @@ namespace Speckle.Core.Kits
       get
       {
         Initialize();
-        return _SpeckleKits.Values;
+        return _SpeckleKits.Values.Where(v => v != null);
       }
     }
 
@@ -123,8 +123,10 @@ namespace Speckle.Core.Kits
 
       GetLoadedSpeckleReferencingAssemblies();
       LoadSpeckleReferencingAssemblies();
-
-      _AvailableTypes = _SpeckleKits.SelectMany(kit => kit.Value.Types).ToList();
+      
+      _AvailableTypes = _SpeckleKits
+        .Where(kit => kit.Value != null)
+        .SelectMany(kit => kit.Value.Types).ToList();
     }
 
     private static void GetLoadedSpeckleReferencingAssemblies()
@@ -137,7 +139,10 @@ namespace Speckle.Core.Kits
           if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
           {
             if (!_SpeckleKits.ContainsKey(assembly.FullName))
-              _SpeckleKits.Add(assembly.FullName, Activator.CreateInstance(kitClass)as ISpeckleKit);
+            {
+              var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
+              if(speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+            }
           }
         }
       }
@@ -154,7 +159,7 @@ namespace Speckle.Core.Kits
 
       foreach (var directory in directories)
       {
-        foreach (var assemblyPath in System.IO.Directory.EnumerateFiles(directory, "*.dll"))
+        foreach (var assemblyPath in Directory.EnumerateFiles(directory, "*.dll"))
         {
           var unloadedAssemblyName = SafeGetAssemblyName(assemblyPath);
 
@@ -166,7 +171,10 @@ namespace Speckle.Core.Kits
           if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
           {
             if (!_SpeckleKits.ContainsKey(assembly.FullName))
-              _SpeckleKits.Add(assembly.FullName, Activator.CreateInstance(kitClass)as ISpeckleKit);
+            {
+              var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
+              if(speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+            }
           }
         }
       }
