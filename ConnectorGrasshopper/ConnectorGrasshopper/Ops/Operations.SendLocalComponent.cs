@@ -25,13 +25,18 @@ namespace ConnectorGrasshopper.Ops
     public SendLocalComponent() : base("Local sender", "LS", "Sends data locally, without the need of a Speckle Server.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.LOCAL)
     {
       BaseWorker = new SendLocalWorker(this);
-      SetDefaultKitAndConverter();
     }
 
     protected override Bitmap Icon => Properties.Resources.LocalSender;
 
     public override Guid ComponentGuid => new Guid("80AC1649-FF36-4B8B-A5B4-320E9D88F8BF");
 
+    public override void AddedToDocument(GH_Document document)
+    {
+      SetDefaultKitAndConverter();
+      base.AddedToDocument(document);
+    }
+    
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddGenericParameter("Data", "D", "Data to send.", GH_ParamAccess.tree);
