@@ -41,9 +41,8 @@ namespace ConnectorGrasshopper.Ops
 
       BaseWorker = new ReceiveComponentWorker(this);
       Attributes = new ReceiveComponentAttributes(this);
-      SetDefaultKitAndConverter();
     }
-
+    
     public Client ApiClient { get; set; }
 
     public bool AutoReceive { get; set; }
@@ -71,6 +70,12 @@ namespace ConnectorGrasshopper.Ops
     public string ReceivedObjectId { get; set; }
 
     public StreamWrapper StreamWrapper { get; set; }
+    
+    public override void AddedToDocument(GH_Document document)
+    {
+      SetDefaultKitAndConverter();
+      base.AddedToDocument(document);
+    }
 
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
     {
@@ -238,9 +243,9 @@ namespace ConnectorGrasshopper.Ops
 
     private void SetDefaultKitAndConverter()
     {
-      Kit = KitManager.GetDefaultKit();
       try
       {
+        Kit = KitManager.GetDefaultKit();
         Converter = Kit.LoadConverter(Applications.Rhino);
         Converter.SetContextDocument(RhinoDoc.ActiveDoc);
       }

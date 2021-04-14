@@ -32,7 +32,7 @@ namespace ConnectorGrasshopper.Objects
       var n = Grasshopper.Instances.Settings.GetValue(key, "Objects");
       try
       {
-        Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino).FirstOrDefault(kit => kit.Name == n);
+        Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino).FirstOrDefault(kit => kit != null && kit.Name == n);
         Converter = Kit.LoadConverter(Applications.Rhino);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         Message = $"{Kit.Name} Kit";
@@ -45,17 +45,24 @@ namespace ConnectorGrasshopper.Objects
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
-      Menu_AppendSeparator(menu);
-      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:");
-      menuItem.Enabled = false;
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-
-      foreach (var kit in kits)
+      try
       {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
-      }
+        var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
 
-      Menu_AppendSeparator(menu);
+        Menu_AppendSeparator(menu);
+        Menu_AppendItem(menu, "Select the converter you want to use:");
+        foreach (var kit in kits)
+        {
+          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
+            kit.Name == Kit.Name);
+        }
+
+        Menu_AppendSeparator(menu);
+      }
+      catch (Exception e)
+      {
+        Menu_AppendItem(menu, "An error occurred while fetching Kits", null, false);
+      }
     }
 
     public void SetConverterFromKit(string kitName)

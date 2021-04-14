@@ -60,10 +60,14 @@ namespace ConnectorGrasshopper.Ops
 
       BaseWorker = new SendComponentWorker(this);
       Attributes = new SendComponentAttributes(this);
-
-      SetDefaultKitAndConverter();
     }
-
+    
+    public override void AddedToDocument(GH_Document document)
+    {
+      SetDefaultKitAndConverter();
+      base.AddedToDocument(document);
+    }
+    
     public override bool Write(GH_IWriter writer)
     {
       writer.SetBoolean("UseDefaultCache", UseDefaultCache);
