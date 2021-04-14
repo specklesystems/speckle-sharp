@@ -29,7 +29,6 @@ namespace ConnectorGrasshopper.Ops
       ComponentCategories.SECONDARY_RIBBON, ComponentCategories.LOCAL)
     {
       BaseWorker = new ReceiveLocalWorker(this);
-      SetDefaultKitAndConverter();
     }
 
     protected override Bitmap Icon => Properties.Resources.LocalReceiver;
@@ -60,7 +59,13 @@ namespace ConnectorGrasshopper.Ops
 
       base.AppendAdditionalComponentMenuItems(menu);
     }
-
+    
+    public override void AddedToDocument(GH_Document document)
+    {
+      SetDefaultKitAndConverter();
+      base.AddedToDocument(document);
+    }
+    
     public void SetConverterFromKit(string kitName)
     {
       if (kitName == Kit.Name)return;
