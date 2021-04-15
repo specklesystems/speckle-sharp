@@ -25,11 +25,14 @@ namespace Objects.Converter.RhinoGh
       var geometry = new List<Base>();
       foreach (var obj in definition.GetObjects())
       {
-        Base converted = ConvertToSpeckle(obj);
-        if (converted != null)
+        if (CanConvertToSpeckle(obj))
         {
-          converted["Layer"] = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
-          geometry.Add(converted);
+          Base converted = ConvertToSpeckle(obj);
+          if (converted != null)
+          {
+            converted["Layer"] = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
+            geometry.Add(converted);
+          }
         }
       }
 
@@ -46,8 +49,12 @@ namespace Objects.Converter.RhinoGh
 
     public InstanceDefinition BlockDefinitionToNative(BlockDefinition definition)
     {
+      // get modified definition name with commit info
+      var commitInfo = GetCommitInfo();
+      var blockName = $"{commitInfo} - {definition.name}";
+
       // see if block name already exists and return if so
-      if (Doc.InstanceDefinitions.Find(definition.name) is InstanceDefinition def)
+      if (Doc.InstanceDefinitions.Find(blockName) is InstanceDefinition def)
         return def;
 
       // base point
@@ -58,22 +65,25 @@ namespace Objects.Converter.RhinoGh
       var attributes = new List<ObjectAttributes>();
       foreach (var geo in definition.geometry)
       {
-        var converted = ConvertToNative(geo) as GeometryBase;
-        if (converted == null)
-          continue;
-        var layerName = $"{Doc.Notes}{Layer.PathSeparator}{geo["Layer"] as string}";
-        int index = 1;
-        if (layerName != null)
-          GetLayer(Doc, layerName, out index, true);
-        var attribute = new ObjectAttributes()
+        if (CanConvertToNative(geo))
         {
-          LayerIndex = index
-        };
-        geometry.Add(converted);
-        attributes.Add(attribute);
+          var converted = ConvertToNative(geo) as GeometryBase;
+          if (converted == null)
+            continue;
+          var layerName = $"{commitInfo}{Layer.PathSeparator}{geo["Layer"] as string}";
+          int index = 1;
+          if (layerName != null)
+            GetLayer(Doc, layerName, out index, true);
+          var attribute = new ObjectAttributes()
+          {
+            LayerIndex = index
+          };
+          geometry.Add(converted);
+          attributes.Add(attribute);
+        }
       }
 
-      int definitionIndex = Doc.InstanceDefinitions.Add(definition.name, string.Empty, basePoint, geometry, attributes);
+      int definitionIndex = Doc.InstanceDefinitions.Add(blockName, string.Empty, basePoint, geometry, attributes);
 
       if (definitionIndex < 0)
         return null;
@@ -120,9 +130,9 @@ namespace Objects.Converter.RhinoGh
         for (int j = 0; j < 4; j++)
         {
           if (j == 3 && i != 3) // scale the delta values for translation transformations
-            transform[i, j] = ScaleToNative(instance.transform[i + count], instance.units);
+            transform[i, j] = ScaleToNative(instance.transform[count], instance.units);
           else
-            transform[i, j] = instance.transform[i + count];
+            transform[i, j] = instance.transform[count];
           count++;
         }
       }

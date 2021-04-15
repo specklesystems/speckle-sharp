@@ -68,8 +68,8 @@ namespace Objects.Converter.RhinoGh
       if (view.isOrthogonal)
         viewport.ChangeToParallelProjection(true);
 
-      var topLevelLayerName = GetCurrentTopLevelLayerName();
-      var viewName = $"{topLevelLayerName } - {view.name}";
+      var commitInfo = GetCommitInfo();
+      var viewName = $"{commitInfo } - {view.name}";
 
       Rhino.RhinoApp.InvokeOnUiThread((Action)delegate {
         Doc.NamedViews.Add(viewName, viewport.Id);

@@ -61,10 +61,10 @@ namespace Objects.Converter.RhinoGh
       return parsedSchema[0].Trim();
     }
 
-    private string GetCurrentTopLevelLayerName()
+    private string GetCommitInfo()
     {
       var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
-      return segments.Count > 1 ? segments[1] : "Unkown commit";
+      return segments.Count > 1 ? segments[1] : "Unknown commit";
     }
 
     #region Units

@@ -5,6 +5,8 @@ using System.Linq;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Arc = Objects.Geometry.Arc;
+using BlockInstance = Objects.Other.BlockInstance;
+using BlockDefinition = Objects.Other.BlockDefinition;
 using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
@@ -160,6 +162,12 @@ namespace Objects.Converter.AutocadCivil
         //case Mesh o: // unstable, do not use for now
         //  return MeshToNativeDB(o);
 
+        case BlockInstance o:
+          return BlockInstanceToNativeDB(o);
+
+        case BlockDefinition o:
+          return BlockDefinitionToNativeDB(o);
+
         default:
           throw new NotSupportedException();
       }
@@ -220,6 +228,12 @@ namespace Objects.Converter.AutocadCivil
         case SubDMesh o:
           return MeshToSpeckle(o);
 
+        case BlockReference o:
+          return BlockReferenceToSpeckle(o);
+
+        case BlockTableRecord o:
+          return BlockRecordToSpeckle(o);
+
 #if CIVIL2021
         case CivilDB.FeatureLine o:
           return FeatureLineToSpeckle(o);
@@ -274,6 +288,12 @@ namespace Objects.Converter.AutocadCivil
               return true;
 
             case SubDMesh _:
+              return true;
+
+            case BlockReference _:
+              return true;
+
+            case BlockTableRecord _:
               return true;
 
             default:
@@ -346,6 +366,12 @@ namespace Objects.Converter.AutocadCivil
 
         case Mesh _:
           return false;
+
+        case BlockDefinition _:
+          return true;
+
+        case BlockInstance _:
+          return true;
 
         default:
           return false;
