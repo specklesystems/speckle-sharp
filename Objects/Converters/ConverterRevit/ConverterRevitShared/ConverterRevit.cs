@@ -217,6 +217,9 @@ namespace Objects.Converter.Revit
         case BER.DirectShape o:
           return DirectShapeToNative(o);
 
+        case BER.FreeformElement o:
+          return FreeformElementToNative(o);
+
         case BER.FamilyInstance o:
           return FamilyInstanceToNative(o);
 
@@ -379,6 +382,9 @@ namespace Objects.Converter.Revit
           return true;
 
         case BER.DirectShape _:
+          return true;
+        
+        case BER.FreeformElement _:
           return true;
 
         case BER.FamilyInstance _:

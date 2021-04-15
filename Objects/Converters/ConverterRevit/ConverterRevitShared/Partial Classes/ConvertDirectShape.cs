@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Autodesk.Revit.DB;
+using ConverterRevitShared.Revit;
 using Objects.Geometry;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -25,7 +27,7 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
       }
 
-      var converted = new List<GeometryObject>();
+      var converted = new List<DB.GeometryObject>();
 
       speckleDs.baseGeometries.ToList().ForEach(b =>
       {
@@ -159,6 +161,5 @@ namespace Objects.Converter.Revit
       speckleAc["type"] = revitAc.Name;
       return speckleAc;
     }
-
   }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.Geometry;
 using Objects.Primitive;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Arc = Objects.Geometry.Arc;
 using Curve = Objects.Geometry.Curve;
@@ -438,15 +439,13 @@ namespace Objects.Converter.Revit
 
     // Insipred by
     // https://github.com/DynamoDS/DynamoRevit/blob/master/src/Libraries/RevitNodes/GeometryConversion/ProtoToRevitMesh.cs
-    public IList<GeometryObject> MeshToNative(Mesh mesh)
+    public IList<GeometryObject> MeshToNative(Mesh mesh, TessellatedShapeBuilderTarget target = TessellatedShapeBuilderTarget.Mesh, TessellatedShapeBuilderFallback fallback = TessellatedShapeBuilderFallback.Salvage)
     {
-
-      TessellatedShapeBuilderTarget target = TessellatedShapeBuilderTarget.Mesh;
-      TessellatedShapeBuilderFallback fallback = TessellatedShapeBuilderFallback.Salvage;
-
       var tsb = new TessellatedShapeBuilder() { Fallback = fallback, Target = target, GraphicsStyleId = ElementId.InvalidElementId };
-      tsb.OpenConnectedFaceSet(false);
-
+      
+      var valid = tsb.AreTargetAndFallbackCompatible(target, fallback);
+      tsb.OpenConnectedFaceSet(target == TessellatedShapeBuilderTarget.Solid);
+      
       var vertices = ArrayToPoints(mesh.vertices, mesh.units);
 
       int i = 0;
@@ -459,6 +458,7 @@ namespace Objects.Converter.Revit
         { // triangle
           points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]] };
           var face = new TessellatedFace(points, ElementId.InvalidElementId);
+          var check = !tsb.DoesFaceHaveEnoughLoopsAndVertices(face);
           tsb.AddFace(face);
           i += 4;
         }
@@ -466,16 +466,27 @@ namespace Objects.Converter.Revit
         { // quad
           points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 4]] };
           var face1 = new TessellatedFace(points, ElementId.InvalidElementId);
+          var check1 = tsb.DoesFaceHaveEnoughLoopsAndVertices(face1);
           tsb.AddFace(face1);
           points = new List<XYZ> { vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]], vertices[mesh.faces[i + 4]] };
           var face2 = new TessellatedFace(points, ElementId.InvalidElementId);
+          var check2 = tsb.DoesFaceHaveEnoughLoopsAndVertices(face2);
+
           tsb.AddFace(face2);
           i += 5;
         }
       }
 
       tsb.CloseConnectedFaceSet();
-      tsb.Build();
+      try
+      {
+        tsb.Build();
+      }
+      catch (Exception e)
+      {
+        ConversionErrors.Add(e);
+        return null;
+      }
       var result = tsb.GetBuildResult();
       return result.GetGeometricalObjects();
 
@@ -1020,9 +1031,9 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
+        ConversionErrors.Add(new Exception($"Failed to convert BREP with id {brep.id}, using display mesh value instead.", e));
         var mesh = MeshToNative(brep.displayMesh);
         revitDs.SetShape(mesh);
-        ConversionErrors.Add(new Exception($"Failed to convert BREP with id {brep.id}, using display mesh value instead.", e));
       }
       return revitDs;
     }

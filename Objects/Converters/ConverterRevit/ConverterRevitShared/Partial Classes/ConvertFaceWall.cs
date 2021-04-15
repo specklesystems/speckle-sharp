@@ -25,7 +25,7 @@ namespace Objects.Converter.Revit
       }
 
       // Cannot update revit wall to new mass face
-      FaceWall revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.FaceWall;
+      FaceWall revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as FaceWall;
       if (revitWall != null)
       {
         Doc.Delete(revitWall.Id);
