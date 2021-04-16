@@ -95,27 +95,12 @@ namespace Objects.Converter.AutocadCivil
     // Arcs
     public Arc ArcToSpeckle(AcadDB.Arc arc)
     {
-      Plane plane = arc.GetPlane();
-
-      // calculate start and end angles manually (there is a bug in some types of arcs that give the wrong angles)
-      var startVector = new Vector3d(arc.StartPoint.X - arc.Center.X, arc.StartPoint.Y - arc.Center.Y, arc.StartPoint.Z - arc.Center.Z);
-      var endVector = new Vector3d(arc.EndPoint.X - arc.Center.X, arc.EndPoint.Y - arc.Center.Y, arc.EndPoint.Z - arc.Center.Z);
-
-      var _arc = new Arc()
-      {
-        radius = arc.Radius,
-        angleRadians = arc.TotalAngle,
-        plane = PlaneToSpeckle(plane),
-        startPoint = PointToSpeckle(arc.StartPoint),
-        endPoint = PointToSpeckle(arc.EndPoint),
-        startAngle = startVector.AngleOnPlane(plane),
-        endAngle = endVector.AngleOnPlane(plane),
-        domain = new Interval(arc.StartParam, arc.EndParam),
-        length = arc.Length,
-        bbox = BoxToSpeckle(arc.GeometricExtents, true),
-        units = ModelUnits
-      };
-
+      var _arc = new Arc(PlaneToSpeckle(arc.GetPlane()), arc.Radius, arc.StartAngle, arc.EndAngle, arc.TotalAngle, ModelUnits);
+      _arc.startPoint = PointToSpeckle(arc.StartPoint);
+      _arc.endPoint = PointToSpeckle(arc.EndPoint);
+      _arc.domain = new Interval(arc.StartParam, arc.EndParam);
+      _arc.length = arc.Length;
+      _arc.bbox = BoxToSpeckle(arc.GeometricExtents, true);
       return _arc;
     }
     public AcadDB.Arc ArcToNativeDB(Arc arc)
