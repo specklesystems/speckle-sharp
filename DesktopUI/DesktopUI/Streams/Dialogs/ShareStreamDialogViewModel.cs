@@ -27,7 +27,7 @@ namespace Speckle.DesktopUI.Streams
       _bindings = bindings;
 
       Roles = _streamsRepo.GetRoles();
-      SelectedRole = Roles[0];
+      SelectedRole = Roles[ 0 ];
     }
 
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
@@ -108,7 +108,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void SearchForUsers()
     {
-      if (UserQuery.Length <= 2)
+      if ( UserQuery.Length <= 2 )
         return;
 
       try
@@ -117,7 +117,7 @@ namespace Speckle.DesktopUI.Streams
         DropdownState = true; // open search dropdown when there are results
         UserSearchResults = new BindableCollection<User>(users);
       }
-      catch (Exception e)
+      catch ( Exception e )
       {
         // search prob returned no results
         UserSearchResults?.Clear();
@@ -131,12 +131,10 @@ namespace Speckle.DesktopUI.Streams
       {
         var res = await StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput()
         {
-          streamId = StreamState.Stream.id,
-          role = SelectedRole.Role,
-          userId = SelectedUser.id
+          streamId = StreamState.Stream.id, role = SelectedRole.Role, userId = SelectedUser.id
         });
       }
-      catch (Exception e)
+      catch ( Exception e )
       {
         Notifications.Enqueue($"Sorry - could not add {SelectedUser.name} to this stream. Error: {e.Message}");
         return;
@@ -157,7 +155,7 @@ namespace Speckle.DesktopUI.Streams
     // close the dropdown when a user is selected
     public void UserSelected(ListBox sender, SelectionChangedEventArgs e)
     {
-      if (e.AddedItems.Count == 1)
+      if ( e.AddedItems.Count == 1 )
       {
         DropdownState = false;
       }
@@ -175,7 +173,7 @@ namespace Speckle.DesktopUI.Streams
     {
       ShareLinkVisible = !ShareLinkVisible;
 
-      if (ShareLinkVisible != StreamState.Stream.isPublic)
+      if ( ShareLinkVisible != StreamState.Stream.isPublic )
       {
         try
         {
@@ -188,11 +186,16 @@ namespace Speckle.DesktopUI.Streams
           });
           _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
         }
-        catch (Exception e)
+        catch ( Exception e )
         {
           Notifications.Enqueue($"Could not set link sharing to {ShareLinkVisible}. Error: {e.Message}");
         }
       }
+    }
+
+    public void OpenEmailInviteLink()
+    {
+      Link.OpenInBrowser($"{ShareLink}?invite=true");
     }
 
     public List<StreamRole> Roles { get; set; }
