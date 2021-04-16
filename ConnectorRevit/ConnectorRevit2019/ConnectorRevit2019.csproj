@@ -77,6 +77,9 @@
   </ItemGroup>
   <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+  </PropertyGroup>
   <!-- POST BUILD EVENTS START -->
   <Target Name="Clean">
     <RemoveDir Directories="$(TargetDir);$(ProjectDir)\..\Release\Release2019;$(AppData)\Autodesk\Revit\Addins\2019\SpeckleRevit2" />
@@ -92,6 +95,8 @@
     </ItemGroup>
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
+
+    <Message Importance="High" Text="DEBUG copy from $(TargetDir) to $(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\" />
   </Target>
   <Target Name="AfterBuildRelease">
     <ItemGroup>
