@@ -2,11 +2,14 @@
 using Speckle.Core.Models;
 
 using Autodesk.AutoCAD.DatabaseServices;
+using System.Drawing;
+using System.Text.RegularExpressions;
 
 namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
+    #region units
     private string _modelUnits;
     public string ModelUnits
     {
@@ -52,5 +55,6 @@ namespace Objects.Converter.AutocadCivil
           throw new System.Exception("The current Unit System is unsupported.");
       }
     }
+#endregion 
   }
 }

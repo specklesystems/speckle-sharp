@@ -42,7 +42,7 @@ namespace Objects.Converter.RhinoGh
 
       return _view;
     }
-    public RhinoViewport ViewToNative(View3D view)
+    public string ViewToNative(View3D view)
     {
       RhinoView _view = Doc.Views.ActiveView;
       RhinoViewport viewport = _view.ActiveViewport;
@@ -60,13 +60,26 @@ namespace Objects.Converter.RhinoGh
       }
       viewport.Name = view.name;
 
+      var activeView = Doc.Views.ActiveView;
+
       // set rhino view props if available
       SetViewParams(viewport, view);
 
       if (view.isOrthogonal)
         viewport.ChangeToParallelProjection(true);
 
-      return viewport;
+      var commitInfo = GetCommitInfo();
+      var viewName = $"{commitInfo } - {view.name}";
+
+      Rhino.RhinoApp.InvokeOnUiThread((Action)delegate {
+        Doc.NamedViews.Add(viewName, viewport.Id);
+        Doc.Views.ActiveView = activeView;
+        Doc.Views.ActiveView.ActiveViewport.SetProjection(DefinedViewportProjection.Perspective, null, true);
+      });
+
+      //ConversionErrors.Add(sdfasdfaf);
+
+      return "baked";
     }
 
     private void AttachViewParams(Base speckleView, ViewInfo view)

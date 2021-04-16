@@ -9,7 +9,7 @@
     <Import_RootNamespace>ConverterAutocadCivilShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Converter.AutocadCivil.Units.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converter.AutocadCivil.Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.Civil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.DBObjects.cs" />

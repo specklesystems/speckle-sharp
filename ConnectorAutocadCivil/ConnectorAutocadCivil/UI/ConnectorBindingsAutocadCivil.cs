@@ -23,6 +23,7 @@ using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.ApplicationServices;
 
 using Stylet;
+using Autodesk.AutoCAD.DatabaseServices;
 
 namespace Speckle.ConnectorAutocadCivil.UI
 {
@@ -223,6 +224,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
           // create a commit layer prefix: all nested layers will be concatenated with this
           var layerPrefix = DesktopUI.Utils.Formatting.CommitLayer(stream.name, state.Branch.name, id);
 
+          // give converter a way to access the commit info
+          Doc.UserData.Add("commit", layerPrefix);
+
           // delete existing commit layers
           try
           {
@@ -241,40 +245,37 @@ namespace Speckle.ConnectorAutocadCivil.UI
           foreach (var commitObj in commitObjs)
           {
             // create the object's bake layer if it doesn't already exist
-            Base obj = commitObj.Item1;
-            string layerName = commitObj.Item2;
+            (Base obj, string layerName) = commitObj;
 
-            if (GetOrMakeLayer(layerName, tr, out string cleanName))
+            var converted = converter.ConvertToNative(obj);
+            var convertedEntity = converted as Entity;
+
+            if (convertedEntity != null)
             {
-              // record if layer name has been modified
-              if (!cleanName.Equals(layerName))
-                changedLayerNames = true;
+              if (GetOrMakeLayer(layerName, tr, out string cleanName))
+              {
+                // record if layer name has been modified
+                if (!cleanName.Equals(layerName))
+                  changedLayerNames = true;
 
-              // convert obj and add to doc
-              // try catch to prevent memory access violation crash in case a conversion goes wrong
-              try
-              {
-                var converted = converter.ConvertToNative(obj) as AcadDb.Entity;
-                if (converted != null)
-                  converted.Append(cleanName, tr);
-                else
-                  state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+                if (!convertedEntity.Append(cleanName, tr))
+                  state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
               }
-              catch
-              {
-                state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
-              }
+              else
+                state.Errors.Add(new Exception($"Could not create layer {layerName} to bake objects into."));
             }
-            else
+            else if (converted == null)
             {
-              RaiseNotification($"could not create layer {layerName} to bake objects into.");
-              state.Errors.Add(new Exception($"could not create layer {layerName} to bake objects into."));
+              state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
             }
           }
 
           // raise any warnings from layer name modification
           if (changedLayerNames)
             state.Errors.Add(new Exception($"Layer names were modified: one or more layers contained invalid characters {Utils.invalidChars}"));
+
+          // remove commit info from doc userdata
+          Doc.UserData.Remove("commit");
 
           tr.Commit();
         }
@@ -474,21 +475,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
           continue;
         }
 
-        // remove invalid chars from layer name
-        string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
-        if (!cleanLayerName.Equals(layer))
-          renamedlayers = true;
-
-
-        // convert geo to speckle base
-        if (!converter.CanConvertToSpeckle(obj))
-        {
-          state.Errors.Add(new Exception($"Skipping object {autocadObjectHandle}, {obj.GetType()} type not supported"));
-          continue;
-        }
         // convert obj
         // try catch to prevent memory access violation crash in case a conversion goes wrong
         Base converted = null;
+        string containerName = string.Empty;
         try
         {
           converted = converter.ConvertToSpeckle(obj);
@@ -504,11 +494,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
           continue;
         }
 
-        conversionProgressDict["Conversion"]++;
-        UpdateProgress(conversionProgressDict, state.Progress);
-
-        converted.applicationId = autocadObjectHandle;
-
         /* TODO: adding the extension dictionary / xdata per object 
         foreach (var key in obj.ExtensionDictionary)
         {
@@ -516,10 +501,26 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
         */
 
-        if (commitObj[$"@{cleanLayerName}"] == null)
-          commitObj[$"@{cleanLayerName}"] = new List<Base>();
+        if (obj is BlockReference)
+          containerName = "Blocks";
+        else
+        {
+          // remove invalid chars from layer name
+          string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
+          containerName = cleanLayerName;
+          if (!cleanLayerName.Equals(layer))
+            renamedlayers = true;
+        }
 
-        ((List<Base>)commitObj[$"@{cleanLayerName}"]).Add(converted);
+        if (commitObj[$"@{containerName}"] == null)
+          commitObj[$"@{containerName}"] = new List<Base>();
+        ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
+
+        conversionProgressDict["Conversion"]++;
+        UpdateProgress(conversionProgressDict, state.Progress);
+
+        converted.applicationId = autocadObjectHandle;
+
         convertedCount++;
       }
 

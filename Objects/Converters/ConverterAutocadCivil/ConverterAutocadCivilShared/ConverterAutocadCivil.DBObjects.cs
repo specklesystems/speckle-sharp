@@ -8,6 +8,8 @@ using System.Drawing;
 
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
+using BlockInstance = Objects.Other.BlockInstance;
+using BlockDefinition = Objects.Other.BlockDefinition;
 using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
@@ -20,6 +22,7 @@ using Surface = Objects.Geometry.Surface;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -668,5 +671,144 @@ namespace Objects.Converter.AutocadCivil
       return _mesh;
     }
 
+    public BlockInstance BlockReferenceToSpeckle(AcadDB.BlockReference reference)
+    {
+      // get record
+      BlockDefinition definition = null;
+      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      {
+        BlockTableRecord btr = (BlockTableRecord)tr.GetObject(reference.BlockTableRecord, OpenMode.ForRead);
+        definition = BlockRecordToSpeckle(btr);
+        tr.Commit();
+      }
+
+      var instance = new BlockInstance()
+      {
+        insertionPoint = PointToSpeckle(reference.Position),
+        transform = reference.BlockTransform.ToArray(),
+        blockDefinition = definition,
+        units = ModelUnits
+      };
+
+      return instance;
+    }
+    public string BlockInstanceToNativeDB( BlockInstance instance)
+    {
+      string result = null;
+
+      // block definition
+      ObjectId definitionId = BlockDefinitionToNativeDB(instance.blockDefinition);
+      if (definitionId == ObjectId.Null)
+        return result;
+
+      // insertion pt
+      Point3d insertionPoint = PointToNative(instance.insertionPoint);
+
+      // transform
+      double[] transform = instance.transform;
+      for (int i = 3; i < 12; i += 4)
+        transform[i] = ScaleToNative(transform[i], instance.units);
+      Matrix3d convertedTransform = new Matrix3d(transform);
+
+      
+      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      {
+        BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+        BlockTableRecord modelSpaceRecord = (BlockTableRecord)tr.GetObject(blckTbl[BlockTableRecord.ModelSpace], AcadDB.OpenMode.ForWrite);
+
+        BlockReference br = new BlockReference(insertionPoint, definitionId);
+        br.BlockTransform = convertedTransform;
+        modelSpaceRecord.AppendEntity(br);
+        tr.AddNewlyCreatedDBObject(br, true);
+        result = "success";
+
+        tr.Commit();
+      }
+
+      return result;
+    }
+
+    public BlockDefinition BlockRecordToSpeckle (BlockTableRecord record)
+    {
+      // get geometry
+      var geometry = new List<Base>();
+      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      {
+        foreach (ObjectId id in record)
+        {
+          DBObject obj = tr.GetObject(id, OpenMode.ForRead);
+          Entity objEntity = obj as Entity;
+          if (CanConvertToSpeckle(obj))
+          {
+            Base converted = ConvertToSpeckle(obj);
+            if (converted != null)
+            {
+              converted["Layer"] = objEntity.Layer;
+              geometry.Add(converted);
+            }
+          }  
+        }
+        tr.Commit();
+      }
+
+      var definition = new BlockDefinition()
+      {
+        name = record.Name,
+        basePoint = PointToSpeckle(record.Origin),
+        geometry = geometry,
+        units = ModelUnits
+      };
+
+      return definition;
+    }
+
+    public ObjectId BlockDefinitionToNativeDB(BlockDefinition definition)
+    {
+      // get modified definition name with commit info
+      var blockName = $"{Doc.UserData["commit"]} - {definition.name}";
+
+      ObjectId blockId = ObjectId.Null;
+      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      {
+        // see if block record already exists and return if so
+        BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+        foreach (ObjectId id in blckTbl)
+        {
+          BlockTableRecord btr = (BlockTableRecord)tr.GetObject(id, OpenMode.ForRead);
+          if (btr.Name == blockName)
+          {
+            tr.Commit();
+            return id;
+          }
+        }
+
+        // create btr
+        using (BlockTableRecord btr = new BlockTableRecord())
+        {
+          btr.Name = blockName;
+
+          // base point
+          btr.Origin = PointToNative(definition.basePoint);
+
+          // add geometry
+          blckTbl.UpgradeOpen();
+          foreach (var geo in definition.geometry)
+          {
+            if (CanConvertToNative(geo))
+            {
+              var converted = ConvertToNative(geo) as Entity;
+              if (converted == null)
+                continue;
+              btr.AppendEntity(converted);
+            }
+          }
+          blockId = blckTbl.Add(btr);
+          tr.AddNewlyCreatedDBObject(btr, true);
+        }
+        tr.Commit();
+      }
+
+      return blockId;
+    }
   }
 }

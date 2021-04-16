@@ -28,7 +28,6 @@ namespace SpeckleRhino
     public Timer SelectionTimer;
 
     private static string SpeckleKey = "speckle";
-    private static string NamedView = "Named Views";
 
     /// <summary>
     /// TODO: Any errors thrown should be stored here and passed to the ui state (somehow).
@@ -253,34 +252,31 @@ namespace SpeckleRhino
 
       // get commit layer name 
       var commitLayerName = Speckle.DesktopUI.Utils.Formatting.CommitLayer(stream.name, state.Branch.name, commitId);
+
+      // give converter a way to access the base commit layer name
+      RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
+
       var existingLayer = Doc.Layers.FindName(commitLayerName);
       if (existingLayer != null)
         Doc.Layers.Purge(existingLayer.Id, false);
-
+      
       // flatten the commit object to retrieve children objs
       int count = 0;
       var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state, ref count);
 
       foreach (var commitObj in commitObjs)
       {
-        Base obj = commitObj.Item1;
-        string layerPath = commitObj.Item2;
-
-        switch (obj.speckle_type)
-        {
-          case "Objects.BuiltElements.View:Objects.BuiltElements.View3D":
-            BakeNamedView(obj, commitLayerName, state, converter);
-            break;
-          default:
-            BakeObject(obj, layerPath, state, converter);
-            break;
-        }
-
+        var (obj, layerPath) = commitObj;
+        BakeObject(obj, layerPath, state, converter);
         updateProgressAction?.Invoke();
       }
 
       Doc.Views.Redraw();
       Doc.EndUndoRecord(undoRecord);
+
+      // undo notes edit
+      var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
+      Doc.Notes = segments[0];
 
       return state;
     }
@@ -343,45 +339,24 @@ namespace SpeckleRhino
       return objects;
     }
 
-    // Uses dispatcher for synchronous conversion and baking of named views
-    private void BakeNamedView(Base view, string namePrefix, StreamState state, ISpeckleConverter converter)
-    {
-      App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() =>
-      {
-        var converted = converter.ConvertToNative(view) as RhinoViewport;
-        if (converted != null)
-        {
-          if (Doc.NamedViews.Add($"{namePrefix} - {converted.Name}", converted.Id) < 0)
-          {
-            state.Errors.Add(new Exception($"Failed to bake object {view.id} of type {view.speckle_type}."));
-          }
-        }
-        else
-        {
-          state.Errors.Add(new Exception($"Failed to convert object {view.id} of type {view.speckle_type}."));
-        }
-
-        // reset view to perspective
-        Doc.Views.ActiveView.ActiveViewport.SetProjection(DefinedViewportProjection.Perspective, null, true);
-      }));
-    }
-
     // conversion and bake for non view objects
     private void BakeObject(Base obj, string layerPath, StreamState state, ISpeckleConverter converter)
     {
-      var converted = converter.ConvertToNative(obj) as Rhino.Geometry.GeometryBase;
-      if (converted != null)
+      var converted = converter.ConvertToNative(obj);
+      var convertedRH = converted as Rhino.Geometry.GeometryBase;
+
+      if (convertedRH != null)
       {
         Layer bakeLayer = Doc.GetLayer(layerPath, true);
         if (bakeLayer != null)
         {
-          if (Doc.Objects.Add(converted, new ObjectAttributes { LayerIndex = bakeLayer.Index }) == Guid.Empty)
+          if (Doc.Objects.Add(convertedRH, new ObjectAttributes { LayerIndex = bakeLayer.Index }) == Guid.Empty)
             state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
         }
         else
           state.Errors.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
       }
-      else
+      else if (converted == null)
       {
         state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
       }
@@ -434,6 +409,7 @@ namespace SpeckleRhino
         }
 
         Base converted = null;
+        string containerName = string.Empty;
 
         try
         {
@@ -458,15 +434,16 @@ namespace SpeckleRhino
               converted[key] = obj.Attributes.GetUserString(key);
             }
 
-            var layerPath = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
-            string cleanLayerPath = RemoveInvalidDynamicPropChars(layerPath);
-            if (!cleanLayerPath.Equals(layerPath))
-              renamedlayers = true;
-
-            if (commitObj[$"@{cleanLayerPath}"] == null)
-              commitObj[$"@{cleanLayerPath}"] = new List<Base>();
-
-            ((List<Base>)commitObj[$"@{cleanLayerPath}"]).Add(converted);
+            if (obj is InstanceObject)
+              containerName = "Blocks";
+            else
+            {
+              var layerPath = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
+              string cleanLayerPath = RemoveInvalidDynamicPropChars(layerPath);
+              containerName = cleanLayerPath;
+              if (!cleanLayerPath.Equals(layerPath))
+                renamedlayers = true;
+            }
           }
         }
         catch
@@ -487,12 +464,12 @@ namespace SpeckleRhino
             state.Errors.Add(new Exception($"Failed to convert object ${applicationId} of type ${view.GetType()}."));
             continue;
           }
-
-          if (commitObj[$"@{NamedView}"] == null)
-            commitObj[$"@{NamedView}"] = new List<Base>();
-
-          ((List<Base>)commitObj[$"@{NamedView}"]).Add(converted);
+          containerName = "Named Views";
         }
+
+        if (commitObj[$"@{containerName}"] == null)
+          commitObj[$"@{containerName}"] = new List<Base>();
+        ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
 
         conversionProgressDict["Conversion"]++;
         UpdateProgress(conversionProgressDict, state.Progress);

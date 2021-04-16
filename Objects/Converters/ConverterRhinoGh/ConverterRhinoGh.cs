@@ -58,7 +58,6 @@ namespace Objects.Converter.RhinoGh
     }
 
     // speckle user string for custom schemas
-    // TODO: address consistency weak point, since SpeckleApplySchema command in the connector needs to match this exact string!!!
     string SpeckleSchemaKey = "SpeckleSchema";
 
     public Base ConvertToSpeckle(object @object)
@@ -80,7 +79,8 @@ namespace Objects.Converter.RhinoGh
           }
         }
         //conversion to built elem failed, revert to just send the base geom
-        @object = ro.Geometry;
+        if (!(@object is InstanceObject))
+          @object = ro.Geometry;
       }
 
       switch (@object)
@@ -88,11 +88,9 @@ namespace Objects.Converter.RhinoGh
         case Point3d o:
           @base = PointToSpeckle(o);
           break;
-
         case Rhino.Geometry.Point o:
           @base = PointToSpeckle(o);
           break;
-
         case Vector3d o:
           @base = VectorToSpeckle(o);
           break;
@@ -155,6 +153,12 @@ namespace Objects.Converter.RhinoGh
           break;
         case ViewInfo o:
           @base = ViewToSpeckle(o);
+          break;
+        case InstanceDefinition o:
+          @base = BlockDefinitionToSpeckle(o);
+          break;
+        case InstanceObject o:
+          @base = BlockInstanceToSpeckle(o);
           break;
         default:
           throw new NotSupportedException();
@@ -313,6 +317,13 @@ namespace Objects.Converter.RhinoGh
         case View3D o:
           return ViewToNative(o);
 
+        case BlockDefinition o:
+          return BlockDefinitionToNative(o);
+
+        case BlockInstance o:
+          return BlockInstanceToNative(o);
+
+
         default:
           throw new NotSupportedException();
       }
@@ -325,7 +336,7 @@ namespace Objects.Converter.RhinoGh
 
     public bool CanConvertToSpeckle(object @object)
     {
-      if (@object is RhinoObject ro)
+      if (@object is RhinoObject ro && !(@object is InstanceObject))
       {
         @object = ro.Geometry;
       }
@@ -398,6 +409,15 @@ namespace Objects.Converter.RhinoGh
         case NurbsSurface _:
           return true;
 
+        case ViewInfo _:
+          return true;
+
+        case InstanceDefinition _:
+          return true;
+
+        case InstanceObject _:
+          return true;
+
         default:
           return false;
       }
@@ -462,6 +482,12 @@ namespace Objects.Converter.RhinoGh
           return true;
 
         case View3D _:
+          return true;
+
+        case BlockDefinition _:
+          return true;
+
+        case BlockInstance _:
           return true;
 
         default:
