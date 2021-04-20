@@ -298,6 +298,8 @@ namespace SpeckleRhino
           List<string> props = @base.GetDynamicMembers().ToList();
           if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists
             props.Add("displayMesh");
+          else if (@base.GetMembers().ContainsKey("displayValue"))
+            props.Add("displayValue");
           int totalMembers = props.Count;
 
           foreach (var prop in props)
