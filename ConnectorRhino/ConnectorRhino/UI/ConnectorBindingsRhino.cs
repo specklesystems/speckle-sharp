@@ -295,8 +295,12 @@ namespace SpeckleRhino
         }
         else
         {
-          int totalMembers = @base.GetDynamicMembers().Count();
-          foreach (var prop in @base.GetDynamicMembers())
+          List<string> props = @base.GetDynamicMembers().ToList();
+          if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists
+            props.Add("displayMesh");
+          int totalMembers = props.Count;
+
+          foreach (var prop in props)
           {
             count++;
 
@@ -311,9 +315,9 @@ namespace SpeckleRhino
               foundConvertibleMember = true;
             }
           }
+
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
           {
-            // try to get displaymesh instead
             state.Errors.Add(new Exception($"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
           }
           return objects;
@@ -339,7 +343,7 @@ namespace SpeckleRhino
       return objects;
     }
 
-    // conversion and bake for non view objects
+    // conversion and bake
     private void BakeObject(Base obj, string layerPath, StreamState state, ISpeckleConverter converter)
     {
       var converted = converter.ConvertToNative(obj);
@@ -347,14 +351,19 @@ namespace SpeckleRhino
 
       if (convertedRH != null)
       {
-        Layer bakeLayer = Doc.GetLayer(layerPath, true);
-        if (bakeLayer != null)
+        if (convertedRH.IsValid)
         {
-          if (Doc.Objects.Add(convertedRH, new ObjectAttributes { LayerIndex = bakeLayer.Index }) == Guid.Empty)
-            state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
+          Layer bakeLayer = Doc.GetLayer(layerPath, true);
+          if (bakeLayer != null)
+          {
+            if (Doc.Objects.Add(convertedRH, new ObjectAttributes { LayerIndex = bakeLayer.Index }) == Guid.Empty)
+              state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
+          }
+          else
+            state.Errors.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
         }
         else
-          state.Errors.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
+          state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: invalid object props"));
       }
       else if (converted == null)
       {
