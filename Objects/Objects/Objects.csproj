@@ -8,7 +8,7 @@
     <Authors>Speckle</Authors>
     <Company>Speckle</Company>
     <Product>Objects</Product>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>Objects is the default object model for Speckle</Description>
     <PackageTags>speckle objects</PackageTags>

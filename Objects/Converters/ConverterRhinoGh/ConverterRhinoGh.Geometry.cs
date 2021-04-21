@@ -31,6 +31,7 @@ using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
+using Pointcloud = Objects.Geometry.Pointcloud;
 using Polyline = Objects.Geometry.Polyline;
 
 using RH = Rhino.Geometry;
@@ -48,17 +49,7 @@ namespace Objects.Converter.RhinoGh
       return new double[] { pt.X, pt.Y, pt.Z };
     }
 
-    public double[] PointToArray(Point2d pt)
-    {
-      return new double[] { pt.X, pt.Y };
-    }
-
-    public double[] PointToArray(Point2f pt)
-    {
-      return new double[] { pt.X, pt.Y };
-    }
-
-    // Mass point converter
+    // Mass point converter - deprecate once mesh implements pts method
     public Point3d[] PointListToNative(IEnumerable<double> arr, string units)
     {
       var enumerable = arr.ToList();
@@ -78,22 +69,6 @@ namespace Objects.Converter.RhinoGh
     public double[] PointsToFlatArray(IEnumerable<Point3d> points)
     {
       return points.SelectMany(pt => PointToArray(pt)).ToArray();
-    }
-
-    public double[] PointsToFlatArray(IEnumerable<Point2f> points)
-    {
-      return points.SelectMany(pt => PointToArray(pt)).ToArray();
-    }
-
-    // Convenience methods vector:
-    public double[] VectorToArray(Vector3d vc)
-    {
-      return new double[] { vc.X, vc.Y, vc.Z };
-    }
-
-    public Vector3d ArrayToVector(double[] arr)
-    {
-      return new Vector3d(arr[0], arr[1], arr[2]);
     }
 
     // Points
@@ -179,7 +154,7 @@ namespace Objects.Converter.RhinoGh
     public Line LineToSpeckle(RH.Line line, string units = null)
     {
       var u = units ?? ModelUnits;
-      var sLine = new Line(PointsToFlatArray(new Point3d[] { line.From, line.To }), u);
+      var sLine = new Line(PointToSpeckle(line.From), PointToSpeckle(line.To), u);
       sLine.length = line.Length;
       sLine.domain = new Interval(0, line.Length);
       var box = new RH.Box(line.BoundingBox);
@@ -191,7 +166,7 @@ namespace Objects.Converter.RhinoGh
     public Line LineToSpeckle(LineCurve line, string units = null)
     {
       var u = units ?? ModelUnits;
-      var sLine = new Line(PointsToFlatArray(new Point3d[] { line.PointAtStart, line.PointAtEnd }), u)
+      var sLine = new Line(PointToSpeckle(line.PointAtStart), PointToSpeckle(line.PointAtEnd), u)
       {
         domain = IntervalToSpeckle(line.Domain)
       };
@@ -341,12 +316,9 @@ namespace Objects.Converter.RhinoGh
     public ICurve PolylineToSpeckle(RH.Polyline poly, Interval domain, string units = null)
     {
       var u = units ?? ModelUnits;
+
       if (poly.Count == 2)
-      {
-        var l = new Line(PointsToFlatArray(poly), u);
-        l.domain = domain;
-        return l;
-      }
+        return LineToSpeckle(new RH.Line(poly[0], poly[1]));
 
       var myPoly = new Polyline(PointsToFlatArray(poly), u);
       myPoly.closed = poly.IsClosed;
@@ -401,7 +373,7 @@ namespace Objects.Converter.RhinoGh
     // Deserialise
     public PolylineCurve PolylineToNative(Polyline poly)
     {
-      var points = PointListToNative(poly.value, poly.units).ToList();
+      List<Point3d> points = poly.points.Select(o => PointToNative(o).Location).ToList();
       if (poly.closed) points.Add(points[0]);
 
       var myPoly = new PolylineCurve(points);
@@ -572,7 +544,7 @@ namespace Objects.Converter.RhinoGh
 
     public NurbsCurve NurbsToNative(Curve curve)
     {
-      var ptsList = PointListToNative(curve.points, curve.units);
+      var ptsList = curve.GetPoints().Select(o => PointToNative(o).Location).ToList();
 
       var nurbsCurve = NurbsCurve.Create(false, curve.degree, ptsList);
 
@@ -685,6 +657,53 @@ namespace Objects.Converter.RhinoGh
           return true;
       }
       return false;
+    }
+
+    // Pointcloud
+    public Pointcloud PointcloudToSpeckle(RH.PointCloud pointcloud, string units = null)
+    {
+      var u = units ?? ModelUnits;
+
+      var _pointcloud = new Pointcloud()
+      {
+        points = PointsToFlatArray(pointcloud.GetPoints().ToList()).ToList(),
+        colors = pointcloud.GetColors().Select(o => o.ToArgb()).ToList(),
+        bbox = BoxToSpeckle(new RH.Box(pointcloud.GetBoundingBox(true)), u),
+        units = u
+      };
+
+      return _pointcloud;
+    }
+    public RH.PointCloud PointcloudToNative(Pointcloud pointcloud)
+    {
+      var points = pointcloud.GetPoints().Select(o => PointToNative(o).Location).ToList();
+      var _pointcloud = new RH.PointCloud(points);
+
+      if (pointcloud.colors.Count == points.Count)
+        for (int i = 0; i < points.Count; i++)
+          _pointcloud[i].Color = System.Drawing.Color.FromArgb(pointcloud.colors[i]);
+
+      return _pointcloud;
+    }
+
+    private void AttachPointcloudParams(Base specklePointcloud, PointCloud pointcloud)
+    {
+      // normals
+      if(pointcloud.ContainsNormals)
+      {
+        var normals = pointcloud.GetNormals().Select(o => VectorToSpeckle(o, ModelUnits)).ToList();
+        specklePointcloud["normals"] = normals;
+      }
+    }
+    private PointCloud SetPointcloudParams(PointCloud pointcloud, Base specklePointcloud)
+    {
+      // normals
+      var normals = specklePointcloud["normals"] as List<Vector>;
+      if (normals != null && normals.Count == pointcloud.Count)
+        for (int i = 0; i < pointcloud.Count; i++)
+          pointcloud[i].Normal = VectorToNative(normals[i]);
+
+      return pointcloud;
     }
 
     /// <summary>
