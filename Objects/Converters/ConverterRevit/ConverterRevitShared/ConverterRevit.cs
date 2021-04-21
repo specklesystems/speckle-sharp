@@ -1,9 +1,9 @@
-﻿using Autodesk.Revit.DB;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
@@ -32,7 +32,7 @@ namespace Objects.Converter.Revit
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
 
-    public IEnumerable<string> GetServicedApplications() => new string[] { RevitAppName };
+    public IEnumerable<string> GetServicedApplications() => new string[ ] { RevitAppName };
 
     #endregion ISpeckleConverter props
 
@@ -104,6 +104,7 @@ namespace Objects.Converter.Revit
           {
             returnObject = ModelCurveToSpeckle(o);
           }
+
           break;
         case DB.Opening o:
           returnObject = OpeningToSpeckle(o);
@@ -123,7 +124,10 @@ namespace Objects.Converter.Revit
         case DB.Mechanical.Duct o:
           returnObject = DuctToSpeckle(o);
           break;
-        //these should be handled by curtain walls
+        case DB.Plumbing.Pipe o:
+          returnObject = PipeToSpeckle(o);
+          break;
+          //these should be handled by curtain walls
         case DB.CurtainGridLine _:
           returnObject = null;
           break;
@@ -133,7 +137,7 @@ namespace Objects.Converter.Revit
         case DB.Architecture.Stairs o:
           returnObject = StairToSpeckle(o);
           break;
-        //these are handled by Stairs
+          //these are handled by Stairs
         case DB.Architecture.StairsRun _:
           returnObject = null;
           break;
@@ -185,6 +189,7 @@ namespace Objects.Converter.Revit
       {
         return $", name: {e.Name}, id: {e.UniqueId}";
       }
+
       return "";
     }
 
@@ -202,7 +207,7 @@ namespace Objects.Converter.Revit
         case Geometry.Mesh o:
           return DirectShapeToNative(o);
 
-        //built elems
+          //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
 
@@ -257,6 +262,9 @@ namespace Objects.Converter.Revit
         case BE.Duct o:
           return DuctToNative(o);
 
+        case BE.Pipe o:
+          return PipeToNative(o);
+
         case BE.Revit.RevitRailing o:
           return RailingToNative(o);
 
@@ -273,174 +281,78 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(o => ConvertToSpeckle(o)).ToList();
+    public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
 
-    public List<object> ConvertToNative(List<Base> objects) => objects.Select(o => ConvertToNative(o)).ToList();
+    public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
 
     public bool CanConvertToSpeckle(object @object)
     {
-      switch (@object)
+      return @object
+      switch
       {
-        case DB.DetailCurve _:
-          return true;
-
-        case DB.DirectShape _:
-          return true;
-
-        case DB.FamilyInstance _:
-          return true;
-
-        case DB.Floor _:
-          return true;
-
-        case DB.Level _:
-          return true;
-
-        case DB.View _:
-          return true;
-
-        case DB.ModelCurve _:
-          return true;
-
-        case DB.Opening _:
-          return true;
-
-        case DB.RoofBase _:
-          return true;
-
-        case DB.Architecture.Room _:
-          return true;
-
-        case DB.Architecture.TopographySurface _:
-          return true;
-
-        case DB.Wall _:
-          return true;
-
-        case DB.Mechanical.Duct _:
-          return true;
-
-        //these should be handled by curtain walls
-        case DB.CurtainGridLine _:
-          return true;
-
-        case DB.Architecture.BuildingPad _:
-          return true;
-
-        case DB.Architecture.Stairs _:
-          return true;
-
-        case DB.Architecture.StairsRun _:
-          return true;
-
-        case DB.Architecture.StairsLanding _:
-          return true;
-
-        case DB.Architecture.Railing _:
-          return true;
-
-        case DB.Architecture.TopRail _:
-          return true;
-
-        case DB.Ceiling _:
-          return true;
-
-        case DB.Group _:
-          return true;
-
-        case DB.ProjectInfo _:
-          return true;
-
-        case DB.ElementType _:
-          return true;
-
-        default:
-          return (@object as Element).IsElementSupported();
-      }
+        DB.DetailCurve _ => true,
+        DB.DirectShape _ => true,
+        DB.FamilyInstance _ => true,
+        DB.Floor _ => true,
+        DB.Level _ => true,
+        DB.View _ => true,
+        DB.ModelCurve _ => true,
+        DB.Opening _ => true,
+        DB.RoofBase _ => true,
+        DB.Architecture.Room _ => true,
+        DB.Architecture.TopographySurface _ => true,
+        DB.Wall _ => true,
+        DB.Mechanical.Duct _ => true,
+        DB.Plumbing.Pipe _ => true,
+        DB.CurtainGridLine _ => true, //these should be handled by curtain walls
+        DB.Architecture.BuildingPad _ => true,
+        DB.Architecture.Stairs _ => true,
+        DB.Architecture.StairsRun _ => true,
+        DB.Architecture.StairsLanding _ => true,
+        DB.Architecture.Railing _ => true,
+        DB.Architecture.TopRail _ => true,
+        DB.Ceiling _ => true,
+        DB.Group _ => true,
+        DB.ProjectInfo _ => true,
+        DB.ElementType _ => true,
+        _ => (@object as Element).IsElementSupported()
+      };
     }
 
     public bool CanConvertToNative(Base @object)
     {
-      switch (@object)
+      return @object
+      switch
       {
         //geometry
-        case ICurve _:
-          return true;
-
-        case Geometry.Brep _:
-          return true;
-
-        case Geometry.Mesh _:
-          return true;
-
+        ICurve _ => true,
+        Geometry.Brep _ => true,
+        Geometry.Mesh _ => true,
         //built elems
-        case BER.AdaptiveComponent _:
-          return true;
-
-        case BE.Beam _:
-          return true;
-
-        case BE.Brace _:
-          return true;
-
-        case BE.Column _:
-          return true;
-
-        case BERC.DetailCurve _:
-          return true;
-
-        case BER.DirectShape _:
-          return true;
-
-        case BER.FreeformElement _:
-          return true;
-
-        case BER.FamilyInstance _:
-          return true;
-
-        case BE.Floor _:
-          return true;
-
-        case BE.Level _:
-          return true;
-
-        case BERC.ModelCurve _:
-          return true;
-
-        case BE.Opening _:
-          return true;
-
-        case BERC.RoomBoundaryLine _:
-          return true;
-
-        case BE.Roof _:
-          return true;
-
-        case BE.Topography _:
-          return true;
-
-        case BER.RevitFaceWall _:
-          return true;
-
-        case BE.Wall _:
-          return true;
-
-        case BE.Duct _:
-          return true;
-
-        case BE.Revit.RevitRailing _:
-          return true;
-
-        case BER.ParameterUpdater _:
-          return true;
-
-        // other
-        case Other.BlockInstance _:
-          return true;
-
-        default:
-          return false;
-      }
+        BER.AdaptiveComponent _ => true,
+        BE.Beam _ => true,
+        BE.Brace _ => true,
+        BE.Column _ => true,
+        BERC.DetailCurve _ => true,
+        BER.DirectShape _ => true,
+        BER.FreeformElement _ => true,
+        BER.FamilyInstance _ => true,
+        BE.Floor _ => true,
+        BE.Level _ => true,
+        BERC.ModelCurve _ => true,
+        BE.Opening _ => true,
+        BERC.RoomBoundaryLine _ => true,
+        BE.Roof _ => true,
+        BE.Topography _ => true,
+        BER.RevitFaceWall _ => true,
+        BE.Wall _ => true,
+        BE.Duct _ => true,
+        BE.Pipe _ => true,
+        BE.Revit.RevitRailing _ => true,
+        BER.ParameterUpdater _ => true,
+        Other.BlockInstance _ => true,
+        _ => false
+      };
     }
   }
 }
