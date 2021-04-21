@@ -32,7 +32,8 @@ namespace Objects.BuiltElements.Revit
   {
     public string family { get; set; }
     public string type { get; set; }
-    public string system { get; set; }
+    public string systemName { get; set; }
+    public string systemType { get; set; }
     public List<Parameter> parameters { get; set; }
     public string elementId { get; set; }
     public Level level { get; set; }
@@ -40,13 +41,14 @@ namespace Objects.BuiltElements.Revit
     public RevitPipe() { }
 
     [SchemaInfo("RevitPipe", "Creates a Revit pipe")]
-    public RevitPipe(string family, string type, Line baseLine, double diameter, Level level,  string system = "", List<Parameter> parameters = null)
+    public RevitPipe(string family, string type, Line baseLine, double diameter, Level level,  string systemName = "", string systemType = "", List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
       this.baseLine = baseLine;
       this.diameter = diameter;
-      this.system = system;
+      this.systemName = systemName;
+      this.systemType = systemType;
       this.level = level;
       this.parameters = parameters;
     }

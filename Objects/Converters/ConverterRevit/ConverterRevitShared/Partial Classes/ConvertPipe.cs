@@ -13,25 +13,27 @@ namespace Objects.Converter.Revit
   {
     public List<ApplicationPlaceholderObject> PipeToNative(BuiltElements.Pipe specklePipe)
     {
+      // geometry
       var baseLine = LineToNative(specklePipe.baseLine);
       var speckleRevitPipe = specklePipe as RevitPipe;
       var level = LevelToNative(speckleRevitPipe != null ? speckleRevitPipe.level : LevelFromCurve(baseLine));
 
+      // get MEP pipe system by name or by type
       var pipeType = GetElementType<DB.Plumbing.PipeType>(specklePipe);
       var types = new FilteredElementCollector(Doc).WhereElementIsElementType()
         .OfClass(typeof(DB.Plumbing.PipingSystemType)).ToElements().Cast<ElementType>().ToList();
-      var systemFamily = speckleRevitPipe?.system ?? "";
-      var system = types.FirstOrDefault(x => x.Name == systemFamily);
+      var systemFamily = speckleRevitPipe?.systemType ?? "";
+      var system = types.FirstOrDefault(x => x.Name == speckleRevitPipe?.systemName) ??
+                   types.FirstOrDefault(x => x.Name == systemFamily);
       if ( system == null )
       {
         system = types.FirstOrDefault();
         ConversionErrors.Add(new Exception($"Pipe type {systemFamily} not found; replaced with {system.Name}"));
       }
 
-      DB.Plumbing.Pipe pipe = null;
-
+      // create or update the pipe
+      DB.Plumbing.Pipe pipe;
       var docObj = GetExistingElementByApplicationId(specklePipe.applicationId);
-
       if ( docObj == null )
       {
         pipe = DB.Plumbing.Pipe.Create(Doc, system.Id, pipeType.Id, level.Id,
@@ -42,6 +44,7 @@ namespace Objects.Converter.Revit
       {
         pipe = ( DB.Plumbing.Pipe ) docObj;
         pipe.SetSystemType(system.Id);
+        ( ( LocationCurve ) pipe.Location ).Curve = baseLine;
       }
 
       if ( speckleRevitPipe != null )
@@ -76,7 +79,8 @@ namespace Objects.Converter.Revit
         baseLine = baseLine,
         family = revitPipe.PipeType.FamilyName,
         type = revitPipe.PipeType.Name,
-        system = revitPipe.MEPSystem.Name,
+        systemName = revitPipe.MEPSystem.Name,
+        systemType = GetParamValue<string>(revitPipe, BuiltInParameter.RBS_SYSTEM_CLASSIFICATION_PARAM),
         diameter = GetParamValue<double>(revitPipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM),
         length = GetParamValue<double>(revitPipe, BuiltInParameter.CURVE_ELEM_LENGTH),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
@@ -85,7 +89,8 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(specklePipe, revitPipe, new List<string>
       {
-        "RBS_PIPING_SYSTEM_TYPE_PARAM", // system stuff will be set by `specklePipe.system`
+        "RBS_SYSTEM_CLASSIFICATION_PARAM",
+        "RBS_PIPING_SYSTEM_TYPE_PARAM",
         "RBS_SYSTEM_NAME_PARAM",
         "RBS_PIPE_DIAMETER_PARAM",
         "CURVE_ELEM_LENGTH",
