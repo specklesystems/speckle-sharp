@@ -13,7 +13,11 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit : ISpeckleConverter
   {
-#if REVIT2021
+#if REVIT2023
+    public static string RevitAppName = Applications.Revit2023;
+#elif REVIT2022
+    public static string RevitAppName = Applications.Revit2022;
+#elif REVIT2021
     public static string RevitAppName = Applications.Revit2021;
 #elif REVIT2020
     public static string RevitAppName = Applications.Revit2020;
@@ -383,7 +387,7 @@ namespace Objects.Converter.Revit
 
         case BER.DirectShape _:
           return true;
-        
+
         case BER.FreeformElement _:
           return true;
 

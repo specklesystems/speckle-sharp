@@ -12,7 +12,11 @@ namespace Speckle.ConnectorRevit
 {
   public static class ConnectorRevitUtils
   {
-#if REVIT2021
+#if REVIT2023
+    public static string RevitAppName = Applications.Revit2023;
+#elif REVIT2022
+    public static string RevitAppName = Applications.Revit2022;
+#elif REVIT2021
     public static string RevitAppName = Applications.Revit2021;
 #elif REVIT2020
     public static string RevitAppName = Applications.Revit2020;
