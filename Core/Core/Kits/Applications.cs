@@ -10,6 +10,7 @@ namespace Speckle.Core.Kits
     public const string Revit2020 = "Revit2020";
     public const string Revit2021 = "Revit2021";
     public const string Revit2022 = "Revit2022";
+    public const string Revit2023 = "Revit2023";
     public const string DynamoSandbox = "DynamoSandbox";
     public const string DynamoRevit = "DynamoRevit";
     public const string Unity = "Unity";
@@ -17,7 +18,11 @@ namespace Speckle.Core.Kits
     public const string Tekla = "Tekla";
     public const string GSA = "GSA";
     public const string Civil2021 = "Civil2021";
+    public const string Civil2022 = "Civil2022";
+    public const string Civil2023 = "Civil2023";
     public const string Autocad2021 = "AutoCAD2021";
+    public const string Autocad2022 = "AutoCAD2022";
+    public const string Autocad2023 = "AutoCAD2023";
 
     public const string Script = "Script";
     public const string Other = "Other";
