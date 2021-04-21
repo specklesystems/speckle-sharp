@@ -3,11 +3,43 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorDynamo.Functions
 {
   internal static class Utils
   {
+    /// Gets the App name from the injected Doc without requiring a dependency on the Revit dll
+    internal static string GetAppName()
+    {
+      if (Globals.RevitDocument == null)
+        return Applications.DynamoSandbox;
+      else
+      {
+        try
+        {
+          System.Type type = Globals.RevitDocument.GetType();
+          var app = (object)type.GetProperty("Application").GetValue(Globals.RevitDocument, null);
+
+          System.Type type2 = app.GetType();
+          var version = (string)type2.GetProperty("VersionNumber").GetValue(app, null);
+
+          if (version.Contains("2023"))
+            return Applications.DynamoRevit2023;
+          if (version.Contains("2022"))
+            return Applications.DynamoRevit2022;
+          if (version.Contains("2021"))
+            return Applications.DynamoRevit2021;
+          else
+            return Applications.DynamoRevit;
+
+        }
+        catch (Exception e)
+        {
+          return Applications.DynamoRevit;
+        }
+      }
+    }
 
     //My god this function sucks. It took me 20 mins to understand. Why not one that simply deals with one stream wrapper, and then use linq to cast things around? 
     internal static List<StreamWrapper> InputToStream(object input)

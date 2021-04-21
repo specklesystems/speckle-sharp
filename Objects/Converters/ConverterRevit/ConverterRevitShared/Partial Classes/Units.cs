@@ -48,7 +48,7 @@ namespace Objects.Converter.Revit
     }
 
     //new units api introduced in 2021, bleah
-    private string UnitsToSpeckle(string typeId)
+    public string UnitsToSpeckle(string typeId)
     {
       if (typeId == UnitTypeId.Millimeters.TypeId)
         return Speckle.Core.Kits.Units.Millimeters;
@@ -64,7 +64,7 @@ namespace Objects.Converter.Revit
       throw new Exception("The current Unit System is unsupported.");
     }
 
-    private string UnitsToNative(string units)
+    public string UnitsToNative(string units)
     {
       switch (units)
       {

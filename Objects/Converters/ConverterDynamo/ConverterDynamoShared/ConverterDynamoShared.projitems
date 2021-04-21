@@ -12,7 +12,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterDynamo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterDynamo.Geometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterDynamo.Units.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ConverterDynamo.Units.Revit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
   </ItemGroup>
 </Project>
