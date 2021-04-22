@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\CmdAvailabilityViews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\ErrorEater.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExternalEventHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\FamilyLoadOption.cs" />

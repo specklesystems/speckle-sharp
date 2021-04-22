@@ -21,10 +21,7 @@ namespace Speckle.ConnectorDynamo.Functions
       if (kit == null)
         throw new SpeckleException("Cannot find the Objects Kit. Has it been copied to the Kits folder?");
 
-      if (Globals.RevitDocument != null)
-        _converter = kit.LoadConverter(Applications.DynamoRevit);
-      else
-        _converter = kit.LoadConverter(Applications.DynamoSandbox);
+      _converter = kit.LoadConverter(Utils.GetAppName());
 
       if (_converter == null)
         throw new SpeckleException("Cannot find the Dynamo converter. Has it been copied to the Kits folder?");
@@ -120,7 +117,7 @@ namespace Speckle.ConnectorDynamo.Functions
         }
         catch (Exception ex)
         {
-          throw new SpeckleException("Could not convert "+ value.GetType()+ " to Speckle", ex);
+          throw new SpeckleException("Could not convert " + value.GetType() + " to Speckle", ex);
         }
       }
 
@@ -130,7 +127,7 @@ namespace Speckle.ConnectorDynamo.Functions
         return value;
       }
 
-     
+
 
       return result;
     }

@@ -26,12 +26,24 @@ namespace Objects.Converter.Dynamo
   public partial class ConverterDynamo : ISpeckleConverter
   {
 
+#if REVIT2023
+    public static string AppName = Applications.DynamoRevit2023;
+#elif REVIT2022
+    public static string AppName = Applications.DynamoRevit2022;
+#elif REVIT2021
+    public static string AppName = Applications.DynamoRevit2021;
+#elif REVIT
+    public static string AppName = Applications.DynamoRevit;
+#else
+    public static string AppName = Applications.DynamoSandbox;
+#endif
+
     public string Description => "Default Speckle Kit for Dynamo";
     public string Name => nameof(ConverterDynamo);
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
 
-    public IEnumerable<string> GetServicedApplications() => new string[] { Applications.DynamoRevit, Applications.DynamoSandbox };
+    public IEnumerable<string> GetServicedApplications() => new string[] { AppName };
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 

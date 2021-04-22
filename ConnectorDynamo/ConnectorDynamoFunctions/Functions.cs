@@ -58,7 +58,7 @@ namespace Speckle.ConnectorDynamo.Functions
               branchName = branchName,
               objectId = objectId,
               message = message,
-              sourceApplication = (Globals.RevitDocument != null) ? Applications.DynamoRevit : Applications.DynamoSandbox,
+              sourceApplication = Utils.GetAppName(),
               parents = new List<string> { serverTransport.StreamId }
             }).Result;
 
