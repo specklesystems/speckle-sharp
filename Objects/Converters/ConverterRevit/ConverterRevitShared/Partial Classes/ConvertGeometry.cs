@@ -442,10 +442,10 @@ namespace Objects.Converter.Revit
     public IList<GeometryObject> MeshToNative(Mesh mesh, TessellatedShapeBuilderTarget target = TessellatedShapeBuilderTarget.Mesh, TessellatedShapeBuilderFallback fallback = TessellatedShapeBuilderFallback.Salvage)
     {
       var tsb = new TessellatedShapeBuilder() { Fallback = fallback, Target = target, GraphicsStyleId = ElementId.InvalidElementId };
-      
+
       var valid = tsb.AreTargetAndFallbackCompatible(target, fallback);
       tsb.OpenConnectedFaceSet(target == TessellatedShapeBuilderTarget.Solid);
-      
+
       var vertices = ArrayToPoints(mesh.vertices, mesh.units);
 
       int i = 0;
@@ -527,7 +527,7 @@ namespace Objects.Converter.Revit
     public Geometry.Surface FaceToSpeckle(DB.Face face, DB.BoundingBoxUV uvBox, string units = null)
     {
 
-#if REVIT2021
+#if (REVIT2021 || REVIT2022)
       var surf = DB.ExportUtils.GetNurbsSurfaceDataForSurface(face.GetSurface());
 #else
       var surf = DB.ExportUtils.GetNurbsSurfaceDataForFace(face);

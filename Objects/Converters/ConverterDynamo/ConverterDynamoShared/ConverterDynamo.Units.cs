@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+#if REVIT
+using Autodesk.Revit.DB;
+using Objects.Converter.Revit;
+#endif
 
 namespace Objects.Converter.Dynamo
 {
@@ -23,6 +27,92 @@ namespace Objects.Converter.Dynamo
         return _modelUnits;
       }
     }
+
+#if REVIT
+
+    public string GetRevitDocUnits()
+    {
+      if (Doc != null)
+      {
+        _modelUnits = UnitsToSpeckle(RevitLengthTypeId);
+        return _modelUnits;
+      }
+      return Speckle.Core.Kits.Units.Meters;
+    }
+
+#if !(REVIT2022)
+
+
+    private DisplayUnitType _revitUnitsTypeId = DisplayUnitType.DUT_UNDEFINED;
+    public DisplayUnitType RevitLengthTypeId
+    {
+      get
+      {
+        if (_revitUnitsTypeId == DisplayUnitType.DUT_UNDEFINED)
+        {
+          var fo = Doc.GetUnits().GetFormatOptions(UnitType.UT_Length);
+          _revitUnitsTypeId = fo.DisplayUnits;
+        }
+        return _revitUnitsTypeId;
+      }
+    }
+
+    private string UnitsToSpeckle(DisplayUnitType type)
+    {
+      switch (type)
+      {
+        case DisplayUnitType.DUT_MILLIMETERS:
+          return Speckle.Core.Kits.Units.Millimeters;
+        case DisplayUnitType.DUT_CENTIMETERS:
+          return Speckle.Core.Kits.Units.Centimeters;
+        case DisplayUnitType.DUT_METERS:
+          return Speckle.Core.Kits.Units.Meters;
+        case DisplayUnitType.DUT_DECIMAL_INCHES:
+          return Speckle.Core.Kits.Units.Inches;
+        case DisplayUnitType.DUT_DECIMAL_FEET:
+          return Speckle.Core.Kits.Units.Feet;
+        default:
+          throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.");
+      }
+
+    }
+#else
+
+    private ForgeTypeId _revitUnitsTypeId;
+    private ForgeTypeId RevitLengthTypeId
+    {
+      get
+      {
+        if (_revitUnitsTypeId == null)
+        {
+          var fo = Doc.GetUnits().GetFormatOptions(SpecTypeId.Length);
+          _revitUnitsTypeId = fo.GetUnitTypeId();
+        }
+        return _revitUnitsTypeId;
+      }
+    }
+
+    private string UnitsToSpeckle(ForgeTypeId typeId)
+    {
+      if (typeId == UnitTypeId.Millimeters)
+        return Speckle.Core.Kits.Units.Millimeters;
+      else if (typeId == UnitTypeId.Centimeters)
+        return Speckle.Core.Kits.Units.Centimeters;
+      else if (typeId == UnitTypeId.Meters)
+        return Speckle.Core.Kits.Units.Meters;
+      else if (typeId == UnitTypeId.Inches)
+        return Speckle.Core.Kits.Units.Inches;
+      else if (typeId == UnitTypeId.Feet)
+        return Speckle.Core.Kits.Units.Feet;
+
+      throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.");
+    }
+
+#endif
+
+
+
+#endif
 
 
 

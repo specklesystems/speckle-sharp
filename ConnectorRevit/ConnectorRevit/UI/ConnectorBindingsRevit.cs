@@ -108,7 +108,7 @@ namespace Speckle.ConnectorRevit.UI
       if (CurrentDoc != null)
         return;
 
-      if (SpeckleRevitCommand.Bootstrapper != null)
+      if (SpeckleRevitCommand.Bootstrapper != null && SpeckleRevitCommand.Bootstrapper.Application!=null)
         SpeckleRevitCommand.Bootstrapper.Application.MainWindow.Hide();
 
       var appEvent = new ApplicationEvent() { Type = ApplicationEvent.EventType.DocumentClosed };

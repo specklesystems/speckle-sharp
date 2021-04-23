@@ -91,6 +91,9 @@ namespace Objects.Converter.RhinoGh
         case Rhino.Geometry.Point o:
           @base = PointToSpeckle(o);
           break;
+        case PointCloud o:
+          @base = PointcloudToSpeckle(o);
+          break;
         case Vector3d o:
           @base = VectorToSpeckle(o);
           break;
@@ -258,6 +261,9 @@ namespace Objects.Converter.RhinoGh
         case Point o:
           return PointToNative(o);
 
+        case Pointcloud o:
+          return PointcloudToNative(o);
+
         case Vector o:
           return VectorToNative(o);
 
@@ -349,6 +355,9 @@ namespace Objects.Converter.RhinoGh
         case Rhino.Geometry.Point _:
           return true;
 
+        case PointCloud _:
+          return true;
+
         case Vector3d _:
           return true;
 
@@ -427,7 +436,10 @@ namespace Objects.Converter.RhinoGh
     {
       switch (@object)
       {
-        case Point _:
+        case Point _ :
+          return true;
+
+        case Pointcloud _:
           return true;
 
         case Vector _:

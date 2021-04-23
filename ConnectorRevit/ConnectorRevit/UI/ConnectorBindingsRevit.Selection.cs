@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using ConnectorRevit;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -187,15 +188,15 @@ namespace Speckle.ConnectorRevit.UI
                   GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue));
                 break;
               case "is greater than":
-                query = query.Where(fi => UnitUtils.ConvertFromInternalUnits(
+                query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
                                             fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-                                            fi.LookupParameter(propFilter.PropertyName).DisplayUnitType) >
+                                            fi.LookupParameter(propFilter.PropertyName)) >
                                           double.Parse(propFilter.PropertyValue));
                 break;
               case "is less than":
-                query = query.Where(fi => UnitUtils.ConvertFromInternalUnits(
+                query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
                                             fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-                                            fi.LookupParameter(propFilter.PropertyName).DisplayUnitType) <
+                                            fi.LookupParameter(propFilter.PropertyName)) <
                                           double.Parse(propFilter.PropertyValue));
                 break;
             }
