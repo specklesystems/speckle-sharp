@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
         ?.GetFamilySymbolIds()
         .Select(id => Doc.GetElement(id))
         .OfType<FamilySymbol>()
-        .FirstOrDefault(null);
+        .First();
 
       if (familySymbol == null)
         familySymbol = BlockDefinitionToNative(instance.blockDefinition);
@@ -72,6 +72,9 @@ namespace Objects.Converter.Revit
       return placeholders;
     }
 
+    // TODO: fix unit conversions since block geometry is being converted inside a new family document, which potentially has different unit settings from the main doc.
+    // This could be done by passing in an option Document argument for all conversions that defaults to the main doc (annoying)
+    // I suspect this also needs to be fixed for freeform elements
     private FamilySymbol BlockDefinitionToNative(BlockDefinition definition)
     {
       // convert definition geometry to native
@@ -89,7 +92,7 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
-              ConversionErrors.Add(new SpeckleException($"Could not convert block {definition.id} BREP to native, falling back to mesh representation.", e));
+              ConversionErrors.Add(new SpeckleException($"Could not convert block {definition.id} brep to native, falling back to mesh representation.", e));
               var brepMeshSolids = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
                   .Select(m => m as DB.Solid);
               solids.AddRange(brepMeshSolids);
@@ -100,15 +103,16 @@ namespace Objects.Converter.Revit
                 .Select(m => m as DB.Solid);
             solids.AddRange(meshSolids);
             break;
-          case Geometry.Curve curve:
+          case ICurve curve:
             try
             {
-              var modelCurve = CurveToNative(geometry as Objects.Geometry.Curve);
-              curves.Add(modelCurve);
+              var modelCurves = CurveToNative(geometry as ICurve);
+              foreach (DB.Curve modelCurve in modelCurves)
+                curves.Add(modelCurve);
             }
             catch (Exception e)
             {
-              ConversionErrors.Add(new SpeckleException($"Could not convert block {definition.id} CURVE to native.", e));
+              ConversionErrors.Add(new SpeckleException($"Could not convert block {definition.id} curve to native.", e));
             }
             break;
         }
@@ -152,7 +156,10 @@ namespace Objects.Converter.Revit
     private string CreateBlockFamily(List<DB.Solid> solids, List<DB.Curve> curves, string name)
     {
       // create a family to represent a block definition
-      var famPath = Path.Combine(Doc.Application.FamilyTemplatePath, @"English\Metric Generic Model.rft");
+      // TODO: package our own generic model rft so this path will always work (need to change for freeform elem too)
+      // TODO: match the rft unit to the main doc unit system (ie if main doc is in feet, pick the English Generic Model)
+      // TODO: rename block with stream commit info prefix taken from UI - need to figure out cleanest way of storing this in the doc for retrieval by converter
+      var famPath = Path.Combine(Doc.Application.FamilyTemplatePath, @"Metric Generic Model.rft");
       if (!File.Exists(famPath))
       {
         throw new Exception($"Could not find file Metric Generic Model.rft - {famPath}");
@@ -164,7 +171,7 @@ namespace Objects.Converter.Revit
         t.Start();
 
         solids.ForEach(o => { DB.FreeFormElement.Create(famDoc, o); });
-        curves.ForEach(o => { famDoc.FamilyCreate.NewModelCurve(o, NewSketchPlaneFromCurve(o)); });
+        curves.ForEach(o => { famDoc.FamilyCreate.NewModelCurve(o, NewSketchPlaneFromCurve(o, famDoc)); });
 
         t.Commit();
       }
