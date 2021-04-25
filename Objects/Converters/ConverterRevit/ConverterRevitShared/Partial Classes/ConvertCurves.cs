@@ -39,7 +39,7 @@ namespace Objects.Converter.Revit
       while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
       {
         var baseCurve = curveEnumerator.Current as Curve;
-        DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(baseCurve, NewSketchPlaneFromCurve(baseCurve));
+        DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(baseCurve, NewSketchPlaneFromCurve(baseCurve, Doc));
 
         var lineStyles = revitCurve.GetLineStyleIds();
         var lineStyleId = lineStyles.FirstOrDefault(x => Doc.GetElement(x).Name == speckleCurve.lineStyle);
@@ -71,7 +71,7 @@ namespace Objects.Converter.Revit
       while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
       {
         var curve = curveEnumerator.Current as DB.Curve;
-        DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve));
+        DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
         placeholders.Add(new ApplicationPlaceholderObject() { applicationId = (speckleLine as Base).applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
       }
 
@@ -149,7 +149,7 @@ namespace Objects.Converter.Revit
 
       try
       {
-        var res = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0)), baseCurve, Doc.ActiveView).get_Item(0);
+        var res = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
         return new ApplicationPlaceholderObject()
         { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res };
       }
@@ -169,7 +169,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="curve">Curve to get plane from</param>
     /// <returns>Plane of the curve</returns>
-    private SketchPlane NewSketchPlaneFromCurve(DB.Curve curve)
+    private SketchPlane NewSketchPlaneFromCurve(DB.Curve curve, Document doc)
     {
       XYZ startPoint = curve.GetEndPoint(0);
       XYZ endPoint = curve.GetEndPoint(1);
@@ -212,7 +212,7 @@ namespace Objects.Converter.Revit
         plane = DB.Plane.CreateByThreePoints(startPoint, new XYZ(0, 0, 0), endPoint);
       }
 
-      return SketchPlane.Create(Doc, plane);
+      return SketchPlane.Create(doc, plane);
     }
     private DB.Plane CreatePlane(XYZ basis, XYZ startPoint)
     {
