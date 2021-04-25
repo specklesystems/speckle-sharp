@@ -98,6 +98,7 @@ namespace Objects.Converter.AutocadCivil
       var _arc = new Arc(PlaneToSpeckle(arc.GetPlane()), arc.Radius, arc.StartAngle, arc.EndAngle, arc.TotalAngle, ModelUnits);
       _arc.startPoint = PointToSpeckle(arc.StartPoint);
       _arc.endPoint = PointToSpeckle(arc.EndPoint);
+      _arc.midPoint = PointToSpeckle(arc.GetPointAtDist(arc.Length / 2));
       _arc.domain = new Interval(arc.StartParam, arc.EndParam);
       _arc.length = arc.Length;
       _arc.bbox = BoxToSpeckle(arc.GeometricExtents, true);
@@ -105,9 +106,22 @@ namespace Objects.Converter.AutocadCivil
     }
     public AcadDB.Arc ArcToNativeDB(Arc arc)
     {
-      var center = PointToNative(arc.plane.origin);
-      var radius = ScaleToNative((double)arc.radius, arc.units);
-      return new AcadDB.Arc(center, radius, (double)arc.startAngle, (double)arc.endAngle);
+      // because of different plane & start/end angle conventions, most reliable method to convert to autocad convention is to calculate from start, end, and midpoint
+      var circularArc = ArcToNative(arc);
+
+      // calculate adjusted start and end angles from circularArc reference
+      double angle = circularArc.ReferenceVector.AngleOnPlane(PlaneToNative(arc.plane));
+      double startAngle = circularArc.StartAngle + angle;
+      double endAngle = circularArc.EndAngle + angle;
+
+      var _arc = new AcadDB.Arc(
+        PointToNative(arc.plane.origin), 
+        VectorToNative(arc.plane.normal), 
+        ScaleToNative((double)arc.radius, arc.units),
+        startAngle,
+        endAngle);
+
+      return _arc;
     }
 
     // Circles

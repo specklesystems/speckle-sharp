@@ -185,7 +185,12 @@ namespace Objects.Converter.AutocadCivil
     }
     public CircularArc3d ArcToNative(Arc arc)
     {
-      return new CircularArc3d(PointToNative(arc.startPoint), PointToNative(arc.midPoint), PointToNative(arc.endPoint));
+      var _arc = new CircularArc3d(PointToNative(arc.startPoint), PointToNative(arc.midPoint), PointToNative(arc.endPoint));
+
+      _arc.SetAxes(VectorToNative(arc.plane.normal), VectorToNative(arc.plane.xdir));
+      _arc.SetAngles((double)arc.startAngle, (double)arc.endAngle);
+
+      return _arc;
     }
 
     // Curve
