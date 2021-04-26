@@ -50,7 +50,7 @@ namespace ConverterRevitTests
     private void AssertFloorEqual(DB.Floor sourceElem, DB.Floor destElem)
     {
       Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, sourceElem.Name);
+      Assert.Equal(sourceElem.Name, destElem.Name);
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM);
       //AssertEqualParam(sourceElem, destElem, BuiltInParameter.HOST_PERIMETER_COMPUTED);

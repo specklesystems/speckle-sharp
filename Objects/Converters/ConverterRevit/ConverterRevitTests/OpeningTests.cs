@@ -66,7 +66,7 @@ namespace ConverterRevitTests
         return;
 
       Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, sourceElem.Name);
+      Assert.Equal(sourceElem.Name, destElem.Name);
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_CONSTRAINT);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);
