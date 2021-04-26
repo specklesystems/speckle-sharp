@@ -4,6 +4,7 @@ using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Curve = Objects.Geometry.Curve;
 
@@ -14,11 +15,34 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> WireToNative(BuiltElements.Wire speckleWire)
     {
       var speckleRevitWire = speckleWire as RevitWire;
-      var points = PointListToNative(speckleWire.points, speckleWire.units);
-      var wiringType = speckleRevitWire?.wiringType == "Arc"
-        ? DB.Electrical.WiringType.Arc
-        : DB.Electrical.WiringType.Chamfer;
+
+      var wiringType = speckleRevitWire?.wiringType == "Chamfer"
+        ? DB.Electrical.WiringType.Chamfer
+        : DB.Electrical.WiringType.Arc;
       var wireType = GetElementType<DB.Electrical.WireType>(speckleWire);
+
+      // get construction points (if wire is from Revit, these are not the same as the geometry points)
+      var points = new List<XYZ>();
+      if ( speckleRevitWire != null )
+        points = PointListToNative(speckleRevitWire.constructionPoints, speckleRevitWire.units);
+      else
+      {
+        foreach ( var segment in speckleWire.segments )
+        {
+          switch ( segment )
+          {
+            case Curve curve:
+              points.AddRange(PointListToNative(curve.points));
+              break;
+            case Polyline line:
+              points.AddRange(PointListToNative(line.value));
+              break;
+            default:  // what other curves should be supported? currently just the ones you can create from revit
+              new SpeckleException($"Wire segment geometry of type {segment.GetType()} not currently supported");
+              break;
+          }
+        }
+      }
 
       DB.Electrical.Wire wire = null;
       var docObj = GetExistingElementByApplicationId(speckleWire.applicationId);
@@ -26,7 +50,7 @@ namespace Objects.Converter.Revit
       {
         wire = ( DB.Electrical.Wire ) docObj;
         // if the number of vertices doesn't match, we need to create a new wire
-        if ( wire.NumberOfVertices != points.Length )
+        if ( wire.NumberOfVertices != points.Count )
           wire = null;
       }
 
@@ -58,17 +82,19 @@ namespace Objects.Converter.Revit
 
     public BuiltElements.Wire WireToSpeckle(DB.Electrical.Wire revitWire)
     {
-      var speckleWire = new RevitWire();
-      speckleWire.family = revitWire.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM).AsValueString();
-      speckleWire.type = revitWire.get_Parameter(BuiltInParameter.ELEM_TYPE_PARAM).AsValueString();
-      speckleWire.wiringType = revitWire.get_Parameter(BuiltInParameter.RBS_ELEC_WIRE_TYPE).AsValueString();
-      speckleWire.level = ConvertAndCacheLevel(revitWire.ReferenceLevel.Id);
+      var speckleWire = new RevitWire
+      {
+        family = revitWire.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM).AsValueString(),
+        type = revitWire.get_Parameter(BuiltInParameter.ELEM_TYPE_PARAM).AsValueString(),
+        wiringType = revitWire.get_Parameter(BuiltInParameter.RBS_ELEC_WIRE_TYPE).AsValueString(),
+        level = ConvertAndCacheLevel(revitWire.ReferenceLevel.Id)
+      };
 
       // construction geometry for creating the wire on receive (doesn't match geometry points 🙃)
       var points = new List<double>();
       for ( var i = 0; i < revitWire.NumberOfVertices; i++ )
         points.AddRange(PointToSpeckle(revitWire.GetVertex(i)).ToList());
-      speckleWire.points = points;
+      speckleWire.constructionPoints = points;
 
       // geometry
       var start = ( ( LocationCurve ) revitWire.Location ).Curve.GetEndPoint(0);

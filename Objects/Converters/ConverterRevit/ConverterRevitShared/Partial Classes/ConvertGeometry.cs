@@ -61,17 +61,17 @@ namespace Objects.Converter.Revit
       return pointToSpeckle;
     }
 
-    public XYZ[ ] PointListToNative(IEnumerable<double> arr, string units = null)
+    public List<XYZ> PointListToNative(IEnumerable<double> arr, string units = null)
     {
       var coords = arr.ToList();
       if (coords.Count % 3 != 0)throw new SpeckleException("Array malformed: length%3 != 0.");
 
-      var points = new XYZ[coords.Count / 3];
-      for (int i = 2, p = 0; i < coords.Count; i += 3)
-        points[p++] = new XYZ(
-          ScaleToNative(coords[i - 2], units ?? ModelUnits),
-          ScaleToNative(coords[i - 1], units ?? ModelUnits),
-          ScaleToNative(coords[i], units ?? ModelUnits));
+      var points = new List<XYZ>();
+      for (int i = 2; i < coords.Count; i += 3)
+        points.Add(new XYZ(
+          ScaleToNative(coords[ i - 2 ], units ?? ModelUnits),
+          ScaleToNative(coords[ i - 1 ], units ?? ModelUnits),
+          ScaleToNative(coords[ i ], units ?? ModelUnits)));
 
       return points;
     }
