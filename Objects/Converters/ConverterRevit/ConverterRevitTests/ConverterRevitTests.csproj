@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="BrepTests.cs" />
     <Compile Include="DuctTests.cs" />
+    <Compile Include="PipeTests.cs" />
     <Compile Include="RoofTests.cs" />
     <Compile Include="FamilyInstanceTests.cs" />
     <Compile Include="CurveTests.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="SpeckleConversionTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WallTests.cs" />
+    <Compile Include="WireTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SpeckleRevitTests.addin" />
