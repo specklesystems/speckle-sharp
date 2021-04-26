@@ -147,7 +147,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "a/0.0.$($env:CIRCLE_BUILD_NUM)-beta" } else { $env:CIRCLE_TAG }
             $version = $tag.Split("/")[1]  
-            nuget pack DesktopUI/DesktopUI/DesktopUI.nuspec -OutputDirectory $HOME/output -Version $version -Properties Configuration=Release
+            nuget pack DesktopUI/DesktopUI/DesktopUI.csproj -OutputDirectory $HOME/output -Version $version -Properties Configuration=Release
             cd $HOME/output
             nuget push **/*.nupkg -src https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_APIKEY
 
