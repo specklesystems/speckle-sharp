@@ -150,7 +150,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     steps:
       - checkout
       - run: 
-          name: Build Objects
+          name: Restore DesktopUI
+          command: nuget restore DesktopUI/DesktopUI.sln
+      - run: 
+          name: Build DesktopUI
           command: msbuild DesktopUI/DesktopUI.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
 
   build-connector: # Reusable job for basic connectors
