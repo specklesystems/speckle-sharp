@@ -25,19 +25,6 @@ commands:
             dotnet pack -c Release /p:Version="$version" -o $HOME/output <<parameters.projectfilepath>> 
             cd $HOME/output
             dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
-  packandpublishnuget: #same as abo but using nuget.exe for .net framework stuff, does not support .sln
-    parameters:
-      projectfilepath:
-        type: string
-    steps:
-      - run:
-          name: Publish nuget package
-          command: |
-            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "a/0.0.$($env:CIRCLE_BUILD_NUM)-beta" } else { $env:CIRCLE_TAG }
-            $version = $tag.Split("/")[1]  
-            nuget pack <<parameters.projectfilepath>> -OutputDirectory $HOME/output -Version $version -Properties Configuration=Release
-            cd $HOME/output
-            nuget push **/*.nupkg -src https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_APIKEY
 
 
 # Parameters of our pipeline. Most of them are booleans that indicate which project to build/test with the pattern 'run_{PROJECT_NAME}'
@@ -155,6 +142,14 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run: 
           name: Build DesktopUI
           command: msbuild DesktopUI/DesktopUI.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+      - run:
+          name: Publish nuget package
+          command: |
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "a/0.0.$($env:CIRCLE_BUILD_NUM)-beta" } else { $env:CIRCLE_TAG }
+            $version = $tag.Split("/")[1]  
+            nuget pack DesktopUI/DesktopUI/DesktopUI.nuspec -OutputDirectory $HOME/output -Version $version -Properties Configuration=Release
+            cd $HOME/output
+            nuget push **/*.nupkg -src https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_APIKEY
 
   build-connector: # Reusable job for basic connectors
     executor:
@@ -341,9 +336,6 @@ workflows:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags:
               only: /^(desktopui|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
-          post-steps:
-            - packandpublishnuget: #NB different then the packandpublish above
-                projectfilepath: DesktopUI/DesktopUI.nuspec
 
   # Makes installers based on which tag is provided
   # Tag has to be provided in the format "appname/1.0.0"
