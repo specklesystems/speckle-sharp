@@ -143,6 +143,16 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Build Objects
           command: dotnet build Objects/Objects.sln -c Release /p:IsDesktopBuild=false -v q
 
+  build-desktopui:
+    executor:
+      name: win/default
+      shell: powershell.exe
+    steps:
+      - checkout
+      - run: 
+          name: Build Objects
+          command: msbuild DesktopUI/DesktopUI.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+
   build-connector: # Reusable job for basic connectors
     executor:
       name: win/default
