@@ -251,7 +251,7 @@ namespace SpeckleRhino
       };
 
       // get commit layer name 
-      var commitLayerName = Speckle.DesktopUI.Utils.Formatting.CommitLayer(stream.name, state.Branch.name, commitId);
+      var commitLayerName = Speckle.DesktopUI.Utils.Formatting.CommitInfo(stream.name, state.Branch.name, commitId);
 
       // give converter a way to access the base commit layer name
       RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
@@ -358,7 +358,12 @@ namespace SpeckleRhino
           Layer bakeLayer = Doc.GetLayer(layerPath, true);
           if (bakeLayer != null)
           {
-            if (Doc.Objects.Add(convertedRH, new ObjectAttributes { LayerIndex = bakeLayer.Index }) == Guid.Empty)
+            var attributes = new ObjectAttributes { LayerIndex = bakeLayer.Index };
+            string schema = obj["SpeckleSchema"] as string;
+            if (schema != null)
+              attributes.SetUserString("SpeckleSchema", schema);
+
+            if (Doc.Objects.Add(convertedRH, attributes) == Guid.Empty)
               state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
           }
           else
@@ -440,10 +445,7 @@ namespace SpeckleRhino
             }
 
             foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
-            {
-              // TODO: check if this is a SchemaBuilder key and maybe omit?
-              converted[key] = obj.Attributes.GetUserString(key);
-            }
+                converted[key] = obj.Attributes.GetUserString(key);
 
             if (obj is InstanceObject)
               containerName = "Blocks";

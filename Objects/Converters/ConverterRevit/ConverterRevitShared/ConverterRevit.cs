@@ -191,8 +191,15 @@ namespace Objects.Converter.Revit
     public object ConvertToNative(Base @object)
     {
       // schema check
-      Base speckleSchema = @object["SpeckleSchema"] as Base;
-       @object = (speckleSchema != null) ? speckleSchema : @object ;
+      var speckleSchema = @object["@SpeckleSchema"] as Base;
+      if (speckleSchema != null) 
+      {
+        // find self referential prop and set value to @object if it is null (happens when sent from gh)
+        var objProp = speckleSchema.GetInstanceMembers().Where(o => !o.GetType().IsEnum).Where(o => !Utilities.IsSimpleType(o.GetType())).First();
+        if (speckleSchema[objProp.Name] == null)
+          speckleSchema[objProp.Name] = @object;
+        @object = speckleSchema;
+      }
 
       switch (@object)
       {

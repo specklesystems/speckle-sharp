@@ -17,7 +17,7 @@ namespace Speckle.DesktopUI.Utils
   {
 
     /// <summary>
-    /// User friendly name displaied in the UI
+    /// User friendly name displayed in the UI
     /// </summary>
     string Name { get; set; }
 

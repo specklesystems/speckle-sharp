@@ -64,22 +64,15 @@ namespace Objects.Converter.RhinoGh
     {
       RenderMaterial material = null;
       Base @base = null;
+      Base schema = null;
       if (@object is RhinoObject ro)
       {
         material = GetMaterial(ro);
-        // special case for rhino objects that have a `SpeckleSchema` attribute
-        // this will change in the near future
-        if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null)
-        {
-          @base = ConvertToSpeckleBE(ro);
-          if (@base != null)
-          {
-            @base["renderMaterial"] = material;
-            return @base;
-          }
-        }
-        //conversion to built elem failed, revert to just send the base geom
-        if (!(@object is InstanceObject))
+        
+        if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
+          schema = ConvertToSpeckleBE(ro);
+
+        if (!(@object is InstanceObject)) // block instance check
           @object = ro.Geometry;
       }
 
@@ -169,6 +162,12 @@ namespace Objects.Converter.RhinoGh
 
       if (material != null)
         @base["renderMaterial"] = material;
+
+      if (schema != null)
+      {
+        schema["renderMaterial"] = material;
+        @base["@SpeckleSchema"] = schema;
+      }
 
       return @base;
     }
