@@ -190,6 +190,10 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNative(Base @object)
     {
+      // schema check
+      Base speckleSchema = @object["SpeckleSchema"] as Base;
+       @object = (speckleSchema != null) ? speckleSchema : @object ;
+
       switch (@object)
       {
         //geometry

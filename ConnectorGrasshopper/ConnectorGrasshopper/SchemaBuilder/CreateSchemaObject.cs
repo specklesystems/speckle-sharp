@@ -258,6 +258,8 @@ namespace ConnectorGrasshopper
         return;
       }
 
+      var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
+
       List<object> cParamsValues = new List<object>();
       var cParams = SelectedConstructor.GetParameters();
 
@@ -296,21 +298,31 @@ namespace ConnectorGrasshopper
         }
       }
 
-      object outputObject = null;
+      object schemaObject = null;
       try
       {
-        outputObject = SelectedConstructor.Invoke(cParamsValues.ToArray());
+        schemaObject = SelectedConstructor.Invoke(cParamsValues.ToArray());
       }
       catch (Exception e)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.InnerException?.Message ?? e.Message);
         return;
       }
-      
-      ((Base)outputObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
-      ((Base)outputObject).units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
+      ((Base)schemaObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
+      ((Base)schemaObject).units = units;
 
-      DA.SetData(0, new GH_SpeckleBase() { Value = outputObject as Base });
+      // create commit obj from first (non enum & non simple type) param and try to attach schema
+      // send schema obj as commit obj if no viable param is found
+      Base commitObj = (Base)schemaObject;
+      var GetGeometryParam = cParamsValues.Where(o => !o.GetType().IsEnum).Where(o => !Speckle.Core.Models.Utilities.IsSimpleType(o.GetType())).First();
+      if (GetGeometryParam != null)
+      {
+        commitObj = (Base)GetGeometryParam;
+        commitObj["@SpeckleSchema"] = schemaObject;
+        commitObj.units = units;
+      }
+
+      DA.SetData(0, new GH_SpeckleBase() { Value = commitObj });
     }
 
     private object ExtractRealInputValue(object inputValue)
