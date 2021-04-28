@@ -264,6 +264,10 @@ namespace Objects.Converter.Revit
           UpdateParameter(o);
           return null;
 
+        // other
+        case Other.BlockInstance o:
+          return BlockInstanceToNative(o);
+
         default:
           return null;
       }
@@ -428,6 +432,10 @@ namespace Objects.Converter.Revit
           return true;
 
         case BER.ParameterUpdater _:
+          return true;
+
+        // other
+        case Other.BlockInstance _:
           return true;
 
         default:
