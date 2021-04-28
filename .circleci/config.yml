@@ -16,21 +16,14 @@ commands:
     parameters:
       projectfilepath:
         type: string
-      nugetoutputpath:
-        type: string
-        default: output
-      nobuildonpack:
-        type: boolean
-        default: true
     steps:
       - run:
           name: Publish nuget package
           command: |
             $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "a/0.0.$($env:CIRCLE_BUILD_NUM)-beta" } else { $env:CIRCLE_TAG }
             $version = $tag.Split("/")[1]  
-            dotnet pack -c Release <<#parameters.nobuildonpack>>--no-build<</parameters.nobuildonpack>> /p:Version="$version" -o $HOME/<<parameters.nugetoutputpath>> <<parameters.projectfilepath>> 
-            cd $HOME/<<parameters.nugetoutputpath>>
-            ls
+            dotnet pack -c Release /p:Version="$version" -o $HOME/output <<parameters.projectfilepath>> 
+            cd $HOME/output
             dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
 
 
@@ -85,9 +78,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           ]'
   
   build-core:
-    docker:
-      - image: 'mcr.microsoft.com/dotnet/core/sdk' # dotnet core 3.1 sdk
-      - image: 'mcr.microsoft.com/dotnet/core/sdk:2.1-focal' # dotnet core 2.1 sdk (for netstandard support on build)
+    executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
+      name: win/default
+      shell: powershell.exe
     steps:
       - checkout
       - run: 
@@ -136,6 +129,27 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run: 
           name: Build Objects
           command: dotnet build Objects/Objects.sln -c Release /p:IsDesktopBuild=false -v q
+
+  build-desktopui:
+    executor:
+      name: win/default
+      shell: powershell.exe
+    steps:
+      - checkout
+      - run: 
+          name: Restore DesktopUI
+          command: nuget restore DesktopUI/DesktopUI.sln
+      - run: 
+          name: Build DesktopUI
+          command: msbuild DesktopUI/DesktopUI.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+      - run:
+          name: Publish nuget package
+          command: |
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "a/0.0.$($env:CIRCLE_BUILD_NUM)-beta" } else { $env:CIRCLE_TAG }
+            $version = $tag.Split("/")[1]  
+            nuget pack DesktopUI/DesktopUI/DesktopUI.csproj -OutputDirectory $HOME/output -Version $version -Properties Configuration=Release
+            cd $HOME/output
+            nuget push **/*.nupkg -src https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_APIKEY
 
   build-connector: # Reusable job for basic connectors
     executor:
@@ -300,7 +314,7 @@ workflows:
           filters:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
-            tags: # DO NOT RUN on "all" as already being pushed by objects     
+            tags: 
               only: /^(core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
           post-steps:
             - packandpublish: 
@@ -315,6 +329,13 @@ workflows:
           post-steps:
             - packandpublish: 
                 projectfilepath: Objects/Objects.sln
+      - build-desktopui:
+          name: nuget-deploy-desktopui
+          filters:
+            branches:
+              ignore: /.*/ # For testing only: /ci\/.*/
+            tags:
+              only: /^(desktopui|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
 
   # Makes installers based on which tag is provided
   # Tag has to be provided in the format "appname/1.0.0"

@@ -191,6 +191,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="DesktopUI.nuspec" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -211,6 +212,7 @@
     <Resource Include="Resources\ReceiverWhite%4020.png" />
     <Resource Include="Resources\CreateStreamWhite%4032.png" />
     <Resource Include="Resources\CreateStreamWhite%4064.png" />
+    <Resource Include="logo.png" />
     <Content Include="Resources\s2logo.svg" />
     <Resource Include="Resources\SenderWhite%4020.png" />
   </ItemGroup>

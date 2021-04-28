@@ -7,13 +7,13 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DesktopUI2")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Speckle.DesktopUI")]
+[assembly: AssemblyDescription("WPF UI for Speckle")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("DesktopUI2")]
-[assembly: AssemblyCopyright("Copyright ©  2020")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCompany("Speckle")]
+[assembly: AssemblyProduct("DesktopUI")]
+[assembly: AssemblyCopyright("Copyright (c) AEC Systems Ltd")]
+[assembly: AssemblyTrademark("Speckle")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
