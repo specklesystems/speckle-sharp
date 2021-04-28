@@ -262,6 +262,7 @@ namespace ConnectorGrasshopper
 
       List<object> cParamsValues = new List<object>();
       var cParams = SelectedConstructor.GetParameters();
+      object mainGeometryParam = null;
 
       for (int i = 0; i < Params.Input.Count; i++)
       {
@@ -295,6 +296,9 @@ namespace ConnectorGrasshopper
           var extractRealInputValue = ExtractRealInputValue(inputValue);
           var objectProp = GetObjectProp(param, extractRealInputValue, cParam.ParameterType);
           cParamsValues.Add(objectProp);
+
+          if (!param.Optional && mainGeometryParam == null)
+            mainGeometryParam = objectProp;
         }
       }
 
@@ -311,13 +315,11 @@ namespace ConnectorGrasshopper
       ((Base)schemaObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
       ((Base)schemaObject).units = units;
 
-      // create commit obj from first (non enum & non simple type) param and try to attach schema
-      // send schema obj as commit obj if no viable param is found
+      // create commit obj from main geometry param and try to attach schema obj. use schema obj if no main geom param was found.
       Base commitObj = (Base)schemaObject;
-      var GetGeometryParam = cParamsValues.Where(o => !o.GetType().IsEnum).Where(o => !Speckle.Core.Models.Utilities.IsSimpleType(o.GetType())).First();
-      if (GetGeometryParam != null)
+      if (mainGeometryParam != null)
       {
-        commitObj = (Base)GetGeometryParam;
+        commitObj = (Base)mainGeometryParam;
         commitObj["@SpeckleSchema"] = schemaObject;
         commitObj.units = units;
       }

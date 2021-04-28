@@ -32,7 +32,7 @@ namespace ConnectorGrasshopper.Conversion
     private ISpeckleKit Kit;
 
     public ToNativeConverterAsync() : base("To Native", "To Native",
-      "Convert data from Speckle's Base object to it`s Dynamo equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
+      "Convert data from Speckle's Base object to its Rhino equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
       SetDefaultKitAndConverter();
       BaseWorker = new ToNativeWorker(Converter, this);
