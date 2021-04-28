@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <!--Do not publish a Core nuget when publishing Objects-->
-  <PropertyGroup Condition="'$(SolutionName)'=='Objects'">
+  <PropertyGroup Condition="'$(SolutionName)'=='Objects' Or '$(SolutionName)'=='DesktopUI'">
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
