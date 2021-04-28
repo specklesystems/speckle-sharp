@@ -297,8 +297,13 @@ namespace ConnectorGrasshopper
           var objectProp = GetObjectProp(param, extractRealInputValue, cParam.ParameterType);
           cParamsValues.Add(objectProp);
 
-          if (!param.Optional && mainGeometryParam == null)
-            mainGeometryParam = objectProp;
+          try
+          {
+            var baseProp = (Base)objectProp;
+            if (!param.Optional && baseProp.speckle_type.StartsWith("Objects.Geometry") && mainGeometryParam == null)
+              mainGeometryParam = objectProp;
+          }
+          catch { }
         }
       }
 

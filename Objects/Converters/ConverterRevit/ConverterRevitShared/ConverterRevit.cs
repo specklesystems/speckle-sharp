@@ -195,10 +195,13 @@ namespace Objects.Converter.Revit
       if (speckleSchema != null) 
       {
         // find self referential prop and set value to @object if it is null (happens when sent from gh)
-        var objProp = speckleSchema.GetInstanceMembers().Where(o => !o.GetType().IsEnum).Where(o => !Utilities.IsSimpleType(o.GetType())).First();
-        if (speckleSchema[objProp.Name] == null)
-          speckleSchema[objProp.Name] = @object;
-        @object = speckleSchema;
+        if (CanConvertToNative(speckleSchema))
+        {
+          var prop = speckleSchema.GetInstanceMembers().Where(o => speckleSchema[o.Name] == null)?.Where(o => o.PropertyType.IsAssignableFrom(@object.GetType()))?.FirstOrDefault();
+          if (prop != null)
+            speckleSchema[prop.Name] = @object;
+          @object = speckleSchema;
+        }
       }
 
       switch (@object)
