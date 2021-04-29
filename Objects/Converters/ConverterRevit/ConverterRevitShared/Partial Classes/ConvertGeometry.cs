@@ -235,7 +235,9 @@ namespace Objects.Converter.Revit
       speckleCurve.units = units ?? ModelUnits;
       //speckleCurve.domain = new Interval(revitCurve.StartParameter(), revitCurve.EndParameter());
       speckleCurve.length = ScaleToSpeckle(revitCurve.Length);
-
+      var coords = revitCurve.Tessellate().SelectMany(xyz => PointToSpeckle(xyz, units).ToList()).ToArray();
+      speckleCurve.displayValue = new Polyline(coords, units);
+      
       return speckleCurve;
     }
 
