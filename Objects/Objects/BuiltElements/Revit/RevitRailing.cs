@@ -21,7 +21,7 @@ namespace Objects.BuiltElements.Revit
     public RevitRailing() { }
 
     [SchemaInfo("Railing", "Creates a Revit railing by base curve.")]
-    public RevitRailing(string type, Polycurve baseCurve, Level level, bool flipped = false)
+    public RevitRailing(string type, [SchemaMainParam] Polycurve baseCurve, Level level, bool flipped = false)
     {
       this.type = type;
       this.path = baseCurve;

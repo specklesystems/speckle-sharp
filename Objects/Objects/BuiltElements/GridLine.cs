@@ -15,7 +15,7 @@ namespace Objects.BuiltElements
     public GridLine() { }
 
     [SchemaInfo("GridLine", "Creates a Speckle grid line")]
-    public GridLine(Line baseLine, Level level = null)
+    public GridLine([SchemaMainParam] Line baseLine, Level level = null)
     {
       this.baseLine = baseLine;
       this.level = level;

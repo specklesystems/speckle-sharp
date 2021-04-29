@@ -262,12 +262,12 @@ namespace ConnectorGrasshopper
 
       List<object> cParamsValues = new List<object>();
       var cParams = SelectedConstructor.GetParameters();
-      object mainGeometryParam = null;
-
+      object mainSchemaObj = null;
       for (int i = 0; i < Params.Input.Count; i++)
       {
         var cParam = cParams[i];
         var param = Params.Input[i];
+        object objectProp = null;
         if (param.Access == GH_ParamAccess.list)
         {
           var inputValues = new List<object>();
@@ -281,7 +281,7 @@ namespace ConnectorGrasshopper
           try
           {
             inputValues = inputValues.Select(x => ExtractRealInputValue(x)).ToList();
-            cParamsValues.Add(GetObjectListProp(param, inputValues, cParam.ParameterType));
+            objectProp = GetObjectListProp(param, inputValues, cParam.ParameterType);
           }
           catch (Exception e)
           {
@@ -294,17 +294,11 @@ namespace ConnectorGrasshopper
           object inputValue = null;
           DA.GetData(i, ref inputValue);
           var extractRealInputValue = ExtractRealInputValue(inputValue);
-          var objectProp = GetObjectProp(param, extractRealInputValue, cParam.ParameterType);
-          cParamsValues.Add(objectProp);
-
-          try
-          {
-            var baseProp = (Base)objectProp;
-            if (!param.Optional && baseProp.speckle_type.StartsWith("Objects.Geometry") && mainGeometryParam == null)
-              mainGeometryParam = objectProp;
-          }
-          catch { }
+          objectProp = GetObjectProp(param, extractRealInputValue, cParam.ParameterType);
         }
+        cParamsValues.Add(objectProp);
+        if (CustomAttributeData.GetCustomAttributes(cParam)?.Where(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))?.Count() > 0)
+          mainSchemaObj = objectProp;
       }
 
       object schemaObject = null;
@@ -322,12 +316,16 @@ namespace ConnectorGrasshopper
 
       // create commit obj from main geometry param and try to attach schema obj. use schema obj if no main geom param was found.
       Base commitObj = (Base)schemaObject;
-      if (mainGeometryParam != null)
+      try
       {
-        commitObj = (Base)mainGeometryParam;
-        commitObj["@SpeckleSchema"] = schemaObject;
-        commitObj.units = units;
+        if (mainSchemaObj != null)
+        {
+          commitObj = (Base)mainSchemaObj;
+          commitObj["@SpeckleSchema"] = schemaObject;
+          commitObj.units = units;
+        }
       }
+      catch { }
 
       DA.SetData(0, new GH_SpeckleBase() { Value = commitObj });
     }
