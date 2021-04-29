@@ -153,10 +153,9 @@ namespace Objects.Converter.Revit
     {
       var u = units ?? ModelUnits;
       // see https://forums.autodesk.com/t5/revit-api-forum/how-to-retrieve-startangle-and-endangle-of-arc-object/td-p/7637128
-      var arcPlane = DB.Plane.CreateByNormalAndOrigin(arc.Normal, arc.Center);
-
+      var arcPlane = DB.Plane.CreateByOriginAndBasis(arc.Center, arc.XDirection, arc.YDirection);
       XYZ center = arc.Center;
-
+      
       XYZ dir0 = (arc.GetEndPoint(0) - center).Normalize();
       XYZ dir1 = (arc.GetEndPoint(1) - center).Normalize();
 
@@ -164,9 +163,9 @@ namespace Objects.Converter.Revit
       XYZ end = arc.Evaluate(1, true);
       XYZ mid = arc.Evaluate(0.5, true);
 
-      double startAngle = dir0.AngleOnPlaneTo(arc.XDirection, arc.Normal);
-      double endAngle = dir1.AngleOnPlaneTo(arc.XDirection, arc.Normal);
-
+      double startAngle = arc.XDirection.AngleOnPlaneTo(dir0, arc.Normal);
+      double endAngle = arc.XDirection.AngleOnPlaneTo(dir1, arc.Normal);
+      
       var a = new Arc(PlaneToSpeckle(arcPlane, u), u == Units.None ? arc.Radius : ScaleToSpeckle(arc.Radius), startAngle, endAngle, endAngle - startAngle, u);
       a.endPoint = PointToSpeckle(end, u);
       a.startPoint = PointToSpeckle(start, u);
