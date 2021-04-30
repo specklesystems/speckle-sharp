@@ -71,6 +71,8 @@ namespace Objects.Converter.Revit
       while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
       {
         var curve = curveEnumerator.Current as DB.Curve;
+        // Curves must be bound in order to be valid model curves
+        if(!curve.IsBound) curve.MakeBound(speckleLine.domain.start ?? 0, speckleLine.domain.end ?? Math.PI * 2);
         DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
         placeholders.Add(new ApplicationPlaceholderObject() { applicationId = (speckleLine as Base).applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
       }
