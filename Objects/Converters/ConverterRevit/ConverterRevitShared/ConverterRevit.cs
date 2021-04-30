@@ -190,6 +190,20 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNative(Base @object)
     {
+      // schema check
+      var speckleSchema = @object["@SpeckleSchema"] as Base;
+      if (speckleSchema != null) 
+      {
+        // find self referential prop and set value to @object if it is null (happens when sent from gh)
+        if (CanConvertToNative(speckleSchema))
+        {
+          var prop = speckleSchema.GetInstanceMembers().Where(o => speckleSchema[o.Name] == null)?.Where(o => o.PropertyType.IsAssignableFrom(@object.GetType()))?.FirstOrDefault();
+          if (prop != null)
+            speckleSchema[prop.Name] = @object;
+          @object = speckleSchema;
+        }
+      }
+
       switch (@object)
       {
         //geometry
@@ -365,72 +379,30 @@ namespace Objects.Converter.Revit
       {
         //geometry
         case ICurve _:
-          return true;
-
         case Geometry.Brep _:
-          return true;
-
         case Geometry.Mesh _:
           return true;
 
         //built elems
         case BER.AdaptiveComponent _:
-          return true;
-
         case BE.Beam _:
-          return true;
-
         case BE.Brace _:
-          return true;
-
         case BE.Column _:
-          return true;
-
         case BERC.DetailCurve _:
-          return true;
-
         case BER.DirectShape _:
-          return true;
-
         case BER.FreeformElement _:
-          return true;
-
         case BER.FamilyInstance _:
-          return true;
-
         case BE.Floor _:
-          return true;
-
         case BE.Level _:
-          return true;
-
         case BERC.ModelCurve _:
-          return true;
-
         case BE.Opening _:
-          return true;
-
         case BERC.RoomBoundaryLine _:
-          return true;
-
         case BE.Roof _:
-          return true;
-
         case BE.Topography _:
-          return true;
-
         case BER.RevitFaceWall _:
-          return true;
-
         case BE.Wall _:
-          return true;
-
         case BE.Duct _:
-          return true;
-
         case BE.Revit.RevitRailing _:
-          return true;
-
         case BER.ParameterUpdater _:
           return true;
 
@@ -439,8 +411,12 @@ namespace Objects.Converter.Revit
           return true;
 
         default:
+          var schema = @object["@SpeckleSchema"] as Base; // check for contained schema
+          if (schema != null)
+            return CanConvertToNative(schema);
           return false;
       }
+
     }
   }
 }

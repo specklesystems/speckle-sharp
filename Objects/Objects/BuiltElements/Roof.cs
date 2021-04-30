@@ -21,7 +21,7 @@ namespace Objects.BuiltElements
     public Roof() { }
 
     [SchemaInfo("Roof", "Creates a Speckle roof")]
-    public Roof(ICurve outline, List<ICurve> voids = null, List<Base> elements = null)
+    public Roof([SchemaMainParam] ICurve outline, List<ICurve> voids = null, List<Base> elements = null)
     {
       this.outline = outline;
       this.voids = voids;
@@ -67,7 +67,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
     public RevitExtrusionRoof(string family, string type,
       [SchemaParamInfo("Extrusion start")] double start,
       [SchemaParamInfo("Extrusion end")] double end,
-      [SchemaParamInfo("Profile along which to extrude the roof")] Line referenceLine,
+      [SchemaParamInfo("Profile along which to extrude the roof")][SchemaMainParam] Line referenceLine,
       Level level,
       List<Base> elements = null,
       List<Parameter> parameters = null)
@@ -91,7 +91,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
     public RevitFootprintRoof() { }
 
     [SchemaInfo("RevitFootprintRoof", "Creates a Revit roof by outline")]
-    public RevitFootprintRoof(ICurve outline, string family, string type, Level level, RevitLevel cutOffLevel = null, double slope = 0, List<ICurve> voids = null,
+    public RevitFootprintRoof([SchemaMainParam] ICurve outline, string family, string type, Level level, RevitLevel cutOffLevel = null, double slope = 0, List<ICurve> voids = null,
       List<Base> elements = null,
       List<Parameter> parameters = null)
     {

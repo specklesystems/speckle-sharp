@@ -17,7 +17,7 @@ namespace Objects.BuiltElements
     public Column() { }
 
     [SchemaInfo("Column", "Creates a Speckle column")]
-    public Column(ICurve baseLine)
+    public Column([SchemaMainParam] ICurve baseLine)
     {
       this.baseLine = baseLine;
     }
@@ -60,7 +60,7 @@ namespace Objects.BuiltElements.Revit
     /// <remarks>Assign units when using this constructor due to <paramref name="baseOffset"/> and <paramref name="topOffset"/> params</remarks>
     [SchemaInfo("Vertical Column", "Creates a vertical Revit Column by point and levels.")]
     public RevitColumn(string family, string type,
-      [SchemaParamInfo("Only the lower point of this line will be used as base point.")] ICurve baseLine,
+      [SchemaParamInfo("Only the lower point of this line will be used as base point.")][SchemaMainParam] ICurve baseLine,
       Level level, Level topLevel,
       double baseOffset = 0, double topOffset = 0, bool structural = false,
       double rotation = 0, List<Parameter> parameters = null)
@@ -78,7 +78,7 @@ namespace Objects.BuiltElements.Revit
     }
 
     [SchemaInfo("Slanted Column", "Creates a slanted Revit Column by curve.")]
-    public RevitColumn(string family, string type, ICurve baseLine, Level level, bool structural = false, List<Parameter> parameters = null)
+    public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, bool structural = false, List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;

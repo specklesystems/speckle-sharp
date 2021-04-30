@@ -60,7 +60,7 @@ namespace Objects.BuiltElements.Revit
     /// <param name="topLevel"></param>
     /// <param name="parameters"></param>
     [SchemaInfo("RevitShaft", "Creates a Revit shaft from a bottom and top level")]
-    public RevitShaft(ICurve outline, Level bottomLevel, Level topLevel, List<Parameter> parameters = null)
+    public RevitShaft([SchemaMainParam] ICurve outline, Level bottomLevel, Level topLevel, List<Parameter> parameters = null)
     {
       this.outline = outline;
       this.bottomLevel = bottomLevel;

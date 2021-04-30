@@ -17,7 +17,7 @@ namespace Objects.BuiltElements
     public Beam() { }
 
     [SchemaInfo("Beam", "Creates a Speckle beam")]
-    public Beam(ICurve baseLine)
+    public Beam([SchemaMainParam] ICurve baseLine)
     {
       this.baseLine = baseLine;
     }
@@ -37,7 +37,7 @@ namespace Objects.BuiltElements.Revit
     public RevitBeam() { }
 
     [SchemaInfo("RevitBeam", "Creates a Revit beam by curve and base level.")]
-    public RevitBeam(string family, string type, ICurve baseLine, Level level, List<Parameter> parameters = null)
+    public RevitBeam(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;

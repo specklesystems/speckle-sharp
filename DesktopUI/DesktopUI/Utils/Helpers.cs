@@ -145,7 +145,7 @@ namespace Speckle.DesktopUI.Utils
       return num != 1 ? "s" : "";
     }
 
-    public static string CommitLayer(string stream, string branch, string commitId)
+    public static string CommitInfo(string stream, string branch, string commitId)
     {
       string formatted = $"{stream}[ {branch} @ {commitId} ]";
       string clean = Regex.Replace(formatted, @"[^\u0000-\u007F]+", string.Empty).Trim(); // remove emojis and trim :( 
