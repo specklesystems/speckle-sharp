@@ -41,13 +41,20 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterCivil2021", "Conve
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhinoGh", "Converters\ConverterRhinoGh\ConverterRhinoGh.csproj", "{85DAE0A6-47C1-41EB-947A-13E2DC1591BB}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAutocad2022", "Converters\ConverterAutocadCivil\ConverterAutocad2022\ConverterAutocad2022.csproj", "{156FF86C-8531-46D0-AA23-97DB326BC591}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterCivil2022", "Converters\ConverterAutocadCivil\ConverterCivil2022\ConverterCivil2022.csproj", "{2C68E80F-38F4-41D0-9B38-473031D1B541}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{0bcb32cf-a3cf-4a6a-a9f8-dfe5d85d608c}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{13f93c20-793c-4f2d-b836-68d7744063df}*SharedItemsImports = 5
+		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{156ff86c-8531-46d0-aa23-97db326bc591}*SharedItemsImports = 5
+		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{2c68e80f-38f4-41d0-9b38-473031d1b541}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{2d0f9f8a-2e89-4780-978a-cd92d6d7b843}*SharedItemsImports = 13
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{4f16a993-7d11-4565-a2a5-910899919e00}*SharedItemsImports = 5
+		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{4f16a993-7d11-4565-a2a5-910899919e00}*SharedItemsImports = 5
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{5bab09dc-b0fc-4004-9fd5-6496a9634071}*SharedItemsImports = 13
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{bc110327-3c61-4c15-ae4c-daae7ca82a7b}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{bf5515b4-c97c-4fb9-9f93-1740d2b615b3}*SharedItemsImports = 5
@@ -102,6 +109,14 @@ Global
 		{85DAE0A6-47C1-41EB-947A-13E2DC1591BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{85DAE0A6-47C1-41EB-947A-13E2DC1591BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{85DAE0A6-47C1-41EB-947A-13E2DC1591BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{156FF86C-8531-46D0-AA23-97DB326BC591}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{156FF86C-8531-46D0-AA23-97DB326BC591}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{156FF86C-8531-46D0-AA23-97DB326BC591}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{156FF86C-8531-46D0-AA23-97DB326BC591}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C68E80F-38F4-41D0-9B38-473031D1B541}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C68E80F-38F4-41D0-9B38-473031D1B541}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C68E80F-38F4-41D0-9B38-473031D1B541}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C68E80F-38F4-41D0-9B38-473031D1B541}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -123,6 +138,8 @@ Global
 		{DD4ADD16-65F9-46E0-A610-2B7908A966B3} = {5419488F-6509-4F16-A342-BB2BE2689E00}
 		{13F93C20-793C-4F2D-B836-68D7744063DF} = {5419488F-6509-4F16-A342-BB2BE2689E00}
 		{85DAE0A6-47C1-41EB-947A-13E2DC1591BB} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
+		{156FF86C-8531-46D0-AA23-97DB326BC591} = {5419488F-6509-4F16-A342-BB2BE2689E00}
+		{2C68E80F-38F4-41D0-9B38-473031D1B541} = {5419488F-6509-4F16-A342-BB2BE2689E00}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}

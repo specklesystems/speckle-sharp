@@ -1,4 +1,4 @@
-﻿#if CIVIL2021
+﻿#if (CIVIL2021 || CIVIL2022)
 using System.Collections.Generic;
 
 using Autodesk.AutoCAD.DatabaseServices;
