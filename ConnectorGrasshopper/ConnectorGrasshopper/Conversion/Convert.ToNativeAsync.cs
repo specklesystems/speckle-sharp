@@ -32,8 +32,8 @@ namespace ConnectorGrasshopper.Conversion
     
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Base", "B",
-        "Speckle Base objects to convert to Grasshopper.", GH_ParamAccess.tree));
+      pManager.AddGenericParameter("Base", "B",
+        "Speckle Base objects to convert to Grasshopper.", GH_ParamAccess.tree);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -56,7 +56,7 @@ namespace ConnectorGrasshopper.Conversion
 
   public class ToNativeWorker : WorkerInstance
   {
-    GH_Structure<GH_SpeckleBase> Objects;
+    GH_Structure<GH_ObjectWrapper> Objects;
     GH_Structure<IGH_Goo> ConvertedObjects;
 
     public ISpeckleConverter Converter { get; set; }
@@ -64,7 +64,7 @@ namespace ConnectorGrasshopper.Conversion
     public ToNativeWorker(ISpeckleConverter _Converter, GH_Component parent) : base(parent)
     {
       Converter = _Converter;
-      Objects = new GH_Structure<GH_SpeckleBase>();
+      Objects = new GH_Structure<GH_ObjectWrapper>();
       ConvertedObjects = new GH_Structure<IGH_Goo>();
     }
 
@@ -87,7 +87,7 @@ namespace ConnectorGrasshopper.Conversion
           {
             if (CancellationToken.IsCancellationRequested)
               return;
-            var converted = Utilities.TryConvertItemToNative(item?.Value, Converter);
+            var converted = Utilities.TryConvertItemToNative(item?.Value, Converter, true);
             ConvertedObjects.Append(converted, path);
             ReportProgress(Id, (completed++ + 1) / (double)Objects.Count());
           }
@@ -130,7 +130,7 @@ namespace ConnectorGrasshopper.Conversion
         return;
       }
 
-      GH_Structure<GH_SpeckleBase> _objects;
+      GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);
 
       var branchIndex = 0;
@@ -141,7 +141,7 @@ namespace ConnectorGrasshopper.Conversion
         {
           if(!item.IsValid) 
              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] is not a Base object."));
-          Objects.Append(item, path);
+          Objects.Append(item as GH_ObjectWrapper, path);
         }
 
         branchIndex++;
