@@ -314,7 +314,9 @@ namespace Objects.Converter.Revit
                 rp.Set(val);
               }
               else
+              {
                 rp.Set(Convert.ToDouble(sp.value));
+              }
               break;
 
             case StorageType.Integer:
@@ -735,6 +737,14 @@ namespace Objects.Converter.Revit
       return false;
     }
 
+    #endregion
+
+    #region misc
+    public string Replace(string s, char[] separators, string newVal)
+    {
+      string[] _string = s.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+      return String.Join(newVal, _string);
+    }
     #endregion
 
     public WallLocationLine GetWallLocationLine(LocationLine location)

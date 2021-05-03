@@ -20,6 +20,7 @@ namespace Objects.BuiltElements
     public Point target { get; set; }
     public Vector upDirection { get; set; }
     public Vector forwardDirection { get; set; }
+    public Box boundingBox { get; set; } // x is right, y is top of screen, z is towards viewer
     public bool isOrthogonal { get; set; } = false;
 
     public View3D() { }
