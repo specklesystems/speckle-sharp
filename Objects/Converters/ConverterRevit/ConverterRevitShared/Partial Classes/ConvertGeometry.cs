@@ -61,6 +61,21 @@ namespace Objects.Converter.Revit
       return pointToSpeckle;
     }
 
+    public List<XYZ> PointListToNative(IEnumerable<double> arr, string units = null)
+    {
+      var coords = arr.ToList();
+      if (coords.Count % 3 != 0) throw new SpeckleException("Array malformed: length%3 != 0.");
+
+      var points = new List<XYZ>();
+      for (int i = 2; i < coords.Count; i += 3)
+        points.Add(new XYZ(
+          ScaleToNative(coords[i - 2], units ?? ModelUnits),
+          ScaleToNative(coords[i - 1], units ?? ModelUnits),
+          ScaleToNative(coords[i], units ?? ModelUnits)));
+
+      return points;
+    }
+
     public Vector VectorToSpeckle(XYZ pt, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -155,7 +170,7 @@ namespace Objects.Converter.Revit
       // see https://forums.autodesk.com/t5/revit-api-forum/how-to-retrieve-startangle-and-endangle-of-arc-object/td-p/7637128
       var arcPlane = DB.Plane.CreateByOriginAndBasis(arc.Center, arc.XDirection, arc.YDirection);
       XYZ center = arc.Center;
-      
+
       XYZ dir0 = (arc.GetEndPoint(0) - center).Normalize();
       XYZ dir1 = (arc.GetEndPoint(1) - center).Normalize();
 
@@ -165,7 +180,7 @@ namespace Objects.Converter.Revit
 
       double startAngle = arc.XDirection.AngleOnPlaneTo(dir0, arc.Normal);
       double endAngle = arc.XDirection.AngleOnPlaneTo(dir1, arc.Normal);
-      
+
       var a = new Arc(PlaneToSpeckle(arcPlane, u), u == Units.None ? arc.Radius : ScaleToSpeckle(arc.Radius), startAngle, endAngle, endAngle - startAngle, u);
       a.endPoint = PointToSpeckle(end, u);
       a.startPoint = PointToSpeckle(start, u);
@@ -236,7 +251,7 @@ namespace Objects.Converter.Revit
       speckleCurve.length = ScaleToSpeckle(revitCurve.Length);
       var coords = revitCurve.Tessellate().SelectMany(xyz => PointToSpeckle(xyz, units).ToList()).ToArray();
       speckleCurve.displayValue = new Polyline(coords, units);
-      
+
       return speckleCurve;
     }
 
@@ -414,6 +429,15 @@ namespace Objects.Converter.Revit
       return curveArray;
     }
 
+
+    public Polyline PolylineToSpeckle(PolyLine polyline, string units = null)
+    {
+      var coords = polyline.GetCoordinates().SelectMany(coord => PointToSpeckle(coord).ToList());
+
+      return new Polyline(coords, units ?? ModelUnits);
+
+    }
+
     public Box BoxToSpeckle(DB.BoundingBoxXYZ box, string units = null)
     {
       // convert min and max pts to speckle first
@@ -460,8 +484,10 @@ namespace Objects.Converter.Revit
         var B = triangle.get_Index(1);
         var C = triangle.get_Index(2);
         speckleMesh.faces.Add(0);
-        speckleMesh.faces.AddRange(new int[] {
-          (int)A, (int)B, (int)C });
+        speckleMesh.faces.AddRange(new int[]
+        {
+          (int)A, (int)B, (int)C
+        });
       }
 
       speckleMesh.units = units ?? ModelUnits;

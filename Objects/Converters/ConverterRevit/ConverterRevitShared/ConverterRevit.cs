@@ -1,9 +1,9 @@
-﻿using Autodesk.Revit.DB;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
@@ -104,6 +104,7 @@ namespace Objects.Converter.Revit
           {
             returnObject = ModelCurveToSpeckle(o);
           }
+
           break;
         case DB.Opening o:
           returnObject = OpeningToSpeckle(o);
@@ -122,6 +123,12 @@ namespace Objects.Converter.Revit
           break;
         case DB.Mechanical.Duct o:
           returnObject = DuctToSpeckle(o);
+          break;
+        case DB.Plumbing.Pipe o:
+          returnObject = PipeToSpeckle(o);
+          break;
+        case DB.Electrical.Wire o:
+          returnObject = WireToSpeckle(o);
           break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
@@ -185,6 +192,7 @@ namespace Objects.Converter.Revit
       {
         return $", name: {e.Name}, id: {e.UniqueId}";
       }
+
       return "";
     }
 
@@ -192,7 +200,7 @@ namespace Objects.Converter.Revit
     {
       // schema check
       var speckleSchema = @object["@SpeckleSchema"] as Base;
-      if (speckleSchema != null) 
+      if (speckleSchema != null)
       {
         // find self referential prop and set value to @object if it is null (happens when sent from gh)
         if (CanConvertToNative(speckleSchema))
@@ -271,6 +279,12 @@ namespace Objects.Converter.Revit
         case BE.Duct o:
           return DuctToNative(o);
 
+        case BE.Pipe o:
+          return PipeToNative(o);
+
+        case BE.Wire o:
+          return WireToNative(o);
+
         case BE.Revit.RevitRailing o:
           return RailingToNative(o);
 
@@ -290,90 +304,87 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(o => ConvertToSpeckle(o)).ToList();
+    public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
 
-    public List<object> ConvertToNative(List<Base> objects) => objects.Select(o => ConvertToNative(o)).ToList();
+    public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
 
     public bool CanConvertToSpeckle(object @object)
     {
-      switch (@object)
+      return @object
+      switch
       {
-        case DB.DetailCurve _:
-        case DB.DirectShape _:
-        case DB.FamilyInstance _:
-        case DB.Floor _:
-        case DB.Level _:
-        case DB.View _:
-        case DB.ModelCurve _:
-        case DB.Opening _:
-        case DB.RoofBase _:
-        case DB.Architecture.Room _:
-        case DB.Architecture.TopographySurface _:
-        case DB.Wall _:
-        case DB.Mechanical.Duct _:
-        case DB.CurtainGridLine _: //these should be handled by curtain walls
-        case DB.Architecture.BuildingPad _:
-        case DB.Architecture.Stairs _:
-        case DB.Architecture.StairsRun _:
-        case DB.Architecture.StairsLanding _:
-        case DB.Architecture.Railing _:
-        case DB.Architecture.TopRail _:
-        case DB.Ceiling _:
-        case DB.Group _:
-        case DB.ProjectInfo _:
-        case DB.ElementType _:
-          return true;
-
-        default:
-          return (@object as Element).IsElementSupported();
-      }
+        DB.DetailCurve _ => true,
+        DB.DirectShape _ => true,
+        DB.FamilyInstance _ => true,
+        DB.Floor _ => true,
+        DB.Level _ => true,
+        DB.View _ => true,
+        DB.ModelCurve _ => true,
+        DB.Opening _ => true,
+        DB.RoofBase _ => true,
+        DB.Architecture.Room _ => true,
+        DB.Architecture.TopographySurface _ => true,
+        DB.Wall _ => true,
+        DB.Mechanical.Duct _ => true,
+        DB.Plumbing.Pipe _ => true,
+        DB.Electrical.Wire _ => true,
+        DB.CurtainGridLine _ => true, //these should be handled by curtain walls
+        DB.Architecture.BuildingPad _ => true,
+        DB.Architecture.Stairs _ => true,
+        DB.Architecture.StairsRun _ => true,
+        DB.Architecture.StairsLanding _ => true,
+        DB.Architecture.Railing _ => true,
+        DB.Architecture.TopRail _ => true,
+        DB.Ceiling _ => true,
+        DB.Group _ => true,
+        DB.ProjectInfo _ => true,
+        DB.ElementType _ => true,
+        _ => (@object as Element).IsElementSupported()
+      };
     }
 
     public bool CanConvertToNative(Base @object)
     {
-      switch (@object)
+
+      var schema = @object["@SpeckleSchema"] as Base; // check for contained schema
+      if (schema != null)
+        return CanConvertToNative(schema);
+
+      return @object
+      switch
       {
         //geometry
-        case ICurve _:
-        case Geometry.Brep _:
-        case Geometry.Mesh _:
-          return true;
-
+        ICurve _ => true,
+        Geometry.Brep _ => true,
+        Geometry.Mesh _ => true,
         //built elems
-        case BER.AdaptiveComponent _:
-        case BE.Beam _:
-        case BE.Brace _:
-        case BE.Column _:
-        case BERC.DetailCurve _:
-        case BER.DirectShape _:
-        case BER.FreeformElement _:
-        case BER.FamilyInstance _:
-        case BE.Floor _:
-        case BE.Level _:
-        case BERC.ModelCurve _:
-        case BE.Opening _:
-        case BERC.RoomBoundaryLine _:
-        case BE.Roof _:
-        case BE.Topography _:
-        case BER.RevitFaceWall _:
-        case BE.Wall _:
-        case BE.Duct _:
-        case BE.Revit.RevitRailing _:
-        case BER.ParameterUpdater _:
-        case BE.View3D _:
-          return true;
+        BER.AdaptiveComponent _ => true,
+        BE.Beam _ => true,
+        BE.Brace _ => true,
+        BE.Column _ => true,
+        BERC.DetailCurve _ => true,
+        BER.DirectShape _ => true,
+        BER.FreeformElement _ => true,
+        BER.FamilyInstance _ => true,
+        BE.Floor _ => true,
+        BE.Level _ => true,
+        BERC.ModelCurve _ => true,
+        BE.Opening _ => true,
+        BERC.RoomBoundaryLine _ => true,
+        BE.Roof _ => true,
+        BE.Topography _ => true,
+        BER.RevitFaceWall _ => true,
+        BE.Wall _ => true,
+        BE.Duct _ => true,
+        BE.Pipe _ => true,
+        BE.Wire _ => true,
+        BE.Revit.RevitRailing _ => true,
+        BER.ParameterUpdater _ => true,
+        BE.View3D _ => true,
+        Other.BlockInstance _ => true,
+        _ => false
 
-        // other
-        case Other.BlockInstance _:
-          return true;
-
-        default:
-          var schema = @object["@SpeckleSchema"] as Base; // check for contained schema
-          if (schema != null)
-            return CanConvertToNative(schema);
-          return false;
-      }
-
+      };
     }
   }
 }

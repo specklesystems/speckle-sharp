@@ -50,7 +50,7 @@ namespace ConverterRevitTests
     private void AssertRoofEqual(DB.RoofBase sourceElem, DB.RoofBase destElem)
     {
       Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, sourceElem.Name);
+      Assert.Equal(sourceElem.Name, destElem.Name);
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.ROOF_SLOPE);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.ROOF_BASE_LEVEL_PARAM);

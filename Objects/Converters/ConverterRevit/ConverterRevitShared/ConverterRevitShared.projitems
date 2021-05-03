@@ -17,7 +17,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBrace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBlock.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPipe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRevitElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWire.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\FreeformElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\UpdateParameter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertView.cs" />
