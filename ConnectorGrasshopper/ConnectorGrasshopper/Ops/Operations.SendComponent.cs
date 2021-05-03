@@ -502,7 +502,7 @@ namespace ConnectorGrasshopper.Ops
           var message = _MessageInput.get_FirstItem(true).Value;
           if (message == "")
           {
-            message = "Grasshopper push.";
+            message = $"Pushed {TotalObjectCount} elements from Grasshopper.";
           }
 
           var prevCommits = ((SendComponent)Parent).OutputWrappers;

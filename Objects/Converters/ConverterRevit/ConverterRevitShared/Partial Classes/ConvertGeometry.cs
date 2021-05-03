@@ -64,14 +64,14 @@ namespace Objects.Converter.Revit
     public List<XYZ> PointListToNative(IEnumerable<double> arr, string units = null)
     {
       var coords = arr.ToList();
-      if (coords.Count % 3 != 0)throw new SpeckleException("Array malformed: length%3 != 0.");
+      if (coords.Count % 3 != 0) throw new SpeckleException("Array malformed: length%3 != 0.");
 
       var points = new List<XYZ>();
       for (int i = 2; i < coords.Count; i += 3)
         points.Add(new XYZ(
-          ScaleToNative(coords[ i - 2 ], units ?? ModelUnits),
-          ScaleToNative(coords[ i - 1 ], units ?? ModelUnits),
-          ScaleToNative(coords[ i ], units ?? ModelUnits)));
+          ScaleToNative(coords[i - 2], units ?? ModelUnits),
+          ScaleToNative(coords[i - 1], units ?? ModelUnits),
+          ScaleToNative(coords[i], units ?? ModelUnits)));
 
       return points;
     }
@@ -168,8 +168,7 @@ namespace Objects.Converter.Revit
     {
       var u = units ?? ModelUnits;
       // see https://forums.autodesk.com/t5/revit-api-forum/how-to-retrieve-startangle-and-endangle-of-arc-object/td-p/7637128
-      var arcPlane = DB.Plane.CreateByNormalAndOrigin(arc.Normal, arc.Center);
-
+      var arcPlane = DB.Plane.CreateByOriginAndBasis(arc.Center, arc.XDirection, arc.YDirection);
       XYZ center = arc.Center;
 
       XYZ dir0 = (arc.GetEndPoint(0) - center).Normalize();
@@ -179,8 +178,8 @@ namespace Objects.Converter.Revit
       XYZ end = arc.Evaluate(1, true);
       XYZ mid = arc.Evaluate(0.5, true);
 
-      double startAngle = dir0.AngleOnPlaneTo(arc.XDirection, arc.Normal);
-      double endAngle = dir1.AngleOnPlaneTo(arc.XDirection, arc.Normal);
+      double startAngle = arc.XDirection.AngleOnPlaneTo(dir0, arc.Normal);
+      double endAngle = arc.XDirection.AngleOnPlaneTo(dir1, arc.Normal);
 
       var a = new Arc(PlaneToSpeckle(arcPlane, u), u == Units.None ? arc.Radius : ScaleToSpeckle(arc.Radius), startAngle, endAngle, endAngle - startAngle, u);
       a.endPoint = PointToSpeckle(end, u);
@@ -194,7 +193,7 @@ namespace Objects.Converter.Revit
     public DB.Ellipse EllipseToNative(Ellipse ellipse)
     {
       //TODO: support ellipse arcs
-      using(DB.Plane basePlane = PlaneToNative(ellipse.plane))
+      using (DB.Plane basePlane = PlaneToNative(ellipse.plane))
       {
         var e = DB.Ellipse.CreateCurve(
           PointToNative(ellipse.plane.origin),
@@ -204,7 +203,7 @@ namespace Objects.Converter.Revit
           basePlane.YVec.Normalize(),
           ellipse.domain.start ?? 0,
           ellipse.domain.end ?? 2 * Math.PI
-        )as DB.Ellipse;
+        ) as DB.Ellipse;
 
         e.MakeBound(ellipse.trimDomain?.start ?? 0, ellipse.trimDomain?.end ?? 2 * Math.PI);
         return e;
@@ -214,7 +213,7 @@ namespace Objects.Converter.Revit
     public Ellipse EllipseToSpeckle(DB.Ellipse ellipse, string units = null)
     {
       var u = units ?? ModelUnits;
-      using(DB.Plane basePlane = DB.Plane.CreateByOriginAndBasis(ellipse.Center, ellipse.XDirection, ellipse.YDirection))
+      using (DB.Plane basePlane = DB.Plane.CreateByOriginAndBasis(ellipse.Center, ellipse.XDirection, ellipse.YDirection))
       {
         var trim = ellipse.IsBound ? new Interval(ellipse.GetEndParameter(0), ellipse.GetEndParameter(1)) : null;
 
@@ -242,7 +241,7 @@ namespace Objects.Converter.Revit
       Curve speckleCurve = new Curve();
       speckleCurve.weights = revitCurve.Weights.Cast<double>().ToList();
       speckleCurve.points = points;
-      speckleCurve.knots = revitCurve.Knots.Cast<double>().ToList();;
+      speckleCurve.knots = revitCurve.Knots.Cast<double>().ToList(); ;
       speckleCurve.degree = revitCurve.Degree;
       //speckleCurve.periodic = revitCurve.Period;
       speckleCurve.rational = revitCurve.isRational;
@@ -250,6 +249,8 @@ namespace Objects.Converter.Revit
       speckleCurve.units = units ?? ModelUnits;
       //speckleCurve.domain = new Interval(revitCurve.StartParameter(), revitCurve.EndParameter());
       speckleCurve.length = ScaleToSpeckle(revitCurve.Length);
+      var coords = revitCurve.Tessellate().SelectMany(xyz => PointToSpeckle(xyz, units).ToList()).ToArray();
+      speckleCurve.displayValue = new Polyline(coords, units);
 
       return speckleCurve;
     }
@@ -415,24 +416,56 @@ namespace Objects.Converter.Revit
 
         for (var i = 1; i < pts.Count; i++)
         {
-          var speckleLine = new Line(new double[ ] { pts[i - 1].x, pts[i - 1].y, pts[i - 1].z, pts[i].x, pts[i].y, pts[i].z }, polyline.units);
+          var speckleLine = new Line(new double[] { pts[i - 1].x, pts[i - 1].y, pts[i - 1].z, pts[i].x, pts[i].y, pts[i].z }, polyline.units);
           curveArray.Append(LineToNative(speckleLine));
         }
 
         if (polyline.closed)
         {
-          var speckleLine = new Line(new double[ ] { pts[pts.Count - 1].x, pts[pts.Count - 1].y, pts[pts.Count - 1].z, pts[0].x, pts[0].y, pts[0].z }, polyline.units);
+          var speckleLine = new Line(new double[] { pts[pts.Count - 1].x, pts[pts.Count - 1].y, pts[pts.Count - 1].z, pts[0].x, pts[0].y, pts[0].z }, polyline.units);
           curveArray.Append(LineToNative(speckleLine));
         }
       }
       return curveArray;
     }
 
+
     public Polyline PolylineToSpeckle(PolyLine polyline, string units = null)
     {
       var coords = polyline.GetCoordinates().SelectMany(coord => PointToSpeckle(coord).ToList());
 
       return new Polyline(coords, units ?? ModelUnits);
+
+    }
+
+    public Box BoxToSpeckle(DB.BoundingBoxXYZ box, string units = null)
+    {
+      // convert min and max pts to speckle first
+      var min = PointToSpeckle(box.Min, units);
+      var max = PointToSpeckle(box.Max, units);
+
+      // get the base plane of the bounding box from the transform
+      var transform = box.Transform;
+      var plane = DB.Plane.CreateByOriginAndBasis(transform.Origin, transform.BasisX.Normalize(), transform.BasisY.Normalize());
+
+      var _box = new Box()
+      {
+        xSize = new Interval(min.x, max.x),
+        ySize = new Interval(min.y, max.y),
+        zSize = new Interval(min.z, max.z),
+        basePlane = PlaneToSpeckle(plane),
+        units = units ?? ModelUnits
+      };
+
+      return _box;
+    }
+
+    public DB.BoundingBoxXYZ BoxToNative(Box box)
+    {
+      var boundingBox = new BoundingBoxXYZ();
+      boundingBox.Min = PointToNative(new Point((double)box.xSize.start, (double)box.ySize.start, (double)box.zSize.start));
+      boundingBox.Max = PointToNative(new Point((double)box.xSize.end, (double)box.ySize.end, (double)box.zSize.end));
+      return boundingBox;
     }
 
     public Mesh MeshToSpeckle(DB.Mesh mesh, string units = null)
@@ -441,7 +474,7 @@ namespace Objects.Converter.Revit
       foreach (var vert in mesh.Vertices)
       {
         var vertex = PointToSpeckle(vert);
-        speckleMesh.vertices.AddRange(new double[ ] { vertex.x, vertex.y, vertex.z });
+        speckleMesh.vertices.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
       }
 
       for (int i = 0; i < mesh.NumTriangles; i++)
@@ -451,7 +484,7 @@ namespace Objects.Converter.Revit
         var B = triangle.get_Index(1);
         var C = triangle.get_Index(2);
         speckleMesh.faces.Add(0);
-        speckleMesh.faces.AddRange(new int[ ]
+        speckleMesh.faces.AddRange(new int[]
         {
           (int)A, (int)B, (int)C
         });
@@ -516,14 +549,14 @@ namespace Objects.Converter.Revit
 
     }
 
-    public XYZ[ ] ArrayToPoints(IEnumerable<double> arr, string units = null)
+    public XYZ[] ArrayToPoints(IEnumerable<double> arr, string units = null)
     {
       if (arr.Count() % 3 != 0)
       {
         throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
       }
 
-      XYZ[ ] points = new XYZ[arr.Count() / 3];
+      XYZ[] points = new XYZ[arr.Count() / 3];
       var asArray = arr.ToArray();
       for (int i = 2, k = 0; i < arr.Count(); i += 3)
       {
@@ -678,7 +711,7 @@ namespace Objects.Converter.Revit
       return result;
     }
 
-    public double[ ] ControlPointWeightsToNative(List<List<ControlPoint>> controlPoints)
+    public double[] ControlPointWeightsToNative(List<List<ControlPoint>> controlPoints)
     {
       var uCount = controlPoints.Count;
       var vCount = controlPoints[0].Count;
@@ -693,7 +726,7 @@ namespace Objects.Converter.Revit
       return weights;
     }
 
-    public XYZ[ ] ControlPointsToNative(List<List<ControlPoint>> controlPoints)
+    public XYZ[] ControlPointsToNative(List<List<ControlPoint>> controlPoints)
     {
       var uCount = controlPoints.Count;
       var vCount = controlPoints[0].Count;
@@ -711,7 +744,7 @@ namespace Objects.Converter.Revit
       return points;
     }
 
-    public double[ ] SurfaceKnotsToNative(List<double> list)
+    public double[] SurfaceKnotsToNative(List<double> list)
     {
       var count = list.Count;
       var knots = new double[count + 2];
@@ -823,10 +856,10 @@ namespace Objects.Converter.Revit
 
       var removedFace = builder.RemovedSomeFaces();
       var bRepBuilderOutcome = builder.Finish();
-      if (bRepBuilderOutcome == BRepBuilderOutcome.Failure)return null;
+      if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
 
       var isResultAvailable = builder.IsResultAvailable();
-      if (!isResultAvailable)return null;
+      if (!isResultAvailable) return null;
       var result = builder.GetResult();
       return result;
     }
@@ -955,8 +988,8 @@ namespace Objects.Converter.Revit
     public Surface FaceToSpeckle(DB.Face face, out bool parametricOrientation, double relativeTolerance = 0.0, string units = null)
     {
       var u = units ?? ModelUnits;
-      using(var surface = face.GetSurface())
-      parametricOrientation = surface.OrientationMatchesParametricOrientation;
+      using (var surface = face.GetSurface())
+        parametricOrientation = surface.OrientationMatchesParametricOrientation;
 
       switch (face)
       {
@@ -999,13 +1032,13 @@ namespace Objects.Converter.Revit
       throw new NotImplementedException();
     }
 
-    public int AddSurface(Brep brep, DB.Face face, out List<BrepBoundary>[ ] shells,
+    public int AddSurface(Brep brep, DB.Face face, out List<BrepBoundary>[] shells,
       Dictionary<DB.Edge, BrepEdge> brepEdges = null)
     {
       throw new NotImplementedException();
     }
 
-    public void TrimSurface(Brep brep, int surface, bool orientationReversed, List<BrepBoundary>[ ] shells)
+    public void TrimSurface(Brep brep, int surface, bool orientationReversed, List<BrepBoundary>[] shells)
     {
       // TODO: Incomplete method.
       foreach (var shell in shells)
@@ -1021,7 +1054,7 @@ namespace Objects.Converter.Revit
           {
             var brepEdge = loop.edges[e];
             var orientation = loop.orientation[e];
-            if (orientation == 0)continue;
+            if (orientation == 0) continue;
 
             if (loop.trims.segments[e] is Curve trim)
             {
@@ -1050,7 +1083,7 @@ namespace Objects.Converter.Revit
       try
       {
         var solid = BrepToNative(brep);
-        if (solid == null)throw new Speckle.Core.Logging.SpeckleException("Could not convert Brep to Solid");
+        if (solid == null) throw new Speckle.Core.Logging.SpeckleException("Could not convert Brep to Solid");
         revitDs.SetShape(new List<GeometryObject> { solid });
       }
       catch (Exception e)

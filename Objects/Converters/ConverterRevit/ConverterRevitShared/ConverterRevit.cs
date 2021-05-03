@@ -32,7 +32,7 @@ namespace Objects.Converter.Revit
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
 
-    public IEnumerable<string> GetServicedApplications() => new string[ ] { RevitAppName };
+    public IEnumerable<string> GetServicedApplications() => new string[] { RevitAppName };
 
     #endregion ISpeckleConverter props
 
@@ -140,7 +140,7 @@ namespace Objects.Converter.Revit
         case DB.Architecture.Stairs o:
           returnObject = StairToSpeckle(o);
           break;
-          //these are handled by Stairs
+        //these are handled by Stairs
         case DB.Architecture.StairsRun _:
           returnObject = null;
           break;
@@ -198,6 +198,20 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNative(Base @object)
     {
+      // schema check
+      var speckleSchema = @object["@SpeckleSchema"] as Base;
+      if (speckleSchema != null)
+      {
+        // find self referential prop and set value to @object if it is null (happens when sent from gh)
+        if (CanConvertToNative(speckleSchema))
+        {
+          var prop = speckleSchema.GetInstanceMembers().Where(o => speckleSchema[o.Name] == null)?.Where(o => o.PropertyType.IsAssignableFrom(@object.GetType()))?.FirstOrDefault();
+          if (prop != null)
+            speckleSchema[prop.Name] = @object;
+          @object = speckleSchema;
+        }
+      }
+
       switch (@object)
       {
         //geometry
@@ -210,7 +224,7 @@ namespace Objects.Converter.Revit
         case Geometry.Mesh o:
           return DirectShapeToNative(o);
 
-          //built elems
+        //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
 
@@ -278,6 +292,9 @@ namespace Objects.Converter.Revit
           UpdateParameter(o);
           return null;
 
+        case BE.View3D o:
+          return ViewToNative(o);
+
         // other
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
@@ -328,6 +345,11 @@ namespace Objects.Converter.Revit
 
     public bool CanConvertToNative(Base @object)
     {
+
+      var schema = @object["@SpeckleSchema"] as Base; // check for contained schema
+      if (schema != null)
+        return CanConvertToNative(schema);
+
       return @object
       switch
       {
@@ -358,8 +380,10 @@ namespace Objects.Converter.Revit
         BE.Wire _ => true,
         BE.Revit.RevitRailing _ => true,
         BER.ParameterUpdater _ => true,
+        BE.View3D _ => true,
         Other.BlockInstance _ => true,
         _ => false
+
       };
     }
   }

@@ -222,7 +222,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           bool changedLayerNames = false;
 
           // create a commit layer prefix: all nested layers will be concatenated with this
-          var layerPrefix = DesktopUI.Utils.Formatting.CommitLayer(stream.name, state.Branch.name, id);
+          var layerPrefix = DesktopUI.Utils.Formatting.CommitInfo(stream.name, state.Branch.name, id);
 
           // give converter a way to access the commit info
           Doc.UserData.Add("commit", layerPrefix);

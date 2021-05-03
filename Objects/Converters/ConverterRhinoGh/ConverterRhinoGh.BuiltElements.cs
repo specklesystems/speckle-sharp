@@ -28,14 +28,28 @@ namespace Objects.Converter.RhinoGh
   {
     public View3D ViewToSpeckle(ViewInfo view)
     {
+      // get orientation vectors
+      var up = view.Viewport.CameraUp;
+      var forward = view.Viewport.CameraDirection;
+      up.Unitize(); forward.Unitize();
+
       var _view = new View3D();
       _view.name = view.Name;
-      _view.upDirection = VectorToSpeckle(view.Viewport.CameraUp);
-      _view.forwardDirection = VectorToSpeckle(view.Viewport.CameraDirection);
+      _view.upDirection = new Vector(up.X, up.Y, up.Z, "none");
+      _view.forwardDirection = new Vector(forward.X, forward.Y, forward.Z, "none"); 
       _view.origin = PointToSpeckle(view.Viewport.CameraLocation);
       _view.target = PointToSpeckle(view.Viewport.TargetPoint);
       _view.isOrthogonal = (view.Viewport.IsParallelProjection) ? true : false;
       _view.units = ModelUnits;
+
+      // get view bounding box
+      var near = view.Viewport.GetNearPlaneCorners();
+      var far = view.Viewport.GetFarPlaneCorners();
+      if (near.Length > 0 && far.Length > 0)
+      {
+        var box = new RH.Box(new BoundingBox(near[0], far[3]));
+        _view.boundingBox = BoxToSpeckle(box);
+      }
 
       // attach props
       AttachViewParams(_view, view);
@@ -44,37 +58,44 @@ namespace Objects.Converter.RhinoGh
     }
     public string ViewToNative(View3D view)
     {
-      RhinoView _view = Doc.Views.ActiveView;
-      RhinoViewport viewport = _view.ActiveViewport;
-      viewport.SetProjection(DefinedViewportProjection.Perspective, null, false);
-
-      if (view.target != null)
-      {
-        viewport.SetCameraLocations(PointToNative(view.target).Location, PointToNative(view.origin).Location);
-      }
-      else
-      {
-        viewport.SetCameraLocation(PointToNative(view.origin).Location, true);
-        viewport.SetCameraDirection(VectorToNative(view.forwardDirection), true);
-        viewport.CameraUp = VectorToNative(view.upDirection);
-      }
-      viewport.Name = view.name;
-
-      var activeView = Doc.Views.ActiveView;
-
-      // set rhino view props if available
-      SetViewParams(viewport, view);
-
-      if (view.isOrthogonal)
-        viewport.ChangeToParallelProjection(true);
-
-      var commitInfo = GetCommitInfo();
-      var viewName = $"{commitInfo } - {view.name}";
-
       Rhino.RhinoApp.InvokeOnUiThread((Action)delegate {
+
+        RhinoView _view = Doc.Views.ActiveView;
+        RhinoViewport viewport = _view.ActiveViewport;
+        viewport.SetProjection(DefinedViewportProjection.Perspective, null, false);
+        var origin = PointToNative(view.origin).Location;
+        var forward = new Vector3d(view.forwardDirection.x, view.forwardDirection.y, view.forwardDirection.z);
+
+        if (view.target != null)
+        {
+          viewport.SetCameraLocations(PointToNative(view.target).Location, origin); // this changes viewport.CameraUp. works for axon from revit if after, for perspective from revit if before
+        }
+        else
+        {
+          viewport.SetCameraLocation(origin, true);
+          viewport.SetCameraDirection(forward, true);
+        }
+        viewport.CameraUp = new Vector3d(view.upDirection.x, view.upDirection.y, view.upDirection.z);
+
+        viewport.Name = view.name;
+
+        /* TODO: debug this and see if it helps better match views from revit
+        // set bounding box 
+        var box = BoxToNative(view.boundingBox);
+        BoundingBox boundingBox = new BoundingBox(box.X.Min, box.Y.Min, box.Z.Min, box.X.Max, box.Y.Max, box.Z.Max);
+        viewport.SetClippingPlanes(boundingBox);
+        */
+
+        // set rhino view props if available
+        SetViewParams(viewport, view);
+
+        if (view.isOrthogonal)
+          viewport.ChangeToParallelProjection(true);
+
+        var commitInfo = GetCommitInfo();
+        var viewName = $"{commitInfo } - {view.name}";
+
         Doc.NamedViews.Add(viewName, viewport.Id);
-        Doc.Views.ActiveView = activeView;
-        Doc.Views.ActiveView.ActiveViewport.SetProjection(DefinedViewportProjection.Perspective, null, true);
       });
 
       //ConversionErrors.Add(sdfasdfaf);
@@ -86,6 +107,13 @@ namespace Objects.Converter.RhinoGh
     {
       // lens
       speckleView["lens"] = view.Viewport.Camera35mmLensLength;
+
+      // frustrum
+      if (view.Viewport.GetFrustum(out double left, out double right, out double bottom, out double top, out double near, out double far))
+        speckleView["frustrum"] = new List<double>() { left, right, bottom, top, near, far };
+
+      // crop
+      speckleView["cropped"] = bool.FalseString;
     }
     private RhinoViewport SetViewParams(RhinoViewport viewport, Base speckleView)
     {

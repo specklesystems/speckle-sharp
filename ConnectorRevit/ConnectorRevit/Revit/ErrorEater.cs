@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Autodesk.Revit.DB;
@@ -27,7 +27,7 @@ namespace ConnectorRevit.Revit
       var failedElements = new List<ElementId>();
       // Inside event handler, get all warnings
       failList = failuresAccessor.GetFailureMessages();
-      foreach (FailureMessageAccessor failure in failList)
+      foreach ( FailureMessageAccessor failure in failList )
       {
         // check FailureDefinitionIds against ones that you want to dismiss, 
         //FailureDefinitionId failID = failure.GetFailureDefinitionId();
@@ -38,20 +38,25 @@ namespace ConnectorRevit.Revit
         _converter.ConversionErrors.Add(new Exception(t));
 
         var s = failure.GetSeverity();
-        if (s == FailureSeverity.Warning) continue;
+        if ( s == FailureSeverity.Warning ) continue;
         try
         {
           failuresAccessor.ResolveFailure(failure);
         }
-        catch (Exception e)
+        catch ( Exception e )
         {
           // currently, the whole commit is rolled back. this should be investigated further at a later date
           // to properly proceed with commit
           failedElements.AddRange(failure.GetFailingElementIds());
           _converter.ConversionErrors.Clear();
-          _converter.ConversionErrors.Add(new Exception("Objects failed to bake due to fatal error: " + t));
+          _converter.ConversionErrors.Add(new Exception(
+            "Objects failed to bake due to a fatal error!\n" +
+            "This is likely due to scaling issues - please ensure you've set the correct units on your objects or remove any invalid objects.\n\n" +
+            "Revit error: " + t));
           // logging the error
-          var exception = new Speckle.Core.Logging.SpeckleException("Revit commit failed: " + t, e, level: Sentry.SentryLevel.Warning);
+          var exception =
+            new Speckle.Core.Logging.SpeckleException("Revit commit failed: " + t, e,
+              level: Sentry.SentryLevel.Warning);
           return FailureProcessingResult.ProceedWithCommit;
         }
       }

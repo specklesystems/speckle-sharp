@@ -29,7 +29,7 @@ namespace Objects.BuiltElements
     /// <param name="velocity"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="width"/>, <paramref name="height"/>, and <paramref name="diameter"/> params</remarks>
     [SchemaInfo("Duct", "Creates a Speckle duct")]
-    public Duct(Line baseLine, double width, double height, double diameter, double velocity = 0)
+    public Duct([SchemaMainParam] Line baseLine, double width, double height, double diameter, double velocity = 0)
     {
       this.baseLine = baseLine;
       this.width = width;
@@ -70,7 +70,7 @@ namespace Objects.BuiltElements.Revit
     /// <param name="parameters"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="width"/>, <paramref name="height"/>, and <paramref name="diameter"/> params</remarks>
     [SchemaInfo("RevitDuct", "Creates a Revit duct")]
-    public RevitDuct(string family, string type, Line baseLine, string systemName, string systemType, Level level, double width, double height, double diameter, double velocity = 0, List<Parameter> parameters = null)
+    public RevitDuct(string family, string type, [SchemaMainParam] Line baseLine, string systemName, string systemType, Level level, double width, double height, double diameter, double velocity = 0, List<Parameter> parameters = null)
     {
       this.baseLine = baseLine;
       this.family = family;

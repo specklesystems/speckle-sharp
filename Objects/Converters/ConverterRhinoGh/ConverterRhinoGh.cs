@@ -64,22 +64,15 @@ namespace Objects.Converter.RhinoGh
     {
       RenderMaterial material = null;
       Base @base = null;
+      Base schema = null;
       if (@object is RhinoObject ro)
       {
         material = GetMaterial(ro);
-        // special case for rhino objects that have a `SpeckleSchema` attribute
-        // this will change in the near future
-        if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null)
-        {
-          @base = ConvertToSpeckleBE(ro);
-          if (@base != null)
-          {
-            @base["renderMaterial"] = material;
-            return @base;
-          }
-        }
-        //conversion to built elem failed, revert to just send the base geom
-        if (!(@object is InstanceObject))
+        
+        if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
+          schema = ConvertToSpeckleBE(ro);
+
+        if (!(@object is InstanceObject)) // block instance check
           @object = ro.Geometry;
       }
 
@@ -169,6 +162,12 @@ namespace Objects.Converter.RhinoGh
 
       if (material != null)
         @base["renderMaterial"] = material;
+
+      if (schema != null)
+      {
+        schema["renderMaterial"] = material;
+        @base["@SpeckleSchema"] = schema;
+      }
 
       return @base;
     }
@@ -350,84 +349,38 @@ namespace Objects.Converter.RhinoGh
       switch (@object)
       {
         case Point3d _:
-          return true;
-
         case Rhino.Geometry.Point _:
-          return true;
-
         case PointCloud _:
-          return true;
-
         case Vector3d _:
-          return true;
-
         case RH.Interval _:
-          return true;
-
         case UVInterval _:
-          return true;
-
         case RH.Line _:
-          return true;
-
         case LineCurve _:
-          return true;
-
         case RH.Plane _:
-          return true;
-
         case Rectangle3d _:
-          return true;
-
         case RH.Circle _:
-          return true;
-
         case RH.Arc _:
-          return true;
-
         case ArcCurve _:
-          return true;
-
         case RH.Ellipse _:
-          return true;
-
         case RH.Polyline _:
-          return true;
-
         case PolylineCurve _:
-          return true;
-
         case PolyCurve _:
-          return true;
-
         case NurbsCurve _:
-          return true;
-
         case RH.Box _:
-          return true;
-
         case RH.Mesh _:
-          return true;
-
         case RH.Extrusion _:
-          return true;
-
         case RH.Brep _:
-          return true;
-
         case NurbsSurface _:
-          return true;
 
         case ViewInfo _:
-          return true;
 
         case InstanceDefinition _:
-          return true;
-
         case InstanceObject _:
+
           return true;
 
         default:
+
           return false;
       }
     }
@@ -437,72 +390,35 @@ namespace Objects.Converter.RhinoGh
       switch (@object)
       {
         case Point _ :
-          return true;
-
         case Pointcloud _:
-          return true;
-
         case Vector _:
-          return true;
-
         case Interval _:
-          return true;
-
         case Interval2d _:
-          return true;
-
         case Line _:
-          return true;
-
         case Plane _:
-          return true;
-
         case Circle _:
-          return true;
-
         case Arc _:
-          return true;
-
         case Ellipse _:
-          return true;
-
         case Polyline _:
-          return true;
-
         case Polycurve _:
-          return true;
-
         case Curve _:
-          return true;
-
         case Box _:
-          return true;
-
         case Mesh _:
-          return true;
-
         case Brep _:
-          return true;
-
         case Surface _:
-          return true;
 
         case ModelCurve _:
-          return true;
-
         case DirectShape _:
-          return true;
 
         case View3D _:
-          return true;
 
         case BlockDefinition _:
-          return true;
-
         case BlockInstance _:
+
           return true;
 
         default:
+
           return false;
       }
     }
