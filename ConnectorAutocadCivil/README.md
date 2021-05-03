@@ -16,10 +16,13 @@ Comprehensive developer and user documentation can be found in our:
 
 ### Requirements
 
-- AutoCAD 2021
-- Civil3D 2021 (optional)
 - A Speckle Server running (more on this below)
 - Speckle Manager (more on this below)
+
+#### Supported versions
+
+- AutoCAD: 2021, 2022
+- Civil3D: 2021, 2022
 
 ### Getting Started
 
@@ -35,7 +38,7 @@ The connector itself doesn't have features to manage your Speckle account - this
 
 We are currently exploring ways of streamlining AutoCAD add-in loading: for now, follow the steps below on *every* debug session ಠ_ಠ :
 
-- Start a Visual Studio debug session, and wait for your AutoCAD, Civil3D, or Civil3D as AutoCAD application to open
+- Start a Visual Studio debug session with the target connector as your startup project, and wait for your AutoCAD, Civil3D, or Civil3D as AutoCAD application to open
 - Enter `NETLOAD` in the command prompt
 - Navigate to and select the SpeckleConnectorAutocad.dll or SpeckleConnectorCivil.dll in the corresponding local repo Debug bin (ex: `speckle-sharp\ConnectorAutocadCivil\ConnectorCivil2021\bin\Debug`)
 - The Speckle connector should now appear in the Add-ins ribbon! Click this to get started, or enter `SPECKLE` in the command prompt.
