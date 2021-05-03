@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Objects.Converter.Rhino</AssemblyName>
     <RootNamespace>Objects.Converter.RhinoGh</RootNamespace>
-    <Configurations>Debug;Release</Configurations>
+    <Configurations>Debug;Release;Debug along Revit</Configurations>
     <DefineConstants>$(DefineConstants)</DefineConstants>
     <PackageId>Speckle.Objects.Converter.RhinoGh</PackageId>
     <Authors>Speckle</Authors>
@@ -19,6 +19,7 @@
     <PackageIcon>logo.png</PackageIcon>
     <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
     <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
+    <Platforms>AnyCPU</Platforms>
 
   </PropertyGroup>
 

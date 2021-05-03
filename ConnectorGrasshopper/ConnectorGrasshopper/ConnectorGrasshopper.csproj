@@ -230,6 +230,9 @@
     <StartAction>Program</StartAction>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug along Revit|AnyCPU' ">
+    <OutputPath>bin\Debug along Revit\</OutputPath>
+  </PropertyGroup>
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets')" />
   <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
     <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(TargetName).gha"</PostBuildEvent>

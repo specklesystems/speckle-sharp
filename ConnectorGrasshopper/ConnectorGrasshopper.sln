@@ -24,28 +24,36 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Debug along Revit|Any CPU = Debug along Revit|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{BDEC781D-F322-49B0-8001-2CA66C182174}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BDEC781D-F322-49B0-8001-2CA66C182174}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDEC781D-F322-49B0-8001-2CA66C182174}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDEC781D-F322-49B0-8001-2CA66C182174}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDEC781D-F322-49B0-8001-2CA66C182174}.Debug along Revit|Any CPU.ActiveCfg = Debug along Revit|Any CPU
+		{BDEC781D-F322-49B0-8001-2CA66C182174}.Debug along Revit|Any CPU.Build.0 = Debug along Revit|Any CPU
 		{B4D98D2C-E5DA-463E-BF6C-68E9B77C72F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B4D98D2C-E5DA-463E-BF6C-68E9B77C72F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4D98D2C-E5DA-463E-BF6C-68E9B77C72F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4D98D2C-E5DA-463E-BF6C-68E9B77C72F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4D98D2C-E5DA-463E-BF6C-68E9B77C72F3}.Debug along Revit|Any CPU.ActiveCfg = Debug along Revit|Any CPU
 		{8F16A9A1-DC5F-4800-821C-336E6CCF8F9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8F16A9A1-DC5F-4800-821C-336E6CCF8F9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F16A9A1-DC5F-4800-821C-336E6CCF8F9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F16A9A1-DC5F-4800-821C-336E6CCF8F9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F16A9A1-DC5F-4800-821C-336E6CCF8F9C}.Debug along Revit|Any CPU.ActiveCfg = Debug along Revit|Any CPU
 		{9103058A-0D20-49AA-B053-01548DD66D16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9103058A-0D20-49AA-B053-01548DD66D16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9103058A-0D20-49AA-B053-01548DD66D16}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9103058A-0D20-49AA-B053-01548DD66D16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9103058A-0D20-49AA-B053-01548DD66D16}.Debug along Revit|Any CPU.ActiveCfg = Debug along Revit|Any CPU
 		{C73D5B6D-4A65-4CF8-8F36-9B78C17D92D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C73D5B6D-4A65-4CF8-8F36-9B78C17D92D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C73D5B6D-4A65-4CF8-8F36-9B78C17D92D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C73D5B6D-4A65-4CF8-8F36-9B78C17D92D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C73D5B6D-4A65-4CF8-8F36-9B78C17D92D5}.Debug along Revit|Any CPU.ActiveCfg = Debug along Revit|Any CPU
+		{C73D5B6D-4A65-4CF8-8F36-9B78C17D92D5}.Debug along Revit|Any CPU.Build.0 = Debug along Revit|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
