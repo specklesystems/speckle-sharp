@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
+using ConnectorGrasshopper.Objects;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -16,112 +17,19 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Conversion
 {
-  public class ToNativeConverterAsync : GH_AsyncComponent
+  public class ToNativeConverterAsync : SelectKitAsyncComponentBase
   {
-    public override Guid ComponentGuid
-    {
-      get => new Guid("98027377-5A2D-4EBA-B8D4-D72872593CD8");
-    }
+    public override Guid ComponentGuid => new Guid("98027377-5A2D-4EBA-B8D4-D72872593CD8");
 
     protected override Bitmap Icon => Properties.Resources.ToNative;
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    private ISpeckleConverter Converter;
-
-    private ISpeckleKit Kit;
-
     public ToNativeConverterAsync() : base("To Native", "To Native",
       "Convert data from Speckle's Base object to its Rhino equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
-      SetDefaultKitAndConverter();
-      BaseWorker = new ToNativeWorker(Converter, this);
     }
-
-    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
-    {
-      try
-      {
-        var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-
-        Menu_AppendSeparator(menu);
-        Menu_AppendItem(menu, "Select the converter you want to use:");
-        foreach (var kit in kits)
-        {
-          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
-            kit.Name == Kit.Name);
-        }
-
-        Menu_AppendSeparator(menu);
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine("X");
-      }
-    }
-
-    private void SetDefaultKitAndConverter()
-    {
-      try
-      {
-        Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(Applications.Rhino);
-        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-      }
-      catch
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-      }
-    }
-
-    private void SetConverterFromKit(string kitName)
-    {
-      if (kitName == Kit.Name)
-      {
-        return;
-      }
-
-      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino);
-      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-
-      ((ToNativeWorker)BaseWorker).Converter = Converter;
-
-      ExpireSolution(true);
-    }
-
-    public override bool Read(GH_IReader reader)
-    {
-      var kitName = "";
-      reader.TryGetString("KitName", ref kitName);
-
-      if (kitName != "")
-      {
-        try
-        {
-          SetConverterFromKit(kitName);
-        }
-        catch (Exception)
-        {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
-            $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
-          SetDefaultKitAndConverter();
-        }
-      }
-      else
-      {
-        SetDefaultKitAndConverter();
-      }
-
-      return base.Read(reader);
-    }
-
-    public override bool Write(GH_IWriter writer)
-    {
-      writer.SetString("KitName", Kit.Name);
-      return base.Write(writer);
-    }
-
+    
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddParameter(new SpeckleBaseParam("Base", "B",
@@ -137,6 +45,12 @@ namespace ConnectorGrasshopper.Conversion
     {
       Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
       base.BeforeSolveInstance();
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document);
+      BaseWorker = new ToNativeWorker(Converter, this);
     }
   }
 
@@ -172,10 +86,7 @@ namespace ConnectorGrasshopper.Conversion
           foreach (var item in list)
           {
             if (CancellationToken.IsCancellationRequested)
-            {
               return;
-            }
-
             var converted = Utilities.TryConvertItemToNative(item?.Value, Converter);
             ConvertedObjects.Append(converted, path);
             ReportProgress(Id, (completed++ + 1) / (double)Objects.Count());
