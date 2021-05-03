@@ -413,6 +413,36 @@ namespace Objects.Converter.Revit
       return curveArray;
     }
 
+    public Box BoxToSpeckle(DB.BoundingBoxXYZ box, string units = null)
+    {
+      // convert min and max pts to speckle first
+      var min = PointToSpeckle(box.Min, units);
+      var max = PointToSpeckle(box.Max, units);
+
+      // get the base plane of the bounding box from the transform
+      var transform = box.Transform;
+      var plane = DB.Plane.CreateByOriginAndBasis(transform.Origin, transform.BasisX.Normalize(), transform.BasisY.Normalize());
+
+      var _box = new Box()
+      {
+        xSize = new Interval(min.x, max.x),
+        ySize = new Interval(min.y, max.y),
+        zSize = new Interval(min.z, max.z),
+        basePlane = PlaneToSpeckle(plane),
+        units = units ?? ModelUnits
+      };
+
+      return _box;
+    }
+
+    public DB.BoundingBoxXYZ BoxToNative(Box box)
+    {
+      var boundingBox = new BoundingBoxXYZ();
+      boundingBox.Min = PointToNative(new Point((double)box.xSize.start, (double)box.ySize.start, (double)box.zSize.start));
+      boundingBox.Max = PointToNative(new Point((double)box.xSize.end, (double)box.ySize.end, (double)box.zSize.end));
+      return boundingBox;
+    }
+
     public Mesh MeshToSpeckle(DB.Mesh mesh, string units = null)
     {
       var speckleMesh = new Mesh();

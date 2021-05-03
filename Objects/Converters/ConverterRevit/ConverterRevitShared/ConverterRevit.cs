@@ -278,6 +278,9 @@ namespace Objects.Converter.Revit
           UpdateParameter(o);
           return null;
 
+        case BE.View3D o:
+          return ViewToNative(o);
+
         // other
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
@@ -296,75 +299,28 @@ namespace Objects.Converter.Revit
       switch (@object)
       {
         case DB.DetailCurve _:
-          return true;
-
         case DB.DirectShape _:
-          return true;
-
         case DB.FamilyInstance _:
-          return true;
-
         case DB.Floor _:
-          return true;
-
         case DB.Level _:
-          return true;
-
         case DB.View _:
-          return true;
-
         case DB.ModelCurve _:
-          return true;
-
         case DB.Opening _:
-          return true;
-
         case DB.RoofBase _:
-          return true;
-
         case DB.Architecture.Room _:
-          return true;
-
         case DB.Architecture.TopographySurface _:
-          return true;
-
         case DB.Wall _:
-          return true;
-
         case DB.Mechanical.Duct _:
-          return true;
-
-        //these should be handled by curtain walls
-        case DB.CurtainGridLine _:
-          return true;
-
+        case DB.CurtainGridLine _: //these should be handled by curtain walls
         case DB.Architecture.BuildingPad _:
-          return true;
-
         case DB.Architecture.Stairs _:
-          return true;
-
         case DB.Architecture.StairsRun _:
-          return true;
-
         case DB.Architecture.StairsLanding _:
-          return true;
-
         case DB.Architecture.Railing _:
-          return true;
-
         case DB.Architecture.TopRail _:
-          return true;
-
         case DB.Ceiling _:
-          return true;
-
         case DB.Group _:
-          return true;
-
         case DB.ProjectInfo _:
-          return true;
-
         case DB.ElementType _:
           return true;
 
@@ -404,6 +360,7 @@ namespace Objects.Converter.Revit
         case BE.Duct _:
         case BE.Revit.RevitRailing _:
         case BER.ParameterUpdater _:
+        case BE.View3D _:
           return true;
 
         // other
