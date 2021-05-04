@@ -27,16 +27,18 @@ namespace ConnectorGrasshopper.Extras
       var output = new List<object>();
       for (var i = 0; i < dataInput.Branches.Count; i++)
       {
-        if (cancellationToken.IsCancellationRequested) return output;
+        if (cancellationToken.IsCancellationRequested) 
+          return output;
 
         var path = dataInput.Paths[i].Indices.ToList();
         var leaves = new List<object>(); 
         
         foreach(var goo in dataInput.Branches[i])
         {
-        if (cancellationToken.IsCancellationRequested) return output;
+          if (cancellationToken.IsCancellationRequested) 
+            return output;
           OnConversionProgress?.Invoke();
-          leaves.Add(TryConvertItemToSpeckle(goo, converter));
+          leaves.Add(TryConvertItemToSpeckle(goo, converter, true));
         }
 
         RecurseTreeToList(output, path, 0, leaves);
@@ -67,7 +69,28 @@ namespace ConnectorGrasshopper.Extras
         throw ex;
       }
     }
-
+    /// <summary>
+    /// Wraps an object in the appropriate GH_Goo subtype for display in GH.
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    public static IGH_Goo WrapInGhType(object obj)
+    {
+      switch (obj)
+      {
+        case Base @base:
+          return new GH_SpeckleBase(@base);
+        case string str:
+          return new GH_String(str);
+        case double dbl:
+          return new GH_Number(dbl);
+        case int i:
+          return new GH_Integer(i);
+        default:
+          return new GH_ObjectWrapper(obj);
+      }
+    }
+    
     /// <summary>
     /// For a given parent list it creates enough sublists so that we have a sublist at the specified index
     /// If the parent contains some objects already, insert the sublist the the specified index
@@ -89,9 +112,33 @@ namespace ConnectorGrasshopper.Extras
 
       return parent;
     }
+    
+    public static Base TraverseAndConvertToNative(Base @base, ISpeckleConverter converter)
+    {
+      var copy = @base.ShallowCopy();
+      copy.GetMembers().ToList().ForEach(keyval =>
+      {
+        var goo = TryConvertItemToNative(keyval.Value, converter, true);
+        var value = goo.GetType().GetProperty("Value")?.GetValue(goo);
+        copy[keyval.Key] = value;
+      });
+      return copy;
+    }
+    
+    public static Base TraverseAndConvertToSpeckle(Base @base, ISpeckleConverter converter)
+    {
+      var subclass = @base.GetType().IsSubclassOf(typeof(Base));
+      if (subclass) 
+        return @base;
+      var copy = @base.ShallowCopy();
+      copy.GetMembers().ToList().ForEach(keyval =>
+      {
+        copy[keyval.Key] = TryConvertItemToSpeckle(keyval.Value, converter, true);
+      });
+      return copy;
+    }
 
-
-    public static IGH_Goo TryConvertItemToNative(object value, ISpeckleConverter converter)
+    public static IGH_Goo TryConvertItemToNative(object value, ISpeckleConverter converter, bool recursive = false)
     {
       if (value == null)
         return null;
@@ -101,21 +148,28 @@ namespace ConnectorGrasshopper.Extras
         value = value.GetType().GetProperty("Value")?.GetValue(value);
       }
 
-      if (value is Base @base && converter.CanConvertToNative(@base))
+      if (value is Base @base)
       {
-        var converted = converter.ConvertToNative(@base);
-        var geomgoo = GH_Convert.ToGoo(converted);
-        if (geomgoo != null) 
-          return geomgoo;
-        var goo = new GH_ObjectWrapper { Value = converted };
-        return goo;
+        if (converter.CanConvertToNative(@base))
+        {
+          var converted = converter.ConvertToNative(@base);
+          var geomgoo = GH_Convert.ToGoo(converted);
+          if (geomgoo != null) 
+            return geomgoo;
+          var goo = new GH_ObjectWrapper { Value = converted };
+          return goo;
+        }
+        if(recursive)
+        {
+          // Object is base but cannot convert directly, traverse!!!
+          var x =TraverseAndConvertToNative(@base, converter);
+          return new GH_SpeckleBase(x);
+        }
       }
 
       if (value is Base @base2)
-      {
-        var goo = new GH_SpeckleBase { Value = @base2 };
-        return goo;
-      }
+        return new GH_SpeckleBase { Value = @base2 };
+      
 
       if (value.GetType().IsSimpleType())
       {
@@ -127,10 +181,10 @@ namespace ConnectorGrasshopper.Extras
         var i = (Enum) value;
         return new GH_ObjectWrapper {Value = i};
       }
-      return null;
+      return new GH_ObjectWrapper(value);
     }
 
-    public static object TryConvertItemToSpeckle(object value, ISpeckleConverter converter)
+    public static object TryConvertItemToSpeckle(object value, ISpeckleConverter converter, bool recursive = false)
     {
       object result = null;
 
@@ -141,17 +195,19 @@ namespace ConnectorGrasshopper.Extras
         value = value.GetType().GetProperty("Value").GetValue(value);
       }
 
-      if (value is Base || value.GetType().IsSimpleType())
-      {
+      if (value.GetType().IsSimpleType()) 
         return value;
-      }
-
+      
       if (converter.CanConvertToSpeckle(value))
       {
         return converter.ConvertToSpeckle(value);
       }
+      if (recursive && value is Base @base) 
+        return TraverseAndConvertToSpeckle(@base, converter);
+      if (value is Base @base2)
+        return @base2;
       
-      return result;
+      return null;
     }
 
     public static GH_Structure<IGH_Goo> GetSubTree(GH_Structure<IGH_Goo> valueTree, GH_Path searchPath)
