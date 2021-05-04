@@ -38,7 +38,7 @@ namespace ConnectorGrasshopper.Extras
           if (cancellationToken.IsCancellationRequested) 
             return output;
           OnConversionProgress?.Invoke();
-          leaves.Add(TryConvertItemToSpeckle(goo, converter));
+          leaves.Add(TryConvertItemToSpeckle(goo, converter, true));
         }
 
         RecurseTreeToList(output, path, 0, leaves);
