@@ -17,6 +17,23 @@ namespace ConnectorGrasshopper.Extras
 {
   public static class Utilities
   {
+    public static ISpeckleConverter GetDefaultConverter()
+    {
+      var key = "Speckle2:kit.default.name";
+      var n = Grasshopper.Instances.Settings.GetValue(key, "Objects");
+      try
+      {
+        var defKit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino).FirstOrDefault(kit => kit != null && kit.Name == n);
+        var converter = defKit.LoadConverter(Applications.Rhino);
+        converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        return converter;
+      }
+      catch
+      {
+        throw new Exception("Default kit was not found");
+      }
+    }
+    
     public static List<object> DataTreeToNestedLists(GH_Structure<IGH_Goo> dataInput, ISpeckleConverter converter, Action OnConversionProgress = null)
     {
       return DataTreeToNestedLists(dataInput, converter, CancellationToken.None, OnConversionProgress);
