@@ -141,7 +141,8 @@ namespace ConnectorGrasshopper.Conversion
         {
           if(!item.IsValid) 
              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] is not a Base object."));
-          Objects.Append(item as GH_ObjectWrapper, path);
+          var scriptVariable = item.ScriptVariable();
+          Objects.Append(new GH_ObjectWrapper(scriptVariable), path);
         }
 
         branchIndex++;

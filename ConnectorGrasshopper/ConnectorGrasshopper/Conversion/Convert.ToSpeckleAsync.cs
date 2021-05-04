@@ -91,7 +91,7 @@ namespace ConnectorGrasshopper.Conversion
               ConvertedObjects.Append(new GH_ObjectWrapper(converted));
             else
               ConvertedObjects.Append(new GH_SpeckleBase { Value = converted as Base }, Objects.Paths[branchIndex]);
-            ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
+            ReportProgress(Id, Math.Round((completed++ + 1) / (double)Objects.Count(),2));
           }
 
           branchIndex++;
