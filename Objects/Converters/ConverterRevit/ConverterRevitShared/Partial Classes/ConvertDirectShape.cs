@@ -99,6 +99,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
+        ConversionErrors.Add(new Exception(e.Message));
         var mesh = MeshToNative(brep.displayMesh);
         revitDs.SetShape(mesh);
       }

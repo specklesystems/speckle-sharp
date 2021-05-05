@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
+using ConnectorGrasshopper.Objects;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -16,7 +17,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Conversion
 {
-  public class ToSpeckleConverterAsync : GH_AsyncComponent
+  public class ToSpeckleConverterAsync : SelectKitAsyncComponentBase
   {
     public override Guid ComponentGuid { get => new Guid("F1E5F78F-242D-44E3-AAD6-AB0257D69256"); }
 
@@ -24,90 +25,11 @@ namespace ConnectorGrasshopper.Conversion
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    private ISpeckleConverter Converter;
-
-    private ISpeckleKit Kit;
 
     public ToSpeckleConverterAsync() : base("To Speckle", "To Speckle", "Convert data from Rhino to their Speckle Base equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
-      SetDefaultKitAndConverter();
-      BaseWorker = new ToSpeckleWorker(Converter, this);
     }
-
-    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
-    {
-      Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Select the converter you want to use:");
-
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-
-      foreach (var kit in kits)
-      {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
-      }
-
-      Menu_AppendSeparator(menu);
-    }
-
-    private void SetDefaultKitAndConverter()
-    {
-      try
-      {
-        Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(Applications.Rhino);
-        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-        var x = Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem;
-      }
-      catch
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-      }
-    }
-
-    private void SetConverterFromKit(string kitName)
-    {
-      if (kitName == Kit.Name)return;
-
-      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino);
-      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-
-      ((ToSpeckleWorker)BaseWorker).Converter = Converter;
-
-      ExpireSolution(true);
-    }
-
-    public override bool Read(GH_IReader reader)
-    {
-      var kitName = "";
-      reader.TryGetString("KitName", ref kitName);
-
-      if (kitName != "")
-      {
-        try
-        {
-          SetConverterFromKit(kitName);
-        }
-        catch (Exception e)
-        {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
-          SetDefaultKitAndConverter();
-        }
-      }
-      else
-      {
-        SetDefaultKitAndConverter();
-      }
-
-      return base.Read(reader);
-    }
-
-    public override bool Write(GH_IWriter writer)
-    {
-      writer.SetString("KitName", Kit.Name);
-      return base.Write(writer);
-    }
-
+    
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddGenericParameter("Data", "D", "Data to convert to Speckle Base objects.", GH_ParamAccess.tree);
@@ -115,7 +37,8 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Base", "B", "Converted Base Speckle objects.", GH_ParamAccess.item));
+      pManager.AddGenericParameter("Base", "B", "Converted Base Speckle objects.", GH_ParamAccess.item);
+      //pManager.AddParameter(new SpeckleBaseParam("Base", "B", "Converted Base Speckle objects.", GH_ParamAccess.item));
     }
 
     protected override void BeforeSolveInstance()
@@ -124,12 +47,17 @@ namespace ConnectorGrasshopper.Conversion
       base.BeforeSolveInstance();
     }
 
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document);
+      BaseWorker = new ToSpeckleWorker(Converter, this);
+    }
   }
 
   public class ToSpeckleWorker : WorkerInstance
   {
     GH_Structure<IGH_Goo> Objects;
-    GH_Structure<GH_SpeckleBase> ConvertedObjects;
+    GH_Structure<IGH_Goo> ConvertedObjects;
 
     public ISpeckleConverter Converter { get; set; }
 
@@ -137,7 +65,7 @@ namespace ConnectorGrasshopper.Conversion
     {
       Converter = _Converter;
       Objects = new GH_Structure<IGH_Goo>();
-      ConvertedObjects = new GH_Structure<GH_SpeckleBase>();
+      ConvertedObjects = new GH_Structure<IGH_Goo>();
     }
 
     public override WorkerInstance Duplicate() => new ToSpeckleWorker(Converter, Parent);
@@ -156,11 +84,14 @@ namespace ConnectorGrasshopper.Conversion
           {
             if (CancellationToken.IsCancellationRequested)return;
 
-            var converted = Utilities.TryConvertItemToSpeckle(item, Converter) as Base;
+            var converted = Utilities.TryConvertItemToSpeckle(item, Converter, true);
             if(converted == null)
               RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,$"Cannot convert item at {path}[{list.IndexOf(item)}] to Speckle."));
-            ConvertedObjects.Append(new GH_SpeckleBase { Value = converted }, Objects.Paths[branchIndex]);
-            ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
+            else if (converted.GetType().IsSimpleType())
+              ConvertedObjects.Append(new GH_ObjectWrapper(converted));
+            else
+              ConvertedObjects.Append(new GH_SpeckleBase { Value = converted as Base }, Objects.Paths[branchIndex]);
+            ReportProgress(Id, Math.Round((completed++ + 1) / (double)Objects.Count(),2));
           }
 
           branchIndex++;
