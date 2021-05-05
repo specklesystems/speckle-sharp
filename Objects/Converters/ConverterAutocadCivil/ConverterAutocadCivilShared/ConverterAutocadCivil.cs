@@ -25,7 +25,7 @@ using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Acad = Autodesk.AutoCAD;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
-#if CIVIL2021
+#if (CIVIL2021 || CIVIL2022)
 using Civil = Autodesk.Civil;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 #endif
@@ -37,8 +37,12 @@ namespace Objects.Converter.AutocadCivil
   {
 #if AUTOCAD2021
     public static string AutocadAppName = Applications.Autocad2021;
+#elif AUTOCAD2022
+public static string AutocadAppName = Applications.Autocad2022;
 #elif CIVIL2021
     public static string AutocadAppName = Applications.Civil2021;
+#elif CIVIL2022
+    public static string AutocadAppName = Applications.Civil2022;
 #endif
 
     #region ISpeckleConverter props
@@ -234,7 +238,7 @@ namespace Objects.Converter.AutocadCivil
         case BlockTableRecord o:
           return BlockRecordToSpeckle(o);
 
-#if CIVIL2021
+#if (CIVIL2021 || CIVIL2022)
         case CivilDB.FeatureLine o:
           return FeatureLineToSpeckle(o);
 #endif

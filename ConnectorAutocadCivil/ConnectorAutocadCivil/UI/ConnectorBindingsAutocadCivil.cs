@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Collections;
-using System.Drawing;
 
 using Speckle.Newtonsoft.Json;
 using Speckle.Core.Models;
@@ -21,6 +20,7 @@ using AcadApp = Autodesk.AutoCAD.ApplicationServices;
 using AcadDb = Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.Colors;
 
 using Stylet;
 using Autodesk.AutoCAD.DatabaseServices;
@@ -397,7 +397,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var _layer = new AcadDb.LayerTableRecord();
 
           // Assign the layer properties
-          _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColor(Color.White);
+          _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(ColorMethod.ByColor, 7); // white
           _layer.Name = cleanName;
 
           // Append the new layer to the layer table and the transaction

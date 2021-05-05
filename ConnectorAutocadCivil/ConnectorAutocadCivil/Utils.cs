@@ -18,8 +18,14 @@ namespace Speckle.ConnectorAutocadCivil
 #if AUTOCAD2021
     public static string AutocadAppName = Applications.Autocad2021;
     public static string AppName = "AutoCAD";
+#elif AUTOCAD2022
+public static string AutocadAppName = Applications.Autocad2022;
+    public static string AppName = "AutoCAD";
 #elif CIVIL2021
     public static string AutocadAppName = Applications.Civil2021;
+    public static string AppName = "Civil 3D";
+#elif CIVIL2022
+    public static string AutocadAppName = Applications.Civil2022;
     public static string AppName = "Civil 3D";
 #endif
     public static string invalidChars = @"<>/\:;""?*|=‘";

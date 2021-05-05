@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{58A88F1A-7489-46D2-949D-2FC3F68C8D84}</ProjectGuid>
+    <ProjectGuid>{FF1793E1-77F5-4A92-B3F2-6D8B104E479B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Speckle.ConnectorAutocad</RootNamespace>
@@ -13,7 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <StartAction>Program</StartAction>
-    <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2021\acad.exe</StartProgram>
+    <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2022\acad.exe</StartProgram>
     <!--these four make so that the SQLite.Interop.dll is copied in the after build target-->
     <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
     <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
@@ -25,23 +25,22 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;AUTOCAD2021</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;AUTOCAD2022</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;AUTOCAD2021</DefineConstants>
+    <DefineConstants>TRACE;AUTOCAD2022</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -53,6 +52,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Speckle.AutoCAD.API">
+      <Version>2022.0.0.2</Version>
+      <ExcludeAssets>runtime</ExcludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{3ad2c014-1eca-4a6b-bac4-30ce9a443a5b}</Project>
       <Name>Core</Name>
@@ -62,13 +68,6 @@
       <Name>DesktopUI</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="ModPlus.AutoCAD.API.2021">
-      <Version>1.0.0</Version>
-      <ExcludeAssets>runtime</ExcludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- POST BUILD EVENTS START -->
@@ -76,7 +75,7 @@
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
   </PropertyGroup>
   <Target Name="Clean">
-    <RemoveDir Directories="$(TargetDir);$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2021" />
+    <RemoveDir Directories="$(TargetDir);$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2022" />
   </Target>
   <Target Name="AfterBuild">
     <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
@@ -86,7 +85,7 @@
     <ItemGroup>
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
     </ItemGroup>
-    <Copy DestinationFolder="$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2021\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+    <Copy DestinationFolder="$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2022\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
   </Target>
   <!--<Target Name="AfterBuildRelease">
   </Target>-->
