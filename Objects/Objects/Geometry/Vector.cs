@@ -52,7 +52,7 @@ namespace Objects.Geometry
       return new List<double>() { x, y, z };
     }
 
-    public static Vector FromList(List<double> list) => new Vector(list[0], list[1], list[2]);
+    public static Vector FromList(List<double> list, string units) => new Vector(list[0], list[1], list[2]);
 
     public double x
     {
