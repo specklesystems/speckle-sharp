@@ -80,7 +80,7 @@ namespace Objects.Geometry
       arc.angleRadians = list[5];
       arc.domain = new Interval(list[6], list[7]);
       arc.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
-      arc.plane = Plane.FromList(list.GetRange(8, 13), arc.units);
+      arc.plane = Plane.FromList(list.GetRange(8, 13));
       
       arc.plane.units = arc.units;
 
