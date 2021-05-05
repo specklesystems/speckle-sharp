@@ -318,7 +318,11 @@ namespace Objects.Converter.RhinoGh
       var u = units ?? ModelUnits;
 
       if (poly.Count == 2)
-        return LineToSpeckle(new RH.Line(poly[0], poly[1]));
+      {
+        var l =  LineToSpeckle(new RH.Line(poly[0], poly[1]), u);
+        if (domain != null) l.domain = domain;
+        return l;
+      }
 
       var myPoly = new Polyline(PointsToFlatArray(poly), u);
       myPoly.closed = poly.IsClosed;
@@ -398,7 +402,7 @@ namespace Objects.Converter.RhinoGh
       CurveSegments(segments, p, true);
 
       //let the converter pick the best type of curve
-      myPoly.segments = segments.Select(s => (ICurve)ConvertToSpeckle(s)).ToList();
+      myPoly.segments = segments.Select(s => CurveToSpeckle(s, u)).ToList();
 
       return myPoly;
     }
@@ -454,7 +458,7 @@ namespace Objects.Converter.RhinoGh
       }
     }
 
-    public ICurve CurveToSpeckle(NurbsCurve curve, string units = null)
+    public ICurve CurveToSpeckle(RH.Curve curve, string units = null)
     {
       var u = units ?? ModelUnits;
       var tolerance = 0.0;
@@ -493,7 +497,7 @@ namespace Objects.Converter.RhinoGh
         }
       }
 
-      return NurbsToSpeckle(curve, u);
+      return NurbsToSpeckle(curve.ToNurbsCurve(), u);
     }
 
     public Curve NurbsToSpeckle(NurbsCurve curve, string units = null)
@@ -717,10 +721,10 @@ namespace Objects.Converter.RhinoGh
       //tol = 0;
       var u = units ?? ModelUnits;
       brep.Repair(tol); //should maybe use ModelAbsoluteTolerance ?
-      foreach (var f in brep.Faces)
-      {
-        f.RebuildEdges(tol, false, false);
-      }
+      // foreach (var f in brep.Faces)
+      // {
+      //   f.RebuildEdges(tol, false, false);
+      // }
       // Create complex
       var joinedMesh = new RH.Mesh();
       var mySettings = MeshingParameters.Minimal;
