@@ -154,7 +154,7 @@ namespace Objects.Converter.RhinoGh
     public Line LineToSpeckle(RH.Line line, string units = null)
     {
       var u = units ?? ModelUnits;
-      var sLine = new Line(PointToSpeckle(line.From), PointToSpeckle(line.To), u);
+      var sLine = new Line(PointToSpeckle(line.From, u), PointToSpeckle(line.To, u), u);
       sLine.length = line.Length;
       sLine.domain = new Interval(0, line.Length);
       var box = new RH.Box(line.BoundingBox);
@@ -166,7 +166,7 @@ namespace Objects.Converter.RhinoGh
     public Line LineToSpeckle(LineCurve line, string units = null)
     {
       var u = units ?? ModelUnits;
-      var sLine = new Line(PointToSpeckle(line.PointAtStart), PointToSpeckle(line.PointAtEnd), u)
+      var sLine = new Line(PointToSpeckle(line.PointAtStart, u), PointToSpeckle(line.PointAtEnd, u), u)
       {
         domain = IntervalToSpeckle(line.Domain)
       };
@@ -403,7 +403,7 @@ namespace Objects.Converter.RhinoGh
 
       //let the converter pick the best type of curve
       myPoly.segments = segments.Select(s => CurveToSpeckle(s, u)).ToList();
-
+      myPoly.units = u;
       return myPoly;
     }
 
@@ -464,7 +464,12 @@ namespace Objects.Converter.RhinoGh
       var tolerance = 0.0;
       Rhino.Geometry.Plane pln = Rhino.Geometry.Plane.Unset;
       curve.TryGetPlane(out pln, tolerance);
-
+      
+      if (curve is PolyCurve polyCurve)
+      {
+        return PolycurveToSpeckle(polyCurve, u);
+      }
+      
       if (curve.IsCircle(tolerance) && curve.IsClosed)
       {
         curve.TryGetCircle(out var getObj, tolerance);
