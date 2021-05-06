@@ -81,19 +81,7 @@ namespace ConnectorGrasshopper.Objects
 
     public void VariableParameterMaintenance()
     {
-      if (outputList.Count == 0) return;
 
-      for (var i = 0; i < Params.Output.Count; i++)
-      {
-        if (i > outputList.Count - 1) return;
-
-        var name = outputList[i];
-        Params.Output[i].Name = $"{name}";
-        Params.Output[i].NickName = $"{name}";
-        Params.Output[i].Description = $"Data from property: {name}";
-        Params.Output[i].MutableNickName = false;
-        Params.Output[i].Access = GH_ParamAccess.tree;
-      }
     }
     
     private bool OutputMismatch()
@@ -101,29 +89,44 @@ namespace ConnectorGrasshopper.Objects
       var countMatch = outputList.Count == Params.Output.Count;
       if (!countMatch)
         return true;
-
+      
+      
       return outputList.Where((t, i) => Params.Output[i].NickName != t).Any();
     }
-
+    
     private void AutoCreateOutputs()
     {
       var tokenCount = outputList?.Count ?? 0 ;
 
       if (tokenCount == 0 || !OutputMismatch()) return;
       RecordUndoEvent("Creating Outputs");
-
-      if (Params.Output.Count < tokenCount)
-        while (Params.Output.Count < tokenCount)
+      
+      // Check what params must be deleted, and do so when safe.
+      var remove = Params.Output.Select((p, i) =>
+      {
+        var res = outputList.Find(o => o == p.Name);
+        return res == null ? i : -1;
+      }).ToList();
+      remove.Reverse();
+      remove.ForEach(b =>
+      {
+        if (b != -1 && Params.Output[b].Recipients.Count == 0)
+          Params.UnregisterOutputParameter(Params.Output[b]);
+        
+      });
+      
+      outputList.ForEach(s =>
+      {
+        var param = Params.Output.Find(p => p.Name == s);
+        if (param == null)
         {
           var newParam = CreateParameter(GH_ParameterSide.Output, Params.Output.Count);
           Params.RegisterOutputParam(newParam);
         }
-      else if (Params.Output.Count > tokenCount)
-        while (Params.Output.Count > tokenCount)
-        {
-          Params.UnregisterOutputParameter(Params.Output[Params.Output.Count - 1]);
-        }
-
+        
+      });
+      
+      //Params.Output.Sort();
       Params.OnParametersChanged();
       VariableParameterMaintenance();
     }
@@ -144,7 +147,7 @@ namespace ConnectorGrasshopper.Objects
     }
 
     public override WorkerInstance Duplicate() => new ExpandSpeckleObjectWorker(Parent, Converter);
-
+    
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
       try
@@ -184,6 +187,8 @@ namespace ConnectorGrasshopper.Objects
     {
       DA.GetDataTree(0, out speckleObjects);
       speckleObjects.Graft(GH_GraftMode.GraftAll);
+      var names = Params.Output.Select(p => p.Name);
+      Console.WriteLine("Previous names:{0}", string.Join(", ",names));
       this.Params = Params;
     }
 
@@ -205,7 +210,7 @@ namespace ConnectorGrasshopper.Objects
             fullProps.Remove(prop);
         });
       }
-      fullProps.Sort();
+      //fullProps.Sort();
       return fullProps;
     }
     
@@ -220,10 +225,9 @@ namespace ConnectorGrasshopper.Objects
         if (speckleObjects.get_Branch(path).Count == 0) continue;
         // Loop through all dynamic properties
         var baseGoo = speckleObjects.get_DataItem(path, 0) as GH_SpeckleBase;
-        if (baseGoo == null || baseGoo.Value == null)
-        {
+        if (baseGoo?.Value == null)
           continue;
-        }
+
         var obj = baseGoo.Value;
         foreach (var prop in obj.GetMembers())
         {
