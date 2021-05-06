@@ -63,37 +63,23 @@ namespace ConnectorGrasshopper.Objects
       {
         Name = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input),
         MutableNickName = true,
-        Optional = true
+        Optional = true,
       };
-
       myParam.NickName = myParam.Name;
-      myParam.ObjectChanged += (sender, e) => { };
-
       return myParam;
     }
 
-    public bool DestroyParameter(GH_ParameterSide side, int index)
-    {
-      if (side == GH_ParameterSide.Input)
-        return false;
-      return true;
-    }
-
+    public bool DestroyParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Output;
+    
     public void VariableParameterMaintenance()
     {
+      // Perform parameter maintenance here!
+    }
 
-    }
-    
-    private bool OutputMismatch()
-    {
-      var countMatch = outputList.Count == Params.Output.Count;
-      if (!countMatch)
-        return true;
-      
-      
-      return outputList.Where((t, i) => Params.Output[i].NickName != t).Any();
-    }
-    
+    private bool OutputMismatch() =>
+      outputList.Count != Params.Output.Count 
+      || outputList.Where((t, i) => Params.Output[i].NickName != t).Any();
+
     private void AutoCreateOutputs()
     {
       var tokenCount = outputList?.Count ?? 0 ;
@@ -112,21 +98,28 @@ namespace ConnectorGrasshopper.Objects
       {
         if (b != -1 && Params.Output[b].Recipients.Count == 0)
           Params.UnregisterOutputParameter(Params.Output[b]);
-        
       });
       
+      outputList.Sort();
       outputList.ForEach(s =>
       {
         var param = Params.Output.Find(p => p.Name == s);
         if (param == null)
         {
           var newParam = CreateParameter(GH_ParameterSide.Output, Params.Output.Count);
+          newParam.Name = s;
+          newParam.NickName = s;
+          newParam.Description = $"Data from property: {s}";
+          newParam.MutableNickName = false;
+          newParam.Access = GH_ParamAccess.tree;
           Params.RegisterOutputParam(newParam);
         }
         
       });
-      
-      //Params.Output.Sort();
+      var paramNames = Params.Output.Select(p => p.Name).ToList();
+      paramNames.Sort();
+      var sortOrder = Params.Output.Select(p => paramNames.IndexOf(p.Name)).ToArray();
+      Params.SortOutput(sortOrder);
       Params.OnParametersChanged();
       VariableParameterMaintenance();
     }
@@ -177,7 +170,14 @@ namespace ConnectorGrasshopper.Objects
     {
       if (outputDict == null) return;
       foreach (var key in outputDict.Keys)
-        DA.SetDataTree(Params.IndexOfOutputParam(key), outputDict[key]);
+      {
+        var indexOfOutputParam = Params.IndexOfOutputParam(key);
+        if(indexOfOutputParam != -1)
+        {
+          var ghStructure = outputDict[key];
+          DA.SetDataTree(indexOfOutputParam, ghStructure);
+        }
+      }
       outputDict = null;
       (Parent as ExpandSpeckleObjectAsync).State = 0;
 
@@ -200,9 +200,8 @@ namespace ConnectorGrasshopper.Objects
       {
         if (speckleObjects.get_Branch(path).Count == 0) continue;
         var obj = speckleObjects.get_DataItem(path, 0);
-        var b = (obj as GH_SpeckleBase)?.Value;
-        var props = b?.GetMemberNames().ToList();
-        props?.ForEach(prop =>
+        var b = obj.Value;
+        b?.GetMemberNames().ToList().ForEach(prop =>
         {
           if (!fullProps.Contains(prop) && b[prop] != null)
             fullProps.Add(prop);
@@ -210,7 +209,7 @@ namespace ConnectorGrasshopper.Objects
             fullProps.Remove(prop);
         });
       }
-      //fullProps.Sort();
+      fullProps.Sort();
       return fullProps;
     }
     
