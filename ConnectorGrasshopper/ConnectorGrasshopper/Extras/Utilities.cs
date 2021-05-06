@@ -87,10 +87,10 @@ namespace ConnectorGrasshopper.Extras
       }
     }
     /// <summary>
-    /// Wraps an object in the appropriate GH_Goo subtype for display in GH.
+    /// Wraps an object in the appropriate <see cref="IGH_Goo"/> subtype for display in GH. The default value will return a <see cref="GH_ObjectWrapper"/> instance.
     /// </summary>
-    /// <param name="obj"></param>
-    /// <returns></returns>
+    /// <param name="obj">Object to be wrapped.</param>
+    /// <returns>An <see cref="IGH_Goo"/> instance wrapping the object.</returns>
     public static IGH_Goo WrapInGhType(object obj)
     {
       switch (obj)
@@ -130,6 +130,13 @@ namespace ConnectorGrasshopper.Extras
       return parent;
     }
     
+    /// <summary>
+    /// Traverses all keys of a given <see cref="Base"/> instance and attempts to convert any entities 'To Native'.
+    /// This method works recursively, and will traverse any <see cref="Base"/> instances it encounters that it cannot convert directly.
+    /// </summary>
+    /// <param name="base">Base object</param>
+    /// <param name="converter">Converter instance to use.</param>
+    /// <returns>A shallow copy of the base object with compatible values converted to native (Rhino) entities.</returns>
     public static Base TraverseAndConvertToNative(Base @base, ISpeckleConverter converter)
     {
       var copy = @base.ShallowCopy();
@@ -142,6 +149,13 @@ namespace ConnectorGrasshopper.Extras
       return copy;
     }
     
+    /// <summary>
+    /// Traverses all keys of a given <see cref="Base"/> instance and attempts to convert any entities 'To Speckle'.
+    /// This method works recursively, and will traverse any Base instances it encounters that it cannot convert directly.
+    /// </summary>
+    /// <param name="base">Base object</param>
+    /// <param name="converter">Converter instance to use.</param>
+    /// <returns>A shallow copy of the base object with compatible values converted to Speckle entities.</returns>
     public static Base TraverseAndConvertToSpeckle(Base @base, ISpeckleConverter converter)
     {
       var subclass = @base.GetType().IsSubclassOf(typeof(Base));
@@ -154,7 +168,14 @@ namespace ConnectorGrasshopper.Extras
       });
       return copy;
     }
-
+    
+    /// <summary>
+    /// Try to convert a given object into native (Grasshopper) format.
+    /// </summary>
+    /// <param name="value">Object to convert</param>
+    /// <param name="converter">Converter instance to use.</param>
+    /// <param name="recursive">Indicates if any non-convertible <see cref="Base"/> instances should be traversed too.</param>
+    /// <returns>An <see cref="IGH_Goo"/> instance holding the converted object. </returns>
     public static IGH_Goo TryConvertItemToNative(object value, ISpeckleConverter converter, bool recursive = false)
     {
       if (value == null)
@@ -201,6 +222,13 @@ namespace ConnectorGrasshopper.Extras
       return new GH_ObjectWrapper(value);
     }
 
+    /// <summary>
+    /// Try to convert a given object into native (Rhino) format.
+    /// </summary>
+    /// <param name="value">Object to convert</param>
+    /// <param name="converter">Converter instance to use.</param>
+    /// <param name="recursive">Indicates if any non-convertible <see cref="Base"/> instances should be traversed too.</param>
+    /// <returns>An <see cref="IGH_Goo"/> instance holding the converted object. </returns>
     public static object TryConvertItemToSpeckle(object value, ISpeckleConverter converter, bool recursive = false)
     {
       object result = null;
@@ -226,7 +254,13 @@ namespace ConnectorGrasshopper.Extras
       
       return null;
     }
-
+    
+    /// <summary>
+    /// Get all descendant branches of a specific path in a tree. 
+    /// </summary>
+    /// <param name="valueTree"></param>
+    /// <param name="searchPath"></param>
+    /// <returns></returns>
     public static GH_Structure<IGH_Goo> GetSubTree(GH_Structure<IGH_Goo> valueTree, GH_Path searchPath)
     {
       var subTree = new GH_Structure<IGH_Goo>();
