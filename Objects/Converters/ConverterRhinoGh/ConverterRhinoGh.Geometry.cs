@@ -757,8 +757,12 @@ namespace Objects.Converter.RhinoGh
 
             // If the curve has invalid multiplicity and is not closed, rebuild with same number of points and degree.
             // TODO: Figure out why closed curves don't like this hack?
-            if (invalid && !nurbsCurve.IsClosed)
-              nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count, nurbsCurve.Degree, true);
+            if (invalid )
+            {
+              nurbsCurve = nurbsCurve.Fit(nurbsCurve.Degree, 0,
+                0).ToNurbsCurve();
+              var in1 = HasInvalidMultiplicity(nurbsCurve);
+            }
             nurbsCurve.Domain = curve3d.Domain;
             crv = nurbsCurve;
           }
@@ -769,11 +773,17 @@ namespace Objects.Converter.RhinoGh
         }).ToList();
       spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c =>
       {
-        var nurbsCurve = c.ToNurbsCurve();
-        //nurbsCurve.Knots.RemoveMultipleKnots(1, nurbsCurve.Degree, Doc.ModelAbsoluteTolerance );
-        var rebuild = nurbsCurve.Rebuild(nurbsCurve.Points.Count, nurbsCurve.Degree, true);
-
-        var crv = CurveToSpeckle(rebuild, Units.None);
+        if (c is NurbsCurve nurbsCurve)
+        {
+          var invalid = HasInvalidMultiplicity(nurbsCurve);
+          if (invalid)
+          {
+            nurbsCurve = nurbsCurve.Fit(nurbsCurve.Degree, 0,
+              0).ToNurbsCurve();
+            var in1 = HasInvalidMultiplicity(nurbsCurve);
+          }
+        }
+        var crv = CurveToSpeckle(c, Units.None);
         return crv;
       }).ToList();
       spcklBrep.Surfaces = brep.Surfaces
