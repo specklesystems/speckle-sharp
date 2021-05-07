@@ -5,7 +5,9 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.Civil.ApplicationServices;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 
+using Interval = Objects.Primitive.Interval;
 using Polycurve = Objects.Geometry.Polycurve;
+using Brep = Objects.Geometry.Brep;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -24,6 +26,12 @@ namespace Objects.Converter.AutocadCivil
         segments.Add((ICurve)ConvertToSpeckle(exploded[i]));
       polycurve.segments = segments;
 
+      // TODO: additional params to attach
+      var points = featureLine.GetPoints(Autodesk.Civil.FeatureLinePointType.AllPoints);
+      var grade = new Interval(featureLine.MinGrade, featureLine.MaxGrade);
+      var elevation = new Interval(featureLine.MinElevation, featureLine.MaxElevation);
+      var name = featureLine.DisplayName;
+
       return polycurve;
     }
     public CivilDB.FeatureLine FeatureLineToNative(Polycurve polycurve)
@@ -32,6 +40,17 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // alignments
+    public Curve AlignmentToSpeckle(CivilDB.Alignment alignment)
+    {
+      var baseCurve = alignment.BaseCurve;
+      return null;
+    }
+
+    // 3D solids
+    //public Brep SolidToSpeckle(Solid3d solid)
+    //{
+    //return null;
+    //}
   }
 }
 #endif

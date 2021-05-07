@@ -263,7 +263,7 @@ namespace Objects.Geometry
     None = 0,
     Inward = -1,
     Outward = 1,
-    Unkown = 2
+    Unknown = 2
   }
 
   /// <summary>

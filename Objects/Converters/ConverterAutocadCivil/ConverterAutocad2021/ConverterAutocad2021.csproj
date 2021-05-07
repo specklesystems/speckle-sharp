@@ -40,6 +40,13 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="acdbmgdbrep">
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\AutoCAD 2021\acdbmgdbrep.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
   <Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems" Label="Shared" />
 
 </Project>

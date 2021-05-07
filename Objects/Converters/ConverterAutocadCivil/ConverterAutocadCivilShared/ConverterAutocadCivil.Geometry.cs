@@ -17,6 +17,7 @@ using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
+using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.AutocadCivil
@@ -53,9 +54,10 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Points
-    public Point PointToSpeckle(Point3d point)
+    public Point PointToSpeckle(Point3d point, string units = null)
     {
-      return new Point(point.X, point.Y, point.Z, ModelUnits);
+      var u = units ?? ModelUnits;
+      return new Point(point.X, point.Y, point.Z, u);
     }
     public Point3d PointToNative(Point point)
     {
@@ -63,6 +65,27 @@ namespace Objects.Converter.AutocadCivil
         ScaleToNative(point.y, point.units),
         ScaleToNative(point.z, point.units));
       return _point;
+    }
+
+    public List<List<ControlPoint>> ControlPointsToSpeckle(AC.NurbSurface surface, string units = null)
+    {
+      var u = units ?? ModelUnits;
+
+      var points = new List<List<ControlPoint>>();
+      int count = 0;
+      for (var i = 0; i < surface.NumControlPointsInU; i++)
+      {
+        var row = new List<ControlPoint>();
+        for (var j = 0; j < surface.NumControlPointsInV; j++)
+        {
+          var point = surface.ControlPoints[count];
+          var weight = surface.Weights[count];
+          row.Add(new ControlPoint(point.X, point.Y, point.Z, weight, u));
+          count++;
+        }
+        points.Add(row);
+      }
+      return points;
     }
 
     // Vectors
@@ -331,6 +354,35 @@ namespace Objects.Converter.AutocadCivil
       }
 
       return NurbsToSpeckle(curve as NurbCurve3d);
+    }
+
+    public Surface SurfaceToSpeckle(AC.NurbSurface surface, string units = null)
+    {
+      var u = units ?? ModelUnits;
+
+      List<double> Uknots = new List<double>();
+      List<double> Vknots = new List<double>();
+      foreach (var knot in surface.UKnots)
+        Uknots.Add((double)knot);
+      foreach (var knot in surface.VKnots)
+        Vknots.Add((double)knot);
+
+      var _surface = new Surface()
+      {
+        degreeU = surface.DegreeInU,
+        degreeV = surface.DegreeInV,
+        rational = surface.IsRationalInU && surface.IsRationalInV,
+        closedU = surface.IsClosedInU(),
+        closedV = surface.IsClosedInV(),
+        knotsU = Uknots,
+        knotsV = Vknots,
+        countU = surface.NumControlPointsInU,
+        countV = surface.NumControlPointsInV
+      };
+      _surface.SetControlPoints(ControlPointsToSpeckle(surface));
+      _surface.units = u;
+
+      return _surface;
     }
 
     public AC.NurbSurface SurfaceToNative(Geometry.Surface surface)

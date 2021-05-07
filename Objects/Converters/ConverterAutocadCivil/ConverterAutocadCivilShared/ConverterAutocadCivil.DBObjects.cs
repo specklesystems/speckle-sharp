@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
+using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 using System.Drawing;
 
@@ -11,6 +12,11 @@ using Box = Objects.Geometry.Box;
 using BlockInstance = Objects.Other.BlockInstance;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using Brep = Objects.Geometry.Brep;
+using BrepEdge = Objects.Geometry.BrepEdge;
+using BrepFace = Objects.Geometry.BrepFace;
+using BrepLoop = Objects.Geometry.BrepLoop;
+using BrepLoopType = Objects.Geometry.BrepLoopType;
+using BrepTrim = Objects.Geometry.BrepTrim;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
 using Curve = Objects.Geometry.Curve;
@@ -23,25 +29,45 @@ using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Speckle.Core.Models;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
     // Points
-    public Point PointToSpeckle(DBPoint point)
+    public Point PointToSpeckle(DBPoint point, string units = null)
     {
-      return PointToSpeckle(point.Position);
+      var u = units ?? ModelUnits;
+      return PointToSpeckle(point.Position, u);
     }
     public DBPoint PointToNativeDB(Point point)
     {
       return new DBPoint(PointToNative(point));
     }
+    public List<List<ControlPoint>> ControlPointsToSpeckle(AcadDB.NurbSurface surface)
+    {
+      var points = new List<List<ControlPoint>>();
+      for (var i = 0; i < surface.NumberOfControlPointsInU; i++)
+      {
+        var row = new List<ControlPoint>();
+        for (var j = 0; j < surface.NumberOfControlPointsInV; j++)
+        {
+          var point = surface.GetControlPointAt(i, j);
+          var weight = surface.GetWeight(i, j);
+          row.Add(new ControlPoint(point.X, point.Y, point.Z, weight, ModelUnits));
+        }
+        points.Add(row);
+      }
+      return points;
+    }
 
     // Lines
-    public Line LineToSpeckle(AcadDB.Line line)
+    public Line LineToSpeckle(AcadDB.Line line, string units = null)
     {
-      var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      var u = units ?? ModelUnits;
+
+      var _line = new Line(PointToSpeckle(line.StartPoint, u), PointToSpeckle(line.EndPoint, u), u);
       _line.domain = new Interval(line.StartParam, line.EndParam);
       _line.length = line.Length;
       _line.bbox = BoxToSpeckle(line.GeometricExtents, true);
@@ -432,16 +458,20 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Surfaces
-    public Surface SurfaceToSpeckle(AcadDB.PlaneSurface surface)
+    public Surface SurfaceToSpeckle(AcadDB.PlaneSurface surface, string units = null)
     {
+      var u = units ?? ModelUnits;
+
       var nurbs = surface.ConvertToNurbSurface();
       if (nurbs.Length > 0)
-        return SurfaceToSpeckle(nurbs[0]);
+        return SurfaceToSpeckle(nurbs[0], u);
       return null;
     }
 
-    public Surface SurfaceToSpeckle(AcadDB.NurbSurface surface)
+    public Surface SurfaceToSpeckle(AcadDB.NurbSurface surface, string units = null)
     {
+      var u = units ?? ModelUnits;
+
       List<double> Uknots = new List<double>();
       List<double> Vknots = new List<double>();
       foreach (var knot in surface.UKnots)
@@ -504,28 +534,7 @@ namespace Objects.Converter.AutocadCivil
 
       return _surface;
     }
-    public List<List<ControlPoint>> ControlPointsToSpeckle(AcadDB.NurbSurface surface)
-    {
-      var points = new List<List<ControlPoint>>();
-      for (var i = 0; i < surface.NumberOfControlPointsInU; i++)
-      {
-        var row = new List<ControlPoint>();
-        for (var j = 0; j < surface.NumberOfControlPointsInV; j++)
-        {
-          var point = surface.GetControlPointAt(i, j);
-          var weight = surface.GetWeight(i, j);
-          row.Add(new ControlPoint(point.X, point.Y, point.Z, weight, ModelUnits));
-        }
-        points.Add(row);
-      }
-      return points;
-    }
-
-    // Breps
-    public List<AcadDB.Surface> BrepToNativeDB(Brep brep)
-    {
-      return brep.Surfaces.Select(o => SurfaceToNativeDB(o)).ToList();
-    }
+    
 
     // Meshes
     /* need edge & face info on polygon meshes
@@ -552,8 +561,10 @@ namespace Objects.Converter.AutocadCivil
     }
     */
     // Polyface mesh vertex indexing starts at 1. Subtract 1 from face vertex index when sending to Speckle
-    public Mesh MeshToSpeckle(AcadDB.PolyFaceMesh mesh)
+    public Mesh MeshToSpeckle(AcadDB.PolyFaceMesh mesh, string units = null)
     {
+      var u = units ?? ModelUnits;
+
       var _vertices = new List<Point3d>();
       var _faces = new List<int[]>();
       var colors = new List<int>();
@@ -588,7 +599,7 @@ namespace Objects.Converter.AutocadCivil
       var vertices = PointsToFlatArray(_vertices);
       var faces = _faces.SelectMany(o => o).ToArray();
 
-      var speckleMesh = new Mesh(vertices, faces, colors.ToArray(), null, ModelUnits);
+      var speckleMesh = new Mesh(vertices, faces, colors.ToArray(), null, u);
       speckleMesh.bbox = BoxToSpeckle(mesh.GeometricExtents, true);
 
       return speckleMesh;
@@ -683,6 +694,123 @@ namespace Objects.Converter.AutocadCivil
       }
       
       return _mesh;
+    }
+
+    // breps
+    public Brep SolidToSpeckle(Solid3d solid, string units = null)
+    {
+      var tol = 0.000;
+      var u = units ?? ModelUnits;
+
+      // create display mesh
+      //var displayMesh = PolyFaceMesh.FromAcadObject(solid).GetObject(OpenMode.ForRead);
+
+      // make brep
+      var brep = new AcadBRep.Brep(solid);
+      var t = brep.Faces.First().GetSurfaceAsTrimmedNurbs();
+
+      // output lists
+      var speckleBrep = new Brep(displayValue: null, provenance: Applications.Autocad2021, units: u);
+      var speckleSurfaces = new List<Surface>();
+      var speckleTrims = new List<BrepTrim>();
+      var speckleFaces = new List<BrepFace>();
+      var speckleLoops = new List<BrepLoop>();
+      var speckleEdges = new List<BrepEdge>();
+      var speckleVertices = new List<Point>();
+      var speckleCurve3ds = new List<ICurve>();
+      var SpeckleCurve2ds = new List<ICurve>();
+
+      // process vertices
+      var vertexDictionary = new Dictionary<AcadBRep.Vertex, int>();
+      for (int i = 0; i < brep.Vertices.Count(); i++)
+      {
+        var vertex = brep.Vertices.ElementAt(i);
+        var speckleVertex = PointToSpeckle(vertex.Point, u);
+        vertexDictionary.Add(vertex, i);
+        speckleVertices.Add(speckleVertex);
+      }
+
+      // process faces, surfaces, loops, trims
+      var faceDictionary = new Dictionary<AcadBRep.Face, int>();
+      var loopDictionary = new Dictionary<AcadBRep.BoundaryLoop, int>();
+      for (int i = 0; i < brep.Faces.Count(); i++)
+      {
+        var face = brep.Faces.ElementAt(i);
+        faceDictionary.Add(face, i);
+
+        // surfaces
+        speckleSurfaces.Add(SurfaceToSpeckle(face.GetSurfaceAsNurb(), u));
+
+        // loops: this could be simplified if no faces will ever share loops
+        var loops = new List<int>();
+        int count = loopDictionary.Count;
+        int outerLoop = count;
+        foreach (var loop in face.Loops)
+        {
+          if (!loopDictionary.ContainsKey(loop))
+          {
+            var speckleLoop = new BrepLoop(speckleBrep, i, null, GetLoopType(loop.LoopType));
+            speckleLoops.Add(speckleLoop);
+            loopDictionary.Add(loop, count); loops.Add(count);
+            if (loop.LoopType == AcadBRep.LoopType.LoopExterior)
+              outerLoop = count;
+            count++;
+          }
+          else
+          {
+            loops.Add(loopDictionary[loop]);
+            if (loop.LoopType == AcadBRep.LoopType.LoopExterior)
+              outerLoop = loopDictionary[loop];
+          }
+        }
+        var speckleFace = new BrepFace(speckleBrep, i, loops, outerLoop, !face.IsOrientToSurface);
+        speckleFaces.Add(speckleFace);
+      }
+
+      // process edges
+      var edgeDictionary = new Dictionary<AcadBRep.Edge, int>();
+      for (int i = 0; i < brep.Edges.Count(); i++)
+      {
+        var edge = brep.Edges.ElementAt(i);
+        edgeDictionary.Add(edge, i);
+
+        var startVertex = (vertexDictionary.ContainsKey(edge.Vertex1)) ? vertexDictionary[edge.Vertex1] : -1;
+        var endVertex = (vertexDictionary.ContainsKey(edge.Vertex2)) ? vertexDictionary[edge.Vertex2] : -1;
+
+        var speckleEdge = new BrepEdge(speckleBrep, i, null, startVertex, endVertex, !edge.IsOrientToCurve, IntervalToSpeckle(edge.Curve.GetInterval()));
+        speckleEdges.Add(speckleEdge);
+
+        var speckleCurve3d = CurveToSpeckle(edge.Curve) as ICurve;
+        speckleCurve3ds.Add(speckleCurve3d);
+      }
+
+      // set props
+      speckleBrep.Curve3D = speckleCurve3ds;
+      speckleBrep.Edges = speckleEdges;
+      speckleBrep.Faces = speckleFaces;
+      speckleBrep.Surfaces = speckleSurfaces;
+      speckleBrep.Vertices = speckleVertices;
+      speckleBrep.Loops = speckleLoops;
+
+      speckleBrep.IsClosed = true;
+      speckleBrep.Orientation = Geometry.BrepOrientation.Unknown;
+      speckleBrep.volume = brep.GetVolume();
+      speckleBrep.bbox = BoxToSpeckle(brep.BoundBlock);
+      speckleBrep.area = brep.GetSurfaceArea();
+      return speckleBrep;
+    }
+
+    private BrepLoopType GetLoopType(AcadBRep.LoopType loopType)
+    {
+      switch (loopType)
+      {
+        case AcadBRep.LoopType.LoopExterior:
+          return BrepLoopType.Outer;
+        case AcadBRep.LoopType.LoopInterior:
+          return BrepLoopType.Inner;
+        default:
+          return BrepLoopType.Unknown;
+      }
     }
 
     public BlockInstance BlockReferenceToSpeckle(AcadDB.BlockReference reference)
