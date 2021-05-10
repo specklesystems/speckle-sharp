@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
+using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
@@ -23,6 +24,8 @@ namespace ConnectorGrasshopper.Objects
 
     public virtual bool CanDisableConversion => true;
     
+    public string SelectedKitName;
+    
     public SelectKitAsyncComponentBase(string name, string nickname, string description, string category,
       string subCategory) : base(name, nickname, description, category, subCategory)
     {
@@ -31,14 +34,18 @@ namespace ConnectorGrasshopper.Objects
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document);
+      if (SelectedKitName == null)
+      {
+        var key = "Speckle2:kit.default.name";
+        SelectedKitName = Grasshopper.Instances.Settings.GetValue(key, "Objects");
+      }
+
       SetConverter();
     }
 
     public virtual void SetConverter()
     {
-      var key = "Speckle2:kit.default.name";
-      var n = Grasshopper.Instances.Settings.GetValue(key, "Objects");
-      if (n == "None")
+      if (SelectedKitName == "None")
       {
         Kit = null;
         Converter = null;
@@ -47,12 +54,24 @@ namespace ConnectorGrasshopper.Objects
       }
       try
       {
-        SetConverterFromKit(n);
+        SetConverterFromKit(SelectedKitName);
       }
       catch
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
       }
+    }
+
+    public override bool Write(GH_IWriter writer)
+    {
+      writer.SetString("selectedKitName", SelectedKitName);
+      return base.Write(writer);
+    }
+
+    public override bool Read(GH_IReader reader)
+    {
+      SelectedKitName = reader.GetString("selectedKitName");
+      return base.Read(reader);
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -66,15 +85,15 @@ namespace ConnectorGrasshopper.Objects
         if(CanDisableConversion)
           Menu_AppendItem(menu, "Do Not Convert", (s, e) =>
           {
-            var key = "Speckle2:kit.default.name";
-            Grasshopper.Instances.Settings.SetValue(key, "None");
+            SelectedKitName = "None";
             SetConverter();
             ExpireSolution(true);
           }, true, Kit == null);
           
         foreach (var kit in kits)
         {
-          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
+          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); ExpireSolution(true);
+            }, true,
             kit.Name == Kit?.Name);
         }
 
@@ -90,6 +109,7 @@ namespace ConnectorGrasshopper.Objects
     {
       if (kitName == Kit?.Name) return;
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
+      SelectedKitName = Kit.Name;
       Converter = Kit.LoadConverter(Applications.Rhino);
       Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
       Message = $"Using the {Kit.Name} Converter";
