@@ -178,6 +178,7 @@ namespace ConnectorGrasshopper.Extras
     /// <returns>An <see cref="IGH_Goo"/> instance holding the converted object. </returns>
     public static IGH_Goo TryConvertItemToNative(object value, ISpeckleConverter converter, bool recursive = false)
     {
+      if (converter == null) return new GH_ObjectWrapper(value);
       if (value == null)
         return null;
 

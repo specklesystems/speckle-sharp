@@ -21,21 +21,31 @@ namespace ConnectorGrasshopper.Objects
 
     public ISpeckleKit Kit;
 
-    public SelectKitAsyncComponentBase(string name, string nickname, string description, string category, string subCategory) : base(name, nickname, description, category, subCategory)
+    public SelectKitAsyncComponentBase(string name, string nickname, string description, string category,
+      string subCategory) : base(name, nickname, description, category, subCategory)
     {
     }
 
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document);
+      SetConverter();
+    }
+
+    private void SetConverter()
+    {
       var key = "Speckle2:kit.default.name";
       var n = Grasshopper.Instances.Settings.GetValue(key, "Objects");
+      if (n == "None")
+      {
+        Kit = null;
+        Converter = null;
+        Message = "No Conversion";
+        return;
+      }
       try
       {
-        Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino).FirstOrDefault(kit => kit != null && kit.Name == n);
-        Converter = Kit.LoadConverter(Applications.Rhino);
-        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-        Message = $"{Kit.Name} Kit";
+        SetConverterFromKit(n);
       }
       catch
       {
@@ -51,10 +61,19 @@ namespace ConnectorGrasshopper.Objects
 
         Menu_AppendSeparator(menu);
         Menu_AppendItem(menu, "Select the converter you want to use:");
+        Menu_AppendItem(menu, "Do Not Convert", (s, e) =>
+        {
+          var key = "Speckle2:kit.default.name";
+          Grasshopper.Instances.Settings.SetValue(key, "None");
+          SetConverter();
+          BaseWorker = new ExpandSpeckleObjectWorker(this, Converter);
+          ExpireSolution(true);
+        }, true, Kit == null);
+        
         foreach (var kit in kits)
         {
-          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
-            kit.Name == Kit.Name);
+          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); ExpireSolution(true); }, true,
+            kit.Name == Kit?.Name);
         }
 
         Menu_AppendSeparator(menu);
@@ -67,12 +86,12 @@ namespace ConnectorGrasshopper.Objects
 
     public void SetConverterFromKit(string kitName)
     {
-      if (kitName == Kit.Name)return;
+      if (kitName == Kit?.Name) return;
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
       Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-
+      BaseWorker = new ExpandSpeckleObjectWorker(this, Converter);
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
     }
@@ -81,12 +100,14 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly", level : SentryLevel.Warning);
+      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly",
+        level: SentryLevel.Warning);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly", level : SentryLevel.Warning);
+      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly",
+        level: SentryLevel.Warning);
     }
 
     protected override void BeforeSolveInstance()
@@ -98,13 +119,13 @@ namespace ConnectorGrasshopper.Objects
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       //Ensure converter document is up to date
-      if(Converter == null)
+      if (Converter == null)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-        return;
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No converter was provided. Conversions are disabled.");
+
       }
+
       base.SolveInstance(DA);
-      
     }
   }
 }
