@@ -1051,14 +1051,15 @@ namespace Objects.Converter.RhinoGh
         points.Count, points[0].Count);
 
       // Set knot vectors
-      for (int i = 0; i < surface.knotsU.Count; i++)
+      var correctUKnots = GetCorrectKnots(surface.knotsU, surface.countU, surface.degreeU);
+      for (int i = 0; i < correctUKnots.Count; i++)
       {
-        result.KnotsU[i] = surface.knotsU[i];
+        result.KnotsU[i] = correctUKnots[i];
       }
-
-      for (int i = 0; i < surface.knotsV.Count; i++)
+      var correctVKnots = GetCorrectKnots(surface.knotsV, surface.countV, surface.degreeV);
+      for (int i = 0; i < correctVKnots.Count; i++)
       {
-        result.KnotsV[i] = surface.knotsV[i];
+        result.KnotsV[i] = correctVKnots[i];
       }
 
       // Set control points
@@ -1116,6 +1117,18 @@ namespace Objects.Converter.RhinoGh
       result.bbox = BoxToSpeckle(new RH.Box(surface.GetBoundingBox(true)), u);
 
       return result;
+    }
+
+    private List<double> GetCorrectKnots(List<double> knots, int controlPointCount, int degree)
+    {
+      var correctKnots = knots;
+      if (knots.Count == controlPointCount + degree + 1)
+      {
+        correctKnots.RemoveAt(0);
+        correctKnots.RemoveAt(correctKnots.Count - 1);
+      }
+
+      return correctKnots;
     }
   }
 }

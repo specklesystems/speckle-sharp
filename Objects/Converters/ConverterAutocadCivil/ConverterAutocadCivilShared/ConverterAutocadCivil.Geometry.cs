@@ -205,9 +205,11 @@ namespace Objects.Converter.AutocadCivil
     // Arc
     public Arc ArcToSpeckle(CircularArc3d arc)
     {
+      var interval = arc.GetInterval();
       var _arc = new Arc(PlaneToSpeckle(arc.GetPlane()), arc.Radius, arc.StartAngle, arc.EndAngle, Math.Abs(arc.EndAngle - arc.StartAngle), ModelUnits);
       _arc.startPoint = PointToSpeckle(arc.StartPoint);
       _arc.endPoint = PointToSpeckle(arc.EndPoint);
+      _arc.midPoint = PointToSpeckle(arc.EvaluatePoint((interval.UpperBound - interval.LowerBound) / 2));
       _arc.domain = IntervalToSpeckle(arc.GetInterval());
       _arc.length = arc.GetLength(arc.GetParameterOf(arc.StartPoint), arc.GetParameterOf(arc.EndPoint), tolerance);
       _arc.bbox = BoxToSpeckle(arc.OrthoBoundBlock);
