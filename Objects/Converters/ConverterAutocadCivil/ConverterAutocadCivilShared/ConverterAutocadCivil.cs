@@ -232,6 +232,9 @@ public static string AutocadAppName = Applications.Autocad2022;
         case SubDMesh o:
           return MeshToSpeckle(o);
 
+        case Solid3d o:
+          return SolidToSpeckle(o);
+
         case BlockReference o:
           return BlockReferenceToSpeckle(o);
 
@@ -239,8 +242,23 @@ public static string AutocadAppName = Applications.Autocad2022;
           return BlockRecordToSpeckle(o);
 
 #if (CIVIL2021 || CIVIL2022)
+        case CivilDB.Alignment o:
+          return AlignmentToSpeckle(o);
+
         case CivilDB.FeatureLine o:
           return FeatureLineToSpeckle(o);
+
+        case CivilDB.Structure o:
+          return StructureToSpeckle(o);
+
+        case CivilDB.Pipe o:
+          return PipeToSpeckle(o);
+
+        case CivilDB.Profile o:
+          return ProfileToSpeckle(o);
+
+        case CivilDB.TinSurface o:
+          return SurfaceToSpeckle(o);
 #endif
 
         default:
@@ -256,81 +274,50 @@ public static string AutocadAppName = Applications.Autocad2022;
           switch (o)
           {
             case DBPoint _:
-              return true;
-
             case AcadDB.Line _:
-              return true;
-
             case AcadDB.Arc _:
-              return true;
-
             case AcadDB.Circle _:
-              return true;
-
             case AcadDB.Ellipse _:
-              return true;
-
             case AcadDB.Spline _:
-              return true;
-
             case AcadDB.Polyline _:
-              return true;
-
             case AcadDB.Polyline2d _:
-              return true;
-
             case AcadDB.Polyline3d _:
-              return true;
-
             case AcadDB.PlaneSurface _:
-              return true;
-
             case AcadDB.NurbSurface _:
-              return true;
-
             case AcadDB.PolyFaceMesh _:
-              return true;
-
             case SubDMesh _:
+            case Solid3d _:
               return true;
 
             case BlockReference _:
-              return true;
-
             case BlockTableRecord _:
               return true;
+
+#if (CIVIL2021 || CIVIL2022)
+            case CivilDB.FeatureLine _:
+            case CivilDB.Structure _:
+            case CivilDB.Alignment _:
+            case CivilDB.Pipe _:
+            case CivilDB.Profile _:
+            case CivilDB.TinSurface _:
+              return true;
+#endif
 
             default:
               return false;
           }
 
         case Acad.Geometry.Point3d _:
-          return true;
-
         case Acad.Geometry.Vector3d _:
-          return true;
-
         case Acad.Geometry.Plane _:
-          return true;
-
         case Acad.Geometry.Line3d _:
-          return true;
-
         case Acad.Geometry.LineSegment3d _:
-          return true;
-
         case Acad.Geometry.CircularArc3d _:
-          return true;
-
         case Acad.Geometry.Curve3d _:
           return true;
 
-        case Acad.Geometry.NurbSurface _:
-          return false;
-
         default:
           return false;
-
       }
     }
 

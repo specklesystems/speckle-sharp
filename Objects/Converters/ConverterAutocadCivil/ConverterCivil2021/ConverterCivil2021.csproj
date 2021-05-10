@@ -20,12 +20,6 @@
     <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
   </PropertyGroup>
 
-
-  <ItemGroup>
-    <PackageReference Include="Civil3D2021.Base" Version="1.0.0" />
-    <PackageReference Include="ModPlus.AutoCAD.API.2021" Version="1.0.0" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
@@ -40,6 +34,11 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Speckle.AutoCAD.API" Version="2021.0.0.3" />
+    <PackageReference Include="Speckle.Civil3D.API" Version="2021.0.0.3" />
   </ItemGroup>
 
   <Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems" Label="Shared" />
