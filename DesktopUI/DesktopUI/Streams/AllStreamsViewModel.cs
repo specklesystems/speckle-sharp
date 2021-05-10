@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -185,6 +185,14 @@ namespace Speckle.DesktopUI.Streams
       Link.OpenInBrowser($"{state.ServerUrl}/streams/{state.Stream.id}");
     }
 
+    public void CopyStreamUrl(StreamState state)
+    {
+      Tracker.TrackPageview("stream", "copy-link");
+      Clipboard.SetDataObject($"{state.ServerUrl}/streams/{state.Stream.id}");
+      // notification might actually be annoying? idk commenting out for now
+      // _bindings.RaiseNotification($"Copied URL for {state.Stream.name} to clipboard");
+    }
+
     #region Application events
 
     public void Handle(StreamAddedEvent message)
@@ -299,7 +307,6 @@ namespace Speckle.DesktopUI.Streams
         }
       }
     }
-    }
 
     private static void OnMouseLeftButtonUp(object sender, RoutedEventArgs e)
     {
@@ -324,7 +331,6 @@ namespace Speckle.DesktopUI.Streams
       }
       fe.ContextMenu.IsOpen = true;
     }
-  }
   }
 
   public class BindingProxy : Freezable
