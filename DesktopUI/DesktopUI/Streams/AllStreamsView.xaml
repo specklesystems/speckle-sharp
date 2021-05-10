@@ -412,8 +412,9 @@
                   </Grid.RowDefinitions>
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
 
                   <WrapPanel Grid.Row="0"
@@ -431,8 +432,34 @@
                     </TextBlock>
                   </WrapPanel>
 
-                  <ToggleButton Grid.Row="0"
+                  <Button Grid.Row="0"
+                    Grid.Column="1"
+                    Width="28"
+                    Height="28"
+                    HorizontalAlignment="Right"
+                    md:RippleAssist.ClipToBounds="True"
+                    Command="{s:Action CopyStreamUrl}"
+                    CommandParameter="{Binding}"
+                    Content="{md:PackIcon Kind=LinkVariant,
+                                          Size=16}"
+                    Style="{StaticResource MaterialDesignIconButton}"
+                    ToolTip="Copy stream url to clipboard" />
+
+                  <Button Grid.Row="0"
                     Grid.Column="2"
+                    Width="28"
+                    Height="28"
+                    HorizontalAlignment="Right"
+                    md:RippleAssist.ClipToBounds="True"
+                    Command="{s:Action OpenStreamInWeb}"
+                    CommandParameter="{Binding}"
+                    Content="{md:PackIcon Kind=OpenInNew,
+                                          Size=16}"
+                    Style="{StaticResource MaterialDesignIconButton}"
+                    ToolTip="Open this stream in the browser" />
+
+                  <ToggleButton Grid.Row="0"
+                    Grid.Column="3"
                     Width="28"
                     Height="28"
                     Command="{s:Action SwapState}"
@@ -469,18 +496,6 @@
                     </md:ToggleButtonAssist.OnContent>
                   </ToggleButton>
 
-                  <Button Grid.Row="0"
-                    Grid.Column="1"
-                    Width="28"
-                    Height="28"
-                    HorizontalAlignment="Right"
-                    md:RippleAssist.ClipToBounds="True"
-                    Command="{s:Action OpenStreamInWeb}"
-                    CommandParameter="{Binding}"
-                    Content="{md:PackIcon Kind=OpenInNew,
-                                          Size=16}"
-                    Style="{StaticResource MaterialDesignIconButton}"
-                    ToolTip="Open this stream in the browser" />
                   <!--<StackPanel Orientation="Horizontal"
                               Grid.Row="1"
                               Grid.Column="0"
@@ -557,8 +572,8 @@
                     Grid.Column="3"
                     Margin="8,5,0,0"
                     Foreground="{DynamicResource MaterialDesignBody}"
-                    IsEnabled="{Binding SendEnabled}"
                     IsChecked="{Binding CommitExpanderChecked}"
+                    IsEnabled="{Binding SendEnabled}"
                     Style="{StaticResource MaterialDesignExpanderToggleButton}"
                     ToolTip="Add a commit message" />
 

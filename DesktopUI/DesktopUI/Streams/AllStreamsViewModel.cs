@@ -185,6 +185,14 @@ namespace Speckle.DesktopUI.Streams
       Link.OpenInBrowser($"{state.ServerUrl}/streams/{state.Stream.id}");
     }
 
+    public void CopyStreamUrl(StreamState state)
+    {
+      Tracker.TrackPageview("stream", "copy-link");
+      Clipboard.SetDataObject($"{state.ServerUrl}/streams/{state.Stream.id}");
+      // notification might actually be annoying? idk commenting out for now
+      // _bindings.RaiseNotification($"Copied URL for {state.Stream.name} to clipboard");
+    }
+
     #region Application events
 
     public void Handle(StreamAddedEvent message)
@@ -273,31 +281,29 @@ namespace Speckle.DesktopUI.Streams
     {
       var uiElement = sender as UIElement;
 
-      if (uiElement != null)
-      {
-        bool IsEnabled = e.NewValue is bool && (bool)e.NewValue;
+      if ( uiElement == null ) return;
+      bool IsEnabled = e.NewValue is bool value && value;
 
-        if (IsEnabled)
+      if (IsEnabled)
+      {
+        if (uiElement is ButtonBase btn)
         {
-          if (uiElement is ButtonBase)
-          {
-            ((ButtonBase)uiElement).Click += OnMouseLeftButtonUp;
-          }
-          else
-          {
-            uiElement.MouseLeftButtonUp += OnMouseLeftButtonUp;
-          }
+          btn.Click += OnMouseLeftButtonUp;
         }
         else
         {
-          if (uiElement is ButtonBase)
-          {
-            ((ButtonBase)uiElement).Click -= OnMouseLeftButtonUp;
-          }
-          else
-          {
-            uiElement.MouseLeftButtonUp -= OnMouseLeftButtonUp;
-          }
+          uiElement.MouseLeftButtonUp += OnMouseLeftButtonUp;
+        }
+      }
+      else
+      {
+        if (uiElement is ButtonBase btn )
+        {
+          btn.Click -= OnMouseLeftButtonUp;
+        }
+        else
+        {
+          uiElement.MouseLeftButtonUp -= OnMouseLeftButtonUp;
         }
       }
     }
@@ -306,26 +312,24 @@ namespace Speckle.DesktopUI.Streams
     {
       Debug.Print("OnMouseLeftButtonUp");
       var fe = sender as FrameworkElement;
-      if (fe != null)
+      if ( fe == null ) return;
+      // if we use binding in our context menu, then it's DataContext won't be set when we show the menu on left click
+      // (it seems setting DataContext for ContextMenu is hardcoded in WPF when user right clicks on a control, although I'm not sure)
+      // so we have to set up ContextMenu.DataContext manually here
+      if (fe.ContextMenu.DataContext == null)
       {
-        // if we use binding in our context menu, then it's DataContext won't be set when we show the menu on left click
-        // (it seems setting DataContext for ContextMenu is hardcoded in WPF when user right clicks on a control, although I'm not sure)
-        // so we have to set up ContextMenu.DataContext manually here
-        if (fe.ContextMenu.DataContext == null)
-        {
-          fe.ContextMenu.SetBinding(FrameworkElement.DataContextProperty, new Binding { Source = fe.DataContext });
-        }
-        fe.ContextMenu.PlacementTarget = fe;
-        //fe.ContextMenu.
-        fe.ContextMenu.Placement = PlacementMode.Bottom;
-        //fe.ContextMenu.HorizontalOffset = 0;
-        //fe.ContextMenu.VerticalOffset = 0;
-        if (fe.ContextMenu.IsOpen)
-        {
-          Debug.WriteLine("WASD OPEN");
-        }
-        fe.ContextMenu.IsOpen = true;
+        fe.ContextMenu.SetBinding(FrameworkElement.DataContextProperty, new Binding { Source = fe.DataContext });
       }
+      fe.ContextMenu.PlacementTarget = fe;
+      //fe.ContextMenu.
+      fe.ContextMenu.Placement = PlacementMode.Bottom;
+      //fe.ContextMenu.HorizontalOffset = 0;
+      //fe.ContextMenu.VerticalOffset = 0;
+      if (fe.ContextMenu.IsOpen)
+      {
+        Debug.WriteLine("WASD OPEN");
+      }
+      fe.ContextMenu.IsOpen = true;
     }
   }
 
