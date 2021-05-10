@@ -242,11 +242,23 @@ public static string AutocadAppName = Applications.Autocad2022;
           return BlockRecordToSpeckle(o);
 
 #if (CIVIL2021 || CIVIL2022)
+        case CivilDB.Alignment o:
+          return AlignmentToSpeckle(o);
+
         case CivilDB.FeatureLine o:
           return FeatureLineToSpeckle(o);
 
         case CivilDB.Structure o:
-          return SolidToSpeckle(o.Solid3dBody);
+          return StructureToSpeckle(o);
+
+        case CivilDB.Pipe o:
+          return PipeToSpeckle(o);
+
+        case CivilDB.Profile o:
+          return ProfileToSpeckle(o);
+
+        case CivilDB.TinSurface o:
+          return SurfaceToSpeckle(o);
 #endif
 
         default:
@@ -284,6 +296,10 @@ public static string AutocadAppName = Applications.Autocad2022;
 #if (CIVIL2021 || CIVIL2022)
             case CivilDB.FeatureLine _:
             case CivilDB.Structure _:
+            case CivilDB.Alignment _:
+            case CivilDB.Pipe _:
+            case CivilDB.Profile _:
+            case CivilDB.TinSurface _:
               return true;
 #endif
 

@@ -457,6 +457,38 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
+    public ICurve CurveToSpeckle(AcadDB.Curve curve, string units = null)
+    {
+      var u = units ?? ModelUnits;
+
+      switch (curve)
+      {
+        case AcadDB.Line line:
+          return LineToSpeckle(line, u);
+
+        case AcadDB.Polyline polyline:
+          return PolylineToSpeckle(polyline);
+
+        case AcadDB.Polyline2d polyline2d:
+          return PolycurveToSpeckle(polyline2d);
+
+        case AcadDB.Polyline3d polyline3d:
+          return PolylineToSpeckle(polyline3d);
+
+        case AcadDB.Arc arc:
+          return ArcToSpeckle(arc);
+
+        case AcadDB.Circle circle:
+          return CircleToSpeckle(circle);
+
+        case AcadDB.Spline spline:
+          return SplineToSpeckle(spline);
+
+        default:
+          return null;
+      }
+    }
+
     // Surfaces
     public Surface SurfaceToSpeckle(AcadDB.PlaneSurface surface, string units = null)
     {
@@ -697,75 +729,69 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // breps
-    public Brep SolidToSpeckle(Solid3d solid, string units = null)
+    public Mesh SolidToSpeckle(Solid3d solid, string units = null)
     {
-      var tol = 0.000;
       var u = units ?? ModelUnits;
 
       // create display mesh
-      //var displayMesh = PolyFaceMesh.FromAcadObject(solid).GetObject(OpenMode.ForRead);
+      var displayMesh = GetMeshFromSolid(solid);
 
+      return displayMesh;
+
+      /* Not in use currently: needs development on trims
       // make brep
       var brep = new AcadBRep.Brep(solid);
-      var t = brep.Faces.First().GetSurfaceAsTrimmedNurbs();
+      var t = brep.Faces.First().GetSurfaceAsTrimmedNurbs()[0].GetContours();
 
       // output lists
-      var speckleBrep = new Brep(displayValue: null, provenance: Applications.Autocad2021, units: u);
-      var speckleSurfaces = new List<Surface>();
-      var speckleTrims = new List<BrepTrim>();
+      var speckleBrep = new Brep(displayValue: displayMesh, provenance: Applications.Autocad2021, units: u);
       var speckleFaces = new List<BrepFace>();
       var speckleLoops = new List<BrepLoop>();
+      var speckleSurfaces = new List<Surface>();
+      var speckleTrims = new List<BrepTrim>();
       var speckleEdges = new List<BrepEdge>();
-      var speckleVertices = new List<Point>();
-      var speckleCurve3ds = new List<ICurve>();
       var SpeckleCurve2ds = new List<ICurve>();
 
       // process vertices
-      var vertexDictionary = new Dictionary<AcadBRep.Vertex, int>();
-      for (int i = 0; i < brep.Vertices.Count(); i++)
-      {
-        var vertex = brep.Vertices.ElementAt(i);
-        var speckleVertex = PointToSpeckle(vertex.Point, u);
-        vertexDictionary.Add(vertex, i);
-        speckleVertices.Add(speckleVertex);
-      }
+      var vertexList = brep.Vertices.ToList();
+      var speckleVertices = vertexList.Select(o => PointToSpeckle(o.Point, u)).ToList();
 
-      // process faces, surfaces, loops, trims
-      var faceDictionary = new Dictionary<AcadBRep.Face, int>();
-      var loopDictionary = new Dictionary<AcadBRep.BoundaryLoop, int>();
+      // process faces, surfaces, loops, curve3ds
+      var faceList = new List<AcadBRep.Face>();
+      var loopList = new List<AcadBRep.BoundaryLoop>();
+      var curve3dList = new List<Curve3d>();
       for (int i = 0; i < brep.Faces.Count(); i++)
       {
         var face = brep.Faces.ElementAt(i);
-        faceDictionary.Add(face, i);
+        faceList.Add(face);
 
         // surfaces
         speckleSurfaces.Add(SurfaceToSpeckle(face.GetSurfaceAsNurb(), u));
 
-        // loops: this could be simplified if no faces will ever share loops
+        // curve3ds
+        var boundaries = face.GetSurfaceAsTrimmedNurbs().First().GetContours();
+        foreach (var boundary in boundaries)
+          foreach (var contour in boundary.Contour.GetCurve3ds().Select(o => (Curve3d)o))
+            if (curve3dList.Where(o => o.IsEqualTo(contour)).Count() == 0)
+              curve3dList.Add(contour);
+
+        // loops
         var loops = new List<int>();
-        int count = loopDictionary.Count;
+        int count = loopList.Count;
         int outerLoop = count;
         foreach (var loop in face.Loops)
         {
-          if (!loopDictionary.ContainsKey(loop))
-          {
-            var speckleLoop = new BrepLoop(speckleBrep, i, null, GetLoopType(loop.LoopType));
-            speckleLoops.Add(speckleLoop);
-            loopDictionary.Add(loop, count); loops.Add(count);
-            if (loop.LoopType == AcadBRep.LoopType.LoopExterior)
-              outerLoop = count;
-            count++;
-          }
-          else
-          {
-            loops.Add(loopDictionary[loop]);
-            if (loop.LoopType == AcadBRep.LoopType.LoopExterior)
-              outerLoop = loopDictionary[loop];
-          }
+          loopList.Add(loop); loops.Add(count);
+          if (loop.LoopType == AcadBRep.LoopType.LoopExterior)
+            outerLoop = count;
+          var speckleLoop = new BrepLoop(speckleBrep, i, null, GetLoopType(loop.LoopType));
+          speckleLoops.Add(speckleLoop);
+          count++;
         }
         var speckleFace = new BrepFace(speckleBrep, i, loops, outerLoop, !face.IsOrientToSurface);
         speckleFaces.Add(speckleFace);
       }
+      var speckleCurve3ds = curve3dList.Select(o => CurveToSpeckle(o)).ToList();
 
       // process edges
       var edgeDictionary = new Dictionary<AcadBRep.Edge, int>();
@@ -774,14 +800,12 @@ namespace Objects.Converter.AutocadCivil
         var edge = brep.Edges.ElementAt(i);
         edgeDictionary.Add(edge, i);
 
-        var startVertex = (vertexDictionary.ContainsKey(edge.Vertex1)) ? vertexDictionary[edge.Vertex1] : -1;
-        var endVertex = (vertexDictionary.ContainsKey(edge.Vertex2)) ? vertexDictionary[edge.Vertex2] : -1;
+        var startIndex = GetIndexOfVertex(vertexList, edge.Vertex1);
+        var endIndex = GetIndexOfVertex(vertexList, edge.Vertex2);
+        var crvIndex = GetIndexOfCurve(curve3dList,edge.Curve);
 
-        var speckleEdge = new BrepEdge(speckleBrep, i, null, startVertex, endVertex, !edge.IsOrientToCurve, IntervalToSpeckle(edge.Curve.GetInterval()));
+        var speckleEdge = new BrepEdge(speckleBrep, crvIndex, null, startIndex, endIndex, !edge.IsOrientToCurve, IntervalToSpeckle(edge.Curve.GetInterval()));
         speckleEdges.Add(speckleEdge);
-
-        var speckleCurve3d = CurveToSpeckle(edge.Curve) as ICurve;
-        speckleCurve3ds.Add(speckleCurve3d);
       }
 
       // set props
@@ -798,6 +822,97 @@ namespace Objects.Converter.AutocadCivil
       speckleBrep.bbox = BoxToSpeckle(brep.BoundBlock);
       speckleBrep.area = brep.GetSurfaceArea();
       return speckleBrep;
+      */
+    }
+
+    // Based on Kean Walmsley's blog post on mesh conversion using Brep API
+    private Mesh GetMeshFromSolid(Solid3d solid)
+    {
+      Mesh mesh = null;
+
+      using (var brep = new AcadBRep.Brep(solid))
+      {
+        using (var control = new AcadBRep.Mesh2dControl())
+        {
+          // These settings may need adjusting
+          control.MaxSubdivisions = 10000;
+
+          // output mesh vars
+          var _vertices = new List<Point3d>();
+          var _faces = new List<int[]>();
+
+          // create mesh filterS
+          using (var filter = new AcadBRep.Mesh2dFilter())
+          {
+            filter.Insert(brep, control);
+            using (var m = new AcadBRep.Mesh2d(filter))
+            {
+              foreach (var e in m.Element2ds)
+              {
+                // get vertices
+                var faceIndices = new List<int>();
+                foreach (var n in e.Nodes)
+                {
+                  if (!_vertices.Contains(n.Point))
+                  {
+                    faceIndices.Add(_vertices.Count);
+                    _vertices.Add(n.Point);
+                  }
+                  else
+                  {
+                    faceIndices.Add(_vertices.IndexOf(n.Point));
+                  }
+                  n.Dispose();
+                }
+
+                // get faces
+                if (e.Nodes.Count() == 3)
+                  _faces.Add(new int[] { 0, faceIndices[0], faceIndices[1], faceIndices[2] });
+                else if (e.Nodes.Count() == 4)
+                  _faces.Add(new int[] { 1, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
+                e.Dispose();
+              }
+            }
+          }
+
+          // create speckle mesh
+          var vertices = PointsToFlatArray(_vertices);
+          var faces = _faces.SelectMany(o => o).ToArray();
+          mesh = new Mesh(vertices, faces);
+          mesh.units = ModelUnits;
+          mesh.bbox = BoxToSpeckle(solid.GeometricExtents);
+        }
+      }
+
+      return mesh;
+    }
+
+    private int GetIndexOfCurve(List<Curve3d> list, Curve3d curve) // necessary since contains comparer doesn't work
+    {
+      int index = -1;
+      for (int i = 0; i < list.Count; i++)
+      {
+        if (list[i].IsEqualTo(curve))
+        {
+          index = i;
+          break;
+        }
+      }
+      return index;
+    }
+
+    private int GetIndexOfVertex(List<AcadBRep.Vertex> list, AcadBRep.Vertex vertex)
+    {
+      int index = -1;
+      for (int i = 0; i < list.Count; i++)
+      {
+        if (list[i].Point.IsEqualTo(vertex.Point))
+        {
+          index = i;
+          break;
+        }
+      }
+      return index;
     }
 
     private BrepLoopType GetLoopType(AcadBRep.LoopType loopType)

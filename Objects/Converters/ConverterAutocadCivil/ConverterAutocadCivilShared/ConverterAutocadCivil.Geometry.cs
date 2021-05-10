@@ -79,7 +79,12 @@ namespace Objects.Converter.AutocadCivil
         for (var j = 0; j < surface.NumControlPointsInV; j++)
         {
           var point = surface.ControlPoints[count];
-          var weight = surface.Weights[count];
+          double weight = 1;
+          try
+          {
+            weight = surface.Weights[count];
+          }
+          catch { }
           row.Add(new ControlPoint(point.X, point.Y, point.Z, weight, u));
           count++;
         }
@@ -125,11 +130,13 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Line
-    public Line LineToSpeckle(Line3d line)
+    public Line LineToSpeckle(Line3d line, string units = null)
     {
+      var u = units ?? ModelUnits;
+
       var startParam = line.GetParameterOf(line.StartPoint);
       var endParam = line.GetParameterOf(line.EndPoint);
-      var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), u);
       _line.length = line.GetLength(startParam, endParam, tolerance);
       _line.domain = IntervalToSpeckle(line.GetInterval());
       _line.bbox = BoxToSpeckle(line.OrthoBoundBlock);
@@ -337,19 +344,24 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
-    public ICurve CurveToSpeckle(Curve3d curve)
+    public ICurve CurveToSpeckle(Curve3d curve, string units = null)
     {
+      var u = units ?? ModelUnits;
+
       if (curve.IsPlanar(out AC.Plane pln))
       {
         if (curve.IsPeriodic(out double period) && curve.IsClosed())
         { }
 
-        if (curve.IsLinear(out Line3d line)) // defaults to polyline
+        if (curve.IsLinear(out Line3d line)) // this removes endpoint info! need to create line here instead of using LineToSpeckle
         {
-          if (null != line)
-          {
-            return LineToSpeckle(line);
-          }
+          var startParam = line.GetParameterOf(curve.StartPoint);
+          var endParam = line.GetParameterOf(curve.EndPoint);
+          var _line = new Line(PointToSpeckle(curve.StartPoint, u), PointToSpeckle(curve.EndPoint, u), u);
+          _line.length = line.GetLength(startParam, endParam, tolerance);
+          _line.domain = IntervalToSpeckle(curve.GetInterval());
+          _line.bbox = BoxToSpeckle(curve.OrthoBoundBlock);
+          return _line;
         }
       }
 
@@ -377,7 +389,9 @@ namespace Objects.Converter.AutocadCivil
         knotsU = Uknots,
         knotsV = Vknots,
         countU = surface.NumControlPointsInU,
-        countV = surface.NumControlPointsInV
+        countV = surface.NumControlPointsInV,
+        domainU = IntervalToSpeckle(surface.GetEnvelope()[0]),
+        domainV = IntervalToSpeckle(surface.GetEnvelope()[1])
       };
       _surface.SetControlPoints(ControlPointsToSpeckle(surface));
       _surface.units = u;
