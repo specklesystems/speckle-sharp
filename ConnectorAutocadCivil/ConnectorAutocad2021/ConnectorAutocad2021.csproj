@@ -63,10 +63,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ModPlus.AutoCAD.API.2021">
-      <Version>1.0.0</Version>
-      <ExcludeAssets>runtime</ExcludeAssets>
-      <PrivateAssets>all</PrivateAssets>
+    <PackageReference Include="Speckle.AutoCAD.API">
+      <Version>2021.0.0.3</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
