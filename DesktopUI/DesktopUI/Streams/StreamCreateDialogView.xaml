@@ -11,55 +11,64 @@
   mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
-      <DataTemplate x:Key="AccountTemplate">
-        <TextBlock>
-          <Run Text="{Binding userInfo.email}" />
-          <Run Text="{Binding serverInfo.name, StringFormat=' - {0}'}" />
-        </TextBlock>
-      </DataTemplate>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary
+          Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Snackbar.xaml" />
+        <ResourceDictionary>
+          <DataTemplate x:Key="AccountTemplate">
+            <TextBlock>
+              <Run Text="{Binding userInfo.email}" />
+              <Run Text="{Binding serverInfo.name, StringFormat=' - {0}'}" />
+            </TextBlock>
+          </DataTemplate>
 
-      <DataTemplate x:Key="StreamCardTemplate">
-        <Grid Margin="9,20">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-          </Grid.ColumnDefinitions>
-          <Grid.RowDefinitions />
-          <Border Margin="-10"
-            VerticalAlignment="Stretch"
-            BorderBrush="LightGray"
-            BorderThickness="1,0,0,0" />
+          <DataTemplate x:Key="StreamCardTemplate">
+            <Grid Margin="9,20">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions />
+              <Border Margin="-10"
+                VerticalAlignment="Stretch"
+                BorderBrush="LightGray"
+                BorderThickness="1,0,0,0" />
 
-          <StackPanel Grid.Column="0" MaxHeight="75"
-            HorizontalAlignment="Stretch">
-            <TextBlock FontSize="16"
-              FontWeight="Bold"
-              Text="{Binding name}" />
-            <TextBlock FontSize="10"
-              Text="{Binding createdAt}" />
-            <TextBlock FontSize="10"
-              Text="{Binding role, StringFormat='Role: {0}'}" />
-            <TextBlock FontSize="10" TextWrapping="Wrap"
-              Text="{Binding description}" />
-          </StackPanel>
+              <StackPanel Grid.Column="0"
+                MaxHeight="75"
+                HorizontalAlignment="Stretch">
+                <TextBlock FontSize="16"
+                  FontWeight="Bold"
+                  Text="{Binding name}" />
+                <TextBlock FontSize="10"
+                  Text="{Binding createdAt}" />
+                <TextBlock FontSize="10"
+                  Text="{Binding role, StringFormat='Role: {0}'}" />
+                <TextBlock FontSize="10"
+                  Text="{Binding description}"
+                  TextWrapping="Wrap" />
+              </StackPanel>
 
-          <Button x:Name="AddExistingStreamButton"
-            Grid.Column="1"
-            Margin="0"
-            md:ShadowAssist.ShadowDepth="Depth2"
-            Command="{s:Action AddExistingStream}"
-            CommandParameter="{Binding}"
-            Content="{md:PackIcon Kind=ArrowRight,
-                                  Size=20}"
-            Foreground="{StaticResource MaterialDesignLightBackground}"
-            Style="{StaticResource FlatFloatingActionMiniButton}"
-            ToolTip="Select this stream" />
-        </Grid>
+              <Button x:Name="AddExistingStreamButton"
+                Grid.Column="1"
+                Margin="0"
+                md:ShadowAssist.ShadowDepth="Depth2"
+                Command="{s:Action AddExistingStream}"
+                CommandParameter="{Binding}"
+                Content="{md:PackIcon Kind=ArrowRight,
+                                      Size=20}"
+                Foreground="{StaticResource MaterialDesignLightBackground}"
+                Style="{StaticResource FlatFloatingActionMiniButton}"
+                ToolTip="Select this stream" />
+            </Grid>
 
-      </DataTemplate>
+          </DataTemplate>
+        </ResourceDictionary>
+
+      </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </UserControl.Resources>
-  <Grid Margin="24 0">
+  <Grid Margin="24,0">
     <Grid.RowDefinitions>
       <RowDefinition x:Name="CloseButtonRow"
         Height="Auto" />
@@ -139,11 +148,11 @@
           Margin="0,0"
           md:HintAssist.Hint="Account"
           FontSize="10"
-          IsReadOnly="True"
           IsEnabled="True"
+          IsReadOnly="True"
+          ItemTemplate="{StaticResource AccountTemplate}"
           ItemsSource="{Binding Accounts}"
           SelectedItem="{Binding AccountToSendFrom}"
-          ItemTemplate="{StaticResource AccountTemplate}"
           StaysOpenOnEdit="True" />
       </Grid>
     </Grid>
@@ -193,11 +202,14 @@
         <Separator Grid.Row="1"
           Visibility="{Binding HasSearchResults, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
         <ItemsControl Grid.Row="2"
-          Margin="0 0 0 36"
+          Margin="0,0,0,36"
           ItemTemplate="{StaticResource StreamCardTemplate}"
           ItemsSource="{Binding StreamSearchResults, Mode=OneWay, UpdateSourceTrigger=Default}" />
 
-        <md:Snackbar MessageQueue="{Binding Notifications}" Margin="0 0 0 -36"/>
+        <md:Snackbar Margin="0,0,0,-36"
+          ActionButtonPlacement="Inline"
+          ActionButtonStyle="{StaticResource MaterialDesignSnackbarActionDarkButton}"
+          MessageQueue="{Binding Notifications}" />
       </Grid>
     </ScrollViewer>
   </Grid>
