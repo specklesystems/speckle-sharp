@@ -31,9 +31,14 @@ namespace ConnectorGrasshopper.Objects
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document);
-      BaseWorker = new CreateSpeckleObjectByKeyValueWorker(this, Converter);
     }
 
+    public override void SetConverter()
+    {
+      base.SetConverter();
+      BaseWorker = new CreateSpeckleObjectWorker(this, Converter);
+    }
+    
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddTextParameter("Keys", "K", "List of keys", GH_ParamAccess.list);

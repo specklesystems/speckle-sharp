@@ -21,6 +21,8 @@ namespace ConnectorGrasshopper.Objects
 
     public ISpeckleKit Kit;
 
+    public virtual bool CanDisableConversion => true;
+    
     public SelectKitAsyncComponentBase(string name, string nickname, string description, string category,
       string subCategory) : base(name, nickname, description, category, subCategory)
     {
@@ -32,7 +34,7 @@ namespace ConnectorGrasshopper.Objects
       SetConverter();
     }
 
-    private void SetConverter()
+    public virtual void SetConverter()
     {
       var key = "Speckle2:kit.default.name";
       var n = Grasshopper.Instances.Settings.GetValue(key, "Objects");
@@ -61,18 +63,18 @@ namespace ConnectorGrasshopper.Objects
 
         Menu_AppendSeparator(menu);
         Menu_AppendItem(menu, "Select the converter you want to use:");
-        Menu_AppendItem(menu, "Do Not Convert", (s, e) =>
-        {
-          var key = "Speckle2:kit.default.name";
-          Grasshopper.Instances.Settings.SetValue(key, "None");
-          SetConverter();
-          BaseWorker = new ExpandSpeckleObjectWorker(this, Converter);
-          ExpireSolution(true);
-        }, true, Kit == null);
-        
+        if(CanDisableConversion)
+          Menu_AppendItem(menu, "Do Not Convert", (s, e) =>
+          {
+            var key = "Speckle2:kit.default.name";
+            Grasshopper.Instances.Settings.SetValue(key, "None");
+            SetConverter();
+            ExpireSolution(true);
+          }, true, Kit == null);
+          
         foreach (var kit in kits)
         {
-          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); ExpireSolution(true); }, true,
+          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
             kit.Name == Kit?.Name);
         }
 
@@ -84,16 +86,13 @@ namespace ConnectorGrasshopper.Objects
       }
     }
 
-    public void SetConverterFromKit(string kitName)
+    public virtual void SetConverterFromKit(string kitName)
     {
       if (kitName == Kit?.Name) return;
-
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
       Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-      BaseWorker = new ExpandSpeckleObjectWorker(this, Converter);
       Message = $"Using the {Kit.Name} Converter";
-      ExpireSolution(true);
     }
 
     public override Guid ComponentGuid => new Guid("2FEE5354-0F5E-41D9-ACD3-BF376D29CCDC");
