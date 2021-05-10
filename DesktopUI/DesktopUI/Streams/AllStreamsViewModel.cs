@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -273,60 +273,58 @@ namespace Speckle.DesktopUI.Streams
     {
       var uiElement = sender as UIElement;
 
-      if (uiElement != null)
-      {
-        bool IsEnabled = e.NewValue is bool && (bool)e.NewValue;
+      if ( uiElement == null ) return;
+      bool IsEnabled = e.NewValue is bool value && value;
 
-        if (IsEnabled)
+      if (IsEnabled)
+      {
+        if (uiElement is ButtonBase btn)
         {
-          if (uiElement is ButtonBase)
-          {
-            ((ButtonBase)uiElement).Click += OnMouseLeftButtonUp;
-          }
-          else
-          {
-            uiElement.MouseLeftButtonUp += OnMouseLeftButtonUp;
-          }
+          btn.Click += OnMouseLeftButtonUp;
         }
         else
         {
-          if (uiElement is ButtonBase)
-          {
-            ((ButtonBase)uiElement).Click -= OnMouseLeftButtonUp;
-          }
-          else
-          {
-            uiElement.MouseLeftButtonUp -= OnMouseLeftButtonUp;
-          }
+          uiElement.MouseLeftButtonUp += OnMouseLeftButtonUp;
         }
       }
+      else
+      {
+        if (uiElement is ButtonBase btn )
+        {
+          btn.Click -= OnMouseLeftButtonUp;
+        }
+        else
+        {
+          uiElement.MouseLeftButtonUp -= OnMouseLeftButtonUp;
+        }
+      }
+    }
     }
 
     private static void OnMouseLeftButtonUp(object sender, RoutedEventArgs e)
     {
       Debug.Print("OnMouseLeftButtonUp");
       var fe = sender as FrameworkElement;
-      if (fe != null)
+      if ( fe == null ) return;
+      // if we use binding in our context menu, then it's DataContext won't be set when we show the menu on left click
+      // (it seems setting DataContext for ContextMenu is hardcoded in WPF when user right clicks on a control, although I'm not sure)
+      // so we have to set up ContextMenu.DataContext manually here
+      if (fe.ContextMenu.DataContext == null)
       {
-        // if we use binding in our context menu, then it's DataContext won't be set when we show the menu on left click
-        // (it seems setting DataContext for ContextMenu is hardcoded in WPF when user right clicks on a control, although I'm not sure)
-        // so we have to set up ContextMenu.DataContext manually here
-        if (fe.ContextMenu.DataContext == null)
-        {
-          fe.ContextMenu.SetBinding(FrameworkElement.DataContextProperty, new Binding { Source = fe.DataContext });
-        }
-        fe.ContextMenu.PlacementTarget = fe;
-        //fe.ContextMenu.
-        fe.ContextMenu.Placement = PlacementMode.Bottom;
-        //fe.ContextMenu.HorizontalOffset = 0;
-        //fe.ContextMenu.VerticalOffset = 0;
-        if (fe.ContextMenu.IsOpen)
-        {
-          Debug.WriteLine("WASD OPEN");
-        }
-        fe.ContextMenu.IsOpen = true;
+        fe.ContextMenu.SetBinding(FrameworkElement.DataContextProperty, new Binding { Source = fe.DataContext });
       }
+      fe.ContextMenu.PlacementTarget = fe;
+      //fe.ContextMenu.
+      fe.ContextMenu.Placement = PlacementMode.Bottom;
+      //fe.ContextMenu.HorizontalOffset = 0;
+      //fe.ContextMenu.VerticalOffset = 0;
+      if (fe.ContextMenu.IsOpen)
+      {
+        Debug.WriteLine("WASD OPEN");
+      }
+      fe.ContextMenu.IsOpen = true;
     }
+  }
   }
 
   public class BindingProxy : Freezable
