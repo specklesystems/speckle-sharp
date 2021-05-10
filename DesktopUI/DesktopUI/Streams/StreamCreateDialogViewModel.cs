@@ -139,11 +139,9 @@ namespace Speckle.DesktopUI.Streams
 
     private async Task<List<Stream>> GetLatestStreams()
     {
-      if ( _latestStreams == null )
-      {
-        var client = new Client(AccountToSendFrom);
-        _latestStreams = await client.StreamsGet(3);
-      }
+      if ( _latestStreams != null ) return _latestStreams;
+      var client = new Client(AccountToSendFrom);
+      _latestStreams = await client.StreamsGet(3);
 
       return _latestStreams;
     }
@@ -168,27 +166,28 @@ namespace Speckle.DesktopUI.Streams
       if ( StreamQuery.Length <= 2 )
         return;
 
-      // extract stream id if the query is a url
-      Uri uri;
-
       try
       {
         var client = new Client(AccountToSendFrom);
-        if ( Uri.TryCreate(StreamQuery, UriKind.Absolute, out uri) )
-        {
-          if ( uri.Segments[ 1 ].ToLowerInvariant() == "streams/" )
-          {
-            var streamId = uri.Segments[ 2 ].Replace("/", "");
-            StreamSearchResults = new BindableCollection<Stream> {await client.StreamGet(streamId)};
-            return;
-          }
-        }
-
         StreamSearchResults = new BindableCollection<Stream>(await client.StreamSearch(StreamQuery));
       }
       catch ( Exception )
       {
         // search prob returned no results
+        StreamSearchResults?.Clear();
+      }
+
+      if ( !( StreamSearchResults is null ) && StreamSearchResults.Any() ) return;
+
+      try
+      {
+        var wrapper = new StreamWrapper(StreamQuery);
+        var client = new Client(await wrapper.GetAccount());
+        StreamSearchResults = new BindableCollection<Stream> {await client.StreamGet(wrapper.StreamId)};
+      }
+      catch ( Exception e )
+      {
+        // not a url or stream is invalid for some reason
         StreamSearchResults?.Clear();
       }
     }
@@ -230,8 +229,7 @@ namespace Speckle.DesktopUI.Streams
 
         StreamToCreate = await client.StreamGet(streamId);
 
-        StreamState = new StreamState(client, StreamToCreate);
-        StreamState.Branches = await client.StreamGetBranches(streamId);
+        StreamState = new StreamState(client, StreamToCreate) {Branches = await client.StreamGetBranches(streamId)};
         Bindings.AddNewStream(StreamState);
 
         _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
