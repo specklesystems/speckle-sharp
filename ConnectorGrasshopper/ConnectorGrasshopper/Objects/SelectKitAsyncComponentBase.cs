@@ -92,7 +92,7 @@ namespace ConnectorGrasshopper.Objects
           
         foreach (var kit in kits)
         {
-          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); ExpireSolution(true);
+          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SelectedKitName=kit.Name; SetConverter(); ExpireSolution(true);
             }, true,
             kit.Name == Kit?.Name);
         }
