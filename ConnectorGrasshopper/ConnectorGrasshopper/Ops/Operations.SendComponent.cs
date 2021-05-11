@@ -347,7 +347,7 @@ namespace ConnectorGrasshopper.Ops
         int convertedCount = 0;
         var converted = Utilities.DataTreeToNestedLists(DataInput, ((SendComponent)Parent).Converter, CancellationToken, () =>
         {
-          ReportProgress("Conversion", convertedCount++ / (double)DataInput.DataCount);
+          ReportProgress("Conversion",Math.Round(convertedCount++ / (double) DataInput.DataCount, 2));
         });
 
         if ( convertedCount == 0 )
