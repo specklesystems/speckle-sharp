@@ -723,7 +723,7 @@ namespace Objects.Converter.RhinoGh
       }
       // Create complex
       var joinedMesh = new RH.Mesh();
-      var mySettings = MeshingParameters.FastRenderMesh;
+      var mySettings = MeshingParameters.Minimal;
       joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
       joinedMesh.Weld(Math.PI);
       joinedMesh.Vertices.CombineIdentical(true, true);
