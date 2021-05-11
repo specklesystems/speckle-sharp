@@ -134,7 +134,10 @@ namespace ConnectorGrasshopper.Objects
             List<object> converted = null;
             try
             {
-              converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
+              converted = list.Select(item =>
+              {
+                return Converter != null ? Utilities.TryConvertItemToSpeckle(item, Converter) : item;
+              }).ToList();
             }
             catch (Exception e)
             {

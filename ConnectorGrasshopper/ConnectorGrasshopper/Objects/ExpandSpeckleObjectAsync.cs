@@ -29,9 +29,9 @@ namespace ConnectorGrasshopper.Objects
     {
     }
 
-    public override void AddedToDocument(GH_Document document)
+    public override void SetConverter()
     {
-      base.AddedToDocument(document);
+      base.SetConverter();
       BaseWorker = new ExpandSpeckleObjectWorker(this, Converter);
     }
 
@@ -75,13 +75,7 @@ namespace ConnectorGrasshopper.Objects
     {
       // Perform parameter maintenance here!
     }
-    public override void SetConverterFromKit(string kitName)
-    {
-      base.SetConverterFromKit(kitName);
-      BaseWorker = new ExpandSpeckleObjectWorker(this, Converter);
-      ExpireSolution(true);
-    }
-    
+
     private bool OutputMismatch() =>
       outputList.Count != Params.Output.Count 
       || outputList.Where((t, i) => Params.Output[i].NickName != t).Any();
