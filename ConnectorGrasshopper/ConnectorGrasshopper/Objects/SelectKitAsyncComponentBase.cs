@@ -70,7 +70,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override bool Read(GH_IReader reader)
     {
-      SelectedKitName = reader.GetString("selectedKitName");
+      reader.TryGetString("selectedKitName", ref SelectedKitName);
       return base.Read(reader);
     }
 
