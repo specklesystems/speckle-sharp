@@ -197,8 +197,6 @@ namespace Objects.Converter.AutocadCivil
       List<Point3d> vertices = new List<Point3d>();
       for (int i = 0; i < polyline.NumberOfVertices; i++)
         vertices.Add(polyline.GetPoint3dAt(i));
-      if (polyline.Closed)
-        vertices.Add(polyline.GetPoint3dAt(0));
 
       var _polyline = new Polyline(PointsToFlatArray(vertices), ModelUnits);
       _polyline.closed = polyline.Closed;
@@ -229,8 +227,6 @@ namespace Objects.Converter.AutocadCivil
           }
           tr.Commit();
         }
-        if (polyline.Closed)
-          vertices.Add(vertices[0]);
       }
 
       var _polyline = new Polyline(PointsToFlatArray(vertices), ModelUnits);
@@ -930,6 +926,10 @@ namespace Objects.Converter.AutocadCivil
 
     public BlockInstance BlockReferenceToSpeckle(AcadDB.BlockReference reference)
     {
+      // skip if dynamic block
+      if (reference.IsDynamicBlock)
+        return null;
+
       // get record
       BlockDefinition definition = null;
       using (Transaction tr = Doc.TransactionManager.StartTransaction())
@@ -949,9 +949,10 @@ namespace Objects.Converter.AutocadCivil
 
       return instance;
     }
-    public string BlockInstanceToNativeDB( BlockInstance instance)
+    public string BlockInstanceToNativeDB(BlockInstance instance, out BlockReference reference, bool AppendToModelSpace = true)
     {
       string result = null;
+      reference = null;
 
       // block definition
       ObjectId definitionId = BlockDefinitionToNativeDB(instance.blockDefinition);
@@ -975,9 +976,14 @@ namespace Objects.Converter.AutocadCivil
 
         BlockReference br = new BlockReference(insertionPoint, definitionId);
         br.BlockTransform = convertedTransform;
-        modelSpaceRecord.AppendEntity(br);
-        tr.AddNewlyCreatedDBObject(br, true);
+        if (AppendToModelSpace)
+        {
+          modelSpaceRecord.AppendEntity(br);
+          tr.AddNewlyCreatedDBObject(br, true);
+        }
+        
         result = "success";
+        reference = br;
 
         tr.Commit();
       }
@@ -1029,14 +1035,10 @@ namespace Objects.Converter.AutocadCivil
       {
         // see if block record already exists and return if so
         BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-        foreach (ObjectId id in blckTbl)
+        if (blckTbl.Has(blockName))
         {
-          BlockTableRecord btr = (BlockTableRecord)tr.GetObject(id, OpenMode.ForRead);
-          if (btr.Name == blockName)
-          {
-            tr.Commit();
-            return id;
-          }
+          tr.Commit();
+          return blckTbl[blockName];
         }
 
         // create btr
@@ -1053,7 +1055,18 @@ namespace Objects.Converter.AutocadCivil
           {
             if (CanConvertToNative(geo))
             {
-              var converted = ConvertToNative(geo) as Entity;
+              Entity converted = null;
+              switch (geo)
+              {
+                case BlockInstance o:
+                  BlockInstanceToNativeDB(o, out BlockReference reference, false);
+                  converted = reference;
+                  break;
+                default:
+                  converted = ConvertToNative(geo) as Entity;
+                  break;
+              }
+              
               if (converted == null)
                 continue;
               btr.AppendEntity(converted);
