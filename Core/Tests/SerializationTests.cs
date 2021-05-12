@@ -88,7 +88,7 @@ namespace Tests
       var test = Operations.Serialize(pt);
 
       var result = Operations.Deserialize(test);
-      var circle = result["circle"];
+      var circle = ((dynamic)result).circle;
 
       Assert.Null(circle);
     }
@@ -224,17 +224,6 @@ namespace Tests
       var deserialised = Operations.Deserialize(serialised);
 
       Assert.AreEqual(deserialised.GetId(), mesh.GetId());
-    }
-
-    [Test]
-    public void EmptyChunkablesShouldNotSerialize()
-    {
-      var test = new Base();
-      test["@(5)chunks"] = new List<object>();
-
-      var serialised = Operations.Serialize(test);
-      var hasProp = serialised.Contains("chunks");
-      Assert.AreEqual(hasProp, false);
     }
 
   }

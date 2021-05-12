@@ -426,12 +426,6 @@ namespace Speckle.Core.Serialisation
           {
             var what = JToken.FromObject(propValue, serializer); // Trigger next.
 
-            // let's try to not write gratuitous nulls
-            if (what == null)
-            {
-              return;
-            }
-
             if (CancellationToken.IsCancellationRequested)
             {
               return; // Check for cancellation
@@ -445,12 +439,7 @@ namespace Speckle.Core.Serialisation
           }
           else
           {
-            // let's try to not write gratuitous nulls
-            var val = JToken.FromObject(propValue, serializer);
-            if(val!=null)
-            {
-              jo.Add(prop, val); // Default route
-            }
+            jo.Add(prop, JToken.FromObject(propValue, serializer)); // Default route
           }
 
           // Pop detach lineage. If you don't get this, remember this thing moves ONLY FORWARD, DEPTH FIRST
@@ -525,14 +514,12 @@ namespace Speckle.Core.Serialisation
         if (DetachLineage[DetachLineage.Count - 1] && serializer.Context.Context is Chunkable chunkInfo)
         {
           var maxCount = chunkInfo.MaxObjCountPerChunk;
-          var i = 0; 
-          var t = 0;
+          var i = 0;
           var chunkList = new List<DataChunk>();
           var currChunk = new DataChunk();
 
           foreach (var arrValue in ((IEnumerable)value))
           {
-            t++;
             if (i == maxCount)
             {
               chunkList.Add(currChunk);
@@ -543,11 +530,7 @@ namespace Speckle.Core.Serialisation
             i++;
           }
           chunkList.Add(currChunk);
-
-          if (t == 0)
-          {
-            return; // exit on empty chunky lists
-          }
+          value = chunkList;
         }
 
         foreach (var arrValue in ((IEnumerable)value))
@@ -582,11 +565,8 @@ namespace Speckle.Core.Serialisation
         {
           return; // Check for cancellation
         }
-        
-        if(arr.Count!=0)
-        {
-          arr.WriteTo(writer);
-        }
+
+        arr.WriteTo(writer);
 
         if (DetachLineage.Count == 1 && FirstEntryWasListOrDict) // are we in a list entry point case?
         {
