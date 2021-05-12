@@ -24,11 +24,12 @@ namespace ConnectorGrasshopper.Objects
     {
     }
 
-    public override void AddedToDocument(GH_Document document)
+    public override void SetConverter()
     {
-      base.AddedToDocument(document);
+      base.SetConverter();
       BaseWorker = new GetObjectValueByKeyWorker(this, Converter);
     }
+
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -78,11 +79,11 @@ namespace ConnectorGrasshopper.Objects
           case List<object> list:
           {
             value = list.Select(
-              item => Utilities.TryConvertItemToNative(item, Converter)).ToList();
+              item => Converter != null ? Utilities.TryConvertItemToNative(item, Converter) : item).ToList();
             break;
           }
           default:
-            value = Utilities.TryConvertItemToNative(obj, Converter);
+            value = Converter!= null ? Utilities.TryConvertItemToNative(obj, Converter) : obj;
             break;
         }
 

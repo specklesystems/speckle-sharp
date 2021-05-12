@@ -29,9 +29,9 @@ namespace ConnectorGrasshopper.Objects
     {
     }
 
-    public override void AddedToDocument(GH_Document document)
+    public override void SetConverter()
     {
-      base.AddedToDocument(document);
+      base.SetConverter();
       BaseWorker = new ExpandSpeckleObjectWorker(this, Converter);
     }
 

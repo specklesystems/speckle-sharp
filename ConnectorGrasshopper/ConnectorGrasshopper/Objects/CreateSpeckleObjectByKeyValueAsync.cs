@@ -31,9 +31,14 @@ namespace ConnectorGrasshopper.Objects
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document);
-      BaseWorker = new CreateSpeckleObjectByKeyValueWorker(this, Converter);
     }
 
+    public override void SetConverter()
+    {
+      base.SetConverter();
+      BaseWorker = new CreateSpeckleObjectByKeyValueWorker(this, Converter);
+    }
+    
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddTextParameter("Keys", "K", "List of keys", GH_ParamAccess.list);
@@ -85,7 +90,10 @@ namespace ConnectorGrasshopper.Objects
             if (ind < list.Count)
               try
               {
-                speckleObj[key] = Utilities.TryConvertItemToSpeckle(list[ind], Converter);
+                if (Converter != null)
+                  speckleObj[key] = Utilities.TryConvertItemToSpeckle(list[ind], Converter);
+                else
+                  speckleObj[key] = list[ind];
               }
               catch (Exception e)
               {
@@ -117,7 +125,10 @@ namespace ConnectorGrasshopper.Objects
               var objs = new List<object>();
               foreach (var goo in branch)
               {
-                objs.Add(Utilities.TryConvertItemToSpeckle(goo, Converter));
+                if(Converter != null)
+                  objs.Add(Utilities.TryConvertItemToSpeckle(goo, Converter));
+                else
+                  objs.Add(goo);
               }
 
               if (objs.Count > 0)

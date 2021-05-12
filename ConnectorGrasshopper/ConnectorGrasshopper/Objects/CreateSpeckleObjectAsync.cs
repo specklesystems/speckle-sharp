@@ -28,6 +28,12 @@ namespace ConnectorGrasshopper.Objects
     {
     }
 
+    public override void SetConverter()
+    {
+      base.SetConverter();
+      BaseWorker = new CreateSpeckleObjectWorker(this, Converter);
+    }
+
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document); // This would set the converter already.
@@ -58,6 +64,11 @@ namespace ConnectorGrasshopper.Objects
       pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item));
     }
 
+    public override void SetConverterFromKit(string kitName)
+    {
+      base.SetConverterFromKit(kitName);
+    }
+
     public bool CanInsertParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;
 
     public bool CanRemoveParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;
@@ -84,7 +95,6 @@ namespace ConnectorGrasshopper.Objects
 
     public void VariableParameterMaintenance()
     {
-      Console.WriteLine("parameter maintenance!");
     }
   }
 
@@ -124,7 +134,10 @@ namespace ConnectorGrasshopper.Objects
             List<object> converted = null;
             try
             {
-              converted = list.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList();
+              converted = list.Select(item =>
+              {
+                return Converter != null ? Utilities.TryConvertItemToSpeckle(item, Converter) : item;
+              }).ToList();
             }
             catch (Exception e)
             {
@@ -149,8 +162,10 @@ namespace ConnectorGrasshopper.Objects
             
             try
             {
-              var obj = value == null ? null : Utilities.TryConvertItemToSpeckle(value, Converter);
-              @base[key] = obj;
+              if(Converter != null)
+                @base[key] = value == null ? null : Utilities.TryConvertItemToSpeckle(value, Converter);
+              else
+                @base[key] = value;
             }
             catch (Exception e)
             {
@@ -197,13 +212,13 @@ namespace ConnectorGrasshopper.Objects
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
       DA.DisableGapLogic();
-      var hasErrors = false;
-      var allOptional = Params.Input.FindAll(p => p.Optional).Count == Params.Input.Count;
       if (Params.Input.Count == 0)
       {
         inputData = null;
         return;
       }
+      var hasErrors = false;
+      var allOptional = Params.Input.FindAll(p => p.Optional).Count == Params.Input.Count;
       if (Params.Input.Count > 0 && allOptional)
       {
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "You cannot set all parameters as optional"));

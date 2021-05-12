@@ -26,10 +26,9 @@ namespace ConnectorGrasshopper.Objects
       "Extend a current object with key/value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }
-
-    public override void AddedToDocument(GH_Document document)
+    public override void SetConverter()
     {
-      base.AddedToDocument(document);
+      base.SetConverter();
       BaseWorker = new ExtendSpeckleObjectWorker(this, Converter);
     }
 
@@ -108,7 +107,12 @@ namespace ConnectorGrasshopper.Objects
         var value = i < values.Count ? values[i] : values[values.Count - 1];
         try
         {
-          @base[key] = Utilities.TryConvertItemToSpeckle(value, Converter);
+          if(Converter != null)
+            @base[key] = Utilities.TryConvertItemToSpeckle(value, Converter);
+          else
+          {
+            @base[key] = value;
+          }
         } catch(Exception e)
         {
           RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Failed to set prop {key}: {e.Message}"));

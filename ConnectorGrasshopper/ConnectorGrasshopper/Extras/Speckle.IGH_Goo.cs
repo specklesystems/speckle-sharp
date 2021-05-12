@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
@@ -57,6 +58,11 @@ namespace ConnectorGrasshopper.Extras
     public override bool CastFrom(object source)
     {
       Base @base = null;
+      var type = source.GetType();
+
+      if (source == null)
+        return false;
+
       if (source is Base _base)
       {
         @base = _base;
@@ -68,10 +74,17 @@ namespace ConnectorGrasshopper.Extras
       else if (source is GH_Goo<Base> goo)
       {
         @base = goo.Value;
-      }
-      
-      if (source == null)
-        return false;
+      } 
+      else if(typeof(IDictionary).IsAssignableFrom(source.GetType()))
+      {
+        var dict = source as IDictionary;
+        @base = new Base();
+        foreach(DictionaryEntry kvp in dict)
+        {
+          if (!(kvp.Key is string s)) return false;
+          @base[(string)kvp.Key] = kvp.Value;
+        }
+      } 
       
       Value = @base;
       return true;

@@ -23,6 +23,8 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override Bitmap Icon => Properties.Resources.ToNative;
 
+    public override bool CanDisableConversion => false;
+    
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public ToNativeConverterAsync() : base("To Native", "To Native",
