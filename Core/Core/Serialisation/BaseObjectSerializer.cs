@@ -522,15 +522,24 @@ namespace Speckle.Core.Serialisation
           {
             if (i == maxCount)
             {
-              chunkList.Add(currChunk);
+              if(currChunk.data.Count!=0)
+              {
+                chunkList.Add(currChunk);
+              }
+
               currChunk = new DataChunk();
               i = 0;
             }
             currChunk.data.Add(arrValue);
             i++;
           }
-          chunkList.Add(currChunk);
+
+          if (currChunk.data.Count != 0)
+          {
+            chunkList.Add(currChunk);
+          }
           value = chunkList;
+
         }
 
         foreach (var arrValue in ((IEnumerable)value))
