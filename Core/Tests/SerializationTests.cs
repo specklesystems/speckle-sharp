@@ -233,7 +233,8 @@ namespace Tests
       test["@(5)chunks"] = new List<object>();
 
       var serialised = Operations.Serialize(test);
-      var copy = serialised;
+      var hasProp = serialised.Contains("chunks");
+      Assert.AreEqual(hasProp, false);
     }
 
   }
