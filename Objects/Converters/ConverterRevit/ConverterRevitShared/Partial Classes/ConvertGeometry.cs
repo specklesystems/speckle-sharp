@@ -818,7 +818,7 @@ namespace Objects.Converter.Revit
 
           foreach (var trim in loop.Trims)
           {
-            if (trim.TrimType != BrepTrimType.Boundary && trim.TrimType != BrepTrimType.Mated)
+            if (trim.TrimType != BrepTrimType.Boundary && trim.TrimType != BrepTrimType.Mated && trim.TrimType != BrepTrimType.Seam)
               continue;
 
             if (trim.Edge == null)

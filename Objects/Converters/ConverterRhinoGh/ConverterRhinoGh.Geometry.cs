@@ -461,7 +461,7 @@ namespace Objects.Converter.RhinoGh
     public ICurve CurveToSpeckle(RH.Curve curve, string units = null)
     {
       var u = units ?? ModelUnits;
-      var tolerance = 0.0;
+      var tolerance = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
       Rhino.Geometry.Plane pln = Rhino.Geometry.Plane.Unset;
       curve.TryGetPlane(out pln, tolerance);
       
@@ -759,9 +759,9 @@ namespace Objects.Converter.RhinoGh
             // TODO: Figure out why closed curves don't like this hack?
             if (invalid )
             {
-              nurbsCurve = nurbsCurve.Fit(nurbsCurve.Degree, 0,
-                0).ToNurbsCurve();
+              nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count * 3, nurbsCurve.Degree, true);;
               var in1 = HasInvalidMultiplicity(nurbsCurve);
+              Console.WriteLine(in1);
             }
             nurbsCurve.Domain = curve3d.Domain;
             crv = nurbsCurve;
@@ -773,15 +773,18 @@ namespace Objects.Converter.RhinoGh
         }).ToList();
       spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c =>
       {
+        var curve = c;
         if (c is NurbsCurve nurbsCurve)
         {
           var invalid = HasInvalidMultiplicity(nurbsCurve);
           if (invalid)
           {
-            nurbsCurve = nurbsCurve.Fit(nurbsCurve.Degree, 0,
-              0).ToNurbsCurve();
+            //nurbsCurve = nurbsCurve.Fit(nurbsCurve.Degree, 0, 0).ToNurbsCurve();
+            nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count * 3, nurbsCurve.Degree, true);
             var in1 = HasInvalidMultiplicity(nurbsCurve);
           }
+
+          curve = nurbsCurve;
         }
         var crv = CurveToSpeckle(c, Units.None);
         return crv;
