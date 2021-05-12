@@ -14,6 +14,10 @@ namespace Objects.Geometry
     [DetachProperty]
     [Chunkable(31250)]
     public List<double> value { get; set; } = new List<double>();
+
+    /// <summary>
+    /// If true, do not add the last point to the value list. Polyline first and last points should be unique.
+    /// </summary>
     public bool closed { get; set; }
     public Interval domain { get; set; }
     public Box bbox { get; set; }

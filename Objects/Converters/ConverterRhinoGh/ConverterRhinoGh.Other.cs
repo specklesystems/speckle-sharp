@@ -67,7 +67,18 @@ namespace Objects.Converter.RhinoGh
       {
         if (CanConvertToNative(geo))
         {
-          var converted = ConvertToNative(geo) as GeometryBase;
+          GeometryBase converted = null;
+          switch (geo)
+          {
+            case BlockInstance _:
+              var instance = (InstanceObject)ConvertToNative(geo);
+              converted = instance.Geometry;
+              Doc.Objects.Delete(instance);
+              break;
+            default:
+              converted = (GeometryBase)ConvertToNative(geo);
+              break;
+          }
           if (converted == null)
             continue;
           var layerName = $"{commitInfo}{Layer.PathSeparator}{geo["Layer"] as string}";
@@ -88,7 +99,8 @@ namespace Objects.Converter.RhinoGh
       if (definitionIndex < 0)
         return null;
 
-      return Doc.InstanceDefinitions[definitionIndex];
+      var blockDefinition = Doc.InstanceDefinitions[definitionIndex];
+      return blockDefinition;
     }
 
     // Rhino convention seems to order the origin of the vector space last instead of first
