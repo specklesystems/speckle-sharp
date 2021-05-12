@@ -154,7 +154,7 @@ namespace Objects.Converter.RhinoGh
     public Line LineToSpeckle(RH.Line line, string units = null)
     {
       var u = units ?? ModelUnits;
-      var sLine = new Line(PointToSpeckle(line.From), PointToSpeckle(line.To), u);
+      var sLine = new Line(PointToSpeckle(line.From, u), PointToSpeckle(line.To, u), u);
       sLine.length = line.Length;
       sLine.domain = new Interval(0, line.Length);
       var box = new RH.Box(line.BoundingBox);
@@ -166,7 +166,7 @@ namespace Objects.Converter.RhinoGh
     public Line LineToSpeckle(LineCurve line, string units = null)
     {
       var u = units ?? ModelUnits;
-      var sLine = new Line(PointToSpeckle(line.PointAtStart), PointToSpeckle(line.PointAtEnd), u)
+      var sLine = new Line(PointToSpeckle(line.PointAtStart, u), PointToSpeckle(line.PointAtEnd, u), u)
       {
         domain = IntervalToSpeckle(line.Domain)
       };
@@ -318,7 +318,11 @@ namespace Objects.Converter.RhinoGh
       var u = units ?? ModelUnits;
 
       if (poly.Count == 2)
-        return LineToSpeckle(new RH.Line(poly[0], poly[1]));
+      {
+        var l =  LineToSpeckle(new RH.Line(poly[0], poly[1]), u);
+        if (domain != null) l.domain = domain;
+        return l;
+      }
 
       var myPoly = new Polyline(PointsToFlatArray(poly), u);
       myPoly.closed = poly.IsClosed;
@@ -398,8 +402,8 @@ namespace Objects.Converter.RhinoGh
       CurveSegments(segments, p, true);
 
       //let the converter pick the best type of curve
-      myPoly.segments = segments.Select(s => (ICurve)ConvertToSpeckle(s)).ToList();
-
+      myPoly.segments = segments.Select(s => CurveToSpeckle(s, u)).ToList();
+      myPoly.units = u;
       return myPoly;
     }
 
@@ -454,13 +458,18 @@ namespace Objects.Converter.RhinoGh
       }
     }
 
-    public ICurve CurveToSpeckle(NurbsCurve curve, string units = null)
+    public ICurve CurveToSpeckle(RH.Curve curve, string units = null)
     {
       var u = units ?? ModelUnits;
-      var tolerance = 0.0;
+      var tolerance = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
       Rhino.Geometry.Plane pln = Rhino.Geometry.Plane.Unset;
       curve.TryGetPlane(out pln, tolerance);
-
+      
+      if (curve is PolyCurve polyCurve)
+      {
+        return PolycurveToSpeckle(polyCurve, u);
+      }
+      
       if (curve.IsCircle(tolerance) && curve.IsClosed)
       {
         curve.TryGetCircle(out var getObj, tolerance);
@@ -493,7 +502,7 @@ namespace Objects.Converter.RhinoGh
         }
       }
 
-      return NurbsToSpeckle(curve, u);
+      return NurbsToSpeckle(curve.ToNurbsCurve(), u);
     }
 
     public Curve NurbsToSpeckle(NurbsCurve curve, string units = null)
@@ -717,10 +726,10 @@ namespace Objects.Converter.RhinoGh
       //tol = 0;
       var u = units ?? ModelUnits;
       brep.Repair(tol); //should maybe use ModelAbsoluteTolerance ?
-      foreach (var f in brep.Faces)
-      {
-        f.RebuildEdges(tol, false, false);
-      }
+      // foreach (var f in brep.Faces)
+      // {
+      //   f.RebuildEdges(tol, false, false);
+      // }
       // Create complex
       var joinedMesh = new RH.Mesh();
       var mySettings = MeshingParameters.Minimal;
@@ -748,8 +757,12 @@ namespace Objects.Converter.RhinoGh
 
             // If the curve has invalid multiplicity and is not closed, rebuild with same number of points and degree.
             // TODO: Figure out why closed curves don't like this hack?
-            if (invalid && !nurbsCurve.IsClosed)
-              nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count, nurbsCurve.Degree, true);
+            if (invalid )
+            {
+              nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count * 3, nurbsCurve.Degree, true);;
+              var in1 = HasInvalidMultiplicity(nurbsCurve);
+              Console.WriteLine(in1);
+            }
             nurbsCurve.Domain = curve3d.Domain;
             crv = nurbsCurve;
           }
@@ -760,11 +773,20 @@ namespace Objects.Converter.RhinoGh
         }).ToList();
       spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c =>
       {
-        var nurbsCurve = c.ToNurbsCurve();
-        //nurbsCurve.Knots.RemoveMultipleKnots(1, nurbsCurve.Degree, Doc.ModelAbsoluteTolerance );
-        var rebuild = nurbsCurve.Rebuild(nurbsCurve.Points.Count, nurbsCurve.Degree, true);
+        var curve = c;
+        if (c is NurbsCurve nurbsCurve)
+        {
+          var invalid = HasInvalidMultiplicity(nurbsCurve);
+          if (invalid)
+          {
+            //nurbsCurve = nurbsCurve.Fit(nurbsCurve.Degree, 0, 0).ToNurbsCurve();
+            nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count * 3, nurbsCurve.Degree, true);
+            var in1 = HasInvalidMultiplicity(nurbsCurve);
+          }
 
-        var crv = CurveToSpeckle(rebuild, Units.None);
+          curve = nurbsCurve;
+        }
+        var crv = CurveToSpeckle(c, Units.None);
         return crv;
       }).ToList();
       spcklBrep.Surfaces = brep.Surfaces

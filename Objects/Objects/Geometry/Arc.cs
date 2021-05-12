@@ -79,8 +79,11 @@ namespace Objects.Geometry
       arc.endAngle = list[4];
       arc.angleRadians = list[5];
       arc.domain = new Interval(list[6], list[7]);
-      arc.plane = Plane.FromList(list.GetRange(8, 12));
       arc.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+      arc.plane = Plane.FromList(list.GetRange(8, 13));
+      
+      arc.plane.units = arc.units;
+
       return arc;
     }
   }

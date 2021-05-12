@@ -142,6 +142,7 @@ namespace ConnectorGrasshopper.Extras
       var copy = @base.ShallowCopy();
       copy.GetMembers().ToList().ForEach(keyval =>
       {
+        // TODO: Handle dicts!!!
         if (keyval.Value is IList list)
         {
           var converted = new List<object>();
@@ -188,6 +189,7 @@ namespace ConnectorGrasshopper.Extras
       var copy = @base.ShallowCopy();
       copy.GetMembers().ToList().ForEach(keyval =>
       {
+        // TODO: Handle dicts!!
         if (keyval.Value is IList list)
         {
           var converted = new List<object>();

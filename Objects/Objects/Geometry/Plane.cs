@@ -39,6 +39,7 @@ namespace Objects.Geometry
       list.AddRange(normal.ToList());
       list.AddRange(xdir.ToList());
       list.AddRange(ydir.ToList());
+      list.Add(Units.GetEncodingFromUnit(units));
 
       return list;
     }
@@ -47,10 +48,11 @@ namespace Objects.Geometry
     {
       var plane = new Plane();
 
-      plane.origin = Point.FromList(list.GetRange(0, 3));
-      plane.normal = Vector.FromList(list.GetRange(3, 3));
-      plane.xdir = Vector.FromList(list.GetRange(6, 3));
-      plane.ydir = Vector.FromList(list.GetRange(9, 3));
+      var units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+      plane.origin = new Point(list[0], list[1], list[2], units);
+      plane.normal = new Vector(list[3], list[4], list[5], units);
+      plane.xdir = new Vector(list[6], list[7], list[8], units);
+      plane.ydir = new Vector(list[9], list[10], list[11], units);
 
       return plane;
     }

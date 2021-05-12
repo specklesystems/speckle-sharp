@@ -51,6 +51,6 @@ namespace Objects.Geometry
 
     public List<double> ToList() => new List<double>() { x, y, z };
 
-    public static Point FromList(List<double> list) => new Point(list[0], list[1], list[2]);
+    public static Point FromList(List<double> list, string units) => new Point(list[0], list[1], list[2]);
   }
 }
