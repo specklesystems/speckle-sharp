@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Credentials;
 using Speckle.DesktopUI.Utils;
@@ -23,8 +24,8 @@ namespace Speckle.DesktopUI.Settings
     public SettingsViewModel()
     {
       DisplayName = "Settings";
-      _darkMode = Properties.Settings.Default.Theme == BaseTheme.Dark;
-      ToggleTheme();
+      _darkMode = Properties.Settings.Default.Theme == BaseTheme.Inherit;
+      ToggleTheme(null);
 
       HelpLinks = new List<HelpLink>()
       {
@@ -84,13 +85,13 @@ namespace Speckle.DesktopUI.Settings
       set => SetAndNotify(ref _darkMode, value);
     }
 
-    public void ToggleTheme()
+    public void ToggleTheme(ResourceDictionary resource)
     {
-      var paletteHelper = new PaletteHelper();
-      ITheme theme = paletteHelper.GetTheme();
-
-      theme.SetBaseTheme(DarkMode ? Theme.Dark : Theme.Light);
-      paletteHelper.SetTheme(theme);
+      // var paletteHelper = new PaletteHelper();
+      // ITheme theme = paletteHelper.GetTheme();
+      //
+      // theme.SetBaseTheme(DarkMode ? Theme.Dark : Theme.Light);
+      // paletteHelper.SetTheme(theme);
 
       Properties.Settings.Default.Theme = DarkMode ? BaseTheme.Dark : BaseTheme.Light;
       Properties.Settings.Default.Save();

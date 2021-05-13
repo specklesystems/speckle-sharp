@@ -10,6 +10,9 @@
   d:DesignHeight="300"
   d:DesignWidth="300"
   mc:Ignorable="d">
+  <UserControl.Resources>
+    <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/Generic.xaml"></ResourceDictionary>
+  </UserControl.Resources>
   <Grid>
     <Grid>
       <Grid.RowDefinitions>

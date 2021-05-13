@@ -12,8 +12,7 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary
-          Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Snackbar.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/Generic.xaml"></ResourceDictionary>
         <ResourceDictionary>
           <DataTemplate x:Key="AccountTemplate">
             <TextBlock>
