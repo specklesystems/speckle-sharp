@@ -74,7 +74,7 @@ namespace Objects.Geometry
       var list = new List<double>();
       list.AddRange(start.ToList());
       list.AddRange(end.ToList());
-      list.Add( domain.start ?? 0);
+      list.Add(domain.start ?? 0);
       list.Add(domain.end ?? 1);
       list.Add(Units.GetEncodingFromUnit(units));
       list.Insert(0, CurveTypeEncoding.Line);

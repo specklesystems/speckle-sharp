@@ -32,9 +32,12 @@ namespace Objects.Geometry
       get
       {
         var list = new List<double>();
-        foreach(var srf in Surfaces)
+        if (Surfaces != null)
         {
-          list.AddRange(srf.ToList());
+          foreach (var srf in Surfaces)
+          {
+            list.AddRange(srf.ToList());
+          }
         }
         return list;
       }
