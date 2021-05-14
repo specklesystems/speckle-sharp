@@ -237,12 +237,19 @@ namespace ConnectorGrasshopper.Extras
       {
         if (converter.CanConvertToNative(@base))
         {
-          var converted = converter.ConvertToNative(@base);
-          var geomgoo = GH_Convert.ToGoo(converted);
-          if (geomgoo != null) 
-            return geomgoo;
-          var goo = new GH_ObjectWrapper { Value = converted };
-          return goo;
+          try
+          {
+            var converted = converter.ConvertToNative(@base);
+            var geomgoo = GH_Convert.ToGoo(converted);
+            if (geomgoo != null) 
+              return geomgoo;
+            var goo = new GH_ObjectWrapper { Value = converted };
+            return goo;
+          }
+          catch (Exception e)
+          {
+            converter.ConversionErrors.Add(new Exception("Could not convert ${@base}", e));
+          }
         }
         if(recursive)
         {
