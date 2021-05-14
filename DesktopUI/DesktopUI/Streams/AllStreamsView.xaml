@@ -777,7 +777,6 @@
                     </Grid.ColumnDefinitions>
                     <Expander Grid.Row="1"
                       HorizontalAlignment="Stretch"
-                      md:ExpanderAssist.DownHeaderPadding="0"
                       Background="Transparent"
                       FontSize="12">
                       <Expander.Header>

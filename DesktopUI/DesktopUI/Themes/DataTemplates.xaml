@@ -87,7 +87,7 @@
             Grid.Column="1"
             Margin="48,5,0,0"
             Badge="{Binding Placeholders.Count}"
-            BadgeColorZoneMode="Accent"
+            BadgeColorZoneMode="SecondaryMid"
             ToolTip="objects to send"
             Visibility="{Binding Placeholders.Count, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
           <Button
@@ -111,7 +111,7 @@
             Grid.Column="2"
             Margin="48,5,0,0"
             Badge="{md:PackIcon Kind=ExclamationThick}"
-            BadgeColorZoneMode="Accent"
+            BadgeColorZoneMode="SecondaryMid"
             ToolTip="there are new updates on the server"
             Visibility="{Binding ServerUpdates, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
         </Grid>

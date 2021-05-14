@@ -176,7 +176,7 @@
                    Margin="0,10"
                    md:HintAssist.Hint="Stream description (markdown is supported)"
                    AcceptsReturn="true"
-                   Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+                   Style="{StaticResource MaterialDesignOutlinedTextBox}"
                    Text="{Binding StreamDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=1500}"
                    TextAlignment="Left"
                    TextWrapping="Wrap" />

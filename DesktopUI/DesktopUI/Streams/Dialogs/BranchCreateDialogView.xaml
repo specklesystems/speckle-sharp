@@ -46,7 +46,7 @@
         VerticalContentAlignment="Center"
         md:HintAssist.Hint="Branch name"
         MaxLength="100"
-        Style="{StaticResource MaterialDesignFilledTextFieldTextBox}"
+        Style="{StaticResource MaterialDesignOutlinedTextBox}"
         Text="{Binding BranchName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
       <TextBox
         MinHeight="90"
@@ -55,7 +55,7 @@
         VerticalContentAlignment="Center"
         md:HintAssist.Hint="Branch description"
         AcceptsReturn="True"
-        Style="{StaticResource MaterialDesignFilledTextFieldTextBox}"
+        Style="{StaticResource MaterialDesignOutlinedTextBox}"
         Text="{Binding BranchDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         TextWrapping="Wrap" />
     </StackPanel>

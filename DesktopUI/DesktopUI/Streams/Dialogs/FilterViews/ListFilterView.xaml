@@ -52,7 +52,7 @@
           VerticalContentAlignment="Center"
           md:TextFieldAssist.PrefixText="     "
           FontSize="14"
-          Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+          Style="{StaticResource MaterialDesignOutlinedTextBox}"
           Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         <!--<Button
           Width="45"
