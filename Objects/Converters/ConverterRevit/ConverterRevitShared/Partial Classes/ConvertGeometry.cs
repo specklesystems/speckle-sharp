@@ -124,6 +124,7 @@ namespace Objects.Converter.Revit
       var l = new Line { units = u };
       l.start = PointToSpeckle(line.GetEndPoint(0), u);
       l.end = PointToSpeckle(line.GetEndPoint(1), u);
+      l.domain = new Interval(line.GetEndParameter(0), line.GetEndParameter(1));
 
       l.length = ScaleToSpeckle(line.Length);
       return l;
@@ -186,6 +187,7 @@ namespace Objects.Converter.Revit
       a.startPoint = PointToSpeckle(start, u);
       a.midPoint = PointToSpeckle(mid, u);
       a.length = ScaleToSpeckle(arc.Length);
+      a.domain = new Interval(arc.GetEndParameter(0), arc.GetEndParameter(1));
 
       return a;
     }
@@ -225,6 +227,7 @@ namespace Objects.Converter.Revit
           trim,
           u);
         ellipseToSpeckle.length = ScaleToSpeckle(ellipse.Length);
+        ellipseToSpeckle.domain = new Interval(0, 1);
         return ellipseToSpeckle;
       }
     }
@@ -247,7 +250,7 @@ namespace Objects.Converter.Revit
       speckleCurve.rational = revitCurve.isRational;
       speckleCurve.closed = RevitVersionHelper.IsCurveClosed(revitCurve);
       speckleCurve.units = units ?? ModelUnits;
-      //speckleCurve.domain = new Interval(revitCurve.StartParameter(), revitCurve.EndParameter());
+      speckleCurve.domain = new Interval(revitCurve.GetEndParameter(0), revitCurve.GetEndParameter(1));
       speckleCurve.length = ScaleToSpeckle(revitCurve.Length);
       var coords = revitCurve.Tessellate().SelectMany(xyz => PointToSpeckle(xyz, units).ToList()).ToArray();
       speckleCurve.displayValue = new Polyline(coords, units);
@@ -601,6 +604,9 @@ namespace Objects.Converter.Revit
 
       result.degreeU = surface.DegreeU;
       result.degreeV = surface.DegreeV;
+
+      result.domainU = new Interval(0, 1);
+      result.domainV = new Interval(0, 1);
 
       var knotsU = surface.GetKnotsU().ToList();
       var knotsV = surface.GetKnotsV().ToList();
