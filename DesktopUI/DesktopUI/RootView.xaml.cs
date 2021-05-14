@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using System.Windows.Media;
 using Speckle.DesktopUI.Settings;
+using Speckle.DesktopUI.Utils;
 using Stylet;
 using SpeckleSettings = Speckle.DesktopUI.Settings;
 
@@ -15,6 +16,7 @@ namespace Speckle.DesktopUI
     public RootView()
     {
       InitializeComponent();
+      Globals.RootResourceDict = Resources;
     }
 
     // default bindings to null if none are passed

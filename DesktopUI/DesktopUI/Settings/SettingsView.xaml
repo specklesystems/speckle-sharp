@@ -173,7 +173,6 @@
                 <!--  TODO figure out why this isn't changing the theme  -->
                 <ToggleButton x:Name="DarkModeToggleButton"
                   Command="{s:Action ToggleTheme}"
-                  CommandParameter="{}"
                   IsChecked="{Binding DarkMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Margin="8,0,0,0">
                   <md:PackIcon Kind="NightSky" />

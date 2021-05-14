@@ -25,7 +25,7 @@ namespace Speckle.DesktopUI.Settings
     {
       DisplayName = "Settings";
       _darkMode = Properties.Settings.Default.Theme == BaseTheme.Inherit;
-      ToggleTheme(null);
+      ToggleTheme();
 
       HelpLinks = new List<HelpLink>()
       {
@@ -85,8 +85,14 @@ namespace Speckle.DesktopUI.Settings
       set => SetAndNotify(ref _darkMode, value);
     }
 
-    public void ToggleTheme(ResourceDictionary resource)
+    public void ToggleTheme()
     {
+      if ( Globals.RootResourceDict != null )
+      {
+        var theme = Globals.RootResourceDict.GetTheme();
+        theme.SetBaseTheme(DarkMode ? Theme.Dark : Theme.Light);
+        Globals.RootResourceDict.SetTheme(theme);
+      }
       // var paletteHelper = new PaletteHelper();
       // ITheme theme = paletteHelper.GetTheme();
       //
