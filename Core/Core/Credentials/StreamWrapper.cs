@@ -121,7 +121,7 @@ namespace Speckle.Core.Credentials
       ServerUrl = uri.GetLeftPart(UriPartial.Authority);
       // Note: this is a hack. It's because new Uri() is parsed escaped in .net framework; wheareas in .netstandard it's not.
       // Tests pass in Core without this hack.
-      if (uri.Segments[3]?.ToLowerInvariant() == "branches/")
+      if (uri.Segments.Length >= 4 && uri.Segments[3]?.ToLowerInvariant() == "branches/")
       {
         StreamId = uri.Segments[2].Replace("/", "");
         if (uri.Segments.Length > 5)
