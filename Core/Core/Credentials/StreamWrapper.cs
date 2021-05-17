@@ -119,12 +119,14 @@ namespace Speckle.Core.Credentials
       Uri uri = new Uri(streamUrl, true);
 
       ServerUrl = uri.GetLeftPart(UriPartial.Authority);
+      // Note: this is a hack. It's because new Uri() is parsed escaped in .net framework; wheareas in .netstandard it's not.
+      // Tests pass in Core without this hack.
       if (uri.Segments[3]?.ToLowerInvariant() == "branches/")
       {
         StreamId = uri.Segments[2].Replace("/", "");
-        if (uri.Segments.Length > 4)
+        if (uri.Segments.Length > 5)
         {
-          var branchSegs = uri.Segments.ToList().GetRange(4, uri.Segments.Length - 1);
+          var branchSegs = uri.Segments.ToList().GetRange(4, uri.Segments.Length - 1 - 4);
           BranchName = Uri.UnescapeDataString(string.Concat(branchSegs));
         }
         else
@@ -152,6 +154,7 @@ namespace Speckle.Core.Credentials
               StreamId = uri.Segments[2].Replace("/", "");
               CommitId = uri.Segments[4].Replace("/", "");
             }
+            // NOTE: this is a good practice reminder on how it should work
             else if (uri.Segments[3].ToLowerInvariant() == "branches/")
             {
               StreamId = uri.Segments[2].Replace("/", "");
