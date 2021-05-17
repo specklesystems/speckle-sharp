@@ -115,6 +115,11 @@ namespace ConnectorGrasshopper.Conversion
         return;
       }
       
+      foreach (var error in Converter.ConversionErrors)
+      {
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.Message + ": " + error.InnerException?.Message);
+      }
+      
       foreach (var (level, message) in RuntimeMessages)
       {
         Parent.AddRuntimeMessage(level, message);

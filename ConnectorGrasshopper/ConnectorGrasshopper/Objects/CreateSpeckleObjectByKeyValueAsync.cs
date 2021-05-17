@@ -181,7 +181,15 @@ namespace ConnectorGrasshopper.Objects
     {
       // 👉 Checking for cancellation!
       if (CancellationToken.IsCancellationRequested) return;
-
+      
+            
+      // Report all conversion errors as warnings
+      if(Converter != null)
+        foreach (var error in Converter.ConversionErrors)
+        {
+          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.Message + ": " + error.InnerException?.Message);
+        }
+      
       foreach (var (level, message) in RuntimeMessages)
       {
         Parent.AddRuntimeMessage(level, message);
