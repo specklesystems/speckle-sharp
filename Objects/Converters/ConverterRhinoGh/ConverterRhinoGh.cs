@@ -371,13 +371,14 @@ namespace Objects.Converter.RhinoGh
         case RH.Extrusion _:
         case RH.Brep _:
         case NurbsSurface _:
-
+          return true;
+        
+#if !GRASSHOPPER
         case ViewInfo _:
-
         case InstanceDefinition _:
         case InstanceObject _:
-
           return true;
+#endif
 
         default:
 
@@ -390,7 +391,6 @@ namespace Objects.Converter.RhinoGh
       switch (@object)
       {
         case Point _ :
-        case Pointcloud _:
         case Vector _:
         case Interval _:
         case Interval2d _:
@@ -406,19 +406,18 @@ namespace Objects.Converter.RhinoGh
         case Mesh _:
         case Brep _:
         case Surface _:
-
+          return true;
+#if !GRASSHOPPER
+        case Pointcloud _:
         case ModelCurve _:
         case DirectShape _:
-
         case View3D _:
-
         case BlockDefinition _:
         case BlockInstance _:
-
           return true;
-
+#endif
+        
         default:
-
           return false;
       }
     }

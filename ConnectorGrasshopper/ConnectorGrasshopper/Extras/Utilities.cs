@@ -1,4 +1,4 @@
-﻿using Grasshopper.Kernel.Types;
+using Grasshopper.Kernel.Types;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -248,7 +248,7 @@ namespace ConnectorGrasshopper.Extras
           }
           catch (Exception e)
           {
-            converter.ConversionErrors.Add(new Exception("Could not convert ${@base}", e));
+            converter.ConversionErrors.Add(new Exception($"Could not convert {@base}", e));
           }
         }
         if(recursive)
