@@ -19,8 +19,15 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> BlockInstanceToNative(BlockInstance instance)
+    // Creates a generic model instance in a project or family doc
+    public string BlockInstanceToNative(BlockInstance instance, Document familyDoc = null)
     {
+
+      string result = null;
+
+      // Base point
+      var basePoint = PointToNative(instance.insertionPoint);
+
       // Get or make family from block definition
       FamilySymbol familySymbol = new FilteredElementCollector(Doc)
         .OfClass(typeof(Family))
@@ -32,54 +39,70 @@ namespace Objects.Converter.Revit
         .First();
 
       if (familySymbol == null)
-        familySymbol = BlockDefinitionToNative(instance.blockDefinition);
-
-      // base point
-      var basePoint = PointToNative(instance.insertionPoint);
-
-      FamilyInstance _instance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, DB.Structure.StructuralType.NonStructural);
-
-      Doc.Regenerate();
-
-      // transform
-      if (MatrixDecompose(instance.transform, out double rotation))
       {
-        try
-        {
-          // some point based families don't have a rotation, so keep this in a try catch
-          if (rotation != (_instance.Location as LocationPoint).Rotation)
-          {
-            var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
-            (_instance.Location as LocationPoint).Rotate(axis, rotation - (_instance.Location as LocationPoint).Rotation);
-          }
-        }
-        catch { }
+        var familyPath = BlockDefinitionToNative(instance.blockDefinition);
 
+        if (familyDoc != null)
+        {
+          if (familyDoc.LoadFamily(familyPath, new FamilyLoadOption(), out var fam));
+            familySymbol = familyDoc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
+        }
+        else
+        {
+          if (Doc.LoadFamily(familyPath, new FamilyLoadOption(), out var fam))
+            familySymbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
+        }
+
+        familySymbol.Activate();
+        //File.Delete(familyPath);
       }
 
-      SetInstanceParameters(_instance, instance);
-
-      var placeholders = new List<ApplicationPlaceholderObject>()
+      // see if this is a nested family instance or to be inserted in project
+      FamilyInstance _instance = null;
+      if (familyDoc != null)
       {
-        new ApplicationPlaceholderObject
-        {
-        applicationId = instance.applicationId,
-        ApplicationGeneratedId = _instance.UniqueId,
-        NativeObject = _instance
-        }
-      };
+        _instance = familyDoc.FamilyCreate.NewFamilyInstance(basePoint, familySymbol, DB.Structure.StructuralType.NonStructural);
+        familyDoc.Regenerate();
+      }
+      else
+      {
+        _instance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, DB.Structure.StructuralType.NonStructural);
+        Doc.Regenerate();
+      }
 
-      return placeholders;
+      // transform
+      if (_instance != null)
+      {
+        if (MatrixDecompose(instance.transform, out double rotation))
+        {
+          try
+          {
+            // some point based families don't have a rotation, so keep this in a try catch
+            if (rotation != (_instance.Location as LocationPoint).Rotation)
+            {
+              var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
+              (_instance.Location as LocationPoint).Rotate(axis, rotation - (_instance.Location as LocationPoint).Rotation);
+            }
+          }
+          catch { }
+
+        }
+        SetInstanceParameters(_instance, instance);
+        result = "success";
+      }
+
+      return result;
     }
 
     // TODO: fix unit conversions since block geometry is being converted inside a new family document, which potentially has different unit settings from the main doc.
     // This could be done by passing in an option Document argument for all conversions that defaults to the main doc (annoying)
     // I suspect this also needs to be fixed for freeform elements
-    private FamilySymbol BlockDefinitionToNative(BlockDefinition definition)
+    private string BlockDefinitionToNative(BlockDefinition definition)
     {
       // convert definition geometry to native
       var solids = new List<DB.Solid>();
       var curves = new List<DB.Curve>();
+      var blocks = new List<BlockInstance>();
       foreach (var geometry in definition.geometry)
       {
         switch (geometry)
@@ -115,22 +138,42 @@ namespace Objects.Converter.Revit
               ConversionErrors.Add(new SpeckleException($"Could not convert block {definition.id} curve to native.", e));
             }
             break;
+          case BlockInstance instance:
+            blocks.Add(instance);
+            break;
         }
       }
 
-      var tempPath = CreateBlockFamily(solids, curves, definition.name);
-      Doc.LoadFamily(tempPath, new FamilyLoadOption(), out var fam);
-      var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
-      symbol.Activate();
-      try
+      // create a family to represent a block definition
+      // TODO: package our own generic model rft so this path will always work (need to change for freeform elem too)
+      // TODO: match the rft unit to the main doc unit system (ie if main doc is in feet, pick the English Generic Model)
+      // TODO: rename block with stream commit info prefix taken from UI - need to figure out cleanest way of storing this in the doc for retrieval by converter
+      var famPath = Path.Combine(Doc.Application.FamilyTemplatePath, @"Metric Generic Model.rft");
+      if (!File.Exists(famPath))
       {
-        File.Delete(tempPath);
-      }
-      catch
-      {
+        throw new Exception($"Could not find file Metric Generic Model.rft - {famPath}");
       }
 
-      return symbol;
+      var famDoc = Doc.Application.NewFamilyDocument(famPath);
+      using (DB.Transaction t = new DB.Transaction(famDoc, "Create Block Geometry Elements"))
+      {
+        t.Start();
+
+        solids.ForEach(o => { DB.FreeFormElement.Create(famDoc, o); });
+        curves.ForEach(o => { famDoc.FamilyCreate.NewModelCurve(o, NewSketchPlaneFromCurve(o, famDoc)); });
+        blocks.ForEach(o => { BlockInstanceToNative(o, famDoc); });
+
+        t.Commit();
+      }
+
+      var famName = "SpeckleBlock_" + definition.name;
+      string familyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
+      var so = new DB.SaveAsOptions();
+      so.OverwriteExistingFile = true;
+      famDoc.SaveAs(familyPath, so);
+      famDoc.Close();
+
+      return familyPath;
     }
 
     private bool MatrixDecompose(double[] m, out double rotation)
@@ -151,39 +194,6 @@ namespace Objects.Converter.Revit
         rotation = 0;
         return false;
       }
-    }
-
-    private string CreateBlockFamily(List<DB.Solid> solids, List<DB.Curve> curves, string name)
-    {
-      // create a family to represent a block definition
-      // TODO: package our own generic model rft so this path will always work (need to change for freeform elem too)
-      // TODO: match the rft unit to the main doc unit system (ie if main doc is in feet, pick the English Generic Model)
-      // TODO: rename block with stream commit info prefix taken from UI - need to figure out cleanest way of storing this in the doc for retrieval by converter
-      var famPath = Path.Combine(Doc.Application.FamilyTemplatePath, @"Metric Generic Model.rft");
-      if (!File.Exists(famPath))
-      {
-        throw new Exception($"Could not find file Metric Generic Model.rft - {famPath}");
-      }
-
-      var famDoc = Doc.Application.NewFamilyDocument(famPath);
-      using (DB.Transaction t = new DB.Transaction(famDoc, "Create Block Geometry Elements"))
-      {
-        t.Start();
-
-        solids.ForEach(o => { DB.FreeFormElement.Create(famDoc, o); });
-        curves.ForEach(o => { famDoc.FamilyCreate.NewModelCurve(o, NewSketchPlaneFromCurve(o, famDoc)); });
-
-        t.Commit();
-      }
-
-      var famName = "SpeckleBlock_" + name;
-      string tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
-      var so = new DB.SaveAsOptions();
-      so.OverwriteExistingFile = true;
-      famDoc.SaveAs(tempFamilyPath, so);
-      famDoc.Close();
-
-      return tempFamilyPath;
     }
   }
 }
