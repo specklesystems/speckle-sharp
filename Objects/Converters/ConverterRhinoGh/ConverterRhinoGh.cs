@@ -372,13 +372,11 @@ namespace Objects.Converter.RhinoGh
         case RH.Brep _:
         case NurbsSurface _:
           return true;
-        
-#if !GRASSHOPPER
+        // TODO: This types are not supported in GH!
         case ViewInfo _:
         case InstanceDefinition _:
         case InstanceObject _:
           return true;
-#endif
 
         default:
 
@@ -407,7 +405,8 @@ namespace Objects.Converter.RhinoGh
         case Brep _:
         case Surface _:
           return true;
-#if !GRASSHOPPER
+        
+        //TODO: This types are not supported in GH!
         case Pointcloud _:
         case ModelCurve _:
         case DirectShape _:
@@ -415,7 +414,6 @@ namespace Objects.Converter.RhinoGh
         case BlockDefinition _:
         case BlockInstance _:
           return true;
-#endif
         
         default:
           return false;
