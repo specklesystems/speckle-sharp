@@ -80,7 +80,7 @@ namespace Objects.Converter.Revit
                   revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), isSloped == true);
                   if (slopeAngle != null && isSloped == true)
                   {
-                    revitFootprintRoof.set_SlopeAngle(curveArray.get_Item(i), (double)slopeAngle);
+                    revitFootprintRoof.set_SlopeAngle(curveArray.get_Item(i), (double)slopeAngle * Math.PI / 180);
                     hasSlopedSide = true;
                   }
 
