@@ -78,7 +78,7 @@ public static string AutocadAppName = Applications.Autocad2022;
     /// </summary>
     /// <param name="entity"></param>
     /// <param name="tr"></param>
-    public static bool Append(this Entity entity, string layer, Transaction tr)
+    public static bool Append(this Entity entity, string layer, Transaction tr, BlockTableRecord btr)
     {
       Document Doc = Application.DocumentManager.MdiActiveDocument;
       
@@ -86,9 +86,6 @@ public static string AutocadAppName = Applications.Autocad2022;
       {
         try
         {
-          // open blocktable record for editing
-          BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
-
           entity.Layer = layer;
           btr.AppendEntity(entity);
           tr.AddNewlyCreatedDBObject(entity, true);
@@ -97,6 +94,10 @@ public static string AutocadAppName = Applications.Autocad2022;
         {
           return false;
         }
+      }
+      else
+      {
+        entity.Layer = layer;
       }
       return true;
     }

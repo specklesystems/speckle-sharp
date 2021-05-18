@@ -670,12 +670,17 @@ namespace Objects.Converter.AutocadCivil
     public AcadDB.PolyFaceMesh MeshToNativeDB(Mesh mesh)
     {
       // get vertex points
+      var vertices = new Point3dCollection();
       Point3d[] points = PointListToNative(mesh.vertices, mesh.units);
+      foreach (var point in points)
+        vertices.Add(point);
 
       PolyFaceMesh _mesh = null;
+
       using (Transaction tr = Doc.TransactionManager.StartTransaction())
       {
         _mesh = new PolyFaceMesh();
+        _mesh.SetDatabaseDefaults();
 
         // append mesh to blocktable record - necessary before adding vertices and faces
         BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
@@ -683,7 +688,8 @@ namespace Objects.Converter.AutocadCivil
         tr.AddNewlyCreatedDBObject(_mesh, true);
 
         // add polyfacemesh vertices
-        for (int i = 0; i < points.Length; i++)
+        
+        for (int i = 0; i < vertices.Count; i++)
         {
           var vertex = new PolyFaceMeshVertex(points[i]);
           try
@@ -694,6 +700,7 @@ namespace Objects.Converter.AutocadCivil
           catch { }
           _mesh.AppendVertex(vertex);
           tr.AddNewlyCreatedDBObject(vertex, true);
+          vertex.Dispose();
         }
 
         // add polyfacemesh faces. vertex index starts at 1 sigh
@@ -716,10 +723,12 @@ namespace Objects.Converter.AutocadCivil
             _mesh.AppendFaceRecord(face);
             tr.AddNewlyCreatedDBObject(face, true);
           }
+          face.Dispose();
         }
 
         tr.Commit();
       }
+      
       
       return _mesh;
     }
