@@ -95,7 +95,6 @@ namespace Speckle.DesktopUI.Streams
 
     public void ToggleAccountSelection()
     {
-      NotifyOfPropertyChange(nameof(Accounts));
       AccountSelectionVisibility = AccountSelectionVisibility == System.Windows.Visibility.Visible
         ? System.Windows.Visibility.Collapsed
         : System.Windows.Visibility.Visible;
