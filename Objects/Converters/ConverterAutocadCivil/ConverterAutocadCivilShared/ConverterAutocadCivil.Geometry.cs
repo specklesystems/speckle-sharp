@@ -350,24 +350,18 @@ namespace Objects.Converter.AutocadCivil
     {
       var u = units ?? ModelUnits;
 
-      if (curve.IsPlanar(out AC.Plane pln))
+      // note: some curve3ds may not have endpoints! Not sure what contexts this may occur in, might cause issues later.
+      switch (curve)
       {
-        if (curve.IsPeriodic(out double period) && curve.IsClosed())
-        { }
-
-        if (curve.IsLinear(out Line3d line)) // this removes endpoint info! need to create line here instead of using LineToSpeckle
-        {
-          var startParam = line.GetParameterOf(curve.StartPoint);
-          var endParam = line.GetParameterOf(curve.EndPoint);
-          var _line = new Line(PointToSpeckle(curve.StartPoint, u), PointToSpeckle(curve.EndPoint, u), u);
-          _line.length = line.GetLength(startParam, endParam, tolerance);
-          _line.domain = IntervalToSpeckle(curve.GetInterval());
-          _line.bbox = BoxToSpeckle(curve.OrthoBoundBlock);
-          return _line;
-        }
+        case Line3d line:
+          return LineToSpeckle(line);
+        case LineSegment3d line:
+          return LineToSpeckle(line);
+        case CircularArc3d arc:
+          return ArcToSpeckle(arc);
+        default:
+          return NurbsToSpeckle(curve as NurbCurve3d);
       }
-
-      return NurbsToSpeckle(curve as NurbCurve3d);
     }
 
     public Surface SurfaceToSpeckle(AC.NurbSurface surface, string units = null)
