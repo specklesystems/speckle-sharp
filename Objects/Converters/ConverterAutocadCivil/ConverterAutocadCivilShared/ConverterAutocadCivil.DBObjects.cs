@@ -291,6 +291,8 @@ namespace Objects.Converter.AutocadCivil
       for (int i = 0; i < polyline.NumberOfVertices; i++)
       {
         var segment = GetSegmentByType(polyline, i);
+        if (segment == null)
+          continue;
         if (i == 0 && polyline.NumberOfVertices > 1)
         {
           // get the connection point to the next segment
