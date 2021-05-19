@@ -343,7 +343,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"         
-              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # DYNAMO Build&Deploy
       - build-connector:
@@ -358,7 +358,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(dynamo|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/         
+              only: /^(dynamo|revitdynamo|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/         
 
       # REVIT Build&Deploy
       - build-connector:
@@ -373,7 +373,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(revit|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(revit|revitdynamo|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # GRASSHOPPER Build&Deploy
       - build-connector:
@@ -388,7 +388,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(grasshopper|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(grasshopper|rhinogh|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # RHINO Build&Deploy
       - build-connector:
@@ -403,7 +403,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(rhino|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(rhino|rhinogh|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # AUTOCAD Build&Deploy
       - build-connector:
@@ -447,4 +447,4 @@ workflows:
             - build-deploy-connector-civil3d
           filters:
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"
-              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
