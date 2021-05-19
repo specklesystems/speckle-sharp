@@ -414,6 +414,9 @@ namespace Speckle.Core.Serialisation
               int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
               serializer.Context = new StreamingContext(StreamingContextStates.Other,
                 chunkSize > 0 ? new Chunkable(chunkSize) : new Chunkable());
+            } else
+            {
+              serializer.Context = new StreamingContext();
             }
           }
           else
@@ -444,6 +447,8 @@ namespace Speckle.Core.Serialisation
 
           // Pop detach lineage. If you don't get this, remember this thing moves ONLY FORWARD, DEPTH FIRST
           DetachLineage.RemoveAt(DetachLineage.Count - 1);
+          // Refresh the streaming context to remove chunking flag
+          serializer.Context = new StreamingContext();
         }
 
         // Check if we actually have any transports present that would warrant a 
@@ -522,15 +527,24 @@ namespace Speckle.Core.Serialisation
           {
             if (i == maxCount)
             {
-              chunkList.Add(currChunk);
+              if(currChunk.data.Count!=0)
+              {
+                chunkList.Add(currChunk);
+              }
+
               currChunk = new DataChunk();
               i = 0;
             }
             currChunk.data.Add(arrValue);
             i++;
           }
-          chunkList.Add(currChunk);
+
+          if (currChunk.data.Count != 0)
+          {
+            chunkList.Add(currChunk);
+          }
           value = chunkList;
+
         }
 
         foreach (var arrValue in ((IEnumerable)value))

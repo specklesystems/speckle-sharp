@@ -226,5 +226,31 @@ namespace Tests
       Assert.AreEqual(deserialised.GetId(), mesh.GetId());
     }
 
+    [Test]
+    public void EmptyListSerialisationTests()
+    {
+      // NOTE: expected behaviour is that empty lists should serialize as empty lists. Don't ask why, it's complicated. 
+      // Regarding chunkable empty lists, to prevent empty chunks, the expected behaviour is to have an empty lists, with no chunks inside.
+      var test = new Base();
+
+      test["@(5)emptyChunks"] = new List<object>();
+      test["emptyList"] = new List<object>();
+      test["@emptyDetachableList"] = new List<object>();
+
+      // Note: nested empty lists should be preserved. 
+      test["nestedList"] = new List<object>() { new List<object>() { new List<object>() } };
+      test["@nestedDetachableList"] = new List<object>() { new List<object>() { new List<object>() } };
+      
+      var serialised = Operations.Serialize(test);
+      var isCorrect =
+        serialised.Contains("\"@(5)emptyChunks\":[]") &&
+        serialised.Contains("\"emptyList\":[]") &&
+        serialised.Contains("\"@emptyDetachableList\":[]") &&
+        serialised.Contains("\"nestedList\":[[[]]]") &&
+        serialised.Contains("\"@nestedDetachableList\":[[[]]]");
+
+      Assert.AreEqual(isCorrect, true);
+    }
+
   }
 }

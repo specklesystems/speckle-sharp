@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Objects.Converter.Rhino</AssemblyName>
     <RootNamespace>Objects.Converter.RhinoGh</RootNamespace>
-    <Configurations>Debug;Release;Debug along Revit</Configurations>
+    <Configurations>Debug;Release;Debug along Revit;Debug Grasshopper;Release Grasshopper</Configurations>
     <DefineConstants>$(DefineConstants)</DefineConstants>
     <PackageId>Speckle.Objects.Converter.RhinoGh</PackageId>
     <Authors>Speckle</Authors>
@@ -21,6 +21,17 @@
     <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
     <Platforms>AnyCPU</Platforms>
 
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug Grasshopper' ">
+    <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+    <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+    <DefineConstants>TRACE;GRASSHOPPER;</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release Grasshopper' ">
+    <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
+    <DefineConstants>TRACE;GRASSHOPPER;</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

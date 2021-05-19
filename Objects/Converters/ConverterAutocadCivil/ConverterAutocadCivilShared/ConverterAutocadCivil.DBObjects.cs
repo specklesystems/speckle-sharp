@@ -251,8 +251,29 @@ namespace Objects.Converter.AutocadCivil
       var segments = new List<ICurve>();
       var exploded = new DBObjectCollection();
       polyline.Explode(exploded);
+      Point3d previousPoint = new Point3d();
       for (int i = 0; i < exploded.Count; i++)
-        segments.Add((ICurve)ConvertToSpeckle(exploded[i]));
+      {
+        var segment = (exploded[i] as AcadDB.Curve).GetGeCurve();
+
+        if (i == 0 && exploded.Count > 1)
+        {
+          // get the connection point to the next segment - this is necessary since imported polycurves might have segments in different directions
+          var connectionPoint = new Point3d();
+          var nextSegment = (exploded[i+1] as AcadDB.Curve).GetGeCurve();
+          if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
+            connectionPoint = nextSegment.StartPoint;
+          else
+            connectionPoint = nextSegment.EndPoint;
+          previousPoint = connectionPoint;
+          segment = GetCorrectSegmentDirection(segment, connectionPoint, true, out Point3d otherPoint);
+        }
+        else
+        {
+          segment = GetCorrectSegmentDirection(segment, previousPoint, false, out previousPoint);
+        }
+        segments.Add(CurveToSpeckle(segment));
+      }
       polycurve.segments = segments;
 
       polycurve.length = polyline.Length;
@@ -266,18 +287,29 @@ namespace Objects.Converter.AutocadCivil
 
       // extract segments
       var segments = new List<ICurve>();
+      Point3d previousPoint = new Point3d();
       for (int i = 0; i < polyline.NumberOfVertices; i++)
       {
-        SegmentType type = polyline.GetSegmentType(i);
-        switch (type)
+        var segment = GetSegmentByType(polyline, i);
+        if (segment == null)
+          continue;
+        if (i == 0 && polyline.NumberOfVertices > 1)
         {
-          case SegmentType.Line:
-            segments.Add(LineToSpeckle(polyline.GetLineSegmentAt(i)));
-            break;
-          case SegmentType.Arc:
-            segments.Add(ArcToSpeckle(polyline.GetArcSegmentAt(i)));
-            break;
+          // get the connection point to the next segment
+          var connectionPoint = new Point3d();
+          var nextSegment = GetSegmentByType(polyline, i + 1);
+          if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
+            connectionPoint = nextSegment.StartPoint;
+          else
+            connectionPoint = nextSegment.EndPoint;
+          previousPoint = connectionPoint;
+          segment = GetCorrectSegmentDirection(segment, connectionPoint, true, out Point3d otherPoint);
         }
+        else
+        {
+          segment = GetCorrectSegmentDirection(segment, previousPoint, false, out previousPoint);
+        }
+        segments.Add(CurveToSpeckle(segment));
       }
       polycurve.segments = segments;
 
@@ -285,6 +317,42 @@ namespace Objects.Converter.AutocadCivil
       polycurve.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
 
       return polycurve;
+    }
+
+    private Curve3d GetSegmentByType(AcadDB.Polyline polyline, int i)
+    {
+      SegmentType type = polyline.GetSegmentType(i);
+      switch (type)
+      {
+        case SegmentType.Line:
+          return polyline.GetLineSegmentAt(i);
+        case SegmentType.Arc:
+          return polyline.GetArcSegmentAt(i);
+        default:
+          return null;
+      }
+    }
+
+    private Curve3d GetCorrectSegmentDirection (Curve3d segment, Point3d connectionPoint, bool isFirstSegment, out Point3d nextPoint) // note sometimes curve3d may not have endpoints
+    {
+      nextPoint = segment.EndPoint;
+
+      if (connectionPoint == null)
+        return segment;
+
+      bool reverseDirection = false; 
+      if (isFirstSegment)
+      {
+        reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? true : false;
+        if (reverseDirection) nextPoint = segment.StartPoint;
+      }  
+      else
+      {
+        reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? false : true;
+        if (reverseDirection) nextPoint = segment.StartPoint;
+      }
+        
+      return (reverseDirection) ? segment.GetReverseParameterCurve() : segment;
     }
 
     // polylines can only support curve segments of type circular arc
@@ -670,12 +738,17 @@ namespace Objects.Converter.AutocadCivil
     public AcadDB.PolyFaceMesh MeshToNativeDB(Mesh mesh)
     {
       // get vertex points
+      var vertices = new Point3dCollection();
       Point3d[] points = PointListToNative(mesh.vertices, mesh.units);
+      foreach (var point in points)
+        vertices.Add(point);
 
       PolyFaceMesh _mesh = null;
+
       using (Transaction tr = Doc.TransactionManager.StartTransaction())
       {
         _mesh = new PolyFaceMesh();
+        _mesh.SetDatabaseDefaults();
 
         // append mesh to blocktable record - necessary before adding vertices and faces
         BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
@@ -683,7 +756,8 @@ namespace Objects.Converter.AutocadCivil
         tr.AddNewlyCreatedDBObject(_mesh, true);
 
         // add polyfacemesh vertices
-        for (int i = 0; i < points.Length; i++)
+        
+        for (int i = 0; i < vertices.Count; i++)
         {
           var vertex = new PolyFaceMeshVertex(points[i]);
           try
@@ -694,6 +768,7 @@ namespace Objects.Converter.AutocadCivil
           catch { }
           _mesh.AppendVertex(vertex);
           tr.AddNewlyCreatedDBObject(vertex, true);
+          vertex.Dispose();
         }
 
         // add polyfacemesh faces. vertex index starts at 1 sigh
@@ -716,10 +791,12 @@ namespace Objects.Converter.AutocadCivil
             _mesh.AppendFaceRecord(face);
             tr.AddNewlyCreatedDBObject(face, true);
           }
+          face.Dispose();
         }
 
         tr.Commit();
       }
+      
       
       return _mesh;
     }
@@ -1074,6 +1151,7 @@ namespace Objects.Converter.AutocadCivil
           }
           blockId = blckTbl.Add(btr);
           tr.AddNewlyCreatedDBObject(btr, true);
+          blckTbl.Dispose();
         }
         tr.Commit();
       }

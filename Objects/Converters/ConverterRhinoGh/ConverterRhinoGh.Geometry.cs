@@ -272,6 +272,10 @@ namespace Objects.Converter.RhinoGh
       RH.Arc arc = new RH.Arc(PlaneToNative(a.plane), ScaleToNative((double)a.radius, a.units), (double)a.angleRadians);
       arc.StartAngle = (double)a.startAngle;
       arc.EndAngle = (double)a.endAngle;
+      if (!arc.IsValid) // try with different method if not valid
+      {
+        arc = new RH.Arc(PointToNative(a.startPoint).Location, PointToNative(a.midPoint).Location, PointToNative(a.endPoint).Location);
+      }
       var myArc = new ArcCurve(arc);
 
       if (a.domain != null)

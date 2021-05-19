@@ -53,7 +53,8 @@ namespace Speckle.Core.Credentials
     }
 
     public StreamWrapper()
-    { }
+    {
+    }
 
     /// <summary>
     /// Creates a StreamWrapper from a stream url or a stream id
@@ -115,48 +116,65 @@ namespace Speckle.Core.Credentials
 
     private void StreamWrapperFromUrl(string streamUrl)
     {
-      Uri uri = new Uri(streamUrl);
+      Uri uri = new Uri(streamUrl, true);
+
       ServerUrl = uri.GetLeftPart(UriPartial.Authority);
-
-      switch (uri.Segments.Length)
+      // Note: this is a hack. It's because new Uri() is parsed escaped in .net framework; wheareas in .netstandard it's not.
+      // Tests pass in Core without this hack.
+      if (uri.Segments.Length >= 4 && uri.Segments[3]?.ToLowerInvariant() == "branches/")
       {
-        case 3: // ie http://speckle.server/streams/8fecc9aa6d
-          if (uri.Segments[1].ToLowerInvariant() == "streams/")
-          {
-            StreamId = uri.Segments[2].Replace("/", "");
-          }
-          else
-          {
-            throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
-          }
-
-          break;
-        case 5: // ie http://speckle.server/streams/8fecc9aa6d/commits/76a23d7179
-          if (uri.Segments[3].ToLowerInvariant() == "commits/")
-          {
-            StreamId = uri.Segments[2].Replace("/", "");
-            CommitId = uri.Segments[4].Replace("/", "");
-          }
-          else if (uri.Segments[3].ToLowerInvariant() == "branches/")
-          {
-            StreamId = uri.Segments[2].Replace("/", "");
-            BranchName = Uri.UnescapeDataString(uri.Segments[4].Replace("/", ""));
-          }
-          else if (uri.Segments[3].ToLowerInvariant() == "objects/")
-          {
-            StreamId = uri.Segments[2].Replace("/", "");
-            ObjectId = uri.Segments[4].Replace("/", "");
-          }
-          else
-          {
-            throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
-          }
-
-          break;
-
-        default:
-          throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
+        StreamId = uri.Segments[2].Replace("/", "");
+        if (uri.Segments.Length > 5)
+        {
+          var branchSegs = uri.Segments.ToList().GetRange(4, uri.Segments.Length - 1 - 4);
+          BranchName = Uri.UnescapeDataString(string.Concat(branchSegs));
+        }
+        else
+        {
+          BranchName = Uri.UnescapeDataString(uri.Segments[4]);
+        }
       }
+      else
+        switch (uri.Segments.Length)
+        {
+          case 3: // ie http://speckle.server/streams/8fecc9aa6d
+            if (uri.Segments[1].ToLowerInvariant() == "streams/")
+            {
+              StreamId = uri.Segments[2].Replace("/", "");
+            }
+            else
+            {
+              throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
+            }
+
+            break;
+          case 5: // ie http://speckle.server/streams/8fecc9aa6d/commits/76a23d7179
+            if (uri.Segments[3].ToLowerInvariant() == "commits/")
+            {
+              StreamId = uri.Segments[2].Replace("/", "");
+              CommitId = uri.Segments[4].Replace("/", "");
+            }
+            // NOTE: this is a good practice reminder on how it should work
+            else if (uri.Segments[3].ToLowerInvariant() == "branches/")
+            {
+              StreamId = uri.Segments[2].Replace("/", "");
+              BranchName = Uri.UnescapeDataString(uri.Segments[4].Replace("/", ""));
+            }
+            else if (uri.Segments[3].ToLowerInvariant() == "objects/")
+            {
+              StreamId = uri.Segments[2].Replace("/", "");
+              ObjectId = uri.Segments[4].Replace("/", "");
+            }
+            else
+            {
+              throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
+            }
+
+            break;
+
+          default:
+            throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
+        }
     }
 
     private Account _Account;
@@ -179,7 +197,7 @@ namespace Speckle.Core.Credentials
       // Step 1: check if direct account id (?u=)
       if (originalInput.Contains("?u="))
       {
-        var userId = originalInput.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
+        var userId = originalInput.Split(new string[] {"?u="}, StringSplitOptions.None)[1];
         var acc = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == userId);
         if (acc != null)
         {
@@ -239,12 +257,12 @@ namespace Speckle.Core.Credentials
       if (wrapper == null) return false;
       if (Type != wrapper.Type) return false;
       return Type == wrapper.Type &&
-        ServerUrl == wrapper.ServerUrl &&
-        UserId == wrapper.UserId &&
-        StreamId == wrapper.StreamId &&
-        (Type == StreamWrapperType.Branch && BranchName == wrapper.BranchName) ||
-        (Type == StreamWrapperType.Object && ObjectId == wrapper.ObjectId) ||
-        (Type == StreamWrapperType.Commit && CommitId == wrapper.CommitId);
+             ServerUrl == wrapper.ServerUrl &&
+             UserId == wrapper.UserId &&
+             StreamId == wrapper.StreamId &&
+             (Type == StreamWrapperType.Branch && BranchName == wrapper.BranchName) ||
+             (Type == StreamWrapperType.Object && ObjectId == wrapper.ObjectId) ||
+             (Type == StreamWrapperType.Commit && CommitId == wrapper.CommitId);
     }
 
     private async Task ValidateWithAccount(Account acc)
@@ -282,6 +300,7 @@ namespace Speckle.Core.Credentials
           url += $"/objects/{ObjectId}";
           break;
       }
+
       var acc = $"{(UserId != null ? "?u=" + UserId : "")}";
       return url + acc;
     }

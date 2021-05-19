@@ -242,6 +242,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
           int count = 0;
           var commitObjs = FlattenCommitObject(commitObject, converter, layerPrefix, state, ref count);
 
+          // open model space block table record for write
+          BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
+
           foreach (var commitObj in commitObjs)
           {
             // create the object's bake layer if it doesn't already exist
@@ -258,7 +261,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 if (!cleanName.Equals(layerName))
                   changedLayerNames = true;
 
-                if (!convertedEntity.Append(cleanName, tr))
+                if (!convertedEntity.Append(cleanName, tr, btr))
                   state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
               }
               else

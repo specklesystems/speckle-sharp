@@ -178,6 +178,17 @@ namespace ConnectorGrasshopper.Objects
           DA.SetDataTree(indexOfOutputParam, ghStructure);
         }
       }
+
+      // Report all conversion errors as warnings
+      if(Converter != null)
+      {
+        foreach (var error in Converter.ConversionErrors)
+        {
+          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
+            error.Message + ": " + error.InnerException?.Message);
+        }
+        Converter.ConversionErrors.Clear();
+      }
       outputDict = null;
       (Parent as ExpandSpeckleObjectAsync).State = 0;
 
@@ -185,6 +196,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
+      Parent.ClearRuntimeMessages();
       DA.GetDataTree(0, out speckleObjects);
       speckleObjects.Graft(GH_GraftMode.GraftAll);
       var names = Params.Output.Select(p => p.Name);
