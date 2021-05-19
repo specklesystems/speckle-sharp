@@ -157,7 +157,8 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Curve o:
           return CurveToNativeDB(o);
 
-        //case Surface o: // TODO: NOT TESTED
+          /*
+        //case Surface o: 
         //  return SurfaceToNative(o);
 
         case Brep o:
@@ -168,6 +169,7 @@ public static string AutocadAppName = Applications.Autocad2022;
 
         //case Mesh o: // unstable, do not use for now
         //  return MeshToNativeDB(o);
+        */
 
         case BlockInstance o:
           return BlockInstanceToNativeDB(o, out BlockReference refernce);
@@ -336,8 +338,8 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Polyline _:
         case Polycurve _:
         case Curve _:
-        case Brep _:
-        case Mesh _:
+        //case Brep _:
+        //case Mesh _:
 
         case BlockDefinition _:
         case BlockInstance _:
