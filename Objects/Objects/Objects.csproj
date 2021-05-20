@@ -17,7 +17,7 @@
     <PackageIcon>logo.png</PackageIcon>
     <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
     <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
-    <Configurations>Debug;Release;Debug along Revit</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
   <ItemGroup>
@@ -34,6 +34,9 @@
   </ItemGroup>
   <PropertyGroup>
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;</DefineConstants>
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">

@@ -126,7 +126,7 @@ namespace Speckle.Core.Credentials
         StreamId = uri.Segments[2].Replace("/", "");
         if (uri.Segments.Length > 5)
         {
-          var branchSegs = uri.Segments.ToList().GetRange(4, uri.Segments.Length - 1 - 4);
+          var branchSegs = uri.Segments.ToList().GetRange(4, uri.Segments.Length - 4);
           BranchName = Uri.UnescapeDataString(string.Concat(branchSegs));
         }
         else
