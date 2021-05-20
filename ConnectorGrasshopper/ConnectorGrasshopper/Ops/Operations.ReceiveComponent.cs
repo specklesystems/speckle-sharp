@@ -66,9 +66,7 @@ namespace ConnectorGrasshopper.Ops
     public double OverallProgress { get; set; }
 
     public string ReceivedCommitId { get; set; }
-
-    public string ReceivedObjectId { get; set; }
-
+    
     public StreamWrapper StreamWrapper { get; set; }
     
     public override void AddedToDocument(GH_Document document)
@@ -129,16 +127,12 @@ namespace ConnectorGrasshopper.Ops
       writer.SetBoolean("AutoReceive", AutoReceive);
       writer.SetString("CurrentComponentState", CurrentComponentState);
       
-
-      
       writer.SetString("KitName", Kit.Name);
       var streamUrl = StreamWrapper != null ? StreamWrapper.ToString() : "";
       writer.SetString("StreamWrapper", streamUrl);
       writer.SetString("LastInfoMessage", LastInfoMessage);
       writer.SetString("LastCommitDate", LastCommitDate);
-      writer.SetString("ReceivedObjectId", ReceivedObjectId);
       writer.SetString("ReceivedCommitId", ReceivedCommitId);
-      
       return base.Write(writer);
     }
 
@@ -148,9 +142,8 @@ namespace ConnectorGrasshopper.Ops
       CurrentComponentState = reader.GetString("CurrentComponentState");
       LastInfoMessage = reader.GetString("LastInfoMessage");
       LastCommitDate = reader.GetString("LastCommitDate");
-      ReceivedObjectId = reader.GetString("ReceivedObjectId");
       ReceivedCommitId = reader.GetString("ReceivedCommitId");
-
+      
       var swString = reader.GetString("StreamWrapper");
       if (!string.IsNullOrEmpty(swString)) StreamWrapper = new StreamWrapper(swString);
 
@@ -273,8 +266,7 @@ namespace ConnectorGrasshopper.Ops
         base.SolveInstance(DA);
         return;
       }
-
-
+      
       // Force update output parameters
       // TODO: This is a hack due to the fact that GH_AsyncComponent overrides ExpireDownstreamObjects()
       // and will only propagate the call upwards to GH_Component if the private 'setData' prop  is == 1.
@@ -504,29 +496,6 @@ namespace ConnectorGrasshopper.Ops
         var remoteTransport = new ServerTransport(InputWrapper?.GetAccount().Result, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 
-        /*
-        if (receiveComponent.JustPastedIn &&
-            !string.IsNullOrEmpty(receiveComponent.ReceivedObjectId))
-        {
-          var task = Task.Run(async () =>
-          {
-            ReceivedObject = await Operations.Receive(
-              receiveComponent.ReceivedObjectId,
-              CancellationToken,
-              remoteTransport,
-              new SQLiteTransport { TransportName = "LC" }, // Local cache!
-              InternalProgressAction,
-              ErrorAction,
-              count => TotalObjectCount = count
-            );
-
-            Done();
-          });
-          task.Wait();
-          return;
-        }
-        */
-
         // Means it's a copy paste of an empty non-init component; set the record and exit fast.
         if (receiveComponent.JustPastedIn && !receiveComponent.AutoReceive)
         {
@@ -619,7 +588,7 @@ namespace ConnectorGrasshopper.Ops
 
       if (ReceivedObject == null) return;
 
-      ((ReceiveComponent)Parent).ReceivedObjectId = ReceivedObject.id;
+      //((ReceiveComponent)Parent).ReceivedObjectId = ReceivedObject.id;
 
       //the active document may have changed
       ((ReceiveComponent)Parent).Converter.SetContextDocument(RhinoDoc.ActiveDoc);
