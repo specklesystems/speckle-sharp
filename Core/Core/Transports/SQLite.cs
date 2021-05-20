@@ -352,5 +352,33 @@ namespace Speckle.Core.Transports
     {
       return $"Sqlite Transport @{RootPath}";
     }
+
+    public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+    {
+      Dictionary<string, bool> ret = new Dictionary<string, bool>();
+      // Initialize with false so that canceled queries still return a dictionary item for every object id
+      foreach (string objectId in objectIds) ret[objectId] = false;
+
+      using (var c = new SQLiteConnection(ConnectionString))
+      {
+        c.Open();
+        foreach (string objectId in objectIds)
+        {
+          if (CancellationToken.IsCancellationRequested) return ret;
+
+          using (var command = new SQLiteCommand(c))
+          {
+            command.CommandText = "SELECT 1 FROM objects WHERE hash = @hash LIMIT 1 ";
+            command.Parameters.AddWithValue("@hash", objectId);
+            using (var reader = command.ExecuteReader())
+            {
+              bool rowFound = reader.Read();
+              ret[objectId] = rowFound;
+            }
+          }
+        }
+      }
+      return ret;
+    }
   }
 }
