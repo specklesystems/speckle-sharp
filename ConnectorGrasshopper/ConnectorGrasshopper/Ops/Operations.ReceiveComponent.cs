@@ -134,7 +134,11 @@ namespace ConnectorGrasshopper.Ops
       writer.SetString("KitName", Kit.Name);
       var streamUrl = StreamWrapper != null ? StreamWrapper.ToString() : "";
       writer.SetString("StreamWrapper", streamUrl);
-
+      writer.SetString("LastInfoMessage", LastInfoMessage);
+      writer.SetString("LastCommitDate", LastCommitDate);
+      writer.SetString("ReceivedObjectId", ReceivedObjectId);
+      writer.SetString("ReceivedCommitId", ReceivedCommitId);
+      
       return base.Write(writer);
     }
 
@@ -142,7 +146,10 @@ namespace ConnectorGrasshopper.Ops
     {
       AutoReceive = reader.GetBoolean("AutoReceive");
       CurrentComponentState = reader.GetString("CurrentComponentState");
-
+      LastInfoMessage = reader.GetString("LastInfoMessage");
+      LastCommitDate = reader.GetString("LastCommitDate");
+      ReceivedObjectId = reader.GetString("ReceivedObjectId");
+      ReceivedCommitId = reader.GetString("ReceivedCommitId");
 
       var swString = reader.GetString("StreamWrapper");
       if (!string.IsNullOrEmpty(swString)) StreamWrapper = new StreamWrapper(swString);
@@ -277,7 +284,6 @@ namespace ConnectorGrasshopper.Ops
       if (JustPastedIn)
       {
         // This ensures that we actually do a run. The worker will check and determine if it needs to pull an existing object or not.
-        CurrentComponentState = "receiving";
         OnDisplayExpired(true);
         base.SolveInstance(DA);
       }
@@ -498,6 +504,7 @@ namespace ConnectorGrasshopper.Ops
         var remoteTransport = new ServerTransport(InputWrapper?.GetAccount().Result, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 
+        /*
         if (receiveComponent.JustPastedIn &&
             !string.IsNullOrEmpty(receiveComponent.ReceivedObjectId))
         {
@@ -518,9 +525,10 @@ namespace ConnectorGrasshopper.Ops
           task.Wait();
           return;
         }
+        */
 
         // Means it's a copy paste of an empty non-init component; set the record and exit fast.
-        if (receiveComponent.JustPastedIn && receiveComponent.StreamWrapper == null)
+        if (receiveComponent.JustPastedIn && !receiveComponent.AutoReceive)
         {
           receiveComponent.JustPastedIn = false;
           return;
