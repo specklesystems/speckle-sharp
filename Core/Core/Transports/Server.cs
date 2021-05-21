@@ -489,67 +489,6 @@ namespace Speckle.Core.Transports
       return rootObjectStr;
     }
 
-    public async Task<string> CopyObjectAndChildren_old(string hash, ITransport targetTransport, Action<int> onTotalChildrenCountKnown)
-    {
-      if (CancellationToken.IsCancellationRequested)
-      {
-        Queue = new ConcurrentQueue < (string, string, int) > ();
-        return null;
-      }
-
-      var message = new HttpRequestMessage()
-      {
-        RequestUri = new Uri($"/objects/{StreamId}/{hash}", UriKind.Relative),
-        Method = HttpMethod.Get,
-      };
-
-      message.Headers.Add("Accept", "text/plain");
-      string commitObj = null;
-
-      HttpResponseMessage response = null;
-      try
-      {
-        response = await Client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
-        response.EnsureSuccessStatusCode();
-      }
-      catch (Exception e)
-      {
-        OnErrorAction?.Invoke(TransportName, e);
-      }
-
-      var i = 0;
-      using(var stream = await response.Content.ReadAsStreamAsync())
-      {
-        using(var reader = new StreamReader(stream, Encoding.UTF8))
-        {
-          while (reader.Peek() > 0)
-          {
-            if (CancellationToken.IsCancellationRequested)
-            {
-              Queue = new ConcurrentQueue < (string, string, int) > ();
-              return null;
-            }
-
-            var line = reader.ReadLine();
-            var pcs = line.Split(new char[ ] { '\t' }, count : 2);
-            targetTransport.SaveObject(pcs[0], pcs[1]);
-            if (i == 0)
-            {
-              commitObj = pcs[1];
-              var partial = JsonConvert.DeserializeObject<Placeholder>(commitObj);
-              if (partial.__closure != null)
-                onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
-            }
-            OnProgressAction?.Invoke(TransportName, 1); // possibly make this more friendly
-            i++;
-          }
-        }
-      }
-
-      await targetTransport.WriteComplete();
-      return commitObj;
-    }
-
     #endregion
 
     public override string ToString()
