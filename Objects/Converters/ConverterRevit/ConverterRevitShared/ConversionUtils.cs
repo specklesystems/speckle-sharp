@@ -559,6 +559,9 @@ namespace Objects.Converter.Revit
     /// <returns>The element, if found, otherwise null</returns>
     public DB.Element GetExistingElementByApplicationId(string applicationId)
     {
+      if (applicationId == null)
+        return null;
+
       var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
 
       if (@ref == null)
