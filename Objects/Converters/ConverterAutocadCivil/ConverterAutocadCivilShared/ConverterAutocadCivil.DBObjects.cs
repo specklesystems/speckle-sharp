@@ -553,15 +553,27 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
-    // Surfaces
-    public Surface SurfaceToSpeckle(AcadDB.PlaneSurface surface, string units = null)
+    // Regions
+    public Mesh RegionToSpeckle(Region region, string units = null)
     {
       var u = units ?? ModelUnits;
 
-      var nurbs = surface.ConvertToNurbSurface();
-      if (nurbs.Length > 0)
-        return SurfaceToSpeckle(nurbs[0], u);
-      return null;
+      return GetMeshFromSolidOrSurface(region: region);
+    }
+
+    // Surfaces
+    public Mesh SurfaceToSpeckle(AcadDB.Surface surface, string units = null)
+    {
+      var u = units ?? ModelUnits;
+
+      switch (surface)
+      {
+        case AcadDB.PlaneSurface _:
+        case AcadDB.NurbSurface _:
+        default: // return mesh for now
+          var displayMesh = GetMeshFromSolidOrSurface(surface: surface);
+          return displayMesh;
+      }
     }
 
     public Surface SurfaceToSpeckle(AcadDB.NurbSurface surface, string units = null)
@@ -656,8 +668,8 @@ namespace Objects.Converter.AutocadCivil
       return speckleMesh;
     }
     */
-    // Polyface mesh vertex indexing starts at 1. Subtract 1 from face vertex index when sending to Speckle
-    public Mesh MeshToSpeckle(AcadDB.PolyFaceMesh mesh, string units = null)
+      // Polyface mesh vertex indexing starts at 1. Subtract 1 from face vertex index when sending to Speckle
+      public Mesh MeshToSpeckle(AcadDB.PolyFaceMesh mesh, string units = null)
     {
       var u = units ?? ModelUnits;
 
@@ -807,7 +819,7 @@ namespace Objects.Converter.AutocadCivil
       var u = units ?? ModelUnits;
 
       // create display mesh
-      var displayMesh = GetMeshFromSolid(solid);
+      var displayMesh = GetMeshFromSolidOrSurface(solid);
 
       return displayMesh;
 
@@ -899,11 +911,19 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Based on Kean Walmsley's blog post on mesh conversion using Brep API
-    private Mesh GetMeshFromSolid(Solid3d solid)
+    private Mesh GetMeshFromSolidOrSurface(Solid3d solid = null, AcadDB.Surface surface = null, Region region = null)
     {
       Mesh mesh = null;
 
-      using (var brep = new AcadBRep.Brep(solid))
+      AcadBRep.Brep brep = null;
+      if (solid != null)
+        brep = new AcadBRep.Brep(solid);
+      else if (surface != null)
+        brep = new AcadBRep.Brep(surface);
+      else if (region != null)
+        brep = new AcadBRep.Brep(region);
+
+      if (brep!= null)
       {
         using (var control = new AcadBRep.Mesh2dControl())
         {
@@ -947,18 +967,25 @@ namespace Objects.Converter.AutocadCivil
               }
             }
           }
+          brep.Dispose();
 
           // create speckle mesh
           var vertices = PointsToFlatArray(_vertices);
           var faces = _faces.SelectMany(o => o).ToArray();
           mesh = new Mesh(vertices, faces);
           mesh.units = ModelUnits;
-          mesh.bbox = BoxToSpeckle(solid.GeometricExtents);
+          if (solid != null)
+            mesh.bbox = BoxToSpeckle(solid.GeometricExtents);
+          else if (surface != null)
+            mesh.bbox = BoxToSpeckle(surface.GeometricExtents);
+          else if (region != null)
+            mesh.bbox = BoxToSpeckle(region.GeometricExtents);
         }
       }
 
       return mesh;
     }
+
 
     private int GetIndexOfCurve(List<Curve3d> list, Curve3d curve) // necessary since contains comparer doesn't work
     {
