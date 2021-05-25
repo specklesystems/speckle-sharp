@@ -345,7 +345,7 @@ namespace ConnectorGrasshopper
         }
         else if (ghParam.Access == GH_ParamAccess.list)
         {
-          List<object> input = null;
+          List<object> input = new List<object>();
           DA.GetDataList(j, input);
           commitObj[ghParam.Name] = input.Select(i => Utilities.TryConvertItemToSpeckle(i, Converter)).ToList();
         }
