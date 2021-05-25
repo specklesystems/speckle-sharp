@@ -434,6 +434,10 @@ namespace Speckle.Core.Serialisation
               return; // Check for cancellation
             }
 
+            if (what == null) {
+              return; // HACK: Prevent nulls from borking our serialization on nested schema object refs. (i.e. Line has @SchemaObject, that has ref to line)
+            }
+
             var refHash = ((JObject)what).GetValue("id").ToString();
 
             var reference = new ObjectReference() { referencedId = refHash };
