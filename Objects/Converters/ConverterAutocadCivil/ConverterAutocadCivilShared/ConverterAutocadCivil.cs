@@ -225,11 +225,11 @@ public static string AutocadAppName = Applications.Autocad2022;
         case AcadDB.Polyline2d o:
           return PolycurveToSpeckle(o);
 
-        case PlaneSurface o:
-          return SurfaceToSpeckle(o);
+        case Region o:
+          return RegionToSpeckle(o);
 
-         case AcadDB.NurbSurface o:
-           return SurfaceToSpeckle(o);
+        case AcadDB.Surface o:
+          return SurfaceToSpeckle(o);
 
         case AcadDB.PolyFaceMesh o:
           return MeshToSpeckle(o);
@@ -287,9 +287,9 @@ public static string AutocadAppName = Applications.Autocad2022;
             case AcadDB.Polyline _:
             case AcadDB.Polyline2d _:
             case AcadDB.Polyline3d _:
-            case AcadDB.PlaneSurface _:
-            case AcadDB.NurbSurface _:
+            case AcadDB.Surface _:
             case AcadDB.PolyFaceMesh _:
+            case AcadDB.Region _:
             case SubDMesh _:
             case Solid3d _:
               return true;
