@@ -168,32 +168,17 @@ namespace Speckle.Core.Transports
       }
 
       // Ask the server which objects from the batch it already has
-
-      var hasObjectsHttpMessage = new HttpRequestMessage()
-      {
-        RequestUri = new Uri($"/api/diff/{StreamId}", UriKind.Relative),
-        Method = HttpMethod.Post,
-      };
-
-      Dictionary<string, string> postParameters = new Dictionary<string, string>();
-      postParameters.Add("objects", JsonConvert.SerializeObject(queuedBatchIds));
-      hasObjectsHttpMessage.Content = new FormUrlEncodedContent(postParameters);
-      
-      HttpResponseMessage hasObjectsHttpResponse = null;
+      Dictionary<String, Boolean> hasObjects = null;
       try
       {
-        hasObjectsHttpResponse = await Client.SendAsync(hasObjectsHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken);
-        hasObjectsHttpResponse.EnsureSuccessStatusCode();
+        hasObjects = await HasObjects(queuedBatchIds);
       }
       catch (Exception e)
       {
         OnErrorAction?.Invoke(TransportName, e);
         return (queuedBatch.Count, null);
       }
-
-      String hasObjectsJson = await hasObjectsHttpResponse.Content.ReadAsStringAsync();
-      Dictionary<String, Boolean> hasObjects = JsonConvert.DeserializeObject<Dictionary<String, Boolean>>(hasObjectsJson);
-
+      
       // Filter the queued batch to only return new objects
 
       List<(string, string, int)> newBatch = new List<(string, string, int)>();
@@ -251,6 +236,7 @@ namespace Speckle.Core.Transports
           return;
         }
         
+        // TODO: rmeove
         Console.WriteLine($"Got batch of {batch.Count} objects (from {consumedQueuedObjects} objects)");
 
         if (batch.Count == 0)
@@ -425,6 +411,7 @@ namespace Speckle.Core.Transports
       var childrenFoundMap = await targetTransport.HasObjects(childrenIds);
       List<string> newChildrenIds = new List<string>(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
 
+      // TODO: rmeove
       Console.WriteLine($"Receiving object with {childrenIds.Count} children ({newChildrenIds.Count} new)");
 
       // Get the children that are not already in the targetTransport
@@ -504,7 +491,24 @@ namespace Speckle.Core.Transports
 
     public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
     {
-      throw new NotImplementedException();
+      var hasObjectsHttpMessage = new HttpRequestMessage()
+      {
+        RequestUri = new Uri($"/api/diff/{StreamId}", UriKind.Relative),
+        Method = HttpMethod.Post,
+      };
+
+      Dictionary<string, string> postParameters = new Dictionary<string, string>();
+      postParameters.Add("objects", JsonConvert.SerializeObject(objectIds));
+      hasObjectsHttpMessage.Content = new FormUrlEncodedContent(postParameters);
+
+      HttpResponseMessage hasObjectsHttpResponse = null;
+
+      hasObjectsHttpResponse = await Client.SendAsync(hasObjectsHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken);
+      hasObjectsHttpResponse.EnsureSuccessStatusCode();
+
+      String hasObjectsJson = await hasObjectsHttpResponse.Content.ReadAsStringAsync();
+      Dictionary<String, Boolean> hasObjects = JsonConvert.DeserializeObject<Dictionary<String, Boolean>>(hasObjectsJson);
+      return hasObjects;
     }
 
     internal class Placeholder
