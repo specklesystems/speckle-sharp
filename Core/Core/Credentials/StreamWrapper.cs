@@ -8,7 +8,8 @@ namespace Speckle.Core.Credentials
 {
   public class StreamWrapper
   {
-    private string originalInput;
+    //this needs to be public so it's serialized and stored in Dynamo
+    public string OriginalInput { get; set; }
 
     public string UserId { get; set; }
     public string ServerUrl { get; set; }
@@ -63,7 +64,7 @@ namespace Speckle.Core.Credentials
     /// <exception cref="Exception"></exception>
     public StreamWrapper(string streamUrlOrId)
     {
-      originalInput = streamUrlOrId;
+      OriginalInput = streamUrlOrId;
 
       Uri uri;
       try
@@ -96,7 +97,7 @@ namespace Speckle.Core.Credentials
       ServerUrl = serverUrl;
       StreamId = streamId;
 
-      originalInput = $"{ServerUrl}/streams/{StreamId}{(UserId != null ? "?u=" + UserId : "")}";
+      OriginalInput = $"{ServerUrl}/streams/{StreamId}{(UserId != null ? "?u=" + UserId : "")}";
     }
 
     private void StreamWrapperFromId(string streamId)
@@ -195,9 +196,9 @@ namespace Speckle.Core.Credentials
       }
 
       // Step 1: check if direct account id (?u=)
-      if (originalInput.Contains("?u="))
+      if (OriginalInput.Contains("?u="))
       {
-        var userId = originalInput.Split(new string[] {"?u="}, StringSplitOptions.None)[1];
+        var userId = OriginalInput.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
         var acc = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == userId);
         if (acc != null)
         {
