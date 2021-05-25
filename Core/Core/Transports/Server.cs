@@ -235,9 +235,6 @@ namespace Speckle.Core.Transports
           IS_WRITING = false;
           return;
         }
-        
-        // TODO: rmeove
-        Console.WriteLine($"Got batch of {batch.Count} objects (from {consumedQueuedObjects} objects)");
 
         if (batch.Count == 0)
         {
@@ -411,11 +408,7 @@ namespace Speckle.Core.Transports
       var childrenFoundMap = await targetTransport.HasObjects(childrenIds);
       List<string> newChildrenIds = new List<string>(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
 
-      // TODO: rmeove
-      Console.WriteLine($"Receiving object with {childrenIds.Count} children ({newChildrenIds.Count} new)");
-
       // Get the children that are not already in the targetTransport
-
 
       Stream childrenStream = null;
 

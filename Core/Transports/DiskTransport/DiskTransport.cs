@@ -54,7 +54,7 @@ namespace DiskTransport
         return File.ReadAllText(filePath, Encoding.UTF8);
       }
 
-      throw new SpeckleException($"Could not find the specified object ({filePath}).");
+      return null;
     }
 
     public void SaveObject(string id, string serializedObject)
@@ -110,6 +110,17 @@ namespace DiskTransport
     public override string ToString()
     {
       return $"Disk Transport @{RootPath}";
+    }
+
+    public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+    {
+      Dictionary<string, bool> ret = new Dictionary<string, bool>();
+      foreach (string objectId in objectIds)
+      {
+        var filePath = Path.Combine(RootPath, objectId);
+        ret[objectId] = File.Exists(filePath);
+      }
+      return ret;
     }
 
     class Placeholder
