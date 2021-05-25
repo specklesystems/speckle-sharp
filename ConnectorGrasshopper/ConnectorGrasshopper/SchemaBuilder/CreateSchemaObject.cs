@@ -21,6 +21,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
+using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper
 {
@@ -263,7 +264,7 @@ namespace ConnectorGrasshopper
       List<object> cParamsValues = new List<object>();
       var cParams = SelectedConstructor.GetParameters();
       object mainSchemaObj = null;
-      for (int i = 0; i < Params.Input.Count; i++)
+      for (var i = 0; i < cParams.Length; i++)
       {
         var cParam = cParams[i];
         var param = Params.Input[i];
@@ -300,6 +301,7 @@ namespace ConnectorGrasshopper
         if (CustomAttributeData.GetCustomAttributes(cParam)?.Where(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))?.Count() > 0)
           mainSchemaObj = objectProp;
       }
+      
 
       object schemaObject = null;
       try
@@ -311,8 +313,10 @@ namespace ConnectorGrasshopper
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.InnerException?.Message ?? e.Message);
         return;
       }
-      ((Base)schemaObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
-      ((Base)schemaObject).units = units;
+
+      var @base = ((Base)schemaObject);
+      @base.applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
+      @base.units = units;
 
       // create commit obj from main geometry param and try to attach schema obj. use schema obj if no main geom param was found.
       Base commitObj = (Base)schemaObject;
@@ -326,7 +330,26 @@ namespace ConnectorGrasshopper
         }
       }
       catch { }
-
+        
+      // Finally, add any custom props created by the user.
+      for( var j = cParams.Length; j < Params.Input.Count; j++)
+      {
+        // Additional props added to the object
+        var ghParam = Params.Input[j];
+        if (ghParam.Access == GH_ParamAccess.item)
+        {
+          object input = null;
+          DA.GetData(j, ref input);
+          
+          commitObj[ghParam.Name] = Utilities.TryConvertItemToSpeckle(input, Converter);
+        }
+        else if (ghParam.Access == GH_ParamAccess.list)
+        {
+          List<object> input = new List<object>();
+          DA.GetDataList(j, input);
+          commitObj[ghParam.Name] = input.Select(i => Utilities.TryConvertItemToSpeckle(i, Converter)).ToList();
+        }
+      }
       DA.SetData(0, new GH_SpeckleBase() { Value = commitObj });
     }
 
@@ -445,9 +468,18 @@ namespace ConnectorGrasshopper
       return (T)input;
     }
 
-    public bool CanInsertParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;
+    public bool CanInsertParameter(GH_ParameterSide side, int index)
+    {
+      var intPtr = SelectedConstructor.GetParameters().Length;
+      var canInsertParameter = side == GH_ParameterSide.Input && index >= intPtr;
+      return canInsertParameter;
+    }
 
-    public bool CanRemoveParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Input;
+    public bool CanRemoveParameter(GH_ParameterSide side, int index)
+    {
+      var intPtr = SelectedConstructor.GetParameters().Length;
+      return side == GH_ParameterSide.Input && index >= intPtr;
+    }
 
     public IGH_Param CreateParameter(GH_ParameterSide side, int index)
     {
@@ -455,9 +487,9 @@ namespace ConnectorGrasshopper
       {
         Name = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input),
         MutableNickName = true,
-        Optional = true
+        Optional = false
       };
-
+      
       myParam.NickName = myParam.Name;
       //myParam.ObjectChanged += (sender, e) => Debouncer.Start();
 
