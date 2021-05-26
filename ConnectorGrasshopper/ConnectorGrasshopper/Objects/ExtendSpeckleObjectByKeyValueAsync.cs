@@ -15,21 +15,21 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class ExtendSpeckleObjectAsync : SelectKitAsyncComponentBase
+  public class ExtendSpeckleObjectByKeyValueAsync : SelectKitAsyncComponentBase
   {
     public override Guid ComponentGuid => new Guid("00287364-F725-466E-9E38-FDAD270D87D3");
     protected override Bitmap Icon => Properties.Resources.ExtendSpeckleObject;
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public ExtendSpeckleObjectAsync() : base("Extend Speckle Object", "ESO",
+    public ExtendSpeckleObjectByKeyValueAsync() : base("Extend Speckle Object", "ESO",
       "Extend a current object with key/value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }
     public override void SetConverter()
     {
       base.SetConverter();
-      BaseWorker = new ExtendSpeckleObjectWorker(this, Converter);
+      BaseWorker = new ExtendSpeckleObjectByKeyValueWorker(this, Converter);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -46,14 +46,14 @@ namespace ConnectorGrasshopper.Objects
     }
   }
 
-  public class ExtendSpeckleObjectWorker : WorkerInstance
+  public class ExtendSpeckleObjectByKeyValueWorker : WorkerInstance
   {
     private List<Base> bases;
     private List<string> keys;
     private List<object> values;
     public ISpeckleConverter Converter;
 
-    public ExtendSpeckleObjectWorker(GH_Component _parent, ISpeckleConverter converter) : base(_parent)
+    public ExtendSpeckleObjectByKeyValueWorker(GH_Component _parent, ISpeckleConverter converter) : base(_parent)
     {
       Converter = converter;
       keys = new List<string>();
@@ -62,7 +62,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override WorkerInstance Duplicate()
     {
-      return new ExtendSpeckleObjectWorker(Parent, Converter);
+      return new ExtendSpeckleObjectByKeyValueWorker(Parent, Converter);
     }
 
     private bool AssignToObject(Base b, List<string> keys, List<IGH_Goo> values)
