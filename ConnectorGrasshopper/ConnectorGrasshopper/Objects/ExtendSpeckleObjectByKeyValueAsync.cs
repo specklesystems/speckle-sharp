@@ -22,7 +22,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public ExtendSpeckleObjectByKeyValueAsync() : base("Extend Speckle Object", "ESO",
+    public ExtendSpeckleObjectByKeyValueAsync() : base("Extend Speckle Object by Key/Value", "ESO K/V",
       "Extend a current object with key/value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }

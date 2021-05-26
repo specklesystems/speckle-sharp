@@ -14,7 +14,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class ExtendSpeckleObjectAsyncV2 : SelectKitAsyncComponentBase, IGH_VariableParameterComponent
+  public class ExtendSpeckleObjectAsync : SelectKitAsyncComponentBase, IGH_VariableParameterComponent
   {
     protected override Bitmap Icon => Properties.Resources.ExtendSpeckleObject;
 
@@ -22,7 +22,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override Guid ComponentGuid => new Guid("6B1A1705-FDDE-4DE6-9FEA-D31A226F2F66");
 
-    public ExtendSpeckleObjectAsyncV2() : base("Extend Speckle Object v2", "ESO 2",
+    public ExtendSpeckleObjectAsync() : base("Extend Speckle Object", "ESO",
       "Allows you to extend a Speckle object by setting its keys and values.",
       ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
@@ -31,13 +31,13 @@ namespace ConnectorGrasshopper.Objects
     public override void SetConverter()
     {
       base.SetConverter();
-      BaseWorker = new ExtendSpeckleObjectWorkerV2(this, Converter);
+      BaseWorker = new ExtendSpeckleObjectWorker(this, Converter);
     }
 
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document); // This would set the converter already.
-      BaseWorker = new ExtendSpeckleObjectWorkerV2(this, Converter);
+      BaseWorker = new ExtendSpeckleObjectWorker(this, Converter);
       Params.ParameterNickNameChanged += (sender, args) =>
       {
         args.Parameter.Name = args.Parameter.NickName;
@@ -95,19 +95,19 @@ namespace ConnectorGrasshopper.Objects
     }
   }
 
-  public class ExtendSpeckleObjectWorkerV2 : WorkerInstance
+  public class ExtendSpeckleObjectWorker : WorkerInstance
   {
     public Base @base;
     public ISpeckleConverter Converter;
     private Dictionary<string, object> inputData;
 
-    public ExtendSpeckleObjectWorkerV2(GH_Component parent, ISpeckleConverter converter) : base(parent)
+    public ExtendSpeckleObjectWorker(GH_Component parent, ISpeckleConverter converter) : base(parent)
     {
       Converter = converter;
       inputData = new Dictionary<string, object>();
     }
 
-    public override WorkerInstance Duplicate() => new ExtendSpeckleObjectWorkerV2(Parent, Converter);
+    public override WorkerInstance Duplicate() => new ExtendSpeckleObjectWorker(Parent, Converter);
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {

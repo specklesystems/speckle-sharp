@@ -63,7 +63,7 @@
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Loader.cs" />
-    <Compile Include="Objects\ExpandSpeckleObjectAsync-v2.cs" />
+    <Compile Include="Objects\ExtendSpeckleObjectAsync.cs" />
     <Compile Include="Objects\SelectKitAsyncComponentBase.cs" />
     <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
     <Compile Include="Ops\Operations.SendLocalComponent.cs" />
