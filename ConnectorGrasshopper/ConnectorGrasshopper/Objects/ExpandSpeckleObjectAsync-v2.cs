@@ -37,7 +37,7 @@ namespace ConnectorGrasshopper.Objects
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document); // This would set the converter already.
-      BaseWorker = new CreateSpeckleObjectWorker(this, Converter);
+      BaseWorker = new ExtendSpeckleObjectWorkerV2(this, Converter);
       Params.ParameterNickNameChanged += (sender, args) =>
       {
         args.Parameter.Name = args.Parameter.NickName;
@@ -114,12 +114,7 @@ namespace ConnectorGrasshopper.Objects
       try
       {
         Parent.Message = "Creating...";
-        @base = targetObject.ShallowCopy();
         var hasErrors = false;
-        if (inputData == null)
-        {
-          @base = null;
-        }
 
         inputData?.Keys.ToList().ForEach(key =>
         {
@@ -212,7 +207,8 @@ namespace ConnectorGrasshopper.Objects
         Parent.AddRuntimeMessage(level, message);
       }
 
-      if (@base != null) DA.SetData(0, new GH_SpeckleBase {Value = @base});
+      if (@base != null) 
+        DA.SetData(0, new GH_SpeckleBase {Value = @base});
     }
 
     public Base targetObject;
@@ -220,9 +216,9 @@ namespace ConnectorGrasshopper.Objects
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
       DA.DisableGapLogic();
-
-      DA.GetData(0, ref targetObject);
-      
+      GH_SpeckleBase speckleBase = null;
+      DA.GetData(0, ref speckleBase);
+      @base = speckleBase.Value.ShallowCopy();
       if (Params.Input.Count == 1)
       {
         inputData = null;
@@ -238,6 +234,7 @@ namespace ConnectorGrasshopper.Objects
         return;
       }
 
+      inputData = new Dictionary<string, object>();
       for (int i = 1; i < Params.Input.Count; i++)
       {
         var ighParam = Params.Input[i];
@@ -246,6 +243,11 @@ namespace ConnectorGrasshopper.Objects
         var detachable = param.Detachable;
         var key = detachable ? "@" + param.NickName : param.NickName;
 
+        var willOverwrite = @base.GetMembers().ContainsKey(key);
+        var targetIndex = DA.ParameterTargetIndex(0);
+        var path = DA.ParameterTargetPath(0);
+        if(willOverwrite)
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark,$"Key {key} already exists in object at {path}[{targetIndex}], its value will be overwritten"));
         switch (param.Access)
         {
           case GH_ParamAccess.item:
