@@ -63,6 +63,7 @@
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Loader.cs" />
+    <Compile Include="Objects\ExtendSpeckleObjectAsync.cs" />
     <Compile Include="Objects\SelectKitAsyncComponentBase.cs" />
     <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
     <Compile Include="Ops\Operations.SendLocalComponent.cs" />
@@ -76,7 +77,7 @@
     <Compile Include="Objects\ExpandSpeckleObject.cs" />
     <Compile Include="Objects\ExpandSpeckleObjectAsync.cs" />
     <Compile Include="Objects\ExtendSpeckleObject.cs" />
-    <Compile Include="Objects\ExtendSpeckleObjectAsync.cs" />
+    <Compile Include="Objects\ExtendSpeckleObjectByKeyValueAsync.cs" />
     <Compile Include="Objects\GetObjectValueByKey.cs" />
     <Compile Include="Objects\GetObjectValueByKeyAsync.cs" />
     <Compile Include="Objects\SelectKitComponentBase.cs" />
@@ -201,6 +202,7 @@
     <None Include="Resources\LocalReceiver.png" />
     <None Include="Resources\LocalSender.png" />
     <None Include="Resources\SchemaBuilder.png" />
+    <None Include="Resources\ExtendSpeckleObjectByKeyValue.png" />
     <Content Include="Resources\speckle-logo-bw.png" />
     <Content Include="Resources\speckle-logo.png" />
   </ItemGroup>

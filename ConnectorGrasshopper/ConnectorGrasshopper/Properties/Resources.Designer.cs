@@ -163,6 +163,16 @@ namespace ConnectorGrasshopper.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ExtendSpeckleObjectByKeyValue {
+            get {
+                object obj = ResourceManager.GetObject("ExtendSpeckleObjectByKeyValue", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap GetObjectValueByKey {
             get {
                 object obj = ResourceManager.GetObject("GetObjectValueByKey", resourceCulture);
