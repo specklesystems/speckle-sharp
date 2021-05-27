@@ -228,5 +228,9 @@ namespace Speckle.Core.Transports
       // Time out locking could be added if an expected use case is multiple clients writing to the same server
     }
 
+    public Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+    {
+      throw new NotImplementedException();
+    }
   }
 }

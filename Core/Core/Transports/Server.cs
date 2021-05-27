@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -42,9 +43,9 @@ namespace Speckle.Core.Transports
 
     private bool IS_WRITING = false;
 
-    private int MAX_BUFFER_SIZE = 100_000;
+    private int MAX_BUFFER_SIZE = 1_000_000;
 
-    private int MAX_MULTIPART_COUNT = 500;
+    private int MAX_MULTIPART_COUNT = 50;
 
     public bool CompressPayloads { get; set; } = true;
 
@@ -137,6 +138,61 @@ namespace Speckle.Core.Transports
       }
     }
 
+    /// <summary>
+    /// Consumes a batch of objects from Queue, of MAX_BUFFER_SIZE or until queue is empty, and filters out the objects that already exist on the server
+    /// </summary>
+    /// <returns>
+    /// Tuple of:
+    ///  - int: the number of objects consumed from the queue (useful to report progress)
+    ///  - List<(string, string, int)>: List of queued objects that are not already on the server
+    /// </returns>
+    private async Task<(int, List<(string, string, int)>)> ConsumeNewBatch()
+    {
+      // Read a batch from the queue
+
+      List<(string, string, int)> queuedBatch = new List<(string, string, int)>();
+      List<String> queuedBatchIds = new List<string>();
+      ValueTuple<string, string, int> queueElement;
+      var payloadBufferSize = 0;
+      while (Queue.TryPeek(out queueElement) && payloadBufferSize < MAX_BUFFER_SIZE)
+      {
+        if (CancellationToken.IsCancellationRequested)
+        {
+          return (queuedBatch.Count, null);
+        }
+
+        Queue.TryDequeue(out queueElement);
+        queuedBatch.Add(queueElement);
+        queuedBatchIds.Add(queueElement.Item1);
+        payloadBufferSize += queueElement.Item3;
+      }
+
+      // Ask the server which objects from the batch it already has
+      Dictionary<String, Boolean> hasObjects = null;
+      try
+      {
+        hasObjects = await HasObjects(queuedBatchIds);
+      }
+      catch (Exception e)
+      {
+        OnErrorAction?.Invoke(TransportName, e);
+        return (queuedBatch.Count, null);
+      }
+      
+      // Filter the queued batch to only return new objects
+
+      List<(string, string, int)> newBatch = new List<(string, string, int)>();
+      foreach(var queuedItem in queuedBatch)
+      {
+        if (!hasObjects.ContainsKey(queuedItem.Item1) || !hasObjects[queuedItem.Item1])
+        {
+          newBatch.Add(queuedItem);
+        }
+      }
+
+      return (queuedBatch.Count, newBatch);
+    }
+
     private async Task ConsumeQueue()
     {
       if (CancellationToken.IsCancellationRequested)
@@ -160,7 +216,6 @@ namespace Speckle.Core.Transports
 
       var multipart = new MultipartFormDataContent("--obj--");
 
-      ValueTuple<string, string, int> result;
       SavedObjectCount = 0;
       var addedMpCount = 0;
 
@@ -173,43 +228,47 @@ namespace Speckle.Core.Transports
           return;
         }
 
-        var _ct = "[";
-        var payloadBufferSize = 0;
-        var i = 0;
-        while (Queue.TryPeek(out result) && payloadBufferSize < MAX_BUFFER_SIZE)
-        {
-          if (CancellationToken.IsCancellationRequested)
-          {
-            Queue = new ConcurrentQueue < (string, string, int) > ();
-            return;
-          }
-
-          Queue.TryDequeue(out result);
-          if (i != 0)
-          {
-            _ct += ",";
-          }
-
-          _ct += result.Item2;
-          payloadBufferSize += result.Item3;
-          TotalSentBytes += result.Item3;
-          i++;
+        (int consumedQueuedObjects, List<(string, string, int)> batch) = await ConsumeNewBatch();
+        if (batch == null) {
+          // Canceled or error happened (which was already reported)
+          Queue = new ConcurrentQueue<(string, string, int)>();
+          IS_WRITING = false;
+          return;
         }
-        _ct += "]";
+
+        if (batch.Count == 0)
+        {
+          // The server already has all objects from the queued batch
+          SavedObjectCount += consumedQueuedObjects;
+          continue;
+        }
+
+        var _ctBuilder = new StringBuilder("[");
+        for (int i = 0; i < batch.Count; i++)
+        {
+          if (i > 0)
+          {
+            _ctBuilder.Append(",");
+          }
+          _ctBuilder.Append(batch[i].Item2);
+          TotalSentBytes += batch[i].Item3;
+        }
+        _ctBuilder.Append("]");
+        String _ct = _ctBuilder.ToString();
 
         if (CompressPayloads)
         {
           var content = new GzipContent(new StringContent(_ct, Encoding.UTF8));
           content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/gzip");
-          multipart.Add(content, $"batch-{i}", $"batch-{i}");
+          multipart.Add(content, $"batch-{addedMpCount}", $"batch-{addedMpCount}");
         }
         else
         {
-          multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{i}", $"batch-{i}");
+          multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{addedMpCount}", $"batch-{addedMpCount}");
         }
 
         addedMpCount++;
-        SavedObjectCount += i;
+        SavedObjectCount += consumedQueuedObjects;
       }
 
       message.Content = multipart;
@@ -221,21 +280,22 @@ namespace Speckle.Core.Transports
         return;
       }
 
-      try
+      if (addedMpCount > 0)
       {
-        var response = await Client.SendAsync(message, CancellationToken);
-        response.EnsureSuccessStatusCode();
-      }
-      catch (Exception e)
-      {
-        IS_WRITING = false;
-        OnErrorAction?.Invoke(TransportName, new Exception($"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}", e));
+        try
+        {
+          var response = await Client.SendAsync(message, CancellationToken);
+          response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+          IS_WRITING = false;
+          OnErrorAction?.Invoke(TransportName, new Exception($"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}", e));
 
-        Queue = new ConcurrentQueue < (string, string, int) > ();
-        return;
+          Queue = new ConcurrentQueue<(string, string, int)>();
+          return;
+        }
       }
-
-      //message.Headers.
 
       IS_WRITING = false;
 
@@ -308,65 +368,105 @@ namespace Speckle.Core.Transports
       return response.ReadAsStringAsync().Result;
     }
 
+
     public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport, Action<int> onTotalChildrenCountKnown)
     {
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue < (string, string, int) > ();
+        Queue = new ConcurrentQueue<(string, string, int)>();
         return null;
       }
 
-      var message = new HttpRequestMessage()
+      // Get root object
+      var rootHttpMessage = new HttpRequestMessage()
       {
-        RequestUri = new Uri($"/objects/{StreamId}/{hash}", UriKind.Relative),
+        RequestUri = new Uri($"/objects/{StreamId}/{hash}/single", UriKind.Relative),
         Method = HttpMethod.Get,
       };
 
-      message.Headers.Add("Accept", "text/plain");
-      string commitObj = null;
-
-      HttpResponseMessage response = null;
+      HttpResponseMessage rootHttpResponse = null;
       try
       {
-        response = await Client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
-        response.EnsureSuccessStatusCode();
+        rootHttpResponse = await Client.SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken);
+        rootHttpResponse.EnsureSuccessStatusCode();
       }
       catch (Exception e)
       {
         OnErrorAction?.Invoke(TransportName, e);
+        return null;
       }
 
-      var i = 0;
-      using(var stream = await response.Content.ReadAsStreamAsync())
+      String rootObjectStr = await rootHttpResponse.Content.ReadAsStringAsync();
+      List<string> childrenIds = new List<string>();
+      var rootPartial = JsonConvert.DeserializeObject<Placeholder>(rootObjectStr);
+      if (rootPartial.__closure != null)
       {
-        using(var reader = new StreamReader(stream, Encoding.UTF8))
+        childrenIds = new List<string>(rootPartial.__closure.Keys);
+      }
+      onTotalChildrenCountKnown?.Invoke(childrenIds.Count);
+
+      var childrenFoundMap = await targetTransport.HasObjects(childrenIds);
+      List<string> newChildrenIds = new List<string>(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
+
+      // Get the children that are not already in the targetTransport
+
+      Stream childrenStream = null;
+
+      if (newChildrenIds.Count > 0)
+      {
+        var childrenHttpMessage = new HttpRequestMessage()
+        {
+          RequestUri = new Uri($"/api/getobjects/{StreamId}", UriKind.Relative),
+          Method = HttpMethod.Post,
+        };
+
+        Dictionary<string, string> postParameters = new Dictionary<string, string>();
+        postParameters.Add("objects", JsonConvert.SerializeObject(newChildrenIds));
+        childrenHttpMessage.Content = new FormUrlEncodedContent(postParameters);
+        childrenHttpMessage.Headers.Add("Accept", "text/plain");
+
+        HttpResponseMessage childrenHttpResponse = null;
+        try
+        {
+          childrenHttpResponse = await Client.SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
+          childrenHttpResponse.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+          OnErrorAction?.Invoke(TransportName, e);
+          return null;
+        }
+
+        childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync();
+      }
+      else
+      {
+        childrenStream = new MemoryStream();
+      }
+
+      using (var stream = childrenStream)
+      {
+        using (var reader = new StreamReader(stream, Encoding.UTF8))
         {
           while (reader.Peek() > 0)
           {
             if (CancellationToken.IsCancellationRequested)
             {
-              Queue = new ConcurrentQueue < (string, string, int) > ();
+              Queue = new ConcurrentQueue<(string, string, int)>();
               return null;
             }
 
             var line = reader.ReadLine();
-            var pcs = line.Split(new char[ ] { '\t' }, count : 2);
+            var pcs = line.Split(new char[] { '\t' }, count: 2);
             targetTransport.SaveObject(pcs[0], pcs[1]);
-            if (i == 0)
-            {
-              commitObj = pcs[1];
-              var partial = JsonConvert.DeserializeObject<Placeholder>(commitObj);
-              if (partial.__closure != null)
-                onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
-            }
+
             OnProgressAction?.Invoke(TransportName, 1); // possibly make this more friendly
-            i++;
           }
         }
       }
-
+      targetTransport.SaveObject(hash, rootObjectStr);
       await targetTransport.WriteComplete();
-      return commitObj;
+      return rootObjectStr;
     }
 
     #endregion
@@ -380,6 +480,28 @@ namespace Speckle.Core.Transports
     {
       // TODO: check if it's writing first? 
       Client.Dispose();
+    }
+
+    public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+    {
+      var hasObjectsHttpMessage = new HttpRequestMessage()
+      {
+        RequestUri = new Uri($"/api/diff/{StreamId}", UriKind.Relative),
+        Method = HttpMethod.Post,
+      };
+
+      Dictionary<string, string> postParameters = new Dictionary<string, string>();
+      postParameters.Add("objects", JsonConvert.SerializeObject(objectIds));
+      hasObjectsHttpMessage.Content = new FormUrlEncodedContent(postParameters);
+
+      HttpResponseMessage hasObjectsHttpResponse = null;
+
+      hasObjectsHttpResponse = await Client.SendAsync(hasObjectsHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken);
+      hasObjectsHttpResponse.EnsureSuccessStatusCode();
+
+      String hasObjectsJson = await hasObjectsHttpResponse.Content.ReadAsStringAsync();
+      Dictionary<String, Boolean> hasObjects = JsonConvert.DeserializeObject<Dictionary<String, Boolean>>(hasObjectsJson);
+      return hasObjects;
     }
 
     internal class Placeholder
