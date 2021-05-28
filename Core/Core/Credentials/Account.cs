@@ -1,24 +1,25 @@
 ﻿using System;
-using System.Threading.Tasks;
-using GraphQL.Client.Http;
-using GraphQL;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Speckle.Core.Logging;
+using System.Threading.Tasks;
+using GraphQL;
+using GraphQL.Client.Http;
 using Speckle.Core.Api.GraphQL.Serializer;
+using Speckle.Core.Logging;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Credentials
 {
 
   public class Account : IEquatable<Account>
   {
-
+    [JsonIgnore]
     public string id
     {
       get
       {
         if (serverInfo == null || userInfo == null)
-          Log.CaptureAndThrow(new SpeckleException("Incomplete account info: cannot generate id."));
+          throw new SpeckleException("Incomplete account info: cannot generate id.", level: Sentry.SentryLevel.Error);
         return Speckle.Core.Models.Utilities.hashString(serverInfo.url + userInfo.email);
       }
     }

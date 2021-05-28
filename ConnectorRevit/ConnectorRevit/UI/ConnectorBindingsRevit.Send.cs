@@ -46,6 +46,7 @@ namespace Speckle.ConnectorRevit.UI
       }
       else //selection was by cursor
       {
+        // TODO: update state by removing any deleted or null object ids
         selectedObjects = state.SelectedObjectIds.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null).ToList();
       }
 
@@ -77,7 +78,7 @@ namespace Speckle.ConnectorRevit.UI
 
           if (!converter.CanConvertToSpeckle(revitElement))
           {
-            state.Errors.Add(new Exception($"Skipping {revitElement.GetType()}, not supported"));
+            state.Errors.Add(new Exception($"Skipping not supported type: {revitElement.GetType()}, name {revitElement.Name}"));
             continue;
           }
 
@@ -113,13 +114,13 @@ namespace Speckle.ConnectorRevit.UI
       if (converter.ConversionErrors.Count != 0)
       {
         // TODO: Get rid of the custom Error class. It's not needed.
-        ConversionErrors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.details}")));
-        state.Errors.AddRange(converter.ConversionErrors.Select(x => new Exception($"{x.Message}\n{x.details}")));
+        ConversionErrors.AddRange(converter.ConversionErrors);
+        state.Errors.AddRange(converter.ConversionErrors);
       }
 
       if (convertedCount == 0)
       {
-        Globals.Notify("Failed to convert any objects. Push aborted.");
+        Globals.Notify("Zero objects converted successfully. Send stopped.");
         return state;
       }
 

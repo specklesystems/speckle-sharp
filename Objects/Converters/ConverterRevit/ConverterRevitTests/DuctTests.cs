@@ -42,7 +42,7 @@ namespace ConverterRevitTests
     private void AssertDuctEqual(DB.Duct sourceElem, DB.Duct destElem)
     {
       Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, sourceElem.Name);
+      Assert.Equal(sourceElem.Name, destElem.Name);
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.CURVE_ELEM_LENGTH);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_START_LEVEL_PARAM);

@@ -78,6 +78,12 @@ namespace Speckle.DesktopUI.Streams
       var ass = AppDomain.CurrentDomain.GetAssemblies().Where(x => x.FullName.ToLowerInvariant().Contains("xaml")).ToList();
     }
 
+    public void RefreshPage()
+    {
+      NotifyOfPropertyChange(string.Empty);
+      StreamList = LoadStreams();
+    }
+
     private BindableCollection<StreamState> LoadStreams()
     {
       var streams = new BindableCollection<StreamState>(_bindings.GetStreamsInFile());
@@ -106,7 +112,7 @@ namespace Speckle.DesktopUI.Streams
 
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
       var res = await DialogHost.Show(view, "RootDialogHost");
-      if (res == null) return;
+      if (res == null)return;
       args.RootStreamState.SwitchBranch((Branch)res);
     }
 
@@ -128,7 +134,13 @@ namespace Speckle.DesktopUI.Streams
       await DialogHost.Show(view, "RootDialogHost");
     }
 
-    public async void Send(StreamState state) => state.Send();
+    public async void Send(StreamState state)
+    {
+      if ( state.CommitExpanderChecked )
+        state.Send();
+      else
+        state.CommitExpanderChecked = true;
+    }
 
     public async void Receive(StreamState state) => state.Receive();
 
@@ -154,10 +166,31 @@ namespace Speckle.DesktopUI.Streams
       var result = await DialogHost.Show(view, "RootDialogHost");
     }
 
+    public void RemoveDisabledStream(StreamState state)
+    {
+      Tracker.TrackPageview("stream", "remove", "no-account-found");
+      RemoveStream(state.Stream.id);
+    }
+
+    private void RemoveStream(string streamId)
+    {
+      var state = StreamList.First(s => s.Stream.id == streamId);
+      StreamList.Remove(state);
+      NotifyOfPropertyChange(nameof(EmptyState));
+    }
+
     public void OpenStreamInWeb(StreamState state)
     {
-      Tracker.TrackPageview("stream", "web");
+      Tracker.TrackPageview(Tracker.STREAM_VIEW);
       Link.OpenInBrowser($"{state.ServerUrl}/streams/{state.Stream.id}");
+    }
+
+    public void CopyStreamUrl(StreamState state)
+    {
+      Tracker.TrackPageview("stream", "copy-link");
+      Clipboard.SetDataObject($"{state.ServerUrl}/streams/{state.Stream.id}");
+      // notification might actually be annoying? idk commenting out for now
+      // _bindings.RaiseNotification($"Copied URL for {state.Stream.name} to clipboard");
     }
 
     #region Application events
@@ -175,9 +208,7 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(StreamRemovedEvent message)
     {
-      var state = StreamList.First(s => s.Stream.id == message.StreamId);
-      StreamList.Remove(state);
-      NotifyOfPropertyChange(nameof(EmptyState));
+      RemoveStream(message.StreamId);
     }
 
     public void Handle(ApplicationEvent message)
@@ -200,10 +231,10 @@ namespace Speckle.DesktopUI.Streams
           StreamList.Clear();
           StreamList = new BindableCollection<StreamState>(message.DynamicInfo);
           StreamList.Refresh();
-          foreach (var state in StreamList)
-          {
-            state.RefreshStream();
-          }
+          //foreach (var state in StreamList)
+          //{
+          //  state.RefreshStream();
+          //}
           break;
         case ApplicationEvent.EventType.ApplicationIdling:
           break;
@@ -241,40 +272,38 @@ namespace Speckle.DesktopUI.Streams
     }
 
     public static readonly DependencyProperty IsLeftClickEnabledProperty = DependencyProperty.RegisterAttached(
-        "IsLeftClickEnabled",
-        typeof(bool),
-        typeof(ContextMenuLeftClickBehavior),
-        new UIPropertyMetadata(false, OnIsLeftClickEnabledChanged));
+      "IsLeftClickEnabled",
+      typeof(bool),
+      typeof(ContextMenuLeftClickBehavior),
+      new UIPropertyMetadata(false, OnIsLeftClickEnabledChanged));
 
     private static void OnIsLeftClickEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
       var uiElement = sender as UIElement;
 
-      if (uiElement != null)
-      {
-        bool IsEnabled = e.NewValue is bool && (bool)e.NewValue;
+      if ( uiElement == null ) return;
+      bool IsEnabled = e.NewValue is bool value && value;
 
-        if (IsEnabled)
+      if (IsEnabled)
+      {
+        if (uiElement is ButtonBase btn)
         {
-          if (uiElement is ButtonBase)
-          {
-            ((ButtonBase)uiElement).Click += OnMouseLeftButtonUp;
-          }
-          else
-          {
-            uiElement.MouseLeftButtonUp += OnMouseLeftButtonUp;
-          }
+          btn.Click += OnMouseLeftButtonUp;
         }
         else
         {
-          if (uiElement is ButtonBase)
-          {
-            ((ButtonBase)uiElement).Click -= OnMouseLeftButtonUp;
-          }
-          else
-          {
-            uiElement.MouseLeftButtonUp -= OnMouseLeftButtonUp;
-          }
+          uiElement.MouseLeftButtonUp += OnMouseLeftButtonUp;
+        }
+      }
+      else
+      {
+        if (uiElement is ButtonBase btn )
+        {
+          btn.Click -= OnMouseLeftButtonUp;
+        }
+        else
+        {
+          uiElement.MouseLeftButtonUp -= OnMouseLeftButtonUp;
         }
       }
     }
@@ -283,26 +312,24 @@ namespace Speckle.DesktopUI.Streams
     {
       Debug.Print("OnMouseLeftButtonUp");
       var fe = sender as FrameworkElement;
-      if (fe != null)
+      if ( fe == null ) return;
+      // if we use binding in our context menu, then it's DataContext won't be set when we show the menu on left click
+      // (it seems setting DataContext for ContextMenu is hardcoded in WPF when user right clicks on a control, although I'm not sure)
+      // so we have to set up ContextMenu.DataContext manually here
+      if (fe.ContextMenu.DataContext == null)
       {
-        // if we use binding in our context menu, then it's DataContext won't be set when we show the menu on left click
-        // (it seems setting DataContext for ContextMenu is hardcoded in WPF when user right clicks on a control, although I'm not sure)
-        // so we have to set up ContextMenu.DataContext manually here
-        if (fe.ContextMenu.DataContext == null)
-        {
-          fe.ContextMenu.SetBinding(FrameworkElement.DataContextProperty, new Binding { Source = fe.DataContext });
-        }
-        fe.ContextMenu.PlacementTarget = fe;
-        //fe.ContextMenu.
-        fe.ContextMenu.Placement = PlacementMode.Bottom;
-        //fe.ContextMenu.HorizontalOffset = 0;
-        //fe.ContextMenu.VerticalOffset = 0;
-        if (fe.ContextMenu.IsOpen)
-        {
-          Debug.WriteLine("WASD OPEN");
-        }
-        fe.ContextMenu.IsOpen = true;
+        fe.ContextMenu.SetBinding(FrameworkElement.DataContextProperty, new Binding { Source = fe.DataContext });
       }
+      fe.ContextMenu.PlacementTarget = fe;
+      //fe.ContextMenu.
+      fe.ContextMenu.Placement = PlacementMode.Bottom;
+      //fe.ContextMenu.HorizontalOffset = 0;
+      //fe.ContextMenu.VerticalOffset = 0;
+      if (fe.ContextMenu.IsOpen)
+      {
+        Debug.WriteLine("WASD OPEN");
+      }
+      fe.ContextMenu.IsOpen = true;
     }
   }
 
@@ -320,8 +347,7 @@ namespace Speckle.DesktopUI.Streams
     }
 
     public static readonly DependencyProperty DataProperty =
-        DependencyProperty.Register("Data", typeof(object), typeof(BindingProxy), new UIPropertyMetadata(null));
+      DependencyProperty.Register("Data", typeof(object), typeof(BindingProxy), new UIPropertyMetadata(null));
   }
-
 
 }

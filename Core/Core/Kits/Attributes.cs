@@ -44,6 +44,17 @@ namespace Speckle.Core.Kits
     }
   }
 
+  /// <summary>
+  /// Used to indicate which is the main input parameter of the schema builder component. Schema info will be attached to this object.
+  /// </summary>
+  [AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
+  public class SchemaMainParam : Attribute
+  {
+    public SchemaMainParam()
+    {
+    }
+  }
+
   // TODO: this could be nuked, as it's only used to hide props on Base, 
   // which we might want to expose anyways...
   /// <summary>

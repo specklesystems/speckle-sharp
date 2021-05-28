@@ -7,6 +7,7 @@ using Speckle.Core.Models;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
 using Speckle.ConnectorRevit.Entry;
+using Speckle.ConnectorRevit.Storage;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -107,7 +108,8 @@ namespace Speckle.ConnectorRevit.UI
       if (CurrentDoc != null)
         return;
 
-      SpeckleRevitCommand.Bootstrapper.Application.MainWindow.Hide();
+      if (SpeckleRevitCommand.Bootstrapper != null && SpeckleRevitCommand.Bootstrapper.Application!=null)
+        SpeckleRevitCommand.Bootstrapper.Application.MainWindow.Hide();
 
       var appEvent = new ApplicationEvent() { Type = ApplicationEvent.EventType.DocumentClosed };
       NotifyUi(appEvent);
@@ -120,10 +122,16 @@ namespace Speckle.ConnectorRevit.UI
 
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
     {
+      var streams = GetStreamsInFile();
+      if (streams != null && streams.Count != 0)
+      {
+        SpeckleRevitCommand.OpenOrFocusSpeckle();
+      }
+
       var appEvent = new ApplicationEvent()
       {
         Type = ApplicationEvent.EventType.DocumentOpened,
-        DynamicInfo = GetStreamsInFile()
+        DynamicInfo = streams
       };
 
       NotifyUi(appEvent);

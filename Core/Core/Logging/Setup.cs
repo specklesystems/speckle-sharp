@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 
 namespace Speckle.Core.Logging
@@ -12,13 +13,16 @@ namespace Speckle.Core.Logging
   public static class Setup
   {
     private readonly static string _suuidPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "suuid");
-    
+
     public static void Init(string hostApplication)
     {
       HostApplication = hostApplication;
 
-      Log.Instance();
-      Tracker.TrackPageview(Tracker.SESSION_START);
+      //needed by older .net frameworks, eg Revit 2019
+      ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
+
+      Log.Initialize();
     }
 
     /// <summary>

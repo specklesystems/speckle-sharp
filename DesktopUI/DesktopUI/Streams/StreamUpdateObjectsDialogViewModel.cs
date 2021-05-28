@@ -38,9 +38,9 @@ namespace Speckle.DesktopUI.Streams
       StreamState = state;
 
       //set previous selection
-      if (StreamState.Filter != null)
+      if (StreamState.Filter != null && FilterTabs.Any(x => x.Slug == StreamState.Filter.Slug))
       {
-        SelectedFilterTab = FilterTabs.First(x => x.Name == StreamState.Filter.Name);
+        SelectedFilterTab = FilterTabs.First(x => x.Slug == StreamState.Filter.Slug);
         SelectedFilterTab.ListItems = new BindableCollection<string>(StreamState.Filter.Selection);
 
         if (StreamState.Filter is PropertySelectionFilter stateFilter && SelectedFilterTab.Filter is PropertySelectionFilter selectedFilter)
@@ -111,8 +111,12 @@ namespace Speckle.DesktopUI.Streams
       if (e.RemovedItems.Count == 1)
       {
         var toRemove = (string)e.RemovedItems[0];
-        //if it was removed as a result of a search query change, don't actually remove it from our selected list
-        if (!SelectedFilterTab.SelectedListItems.Contains(toRemove) || SelectedFilterTab.ListItems.Contains(toRemove))
+
+        if (!SelectedFilterTab.SelectedListItems.Contains(toRemove))
+          return;
+        // this item is selected but is getting "removed" because of the search query
+        // so we don't actually remove it from our selected list
+        if (SelectedFilterTab.ListItems.Contains(toRemove) && SelectedFilterTab.SearchQuery != null && !toRemove.ToLower().Contains(SelectedFilterTab.SearchQuery.ToLower()))
           return;
         SelectedFilterTab.SelectedListItems.Remove(toRemove);
       }

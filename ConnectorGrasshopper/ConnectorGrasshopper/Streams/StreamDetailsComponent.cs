@@ -17,7 +17,7 @@ namespace ConnectorGrasshopper.Streams
   public class StreamDetailsComponent : GH_Component
   {
     public StreamDetailsComponent() : base("Stream Details", "sDet", "Extracts the details of a given stream, use is limited to 20 streams.",
-      "Speckle 2", "Streams")
+      ComponentCategories.PRIMARY_RIBBON, ComponentCategories.STREAMS)
     {
     }
 
@@ -56,7 +56,7 @@ namespace ConnectorGrasshopper.Streams
       if (error != null)
       {
         Message = null;
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error,error.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, error.Message);
         error = null;
         stream = null;
       }
@@ -64,7 +64,7 @@ namespace ConnectorGrasshopper.Streams
       {
         if (!DA.GetDataTree(0, out GH_Structure<GH_SpeckleStream> ghStreamTree))
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"Could not convert object to Stream.");
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Could not convert object to Stream.");
           Message = null;
           return;
         }
@@ -74,19 +74,19 @@ namespace ConnectorGrasshopper.Streams
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Input S failed to collect data.");
           return;
         }
-        
+
         if (ghStreamTree.DataCount >= 20)
         {
           tooManyItems = true;
         }
-        
+
         Task.Run(async () =>
         {
           try
           {
             int count = 0;
-            var tasks = new Dictionary<GH_Path,Task<Stream>>();
-            
+            var tasks = new Dictionary<GH_Path, Task<Stream>>();
+
             ghStreamTree.Paths.ToList().ForEach(path =>
             {
               if (count >= 20) return;
@@ -99,16 +99,16 @@ namespace ConnectorGrasshopper.Streams
                   itemCount++;
                   return;
                 }
-                var account = item.Value.AccountId == null
+                var account = item.Value.UserId == null
                   ? AccountManager.GetDefaultAccount()
-                  : AccountManager.GetAccounts().FirstOrDefault(a => a.id == item.Value.AccountId);
+                  : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == item.Value.UserId);
                 if (account == null)
                 {
                   AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find default account in this machine. Use the Speckle Manager to add an account.");
                   return;
                 }
                 var client = new Client(account);
-                
+
                 var task = client.StreamGet(item.Value?.StreamId);
                 tasks[path.AppendElement(itemCount)] = task;
                 count++;
@@ -117,8 +117,8 @@ namespace ConnectorGrasshopper.Streams
             });
 
             var values = await Task.WhenAll(tasks.Values);
-            var fetchedStreams = new Dictionary<GH_Path,Stream>();
-            
+            var fetchedStreams = new Dictionary<GH_Path, Stream>();
+
             for (int i = 0; i < tasks.Keys.ToList().Count; i++)
             {
               var key = tasks.Keys.ToList()[i];
@@ -126,7 +126,7 @@ namespace ConnectorGrasshopper.Streams
             }
 
             streams = fetchedStreams;
-            
+
           }
           catch (Exception e)
           {
@@ -134,13 +134,13 @@ namespace ConnectorGrasshopper.Streams
           }
           finally
           {
-            Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { ExpireSolution(true); });
+            Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
           }
         });
       }
       else
       {
-        if(tooManyItems)
+        if (tooManyItems)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
             "Input data has too many items. Only the first 20 streams will be fetched.");
@@ -154,7 +154,7 @@ namespace ConnectorGrasshopper.Streams
         var isPublic = new GH_Structure<GH_Boolean>();
         var collaborators = new GH_Structure<IGH_Goo>();
         var branches = new GH_Structure<IGH_Goo>();
-        
+
         streams.AsEnumerable()?.ToList().ForEach(pair =>
         {
           id.Append(GH_Convert.ToGoo(pair.Value.id), pair.Key);
@@ -166,7 +166,7 @@ namespace ConnectorGrasshopper.Streams
           collaborators.AppendRange(pair.Value.collaborators.Select(GH_Convert.ToGoo).ToList(), pair.Key);
           branches.AppendRange(pair.Value.branches.items.Select(GH_Convert.ToGoo), pair.Key);
         });
-        
+
         Message = "Done";
         DA.SetDataTree(0, id);
         DA.SetDataTree(1, name);
@@ -182,7 +182,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("stream", "details");
+      Tracker.TrackPageview(Tracker.STREAM_DETAILS);
       base.BeforeSolveInstance();
     }
   }

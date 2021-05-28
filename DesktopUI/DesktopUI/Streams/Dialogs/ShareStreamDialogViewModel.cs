@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Controls;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -27,6 +28,7 @@ namespace Speckle.DesktopUI.Streams
 
       Roles = _streamsRepo.GetRoles();
       SelectedRole = Roles[0];
+
     }
 
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
@@ -83,13 +85,12 @@ namespace Speckle.DesktopUI.Streams
 
     public string ShareLink => $"{StreamState.ServerUrl}/streams/{StreamState.Stream.id}";
 
-    private bool _shareLinkVisible;
 
-    public bool ShareLinkVisible
-    {
-      get => _shareLinkVisible;
-      set => SetAndNotify(ref _shareLinkVisible, value);
-    }
+    //public bool IsPublic
+    //{
+    //  get => StreamState.Stream.isPublic;
+    //  //set => SetAndNotify(ref _isPublic, value);
+    //}
 
     // select full share link in link sharing box on click 
     public void SelectAllText(TextBox sender, EventArgs args)
@@ -125,6 +126,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void AddCollaborator()
     {
+      Tracker.TrackPageview("stream", "add-collaborator");
       try
       {
         var res = await StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput()
@@ -169,28 +171,33 @@ namespace Speckle.DesktopUI.Streams
 
     // turn on or off link sharing of the stream 
     // doesn't work right now - server bug doesn't allow flipping `isPublic`
-    public async void ToggleShareLink()
+    public async void ToggleIsPublic()
     {
-      ShareLinkVisible = !ShareLinkVisible;
+      //IsPublic = !IsPublic;
 
-      if (ShareLinkVisible != StreamState.Stream.isPublic)
+      //if (IsPublic != StreamState.Stream.isPublic)
+      //{
+      try
       {
-        try
+        await StreamState.Client.StreamUpdate(new StreamUpdateInput()
         {
-          await StreamState.Client.StreamUpdate(new StreamUpdateInput()
-          {
-            id = StreamState.Stream.id,
-            name = StreamState.Stream.name,
-            description = StreamState.Stream.description,
-            isPublic = ShareLinkVisible
-          });
-          _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
-        }
-        catch (Exception e)
-        {
-          Notifications.Enqueue($"Could not set link sharing to {ShareLinkVisible}. Error: {e.Message}");
-        }
+          id = StreamState.Stream.id,
+          name = StreamState.Stream.name,
+          description = StreamState.Stream.description,
+          isPublic = !StreamState.Stream.isPublic
+        });
+        _events.Publish(new StreamUpdatedEvent(StreamState.Stream));
       }
+      catch (Exception e)
+      {
+        Notifications.Enqueue($"Could not set to {(!StreamState.Stream.isPublic ? "public" : "private")}. Error: {e.Message}");
+      }
+      //}
+    }
+
+    public void OpenEmailInviteLink()
+    {
+      Link.OpenInBrowser($"{ShareLink}?invite=true");
     }
 
     public List<StreamRole> Roles { get; set; }

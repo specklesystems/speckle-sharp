@@ -12,8 +12,9 @@ namespace Objects.BuiltElements.Revit.Curve
     public string elementId { get; set; }
 
     public ModelCurve() { }
+
     [SchemaInfo("ModelCurve", "Creates a Revit model curve")]
-    public ModelCurve(ICurve baseCurve, string lineStyle, List<Parameter> parameters = null)
+    public ModelCurve([SchemaMainParam] ICurve baseCurve, string lineStyle, List<Parameter> parameters = null)
     {
       this.baseCurve = baseCurve;
       this.lineStyle = lineStyle;
@@ -26,12 +27,12 @@ namespace Objects.BuiltElements.Revit.Curve
     public ICurve baseCurve { get; set; }
     public string lineStyle { get; set; }
     public List<Parameter> parameters { get; set; }
-
     public string elementId { get; set; }
 
     public DetailCurve() { }
+
     [SchemaInfo("DetailCurve", "Creates a Revit detail curve")]
-    public DetailCurve(ICurve baseCurve, string lineStyle, List<Parameter> parameters = null)
+    public DetailCurve([SchemaMainParam] ICurve baseCurve, string lineStyle, List<Parameter> parameters = null)
     {
       this.baseCurve = baseCurve;
       this.lineStyle = lineStyle;
@@ -42,15 +43,13 @@ namespace Objects.BuiltElements.Revit.Curve
   public class RoomBoundaryLine : Base
   {
     public ICurve baseCurve { get; set; }
-
     public List<Parameter> parameters { get; set; }
-
     public string elementId { get; set; }
 
-    public RoomBoundaryLine()
-    { }
+    public RoomBoundaryLine() { }
+
     [SchemaInfo("RoomBoundaryLine", "Creates a Revit room boundary line")]
-    public RoomBoundaryLine(ICurve baseCurve, List<Parameter> parameters = null)
+    public RoomBoundaryLine([SchemaMainParam] ICurve baseCurve, List<Parameter> parameters = null)
     {
       this.baseCurve = baseCurve;
       this.parameters = parameters;

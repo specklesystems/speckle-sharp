@@ -1,9 +1,9 @@
-﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
 
@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleWall.baseLine == null)
       {
-        throw new Exception("Only line based Walls are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Walls are currently supported.");
       }
 
       var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;
@@ -45,7 +45,7 @@ namespace Objects.Converter.Revit
       }
       if (revitWall == null)
       {
-        ConversionErrors.Add(new Error { message = $"Failed to create wall ${speckleWall.applicationId}." });
+        ConversionErrors.Add(new Exception($"Failed to create wall ${speckleWall.applicationId}."));
         return null;
       }
 
@@ -56,16 +56,19 @@ namespace Objects.Converter.Revit
 
       if (isUpdate)
       {
-        //NOTE: updating an element location is quite buggy in Revit!
+        //NOTE: updating an element location can be buggy if the baseline and level elevation don't match
         //Let's say the first time an element is created its base point/curve is @ 10m and the Level is @ 0m
         //the element will be created @ 0m
         //but when this element is updated (let's say with no changes), it will jump @ 10m (unless there is a level change)!
-        //to avoid this behavior we're always setting the previous location Z coordinate when updating an element
-        //this means the Z coord of an element will only be set by its Level 
-        //and by additional parameters as sill height, base offset etc
-        var z = ((LocationCurve)revitWall.Location).Curve.GetEndPoint(0).Z;
-        var offsetLine = baseCurve.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, z)));
-        ((LocationCurve)revitWall.Location).Curve = offsetLine;
+        //to avoid this behavior we're moving the base curve to match the level elevation
+        var newz = baseCurve.GetEndPoint(0).Z;
+        var offset = level.Elevation - newz;
+        var newCurve = baseCurve;
+        if (Math.Abs(offset) > 0.0164042) // level and curve are not at the same height
+        {
+          newCurve = baseCurve.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, offset)));
+        }
+        ((LocationCurve)revitWall.Location).Curve = newCurve;
 
         TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
       }
@@ -98,12 +101,15 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(revitWall, speckleWall);
 
-      var placeholders = new List<ApplicationPlaceholderObject>() {new ApplicationPlaceholderObject
+      var placeholders = new List<ApplicationPlaceholderObject>()
       {
+        new ApplicationPlaceholderObject
+        {
         applicationId = speckleWall.applicationId,
         ApplicationGeneratedId = revitWall.UniqueId,
         NativeObject = revitWall
-      } };
+        }
+      };
 
       var hostedElements = SetHostedElements(speckleWall, revitWall);
       placeholders.AddRange(hostedElements);
@@ -111,18 +117,17 @@ namespace Objects.Converter.Revit
       return placeholders;
     }
 
-    public RevitWall WallToSpeckle(DB.Wall revitWall)
+    public Base WallToSpeckle(DB.Wall revitWall)
     {
 
       var baseGeometry = LocationToSpeckle(revitWall);
       if (baseGeometry is Geometry.Point)
       {
-        ConversionErrors.Add(new Error { message = "Failed to convert wall by point. Currently not supported." });
-        return null;
+        return RevitElementToSpeckle(revitWall);
       }
 
       RevitWall speckleWall = new RevitWall();
-      speckleWall.family = revitWall.WallType.FamilyName;
+      speckleWall.family = revitWall.WallType.FamilyName.ToString();
       speckleWall.type = revitWall.WallType.Name;
       speckleWall.baseLine = (ICurve)baseGeometry;
       speckleWall.level = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT);
@@ -133,54 +138,62 @@ namespace Objects.Converter.Revit
       speckleWall.structural = GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
       speckleWall.flipped = revitWall.Flipped;
 
-      speckleWall["@displayMesh"] = GetWallDisplayMesh(revitWall);
+      if (revitWall.CurtainGrid == null)
+        speckleWall.displayMesh = GetElementDisplayMesh(revitWall, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      else
+      {
+        // curtain walls have two meshes, one for panels and one for mullions
+        // adding mullions as sub-elements so they can be correctly displayed in viewers etc
+        (var panelsMesh, var mullionsMesh) = GetCurtainWallDisplayMesh(revitWall);
+        speckleWall["renderMaterial"] = new Other.RenderMaterial() { opacity = 0.2, diffuse = System.Drawing.Color.AliceBlue.ToArgb() };
+        speckleWall.displayMesh = panelsMesh;
 
-      GetAllRevitParamsAndIds(speckleWall, revitWall, new List<string> { "WALL_USER_HEIGHT_PARAM", "WALL_BASE_OFFSET", "WALL_TOP_OFFSET", "WALL_BASE_CONSTRAINT",
-      "WALL_HEIGHT_TYPE", "WALL_STRUCTURAL_SIGNIFICANT"});
+        var mullions = new Base();
+        mullions["@displayMesh"] = mullionsMesh;
+        mullions["renderMaterial"] = new Other.RenderMaterial() { diffuse = System.Drawing.Color.DarkGray.ToArgb() };
+        speckleWall.elements = new List<Base> { mullions };
+
+      }
+
+      GetAllRevitParamsAndIds(speckleWall, revitWall, new List<string>
+      {
+        "WALL_USER_HEIGHT_PARAM",
+        "WALL_BASE_OFFSET",
+        "WALL_TOP_OFFSET",
+        "WALL_BASE_CONSTRAINT",
+        "WALL_HEIGHT_TYPE",
+        "WALL_STRUCTURAL_SIGNIFICANT"
+      });
 
       GetHostedElements(speckleWall, revitWall);
 
       return speckleWall;
     }
 
-    private object GetWallDisplayMesh(DB.Wall wall)
+    private (Mesh, Mesh) GetCurtainWallDisplayMesh(DB.Wall wall)
     {
       var grid = wall.CurtainGrid;
-      var mesh = new Mesh();
 
-      // meshing for walls in case they are curtain grids
-      if (grid != null)
+      var meshPanels = new Mesh();
+      var meshMullions = new Mesh();
+
+      var solidPanels = new List<Solid>();
+      var solidMullions = new List<Solid>();
+      foreach (ElementId panelId in grid.GetPanelIds())
       {
-        var meshPanels = new Mesh();
-        var meshMullions = new Mesh();
-
-        var panels = new List<Solid>();
-        var mullions = new List<Solid>();
-        foreach (ElementId panelId in grid.GetPanelIds())
-        {
-          panels.AddRange(GetElementSolids(Doc.GetElement(panelId)));
-        }
-        foreach (ElementId mullionId in grid.GetMullionIds())
-        {
-          mullions.AddRange(GetElementSolids(Doc.GetElement(mullionId)));
-        }
-        (meshPanels.faces, meshPanels.vertices) = GetFaceVertexArrFromSolids(panels);
-        (meshMullions.faces, meshMullions.vertices) = GetFaceVertexArrFromSolids(mullions);
-
-        meshPanels["renderMaterial"] = new Other.RenderMaterial() { opacity = 0.2, diffuse = System.Drawing.Color.AliceBlue.ToArgb() };
-
-        meshMullions["renderMaterial"] = new Other.RenderMaterial() { diffuse = System.Drawing.Color.DarkGray.ToArgb() };
-
-        meshPanels.units = ModelUnits;
-        meshMullions.units = ModelUnits;
-        return new List<Base>() { meshPanels, meshMullions };
+        solidPanels.AddRange(GetElementSolids(Doc.GetElement(panelId)));
       }
-      else
+      foreach (ElementId mullionId in grid.GetMullionIds())
       {
-        (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(wall, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-        mesh.units = ModelUnits;
-        return mesh;
+        solidMullions.AddRange(GetElementSolids(Doc.GetElement(mullionId)));
       }
+      (meshPanels.faces, meshPanels.vertices) = GetFaceVertexArrFromSolids(solidPanels);
+      (meshMullions.faces, meshMullions.vertices) = GetFaceVertexArrFromSolids(solidMullions);
+      meshPanels.units = ModelUnits;
+      meshMullions.units = ModelUnits;
+
+
+      return (meshPanels, meshMullions);
     }
 
   }

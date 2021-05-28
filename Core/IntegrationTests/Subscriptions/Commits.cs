@@ -16,7 +16,6 @@ namespace TestsIntegration.Subscriptions
   public class Commits
   {
     public Client client;
-    public ServerInfo testServer;
     public Account testUserAccount;
 
     private CommitInfo CommitCreatedInfo;
@@ -29,8 +28,7 @@ namespace TestsIntegration.Subscriptions
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo { url = "https://testing.speckle.dev", name = "TestServer" };
-      testUserAccount = Fixtures.SeedUser(testServer);
+      testUserAccount = Fixtures.SeedUser();
       client = new Client(testUserAccount);
       myServerTransport = new ServerTransport(testUserAccount, null);
     }

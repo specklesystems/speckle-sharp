@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
 
@@ -48,14 +44,14 @@ namespace Speckle.DesktopUI.Utils
     public int SelectionCount { get; set; }
   }
 
-  public class  UpdateSelectionEvent : EventBase
+  public class UpdateSelectionEvent : EventBase
   {
     public List<string> ObjectIds { get; set; }
   }
 
   public class RetrievedFilteredObjectsEvent : EventBase
   {
-    public string AccountId { get; set; }
+   // public string UserId { get; set; }
     public IEnumerable<Base> Objects { get; set; }
   }
 

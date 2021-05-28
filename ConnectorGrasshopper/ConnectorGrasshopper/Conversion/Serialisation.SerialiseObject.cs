@@ -1,13 +1,14 @@
-﻿using Grasshopper.Kernel;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ConnectorGrasshopper.Extras;
+using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using System;
-using System.Linq;
-using ConnectorGrasshopper.Extras;
 
 namespace ConnectorGrasshopper.Conversion
 {
@@ -19,24 +20,24 @@ namespace ConnectorGrasshopper.Conversion
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle Base object to JSON", "Speckle 2 Dev", "Conversion")
+    public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle Base object to JSON", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
       BaseWorker = new SerializeWorker(this);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Speckle objects to serialize.", GH_ParamAccess.tree));
+      pManager.AddParameter(new SpeckleBaseParam("Base", "B", "Speckle base objects to serialize.", GH_ParamAccess.tree));
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddTextParameter("S", "S", "Serialized objects in JSON format.", GH_ParamAccess.tree);
+      pManager.AddTextParameter("Json", "J", "Serialized objects in JSON format.", GH_ParamAccess.tree);
     }
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("serialization", "serialize");
+      Tracker.TrackPageview(Tracker.SERIALIZE);
       base.BeforeSolveInstance();
     }
   }
@@ -54,48 +55,60 @@ namespace ConnectorGrasshopper.Conversion
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      if (CancellationToken.IsCancellationRequested) return;
-
-      int branchIndex = 0, completed = 0;
-      foreach (var list in Objects.Branches)
+      try
       {
-        var path = Objects.Paths[branchIndex];
-        foreach (var item in list)
+        if (CancellationToken.IsCancellationRequested)return;
+
+        int branchIndex = 0, completed = 0;
+        foreach (var list in Objects.Branches)
         {
-          if (CancellationToken.IsCancellationRequested) return;
-
-          if (item != null)
+          var path = Objects.Paths[branchIndex];
+          foreach (var item in list)
           {
-            try
-            {
-              var serialised = Operations.Serialize(item.Value);
-              ConvertedObjects.Append(new GH_String { Value = serialised }, path);
-            }
-            catch (Exception e)
-            {
+            if (CancellationToken.IsCancellationRequested)return;
 
+            if (item != null && item.Value != null)
+            {
+              try
+              {
+                var serialised = Operations.Serialize(item.Value);
+                ConvertedObjects.Append(new GH_String { Value = serialised }, path);
+              }
+              catch (Exception e)
+              {
+                RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
+              }
             }
-          }
-          else
-          {
-            ConvertedObjects.Append(new GH_String { Value = null }, path);
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Object at {Objects.Paths[branchIndex]} is not a Speckle object.");
+            else
+            {
+              ConvertedObjects.Append(null, path);
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] is not a Base object."));            }
+
+            ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
           }
 
-          ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
+          branchIndex++;
         }
 
-        branchIndex++;
       }
-
+      catch (Exception e)
+      {
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
+        Parent.Message = "Error";
+      }
+      // Always call done
       Done();
     }
 
     public override WorkerInstance Duplicate() => new SerializeWorker(Parent);
 
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
+
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)return;
 
       GH_Structure<GH_SpeckleBase> _objects;
       DA.GetDataTree(0, out _objects);
@@ -112,10 +125,13 @@ namespace ConnectorGrasshopper.Conversion
       }
     }
 
-
     public override void SetData(IGH_DataAccess DA)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)return;
+      foreach (var (level, message) in RuntimeMessages)
+      {
+        Parent.AddRuntimeMessage(level, message);
+      }
       DA.SetDataTree(0, ConvertedObjects);
     }
   }

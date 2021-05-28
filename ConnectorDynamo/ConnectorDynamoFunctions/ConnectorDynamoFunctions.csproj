@@ -40,6 +40,7 @@
     <Reference Include="System.Core">
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics">
       <Private>False</Private>
     </Reference>
@@ -73,7 +74,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stream.cs" />
     <Compile Include="BatchConverter.cs" />
-    <Compile Include="Transport.cs" />
+    <Compile Include="Advanced\Transport.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -87,23 +88,51 @@
       <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj">
-      <Project>{941aac33-a406-4ae7-9930-67ffdb746d9d}</Project>
+      <Project>{485aacf5-f27c-427c-ad55-719062e6bd0b}</Project>
       <Name>DiskTransport</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
-      <Project>{82f74946-6c04-4ae3-bfb9-f09e68cdfe12}</Project>
-      <Name>ServerTransport</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
-      <Project>{82f74946-6c04-4ae3-bfb9-f09e68cdfe12}</Project>
-      <Name>ServerTransport</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DynamoVisualProgramming.Core">
       <Version>2.8.0.2471</Version>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="MSBuild.AssemblyVersion">
+      <Version>1.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SpeckleConnectorDynamoFunctionsImages.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\accountdetails%40128.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\accountdetails%4032.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="Clean">
+    <RemoveDir Directories="$(TargetDir)" />
+  </Target>
+  <Target Name="AfterBuild">
+    <!-- Icons stuff -->
+    <!-- Get System.Drawing.dll -->
+    <GetReferenceAssemblyPaths TargetFrameworkMoniker=".NETFramework, Version=v4.7">
+      <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="FrameworkAssembliesPath" />
+    </GetReferenceAssemblyPaths>
+    <!-- Get assembly -->
+    <GetAssemblyIdentity AssemblyFiles="$(OutDir)$(TargetName).dll">
+      <Output TaskParameter="Assemblies" ItemName="AssemblyInfo" />
+    </GetAssemblyIdentity>
+    <!-- Generate customization dll -->
+    <GenerateResource SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" UseSourcePath="true" Sources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resx" OutputResources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resources" References="$(FrameworkAssembliesPath)System.Drawing.dll" />
+    <AL SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" TargetType="library" EmbedResources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resources" OutputAssembly="$(OutDir)SpeckleConnectorDynamoFunctions.customization.dll" Version="%(AssemblyInfo.Version)" />
+    <!-- Icons stuff end -->
+    <ItemGroup>
+      <Dll Include="$(OutDir)SpeckleConnectorDynamoFunctions.customization.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(Dll)" DestinationFolder="$(ProjectDir)\..\ConnectorDynamo\bin\$(ConfigurationName)" />
+  </Target>
 </Project>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -10,6 +11,7 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -17,15 +19,16 @@ namespace ConnectorGrasshopper.Ops
 {
   public class ReceiveLocalComponent : GH_AsyncComponent
   {
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
+
     public ISpeckleConverter Converter;
 
     public ISpeckleKit Kit;
     public ReceiveLocalComponent() : base("Local Receive", "LR",
       "Receives data locally, without the need of a Speckle Server. NOTE: updates will not be automatically received.",
-      "Speckle 2", "   Send/Receive")
+      ComponentCategories.SECONDARY_RIBBON, ComponentCategories.LOCAL)
     {
       BaseWorker = new ReceiveLocalWorker(this);
-      SetDefaultKitAndConverter();
     }
 
     protected override Bitmap Icon => Properties.Resources.LocalReceiver;
@@ -41,8 +44,7 @@ namespace ConnectorGrasshopper.Ops
     {
       pManager.AddGenericParameter("Data", "D", "Data to send.", GH_ParamAccess.tree);
     }
-    
-    
+
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
@@ -57,10 +59,16 @@ namespace ConnectorGrasshopper.Ops
 
       base.AppendAdditionalComponentMenuItems(menu);
     }
-
+    
+    public override void AddedToDocument(GH_Document document)
+    {
+      SetDefaultKitAndConverter();
+      base.AddedToDocument(document);
+    }
+    
     public void SetConverterFromKit(string kitName)
     {
-      if (kitName == Kit.Name) return;
+      if (kitName == Kit.Name)return;
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
@@ -83,47 +91,80 @@ namespace ConnectorGrasshopper.Ops
       }
     }
 
+    protected override void BeforeSolveInstance()
+    {
+      Tracker.TrackPageview(Tracker.RECEIVE_LOCAL);
+      base.BeforeSolveInstance();
+    }
   }
   public class ReceiveLocalWorker : WorkerInstance
   {
     private GH_Structure<IGH_Goo> data;
     private string localDataId;
-    public ReceiveLocalWorker(GH_Component _parent) : base(_parent)
-    {
-    }
+    public ReceiveLocalWorker(GH_Component _parent) : base(_parent) { }
 
     public override WorkerInstance Duplicate() => new ReceiveLocalWorker(Parent);
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      Parent.Message = "Receiving...";
-      var Converter = (Parent as ReceiveLocalComponent).Converter;
-      var @base = Operations.Receive(localDataId).Result;
-      
-      if (Converter.CanConvertToNative(@base))
+      try
       {
-        var converted = Converter.ConvertToNative(@base);
-        data = new GH_Structure<IGH_Goo>();
-        data.Append(Utilities.TryConvertItemToNative(converted, Converter));
+        Parent.Message = "Receiving...";
+        var Converter = (Parent as ReceiveLocalComponent).Converter;
+        
+        Base @base = null;
+
+        try
+        {
+          @base = Operations.Receive(localDataId).Result;
+        }
+        catch (Exception e)
+        {
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,"Failed to receive local data."));
+          Done();
+          return;
+        }
+
+        if (Converter.CanConvertToNative(@base))
+        {
+          var converted = Converter.ConvertToNative(@base);
+          data = new GH_Structure<IGH_Goo>();
+          data.Append(Utilities.TryConvertItemToNative(converted, Converter));
+        }
+        else if (@base.GetDynamicMembers().Count() == 1)
+        {
+          var treeBuilder = new TreeBuilder(Converter);
+          var tree = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);
+          data = tree;
+        }
+        else
+        {
+          data = new GH_Structure<IGH_Goo>();
+          data.Append(new GH_SpeckleBase(@base));
+        }
       }
-      else if (@base.GetDynamicMembers().Count() == 1)
+      catch (Exception e)
       {
-        var treeBuilder = new TreeBuilder(Converter);
-        var tree = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);
-        data = tree;
-      }
-      else
-      {
-        data = new GH_Structure<IGH_Goo>();
-        data.Append(new GH_SpeckleBase(@base));
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
+        Parent.Message = "Error";
       }
       Done();
     }
 
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
+
     public override void SetData(IGH_DataAccess DA)
     {
-      DA.SetDataTree(0, data);
-      localDataId = null;
+      if(data != null) DA.SetDataTree(0, data);
+      
+      foreach (var (level, message) in RuntimeMessages)
+      {
+        Parent.AddRuntimeMessage(level, message);
+      }
+
+      Parent.Message = "Done";
     }
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)

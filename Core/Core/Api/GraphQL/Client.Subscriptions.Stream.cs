@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
-using Sentry.Protocol;
+using Sentry;
 using Speckle.Core.Logging;
 using Speckle.Core.Api.SubscriptionModels;
 
@@ -33,7 +33,7 @@ namespace Speckle.Core.Api
         UserStreamAddedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            Log.CaptureAndThrow(new GraphQLException("Could not subscribe to userStreamAdded"), response.Errors);
+            throw new SpeckleException("Could not subscribe to userStreamAdded", response.Errors);
 
           if (response.Data != null)
             OnUserStreamAdded(this, response.Data.userStreamAdded);
@@ -42,8 +42,7 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
-        throw e;
+        throw new SpeckleException(e.Message, e);
       }
     }
 
@@ -77,7 +76,7 @@ namespace Speckle.Core.Api
         StreamUpdatedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            Log.CaptureAndThrow(new GraphQLException("Could not subscribe to streamUpdated"), response.Errors);
+            throw new SpeckleException("Could not subscribe to streamUpdated", response.Errors);
 
           if (response.Data != null)
             OnStreamUpdated(this, response.Data.streamUpdated);
@@ -85,8 +84,7 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
-        throw e;
+        throw new SpeckleException(e.Message, e);
       }
     }
 
@@ -120,7 +118,7 @@ namespace Speckle.Core.Api
         UserStreamRemovedSubscription = res.Subscribe(response =>
         {
           if (response.Errors != null)
-            Log.CaptureAndThrow(new GraphQLException("Could not subscribe to userStreamRemoved"), response.Errors);
+            throw new SpeckleException("Could not subscribe to userStreamRemoved", response.Errors);
 
           if (response.Data != null)
             OnUserStreamRemoved(this, response.Data.userStreamRemoved);
@@ -128,8 +126,7 @@ namespace Speckle.Core.Api
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
-        throw e;
+        throw new SpeckleException(e.Message, e);
       }
     }
 

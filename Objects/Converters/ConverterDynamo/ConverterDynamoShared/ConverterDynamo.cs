@@ -1,9 +1,11 @@
 ﻿#if REVIT
 using Autodesk.Revit.DB;
+using RD = Revit.Elements; //Dynamo for Revit nodes
+using Objects.Converter.Revit;
+
 #endif
 using Objects.Geometry;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -23,16 +25,27 @@ namespace Objects.Converter.Dynamo
 {
   public partial class ConverterDynamo : ISpeckleConverter
   {
-    #region implemented methods
+
+#if REVIT2023
+    public static string AppName = Applications.DynamoRevit2023;
+#elif REVIT2022
+    public static string AppName = Applications.DynamoRevit2022;
+#elif REVIT2021
+    public static string AppName = Applications.DynamoRevit2021;
+#elif REVIT
+    public static string AppName = Applications.DynamoRevit;
+#else
+    public static string AppName = Applications.DynamoSandbox;
+#endif
 
     public string Description => "Default Speckle Kit for Dynamo";
     public string Name => nameof(ConverterDynamo);
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
 
-    public IEnumerable<string> GetServicedApplications() => new string[] { Applications.DynamoRevit, Applications.DynamoSandbox };
+    public IEnumerable<string> GetServicedApplications() => new string[] { AppName };
 
-    public HashSet<Error> ConversionErrors { get; private set; } = new HashSet<Error>();
+    public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
 #if REVIT
     public Document Doc { get; private set; }
@@ -93,6 +106,17 @@ namespace Objects.Converter.Dynamo
         case DS.Mesh o:
           return MeshToSpeckle(o);
 
+        case DS.Cuboid o:
+          return BoxToSpeckle(o);
+
+#if REVIT
+        //using the revit converter to handle Revit geometry
+        case RD.Element o:
+          var c = new ConverterRevit();
+          c.SetContextDocument(Doc);
+          return c.ConvertToSpeckle(o.InternalElement);
+#endif
+
         default:
           throw new NotSupportedException();
       }
@@ -137,6 +161,9 @@ namespace Objects.Converter.Dynamo
 
         case Mesh o:
           return MeshToNative(o);
+
+        case Box o:
+          return BoxToNative(o);
 
         default:
           throw new NotSupportedException();
@@ -202,6 +229,17 @@ namespace Objects.Converter.Dynamo
         case DS.Mesh _:
           return true;
 
+        case DS.Cuboid _:
+          return true;
+
+#if REVIT
+        //using the revit converter to handle Revit geometry
+        case RD.Element o:
+          var c = new ConverterRevit();
+          c.SetContextDocument(Doc);
+          return c.CanConvertToSpeckle(o.InternalElement);
+#endif
+
         default:
           return false;
       }
@@ -247,6 +285,9 @@ namespace Objects.Converter.Dynamo
         case Mesh _:
           return true;
 
+        case Box _:
+          return true;
+
         default:
           return false;
       }
@@ -260,6 +301,5 @@ namespace Objects.Converter.Dynamo
 #endif
     }
 
-    #endregion implemented methods
   }
 }

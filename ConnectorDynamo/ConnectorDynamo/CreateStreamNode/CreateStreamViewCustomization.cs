@@ -17,15 +17,17 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
   {
     private DynamoViewModel dynamoViewModel;
     private DispatcherSynchronizationContext syncContext;
-    private CreateStream accountsNode;
+    private CreateStream createNode;
     private DynamoModel dynamoModel;
+    private NodeView _nodeView;
 
     public void CustomizeView(CreateStream model, NodeView nodeView)
     {
+      _nodeView = nodeView;
       dynamoModel = nodeView.ViewModel.DynamoViewModel.Model;
       dynamoViewModel = nodeView.ViewModel.DynamoViewModel;
       syncContext = new DispatcherSynchronizationContext(nodeView.Dispatcher);
-      accountsNode = model;
+      createNode = model;
 
       var ui = new CreateStreamUi();
       nodeView.inputGrid.Children.Add(ui);
@@ -35,22 +37,46 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
       ui.Loaded += Loaded;
       ui.CreateStreamButton.Click += CreateStreamButtonClick;
       ui.AccountsComboBox.DropDownOpened += AccountsComboBoxOnDropDownOpened;
+
+      nodeView.grid.ContextMenu.Items.Add(new Separator());
     }
 
     private void AccountsComboBoxOnDropDownOpened(object sender, EventArgs e)
     {
-      accountsNode.ClearErrorsAndWarnings();
-      accountsNode.RestoreSelection();
+      createNode.ClearErrorsAndWarnings();
+      createNode.RestoreSelection();
     }
 
     private void Loaded(object o, RoutedEventArgs a)
     {
-      Task.Run(async () => { accountsNode.RestoreSelection(); });
+      Task.Run(async () => { createNode.RestoreSelection(); });
     }
 
     private void CreateStreamButtonClick(object sender, RoutedEventArgs e)
     {
-      Task.Run(async () => { accountsNode.DoCreateStream(); });
+      Task.Run(async () =>
+      {
+        createNode.DoCreateStream();
+        UpdateContextMenu();
+      });
+    }
+
+    private void UpdateContextMenu()
+    {
+      createNode.DispatchOnUIThread(() =>
+      {
+
+        if (createNode.Stream != null)
+        {
+          var viewStreamMenuItem = new MenuItem { Header = $"View stream {createNode.Stream.StreamId} @ {createNode.Stream.ServerUrl} online ↗" };
+          viewStreamMenuItem.Click += (a, e) =>
+          {
+            System.Diagnostics.Process.Start($"{createNode.Stream.ServerUrl}/streams/{createNode.Stream.StreamId}");
+          };
+          _nodeView.grid.ContextMenu.Items.Add(viewStreamMenuItem);
+
+        }
+      });
     }
 
 

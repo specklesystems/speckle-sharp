@@ -33,7 +33,7 @@ namespace Speckle.Core.Kits
       Initialize();
       return _SpeckleKits.ContainsKey(assemblyFullName);
     }
-     
+
     /// <summary>
     /// Gets a specific kit.
     /// </summary>
@@ -53,7 +53,7 @@ namespace Speckle.Core.Kits
       get
       {
         Initialize();
-        return _SpeckleKits.Values;
+        return _SpeckleKits.Values.Where(v => v != null);
       }
     }
 
@@ -68,8 +68,7 @@ namespace Speckle.Core.Kits
         return _AvailableTypes;
       }
     }
-    
-    
+
     /// <summary>
     /// Gets the default Speckle provided kit, "Objects".
     /// </summary>
@@ -87,7 +86,7 @@ namespace Speckle.Core.Kits
     /// <returns></returns>
     public static IEnumerable<ISpeckleKit> GetKitsWithConvertersForApp(string app)
     {
-      foreach(var kit in Kits)
+      foreach (var kit in Kits)
       {
         if (kit.Converters.Contains(app))
           yield return kit;
@@ -100,8 +99,8 @@ namespace Speckle.Core.Kits
     /// <param name="kitFolderLocation"></param>
     public static void Initialize(string kitFolderLocation)
     {
-      if (_initialized) throw new SpeckleException("The kit manager has already been initialised. Make sure you call this method earlier in your code!");
-      
+      if (_initialized)throw new SpeckleException("The kit manager has already been initialised. Make sure you call this method earlier in your code!", level : Sentry.SentryLevel.Warning);
+
       KitsFolder = kitFolderLocation;
       Load();
       _initialized = true;
@@ -124,8 +123,10 @@ namespace Speckle.Core.Kits
 
       GetLoadedSpeckleReferencingAssemblies();
       LoadSpeckleReferencingAssemblies();
-
-      _AvailableTypes = _SpeckleKits.SelectMany(kit => kit.Value.Types).ToList();
+      
+      _AvailableTypes = _SpeckleKits
+        .Where(kit => kit.Value != null)
+        .SelectMany(kit => kit.Value.Types).ToList();
     }
 
     private static void GetLoadedSpeckleReferencingAssemblies()
@@ -138,7 +139,10 @@ namespace Speckle.Core.Kits
           if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
           {
             if (!_SpeckleKits.ContainsKey(assembly.FullName))
-              _SpeckleKits.Add(assembly.FullName, Activator.CreateInstance(kitClass) as ISpeckleKit);
+            {
+              var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
+              if(speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+            }
           }
         }
       }
@@ -155,7 +159,7 @@ namespace Speckle.Core.Kits
 
       foreach (var directory in directories)
       {
-        foreach (var assemblyPath in System.IO.Directory.EnumerateFiles(directory, "*.dll"))
+        foreach (var assemblyPath in Directory.EnumerateFiles(directory, "*.dll"))
         {
           var unloadedAssemblyName = SafeGetAssemblyName(assemblyPath);
 
@@ -167,7 +171,10 @@ namespace Speckle.Core.Kits
           if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
           {
             if (!_SpeckleKits.ContainsKey(assembly.FullName))
-              _SpeckleKits.Add(assembly.FullName, Activator.CreateInstance(kitClass) as ISpeckleKit);
+            {
+              var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
+              if(speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+            }
           }
         }
       }
@@ -180,18 +187,18 @@ namespace Speckle.Core.Kits
         var kitClass = assembly.GetTypes().FirstOrDefault(type =>
         {
           return type
-          .GetInterfaces()
-          .FirstOrDefault(iface =>
-          {
-            return iface.Name == typeof(Speckle.Core.Kits.ISpeckleKit).Name;
-          }) != null;
+            .GetInterfaces()
+            .FirstOrDefault(iface =>
+            {
+              return iface.Name == typeof(Speckle.Core.Kits.ISpeckleKit).Name;
+            }) != null;
         });
 
         return kitClass;
       }
-      catch (Exception e)
+      catch
       {
-        Log.CaptureException(e);
+        // this will be a ReflectionTypeLoadException and is expected. we don't need to care!
         return null;
       }
     }
@@ -219,7 +226,7 @@ namespace Speckle.Core.Kits
         return null;
       }
     }
-    
+
     #endregion
   }
 

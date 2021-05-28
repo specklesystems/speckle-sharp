@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
 
 namespace Speckle.Core.Transports
 {
@@ -44,7 +42,7 @@ namespace Speckle.Core.Transports
       if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
 
       Objects[hash] = serializedObject;
-      
+
       SavedObjectCount++;
       OnProgressAction?.Invoke(TransportName, 1);
     }
@@ -60,10 +58,7 @@ namespace Speckle.Core.Transports
 
       if (Objects.ContainsKey(hash)) return Objects[hash];
       else
-      {
-        Log.CaptureException(new SpeckleException("No object found in this memory transport."), level: Sentry.Protocol.SentryLevel.Warning);
-        throw new SpeckleException("No object found in this memory transport.");
-      }
+        return null;
     }
 
     public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
@@ -84,6 +79,17 @@ namespace Speckle.Core.Transports
     public override string ToString()
     {
       return $"Memory Transport {TransportName}";
+    }
+
+    public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+    {
+      Dictionary<string, bool> ret = new Dictionary<string, bool>();
+      foreach (string objectId in objectIds)
+      {
+        ret[objectId] = Objects.ContainsKey(objectId);
+      }
+
+      return ret;
     }
   }
 

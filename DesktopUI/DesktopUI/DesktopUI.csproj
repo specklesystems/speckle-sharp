@@ -61,10 +61,6 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Threading.Tasks, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="Microsoft.Threading.Tasks.Extensions, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="Microsoft.Threading.Tasks.Extensions.Desktop, Version=1.0.168.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Windows" />
@@ -101,6 +97,9 @@
     <Compile Include="Streams\Dialogs\FilterViews\ListFilterView.xaml.cs">
       <DependentUpon>ListFilterView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Streams\Dialogs\FilterViews\AllFilterView.xaml.cs">
+      <DependentUpon>AllFilterView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Streams\Dialogs\FilterViews\PropertyFilterView.xaml.cs">
       <DependentUpon>PropertyFilterView.xaml</DependentUpon>
     </Compile>
@@ -119,7 +118,6 @@
     <Compile Include="Utils\ViewModelFactories.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\SelectionFilter.cs" />
-    <Compile Include="Accounts\AccountsRepository.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -138,6 +136,9 @@
     </Page>
     <Page Include="Streams\Dialogs\BranchCreateDialogView.xaml" />
     <Page Include="Streams\Dialogs\FilterViews\ListFilterView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Streams\Dialogs\FilterViews\AllFilterView.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Streams\Dialogs\FilterViews\PropertyFilterView.xaml">
@@ -190,6 +191,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="DesktopUI.nuspec" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -205,7 +207,14 @@
     <Resource Include="Resources\s2logo.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\ReceiverWhite%4032.png" />
+    <Resource Include="Resources\SenderWhite%4032.png" />
+    <Resource Include="Resources\ReceiverWhite%4020.png" />
+    <Resource Include="Resources\CreateStreamWhite%4032.png" />
+    <Resource Include="Resources\CreateStreamWhite%4064.png" />
+    <Resource Include="logo.png" />
     <Content Include="Resources\s2logo.svg" />
+    <Resource Include="Resources\SenderWhite%4020.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
@@ -224,7 +233,7 @@
       <Version>1.1.31</Version>
     </PackageReference>
     <PackageReference Include="Stylet">
-      <Version>1.3.5</Version>
+      <Version>1.3.6</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

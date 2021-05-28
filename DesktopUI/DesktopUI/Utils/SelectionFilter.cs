@@ -6,7 +6,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Xaml.Behaviors;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 using Speckle.DesktopUI.Streams.Dialogs.FilterViews;
 using Stylet;
 
@@ -15,9 +15,22 @@ namespace Speckle.DesktopUI.Utils
 
   public interface ISelectionFilter
   {
+
+    /// <summary>
+    /// User friendly name displayed in the UI
+    /// </summary>
     string Name { get; set; }
 
+    /// <summary>
+    /// MaterialDesignIcon use the demo app from the MaterialDesignInXamlToolkit to get the correct name
+    /// </summary>
     string Icon { get; set; }
+
+
+    /// <summary>
+    /// Internal filter name 
+    /// </summary>
+    string Slug { get; set; }
 
     /// <summary>
     /// Used as the discriminator for deserialisation.
@@ -40,11 +53,29 @@ namespace Speckle.DesktopUI.Utils
     List<string> Selection { get; set; }
   }
 
+  public class AllSelectionFilter : ISelectionFilter
+  {
+    public string Type => typeof(ListSelectionFilter).ToString();
+    public string Name { get; set; }
+    public string Slug { get; set; }
+    public string Icon { get; set; }
+    public string Description { get; set; }
+    public List<string> Selection { get; set; } = new List<string>();
+    public string Summary
+    {
+      get
+      {
+        return "Everything";
+      }
+    }
+  }
+
   public class ListSelectionFilter : ISelectionFilter
   {
     public string Type => typeof(ListSelectionFilter).ToString();
 
     public string Name { get; set; }
+    public string Slug { get; set; }
     public string Icon { get; set; }
     public string Description { get; set; }
 
@@ -72,6 +103,8 @@ namespace Speckle.DesktopUI.Utils
     public string Type => typeof(PropertySelectionFilter).ToString();
 
     public string Name { get; set; }
+
+    public string Slug { get; set; }
     public string Icon { get; set; }
     public string Description { get; set; }
 
@@ -96,6 +129,7 @@ namespace Speckle.DesktopUI.Utils
   public class FilterTab : PropertyChangedBase
   {
     public string Name => Filter.Name;
+    public string Slug => Filter.Slug;
 
     public ISelectionFilter Filter { get; }
 
@@ -142,6 +176,9 @@ namespace Speckle.DesktopUI.Utils
         case ListSelectionFilter f:
           FilterView = new ListFilterView();
           _valuesList = SearchResults = new BindableCollection<string>(f.Values);
+          break;
+        case AllSelectionFilter f:
+          FilterView = new AllFilterView();
           break;
       }
     }

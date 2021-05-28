@@ -28,6 +28,7 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
     <Button
@@ -36,18 +37,22 @@
       HorizontalAlignment="Center"
       HorizontalContentAlignment="Center"
       md:ShadowAssist.ShadowDepth="Depth0"
-      Content="{md:PackIcon Kind=CloudUpload,
-                            Size=20}"
       IsEnabled="{Binding SendEnabled}"
       Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
       ToolTip="Send objects to Speckle"
-      Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}, ConverterParameter='opposite'}" />
+      Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}, ConverterParameter='opposite'}">
+      <!--  Set image as resource  -->
+      <Image
+        Width="32"
+        Height="32"
+        Source="/SpeckleConnectorDynamo;Component/Assets/Sender@32.png" />
+    </Button>
     <Button
       x:Name="CancelSendStreamButton"
       Margin="10,22,10,0"
       HorizontalAlignment="Center"
       HorizontalContentAlignment="Center"
-      md:ButtonProgressAssist.IsIndeterminate="False"
+      md:ButtonProgressAssist.IsIndeterminate="True"
       md:ButtonProgressAssist.IsIndicatorVisible="{Binding Transmitting}"
       md:ButtonProgressAssist.Value="{Binding Progress}"
       md:ShadowAssist.ShadowDepth="Depth0"
@@ -61,6 +66,13 @@
       Badge="{Binding ExpiredCount}"
       BadgeColorZoneMode="Accent"
       ToolTip="Has new data to send" />
+    <ToggleButton
+      Grid.Row="1"
+      Margin="0,5"
+      HorizontalAlignment="Center"
+      IsChecked="{Binding AutoUpdate}"
+      Style="{StaticResource MaterialDesignSwitchToggleButton}"
+      ToolTip="Toggle auto sending" />
     <TextBlock
       Grid.Row="2"
       Width="130"

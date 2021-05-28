@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using ConnectorRevit;
+using ConnectorRevit.Revit;
+using Speckle.ConnectorRevit.Entry;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -40,6 +43,11 @@ namespace Speckle.ConnectorRevit.UI
 
       string referencedObject = state.Commit.referencedObject;
 
+      if (state.CancellationTokenSource.Token.IsCancellationRequested)
+      {
+        return null;
+      }
+
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
       if (state.Commit.id == "latest")
       {
@@ -49,10 +57,7 @@ namespace Speckle.ConnectorRevit.UI
 
       var commit = state.Commit;
 
-      if (state.CancellationTokenSource.Token.IsCancellationRequested)
-      {
-        return null;
-      }
+
 
       var commitObject = await Operations.Receive(
           referencedObject,
@@ -79,32 +84,56 @@ namespace Speckle.ConnectorRevit.UI
         return null;
       }
 
-      UpdateProgress(new ConcurrentDictionary<string, int>() { ["Converting"] = 1 }, state.Progress);
+
 
       // Bake the new ones.
       Queue.Add(() =>
       {
         using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.Stream.name}"))
         {
-          t.Start();
+          var failOpts = t.GetFailureHandlingOptions();
+          failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
+          failOpts.SetClearAfterRollback(true);
+          t.SetFailureHandlingOptions(failOpts);
 
+          t.Start();
           var flattenedObjects = FlattenCommitObject(commitObject, converter);
           // needs to be set for editing to work 
           converter.SetPreviousContextObjects(previouslyReceiveObjects);
           // needs to be set for openings in floors and roofs to work
           converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
           var newPlaceholderObjects = ConvertReceivedObjects(flattenedObjects, converter, state);
+          // receive was cancelled by user
+          if ( newPlaceholderObjects == null )
+          {
+            converter.ConversionErrors.Add(new Exception("fatal error: receive cancelled by user"));
+            t.RollBack();
+            return;
+          }
 
           DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
 
           state.ReceivedObjects = newPlaceholderObjects;
-          state.Errors.AddRange(converter.ConversionErrors.Select(e => new Exception($"{e.message}: {e.details}")));
 
           t.Commit();
+
+          state.Errors.AddRange(converter.ConversionErrors);
         }
+
       });
 
       Executor.Raise();
+
+      while (Queue.Count > 0)
+      {
+        //wait to let queue finish
+      }
+
+      if (converter.ConversionErrors.Any(x => x.Message.Contains("fatal error")))
+      {
+        // the commit is being rolled back
+        return null;
+      }
 
       try
       {
@@ -142,11 +171,26 @@ namespace Speckle.ConnectorRevit.UI
     private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state)
     {
       var placeholders = new List<ApplicationPlaceholderObject>();
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 1;
 
       foreach (var @base in objects)
       {
+        if ( state.CancellationTokenSource.Token.IsCancellationRequested )
+        {
+          placeholders = null;
+          break;
+        }
+
         try
         {
+          conversionProgressDict["Conversion"]++;
+          // wrapped in a dispatcher not to block the ui
+          SpeckleRevitCommand.Bootstrapper.RootWindow.Dispatcher.Invoke(() =>
+          {
+            UpdateProgress(conversionProgressDict, state.Progress);
+          }, System.Windows.Threading.DispatcherPriority.Background);
+
           var convRes = converter.ConvertToNative(@base);
           if (convRes is ApplicationPlaceholderObject placeholder)
           {

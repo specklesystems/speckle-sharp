@@ -30,18 +30,8 @@ namespace ConnectorGrasshopper
     public CreateSpeckleObject()
       : base("Create Speckle Object", "CSO",
           "Allows you to create a Speckle object by setting its keys and values.\nIn each individual parameter, you can select between 'item' and 'list' access type via the right-click menu.\n",
-          "Speckle 2", "Object Management")
+          ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
-      Kit = KitManager.GetDefaultKit();
-      try
-      {
-        Converter = Kit.LoadConverter(Applications.Rhino);
-        Message = $"{Kit.Name} Kit";
-      }
-      catch
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-      }
     }
 
     public override void AddedToDocument(GH_Document document)

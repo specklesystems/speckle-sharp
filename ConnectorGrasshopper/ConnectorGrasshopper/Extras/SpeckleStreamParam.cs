@@ -9,7 +9,7 @@ namespace ConnectorGrasshopper.Extras
 {
   public class SpeckleStreamParam : GH_Param<GH_SpeckleStream>
   {
-    public SpeckleStreamParam() : base("Speckle Stream", "SS", "A speckle data stream object.", "Speckle 2", "Params",
+    public SpeckleStreamParam() : base("Speckle Stream", "SS", "A speckle data stream object.", ComponentCategories.PRIMARY_RIBBON, "Params",
         GH_ParamAccess.item)
     {
 
@@ -26,7 +26,7 @@ namespace ConnectorGrasshopper.Extras
     {
     }
 
-    public SpeckleStreamParam(string name, string nickname, string description, GH_ParamAccess access) : base(name, nickname, description, "Speckle 2", "Params", access)
+    public SpeckleStreamParam(string name, string nickname, string description, GH_ParamAccess access) : base(name, nickname, description, ComponentCategories.PRIMARY_RIBBON, "Params", access)
     {
     }
 
@@ -70,7 +70,6 @@ namespace ConnectorGrasshopper.Extras
     public override bool CastFrom(object source)
     {
       var t = source.GetType();
-      var tt = t;
 
       if(source is GH_String ghStr)
       {
@@ -81,7 +80,7 @@ namespace ConnectorGrasshopper.Extras
         }
         catch
         {
-          return false;
+          throw;
         }
       }
 
@@ -98,6 +97,11 @@ namespace ConnectorGrasshopper.Extras
         }
       }
 
+      if (source is StreamWrapper strWrapper)
+      {
+        Value = strWrapper;
+        return true;
+      }
       var stream = (source as GH_SpeckleStream)?.Value;
       if (stream == null) return false;
       Value = stream;

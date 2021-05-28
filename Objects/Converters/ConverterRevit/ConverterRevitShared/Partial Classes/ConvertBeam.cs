@@ -1,10 +1,10 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleBeam.baseLine == null)
       {
-        throw new Exception("Only line based Beams are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.");
       }
 
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
@@ -72,6 +72,8 @@ namespace Objects.Converter.Revit
       if (revitBeam == null)
       {
         revitBeam = Doc.Create.NewFamilyInstance(baseLine, familySymbol, level, structuralType);
+        StructuralFramingUtils.DisallowJoinAtEnd(revitBeam, 0);
+        StructuralFramingUtils.DisallowJoinAtEnd(revitBeam, 1);
       }
 
       //reference level, only for beams
@@ -90,20 +92,20 @@ namespace Objects.Converter.Revit
       return placeholders;
     }
 
-    private RevitBeam BeamToSpeckle(DB.FamilyInstance revitBeam)
+    private Base BeamToSpeckle(DB.FamilyInstance revitBeam)
     {
       var baseGeometry = LocationToSpeckle(revitBeam);
       var baseLine = baseGeometry as ICurve;
       if (baseLine == null)
       {
-        throw new Exception("Only line based Beams are currently supported.");
+        return RevitElementToSpeckle(revitBeam);
       }
 
       var speckleBeam = new RevitBeam();
       speckleBeam.type = Doc.GetElement(revitBeam.GetTypeId()).Name;
       speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
-      speckleBeam["@displayMesh"] = GetElementMesh(revitBeam);
+      speckleBeam.displayMesh = GetElementMesh(revitBeam);
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 

@@ -30,20 +30,8 @@ namespace ConnectorGrasshopper.Objects
     public ExpandSpeckleObject()
       : base("Expand Speckle Object", "ESO",
           "Allows you to decompose a Speckle object in its constituent parts.\nKeys will be sorted in alphabetical order.\nIf a key is removed from the object, it's output will be automatically deleted; unless the output had existing connections.",
-          "Speckle 2", "Object Management")
+          ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
-    }
-
-    public override bool Read(GH_IReader reader)
-    {
-      // TODO: Read kit name and instantiate converter
-      return base.Read(reader);
-    }
-
-    public override bool Write(GH_IWriter writer)
-    {
-      // TODO: Write kit name to disk
-      return base.Write(writer);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -77,7 +65,7 @@ namespace ConnectorGrasshopper.Objects
       {
         if (speckleObjects.get_Branch(path).Count == 0) continue;
         var obj = speckleObjects.get_DataItem(path, 0);
-        var b = (obj as GH_SpeckleBase)?.Value;
+        var b = obj.Value;
         var props = b?.GetMemberNames().ToList();
         props?.ForEach(prop =>
         {

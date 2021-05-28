@@ -5,6 +5,7 @@ using Speckle.Core.Models;
 using System.Collections.Generic;
 using Point = Objects.Geometry.Point;
 using Objects.BuiltElements.Revit;
+using System;
 
 namespace Objects.Converter.Revit
 {
@@ -66,7 +67,7 @@ namespace Objects.Converter.Revit
       speckleAc.type = Doc.GetElement(revitAc.GetTypeId()).Name;
       speckleAc.basePoints = GetAdaptivePoints(revitAc);
       speckleAc.flipped = AdaptiveComponentInstanceUtils.IsInstanceFlipped(revitAc);
-      speckleAc["@displayMesh"] = GetElementMesh(revitAc);
+      speckleAc.displayMesh = GetElementMesh(revitAc);
 
       GetAllRevitParamsAndIds(speckleAc, revitAc);
 
@@ -79,7 +80,7 @@ namespace Objects.Converter.Revit
 
       if (pointIds.Count != points.Count)
       {
-        ConversionErrors.Add(new Error("Adaptive family error", $"Wrong number of points supplied to adapive family"));
+        ConversionErrors.Add(new Exception("Adaptive family error\nWrong number of points supplied to adaptive family"));
         return;
       }
 

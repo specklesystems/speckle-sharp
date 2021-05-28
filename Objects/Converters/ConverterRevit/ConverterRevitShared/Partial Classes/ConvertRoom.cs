@@ -27,10 +27,7 @@ namespace Objects.Converter.Revit
       }
 
       GetAllRevitParamsAndIds(speckleRoom, revitRoom);
-
-      var displayMesh = new Geometry.Mesh();
-      (displayMesh.faces, displayMesh.vertices) = GetFaceVertexArrayFromElement(revitRoom);
-      speckleRoom["@displayMesh"] = displayMesh;
+      speckleRoom.displayMesh = GetElementDisplayMesh(revitRoom);
 
       return speckleRoom;
     }

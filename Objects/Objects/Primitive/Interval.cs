@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.Primitive
 {
@@ -22,5 +23,7 @@ namespace Objects.Primitive
     {
       return base.ToString() + $"[{this.start}, {this.end}]";
     }
+
+    [JsonIgnore] public double Length => Math.Abs(end ?? 0 - start ?? 0);
   }
 }

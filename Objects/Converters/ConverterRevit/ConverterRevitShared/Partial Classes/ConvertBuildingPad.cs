@@ -29,10 +29,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(specklePad, revitPad, new List<string> { "LEVEL_PARAM" });
 
-      var mesh = new Geometry.Mesh();
-      (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitPad, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-
-      specklePad["@displayMesh"] = mesh;
+      specklePad.displayMesh = GetElementDisplayMesh(revitPad, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       return specklePad;
     }

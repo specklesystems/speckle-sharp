@@ -33,7 +33,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
     /// </summary>
     public StreamWrapper Stream { get; set; }
 
-    public string SelectedAccountId = "";
+    public string SelectedUserId = "";
 
 
     /// <summary>
@@ -117,12 +117,12 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
       {
         Warning("No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
         SelectedAccount = null;
-        SelectedAccountId = "";
+        SelectedUserId = "";
         return;
       }
 
-      SelectedAccount = !string.IsNullOrEmpty(SelectedAccountId)
-        ? AccountList.FirstOrDefault(x => x.id == SelectedAccountId)
+      SelectedAccount = !string.IsNullOrEmpty(SelectedUserId)
+        ? AccountList.FirstOrDefault(x => x.userInfo.id == SelectedUserId)
         : AccountList.FirstOrDefault(x => x.isDefault);
     }
 
@@ -143,9 +143,9 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
       {
         var res = client.StreamCreate(new StreamCreateInput()).Result;
 
-        Stream = new StreamWrapper(res, SelectedAccount.id, SelectedAccount.serverInfo.url);
+        Stream = new StreamWrapper(res, SelectedAccount.userInfo.id, SelectedAccount.serverInfo.url);
         CreateEnabled = false;
-        SelectedAccountId = SelectedAccount.id;
+        SelectedUserId = SelectedAccount.userInfo.id;
 
         this.Name = "Stream Created";
         OnNodeModified(true);
@@ -164,7 +164,6 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
 
     }
 
-
     #region overrides
 
     /// <summary>
@@ -179,14 +178,9 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
         return OutPorts.Enumerate().Select(output =>
           AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
 
-      var functionCall = AstFactory.BuildFunctionCall(
-        new Func<string, string, StreamWrapper>(Functions.Stream.GetByStreamAndAccountId),
-        new List<AssociativeNode>
-        {
-          AstFactory.BuildStringNode(Stream.StreamId), AstFactory.BuildStringNode(Stream.AccountId)
-        });
+      var sw = AstFactory.BuildStringNode(Stream.ToString());
 
-      return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall) };
+      return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), sw) };
     }
 
     #endregion

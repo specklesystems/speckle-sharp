@@ -1,13 +1,13 @@
-﻿using Speckle.Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Specialized;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using GraphQL.Client.Http;
+using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
-using Speckle.Core.Api.GraphQL.Serializer;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api
 {
@@ -16,8 +16,6 @@ namespace Speckle.Core.Api
     public string ServerUrl { get => Account.serverInfo.url; }
 
     public string ApiToken { get => Account.token; }
-
-    public string AccountId { get; set; }
 
     [JsonIgnore]
     public Account Account { get; set; }
@@ -36,10 +34,9 @@ namespace Speckle.Core.Api
     public Client(Account account)
     {
       if (account == null)
-        Log.CaptureAndThrow(new SpeckleException($"Provided account is null."));
+        throw new SpeckleException($"Provided account is null.");
 
       Account = account;
-      AccountId = account.id;
 
       HttpClient = new HttpClient();
 

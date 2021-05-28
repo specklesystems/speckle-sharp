@@ -20,32 +20,32 @@ namespace Speckle.DesktopUI
 
     public ConnectorBindings Bindings;
 
-    private string _ViewName;
+    private string _viewName;
     public string ViewName
     {
-      get => _ViewName;
-      set => SetAndNotify(ref _ViewName, value);
+      get => _viewName;
+      set => SetAndNotify(ref _viewName, value);
     }
 
-    private PackIcon BackIcon = new PackIcon { Kind = PackIconKind.ArrowLeft, Foreground = System.Windows.Media.Brushes.Gray };
+    private PackIcon BackIcon = new PackIcon { Kind = PackIconKind.ArrowLeft };
 
-    private PackIcon SettingsIcon = new PackIcon { Kind = PackIconKind.Settings, Foreground = System.Windows.Media.Brushes.Gray };
+    private PackIcon SettingsIcon = new PackIcon { Kind = PackIconKind.Settings };
 
-    private PackIcon _MainButtonIcon;
+    private PackIcon _mainButtonIcon;
     public PackIcon MainButtonIcon
     {
-      get => _MainButtonIcon;
-      set => SetAndNotify(ref _MainButtonIcon, value);
+      get => _mainButtonIcon;
+      set => SetAndNotify(ref _mainButtonIcon, value);
     }
 
-    private bool _MainButton_Checked = false;
+    private bool _mainButton_Checked;
     public bool MainButton_Checked
     {
-      get => _MainButton_Checked;
-      set => SetAndNotify(ref _MainButton_Checked, value);
+      get => _mainButton_Checked;
+      set => SetAndNotify(ref _mainButton_Checked, value);
     }
 
-    public Dictionary<string, IScreen> Pages = new Dictionary<string, IScreen>();
+    public readonly Dictionary<string, IScreen> Pages = new Dictionary<string, IScreen>();
 
     public RootViewModel(IWindowManager windowManager, IEventAggregator events, IViewModelFactory viewModelFactory, ConnectorBindings bindings)
     {
@@ -59,12 +59,9 @@ namespace Speckle.DesktopUI
 
       ActivateItem(Pages["streams"]);
 
-      ViewName = ActiveItem.DisplayName;
-      MainButtonIcon = SettingsIcon;
-
       events.Subscribe(this);
 
-      Utils.Globals.RVMInstance = this;
+      Globals.RVMInstance = this;
     }
 
     public ISnackbarMessageQueue Notifications
@@ -87,46 +84,48 @@ namespace Speckle.DesktopUI
       Link.OpenInBrowser(url);
     }
 
-    // Needs a bit of cleanup.
-    public void GoToSettingsOrBack()
+    public sealed override void ActivateItem(IScreen item)
     {
-      if( ActiveItem is StreamViewModel )
+      base.ActivateItem(item);
+      ViewName = item.DisplayName;
+
+      if ( ActiveItem is AllStreamsViewModel  )
       {
-        ActiveItem.RequestClose();
-        ActiveItem = Pages["streams"];
-        ViewName = ActiveItem.DisplayName;
         MainButtonIcon = SettingsIcon;
         MainButton_Checked = false;
-        return;
       }
-
-      ActiveItem = ActiveItem is AllStreamsViewModel ? Pages["settings"] : Pages["streams"];
-      ViewName = ActiveItem.DisplayName;
-
-      if(!(ActiveItem is AllStreamsViewModel))
+      else
       {
         MainButtonIcon = BackIcon;
         MainButton_Checked = true;
-      } 
-      else
-      {
-        MainButtonIcon = SettingsIcon;
-        MainButton_Checked = false;
       }
+    }
+
+    public void GoToSettingsOrBack()
+    {
+      if( ActiveItem is StreamViewModel )
+        ActivateItem(Pages[ "streams" ]);
+      else
+        ActivateItem( ActiveItem is AllStreamsViewModel ? Pages[ "settings" ] : Pages[ "streams" ] );
     }
 
     public void GoToStreamViewPage( StreamViewModel streamItem)
     {
       ActivateItem(streamItem);
-      ViewName = ActiveItem.DisplayName;
-      MainButtonIcon = BackIcon;
-      MainButton_Checked = true;
+    }
+
+    public void RefreshActiveView()
+    {
+      ( ( SettingsViewModel ) Pages[ "settings" ] ).Refresh();
+      ( ( AllStreamsViewModel ) Pages[ "streams" ] ).RefreshPage();
+      if ( ActiveItem is StreamViewModel streamViewModel)
+        streamViewModel.Refresh();
+
     }
 
     public void Handle(StreamRemovedEvent message)
     {
-      MainButtonIcon = SettingsIcon;
-      MainButton_Checked = false;
+      ActivateItem(Pages[ "streams" ]);
     }
 
     public void Handle(ShowNotificationEvent message)

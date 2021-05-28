@@ -1,8 +1,4 @@
-﻿using Autodesk.Revit.UI;
-using Speckle.ConnectorRevit.Storage;
-using Speckle.ConnectorRevit.UI;
-using Speckle.DesktopUI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +8,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
+using Speckle.ConnectorRevit.Storage;
+using Speckle.ConnectorRevit.UI;
+using Speckle.DesktopUI;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -29,7 +30,7 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling += Initialise;
 
       var SpecklePanel = application.CreateRibbonPanel("Speckle 2");
-      var SpeckleButton = SpecklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
+      var SpeckleButton = SpecklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName))as PushButton;
 
       if (SpeckleButton != null)
       {
@@ -49,22 +50,10 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling -= Initialise;
       AppInstance = sender as UIApplication;
 
-      // Adds an event on doc open to check for streams and launch/focus speckle if any are present.
-      AppInstance.Application.DocumentOpened += CheckForStreamsAndOpenSpeckle;
-
       // Set up bindings now as they subscribe to some document events and it's better to do it now
       SpeckleRevitCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
       var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
       SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
-    }
-
-    private void CheckForStreamsAndOpenSpeckle(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
-    {
-      var streams = StreamStateManager.ReadState(e.Document);
-      if (streams != null && streams.Count != 0)
-      {
-        SpeckleRevitCommand.OpenOrFocusSpeckle(AppInstance);
-      }
     }
 
     public Result OnShutdown(UIControlledApplication application)

@@ -1,15 +1,11 @@
 ﻿using Autodesk.DesignScript.Runtime;
-using Newtonsoft.Json;
-using ProtoCore.Lang;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.Functions
 {
@@ -22,13 +18,13 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       var kit = KitManager.GetDefaultKit();
 
-      if (Globals.RevitDocument != null)
-        _converter = kit.LoadConverter(Applications.DynamoRevit);
-      else
-        _converter = kit.LoadConverter(Applications.DynamoSandbox);
+      if (kit == null)
+        throw new SpeckleException("Cannot find the Objects Kit. Has it been copied to the Kits folder?");
+
+      _converter = kit.LoadConverter(Utils.GetAppName());
 
       if (_converter == null)
-        throw new Exception("Cannot find the Dynamo converter, has it been copied to the Kit folder?");
+        throw new SpeckleException("Cannot find the Dynamo converter. Has it been copied to the Kits folder?");
 
       // if in Revit, we have a doc, injected by the Extension
       if (Globals.RevitDocument != null)
@@ -46,7 +42,7 @@ namespace Speckle.ConnectorDynamo.Functions
     public Base ConvertRecursivelyToSpeckle(object @object)
     {
       if (@object is ProtoCore.DSASM.StackValue)
-        throw new Exception("Invalid input");
+        throw new SpeckleException("Invalid input");
 
       var converted = RecurseTreeToSpeckle(@object);
       var @base = new Base();
@@ -113,20 +109,25 @@ namespace Speckle.ConnectorDynamo.Functions
     private object TryConvertItemToSpeckle(object value)
     {
       object result = null;
+      if (_converter.CanConvertToSpeckle(value))
+      {
+        try
+        {
+          return _converter.ConvertToSpeckle(value);
+        }
+        catch (Exception ex)
+        {
+          throw new SpeckleException("Could not convert " + value.GetType() + " to Speckle", ex);
+        }
+      }
+
 
       if (value is Base || value.GetType().IsSimpleType())
       {
         return value;
       }
 
-      try
-      {
-        return _converter.ConvertToSpeckle(value);
-      }
-      catch (Exception ex)
-      {
-        Core.Logging.Log.CaptureAndThrow(ex);
-      }
+
 
       return result;
     }
@@ -206,7 +207,7 @@ namespace Speckle.ConnectorDynamo.Functions
       }
       catch (Exception ex)
       {
-        Core.Logging.Log.CaptureAndThrow(ex);
+        throw new SpeckleException(ex.Message, ex);
       }
 
       return null;

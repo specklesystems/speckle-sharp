@@ -63,15 +63,16 @@
       <Version>1.0.0</Version>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="MSBuild.AssemblyVersion">
+      <Version>1.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{521d4aee-08cf-4913-bbe8-5511d176d126}</Project>
       <Name>Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Core\Transports\ServerTransport\ServerTransport.csproj">
-      <Project>{e2fdb466-88d3-43a2-b840-84634613cbf5}</Project>
-      <Name>ServerTransport</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\DesktopUI\DesktopUI\DesktopUI.csproj">
       <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
@@ -82,10 +83,12 @@
   <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
   </PropertyGroup>
   <!-- POST BUILD EVENTS START -->
+  <Target Name="Clean">
+    <RemoveDir Directories="$(TargetDir);$(ProjectDir)\..\Release\Release2019;$(AppData)\Autodesk\Revit\Addins\2019\SpeckleRevit2" />
+  </Target>
   <Target Name="AfterBuild">
     <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
     <CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />
@@ -97,6 +100,7 @@
     </ItemGroup>
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
+    <Message Importance="High" Text="DEBUG copy from $(TargetDir) to $(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\" />
   </Target>
   <Target Name="AfterBuildRelease">
     <ItemGroup>

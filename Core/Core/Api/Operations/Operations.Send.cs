@@ -1,16 +1,16 @@
-﻿using Speckle.Newtonsoft.Json;
-using Speckle.Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sentry;
-using Sentry.Protocol;
+using Sentry;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.Newtonsoft.Json;
+using Speckle.Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Api
 {
@@ -36,7 +36,7 @@ namespace Speckle.Core.Api
         useDefaultCache,
         onProgressAction,
         onErrorAction
-        );
+      );
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ namespace Speckle.Core.Api
 
       if (transports.Count == 0 && useDefaultCache == false)
       {
-        Log.CaptureAndThrow(new SpeckleException($"You need to provide at least one transport: cannot send with an empty transport list and no default cache."), SentryLevel.Error);
+        throw new SpeckleException($"You need to provide at least one transport: cannot send with an empty transport list and no default cache.", level : SentryLevel.Error);
       }
 
       if (useDefaultCache)
@@ -68,7 +68,7 @@ namespace Speckle.Core.Api
         transports.Insert(0, new SQLiteTransport() { TransportName = "LC" });
       }
 
-      var (serializer, settings) = GetSerializerInstance();
+      var(serializer, settings) = GetSerializerInstance();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = Operations.GetInternalProgressAction(localProgressDict, onProgressAction);
@@ -91,7 +91,7 @@ namespace Speckle.Core.Api
 
       var transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
 
-      if (cancellationToken.IsCancellationRequested) return null;
+      if (cancellationToken.IsCancellationRequested)return null;
 
       await Task.WhenAll(transportAwaits).ConfigureAwait(false);
 
@@ -100,7 +100,7 @@ namespace Speckle.Core.Api
         t.EndWrite();
       }
 
-      if (cancellationToken.IsCancellationRequested) return null;
+      if (cancellationToken.IsCancellationRequested)return null;
 
       var hash = JObject.Parse(obj).GetValue("id").ToString();
       return hash;

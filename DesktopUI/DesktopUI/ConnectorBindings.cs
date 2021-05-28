@@ -3,7 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Sentry.Reflection;
+using Speckle.Newtonsoft.Json;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 using StyletIoC;
@@ -17,6 +18,12 @@ namespace Speckle.DesktopUI
 
     public ConnectorBindings() { }
 
+    public string ConnectorVersion =>
+      System.Reflection.Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
+
+    public string ConnectorName =>
+      System.Reflection.Assembly.GetAssembly(GetType()).GetNameAndVersion().Name;
+
     /// <summary>
     /// Sends an event to the UI. The event types are pre-defined and inherit from EventBase.
     /// </summary>
@@ -24,8 +31,7 @@ namespace Speckle.DesktopUI
     public virtual void NotifyUi(EventBase notifyEvent)
     {
       //TODO: checked why it's null sometimes
-      if(_events!=null)
-        _events.PublishOnUIThread(notifyEvent);
+      _events?.PublishOnUIThread(notifyEvent);
     }
 
     /// <summary>

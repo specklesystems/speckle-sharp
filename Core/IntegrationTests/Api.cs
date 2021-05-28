@@ -1,7 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Speckle.Core.Api;
@@ -9,22 +6,11 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Tests;
-using System.Net;
-using System.Collections.Specialized;
-using System.Text;
-using Newtonsoft.Json;
 
-////////////////////////////////////////////////////////////////////////////
-/// NOTE:                                                                ///
-/// These tests don't run without a server running locally.              ///
-/// Check out https://github.com/specklesystems/server for               ///
-/// more info on the server.                                             ///
-////////////////////////////////////////////////////////////////////////////
 namespace TestsIntegration
 {
   public class Api
   {
-    public ServerInfo testServer;
     public Account firstUserAccount, secondUserAccount;
 
     public Client myClient;
@@ -39,10 +25,8 @@ namespace TestsIntegration
     [OneTimeSetUp]
     public void Setup()
     {
-      testServer = new ServerInfo { url = "https://testing.speckle.dev", name = "TestServer" };
-
-      firstUserAccount = Fixtures.SeedUser(testServer);
-      secondUserAccount = Fixtures.SeedUser(testServer);
+      firstUserAccount = Fixtures.SeedUser();
+      secondUserAccount = Fixtures.SeedUser();
 
       myClient = new Client(firstUserAccount);
       myServerTransport = new ServerTransport(firstUserAccount, null);
@@ -233,7 +217,7 @@ namespace TestsIntegration
     public async Task StreamGetCommits()
     {
       var res = await myClient.StreamGetCommits(streamId);
-      
+
       Assert.NotNull(res);
       Assert.AreEqual(commitId, res[0].id);
     }

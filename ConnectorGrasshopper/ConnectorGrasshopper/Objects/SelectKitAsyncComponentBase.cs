@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
+using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
+using Sentry;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper.Objects
@@ -18,17 +21,40 @@ namespace ConnectorGrasshopper.Objects
     public ISpeckleConverter Converter;
 
     public ISpeckleKit Kit;
+
+    public virtual bool CanDisableConversion => true;
     
-    public SelectKitAsyncComponentBase(string name, string nickname, string description, string category, string subCategory) : base(name, nickname, description, category, subCategory)
+    public string SelectedKitName;
+    
+    public SelectKitAsyncComponentBase(string name, string nickname, string description, string category,
+      string subCategory) : base(name, nickname, description, category, subCategory)
     {
-      var key = "Speckle2:kit.default.name";
-      var n = Grasshopper.Instances.Settings.GetValue(key,"Objects");
-      Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino).FirstOrDefault(kit => kit.Name == n);
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document);
+      if (SelectedKitName == null)
+      {
+        var key = "Speckle2:kit.default.name";
+        SelectedKitName = Grasshopper.Instances.Settings.GetValue(key, "Objects");
+      }
+
+      SetConverter();
+    }
+
+    public virtual void SetConverter()
+    {
+      if (SelectedKitName == "None")
+      {
+        Kit = null;
+        Converter = null;
+        Message = "No Conversion";
+        return;
+      }
       try
       {
-        Converter = Kit.LoadConverter(Applications.Rhino);
-        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-        Message = $"{Kit.Name} Kit";
+        SetConverterFromKit(SelectedKitName);
       }
       catch
       {
@@ -36,43 +62,89 @@ namespace ConnectorGrasshopper.Objects
       }
     }
 
-    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    public override bool Write(GH_IWriter writer)
     {
-      Menu_AppendSeparator(menu);
-      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:");
-      menuItem.Enabled = false;
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
-
-      foreach (var kit in kits)
-      {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true, kit.Name == Kit.Name);
-      }
-
-      Menu_AppendSeparator(menu);
+      writer.SetString("selectedKitName", SelectedKitName);
+      return base.Write(writer);
     }
 
-    public void SetConverterFromKit(string kitName)
+    public override bool Read(GH_IReader reader)
     {
-      if (kitName == Kit.Name) return;
+      reader.TryGetString("selectedKitName", ref SelectedKitName);
+      return base.Read(reader);
+    }
 
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+      try
+      {
+        var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+
+        Menu_AppendSeparator(menu);
+        Menu_AppendItem(menu, "Select the converter you want to use:");
+        if(CanDisableConversion)
+          Menu_AppendItem(menu, "Do Not Convert", (s, e) =>
+          {
+            SelectedKitName = "None";
+            SetConverter();
+            ExpireSolution(true);
+          }, true, Kit == null);
+          
+        foreach (var kit in kits)
+        {
+          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SelectedKitName=kit.Name; SetConverter(); ExpireSolution(true);
+            }, true,
+            kit.Name == Kit?.Name);
+        }
+
+        Menu_AppendSeparator(menu);
+      }
+      catch (Exception e)
+      {
+        Menu_AppendItem(menu, "An error occurred while fetching Kits", null, false);
+      }
+    }
+
+    public virtual void SetConverterFromKit(string kitName)
+    {
+      if (kitName == Kit?.Name) return;
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
+      SelectedKitName = Kit.Name;
       Converter = Kit.LoadConverter(Applications.Rhino);
       Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-
       Message = $"Using the {Kit.Name} Converter";
-      ExpireSolution(true);
     }
 
     public override Guid ComponentGuid => new Guid("2FEE5354-0F5E-41D9-ACD3-BF376D29CCDC");
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      throw new Exception("Please inherit from this class, don't use SelectKitComponentBase directly");
+      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly",
+        level: SentryLevel.Warning);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      throw new Exception("Please inherit from this class, don't use SelectKitComponentBase directly");
+      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly",
+        level: SentryLevel.Warning);
+    }
+
+    protected override void BeforeSolveInstance()
+    {
+      Converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      base.BeforeSolveInstance();
+    }
+
+    protected override void SolveInstance(IGH_DataAccess DA)
+    {
+      //Ensure converter document is up to date
+      if (Converter == null)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No converter was provided. Conversions are disabled.");
+
+      }
+
+      base.SolveInstance(DA);
     }
   }
 }

@@ -9,6 +9,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -24,8 +25,13 @@ namespace ConnectorGrasshopper.Objects
     public int State = 0;
     public ExpandSpeckleObjectAsync() : base("Expand Speckle Object", "ESO",
       "Allows you to decompose a Speckle object in its constituent parts.",
-      "Speckle 2", "Object Management")
+      ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
+    }
+
+    public override void SetConverter()
+    {
+      base.SetConverter();
       BaseWorker = new ExpandSpeckleObjectWorker(this, Converter);
     }
 
@@ -57,47 +63,22 @@ namespace ConnectorGrasshopper.Objects
       {
         Name = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input),
         MutableNickName = true,
-        Optional = true
+        Optional = true,
       };
-
       myParam.NickName = myParam.Name;
-      myParam.ObjectChanged += (sender, e) => { };
-
       return myParam;
     }
 
-    public bool DestroyParameter(GH_ParameterSide side, int index)
-    {
-      if (side == GH_ParameterSide.Input)
-        return false;
-      return true;
-    }
-
+    public bool DestroyParameter(GH_ParameterSide side, int index) => side == GH_ParameterSide.Output;
+    
     public void VariableParameterMaintenance()
     {
-      if (outputList.Count == 0) return;
-
-      for (var i = 0; i < Params.Output.Count; i++)
-      {
-        if (i > outputList.Count - 1) return;
-
-        var name = outputList[i];
-        Params.Output[i].Name = $"{name}";
-        Params.Output[i].NickName = $"{name}";
-        Params.Output[i].Description = $"Data from property: {name}";
-        Params.Output[i].MutableNickName = false;
-        Params.Output[i].Access = GH_ParamAccess.tree;
-      }
+      // Perform parameter maintenance here!
     }
-    
-    private bool OutputMismatch()
-    {
-      var countMatch = outputList.Count == Params.Output.Count;
-      if (!countMatch)
-        return true;
 
-      return outputList.Where((t, i) => Params.Output[i].NickName != t).Any();
-    }
+    private bool OutputMismatch() =>
+      outputList.Count != Params.Output.Count 
+      || outputList.Where((t, i) => Params.Output[i].NickName != t).Any();
 
     private void AutoCreateOutputs()
     {
@@ -105,19 +86,40 @@ namespace ConnectorGrasshopper.Objects
 
       if (tokenCount == 0 || !OutputMismatch()) return;
       RecordUndoEvent("Creating Outputs");
-
-      if (Params.Output.Count < tokenCount)
-        while (Params.Output.Count < tokenCount)
+      
+      // Check what params must be deleted, and do so when safe.
+      var remove = Params.Output.Select((p, i) =>
+      {
+        var res = outputList.Find(o => o == p.Name);
+        return res == null ? i : -1;
+      }).ToList();
+      remove.Reverse();
+      remove.ForEach(b =>
+      {
+        if (b != -1 && Params.Output[b].Recipients.Count == 0)
+          Params.UnregisterOutputParameter(Params.Output[b]);
+      });
+      
+      outputList.Sort();
+      outputList.ForEach(s =>
+      {
+        var param = Params.Output.Find(p => p.Name == s);
+        if (param == null)
         {
           var newParam = CreateParameter(GH_ParameterSide.Output, Params.Output.Count);
+          newParam.Name = s;
+          newParam.NickName = s;
+          newParam.Description = $"Data from property: {s}";
+          newParam.MutableNickName = false;
+          newParam.Access = GH_ParamAccess.tree;
           Params.RegisterOutputParam(newParam);
         }
-      else if (Params.Output.Count > tokenCount)
-        while (Params.Output.Count > tokenCount)
-        {
-          Params.UnregisterOutputParameter(Params.Output[Params.Output.Count - 1]);
-        }
-
+        
+      });
+      var paramNames = Params.Output.Select(p => p.Name).ToList();
+      paramNames.Sort();
+      var sortOrder = Params.Output.Select(p => paramNames.IndexOf(p.Name)).ToArray();
+      Params.SortOutput(sortOrder);
       Params.OnParametersChanged();
       VariableParameterMaintenance();
     }
@@ -138,27 +140,55 @@ namespace ConnectorGrasshopper.Objects
     }
 
     public override WorkerInstance Duplicate() => new ExpandSpeckleObjectWorker(Parent, Converter);
-
+    
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      Parent.Message = "Expanding...";
-      if (speckleObjects.DataCount == 0)
+      try
       {
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"Input was empty!");
-        Parent.Message = "Done";
+        Parent.Message = "Expanding...";
+        if (speckleObjects.DataCount == 0)
+        {
+          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,"Input was empty!");
+          Parent.Message = "Done";
+        }
+        outputList = GetOutputList();
+        (Parent as ExpandSpeckleObjectAsync).outputList = outputList;
+        outputDict = CreateOutputDictionary();
+        (Parent as ExpandSpeckleObjectAsync).State = 1;
+        Done();
       }
-      outputList = GetOutputList();
-      (Parent as ExpandSpeckleObjectAsync).outputList = outputList;
-      outputDict = CreateOutputDictionary();
-      (Parent as ExpandSpeckleObjectAsync).State = 1;
-      Done();
+      catch (Exception e)
+      {
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        Parent.Message = "Error";
+      }
     }
 
     public override void SetData(IGH_DataAccess DA)
     {
       if (outputDict == null) return;
       foreach (var key in outputDict.Keys)
-        DA.SetDataTree(Params.IndexOfOutputParam(key), outputDict[key]);
+      {
+        var indexOfOutputParam = Params.IndexOfOutputParam(key);
+        if(indexOfOutputParam != -1)
+        {
+          var ghStructure = outputDict[key];
+          DA.SetDataTree(indexOfOutputParam, ghStructure);
+        }
+      }
+
+      // Report all conversion errors as warnings
+      if(Converter != null)
+      {
+        foreach (var error in Converter.ConversionErrors)
+        {
+          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
+            error.Message + ": " + error.InnerException?.Message);
+        }
+        Converter.ConversionErrors.Clear();
+      }
       outputDict = null;
       (Parent as ExpandSpeckleObjectAsync).State = 0;
 
@@ -166,8 +196,11 @@ namespace ConnectorGrasshopper.Objects
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
+      Parent.ClearRuntimeMessages();
       DA.GetDataTree(0, out speckleObjects);
       speckleObjects.Graft(GH_GraftMode.GraftAll);
+      var names = Params.Output.Select(p => p.Name);
+      Console.WriteLine("Previous names:{0}", string.Join(", ",names));
       this.Params = Params;
     }
 
@@ -179,9 +212,8 @@ namespace ConnectorGrasshopper.Objects
       {
         if (speckleObjects.get_Branch(path).Count == 0) continue;
         var obj = speckleObjects.get_DataItem(path, 0);
-        var b = (obj as GH_SpeckleBase)?.Value;
-        var props = b?.GetMemberNames().ToList();
-        props?.ForEach(prop =>
+        var b = obj.Value;
+        b?.GetMemberNames().ToList().ForEach(prop =>
         {
           if (!fullProps.Contains(prop) && b[prop] != null)
             fullProps.Add(prop);
@@ -204,10 +236,9 @@ namespace ConnectorGrasshopper.Objects
         if (speckleObjects.get_Branch(path).Count == 0) continue;
         // Loop through all dynamic properties
         var baseGoo = speckleObjects.get_DataItem(path, 0) as GH_SpeckleBase;
-        if (baseGoo == null)
-        {
+        if (baseGoo?.Value == null)
           continue;
-        }
+
         var obj = baseGoo.Value;
         foreach (var prop in obj.GetMembers())
         {

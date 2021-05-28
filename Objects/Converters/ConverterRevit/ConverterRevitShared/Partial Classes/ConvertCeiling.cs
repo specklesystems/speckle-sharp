@@ -33,11 +33,7 @@ namespace Objects.Converter.Revit
       GetAllRevitParamsAndIds(speckleCeiling, revitCeiling, new List<string> { "LEVEL_PARAM", "CEILING_HEIGHTABOVELEVEL_PARAM" });
 
       GetHostedElements(speckleCeiling, revitCeiling);
-
-      var mesh = new Geometry.Mesh();
-      (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-
-      speckleCeiling["@displayMesh"] = mesh;
+      speckleCeiling.displayMesh = GetElementDisplayMesh(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       return speckleCeiling;
     }

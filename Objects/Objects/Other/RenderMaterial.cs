@@ -1,4 +1,5 @@
 ﻿using Speckle.Core.Models;
+using Speckle.Core.Kits;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -17,17 +18,22 @@ namespace Objects.Other
   public class RenderMaterial : Base
   {
     public string name { get; set; }
-
     public double opacity { get; set; } = 1;
-
     public double metalness { get; set; } = 0;
-
     public double roughness { get; set; } = 1;
-
     public int diffuse { get; set; } = Color.LightGray.ToArgb();
-
     public int emissive { get; set; } = Color.Black.ToArgb();
 
     public RenderMaterial() { }
+
+    [SchemaInfo("RenderMaterial", "Creates a render material.")]
+    public RenderMaterial(double opacity = 1, double metalness = 0, double roughness = 1, Color? diffuse = null, Color? emissive = null)
+    {
+      this.opacity = opacity;
+      this.metalness = metalness;
+      this.roughness = roughness;
+      this.diffuse = (diffuse.HasValue) ? diffuse.Value.ToArgb() : Color.LightGray.ToArgb();
+      this.emissive = (emissive.HasValue) ? emissive.Value.ToArgb() : Color.Black.ToArgb();
+    }
   }
 }

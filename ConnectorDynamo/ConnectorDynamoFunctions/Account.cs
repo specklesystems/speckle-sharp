@@ -16,7 +16,7 @@ namespace Speckle.ConnectorDynamo.Functions
     [IsVisibleInDynamoLibrary(false)]
     public static Core.Credentials.Account GetById(string id)
     {
-      var acc =  AccountManager.GetAccounts().FirstOrDefault(x => x.id == id);
+      var acc =  AccountManager.GetAccounts().FirstOrDefault(x => x.userInfo.id == id);
       return acc;
     }
 
@@ -24,7 +24,7 @@ namespace Speckle.ConnectorDynamo.Functions
     /// Get an Account details
     /// </summary>
     [NodeCategory("Query")]
-    [MultiReturn(new[] {"id", "isDefault", "serverInfo", "userInfo"})]
+    [MultiReturn(new[] {"isDefault", "serverInfo", "userInfo"})]
     public static Dictionary<string, object> Details(Core.Credentials.Account account)
     {
       Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
@@ -35,7 +35,6 @@ namespace Speckle.ConnectorDynamo.Functions
       }
       return new Dictionary<string, object>
       {
-        {"id", account.id},
         {"isDefault", account.isDefault},
         {
           "serverInfo",

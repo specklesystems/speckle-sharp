@@ -7,7 +7,6 @@ using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
-using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -19,19 +18,17 @@ namespace Speckle.DesktopUI.Streams
     private readonly IEventAggregator _events;
     private ISnackbarMessageQueue _notifications = new SnackbarMessageQueue(TimeSpan.FromSeconds(5));
 
-    public StreamCreateDialogViewModel(IEventAggregator events, StreamsRepository streamsRepo, AccountsRepository acctsRepo, ConnectorBindings bindings)
+    public StreamCreateDialogViewModel(IEventAggregator events, StreamsRepository streamsRepo,
+      ConnectorBindings bindings)
     {
       DisplayName = "Create Stream";
       _events = events;
       Bindings = bindings;
       FilterTabs = new BindableCollection<FilterTab>(Bindings.GetSelectionFilters().Select(f => new FilterTab(f)));
-      _acctRepo = acctsRepo;
 
       SelectionCount = Bindings.GetSelectedObjects().Count;
       _events.Subscribe(this);
     }
-
-    private readonly AccountsRepository _acctRepo;
 
     public override Account AccountToSendFrom
     {
@@ -86,24 +83,21 @@ namespace Speckle.DesktopUI.Streams
       set => SetAndNotify(ref _streamState, value);
     }
 
-    public ObservableCollection<Account> Accounts
-    {
-      get => _acctRepo.LoadAccounts();
-    }
+    public ObservableCollection<Account> Accounts => new BindableCollection<Account>(AccountManager.GetAccounts());
 
     private System.Windows.Visibility _AccountSelectionVisibility = System.Windows.Visibility.Collapsed;
+
     public System.Windows.Visibility AccountSelectionVisibility
     {
       get => _AccountSelectionVisibility;
-      set
-      {
-        SetAndNotify(ref _AccountSelectionVisibility, value);
-      }
+      set { SetAndNotify(ref _AccountSelectionVisibility, value); }
     }
 
     public void ToggleAccountSelection()
     {
-      AccountSelectionVisibility = AccountSelectionVisibility == System.Windows.Visibility.Visible ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
+      AccountSelectionVisibility = AccountSelectionVisibility == System.Windows.Visibility.Visible
+        ? System.Windows.Visibility.Collapsed
+        : System.Windows.Visibility.Visible;
     }
 
     #region Searching Existing Streams
@@ -117,14 +111,14 @@ namespace Speckle.DesktopUI.Streams
       {
         SetAndNotify(ref _streamQuery, value);
 
-        if (value == "")
+        if ( value == "" )
         {
           StreamSearchResults?.Clear();
         }
+
         SearchForStreams();
       }
     }
-
 
 
     private BindableCollection<Stream> _streamSearchResults;
@@ -132,10 +126,7 @@ namespace Speckle.DesktopUI.Streams
     public BindableCollection<Stream> StreamSearchResults
     {
       get => _streamSearchResults;
-      set
-      {
-        SetAndNotify(ref _streamSearchResults, value);
-      }
+      set { SetAndNotify(ref _streamSearchResults, value); }
     }
 
     public bool HasSearchResults
@@ -147,18 +138,17 @@ namespace Speckle.DesktopUI.Streams
 
     private async Task<List<Stream>> GetLatestStreams()
     {
-      if (_latestStreams == null)
-      {
-        var client = new Client(AccountToSendFrom);
-        _latestStreams = await client.StreamsGet(3);
-      }
+      if ( _latestStreams != null ) return _latestStreams;
+      var client = new Client(AccountToSendFrom);
+      _latestStreams = await client.StreamsGet(3);
+
       return _latestStreams;
     }
 
     private async void SearchForStreams()
     {
       //Show latest 3 streams if query field is empty
-      if (string.IsNullOrEmpty(StreamQuery))
+      if ( string.IsNullOrEmpty(StreamQuery) )
       {
         try
         {
@@ -168,22 +158,35 @@ namespace Speckle.DesktopUI.Streams
         {
           StreamSearchResults?.Clear();
         }
+
         return;
       }
 
-
-      if (StreamQuery.Length <= 2)
+      if ( StreamQuery.Length <= 2 )
         return;
 
       try
       {
         var client = new Client(AccountToSendFrom);
-        var streams = await client.StreamSearch(StreamQuery);
-        StreamSearchResults = new BindableCollection<Stream>(streams);
+        StreamSearchResults = new BindableCollection<Stream>(await client.StreamSearch(StreamQuery));
       }
-      catch (Exception)
+      catch ( Exception )
       {
         // search prob returned no results
+        StreamSearchResults?.Clear();
+      }
+
+      if ( !( StreamSearchResults is null ) && StreamSearchResults.Any() ) return;
+
+      try
+      {
+        var wrapper = new StreamWrapper(StreamQuery);
+        var client = new Client(await wrapper.GetAccount());
+        StreamSearchResults = new BindableCollection<Stream> {await client.StreamGet(wrapper.StreamId)};
+      }
+      catch ( Exception e )
+      {
+        // not a url or stream is invalid for some reason
         StreamSearchResults?.Clear();
       }
     }
@@ -194,6 +197,14 @@ namespace Speckle.DesktopUI.Streams
     {
       CreateButtonLoading = true;
       Tracker.TrackPageview(Tracker.STREAM_CREATE);
+
+      if ( AccountToSendFrom is null )
+      {
+        Notifications.Enqueue("No accounts found. Please add an account to the Speckle Manager.", "HELP",
+          () => Link.OpenInBrowser("https://speckle.guide/user/manager.html"));
+        return;
+      }
+
       var client = new Client(AccountToSendFrom);
       try
       {
@@ -202,34 +213,39 @@ namespace Speckle.DesktopUI.Streams
           name = StreamToCreate.name, description = StreamToCreate.description, isPublic = StreamToCreate.isPublic
         });
 
-        if (Collaborators.Any())
+        if ( Collaborators.Any() )
         {
           Tracker.TrackPageview("stream", "collaborators");
         }
 
-        foreach (var user in Collaborators)
+        foreach ( var user in Collaborators )
         {
           var res = await client.StreamGrantPermission(new StreamGrantPermissionInput()
           {
-            streamId = streamId,
-            userId = user.id,
-            role = "stream:contributor"
+            streamId = streamId, userId = user.id, role = "stream:contributor"
           });
         }
 
         StreamToCreate = await client.StreamGet(streamId);
 
-        StreamState = new StreamState(client, StreamToCreate);
-        StreamState.Branches = await client.StreamGetBranches(streamId);
+        StreamState = new StreamState(client, StreamToCreate) {Branches = await client.StreamGetBranches(streamId)};
         Bindings.AddNewStream(StreamState);
 
-        _events.Publish(new StreamAddedEvent() { NewStream = StreamState });
+        _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
         StreamState = new StreamState();
         CloseDialog();
       }
-      catch (Exception e)
+      catch ( Exception e )
       {
-        await client.StreamDelete(StreamToCreate.id);
+        try
+        {
+          await client.StreamDelete(StreamToCreate.id);
+        }
+        catch
+        {
+          // POKEMON! (server is prob down)
+        }
+
         Log.CaptureException(e);
         Notifications.Enqueue($"Error: {e.Message}");
       }
@@ -240,7 +256,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void AddExistingStream(Stream SelectedStream)
     {
-      if (StreamIds.Contains(SelectedStream.id))
+      if ( StreamIds.Contains(SelectedStream.id) )
       {
         Notifications.Enqueue("This stream already exists in this file");
         return;
@@ -258,7 +274,7 @@ namespace Speckle.DesktopUI.Streams
       StreamState.IsSenderCard = false; // Assume we're creating a receiver
 
       Bindings.AddNewStream(StreamState);
-      _events.Publish(new StreamAddedEvent() { NewStream = StreamState });
+      _events.Publish(new StreamAddedEvent() {NewStream = StreamState});
 
       AddExistingButtonLoading = false;
       CloseDialog();
@@ -294,19 +310,19 @@ namespace Speckle.DesktopUI.Streams
 
     public void Handle(ApplicationEvent message)
     {
-      switch (message.Type)
+      switch ( message.Type )
       {
         case ApplicationEvent.EventType.ViewActivated:
-          {
-            NotifyOfPropertyChange(nameof(ActiveViewName));
-            NotifyOfPropertyChange(nameof(ActiveViewObjects));
-            return;
-          }
+        {
+          NotifyOfPropertyChange(nameof(ActiveViewName));
+          NotifyOfPropertyChange(nameof(ActiveViewObjects));
+          return;
+        }
         case ApplicationEvent.EventType.DocumentClosed:
-          {
-            CloseDialog();
-            return;
-          }
+        {
+          CloseDialog();
+          return;
+        }
         default:
           return;
       }

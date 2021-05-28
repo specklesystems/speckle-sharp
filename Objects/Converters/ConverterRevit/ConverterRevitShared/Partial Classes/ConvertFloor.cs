@@ -1,13 +1,12 @@
-﻿
-using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
-using Objects.Geometry;
-using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
+using Objects.BuiltElements;
+using Objects.BuiltElements.Revit;
+using Objects.BuiltElements.Revit;
+using Objects.Geometry;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Opening = Objects.BuiltElements.Opening;
 
@@ -19,7 +18,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleFloor.outline == null)
       {
-        throw new Exception("Only outline based Floor are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only outline based Floor are currently supported.");
       }
 
       bool structural = false;
@@ -66,7 +65,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception ex)
       {
-        ConversionErrors.Add(new Error($"Could not create openings in floor {speckleFloor.applicationId}", ex.Message));
+        ConversionErrors.Add(new Exception($"Could not create openings in floor {speckleFloor.applicationId}", ex));
       }
 
       SetInstanceParameters(revitFloor, speckleFloor);
@@ -78,10 +77,6 @@ namespace Objects.Converter.Revit
 
       return placeholders;
     }
-
-
-
-
 
     private RevitFloor FloorToSpeckle(DB.Floor revitFloor)
     {
@@ -100,10 +95,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleFloor, revitFloor, new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL" });
 
-      var mesh = new Geometry.Mesh();
-      (mesh.faces, mesh.vertices) = GetFaceVertexArrayFromElement(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-
-      speckleFloor["@displayMesh"] = mesh;
+      speckleFloor.displayMesh = GetElementDisplayMesh(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       GetHostedElements(speckleFloor, revitFloor);
 

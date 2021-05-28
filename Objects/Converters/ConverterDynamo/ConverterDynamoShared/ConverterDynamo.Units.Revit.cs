@@ -10,44 +10,76 @@ namespace Objects.Converter.Dynamo
 
     public string GetRevitDocUnits()
     {
-        if (Doc != null)
-        {
-          _modelUnits = UnitsToSpeckle(RevitLengthTypeId.TypeId);
-          return _modelUnits;
-        }
+      if (Doc != null)
+      {
+        _modelUnits = UnitsToSpeckle(RevitLengthTypeId);
+        return _modelUnits;
+      }
       return Speckle.Core.Kits.Units.Meters;
     }
 
-    private ForgeTypeId _revitUnitsTypeId;
-    private ForgeTypeId RevitLengthTypeId
+    private string UnitsToSpeckle(DisplayUnitType type)
+    {
+      switch (type)
+      {
+        case DisplayUnitType.DUT_MILLIMETERS:
+          return Speckle.Core.Kits.Units.Millimeters;
+        case DisplayUnitType.DUT_CENTIMETERS:
+          return Speckle.Core.Kits.Units.Centimeters;
+        case DisplayUnitType.DUT_METERS:
+          return Speckle.Core.Kits.Units.Meters;
+        case DisplayUnitType.DUT_DECIMAL_INCHES:
+          return Speckle.Core.Kits.Units.Inches;
+        case DisplayUnitType.DUT_DECIMAL_FEET:
+          return Speckle.Core.Kits.Units.Feet;
+        default:
+          throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.");
+      }
+
+    }
+
+    private DisplayUnitType _revitUnitsTypeId = DisplayUnitType.DUT_UNDEFINED;
+    public DisplayUnitType RevitLengthTypeId
     {
       get
       {
-        if (_revitUnitsTypeId == null)
+        if (_revitUnitsTypeId == DisplayUnitType.DUT_UNDEFINED)
         {
-          var fo = Doc.GetUnits().GetFormatOptions(SpecTypeId.Length);
-          _revitUnitsTypeId = fo.GetUnitTypeId();
+          var fo = Doc.GetUnits().GetFormatOptions(UnitType.UT_Length);
+          _revitUnitsTypeId = fo.DisplayUnits;
         }
         return _revitUnitsTypeId;
       }
     }
 
-    //new units api introduced in 2021, bleah
-    private string UnitsToSpeckle(string typeId)
-    {
-      if (typeId == UnitTypeId.Millimeters.TypeId)
-        return Speckle.Core.Kits.Units.Millimeters;
-      else if (typeId == UnitTypeId.Centimeters.TypeId)
-        return Speckle.Core.Kits.Units.Centimeters;
-      else if (typeId == UnitTypeId.Meters.TypeId)
-        return Speckle.Core.Kits.Units.Meters;
-      else if (typeId == UnitTypeId.Inches.TypeId)
-        return Speckle.Core.Kits.Units.Inches;
-      else if (typeId == UnitTypeId.Feet.TypeId)
-        return Speckle.Core.Kits.Units.Feet;
+    //private ForgeTypeId _revitUnitsTypeId;
+    //private ForgeTypeId RevitLengthTypeId
+    //{
+    //  get
+    //  {
+    //    if (_revitUnitsTypeId == null)
+    //    {
+    //      var fo = Doc.GetUnits().GetFormatOptions(SpecTypeId.Length);
+    //      _revitUnitsTypeId = fo.GetUnitTypeId();
+    //    }
+    //    return _revitUnitsTypeId;
+    //  }
+    //}
+    //private string UnitsToSpeckle(string typeId)
+    //{
+    //  if (typeId == UnitTypeId.Millimeters.TypeId)
+    //    return Speckle.Core.Kits.Units.Millimeters;
+    //  else if (typeId == UnitTypeId.Centimeters.TypeId)
+    //    return Speckle.Core.Kits.Units.Centimeters;
+    //  else if (typeId == UnitTypeId.Meters.TypeId)
+    //    return Speckle.Core.Kits.Units.Meters;
+    //  else if (typeId == UnitTypeId.Inches.TypeId)
+    //    return Speckle.Core.Kits.Units.Inches;
+    //  else if (typeId == UnitTypeId.Feet.TypeId)
+    //    return Speckle.Core.Kits.Units.Feet;
 
-      throw new Exception("The current Unit System is unsupported.");
-    }
+    //  throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.");
+    //}
   }
 }
 #endif

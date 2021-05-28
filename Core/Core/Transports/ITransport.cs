@@ -72,5 +72,12 @@ namespace Speckle.Core.Transports
     /// <param name="onTotalChildrenCountKnown">(Optional) an action that will be invoked once, when the amount of object children to be copied over is known.</param>
     /// <returns>The string representation of the root object.</returns>
     public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null);
+
+  /// <summary>
+  /// Checks if objects are present in the transport
+  /// </summary>
+  /// <param name="objectIds">List of object ids to check</param>
+  /// <returns>A dictionary with the specified object ids as keys and boolean values, whether each object is present in the transport or not</returns>
+    public Task<Dictionary<string, bool>> HasObjects(List<string> objectIds);
   }
 }

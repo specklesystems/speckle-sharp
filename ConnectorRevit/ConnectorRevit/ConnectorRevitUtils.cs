@@ -12,10 +12,14 @@ namespace Speckle.ConnectorRevit
 {
   public static class ConnectorRevitUtils
   {
-#if REVIT2021
+#if REVIT2023
+    public static string RevitAppName = Applications.Revit2023;
+#elif REVIT2022
+    public static string RevitAppName = Applications.Revit2022;
+#elif REVIT2021
     public static string RevitAppName = Applications.Revit2021;
 #elif REVIT2020
-      public static string RevitAppName = Applications.Revit2020;
+    public static string RevitAppName = Applications.Revit2020;
 #else
       public static string RevitAppName = Applications.Revit2019;
 #endif
@@ -39,6 +43,69 @@ namespace Speckle.ConnectorRevit
       }
       return _categories;
     }
+
+    #region extension methods
+    public static List<Element> SupportedElements(this Document doc)
+    {
+      //get element types of supported categories
+      var categoryFilter = new LogicalOrFilter(GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList());
+
+      List<Element> elements = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .WhereElementIsViewIndependent()
+        .WherePasses(categoryFilter).ToList();
+
+      return elements;
+    }
+
+    public static List<Element> SupportedTypes(this Document doc)
+    {
+      //get element types of supported categories
+      var categoryFilter = new LogicalOrFilter(GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList());
+
+      List<Element> elements = new FilteredElementCollector(doc)
+        .WhereElementIsElementType()
+        .WherePasses(categoryFilter).ToList();
+
+      return elements;
+    }
+
+    public static List<View> Views2D(this Document doc)
+    {
+      List<View> views = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .OfCategory(BuiltInCategory.OST_Views)
+        .Cast<View>()
+        .Where(x => x.ViewType == ViewType.CeilingPlan ||
+        x.ViewType == ViewType.FloorPlan ||
+        x.ViewType == ViewType.Elevation ||
+        x.ViewType == ViewType.Section)
+        .ToList();
+
+      return views;
+    }
+
+    public static List<View> Views3D(this Document doc)
+    {
+      List<View> views = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .OfCategory(BuiltInCategory.OST_Views)
+        .Cast<View>()
+        .Where(x => x.ViewType == ViewType.ThreeD)
+        .ToList();
+
+      return views;
+    }
+
+    public static List<Element> Levels(this Document doc)
+    {
+      List<Element> levels = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .OfCategory(BuiltInCategory.OST_Levels).ToList();
+
+      return levels;
+    }
+    #endregion
 
     public static List<string> GetCategoryNames(Document doc)
     {
@@ -120,29 +187,83 @@ namespace Speckle.ConnectorRevit
       return e.Category.CategoryType == CategoryType.Model && e.Category.CanAddSubcategory;
     }
 
+    public static bool IsElementSupported(this Element e)
+    {
+      if (e.Category == null) return false;
+      if (e.ViewSpecific) return false;
+
+      if (SupportedBuiltInCategories.Contains((BuiltInCategory)e.Category.Id.IntegerValue))
+        return true;
+      return false;
+    }
+
 
     //list of currently supported Categories
     private static List<BuiltInCategory> SupportedBuiltInCategories = new List<BuiltInCategory>{
 
+      BuiltInCategory.OST_CableTray,
       BuiltInCategory.OST_Ceilings,
       BuiltInCategory.OST_Columns,
+      BuiltInCategory.OST_CommunicationDevices,
+      BuiltInCategory.OST_Conduit,
       BuiltInCategory.OST_CurtaSystem,
-      BuiltInCategory.OST_Doors,
+      BuiltInCategory.OST_DataDevices,
+      BuiltInCategory.OST_DuctSystem,
+      BuiltInCategory.OST_DuctCurves,
+      BuiltInCategory.OST_ElectricalCircuit,
+      BuiltInCategory.OST_ElectricalEquipment,
+      BuiltInCategory.OST_ElectricalFixtures,
+      BuiltInCategory.OST_Fascia,
+      BuiltInCategory.OST_FireAlarmDevices,
+      BuiltInCategory.OST_FlexDuctCurves,
+      BuiltInCategory.OST_FlexPipeCurves,
       BuiltInCategory.OST_Floors,
-      BuiltInCategory.OST_Furniture,
       BuiltInCategory.OST_GenericModel,
-      BuiltInCategory.OST_Levels,
+      BuiltInCategory.OST_Grids,
+      BuiltInCategory.OST_Gutter,
+      BuiltInCategory.OST_HVAC_Zones,
+      BuiltInCategory.OST_IOSModelGroups,
+      BuiltInCategory.OST_LightingDevices,
+      BuiltInCategory.OST_LightingFixtures,
+      BuiltInCategory.OST_Lines,
       BuiltInCategory.OST_Mass,
-      BuiltInCategory.OST_Ramps,
+      BuiltInCategory.OST_MassFloor,
+      BuiltInCategory.OST_Parking,
+      BuiltInCategory.OST_PipeCurves,
+      BuiltInCategory.OST_PipingSystem,
+      BuiltInCategory.OST_PointClouds,
+      BuiltInCategory.OST_PointLoads,
+      BuiltInCategory.OST_StairsRailing,
+      BuiltInCategory.OST_RailingSupport,
+      BuiltInCategory.OST_RailingTermination,
+      BuiltInCategory.OST_Roads,
+      BuiltInCategory.OST_RoofSoffit,
       BuiltInCategory.OST_Roofs,
-      BuiltInCategory.OST_SpecialityEquipment,
+      BuiltInCategory.OST_Rooms,
+      BuiltInCategory.OST_SecurityDevices,
+      BuiltInCategory.OST_ShaftOpening,
+      BuiltInCategory.OST_Site,
+      BuiltInCategory.OST_EdgeSlab,
       BuiltInCategory.OST_Stairs,
+      BuiltInCategory.OST_AreaRein,
+      BuiltInCategory.OST_StructuralFramingSystem,
       BuiltInCategory.OST_StructuralColumns,
+      BuiltInCategory.OST_StructConnections,
+      BuiltInCategory.OST_FabricAreas,
+      BuiltInCategory.OST_FabricReinforcement,
       BuiltInCategory.OST_StructuralFoundation,
       BuiltInCategory.OST_StructuralFraming,
+      BuiltInCategory.OST_PathRein,
+      BuiltInCategory.OST_Rebar,
+      BuiltInCategory.OST_StructuralStiffener,
       BuiltInCategory.OST_StructuralTruss,
+      BuiltInCategory.OST_SwitchSystem,
+      BuiltInCategory.OST_TelephoneDevices,
+      BuiltInCategory.OST_Topography,
+      BuiltInCategory.OST_Cornices,
       BuiltInCategory.OST_Walls,
-      BuiltInCategory.OST_Windows
-      };
+      BuiltInCategory.OST_Windows,
+      BuiltInCategory.OST_Wire
+  };
   }
 }

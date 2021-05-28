@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Credentials;
-using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -14,28 +10,19 @@ namespace Speckle.DesktopUI.Settings
 {
   public class SettingsViewModel : Screen
   {
-    private AccountsRepository _repo = new AccountsRepository();
+    public int LocalAccountsCount => AccountManager.GetAccounts().Count();
 
-    public ObservableCollection<Account> LocalAccounts => _repo.LoadAccounts();
+    public Account DefaultAccount => AccountManager.GetDefaultAccount();
 
-    private Account _defaultAccount;
+    public string ConnectorVersion => Globals.HostBindings.ConnectorVersion;
 
-    public Account DefaultAccount
-    {
-      get => _defaultAccount;
-      set => SetAndNotify(ref _defaultAccount, value);
-    }
+    public string ConnectorName => Globals.HostBindings.ConnectorName;
 
-    public List<HelpLink> HelpLinks { get; set; }
-
-    public RelayCommand<string> ManageAccountsCommand { get; set; }
+    public List<HelpLink> HelpLinks { get; }
 
     public SettingsViewModel()
     {
       DisplayName = "Settings";
-      DefaultAccount = _repo.GetDefault();
-      ManageAccountsCommand = new RelayCommand<string>(OnManageAccountsCommand);
-
       _darkMode = Properties.Settings.Default.Theme == BaseTheme.Dark;
       ToggleTheme();
 
@@ -45,14 +32,14 @@ namespace Speckle.DesktopUI.Settings
         {
         name = "Docs",
         description = "Browse through the Speckle documentation on our website",
-        url = "https://speckle.systems/docs/clients/revit/basics",
+        url = "https://speckle.guide/user/connectors.html#revit-rhino",
         icon = "FileDocument"
         },
         new HelpLink()
         {
         name = "Github",
         description = "Take a look at the source code or submit an issue in the repository",
-        url = "https://github.com/specklesystems/DesktopUI",
+        url = "https://github.com/specklesystems/speckle-sharp/tree/master/DesktopUI",
         icon = "Github"
         },
         new HelpLink()
@@ -65,9 +52,16 @@ namespace Speckle.DesktopUI.Settings
       };
     }
 
-    private void OnManageAccountsCommand(string arg)
+    protected override void OnActivate()
     {
-      //TODO open Manager app with speckle://
+      base.OnActivate();
+      RefreshAccounts();
+    }
+
+    public void RefreshAccounts()
+    {
+      NotifyOfPropertyChange(nameof(LocalAccountsCount));
+      NotifyOfPropertyChange(nameof(DefaultAccount));
     }
 
     public void OpenHelpLink(string url)

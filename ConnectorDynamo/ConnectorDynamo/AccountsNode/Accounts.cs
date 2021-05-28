@@ -22,7 +22,7 @@ namespace Speckle.ConnectorDynamo.AccountsNode
   [IsDesignScriptCompatible]
   public class Accounts : NodeModel
   {
-    public string SelectedAccountId = "";
+    public string SelectedUserId = "";
     private ObservableCollection<Core.Credentials.Account> _accountList = new ObservableCollection<Account>();
 
     /// <summary>
@@ -95,18 +95,18 @@ namespace Speckle.ConnectorDynamo.AccountsNode
       {
         Warning("No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
         SelectedAccount = null;
-        SelectedAccountId = "";
+        SelectedUserId = "";
         return;
       }
 
-      SelectedAccount = !string.IsNullOrEmpty(SelectedAccountId)
-        ? AccountList.FirstOrDefault(x => x.id == SelectedAccountId)
+      SelectedAccount = !string.IsNullOrEmpty(SelectedUserId)
+        ? AccountList.FirstOrDefault(x => x.userInfo.id == SelectedUserId)
         : AccountList.FirstOrDefault(x => x.isDefault);
     }
 
     internal void SelectionChanged(Account account)
     {
-      SelectedAccountId = account.id;
+      SelectedUserId = account.userInfo.id;
       OnNodeModified(true);
     }
 
@@ -121,7 +121,7 @@ namespace Speckle.ConnectorDynamo.AccountsNode
     /// <returns></returns>
     public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
     {
-      var id = SelectedAccountId ?? "";
+      var id = SelectedUserId ?? "";
       var functionCall = AstFactory.BuildFunctionCall(
         new Func<string, Account>(Functions.Account.GetById),
         new List<AssociativeNode> { AstFactory.BuildStringNode(id) });

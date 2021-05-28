@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using ConnectorRevit;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -27,7 +28,7 @@ namespace Speckle.ConnectorRevit.UI
       var categories = new List<string>();
       var parameters = new List<string>();
       var views = new List<string>();
-      var projectInfo = new List<string> { "Project Info", "Levels", "Families & Types" };
+      var projectInfo = new List<string> { "Project Info", "Levels", "Views 2D", "Views 3D", "Families & Types" };
 
       if (CurrentDoc != null)
       {
@@ -39,18 +40,20 @@ namespace Speckle.ConnectorRevit.UI
 
       return new List<ISelectionFilter>
       {
-        new ListSelectionFilter {Name = "Category", Icon = "Category", Values = categories, Description="Adds all objects belonging to the selected categories"},
-        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Values = views, Description="Adds all objects visible in the selected views" },
-        new ListSelectionFilter {Name = "Project Info", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels and family names to the stream"},
+        new ListSelectionFilter {Slug="category", Name = "Cat", Icon = "Category", Values = categories, Description="Adds all objects belonging to the selected categories"},
+        new ListSelectionFilter {Slug="view", Name = "View", Icon = "RemoveRedEye", Values = views, Description="Adds all objects visible in the selected views" },
+        new ListSelectionFilter {Slug="project-info", Name = "P. Info", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels, views and family names to the stream"},
         new PropertySelectionFilter
         {
-          Name = "Parameter",
+          Slug="param",
+          Name = "Param",
           Description="Adds  all objects satisfying the selected parameter",
           Icon = "FilterList",
           HasCustomProperty = false,
           Values = parameters,
           Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
-        }
+        },
+        new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects and project information." }
       };
     }
 
@@ -89,9 +92,17 @@ namespace Speckle.ConnectorRevit.UI
 
       var selection = new List<Element>();
 
-      switch (filter.Name)
+      switch (filter.Slug)
       {
-        case "Category":
+        case "all":
+          selection.AddRange(doc.SupportedElements()); // includes levels
+          selection.Add(doc.ProjectInformation);
+          selection.AddRange(doc.Views2D());
+          selection.AddRange(doc.Views3D());
+          selection.AddRange(doc.SupportedTypes());
+          return selection;
+
+        case "category":
           var catFilter = filter as ListSelectionFilter;
           var bics = new List<BuiltInCategory>();
           var categories = ConnectorRevitUtils.GetCategories(doc);
@@ -110,7 +121,7 @@ namespace Speckle.ConnectorRevit.UI
             .WherePasses(categoryFilter).ToList();
           return selection;
 
-        case "View":
+        case "view":
           var viewFilter = filter as ListSelectionFilter;
 
           var views = new FilteredElementCollector(doc)
@@ -133,33 +144,27 @@ namespace Speckle.ConnectorRevit.UI
           }
           return selection;
 
-        case "Project Info":
+        case "project-info":
           var projectInfoFilter = filter as ListSelectionFilter;
 
           if (projectInfoFilter.Selection.Contains("Project Info"))
-          {
             selection.Add(doc.ProjectInformation);
-          }
+
+          if (projectInfoFilter.Selection.Contains("Views 2D"))
+            selection.AddRange(doc.Views2D());
+
+          if (projectInfoFilter.Selection.Contains("Views 3D"))
+            selection.AddRange(doc.Views3D());
 
           if (projectInfoFilter.Selection.Contains("Levels"))
-          {
-            selection.AddRange(new FilteredElementCollector(doc)
-            .WhereElementIsNotElementType()
-            .OfCategory(BuiltInCategory.OST_Levels).ToList());
-          }
+            selection.AddRange(doc.Levels());
 
           if (projectInfoFilter.Selection.Contains("Families & Types"))
-          {
-            //get all the elementtypes of the categories we support
-            var allCategoryFilter = new LogicalOrFilter(ConnectorRevitUtils.GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList());
+            selection.AddRange(doc.SupportedTypes());
 
-            selection.AddRange(new FilteredElementCollector(doc)
-            .WhereElementIsElementType()
-            .WherePasses(allCategoryFilter).ToList());
-          }
           return selection;
 
-        case "Parameter":
+        case "param":
           try
           {
             var propFilter = filter as PropertySelectionFilter;
@@ -183,15 +188,15 @@ namespace Speckle.ConnectorRevit.UI
                   GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue));
                 break;
               case "is greater than":
-                query = query.Where(fi => UnitUtils.ConvertFromInternalUnits(
+                query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
                                             fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-                                            fi.LookupParameter(propFilter.PropertyName).DisplayUnitType) >
+                                            fi.LookupParameter(propFilter.PropertyName)) >
                                           double.Parse(propFilter.PropertyValue));
                 break;
               case "is less than":
-                query = query.Where(fi => UnitUtils.ConvertFromInternalUnits(
+                query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
                                             fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-                                            fi.LookupParameter(propFilter.PropertyName).DisplayUnitType) <
+                                            fi.LookupParameter(propFilter.PropertyName)) <
                                           double.Parse(propFilter.PropertyValue));
                 break;
             }

@@ -1,10 +1,10 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
 
@@ -102,14 +102,15 @@ namespace Objects.Converter.Revit
       }
       catch { }
 
-
       SetInstanceParameters(familyInstance, speckleFi);
 
-      var placeholders = new List<ApplicationPlaceholderObject>() {
-        new ApplicationPlaceholderObject {
-          applicationId = speckleFi.applicationId,
-          ApplicationGeneratedId = familyInstance.UniqueId,
-          NativeObject = familyInstance
+      var placeholders = new List<ApplicationPlaceholderObject>()
+      {
+        new ApplicationPlaceholderObject
+        {
+        applicationId = speckleFi.applicationId,
+        ApplicationGeneratedId = familyInstance.UniqueId,
+        NativeObject = familyInstance
         }
       };
 
@@ -161,7 +162,7 @@ namespace Objects.Converter.Revit
       var basePoint = baseGeometry as Point;
       if (basePoint == null)
       {
-        throw new Exception("Only point based Family Instances are currently supported.");
+        return RevitElementToSpeckle(revitFi);
       }
 
       var lev1 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_LEVEL_PARAM);
@@ -183,7 +184,7 @@ namespace Objects.Converter.Revit
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
       }
 
-      speckleFi["@displayMesh"] = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
+      speckleFi.displayMesh = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
 
       GetAllRevitParamsAndIds(speckleFi, revitFi);
 
@@ -211,7 +212,6 @@ namespace Objects.Converter.Revit
       {
         speckleFi.elements = convertedSubElements;
       }
-
 
       #endregion
 

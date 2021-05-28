@@ -1,9 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Data;
+using System.Windows.Media.Imaging;
 using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using Stylet;
 
 namespace Speckle.DesktopUI.Utils
@@ -99,26 +102,49 @@ namespace Speckle.DesktopUI.Utils
   {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-      if (value == null)
-        return value;
+      var imgString = "";
 
-      if (value.GetType() == typeof(User))
+      switch ( value )
       {
-        var user = (User)value;
-        if (String.IsNullOrEmpty(user.avatar))
-          return $"https://robohash.org/{user.id}";
-        return user.avatar;
+        case null:
+          return null;
+        case User user:
+          imgString = user.avatar ?? $"https://robohash.org/{user.id}";
+          break;
+        case Collaborator collab:
+          imgString = collab.avatar ?? $"https://robohash.org/{collab.id}";
+          break;
+        case Account account:
+          var client = new Client(account);
+          User userRes = new User();
+          try
+          {
+            userRes = Task.Run(async () => ( await client.UserSearch(account.userInfo.email) ).FirstOrDefault()).Result;
+          }
+          catch ( Exception )
+          {
+            // server is offline
+          }
+          imgString = userRes.avatar ?? $"https://robohash.org/{account.userInfo.id}";
+          break;
+        default:
+          throw new InvalidOperationException("Unrecognised type given to robot converter");
       }
 
-      if (value.GetType() == typeof(Collaborator))
-      {
-        var collab = (Collaborator)value;
-        if (String.IsNullOrEmpty(collab.avatar))
-          return $"https://robohash.org/{collab.id}";
-        return collab.avatar;
-      }
-      else
-        throw new InvalidOperationException("Unrecognised type given to robot converter");
+      if ( imgString.StartsWith("http") ) return imgString;
+      return StringToBitmap(imgString);
+    }
+
+    private BitmapImage StringToBitmap(string value)
+    {
+      if ( !value.StartsWith("data:image/") ) return null;
+      var str = value.Split(',')[1];
+      var img = new BitmapImage();
+      img.BeginInit();
+      img.StreamSource = new MemoryStream(System.Convert.FromBase64String(str));
+      img.EndInit();
+
+      return img;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

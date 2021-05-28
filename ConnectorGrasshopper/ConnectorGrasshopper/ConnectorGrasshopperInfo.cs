@@ -6,7 +6,7 @@ namespace ConnectorGrasshopper
 {
   public class ConnectorGrasshopperInfo : GH_AssemblyInfo
   {
-    public override string Name => "Speckle 2";
+    public override string Name => ComponentCategories.PRIMARY_RIBBON;
 
     public override Bitmap Icon => Properties.Resources.speckle_logo;
 

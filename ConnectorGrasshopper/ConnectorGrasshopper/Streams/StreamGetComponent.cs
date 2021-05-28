@@ -14,10 +14,9 @@ namespace ConnectorGrasshopper.Streams
 {
   public class StreamGetComponent : GH_Component
   {
-    public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account", "Speckle 2",
-      "Streams")
-    {
-    }
+    public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account", ComponentCategories.PRIMARY_RIBBON,
+      ComponentCategories.STREAMS)
+    { }
 
     public override Guid ComponentGuid => new Guid("D66AFB58-A1BA-487C-94BF-AF0FFFBA6CE5");
 
@@ -27,7 +26,8 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddTextParameter("Stream ID", "ID", "Stream ID to fetch stream from the server", GH_ParamAccess.item);
+      pManager.AddParameter(new SpeckleStreamParam("Stream ID/URL", "ID/URL", "Speckle stream ID or URL",
+        GH_ParamAccess.item));
       var acc = pManager.AddTextParameter("Account", "A", "Account to get stream with.", GH_ParamAccess.item);
 
       Params.Input[acc].Optional = true;
@@ -52,21 +52,22 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
-      string accountId = null;
-      string id = null;
+      string userId = null;
+      GH_SpeckleStream ghIdWrapper = null;
       DA.DisableGapLogic();
-      DA.GetData(0, ref id);
-      var account = !DA.GetData(1, ref accountId)
-        ? AccountManager.GetDefaultAccount()
-        : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+      DA.GetData(0, ref ghIdWrapper);
+      DA.GetData(1, ref userId);
+      var account = string.IsNullOrEmpty(userId) ? AccountManager.GetDefaultAccount() :
+        AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
 
-      if(account == null)
+      var idWrapper = ghIdWrapper.Value;
+      if (account == null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find default account in this machine. Use the Speckle Manager to add an account.");
         return;
       }
 
-      Params.Input[1].AddVolatileData(new GH_Path(0), 0, account.id);
+      Params.Input[1].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
       if (error != null)
       {
@@ -80,7 +81,7 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         // Validation
         string errorMessage = null;
-        if (!ValidateInput(account, id, ref errorMessage))
+        if (!ValidateInput(account, idWrapper.StreamId, ref errorMessage))
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, errorMessage);
           return;
@@ -93,8 +94,11 @@ namespace ConnectorGrasshopper.Streams
           {
             //Exists?
             var client = new Client(account);
-            var result = await client.StreamGet(id);
-            stream = new StreamWrapper(result.id, account.id, account.serverInfo.url);
+            var result = await client.StreamGet(idWrapper.StreamId);
+            stream = new StreamWrapper(result.id, account.userInfo.id, account.serverInfo.url);
+            stream.BranchName = idWrapper.BranchName;
+            stream.ObjectId = idWrapper.ObjectId;
+            stream.CommitId = idWrapper.CommitId;
           }
           catch (Exception e)
           {
@@ -148,7 +152,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("stream", "details");
+      Tracker.TrackPageview(Tracker.STREAM_GET);
       base.BeforeSolveInstance();
     }
   }

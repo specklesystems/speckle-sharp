@@ -1,8 +1,8 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Speckle.Core.Models;
-using System;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
@@ -17,8 +17,8 @@ namespace Objects.Converter.Revit
       if (revitElement is FamilyInstance familyInstance)
       {
         //vertical columns are point based, and the point does not reflect the actual vertical location
-        if (Categories.columnCategories.Contains(familyInstance.Category)
-             || familyInstance.StructuralType == StructuralType.Column)
+        if (Categories.columnCategories.Contains(familyInstance.Category) ||
+          familyInstance.StructuralType == StructuralType.Column)
         {
           return TryGetLocationAsCurve(familyInstance);
         }
@@ -40,13 +40,13 @@ namespace Objects.Converter.Revit
               curve = curve.CreateTransformed(tf);
             }
 
-            return CurveToSpeckle(curve) as Base;
+            return CurveToSpeckle(curve)as Base;
           }
         case LocationPoint locationPoint:
           {
             return PointToSpeckle(locationPoint.Point);
           }
-        // TODO what is the correct way to handle this?
+          // TODO what is the correct way to handle this?
         case null:
           return null;
 
@@ -65,34 +65,36 @@ namespace Objects.Converter.Revit
       if (familyInstance.CanHaveAnalyticalModel())
       {
         //no need to apply offset transform
-        var analiticalModel = familyInstance.GetAnalyticalModel();
-        if (analiticalModel != null)
+        var analyticalModel = familyInstance.GetAnalyticalModel();
+        if (analyticalModel != null)
         {
-          return CurveToSpeckle(analiticalModel.GetCurve()) as Base;
+          return CurveToSpeckle(analyticalModel.GetCurve())as Base;
         }
       }
-      var point = (familyInstance.Location as LocationPoint).Point;
+      var point = PointToSpeckle((familyInstance.Location as LocationPoint).Point);
       try
       {
-        //apply offset tranform and create line
-        var baseOffset = familyInstance.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM).AsDouble(); //keep internal units
-        var topOffset = familyInstance.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM).AsDouble(); //keep internal units
-        var topLevel = (DB.Level)Doc.GetElement(familyInstance.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM).AsElementId()); //keep internal units
+        //apply offset transform and create line
+        var baseOffset = GetParamValue<double>(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
+        var baseLevel = ConvertAndCacheLevel(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
+        var topOffset = GetParamValue<double>(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
+        var topLevel = ConvertAndCacheLevel(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
 
-        var baseLine = DB.Line.CreateBound(new XYZ(point.X, point.Y, point.Z + baseOffset), new XYZ(point.X, point.Y, topLevel.Elevation));
+        var baseLine = new Line(new [ ] { point.x, point.y, baseLevel.elevation + baseOffset, point.x, point.y, topLevel.elevation + topOffset }, ModelUnits);
+        baseLine.length = Math.Abs(baseLine.start.z - baseLine.end.z);
 
-        return LineToSpeckle(baseLine);
+        return baseLine;
       }
       catch { }
-      //everything else failed, just retun the base point without moving it
-      return PointToSpeckle(point);
+      //everything else failed, just return the base point without moving it
+      return point;
     }
 
     //TODO: revise and improve
     private object LocationToNative(Base elem)
     {
 
-      //no transforms are appliend on points
+      //no transforms are applied on points
 
       if (elem["basePoint"] as Point != null)
       {
@@ -101,7 +103,7 @@ namespace Objects.Converter.Revit
 
       if (elem["baseLine"] == null)
       {
-        throw new Exception("Location is null.");
+        throw new Speckle.Core.Logging.SpeckleException("Location is null.");
       }
 
       //must be a curve!?
@@ -112,11 +114,11 @@ namespace Objects.Converter.Revit
 
       if (elem is Column)
       {
-        //revit verical columns can only be POINT based
+        //revit vertical columns can only be POINT based
         if (!(bool)elem["isSlanted"] || IsVertical(curve))
         {
           var baseLine = elem["baseLine"] as Line;
-          var point = new Point(baseLine.value[0], baseLine.value[1], baseLine.value[3] - (double) offset, ModelUnits);
+          var point = new Point(baseLine.start.x, baseLine.start.y, baseLine.start.z - (double)offset, ModelUnits);
 
           return PointToNative(point);
         }

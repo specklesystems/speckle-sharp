@@ -14,10 +14,9 @@ namespace ConnectorGrasshopper.Streams
 {
   public class StreamListComponent : GH_Component
   {
-    public StreamListComponent() : base("Stream List", "sList", "Lists all the streams for this account", "Speckle 2",
-      "Streams")
-    {
-    }
+    public StreamListComponent() : base("Stream List", "sList", "Lists all the streams for this account", ComponentCategories.PRIMARY_RIBBON,
+      ComponentCategories.STREAMS)
+    { }
 
     public override Guid ComponentGuid => new Guid("BE790AF4-1834-495B-BE68-922B42FD53C7");
     protected override Bitmap Icon => Properties.Resources.StreamList;
@@ -28,7 +27,7 @@ namespace ConnectorGrasshopper.Streams
     {
       var acc = pManager.AddTextParameter("Account", "A", "Account to get streams from", GH_ParamAccess.item);
       pManager.AddIntegerParameter("Limit", "L", "Max number of streams to fetch", GH_ParamAccess.item, 10);
-      
+
       Params.Input[acc].Optional = true;
     }
 
@@ -53,20 +52,24 @@ namespace ConnectorGrasshopper.Streams
       else if (streams == null)
       {
         Message = "Fetching";
-        string accountId = null;
+        string userId = null;
         var limit = 10;
 
+        DA.GetData(0, ref userId);
         DA.GetData(1, ref limit); // Has default value so will never be empty.
 
-        var account = !DA.GetData(0, ref accountId)
-          ? AccountManager.GetDefaultAccount()
-          : AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
-
-        if (accountId == null)
+        if (limit > 50)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No account ID was provided");
-          Message = null;
-          return;
+          limit = 50;
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50.");
+        }
+
+        var account = string.IsNullOrEmpty(userId) ? AccountManager.GetDefaultAccount() :
+          AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
+
+        if (userId == null)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account was provided, using default.");
         }
 
         if (account == null)
@@ -75,7 +78,7 @@ namespace ConnectorGrasshopper.Streams
           return;
         }
 
-        Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.id);
+        Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
         Task.Run(async () =>
         {
@@ -85,7 +88,7 @@ namespace ConnectorGrasshopper.Streams
             // Save the result
             var result = await client.StreamsGet(limit);
             streams = result
-              .Select(stream => new StreamWrapper(stream.id, account.id, account.serverInfo.url))
+              .Select(stream => new StreamWrapper(stream.id, account.userInfo.id, account.serverInfo.url))
               .ToList();
           }
           catch (Exception e)
@@ -102,14 +105,17 @@ namespace ConnectorGrasshopper.Streams
       {
         Message = "Done";
         if (streams != null)
+        {
           DA.SetDataList(0, streams.Select(item => new GH_SpeckleStream(item)));
+        }
+
         streams = null;
       }
     }
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("stream", "list");
+      Tracker.TrackPageview(Tracker.STREAM_LIST);
       base.BeforeSolveInstance();
     }
   }

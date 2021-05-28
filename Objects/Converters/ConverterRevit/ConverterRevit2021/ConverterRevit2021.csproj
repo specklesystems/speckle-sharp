@@ -7,6 +7,19 @@
     <AssemblyName>Objects.Converter.Revit2021</AssemblyName>
     <Configurations>Debug;Release</Configurations>
     <DefineConstants>$(DefineConstants);REVIT2021</DefineConstants>
+    <PackageId>Speckle.Objects.Converter.Revit2021</PackageId>
+    <Authors>Speckle</Authors>
+    <Company>Speckle</Company>
+    <Product>Objects.Converter.Revit2021</Product>
+    <Version>2.1.0</Version>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Description>Converter for Revit 2021</Description>
+    <PackageTags>speckle objects converter revit</PackageTags>
+    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
+    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,6 +41,13 @@
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
     <Exec Command="if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (&#xA;&#xA;&#xD;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;&#xD;&#xA;)" />
   </Target>
+
+  <ItemGroup>
+    <None Include="..\..\..\..\logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
 
   <Import Project="..\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared" />
 </Project>

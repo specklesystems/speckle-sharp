@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Input;
 using MaterialDesignThemes.Wpf;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -30,19 +31,23 @@ namespace Speckle.DesktopUI.Utils
       get => _client;
       set
       {
-        if (value.AccountId == null)
+        if (value.Account == null)
         {
           return;
         }
 
         _client = value;
-        AccountId = Client.AccountId;
+        UserId = Client.Account.userInfo.id;
         ServerUrl = Client.ServerUrl;
       }
     }
 
-    [JsonProperty]
-    public string AccountId { get; private set; }
+    /// <summary>
+    /// Internally stored as AccountId to prevent breaking older streams that were saved using the actual AccountId
+    /// We have now standardized to use the UserId instead
+    /// </summary>
+    [JsonProperty("AccountId")]
+    public string UserId { get; private set; }
 
     [JsonProperty]
     public string ServerUrl { get; private set; }
@@ -66,10 +71,10 @@ namespace Speckle.DesktopUI.Utils
       get => !_IsSender;
     }
 
+    public bool RoleIsReviewer => Stream.role == "stream:reviewer";
+
     private Stream _stream;
-    /// <summary>
-    /// Setting this property will re-initialise this class.
-    /// </summary>
+
     [JsonProperty]
     public Stream Stream
     {
@@ -77,7 +82,6 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         SetAndNotify(ref _stream, value);
-        Initialise();
       }
     }
 
@@ -90,6 +94,15 @@ namespace Speckle.DesktopUI.Utils
       set
       {
         Stream.branches.items = value;
+        // makes sure updates to Branches are propagated to the selected Branch
+        if (Branch != null && Branches != null)
+        {
+          var updatedBranch = Branches.FirstOrDefault(x => x.name == Branch.name);
+          if (updatedBranch == null)
+            updatedBranch = Branches.FirstOrDefault(b => b.name == "main");
+
+          Branch = updatedBranch;
+        }
         NotifyOfPropertyChange(nameof(BranchContextMenuItems));
         NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       }
@@ -104,23 +117,29 @@ namespace Speckle.DesktopUI.Utils
       {
         SetAndNotify(ref _Branch, value);
 
-        if (Commit != null && !string.IsNullOrEmpty(Commit.id))
+        //make sure the current commit exists in this branch
+        if (Commit != null && HasCommits(value) && value.commits.items.Any(x => x.id == Commit.id))
         {
           //do nothing, it means the current commit is either "latest" or a previous commitId, 
           //in which case we don't want to switch it automatically
         }
-        else if (value.commits != null && value.commits.items != null && value.commits.items.Count != 0)
+        else if (HasCommits(value))
         {
           Commit = new Commit { id = "latest" };
         }
         else
         {
-          Commit = new Commit { id = "Empty Branch" };
+          Commit = new Commit { id = "No Commits" };
         }
 
         NotifyOfPropertyChange(nameof(BranchContextMenuItems));
         NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       }
+    }
+
+    private bool HasCommits(Branch branch)
+    {
+      return branch.commits != null && branch.commits.items != null && branch.commits.items.Count != 0;
     }
 
     public BindableCollection<BranchContextMenuItem> BranchContextMenuItems
@@ -218,9 +237,10 @@ namespace Speckle.DesktopUI.Utils
     }
 
     private ISelectionFilter _filter;
-
-    [JsonProperty]
-    [JsonConverter(typeof(SelectionFilterConverter))]
+    
+    // decided not to store these in the file - commenting out in case we change our minds 
+    // [JsonProperty]
+    // [JsonConverter(typeof(SelectionFilterConverter))]
     public ISelectionFilter Filter
     {
       get => _filter;
@@ -258,7 +278,7 @@ namespace Speckle.DesktopUI.Utils
 
     public bool ReceiveEnabled
     {
-      get => Commit != null && Commit.id != "Empty Branch";
+      get => Commit != null && Commit.id != "No Commits";
     }
 
     public bool ReceiveDisabled
@@ -452,18 +472,25 @@ namespace Speckle.DesktopUI.Utils
     {
       Client = client;
       Stream = stream;
+      Initialise();
     }
 
     /// <summary>
     /// Recreates the client when the state is deserialised.
     /// If the account doesn't exist, it tries to find another account on the same server.
     /// </summary>
-    /// <param name="accountId"></param>
+    /// <param name="userId"></param>
     [JsonConstructor]
-    public StreamState(string accountId)
+    public StreamState(string userId, string serverUrl)
     {
-      var account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId) ??
-        AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == ServerUrl);
+      var account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId || a.id == userId);
+
+      //if the current user is not the one who created the stream, try find an account on that server, and prioritize the default if multiple are found
+      if (account == null)
+      {
+        account = AccountManager.GetAccounts().OrderByDescending(x => x.isDefault).FirstOrDefault(a => a.serverInfo.url == serverUrl);
+      }
+
       if (account == null)
       {
         // TODO : Notify error!
@@ -473,14 +500,15 @@ namespace Speckle.DesktopUI.Utils
       Client = new Client(account);
     }
 
-    internal void Initialise()
+    public void Initialise(bool refresh = false)
     {
-      if (Stream == null || Client?.AccountId == null)
+      if (Stream == null || Client == null)
       {
         return;
       }
-      // refresh after deserialisation
-      Task.Run(() => RefreshStream());
+
+      if (refresh) //only need to refresh after de-serialization
+        Task.Run(() => RefreshStream());
 
       Client.SubscribeStreamUpdated(Stream.id);
       Client.SubscribeCommitCreated(Stream.id);
@@ -492,12 +520,13 @@ namespace Speckle.DesktopUI.Utils
 
       Client.OnStreamUpdated += HandleStreamUpdated;
       Client.OnCommitCreated += HandleCommitCreated;
-      Client.OnCommitDeleted += HandleCommitCreated;
+      Client.OnCommitDeleted += HandleCommitDeleted;
       Client.OnCommitUpdated += HandleCommitUpdated;
       // BUG: due to subs bug, these all have to be handled by fetching new list from server
       Client.OnBranchCreated += HandleBranchCreated;
       Client.OnBranchUpdated += HandleBranchCreated;
       Client.OnBranchUpdated += HandleBranchCreated;
+
 
       if (Branch == null)
       {
@@ -542,12 +571,19 @@ namespace Speckle.DesktopUI.Utils
       Globals.HostBindings.PersistAndUpdateStreamInFile(this);
     }
 
+    private bool _commitExpanderChecked;
+
+    public bool CommitExpanderChecked
+    {
+      get => _commitExpanderChecked;
+      set => SetAndNotify(ref _commitExpanderChecked, value);
+    }
+
     public void SendWithCommitMessage(object sender, KeyEventArgs e)
     {
-      if (e.Key == Key.Enter)
-      {
-        Send();
-      }
+      if ( e.Key != Key.Enter ) return;
+      CommitMessage = ( ( TextBox ) sender ).Text;
+      Send();
     }
 
     public async void Send()
@@ -564,7 +600,8 @@ namespace Speckle.DesktopUI.Utils
       Tracker.TrackPageview(Tracker.SEND);
       IsSending = true;
       ShowProgressBar = true;
-      ProgressBarIsIndeterminate = false;
+      //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+      ProgressBarIsIndeterminate = true;
       CancellationTokenSource = new CancellationTokenSource();
 
       await Task.Run(() => Globals.Repo.ConvertAndSend(this));
@@ -573,7 +610,7 @@ namespace Speckle.DesktopUI.Utils
       Progress.ResetProgress();
       CommitMessage = null;
       IsSending = false;
-      Globals.Notify($"Data uploded to {Stream.name}!");
+      Globals.Notify($"Data uploaded to {Stream.name}!");
 
       if (Errors.Count != 0)
       {
@@ -597,7 +634,8 @@ namespace Speckle.DesktopUI.Utils
 
       IsReceiving = true;
       ShowProgressBar = true;
-      ProgressBarIsIndeterminate = false;
+      //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+      ProgressBarIsIndeterminate = true;
       CancellationTokenSource = new CancellationTokenSource();
 
       await Task.Run(() => Globals.Repo.ConvertAndReceive(this));
@@ -605,7 +643,6 @@ namespace Speckle.DesktopUI.Utils
       ShowProgressBar = false;
       Progress.ResetProgress();
       IsReceiving = false;
-      Globals.Notify($"Data received from {Stream.name}!");
 
       if (Errors.Count != 0)
       {
@@ -617,11 +654,13 @@ namespace Speckle.DesktopUI.Utils
     public void CancelSendOrReceive()
     {
       CancellationTokenSource.Cancel();
+      //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
       ProgressBarIsIndeterminate = true;
     }
 
     public void SwapState()
     {
+      CommitExpanderChecked = false;
       IsSenderCard = !IsSenderCard;
       NotifyOfPropertyChange(nameof(CommitContextMenuItems));
       Globals.HostBindings.PersistAndUpdateStreamInFile(this);
@@ -640,6 +679,7 @@ namespace Speckle.DesktopUI.Utils
     }
 
     #endregion
+
   }
 
   /// <summary>

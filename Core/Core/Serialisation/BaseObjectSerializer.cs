@@ -1,7 +1,4 @@
-﻿using Speckle.Newtonsoft.Json;
-using Speckle.Newtonsoft.Json.Serialization;
-using Speckle.Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -10,6 +7,9 @@ using System.Threading;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.Newtonsoft.Json;
+using Speckle.Newtonsoft.Json.Linq;
+using Speckle.Newtonsoft.Json.Serialization;
 
 namespace Speckle.Core.Serialisation
 {
@@ -64,7 +64,6 @@ namespace Speckle.Core.Serialisation
     public Action<string, int> OnProgressAction { get; set; }
 
     public Action<string, Exception> OnErrorAction { get; set; }
-
 
     public BaseObjectSerializer()
     {
@@ -172,7 +171,7 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference, no transport is defined."), level: Sentry.Protocol.SentryLevel.Warning);
+          throw new SpeckleException("Cannot resolve reference, no transport is defined.", level : Sentry.SentryLevel.Error);
         }
 
         if (str != null && str != "")
@@ -182,7 +181,7 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          Log.CaptureAndThrow(new SpeckleException("Cannot resolve reference. The provided transport could not find it."), level: Sentry.Protocol.SentryLevel.Warning);
+          throw new SpeckleException("Cannot resolve reference. The provided transport could not find it.", level : Sentry.SentryLevel.Error);
         }
       }
 
@@ -217,9 +216,10 @@ namespace Speckle.Core.Serialisation
 
         // first attempt to find a settable property, otherwise fall back to a dynamic set without type
         JsonProperty property = contract.Properties.GetClosestMatchProperty(jProperty.Name);
-
-        if (property != null && property.Writable && !property.Ignored)
+        
+        if (property != null && property.Writable)
         {
+
           if (type == typeof(Abstract) && property.PropertyName == "base")
           {
             var propertyValue = SerializationUtilities.HandleAbstractOriginalValue(jProperty.Value, ((JValue)jObject.GetValue("assemblyQualifiedName")).Value as string, serializer);
@@ -291,7 +291,7 @@ namespace Speckle.Core.Serialisation
     // the parent object being last. 
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
     {
-      var xxxx = serializer.ReferenceLoopHandling;
+      writer.Formatting = serializer.Formatting;
       if (CancellationToken.IsCancellationRequested)
       {
         return; // Check for cancellation
@@ -313,8 +313,9 @@ namespace Speckle.Core.Serialisation
       if (value.GetType().IsPrimitive || value is string)
       {
         FirstEntry = false;
-        var t = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer
-        t.WriteTo(writer);
+        writer.WriteValue(value);
+        //var t = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer
+        //t.WriteTo(writer);
         return;
       }
 
@@ -351,6 +352,11 @@ namespace Speckle.Core.Serialisation
           }
           // Ignore properties starting with a double underscore.
           if (prop.StartsWith("__"))
+          {
+            continue;
+          }
+
+          if (prop == "id")
           {
             continue;
           }
@@ -408,6 +414,9 @@ namespace Speckle.Core.Serialisation
               int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
               serializer.Context = new StreamingContext(StreamingContextStates.Other,
                 chunkSize > 0 ? new Chunkable(chunkSize) : new Chunkable());
+            } else
+            {
+              serializer.Context = new StreamingContext();
             }
           }
           else
@@ -425,6 +434,10 @@ namespace Speckle.Core.Serialisation
               return; // Check for cancellation
             }
 
+            if (what == null) {
+              return; // HACK: Prevent nulls from borking our serialization on nested schema object refs. (i.e. Line has @SchemaObject, that has ref to line)
+            }
+
             var refHash = ((JObject)what).GetValue("id").ToString();
 
             var reference = new ObjectReference() { referencedId = refHash };
@@ -438,6 +451,8 @@ namespace Speckle.Core.Serialisation
 
           // Pop detach lineage. If you don't get this, remember this thing moves ONLY FORWARD, DEPTH FIRST
           DetachLineage.RemoveAt(DetachLineage.Count - 1);
+          // Refresh the streaming context to remove chunking flag
+          serializer.Context = new StreamingContext();
         }
 
         // Check if we actually have any transports present that would warrant a 
@@ -455,7 +470,7 @@ namespace Speckle.Core.Serialisation
 
         if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && WriteTransports != null && WriteTransports.Count != 0)
         {
-          var objString = jo.ToString();
+          var objString = jo.ToString(writer.Formatting);
           var objId = jo["id"].Value<string>();
 
           OnProgressAction?.Invoke("S", 1);
@@ -516,15 +531,24 @@ namespace Speckle.Core.Serialisation
           {
             if (i == maxCount)
             {
-              chunkList.Add(currChunk);
+              if(currChunk.data.Count!=0)
+              {
+                chunkList.Add(currChunk);
+              }
+
               currChunk = new DataChunk();
               i = 0;
             }
             currChunk.data.Add(arrValue);
             i++;
           }
-          chunkList.Add(currChunk);
+
+          if (currChunk.data.Count != 0)
+          {
+            chunkList.Add(currChunk);
+          }
           value = chunkList;
+
         }
 
         foreach (var arrValue in ((IEnumerable)value))

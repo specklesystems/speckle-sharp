@@ -28,16 +28,98 @@ namespace Objects.Converter.Revit
 
     }
 
-    public static RevitCategory GetCategory(string builtInCategory)
+    public static bool IsElementSupported(this Element e)
+    {
+      if (e.Category == null) return false;
+      if (e.ViewSpecific) return false;
+
+      if (SupportedBuiltInCategories.Contains((BuiltInCategory)e.Category.Id.IntegerValue))
+        return true;
+      return false;
+    }
+
+    //list of currently supported Categories (for sending only)
+    //exact copy of the one in the Speckle.ConnectorRevit.ConnectorRevitUtils
+    //until issue https://github.com/specklesystems/speckle-sharp/issues/392 is resolved
+    private static List<BuiltInCategory> SupportedBuiltInCategories = new List<BuiltInCategory>{
+
+      BuiltInCategory.OST_CableTray,
+      BuiltInCategory.OST_Ceilings,
+      BuiltInCategory.OST_Columns,
+      BuiltInCategory.OST_CommunicationDevices,
+      BuiltInCategory.OST_Conduit,
+      BuiltInCategory.OST_CurtaSystem,
+      BuiltInCategory.OST_DataDevices,
+      BuiltInCategory.OST_DuctSystem,
+      BuiltInCategory.OST_DuctCurves,
+      BuiltInCategory.OST_ElectricalCircuit,
+      BuiltInCategory.OST_ElectricalEquipment,
+      BuiltInCategory.OST_ElectricalFixtures,
+      BuiltInCategory.OST_Fascia,
+      BuiltInCategory.OST_FireAlarmDevices,
+      BuiltInCategory.OST_FlexDuctCurves,
+      BuiltInCategory.OST_FlexPipeCurves,
+      BuiltInCategory.OST_Floors,
+      BuiltInCategory.OST_GenericModel,
+      BuiltInCategory.OST_Grids,
+      BuiltInCategory.OST_Gutter,
+      BuiltInCategory.OST_HVAC_Zones,
+      BuiltInCategory.OST_IOSModelGroups,
+      BuiltInCategory.OST_LightingDevices,
+      BuiltInCategory.OST_LightingFixtures,
+      BuiltInCategory.OST_Lines,
+      BuiltInCategory.OST_Mass,
+      BuiltInCategory.OST_MassFloor,
+      BuiltInCategory.OST_Parking,
+      BuiltInCategory.OST_PipeCurves,
+      BuiltInCategory.OST_PipingSystem,
+      BuiltInCategory.OST_PointClouds,
+      BuiltInCategory.OST_PointLoads,
+      BuiltInCategory.OST_StairsRailing,
+      BuiltInCategory.OST_RailingSupport,
+      BuiltInCategory.OST_RailingTermination,
+      BuiltInCategory.OST_Roads,
+      BuiltInCategory.OST_RoofSoffit,
+      BuiltInCategory.OST_Roofs,
+      BuiltInCategory.OST_Rooms,
+      BuiltInCategory.OST_SecurityDevices,
+      BuiltInCategory.OST_ShaftOpening,
+      BuiltInCategory.OST_Site,
+      BuiltInCategory.OST_EdgeSlab,
+      BuiltInCategory.OST_Stairs,
+      BuiltInCategory.OST_AreaRein,
+      BuiltInCategory.OST_StructuralFramingSystem,
+      BuiltInCategory.OST_StructuralColumns,
+      BuiltInCategory.OST_StructConnections,
+      BuiltInCategory.OST_FabricAreas,
+      BuiltInCategory.OST_FabricReinforcement,
+      BuiltInCategory.OST_StructuralFoundation,
+      BuiltInCategory.OST_StructuralFraming,
+      BuiltInCategory.OST_PathRein,
+      BuiltInCategory.OST_Rebar,
+      BuiltInCategory.OST_StructuralStiffener,
+      BuiltInCategory.OST_StructuralTruss,
+      BuiltInCategory.OST_SwitchSystem,
+      BuiltInCategory.OST_TelephoneDevices,
+      BuiltInCategory.OST_Topography,
+      BuiltInCategory.OST_Cornices,
+      BuiltInCategory.OST_Walls,
+      BuiltInCategory.OST_Windows,
+      BuiltInCategory.OST_Wire
+  };
+
+    public static RevitCategory GetSchemaBuilderCategoryFromBuiltIn(string builtInCategory)
     {
       return (RevitCategory)BuiltInCategoryNames.IndexOf(builtInCategory);
     }
 
-    public static string GetBuiltInCategory(RevitCategory c)
+    public static string GetBuiltInFromSchemaBuilderCategory(RevitCategory c)
     {
       return BuiltInCategoryNames[(int)c];
     }
 
+    //This list is used to retrieve BuiltIn names of the categories used by Schema builder
+    //NOTE: if edited the list in Objects.BuiltElements.Revit.Enums should be updated too
     internal static List<string> BuiltInCategoryNames = new List<string>
     {
       "OST_Casework",

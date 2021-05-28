@@ -58,13 +58,13 @@ namespace Speckle.ConnectorDynamo.Functions
               branchName = branchName,
               objectId = objectId,
               message = message,
-              sourceApplication = (Globals.RevitDocument != null) ? Applications.DynamoRevit : Applications.DynamoSandbox,
+              sourceApplication = Utils.GetAppName(),
               parents = new List<string> { serverTransport.StreamId }
             }).Result;
 
           responses.Add(res);
           var wrapper =
-            new StreamWrapper(serverTransport.StreamId, serverTransport.Account.id, serverTransport.BaseUri)
+            new StreamWrapper(serverTransport.StreamId, serverTransport.Account.userInfo.id, serverTransport.BaseUri)
             {
               CommitId = res
             };
@@ -100,43 +100,58 @@ namespace Speckle.ConnectorDynamo.Functions
       Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null,
       Action<int> onTotalChildrenCountKnown = null)
     {
-      var account = stream.GetAccount();
+      var account = stream.GetAccount().Result;
       stream.BranchName = string.IsNullOrEmpty(stream.BranchName) ? "main" : stream.BranchName;
 
       var client = new Client(account);
-      Commit commit;
-      try
+      Commit commit = null;
+
+      if (stream.Type == StreamWrapperType.Stream || stream.Type == StreamWrapperType.Branch)
       {
-        if (string.IsNullOrEmpty(stream.CommitId))
+        List<Branch> branches;
+        try
         {
-
-          var branches = client.StreamGetBranches(cancellationToken, stream.StreamId).Result;
-          var mainBranch = branches.FirstOrDefault(b => b.name == stream.BranchName);
-
-          if (mainBranch == null)
-          {
-            Log.CaptureAndThrow(new Exception("No branch found with name " + stream.BranchName));
-          }
-
-          if (!mainBranch.commits.items.Any())
-            throw new Exception("No commits found.");
-
-          commit = mainBranch.commits.items[0];
+          branches = client.StreamGetBranches(cancellationToken, stream.StreamId).Result;
         }
-        else
+        catch (Exception ex)
+        {
+          Utils.HandleApiExeption(ex);
+          return null;
+        }
+
+        var branch = branches.FirstOrDefault(b => b.name == stream.BranchName);
+        if (branch == null)
+        {
+          throw new SpeckleException("No branch found with name " + stream.BranchName);
+        }
+
+        if (!branch.commits.items.Any())
+        {
+          throw new SpeckleException("No commits found.");
+        }
+
+        commit = branch.commits.items[0];
+      }
+      else if (stream.Type == StreamWrapperType.Commit)
+      {
+        try
         {
           commit = client.CommitGet(cancellationToken, stream.StreamId, stream.CommitId).Result;
         }
+        catch (Exception ex)
+        {
+          Utils.HandleApiExeption(ex);
+          return null;
+        }
       }
-      catch (Exception ex)
+      else if (stream.Type == StreamWrapperType.Object)
       {
-        Utils.HandleApiExeption(ex);
-        return null;
+        commit = new Commit() { referencedObject = stream.ObjectId, id = Guid.NewGuid().ToString() };
       }
 
       if (commit == null)
       {
-        throw new Exception("Could not get commit.");
+        throw new SpeckleException("Could not get commit.");
       }
 
       if (cancellationToken.IsCancellationRequested)
@@ -160,7 +175,6 @@ namespace Speckle.ConnectorDynamo.Functions
 
       return new Dictionary<string, object> { { "data", data }, { "commit", commit } };
     }
-
 
     public static object ReceiveData(string inMemoryDataId)
     {

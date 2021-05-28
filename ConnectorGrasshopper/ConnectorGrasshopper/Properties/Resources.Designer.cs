@@ -63,6 +63,16 @@ namespace ConnectorGrasshopper.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap AccountDetails {
+            get {
+                object obj = ResourceManager.GetObject("AccountDetails", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Accounts {
             get {
                 object obj = ResourceManager.GetObject("Accounts", resourceCulture);
@@ -146,6 +156,16 @@ namespace ConnectorGrasshopper.Properties {
         internal static System.Drawing.Bitmap ExtendSpeckleObject {
             get {
                 object obj = ResourceManager.GetObject("ExtendSpeckleObject", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ExtendSpeckleObjectByKeyValue {
+            get {
+                object obj = ResourceManager.GetObject("ExtendSpeckleObjectByKeyValue", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -256,6 +276,66 @@ namespace ConnectorGrasshopper.Properties {
         internal static System.Drawing.Bitmap SQLiteTransport {
             get {
                 object obj = ResourceManager.GetObject("SQLiteTransport", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap StateTag_Detach {
+            get {
+                object obj = ResourceManager.GetObject("StateTag_Detach", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap StateTag_Detach_Large {
+            get {
+                object obj = ResourceManager.GetObject("StateTag_Detach_Large", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap StateTag_List {
+            get {
+                object obj = ResourceManager.GetObject("StateTag_List", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap StateTag_List_Large {
+            get {
+                object obj = ResourceManager.GetObject("StateTag_List_Large", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap StateTag_Optional {
+            get {
+                object obj = ResourceManager.GetObject("StateTag_Optional", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap StateTag_Optional_Large {
+            get {
+                object obj = ResourceManager.GetObject("StateTag_Optional_Large", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

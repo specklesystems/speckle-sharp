@@ -1,13 +1,13 @@
-﻿using ConnectorGrasshopper.Extras;
-using GH_IO.Serialization;
-using Grasshopper.Kernel;
-using Speckle.Core.Api;
-using Speckle.Core.Credentials;
-using System;
+﻿using System;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using ConnectorGrasshopper.Extras;
+using GH_IO.Serialization;
+using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
@@ -21,13 +21,13 @@ namespace ConnectorGrasshopper.Streams
 
     public StreamWrapper stream { get; set; } = null;
 
-    public StreamCreateComponent() : base("Create Stream", "sCreate", "Create a new speckle stream.", "Speckle 2",
-        "Streams")
+    public StreamCreateComponent() : base("Create Stream", "sCreate", "Create a new speckle stream.", ComponentCategories.PRIMARY_RIBBON,
+      ComponentCategories.STREAMS)
     { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-       pManager.AddTextParameter("Account", "A", "Account to be used when creating the stream.", GH_ParamAccess.item);
+      pManager.AddTextParameter("Account", "A", "Account to be used when creating the stream.", GH_ParamAccess.item);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -56,7 +56,7 @@ namespace ConnectorGrasshopper.Streams
         return base.Write(writer);
       }
 
-      var serialisedStreamWrapper = $"{stream.StreamId} {stream.ServerUrl} {stream.AccountId}";
+      var serialisedStreamWrapper = $"{stream.StreamId} {stream.ServerUrl} {stream.UserId}";
       writer.SetString("stream", serialisedStreamWrapper);
       return base.Write(writer);
     }
@@ -69,27 +69,27 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
-      string accountId = null;
+      string userId = null;
       Account account = null;
-      DA.GetData(0, ref accountId);
+      DA.GetData(0, ref userId);
 
-      if (accountId == null)
+      if (userId == null)
       {
         //account = AccountManager.GetDefaultAccount();
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using default account {account}");
       }
       else
       {
-        account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+        account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
         if (account == null)
         {
           // Really last ditch effort - in case people delete accounts from the manager, and the selection dropdown is still using an outdated list.
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The account with an id of {accountId} was not found.");
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The user with id of {userId} was not found.");
           return;
         }
       }
 
-      Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.id);
+      Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
       if (stream != null)
       {
@@ -106,10 +106,9 @@ namespace ConnectorGrasshopper.Streams
         try
         {
           var streamId = await client.StreamCreate(new StreamCreateInput());
-          stream = new StreamWrapper
-          (
+          stream = new StreamWrapper(
             streamId,
-            account.id,
+            account.userInfo.id,
             account.serverInfo.url
           );
 
@@ -131,7 +130,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("stream", "create");
+      Tracker.TrackPageview(Tracker.STREAM_CREATE);
       base.BeforeSolveInstance();
     }
 

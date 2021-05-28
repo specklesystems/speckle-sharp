@@ -17,7 +17,7 @@ namespace ConnectorGrasshopper.Transports
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    public ServerTransportComponent() : base("Server Transport", "Server", "Creates a Server Transport.", "Speckle 2 Dev", "Transports") { }
+    public ServerTransportComponent() : base("Server Transport", "Server", "Creates a Server Transport.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -48,10 +48,10 @@ namespace ConnectorGrasshopper.Transports
 
       streamWrapper = speckleStream.Value;
 
-      var accountId = streamWrapper.AccountId;
+      var userId = streamWrapper.UserId;
       Account account = null;
 
-      account = AccountManager.GetAccounts().FirstOrDefault(a => a.id == accountId);
+      account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
       if (account == null)
       {
         account = AccountManager.GetAccounts(streamWrapper.ServerUrl).FirstOrDefault();

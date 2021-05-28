@@ -39,16 +39,34 @@ namespace Objects.Converter.Revit
     }
 
     /// <summary>
-    /// Returns a merged face and vertex array representing the provided element, if possible.
+    /// Returns a mesh representing the provided element, if possible.
     /// </summary>
     /// <param name="elem">Element you want a mesh from.</param>
     /// <param name="opt">The view options to use</param>
     /// <param name="useOriginGeom4FamilyInstance">Whether to refer to the orignal geometry of the family (if it's a family).</param>
     /// <returns></returns>
-    public (List<int>, List<double>) GetFaceVertexArrayFromElement(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
+    public Mesh GetElementDisplayMesh(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
     {
-      var solids = GetElementSolids(elem, opt, useOriginGeom4FamilyInstance);
-      return GetFaceVertexArrFromSolids(solids);
+      var mesh = new Mesh();
+      mesh.units = ModelUnits;
+
+      List<Solid> solids = new List<Solid>();
+
+      if (elem is Group g)
+      {
+        foreach (var id in g.GetMemberIds())
+        {
+          var subSolids = GetElementSolids(Doc.GetElement(id), opt, useOriginGeom4FamilyInstance);
+          if (subSolids != null && subSolids.Any())
+            solids.AddRange(subSolids);
+        }
+      }
+      else
+        solids = GetElementSolids(elem, opt, useOriginGeom4FamilyInstance);
+
+
+      (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(solids);
+      return mesh;
     }
 
     /// <summary>
@@ -117,7 +135,8 @@ namespace Objects.Converter.Revit
 
           foreach (var vert in mesh.Vertices)
           {
-            speckleMesh.vertices.AddRange(new double[] { ScaleToSpeckle(vert.X), ScaleToSpeckle(vert.Y), ScaleToSpeckle(vert.Z) });
+            var vertex = PointToSpeckle(vert);
+            speckleMesh.vertices.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
           }
 
           for (int i = 0; i < mesh.NumTriangles; i++)
@@ -131,6 +150,7 @@ namespace Objects.Converter.Revit
           }
         }
       }
+      speckleMesh.units = ModelUnits;
       return speckleMesh;
     }
 
@@ -189,9 +209,10 @@ namespace Objects.Converter.Revit
           var m = face.Triangulate();
           var points = m.Vertices;
 
-          foreach (var point in m.Vertices)
+          foreach (var vert in m.Vertices)
           {
-            vertexArr.AddRange(new double[] { ScaleToSpeckle(point.X), ScaleToSpeckle(point.Y), ScaleToSpeckle(point.Z) });
+            var vertex = PointToSpeckle(vert);
+            vertexArr.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
           }
 
           for (int i = 0; i < m.NumTriangles; i++)

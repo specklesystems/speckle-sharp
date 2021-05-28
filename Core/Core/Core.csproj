@@ -5,20 +5,37 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RootNamespace>Speckle.Core</RootNamespace>
     <LangVersion>8.0</LangVersion>
-    <PackageId>SpeckleCore</PackageId>
+    <PackageId>Speckle.Core</PackageId>
     <Authors>Speckle</Authors>
-    <Company>SpeckleSpeckle</Company>
+    <Company>Speckle</Company>
     <Product>SpeckleCore</Product>
     <AssemblyName>SpeckleCore2</AssemblyName>
-    <Version>2.0.0</Version>
+    <Version>2.1.0</Version>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Description>Core is the .NET SDK for Speckle</Description>
+    <PackageTags>speckle core</PackageTags>
+    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
+    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
+    <Configurations>Debug;Release</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
+
+  <!--Do not publish a Core nuget when publishing Objects-->
+  <PropertyGroup Condition="'$(SolutionName)'=='Objects' Or '$(SolutionName)'=='DesktopUI'">
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
+    <DefineConstants>TRACE;</DefineConstants>
   </PropertyGroup>
   <Choose>
     <When Condition="$([MSBuild]::IsOsPlatform('Windows')) Or $([MSBuild]::IsOsPlatform('Linux')) ">
       <ItemGroup>
-        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.6" />
+        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.7" />
       </ItemGroup>
     </When>
     <When Condition="$([MSBuild]::IsOsPlatform('OSX'))">
@@ -28,17 +45,16 @@
     </When>
   </Choose>
   <ItemGroup>
-    <PackageReference Include="GraphQL.Client" Version="3.2.1" />
+    <PackageReference Include="GraphQL.Client" Version="3.2.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Piwik.Tracker" Version="3.0.0" />
-    <PackageReference Include="Sentry" Version="2.1.8" />
+    <PackageReference Include="Sentry" Version="3.2.0" />
     <PackageReference Include="Speckle.Newtonsoft.Json" Version="12.0.3.1">
       <Aliases></Aliases>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Serialisation\" />
-    <Folder Include="Transports\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Core\Commit.cs" />
@@ -46,5 +62,11 @@
     <Compile Remove="Core\Classes.cs" />
     <Compile Remove="Core\Account.cs" />
     <Compile Remove="Core\User.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 </Project>

@@ -1,4 +1,12 @@
-﻿using ConnectorGrasshopper.Extras;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Timers;
+using System.Windows.Forms;
 using GH_IO.Serialization;
 using Grasshopper.GUI;
 using Grasshopper.GUI.Canvas;
@@ -7,20 +15,14 @@ using Grasshopper.Kernel.Attributes;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
+using Rhino;
+using Sentry.PlatformAbstractions;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Timers;
-using System.Windows.Forms;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
@@ -51,15 +53,21 @@ namespace ConnectorGrasshopper.Ops
 
     public ISpeckleKit Kit;
 
-    public SendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", "Speckle 2",
-      "   Send/Receive")
+    public SendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", ComponentCategories.PRIMARY_RIBBON,
+      ComponentCategories.SEND_RECEIVE)
     {
+      Tracker.TrackPageview(Tracker.SEND_ADDED);
+
       BaseWorker = new SendComponentWorker(this);
       Attributes = new SendComponentAttributes(this);
-
-      SetDefaultKitAndConverter();
     }
-
+    
+    public override void AddedToDocument(GH_Document document)
+    {
+      SetDefaultKitAndConverter();
+      base.AddedToDocument(document);
+    }
+    
     public override bool Write(GH_IWriter writer)
     {
       writer.SetBoolean("UseDefaultCache", UseDefaultCache);
@@ -106,7 +114,7 @@ namespace ConnectorGrasshopper.Ops
         {
           SetConverterFromKit(kitName);
         }
-        catch (Exception e)
+        catch (Exception)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
             $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
@@ -175,13 +183,26 @@ namespace ConnectorGrasshopper.Ops
             (s, e) => System.Diagnostics.Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}"));
         }
       }
+      Menu_AppendSeparator(menu);
+
+      if (CurrentComponentState == "sending")
+      {
+        Menu_AppendItem(menu, "Cancel Send", (s, e) =>
+        {
+          CurrentComponentState = "expired";
+          RequestCancellation();
+        });
+      }
 
       base.AppendAdditionalComponentMenuItems(menu);
     }
 
     public void SetConverterFromKit(string kitName)
     {
-      if (kitName == Kit.Name) return;
+      if (kitName == Kit.Name)
+      {
+        return;
+      }
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino);
@@ -214,7 +235,7 @@ namespace ConnectorGrasshopper.Ops
       }
 
       if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") &&
-          !JustPastedIn)
+        !JustPastedIn)
       {
         CurrentComponentState = "sending";
 
@@ -243,7 +264,7 @@ namespace ConnectorGrasshopper.Ops
       var total = 0.0;
       foreach (var kvp in ProgressReports)
       {
-        Message += $"{kvp.Key}: {kvp.Value:0.00%}\n";
+        Message += $"{kvp.Key}: {kvp.Value}\n";
         total += kvp.Value;
       }
 
@@ -305,153 +326,161 @@ namespace ConnectorGrasshopper.Ops
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      if (((SendComponent)Parent).JustPastedIn)
+      try
       {
-        Done();
-        return;
-      }
-
-      if (CancellationToken.IsCancellationRequested)
-      {
-        ((SendComponent)Parent).CurrentComponentState = "expired";
-        return;
-      }
-
-      //the active document may have changed
-      ((SendComponent)Parent).Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-      var converted = Utilities.DataTreeToNestedLists(DataInput, ((SendComponent)Parent).Converter);
-      ObjectToSend = new Base();
-      ObjectToSend["@data"] = converted;
-
-
-      TotalObjectCount = ObjectToSend.GetTotalChildrenCount();
-
-      if (CancellationToken.IsCancellationRequested)
-      {
-        ((SendComponent)Parent).CurrentComponentState = "expired";
-        return;
-      }
-
-      // Part 2: create transports
-
-      Transports = new List<ITransport>();
-
-      if (_TransportsInput.DataCount == 0)
-      {
-        // TODO: Set default account + "default" user stream
-      }
-
-      var transportBranches = new Dictionary<ITransport, string>();
-      int t = 0;
-      foreach (var data in _TransportsInput)
-      {
-        var transport = data.GetType().GetProperty("Value").GetValue(data);
-
-        if (transport is string s)
+        if (((SendComponent)Parent).JustPastedIn)
         {
-          try
-          {
-            transport = new StreamWrapper(s);
-          }
-          catch(Exception e)
-          {
-            // TODO: Check this with team.
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.Message);
-          }
+          Done();
+          return;
         }
 
-        if (transport is StreamWrapper sw)
-        {
-          if (sw.Type == StreamWrapperType.Undefined)
-          {
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Input stream is invalid.");
-            continue;
-          }
-
-          if (sw.Type == StreamWrapperType.Commit)
-          {
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot push to a specific commit stream url.");
-            continue;
-          }
-          
-          var acc = sw.GetAccount();
-          if (acc == null)
-          {
-            Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Could not get an account for {sw}");
-            continue;
-          }
-
-          var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
-          transportBranches.Add(serverTransport, sw.BranchName ?? "main");
-          Transports.Add(serverTransport);
-        }
-        else if (transport is ITransport otherTransport)
-        {
-          otherTransport.TransportName = $"T{t}";
-          Transports.Add(otherTransport);
-        }
-
-        t++;
-      }
-
-      if (Transports.Count == 0)
-      {
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Could not identify any valid transports to send to."));
-        Done();
-        return;
-      }
-
-      InternalProgressAction = (dict) =>
-      {
-        foreach (var kvp in dict)
-        {
-          ReportProgress(kvp.Key, (double)kvp.Value / TotalObjectCount);
-        }
-      };
-
-      ErrorAction = (transportName, exception) =>
-      {
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
-        var asyncParent = (GH_AsyncComponent) Parent;
-        asyncParent.CancellationSources.ForEach(source => source.Cancel());
-      };
-
-      if (CancellationToken.IsCancellationRequested)
-      {
-        ((SendComponent)Parent).CurrentComponentState = "expired";
-        return;
-      }
-
-      // Part 3: actually send stuff!
-
-      Task.Run(async () =>
-      {
         if (CancellationToken.IsCancellationRequested)
         {
           ((SendComponent)Parent).CurrentComponentState = "expired";
           return;
         }
 
-        // Part 3.1: persist the objects
-        BaseId = await Operations.Send(
-          ObjectToSend,
-          CancellationToken,
-          Transports,
-          useDefaultCache: ((SendComponent)Parent).UseDefaultCache,
-          onProgressAction: InternalProgressAction,
-          onErrorAction: ErrorAction);
+        //the active document may have changed
+        ((SendComponent)Parent).Converter.SetContextDocument(RhinoDoc.ActiveDoc);
 
-        // 3.2 Create commits for any server transport present
-
-        var message = _MessageInput.get_FirstItem(true).Value;
-        if (message == "")
+        // Note: this method actually converts the objects to speckle too
+        int convertedCount = 0;
+        var converted = Utilities.DataTreeToNestedLists(DataInput, ((SendComponent)Parent).Converter, CancellationToken, () =>
         {
-          message = "Grasshopper push.";
+          ReportProgress("Conversion",Math.Round(convertedCount++ / (double) DataInput.DataCount, 2));
+        });
+
+        if ( convertedCount == 0 )
+        {
+          RuntimeMessages.Add(( GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped." ));
+          Done();
+          return;
+        }
+        ObjectToSend = new Base();
+        ObjectToSend["@data"] = converted;
+
+        TotalObjectCount = ObjectToSend.GetTotalChildrenCount();
+
+        if (CancellationToken.IsCancellationRequested)
+        {
+          ((SendComponent)Parent).CurrentComponentState = "expired";
+          return;
         }
 
-        var prevCommits = ((SendComponent)Parent).OutputWrappers;
+        // Part 2: create transports
 
-        foreach (var transport in Transports)
+        Transports = new List<ITransport>();
+
+        if (_TransportsInput.DataCount == 0)
+        {
+          // TODO: Set default account + "default" user stream
+        }
+
+        var transportBranches = new Dictionary<ITransport, string>();
+        int t = 0;
+        foreach (var data in _TransportsInput)
+        {
+          var transport = data.GetType().GetProperty("Value").GetValue(data);
+
+          if (transport is string s)
+          {
+            try
+            {
+              transport = new StreamWrapper(s);
+            }
+            catch (Exception e)
+            {
+              // TODO: Check this with team.
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
+            }
+          }
+
+          if (transport is StreamWrapper sw)
+          {
+            if (sw.Type == StreamWrapperType.Undefined)
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Input stream is invalid."));
+              continue;
+            }
+
+            if (sw.Type == StreamWrapperType.Commit)
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot push to a specific commit stream url."));
+              continue;
+            }
+
+            if (sw.Type == StreamWrapperType.Object)
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot push to a specific object stream url."));
+              continue;
+            }
+
+            Account acc;
+            try
+            {
+              acc = sw.GetAccount().Result;
+            }
+            catch (Exception e)
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
+              continue;
+            }
+
+            var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
+            transportBranches.Add(serverTransport, sw.BranchName ?? "main");
+            Transports.Add(serverTransport);
+          }
+          else if (transport is ITransport otherTransport)
+          {
+            otherTransport.TransportName = $"T{t}";
+            Transports.Add(otherTransport);
+          }
+
+          t++;
+        }
+
+        if (Transports.Count == 0)
+        {
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Could not identify any valid transports to send to."));
+          Done();
+          return;
+        }
+
+        InternalProgressAction = (dict) =>
+        {
+          foreach (var kvp in dict)
+          {
+            //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+            //ReportProgress(kvp.Key, (double)kvp.Value / TotalObjectCount);
+            ReportProgress(kvp.Key, (double)kvp.Value);
+          }
+        };
+
+        ErrorAction = (transportName, exception) =>
+        {
+          // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
+          var msg = exception.Message.Contains("401")
+            ? $"You don't have access to this transport , or it doesn't exist."
+            : exception.Message;
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
+          Done();
+          var asyncParent = (GH_AsyncComponent)Parent;
+          asyncParent.CancellationSources.ForEach(source =>
+          {
+            if (source.Token != CancellationToken)
+              source.Cancel();
+          });
+        };
+
+        if (CancellationToken.IsCancellationRequested)
+        {
+          ((SendComponent)Parent).CurrentComponentState = "expired";
+          return;
+        }
+
+        // Part 3: actually send stuff!
+
+        var task = Task.Run(async () =>
         {
           if (CancellationToken.IsCancellationRequested)
           {
@@ -459,56 +488,89 @@ namespace ConnectorGrasshopper.Ops
             return;
           }
 
-          if (!(transport is ServerTransport))
+          // Part 3.1: persist the objects
+          BaseId = await Operations.Send(
+            ObjectToSend,
+            CancellationToken,
+            Transports,
+            useDefaultCache: ((SendComponent)Parent).UseDefaultCache,
+            onProgressAction: InternalProgressAction,
+            onErrorAction: ErrorAction);
+
+          // 3.2 Create commits for any server transport present
+
+          var message = _MessageInput.get_FirstItem(true).Value;
+          if (message == "")
           {
-            continue; // skip non-server transports (for now)
+            message = $"Pushed {TotalObjectCount} elements from Grasshopper.";
           }
 
-          try
-          {
-            var client = new Client(((ServerTransport)transport).Account);
-            var branch = transportBranches.ContainsKey(transport) ? transportBranches[transport] : "main";
-            
-            var commitCreateInput = new CommitCreateInput
-            {
-              branchName = branch,
-              message = message,
-              objectId = BaseId,
-              streamId = ((ServerTransport)transport).StreamId,
-              sourceApplication = Applications.Grasshopper
-            };
+          var prevCommits = ((SendComponent)Parent).OutputWrappers;
 
-            // Check to see if we have a previous commit; if so set it.
-            var prevCommit = prevCommits.FirstOrDefault(c =>
-              c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId);
-            if (prevCommit != null)
+          foreach (var transport in Transports)
+          {
+            if (CancellationToken.IsCancellationRequested)
             {
-              commitCreateInput.parents = new List<string>() { prevCommit.CommitId };
+              ((SendComponent)Parent).CurrentComponentState = "expired";
+              return;
             }
 
-            var commitId = await client.CommitCreate(CancellationToken, commitCreateInput);
-
-            OutputWrappers.Add(new StreamWrapper
+            if (!(transport is ServerTransport))
             {
-              StreamId = ((ServerTransport)transport).StreamId,
-              ServerUrl = client.ServerUrl,
-              CommitId = commitId
-            });
+              continue; // skip non-server transports (for now)
+            }
+
+            try
+            {
+              var client = new Client(((ServerTransport)transport).Account);
+              var branch = transportBranches.ContainsKey(transport) ? transportBranches[transport] : "main";
+
+              var commitCreateInput = new CommitCreateInput
+              {
+                branchName = branch,
+                message = message,
+                objectId = BaseId,
+                streamId = ((ServerTransport)transport).StreamId,
+                sourceApplication = Applications.Grasshopper
+              };
+
+              // Check to see if we have a previous commit; if so set it.
+              var prevCommit = prevCommits.FirstOrDefault(c =>
+                c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId);
+              if (prevCommit != null)
+              {
+                commitCreateInput.parents = new List<string>() { prevCommit.CommitId };
+              }
+
+              var commitId = await client.CommitCreate(CancellationToken, commitCreateInput);
+
+              var wrapper = new StreamWrapper($"{client.Account.serverInfo.url}/streams/{((ServerTransport)transport).StreamId}/commits/{commitId}?u={client.Account.userInfo.id}");
+              OutputWrappers.Add(wrapper);
+            }
+            catch (Exception e)
+            {
+              ErrorAction.Invoke("Commits", e);
+            }
           }
-          catch (Exception e)
+
+          if (CancellationToken.IsCancellationRequested)
           {
-            ErrorAction.Invoke("Commits", e);
+            ((SendComponent)Parent).CurrentComponentState = "expired";
+            Done();
           }
-        }
 
-        if (CancellationToken.IsCancellationRequested)
-        {
-          ((SendComponent)Parent).CurrentComponentState = "expired";
-          return;
-        }
-
+          Done();
+        }, CancellationToken);
+      }
+      catch (Exception e)
+      {
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
+        Parent.Message = "Error";
+        ((SendComponent)Parent).CurrentComponentState = "expired";
         Done();
-      }, CancellationToken);
+      }
     }
 
     public override void SetData(IGH_DataAccess DA)
@@ -519,7 +581,6 @@ namespace ConnectorGrasshopper.Ops
       {
         ((SendComponent)Parent).JustPastedIn = false;
         DA.SetDataList(0, ((SendComponent)Parent).OutputWrappers);
-        //DA.SetData(1, ((SendComponent)Parent).BaseId);
         return;
       }
 
@@ -535,14 +596,12 @@ namespace ConnectorGrasshopper.Ops
       }
 
       DA.SetDataList(0, OutputWrappers);
-      //DA.SetData(1, BaseId);
-      //DA.SetData(2, new GH_SpeckleBase { Value = ObjectToSend });
 
       ((SendComponent)Parent).CurrentComponentState = "up_to_date";
-      ((SendComponent)Parent).OutputWrappers =
-        OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
-      ((SendComponent)Parent).BaseId =
-        BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
+      ((SendComponent)Parent).OutputWrappers = OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
+
+      ((SendComponent)Parent).BaseId = BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
+
       ((SendComponent)Parent).OverallProgress = 0;
 
       var hasWarnings = RuntimeMessages.Count > 0;
@@ -554,7 +613,11 @@ namespace ConnectorGrasshopper.Ops
           $"Send duration: {stopwatch.ElapsedMilliseconds / 1000f}s");
         foreach (var t in Transports)
         {
-          if (!(t is ServerTransport st)) continue;
+          if (!(t is ServerTransport st))
+          {
+            continue;
+          }
+
           var mb = st.TotalSentBytes / 1e6;
           Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
             $"{t.TransportName} avg {(mb / (stopwatch.ElapsedMilliseconds / 1000f)):0.00} MB/s");
@@ -568,18 +631,18 @@ namespace ConnectorGrasshopper.Ops
     private bool _selected;
     Rectangle ButtonBounds { get; set; }
 
-    public SendComponentAttributes(GH_Component owner) : base(owner)
-    {
-    }
+    public SendComponentAttributes(GH_Component owner) : base(owner) { }
 
     public override bool Selected
     {
-      get {
-         return _selected;
+      get
+      {
+        return _selected;
       }
-      set {
+      set
+      {
         Owner.Params.ToList().ForEach(p => p.Attributes.Selected = value);
-         _selected = value;
+        _selected = value;
       }
     }
 
@@ -618,7 +681,9 @@ namespace ConnectorGrasshopper.Ops
         else
         {
           var palette = (state == "expired" || state == "up_to_date") ? GH_Palette.Black : GH_Palette.Transparent;
-          var text = state == "sending" ? $"{((SendComponent)Owner).OverallProgress:0.00%}" : "Send";
+          //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+          //var text = state == "sending" ? $"{((SendComponent)Owner).OverallProgress}" : "Send";
+          var text = state == "sending" ? $"Sending..." : "Send";
 
           var button = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, palette, text, 2,
             state == "expired" ? 10 : 0);
@@ -644,11 +709,6 @@ namespace ConnectorGrasshopper.Ops
           {
             return GH_ObjectResponse.Handled;
           }
-          
-          // if (((SendComponent)Owner).CurrentComponentState != "expired")
-          // {
-          //   return GH_ObjectResponse.Handled;
-          // }
 
           ((SendComponent)Owner).CurrentComponentState = "primed_to_send";
           Owner.ExpireSolution(true);
@@ -659,32 +719,5 @@ namespace ConnectorGrasshopper.Ops
       return base.RespondToMouseDown(sender, e);
     }
 
-    /*public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
-    {
-      // Double clicking the send button, even if the state is up to date, will do a "force send"
-      if (e.Button == MouseButtons.Left)
-      {
-        if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
-        {
-          if (((SendComponent)Owner).CurrentComponentState == "sending")
-          {
-            return GH_ObjectResponse.Handled;
-          }
-
-          if (((SendComponent)Owner).AutoSend)
-          {
-            ((SendComponent)Owner).AutoSend = false;
-            Owner.OnDisplayExpired(true);
-            return GH_ObjectResponse.Handled;
-          }
-
-          ((SendComponent)Owner).CurrentComponentState = "primed_to_send";
-          Owner.ExpireSolution(true);
-          return GH_ObjectResponse.Handled;
-        }
-      }
-
-      return base.RespondToMouseDown(sender, e);
-    }*/
   }
 }

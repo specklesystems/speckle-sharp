@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
@@ -56,9 +57,35 @@ namespace ConnectorGrasshopper.Extras
 
     public override bool CastFrom(object source)
     {
-      var @base = (source as GH_SpeckleBase)?.Value;
-      if (@base == null)
+      Base @base = null;
+      var type = source.GetType();
+
+      if (source == null)
         return false;
+
+      if (source is Base _base)
+      {
+        @base = _base;
+      }
+      else if (source is GH_SpeckleBase speckleBase)
+      {
+        @base = speckleBase.Value;
+      }
+      else if (source is GH_Goo<Base> goo)
+      {
+        @base = goo.Value;
+      } 
+      else if(typeof(IDictionary).IsAssignableFrom(source.GetType()))
+      {
+        var dict = source as IDictionary;
+        @base = new Base();
+        foreach(DictionaryEntry kvp in dict)
+        {
+          if (!(kvp.Key is string s)) return false;
+          @base[(string)kvp.Key] = kvp.Value;
+        }
+      } 
+      
       Value = @base;
       return true;
     }

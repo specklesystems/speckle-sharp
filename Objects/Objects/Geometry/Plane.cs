@@ -30,5 +30,31 @@ namespace Objects.Geometry
       this.applicationId = applicationId;
       this.units = units;
     }
+
+    public List<double> ToList()
+    {
+      var list = new List<double>();
+
+      list.AddRange(origin.ToList());
+      list.AddRange(normal.ToList());
+      list.AddRange(xdir.ToList());
+      list.AddRange(ydir.ToList());
+      list.Add(Units.GetEncodingFromUnit(units));
+
+      return list;
+    }
+
+    public static Plane FromList(List<double> list)
+    {
+      var plane = new Plane();
+
+      var units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+      plane.origin = new Point(list[0], list[1], list[2], units);
+      plane.normal = new Vector(list[3], list[4], list[5], units);
+      plane.xdir = new Vector(list[6], list[7], list[8], units);
+      plane.ydir = new Vector(list[9], list[10], list[11], units);
+
+      return plane;
+    }
   }
 }

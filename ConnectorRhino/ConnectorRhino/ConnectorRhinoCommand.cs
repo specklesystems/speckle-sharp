@@ -1,8 +1,10 @@
-﻿﻿using Rhino;
+﻿using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 
 namespace SpeckleRhino
@@ -11,19 +13,46 @@ namespace SpeckleRhino
   {
     public static SpeckleRhinoConnectorPlugin Instance { get; private set; }
 
+    private List<string> ExistingStreams = new List<string>(); // property for tracking stream data during copy and import operations
+
+    private static string SpeckleKey = "speckle";
+
     public SpeckleRhinoConnectorPlugin()
     {
       Instance = this;
-      RhinoApp.Idle += RhinoApp_Idle;
+      RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
+      RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+      // RhinoApp.Idle += RhinoApp_Idle;
     }
 
-    // Makes speckle start on rhino startup. Perhaps this should be customisable? 
-    private void RhinoApp_Idle(object sender, System.EventArgs e)
+    private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
     {
-      RhinoApp.Idle -= RhinoApp_Idle;
+      if (e.Merge) // this is a paste or import event
+      {
+        // get incoming streams
+        var incomingStreams = e.Document.Strings.GetEntryNames(SpeckleKey);
+
+        // remove any that don't already exist in the current active doc
+        foreach (var incomingStream in incomingStreams)
+          if (!ExistingStreams.Contains(incomingStream))
+            RhinoDoc.ActiveDoc.Strings.Delete(SpeckleKey, incomingStream);
+
+        // skip binding
+        return;
+      }
+
       var bindings = new ConnectorBindingsRhino();
       if (bindings.GetStreamsInFile().Count > 0)
-        RhinoApp.RunScript("_Speckle", false);
+        SpeckleCommand.Instance.StartOrShowPanel();
+    }
+
+    private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)
+    {
+      if (e.Merge) // this is a paste or import event
+      {
+        // get existing streams in doc before a paste or import operation to use for cleanup
+        ExistingStreams = RhinoDoc.ActiveDoc.Strings.GetEntryNames(SpeckleKey).ToList();
+      }
     }
 
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
@@ -48,11 +77,11 @@ namespace SpeckleRhino
       return Result.Success;
     }
 
-    private void StartOrShowPanel()
+    internal void StartOrShowPanel()
     {
       if (Bootstrapper != null)
       {
-        Bootstrapper.Application.MainWindow.Show();
+        Bootstrapper.ShowRootView();
         return;
       }
 
@@ -66,22 +95,12 @@ namespace SpeckleRhino
         new Application();
       }
 
-      Bootstrapper.Setup(Application.Current);
-      Bootstrapper.Start(new string[] { });
+      if ( Application.Current != null )
+        new StyletAppLoader() {Bootstrapper = Bootstrapper};
+      else
+        new App(Bootstrapper);
 
-      Bootstrapper.Application.MainWindow.Initialized += (o, e) =>
-      {
-        ((ConnectorBindingsRhino)Bootstrapper.Bindings).GetFileContextAndNotifyUI();
-      };
-
-      Bootstrapper.Application.MainWindow.Closing += (object sender, System.ComponentModel.CancelEventArgs e) =>
-      {
-        Bootstrapper.Application.MainWindow.Hide();
-        e.Cancel = true;
-      };
-
-      var helper = new System.Windows.Interop.WindowInteropHelper(Bootstrapper.Application.MainWindow);
-      helper.Owner = RhinoApp.MainWindowHandle();
+      Bootstrapper.Start(Application.Current);
     }
   }
 

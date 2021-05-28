@@ -42,7 +42,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     private int _objectCount = 0;
     private bool _hasOutput = false;
     private string _outputInfo = "";
-    private bool _firstRun = true;
+    private bool _autoUpdate = false;
     private CancellationTokenSource _cancellationToken;
 
     //cached inputs
@@ -50,6 +50,8 @@ namespace Speckle.ConnectorDynamo.SendNode
     private List<ITransport> _streams { get; set; }
     private Dictionary<ITransport, string> _branchNames { get; set; }
     private string _commitMessage { get; set; }
+
+    internal List<StreamWrapper> _streamWrappers { get; set; }
 
     #endregion
 
@@ -111,6 +113,19 @@ namespace Speckle.ConnectorDynamo.SendNode
       {
         _sendEnabled = value;
         RaisePropertyChanged("SendEnabled");
+      }
+    }
+
+    /// <summary>
+    /// UI Binding
+    /// </summary>
+    public bool AutoUpdate
+    {
+      get => _autoUpdate;
+      set
+      {
+        _autoUpdate = value;
+        RaisePropertyChanged("AutoUpdate");
       }
     }
 
@@ -223,21 +238,44 @@ namespace Speckle.ConnectorDynamo.SendNode
       try
       {
         if (_streams == null)
-          Core.Logging.Log.CaptureAndThrow(new Exception("The stream provided is invalid"));
+          throw new SpeckleException("The stream provided is invalid");
         if (_data == null)
-          Core.Logging.Log.CaptureAndThrow(new Exception("The data provided is invalid"));
+          throw new SpeckleException("The data provided is invalid");
 
-
+        long totalCount = 0;
+        Base @base = null;
         var converter = new BatchConverter();
-        var @base = converter.ConvertRecursivelyToSpeckle(_data);
-        var totalCount = @base.GetTotalChildrenCount();
+        try
+        {
+          @base = converter.ConvertRecursivelyToSpeckle(_data);
+          totalCount = @base.GetTotalChildrenCount();
+        }
+        catch (Exception e)
+        {
+          Message = "Conversion error";
+          Warning(e.Message);
+          throw new SpeckleException("Conversion error", e);
+        }
+
+        if (totalCount == 0)
+          throw new SpeckleException("Zero objects converted successfully. Send stopped.");
+
         Message = "Sending...";
 
         void ProgressAction(ConcurrentDictionary<string, int> dict)
         {
-          var val = (double)dict.Values.Average() / totalCount;
-          Message = val.ToString("0%");
-          Progress = val * 100;
+          //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+          //var val = (double)dict.Values.Average() / totalCount;
+          //Message = val.ToString("0%");
+          //Progress = val * 100;
+
+
+          //NOTE: remove when restoring % progress
+          Message = "";
+          foreach (var kvp in dict)
+          {
+            Message += $"{kvp.Key}: {kvp.Value} ";
+          }
         }
 
         var hasErrors = false;
@@ -271,7 +309,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         {
           _cancellationToken.Cancel();
           Message = e.Message;
-          Core.Logging.Log.CaptureAndThrow(e);
+          throw new SpeckleException(e.Message, e);
         }
       }
       finally
@@ -303,6 +341,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         _objectCount = 0;
         SendEnabled = false;
         Message = "";
+        ClearErrorsAndWarnings();
       }
     }
 
@@ -326,44 +365,10 @@ namespace Speckle.ConnectorDynamo.SendNode
         return;
       }
 
-      Dictionary<ITransport, string> TryConvertInputToTransport(object o)
-      {
-        var defaultBranch = "main";
-        var transports = new Dictionary<ITransport, string>();
-        switch (o)
-        {
-          case StreamWrapper s:
-            var wrapperTransport = new ServerTransport(s.GetAccount(), s.StreamId);
-            var branch = s.BranchName ?? defaultBranch;
-            transports.Add(wrapperTransport, branch);
-            break;
-          case string s:
-            var streamWrapper = new StreamWrapper(s);
-            var transport = new ServerTransport(streamWrapper.GetAccount(), streamWrapper.StreamId);
-            var b = streamWrapper.BranchName ?? defaultBranch;
-            transports.Add(transport, b);
-            break;
-          case ITransport t:
-            transports.Add(t, defaultBranch);
-            break;
-          case List<object> s:
-            transports = s
-              .Select(TryConvertInputToTransport)
-              .Aggregate(transports, (current, t) => new List<Dictionary<ITransport, string>> { current, t }
-                .SelectMany(dict => dict)
-                .ToDictionary(pair => pair.Key, pair => pair.Value));
-            break;
-          default:
-            Warning("Input was neither a transport nor a stream.");
-            break;
-        }
-
-        return transports;
-      }
-
       try
       {
         _streams = new List<ITransport>();
+        _streamWrappers = new List<StreamWrapper>(); // populated during TryConvertInputToTransport, not ideal but I'm lazy
 
         //this port accepts:
         //a stream wrapper, a url, a list of stream wrappers or a list of urls
@@ -372,15 +377,20 @@ namespace Speckle.ConnectorDynamo.SendNode
         _streams = transportsDict.Keys.ToList();
         _branchNames = transportsDict;
       }
-      catch
+      catch (Exception e)
       {
         //ignored
+        ResetNode(true);
+        Warning(e.InnerException?.Message ?? e.Message);
+        Message = "Not authorized";
+        return;
       }
 
       if (_streams == null || !_streams.Any())
       {
         ResetNode(true);
         Message = "Stream is invalid";
+        Warning("Input was neither a transport nor a stream.");
         return;
       }
 
@@ -388,7 +398,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       {
         _commitMessage =
           InPorts[2].Connectors.Any()
-            ? GetInputAs<string>(engine, 3)
+            ? GetInputAs<string>(engine, 2)
             : ""; //IsConnected not working because has default value
       }
       catch
@@ -398,6 +408,44 @@ namespace Speckle.ConnectorDynamo.SendNode
 
 
       InitializeSender();
+    }
+
+    private Dictionary<ITransport, string> TryConvertInputToTransport(object o)
+    {
+      var defaultBranch = "main";
+      var transports = new Dictionary<ITransport, string>();
+
+      switch (o)
+      {
+        case StreamWrapper s:
+          var wrapperTransport = new ServerTransport(s.GetAccount().Result, s.StreamId);
+          var branch = s.BranchName ?? defaultBranch;
+          transports.Add(wrapperTransport, branch);
+          _streamWrappers.Add(s);
+          break;
+        case string s:
+          var streamWrapper = new StreamWrapper(s);
+          var transport = new ServerTransport(streamWrapper.GetAccount().Result, streamWrapper.StreamId);
+          var b = streamWrapper.BranchName ?? defaultBranch;
+          transports.Add(transport, b);
+          _streamWrappers.Add(streamWrapper);
+          break;
+        case ITransport t:
+          transports.Add(t, defaultBranch);
+          break;
+        case List<object> s:
+          transports = s
+            .Select(TryConvertInputToTransport)
+            .Aggregate(transports, (current, t) => new List<Dictionary<ITransport, string>> { current, t }
+              .SelectMany(dict => dict)
+              .ToDictionary(pair => pair.Key, pair => pair.Value));
+          break;
+        default:
+          Warning("Input was neither a transport nor a stream.");
+          break;
+      }
+
+      return transports;
     }
 
     private void InitializeSender()

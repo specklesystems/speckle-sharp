@@ -3,13 +3,11 @@ using System.Windows;
 using System.Windows.Media;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
-using Microsoft.Xaml.Behaviors;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using Speckle.DesktopUI.Accounts;
 using Speckle.DesktopUI.Streams;
 using Speckle.DesktopUI.Utils;
 using Stylet;
+using Stylet.Xaml;
 using StyletIoC;
 
 namespace Speckle.DesktopUI
@@ -18,20 +16,31 @@ namespace Speckle.DesktopUI
   {
     public ConnectorBindings Bindings = new DummyBindings();
 
+    private Window _rootWindow;
+
+    public Window RootWindow
+    {
+      get => _rootWindow ?? ( _rootWindow = ( Window ) RootViewModel.View );
+    }
+
     protected override void OnStart()
     {
       base.OnStart();
       Core.Logging.Setup.Init(Bindings.GetHostAppName());
-      Tracker.TrackPageview(Tracker.SESSION_START);
       InitializeMaterialDesign();
       LoadThemeResources();
       Stylet.Logging.LogManager.Enabled = true;
     }
 
-    protected override void OnExit(ExitEventArgs e)
+    public void ShowRootView()
     {
-      base.OnExit(e);
-      Tracker.TrackPageview(Tracker.SESSION_END);
+      RootWindow.Show();
+      RootWindow.Activate();
+    }
+
+    public void CloseRootView()
+    {
+      RootViewModel.RequestClose();
     }
 
     protected override void ConfigureIoC(IStyletIoCBuilder builder)
@@ -49,7 +58,6 @@ namespace Speckle.DesktopUI
 
       // and factory for repositories
       builder.Bind<StreamsRepository>().ToSelf();
-      builder.Bind<AccountsRepository>().ToSelf();
 
       // and finally the external bindings (eg from Revit, Rhino, etc)
       builder.Bind<ConnectorBindings>().ToFactory(container =>
@@ -78,5 +86,85 @@ namespace Speckle.DesktopUI
         ) as ResourceDictionary);
     }
 
+    public override void Start(string[ ] args)
+    {
+      // stop. get help.
+      // this is getting triggered from _somewhere_ so I'm overriding it to prevent it from messing things up
+    }
+
+    public void Start(Application app)
+    {
+      OnStart();
+      ConfigureBootstrapper();
+
+      try
+      {
+        app.Resources.Add(View.ViewManagerResourceKey, GetInstance(typeof(IViewManager)));
+      }
+      catch ( Exception e )
+      {
+        // already been added somewhere...
+      }
+
+      Configure();
+      Launch();
+      OnLaunch();
+    }
+  }
+
+
+
+  /// <summary>
+  /// Taken from stylet and modified to not use the application.
+  /// Added to your App.xaml, this is responsible for loading the Boostrapper you specify, and Stylet's other resources
+  /// </summary>
+  public class StyletAppLoader : ResourceDictionary
+  {
+    private readonly ResourceDictionary styletResourceDictionary;
+
+    /// <summary>
+    /// Initialises a new instance of the <see cref="ApplicationLoader"/> class
+    /// </summary>
+    public StyletAppLoader()
+    {
+      styletResourceDictionary = new ResourceDictionary()
+      {
+        Source = new Uri("pack://application:,,,/Stylet;component/Xaml/StyletResourceDictionary.xaml",
+          UriKind.Absolute)
+      };
+      LoadStyletResources = true;
+    }
+
+    private Bootstrapper _bootstrapper;
+
+    /// <summary>
+    /// Gets or sets the bootstrapper instance to use to start your application. This must be set.
+    /// </summary>
+    public Bootstrapper Bootstrapper
+    {
+      get => _bootstrapper;
+      set
+      {
+        _bootstrapper = value;
+      }
+    }
+
+    private bool _loadStyletResources;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to load Stylet's own resources (e.g. StyletConductorTabControl). Defaults to true.
+    /// </summary>
+    public bool LoadStyletResources
+    {
+      get => _loadStyletResources;
+      set
+      {
+        _loadStyletResources = value;
+        if ( _loadStyletResources )
+          MergedDictionaries.Add(styletResourceDictionary);
+        else
+          MergedDictionaries.Remove(styletResourceDictionary);
+      }
+    }
   }
 }

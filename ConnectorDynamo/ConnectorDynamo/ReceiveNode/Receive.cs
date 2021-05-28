@@ -1,20 +1,20 @@
-﻿using Dynamo.Engine;
-using Dynamo.Graph.Nodes;
-using ProtoCore.AST.AssociativeAST;
-using Speckle.Core.Api;
-using Speckle.Core.Api.SubscriptionModels;
-using Speckle.Core.Credentials;
-using System;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Speckle.Core.Logging;
-using System.Collections.Concurrent;
-using Dynamo.Utilities;
-using Speckle.ConnectorDynamo.Functions;
 using System.Threading;
 using System.Threading.Tasks;
+using Dynamo.Engine;
+using Dynamo.Graph.Nodes;
+using Dynamo.Utilities;
 using Newtonsoft.Json;
+using ProtoCore.AST.AssociativeAST;
+using Speckle.ConnectorDynamo.Functions;
+using Speckle.Core.Api;
+using Speckle.Core.Api.SubscriptionModels;
+using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.ReceiveNode
 {
@@ -50,7 +50,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       {
         if (_client == null && Stream != null)
         {
-          var account = Stream.GetAccount();
+          var account = Stream.GetAccount().Result;
           _client = new Client(account);
         }
 
@@ -67,7 +67,6 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// Current Stream
     /// </summary>
     public StreamWrapper Stream { get; set; }
-
 
     /// <summary>
     /// Latest Commit received
@@ -222,7 +221,6 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       PropertyChanged += HandlePropertyChanged;
     }
 
-
     private void AddInputs()
     {
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream", "The stream to receive from")));
@@ -247,6 +245,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// </summary>
     internal void DoReceive()
     {
+      ClearErrorsAndWarnings();
       //double check, but can probably remove it
       if (!InPorts[0].IsConnected)
       {
@@ -270,13 +269,21 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       try
       {
         if (Stream == null)
-          Core.Logging.Log.CaptureAndThrow(new Exception("The stream provided is invalid"));
+          throw new SpeckleException("The stream provided is invalid");
 
         void ProgressAction(ConcurrentDictionary<string, int> dict)
         {
-          var val = dict.Values.Average() / _objectCount;
-          Message = val.ToString("0%");
-          Progress = val * 100;
+          //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+          //var val = dict.Values.Average() / _objectCount;
+          //Message = val.ToString("0%");
+          //Progress = val * 100;
+
+          //NOTE: remove when restoring % progress
+          Message = "";
+          foreach (var kvp in dict)
+          {
+            Message += $"{kvp.Key}: {kvp.Value} ";
+          }
         }
 
         var hasErrors = false;
@@ -286,6 +293,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
           hasErrors = true;
           Message = e.InnerException != null ? e.InnerException.Message : e.Message;
           Message = Message.Contains("401") ? "Not authorized" : Message;
+          ReceiveEnabled = false;
           _cancellationToken.Cancel();
         }
 
@@ -306,7 +314,14 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         {
           _cancellationToken.Cancel();
           Message = e.Message;
-          Core.Logging.Log.CaptureAndThrow(e);
+          if (e.InnerException != null) Warning(e.InnerException.Message);
+          if (e is AggregateException agrException)
+            agrException.InnerExceptions.ToList().ForEach(ex =>
+            {
+              Warning(ex.Message);
+              Message = ex.Message.Contains("401") || ex.Message.Contains("don't have access") ? "Not authorized" : e.Message;
+            });
+          throw new SpeckleException(e.Message, e);
         }
       }
       finally
@@ -319,7 +334,6 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         }
       }
     }
-
 
     /// <summary>
     /// Triggered when the node inputs change
@@ -337,7 +351,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       {
         var inputStream = GetInputAs<StreamWrapper>(engine, 0);
         //avoid editing upstream stream!
-        newStream = new StreamWrapper(inputStream.StreamId, inputStream.AccountId, inputStream.ServerUrl)
+        newStream = new StreamWrapper(inputStream.StreamId, inputStream.UserId, inputStream.ServerUrl)
         {
           BranchName = inputStream.BranchName,
           CommitId = inputStream.CommitId
@@ -370,8 +384,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         return;
       }
 
-      if (newStream.Type != StreamWrapperType.Branch)
-        newStream.BranchName = "main";
+      //if (newStream.Type != StreamWrapperType.Branch)
+      //  newStream.BranchName = "main";
 
       //no need to re-subscribe. it's the same stream
       if (oldStream != null && newStream.ToString() == oldStream.ToString())
@@ -379,10 +393,9 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
       ResetNode(true);
       Stream = newStream;
-      ReceiveEnabled = true;
 
       //StreamWrapper points to a Stream
-      if (newStream.Type == StreamWrapperType.Commit)
+      if (newStream.Type == StreamWrapperType.Commit || newStream.Type == StreamWrapperType.Object)
       {
         Name = "Receive Commit";
         AutoUpdate = false;
@@ -394,19 +407,32 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         AutoUpdateEnabled = true;
         InitializeReceiver();
       }
+      ReceiveEnabled = true;
     }
 
     internal void InitializeReceiver()
     {
+      ClearErrorsAndWarnings();
       if (Stream == null)
         return;
+      try
+      {
+        var account = Stream.GetAccount().Result;
+        Client = new Client(account);
+        Client.SubscribeCommitCreated(Stream.StreamId);
+        Client.OnCommitCreated += OnCommitChange;
 
-      var account = Stream.GetAccount();
-      Client = new Client(account);
-      Client.SubscribeCommitCreated(Stream.StreamId);
-      Client.OnCommitCreated += OnCommitChange;
-
-      CheckIfBehind();
+        CheckIfBehind();
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+        var exceptionMessage = e.InnerException?.Message ?? e.Message;
+        Warning(exceptionMessage);
+        Message = exceptionMessage.Contains("don't have access") ? "Not authorised" : "Error";
+        ReceiveEnabled = false;
+        throw e;
+      }
     }
 
     private T GetInputAs<T>(EngineController engine, int port)
@@ -423,7 +449,6 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       return (T)data.Data;
     }
 
-
     private void CheckIfBehind()
     {
       if (Stream == null)
@@ -438,7 +463,6 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
           Message = "Empty Stream";
           return;
         }
-
 
         var lastCommit = mainBranch.commits.items[0];
 
@@ -500,6 +524,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         ReceiveEnabled = false;
         Message = "";
         Client?.Dispose();
+        ClearErrorsAndWarnings();
       }
     }
 
@@ -518,6 +543,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
     private void OnCommitChange(object sender, CommitInfo e)
     {
+      if (e.branchName != (Stream.BranchName ?? "main")) return;
+
       Task.Run(async () => GetExpiredObjectCount(e.objectId));
       if (AutoUpdate)
         OnNewDataAvail?.Invoke();

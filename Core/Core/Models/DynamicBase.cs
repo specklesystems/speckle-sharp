@@ -1,11 +1,11 @@
-﻿using Speckle.Newtonsoft.Json;
-using Speckle.Core.Kits;
-using Speckle.Core.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Models
 {
@@ -48,8 +48,45 @@ namespace Speckle.Core.Models
     /// <returns></returns>
     public override bool TrySetMember(SetMemberBinder binder, object value)
     {
-      properties[binder.Name] = value;
-      return true;
+      var valid = IsPropNameValid(binder.Name, out _);
+      if (valid)
+        properties[binder.Name] = value;
+      return valid;
+    }
+
+    public bool IsPropNameValid(string name, out string reason)
+    {
+      // Regex rules
+      // Rule for multiple leading @.
+      var manyLeadingAtChars = new Regex(@"^@{2,}");
+      // Rule for invalid chars.
+      var invalidChars = new Regex(@"[\.\/]");
+      // Existing members
+      var members = GetInstanceMembersNames();
+
+      // TODO: Check for detached/non-detached duplicate names? i.e: '@something' vs 'something'
+      // TODO: Instance members will not be overwritten, this may cause issues.
+      var checks = new List<(bool, string)>
+      {
+        (!(string.IsNullOrEmpty(name) || name == "@"), "Found empty prop name"),
+        // Checks for multiple leading @
+        (!manyLeadingAtChars.IsMatch(name), "Only one leading '@' char is allowed. This signals the property value should be detached."),
+        // Checks for invalid chars
+        (!invalidChars.IsMatch(name), $"Prop with name '{name}' contains invalid characters. The following characters are not allowed: ./"),
+        // Checks if you are trying to change a member property
+        //(!members.Contains(name), "Modifying the value of instance member properties is not allowed.")
+      };
+
+      var r = "";
+      // Prop name is valid if none of the checks are true
+      var isValid = checks.TrueForAll(v =>
+      {
+        if (!v.Item1) r = v.Item2;
+        return v.Item1;
+      });
+
+      reason = r;
+      return isValid;
     }
 
     /// <summary>
@@ -66,21 +103,24 @@ namespace Speckle.Core.Models
           return properties[key];
 
         var prop = GetType().GetProperty(key);
+
         if (prop == null)
-        {
           return null;
-        }
 
         return prop.GetValue(this);
       }
       set
       {
+        if (!IsPropNameValid(key, out string reason)) throw new SpeckleException("Invalid prop name: " + reason);
+
         if (properties.ContainsKey(key))
         {
           properties[key] = value;
           return;
         }
+
         var prop = this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(p => p.Name == key);
+
         if (prop == null)
         {
           properties[key] = value;
@@ -92,7 +132,7 @@ namespace Speckle.Core.Models
         }
         catch (Exception ex)
         {
-          Log.CaptureAndThrow(ex);
+          throw new SpeckleException(ex.Message, ex);
         }
       }
     }
@@ -173,7 +213,6 @@ namespace Speckle.Core.Models
         dic.Add(kvp.Key, kvp.Value);
       return dic;
     }
-
 
     /// <summary>
     /// Gets the dynamically added property names only.
