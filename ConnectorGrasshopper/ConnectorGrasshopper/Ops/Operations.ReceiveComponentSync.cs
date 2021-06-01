@@ -122,7 +122,7 @@ namespace ConnectorGrasshopper.Ops
     public ReceiveSync() : base("ReceiveSync", "ReceiveSync", "Receive data from a Speckle server Synchronously",
       "Speckle 2", "   Send/Receive")
     {
-      BaseWorker = new ReceiveComponent2Worker(this);
+      //BaseWorker = new ReceiveComponent2Worker(this);
       SetDefaultKitAndConverter();
     }
 
@@ -133,9 +133,9 @@ namespace ConnectorGrasshopper.Ops
       var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
 
       foreach (var kit in kits)
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => 
-        { 
-          SetConverterFromKit(kit.Name); 
+        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) =>
+        {
+          SetConverterFromKit(kit.Name);
         }, true,
         Kit != null ?
           kit.Name == Kit.Name : false);
@@ -271,11 +271,6 @@ namespace ConnectorGrasshopper.Ops
         currentWorker.GetData(DA, Params);
         currentWorker.CancellationToken = tokenSource.Token;
 
-        var currentRun = TaskCreationOptions != null
-        ? new Task(() => ((ReceiveComponent2Worker)currentWorker).DoWork(), tokenSource.Token, (TaskCreationOptions)TaskCreationOptions)
-        : new Task(() => ((ReceiveComponent2Worker)currentWorker).DoWork(), tokenSource.Token);
-        currentRun.Start();
-
         var task = Task.Run(async () =>
         {
           if (StreamWrapper == null)
@@ -288,13 +283,20 @@ namespace ConnectorGrasshopper.Ops
           var remoteTransport = new ServerTransport(acc, StreamWrapper?.StreamId);
           remoteTransport.TransportName = "R";
 
-          var branches = await client.StreamGetBranches(StreamWrapper.StreamId);
-          var mainBranch = branches.FirstOrDefault(b => b.name == (StreamWrapper.BranchName ?? "main"));
-          var myCommit = mainBranch.commits.items[0];
+          var myCommit = await ReceiveComponentWorker.GetCommit(StreamWrapper, client, (level, message) =>
+          {
+            AddRuntimeMessage(level, message);
+            //throw new Exception(message);
+          }, CancelToken);
 
-          //var myCommit = await client.CommitGet(tokenSource.Token, StreamWrapper.StreamId, StreamWrapper.CommitId);
+          if (myCommit == null)
+          {
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Couldn't get the commit");
+            return null;
+          }
+
           var TotalObjectCount = 1;
-          
+
           var ReceivedObject = Operations.Receive(
           myCommit.referencedObject,
           tokenSource.Token,
