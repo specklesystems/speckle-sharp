@@ -49,10 +49,10 @@ namespace ConnectorGrasshopper.Ops
           {
             // Will execute every time a document becomes active (from background or opening file.).
             if (StreamWrapper != null)
-              Task.Run(() =>
+              Task.Run(async () =>
               {
                 // Ensure fresh instance of client.
-                ResetApiClient(StreamWrapper);
+                await ResetApiClient(StreamWrapper);
 
                 // Get last commit from the branch
                 var b = ApiClient.BranchGet(BaseWorker.CancellationToken, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
@@ -90,13 +90,15 @@ namespace ConnectorGrasshopper.Ops
     {
       ApiClient?.Dispose();
     }
-    private void ResetApiClient(StreamWrapper wrapper)
+    private async Task ResetApiClient(StreamWrapper wrapper)
     {
-      CleanApiClient();
-      ApiClient = new Client(wrapper.GetAccount());
+      ApiClient?.Dispose();
+      var acc = await wrapper.GetAccount();
+      ApiClient = new Client(acc);
       ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
       ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
     }
+
     private void ApiClient_OnCommitCreated(object sender, CommitInfo e)
     {
       // Break if wrapper is branch type and branch name is not equal.
@@ -274,18 +276,23 @@ namespace ConnectorGrasshopper.Ops
         : new Task(() => ((ReceiveComponent2Worker)currentWorker).DoWork(), tokenSource.Token);
         currentRun.Start();
 
-        var task = Task.Run(() =>
+        var task = Task.Run(async () =>
         {
           if (StreamWrapper == null)
           {
             AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Select a Kit");
             return null;
           }
-          
-          var client = new Client(StreamWrapper?.GetAccount());
-          var remoteTransport = new ServerTransport(StreamWrapper?.GetAccount(), StreamWrapper?.StreamId);
+          var acc = await StreamWrapper?.GetAccount();
+          var client = new Client(acc);
+          var remoteTransport = new ServerTransport(acc, StreamWrapper?.StreamId);
           remoteTransport.TransportName = "R";
-          var myCommit = client.CommitGet(tokenSource.Token, StreamWrapper.StreamId, StreamWrapper.CommitId).Result;
+
+          var branches = await client.StreamGetBranches(StreamWrapper.StreamId);
+          var mainBranch = branches.FirstOrDefault(b => b.name == (StreamWrapper.BranchName ?? "main"));
+          var myCommit = mainBranch.commits.items[0];
+
+          //var myCommit = await client.CommitGet(tokenSource.Token, StreamWrapper.StreamId, StreamWrapper.CommitId);
           var TotalObjectCount = 1;
           
           var ReceivedObject = Operations.Receive(
@@ -405,23 +412,29 @@ namespace ConnectorGrasshopper.Ops
 
     private void HandleInputType(StreamWrapper wrapper)
     {
-      if (wrapper.Type == StreamWrapperType.Commit)
+      if (wrapper.Type == StreamWrapperType.Commit || wrapper.Type == StreamWrapperType.Object)
       {
         AutoReceive = false;
         StreamWrapper = wrapper;
+        LastInfoMessage = null;
         return;
       }
 
       if (wrapper.Type == StreamWrapperType.Branch)
       {
-        // TODO: 
+        // NOTE: Handled in do work
       }
 
-      if (StreamWrapper != null && wrapper.StreamId == StreamWrapper.StreamId && !JustPastedIn) return;
 
+
+      if (StreamWrapper != null && StreamWrapper.Equals(wrapper) && !JustPastedIn) return;
       StreamWrapper = wrapper;
 
-      ResetApiClient(wrapper);
+      //ResetApiClient(wrapper);
+      Task.Run(async () =>
+      {
+        await ResetApiClient(wrapper);
+      });
     }
 
     /// <summary>

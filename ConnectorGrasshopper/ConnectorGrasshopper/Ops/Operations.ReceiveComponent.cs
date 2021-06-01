@@ -219,7 +219,7 @@ namespace ConnectorGrasshopper.Ops
         Menu_AppendItem(menu, "Cancel Receive", (s, e) =>
         {
           CurrentComponentState = "expired";
-          RequestCancellation();
+          //RequestCancellation();
         });
       }
 
@@ -657,31 +657,188 @@ namespace ConnectorGrasshopper.Ops
       InputWrapper = ((ReceiveSync)Parent).StreamWrapper;
     }
 
+    //public void DoWork2()
+    //{
+    //  //InternalProgressAction = dict =>
+    //  //{
+    //  //  foreach (var kvp in dict) ReportProgress(kvp.Key, (double)kvp.Value / TotalObjectCount);
+    //  //};
+
+    //  ErrorAction = (transportName, exception) =>
+    //  {
+    //    RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
+    //    var asyncParent = (GH_AsyncComponent)Parent;
+    //    asyncParent.CancellationSources.ForEach(source => source.Cancel());
+    //  };
+
+    //  var client = new Client(InputWrapper?.GetAccount());
+    //  var remoteTransport = new ServerTransport(InputWrapper?.GetAccount(), InputWrapper?.StreamId);
+    //  remoteTransport.TransportName = "R";
+
+    //  if (((ReceiveComponent)Parent).JustPastedIn &&
+    //      !string.IsNullOrEmpty(((ReceiveComponent)Parent).ReceivedObjectId))
+    //  {
+    //    Task.Run(async () =>
+    //    {
+    //      ReceivedObject = await Operations.Receive(
+    //        ((ReceiveComponent)Parent).ReceivedObjectId,
+    //        CancellationToken,
+    //        remoteTransport,
+    //        new SQLiteTransport { TransportName = "LC" }, // Local cache!
+    //        InternalProgressAction,
+    //        ErrorAction,
+    //        count => TotalObjectCount = count
+    //      );
+
+    //      //Done();
+    //    });
+    //    return;
+    //  }
+
+    //  // Means it's a copy paste of an empty non-init component; set the record and exit fast.
+    //  if (((ReceiveComponent)Parent).JustPastedIn)
+    //  {
+    //    ((ReceiveComponent)Parent).JustPastedIn = false;
+    //    return;
+    //  }
+
+    //  Task.Run(async () =>
+    //  {
+    //    Commit myCommit;
+    //    if (InputWrapper.CommitId != null)
+    //      try
+    //      {
+    //        myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
+    //      }
+    //      catch (Exception e)
+    //      {
+    //        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+    //        //Done();
+    //        return;
+    //      }
+    //    else
+    //      try
+    //      {
+    //        var branches = await client.StreamGetBranches(InputWrapper.StreamId);
+    //        var mainBranch = branches.FirstOrDefault(b => b.name == (InputWrapper.BranchName ?? "main"));
+    //        myCommit = mainBranch.commits.items[0];
+    //      }
+    //      catch (Exception e)
+    //      {
+    //        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
+    //          "Could not get any commits from the stream's \"main\" branch."));
+    //        //Done();
+    //        return;
+    //      }
+
+    //    ReceivedCommit = myCommit;
+
+    //    if (CancellationToken.IsCancellationRequested) return;
+
+    //    ReceivedObject = await Operations.Receive(
+    //      myCommit.referencedObject,
+    //      CancellationToken,
+    //      remoteTransport,
+    //      new SQLiteTransport { TransportName = "LC" }, // Local cache!
+    //      InternalProgressAction,
+    //      ErrorAction,
+    //      count => TotalObjectCount = count
+    //    );
+
+    //    if (CancellationToken.IsCancellationRequested) return;
+
+    //    //Done();
+    //  });
+    //}
+
     public void DoWork()
     {
-      //InternalProgressAction = dict =>
-      //{
-      //  foreach (var kvp in dict) ReportProgress(kvp.Key, (double)kvp.Value / TotalObjectCount);
-      //};
-
-      ErrorAction = (transportName, exception) =>
+      var receiveComponent = ((ReceiveComponent)Parent);
+      try
       {
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{transportName}: {exception.Message}"));
-        var asyncParent = (GH_AsyncComponent)Parent;
-        asyncParent.CancellationSources.ForEach(source => source.Cancel());
-      };
+        //InternalProgressAction = dict =>
+        //{
+        //  //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+        //  //foreach (var kvp in dict) ReportProgress(kvp.Key, (double)kvp.Value / (TotalObjectCount + 1));
+        //  foreach (var kvp in dict) ReportProgress(kvp.Key, (double)kvp.Value);
+        //};
 
-      var client = new Client(InputWrapper?.GetAccount());
-      var remoteTransport = new ServerTransport(InputWrapper?.GetAccount(), InputWrapper?.StreamId);
-      remoteTransport.TransportName = "R";
-
-      if (((ReceiveComponent)Parent).JustPastedIn &&
-          !string.IsNullOrEmpty(((ReceiveComponent)Parent).ReceivedObjectId))
-      {
-        Task.Run(async () =>
+        ErrorAction = (transportName, exception) =>
         {
+          // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
+          var msg = exception.Message.Contains("401")
+            ? "You don't have access to this stream/transport , or it doesn't exist."
+            : exception.Message;
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: { msg }"));
+          //Done();
+          var asyncParent = (GH_AsyncComponent)Parent;
+          asyncParent.CancellationSources.ForEach(source =>
+          {
+            if (source.Token != CancellationToken)
+              source.Cancel();
+          });
+        };
+
+        Client client;
+        try
+        {
+          client = new Client(InputWrapper?.GetAccount().Result);
+        }
+        catch (Exception e)
+        {
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
+          //Done();
+          return;
+        }
+        var remoteTransport = new ServerTransport(InputWrapper?.GetAccount().Result, InputWrapper?.StreamId);
+        remoteTransport.TransportName = "R";
+
+        // Means it's a copy paste of an empty non-init component; set the record and exit fast.
+        if (receiveComponent.JustPastedIn && !receiveComponent.AutoReceive)
+        {
+          receiveComponent.JustPastedIn = false;
+          return;
+        }
+
+        var t = Task.Run(async () =>
+        {
+          Commit myCommit;
+          if (InputWrapper.CommitId != null)
+            try
+            {
+              myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
+            }
+            catch (Exception e)
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+              //Done();
+              return;
+            }
+          if (InputWrapper.ObjectId != null)
+          {
+            myCommit = new Commit() { referencedObject = InputWrapper.ObjectId };
+          }
+          else
+            try
+            {
+              var branches = await client.StreamGetBranches(InputWrapper.StreamId);
+              var mainBranch = branches.FirstOrDefault(b => b.name == (InputWrapper.BranchName ?? "main"));
+              myCommit = mainBranch.commits.items[0];
+            }
+            catch (Exception e)
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
+                $"Could not get any commits from the stream's '{(InputWrapper.BranchName ?? "main")}' branch."));
+              //Done();
+              return;
+            }
+
+          ReceivedCommit = myCommit;
+
+          if (CancellationToken.IsCancellationRequested) return;
+
           ReceivedObject = await Operations.Receive(
-            ((ReceiveComponent)Parent).ReceivedObjectId,
+            myCommit.referencedObject,
             CancellationToken,
             remoteTransport,
             new SQLiteTransport { TransportName = "LC" }, // Local cache!
@@ -690,123 +847,78 @@ namespace ConnectorGrasshopper.Ops
             count => TotalObjectCount = count
           );
 
+          if (CancellationToken.IsCancellationRequested) return;
+
           //Done();
         });
-        return;
+        t.Wait();
       }
-
-      // Means it's a copy paste of an empty non-init component; set the record and exit fast.
-      if (((ReceiveComponent)Parent).JustPastedIn)
+      catch (Exception e)
       {
-        ((ReceiveComponent)Parent).JustPastedIn = false;
-        return;
-      }
-
-      Task.Run(async () =>
-      {
-        Commit myCommit;
-        if (InputWrapper.CommitId != null)
-          try
-          {
-            myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
-          }
-          catch (Exception e)
-          {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
-            //Done();
-            return;
-          }
-        else
-          try
-          {
-            var branches = await client.StreamGetBranches(InputWrapper.StreamId);
-            var mainBranch = branches.FirstOrDefault(b => b.name == (InputWrapper.BranchName ?? "main"));
-            myCommit = mainBranch.commits.items[0];
-          }
-          catch (Exception e)
-          {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
-              "Could not get any commits from the stream's \"main\" branch."));
-            //Done();
-            return;
-          }
-
-        ReceivedCommit = myCommit;
-
-        if (CancellationToken.IsCancellationRequested) return;
-
-        ReceivedObject = await Operations.Receive(
-          myCommit.referencedObject,
-          CancellationToken,
-          remoteTransport,
-          new SQLiteTransport { TransportName = "LC" }, // Local cache!
-          InternalProgressAction,
-          ErrorAction,
-          count => TotalObjectCount = count
-        );
-
-        if (CancellationToken.IsCancellationRequested) return;
-
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        var msg = e.InnerException?.Message ?? e.Message;
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, msg));
         //Done();
-      });
+      }
     }
 
-    public Task Run()
-    {
-      var client = new Client(InputWrapper?.GetAccount());
-      var remoteTransport = new ServerTransport(InputWrapper?.GetAccount(), InputWrapper?.StreamId);
-      remoteTransport.TransportName = "R";
+    //public Task Run()
+    //{
+    //  var client = new Client(InputWrapper?.GetAccount());
+    //  var remoteTransport = new ServerTransport(InputWrapper?.GetAccount(), InputWrapper?.StreamId);
+    //  remoteTransport.TransportName = "R";
 
-      return new Task(() =>
-      {
-        Commit myCommit;
-        // Get the specific commit
-        if (InputWrapper.CommitId != null)
-          try
-          {
-            myCommit = client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId).Result;
-          }
-          catch (Exception e)
-          {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
-            //Done();
-            return;
-          }
-        // Get the latest branch
-        else
-          try
-          {
-            var branches = client.StreamGetBranches(InputWrapper.StreamId).Result;
-            var mainBranch = branches.FirstOrDefault(b => b.name == (InputWrapper.BranchName ?? "main"));
-            myCommit = mainBranch.commits.items[0];
-          }
-          catch (Exception e)
-          {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
-              "Could not get any commits from the stream's \"main\" branch."));
-            //Done();
-            return;
-          }
+    //  return new Task(() =>
+    //  {
+    //    Commit myCommit;
+    //    // Get the specific commit
+    //    if (InputWrapper.CommitId != null)
+    //      try
+    //      {
+    //        myCommit = client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId).Result;
+    //      }
+    //      catch (Exception e)
+    //      {
+    //        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+    //        //Done();
+    //        return;
+    //      }
+    //    // Get the latest branch
+    //    else
+    //      try
+    //      {
+    //        var branches = client.StreamGetBranches(InputWrapper.StreamId).Result;
+    //        var mainBranch = branches.FirstOrDefault(b => b.name == (InputWrapper.BranchName ?? "main"));
+    //        myCommit = mainBranch.commits.items[0];
+    //      }
+    //      catch (Exception e)
+    //      {
+    //        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
+    //          "Could not get any commits from the stream's \"main\" branch."));
+    //        //Done();
+    //        return;
+    //      }
 
-        ReceivedCommit = myCommit;
+    //    ReceivedCommit = myCommit;
 
-        if (CancellationToken.IsCancellationRequested) return;
+    //    if (CancellationToken.IsCancellationRequested) return;
 
-        ReceivedObject = Operations.Receive(
-          myCommit.referencedObject,
-          CancellationToken,
-          remoteTransport,
-          new SQLiteTransport { TransportName = "LC" }, // Local cache!
-          InternalProgressAction,
-          ErrorAction,
-          count => TotalObjectCount = count
-        ).Result;
+    //    ReceivedObject = Operations.Receive(
+    //      myCommit.referencedObject,
+    //      CancellationToken,
+    //      remoteTransport,
+    //      new SQLiteTransport { TransportName = "LC" }, // Local cache!
+    //      InternalProgressAction,
+    //      ErrorAction,
+    //      count => TotalObjectCount = count
+    //    ).Result;
 
-        if (CancellationToken.IsCancellationRequested) return;
+    //    if (CancellationToken.IsCancellationRequested) return;
 
-        //Done();
-      });
-    }
+    //    //Done();
+    //  });
+    //}
 
     public override void SetData(IGH_DataAccess DA)
     {
@@ -868,7 +980,114 @@ namespace ConnectorGrasshopper.Ops
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      throw new NotImplementedException();
+      var receiveComponent = ((ReceiveComponent)Parent);
+      try
+      {
+        InternalProgressAction = dict =>
+        {
+          //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+          //foreach (var kvp in dict) ReportProgress(kvp.Key, (double)kvp.Value / (TotalObjectCount + 1));
+          foreach (var kvp in dict) ReportProgress(kvp.Key, (double)kvp.Value);
+        };
+
+        ErrorAction = (transportName, exception) =>
+        {
+          // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
+          var msg = exception.Message.Contains("401")
+            ? "You don't have access to this stream/transport , or it doesn't exist."
+            : exception.Message;
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: { msg }"));
+          Done();
+          var asyncParent = (GH_AsyncComponent)Parent;
+          asyncParent.CancellationSources.ForEach(source =>
+          {
+            if (source.Token != CancellationToken)
+              source.Cancel();
+          });
+        };
+
+        Client client;
+        try
+        {
+          client = new Client(InputWrapper?.GetAccount().Result);
+        }
+        catch (Exception e)
+        {
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
+          Done();
+          return;
+        }
+        var remoteTransport = new ServerTransport(InputWrapper?.GetAccount().Result, InputWrapper?.StreamId);
+        remoteTransport.TransportName = "R";
+
+        // Means it's a copy paste of an empty non-init component; set the record and exit fast.
+        if (receiveComponent.JustPastedIn && !receiveComponent.AutoReceive)
+        {
+          receiveComponent.JustPastedIn = false;
+          return;
+        }
+
+        var t = Task.Run(async () =>
+        {
+          Commit myCommit;
+          if (InputWrapper.CommitId != null)
+            try
+            {
+              myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
+            }
+            catch (Exception e)
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+              Done();
+              return;
+            }
+          if (InputWrapper.ObjectId != null)
+          {
+            myCommit = new Commit() { referencedObject = InputWrapper.ObjectId };
+          }
+          else
+            try
+            {
+              var branches = await client.StreamGetBranches(InputWrapper.StreamId);
+              var mainBranch = branches.FirstOrDefault(b => b.name == (InputWrapper.BranchName ?? "main"));
+              myCommit = mainBranch.commits.items[0];
+            }
+            catch (Exception e)
+            {
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
+                $"Could not get any commits from the stream's '{(InputWrapper.BranchName ?? "main")}' branch."));
+              Done();
+              return;
+            }
+
+          ReceivedCommit = myCommit;
+
+          if (CancellationToken.IsCancellationRequested) return;
+
+          ReceivedObject = await Operations.Receive(
+            myCommit.referencedObject,
+            CancellationToken,
+            remoteTransport,
+            new SQLiteTransport { TransportName = "LC" }, // Local cache!
+            InternalProgressAction,
+            ErrorAction,
+            count => TotalObjectCount = count
+          );
+
+          if (CancellationToken.IsCancellationRequested) return;
+
+          Done();
+        });
+        t.Wait();
+      }
+      catch (Exception e)
+      {
+        // If we reach this, something happened that we weren't expecting...
+        Log.CaptureException(e);
+        var msg = e.InnerException?.Message ?? e.Message;
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, msg));
+        Done();
+      }
     }
   }
 
