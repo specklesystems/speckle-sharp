@@ -159,7 +159,7 @@
     <Page Include="Themes\DataTemplates.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Themes\Generic.xaml">
+    <Page Include="Themes\DynamicStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\MaterialDesignTheme.Light.xaml">
@@ -172,6 +172,7 @@
     <Page Include="Themes\MaterialDesignTheme.Overrides.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Themes\StaticStyles.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

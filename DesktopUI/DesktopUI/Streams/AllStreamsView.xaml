@@ -13,11 +13,10 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/Generic.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/StaticStyles.xaml" />
       </ResourceDictionary.MergedDictionaries>
 
       <utils:InverseBooleanConverter x:Key="InverseBooleanConverter" />
-
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
       <!--#region Branch Swapping Button (Sender/Receiver shared)-->

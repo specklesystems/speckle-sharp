@@ -13,7 +13,7 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/Generic.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/StaticStyles.xaml" />
       </ResourceDictionary.MergedDictionaries>
       <utils:NullAvatarToRobotConverter x:Key="NullAvatarToRobotConverter" />
       <utils:StringToUpperConverter x:Key="StringToUpperConverter" />
