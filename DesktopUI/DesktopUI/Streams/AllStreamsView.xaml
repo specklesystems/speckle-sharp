@@ -12,9 +12,11 @@
   mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/StaticStyles.xaml" />
+      </ResourceDictionary.MergedDictionaries>
 
       <utils:InverseBooleanConverter x:Key="InverseBooleanConverter" />
-
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
       <!--#region Branch Swapping Button (Sender/Receiver shared)-->
@@ -774,7 +776,6 @@
                     </Grid.ColumnDefinitions>
                     <Expander Grid.Row="1"
                       HorizontalAlignment="Stretch"
-                      md:ExpanderAssist.DownHeaderPadding="0"
                       Background="Transparent"
                       FontSize="12">
                       <Expander.Header>

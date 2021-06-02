@@ -12,8 +12,7 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary
-          Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Snackbar.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/StaticStyles.xaml" />
         <ResourceDictionary>
           <DataTemplate x:Key="AccountTemplate">
             <TextBlock>
@@ -57,7 +56,7 @@
                 CommandParameter="{Binding}"
                 Content="{md:PackIcon Kind=ArrowRight,
                                       Size=20}"
-                Foreground="{StaticResource MaterialDesignLightBackground}"
+                Foreground="#FDFDFD"
                 Style="{StaticResource FlatFloatingActionMiniButton}"
                 ToolTip="Select this stream" />
             </Grid>

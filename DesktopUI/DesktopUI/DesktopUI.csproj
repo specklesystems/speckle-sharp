@@ -159,7 +159,7 @@
     <Page Include="Themes\DataTemplates.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Themes\Generic.xaml">
+    <Page Include="Themes\DynamicStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\MaterialDesignTheme.Light.xaml">
@@ -172,6 +172,7 @@
     <Page Include="Themes\MaterialDesignTheme.Overrides.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Themes\StaticStyles.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -224,10 +225,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MaterialDesignColors">
-      <Version>1.2.7</Version>
+      <Version>2.0.0</Version>
     </PackageReference>
     <PackageReference Include="MaterialDesignThemes">
-      <Version>3.2.0</Version>
+      <Version>4.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf">
       <Version>1.1.31</Version>

@@ -31,6 +31,8 @@ namespace Speckle.DesktopUI.Utils
     /// </summary>
     public static StreamsRepository Repo { get; set; }
 
+    public static ResourceDictionary RootResourceDict { get; set; }
+
     /// <summary>
     /// Sends a notification to the main view's snack bar.
     /// </summary>

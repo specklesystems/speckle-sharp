@@ -13,6 +13,9 @@
   mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/StaticStyles.xaml" />
+      </ResourceDictionary.MergedDictionaries>
       <utils:SplitFirstNameConverter x:Key="SplitFirstNameConverter" />
       <utils:NullAvatarToRobotConverter x:Key="NullAvatarToRobotConverter" />
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -118,10 +121,10 @@
           x:Name="SearchTextBox"
           Grid.Row="0"
           VerticalContentAlignment="Center"
-          md:HintAssist.Hint="Search for users"
+          md:HintAssist.Hint="    Search for users"
           md:TextFieldAssist.PrefixText="     "
           FontSize="14"
-          Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+          Style="{StaticResource MaterialDesignOutlinedTextBox}"
           Text="{Binding UserQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
         <Button
           Width="45"
@@ -334,7 +337,7 @@
           FontFamily="Consolas"
           IsReadOnly="True"
           PreviewMouseUp="{s:Action SelectAllText}"
-          Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+          Style="{StaticResource MaterialDesignOutlinedTextBox}"
           Text="{Binding ShareLink, Mode=OneWay}"
           TextWrapping="WrapWithOverflow"
            />-->

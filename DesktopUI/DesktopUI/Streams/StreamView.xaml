@@ -1,25 +1,29 @@
 ﻿<UserControl x:Class="Speckle.DesktopUI.Streams.StreamView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:s="https://github.com/canton7/Stylet"
-             xmlns:system="clr-namespace:System;assembly=mscorlib"
-             xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
-             d:DesignHeight="600"
-             d:DesignWidth="450"
-             mc:Ignorable="d">
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:local="clr-namespace:Speckle.DesktopUI.Streams"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:s="https://github.com/canton7/Stylet"
+  xmlns:system="clr-namespace:System;assembly=mscorlib"
+  xmlns:utils="clr-namespace:Speckle.DesktopUI.Utils"
+  d:DesignHeight="600"
+  d:DesignWidth="450"
+  mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/StaticStyles.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+
       <utils:TimeAgoConverter x:Key="TimeAgoConverter" />
       <utils:InverseBooleanConverter x:Key="InverseBooleanConverter" />
       <utils:NullAvatarToRobotConverter x:Key="NullAvatarToRobotConverter" />
       <system:Int32 x:Key="StreamUpdateSlide">1</system:Int32>
       <system:Int32 x:Key="StreamCollabsSlide">2</system:Int32>
       <BitmapImage x:Key="DefaultProfImage"
-                   UriSource="../Resources/s2logo.png" />
+        UriSource="../Resources/s2logo.png" />
 
       <DataTemplate x:Key="CommitTemplate">
         <Grid Margin="0,5">
@@ -28,47 +32,47 @@
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
           <Ellipse Grid.Column="0"
-                   Width="32"
-                   Height="32"
-                   Margin="0,0,8,0"
-                   VerticalAlignment="Top">
+            Width="32"
+            Height="32"
+            Margin="0,0,8,0"
+            VerticalAlignment="Top">
             <Ellipse.Fill>
               <ImageBrush
                 ImageSource="{Binding avatar, FallbackValue={StaticResource DefaultProfImage}, TargetNullValue={StaticResource DefaultProfImage}}" />
             </Ellipse.Fill>
           </Ellipse>
           <StackPanel Grid.Column="1"
-                      Margin="4"
-                      Orientation="Vertical">
+            Margin="4"
+            Orientation="Vertical">
             <StackPanel Orientation="Horizontal">
               <TextBlock FontWeight="Bold"
-                         Text="{Binding authorName}" />
+                Text="{Binding authorName}" />
               <TextBlock
                 Text="{Binding createdAt, Converter={StaticResource TimeAgoConverter}, StringFormat=' created a commit {0}'}" />
             </StackPanel>
             <TextBlock Margin="0,4"
-                       Text="{Binding message}"
-                       TextWrapping="Wrap" />
+              Text="{Binding message}"
+              TextWrapping="Wrap" />
           </StackPanel>
         </Grid>
       </DataTemplate>
 
       <DataTemplate x:Key="CollaboratorSmallCardTemplate">
         <md:Card Width="120"
-                 Height="120"
-                 Margin="8"
-                 Padding="10">
+          Height="120"
+          Margin="8"
+          Padding="10">
           <Grid>
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />
               <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0"
-                       Text="{Binding name}"
-                       TextAlignment="Center" />
+              Text="{Binding name}"
+              TextAlignment="Center" />
             <TextBlock Grid.Row="1"
-                       Text="{Binding role}"
-                       TextAlignment="Center" />
+              Text="{Binding role}"
+              TextAlignment="Center" />
           </Grid>
         </md:Card>
       </DataTemplate>
@@ -82,36 +86,36 @@
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
           <Ellipse Grid.Column="0"
-                   Width="32"
-                   Height="32"
-                   Margin="0,0,8,0"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Center">
+            Width="32"
+            Height="32"
+            Margin="0,0,8,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center">
             <Ellipse.Fill>
               <ImageBrush ImageSource="{Binding Converter={StaticResource NullAvatarToRobotConverter}}" />
             </Ellipse.Fill>
           </Ellipse>
           <TextBlock Grid.Column="1"
-                     Margin="10,10"
-                     HorizontalAlignment="Stretch"
-                     FontWeight="Bold"
-                     Text="{Binding name}" />
+            Margin="10,10"
+            HorizontalAlignment="Stretch"
+            FontWeight="Bold"
+            Text="{Binding name}" />
           <TextBlock Grid.Column="2"
-                     Margin="10,10"
-                     Foreground="Gray"
-                     Text="{Binding role}" />
+            Margin="10,10"
+            Foreground="Gray"
+            Text="{Binding role}" />
           <Button Grid.Column="3"
-                  Width="32"
-                  Height="32"
-                  md:RippleAssist.ClipToBounds="True"
-                  md:RippleAssist.Feedback="#ff5555"
-                  Command="{s:Action RemoveCollaborator}"
-                  CommandParameter="{Binding}"
-                  Content="{md:PackIcon Kind=TrashCanOutline,
+            Width="32"
+            Height="32"
+            md:RippleAssist.ClipToBounds="True"
+            md:RippleAssist.Feedback="#ff5555"
+            Command="{s:Action RemoveCollaborator}"
+            CommandParameter="{Binding}"
+            Content="{md:PackIcon Kind=TrashCanOutline,
                                   Size=18}"
-                  Foreground="#ff5555"
-                  Style="{StaticResource MaterialDesignIconButton}"
-                  ToolTip="Remove this collaborator" />
+            Foreground="#ff5555"
+            Style="{StaticResource MaterialDesignIconButton}"
+            ToolTip="Remove this collaborator" />
         </Grid>
       </DataTemplate>
 
@@ -125,33 +129,33 @@
 
           <!--  TODO: Disable based on stream role  -->
           <TextBlock Grid.Column="0"
-                     Margin="0,0,0,8"
-                     FontSize="20"
-                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                     Text="Name" />
+            Margin="0,0,0,8"
+            FontSize="20"
+            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+            Text="Name" />
           <TextBox FontSize="25"
-                   Text="{Binding StreamName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=1500}" />
+            Text="{Binding StreamName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=1500}" />
           <TextBlock FontFamily="Consolas"
-                     FontSize="12"
-                     Margin="0,6,0, 0"
-                     Foreground="{DynamicResource MaterialDesignBodyLight}"
-                     Text="{Binding StreamState.Stream.id}" />
+            FontSize="12"
+            Margin="0,6,0, 0"
+            Text="{Binding StreamState.Stream.id}" />
+          <!-- Foreground="{DynamicResource MaterialDesignBodyLight}" -->
 
           <WrapPanel MaxWidth="{Binding ActualWidth, ElementName=StreamViewStackPanel}"
-                     Margin="0,20,0,0">
+            Margin="0,20,0,0">
             <md:Chip Height="28"
-                     Margin="0,0,8,8"
-                     md:ButtonAssist.CornerRadius="14"
-                     Command="{s:Action OpenStreamInWeb}"
-                     CommandParameter="{Binding StreamState}"
-                     FontSize="13"
-                     ToolTip="open this stream in the browser">
+              Margin="0,0,8,8"
+              md:ButtonAssist.CornerRadius="14"
+              Command="{s:Action OpenStreamInWeb}"
+              CommandParameter="{Binding StreamState}"
+              FontSize="13"
+              ToolTip="open this stream in the browser">
               <StackPanel Orientation="Horizontal">
                 <md:PackIcon Width="12"
-                             Height="12"
-                             Margin="0,0,4,0"
-                             VerticalAlignment="Center"
-                             Kind="OpenInNew" />
+                  Height="12"
+                  Margin="0,0,4,0"
+                  VerticalAlignment="Center"
+                  Kind="OpenInNew" />
                 <TextBlock Margin="0,0,4,0">Server:</TextBlock>
                 <TextBlock Text="{Binding StreamState.Client.Account.serverInfo.name}" />
                 <TextBlock Margin="4,0,0,0">(</TextBlock>
@@ -163,22 +167,22 @@
 
           <!--  TODO: Disable based on stream role  -->
           <TextBlock Grid.Column="0"
-                     Margin="0,24,0,8"
-                     FontSize="20"
-                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                     Text="Description" />
+            Margin="0,24,0,8"
+            FontSize="20"
+            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+            Text="Description" />
           <TextBox x:Name="StreamDescriptionInput"
-                   Height="100"
-                   Margin="0,10"
-                   md:HintAssist.Hint="Stream description (markdown is supported)"
-                   AcceptsReturn="true"
-                   Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
-                   Text="{Binding StreamDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=1500}"
-                   TextAlignment="Left"
-                   TextWrapping="Wrap" />
+            Height="100"
+            Margin="0,10"
+            md:HintAssist.Hint="Stream description (markdown is supported)"
+            AcceptsReturn="true"
+            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+            Text="{Binding StreamDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=1500}"
+            TextAlignment="Left"
+            TextWrapping="Wrap" />
 
           <md:Snackbar FontSize="12"
-                       MessageQueue="{Binding Notifications}" />
+            MessageQueue="{Binding Notifications}" />
 
           <Grid>
             <Grid.ColumnDefinitions>
@@ -187,52 +191,53 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock Grid.Column="0"
-                       Margin="0,24,0,20"
-                       FontSize="20"
-                       Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                       Text="Collaborators" />
+              Margin="0,24,0,20"
+              FontSize="20"
+              Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+              Text="Collaborators" />
             <Button Grid.Column="1"
-                    Width="32"
-                    Height="32"
-                    md:RippleAssist.ClipToBounds="True"
-                    Command="{s:Action ShowShareStreamDialog}"
-                    CommandParameter="{Binding StreamState}"
-                    Content="{md:PackIcon Kind=AccountAdd,
+              Width="32"
+              Height="32"
+              md:RippleAssist.ClipToBounds="True"
+              Command="{s:Action ShowShareStreamDialog}"
+              CommandParameter="{Binding StreamState}"
+              Content="{md:PackIcon Kind=AccountAdd,
                                     Size=20}"
-                    Foreground="{StaticResource MaterialDesignBody}"
-                    Style="{StaticResource MaterialDesignIconButton}"
-                    ToolTip="Edit this stream's collaborators" />
+              Style="{StaticResource MaterialDesignIconButton}"
+              ToolTip="Edit this stream's collaborators" />
+            <!-- Foreground="{StaticResource MaterialDesignBody}" -->
           </Grid>
           <!--<Separator Margin="0,10" Background="Gray"></Separator>-->
 
           <ItemsControl ItemTemplate="{StaticResource CollaboratorChipTemplate}"
-                        ItemsSource="{Binding StreamState.Stream.collaborators}" />
+            ItemsSource="{Binding StreamState.Stream.collaborators}" />
 
           <!--<Separator Margin="0,20,0,0"></Separator>-->
           <TextBlock Grid.Column="0"
-                     Margin="0,24,0,8"
-                     FontSize="20"
-                     Foreground="#ff5555"
-                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                     Text="Danger Zone" />
+            Margin="0,24,0,8"
+            FontSize="20"
+            Foreground="#ff5555"
+            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+            Text="Danger Zone" />
           <Separator Margin="0,0,0,0"
-                     Background="#ff5555" />
+            Background="#ff5555" />
           <Grid Margin="0,16,0,12">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
             <Button Grid.Column="0"
-                    Margin="4,0"
-                    HorizontalAlignment="Left"
-                    md:RippleAssist.Feedback="#ff5555"
-                    Background="#ff5555"
-                    BorderThickness="0"
-                    Command="{s:Action RemoveStream}"
-                    Content="Remove"
-                    Foreground="{DynamicResource MaterialDesignBody}"
-                    Style="{StaticResource MaterialDesignFlatButton}"
-                    ToolTip="Remove this stream from the file. This will not delete it from the server." />
+              Margin="4,0"
+              HorizontalAlignment="Left"
+              md:RippleAssist.IsDisabled="True"
+              md:RippleAssist.Feedback="#ff5555"
+              md:ButtonAssist.CornerRadius="4"
+              Background="#ff5555"
+              BorderThickness="0"
+              Command="{s:Action RemoveStream}"
+              Content="Remove"
+              Foreground="#FDFDFD"
+              ToolTip="Remove this stream from the file. This will not delete it from the server." />
           </Grid>
         </StackPanel>
       </Grid>
