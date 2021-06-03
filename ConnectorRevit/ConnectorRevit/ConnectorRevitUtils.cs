@@ -38,7 +38,10 @@ namespace Speckle.ConnectorRevit
         foreach (var bic in SupportedBuiltInCategories)
         {
           var category = Category.GetCategory(doc, bic);
-          _categories.Add(category.Name, category);
+          if (_categories.ContainsKey(category.Name))
+            _categories.Add(category.Name + '_' + category.Id, category);
+          else
+            _categories.Add(category.Name, category);
         }
       }
       return _categories;
