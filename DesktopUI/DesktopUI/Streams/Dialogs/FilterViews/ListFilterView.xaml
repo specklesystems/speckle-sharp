@@ -14,6 +14,9 @@
   mc:Ignorable="d">
   <UserControl.Resources>
     <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/StaticStyles.xaml" />
+      </ResourceDictionary.MergedDictionaries>
       <utils:ListToStringConverter x:Key="ListToStringConverter" />
       <DataTemplate x:Key="CategoryChipTemplate">
         <md:Chip
@@ -49,7 +52,7 @@
           VerticalContentAlignment="Center"
           md:TextFieldAssist.PrefixText="     "
           FontSize="14"
-          Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+          Style="{StaticResource MaterialDesignOutlinedTextBox}"
           Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         <!--<Button
           Width="45"

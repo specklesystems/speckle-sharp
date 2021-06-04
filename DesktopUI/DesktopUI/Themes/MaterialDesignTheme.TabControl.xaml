@@ -212,7 +212,7 @@
               <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueDarkForegroundBrush}" />
               <Setter Property="Background" Value="{DynamicResource PrimaryHueDarkForegroundBrush}" />
             </Trigger>
-            <Trigger Property="wpf:ColorZoneAssist.Mode" Value="Accent">
+            <Trigger Property="wpf:ColorZoneAssist.Mode" Value="SecondaryMid">
               <Setter Property="BorderBrush" Value="{DynamicResource SecondaryHueMidForegroundBrush}" />
               <Setter Property="Background" Value="{DynamicResource SecondaryHueMidForegroundBrush}" />
             </Trigger>
@@ -313,7 +313,7 @@
               <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueDarkForegroundBrush}" />
               <Setter Property="Background" Value="{DynamicResource PrimaryHueDarkForegroundBrush}" />
             </Trigger>
-            <Trigger Property="wpf:ColorZoneAssist.Mode" Value="Accent">
+            <Trigger Property="wpf:ColorZoneAssist.Mode" Value="SecondaryMid">
               <Setter Property="BorderBrush" Value="{DynamicResource SecondaryHueMidForegroundBrush}" />
               <Setter Property="Background" Value="{DynamicResource SecondaryHueMidForegroundBrush}" />
             </Trigger>

@@ -28,7 +28,6 @@ namespace Speckle.DesktopUI
       base.OnStart();
       Core.Logging.Setup.Init(Bindings.GetHostAppName());
       InitializeMaterialDesign();
-      LoadThemeResources();
       Stylet.Logging.LogManager.Enabled = true;
     }
 
@@ -76,14 +75,6 @@ namespace Speckle.DesktopUI
       var card = new Card();
       var hue = new Hue("Dummy", Colors.Black, Colors.White);
       var behavior = new Microsoft.Xaml.Behaviors.Media.PlaySoundAction(); //force loading of behaviors reference
-    }
-
-    private void LoadThemeResources()
-    {
-      Application.Current.Resources.MergedDictionaries.Add(
-        Application.LoadComponent(
-          new Uri("SpeckleDesktopUI;component/Themes/Generic.xaml", UriKind.Relative)
-        ) as ResourceDictionary);
     }
 
     public override void Start(string[ ] args)

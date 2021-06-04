@@ -10,6 +10,9 @@
   d:DesignHeight="300"
   d:DesignWidth="300"
   mc:Ignorable="d">
+  <UserControl.Resources>
+    <ResourceDictionary Source="pack://application:,,,/SpeckleDesktopUI;component/Themes/StaticStyles.xaml" />
+  </UserControl.Resources>
   <Grid>
     <StackPanel>
       <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
