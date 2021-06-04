@@ -21,6 +21,7 @@ namespace Objects.Converter.Revit
       speckleRoom.center = (Point)LocationToSpeckle(revitRoom);
       speckleRoom.level = ConvertAndCacheLevel(revitRoom, BuiltInParameter.ROOM_LEVEL_ID);
       speckleRoom.outline = profiles[0];
+      speckleRoom.area = GetParamValue<double>(revitRoom, BuiltInParameter.ROOM_AREA);
       if (profiles.Count > 1)
       {
         speckleRoom.voids = profiles.Skip(1).ToList();
