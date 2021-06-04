@@ -162,6 +162,9 @@ namespace Objects.Converter.Revit
         case DB.ElementType o:
           returnObject = ElementTypeToSpeckle(o);
           break;
+        case DB.Grid o:
+          returnObject = GridLineToSpeckle(o);
+          break;
         default:
           // if we don't have a direct conversion, still try to send this element as a generic RevitElement
           if ((@object as Element).IsElementSupported())
@@ -298,6 +301,9 @@ namespace Objects.Converter.Revit
         case BE.Room o:
           return RoomToNative(o);
 
+        case BE.GridLine o:
+          return GridLineToNative(o);
+
         // other
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
@@ -342,6 +348,7 @@ namespace Objects.Converter.Revit
         DB.Group _ => true,
         DB.ProjectInfo _ => true,
         DB.ElementType _ => true,
+        DB.Grid _ => true,
         _ => (@object as Element).IsElementSupported()
       };
     }
@@ -385,6 +392,7 @@ namespace Objects.Converter.Revit
         BER.ParameterUpdater _ => true,
         BE.View3D _ => true,
         BE.Room _ => true,
+        BE.GridLine _ => true,
         Other.BlockInstance _ => true,
         _ => false
 
