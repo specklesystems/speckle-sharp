@@ -295,6 +295,9 @@ namespace Objects.Converter.Revit
         case BE.View3D o:
           return ViewToNative(o);
 
+        case BE.Room o:
+          return RoomToNative(o);
+
         // other
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
@@ -381,6 +384,7 @@ namespace Objects.Converter.Revit
         BE.Revit.RevitRailing _ => true,
         BER.ParameterUpdater _ => true,
         BE.View3D _ => true,
+        BE.Room _ => true,
         Other.BlockInstance _ => true,
         _ => false
 

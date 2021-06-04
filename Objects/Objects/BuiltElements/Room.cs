@@ -23,5 +23,18 @@ namespace Objects.BuiltElements
     public Mesh displayMesh { get; set; }
 
     public Room() { }
+
+    /// <summary>
+    /// SchemaBuilder constructor for a Room
+    /// </summary>
+    /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
+    [SchemaInfo("Room", "Creates a Speckle room")]
+    public Room(string name, string number, Level level, [SchemaMainParam] Point center)
+    {
+      this.name = name;
+      this.number = number;
+      this.level = level;
+      this.center = center;
+    }
   }
 }
