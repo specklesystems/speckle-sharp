@@ -112,6 +112,9 @@ namespace Objects.Converter.Revit
         case DB.RoofBase o:
           returnObject = RoofToSpeckle(o);
           break;
+        case DB.Area o:
+          returnObject = AreaToSpeckle(o);
+          break;
         case DB.Architecture.Room o:
           returnObject = RoomToSpeckle(o);
           break;
@@ -331,6 +334,7 @@ namespace Objects.Converter.Revit
         DB.ModelCurve _ => true,
         DB.Opening _ => true,
         DB.RoofBase _ => true,
+        DB.Area _ => true,
         DB.Architecture.Room _ => true,
         DB.Architecture.TopographySurface _ => true,
         DB.Wall _ => true,

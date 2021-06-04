@@ -4,6 +4,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
+using Objects.Geometry;
 using Objects.Other;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
@@ -745,6 +746,29 @@ namespace Objects.Converter.Revit
       return String.Join(newVal, _string);
     }
     #endregion
+
+    private List<ICurve> GetProfiles(DB.SpatialElement room)
+    {
+      var profiles = new List<ICurve>();
+      var boundaries = room.GetBoundarySegments(new SpatialElementBoundaryOptions());
+      foreach (var loop in boundaries)
+      {
+        var poly = new Polycurve(ModelUnits);
+        foreach (var segment in loop)
+        {
+          var c = segment.GetCurve();
+
+          if (c == null)
+          {
+            continue;
+          }
+
+          poly.segments.Add(CurveToSpeckle(c));
+        }
+        profiles.Add(poly);
+      }
+      return profiles;
+    }
 
     public WallLocationLine GetWallLocationLine(LocationLine location)
     {

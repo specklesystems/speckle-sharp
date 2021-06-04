@@ -69,27 +69,6 @@ namespace Objects.Converter.Revit
 
 
 
-    private List<ICurve> GetProfiles(DB.Room room)
-    {
-      var profiles = new List<ICurve>();
-      var boundaries = room.GetBoundarySegments(new SpatialElementBoundaryOptions());
-      foreach (var loop in boundaries)
-      {
-        var poly = new Polycurve(ModelUnits);
-        foreach (var segment in loop)
-        {
-          var c = segment.GetCurve();
 
-          if (c == null)
-          {
-            continue;
-          }
-
-          poly.segments.Add(CurveToSpeckle(c));
-        }
-        profiles.Add(poly);
-      }
-      return profiles;
-    }
   }
 }
