@@ -9,16 +9,15 @@ namespace Objects.BuiltElements
 {
   public class GridLine : Base
   {
-    public Line baseLine { get; set; }
-    public Level level { get; set; }
+    public ICurve baseLine { get; set; }
+    public string label { get; set; }
 
     public GridLine() { }
 
     [SchemaInfo("GridLine", "Creates a Speckle grid line")]
-    public GridLine([SchemaMainParam] Line baseLine, Level level = null)
+    public GridLine([SchemaParamInfo("NOTE: only Line and Arc curves are supported in Revit")][SchemaMainParam] ICurve baseLine)
     {
       this.baseLine = baseLine;
-      this.level = level;
     }
   }
 }
