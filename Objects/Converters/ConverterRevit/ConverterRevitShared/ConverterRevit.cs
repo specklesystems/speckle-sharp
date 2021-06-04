@@ -156,6 +156,9 @@ namespace Objects.Converter.Revit
         case DB.Ceiling o:
           returnObject = CeilingToSpeckle(o);
           break;
+        case DB.PointCloudInstance o:
+          returnObject = PointcloudToSpeckle(o);
+          break;
         case DB.ProjectInfo o:
           returnObject = ProjectInfoToSpeckle(o);
           break;
@@ -336,6 +339,7 @@ namespace Objects.Converter.Revit
         DB.Architecture.Railing _ => true,
         DB.Architecture.TopRail _ => true,
         DB.Ceiling _ => true,
+        DB.PointCloudInstance _ => true,
         DB.Group _ => true,
         DB.ProjectInfo _ => true,
         DB.ElementType _ => true,

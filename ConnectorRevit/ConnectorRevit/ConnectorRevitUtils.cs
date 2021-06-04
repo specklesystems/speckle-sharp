@@ -44,7 +44,7 @@ namespace Speckle.ConnectorRevit
             var spec = category.Id.ToString();
             if (category.Parent != null)
               spec = category.Parent.Name;
-            _categories.Add(category.Name + ' (' + spec + ')', category);
+            _categories.Add(category.Name + '(' + spec + ')', category);
           }
 
           else
