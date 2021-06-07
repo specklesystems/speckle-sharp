@@ -220,7 +220,7 @@ namespace ConnectorGrasshopper.Ops
         Menu_AppendItem(menu, "Cancel Receive", (s, e) =>
         {
           CurrentComponentState = "expired";
-          //RequestCancellation();
+          RequestCancellation();
         });
       }
 

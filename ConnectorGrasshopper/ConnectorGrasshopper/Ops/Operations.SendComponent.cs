@@ -199,6 +199,7 @@ namespace ConnectorGrasshopper.Ops
 
     public void SetConverterFromKit(string kitName)
     {
+      if (Kit == null) return;
       if (kitName == Kit.Name)
       {
         return;

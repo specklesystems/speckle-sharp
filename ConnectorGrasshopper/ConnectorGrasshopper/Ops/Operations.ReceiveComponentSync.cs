@@ -22,22 +22,14 @@ namespace ConnectorGrasshopper.Ops
 {
   public class ReceiveSync : GH_TaskCapableComponent<Speckle.Core.Models.Base>
   {
-    /// <summary>
-    /// Initializes a new instance of the TaskCapableMultiThread class.
-    /// </summary>
-    /// 
     CancellationTokenSource source;
-    CancellationTokenSource tokenSource;
-    const int delay = 1000;
-    public WorkerInstance BaseWorker { get; set; }
+    const int delay = 100000;
     public ISpeckleKit Kit;
     public ISpeckleConverter Converter;
-    public WorkerInstance currentWorker { get; set; }
     public TaskCreationOptions? TaskCreationOptions { get; set; } = null;
     public StreamWrapper StreamWrapper { get; set; }
     private Client ApiClient { get; set; }
     public string ReceivedCommitId { get; set; }
-    public string CurrentComponentState { get; set; } = "needs_input";
     public string InputType { get; set; }
     public bool AutoReceive { get; set; }
 
@@ -53,9 +45,11 @@ namespace ConnectorGrasshopper.Ops
               {
                 // Ensure fresh instance of client.
                 await ResetApiClient(StreamWrapper);
-
+                if (source == null)
+                  CreateCancelationToken();
+                
                 // Get last commit from the branch
-                var b = ApiClient.BranchGet(BaseWorker.CancellationToken, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
+                var b = ApiClient.BranchGet(source.Token, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
 
                 // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
                 if (b.commits.items[0].id != ReceivedCommitId)
@@ -74,8 +68,7 @@ namespace ConnectorGrasshopper.Ops
     }
     private void HandleNewCommit()
     {
-      Message = "Expired";
-      CurrentComponentState = "expired";
+      //CurrentComponentState = "expired";
       AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"There is a newer commit available for this {InputType}");
 
       RhinoApp.InvokeOnUiThread((Action)delegate
@@ -122,7 +115,6 @@ namespace ConnectorGrasshopper.Ops
     public ReceiveSync() : base("ReceiveSync", "ReceiveSync", "Receive data from a Speckle server Synchronously",
       "Speckle 2", "   Send/Receive")
     {
-      //BaseWorker = new ReceiveComponent2Worker(this);
       SetDefaultKitAndConverter();
     }
 
@@ -166,7 +158,7 @@ namespace ConnectorGrasshopper.Ops
     public override bool Write(GH_IWriter writer)
     {
       writer.SetBoolean("AutoReceive", AutoReceive);
-      writer.SetString("CurrentComponentState", CurrentComponentState);
+      //writer.SetString("CurrentComponentState", CurrentComponentState);
       writer.SetString("LastInfoMessage", LastInfoMessage);
       //writer.SetString("LastCommitDate", LastCommitDate);
       writer.SetString("ReceivedObjectId", ReceivedObjectId);
@@ -181,7 +173,7 @@ namespace ConnectorGrasshopper.Ops
     public override bool Read(GH_IReader reader)
     {
       AutoReceive = reader.GetBoolean("AutoReceive");
-      CurrentComponentState = reader.GetString("CurrentComponentState");
+      //CurrentComponentState = reader.GetString("CurrentComponentState");
       LastInfoMessage = reader.GetString("LastInfoMessage");
       //LastCommitDate = reader.GetString("LastCommitDate");
       ReceivedObjectId = reader.GetString("ReceivedObjectId");
@@ -253,23 +245,23 @@ namespace ConnectorGrasshopper.Ops
     {
       if (RunCount == 1)
       {
-        source = new CancellationTokenSource(delay * 10);
-        tokenSource = new CancellationTokenSource();
-        currentWorker = BaseWorker.Duplicate();
+        CreateCancelationToken();
+        //tokenSource = new CancellationTokenSource();
+        //currentWorker = BaseWorker.Duplicate();
         ParseInput(DA);
       }
 
       if (InPreSolve)
       {
 
-        if (currentWorker == null)
-        {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not get a worker instance.");
-          return;
-        }
+        //if (currentWorker == null)
+        //{
+        //  AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not get a worker instance.");
+        //  return;
+        //}
 
-        currentWorker.GetData(DA, Params);
-        currentWorker.CancellationToken = tokenSource.Token;
+        //currentWorker.GetData(DA, Params);
+        //currentWorker.CancellationToken = tokenSource.Token;
 
         var task = Task.Run(async () =>
         {
@@ -299,7 +291,7 @@ namespace ConnectorGrasshopper.Ops
 
           var ReceivedObject = Operations.Receive(
           myCommit.referencedObject,
-          tokenSource.Token,
+          source.Token,
           remoteTransport,
           new SQLiteTransport { TransportName = "LC" }, // Local cache!
           null,
@@ -337,7 +329,6 @@ namespace ConnectorGrasshopper.Ops
         if (Converter.CanConvertToNative(ReceivedObject))
         {
           DA.SetData(0, Extras.Utilities.TryConvertItemToNative(ReceivedObject, Converter));
-          Message = "Done";
           return;
         }
 
@@ -349,10 +340,14 @@ namespace ConnectorGrasshopper.Ops
           var tree = treeBuilder.Build(ReceivedObject[members.ElementAt(0)]);
 
           DA.SetDataTree(0, tree);
-          Message = "Done";
           return;
         }
       }
+    }
+
+    private void CreateCancelationToken()
+    {
+      source = new CancellationTokenSource(delay);
     }
 
     private void ParseInput(IGH_DataAccess DA)
@@ -387,7 +382,6 @@ namespace ConnectorGrasshopper.Ops
 
 
       InputType = inputType;
-      Message = inputType;
       HandleInputType(newWrapper);
     }
     private string GetStreamTypeMessage(StreamWrapper newWrapper)
