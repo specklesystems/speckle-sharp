@@ -15,6 +15,7 @@ namespace ConnectorGrasshopper
     public static string STREAMS = "    Streams & Accounts";
     public static string ACCOUNTS = "   Accounts";
     public static string LOCAL = "  [Dev/Local]";
+    public static string SYNCHRONOUS = "  [Dev/Synchronous]";
     public static string CONVERSION = " [Dev/Conversion]";
     public static string TRANSPORTS = "[Dev/Transports]";
 

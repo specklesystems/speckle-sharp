@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
+using ConnectorGrasshopper.Properties;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -112,8 +113,8 @@ namespace ConnectorGrasshopper.Ops
     /// <summary>
     /// Initializes a new instance of the Operations class.
     /// </summary>
-    public ReceiveSync() : base("ReceiveSync", "ReceiveSync", "Receive data from a Speckle server Synchronously",
-      "Speckle 2", "   Send/Receive")
+    public ReceiveSync() : base("Synchronous Receiver", "SR", "Receive data from a Speckle server Synchronously. This will block GH untill all the data are received which can be used to safely trigger other processes downstream",
+      ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SYNCHRONOUS)
     {
       SetDefaultKitAndConverter();
     }
@@ -440,9 +441,7 @@ namespace ConnectorGrasshopper.Ops
     {
       get
       {
-        //You can add image files to your project resources and access them like this:
-        // return Resources.IconForThisComponent;
-        return null;
+        return Resources.SynchronousReceiver;
       }
     }
 
