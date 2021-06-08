@@ -247,23 +247,11 @@ namespace ConnectorGrasshopper.Ops
       if (RunCount == 1)
       {
         CreateCancelationToken();
-        //tokenSource = new CancellationTokenSource();
-        //currentWorker = BaseWorker.Duplicate();
         ParseInput(DA);
       }
 
       if (InPreSolve)
       {
-
-        //if (currentWorker == null)
-        //{
-        //  AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not get a worker instance.");
-        //  return;
-        //}
-
-        //currentWorker.GetData(DA, Params);
-        //currentWorker.CancellationToken = tokenSource.Token;
-
         var task = Task.Run(async () =>
         {
           if (StreamWrapper == null)
@@ -279,7 +267,6 @@ namespace ConnectorGrasshopper.Ops
           var myCommit = await ReceiveComponentWorker.GetCommit(StreamWrapper, client, (level, message) =>
           {
             AddRuntimeMessage(level, message);
-            //throw new Exception(message);
           }, CancelToken);
 
           if (myCommit == null)
@@ -320,7 +307,6 @@ namespace ConnectorGrasshopper.Ops
       {
         if (ReceivedObject == null)
           return;
-        //currentWorker.SetData(DA);
         ReceivedObjectId = ReceivedObject.id;
 
         //the active document may have changed
