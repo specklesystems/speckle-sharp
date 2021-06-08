@@ -7,6 +7,7 @@ using ConverterRevitShared.Revit;
 using Objects.Geometry;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
 {
@@ -33,7 +34,7 @@ namespace Objects.Converter.Revit
                         solids.AddRange(brepMeshSolids);
                     }
                     break;
-                case Mesh mesh:
+                case Objects.Geometry.Mesh mesh:
                     var meshSolids = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
                         .Select(m => m as DB.Solid);
                     solids.AddRange(meshSolids);
@@ -94,10 +95,29 @@ namespace Objects.Converter.Revit
 
         private string CreateFreeformElementFamily(List<DB.Solid> solids, string name)
         {
-            // FreeformElements can only be created in a family context.
-            // so we create a temporary family to hold it.
-            
-            var famPath = Path.Combine(Doc.Application.FamilyTemplatePath, @"English\Metric Generic Model.rft");
+      // FreeformElements can only be created in a family context.
+      // so we create a temporary family to hold it.
+
+      string templatePath = "..\\FamilyTemplates";
+#if (REVIT2019)
+      templatePath = Path.Combine(templatePath, "Revit2019");
+#elif (REVIT2020)
+      templatePath = Path.Combine(templatePath, "Revit2020");
+#elif (REVIT2021)
+      templatePath = Path.Combine(templatePath, "Revit2021");
+#elif (REVIT2022)
+      templatePath = Path.Combine(templatePath, "Revit2022");
+#endif
+      string famPath = null;
+            switch (Doc.DisplayUnitSystem)
+            {
+              case DisplayUnit.IMPERIAL:
+                famPath = Path.Combine(templatePath, @"Generic Model.rft");
+                break;
+              case DisplayUnit.METRIC:
+                famPath = Path.Combine(templatePath, @"Metric Generic Model.rft");
+                break;
+            }
             if (!File.Exists(famPath))
             {
                 throw new Exception($"Could not find file Metric Generic Model.rft - {famPath}");

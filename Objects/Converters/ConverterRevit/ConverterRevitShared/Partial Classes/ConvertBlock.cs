@@ -145,10 +145,27 @@ namespace Objects.Converter.Revit
       }
 
       // create a family to represent a block definition
-      // TODO: package our own generic model rft so this path will always work (need to change for freeform elem too)
-      // TODO: match the rft unit to the main doc unit system (ie if main doc is in feet, pick the English Generic Model)
       // TODO: rename block with stream commit info prefix taken from UI - need to figure out cleanest way of storing this in the doc for retrieval by converter
-      var famPath = Path.Combine(Doc.Application.FamilyTemplatePath, @"Metric Generic Model.rft");
+      var templatePath = "..\\FamilyTemplates";
+#if (REVIT2019)
+      templatePath = Path.Combine(templatePath, "Revit2019");
+#elif (REVIT2020)
+      templatePath = Path.Combine(templatePath, "Revit2020");
+#elif (REVIT2021)
+      templatePath = Path.Combine(templatePath, "Revit2021");
+#elif (REVIT2022)
+      templatePath = Path.Combine(templatePath, "Revit2022");
+#endif
+      string famPath = null;
+      switch (Doc.DisplayUnitSystem)
+      {
+        case DisplayUnit.IMPERIAL:
+          famPath = Path.Combine(templatePath, @"Generic Model.rft");
+          break;
+        case DisplayUnit.METRIC:
+          famPath = Path.Combine(templatePath, @"Metric Generic Model.rft");
+          break;
+      }
       if (!File.Exists(famPath))
       {
         throw new Exception($"Could not find file Metric Generic Model.rft - {famPath}");
