@@ -12,6 +12,7 @@ using Acad = Autodesk.AutoCAD.Geometry;
 using Interval = Objects.Primitive.Interval;
 using Polycurve = Objects.Geometry.Polycurve;
 using Curve = Objects.Geometry.Curve;
+using Point = Objects.Geometry.Point;
 using Brep = Objects.Geometry.Brep;
 using Mesh = Objects.Geometry.Mesh;
 
@@ -19,30 +20,21 @@ namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
-    // featurelines
-    public Polycurve FeatureLineToSpeckle(CivilDB.FeatureLine featureLine)
+    /*
+    // stations
+    public Point StationToSpeckle(CivilDB.Station station)
     {
-      var polycurve = new Polycurve() { closed = featureLine.Closed };
-
-      // extract segment curves
-      var segments = new List<ICurve>();
-      var exploded = new DBObjectCollection();
-      featureLine.Explode(exploded);
-      for (int i = 0; i < exploded.Count; i++)
-        segments.Add((ICurve)ConvertToSpeckle(exploded[i]));
-      polycurve.segments = segments;
-
-      // TODO: additional params to attach
-      try{
-        var points = featureLine.GetPoints(Autodesk.Civil.FeatureLinePointType.AllPoints);
-        var grade = new Interval(featureLine.MinGrade, featureLine.MaxGrade);
-        var elevation = new Interval(featureLine.MinElevation, featureLine.MaxElevation);
-        var name = featureLine.DisplayName;
-      }
-      catch{}
-
-      return polycurve;
+      var point = PointToSpeckle(station.Location);
+      if (station.DisplayName != null)
+        point["name"] = station.DisplayName;
+      if (station.Description != null)
+        point["description"] = station.Description;
+      point["type"] = station.StationType.ToString();
+      point["number"] = station.RawStation;
+      return point;
     }
+    */
+
     public CivilDB.FeatureLine FeatureLineToNative(Polycurve polycurve)
     {
       return null;
@@ -83,6 +75,44 @@ namespace Objects.Converter.AutocadCivil
 
       return curve;
     }
+
+    // featurelines
+    public Base FeatureLineToSpeckle(CivilDB.FeatureLine featureline)
+    {
+      var curve = CurveToSpeckle(featureline.BaseCurve, ModelUnits) as Base;
+
+      if (featureline.DisplayName != null)
+        curve["name"] = featureline.DisplayName;
+      if (featureline.Description != null)
+        curve["description"] = featureline.Description;
+
+      return curve;
+    }
+    /*
+    public Polycurve FeatureLineToSpeckle(CivilDB.FeatureLine featureLine)
+    {
+      var polycurve = new Polycurve() { closed = featureLine.Closed };
+
+      // extract segment curves
+      var segments = new List<ICurve>();
+      var exploded = new DBObjectCollection();
+      featureLine.Explode(exploded);
+      for (int i = 0; i < exploded.Count; i++)
+        segments.Add((ICurve)ConvertToSpeckle(exploded[i]));
+      polycurve.segments = segments;
+
+      // TODO: additional params to attach
+      try
+      {
+        var grade = new Interval(featureLine.MinGrade, featureLine.MaxGrade);
+        var elevation = new Interval(featureLine.MinElevation, featureLine.MaxElevation);
+        var name = featureLine.DisplayName;
+      }
+      catch { }
+
+      return polycurve;
+    }
+    */
 
     // surfaces
     public Mesh SurfaceToSpeckle(CivilDB.TinSurface surface)
@@ -222,6 +252,48 @@ namespace Objects.Converter.AutocadCivil
       catch{}
       return mesh;
     }
+
+    // corridors
+    public Base CorridorToSpeckle(CivilDB.Corridor corridor)
+    {
+      var _corridor = new Base();
+
+      var baselines = new List<Base>();
+      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      {
+        foreach (var baseline in corridor.Baselines)
+        {
+          Base convertedBaseline = null;
+          if (baseline.IsFeatureLineBased())
+          {
+            var featureline = tr.GetObject(baseline.FeatureLineId, OpenMode.ForRead) as CivilDB.FeatureLine;
+            convertedBaseline = FeatureLineToSpeckle(featureline);
+          }
+          else
+          {
+            var alignment = tr.GetObject(baseline.AlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
+            convertedBaseline = AlignmentToSpeckle(alignment);
+          }
+          if (convertedBaseline != null)
+          {
+            convertedBaseline["stations"] = baseline.SortedStations();
+            baselines.Add(convertedBaseline);
+          }
+        }
+
+        tr.Commit();
+      }
+
+      _corridor["@baselines"] = baselines;
+      if (corridor.DisplayName != null)
+        _corridor["name"] = corridor.DisplayName;
+      if (corridor.Description != null)
+        _corridor["description"] = corridor.Description;
+      _corridor.units = ModelUnits;
+
+      return _corridor;
+    }
+
   }
 }
 #endif

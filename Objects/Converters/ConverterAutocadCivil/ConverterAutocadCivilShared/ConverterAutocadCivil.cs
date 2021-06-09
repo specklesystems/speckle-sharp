@@ -250,6 +250,9 @@ public static string AutocadAppName = Applications.Autocad2022;
         case CivilDB.Alignment o:
           return AlignmentToSpeckle(o);
 
+        case CivilDB.Corridor o:
+          return CorridorToSpeckle(o); 
+
         case CivilDB.FeatureLine o:
           return FeatureLineToSpeckle(o);
 
@@ -300,6 +303,7 @@ public static string AutocadAppName = Applications.Autocad2022;
 
 #if (CIVIL2021 || CIVIL2022)
             case CivilDB.FeatureLine _:
+            case CivilDB.Corridor _:
             case CivilDB.Structure _:
             case CivilDB.Alignment _:
             case CivilDB.Pipe _:
