@@ -229,26 +229,31 @@ namespace ConverterRevitTests
       if (expecedParam == null)
         return;
 
-      if (expecedParam.StorageType == StorageType.Double)
+      switch ( expecedParam.StorageType )
       {
-        Assert.Equal(expecedParam.AsDouble(), actual.get_Parameter(param).AsDouble(), 4);
-      }
-      else if (expecedParam.StorageType == StorageType.Integer)
-      {
-        Assert.Equal(expecedParam.AsInteger(), actual.get_Parameter(param).AsInteger());
-      }
-      else if (expecedParam.StorageType == StorageType.String)
-      {
-        Assert.Equal(expecedParam.AsString(), actual.get_Parameter(param).AsString());
-      }
-      else if (expecedParam.StorageType == StorageType.ElementId)
-      {
-        var e1 = fixture.SourceDoc.GetElement(expecedParam.AsElementId());
-        var e2 = fixture.NewDoc.GetElement(actual.get_Parameter(param).AsElementId());
-        if (e1 is Level l1 && e2 is Level l2)
-          Assert.Equal(l1.Elevation, l2.Elevation, 3);
-        else if (e1 != null && e2 != null)
-          Assert.Equal(e1.Name, e2.Name);
+        case StorageType.Double:
+          Assert.Equal(expecedParam.AsDouble(), actual.get_Parameter(param).AsDouble(), 4);
+          break;
+        case StorageType.Integer:
+          Assert.Equal(expecedParam.AsInteger(), actual.get_Parameter(param).AsInteger());
+          break;
+        case StorageType.String:
+          Assert.Equal(expecedParam.AsString(), actual.get_Parameter(param).AsString());
+          break;
+        case StorageType.ElementId:
+        {
+          var e1 = fixture.SourceDoc.GetElement(expecedParam.AsElementId());
+          var e2 = fixture.NewDoc.GetElement(actual.get_Parameter(param).AsElementId());
+          if (e1 is Level l1 && e2 is Level l2)
+            Assert.Equal(l1.Elevation, l2.Elevation, 3);
+          else if (e1 != null && e2 != null)
+            Assert.Equal(e1.Name, e2.Name);
+          break;
+        }
+        case StorageType.None:
+          break;
+        default:
+          throw new ArgumentOutOfRangeException();
       }
     }
   }
