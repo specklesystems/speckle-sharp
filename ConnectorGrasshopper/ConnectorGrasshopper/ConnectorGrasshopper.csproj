@@ -68,6 +68,7 @@
     <Compile Include="Ops\Operations.ReceiveComponentSync.cs" />
     <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
     <Compile Include="Ops\Operations.SendLocalComponent.cs" />
+    <Compile Include="Ops\Operations.SendComponentSync.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObjectDialog.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObject.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
