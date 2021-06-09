@@ -35,7 +35,7 @@ namespace Speckle.Core.Transports
 
     private HttpClient Client { get; set; }
 
-    private ConcurrentQueue < (string, string, int) > Queue = new ConcurrentQueue < (string, string, int) > ();
+    private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
 
     private System.Timers.Timer WriteTimer;
 
@@ -46,6 +46,8 @@ namespace Speckle.Core.Transports
     private int MAX_BUFFER_SIZE = 1_000_000;
 
     private int MAX_MULTIPART_COUNT = 50;
+
+    private int DOWNLOAD_BATCH_SIZE = 1000;
 
     public bool CompressPayloads { get; set; } = true;
 
@@ -75,8 +77,8 @@ namespace Speckle.Core.Transports
       Client = new HttpClient(new HttpClientHandler()
       {
         AutomaticDecompression = System.Net.DecompressionMethods.GZip,
-        })
-        {
+      })
+      {
         BaseAddress = new Uri(baseUri),
         Timeout = new TimeSpan(0, 0, timeoutSeconds),
       };
@@ -123,7 +125,7 @@ namespace Speckle.Core.Transports
 
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue < (string, string, int) > ();
+        Queue = new ConcurrentQueue<(string, string, int)>();
         IS_WRITING = false;
         return;
       }
@@ -178,11 +180,11 @@ namespace Speckle.Core.Transports
         OnErrorAction?.Invoke(TransportName, e);
         return (queuedBatch.Count, null);
       }
-      
+
       // Filter the queued batch to only return new objects
 
       List<(string, string, int)> newBatch = new List<(string, string, int)>();
-      foreach(var queuedItem in queuedBatch)
+      foreach (var queuedItem in queuedBatch)
       {
         if (!hasObjects.ContainsKey(queuedItem.Item1) || !hasObjects[queuedItem.Item1])
         {
@@ -197,7 +199,7 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue < (string, string, int) > ();
+        Queue = new ConcurrentQueue<(string, string, int)>();
         IS_WRITING = false;
         return;
       }
@@ -223,13 +225,14 @@ namespace Speckle.Core.Transports
       {
         if (CancellationToken.IsCancellationRequested)
         {
-          Queue = new ConcurrentQueue < (string, string, int) > ();
+          Queue = new ConcurrentQueue<(string, string, int)>();
           IS_WRITING = false;
           return;
         }
 
         (int consumedQueuedObjects, List<(string, string, int)> batch) = await ConsumeNewBatch();
-        if (batch == null) {
+        if (batch == null)
+        {
           // Canceled or error happened (which was already reported)
           Queue = new ConcurrentQueue<(string, string, int)>();
           IS_WRITING = false;
@@ -275,7 +278,7 @@ namespace Speckle.Core.Transports
 
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue < (string, string, int) > ();
+        Queue = new ConcurrentQueue<(string, string, int)>();
         IS_WRITING = false;
         return;
       }
@@ -312,7 +315,7 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue < (string, string, int) > ();
+        Queue = new ConcurrentQueue<(string, string, int)>();
         IS_WRITING = false;
         return;
       }
@@ -330,7 +333,7 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue < (string, string, int) > ();
+        Queue = new ConcurrentQueue<(string, string, int)>();
         IS_WRITING = false;
         return;
       }
@@ -354,7 +357,7 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue < (string, string, int) > ();
+        Queue = new ConcurrentQueue<(string, string, int)>();
         return null;
       }
 
@@ -367,7 +370,6 @@ namespace Speckle.Core.Transports
       var response = Client.SendAsync(message, HttpCompletionOption.ResponseContentRead, CancellationToken).Result.Content;
       return response.ReadAsStringAsync().Result;
     }
-
 
     public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport, Action<int> onTotalChildrenCountKnown)
     {
@@ -408,11 +410,40 @@ namespace Speckle.Core.Transports
       var childrenFoundMap = await targetTransport.HasObjects(childrenIds);
       List<string> newChildrenIds = new List<string>(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
 
+      targetTransport.BeginWrite();
+
       // Get the children that are not already in the targetTransport
+      List<string> childrenIdBatch = new List<string>(DOWNLOAD_BATCH_SIZE);
+      bool downloadBatchResult;
+      foreach (var objectId in newChildrenIds)
+      {
+        childrenIdBatch.Add(objectId);
+        if (childrenIdBatch.Count >= DOWNLOAD_BATCH_SIZE)
+        {
+          downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport);
+          if (!downloadBatchResult)
+            return null;
+          childrenIdBatch = new List<string>(DOWNLOAD_BATCH_SIZE);
+        }
+      }
+      if (childrenIdBatch.Count > 0)
+      {
+        downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport);
+        if (!downloadBatchResult)
+          return null;
+      }
+
+      targetTransport.SaveObject(hash, rootObjectStr);
+      await targetTransport.WriteComplete();
+      return rootObjectStr;
+    }
+
+    private async Task<bool> CopyObjects(List<string> hashes, ITransport targetTransport)
+    {
 
       Stream childrenStream = null;
 
-      if (newChildrenIds.Count > 0)
+      if (hashes.Count > 0)
       {
         var childrenHttpMessage = new HttpRequestMessage()
         {
@@ -421,7 +452,7 @@ namespace Speckle.Core.Transports
         };
 
         Dictionary<string, string> postParameters = new Dictionary<string, string>();
-        postParameters.Add("objects", JsonConvert.SerializeObject(newChildrenIds));
+        postParameters.Add("objects", JsonConvert.SerializeObject(hashes));
         childrenHttpMessage.Content = new FormUrlEncodedContent(postParameters);
         childrenHttpMessage.Headers.Add("Accept", "text/plain");
 
@@ -434,7 +465,7 @@ namespace Speckle.Core.Transports
         catch (Exception e)
         {
           OnErrorAction?.Invoke(TransportName, e);
-          return null;
+          return false;
         }
 
         childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync();
@@ -453,7 +484,7 @@ namespace Speckle.Core.Transports
             if (CancellationToken.IsCancellationRequested)
             {
               Queue = new ConcurrentQueue<(string, string, int)>();
-              return null;
+              return false;
             }
 
             var line = reader.ReadLine();
@@ -464,9 +495,8 @@ namespace Speckle.Core.Transports
           }
         }
       }
-      targetTransport.SaveObject(hash, rootObjectStr);
-      await targetTransport.WriteComplete();
-      return rootObjectStr;
+
+      return true;
     }
 
     #endregion
@@ -540,7 +570,7 @@ namespace Speckle.Core.Transports
     protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
     {
       // Open a GZipStream that writes to the specified output stream.
-      using(GZipStream gzip = new GZipStream(stream, CompressionMode.Compress, true))
+      using (GZipStream gzip = new GZipStream(stream, CompressionMode.Compress, true))
       {
         // Copy all the input content to the GZip stream.
         if (content != null)
