@@ -47,7 +47,7 @@ namespace Speckle.Core.Transports
 
     private int MAX_MULTIPART_COUNT = 50;
 
-    private int DOWNLOAD_BATCH_SIZE = 5000;
+    private int DOWNLOAD_BATCH_SIZE = 1000;
 
     public bool CompressPayloads { get; set; } = true;
 
