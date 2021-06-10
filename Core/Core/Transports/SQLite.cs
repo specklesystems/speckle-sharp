@@ -22,6 +22,7 @@ namespace Speckle.Core.Transports
     public string ConnectionString { get; set; }
 
     private SQLiteConnection Connection { get; set; }
+    private object ConnectionLock { get; set; }
 
     private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
 
@@ -111,6 +112,10 @@ namespace Speckle.Core.Transports
         cmd = new SQLiteCommand("PRAGMA temp_store=MEMORY;", c);
         cmd.ExecuteNonQuery();
       }
+
+      Connection = new SQLiteConnection(ConnectionString);
+      Connection.Open();
+      ConnectionLock = new object();
 
       if (CancellationToken.IsCancellationRequested) return;
     }
@@ -272,10 +277,9 @@ namespace Speckle.Core.Transports
     public string GetObject(string hash)
     {
       if (CancellationToken.IsCancellationRequested) return null;
-      using (var c = new SQLiteConnection(ConnectionString))
+      lock (ConnectionLock)
       {
-        c.Open();
-        using (var command = new SQLiteCommand(c))
+        using (var command = new SQLiteCommand(Connection))
         {
           command.CommandText = "SELECT * FROM objects WHERE hash = @hash LIMIT 1 ";
           command.Parameters.AddWithValue("@hash", hash);
