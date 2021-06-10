@@ -107,8 +107,8 @@ namespace ConverterRevitTests
           {
             resEls.AddRange(apls);
             flatSpkElems.Add(el);
-            if (el["elements"] != null)
-              flatSpkElems.AddRange(el["elements"] as List<Base>);
+            if ( el[ "elements" ] == null ) continue;
+            flatSpkElems.AddRange(( el[ "elements" ] as List<Base> ).Where(b => converter.CanConvertToNative(b)));
           }
           else
           {
