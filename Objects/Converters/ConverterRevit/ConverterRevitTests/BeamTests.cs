@@ -45,7 +45,7 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Beam", "ToNativeUpdates")]
-    public void WallToNativeUpdates()
+    public void BeamToNativeUpdates()
     {
       SpeckleToNativeUpdates<DB.FamilyInstance>(AssertFamilyInstanceEqual);
     }
