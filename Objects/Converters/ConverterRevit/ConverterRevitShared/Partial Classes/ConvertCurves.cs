@@ -3,9 +3,9 @@ using Objects.BuiltElements.Revit;
 using Objects.BuiltElements.Revit.Curve;
 using Speckle.Core.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-
 using DB = Autodesk.Revit.DB;
 using DetailCurve = Objects.BuiltElements.Revit.Curve.DetailCurve;
 using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
@@ -38,7 +38,7 @@ namespace Objects.Converter.Revit
       var curveEnumerator = curves.GetEnumerator();
       while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
       {
-        var baseCurve = curveEnumerator.Current as Curve;
+        var baseCurve = curveEnumerator.Current as DB.Curve;
         DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(baseCurve, NewSketchPlaneFromCurve(baseCurve, Doc));
 
         var lineStyles = revitCurve.GetLineStyleIds();
@@ -66,15 +66,32 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
       }
 
-      var placeholders = new List<ApplicationPlaceholderObject>();
-      var curveEnumerator = CurveToNative(speckleLine).GetEnumerator();
-      while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
+      try
       {
-        var curve = curveEnumerator.Current as DB.Curve;
+        return ModelCurvesFromEnumerator(CurveToNative(speckleLine).GetEnumerator(), speckleLine);
+      }
+      catch ( Exception e )
+      {
+        // use display value if curve fails (prob a closed, periodic curve or a non-planar nurbs)
+        return ModelCurvesFromEnumerator(CurveToNative(( ( Geometry.Curve ) speckleLine ).displayValue).GetEnumerator(),
+          speckleLine);
+      }
+    }
+
+    public List<ApplicationPlaceholderObject> ModelCurvesFromEnumerator(IEnumerator curveEnum, ICurve speckleLine)
+    {
+      var placeholders = new List<ApplicationPlaceholderObject>();
+      while ( curveEnum.MoveNext() && curveEnum.Current != null )
+      {
+        var curve = curveEnum.Current as DB.Curve;
         // Curves must be bound in order to be valid model curves
-        if(!curve.IsBound) curve.MakeBound(speckleLine.domain.start ?? 0, speckleLine.domain.end ?? Math.PI * 2);
+        if ( !curve.IsBound ) curve.MakeBound(speckleLine.domain.start ?? 0, speckleLine.domain.end ?? Math.PI * 2);
         DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
-        placeholders.Add(new ApplicationPlaceholderObject() { applicationId = (speckleLine as Base).applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
+        placeholders.Add(new ApplicationPlaceholderObject()
+        {
+          applicationId = ( speckleLine as Base ).applicationId, ApplicationGeneratedId = revitCurve.UniqueId,
+          NativeObject = revitCurve
+        });
       }
 
       return placeholders;
