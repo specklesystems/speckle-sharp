@@ -30,7 +30,7 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling += Initialise;
 
       var SpecklePanel = application.CreateRibbonPanel("Speckle 2");
-      var SpeckleButton = SpecklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName))as PushButton;
+      var SpeckleButton = SpecklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
 
       if (SpeckleButton != null)
       {

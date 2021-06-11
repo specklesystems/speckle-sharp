@@ -749,16 +749,15 @@ namespace Objects.Converter.Revit
 
     public string GetTemplatePath(string templateName)
     {
-      DirectoryInfo directoryInfo = new DirectoryInfo(System.IO.Directory.GetCurrentDirectory());
-      string directoryPath = Path.Combine(directoryInfo.Parent.Parent.FullName, @"FamilyTemplates\");
-      string templatePath = null;
+      var directoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Kits", "Objects", "Templates", "Revit", RevitVersionHelper.Version);
+      string templatePath = "";
       switch (Doc.DisplayUnitSystem)
       {
         case DisplayUnit.IMPERIAL:
-          templatePath = Path.Combine(directoryPath, $"{templateName}.rft");
+          templatePath = Path.Combine(directoryPath, $"{templateName} - Imperial.rft");
           break;
         case DisplayUnit.METRIC:
-          templatePath = Path.Combine(directoryPath, $"Metric {templateName}.rft");
+          templatePath = Path.Combine(directoryPath, $"{templateName} - Metric.rft");
           break;
       }
 
