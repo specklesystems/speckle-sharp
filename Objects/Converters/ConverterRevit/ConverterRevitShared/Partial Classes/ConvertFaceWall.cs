@@ -31,33 +31,14 @@ namespace Objects.Converter.Revit
         Doc.Delete(revitWall.Id);
       }
 
-      var templatePath = "..\\FamilyTemplates";
-#if (REVIT2019)
-      templatePath = Path.Combine(templatePath, "Revit2019");
-#elif (REVIT2020)
-      templatePath = Path.Combine(templatePath, "Revit2020");
-#elif (REVIT2021)
-      templatePath = Path.Combine(templatePath, "Revit2021");
-#elif (REVIT2022)
-      templatePath = Path.Combine(templatePath, "Revit2022");
-#endif
-      string famPath = null;
-      switch (Doc.DisplayUnitSystem)
-      {
-        case DisplayUnit.IMPERIAL:
-          famPath = Path.Combine(templatePath, @"Mass.rft");
-          break;
-        case DisplayUnit.METRIC:
-          famPath = Path.Combine(templatePath, @"Metric Mass.rft");
-          break;
-      }
-      if (!File.Exists(famPath))
+      var templatePath = GetTemplatePath("Mass");
+      if (!File.Exists(templatePath))
       {
         ConversionErrors.Add(new Exception($"Could not find file Metric Mass.rft"));
         return null;
       }
 
-      var tempMassFamilyPath = CreateMassFamily(famPath, speckleWall.surface, speckleWall.applicationId);
+      var tempMassFamilyPath = CreateMassFamily(templatePath, speckleWall.surface, speckleWall.applicationId);
       Family fam;
       Doc.LoadFamily(tempMassFamilyPath, new FamilyLoadOption(), out fam);
       var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;

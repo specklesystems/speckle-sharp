@@ -95,55 +95,36 @@ namespace Objects.Converter.Revit
 
         private string CreateFreeformElementFamily(List<DB.Solid> solids, string name)
         {
-      // FreeformElements can only be created in a family context.
-      // so we create a temporary family to hold it.
+          // FreeformElements can only be created in a family context.
+          // so we create a temporary family to hold it.
 
-      string templatePath = "..\\FamilyTemplates";
-#if (REVIT2019)
-      templatePath = Path.Combine(templatePath, "Revit2019");
-#elif (REVIT2020)
-      templatePath = Path.Combine(templatePath, "Revit2020");
-#elif (REVIT2021)
-      templatePath = Path.Combine(templatePath, "Revit2021");
-#elif (REVIT2022)
-      templatePath = Path.Combine(templatePath, "Revit2022");
-#endif
-      string famPath = null;
-            switch (Doc.DisplayUnitSystem)
-            {
-              case DisplayUnit.IMPERIAL:
-                famPath = Path.Combine(templatePath, @"Generic Model.rft");
-                break;
-              case DisplayUnit.METRIC:
-                famPath = Path.Combine(templatePath, @"Metric Generic Model.rft");
-                break;
-            }
-            if (!File.Exists(famPath))
-            {
-                throw new Exception($"Could not find file Metric Generic Model.rft - {famPath}");
-            }
+          var templatePath = GetTemplatePath("Generic Model");
+          if (!File.Exists(templatePath))
+          {
+              throw new Exception($"Could not find Generic Model rft file - {templatePath}");
+          }
             
-            var famDoc = Doc.Application.NewFamilyDocument(famPath);
-            using (DB.Transaction t = new DB.Transaction(famDoc, "Create Freeform Elements"))
-            {
-                t.Start();
+          var famDoc = Doc.Application.NewFamilyDocument(templatePath);
+          using (DB.Transaction t = new DB.Transaction(famDoc, "Create Freeform Elements"))
+          {
+              t.Start();
                     
-                solids.ForEach(s =>
-                {
-                    DB.FreeFormElement.Create(famDoc, s);
-                });
+              solids.ForEach(s =>
+              {
+                  DB.FreeFormElement.Create(famDoc, s);
+              });
 
-                t.Commit();
-            }
+              t.Commit();
+          }
 
-            var famName = "SpeckleFreeform_" + name;
-            string tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
-            var so = new DB.SaveAsOptions();
-            so.OverwriteExistingFile = true;
-            famDoc.SaveAs(tempFamilyPath, so);
-            famDoc.Close();
+          var famName = "SpeckleFreeform_" + name;
+          string tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
+          var so = new DB.SaveAsOptions();
+          so.OverwriteExistingFile = true;
+          famDoc.SaveAs(tempFamilyPath, so);
+          famDoc.Close();
 
-            return tempFamilyPath;
+          return tempFamilyPath;
         }
     }
 }

@@ -99,6 +99,16 @@ namespace Objects.Converter.Revit
     // I suspect this also needs to be fixed for freeform elements
     private string BlockDefinitionToNative(BlockDefinition definition)
     {
+      // create a family to represent a block definition
+      // TODO: rename block with stream commit info prefix taken from UI - need to figure out cleanest way of storing this in the doc for retrieval by converter
+      var templatePath = GetTemplatePath("Generic Model");
+      if (!File.Exists(templatePath))
+      {
+        throw new Exception($"Could not find template file - {templatePath}");
+      }
+
+      var famDoc = Doc.Application.NewFamilyDocument(templatePath);
+
       // convert definition geometry to native
       var solids = new List<DB.Solid>();
       var curves = new List<DB.Curve>();
@@ -144,34 +154,6 @@ namespace Objects.Converter.Revit
         }
       }
 
-      // create a family to represent a block definition
-      // TODO: rename block with stream commit info prefix taken from UI - need to figure out cleanest way of storing this in the doc for retrieval by converter
-      var templatePath = "..\\FamilyTemplates";
-#if (REVIT2019)
-      templatePath = Path.Combine(templatePath, "Revit2019");
-#elif (REVIT2020)
-      templatePath = Path.Combine(templatePath, "Revit2020");
-#elif (REVIT2021)
-      templatePath = Path.Combine(templatePath, "Revit2021");
-#elif (REVIT2022)
-      templatePath = Path.Combine(templatePath, "Revit2022");
-#endif
-      string famPath = null;
-      switch (Doc.DisplayUnitSystem)
-      {
-        case DisplayUnit.IMPERIAL:
-          famPath = Path.Combine(templatePath, @"Generic Model.rft");
-          break;
-        case DisplayUnit.METRIC:
-          famPath = Path.Combine(templatePath, @"Metric Generic Model.rft");
-          break;
-      }
-      if (!File.Exists(famPath))
-      {
-        throw new Exception($"Could not find file Metric Generic Model.rft - {famPath}");
-      }
-
-      var famDoc = Doc.Application.NewFamilyDocument(famPath);
       using (DB.Transaction t = new DB.Transaction(famDoc, "Create Block Geometry Elements"))
       {
         t.Start();
