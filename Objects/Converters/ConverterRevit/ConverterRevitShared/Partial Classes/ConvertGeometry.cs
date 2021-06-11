@@ -297,6 +297,7 @@ namespace Objects.Converter.Revit
             speckleKnots.Insert(0, speckleKnots[0]);
             speckleKnots.Add(speckleKnots[speckleKnots.Count - 1]);
           }
+
           //var knots = speckleKnots.GetRange(0, pts.Count + speckleCurve.degree + 1);
           var curve = NurbSpline.CreateCurve(speckleCurve.degree, speckleKnots, pts, weights);
           return curve;
@@ -311,6 +312,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
+        if ( e is Autodesk.Revit.Exceptions.ArgumentException ) throw e; // prob a closed, periodic curve
         return null;
       }
     }
