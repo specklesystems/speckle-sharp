@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements;
@@ -744,6 +745,24 @@ namespace Objects.Converter.Revit
     {
       string[] _string = s.Split(separators, StringSplitOptions.RemoveEmptyEntries);
       return String.Join(newVal, _string);
+    }
+
+    public string GetTemplatePath(string templateName)
+    {
+      DirectoryInfo directoryInfo = new DirectoryInfo(System.IO.Directory.GetCurrentDirectory());
+      string directoryPath = Path.Combine(directoryInfo.Parent.Parent.FullName, @"FamilyTemplates\");
+      string templatePath = null;
+      switch (Doc.DisplayUnitSystem)
+      {
+        case DisplayUnit.IMPERIAL:
+          templatePath = Path.Combine(directoryPath, $"{templateName}.rft");
+          break;
+        case DisplayUnit.METRIC:
+          templatePath = Path.Combine(directoryPath, $"Metric {templateName}.rft");
+          break;
+      }
+
+      return templatePath;
     }
     #endregion
 
