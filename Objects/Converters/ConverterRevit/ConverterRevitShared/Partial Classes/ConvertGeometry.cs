@@ -47,14 +47,15 @@ namespace Objects.Converter.Revit
     public XYZ PointToNative(Point pt)
     {
       var revitPoint = new XYZ(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
-      var intPt = ToInternalCoordinates(revitPoint);
+      var intPt = ToInternalCoordinates(revitPoint, true);
       return intPt;
     }
 
     public Point PointToSpeckle(XYZ pt, string units = null)
     {
       var u = units ?? ModelUnits;
-      var extPt = ToExternalCoordinates(pt);
+      var extPt = ToExternalCoordinates(pt, true);
+
       var pointToSpeckle = new Point(
         u == Units.None ? extPt.X : ScaleToSpeckle(extPt.X),
         u == Units.None ? extPt.Y : ScaleToSpeckle(extPt.Y),
@@ -97,7 +98,7 @@ namespace Objects.Converter.Revit
     public Vector VectorToSpeckle(XYZ pt, string units = null)
     {
       var u = units ?? ModelUnits;
-      var extPt = ToExternalCoordinates(pt);
+      var extPt = ToExternalCoordinates(pt, false);
       var pointToSpeckle = new Vector(
         u == Units.None ? extPt.X : ScaleToSpeckle(extPt.X),
         u == Units.None ? extPt.Y : ScaleToSpeckle(extPt.Y),
@@ -109,7 +110,7 @@ namespace Objects.Converter.Revit
     public XYZ VectorToNative(Vector pt)
     {
       var revitVector = new XYZ(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
-      var intV = ToInternalCoordinates(revitVector);
+      var intV = ToInternalCoordinates(revitVector, false);
       return intV;
     }
 
@@ -297,6 +298,7 @@ namespace Objects.Converter.Revit
             speckleKnots.Insert(0, speckleKnots[0]);
             speckleKnots.Add(speckleKnots[speckleKnots.Count - 1]);
           }
+
           //var knots = speckleKnots.GetRange(0, pts.Count + speckleCurve.degree + 1);
           var curve = NurbSpline.CreateCurve(speckleCurve.degree, speckleKnots, pts, weights);
           return curve;
@@ -311,6 +313,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
+        if ( e is Autodesk.Revit.Exceptions.ArgumentException ) throw e; // prob a closed, periodic curve
         return null;
       }
     }
@@ -647,7 +650,7 @@ namespace Objects.Converter.Revit
         for (var v = 0; v < controlPointCountV; v++)
         {
           var pt = controlPoints[uOffset + v];
-          var extPt = ToExternalCoordinates(pt);
+          var extPt = ToExternalCoordinates(pt, true);
           if (surface.IsRational)
           {
             var w = weights[uOffset + v];

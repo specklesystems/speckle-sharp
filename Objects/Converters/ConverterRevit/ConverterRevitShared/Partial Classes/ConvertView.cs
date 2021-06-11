@@ -52,8 +52,8 @@ namespace Objects.Converter.Revit
         speckleView = new View3D
         {
           origin = PointToSpeckle(rv3d.Origin),
-          forwardDirection = new Geometry.Vector(forward.X, forward.Y, forward.Z, "none"),
-          upDirection = new Geometry.Vector(up.X, up.Y, up.Z, "none"),
+          forwardDirection = VectorToSpeckle(forward, Speckle.Core.Kits.Units.None),
+          upDirection = VectorToSpeckle(up, Speckle.Core.Kits.Units.None),
           //target = target,
           isOrthogonal = !rv3d.IsPerspective,
           boundingBox = BoxToSpeckle(rv3d.CropBox)

@@ -49,7 +49,7 @@ namespace Objects.Converter.Revit
             var bottomLevel = LevelToNative(rs.bottomLevel);
             var topLevel = LevelToNative(rs.topLevel);
             revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
-            TrySetParam(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM, rs.height);
+            TrySetParam(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM, rs.height, rs.units);
 
             break;
           }
