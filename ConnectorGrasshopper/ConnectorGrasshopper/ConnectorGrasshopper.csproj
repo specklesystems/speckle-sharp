@@ -65,6 +65,7 @@
     <Compile Include="Loader.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectAsync.cs" />
     <Compile Include="Objects\SelectKitAsyncComponentBase.cs" />
+    <Compile Include="Ops\Operations.ReceiveComponentSync.cs" />
     <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
     <Compile Include="Ops\Operations.SendLocalComponent.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObjectDialog.cs" />
@@ -193,6 +194,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\SynchronousSender.png" />
+    <None Include="Resources\SynchronousReceiver.png" />
     <None Include="Resources\StateTag_Optional.Large.png" />
     <None Include="Resources\StateTag_List.Large.png" />
     <None Include="Resources\StateTag_Detach.Large.png" />
