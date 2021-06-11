@@ -47,14 +47,15 @@ namespace Objects.Converter.Revit
     public XYZ PointToNative(Point pt)
     {
       var revitPoint = new XYZ(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
-      var intPt = ToInternalCoordinates(revitPoint);
+      var intPt = ToInternalCoordinates(revitPoint, true);
       return intPt;
     }
 
     public Point PointToSpeckle(XYZ pt, string units = null)
     {
       var u = units ?? ModelUnits;
-      var extPt = ToExternalCoordinates(pt);
+      var extPt = ToExternalCoordinates(pt, true);
+
       var pointToSpeckle = new Point(
         u == Units.None ? extPt.X : ScaleToSpeckle(extPt.X),
         u == Units.None ? extPt.Y : ScaleToSpeckle(extPt.Y),
@@ -97,7 +98,7 @@ namespace Objects.Converter.Revit
     public Vector VectorToSpeckle(XYZ pt, string units = null)
     {
       var u = units ?? ModelUnits;
-      var extPt = ToExternalCoordinates(pt);
+      var extPt = ToExternalCoordinates(pt, false);
       var pointToSpeckle = new Vector(
         u == Units.None ? extPt.X : ScaleToSpeckle(extPt.X),
         u == Units.None ? extPt.Y : ScaleToSpeckle(extPt.Y),
@@ -109,7 +110,7 @@ namespace Objects.Converter.Revit
     public XYZ VectorToNative(Vector pt)
     {
       var revitVector = new XYZ(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
-      var intV = ToInternalCoordinates(revitVector);
+      var intV = ToInternalCoordinates(revitVector, false);
       return intV;
     }
 
@@ -647,7 +648,7 @@ namespace Objects.Converter.Revit
         for (var v = 0; v < controlPointCountV; v++)
         {
           var pt = controlPoints[uOffset + v];
-          var extPt = ToExternalCoordinates(pt);
+          var extPt = ToExternalCoordinates(pt, true);
           if (surface.IsRational)
           {
             var w = weights[uOffset + v];
