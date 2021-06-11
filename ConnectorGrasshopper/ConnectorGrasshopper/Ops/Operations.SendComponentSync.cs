@@ -28,6 +28,9 @@ namespace ConnectorGrasshopper.Ops
     public ISpeckleKit Kit;
     public List<StreamWrapper> OutputWrappers { get; private set; } = new List<StreamWrapper>();
     public bool UseDefaultCache { get; set; } = true;
+    private GH_Structure<IGH_Goo> dataInput;
+    private List<object> converted;
+
     /// <summary>
     /// Initializes a new instance of the SendComponentSync class.
     /// </summary>
@@ -45,7 +48,7 @@ namespace ConnectorGrasshopper.Ops
     {
       pManager.AddGenericParameter("Data", "D", "The data to send.",
   GH_ParamAccess.tree);
-      pManager.AddGenericParameter("Stream", "S", "Stream(s) and/or transports to send to.", GH_ParamAccess.tree);
+      pManager.AddGenericParameter("Stream", "S", "Stream(s) and/or transports to send to.", GH_ParamAccess.item);
       pManager.AddTextParameter("Message", "M", "Commit message. If left blank, one will be generated for you.",
         GH_ParamAccess.item, "");
 
@@ -172,8 +175,7 @@ namespace ConnectorGrasshopper.Ops
       }
     }
 
-    GH_Structure<IGH_Goo> dataInput;
-    GH_Structure<IGH_Goo> transportsInput;
+    //GH_Structure<IGH_Goo> transportsInput;
     /// <summary>
     /// Registers all the output parameters for this component.
     /// </summary>
@@ -183,31 +185,39 @@ namespace ConnectorGrasshopper.Ops
     /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+      DA.DisableGapLogic();
+
       if (RunCount == 1)
       {
         CreateCancelationToken();
         OutputWrappers = new List<StreamWrapper>();
-
         DA.GetDataTree(0, out dataInput);
-        DA.GetDataTree(1, out transportsInput);
+
+        //the active document may have changed
+        Converter.SetContextDocument(RhinoDoc.ActiveDoc);
+
+        // Note: this method actually converts the objects to speckle too
+        converted = Extras.Utilities.DataTreeToNestedLists(dataInput, Converter, source.Token, () =>
+        {
+          //ReportProgress("Conversion", Math.Round(convertedCount++ / (double)DataInput.DataCount, 2));
+        });
       }
+
+      //if (RunCount > 1)
+      //  return;
 
       if (InPreSolve)
       {
-        // TODO : This will force the component to be seen as a multithreaded component. But providing two messages will actually send off twice with different messages. We need to change this so it will make one thread per transport-message. So transport, message should become items on the inputs and not tree or lists
         string messageInput = "";
+
+        IGH_Goo transportInput = null;
+        DA.GetData(1, ref transportInput);
         DA.GetData(2, ref messageInput);
+        var transportsInput = new List<IGH_Goo> { transportInput };
+        //var transportsInput = Params.Input[1].VolatileData.AllData(true).Select(x => x).ToList();
 
         var task = Task.Run(async () =>
         {
-          //the active document may have changed
-          Converter.SetContextDocument(RhinoDoc.ActiveDoc);
-
-          // Note: this method actually converts the objects to speckle too
-          var converted = Extras.Utilities.DataTreeToNestedLists(dataInput, Converter, source.Token, () =>
-          {
-            //ReportProgress("Conversion", Math.Round(convertedCount++ / (double)DataInput.DataCount, 2));
-          });
 
           if (converted.Count == 0)
           {
@@ -226,10 +236,9 @@ namespace ConnectorGrasshopper.Ops
           }
 
           // Part 2: create transports
-
           var Transports = new List<ITransport>();
 
-          if (transportsInput.DataCount == 0)
+          if (transportsInput.Count() == 0)
           {
             // TODO: Set default account + "default" user stream
           }
@@ -324,9 +333,9 @@ namespace ConnectorGrasshopper.Ops
           {
             message = $"Pushed {TotalObjectCount} elements from Grasshopper.";
           }
-          
 
-          var prevCommits = OutputWrappers;
+
+          var prevCommits = new List<StreamWrapper>();
 
           foreach (var transport in Transports)
           {
@@ -366,7 +375,7 @@ namespace ConnectorGrasshopper.Ops
               var commitId = await client.CommitCreate(source.Token, commitCreateInput);
 
               var wrapper = new StreamWrapper($"{client.Account.serverInfo.url}/streams/{((ServerTransport)transport).StreamId}/commits/{commitId}?u={client.Account.userInfo.id}");
-              OutputWrappers.Add(wrapper);
+              prevCommits.Add(wrapper);
             }
             catch (Exception e)
             {
@@ -381,7 +390,7 @@ namespace ConnectorGrasshopper.Ops
             return null;
           }
 
-          return OutputWrappers;
+          return prevCommits;
         }, source.Token);
 
         TaskList.Add(task);
@@ -398,7 +407,7 @@ namespace ConnectorGrasshopper.Ops
       }
       else
       {
-        OutputWrappers = outputWrappers;
+        OutputWrappers.AddRange(outputWrappers);
         DA.SetDataList(0, outputWrappers);
         return;
       }
