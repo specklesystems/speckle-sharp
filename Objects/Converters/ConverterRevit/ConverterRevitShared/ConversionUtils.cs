@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements;
@@ -754,6 +755,23 @@ namespace Objects.Converter.Revit
     {
       string[] _string = s.Split(separators, StringSplitOptions.RemoveEmptyEntries);
       return String.Join(newVal, _string);
+    }
+
+    public string GetTemplatePath(string templateName)
+    {
+      var directoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Kits", "Objects", "Templates", "Revit", RevitVersionHelper.Version);
+      string templatePath = "";
+      switch (Doc.DisplayUnitSystem)
+      {
+        case DisplayUnit.IMPERIAL:
+          templatePath = Path.Combine(directoryPath, $"{templateName} - Imperial.rft");
+          break;
+        case DisplayUnit.METRIC:
+          templatePath = Path.Combine(directoryPath, $"{templateName} - Metric.rft");
+          break;
+      }
+
+      return templatePath;
     }
     #endregion
 

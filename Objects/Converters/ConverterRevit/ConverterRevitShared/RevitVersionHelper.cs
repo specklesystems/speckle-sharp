@@ -8,6 +8,22 @@ namespace Objects.Converter.Revit
   public static class RevitVersionHelper
   {
 
+    public static string Version
+    {
+      get
+      {
+#if REVIT2022
+          return "2022";
+#elif REVIT2021
+        return "2021";
+#elif REVIT2020
+        return "2020";
+#else
+        return "2019";
+#endif
+      }
+    }
+
     public static double ConvertToInternalUnits(Objects.BuiltElements.Revit.Parameter parameter)
     {
 #if !(REVIT2022)
@@ -76,11 +92,11 @@ namespace Objects.Converter.Revit
         return true;
       }
 #else
-   if (curve.IsBound && curve.GetEndPoint(0).IsAlmostEqualTo(curve.GetEndPoint(1)))
+      if (curve.IsBound && curve.GetEndPoint(0).IsAlmostEqualTo(curve.GetEndPoint(1)))
         return true;
       else if (!curve.IsBound && curve.IsCyclic)
         return true;
-      return false;      
+      return false;
 #endif
     }
   }
