@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Room : Base, IHasArea, IHasVolume, IDisplayMesh
+  public class Area : Base, IHasArea, IHasVolume, IDisplayMesh
   {
     public string name { get; set; }
     public string number { get; set; }
@@ -22,14 +22,14 @@ namespace Objects.BuiltElements
     [DetachProperty]
     public Mesh displayMesh { get; set; }
 
-    public Room() { }
+    public Area() { }
 
     /// <summary>
     /// SchemaBuilder constructor for a Room
     /// </summary>
     /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
-    [SchemaInfo("Room", "Creates a Speckle room")]
-    public Room(string name, string number, Level level, [SchemaMainParam] Point center)
+    [SchemaInfo("Area", "Creates a Speckle area")]
+    public Area(string name, string number, Level level, [SchemaMainParam] Point center)
     {
       this.name = name;
       this.number = number;

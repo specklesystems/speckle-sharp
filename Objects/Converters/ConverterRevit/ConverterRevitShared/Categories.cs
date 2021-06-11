@@ -43,6 +43,7 @@ namespace Objects.Converter.Revit
     //until issue https://github.com/specklesystems/speckle-sharp/issues/392 is resolved
     private static List<BuiltInCategory> SupportedBuiltInCategories = new List<BuiltInCategory>{
 
+      BuiltInCategory.OST_Areas,
       BuiltInCategory.OST_CableTray,
       BuiltInCategory.OST_Ceilings,
       BuiltInCategory.OST_Columns,

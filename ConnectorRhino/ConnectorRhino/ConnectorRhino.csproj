@@ -71,10 +71,10 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="RhinoCommon" Version="6.33.20343.16431">
+    <PackageReference Include="RhinoCommon" Version="6.28.20199.17141">
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="RhinoWindows" Version="6.31.20315.17001" />
+    <PackageReference Include="RhinoWindows" Version="6.28.20199.17141" />
     <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework" Version="1.0.113.3" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.7" />
   </ItemGroup>
