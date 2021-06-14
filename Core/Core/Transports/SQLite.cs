@@ -55,7 +55,9 @@ namespace Speckle.Core.Transports
       Directory.CreateDirectory(Path.Combine(basePath, applicationName)); //ensure dir is there
 
       RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
-      ConnectionString = string.Format("Data Source={0};", RootPath);
+      //fix for network drives: https://stackoverflow.com/a/18506097/826060
+      var prefix = RootPath.StartsWith(@"\\") ? @"\\" : "";
+      ConnectionString = string.Format("Data Source={0};", prefix + RootPath);
 
       try
       {
