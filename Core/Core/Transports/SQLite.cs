@@ -55,7 +55,7 @@ namespace Speckle.Core.Transports
       Directory.CreateDirectory(Path.Combine(basePath, applicationName)); //ensure dir is there
 
       RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
-      ConnectionString = $@"URI=file:{RootPath};";
+      ConnectionString = string.Format("Data Source={0};", RootPath);
 
       try
       {
