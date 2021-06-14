@@ -2,7 +2,7 @@
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
-namespace Speckle.ConnectorDynamo.Functions.Advanced
+namespace Speckle.ConnectorDynamo.Functions.Developer
 {
   public static class Conversion
   {

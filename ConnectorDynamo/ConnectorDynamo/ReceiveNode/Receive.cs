@@ -395,9 +395,15 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       Stream = newStream;
 
       //StreamWrapper points to a Stream
-      if (newStream.Type == StreamWrapperType.Commit || newStream.Type == StreamWrapperType.Object)
+      if (newStream.Type == StreamWrapperType.Commit)
       {
         Name = "Receive Commit";
+        AutoUpdate = false;
+        AutoUpdateEnabled = false;
+      }
+      else if (newStream.Type == StreamWrapperType.Object)
+      {
+        Name = "Receive Object";
         AutoUpdate = false;
         AutoUpdateEnabled = false;
       }

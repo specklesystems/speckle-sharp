@@ -3,7 +3,7 @@ using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
 
-namespace Speckle.ConnectorDynamo.Functions.Advanced
+namespace Speckle.ConnectorDynamo.Functions.Developer
 {
   public static class Local
   {

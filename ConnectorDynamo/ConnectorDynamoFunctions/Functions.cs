@@ -20,6 +20,7 @@ namespace Speckle.ConnectorDynamo.Functions
   public static class Functions
   {
 
+
     /// <summary>
     /// Sends data to a Speckle Server by creating a commit on the master branch of a Stream
     /// </summary>
@@ -101,36 +102,29 @@ namespace Speckle.ConnectorDynamo.Functions
       Action<int> onTotalChildrenCountKnown = null)
     {
       var account = stream.GetAccount().Result;
-      stream.BranchName = string.IsNullOrEmpty(stream.BranchName) ? "main" : stream.BranchName;
+      //
 
       var client = new Client(account);
       Commit commit = null;
 
       if (stream.Type == StreamWrapperType.Stream || stream.Type == StreamWrapperType.Branch)
       {
-        List<Branch> branches;
+        stream.BranchName = string.IsNullOrEmpty(stream.BranchName) ? "main" : stream.BranchName;
+
         try
         {
-          branches = client.StreamGetBranches(cancellationToken, stream.StreamId).Result;
-        }
-        catch (Exception ex)
-        {
-          Utils.HandleApiExeption(ex);
-          return null;
-        }
+          var branch = client.BranchGet(cancellationToken, stream.StreamId, stream.BranchName, 1).Result;
+          if (!branch.commits.items.Any())
+          {
+            throw new SpeckleException("No commits found.");
+          }
 
-        var branch = branches.FirstOrDefault(b => b.name == stream.BranchName);
-        if (branch == null)
+          commit = branch.commits.items[0];
+        }
+        catch
         {
           throw new SpeckleException("No branch found with name " + stream.BranchName);
         }
-
-        if (!branch.commits.items.Any())
-        {
-          throw new SpeckleException("No commits found.");
-        }
-
-        commit = branch.commits.items[0];
       }
       else if (stream.Type == StreamWrapperType.Commit)
       {
