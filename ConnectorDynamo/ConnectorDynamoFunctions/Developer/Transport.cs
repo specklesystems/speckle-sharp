@@ -6,7 +6,7 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 
-namespace Speckle.ConnectorDynamo.Functions.Advanced
+namespace Speckle.ConnectorDynamo.Functions.Developer
 {
   public static class Transport
   {

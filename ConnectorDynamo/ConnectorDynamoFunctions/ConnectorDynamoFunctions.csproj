@@ -64,17 +64,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Advanced\Conversion.cs" />
-    <Compile Include="Advanced\Local.cs" />
-    <Compile Include="Advanced\Serialization.cs" />
+    <Compile Include="Developer\Conversion.cs" />
+    <Compile Include="Developer\Local.cs" />
+    <Compile Include="Developer\Serialization.cs" />
     <Compile Include="Globals.cs" />
+    <Compile Include="Icon.cs" />
     <Compile Include="InMemoryCache.cs" />
     <Compile Include="Account.cs" />
     <Compile Include="Functions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stream.cs" />
     <Compile Include="BatchConverter.cs" />
-    <Compile Include="Advanced\Transport.cs" />
+    <Compile Include="Developer\Transport.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -111,6 +112,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\accountdetails%4032.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\logo128.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\logo32.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="Clean">

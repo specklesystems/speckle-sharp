@@ -20,6 +20,7 @@ namespace Speckle.ConnectorDynamo.Functions
   public static class Functions
   {
 
+
     /// <summary>
     /// Sends data to a Speckle Server by creating a commit on the master branch of a Stream
     /// </summary>
@@ -120,10 +121,10 @@ namespace Speckle.ConnectorDynamo.Functions
 
           commit = branch.commits.items[0];
         }
-        catch 
+        catch
         {
           throw new SpeckleException("No branch found with name " + stream.BranchName);
-        }        
+        }
       }
       else if (stream.Type == StreamWrapperType.Commit)
       {
