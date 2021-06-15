@@ -28,8 +28,6 @@ namespace ConnectorGrasshopper.Streams
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       var acc = pManager.AddTextParameter("Account", "A", "Account to get stream with.", GH_ParamAccess.item);
-
-      Params.Input[acc].Optional = true;
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -49,8 +47,8 @@ namespace ConnectorGrasshopper.Streams
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       string userId = null;
-      DA.GetData(0, ref userId);
-
+      if (!DA.GetData(0, ref userId)) return;
+    
       if (string.IsNullOrEmpty(userId))
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account provided. Trying with default account.");
