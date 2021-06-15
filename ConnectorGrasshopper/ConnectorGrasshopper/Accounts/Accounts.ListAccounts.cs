@@ -49,13 +49,14 @@ namespace ConnectorGrasshopper.Accounts
     private void SetAccountList()
     {
       ListItems.Clear();
-      ListItems.Add(new GH_ValueListItem("No account selected", null));
+      ListItems.Add(new GH_ValueListItem("No account selected", ""));
       var accounts = AccountManager.GetAccounts().ToList();
       var defaultAccount = AccountManager.GetDefaultAccount();
-      int index = 1, defaultAccountIndex = 0;
+      int index = 0, defaultAccountIndex = 0;
 
       if (accounts.Count == 0)
       {
+        
         SelectItem(0);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
         return;
@@ -76,6 +77,7 @@ namespace ConnectorGrasshopper.Accounts
       {
         // This is a new component, use default account
         SelectItem(defaultAccountIndex);
+        
         return;
       }
       
@@ -88,7 +90,7 @@ namespace ConnectorGrasshopper.Accounts
     {
       //TODO: Refactor this into a method
       // Check for the specific user ID that was selected before.
-      var acc = accounts.FirstOrDefault(a => a.userInfo.id == selectedUserId);
+      var acc = accounts.Find(a => a.userInfo.id == selectedUserId);
       if (acc != null)
       {
         var accIndex = accounts.IndexOf(acc);
@@ -108,10 +110,9 @@ namespace ConnectorGrasshopper.Accounts
       return -1;
     }
     
-    private string selectedUserId;
+    private string selectedUserId ;
     private string selectedServerUrl;
     
-        
     public override bool Read(GH_IReader reader)
     {
       try
@@ -121,6 +122,7 @@ namespace ConnectorGrasshopper.Accounts
       }
       catch (Exception e)
       {
+        Console.WriteLine(e);
       }
       return base.Read(reader);
     }
@@ -138,8 +140,8 @@ namespace ConnectorGrasshopper.Accounts
         }
         else
         {
-          writer.SetString("selectedId", this.selectedUserId);
-          writer.SetString("selectedServer", this.selectedServerUrl);
+          writer.SetString("selectedId", "-");
+          writer.SetString("selectedServer", "-");
         }
       }
       catch (Exception e)

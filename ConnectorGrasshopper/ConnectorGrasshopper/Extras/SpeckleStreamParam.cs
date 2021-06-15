@@ -38,7 +38,6 @@ namespace ConnectorGrasshopper.Extras
 
   public sealed class GH_SpeckleStream : GH_Goo<StreamWrapper>
   {
-
     public static implicit operator StreamWrapper(GH_SpeckleStream d) => d.Value;
 
     public override StreamWrapper Value { get; set; }
@@ -69,8 +68,6 @@ namespace ConnectorGrasshopper.Extras
 
     public override bool CastFrom(object source)
     {
-      var t = source.GetType();
-
       if(source is GH_String ghStr)
       {
         try
@@ -80,7 +77,8 @@ namespace ConnectorGrasshopper.Extras
         }
         catch
         {
-          throw;
+          
+          return false;
         }
       }
 
