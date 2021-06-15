@@ -55,20 +55,17 @@ namespace ConnectorGrasshopper.Streams
       string userId = null;
       GH_SpeckleStream ghIdWrapper = null;
       DA.DisableGapLogic();
-      DA.GetData(0, ref ghIdWrapper);
+      if(!DA.GetData(0, ref ghIdWrapper)) return;
       DA.GetData(1, ref userId);
-      var account = string.IsNullOrEmpty(userId) ? AccountManager.GetDefaultAccount() :
-        AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
-
       var idWrapper = ghIdWrapper.Value;
-      if (account == null)
+      var account = string.IsNullOrEmpty(userId) ? AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == idWrapper.ServerUrl) :
+        AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
+      if (account == null || account.serverInfo.url != idWrapper.ServerUrl)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find default account in this machine. Use the Speckle Manager to add an account.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Could not find an account for server ${idWrapper.ServerUrl}. Use the Speckle Manager to add an account.");
         return;
       }
-
-      Params.Input[1].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
-
+      
       if (error != null)
       {
         Message = null;
