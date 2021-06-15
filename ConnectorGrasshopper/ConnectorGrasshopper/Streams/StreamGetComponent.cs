@@ -14,9 +14,11 @@ namespace ConnectorGrasshopper.Streams
 {
   public class StreamGetComponent : GH_Component
   {
-    public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account", ComponentCategories.PRIMARY_RIBBON,
+    public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account",
+      ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.STREAMS)
-    { }
+    {
+    }
 
     public override Guid ComponentGuid => new Guid("D66AFB58-A1BA-487C-94BF-AF0FFFBA6CE5");
 
@@ -55,17 +57,19 @@ namespace ConnectorGrasshopper.Streams
       string userId = null;
       GH_SpeckleStream ghIdWrapper = null;
       DA.DisableGapLogic();
-      if(!DA.GetData(0, ref ghIdWrapper)) return;
+      if (!DA.GetData(0, ref ghIdWrapper)) return;
       DA.GetData(1, ref userId);
       var idWrapper = ghIdWrapper.Value;
-      var account = string.IsNullOrEmpty(userId) ? AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == idWrapper.ServerUrl) :
-        AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
+      var account = string.IsNullOrEmpty(userId)
+        ? AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == idWrapper.ServerUrl) // If no user is passed in, get the first account for this server
+        : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId); // If user is passed in, get matching user in the db
       if (account == null || account.serverInfo.url != idWrapper.ServerUrl)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Could not find an account for server ${idWrapper.ServerUrl}. Use the Speckle Manager to add an account.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error,
+          $"Could not find an account for server ${idWrapper.ServerUrl}. Use the Speckle Manager to add an account.");
         return;
       }
-      
+
       if (error != null)
       {
         Message = null;
@@ -104,7 +108,7 @@ namespace ConnectorGrasshopper.Streams
           }
           finally
           {
-            Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
+            Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { ExpireSolution(true); });
           }
         });
       }
