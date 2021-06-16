@@ -210,6 +210,19 @@ public static string AutocadAppName = Applications.Autocad2022;
     }
 
     /// <summary>
+    /// Gets the closes approximate lineweight from double value in mm
+    /// </summary>
+    /// <param name="weight"></param>
+    /// <returns></returns>
+    public static LineWeight GetLineWeight(double weight)
+    {
+      double hundredthMM = weight * 100;
+      var weights = Enum.GetValues(typeof(LineWeight)).Cast<int>().ToList();
+      int closest = weights.Aggregate((x, y) => Math.Abs(x - hundredthMM) < Math.Abs(y - hundredthMM) ? x : y);
+      return (LineWeight)closest;
+    }
+
+    /// <summary>
     /// Removes invalid characters for Autocad names
     /// </summary>
     /// <param name="str"></param>

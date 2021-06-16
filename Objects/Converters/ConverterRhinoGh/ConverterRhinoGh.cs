@@ -63,11 +63,13 @@ namespace Objects.Converter.RhinoGh
     public Base ConvertToSpeckle(object @object)
     {
       RenderMaterial material = null;
+      DisplayStyle style = null;
       Base @base = null;
       Base schema = null;
       if (@object is RhinoObject ro)
       {
         material = GetMaterial(ro);
+        style = GetStyle(ro);
         
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
           schema = ConvertToSpeckleBE(ro);
@@ -162,6 +164,9 @@ namespace Objects.Converter.RhinoGh
 
       if (material != null)
         @base["renderMaterial"] = material;
+
+      if (style != null)
+        @base["displayStyle"] = style;
 
       if (schema != null)
       {

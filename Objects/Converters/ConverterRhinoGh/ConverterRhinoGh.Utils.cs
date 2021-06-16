@@ -42,6 +42,25 @@ namespace Objects.Converter.RhinoGh
       return renderMaterial;
     }
 
+    private DisplayStyle GetStyle(RhinoObject o)
+    {
+      var att = o.Attributes;
+      var style = new DisplayStyle();
+
+      // color
+      style.color = att.DrawColor(Doc).ToArgb();
+
+      // linetype
+      var lineType = Doc.Linetypes[att.LinetypeIndex];
+      if (lineType.HasName)
+        style.linetype = lineType.Name;
+
+      // lineweight
+      style.lineweight = att.PlotWeight;
+
+      return style;
+    }
+
     private string GetSchema(RhinoObject obj, out string[] args)
     {
       args = null;
