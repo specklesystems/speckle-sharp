@@ -4,6 +4,7 @@ using System.Linq;
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Objects.Other;
 using Arc = Objects.Geometry.Arc;
 using BlockInstance = Objects.Other.BlockInstance;
 using BlockDefinition = Objects.Other.BlockDefinition;
@@ -84,7 +85,6 @@ public static string AutocadAppName = Applications.Autocad2022;
           if (schema != null)
             return ObjectToSpeckleBuiltElement(o);
           */
-          // set test material
           return ObjectToSpeckle(o);
 
         case Acad.Geometry.Point3d o:
@@ -194,6 +194,8 @@ public static string AutocadAppName = Applications.Autocad2022;
     /// <returns></returns>
     public Base ObjectToSpeckle(DBObject obj)
     {
+      DisplayStyle style = GetStyle(obj);
+
       switch (obj)
       {
         case DBPoint o:

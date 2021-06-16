@@ -1,6 +1,8 @@
 ﻿using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
+using Objects.Other;
+
 using Autodesk.AutoCAD.DatabaseServices;
 using System.Drawing;
 using System.Text.RegularExpressions;
@@ -56,5 +58,39 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 #endregion 
+
+    public DisplayStyle GetStyle(DBObject obj)
+    {
+      var style = new DisplayStyle();
+      Entity entity = obj as Entity;
+
+      style.color = entity.Color.ColorValue.ToArgb();
+      style.linetype = entity.Linetype;
+
+      // get lineweight
+      double lineWeight = 0;
+      switch (entity.LineWeight)
+      {
+        case LineWeight.ByLayer:
+          using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+          {
+            var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead) as LayerTableRecord;
+            lineWeight = (int)layer.LineWeight / 100;
+            tr.Commit();
+          }
+          break;
+        case LineWeight.ByBlock:
+        case LineWeight.ByLineWeightDefault:
+        case LineWeight.ByDIPs:
+          lineWeight = (int)LineWeight.LineWeight000;
+          break;
+        default:
+          lineWeight = (int)entity.LineWeight / 100; // this should be mm
+          break;
+      }
+      style.lineweight = lineWeight;
+
+      return style;
+    }
   }
 }
