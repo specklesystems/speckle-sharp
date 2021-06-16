@@ -72,7 +72,8 @@ namespace ConnectorGrasshopper.Objects
           break;
         }
         default:
-          DA.SetDataList(0, new List<object>{GH_Convert.ToGoo(value)});
+          Params.Output[0].Access = GH_ParamAccess.item;
+          DA.SetData(0, GH_Convert.ToGoo(value));
           break;
       }
       
