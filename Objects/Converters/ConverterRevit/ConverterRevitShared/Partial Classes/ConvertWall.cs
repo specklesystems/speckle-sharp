@@ -138,8 +138,20 @@ namespace Objects.Converter.Revit
       speckleWall.structural = GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
       speckleWall.flipped = revitWall.Flipped;
 
+
       if (revitWall.CurtainGrid == null)
-        speckleWall.displayMesh = GetElementDisplayMesh(revitWall, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      {
+        if ( revitWall.IsStackedWall )
+        {
+          var wallMembers = revitWall.GetStackedWallMemberIds().Select(id => (Wall)Doc.GetElement(id));
+          speckleWall.elements = new List<Base>();
+          foreach (  var wall in wallMembers )
+            speckleWall.elements.Add(WallToSpeckle(wall));
+        }
+
+        speckleWall.displayMesh = GetElementDisplayMesh(revitWall,
+          new Options() {DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false});
+      }
       else
       {
         // curtain walls have two meshes, one for panels and one for mullions
@@ -148,9 +160,11 @@ namespace Objects.Converter.Revit
         speckleWall["renderMaterial"] = new Other.RenderMaterial() { opacity = 0.2, diffuse = System.Drawing.Color.AliceBlue.ToArgb() };
         speckleWall.displayMesh = panelsMesh;
 
-        var mullions = new Base();
-        mullions["@displayMesh"] = mullionsMesh;
-        mullions["renderMaterial"] = new Other.RenderMaterial() { diffuse = System.Drawing.Color.DarkGray.ToArgb() };
+        var mullions = new Base
+        {
+          [ "@displayMesh" ] = mullionsMesh,
+          [ "renderMaterial" ] = new Other.RenderMaterial() {diffuse = System.Drawing.Color.DarkGray.ToArgb()}
+        };
         speckleWall.elements = new List<Base> { mullions };
 
       }

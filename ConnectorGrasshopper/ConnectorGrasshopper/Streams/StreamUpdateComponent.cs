@@ -73,8 +73,7 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         Task.Run(async () =>
         {
-          var account = streamWrapper.UserId == null ?
-            AccountManager.GetDefaultAccount() :
+          var account = string.IsNullOrEmpty(streamWrapper.UserId) ? AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == streamWrapper.ServerUrl) :
             AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == streamWrapper.UserId);
 
           if (account == null)
