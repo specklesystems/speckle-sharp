@@ -65,6 +65,7 @@
     <Compile Include="Loader.cs" />
     <Compile Include="Objects\CreateSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectAsync.cs" />
+    <Compile Include="Objects\GetObjectValueByKeyTaskComponent.cs" />
     <Compile Include="Objects\SelectKitAsyncComponentBase.cs" />
     <Compile Include="Objects\SelectKitTaskCapableComponentBase.cs" />
     <Compile Include="Ops\Operations.ReceiveComponentSync.cs" />
