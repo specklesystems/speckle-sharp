@@ -379,7 +379,10 @@ namespace SpeckleRhino
               {
                 var ls = Doc.Linetypes.FindName(lineStyle);
                 if (ls != null)
+                {
+                  attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
                   attributes.LinetypeIndex = ls.Index;
+                }
               }
             }
 

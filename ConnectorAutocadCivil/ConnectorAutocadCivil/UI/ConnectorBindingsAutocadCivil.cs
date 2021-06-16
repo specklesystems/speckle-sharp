@@ -248,15 +248,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
           // TODO: create dictionaries here for linetype and layer linewidth
           // More efficient this way than doing this per object
           var lineTypeDictionary = new Dictionary<string, ObjectId>();
-          using (Transaction tx = Doc.Database.TransactionManager.StartTransaction())
+          var lineTypeTable = (LinetypeTable)tr.GetObject(Doc.Database.LinetypeTableId, OpenMode.ForRead);
+          foreach (AcadDb.ObjectId lineTypeId in lineTypeTable)
           {
-            var lineTypeTable = (LinetypeTable)tr.GetObject(Doc.Database.LinetypeTableId, OpenMode.ForRead);
-            foreach (AcadDb.ObjectId lineTypeId in lineTypeTable)
-            {
-              var linetype = (LinetypeTableRecord)tx.GetObject(lineTypeId, OpenMode.ForRead);
-              lineTypeDictionary.Add(linetype.Name, lineTypeId);
-            }
-            tx.Commit();
+            var linetype = (LinetypeTableRecord)tr.GetObject(lineTypeId, OpenMode.ForRead);
+            lineTypeDictionary.Add(linetype.Name, lineTypeId);
           }
 
           foreach (var commitObj in commitObjs)
@@ -282,7 +278,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                   if (display != null)
                   {
                     var color = display["color"] as int?;
-                    var lineStyle = display["linetype"] as string;
+                    var lineType = display["linetype"] as string;
                     var lineWidth = display["lineweight"] as double?;
 
                     if (color != null)
@@ -296,10 +292,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
                       convertedEntity.LineWeight = Utils.GetLineWeight((double)lineWidth);
                     }
                       
-                    if (lineStyle != null)
+                    if (lineType != null)
                     {
-                      if (lineTypeDictionary.ContainsKey(lineStyle))
-                        convertedEntity.LinetypeId = lineTypeDictionary[lineStyle];
+                      if (lineTypeDictionary.ContainsKey(lineType))
+                      {
+                        convertedEntity.LinetypeId = lineTypeDictionary[lineType];
+                      }
                     }
                   }
                 }

@@ -194,86 +194,90 @@ public static string AutocadAppName = Applications.Autocad2022;
     /// <returns></returns>
     public Base ObjectToSpeckle(DBObject obj)
     {
+      Base @base = null;
       DisplayStyle style = GetStyle(obj);
 
       switch (obj)
       {
         case DBPoint o:
-          return PointToSpeckle(o);
-
+          @base = PointToSpeckle(o);
+          break;
         case AcadDB.Line o:
-          return LineToSpeckle(o);
-
+          @base = LineToSpeckle(o);
+          break;
         case AcadDB.Arc o:
-          return ArcToSpeckle(o);
-
+          @base = ArcToSpeckle(o);
+          break;
         case AcadDB.Circle o:
-          return CircleToSpeckle(o);
-
+          @base = CircleToSpeckle(o);
+          break;
         case AcadDB.Ellipse o:
-          return EllipseToSpeckle(o);
-
+          @base = EllipseToSpeckle(o);
+          break;
         case AcadDB.Spline o:
-          return SplineToSpeckle(o);
-
+          @base = SplineToSpeckle(o);
+          break;
         case AcadDB.Polyline o:
           if (o.IsOnlyLines) // db polylines can have arc segments, decide between polycurve or polyline conversion
-            return PolylineToSpeckle(o);
-          else return PolycurveToSpeckle(o);
-
+            @base = PolylineToSpeckle(o);
+          else 
+            @base = PolycurveToSpeckle(o);
+          break;
         case AcadDB.Polyline3d o:
-          return PolylineToSpeckle(o);
-
+          @base = PolylineToSpeckle(o);
+          break;
         case AcadDB.Polyline2d o:
-          return PolycurveToSpeckle(o);
-
+          @base = PolycurveToSpeckle(o);
+          break;
         case Region o:
-          return RegionToSpeckle(o);
-
+          @base = RegionToSpeckle(o);
+          break;
         case AcadDB.Surface o:
-          return SurfaceToSpeckle(o);
-
+          @base = SurfaceToSpeckle(o);
+          break;
         case AcadDB.PolyFaceMesh o:
-          return MeshToSpeckle(o);
-
+          @base = MeshToSpeckle(o);
+          break;
         case SubDMesh o:
-          return MeshToSpeckle(o);
-
+          @base = MeshToSpeckle(o);
+          break;
         case Solid3d o:
-          return SolidToSpeckle(o);
-
+          @base = SolidToSpeckle(o);
+          break;
         case BlockReference o:
-          return BlockReferenceToSpeckle(o);
-
+          @base = BlockReferenceToSpeckle(o);
+          break;
         case BlockTableRecord o:
-          return BlockRecordToSpeckle(o);
-
+          @base = BlockRecordToSpeckle(o);
+          break;
 #if (CIVIL2021 || CIVIL2022)
         case CivilDB.Alignment o:
-          return AlignmentToSpeckle(o);
-
+          @base = AlignmentToSpeckle(o);
+          break;
         case CivilDB.Corridor o:
-          return CorridorToSpeckle(o); 
-
+          @base = CorridorToSpeckle(o);
+          break;
         case CivilDB.FeatureLine o:
-          return FeatureLineToSpeckle(o);
-
+          @base = FeatureLineToSpeckle(o);
+          break;
         case CivilDB.Structure o:
-          return StructureToSpeckle(o);
-
+          @base = StructureToSpeckle(o);
+          break;
         case CivilDB.Pipe o:
-          return PipeToSpeckle(o);
-
+          @base = PipeToSpeckle(o);
+          break;
         case CivilDB.Profile o:
-          return ProfileToSpeckle(o);
-
+          @base = ProfileToSpeckle(o);
+          break;
         case CivilDB.TinSurface o:
-          return SurfaceToSpeckle(o);
+          @base = SurfaceToSpeckle(o);
+          break;
 #endif
-
-        default:
-          return null;
       }
+      if (style != null)
+        @base["displayStyle"] = style;
+
+      return @base;
     }
 
     public bool CanConvertToSpeckle(object @object)

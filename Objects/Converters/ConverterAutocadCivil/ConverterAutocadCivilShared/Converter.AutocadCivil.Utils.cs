@@ -6,6 +6,7 @@ using Objects.Other;
 using Autodesk.AutoCAD.DatabaseServices;
 using System.Drawing;
 using System.Text.RegularExpressions;
+using Autodesk.AutoCAD.Colors;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -64,33 +65,75 @@ namespace Objects.Converter.AutocadCivil
       var style = new DisplayStyle();
       Entity entity = obj as Entity;
 
-      style.color = entity.Color.ColorValue.ToArgb();
+      // get color
+      int color = System.Drawing.Color.Black.ToArgb();
+      switch (entity.Color.ColorMethod)
+      {
+        case ColorMethod.ByLayer:
+          try
+          {
+            using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+            {
+              var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead) as LayerTableRecord;
+              color = layer.Color.ColorValue.ToArgb();
+              tr.Commit();
+            }
+          }
+          catch { }
+          break;
+        case ColorMethod.ByBlock:
+        case ColorMethod.ByAci:
+        case ColorMethod.ByColor:
+          color = entity.Color.ColorValue.ToArgb();
+          break;
+      }
+      style.color = color;
+
+      // get linetype
       style.linetype = entity.Linetype;
+      if (entity.Linetype == "BYLAYER")
+      {
+        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        {
+          var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead) as LayerTableRecord;
+          var linetype = (LinetypeTableRecord)tr.GetObject(layer.LinetypeObjectId, OpenMode.ForRead);
+          style.linetype = linetype.Name;
+          tr.Commit();
+        }
+      }
 
       // get lineweight
       double lineWeight = 0;
       switch (entity.LineWeight)
       {
         case LineWeight.ByLayer:
-          using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+          try
           {
-            var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead) as LayerTableRecord;
-            lineWeight = (int)layer.LineWeight / 100;
-            tr.Commit();
+            using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+            {
+              var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead) as LayerTableRecord;
+              if (layer.LineWeight == LineWeight.ByLineWeightDefault || layer.LineWeight == LineWeight.ByBlock)
+                lineWeight = (int)LineWeight.LineWeight025;
+              else
+                lineWeight = (int)layer.LineWeight;
+              tr.Commit();
+            }
           }
+          catch { }
           break;
         case LineWeight.ByBlock:
         case LineWeight.ByLineWeightDefault:
         case LineWeight.ByDIPs:
-          lineWeight = (int)LineWeight.LineWeight000;
+          lineWeight = (int)LineWeight.LineWeight025;
           break;
         default:
-          lineWeight = (int)entity.LineWeight / 100; // this should be mm
+          lineWeight = (int)entity.LineWeight; 
           break;
       }
-      style.lineweight = lineWeight;
+      style.lineweight = lineWeight / 100; // convert to mm
 
       return style;
     }
+
   }
 }
