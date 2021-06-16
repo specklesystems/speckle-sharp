@@ -300,6 +300,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                       }
                     }
                   }
+                  tr.TransactionManager.QueueForGraphicsFlush();
                 }
                 else
                 {
