@@ -207,12 +207,12 @@ namespace ConnectorGrasshopper.Objects
         Parent.AddRuntimeMessage(level, message);
       }
 
-      if (@base != null) 
+      if (@base != null)
         DA.SetData(0, new GH_SpeckleBase {Value = @base});
     }
 
     public Base targetObject;
-    
+
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
       DA.DisableGapLogic();
@@ -246,8 +246,9 @@ namespace ConnectorGrasshopper.Objects
         var willOverwrite = @base.GetMembers().ContainsKey(key);
         var targetIndex = DA.ParameterTargetIndex(0);
         var path = DA.ParameterTargetPath(0);
-        if(willOverwrite)
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark,$"Key {key} already exists in object at {path}[{targetIndex}], its value will be overwritten"));
+        if (willOverwrite)
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Remark,
+            $"Key {key} already exists in object at {path}[{targetIndex}], its value will be overwritten"));
         switch (param.Access)
         {
           case GH_ParamAccess.item:
@@ -289,7 +290,6 @@ namespace ConnectorGrasshopper.Objects
           default:
             throw new ArgumentOutOfRangeException();
         }
-
       }
 
       if (hasErrors) inputData = null;

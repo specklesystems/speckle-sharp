@@ -63,8 +63,12 @@
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Loader.cs" />
+    <Compile Include="Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\CreateSpeckleObjectTaskComponent.cs" />
+    <Compile Include="Objects\ExpandSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectAsync.cs" />
+    <Compile Include="Objects\ExtendSpeckleObjectByKeyValueTaskComponent.cs" />
+    <Compile Include="Objects\ExtendSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\GetObjectValueByKeyTaskComponent.cs" />
     <Compile Include="Objects\SelectKitAsyncComponentBase.cs" />
     <Compile Include="Objects\SelectKitTaskCapableComponentBase.cs" />
