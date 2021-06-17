@@ -143,6 +143,9 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Ellipse o:
           return EllipseToNativeDB(o);
 
+        case Hatch o:
+          return HatchToNativeDB(o);
+
         case Polyline o:
           return PolylineToNativeDB(o);
 

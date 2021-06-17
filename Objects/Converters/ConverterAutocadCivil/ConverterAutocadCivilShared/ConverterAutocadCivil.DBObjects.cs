@@ -609,21 +609,17 @@ namespace Objects.Converter.AutocadCivil
 
       return _hatch;
     }
-    public AcadDB.Hatch HatchToNative(Hatch hatch)
+    public AcadDB.Hatch HatchToNativeDB(Hatch hatch)
     {
       var _hatch = new AcadDB.Hatch();
 
-      _hatch.PatternAngle = hatch.rotation;
-      _hatch.PatternScale = hatch.scale;
-      _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
-
-      // handle curves
       var curveIds = new ObjectIdCollection();
       using (Transaction tr = Doc.TransactionManager.StartTransaction())
       {
         BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
         BlockTableRecord modelSpaceRecord = (BlockTableRecord)tr.GetObject(blckTbl[BlockTableRecord.ModelSpace], AcadDB.OpenMode.ForWrite);
 
+        // convert curves
         foreach (var curve in hatch.curves)
         {
           var converted = CurveToNativeDB(curve);
@@ -642,6 +638,11 @@ namespace Objects.Converter.AutocadCivil
 
         // insert loops
         _hatch.AppendLoop((int)HatchLoopTypes.Default, curveIds);
+
+        // set props
+        _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
+        _hatch.PatternAngle = hatch.rotation;
+        _hatch.PatternScale = hatch.scale;
 
         tr.Commit();
       }
