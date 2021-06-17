@@ -21,6 +21,7 @@ using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
 using Curve = Objects.Geometry.Curve;
 using Ellipse = Objects.Geometry.Ellipse;
+using Hatch = Objects.Other.Hatch;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;
@@ -30,6 +31,7 @@ using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
+using Autodesk.AutoCAD.Windows.Data;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -205,6 +207,23 @@ namespace Objects.Converter.AutocadCivil
 
       return _polyline;
     }
+
+    public ICurve PolylineToSpeckle(AcadDB.BulgeVertexCollection bulges)
+    {
+      var polyline = new AcadDB.Polyline(bulges.Count);
+      double totalBulge = 0;
+      for (int i = 0; i < bulges.Count; i++)
+      {
+        BulgeVertex bulgeVertex = bulges[i];
+        polyline.AddVertexAt(i, bulgeVertex.Vertex, bulgeVertex.Bulge, 1.0, 1.0);
+        totalBulge += bulgeVertex.Bulge;
+      }
+      if (polyline.IsOnlyLines || totalBulge == 0)
+        return PolylineToSpeckle(polyline);
+      else
+        return PolycurveToSpeckle(polyline);
+    }
+
     public Polyline PolylineToSpeckle(AcadDB.Polyline3d polyline) // AC polyline3d can only have linear segments
     {
       List<Point3d> vertices = new List<Point3d>();
@@ -559,6 +578,75 @@ namespace Objects.Converter.AutocadCivil
       var u = units ?? ModelUnits;
 
       return GetMeshFromSolidOrSurface(region: region);
+    }
+
+    // Hatches
+    public Hatch HatchToSpeckle(AcadDB.Hatch hatch)
+    {
+      var _hatch = new Hatch();
+      _hatch.pattern = hatch.PatternName;
+      _hatch.scale = hatch.PatternScale;
+      _hatch.rotation = hatch.PatternAngle;
+
+      // handle curves
+      var curves = new List<ICurve>();
+      for (int i = 0; i < hatch.NumberOfLoops; i++)
+      {
+        var loop = hatch.GetLoopAt(i);
+        if (loop.IsPolyline)
+        {
+          curves.Add(PolylineToSpeckle(loop.Polyline));
+        }
+        else
+        {
+          var loopcurves = hatch.GetLoopAt(i).Curves;
+          if (loopcurves != null)
+            foreach (AcadDB.Curve loopcurve in loopcurves)
+              curves.Add(CurveToSpeckle(loopcurve));
+        }
+      }
+      _hatch.curves = curves;
+
+      return _hatch;
+    }
+    public AcadDB.Hatch HatchToNative(Hatch hatch)
+    {
+      var _hatch = new AcadDB.Hatch();
+
+      _hatch.PatternAngle = hatch.rotation;
+      _hatch.PatternScale = hatch.scale;
+      _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
+
+      // handle curves
+      var curveIds = new ObjectIdCollection();
+      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      {
+        BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+        BlockTableRecord modelSpaceRecord = (BlockTableRecord)tr.GetObject(blckTbl[BlockTableRecord.ModelSpace], AcadDB.OpenMode.ForWrite);
+
+        foreach (var curve in hatch.curves)
+        {
+          var converted = CurveToNativeDB(curve);
+          if (converted.IsNewObject)
+          {
+            var curveId = modelSpaceRecord.AppendEntity(converted);
+            tr.AddNewlyCreatedDBObject(converted, true);
+            if (curveId.IsValid)
+              curveIds.Add(curveId);
+          }
+        }
+
+        // add hatch to modelspace
+        modelSpaceRecord.AppendEntity(_hatch);
+        tr.AddNewlyCreatedDBObject(_hatch, true);
+
+        // insert loops
+        _hatch.AppendLoop((int)HatchLoopTypes.Default, curveIds);
+
+        tr.Commit();
+      }
+
+      return _hatch;
     }
 
     // Surfaces

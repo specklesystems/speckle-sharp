@@ -17,6 +17,7 @@ using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Ellipse = Objects.Geometry.Ellipse;
+using Hatch = Objects.Other.Hatch;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;
@@ -136,6 +137,9 @@ namespace Objects.Converter.RhinoGh
           break;
         case RH.Box o:
           @base = BoxToSpeckle(o);
+          break;
+        case RH.Hatch o:
+          @base = HatchToSpeckle(o);
           break;
         case RH.Mesh o:
           @base = MeshToSpeckle(o);
@@ -271,6 +275,9 @@ namespace Objects.Converter.RhinoGh
         case Vector o:
           return VectorToNative(o);
 
+        case Hatch o:
+          return HatchToNative(o);
+
         case Interval o:
           return IntervalToNative(o);
 
@@ -361,6 +368,7 @@ namespace Objects.Converter.RhinoGh
         case UVInterval _:
         case RH.Line _:
         case LineCurve _:
+        case Rhino.Geometry.Hatch _:
         case RH.Plane _:
         case Rectangle3d _:
         case RH.Circle _:
@@ -405,6 +413,7 @@ namespace Objects.Converter.RhinoGh
         case Polyline _:
         case Polycurve _:
         case Curve _:
+        case Hatch _:
         case Box _:
         case Mesh _:
         case Brep _:
