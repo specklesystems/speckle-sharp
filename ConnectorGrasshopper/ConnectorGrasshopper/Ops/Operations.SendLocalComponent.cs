@@ -17,12 +17,12 @@ namespace ConnectorGrasshopper.Ops
 {
   public class SendLocalComponent : GH_AsyncComponent
   {
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => GH_Exposure.tertiary | GH_Exposure.obscure;
 
     public ISpeckleConverter Converter;
 
     public ISpeckleKit Kit;
-    public SendLocalComponent() : base("Local sender", "LS", "Sends data locally, without the need of a Speckle Server.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.LOCAL)
+    public SendLocalComponent() : base("Local sender", "LS", "Sends data locally, without the need of a Speckle Server.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SEND_RECEIVE)
     {
       BaseWorker = new SendLocalWorker(this);
     }
