@@ -33,6 +33,10 @@ namespace Objects.Converter.AutocadCivil
     {
       return new double[ ] { pt.X, pt.Y, pt.Z };
     }
+    public double[] PointToArray(Point2d pt)
+    {
+      return new double[] { pt.X, pt.Y, 0 };
+    }
     public Point3d[ ] PointListToNative(IEnumerable<double> arr, string units)
     {
       var enumerable = arr.ToList();
@@ -49,6 +53,10 @@ namespace Objects.Converter.AutocadCivil
       return points;
     }
     public double[ ] PointsToFlatArray(IEnumerable<Point3d> points)
+    {
+      return points.SelectMany(pt => PointToArray(pt)).ToArray();
+    }
+    public double[] PointsToFlatArray(IEnumerable<Point2d> points)
     {
       return points.SelectMany(pt => PointToArray(pt)).ToArray();
     }

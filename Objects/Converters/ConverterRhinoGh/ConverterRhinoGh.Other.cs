@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
+using Hatch = Objects.Other.Hatch;
 using Point = Objects.Geometry.Point;
 using RH = Rhino.DocObjects;
 using Rhino;
@@ -20,6 +21,44 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
+    public Rhino.Geometry.Hatch HatchToNative(Hatch hatch)
+    {
+      var curves = hatch.curves.Select(o => CurveToNative(o));
+      var pattern = Doc.HatchPatterns.FindName(hatch.pattern);
+      int index;
+      if (pattern == null)
+      {
+        // find default hatch pattern
+        pattern = FindDefaultPattern(hatch.pattern);
+        index = Doc.HatchPatterns.Add(pattern);
+      }
+      else
+        index = pattern.Index;
+      var hatches = Rhino.Geometry.Hatch.Create(curves, index, hatch.rotation, hatch.scale, 0.001);
+      return hatches.First();
+    }
+    public Hatch HatchToSpeckle(Rhino.Geometry.Hatch hatch)
+    {
+      var _hatch = new Hatch();
+
+      var curves = hatch.Get3dCurves(true).ToList();
+      curves.AddRange(hatch.Get3dCurves(false));
+      _hatch.curves = curves.Select(o => CurveToSpeckle(o)).ToList();
+      _hatch.scale = hatch.PatternScale;
+      _hatch.pattern = Doc.HatchPatterns.ElementAt(hatch.PatternIndex).Name;
+      _hatch.rotation = hatch.PatternRotation;
+
+      return _hatch;
+    }
+    private HatchPattern FindDefaultPattern(string patternName)
+    {
+      var defaultPattern = typeof(HatchPattern.Defaults).GetProperties().Where(o => o.Name.Equals(patternName, StringComparison.OrdinalIgnoreCase)).ToList()?.First();
+      if (defaultPattern != null)
+        return defaultPattern.GetValue(this, null) as HatchPattern;
+      else
+        return HatchPattern.Defaults.Solid;
+    }
+
     public BlockDefinition BlockDefinitionToSpeckle(RH.InstanceDefinition definition)
     {
       var geometry = new List<Base>();

@@ -12,6 +12,7 @@ using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
 using Ellipse = Objects.Geometry.Ellipse;
+using Hatch = Objects.Other.Hatch;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;
@@ -142,6 +143,9 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Ellipse o:
           return EllipseToNativeDB(o);
 
+        case Hatch o:
+          return HatchToNativeDB(o);
+
         case Polyline o:
           return PolylineToNativeDB(o);
 
@@ -213,6 +217,9 @@ public static string AutocadAppName = Applications.Autocad2022;
           break;
         case AcadDB.Ellipse o:
           @base = EllipseToSpeckle(o);
+          break;
+        case AcadDB.Hatch o:
+          @base = HatchToSpeckle(o);
           break;
         case AcadDB.Spline o:
           @base = SplineToSpeckle(o);
@@ -292,6 +299,7 @@ public static string AutocadAppName = Applications.Autocad2022;
             case AcadDB.Arc _:
             case AcadDB.Circle _:
             case AcadDB.Ellipse _:
+            case AcadDB.Hatch _:
             case AcadDB.Spline _:
             case AcadDB.Polyline _:
             case AcadDB.Polyline2d _:
@@ -345,6 +353,7 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Arc _:
         case Circle _:  
         case Ellipse _:
+        case Hatch _:
         case Polyline _:
         case Polycurve _:
         case Curve _:
