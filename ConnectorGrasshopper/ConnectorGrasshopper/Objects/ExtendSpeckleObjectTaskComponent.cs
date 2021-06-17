@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,10 @@ namespace ConnectorGrasshopper.Objects
   public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBase<Base>,
     IGH_VariableParameterComponent
   {
+    protected override Bitmap Icon => Properties.Resources.ExtendSpeckleObject;
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override Guid ComponentGuid => new Guid("2D455B11-F372-47E5-98BE-515EA758A669");
+
     public ExtendSpeckleObjectTaskComponent() : base("Extend Speckle Object", "ESO",
       "Allows you to extend a Speckle object by setting its keys and values.",
       ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)

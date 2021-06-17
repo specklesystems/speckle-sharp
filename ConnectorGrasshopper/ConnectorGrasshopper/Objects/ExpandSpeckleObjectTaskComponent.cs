@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -17,6 +18,8 @@ namespace ConnectorGrasshopper.Objects
     IGH_VariableParameterComponent
   {
     public override Guid ComponentGuid => new Guid("4884856A-BCA4-43F8-B665-331F51CF4A39");
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
 
     public ExpandSpeckleObjectTaskComponent() : base("Expand Speckle Object", "ESO",
       "Allows you to decompose a Speckle object in its constituent parts.",

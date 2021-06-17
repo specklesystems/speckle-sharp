@@ -14,8 +14,9 @@ namespace ConnectorGrasshopper.Objects
 {
   public class GetObjectValueByKeyAsync : SelectKitAsyncComponentBase
   {
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     protected override Bitmap Icon => Properties.Resources.GetObjectValueByKey;
+    public override bool Obsolete => true;
 
     public override Guid ComponentGuid => new Guid("050B24D3-CCEA-466A-B52C-25CB4DA39981");
 

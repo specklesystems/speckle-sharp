@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
@@ -13,12 +14,14 @@ namespace ConnectorGrasshopper.Objects
 {
   public class ExtendSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableComponentBase<Base>
   {
-    public override Guid ComponentGuid => new Guid("0D862057-254F-40C2-AC4A-9D163BB1E24B");
-
     public ExtendSpeckleObjectByKeyValueTaskComponent() : base("Extend Speckle Object by Key/Value", "ESO K/V",
       "Extend a current object with key/value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }
+
+    public override Guid ComponentGuid => new Guid("0D862057-254F-40C2-AC4A-9D163BB1E24B");
+    protected override Bitmap Icon => Properties.Resources.ExtendSpeckleObjectByKeyValue;
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -45,22 +48,19 @@ namespace ConnectorGrasshopper.Objects
         DA.GetData(0, ref @base);
         DA.GetDataList(1, keys);
         DA.GetDataTree(2, out valueTree);
-        
+
         TaskList.Add(Task.Run(() => DoWork(@base.Value.ShallowCopy(), keys, valueTree)));
         return;
       }
 
-      if (!GetSolveResults(DA, out Base result))
+      if (!GetSolveResults(DA, out var result))
       {
         // Normal mode not supported
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "This component only works with Parallel Computing");
         return;
       }
 
-      if (result != null)
-      {
-        DA.SetData(0, result);
-      }
+      if (result != null) DA.SetData(0, result);
     }
 
     public Base DoWork(Base @base, List<string> keys, GH_Structure<IGH_Goo> valueTree)
@@ -100,10 +100,7 @@ namespace ConnectorGrasshopper.Objects
 
             ind++;
           });
-          if (hasErrors)
-          {
-            @base = null;
-          }
+          if (hasErrors) @base = null;
         }
         else
         {
@@ -121,12 +118,10 @@ namespace ConnectorGrasshopper.Objects
             {
               var objs = new List<object>();
               foreach (var goo in branch)
-              {
                 if (Converter != null)
                   objs.Add(Utilities.TryConvertItemToSpeckle(goo, Converter));
                 else
                   objs.Add(goo);
-              }
 
               if (objs.Count > 0)
                 try
@@ -143,10 +138,7 @@ namespace ConnectorGrasshopper.Objects
             index++;
           });
 
-          if (hasErrors)
-          {
-            @base = null;
-          }
+          if (hasErrors) @base = null;
         }
 
         return @base;

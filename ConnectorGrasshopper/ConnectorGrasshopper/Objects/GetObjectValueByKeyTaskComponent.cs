@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ namespace ConnectorGrasshopper.Objects
   public class GetObjectValueByKeyTaskComponent: SelectKitTaskCapableComponentBase<object>
   {
     public override Guid ComponentGuid => new Guid("BA787569-36E6-4522-AC76-B09983E0A40D");
+    public override GH_Exposure Exposure => GH_Exposure.tertiary;
+    protected override Bitmap Icon => Properties.Resources.GetObjectValueByKey;
 
     public GetObjectValueByKeyTaskComponent() : base("Speckle Object Value by Key", "Object K/V",
       "Gets the value of a specific key in a Speckle object.", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)

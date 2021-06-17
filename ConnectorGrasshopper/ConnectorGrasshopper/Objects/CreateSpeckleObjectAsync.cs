@@ -14,14 +14,15 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class CreateSpeckleObjectAsync : SelectKitAsyncComponentBase , IGH_VariableParameterComponent
+  public class CreateSpeckleObjectAsync : SelectKitAsyncComponentBase, IGH_VariableParameterComponent
   {
     protected override Bitmap Icon => Properties.Resources.CreateSpeckleObject;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override bool Obsolete => true;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public override Guid ComponentGuid => new Guid("FC2EF86F-2C12-4DC2-B216-33BFA409A0FC");
-    
+
     public CreateSpeckleObjectAsync() : base("Create Speckle Object", "CSO",
       "Allows you to create a Speckle object by setting its keys and values.",
       ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
@@ -84,7 +85,7 @@ namespace ConnectorGrasshopper.Objects
 
       myParam.NickName = myParam.Name;
       myParam.Optional = false;
-      myParam.ObjectChanged += (sender, e) => {};
+      myParam.ObjectChanged += (sender, e) => { };
       return myParam;
     }
 
@@ -103,6 +104,7 @@ namespace ConnectorGrasshopper.Objects
     public Base @base;
     public ISpeckleConverter Converter;
     private Dictionary<string, object> inputData;
+
     public CreateSpeckleObjectWorker(GH_Component parent, ISpeckleConverter converter) : base(parent)
     {
       Converter = converter;
@@ -122,12 +124,12 @@ namespace ConnectorGrasshopper.Objects
         {
           @base = null;
         }
-        
+
         inputData?.Keys.ToList().ForEach(key =>
         {
           var value = inputData[key];
 
-          
+
           if (value is List<object> list)
           {
             // Value is a list of items, iterate and convert.
@@ -144,7 +146,8 @@ namespace ConnectorGrasshopper.Objects
               Log.CaptureException(e);
               RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"{e.Message}"));
               hasErrors = true;
-            }           
+            }
+
             try
             {
               @base[key] = converted;
@@ -159,10 +162,10 @@ namespace ConnectorGrasshopper.Objects
           else
           {
             // If value is not list, it is a single item.
-            
+
             try
             {
-              if(Converter != null)
+              if (Converter != null)
                 @base[key] = value == null ? null : Utilities.TryConvertItemToSpeckle(value, Converter);
               else
                 @base[key] = value;
@@ -172,7 +175,7 @@ namespace ConnectorGrasshopper.Objects
               Log.CaptureException(e);
               RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{e.Message}"));
               hasErrors = true;
-            }        
+            }
           }
         });
 
@@ -188,11 +191,11 @@ namespace ConnectorGrasshopper.Objects
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
         Parent.Message = "Error";
       }
-      
+
       // Let's always call done!
       Done();
     }
-    
+
     List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void SetData(IGH_DataAccess DA)
@@ -201,21 +204,22 @@ namespace ConnectorGrasshopper.Objects
       if (CancellationToken.IsCancellationRequested) return;
 
       // Report all conversion errors as warnings
-      if(Converter != null)
+      if (Converter != null)
         foreach (var error in Converter.ConversionErrors)
         {
-          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.Message + ": " + error.InnerException?.Message);
+          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
+            error.Message + ": " + error.InnerException?.Message);
         }
-      
+
       foreach (var (level, message) in RuntimeMessages)
       {
         Parent.AddRuntimeMessage(level, message);
       }
 
-      if(@base != null) DA.SetData(0,new GH_SpeckleBase{ Value = @base });
+      if (@base != null) DA.SetData(0, new GH_SpeckleBase {Value = @base});
     }
 
-    
+
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
       DA.DisableGapLogic();
@@ -224,6 +228,7 @@ namespace ConnectorGrasshopper.Objects
         inputData = null;
         return;
       }
+
       var hasErrors = false;
       var allOptional = Params.Input.FindAll(p => p.Optional).Count == Params.Input.Count;
       if (Params.Input.Count > 0 && allOptional)
@@ -232,6 +237,7 @@ namespace ConnectorGrasshopper.Objects
         inputData = null;
         return;
       }
+
       Params.Input.ForEach(ighParam =>
       {
         var param = ighParam as GenericAccessParam;
@@ -246,9 +252,11 @@ namespace ConnectorGrasshopper.Objects
             DA.GetData(index, ref value);
             if (!param.Optional && value == null)
             {
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Non-optional parameter {param.NickName} cannot be null"));
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
+                $"Non-optional parameter {param.NickName} cannot be null"));
               hasErrors = true;
             }
+
             inputData[key] = value;
             break;
           case GH_ParamAccess.list:
@@ -256,19 +264,21 @@ namespace ConnectorGrasshopper.Objects
             DA.GetDataList(index, values);
             if (!param.Optional)
             {
-              if(values.Count == 0)
+              if (values.Count == 0)
               {
                 RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
                   $"Non-optional parameter {param.NickName} cannot be null or empty."));
                 hasErrors = true;
               }
             }
-            if(values.Any(p => p == null))
+
+            if (values.Any(p => p == null))
             {
               RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
                 $"List access parameter {param.NickName} cannot contain null values. Please clean your data tree."));
               hasErrors = true;
             }
+
             inputData[key] = values;
             break;
           case GH_ParamAccess.tree:

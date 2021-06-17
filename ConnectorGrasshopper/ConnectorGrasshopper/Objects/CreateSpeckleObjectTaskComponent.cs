@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -21,7 +22,8 @@ namespace ConnectorGrasshopper.Objects
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
     public override Guid ComponentGuid => new Guid("DC561A9D-BF12-4EB3-8412-4B7FC6ECB291");
-
+    protected override Bitmap Icon => Properties.Resources.CreateSpeckleObject;
+    
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       //throw new NotImplementedException();

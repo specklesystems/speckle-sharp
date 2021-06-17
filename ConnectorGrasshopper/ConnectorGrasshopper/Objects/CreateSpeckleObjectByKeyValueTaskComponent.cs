@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Drawing;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
@@ -12,15 +12,17 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class CreateSpeckleObjectByKeyValueTaskComponent: SelectKitTaskCapableComponentBase<Base>
+  public class CreateSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableComponentBase<Base>
   {
-    public override Guid ComponentGuid => new Guid("B5232BF7-7014-4F10-8716-C3CEE6A54E2F");
-
     public CreateSpeckleObjectByKeyValueTaskComponent() : base("Create Speckle Object by Key/Value", "K/V",
       "Creates a speckle object from key value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
-      
     }
+
+    public override Guid ComponentGuid => new Guid("B5232BF7-7014-4F10-8716-C3CEE6A54E2F");
+    protected override Bitmap Icon => Properties.Resources.CreateSpeckleObjectByKeyValue;
+    public override GH_Exposure Exposure => GH_Exposure.primary;
+
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddTextParameter("Keys", "K", "List of keys", GH_ParamAccess.list);
@@ -31,40 +33,38 @@ namespace ConnectorGrasshopper.Objects
     {
       pManager.AddParameter(new SpeckleBaseParam("Object", "O", "Speckle object", GH_ParamAccess.item));
     }
+
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {
         var keys = new List<string>();
         var valueTree = new GH_Structure<IGH_Goo>();
-        
+
         DA.GetDataList(0, keys);
         DA.GetDataTree(1, out valueTree);
-        TaskList.Add(Task.Run(()=> DoWork(keys, valueTree)));
+        TaskList.Add(Task.Run(() => DoWork(keys, valueTree)));
         return;
       }
 
-      if (!GetSolveResults(DA, out Base result))
+      if (!GetSolveResults(DA, out var result))
       {
         // Normal mode not supported
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "This component only works with Parallel Computing");
         return;
       }
 
-      if (result != null)
-      {
-        DA.SetData(0, result);
-      }
+      if (result != null) DA.SetData(0, result);
     }
-    
-    
+
+
     public Base DoWork(List<string> keys, GH_Structure<IGH_Goo> valueTree)
     {
       try
       {
         // 👉 Checking for cancellation!
         if (CancelToken.IsCancellationRequested) return null;
-        
+
         // Create a path from the current iteration
         var searchPath = new GH_Path(RunCount - 1);
 
@@ -96,10 +96,7 @@ namespace ConnectorGrasshopper.Objects
 
             ind++;
           });
-          if (hasErrors)
-          {
-            speckleObj = null;
-          }
+          if (hasErrors) speckleObj = null;
         }
         else
         {
@@ -117,12 +114,10 @@ namespace ConnectorGrasshopper.Objects
             {
               var objs = new List<object>();
               foreach (var goo in branch)
-              {
-                if(Converter != null)
+                if (Converter != null)
                   objs.Add(Utilities.TryConvertItemToSpeckle(goo, Converter));
                 else
                   objs.Add(goo);
-              }
 
               if (objs.Count > 0)
                 try
@@ -139,10 +134,7 @@ namespace ConnectorGrasshopper.Objects
             index++;
           });
 
-          if (hasErrors)
-          {
-            speckleObj = null;
-          }
+          if (hasErrors) speckleObj = null;
         }
 
         return speckleObj;
@@ -155,6 +147,5 @@ namespace ConnectorGrasshopper.Objects
         return null;
       }
     }
-
   }
 }
