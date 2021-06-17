@@ -514,23 +514,13 @@ namespace Speckle.Core.Transports
 
     public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
     {
-      var hasObjectsHttpMessage = new HttpRequestMessage()
-      {
-        RequestUri = new Uri($"/api/diff/{StreamId}", UriKind.Relative),
-        Method = HttpMethod.Post,
-      };
+      var payload = new Dictionary<string, string>() { {"objects" , JsonConvert.SerializeObject(objectIds)}};
+      var uri = new Uri($"/api/diff/{StreamId}", UriKind.Relative);
+      var response = await Client.PostAsync( uri, new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"), CancellationToken);
+      response.EnsureSuccessStatusCode();
 
-      Dictionary<string, string> postParameters = new Dictionary<string, string>();
-      postParameters.Add("objects", JsonConvert.SerializeObject(objectIds));
-      hasObjectsHttpMessage.Content = new FormUrlEncodedContent(postParameters);
-
-      HttpResponseMessage hasObjectsHttpResponse = null;
-
-      hasObjectsHttpResponse = await Client.SendAsync(hasObjectsHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken);
-      hasObjectsHttpResponse.EnsureSuccessStatusCode();
-
-      String hasObjectsJson = await hasObjectsHttpResponse.Content.ReadAsStringAsync();
-      Dictionary<String, Boolean> hasObjects = JsonConvert.DeserializeObject<Dictionary<String, Boolean>>(hasObjectsJson);
+      var hasObjectsJson = await response.Content.ReadAsStringAsync();
+      var hasObjects = JsonConvert.DeserializeObject<Dictionary<string, bool>>(hasObjectsJson);
       return hasObjects;
     }
 
