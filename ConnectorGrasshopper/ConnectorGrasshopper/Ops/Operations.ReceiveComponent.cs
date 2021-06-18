@@ -95,12 +95,16 @@ namespace ConnectorGrasshopper.Ops
                 // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
                 if (b.commits.items[0].id != ReceivedCommitId)
                   HandleNewCommit();
+                
+                OnDisplayExpired(true);
               });
             break;
           }
         case GH_DocumentContext.Unloaded:
           // Will execute every time a document becomes inactive (in background or closing file.)
           //Correctly dispose of the client when changing documents to prevent subscription handlers being called in background.
+          CurrentComponentState = "expired";
+          RequestCancellation();
           ApiClient?.Dispose();
           break;
       }
@@ -306,14 +310,15 @@ namespace ConnectorGrasshopper.Ops
 
       RhinoApp.InvokeOnUiThread((Action)delegate { OnDisplayExpired(true); });
     }
-
+    
     public override void RemovedFromDocument(GH_Document document)
     {
+      RequestCancellation();
       //CleanApiClient();
       ApiClient?.Dispose();
       base.RemovedFromDocument(document);
     }
-
+    
     private void ParseInput(IGH_DataAccess DA)
     {
       var check = DA.GetDataTree(0, out GH_Structure<IGH_Goo> DataInput);
