@@ -69,6 +69,7 @@
     <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
     <Compile Include="Ops\Operations.SendLocalComponent.cs" />
     <Compile Include="Ops\Operations.SendComponentSync.cs" />
+    <Compile Include="SchemaBuilder\CreateSchemaObjectBase.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObjectDialog.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObject.cs" />
     <Compile Include="Objects\CreateSpeckleObject.cs" />
@@ -93,6 +94,11 @@
     </Compile>
     <Compile Include="SchemaBuilder\CSOUtils.cs" />
     <Compile Include="SchemaBuilder\CSOViewModel.cs" />
+    <Compile Include="SchemaBuilder\SchemaBuilderGen.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SchemaBuilderGen.tt</DependentUpon>
+    </Compile>
     <Compile Include="Streams\StreamCreateComponent.cs" />
     <Compile Include="Streams\StreamDetailsComponent.cs" />
     <Compile Include="Streams\StreamGetComponent.cs" />
@@ -195,6 +201,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="SchemaBuilder\SchemaBuilderGen.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
+    </Content>
     <None Include="Resources\SynchronousSender.png" />
     <None Include="Resources\SynchronousReceiver.png" />
     <None Include="Resources\StateTag_Optional.Large.png" />

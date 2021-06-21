@@ -1,0 +1,55 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="$(SolutionDir)\ConnectorGrasshopper\bin\SpeckleConnectorGrasshopper.dll" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Drawing" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="ConnectorGrasshopper" #>
+
+<#
+    var allTypes = CSOUtils.ListAvailableTypes();
+    var availableTypes = allTypes;
+    static Guid ToGuid(string src)
+    {
+        byte[] stringbytes = Encoding.UTF8.GetBytes(src);
+        byte[] hashedBytes = new System.Security.Cryptography
+            .SHA1CryptoServiceProvider()
+            .ComputeHash(stringbytes);
+        Array.Resize(ref hashedBytes, 16);
+        return new Guid(hashedBytes);
+    }
+#>
+
+using System;
+using Grasshopper.Kernel;
+
+namespace ConnectorGrasshopper {
+
+<# foreach(Type sType in availableTypes) { #>
+<# 
+    var outputProps = new string[] { "O" };
+    var typeName = string.Join("", sType.Name.Split('.'));
+    var compName = sType.Name + "SchemaComponent";
+    var constructor = CSOUtils.GetValidConstr(sType).FirstOrDefault();
+    var inputProps = constructor.GetParameters().AsEnumerable().ToList();
+#>
+// This is generated code:
+public class <#= compName #>: CreateSchemaObjectBase {
+     
+    public <#= compName #>(): base("<#= typeName #>", "<#= typeName #>", "<#= typeName #>", "Speckle 2 BIM", "<#= sType.Namespace #>") { }
+    
+    public override Guid ComponentGuid => new Guid("<#= ToGuid("secretPhraseToKeepItRandom..." + typeName) #>");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("<#= CSOUtils.MethodFullName(constructor) #>","<#= constructor.DeclaringType.FullName #>");
+        base.AddedToDocument(document);
+    }
+}
+
+<# } #>
+
+}
