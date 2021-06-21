@@ -4,6 +4,7 @@ using System.Linq;
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Objects.Other;
 using Arc = Objects.Geometry.Arc;
 using BlockInstance = Objects.Other.BlockInstance;
 using BlockDefinition = Objects.Other.BlockDefinition;
@@ -11,6 +12,7 @@ using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
 using Ellipse = Objects.Geometry.Ellipse;
+using Hatch = Objects.Other.Hatch;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;
@@ -84,7 +86,6 @@ public static string AutocadAppName = Applications.Autocad2022;
           if (schema != null)
             return ObjectToSpeckleBuiltElement(o);
           */
-          // set test material
           return ObjectToSpeckle(o);
 
         case Acad.Geometry.Point3d o:
@@ -142,6 +143,9 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Ellipse o:
           return EllipseToNativeDB(o);
 
+        case Hatch o:
+          return HatchToNativeDB(o);
+
         case Polyline o:
           return PolylineToNativeDB(o);
 
@@ -194,84 +198,93 @@ public static string AutocadAppName = Applications.Autocad2022;
     /// <returns></returns>
     public Base ObjectToSpeckle(DBObject obj)
     {
+      Base @base = null;
+      DisplayStyle style = GetStyle(obj);
+
       switch (obj)
       {
         case DBPoint o:
-          return PointToSpeckle(o);
-
+          @base = PointToSpeckle(o);
+          break;
         case AcadDB.Line o:
-          return LineToSpeckle(o);
-
+          @base = LineToSpeckle(o);
+          break;
         case AcadDB.Arc o:
-          return ArcToSpeckle(o);
-
+          @base = ArcToSpeckle(o);
+          break;
         case AcadDB.Circle o:
-          return CircleToSpeckle(o);
-
+          @base = CircleToSpeckle(o);
+          break;
         case AcadDB.Ellipse o:
-          return EllipseToSpeckle(o);
-
+          @base = EllipseToSpeckle(o);
+          break;
+        case AcadDB.Hatch o:
+          @base = HatchToSpeckle(o);
+          break;
         case AcadDB.Spline o:
-          return SplineToSpeckle(o);
-
+          @base = SplineToSpeckle(o);
+          break;
         case AcadDB.Polyline o:
           if (o.IsOnlyLines) // db polylines can have arc segments, decide between polycurve or polyline conversion
-            return PolylineToSpeckle(o);
-          else return PolycurveToSpeckle(o);
-
+            @base = PolylineToSpeckle(o);
+          else 
+            @base = PolycurveToSpeckle(o);
+          break;
         case AcadDB.Polyline3d o:
-          return PolylineToSpeckle(o);
-
+          @base = PolylineToSpeckle(o);
+          break;
         case AcadDB.Polyline2d o:
-          return PolycurveToSpeckle(o);
-
+          @base = PolycurveToSpeckle(o);
+          break;
         case Region o:
-          return RegionToSpeckle(o);
-
+          @base = RegionToSpeckle(o);
+          break;
         case AcadDB.Surface o:
-          return SurfaceToSpeckle(o);
-
+          @base = SurfaceToSpeckle(o);
+          break;
         case AcadDB.PolyFaceMesh o:
-          return MeshToSpeckle(o);
-
+          @base = MeshToSpeckle(o);
+          break;
         case SubDMesh o:
-          return MeshToSpeckle(o);
-
+          @base = MeshToSpeckle(o);
+          break;
         case Solid3d o:
-          return SolidToSpeckle(o);
-
+          @base = SolidToSpeckle(o);
+          break;
         case BlockReference o:
-          return BlockReferenceToSpeckle(o);
-
+          @base = BlockReferenceToSpeckle(o);
+          break;
         case BlockTableRecord o:
-          return BlockRecordToSpeckle(o);
-
+          @base = BlockRecordToSpeckle(o);
+          break;
 #if (CIVIL2021 || CIVIL2022)
         case CivilDB.Alignment o:
-          return AlignmentToSpeckle(o);
-
+          @base = AlignmentToSpeckle(o);
+          break;
         case CivilDB.Corridor o:
-          return CorridorToSpeckle(o); 
-
+          @base = CorridorToSpeckle(o);
+          break;
         case CivilDB.FeatureLine o:
-          return FeatureLineToSpeckle(o);
-
+          @base = FeatureLineToSpeckle(o);
+          break;
         case CivilDB.Structure o:
-          return StructureToSpeckle(o);
-
+          @base = StructureToSpeckle(o);
+          break;
         case CivilDB.Pipe o:
-          return PipeToSpeckle(o);
-
+          @base = PipeToSpeckle(o);
+          break;
         case CivilDB.Profile o:
-          return ProfileToSpeckle(o);
-
+          @base = ProfileToSpeckle(o);
+          break;
         case CivilDB.TinSurface o:
-          return SurfaceToSpeckle(o);
+          @base = SurfaceToSpeckle(o);
+          break;
 #endif
-
-        default:
-          return null;
       }
+      if (style != null)
+        @base["displayStyle"] = style;
+
+      return @base;
     }
 
     public bool CanConvertToSpeckle(object @object)
@@ -286,6 +299,7 @@ public static string AutocadAppName = Applications.Autocad2022;
             case AcadDB.Arc _:
             case AcadDB.Circle _:
             case AcadDB.Ellipse _:
+            case AcadDB.Hatch _:
             case AcadDB.Spline _:
             case AcadDB.Polyline _:
             case AcadDB.Polyline2d _:
@@ -339,6 +353,7 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Arc _:
         case Circle _:  
         case Ellipse _:
+        case Hatch _:
         case Polyline _:
         case Polycurve _:
         case Curve _:
