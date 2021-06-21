@@ -21,7 +21,9 @@ namespace ConnectorGrasshopper.Objects
 
     protected override Bitmap Icon => Properties.Resources.CreateSpeckleObjectByKeyValue;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+
+    public override bool Obsolete => true;
 
     public CreateSpeckleObjectByKeyValueAsync() : base("Create Speckle Object by Key/Value", "K/V",
       "Creates a speckle object from key value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)

@@ -30,6 +30,7 @@ namespace ConnectorGrasshopper.Ops
     public bool UseDefaultCache { get; set; } = true;
     private GH_Structure<IGH_Goo> dataInput;
     private List<object> converted;
+    public override GH_Exposure Exposure => GH_Exposure.secondary | GH_Exposure.obscure;
 
     /// <summary>
     /// Initializes a new instance of the SendComponentSync class.
@@ -37,7 +38,7 @@ namespace ConnectorGrasshopper.Ops
     public SendComponentSync()
       : base("Synchronous Sender", "SS",
           "Send data to a Speckle server Synchronously. This will block GH untill all the data are received which can be used to safely trigger other processes downstream",
-          ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SYNCHRONOUS)
+          ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SEND_RECEIVE)
     {
     }
 
