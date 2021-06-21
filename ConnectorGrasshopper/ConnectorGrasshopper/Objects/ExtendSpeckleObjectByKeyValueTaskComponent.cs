@@ -53,10 +53,19 @@ namespace ConnectorGrasshopper.Objects
         return;
       }
 
+      if(Converter != null)
+      {
+        foreach (var error in Converter.ConversionErrors)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
+            error.Message + ": " + error.InnerException?.Message);
+        }
+        Converter.ConversionErrors.Clear();
+      }
+      
       if (!GetSolveResults(DA, out var result))
       {
         // Normal mode not supported
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "This component only works with Parallel Computing");
         return;
       }
 

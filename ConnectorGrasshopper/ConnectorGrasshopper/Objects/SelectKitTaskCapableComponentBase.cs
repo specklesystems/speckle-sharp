@@ -76,7 +76,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
-      base.AppendAdditionalMenuItems(menu);
+      //base.AppendAdditionalMenuItems(menu);
       try
       {
         var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);

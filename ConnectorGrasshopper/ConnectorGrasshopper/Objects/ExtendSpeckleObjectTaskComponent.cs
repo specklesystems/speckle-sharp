@@ -129,10 +129,15 @@ namespace ConnectorGrasshopper.Objects
       }
 
       // Report all conversion errors as warnings
-      if (Converter != null)
+      if(Converter != null)
+      {
         foreach (var error in Converter.ConversionErrors)
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.Message + ": " + error.InnerException?.Message);
-
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
+            error.Message + ": " + error.InnerException?.Message);
+        }
+        Converter.ConversionErrors.Clear();
+      }
 
       if (!GetSolveResults(DA, out Base result))
       {

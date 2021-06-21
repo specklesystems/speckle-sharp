@@ -52,7 +52,6 @@ namespace ConnectorGrasshopper.Objects
           AutoCreateOutputs();
         }
         
-        var speckleObjects = new GH_Structure<GH_SpeckleBase>();
         GH_SpeckleBase ghSpeckleBase = null;
         DA.GetData(0, ref ghSpeckleBase);
         var @base = ghSpeckleBase.Value;
@@ -74,7 +73,6 @@ namespace ConnectorGrasshopper.Objects
       if (!GetSolveResults(DA, out Dictionary<string, object> result))
       {
         // Normal mode not supported
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "This component can only work using Parallel Computing");
         return;
       }
 

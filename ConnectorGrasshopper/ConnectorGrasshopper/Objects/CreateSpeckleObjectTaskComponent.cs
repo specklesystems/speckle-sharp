@@ -14,7 +14,7 @@ namespace ConnectorGrasshopper.Objects
   public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBase<Base>,
     IGH_VariableParameterComponent
   {
-    public CreateSpeckleObjectTaskComponent() : base("TC Create Speckle Object", "TCSO",
+    public CreateSpeckleObjectTaskComponent() : base("Create Speckle Object", "CSO",
       "Allows you to create a Speckle object by setting its keys and values.\nIn each individual parameter, you can select between 'item' and 'list' access type via the right-click menu.\n",
       ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
@@ -110,11 +110,20 @@ namespace ConnectorGrasshopper.Objects
         TaskList.Add(task);
         return;
       } 
-
+      
+      if(Converter != null)
+      {
+        foreach (var error in Converter.ConversionErrors)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
+            error.Message + ": " + error.InnerException?.Message);
+        }
+        Converter.ConversionErrors.Clear();
+      }
+      
       if (!GetSolveResults(DA, out Base result))
       {
         // Not running on multi threaded, handle this properly
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot run on normal mode!");
         return;
       }
 
