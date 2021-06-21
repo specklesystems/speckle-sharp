@@ -33,6 +33,7 @@ namespace ConnectorGrasshopper.Ops
     public string ReceivedCommitId { get; set; }
     public string InputType { get; set; }
     public bool AutoReceive { get; set; }
+    public override GH_Exposure Exposure => GH_Exposure.secondary | GH_Exposure.obscure;
 
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
     {
@@ -114,7 +115,7 @@ namespace ConnectorGrasshopper.Ops
     /// Initializes a new instance of the Operations class.
     /// </summary>
     public ReceiveSync() : base("Synchronous Receiver", "SR", "Receive data from a Speckle server Synchronously. This will block GH untill all the data are received which can be used to safely trigger other processes downstream",
-      ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SYNCHRONOUS)
+      ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SEND_RECEIVE)
     {
       SetDefaultKitAndConverter();
     }

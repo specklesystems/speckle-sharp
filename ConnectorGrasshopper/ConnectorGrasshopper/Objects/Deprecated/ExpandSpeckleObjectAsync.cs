@@ -19,9 +19,10 @@ namespace ConnectorGrasshopper.Objects
   {
     public List<string> outputList = new List<string>();
     public override Guid ComponentGuid => new Guid("A33BB8DF-A9C1-4CD1-855F-D6A8B277102B");
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
-    
+    public override bool Obsolete => true;
+
     public int State = 0;
     public ExpandSpeckleObjectAsync() : base("Expand Speckle Object", "ESO",
       "Allows you to decompose a Speckle object in its constituent parts.",

@@ -19,8 +19,8 @@ namespace ConnectorGrasshopper.Objects
   {
     public override Guid ComponentGuid => new Guid("00287364-F725-466E-9E38-FDAD270D87D3");
     protected override Bitmap Icon => Properties.Resources.ExtendSpeckleObjectByKeyValue;
-
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override bool Obsolete => true;
 
     public ExtendSpeckleObjectByKeyValueAsync() : base("Extend Speckle Object by Key/Value", "ESO K/V",
       "Extend a current object with key/value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
