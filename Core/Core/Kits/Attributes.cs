@@ -10,7 +10,9 @@ namespace Speckle.Core.Kits
   {
     private string _description;
     private string _name;
-
+    public string Subcategory { get; }
+    public string Category { get; }
+    
     public virtual string Description
     {
       get { return _description; }
@@ -21,10 +23,12 @@ namespace Speckle.Core.Kits
       get { return _name; }
     }
 
-    public SchemaInfo(string name, string description)
+    public SchemaInfo(string name, string description, string category = null, string subcategory = null)
     {
       _name = name;
       _description = description;
+      Category = category;
+      Subcategory = subcategory;
     }
   }
 

@@ -20,7 +20,7 @@ namespace Objects.BuiltElements
 
     public Roof() { }
 
-    [SchemaInfo("Roof", "Creates a Speckle roof")]
+    [SchemaInfo("Roof", "Creates a Speckle roof", "BIM", "Architecture")]
     public Roof([SchemaMainParam] ICurve outline, List<ICurve> voids = null, List<Base> elements = null)
     {
       this.outline = outline;
@@ -63,7 +63,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
     /// <param name="elements"></param>
     /// <param name="parameters"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="start"/> and <paramref name="end"/> params</remarks>
-    [SchemaInfo("RevitExtrusionRoof", "Creates a Revit roof by extruding a curve")]
+    [SchemaInfo("RevitExtrusionRoof", "Creates a Revit roof by extruding a curve", "Revit", "Architecture")]
     public RevitExtrusionRoof(string family, string type,
       [SchemaParamInfo("Extrusion start")] double start,
       [SchemaParamInfo("Extrusion end")] double end,
@@ -90,7 +90,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
 
     public RevitFootprintRoof() { }
 
-    [SchemaInfo("RevitFootprintRoof", "Creates a Revit roof by outline")]
+    [SchemaInfo("RevitFootprintRoof", "Creates a Revit roof by outline", "Revit", "Architecture")]
     public RevitFootprintRoof([SchemaMainParam] ICurve outline, string family, string type, Level level, RevitLevel cutOffLevel = null, double slope = 0, List<ICurve> voids = null,
       List<Base> elements = null,
       List<Parameter> parameters = null)

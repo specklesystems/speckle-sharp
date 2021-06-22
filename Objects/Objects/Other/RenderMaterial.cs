@@ -26,7 +26,7 @@ namespace Objects.Other
 
     public RenderMaterial() { }
 
-    [SchemaInfo("RenderMaterial", "Creates a render material.")]
+    [SchemaInfo("RenderMaterial", "Creates a render material.", "BIM", "Other")]
     public RenderMaterial(double opacity = 1, double metalness = 0, double roughness = 1, Color? diffuse = null, Color? emissive = null)
     {
       this.opacity = opacity;

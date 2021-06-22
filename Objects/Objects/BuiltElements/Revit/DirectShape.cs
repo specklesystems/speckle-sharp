@@ -27,7 +27,7 @@ namespace Objects.BuiltElements.Revit
     /// <param name="category">The <see cref="RevitCategory"/> of this instance.</param>
     /// <param name="baseGeometries">A list of base classes to represent the direct shape (only mesh and brep are allowed, anything else will be ignored.)</param>
     /// <param name="parameters">Optional Parameters for this instance.</param>
-    [SchemaInfo("DirectShape by base geometries", "Creates a Revit DirectShape using a list of base geometry objects.")]
+    [SchemaInfo("DirectShape by base geometries", "Creates a Revit DirectShape using a list of base geometry objects.", "Revit", "Families")]
     public DirectShape(string name, RevitCategory category, List<Base> baseGeometries, List<Parameter> parameters = null)
     {
       this.name = name;

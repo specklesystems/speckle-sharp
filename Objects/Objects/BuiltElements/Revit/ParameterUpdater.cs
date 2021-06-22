@@ -12,7 +12,7 @@ namespace Objects.BuiltElements.Revit
     public List<Parameter> parameters { get; set; }
 
 
-    [SchemaInfo("ParameterUpdater", "Updates parameters on a Revit element by id")]
+    [SchemaInfo("ParameterUpdater", "Updates parameters on a Revit element by id", "Revit", "Families")]
     public ParameterUpdater([SchemaParamInfo("A Revit ElementId or UniqueId")] string id, List<Parameter> parameters)
     {
       this.revitId = id;

@@ -15,7 +15,7 @@ namespace Objects.BuiltElements
 
     public Pipe() { }
 
-    [SchemaInfo("Pipe", "Creates a Speckle pipe")]
+    [SchemaInfo("Pipe", "Creates a Speckle pipe", "BIM", "MEP")]
     public Pipe(Line baseLine, double length, double diameter, double flowrate = 0, double relativeRoughness = 0)
     {
       this.baseLine = baseLine;
@@ -40,7 +40,7 @@ namespace Objects.BuiltElements.Revit
 
     public RevitPipe() { }
 
-    [SchemaInfo("RevitPipe", "Creates a Revit pipe")]
+    [SchemaInfo("RevitPipe", "Creates a Revit pipe", "Revit", "MEP")]
     public RevitPipe(string family, string type, Line baseLine, double diameter, Level level,  string systemName = "", string systemType = "", List<Parameter> parameters = null)
     {
       this.family = family;

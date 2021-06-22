@@ -31,16 +31,22 @@ namespace ConnectorGrasshopper {
 
 <# foreach(Type sType in availableTypes) { #>
 <# 
-    var outputProps = new string[] { "O" };
     var typeName = string.Join("", sType.Name.Split('.'));
     var compName = sType.Name + "SchemaComponent";
     var constructor = CSOUtils.GetValidConstr(sType).FirstOrDefault();
-    var inputProps = constructor.GetParameters().AsEnumerable().ToList();
+    var attr = constructor.CustomAttributes.First(e => e.AttributeType.FullName == "Speckle.Core.Kits.SchemaInfo");
+    var name = attr.ConstructorArguments[0].Value;
+    var description = attr.ConstructorArguments[1].Value;
+
+    var catValue = attr.ConstructorArguments[2].Value;
+    var cat = catValue != null ?  "Speckle 2 " + catValue : "Speckle 2 BIM";
+    var subcatValue = attr.ConstructorArguments[3].Value;
+    var subcat = subcatValue != null ? subcatValue : sType.Namespace;
 #>
 // This is generated code:
 public class <#= compName #>: CreateSchemaObjectBase {
      
-    public <#= compName #>(): base("<#= typeName #>", "<#= typeName #>", "<#= typeName #>", "Speckle 2 BIM", "<#= sType.Namespace #>") { }
+    public <#= compName #>(): base("<#= typeName #>", "<#= typeName #>", "<#= typeName #>", "<#= cat #>", "<#= subcat #>") { }
     
     public override Guid ComponentGuid => new Guid("<#= ToGuid("secretPhraseToKeepItRandom..." + typeName) #>");
     

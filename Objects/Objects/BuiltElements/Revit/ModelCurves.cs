@@ -13,7 +13,7 @@ namespace Objects.BuiltElements.Revit.Curve
 
     public ModelCurve() { }
 
-    [SchemaInfo("ModelCurve", "Creates a Revit model curve")]
+    [SchemaInfo("ModelCurve", "Creates a Revit model curve", "Revit", "Curves")]
     public ModelCurve([SchemaMainParam] ICurve baseCurve, string lineStyle, List<Parameter> parameters = null)
     {
       this.baseCurve = baseCurve;
@@ -31,7 +31,7 @@ namespace Objects.BuiltElements.Revit.Curve
 
     public DetailCurve() { }
 
-    [SchemaInfo("DetailCurve", "Creates a Revit detail curve")]
+    [SchemaInfo("DetailCurve", "Creates a Revit detail curve", "Revit", "Curves")]
     public DetailCurve([SchemaMainParam] ICurve baseCurve, string lineStyle, List<Parameter> parameters = null)
     {
       this.baseCurve = baseCurve;
@@ -48,7 +48,7 @@ namespace Objects.BuiltElements.Revit.Curve
 
     public RoomBoundaryLine() { }
 
-    [SchemaInfo("RoomBoundaryLine", "Creates a Revit room boundary line")]
+    [SchemaInfo("RoomBoundaryLine", "Creates a Revit room boundary line", "Revit", "Curves")]
     public RoomBoundaryLine([SchemaMainParam] ICurve baseCurve, List<Parameter> parameters = null)
     {
       this.baseCurve = baseCurve;

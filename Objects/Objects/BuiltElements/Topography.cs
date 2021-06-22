@@ -16,7 +16,7 @@ namespace Objects.BuiltElements
 
     public Topography() { }
 
-    [SchemaInfo("Topography", "Creates a Speckle topography")]
+    [SchemaInfo("Topography", "Creates a Speckle topography", "BIM", "Architecture")]
     public Topography([SchemaMainParam] Mesh displayMesh)
     {
       this.displayMesh = displayMesh;
@@ -33,7 +33,7 @@ namespace Objects.BuiltElements.Revit
 
     public RevitTopography() { }
 
-    [SchemaInfo("RevitTopography", "Creates a Revit topography")]
+    [SchemaInfo("RevitTopography", "Creates a Revit topography", "Revit", "Architecture")]
     public RevitTopography([SchemaMainParam] Mesh displayMesh, List<Parameter> parameters = null)
     {
       this.displayMesh = displayMesh;
