@@ -114,7 +114,7 @@ namespace ConnectorGrasshopper
         }
       }
 
-      if(Params.Input.Count == 0)SetupComponent(SelectedConstructor);
+      if(Params.Input.Count == 0) SetupComponent(SelectedConstructor);
       base.AddedToDocument(document);
     }
 

@@ -10,8 +10,13 @@ namespace Speckle.Core.Kits
   {
     private string _description;
     private string _name;
-    public string Subcategory { get; }
-    public string Category { get; }
+    private string _category;
+    private string _subcategory;
+    public virtual string Subcategory { get => _subcategory; }
+    public virtual string Category
+    {
+      get => _category;
+    }
     
     public virtual string Description
     {
@@ -23,12 +28,14 @@ namespace Speckle.Core.Kits
       get { return _name; }
     }
 
-    public SchemaInfo(string name, string description, string category = null, string subcategory = null)
+    public SchemaInfo(string name, string description): this(name,description,null,null){}
+    
+    public SchemaInfo(string name, string description, string category, string subcategory)
     {
       _name = name;
       _description = description;
-      Category = category;
-      Subcategory = subcategory;
+      _category = category;
+      _subcategory = subcategory;
     }
   }
 
