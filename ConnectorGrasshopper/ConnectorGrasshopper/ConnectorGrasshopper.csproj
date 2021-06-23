@@ -107,6 +107,7 @@
     <Compile Include="Streams\StreamGetComponent.cs" />
     <Compile Include="Streams\StreamListComponent.cs" />
     <Compile Include="Streams\StreamUpdateComponent.cs" />
+    <Compile Include="Transports\SendReceiveTransport.cs" />
     <Compile Include="Transports\Transports.Disk.cs" />
     <Compile Include="Transports\Transports.Memory.cs" />
     <Compile Include="Transports\Transports.Server.cs" />
