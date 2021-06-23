@@ -11,7 +11,7 @@ namespace Objects.BuiltElements
 
     public Wire() { }
 
-    [SchemaInfo("Wire", "Creates a Speckle wire from curve segments and points")]
+    [SchemaInfo("Wire", "Creates a Speckle wire from curve segments and points", "BIM", "MEP")]
     public Wire(List<ICurve> segments)
     {
       this.segments = segments;
@@ -34,7 +34,7 @@ namespace Objects.BuiltElements.Revit
 
     public RevitWire() { }
 
-    [SchemaInfo("RevitWire", "Creates a Revit wire from points and level")]
+    [SchemaInfo("RevitWire", "Creates a Revit wire from points and level", "Revit", "MEP")]
     public RevitWire(List<double> constructionPoints, string family, string type, Level level, string wiringType = "Arc", List<Parameter> parameters = null)
     {
       this.constructionPoints = constructionPoints;

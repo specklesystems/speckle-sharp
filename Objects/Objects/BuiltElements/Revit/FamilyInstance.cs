@@ -26,7 +26,7 @@ namespace Objects.BuiltElements.Revit
 
     public FamilyInstance() { }
 
-    [SchemaInfo("FamilyInstance", "Creates a Revit family instance")]
+    [SchemaInfo("FamilyInstance", "Creates a Revit family instance", "Revit", "Families")]
     public FamilyInstance(Point basePoint, string family, string type, Level level,
       double rotation = 0, bool facingFlipped = false, bool handFlipped = false,
       List<Parameter> parameters = null)

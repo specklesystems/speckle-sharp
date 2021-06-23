@@ -18,22 +18,17 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper
 {
-  public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterComponent
+  public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_VariableParameterComponent
   {
-    public override GH_Exposure Exposure => GH_Exposure.quarternary;
+    public override GH_Exposure Exposure => GH_Exposure.tertiary;
 
-    private ConstructorInfo SelectedConstructor;
-    private bool readFailed = false;
-    private GH_Document _document;
-
-    public override Guid ComponentGuid => new Guid("4dc285e3-810d-47db-bfb5-cd96fe459fdd");
+    protected ConstructorInfo SelectedConstructor;
+    private bool readFailed;
     protected override Bitmap Icon => Properties.Resources.SchemaBuilder;
-
     public string Seed;
 
-    public CreateSchemaObject() : base("Create Schema Object", "CsO",
-      "Allows you to create a Speckle object from a schema class.",
-      ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
+    public CreateSchemaObjectBase(string name, string nickname, string description, string category, string subCategory)
+      : base(name, nickname, description, category, subCategory)
     {
       Seed = GenerateSeed();
     }
@@ -41,6 +36,56 @@ namespace ConnectorGrasshopper
     public string GenerateSeed()
     {
       return new string(Speckle.Core.Models.Utilities.hashString(Guid.NewGuid().ToString()).Take(20).ToArray());
+    }
+
+    public override bool Read(GH_IReader reader)
+    {
+      try
+      {
+        var constructorName = reader.GetString("SelectedConstructorName");
+        var typeName = reader.GetString("SelectedTypeName");
+
+        SelectedConstructor = CSOUtils.FindConstructor(constructorName, typeName);
+        if (SelectedConstructor == null)
+          readFailed = true;
+      }
+      catch
+      {
+        readFailed = true;
+      }
+
+      try
+      {
+        Seed = reader.GetString("seed");
+      }
+      catch
+      {
+      }
+
+      return base.Read(reader);
+    }
+
+    public override bool Write(GH_IWriter writer)
+    {
+      if (SelectedConstructor != null)
+      {
+        writer.SetString("SelectedConstructorName", CSOUtils.MethodFullName(SelectedConstructor));
+        writer.SetString("SelectedTypeName", SelectedConstructor.DeclaringType.FullName);
+      }
+
+      writer.SetString("seed", Seed);
+      return base.Write(writer);
+    }
+
+
+    protected override void RegisterInputParams(GH_InputParamManager pManager)
+    {
+    }
+
+    protected override void RegisterOutputParams(GH_OutputParamManager pManager)
+    {
+      //pManager.AddGenericParameter("Debug", "d", "debug output, please ignore", GH_ParamAccess.list);
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item));
     }
 
     public override void AddedToDocument(GH_Document document)
@@ -53,7 +98,8 @@ namespace ConnectorGrasshopper
         base.AddedToDocument(document);
         if (Grasshopper.Instances.ActiveCanvas.Document != null)
         {
-          var otherSchemaBuilders = Grasshopper.Instances.ActiveCanvas.Document.FindObjects(new List<string>() { Name }, 10000);
+          var otherSchemaBuilders =
+            Grasshopper.Instances.ActiveCanvas.Document.FindObjects(new List<string>() {Name}, 10000);
           foreach (var comp in otherSchemaBuilders)
           {
             if (comp is CreateSchemaObject scb)
@@ -66,30 +112,13 @@ namespace ConnectorGrasshopper
             }
           }
         }
-        return;
       }
 
-      _document = document;
-
-      var dialog = new CreateSchemaObjectDialog();
-      dialog.Owner = Grasshopper.Instances.EtoDocumentEditor;
-      var mouse = GH_Canvas.MousePosition;
-      dialog.Location = new Eto.Drawing.Point((int)((mouse.X - 150) / dialog.Screen.LogicalPixelSize), (int)((mouse.Y - 150) / dialog.Screen.LogicalPixelSize)); //approx the dialog half-size
-
-      dialog.ShowModal();
-
-      if (dialog.HasResult)
-      {
-        base.AddedToDocument(document);
-        SwitchConstructor(dialog.model.SelectedItem.Tag as ConstructorInfo);
-      }
-      else
-      {
-        document.RemoveObject(this.Attributes, true);
-      }
+      if(Params.Input.Count == 0) SetupComponent(SelectedConstructor);
+      base.AddedToDocument(document);
     }
 
-    public void SwitchConstructor(ConstructorInfo constructor)
+    public void SetupComponent(ConstructorInfo constructor)
     {
       int k = 0;
       var props = constructor.GetParameters();
@@ -99,14 +128,12 @@ namespace ConnectorGrasshopper
         RegisterPropertyAsInputParameter(p, k++);
       }
 
-      this.Name = constructor.GetCustomAttribute<SchemaInfo>().Name;
-      this.Description = constructor.GetCustomAttribute<SchemaInfo>().Description;
+      Name = constructor.GetCustomAttribute<SchemaInfo>().Name;
+      Description = constructor.GetCustomAttribute<SchemaInfo>().Description;
 
-      Message = constructor.DeclaringType.FullName.Split('.')[0];
+      Message = constructor.DeclaringType?.FullName?.Split('.')[0];
       SelectedConstructor = constructor;
-      Params.Output[0].NickName = constructor.DeclaringType.Name;
-      Params.OnParametersChanged();
-      ExpireSolution(true);
+      Params.Output[0].NickName = constructor.DeclaringType?.Name;
     }
 
     /// <summary>
@@ -145,7 +172,8 @@ namespace ConnectorGrasshopper
         newInputParam.SetPersistentData(param.DefaultValue);
 
       // check if input needs to be a list or item access
-      bool isCollection = typeof(System.Collections.IEnumerable).IsAssignableFrom(propType) && propType != typeof(string) && !propType.Name.ToLower().Contains("dictionary");
+      bool isCollection = typeof(System.Collections.IEnumerable).IsAssignableFrom(propType) &&
+                          propType != typeof(string) && !propType.Name.ToLower().Contains("dictionary");
       if (isCollection == true)
       {
         newInputParam.Access = GH_ParamAccess.list;
@@ -154,6 +182,7 @@ namespace ConnectorGrasshopper
       {
         newInputParam.Access = GH_ParamAccess.item;
       }
+
       Params.RegisterInputParam(newInputParam, index);
 
       //add dropdown
@@ -166,7 +195,7 @@ namespace ConnectorGrasshopper
 
         var vals = Enum.GetValues(propType).Cast<Enum>().Select(x => x.ToString()).ToList();
         var options = CreateDropDown(propName, vals, Attributes.Bounds.X, Params.Input[index].Attributes.Bounds.Y);
-        _document.AddObject(options, false);
+        OnPingDocument().AddObject(options, false);
         Params.Input[index].AddSource(options);
       }
     }
@@ -191,60 +220,12 @@ namespace ConnectorGrasshopper
       return valueList;
     }
 
-    public override bool Read(GH_IReader reader)
-    {
-      try
-      {
-        var constructorName = reader.GetString("SelectedConstructorName");
-        var typeName = reader.GetString("SelectedTypeName");
-
-        SelectedConstructor = CSOUtils.FindConstructor(constructorName, typeName);
-        if (SelectedConstructor == null)
-          readFailed = true;
-
-      }
-      catch
-      {
-        readFailed = true;
-      }
-
-      try
-      {
-        Seed = reader.GetString("seed");
-      }
-      catch { }
-      return base.Read(reader);
-    }
-
-    public override bool Write(GH_IWriter writer)
-    {
-      if (SelectedConstructor != null)
-      {
-        var methodFullName = CSOUtils.MethodFullName(SelectedConstructor);
-        var declaringTypeFullName = SelectedConstructor.DeclaringType.FullName;
-        writer.SetString("SelectedConstructorName", methodFullName);
-        writer.SetString("SelectedTypeName", declaringTypeFullName);
-      }
-
-      writer.SetString("seed", Seed);
-      return base.Write(writer);
-    }
-
-
-    protected override void RegisterInputParams(GH_InputParamManager pManager)
-    { }
-
-    protected override void RegisterOutputParams(GH_OutputParamManager pManager)
-    {
-      //pManager.AddGenericParameter("Debug", "d", "debug output, please ignore", GH_ParamAccess.list);
-      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item));
-    }
-
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       if (readFailed)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "This component has changed or cannot be found, please create a new one");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error,
+          "This component has changed or cannot be found, please create a new one");
         return;
       }
 
@@ -292,11 +273,13 @@ namespace ConnectorGrasshopper
           var extractRealInputValue = ExtractRealInputValue(inputValue);
           objectProp = GetObjectProp(param, extractRealInputValue, cParam.ParameterType);
         }
+
         cParamsValues.Add(objectProp);
-        if (CustomAttributeData.GetCustomAttributes(cParam)?.Where(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))?.Count() > 0)
+        if (CustomAttributeData.GetCustomAttributes(cParam)
+          ?.Where(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))?.Count() > 0)
           mainSchemaObj = objectProp;
       }
-      
+
 
       object schemaObject = null;
       try
@@ -309,25 +292,27 @@ namespace ConnectorGrasshopper
         return;
       }
 
-      var @base = ((Base)schemaObject);
+      var @base = ((Base) schemaObject);
       @base.applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
       @base.units = units;
 
       // create commit obj from main geometry param and try to attach schema obj. use schema obj if no main geom param was found.
-      Base commitObj = (Base)schemaObject;
+      Base commitObj = (Base) schemaObject;
       try
       {
         if (mainSchemaObj != null)
         {
-          commitObj = (Base)mainSchemaObj;
+          commitObj = (Base) mainSchemaObj;
           commitObj["@SpeckleSchema"] = schemaObject;
           commitObj.units = units;
         }
       }
-      catch { }
-        
+      catch
+      {
+      }
+
       // Finally, add any custom props created by the user.
-      for( var j = cParams.Length; j < Params.Input.Count; j++)
+      for (var j = cParams.Length; j < Params.Input.Count; j++)
       {
         // Additional props added to the object
         var ghParam = Params.Input[j];
@@ -335,7 +320,7 @@ namespace ConnectorGrasshopper
         {
           object input = null;
           DA.GetData(j, ref input);
-          
+
           commitObj[ghParam.Name] = Utilities.TryConvertItemToSpeckle(input, Converter);
         }
         else if (ghParam.Access == GH_ParamAccess.list)
@@ -345,7 +330,8 @@ namespace ConnectorGrasshopper
           commitObj[ghParam.Name] = input.Select(i => Utilities.TryConvertItemToSpeckle(i, Converter)).ToList();
         }
       }
-      DA.SetData(0, new GH_SpeckleBase() { Value = commitObj });
+
+      DA.SetData(0, new GH_SpeckleBase() {Value = commitObj});
     }
 
     private object ExtractRealInputValue(object inputValue)
@@ -369,7 +355,7 @@ namespace ConnectorGrasshopper
     {
       if (!values.Any()) return null;
 
-      var list = (IList)Activator.CreateInstance(t);
+      var list = (IList) Activator.CreateInstance(t);
       var listElementType = list.GetType().GetGenericArguments().Single();
       foreach (var value in values)
       {
@@ -403,7 +389,9 @@ namespace ConnectorGrasshopper
         {
           return Enum.Parse(type, value.ToString());
         }
-        catch { }
+        catch
+        {
+        }
       }
 
       // int, doubles, etc
@@ -416,7 +404,7 @@ namespace ConnectorGrasshopper
         catch (Exception e)
         {
           throw new Exception($"Cannot convert {value.GetType()} to {type}");
-        }      
+        }
       }
 
       if (Converter.CanConvertToSpeckle(value))
@@ -437,6 +425,7 @@ namespace ConnectorGrasshopper
             throw new Exception($"Cannot convert {converted.GetType()} to {type}");
           }
         }
+
         return converted;
       }
       else
@@ -449,9 +438,11 @@ namespace ConnectorGrasshopper
       try
       {
         MethodInfo castIntoMethod = this.GetType().GetMethod("CastObject").MakeGenericMethod(type);
-        return castIntoMethod.Invoke(null, new[] { value });
+        return castIntoMethod.Invoke(null, new[] {value});
       }
-      catch { }
+      catch
+      {
+      }
 
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");
       throw new SpeckleException($"Could not covert object to {type}");
@@ -460,7 +451,7 @@ namespace ConnectorGrasshopper
     //keep public so it can be picked by reflection
     public static T CastObject<T>(object input)
     {
-      return (T)input;
+      return (T) input;
     }
 
     public bool CanInsertParameter(GH_ParameterSide side, int index)
@@ -484,7 +475,7 @@ namespace ConnectorGrasshopper
         MutableNickName = true,
         Optional = false
       };
-      
+
       myParam.NickName = myParam.Name;
       //myParam.ObjectChanged += (sender, e) => Debouncer.Start();
 
@@ -497,7 +488,8 @@ namespace ConnectorGrasshopper
     }
 
     public void VariableParameterMaintenance()
-    { }
+    {
+    }
 
     protected override void BeforeSolveInstance()
     {
@@ -506,5 +498,4 @@ namespace ConnectorGrasshopper
       base.BeforeSolveInstance();
     }
   }
-
 }
