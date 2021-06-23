@@ -18,7 +18,7 @@ namespace SpeckleRhino
   {
     // speckle user string for custom schemas
     // TODO: address consistency weak point, since this string needs to match exactly in ConverterRhinoGH.Geometry.cs!
-    static string SpeckleSchemaKey = "SpeckleBIM";
+    static string SpeckleSchemaKey = "SpeckleSchema";
     static string DirectShapeKey = "DirectShape";
     public RhinoDoc ActiveDoc = null;
 
@@ -52,7 +52,6 @@ namespace SpeckleRhino
 
     public class CreateFloor : Command
     {
-      RhinoDoc ActiveDoc = null;
       public override string EnglishName => "CreateFloor";
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
