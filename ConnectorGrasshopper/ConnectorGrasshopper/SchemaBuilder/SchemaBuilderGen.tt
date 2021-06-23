@@ -32,27 +32,31 @@ namespace ConnectorGrasshopper {
 <# foreach(Type sType in availableTypes) { #>
 <# 
     var typeName = string.Join("", sType.Name.Split('.'));
-    var compName = sType.Name + "SchemaComponent";
-    var constructor = CSOUtils.GetValidConstr(sType).FirstOrDefault();
-    var attr = constructor.CustomAttributes.First(e => e.AttributeType.FullName == "Speckle.Core.Kits.SchemaInfo");
-    var name = attr.ConstructorArguments[0].Value;
-    var description = attr.ConstructorArguments[1].Value;
-    var cat = "Speckle 2 BIM";
-    var subcat = sType.Namespace;
-    if (attr.ConstructorArguments.Count > 2)
+    var constructorInfos = CSOUtils.GetValidConstr(sType);
+    int i = 0;
+    foreach (var constructor in constructorInfos)
     {
-        var catValue = attr.ConstructorArguments[2].Value;
-        cat = catValue != null ? "Speckle 2 " + catValue : "Speckle 2 BIM";
-        var subcatValue = attr.ConstructorArguments[3].Value;
-        subcat = subcatValue != null ? subcatValue as string : sType.Namespace;
-    }
+        var compName = sType.Name + (i == 0 ? null : i) + "SchemaComponent";
+        i++;
+        var attr = constructor.CustomAttributes.First(e => e.AttributeType.FullName == "Speckle.Core.Kits.SchemaInfo");
+        var name = attr.ConstructorArguments[0].Value;
+        var description = attr.ConstructorArguments[1].Value;
+        var cat = "Speckle 2 BIM";
+        var subcat = sType.Namespace;
+        if (attr.ConstructorArguments.Count > 2)
+        {
+            var catValue = attr.ConstructorArguments[2].Value;
+            cat = catValue != null ? "Speckle 2 " + catValue : "Speckle 2 BIM";
+            var subcatValue = attr.ConstructorArguments[3].Value;
+            subcat = subcatValue != null ? subcatValue as string : sType.Namespace;
+        }
 #>
 // This is generated code:
 public class <#= compName #>: CreateSchemaObjectBase {
      
     public <#= compName #>(): base("<#= name #>", "<#= name #>", "<#= description #>", "<#= cat #>", "<#= subcat #>") { }
     
-    public override Guid ComponentGuid => new Guid("<#= ToGuid("secretPhraseToKeepItRandom..." + typeName) #>");
+    public override Guid ComponentGuid => new Guid("<#= ToGuid("secretPhraseToKeepItRandom..." + compName) #>");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("<#= CSOUtils.MethodFullName(constructor) #>","<#= constructor.DeclaringType.FullName #>");
@@ -60,6 +64,6 @@ public class <#= compName #>: CreateSchemaObjectBase {
     }
 }
 
-<# } #>
+<# } } #>
 
 }

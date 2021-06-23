@@ -10,7 +10,7 @@ public class AdaptiveComponentSchemaComponent: CreateSchemaObjectBase {
      
     public AdaptiveComponentSchemaComponent(): base("AdaptiveComponent", "AdaptiveComponent", "Creates a Revit adaptive component by points", "Speckle 2 Revit", "Families") { }
     
-    public override Guid ComponentGuid => new Guid("66b41bbe-c848-bd70-76b5-8fe4eecfb0fe");
+    public override Guid ComponentGuid => new Guid("71420d27-62d1-f158-edab-a89e54604d76");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.AdaptiveComponent.ctor(System.String,System.String,System.Collections.Generic.List`1[Objects.Geometry.Point],System.Boolean,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.AdaptiveComponent");
@@ -23,7 +23,7 @@ public class AreaSchemaComponent: CreateSchemaObjectBase {
      
     public AreaSchemaComponent(): base("Area", "Area", "Creates a Speckle area", "Speckle 2 BIM", "Other") { }
     
-    public override Guid ComponentGuid => new Guid("0a54d2aa-c137-9b5c-cf72-f2e9c6b39468");
+    public override Guid ComponentGuid => new Guid("b98bd134-1ebd-b805-821c-465f1a25fb4e");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Area.ctor(System.String,System.String,Objects.BuiltElements.Level,Objects.Geometry.Point)","Objects.BuiltElements.Area");
@@ -36,7 +36,7 @@ public class BeamSchemaComponent: CreateSchemaObjectBase {
      
     public BeamSchemaComponent(): base("Beam", "Beam", "Creates a Speckle beam", "Speckle 2 BIM", "Structure") { }
     
-    public override Guid ComponentGuid => new Guid("d3efd475-31ec-685a-834c-a3dd5a39bd26");
+    public override Guid ComponentGuid => new Guid("5c0a392e-bc1c-cf28-0048-a99ee090ffa1");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Beam.ctor(Objects.ICurve)","Objects.BuiltElements.Beam");
@@ -49,7 +49,7 @@ public class BraceSchemaComponent: CreateSchemaObjectBase {
      
     public BraceSchemaComponent(): base("Brace", "Brace", "Creates a Speckle brace", "Speckle 2 BIM", "Structure") { }
     
-    public override Guid ComponentGuid => new Guid("49d9db93-7293-978c-2adc-8048894ee6cc");
+    public override Guid ComponentGuid => new Guid("cf5f1dad-80cd-d499-2ef7-6ae1f8d34a5c");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Brace.ctor(Objects.ICurve)","Objects.BuiltElements.Brace");
@@ -62,7 +62,7 @@ public class CeilingSchemaComponent: CreateSchemaObjectBase {
      
     public CeilingSchemaComponent(): base("Ceiling", "Ceiling", "Creates a Speckle ceiling", "Speckle 2 BIM", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("4ce489f1-0c17-6835-90aa-d8ddf8fe8ac9");
+    public override Guid ComponentGuid => new Guid("91b38d18-dd01-dfc7-f11d-e3d2c118ff0b");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Ceiling.ctor(Objects.ICurve,System.Collections.Generic.List`1[Objects.ICurve],System.Collections.Generic.List`1[Speckle.Core.Models.Base])","Objects.BuiltElements.Ceiling");
@@ -75,7 +75,7 @@ public class ColumnSchemaComponent: CreateSchemaObjectBase {
      
     public ColumnSchemaComponent(): base("Column", "Column", "Creates a Speckle column", "Speckle 2 BIM", "Structure") { }
     
-    public override Guid ComponentGuid => new Guid("03be61d3-61e5-a27d-85b8-3e0989306736");
+    public override Guid ComponentGuid => new Guid("d92fc447-81b6-e595-1905-6239ea13a49b");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Column.ctor(Objects.ICurve)","Objects.BuiltElements.Column");
@@ -88,7 +88,7 @@ public class DetailCurveSchemaComponent: CreateSchemaObjectBase {
      
     public DetailCurveSchemaComponent(): base("DetailCurve", "DetailCurve", "Creates a Revit detail curve", "Speckle 2 Revit", "Curves") { }
     
-    public override Guid ComponentGuid => new Guid("ebf4ee5c-edb2-5648-02fc-170ae0fb1279");
+    public override Guid ComponentGuid => new Guid("4752d321-22cc-2d9e-dc6d-e3cf8e70c612");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.Curve.DetailCurve.ctor(Objects.ICurve,System.String,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.Curve.DetailCurve");
@@ -101,7 +101,7 @@ public class DirectShapeSchemaComponent: CreateSchemaObjectBase {
      
     public DirectShapeSchemaComponent(): base("DirectShape by base geometries", "DirectShape by base geometries", "Creates a Revit DirectShape using a list of base geometry objects.", "Speckle 2 Revit", "Families") { }
     
-    public override Guid ComponentGuid => new Guid("45d270ff-5730-a7fc-b2a9-04acda8e243d");
+    public override Guid ComponentGuid => new Guid("870d9670-cbf5-06d2-f371-e1e49212b063");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.DirectShape.ctor(System.String,Objects.BuiltElements.Revit.RevitCategory,System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.DirectShape");
@@ -114,7 +114,7 @@ public class DuctSchemaComponent: CreateSchemaObjectBase {
      
     public DuctSchemaComponent(): base("Duct", "Duct", "Creates a Speckle duct", "Speckle 2 BIM", "MEP") { }
     
-    public override Guid ComponentGuid => new Guid("db524fe6-10ff-13ec-2af5-4b900951ed14");
+    public override Guid ComponentGuid => new Guid("51d40791-43ea-a8e7-ef13-e9bfdf9cd893");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Duct.ctor(Objects.Geometry.Line,System.Double,System.Double,System.Double,System.Double)","Objects.BuiltElements.Duct");
@@ -127,7 +127,7 @@ public class FamilyInstanceSchemaComponent: CreateSchemaObjectBase {
      
     public FamilyInstanceSchemaComponent(): base("FamilyInstance", "FamilyInstance", "Creates a Revit family instance", "Speckle 2 Revit", "Families") { }
     
-    public override Guid ComponentGuid => new Guid("35871f67-164c-9b4e-5fd4-67ed5b463eaa");
+    public override Guid ComponentGuid => new Guid("266c4d84-3f2a-9129-565b-0ddb1e5bdac4");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.FamilyInstance.ctor(Objects.Geometry.Point,System.String,System.String,Objects.BuiltElements.Level,System.Double,System.Boolean,System.Boolean,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.FamilyInstance");
@@ -140,7 +140,7 @@ public class FloorSchemaComponent: CreateSchemaObjectBase {
      
     public FloorSchemaComponent(): base("Floor", "Floor", "Creates a Speckle floor", "Speckle 2 BIM", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("d12fb55d-e105-6dcf-a8f9-2e8cd89d3677");
+    public override Guid ComponentGuid => new Guid("74c5b6bf-257e-8d4e-d9cb-7dc2c7ae3f22");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Floor.ctor(Objects.ICurve,System.Collections.Generic.List`1[Objects.ICurve],System.Collections.Generic.List`1[Speckle.Core.Models.Base])","Objects.BuiltElements.Floor");
@@ -153,7 +153,7 @@ public class FreeformElementSchemaComponent: CreateSchemaObjectBase {
      
     public FreeformElementSchemaComponent(): base("Freeform element", "Freeform element", "Creates a Revit Freeform element using a Brep or a Mesh.", "Speckle 2 Revit", "Families") { }
     
-    public override Guid ComponentGuid => new Guid("d452bb1d-1264-d6d9-5054-fa7c0c96f789");
+    public override Guid ComponentGuid => new Guid("b24dc861-1c3c-a509-bc8b-560e9f7d503e");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.FreeformElement.ctor(Speckle.Core.Models.Base,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.FreeformElement");
@@ -166,7 +166,7 @@ public class GridLineSchemaComponent: CreateSchemaObjectBase {
      
     public GridLineSchemaComponent(): base("GridLine", "GridLine", "Creates a Speckle grid line", "Speckle 2 BIM", "Other") { }
     
-    public override Guid ComponentGuid => new Guid("a7b6381f-a03c-0fc1-51e3-9e71260a7a7f");
+    public override Guid ComponentGuid => new Guid("b2d4bd71-86a7-c142-7220-d9ed2ee7b02e");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.GridLine.ctor(Objects.ICurve)","Objects.BuiltElements.GridLine");
@@ -179,7 +179,7 @@ public class LevelSchemaComponent: CreateSchemaObjectBase {
      
     public LevelSchemaComponent(): base("Level", "Level", "Creates a Speckle level", "Speckle 2 BIM", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("6931f911-a3e4-60cc-5d67-7df6761934b7");
+    public override Guid ComponentGuid => new Guid("04fca79a-ae5b-6ac4-581d-79438351a4e8");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Level.ctor(System.String,System.Double)","Objects.BuiltElements.Level");
@@ -192,7 +192,7 @@ public class ModelCurveSchemaComponent: CreateSchemaObjectBase {
      
     public ModelCurveSchemaComponent(): base("ModelCurve", "ModelCurve", "Creates a Revit model curve", "Speckle 2 Revit", "Curves") { }
     
-    public override Guid ComponentGuid => new Guid("9d8117ef-d131-7c7f-c2d8-7fa144da0cfe");
+    public override Guid ComponentGuid => new Guid("7aa6e073-6783-8e7b-eec2-7b7bb0420db2");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.Curve.ModelCurve.ctor(Objects.ICurve,System.String,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.Curve.ModelCurve");
@@ -205,7 +205,7 @@ public class ParameterSchemaComponent: CreateSchemaObjectBase {
      
     public ParameterSchemaComponent(): base("Parameter", "Parameter", "A Revit instance parameter to set on an element", "Speckle 2 Revit", "Families") { }
     
-    public override Guid ComponentGuid => new Guid("fd9a30a7-a337-1d3f-d7d7-947d5f0c8421");
+    public override Guid ComponentGuid => new Guid("706f3fe9-f499-b07f-b682-febedbe38c9c");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.Parameter.ctor(System.String,System.Object,System.String)","Objects.BuiltElements.Revit.Parameter");
@@ -218,7 +218,7 @@ public class ParameterUpdaterSchemaComponent: CreateSchemaObjectBase {
      
     public ParameterUpdaterSchemaComponent(): base("ParameterUpdater", "ParameterUpdater", "Updates parameters on a Revit element by id", "Speckle 2 Revit", "Families") { }
     
-    public override Guid ComponentGuid => new Guid("206e574f-749f-6ec4-0f83-470e33ac2d26");
+    public override Guid ComponentGuid => new Guid("c4f5fc69-58e1-59f6-4dac-e31b738f7254");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.ParameterUpdater.ctor(System.String,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.ParameterUpdater");
@@ -231,7 +231,7 @@ public class PipeSchemaComponent: CreateSchemaObjectBase {
      
     public PipeSchemaComponent(): base("Pipe", "Pipe", "Creates a Speckle pipe", "Speckle 2 BIM", "MEP") { }
     
-    public override Guid ComponentGuid => new Guid("fb5f2554-9846-3779-417c-2d61b084e899");
+    public override Guid ComponentGuid => new Guid("6892cf99-6913-7004-27ab-2cfb8435a644");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Pipe.ctor(Objects.Geometry.Line,System.Double,System.Double,System.Double,System.Double)","Objects.BuiltElements.Pipe");
@@ -244,7 +244,7 @@ public class RenderMaterialSchemaComponent: CreateSchemaObjectBase {
      
     public RenderMaterialSchemaComponent(): base("RenderMaterial", "RenderMaterial", "Creates a render material.", "Speckle 2 BIM", "Other") { }
     
-    public override Guid ComponentGuid => new Guid("e473fcba-4e52-8a23-43e1-3402d6b6d6d4");
+    public override Guid ComponentGuid => new Guid("03a49484-4eba-6e08-5e96-b3b78ed13f70");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.Other.RenderMaterial.ctor(System.Double,System.Double,System.Double,System.Nullable`1[System.Drawing.Color],System.Nullable`1[System.Drawing.Color])","Objects.Other.RenderMaterial");
@@ -257,7 +257,7 @@ public class RevitBeamSchemaComponent: CreateSchemaObjectBase {
      
     public RevitBeamSchemaComponent(): base("RevitBeam", "RevitBeam", "Creates a Revit beam by curve and base level.", "Speckle 2 Revit", "Structure") { }
     
-    public override Guid ComponentGuid => new Guid("f24a39c8-c9e5-2495-1874-f4ab446e2ec1");
+    public override Guid ComponentGuid => new Guid("6aba19f5-1b1c-8e0c-f063-2a7c91816b1c");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitBeam.ctor(System.String,System.String,Objects.ICurve,Objects.BuiltElements.Level,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitBeam");
@@ -270,7 +270,7 @@ public class RevitBraceSchemaComponent: CreateSchemaObjectBase {
      
     public RevitBraceSchemaComponent(): base("RevitBrace", "RevitBrace", "Creates a Revit brace by curve and base level.", "Speckle 2 Revit", "Structure") { }
     
-    public override Guid ComponentGuid => new Guid("5b25d90c-638c-c68d-0553-966732b0f32e");
+    public override Guid ComponentGuid => new Guid("a3a689dc-2ca5-d5be-a225-99a144768e7e");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitBrace.ctor(System.String,System.String,Objects.ICurve,Objects.BuiltElements.Level,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitBrace");
@@ -283,10 +283,23 @@ public class RevitColumnSchemaComponent: CreateSchemaObjectBase {
      
     public RevitColumnSchemaComponent(): base("RevitColumn Vertical", "RevitColumn Vertical", "Creates a vertical Revit Column by point and levels.", "Speckle 2 Revit", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("2fc41752-da0b-8f1f-5bd4-c17e8b08f0d9");
+    public override Guid ComponentGuid => new Guid("c243fe91-0103-bea1-34b7-3e8b39c8d0ec");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitColumn.ctor(System.String,System.String,Objects.ICurve,Objects.BuiltElements.Level,Objects.BuiltElements.Level,System.Double,System.Double,System.Boolean,System.Double,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitColumn");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class RevitColumn1SchemaComponent: CreateSchemaObjectBase {
+     
+    public RevitColumn1SchemaComponent(): base("RevitColumn Slanted", "RevitColumn Slanted", "Creates a slanted Revit Column by curve.", "Speckle 2 Revit", "Structure") { }
+    
+    public override Guid ComponentGuid => new Guid("bd9936e6-c75f-c0de-feb0-b801eff0e0ea");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitColumn.ctor(System.String,System.String,Objects.ICurve,Objects.BuiltElements.Level,System.Boolean,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitColumn");
         base.AddedToDocument(document);
     }
 }
@@ -296,7 +309,7 @@ public class RevitDuctSchemaComponent: CreateSchemaObjectBase {
      
     public RevitDuctSchemaComponent(): base("RevitDuct", "RevitDuct", "Creates a Revit duct", "Speckle 2 Revit", "MEP") { }
     
-    public override Guid ComponentGuid => new Guid("78a7a7c8-8cae-2f35-78b5-5e2e96d037bd");
+    public override Guid ComponentGuid => new Guid("d7781536-e8a9-8aef-1b27-571584f8c4a3");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitDuct.ctor(System.String,System.String,Objects.Geometry.Line,System.String,System.String,Objects.BuiltElements.Level,System.Double,System.Double,System.Double,System.Double,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitDuct");
@@ -309,7 +322,7 @@ public class RevitExtrusionRoofSchemaComponent: CreateSchemaObjectBase {
      
     public RevitExtrusionRoofSchemaComponent(): base("RevitExtrusionRoof", "RevitExtrusionRoof", "Creates a Revit roof by extruding a curve", "Speckle 2 Revit", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("3de83e73-de31-9005-35e5-1e465ed44f14");
+    public override Guid ComponentGuid => new Guid("707428ab-15b4-e7ec-a2cd-21154ff50c1b");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitRoof.RevitExtrusionRoof.ctor(System.String,System.String,System.Double,System.Double,Objects.Geometry.Line,Objects.BuiltElements.Level,System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitRoof.RevitExtrusionRoof");
@@ -322,7 +335,7 @@ public class RevitFaceWallSchemaComponent: CreateSchemaObjectBase {
      
     public RevitFaceWallSchemaComponent(): base("RevitWall by face", "RevitWall by face", "Creates a Revit wall from a surface.", "Speckle 2 Revit", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("71bf5594-3716-8a74-122d-5539ab277ba0");
+    public override Guid ComponentGuid => new Guid("fc3927a7-0877-8137-a34e-ecd19a6f688c");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitFaceWall.ctor(System.String,System.String,Objects.Geometry.Brep,Objects.BuiltElements.Level,Objects.BuiltElements.Revit.LocationLine,System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitFaceWall");
@@ -335,7 +348,7 @@ public class RevitFloorSchemaComponent: CreateSchemaObjectBase {
      
     public RevitFloorSchemaComponent(): base("RevitFloor", "RevitFloor", "Creates a Revit floor by outline and level", "Speckle 2 Revit", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("9c935e8c-557f-202e-eceb-c385cb932b29");
+    public override Guid ComponentGuid => new Guid("e6f17d4f-6c28-0d0f-2370-7b9c09a14fff");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitFloor.ctor(System.String,System.String,Objects.ICurve,Objects.BuiltElements.Level,System.Boolean,System.Collections.Generic.List`1[Objects.ICurve],System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitFloor");
@@ -348,7 +361,7 @@ public class RevitFootprintRoofSchemaComponent: CreateSchemaObjectBase {
      
     public RevitFootprintRoofSchemaComponent(): base("RevitFootprintRoof", "RevitFootprintRoof", "Creates a Revit roof by outline", "Speckle 2 Revit", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("a5147f8f-143b-b662-62cb-c8c2832b8039");
+    public override Guid ComponentGuid => new Guid("b2f55d9f-7242-ee7e-c44a-24e34d5f6e3e");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitRoof.RevitFootprintRoof.ctor(Objects.ICurve,System.String,System.String,Objects.BuiltElements.Level,Objects.BuiltElements.Revit.RevitLevel,System.Double,System.Collections.Generic.List`1[Objects.ICurve],System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitRoof.RevitFootprintRoof");
@@ -361,10 +374,23 @@ public class RevitLevelSchemaComponent: CreateSchemaObjectBase {
      
     public RevitLevelSchemaComponent(): base("RevitLevel", "RevitLevel", "Creates a new Revit level unless one with the same elevation already exists", "Speckle 2 Revit", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("3058b055-29c8-0142-8ca3-d759903e1077");
+    public override Guid ComponentGuid => new Guid("5ef6e45c-00bd-f3b9-1cbf-6e9a902da7ab");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitLevel.ctor(System.String,System.Double,System.Boolean,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitLevel");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class RevitLevel1SchemaComponent: CreateSchemaObjectBase {
+     
+    public RevitLevel1SchemaComponent(): base("RevitLevel by name", "RevitLevel by name", "Gets an existing Revit level by name", "Speckle 2 Revit", "Architecture") { }
+    
+    public override Guid ComponentGuid => new Guid("e075a88e-7867-3726-3bb7-15b73b2d17e6");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitLevel.ctor(System.String)","Objects.BuiltElements.Revit.RevitLevel");
         base.AddedToDocument(document);
     }
 }
@@ -374,7 +400,7 @@ public class RevitPipeSchemaComponent: CreateSchemaObjectBase {
      
     public RevitPipeSchemaComponent(): base("RevitPipe", "RevitPipe", "Creates a Revit pipe", "Speckle 2 Revit", "MEP") { }
     
-    public override Guid ComponentGuid => new Guid("068d2e01-a492-ad86-49ab-ec26a4fe4784");
+    public override Guid ComponentGuid => new Guid("19700cd2-6310-c8b3-7ad5-954033702e52");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitPipe.ctor(System.String,System.String,Objects.Geometry.Line,System.Double,Objects.BuiltElements.Level,System.String,System.String,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitPipe");
@@ -387,7 +413,7 @@ public class RevitRailingSchemaComponent: CreateSchemaObjectBase {
      
     public RevitRailingSchemaComponent(): base("Railing", "Railing", "Creates a Revit railing by base curve.", "Speckle 2 Revit", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("ae3086f0-fa31-ded0-c1bd-bdb8d87bf5f9");
+    public override Guid ComponentGuid => new Guid("a6c3be7a-9e6b-663b-2bc0-dd9fa2ee6552");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitRailing.ctor(System.String,Objects.Geometry.Polycurve,Objects.BuiltElements.Level,System.Boolean)","Objects.BuiltElements.Revit.RevitRailing");
@@ -400,7 +426,7 @@ public class RevitShaftSchemaComponent: CreateSchemaObjectBase {
      
     public RevitShaftSchemaComponent(): base("RevitShaft", "RevitShaft", "Creates a Revit shaft from a bottom and top level", "Speckle 2 Revit", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("08d18d6d-2ece-25e2-a6f2-ddd706b5ebd9");
+    public override Guid ComponentGuid => new Guid("00cdb2fd-ef75-107e-822c-3490cd359380");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitShaft.ctor(Objects.ICurve,Objects.BuiltElements.Level,Objects.BuiltElements.Level,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitShaft");
@@ -413,7 +439,7 @@ public class RevitTopographySchemaComponent: CreateSchemaObjectBase {
      
     public RevitTopographySchemaComponent(): base("RevitTopography", "RevitTopography", "Creates a Revit topography", "Speckle 2 Revit", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("d6f62ecb-0f54-c1d1-6c69-7346ec552417");
+    public override Guid ComponentGuid => new Guid("f0840908-039e-b6d4-98de-8ed003dfd357");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitTopography.ctor(Objects.Geometry.Mesh,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitTopography");
@@ -426,10 +452,23 @@ public class RevitWallSchemaComponent: CreateSchemaObjectBase {
      
     public RevitWallSchemaComponent(): base("RevitWall by curve and levels", "RevitWall by curve and levels", "Creates a Revit wall with a top and base level.", "Speckle 2 Revit", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("d7afa102-5541-85c6-cf4c-4ac6a0b22820");
+    public override Guid ComponentGuid => new Guid("fa1aef22-ddd5-01f4-887e-145ce21da247");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitWall.ctor(System.String,System.String,Objects.ICurve,Objects.BuiltElements.Level,Objects.BuiltElements.Level,System.Double,System.Double,System.Boolean,System.Boolean,System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitWall");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class RevitWall1SchemaComponent: CreateSchemaObjectBase {
+     
+    public RevitWall1SchemaComponent(): base("RevitWall by curve and height", "RevitWall by curve and height", "Creates an unconnected Revit wall.", "Speckle 2 Revit", "Architecture") { }
+    
+    public override Guid ComponentGuid => new Guid("bd2a0bb1-14f7-cd0a-76c4-2429412a5128");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitWall.ctor(System.String,System.String,Objects.ICurve,Objects.BuiltElements.Level,System.Double,System.Double,System.Double,System.Boolean,System.Boolean,System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitWall");
         base.AddedToDocument(document);
     }
 }
@@ -439,7 +478,7 @@ public class RevitWireSchemaComponent: CreateSchemaObjectBase {
      
     public RevitWireSchemaComponent(): base("RevitWire", "RevitWire", "Creates a Revit wire from points and level", "Speckle 2 Revit", "MEP") { }
     
-    public override Guid ComponentGuid => new Guid("ab51eaa9-50b7-bb99-4ea9-8650311c22a6");
+    public override Guid ComponentGuid => new Guid("4045436b-0804-f0e1-a9f2-6217f4d8a45b");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitWire.ctor(System.Collections.Generic.List`1[System.Double],System.String,System.String,Objects.BuiltElements.Level,System.String,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitWire");
@@ -452,7 +491,7 @@ public class RoofSchemaComponent: CreateSchemaObjectBase {
      
     public RoofSchemaComponent(): base("Roof", "Roof", "Creates a Speckle roof", "Speckle 2 BIM", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("49ec7f71-9688-6843-c2e5-92a53ede6fef");
+    public override Guid ComponentGuid => new Guid("c10c6dcd-e6a8-be88-32f3-45c935d0bae9");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Roof.ctor(Objects.ICurve,System.Collections.Generic.List`1[Objects.ICurve],System.Collections.Generic.List`1[Speckle.Core.Models.Base])","Objects.BuiltElements.Roof");
@@ -465,7 +504,7 @@ public class RoomSchemaComponent: CreateSchemaObjectBase {
      
     public RoomSchemaComponent(): base("Room", "Room", "Creates a Speckle room", "Speckle 2 BIM", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("26fe91d9-8ad7-7f15-fded-c90f6a07537c");
+    public override Guid ComponentGuid => new Guid("c62087b7-2a9d-743d-336d-e8ea2ab72a29");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Room.ctor(System.String,System.String,Objects.BuiltElements.Level,Objects.Geometry.Point)","Objects.BuiltElements.Room");
@@ -478,7 +517,7 @@ public class RoomBoundaryLineSchemaComponent: CreateSchemaObjectBase {
      
     public RoomBoundaryLineSchemaComponent(): base("RoomBoundaryLine", "RoomBoundaryLine", "Creates a Revit room boundary line", "Speckle 2 Revit", "Curves") { }
     
-    public override Guid ComponentGuid => new Guid("5dab27e5-60dc-9e36-4b56-2b23f3195ee0");
+    public override Guid ComponentGuid => new Guid("2edade8a-5139-09be-4273-551f3ac476e2");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.Curve.RoomBoundaryLine.ctor(Objects.ICurve,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.Curve.RoomBoundaryLine");
@@ -491,7 +530,7 @@ public class TopographySchemaComponent: CreateSchemaObjectBase {
      
     public TopographySchemaComponent(): base("Topography", "Topography", "Creates a Speckle topography", "Speckle 2 BIM", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("ac008c63-8c7b-3472-2e92-da065d1665a2");
+    public override Guid ComponentGuid => new Guid("b9207a45-eebc-72d6-a411-f496443d8b7f");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Topography.ctor(Objects.Geometry.Mesh)","Objects.BuiltElements.Topography");
@@ -504,7 +543,7 @@ public class WallSchemaComponent: CreateSchemaObjectBase {
      
     public WallSchemaComponent(): base("Wall", "Wall", "Creates a Speckle wall", "Speckle 2 BIM", "Architecture") { }
     
-    public override Guid ComponentGuid => new Guid("d5303a81-bf0b-90d3-dabd-0580b638b4a5");
+    public override Guid ComponentGuid => new Guid("6878cc65-2628-d00d-e8c0-b130e828a6c7");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Wall.ctor(System.Double,Objects.ICurve,System.Collections.Generic.List`1[Speckle.Core.Models.Base])","Objects.BuiltElements.Wall");
@@ -517,7 +556,7 @@ public class WireSchemaComponent: CreateSchemaObjectBase {
      
     public WireSchemaComponent(): base("Wire", "Wire", "Creates a Speckle wire from curve segments and points", "Speckle 2 BIM", "MEP") { }
     
-    public override Guid ComponentGuid => new Guid("584fe689-34ea-eda4-d42e-cf7094f443d9");
+    public override Guid ComponentGuid => new Guid("c10c9c87-b93d-4e98-d2fb-942d182008dc");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Wire.ctor(System.Collections.Generic.List`1[Objects.ICurve])","Objects.BuiltElements.Wire");
