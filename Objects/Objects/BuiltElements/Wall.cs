@@ -68,7 +68,7 @@ namespace Objects.BuiltElements.Revit
     /// <param name="elements"></param>
     /// <param name="parameters"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="baseOffset"/> and <paramref name="topOffset"/> params</remarks>
-    [SchemaInfo("Wall by curve and levels", "Creates a Revit wall with a top and base level.", "Revit", "Architecture")]
+    [SchemaInfo("RevitWall by curve and levels", "Creates a Revit wall with a top and base level.", "Revit", "Architecture")]
     public RevitWall(string family, string type,
       [SchemaMainParam] ICurve baseLine, Level level, Level topLevel, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
@@ -102,7 +102,7 @@ namespace Objects.BuiltElements.Revit
     /// <param name="elements"></param>
     /// <param name="parameters"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="height"/>, <paramref name="baseOffset"/>, and <paramref name="topOffset"/> params</remarks>
-    [SchemaInfo("Wall by curve and height", "Creates an unconnected Revit wall.", "Revit", "Architecture")]
+    [SchemaInfo("RevitWall by curve and height", "Creates an unconnected Revit wall.", "Revit", "Architecture")]
     public RevitWall(string family, string type,
       [SchemaMainParam] ICurve baseLine, Level level, double height, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
@@ -134,7 +134,7 @@ namespace Objects.BuiltElements.Revit
 
     public RevitFaceWall() { }
 
-    [SchemaInfo("Wall by face", "Creates a Revit wall from a surface.", "Revit", "Architecture")]
+    [SchemaInfo("RevitWall by face", "Creates a Revit wall from a surface.", "Revit", "Architecture")]
     public RevitFaceWall(string family, string type,
       [SchemaParamInfo("Surface or single face Brep to use")][SchemaMainParam] Brep surface,
       Level level, LocationLine locationLine = LocationLine.Interior,

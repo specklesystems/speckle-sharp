@@ -1,7 +1,7 @@
 ﻿<#@ template debug="false" hostspecific="false" language="C#" #>
 <#@ output extension=".cs" #>
 <#@ assembly name="System.Core" #>
-<#@ assembly name="$(SolutionDir)\ConnectorGrasshopper\bin\SpeckleConnectorGrasshopper.dll" #>
+<#@ assembly name="$(SolutionDir)ConnectorGrasshopper\bin\SpeckleConnectorGrasshopper.dll" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Collections.Generic" #>
