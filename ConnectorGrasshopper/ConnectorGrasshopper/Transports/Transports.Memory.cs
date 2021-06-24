@@ -39,7 +39,7 @@ namespace ConnectorGrasshopper.Transports
       DA.GetData(0, ref name);
 
       var myTransport = new MemoryTransport();
-      myTransport.TransportName = name;
+      myTransport.TransportName = name == null ? "Gh Memory Transport" : name;
 
       DA.SetData(0, myTransport);
     }

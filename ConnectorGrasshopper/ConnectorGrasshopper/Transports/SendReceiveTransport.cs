@@ -15,7 +15,7 @@ namespace ConnectorGrasshopper.Transports
   {
     public override Guid ComponentGuid { get => new Guid("4229B8DC-9F81-49A3-9EF9-DF3DE0B8E4B6"); }
 
-    protected override Bitmap Icon => Properties.Resources.DiskTransport;
+    protected override Bitmap Icon => Properties.Resources.sendToTransport;
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
@@ -68,7 +68,7 @@ namespace ConnectorGrasshopper.Transports
   {
     public override Guid ComponentGuid { get => new Guid("8C7C6CA5-1557-4216-810B-F64E710526D0"); }
 
-    protected override Bitmap Icon => Properties.Resources.DiskTransport;
+    protected override Bitmap Icon => Properties.Resources.receiveFromTransport;
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
