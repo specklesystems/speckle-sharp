@@ -19,12 +19,12 @@ namespace ConnectorGrasshopper.Transports
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    public SendReceiveTransport() : base("Send To Transports", "ST", "Sends an object to a list of given transports.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
+    public SendReceiveTransport() : base("Send To Transports", "ST", "Sends an object to a list of given transports: the object will be stored in each of them. Please use this component with caution: it can freeze your defintion. It also does not perform any conversions, so ensure that the object input already has converted speckle objects inside.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddGenericParameter("transports", "T", "The transports to send to.", GH_ParamAccess.list);
-      pManager.AddParameter(new SpeckleBaseParam("Object", "O", "The speckle object you want to send.", GH_ParamAccess.item));
+      pManager.AddParameter(new SpeckleBaseParam("Object", "O", "The speckle object you want to send. It needs to be a Speckle Object in which everything is already converted to Speckle already. ", GH_ParamAccess.item));
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -36,7 +36,7 @@ namespace ConnectorGrasshopper.Transports
     {
       if (DA.Iteration != 0)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "You can't send more than object. Please combine them into a root parent object using the create speckle object component!");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "This component does not work with multiple iterations. Please ensure that you have as inputs a flat list of transports and a single speckle object (combine multiple objects into a root 'parent' speckle object).");
         return;
       }
 
@@ -72,7 +72,7 @@ namespace ConnectorGrasshopper.Transports
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    public ReceiveFromTransport() : base("Receive From Transport", "RT", "Receives objects from a given transport.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
+    public ReceiveFromTransport() : base("Receive From Transport", "RT", "Receives a list of objects from a given transport. Please use this component with caution: it can freeze your defintion. It also does not perform any conversions on the output.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -89,7 +89,7 @@ namespace ConnectorGrasshopper.Transports
     {
       if (DA.Iteration != 0)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "TODO: Error message.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "This component does not work with multiple iterations. Please ensure you've inputed only one transport and a flat list of object ids.");
         return;
       }
 
@@ -100,6 +100,11 @@ namespace ConnectorGrasshopper.Transports
       DA.GetData(0, ref transportGoo);
 
       var transport = transportGoo.GetType().GetProperty("Value").GetValue(transportGoo) as ITransport;
+
+      if(transport == null)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Transport is null.");
+      }
 
       List<Base> results = new List<Base>();
       foreach(var id in ids)
