@@ -292,17 +292,17 @@ namespace ConnectorGrasshopper
         return;
       }
 
-      var @base = ((Base) schemaObject);
+      var @base = ((Base) schemaObject).ShallowCopy();
       @base.applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
       @base.units = units;
 
       // create commit obj from main geometry param and try to attach schema obj. use schema obj if no main geom param was found.
-      Base commitObj = (Base) schemaObject;
+      Base commitObj = ((Base) schemaObject).ShallowCopy();
       try
       {
         if (mainSchemaObj != null)
         {
-          commitObj = (Base) mainSchemaObj;
+          commitObj = ((Base) mainSchemaObj).ShallowCopy();
           commitObj["@SpeckleSchema"] = schemaObject;
           commitObj.units = units;
         }
