@@ -107,9 +107,9 @@
     <Compile Include="Streams\StreamGetComponent.cs" />
     <Compile Include="Streams\StreamListComponent.cs" />
     <Compile Include="Streams\StreamUpdateComponent.cs" />
+    <Compile Include="Transports\SendReceiveTransport.cs" />
     <Compile Include="Transports\Transports.Disk.cs" />
     <Compile Include="Transports\Transports.Memory.cs" />
-    <Compile Include="Transports\Transports.Server.cs" />
     <Compile Include="Transports\Transports.Sqlite.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -204,6 +204,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\receiveFromTransport.png" />
+    <None Include="Resources\sendToTransport.png" />
     <Content Include="SchemaBuilder\SchemaBuilderGen.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
