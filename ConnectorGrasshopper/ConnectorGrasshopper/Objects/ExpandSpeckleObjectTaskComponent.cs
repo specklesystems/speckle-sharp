@@ -43,15 +43,6 @@ namespace ConnectorGrasshopper.Objects
  
       if (InPreSolve)
       {
-        if (RunCount == 1)
-        {
-          Console.WriteLine("No iter has run");
-          var x = Params.Input[0].VolatileData;
-          var tree = x as GH_Structure<GH_SpeckleBase>;
-          outputList = GetOutputList(tree);
-          AutoCreateOutputs();
-        }
-        
         GH_SpeckleBase ghSpeckleBase = null;
         DA.GetData(0, ref ghSpeckleBase);
         var @base = ghSpeckleBase.Value;
@@ -81,6 +72,7 @@ namespace ConnectorGrasshopper.Objects
         foreach (var key in result.Keys)
         {
           var indexOfOutputParam = Params.IndexOfOutputParam(key);
+          
           if(indexOfOutputParam != -1)
           {
             var obj = result[key];
@@ -168,6 +160,24 @@ namespace ConnectorGrasshopper.Objects
       Params.SortOutput(sortOrder);
       Params.OnParametersChanged();
       VariableParameterMaintenance();
+    }
+
+    protected override void BeforeSolveInstance()
+    {
+      if (RunCount == -1)
+      {
+        Console.WriteLine("No iter has run");
+        var x = Params.Input[0].VolatileData;
+        var tree = x as GH_Structure<GH_SpeckleBase>;
+        outputList = GetOutputList(tree);
+        AutoCreateOutputs();
+      }
+      base.BeforeSolveInstance();
+    }
+
+    protected override void AfterSolveInstance()
+    {
+      base.AfterSolveInstance();
     }
 
     private List<string> GetOutputList(GH_Structure<GH_SpeckleBase> speckleObjects)

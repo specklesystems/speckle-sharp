@@ -18,7 +18,7 @@ namespace Objects.BuiltElements
 
     public Ceiling() { }
 
-    [SchemaInfo("Ceiling", "Creates a Speckle ceiling")]
+    [SchemaInfo("Ceiling", "Creates a Speckle ceiling", "BIM", "Architecture")]
     public Ceiling([SchemaMainParam] ICurve outline, List<ICurve> voids = null,
       [SchemaParamInfo("Any nested elements that this ceiling might have")] List<Base> elements = null)
     {

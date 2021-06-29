@@ -2,25 +2,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using GH_IO.Serialization;
-using Grasshopper;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
-using Rhino.Geometry;
-using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper
@@ -227,8 +220,10 @@ namespace ConnectorGrasshopper
     {
       if (SelectedConstructor != null)
       {
-        writer.SetString("SelectedConstructorName", CSOUtils.MethodFullName(SelectedConstructor));
-        writer.SetString("SelectedTypeName", SelectedConstructor.DeclaringType.FullName);
+        var methodFullName = CSOUtils.MethodFullName(SelectedConstructor);
+        var declaringTypeFullName = SelectedConstructor.DeclaringType.FullName;
+        writer.SetString("SelectedConstructorName", methodFullName);
+        writer.SetString("SelectedTypeName", declaringTypeFullName);
       }
 
       writer.SetString("seed", Seed);
@@ -314,17 +309,17 @@ namespace ConnectorGrasshopper
         return;
       }
 
-      var @base = ((Base)schemaObject);
+      var @base = ((Base)schemaObject).ShallowCopy();
       @base.applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
       @base.units = units;
 
       // create commit obj from main geometry param and try to attach schema obj. use schema obj if no main geom param was found.
-      Base commitObj = (Base)schemaObject;
+      Base commitObj = ((Base) schemaObject).ShallowCopy();
       try
       {
         if (mainSchemaObj != null)
         {
-          commitObj = (Base)mainSchemaObj;
+          commitObj = ((Base) mainSchemaObj).ShallowCopy();
           commitObj["@SpeckleSchema"] = schemaObject;
           commitObj.units = units;
         }

@@ -18,7 +18,7 @@ namespace Objects.BuiltElements
 
     public Floor() { }
 
-    [SchemaInfo("Floor", "Creates a Speckle floor")]
+    [SchemaInfo("Floor", "Creates a Speckle floor", "BIM", "Architecture")]
     public Floor([SchemaMainParam] ICurve outline, List<ICurve> voids = null,
       [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null)
     {
@@ -41,7 +41,7 @@ namespace Objects.BuiltElements.Revit
     public string elementId { get; set; }
     public RevitFloor() { }
 
-    [SchemaInfo("RevitFloor", "Creates a Revit floor by outline and level")]
+    [SchemaInfo("RevitFloor", "Creates a Revit floor by outline and level", "Revit", "Architecture")]
     public RevitFloor(string family, string type, [SchemaMainParam] ICurve outline,
        Level level, bool structural = false, List<ICurve> voids = null,
       [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null,
