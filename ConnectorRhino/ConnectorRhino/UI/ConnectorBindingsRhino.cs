@@ -418,10 +418,7 @@ namespace SpeckleRhino
       Exceptions.Clear();
 
       var commitObj = new Base();
-
-      var units = Units.GetUnitsFromString(Doc.GetUnitSystemName(true, false, false, false));
-      commitObj["units"] = units;
-
+      
       int objCount = 0;
       bool renamedlayers = false;
 
