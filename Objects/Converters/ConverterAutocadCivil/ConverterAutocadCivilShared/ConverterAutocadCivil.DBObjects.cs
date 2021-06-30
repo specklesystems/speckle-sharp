@@ -377,6 +377,7 @@ namespace Objects.Converter.AutocadCivil
     // polylines can only support curve segments of type circular arc
     // currently, this will collapse 3d polycurves into 2d since there is no polycurve class that can contain 3d polylines with nonlinear segments
     // TODO: to preserve 3d polycurves, will have to convert segments individually, append to the document, and join. This will convert to spline if 3d with curved segments.
+    // TODO: figure out how to handle polycurves with spline segments
     public AcadDB.Polyline PolycurveToNativeDB(Polycurve polycurve) 
     {
       AcadDB.Polyline polyline = new AcadDB.Polyline() { Closed = polycurve.closed };
@@ -400,7 +401,7 @@ namespace Objects.Converter.AutocadCivil
               polyline.AddVertexAt(i + 1, PointToNative(o.endPoint).Convert2d(plane), 0, 0, 0);
             break;
           default:
-            throw new Speckle.Core.Logging.SpeckleException("Polycurve segment is not a line or arc!");
+            return null;
         }
       }
 
@@ -506,7 +507,8 @@ namespace Objects.Converter.AutocadCivil
 
     public AcadDB.Curve NurbsToNativeDB(Curve curve)
     {
-      return AcadDB.Curve.CreateFromGeCurve(NurbcurveToNative(curve));
+      var _curve = AcadDB.Curve.CreateFromGeCurve(NurbcurveToNative(curve));
+      return _curve;
     }
 
     // All curves
@@ -612,17 +614,21 @@ namespace Objects.Converter.AutocadCivil
     public AcadDB.Hatch HatchToNativeDB(Hatch hatch)
     {
       var _hatch = new AcadDB.Hatch();
-
-      var curveIds = new ObjectIdCollection();
       using (Transaction tr = Doc.TransactionManager.StartTransaction())
       {
         BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
         BlockTableRecord modelSpaceRecord = (BlockTableRecord)tr.GetObject(blckTbl[BlockTableRecord.ModelSpace], AcadDB.OpenMode.ForWrite);
 
         // convert curves
+        var curveIds = new ObjectIdCollection();
         foreach (var curve in hatch.curves)
         {
           var converted = CurveToNativeDB(curve);
+          if (converted == null || !converted.Closed)
+          {
+            tr.Commit();
+            return null;
+          }
           if (converted.IsNewObject)
           {
             var curveId = modelSpaceRecord.AppendEntity(converted);
@@ -636,13 +642,27 @@ namespace Objects.Converter.AutocadCivil
         modelSpaceRecord.AppendEntity(_hatch);
         tr.AddNewlyCreatedDBObject(_hatch, true);
 
-        // insert loops
-        _hatch.AppendLoop((int)HatchLoopTypes.Default, curveIds);
-
-        // set props
-        _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
+        _hatch.SetDatabaseDefaults();
+        // try get hatch pattern
+        switch (HatchPatterns.ValidPatternName(hatch.pattern))
+        {
+          case PatPatternCategory.kCustomdef:
+            _hatch.SetHatchPattern(HatchPatternType.CustomDefined, hatch.pattern);
+            break;
+          case PatPatternCategory.kPredef:
+            _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
+            break;
+          case PatPatternCategory.kUserdef:
+            _hatch.SetHatchPattern(HatchPatternType.UserDefined, hatch.pattern);
+            break;
+          default:
+            _hatch.SetHatchPattern(HatchPatternType.PreDefined, "SOLID");
+            break;
+        }
         _hatch.PatternAngle = hatch.rotation;
         _hatch.PatternScale = hatch.scale;
+        _hatch.AppendLoop(HatchLoopTypes.Default, curveIds);
+        _hatch.EvaluateHatch(true);
 
         tr.Commit();
       }
