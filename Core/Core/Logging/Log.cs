@@ -21,16 +21,11 @@ namespace Speckle.Core.Logging
 
       var dsn = Environment.GetEnvironmentVariable("SENTRY_DSN");
 
-      SentrySdk.ConfigureScope(scope =>
-      {
-        scope.User = new User { Id = Setup.SUUID, };
-        scope.SetTag("hostApplication", Setup.HostApplication);
-      });
       var env = "production";
 
-#if DEBUG
-      env = "dev";
-#endif
+      #if DEBUG
+            env = "dev";
+      #endif
 
       SentrySdk.Init(o =>
       {
@@ -38,6 +33,12 @@ namespace Speckle.Core.Logging
         o.Environment = env;
         o.Debug = true;
         o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
+      });
+      
+      SentrySdk.ConfigureScope(scope =>
+      {
+        scope.User = new User { Id = Setup.SUUID, };
+        scope.SetTag("hostApplication", Setup.HostApplication);
       });
 
       _initialized = true;
