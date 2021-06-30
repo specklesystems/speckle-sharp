@@ -25,6 +25,7 @@ namespace Speckle.Core.Logging
 
       #if DEBUG
             env = "dev";
+            dsn = null;
       #endif
 
       SentrySdk.Init(o =>
