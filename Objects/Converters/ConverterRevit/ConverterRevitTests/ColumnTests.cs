@@ -43,7 +43,7 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Column", "ToNativeUpdates")]
-    public void WallToNativeUpdates()
+    public void ColumnToNativeUpdates()
     {
       SpeckleToNativeUpdates<DB.FamilyInstance>(AssertFamilyInstanceEqual);
     }

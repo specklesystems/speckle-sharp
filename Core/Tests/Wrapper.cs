@@ -40,5 +40,18 @@ namespace Tests
       Assert.AreEqual(StreamWrapperType.Commit, wrapper.Type);
     }
 
+    [Test]
+    public void ParseGlobalAsBranch()
+    {
+      var wrapper = new StreamWrapper("https://testing.speckle.dev/streams/0c6ad366c4/globals/");
+      Assert.AreEqual(StreamWrapperType.Branch, wrapper.Type);
+    }
+
+    [Test]
+    public void ParseGlobalAsCommit()
+    {
+      var wrapper = new StreamWrapper("https://testing.speckle.dev/streams/0c6ad366c4/globals/abd3787893");
+      Assert.AreEqual(StreamWrapperType.Commit, wrapper.Type);
+    }
   }
 }

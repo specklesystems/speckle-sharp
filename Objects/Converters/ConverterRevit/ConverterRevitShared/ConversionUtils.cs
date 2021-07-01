@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements;
@@ -106,11 +107,7 @@ namespace Objects.Converter.Revit
             continue;
           }
 
-          if (!CanConvertToNative(obj))
-          {
-            ConversionErrors.Add(new Exception($"Skipping not supported type: {obj.speckle_type}"));
-            continue;
-          }
+          if (!CanConvertToNative(obj)) continue;
 
           try
           {
@@ -585,6 +582,7 @@ namespace Objects.Converter.Revit
       public double Y { get; set; } = 0;
       public double Z { get; set; } = 0;
       public double Angle { get; set; } = 0;
+      public Transform TotalTransform { get; set; }
     }
 
     ////////////////////////////////////////////////
@@ -619,12 +617,17 @@ namespace Objects.Converter.Revit
           }
           else
           {
+            var x = bp.get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM).AsDouble();
+            var y = bp.get_Parameter(BuiltInParameter.BASEPOINT_NORTHSOUTH_PARAM).AsDouble();
+            var z = bp.get_Parameter(BuiltInParameter.BASEPOINT_ELEVATION_PARAM).AsDouble();
+            var angle = bp.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble();
             _basePoint = new BetterBasePoint
             {
-              X = bp.get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM).AsDouble(),
-              Y = bp.get_Parameter(BuiltInParameter.BASEPOINT_NORTHSOUTH_PARAM).AsDouble(),
-              Z = bp.get_Parameter(BuiltInParameter.BASEPOINT_ELEVATION_PARAM).AsDouble(),
-              Angle = bp.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble()
+              X = x,
+              Y = y,
+              Z = z,
+              Angle = angle,
+              TotalTransform = Transform.CreateRotation(XYZ.BasisZ, angle).Multiply(Transform.CreateTranslation(new XYZ(0 - x, 0 - y, 0 - z)))
             };
           }
         }
@@ -637,8 +640,11 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="p"></param>
     /// <returns></returns>
-    public XYZ ToExternalCoordinates(XYZ p)
+    public XYZ ToExternalCoordinates(XYZ p, bool isPoint)
     {
+      return (isPoint) ? BasePoint.TotalTransform.OfPoint(p) : BasePoint.TotalTransform.OfVector(p);
+
+      /*
       p = new XYZ(p.X - BasePoint.X, p.Y - BasePoint.Y, p.Z - BasePoint.Z);
       //rotation
       double centX = (p.X * Math.Cos(-BasePoint.Angle)) - (p.Y * Math.Sin(-BasePoint.Angle));
@@ -647,6 +653,7 @@ namespace Objects.Converter.Revit
       XYZ newP = new XYZ(centX, centY, p.Z);
 
       return newP;
+      */
     }
 
     /// <summary>
@@ -654,8 +661,11 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="p"></param>
     /// <returns></returns>
-    public XYZ ToInternalCoordinates(XYZ p)
+    public XYZ ToInternalCoordinates(XYZ p, bool isPoint)
     {
+      return (isPoint) ? BasePoint.TotalTransform.Inverse.OfPoint(p) : BasePoint.TotalTransform.Inverse.OfVector(p);
+
+      /*
       //rotation
       double centX = (p.X * Math.Cos(BasePoint.Angle)) - (p.Y * Math.Sin(BasePoint.Angle));
       double centY = (p.X * Math.Sin(BasePoint.Angle)) + (p.Y * Math.Cos(BasePoint.Angle));
@@ -663,6 +673,7 @@ namespace Objects.Converter.Revit
       XYZ newP = new XYZ(centX + BasePoint.X, centY + BasePoint.Y, p.Z + BasePoint.Z);
 
       return newP;
+      */
     }
     #endregion
 
@@ -744,6 +755,23 @@ namespace Objects.Converter.Revit
     {
       string[] _string = s.Split(separators, StringSplitOptions.RemoveEmptyEntries);
       return String.Join(newVal, _string);
+    }
+
+    public string GetTemplatePath(string templateName)
+    {
+      var directoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Kits", "Objects", "Templates", "Revit", RevitVersionHelper.Version);
+      string templatePath = "";
+      switch (Doc.DisplayUnitSystem)
+      {
+        case DisplayUnit.IMPERIAL:
+          templatePath = Path.Combine(directoryPath, $"{templateName} - Imperial.rft");
+          break;
+        case DisplayUnit.METRIC:
+          templatePath = Path.Combine(directoryPath, $"{templateName} - Metric.rft");
+          break;
+      }
+
+      return templatePath;
     }
     #endregion
 

@@ -19,7 +19,7 @@ namespace Objects.BuiltElements.Revit
 
     public AdaptiveComponent() { }
 
-    [SchemaInfo("AdaptiveComponent", "Creates a Revit adaptive component by points")]
+    [SchemaInfo("AdaptiveComponent", "Creates a Revit adaptive component by points", "Revit", "Families")]
     public AdaptiveComponent(string type, string family, List<Point> basePoints, bool flipped = false, List<Parameter> parameters = null)
     {
       this.type = type;

@@ -20,7 +20,7 @@ namespace Objects.BuiltElements
     /// <param name="name"></param>
     /// <param name="elevation"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="elevation"/> param</remarks>
-    [SchemaInfo("Level", "Creates a Speckle level")]
+    [SchemaInfo("Level", "Creates a Speckle level", "BIM", "Architecture")]
     public Level(string name, double elevation)
     {
       this.name = name;
@@ -48,7 +48,7 @@ namespace Objects.BuiltElements.Revit
     /// <param name="createView"></param>
     /// <param name="parameters"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="elevation"/> param</remarks>
-    [SchemaInfo("Create level", "Creates a new Revit level unless one with the same elevation already exists")]
+    [SchemaInfo("RevitLevel", "Creates a new Revit level unless one with the same elevation already exists", "Revit", "Architecture")]
     public RevitLevel(
       [SchemaParamInfo("Level name. NOTE: updating level name is not supported")] string name,
       [SchemaParamInfo("Level elevation. NOTE: updating level elevation is not supported, a new one will be created unless another level at the new elevation already exists.")] double elevation,
@@ -62,7 +62,7 @@ namespace Objects.BuiltElements.Revit
       this.referenceOnly = false;
     }
 
-    [SchemaInfo("Level by name", "Gets an existing Revit level by name")]
+    [SchemaInfo("RevitLevel by name", "Gets an existing Revit level by name", "Revit", "Architecture")]
     public RevitLevel(string name)
     {
       this.name = name;

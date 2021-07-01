@@ -99,9 +99,11 @@ namespace ConnectorGrasshopper.Streams
                   itemCount++;
                   return;
                 }
-                var account = item.Value.UserId == null
-                  ? AccountManager.GetDefaultAccount()
-                  : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == item.Value.UserId);
+
+                var idWrapper = item.Value;
+                var userId = item.Value.UserId;
+                var account = string.IsNullOrEmpty(userId) ? AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == idWrapper.ServerUrl) :
+                  AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
                 if (account == null)
                 {
                   AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find default account in this machine. Use the Speckle Manager to add an account.");

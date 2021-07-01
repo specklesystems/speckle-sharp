@@ -245,6 +245,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
           // open model space block table record for write
           BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
 
+          // TODO: create dictionaries here for linetype and layer linewidth
+          // More efficient this way than doing this per object
+          var lineTypeDictionary = new Dictionary<string, ObjectId>();
+          var lineTypeTable = (LinetypeTable)tr.GetObject(Doc.Database.LinetypeTableId, OpenMode.ForRead);
+          foreach (AcadDb.ObjectId lineTypeId in lineTypeTable)
+          {
+            var linetype = (LinetypeTableRecord)tr.GetObject(lineTypeId, OpenMode.ForRead);
+            lineTypeDictionary.Add(linetype.Name, lineTypeId);
+          }
+
           foreach (var commitObj in commitObjs)
           {
             // create the object's bake layer if it doesn't already exist
@@ -261,8 +271,42 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 if (!cleanName.Equals(layerName))
                   changedLayerNames = true;
 
-                if (!convertedEntity.Append(cleanName, tr, btr))
+                if (convertedEntity.Append(cleanName, tr, btr))
+                {
+                  // handle display
+                  Base display = obj[@"displayStyle"] as Base;
+                  if (display != null)
+                  {
+                    var color = display["color"] as int?;
+                    var lineType = display["linetype"] as string;
+                    var lineWidth = display["lineweight"] as double?;
+
+                    if (color != null)
+                    {
+                      var systemColor = System.Drawing.Color.FromArgb((int)color);
+                      convertedEntity.Color = Color.FromRgb(systemColor.R, systemColor.G, systemColor.B);
+                      convertedEntity.Transparency = new Transparency(systemColor.A);
+                    }
+                    if (lineWidth != null)
+                    {
+                      convertedEntity.LineWeight = Utils.GetLineWeight((double)lineWidth);
+                    }
+                      
+                    if (lineType != null)
+                    {
+                      if (lineTypeDictionary.ContainsKey(lineType))
+                      {
+                        convertedEntity.LinetypeId = lineTypeDictionary[lineType];
+                      }
+                    }
+                  }
+                  tr.TransactionManager.QueueForGraphicsFlush();
+                }
+                else
+                {
                   state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
+                }
+
               }
               else
                 state.Errors.Add(new Exception($"Could not create layer {layerName} to bake objects into."));

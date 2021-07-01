@@ -20,7 +20,7 @@ namespace Objects.Converter.Revit
         throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.");
       }
 
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn); ;
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn);
       var baseLine = CurveToNative(speckleColumn.baseLine).get_Item(0);
 
       // If the start point elevation is higher than the end point elevation, reverse the line.
@@ -91,8 +91,11 @@ namespace Objects.Converter.Revit
       if (revitColumn == null && isLineBased)
       {
         revitColumn = Doc.Create.NewFamilyInstance(baseLine, familySymbol, level, structuralType);
-        StructuralFramingUtils.DisallowJoinAtEnd(revitColumn, 0);
-        StructuralFramingUtils.DisallowJoinAtEnd(revitColumn, 1);
+        if ( revitColumn.Symbol.Family.FamilyPlacementType == FamilyPlacementType.CurveDrivenStructural )
+        {
+          StructuralFramingUtils.DisallowJoinAtEnd(revitColumn, 0);
+          StructuralFramingUtils.DisallowJoinAtEnd(revitColumn, 1);
+        }
       }
 
       //try with a point based column

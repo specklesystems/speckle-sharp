@@ -31,14 +31,14 @@ namespace Objects.Converter.Revit
         Doc.Delete(revitWall.Id);
       }
 
-      var famPath = Path.Combine(Doc.Application.FamilyTemplatePath, @"Conceptual Mass\Metric Mass.rft");
-      if (!File.Exists(famPath))
+      var templatePath = GetTemplatePath("Mass");
+      if (!File.Exists(templatePath))
       {
         ConversionErrors.Add(new Exception($"Could not find file Metric Mass.rft"));
         return null;
       }
 
-      var tempMassFamilyPath = CreateMassFamily(famPath, speckleWall.surface, speckleWall.applicationId);
+      var tempMassFamilyPath = CreateMassFamily(templatePath, speckleWall.surface, speckleWall.applicationId);
       Family fam;
       Doc.LoadFamily(tempMassFamilyPath, new FamilyLoadOption(), out fam);
       var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;

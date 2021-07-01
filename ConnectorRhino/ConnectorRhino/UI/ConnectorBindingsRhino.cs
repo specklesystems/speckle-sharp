@@ -359,6 +359,34 @@ namespace SpeckleRhino
           if (bakeLayer != null)
           {
             var attributes = new ObjectAttributes { LayerIndex = bakeLayer.Index };
+
+            // handle display
+            Base display = obj[@"displayStyle"] as Base;
+            if (display != null)
+            {
+              var color = display["color"] as int?;
+              var lineStyle = display["linetype"] as string;
+              var lineWidth = display["lineweight"] as double?;
+
+              if (color != null)
+              {
+                attributes.ColorSource = ObjectColorSource.ColorFromObject;
+                attributes.ObjectColor = System.Drawing.Color.FromArgb((int)color);
+              }
+              if (lineWidth != null)
+                attributes.PlotWeight = (double)lineWidth;
+              if (lineStyle != null)
+              {
+                var ls = Doc.Linetypes.FindName(lineStyle);
+                if (ls != null)
+                {
+                  attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
+                  attributes.LinetypeIndex = ls.Index;
+                }
+              }
+            }
+
+            // handle schema
             string schema = obj["SpeckleSchema"] as string;
             if (schema != null)
               attributes.SetUserString("SpeckleSchema", schema);
@@ -390,10 +418,7 @@ namespace SpeckleRhino
       Exceptions.Clear();
 
       var commitObj = new Base();
-
-      var units = Units.GetUnitsFromString(Doc.GetUnitSystemName(true, false, false, false));
-      commitObj["units"] = units;
-
+      
       int objCount = 0;
       bool renamedlayers = false;
 

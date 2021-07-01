@@ -199,6 +199,7 @@ namespace ConnectorGrasshopper.Ops
 
     public void SetConverterFromKit(string kitName)
     {
+      if (Kit == null) return;
       if (kitName == Kit.Name)
       {
         return;
@@ -278,6 +279,25 @@ namespace ConnectorGrasshopper.Ops
       Tracker.TrackPageview("send", AutoSend ? "auto" : "manual");
       base.BeforeSolveInstance();
     }
+    
+    public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
+    {
+      switch (context)
+      {
+        case GH_DocumentContext.Loaded:
+          OnDisplayExpired(true);
+          break;
+
+        case GH_DocumentContext.Unloaded:
+          // Will execute every time a document becomes inactive (in background or closing file.)
+          //Correctly dispose of the client when changing documents to prevent subscription handlers being called in background.
+          RequestCancellation();
+          break;
+      }
+
+      base.DocumentContextChanged(document, context);
+    }
+
   }
 
   public class SendComponentWorker : WorkerInstance

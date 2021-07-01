@@ -33,6 +33,10 @@ namespace Objects.Converter.AutocadCivil
     {
       return new double[ ] { pt.X, pt.Y, pt.Z };
     }
+    public double[] PointToArray(Point2d pt)
+    {
+      return new double[] { pt.X, pt.Y, 0 };
+    }
     public Point3d[ ] PointListToNative(IEnumerable<double> arr, string units)
     {
       var enumerable = arr.ToList();
@@ -49,6 +53,10 @@ namespace Objects.Converter.AutocadCivil
       return points;
     }
     public double[ ] PointsToFlatArray(IEnumerable<Point3d> points)
+    {
+      return points.SelectMany(pt => PointToArray(pt)).ToArray();
+    }
+    public double[] PointsToFlatArray(IEnumerable<Point2d> points)
     {
       return points.SelectMany(pt => PointToArray(pt)).ToArray();
     }
@@ -226,11 +234,11 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Curve
+    // TODO: need to handle curves generated from polycurves with spline segments (this probably has to do with control points with varying # of knots associated with it)
     public NurbCurve3d NurbcurveToNative(Curve curve)
     {
       // process control points
-      // NOTE: for **closed periodic** curves that have "n" control pts, curves sent from rhino will have n+degree points. 
-      // Remove extra pts for autocad.
+      // NOTE: for **closed periodic** curves that have "n" control pts, curves sent from rhino will have n+degree points. Remove extra pts for autocad.
       var _points = PointListToNative(curve.points, curve.units).ToList();
       if (curve.closed && curve.periodic)
         _points = _points.GetRange(0, _points.Count - curve.degree);
@@ -254,7 +262,6 @@ namespace Objects.Converter.AutocadCivil
 
       // process weights
       // NOTE: if all weights are the same, autocad convention is to pass an empty list (this will assign them a value of -1)
-      // NOTE: for closed curves that have "n" control pts, curves sent from rhino will have n+degree points. Remove corresponding weights for autocad.
       var _weights = curve.weights;
       if (curve.closed && curve.periodic) // handles closed periodic curves
         _weights = curve.weights.GetRange(0, _points.Count);

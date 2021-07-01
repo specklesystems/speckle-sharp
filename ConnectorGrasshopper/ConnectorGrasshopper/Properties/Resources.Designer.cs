@@ -213,6 +213,16 @@ namespace ConnectorGrasshopper.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap receiveFromTransport {
+            get {
+                object obj = ResourceManager.GetObject("receiveFromTransport", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Receiver {
             get {
                 object obj = ResourceManager.GetObject("Receiver", resourceCulture);
@@ -236,6 +246,16 @@ namespace ConnectorGrasshopper.Properties {
         internal static System.Drawing.Bitmap Sender {
             get {
                 object obj = ResourceManager.GetObject("Sender", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap sendToTransport {
+            get {
+                object obj = ResourceManager.GetObject("sendToTransport", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -386,6 +406,26 @@ namespace ConnectorGrasshopper.Properties {
         internal static System.Drawing.Bitmap StreamUpdate {
             get {
                 object obj = ResourceManager.GetObject("StreamUpdate", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SynchronousReceiver {
+            get {
+                object obj = ResourceManager.GetObject("SynchronousReceiver", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SynchronousSender {
+            get {
+                object obj = ResourceManager.GetObject("SynchronousSender", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
