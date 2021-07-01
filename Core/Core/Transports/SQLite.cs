@@ -11,13 +11,17 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
 {
-  public class SQLiteTransport : IDisposable, ITransport
+  public class SQLiteTransport : IDisposable, ICloneable, ITransport
   {
     public string TransportName { get; set; } = "SQLite";
 
     public CancellationToken CancellationToken { get; set; }
 
     public string RootPath { get; set; }
+
+    private string _BasePath { get; set; }
+    private string _ApplicationName { get; set; }
+    private string _Scope { get; set; }
 
     public string ConnectionString { get; set; }
 
@@ -46,12 +50,15 @@ namespace Speckle.Core.Transports
 
       if (basePath == null)
         basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+      _BasePath = basePath;
 
       if (applicationName == null)
         applicationName = "Speckle";
+      _ApplicationName = applicationName;
 
       if (scope == null)
         scope = "Data";
+      _Scope = scope;
 
       Directory.CreateDirectory(Path.Combine(basePath, applicationName)); //ensure dir is there
 
@@ -347,13 +354,6 @@ namespace Speckle.Core.Transports
       }
     }
 
-    public void Dispose()
-    {
-      // TODO: Check if it's still writing?
-      Connection.Close();
-      Connection.Dispose();
-    }
-
     public override string ToString()
     {
       return $"Sqlite Transport @{RootPath}";
@@ -385,6 +385,19 @@ namespace Speckle.Core.Transports
         }
       }
       return ret;
+    }
+
+    public void Dispose()
+    {
+      // TODO: Check if it's still writing?
+      Connection?.Close();
+      Connection?.Dispose();
+      WriteTimer.Dispose();
+    }
+
+    public object Clone()
+    {
+      return new SQLiteTransport(_BasePath, _ApplicationName, _Scope) { OnProgressAction = OnProgressAction, OnErrorAction = OnErrorAction, CancellationToken = CancellationToken };
     }
   }
 }

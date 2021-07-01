@@ -16,6 +16,7 @@ namespace Speckle.Core.Api
 
     /// <summary>
     /// Receives an object from a transport.
+    /// <para><b>Note: Transports will be disposed of at the end. Make sure you are not reusing them.</b> If you need them afterwards, clone them.</para>
     /// </summary>
     /// <param name="objectId"></param>
     /// <param name="remoteTransport">The transport to receive from.</param>
@@ -39,6 +40,7 @@ namespace Speckle.Core.Api
 
     /// <summary>
     /// Receives an object from a transport.
+    /// <para><b>Note: Transports will be disposed of at the end. Make sure you are not reusing them.</b> If you need them afterwards, clone them.</para>
     /// </summary>
     /// <param name="objectId"></param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to send notice of cancellation.</param>
@@ -78,7 +80,12 @@ namespace Speckle.Core.Api
         if (partial.__closure != null)
           onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
 
-        return JsonConvert.DeserializeObject<Base>(objString, settings);
+        var localRes = JsonConvert.DeserializeObject<Base>(objString, settings);
+
+        if (localTransport is IDisposable dispLocal) dispLocal.Dispose();
+        if (remoteTransport != null && remoteTransport is IDisposable dispRempte) dispRempte.Dispose();
+        
+        return localRes;
       }
       else if (remoteTransport == null)
       {
@@ -98,7 +105,12 @@ namespace Speckle.Core.Api
       await localTransport.WriteComplete();
 
       // Proceed to deserialise the object, now safely knowing that all its children are present in the local (fast) transport. 
-      return JsonConvert.DeserializeObject<Base>(objString, settings);
+      var res = JsonConvert.DeserializeObject<Base>(objString, settings);
+
+      if (localTransport is IDisposable dl) dl.Dispose();
+      if (remoteTransport is IDisposable dr) dr.Dispose();
+
+      return res;
 
       // Summary: 
       // Basically, receiving an object (and all its subchildren) operates with two transports, one that is potentially slow, and one that is fast. 
