@@ -20,7 +20,7 @@ namespace Speckle.Core.Api
 
     /// <summary>
     /// Sends an object via the provided transports. Defaults to the local cache. 
-    /// <para><b>Note: Transports will be disposed of at the end. Make sure you are not reusing them.</b> If you need them afterwards, clone them.</para>
+    /// <para><b>Note: Transports will be disposed of at the end. Make sure you are not reusing them.</b> If you need them afterwards, clone them or pass in `disposeTransports: false`.</para>
     /// </summary>
     /// <param name="object">The object you want to send.</param>
     /// <param name="transports">Where you want to send them.</param>
@@ -43,7 +43,7 @@ namespace Speckle.Core.Api
 
     /// <summary>
     /// Sends an object via the provided transports. Defaults to the local cache. 
-    /// <para><b>Note: Transports will be disposed of at the end. Make sure you are not reusing them.</b> If you need them afterwards, clone them.</para>
+    /// <para><b>Note: Transports will be disposed of at the end. Make sure you are not reusing them.</b> If you need them afterwards, clone them or pass in `disposeTransports: false`.</para>
     /// </summary>
     /// <param name="object">The object you want to send.</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to send notice of cancellation.</param>

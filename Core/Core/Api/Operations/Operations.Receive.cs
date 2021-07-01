@@ -16,7 +16,7 @@ namespace Speckle.Core.Api
 
     /// <summary>
     /// Receives an object from a transport.
-    /// <para><b>Note: Transports will be disposed of at the end. Make sure you are not reusing them.</b> If you need them afterwards, clone them.</para>
+    /// <para><b>Note: Transports will be disposed of at the end. Make sure you are not reusing them.</b> If you need them afterwards, clone them or pass in `disposeTransports: false`.</para>
     /// </summary>
     /// <param name="objectId"></param>
     /// <param name="remoteTransport">The transport to receive from.</param>
@@ -41,7 +41,7 @@ namespace Speckle.Core.Api
 
     /// <summary>
     /// Receives an object from a transport.
-    /// <para><b>Note: Transports will be disposed of at the end. Make sure you are not reusing them.</b> If you need them afterwards, clone them.</para>
+    /// <para><b>Note: Transports will be disposed of at the end. Make sure you are not reusing them.</b> If you need them afterwards, clone them or pass in `disposeTransports: false`.</para>
     /// </summary>
     /// <param name="objectId"></param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to send notice of cancellation.</param>
