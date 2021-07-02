@@ -552,34 +552,36 @@ namespace ConnectorGrasshopper.Ops
     public static async Task<Commit> GetCommit(StreamWrapper InputWrapper, Client client, Action<GH_RuntimeMessageLevel, string> OnFail, CancellationToken CancellationToken)
     {
       Commit myCommit = null;
-      if (InputWrapper.CommitId != null)
+      switch (InputWrapper.Type)
       {
-        try
-        {
-          myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
-        }
-        catch (Exception e)
-        {
-          OnFail(GH_RuntimeMessageLevel.Error, e.Message);
-        }
-      }
-      if (InputWrapper.ObjectId != null)
-      {
-        myCommit = new Commit() { referencedObject = InputWrapper.ObjectId };
-      }
-      else
-      {
-        try
-        {
-          var branches = await client.StreamGetBranches(InputWrapper.StreamId);
-          var mainBranch = branches.FirstOrDefault(b => b.name == (InputWrapper.BranchName ?? "main"));
-          myCommit = mainBranch.commits.items[0];
-          return myCommit;
-        }
-        catch (Exception e)
-        {
-          OnFail(GH_RuntimeMessageLevel.Warning, $"Could not get any commits from the stream's '{(InputWrapper.BranchName ?? "main")}' branch.");
-        }
+        case StreamWrapperType.Commit:
+          try
+          {
+            myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
+          }
+          catch (Exception e)
+          {
+            OnFail(GH_RuntimeMessageLevel.Error, e.Message);
+          }
+
+          break;
+        case StreamWrapperType.Object:
+          myCommit = new Commit { referencedObject = InputWrapper.ObjectId };
+          break;
+        default:
+          try
+          {
+            var branches = await client.StreamGetBranches(InputWrapper.StreamId);
+            var mainBranch = branches.FirstOrDefault(b => b.name == (InputWrapper.BranchName ?? "main"));
+            myCommit = mainBranch?.commits.items[0];
+            return myCommit;
+          }
+          catch (Exception e)
+          {
+            OnFail(GH_RuntimeMessageLevel.Warning, $"Could not get any commits from the stream's '{(InputWrapper.BranchName ?? "main")}' branch.");
+          }
+
+          break;
       }
 
       return myCommit;
