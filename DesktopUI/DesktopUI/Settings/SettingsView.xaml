@@ -170,7 +170,6 @@
                 <TextBlock Margin="0,0,8,0">
                   <md:PackIcon Kind="WhiteBalanceSunny" />
                 </TextBlock>
-                <!--  TODO figure out why this isn't changing the theme  -->
                 <ToggleButton x:Name="DarkModeToggleButton"
                   Command="{s:Action ToggleTheme}"
                   IsChecked="{Binding DarkMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
