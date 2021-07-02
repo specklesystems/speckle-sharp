@@ -44,7 +44,7 @@ namespace ConnectorGrasshopper.Objects
       if (InPreSolve)
       {
         GH_SpeckleBase ghSpeckleBase = null;
-        DA.GetData(0, ref ghSpeckleBase);
+        if(!DA.GetData(0, ref ghSpeckleBase)) return;
         var @base = ghSpeckleBase.Value;
 
         var task = Task.Run(() => DoWork(@base));
