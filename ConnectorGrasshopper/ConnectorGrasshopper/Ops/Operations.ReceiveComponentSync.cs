@@ -285,7 +285,8 @@ namespace ConnectorGrasshopper.Ops
           new SQLiteTransport { TransportName = "LC" }, // Local cache!
           null,
           null,
-          count => TotalObjectCount = count
+          count => TotalObjectCount = count,
+          disposeTransports: true
           ).Result;
 
           return ReceivedObject;

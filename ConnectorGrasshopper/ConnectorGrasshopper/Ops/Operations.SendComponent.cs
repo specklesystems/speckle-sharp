@@ -515,7 +515,7 @@ namespace ConnectorGrasshopper.Ops
             Transports,
             useDefaultCache: ((SendComponent)Parent).UseDefaultCache,
             onProgressAction: InternalProgressAction,
-            onErrorAction: ErrorAction);
+            onErrorAction: ErrorAction, disposeTransports: true);
 
           // 3.2 Create commits for any server transport present
 
