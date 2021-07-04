@@ -193,19 +193,19 @@ namespace Tests
       Assert.GreaterOrEqual(progress.Keys.Count, 1);
     }
 
-    [Test(Description = "Should dispose of transports after a send or receive operation.")]
+    [Test(Description = "Should dispose of transports after a send or receive operation if so specified.")]
     public async Task ShouldDisposeTransports()
     {
       var @base = new Base();
       @base["test"] = "the best";
 
       var myLocalTransport = new SQLiteTransport();
-      var id = await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false);
+      var id = await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false, disposeTransports: true);
       
       // Send
       try
       {
-        await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false);
+        await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false, disposeTransports: true);
         Assert.Fail("Send operation did not dispose of transport.");
       }
       catch (Exception)
@@ -214,7 +214,7 @@ namespace Tests
       }
 
       myLocalTransport = myLocalTransport.Clone() as SQLiteTransport;
-      var obj = await Operations.Receive(id, null, myLocalTransport);
+      var obj = await Operations.Receive(id, null, myLocalTransport, disposeTransports: true);
 
       try
       {
@@ -234,10 +234,10 @@ namespace Tests
       @base["test"] = "the best";
 
       var myLocalTransport = new SQLiteTransport();
-      var id = await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false, disposeTransports: false);
-      await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false, disposeTransports: false);
+      var id = await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false);
+      await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false);
 
-      var obj = await Operations.Receive(id, null, myLocalTransport, disposeTransports: false);
+      var obj = await Operations.Receive(id, null, myLocalTransport);
       await Operations.Receive(id, null, myLocalTransport);
     }
 

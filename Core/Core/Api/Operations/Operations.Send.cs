@@ -20,7 +20,6 @@ namespace Speckle.Core.Api
 
     /// <summary>
     /// Sends an object via the provided transports. Defaults to the local cache. 
-    /// <para><b>Note: Transports will be disposed of at the end. Make sure you are not reusing them.</b> If you need them afterwards, clone them or pass in `disposeTransports: false`.</para>
     /// </summary>
     /// <param name="object">The object you want to send.</param>
     /// <param name="transports">Where you want to send them.</param>
@@ -28,7 +27,7 @@ namespace Speckle.Core.Api
     /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
     /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
     /// <returns>The id (hash) of the object.</returns>
-    public static Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, bool disposeTransports = true)
+    public static Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, bool disposeTransports = false)
     {
       return Send(
         @object,
@@ -43,7 +42,6 @@ namespace Speckle.Core.Api
 
     /// <summary>
     /// Sends an object via the provided transports. Defaults to the local cache. 
-    /// <para><b>Note: Transports will be disposed of at the end. Make sure you are not reusing them.</b> If you need them afterwards, clone them or pass in `disposeTransports: false`.</para>
     /// </summary>
     /// <param name="object">The object you want to send.</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to send notice of cancellation.</param>
@@ -52,7 +50,7 @@ namespace Speckle.Core.Api
     /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
     /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
     /// <returns>The id (hash) of the object.</returns>
-    public static async Task<string> Send(Base @object, CancellationToken cancellationToken, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, bool disposeTransports = true)
+    public static async Task<string> Send(Base @object, CancellationToken cancellationToken, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, bool disposeTransports = false)
     {
       Log.AddBreadcrumb("Send");
 
