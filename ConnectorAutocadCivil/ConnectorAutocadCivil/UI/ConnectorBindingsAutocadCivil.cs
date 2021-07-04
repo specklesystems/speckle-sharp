@@ -193,7 +193,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
         transport,
         onProgressAction: d => UpdateProgress(d, state.Progress),
         onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => state.Progress.Maximum = num),
-        onErrorAction: (message, exception) => { Exceptions.Add(exception); }
+        onErrorAction: (message, exception) => { Exceptions.Add(exception); },
+        disposeTransports: true
         );
 
       if (Exceptions.Count != 0)
@@ -588,7 +589,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
         state.CancellationTokenSource.Token,
         transports,
         onProgressAction: dict => UpdateProgress(dict, state.Progress),
-        onErrorAction: (err, exception) => { Exceptions.Add(exception); }
+        onErrorAction: (err, exception) => { Exceptions.Add(exception); },
+        disposeTransports: true
         );
 
       if (Exceptions.Count != 0)
