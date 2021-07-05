@@ -99,6 +99,7 @@ namespace Speckle.Core.Api
       foreach (var t in transports)
       {
         t.EndWrite();
+        if (useDefaultCache && t is SQLiteTransport lc && lc.TransportName == "LC") { lc.Dispose(); continue; }
         if (disposeTransports && t is IDisposable disp) disp.Dispose();
       }
 
