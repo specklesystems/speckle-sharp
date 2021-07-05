@@ -22,17 +22,18 @@ namespace Speckle.Core.Logging
       var dsn = "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
 
       var env = "production";
-
+      var debug = false;
       #if DEBUG
             env = "dev";
             dsn = null;
+            debug = true;
       #endif
 
       SentrySdk.Init(o =>
       {
         o.Dsn = dsn;
         o.Environment = env;
-        o.Debug = true;
+        o.Debug = debug;
         o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
       });
       
