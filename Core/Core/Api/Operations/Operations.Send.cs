@@ -27,7 +27,7 @@ namespace Speckle.Core.Api
     /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
     /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
     /// <returns>The id (hash) of the object.</returns>
-    public static Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
+    public static Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, bool disposeTransports = false)
     {
       return Send(
         @object,
@@ -35,7 +35,8 @@ namespace Speckle.Core.Api
         transports,
         useDefaultCache,
         onProgressAction,
-        onErrorAction
+        onErrorAction,
+        disposeTransports
       );
     }
 
@@ -49,7 +50,7 @@ namespace Speckle.Core.Api
     /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
     /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
     /// <returns>The id (hash) of the object.</returns>
-    public static async Task<string> Send(Base @object, CancellationToken cancellationToken, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
+    public static async Task<string> Send(Base @object, CancellationToken cancellationToken, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, bool disposeTransports = false)
     {
       Log.AddBreadcrumb("Send");
 
@@ -98,6 +99,8 @@ namespace Speckle.Core.Api
       foreach (var t in transports)
       {
         t.EndWrite();
+        if (useDefaultCache && t is SQLiteTransport lc && lc.TransportName == "LC") { lc.Dispose(); continue; }
+        if (disposeTransports && t is IDisposable disp) disp.Dispose();
       }
 
       if (cancellationToken.IsCancellationRequested)return null;

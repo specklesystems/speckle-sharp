@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -192,6 +191,54 @@ namespace Tests
       });
       Assert.NotNull(progress);
       Assert.GreaterOrEqual(progress.Keys.Count, 1);
+    }
+
+    [Test(Description = "Should dispose of transports after a send or receive operation if so specified.")]
+    public async Task ShouldDisposeTransports()
+    {
+      var @base = new Base();
+      @base["test"] = "the best";
+
+      var myLocalTransport = new SQLiteTransport();
+      var id = await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false, disposeTransports: true);
+      
+      // Send
+      try
+      {
+        await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false, disposeTransports: true);
+        Assert.Fail("Send operation did not dispose of transport.");
+      }
+      catch (Exception)
+      {
+        // Pass
+      }
+
+      myLocalTransport = myLocalTransport.Clone() as SQLiteTransport;
+      var obj = await Operations.Receive(id, null, myLocalTransport, disposeTransports: true);
+
+      try
+      {
+        await Operations.Receive(id, null, myLocalTransport);
+        Assert.Fail("Receive operation did not dispose of transport.");
+      }
+      catch
+      {
+        // Pass
+      }
+    }
+
+    [Test(Description = "Should not dispose of transports if so specified.")]
+    public async Task ShouldNotDisposeTransports()
+    {
+      var @base = new Base();
+      @base["test"] = "the best";
+
+      var myLocalTransport = new SQLiteTransport();
+      var id = await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false);
+      await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false);
+
+      var obj = await Operations.Receive(id, null, myLocalTransport);
+      await Operations.Receive(id, null, myLocalTransport);
     }
 
     //[Test]

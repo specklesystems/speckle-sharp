@@ -64,7 +64,8 @@ namespace Speckle.Core.Api
         remoteTransport: transport,
         onErrorAction: onErrorAction,
         onProgressAction: onProgressAction,
-        onTotalChildrenCountKnown: onTotalChildrenCountKnown
+        onTotalChildrenCountKnown: onTotalChildrenCountKnown,
+        disposeTransports: true
       );
 
     }
@@ -93,7 +94,7 @@ namespace Speckle.Core.Api
         new List<ITransport> { transport },
         useDefaultCache,
         onProgressAction,
-        onErrorAction);
+        onErrorAction, disposeTransports: true);
 
       Tracker.TrackPageview(Tracker.SEND);
 

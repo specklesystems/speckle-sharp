@@ -9,7 +9,7 @@ namespace Speckle.Core.Transports
   /// <summary>
   /// An in memory storage of speckle objects.
   /// </summary>
-  public class MemoryTransport : ITransport
+  public class MemoryTransport : ITransport, IDisposable, ICloneable
   {
     public Dictionary<string, string> Objects;
 
@@ -90,6 +90,27 @@ namespace Speckle.Core.Transports
       }
 
       return ret;
+    }
+
+    public void Dispose()
+    {
+      Objects = null;
+      OnErrorAction = null;
+      OnProgressAction = null;
+      SavedObjectCount = 0;
+    }
+
+    public object Clone()
+    {
+      return new MemoryTransport()
+      {
+        TransportName = TransportName,
+        OnErrorAction = OnErrorAction,
+        OnProgressAction = OnProgressAction,
+        CancellationToken = CancellationToken,
+        Objects = Objects,
+        SavedObjectCount = SavedObjectCount
+      };
     }
   }
 

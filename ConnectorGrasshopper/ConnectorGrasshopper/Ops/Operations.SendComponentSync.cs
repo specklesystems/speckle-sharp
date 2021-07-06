@@ -327,7 +327,8 @@ namespace ConnectorGrasshopper.Ops
             Transports,
             useDefaultCache: UseDefaultCache,
             onProgressAction: y => { },
-            onErrorAction: (x, z) => { });
+            onErrorAction: (x, z) => { },
+            disposeTransports: true);
 
           var message = messageInput;//.get_FirstItem(true).Value;
           if (message == "")

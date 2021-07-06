@@ -114,7 +114,7 @@ namespace ConnectorGrasshopper.Ops
         var converted = Utilities.DataTreeToNestedLists(data, converter);
         var ObjectToSend = new Base();
         ObjectToSend["@data"] = converted;
-        sentObjectId = Operations.Send(ObjectToSend).Result;
+        sentObjectId = Operations.Send(ObjectToSend, disposeTransports: true).Result;
       }
       catch (Exception e)
       {

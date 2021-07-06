@@ -13,7 +13,7 @@ namespace DiskTransport
   /// <summary>
   /// Writes speckle objects to disk.
   /// </summary>
-  public class DiskTransport : ITransport
+  public class DiskTransport : ICloneable, ITransport
   {
     public string TransportName { get; set; } = "Disk";
 
@@ -121,6 +121,11 @@ namespace DiskTransport
         ret[objectId] = File.Exists(filePath);
       }
       return ret;
+    }
+
+    public object Clone()
+    {
+      return new DiskTransport() { RootPath = RootPath, CancellationToken = CancellationToken, OnErrorAction = OnErrorAction, OnProgressAction = OnProgressAction, TransportName = TransportName };
     }
 
     class Placeholder
