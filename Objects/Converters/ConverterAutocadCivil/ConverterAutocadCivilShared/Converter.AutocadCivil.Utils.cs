@@ -1,12 +1,10 @@
-﻿using Speckle.Core.Kits;
-using Speckle.Core.Models;
-
-using Objects.Other;
-
-using Autodesk.AutoCAD.DatabaseServices;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Text.RegularExpressions;
 using Autodesk.AutoCAD.Colors;
+using Autodesk.AutoCAD.DatabaseServices;
+using Objects.Other;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -55,7 +53,7 @@ namespace Objects.Converter.AutocadCivil
         case UnitsValue.Miles:
           return Units.Miles;
         default:
-          throw new System.Exception("The current Unit System is unsupported.");
+          throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
       }
     }
     #endregion
@@ -72,11 +70,11 @@ namespace Objects.Converter.AutocadCivil
         switch (entity.Color.ColorMethod)
         {
           case ColorMethod.ByLayer:
-            using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+            using(Transaction tr = Doc.Database.TransactionManager.StartTransaction())
             {
               if (entity.LayerId.IsValid)
               {
-                var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead) as LayerTableRecord;
+                var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead)as LayerTableRecord;
                 color = layer.Color.ColorValue.ToArgb();
               }
               tr.Commit();
@@ -94,11 +92,11 @@ namespace Objects.Converter.AutocadCivil
         style.linetype = entity.Linetype;
         if (entity.Linetype == "BYLAYER")
         {
-          using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+          using(Transaction tr = Doc.Database.TransactionManager.StartTransaction())
           {
             if (entity.LayerId.IsValid)
             {
-              var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead) as LayerTableRecord;
+              var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead)as LayerTableRecord;
               var linetype = (LinetypeTableRecord)tr.GetObject(layer.LinetypeObjectId, OpenMode.ForRead);
               style.linetype = linetype.Name;
             }
@@ -113,11 +111,11 @@ namespace Objects.Converter.AutocadCivil
           switch (entity.LineWeight)
           {
             case LineWeight.ByLayer:
-              using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+              using(Transaction tr = Doc.Database.TransactionManager.StartTransaction())
               {
                 if (entity.LayerId.IsValid)
                 {
-                  var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead) as LayerTableRecord;
+                  var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead)as LayerTableRecord;
                   if (layer.LineWeight == LineWeight.ByLineWeightDefault || layer.LineWeight == LineWeight.ByBlock)
                     lineWeight = (int)LineWeight.LineWeight025;
                   else

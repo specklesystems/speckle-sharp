@@ -24,7 +24,7 @@ namespace Speckle.Core.Api
     /// <param name="onErrorAction">Action invoked on internal errors.</param>
     /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known.</param>
     /// <returns></returns>
-    public static Task<Base> Receive(string objectId, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null)
+    public static Task<Base> Receive(string objectId, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null, bool disposeTransports = false)
     {
       return Receive(
         objectId,
@@ -33,7 +33,8 @@ namespace Speckle.Core.Api
         localTransport,
         onProgressAction,
         onErrorAction,
-        onTotalChildrenCountKnown
+        onTotalChildrenCountKnown,
+        disposeTransports
       );
     }
 
@@ -48,7 +49,7 @@ namespace Speckle.Core.Api
     /// <param name="onErrorAction">Action invoked on internal errors.</param>
     /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known.</param>
     /// <returns></returns>
-    public static async Task<Base> Receive(string objectId, CancellationToken cancellationToken, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null)
+    public static async Task<Base> Receive(string objectId, CancellationToken cancellationToken, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null, bool disposeTransports = false)
     {
       Log.AddBreadcrumb("Receive");
 
@@ -56,6 +57,8 @@ namespace Speckle.Core.Api
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
+
+      var hasUserProvidedLocalTransport = localTransport != null;
 
       localTransport = localTransport != null ? localTransport : new SQLiteTransport();
       localTransport.OnErrorAction = onErrorAction;
@@ -78,7 +81,12 @@ namespace Speckle.Core.Api
         if (partial.__closure != null)
           onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
 
-        return JsonConvert.DeserializeObject<Base>(objString, settings);
+        var localRes = JsonConvert.DeserializeObject<Base>(objString, settings);
+
+        if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dispLocal) dispLocal.Dispose();
+        if (disposeTransports && remoteTransport != null && remoteTransport is IDisposable dispRempte) dispRempte.Dispose();
+        
+        return localRes;
       }
       else if (remoteTransport == null)
       {
@@ -98,7 +106,12 @@ namespace Speckle.Core.Api
       await localTransport.WriteComplete();
 
       // Proceed to deserialise the object, now safely knowing that all its children are present in the local (fast) transport. 
-      return JsonConvert.DeserializeObject<Base>(objString, settings);
+      var res = JsonConvert.DeserializeObject<Base>(objString, settings);
+
+      if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dl) dl.Dispose();
+      if (disposeTransports && remoteTransport is IDisposable dr) dr.Dispose();
+
+      return res;
 
       // Summary: 
       // Basically, receiving an object (and all its subchildren) operates with two transports, one that is potentially slow, and one that is fast. 

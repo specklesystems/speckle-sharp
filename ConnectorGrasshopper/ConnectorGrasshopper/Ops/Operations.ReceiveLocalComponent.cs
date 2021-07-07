@@ -116,7 +116,7 @@ namespace ConnectorGrasshopper.Ops
 
         try
         {
-          @base = Operations.Receive(localDataId).Result;
+          @base = Operations.Receive(localDataId, disposeTransports: true).Result;
         }
         catch (Exception e)
         {

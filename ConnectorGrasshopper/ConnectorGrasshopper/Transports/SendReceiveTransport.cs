@@ -52,7 +52,15 @@ namespace ConnectorGrasshopper.Transports
         return;
       }
 
-      var res = Task.Run(async () => await Speckle.Core.Api.Operations.Send(obj.Value, transports, false)).Result;
+      var freshTransports = new List<ITransport>();
+      foreach(var tr in transports)
+      {
+        if (tr is ICloneable cloneable) freshTransports.Add(cloneable.Clone() as ITransport);
+        else freshTransports.Add(tr);
+      }
+      transports = freshTransports;
+
+      var res = Task.Run(async () => await Speckle.Core.Api.Operations.Send(obj.Value, transports, false, disposeTransports: true)).Result;
       DA.SetData(0, res);
     }
 
@@ -106,10 +114,15 @@ namespace ConnectorGrasshopper.Transports
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Transport is null.");
       }
 
+      if(transport is ICloneable disposedTwin)
+      {
+        transport = disposedTwin.Clone() as ITransport;
+      }
+
       List<Base> results = new List<Base>();
       foreach(var id in ids)
       {
-        var res = Task.Run(async () => await Operations.Receive(id, null, transport)).Result;
+        var res = Task.Run(async () => await Operations.Receive(id, null, transport, disposeTransports: true)).Result;
         results.Add(res);
       }
 

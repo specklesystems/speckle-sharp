@@ -230,7 +230,8 @@ namespace SpeckleRhino
         transport,
         onProgressAction: d => UpdateProgress(d, state.Progress),
         onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => state.Progress.Maximum = num),
-        onErrorAction: (message, exception) => { Exceptions.Add(exception); }
+        onErrorAction: (message, exception) => { Exceptions.Add(exception); },
+        disposeTransports: true
         );
 
       if (Exceptions.Count != 0)
@@ -544,7 +545,8 @@ namespace SpeckleRhino
         transports,
         onProgressAction: dict => UpdateProgress(dict, state.Progress),
         /* TODO: a wee bit nicer handling here; plus request cancellation! */
-        onErrorAction: (err, exception) => { Exceptions.Add(exception); }
+        onErrorAction: (err, exception) => { Exceptions.Add(exception); },
+        disposeTransports: true
         );
 
       if (Exceptions.Count != 0)

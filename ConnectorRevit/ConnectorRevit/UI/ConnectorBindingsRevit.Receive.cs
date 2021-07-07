@@ -70,7 +70,8 @@ namespace Speckle.ConnectorRevit.UI
             state.Errors.Add(e);
             state.CancellationTokenSource.Cancel();
           },
-          onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count)
+          onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count),
+          disposeTransports: true
           );
 
       if (OperationErrors.Count != 0)
