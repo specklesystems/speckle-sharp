@@ -33,7 +33,7 @@ namespace Objects.Converter.Dynamo
         case DisplayUnitType.DUT_DECIMAL_FEET:
           return Speckle.Core.Kits.Units.Feet;
         default:
-          throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.");
+          throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{type}\" is unsupported.");
       }
 
     }
@@ -78,7 +78,7 @@ namespace Objects.Converter.Dynamo
     //  else if (typeId == UnitTypeId.Feet.TypeId)
     //    return Speckle.Core.Kits.Units.Feet;
 
-    //  throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.");
+    //  throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{typeId}\" is unsupported.");
     //}
   }
 }
