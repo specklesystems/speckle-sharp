@@ -8,24 +8,21 @@ using Speckle.Core.Kits;
 
 namespace ConnectorGrasshopper
 {
-  internal static class CSOUtils
+  public static class CSOUtils
   {
-
-
-
-    internal static List<Type> ListAvailableTypes()
+    public static List<Type> ListAvailableTypes()
     {
       // exclude types that don't have any constructors with a SchemaInfo attribute
       return KitManager.Types.Where(
         x => GetValidConstr(x).Any()).OrderBy(x => x.Name).ToList();
     }
 
-    internal static IEnumerable<ConstructorInfo> GetValidConstr(Type type)
+    public static IEnumerable<ConstructorInfo> GetValidConstr(Type type)
     {
       return type.GetConstructors().Where(y => y.GetCustomAttribute<SchemaInfo>() != null);
     }
 
-    internal static ConstructorInfo FindConstructor(string ConstructorName, string TypeName)
+    public static ConstructorInfo FindConstructor(string ConstructorName, string TypeName)
     {
       var type = KitManager.Types.FirstOrDefault(x => x.FullName == TypeName);
       if (type == null)
@@ -37,7 +34,7 @@ namespace ConnectorGrasshopper
       return constructor;
     }
 
-    internal static string MethodFullName(MethodBase m)
+    public static string MethodFullName(MethodBase m)
     {
       var s = m.ReflectedType.FullName;
       if (!m.IsConstructor)

@@ -16,7 +16,7 @@ namespace Objects.BuiltElements
 
     public Brace() { }
 
-    [SchemaInfo("Brace", "Creates a Speckle brace")]
+    [SchemaInfo("Brace", "Creates a Speckle brace", "BIM", "Structure")]
     public Brace([SchemaMainParam] ICurve baseLine)
     {
       this.baseLine = baseLine;
@@ -36,7 +36,7 @@ namespace Objects.BuiltElements.Revit
 
     public RevitBrace() { }
 
-    [SchemaInfo("RevitBrace", "Creates a Revit brace by curve and base level.")]
+    [SchemaInfo("RevitBrace", "Creates a Revit brace by curve and base level.", "Revit", "Structure")]
     public RevitBrace(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, List<Parameter> parameters = null)
     {
       this.family = family;

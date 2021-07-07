@@ -14,7 +14,7 @@ namespace ConnectorGrasshopper.Transports
 
     public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public MemoryTransportComponent() : base("Memory Transport", "Memory", "Creates an Memory Transport.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
+    public MemoryTransportComponent() : base("Memory Transport", "Memory", "Creates a Memory Transport. This is useful for debugging, or just sending data around one grasshopper defintion. We don't recommend you use it!", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -39,7 +39,7 @@ namespace ConnectorGrasshopper.Transports
       DA.GetData(0, ref name);
 
       var myTransport = new MemoryTransport();
-      myTransport.TransportName = name;
+      myTransport.TransportName = name == null ? "Gh Memory Transport" : name;
 
       DA.SetData(0, myTransport);
     }

@@ -28,7 +28,7 @@ namespace Objects.BuiltElements
     /// SchemaBuilder constructor for a Room
     /// </summary>
     /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
-    [SchemaInfo("Area", "Creates a Speckle area")]
+    [SchemaInfo("Area", "Creates a Speckle area", "BIM", "Other")]
     public Area(string name, string number, Level level, [SchemaMainParam] Point center)
     {
       this.name = name;
