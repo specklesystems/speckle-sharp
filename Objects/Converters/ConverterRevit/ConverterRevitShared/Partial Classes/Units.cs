@@ -61,7 +61,7 @@ namespace Objects.Converter.Revit
       else if (typeId == UnitTypeId.Feet.TypeId || typeId == UnitTypeId.FeetFractionalInches.TypeId)
         return Speckle.Core.Kits.Units.Feet;
 
-      throw new Exception("The current Unit System is unsupported.");
+      throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{typeId}\" is unsupported.");
     }
 
     public string UnitsToNative(string units)
@@ -79,7 +79,7 @@ namespace Objects.Converter.Revit
         case Speckle.Core.Kits.Units.Feet:
           return UnitTypeId.Feet.TypeId;
         default:
-          throw new Exception("The current Unit System is unsupported.");
+          throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
       }
     }
 #else
@@ -167,7 +167,7 @@ namespace Objects.Converter.Revit
         case DisplayUnitType.DUT_FRACTIONAL_INCHES:
           return Speckle.Core.Kits.Units.Inches;
         default:
-          throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.");
+          throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{type}\" is unsupported.");
       }
 
     }
@@ -187,7 +187,7 @@ namespace Objects.Converter.Revit
         case Speckle.Core.Kits.Units.Feet:
           return DisplayUnitType.DUT_DECIMAL_FEET;
         default:
-          throw new Speckle.Core.Logging.SpeckleException("The current Unit System is unsupported.");
+          throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
       }
     }
 #endif

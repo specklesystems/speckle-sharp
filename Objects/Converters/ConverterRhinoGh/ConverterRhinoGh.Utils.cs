@@ -163,7 +163,7 @@ namespace Objects.Converter.RhinoGh
         case UnitSystem.Unset:
           return Units.Meters;
         default:
-          throw new System.Exception("The current Unit System is unsupported.");
+          throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{us}\" is unsupported.");
       }
     }
     #endregion
