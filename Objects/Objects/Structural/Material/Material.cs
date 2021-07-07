@@ -11,6 +11,9 @@ namespace Objects.Structural.Materials
         public string name { get; set; }
         public string grade { get; set; } //ex. 350W(G40.21 Plate), could be set in name too
         public MaterialType type { get; set; }
+        public string designCode { get; set; }
+        public string codeYear { get; set; }
+
         public Material() { }
 
         [SchemaInfo("Material", "Creates a Speckle structural material")]
@@ -19,6 +22,8 @@ namespace Objects.Structural.Materials
             this.name = name;
             this.type = type;
             this.grade = grade;
+            this.designCode = designCode;
+            this.codeYear = codeYear;
         }
     }
 }
