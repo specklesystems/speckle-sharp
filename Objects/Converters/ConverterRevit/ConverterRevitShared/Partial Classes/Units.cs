@@ -54,7 +54,7 @@ namespace Objects.Converter.Revit
         return Speckle.Core.Kits.Units.Millimeters;
       else if (typeId == UnitTypeId.Centimeters.TypeId)
         return Speckle.Core.Kits.Units.Centimeters;
-      else if (typeId == UnitTypeId.Meters.TypeId)
+      else if (typeId == UnitTypeId.Meters.TypeId || typeId == UnitTypeId.MetersCentimeters.TypeId)
         return Speckle.Core.Kits.Units.Meters;
       else if (typeId == UnitTypeId.Inches.TypeId || typeId == UnitTypeId.FractionalInches.TypeId)
         return Speckle.Core.Kits.Units.Inches;
@@ -157,6 +157,8 @@ namespace Objects.Converter.Revit
         case DisplayUnitType.DUT_CENTIMETERS:
           return Speckle.Core.Kits.Units.Centimeters;
         case DisplayUnitType.DUT_METERS:
+          return Speckle.Core.Kits.Units.Meters;
+        case DisplayUnitType.DUT_METERS_CENTIMETERS:
           return Speckle.Core.Kits.Units.Meters;
         case DisplayUnitType.DUT_DECIMAL_INCHES:
           return Speckle.Core.Kits.Units.Inches;
