@@ -26,7 +26,7 @@ namespace Objects.BuiltElements
         public Mesh displayMesh { get; set; }
         public Space() { }
 
-        [SchemaInfo("Space", "Creates a Speckle space", "BIM", "Mechanical")]
+        [SchemaInfo("Space", "Creates a Speckle space", "BIM", "MEP")]
         public Space(string name, string number, [SchemaMainParam] Point basePoint, Level level, Level upperLimit)
         {
             this.name = name;
@@ -47,7 +47,7 @@ namespace Objects.BuiltElements.Revit
 
         public RevitSpace() { }
 
-        [SchemaInfo("RevitSpace", "Creates a Revit space", "Revit", "Mechanical")]
+        [SchemaInfo("RevitSpace", "Creates a Revit space", "Revit", "MEP")]
         public RevitSpace([SchemaMainParam] Mesh displayMesh, List<Parameter> parameters = null)
         {
             this.displayMesh = displayMesh;
