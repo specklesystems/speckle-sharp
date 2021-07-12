@@ -193,6 +193,40 @@ namespace Objects.Converter.Revit
 
     }
 
+    public SpaceSeparationLine SpaceSeparationLineToSpeckle(DB.ModelCurve revitCurve)
+    {
+      var speckleCurve = new SpaceSeparationLine(CurveToSpeckle(revitCurve.GeometryCurve));
+      speckleCurve.elementId = revitCurve.Id.ToString();
+      speckleCurve.applicationId = revitCurve.UniqueId;
+      speckleCurve.units = ModelUnits;
+      return speckleCurve;
+    }
+
+    public ApplicationPlaceholderObject SpaceSeparationLineToNative(SpaceSeparationLine speckleCurve)
+    {
+      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
+      var baseCurve = CurveToNative(speckleCurve.baseCurve);
+
+      //delete and re-create line
+      //TODO: check if can be modified
+      if (docObj != null)
+      {
+        Doc.Delete(docObj.Id);
+      }
+
+      try
+      {
+        var res = Doc.Create.NewSpaceBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
+        return new ApplicationPlaceholderObject()
+        { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res };
+      }
+      catch (Exception)
+      {
+        ConversionErrors.Add(new Exception("Space separation line creation failed\nView is not valid for space separation line creation."));
+        throw;
+      }
+    }
+
     /// <summary>
     /// Credits: Grevit
     /// Creates a new Sketch Plane from a Curve

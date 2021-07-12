@@ -4,6 +4,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Objects.BuiltElements.Revit.Curve;
 
 namespace Objects.BuiltElements
 {
@@ -18,22 +19,22 @@ namespace Objects.BuiltElements
         public Level level { get; set; }
         public double baseOffset { get; set; } = 0;
         public Level upperLimit { get; set; }
-        public double upperOffset { get; set; } = 0;
+        public double limitOffset { get; set; } = 0;
         public ICurve boundary { get; set; }
-        public List<ICurve> separationLines { get; set; } 
+        public List<SpaceSeparationLine> separationLines { get; set; } 
+        //missing Phase? Associated Room? Zone?
 
         [DetachProperty]
         public Mesh displayMesh { get; set; }
         public Space() { }
 
         [SchemaInfo("Space", "Creates a Speckle space", "BIM", "MEP")]
-        public Space(string name, string number, [SchemaMainParam] Point basePoint, Level level, Level upperLimit)
+        public Space(string name, string number, [SchemaMainParam] Point basePoint, Level level)
         {
             this.name = name;
             this.number = number;
             this.basePoint = basePoint;
             this.level = level;
-            this.upperLimit = upperLimit;
         }
     }
 }
@@ -44,7 +45,6 @@ namespace Objects.BuiltElements.Revit
     {
         public string elementId { get; set; }
         public List<Parameter> parameters { get; set; }
-
         public RevitSpace() { }
 
         [SchemaInfo("RevitSpace", "Creates a Revit space", "Revit", "MEP")]

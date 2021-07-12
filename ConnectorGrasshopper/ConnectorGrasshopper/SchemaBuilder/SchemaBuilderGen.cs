@@ -573,7 +573,20 @@ public class SpaceSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("c6907933-2792-eb6d-7c64-fb54835e9b44");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Space.ctor(System.String,System.String,Objects.Geometry.Point,Objects.BuiltElements.Level,Objects.BuiltElements.Level)","Objects.BuiltElements.Space");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Space.ctor(System.String,System.String,Objects.Geometry.Point,Objects.BuiltElements.Level)","Objects.BuiltElements.Space");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class SpaceSeparationLineSchemaComponent: CreateSchemaObjectBase {
+     
+    public SpaceSeparationLineSchemaComponent(): base("SpaceSeparationLine", "SpaceSeparationLine", "Creates a Revit space separation line", "Speckle 2 Revit", "Curves") { }
+    
+    public override Guid ComponentGuid => new Guid("0bba13ce-5758-8513-42fd-9e0b3702a654");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.Curve.SpaceSeparationLine.ctor(Objects.ICurve,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.Curve.SpaceSeparationLine");
         base.AddedToDocument(document);
     }
 }
