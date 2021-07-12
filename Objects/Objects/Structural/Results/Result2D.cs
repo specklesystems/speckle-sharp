@@ -13,7 +13,7 @@ namespace Objects.Structural.Results
         public List<Result2D> results2D { get; set; }
         public ResultSet2D() { }
 
-        [SchemaInfo("ResultSet2D", "Creates a Speckle 2D element result set object")]
+        [SchemaInfo("ResultSet2D", "Creates a Speckle 2D element result set object", "Structural", "Results")]
         public ResultSet2D(List<Result2D> results2D)
         {
             this.results2D = results2D;
@@ -56,7 +56,7 @@ namespace Objects.Structural.Results
         public double stressBotZX { get; set; } //shear stress in zx direction at bot layer of element
         public Result2D() { }
 
-        [SchemaInfo("Result2D (load case)", "Creates a Speckle 2D element result object (for load case)")]
+        [SchemaInfo("Result2D (load case)", "Creates a Speckle 2D element result object (for load case)", "Structural", "Results")]
         public Result2D(Element2D element, LoadCase resultCase, List<double> position, double dispX, double dispY, double dispZ, double forceXX, double forceYY, double forceXY, double momentXX, double momentYY, double momentXY, double shearX, double shearY, double stressTopXX, double stressTopYY, double stressTopZZ, double stressTopXY, double stressTopYZ, double stressTopZX, double stressMidXX, double stressMidYY, double stressMidZZ, double stressMidXY, double stressMidYZ, double stressMidZX, double stressBotXX, double stressBotYY, double stressBotZZ, double stressBotXY, double stressBotYZ, double stressBotZX)
         {            
             this.element = element;
@@ -93,7 +93,7 @@ namespace Objects.Structural.Results
             this.stressBotZX = stressBotZX;
         }
 
-        [SchemaInfo("Result2D (load combination)", "Creates a Speckle 2D element result object (for load combination)")]
+        [SchemaInfo("Result2D (load combination)", "Creates a Speckle 2D element result object (for load combination)", "Structural", "Results")]
         public Result2D(Element2D element, LoadCombination resultCase, List<double> position, double dispX, double dispY, double dispZ, double forceXX, double forceYY, double forceXY, double momentXX, double momentYY, double momentXY, double shearX, double shearY, double stressTopXX, double stressTopYY, double stressTopZZ, double stressTopXY, double stressTopYZ, double stressTopZX, double stressMidXX, double stressMidYY, double stressMidZZ, double stressMidXY, double stressMidYZ, double stressMidZX, double stressBotXX, double stressBotYY, double stressBotZZ, double stressBotXY, double stressBotYZ, double stressBotZX)
         {
             this.element = element;

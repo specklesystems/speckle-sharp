@@ -17,7 +17,7 @@ namespace Objects.Structural.GSA.Geometry
         public bool isDummy { get; set; }        
         public GSAElement1D() { }
 
-        [SchemaInfo("GSAElement1D (from local axis)", "Creates a Speckle structural 1D element for GSA (from local axis)")]
+        [SchemaInfo("GSAElement1D (from local axis)", "Creates a Speckle structural 1D element for GSA (from local axis)", "GSA", "Geometry")]
         public GSAElement1D(int nativeId, ICurve baseLine, Property1D property, ElementType1D type, 
             [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end1Releases = null, 
             [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end2Releases = null, 
@@ -35,7 +35,7 @@ namespace Objects.Structural.GSA.Geometry
             this.localAxis = localAxis;
         }
 
-        [SchemaInfo("GSAElement1D (from orientation node and angle)", "Creates a Speckle structural 1D element for GSA (from orientation node and angle)")]
+        [SchemaInfo("GSAElement1D (from orientation node and angle)", "Creates a Speckle structural 1D element for GSA (from orientation node and angle)", "GSA", "Geometry")]
         public GSAElement1D(int nativeId, ICurve baseLine, Property1D property, ElementType1D type,
             [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end1Releases = null,
             [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end2Releases = null,

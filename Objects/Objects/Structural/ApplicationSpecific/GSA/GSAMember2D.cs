@@ -20,7 +20,7 @@ namespace Objects.Structural.GSA.Geometry //GSA.Geometry?
         //public Result results { get; set; }
         public GSAMember2D() { }
 
-        [SchemaInfo("GSAMember2D", "Creates a Speckle structural 2D member for GSA")]
+        [SchemaInfo("GSAMember2D", "Creates a Speckle structural 2D member for GSA", "GSA", "Geometry")]
         public GSAMember2D(Mesh baseMesh, Property2D property, ElementType2D type, double offset = 0, double orientationAngle = 0)
         {
             this.baseMesh = baseMesh;

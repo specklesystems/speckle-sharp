@@ -13,7 +13,7 @@ namespace Objects.Structural.Geometry
         public Plane definition { get; set; }
         public Axis() { }
 
-        [SchemaInfo("Axis", "Creates a Speckle structural axis (a user-defined axis)")]
+        [SchemaInfo("Axis", "Creates a Speckle structural axis (a user-defined axis)", "Structural", "Geometry")]
         public Axis(string name, AxisType axisType = AxisType.Cartesian, Plane definition = null)
         {
             this.name = name;

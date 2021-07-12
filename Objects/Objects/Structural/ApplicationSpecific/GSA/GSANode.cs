@@ -28,7 +28,7 @@ namespace Objects.Structural.GSA.Geometry
         /// <param name="massPropertyRef"></param>
         /// <param name="damperPropertyRef"></param>
         /// <param name="localElementSize"></param>
-        [SchemaInfo("GSANode", "Creates a Speckle structural node for GSA")]
+        [SchemaInfo("GSANode", "Creates a Speckle structural node for GSA", "GSA", "Geometry")]
         public GSANode(int nativeId, Point basePoint, Restraint restraint, Plane constraintAxis = null, int group = 0, string springPropertyRef = null, string massPropertyRef = null, string damperPropertyRef = null, double localElementSize = 0, string colour = "NO_RGB")
         {
             this.nativeId = nativeId;

@@ -16,7 +16,7 @@ namespace Objects.Structural.GSA.Analysis
         public string description { get; set; } //load combination description, ex. 1.25D + 1.5L
         public Case() { }
 
-        [SchemaInfo("AnalysisCase", "Creates a Speckle structural analysis case for GSA")]
+        [SchemaInfo("AnalysisCase", "Creates a Speckle structural analysis case for GSA", "GSA", "Analysis")]
         public Case(int nativeId, string name, Task task, string description) 
         {
             this.nativeId = nativeId;
@@ -43,7 +43,7 @@ namespace Objects.Structural.GSA.Analysis
         public PruningOption prune { get; set; }
         public Task() { }
 
-        [SchemaInfo("AnalysisTask", "Creates a Speckle structural analysis task for GSA")]
+        [SchemaInfo("AnalysisTask", "Creates a Speckle structural analysis task for GSA", "GSA", "Analysis")]
         public Task(int nativeId, string name)
         {
             this.name = name;

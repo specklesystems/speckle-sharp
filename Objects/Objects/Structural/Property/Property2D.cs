@@ -26,13 +26,13 @@ namespace Objects.Structural.Properties
         public double modifierVolume { get; set; }
         public Property2D() { }
 
-        [SchemaInfo("Property2D (by name)", "Creates a Speckle structural 2D element property")]
+        [SchemaInfo("Property2D (by name)", "Creates a Speckle structural 2D element property", "Structural", "Properties")]
         public Property2D(string name)
         {
             this.name = name;
         }
 
-        [SchemaInfo("Property2D", "Creates a Speckle structural 2D element property")]
+        [SchemaInfo("Property2D", "Creates a Speckle structural 2D element property", "Structural", "Properties")]
         public Property2D(string name, Material material, PropertyType2D type, double thickness)
         {
             this.name = name;

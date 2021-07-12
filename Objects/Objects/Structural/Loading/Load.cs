@@ -15,6 +15,7 @@ namespace Objects.Structural.Loading
 
         public Load() { }
 
+        [SchemaInfo("Load", "Creates a Speckle structural load", "Structural", "Loading")]
         public Load(string name, LoadCase loadCase)
         {
             this.name = name;

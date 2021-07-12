@@ -16,7 +16,7 @@ namespace Objects.Structural.Geometry
         public Restraint restraint { get; set; } // can be detachable? ex. reuse pinned support condition
         public Node() { }
 
-        [SchemaInfo("Node", "Creates a Speckle structural node")]
+        [SchemaInfo("Node", "Creates a Speckle structural node", "Structural", "Geometry")]
         public Node([SchemaMainParam] Point basePoint, 
             string name = null,
             [SchemaParamInfo("If null, restraint condition defaults to free/fully released")]  Restraint restraint = null, 

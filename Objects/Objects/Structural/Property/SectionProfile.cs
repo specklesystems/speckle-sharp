@@ -13,7 +13,7 @@ namespace Objects.Structural.Properties
         public string shapeDescription { get; set; }
         public SectionProfile() { }
 
-        [SchemaInfo("SectionProfile", "Creates a Speckle structural 1D element section profile")]
+        [SchemaInfo("SectionProfile", "Creates a Speckle structural 1D element section profile", "Structural", "Properties")]
         public SectionProfile(string shapeDescription)
         {
             this.shapeDescription = shapeDescription;

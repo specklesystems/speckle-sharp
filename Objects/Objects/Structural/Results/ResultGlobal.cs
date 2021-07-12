@@ -36,7 +36,7 @@ namespace Objects.Structural.Results
         public double effMassZZ { get; set; }
         public ResultGlobal() { }
 
-        [SchemaInfo("ResultGlobal (load case)", "Creates a Speckle global result object (for load case)")]
+        [SchemaInfo("ResultGlobal (load case)", "Creates a Speckle global result object (for load case)", "Structural", "Results")]
         public ResultGlobal(LoadCase resultCase, double loadX, double loadY, double loadZ, double loadXX, double loadYY, double loadZZ, double reactionX, double reactionY, double reactionZ, double reactionXX, double reactionYY, double reactionZZ, double mode, double frequency, double loadFactor, double modalStiffness, double modalGeoStiffness, double effMassX, double effMassY, double effMassZ, double effMassXX, double effMassYY, double effMassZZ)
         {            
             this.resultCase = resultCase;
@@ -65,7 +65,7 @@ namespace Objects.Structural.Results
             this.effMassZZ = effMassZZ;
         }
 
-        [SchemaInfo("ResultGlobal (load combination)", "Creates a Speckle global result object (for load combination)")]
+        [SchemaInfo("ResultGlobal (load combination)", "Creates a Speckle global result object (for load combination)", "Structural", "Results")]
         public ResultGlobal(LoadCombination resultCase, double loadX, double loadY, double loadZ, double loadXX, double loadYY, double loadZZ, double reactionX, double reactionY, double reactionZ, double reactionXX, double reactionYY, double reactionZZ, double mode, double frequency, double loadFactor, double modalStiffness, double modalGeoStiffness, double effMassX, double effMassY, double effMassZ, double effMassXX, double effMassYY, double effMassZZ)
         {
             this.resultCase = resultCase;

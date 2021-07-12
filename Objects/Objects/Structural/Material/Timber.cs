@@ -17,7 +17,7 @@ namespace Objects.Structural.Materials
 
         public Timber() { }
 
-        [SchemaInfo("Timber", "Creates a Speckle structural material for timber (to be used in structural analysis models)")]
+        [SchemaInfo("Timber", "Creates a Speckle structural material for timber (to be used in structural analysis models)", "Structural", "Materials")]
         public Timber(string name, string grade = null, double strength = 0, double density = 0, double youngsModulus = 0, double shearModulus = 0, double poissonsRatio = 0, double thermalExpansivity = 0)
         {
             this.name = name;

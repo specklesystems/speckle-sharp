@@ -15,7 +15,7 @@ namespace Objects.Structural.GSA.Loading
         public int nativeId { get; set; }
         public GSALoadCase() { }
 
-        [SchemaInfo("GSALoadCase", "Creates a Speckle structural load case for GSA")]
+        [SchemaInfo("GSALoadCase", "Creates a Speckle structural load case for GSA", "GSA", "Loading")]
         public GSALoadCase(int nativeId, string name, LoadType loadType, string source = null, ActionType actionType = ActionType.None, string description = null)
         {
             this.nativeId = nativeId;
@@ -41,7 +41,7 @@ namespace Objects.Structural.GSA.Loading
             this.nativeId = nativeId;
         }
 
-        [SchemaInfo("GSALoadCombination", "Creates a Speckle load combination for GSA")]
+        [SchemaInfo("GSALoadCombination", "Creates a Speckle load combination for GSA", "GSA", "Loading")]
         public GSALoadCombination(int nativeId, string name,
             [SchemaParamInfo("A list of load cases")] List<LoadCase> loadCases,
             [SchemaParamInfo("A list of load factors (to be mapped to provided load cases)")] List<double> loadFactors)
@@ -66,7 +66,7 @@ namespace Objects.Structural.GSA.Loading
         public int nativeId { get; set; }
         public GSANodeLoad() { }
 
-        [SchemaInfo("GSANodeLoad", "Creates a Speckle node load for GSA")]
+        [SchemaInfo("GSANodeLoad", "Creates a Speckle node load for GSA", "GSA", "Loading")]
         public GSANodeLoad(int nativeId, string name, LoadCase loadCase, List<GSANode> nodes, LoadDirection direction, List<double> value)
         {
             this.nativeId = nativeId;
@@ -78,7 +78,7 @@ namespace Objects.Structural.GSA.Loading
             this.value = value;            
         }
 
-        [SchemaInfo("GSANodeLoad (user-defined axis)", "Creates a Speckle node load (user-defined axis) for GSA")]
+        [SchemaInfo("GSANodeLoad (user-defined axis)", "Creates a Speckle node load (user-defined axis) for GSA", "GSA", "Loading")]
         public GSANodeLoad(int nativeId, string name, LoadCase loadCase, List<Node> nodes, Axis loadAxis, LoadDirection direction, List<double> value)
         {
             this.nativeId = nativeId;
@@ -96,7 +96,7 @@ namespace Objects.Structural.GSA.Loading
         public int nativeId { get; set; }
         public GSAGravityLoad() { }
 
-        [SchemaInfo("GSAGravityLoad", "Creates a Speckle structural gravity load (applied to all nodes and elements) for GSA")]
+        [SchemaInfo("GSAGravityLoad", "Creates a Speckle structural gravity load (applied to all nodes and elements) for GSA", "GSA", "Loading")]
         public GSAGravityLoad(int nativeId, string name, LoadCase loadCase, Vector gravityFactors = null)
         {
             this.nativeId = nativeId;
@@ -105,7 +105,7 @@ namespace Objects.Structural.GSA.Loading
             this.gravityFactors = gravityFactors == null ? new Vector(0, 0, -1) : gravityFactors;            
         }
 
-        [SchemaInfo("GSAGravityLoad (specified elements)", "Creates a Speckle structural gravity load (applied to specified elements) for GSA")]
+        [SchemaInfo("GSAGravityLoad (specified elements)", "Creates a Speckle structural gravity load (applied to specified elements) for GSA", "GSA", "Loading")]
         public GSAGravityLoad(int nativeId, string name, LoadCase loadCase, List<Base> elements, Vector gravityFactors = null)
         {
             this.nativeId = nativeId;
@@ -115,7 +115,7 @@ namespace Objects.Structural.GSA.Loading
             this.gravityFactors = gravityFactors == null ? new Vector(0, 0, -1) : gravityFactors;
         }
 
-        [SchemaInfo("GSAGravityLoad (specified elements and nodes)", "Creates a Speckle structural gravity load (applied to specified nodes and elements) for GSA")]
+        [SchemaInfo("GSAGravityLoad (specified elements and nodes)", "Creates a Speckle structural gravity load (applied to specified nodes and elements) for GSA", "GSA", "Loading")]
         public GSAGravityLoad(int nativeId, string name, LoadCase loadCase, List<Base> elements, List<Base> nodes, Vector gravityFactors = null, string nativedId = null)
         {
             this.nativeId = nativeId;
@@ -132,7 +132,7 @@ namespace Objects.Structural.GSA.Loading
         public int nativeId { get; set; }
         public GSAFaceLoad() { }
 
-        [SchemaInfo("GSAFaceLoad", "Creates a Speckle structural face (2D elem/member) load for GSA")]
+        [SchemaInfo("GSAFaceLoad", "Creates a Speckle structural face (2D elem/member) load for GSA", "GSA", "Loading")]
         public GSAFaceLoad(int nativeId, LoadCase loadCase, List<Base> elements, AreaLoadType loadType, LoadDirection direction, LoadAxisType loadAxisType = LoadAxisType.Global,
             [SchemaParamInfo("A list that represents load magnitude (number of values varies based on load type - Uniform: 1, Variable: 4 (corner nodes), Point: 1)")] List<double> values = null,
             [SchemaParamInfo("A list that represents load locations (number of values varies based on load type - Uniform: null, Variable: null, Point: 2)")] List<double> positions = null,
@@ -155,7 +155,7 @@ namespace Objects.Structural.GSA.Loading
         public int nativeId { get; set; }
         public GSABeamLoad() { }
 
-        [SchemaInfo("GSABeamLoad", "Creates a Speckle structural beam (1D elem/member) load for GSA")]
+        [SchemaInfo("GSABeamLoad", "Creates a Speckle structural beam (1D elem/member) load for GSA", "GSA", "Loading")]
         public GSABeamLoad(int nativeId, LoadCase loadCase, List<Base> elements, BeamLoadType loadType, LoadDirection direction, LoadAxisType loadAxisType = LoadAxisType.Global,
             [SchemaParamInfo("A list that represents load magnitude (number of values varies based on load type - Point: 1, Uniform: 1, Linear: 2, Patch: 2, Tri-linear:2)")] List<double> values = null,
             [SchemaParamInfo("A list that represents load locations (number of values varies based on load type - Point: 1, Uniform: null, Linear: null, Patch: 2, Tri-linear: 2)")] List<double> positions = null,
@@ -172,7 +172,7 @@ namespace Objects.Structural.GSA.Loading
             this.isProjected = isProjected;
         }
 
-        [SchemaInfo("GSABeamLoad (user-defined axis)", "Creates a Speckle structural beam (1D elem/member) load (specified for a user-defined axis) for GSA")]
+        [SchemaInfo("GSABeamLoad (user-defined axis)", "Creates a Speckle structural beam (1D elem/member) load (specified for a user-defined axis) for GSA", "GSA", "Loading")]
         public GSABeamLoad(int nativeId, LoadCase loadCase, List<Base> elements, BeamLoadType loadType, LoadDirection direction, Axis loadAxis,
             [SchemaParamInfo("A list that represents load magnitude (number of values varies based on load type - Point: 1, Uniform: 1, Linear: 2, Patch: 2, Tri-linear:2)")] List<double> values = null,
             [SchemaParamInfo("A list that represents load locations (number of values varies based on load type - Point: 1, Uniform: null, Linear: null, Patch: 2, Tri-linear: 2)")] List<double> positions = null,

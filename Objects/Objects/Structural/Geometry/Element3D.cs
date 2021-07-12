@@ -31,7 +31,7 @@ namespace Objects.Structural.Geometry
             this.baseMesh = baseMesh;
         }
 
-        [SchemaInfo("Element3D", "Creates a Speckle structural 3D element")]
+        [SchemaInfo("Element3D", "Creates a Speckle structural 3D element", "Structural", "Geometry")]
         public Element3D(Mesh baseMesh, Property3D property, ElementType3D type, string name = null, double orientationAngle = 0)
         {
             this.baseMesh = baseMesh;

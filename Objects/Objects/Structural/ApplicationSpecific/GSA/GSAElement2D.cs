@@ -17,7 +17,7 @@ namespace Objects.Structural.GSA.Geometry
         public bool isDummy { get; set; }
         public GSAElement2D() { }
 
-        [SchemaInfo("GSAElement2D", "Creates a Speckle structural 2D element for GSA")]
+        [SchemaInfo("GSAElement2D", "Creates a Speckle structural 2D element for GSA", "GSA", "Geometry")]
         public GSAElement2D(int nativeId, Mesh baseMesh, Property2D property, ElementType2D type, string name = null, double offset = 0, double orientationAngle = 0, int group = 0, string colour = "NO_RGB", string action = null, bool isDummy = false)
         {
             this.nativeId = nativeId;

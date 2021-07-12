@@ -17,7 +17,7 @@ namespace Objects.Structural.GSA.Geometry
         public bool isDummy { get; set; }
         public GSAElement3D() { }
 
-        [SchemaInfo("GSAElement3D", "Creates a Speckle structural 3D element for GSA")]
+        [SchemaInfo("GSAElement3D", "Creates a Speckle structural 3D element for GSA", "GSA", "Geometry")]
         public GSAElement3D(int nativeId, Mesh baseMesh, Property3D property, ElementType3D type, string name = null, double orientationAngle = 0, int group = 0, string colour = "NO_RGB", string action = null, bool isDummy = false)
         {
             this.nativeId = nativeId;

@@ -24,7 +24,7 @@ namespace Objects.Structural.Analysis
         public string strain { get; set; } //ε, %ε, mε, με
         public ModelUnits() { }
 
-        [SchemaInfo("ModelUnits", "Creates a Speckle object which specifies the units associated with the model")]
+        [SchemaInfo("ModelUnits", "Creates a Speckle object which specifies the units associated with the model", "Structural", "Analysis")]
         public ModelUnits([SchemaParamInfo("Select a set of default units based on the unit system")] UnitsType unitsType) 
         { 
             if (unitsType == UnitsType.Metric)
@@ -59,7 +59,7 @@ namespace Objects.Structural.Analysis
             }
         }
 
-        [SchemaInfo("ModelUnits (custom)", "Creates a Speckle object which specifies the units associated with the model")]
+        [SchemaInfo("ModelUnits (custom)", "Creates a Speckle object which specifies the units associated with the model", "Structural", "Analysis")]
         public ModelUnits([SchemaParamInfo("Used for length and length derived units such as area")] string length = "m", 
             [SchemaParamInfo("Used for cross-sectional properties")] string sections = "m", 
             [SchemaParamInfo("Used for displacements and cross-sectional dimensions")] string displacements = "m",

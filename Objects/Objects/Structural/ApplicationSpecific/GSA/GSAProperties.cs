@@ -17,7 +17,7 @@ namespace Objects.Structural.GSA.Properties
         public string poolRef { get; set; }
         public GSAProperty1D() { }
 
-        [SchemaInfo("GSAProperty1D", "Creates a Speckle structural 1D element property for GSA")]
+        [SchemaInfo("GSAProperty1D", "Creates a Speckle structural 1D element property for GSA", "GSA", "Properties")]
         public GSAProperty1D(int nativeId, string name, Material material, string grade, SectionProfile profile, double cost = 0, double additionalMass = 0, string poolRef = null)
         {
             this.nativeId = nativeId;
@@ -41,7 +41,7 @@ namespace Objects.Structural.GSA.Properties
         public string concreteSlabProp { get; set; }
         public GSAProperty2D() { }
 
-        [SchemaInfo("GSAProperty2D", "Creates a Speckle structural 2D element property for GSA")]
+        [SchemaInfo("GSAProperty2D", "Creates a Speckle structural 2D element property for GSA", "GSA", "Properties")]
         public GSAProperty2D(int nativeId, string name, Material material, double thickness)
         {
             this.nativeId = nativeId;

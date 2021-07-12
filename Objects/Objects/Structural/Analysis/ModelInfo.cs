@@ -28,7 +28,7 @@ namespace Objects.Structural.Analysis
         /// <param name="settings"></param>
         /// <param name="engInitials">Initials that identify the creator of the model</param>
         /// <param name="application"></param>
-        [SchemaInfo("ModelInfo", "Creates a Speckle object which describes basic model and project information for a structural model")]
+        [SchemaInfo("ModelInfo", "Creates a Speckle object which describes basic model and project information for a structural model", "Structural", "Analysis")]
         public ModelInfo(string name = null, string description = null, string projectNumber = null, string projectName = null, ModelSettings settings = null, string engInitials = null, string application = null)
         {
             this.name = name;

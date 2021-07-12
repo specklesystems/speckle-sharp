@@ -29,7 +29,7 @@ namespace Objects.Structural.Analysis
         /// <param name="steelCode"></param>
         /// <param name="concreteCode"></param>
         /// <param name="coincidenceTolerance"></param>
-        [SchemaInfo("ModelSettings", "Creates a Speckle object which describes design and analysis settings for the structural model")]
+        [SchemaInfo("ModelSettings", "Creates a Speckle object which describes design and analysis settings for the structural model", "Structural", "Analysis")]
         public ModelSettings(ModelUnits modelUnits = null, string steelCode = null, string concreteCode = null, double coincidenceTolerance = 10) 
         {
             this.modelUnits = modelUnits == null ? new ModelUnits(UnitsType.Metric) : modelUnits;

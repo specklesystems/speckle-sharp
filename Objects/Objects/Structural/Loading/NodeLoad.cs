@@ -19,7 +19,7 @@ namespace Objects.Structural.Loading
 
         public NodeLoad() { }
 
-        [SchemaInfo("NodeLoad", "Creates a Speckle node load")]
+        [SchemaInfo("NodeLoad", "Creates a Speckle node load", "Structural", "Loading")]
         public NodeLoad(string name, LoadCase loadCase, List<Node> nodes, LoadDirection direction, List<double> value)
         {
             this.name = name;
@@ -29,7 +29,7 @@ namespace Objects.Structural.Loading
             this.value = value;
         }
 
-        [SchemaInfo("NodeLoad (user-defined axis)", "Creates a Speckle node load (user-defined axis)")]
+        [SchemaInfo("NodeLoad (user-defined axis)", "Creates a Speckle node load (user-defined axis)", "Structural", "Loading")]
         public NodeLoad(string name, LoadCase loadCase, List<Node> nodes, Axis loadAxis, LoadDirection direction, List<double> value)
         {
             this.name = name;

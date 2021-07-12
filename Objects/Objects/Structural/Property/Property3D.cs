@@ -19,13 +19,13 @@ namespace Objects.Structural.Properties
 
         public Property3D() { }
 
-        [SchemaInfo("Property3D (by name)", "Creates a Speckle structural 3D element property")]
+        [SchemaInfo("Property3D (by name)", "Creates a Speckle structural 3D element property", "Structural", "Properties")]
         public Property3D(string name)
         {
             this.name = name;
         }
 
-        [SchemaInfo("Property3D", "Creates a Speckle structural 3D element property")]
+        [SchemaInfo("Property3D", "Creates a Speckle structural 3D element property", "Structural", "Properties")]
         public Property3D(string name, PropertyType3D type , Material material)
         {
             this.name = name;

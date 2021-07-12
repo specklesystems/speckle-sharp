@@ -19,13 +19,13 @@ namespace Objects.Structural.Properties
 
         public PropertyDamper() { }
 
-        [SchemaInfo("PropertyDamper", "Creates a Speckle structural damper property")]
+        [SchemaInfo("PropertyDamper", "Creates a Speckle structural damper property", "Structural", "Properties")]
         public PropertyDamper(string name)
         {
             this.name = name;
         }
 
-        [SchemaInfo("PropertyDamper (general)", "Creates a Speckle structural damper property (for 6 degrees of freedom)")]
+        [SchemaInfo("PropertyDamper (general)", "Creates a Speckle structural damper property (for 6 degrees of freedom)", "Structural", "Properties")]
         public PropertyDamper(string name, PropertyTypeDamper damperType, double dampingX = 0, double dampingY = 0, double dampingZ = 0, double dampingXX = 0, double dampingYY = 0, double dampingZZ = 0)
         {
             this.name = name;

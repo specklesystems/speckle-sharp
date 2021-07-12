@@ -20,7 +20,7 @@ namespace Objects.Structural.GSA.Geometry //GSA.Geometry?
 
         public GSAMember1D() { }
 
-        [SchemaInfo("GSAMember1D (from local axis)", "Creates a Speckle structural 1D member for GSA (from local axis)")]
+        [SchemaInfo("GSAMember1D (from local axis)", "Creates a Speckle structural 1D member for GSA (from local axis)", "GSA", "Geometry")]
         public GSAMember1D(int nativeId, ICurve baseLine, Property1D property, ElementType1D type, Restraint end1Releases, Restraint end2Releases, Vector end1Offset, Vector end2Offset, Plane localAxis)
         {
             this.nativeId = nativeId;
@@ -34,7 +34,7 @@ namespace Objects.Structural.GSA.Geometry //GSA.Geometry?
             this.localAxis = localAxis;
         }
 
-        [SchemaInfo("GSAMember1D (from orientation node and angle)", "Creates a Speckle structural 1D member for GSA (from orientation node and angle)")]
+        [SchemaInfo("GSAMember1D (from orientation node and angle)", "Creates a Speckle structural 1D member for GSA (from orientation node and angle)", "GSA", "Geometry")]
         public GSAMember1D(int nativeId, ICurve baseLine, Property1D property, ElementType1D type, Restraint end1Releases, Restraint end2Releases, Vector end1Offset, Vector end2Offset, Node orientationNode, double orientationAngle)
         {
             this.nativeId = nativeId;
