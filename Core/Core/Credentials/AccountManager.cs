@@ -75,6 +75,19 @@ namespace Speckle.Core.Credentials
       return response.Data.user;
     }
 
+    public static async Task<Account> GetAccount(string token, string url)
+    {
+      var userInfo = await GetUserInfo(token, url);
+      var serverInfo = await GetServerInfo(url);
+      var account = new Account()
+      {
+        token = token,
+        serverInfo = serverInfo,
+        userInfo = userInfo,
+      };
+      return account;
+    }
+
     /// <summary>
     /// Gets all the accounts for a given server.
     /// </summary>
@@ -126,7 +139,7 @@ namespace Speckle.Core.Credentials
     private static IEnumerable<Account> GetLocalAccounts()
     {
       var accounts = new List<Account>();
-      var accountsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Accounts");
+      var accountsDir = LocalAccountPath;
       if (!Directory.Exists(accountsDir))
       {
         return accounts;
@@ -139,14 +152,7 @@ namespace Speckle.Core.Credentials
           var json = File.ReadAllText(file);
           var account = JsonConvert.DeserializeObject<Account>(json);
 
-          if (
-            !string.IsNullOrEmpty(account.token) &&
-            !string.IsNullOrEmpty(account.userInfo.id) &&
-            !string.IsNullOrEmpty(account.userInfo.email) &&
-            !string.IsNullOrEmpty(account.userInfo.name) &&
-            !string.IsNullOrEmpty(account.serverInfo.url) &&
-            !string.IsNullOrEmpty(account.serverInfo.name)
-            )
+          if (account.IsValid())
             accounts.Add(account);
         }
         catch
@@ -154,6 +160,34 @@ namespace Speckle.Core.Credentials
         }
       }
       return accounts;
+    }
+
+    private static string LocalAccountPath { get 
+      {
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Accounts");
+      } 
+    }
+
+
+    /// <summary>
+    /// Add a local account if it doesn't exist. Return true if it wrote the file. 
+    /// </summary>
+    /// <param name="account"></param>
+    /// <returns></returns>
+    public static bool AddLocalAccount(Account account)
+    {
+      var exists = GetLocalAccounts().Any(x => x.Equals(account));
+      if(!exists)
+      {
+        var localAccountPath = LocalAccountPath;
+        if (!Directory.Exists(localAccountPath))
+          Directory.CreateDirectory(localAccountPath);
+
+        var data = JsonConvert.SerializeObject(account);
+        File.WriteAllText(Path.Combine(localAccountPath, $"{account.id}.json"), data);
+        return true;
+      }
+      return false;
     }
 
   }
