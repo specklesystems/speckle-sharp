@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using Speckle.Core.Credentials;
@@ -88,7 +89,7 @@ namespace ConnectorGrasshopper.Accounts
       {
         //You can add image files to your project resources and access them like this:
         // return Resources.IconForThisComponent;
-        return null;
+        return Resources.ManualAccount;
       }
     }
 
