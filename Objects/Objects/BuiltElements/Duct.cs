@@ -49,7 +49,7 @@ namespace Objects.BuiltElements.Revit
     public string systemName { get; set; }
     public string systemType { get; set; }
     public Level level { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public RevitDuct() { }
@@ -70,7 +70,7 @@ namespace Objects.BuiltElements.Revit
     /// <param name="parameters"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="width"/>, <paramref name="height"/>, and <paramref name="diameter"/> params</remarks>
     [SchemaInfo("RevitDuct", "Creates a Revit duct", "Revit", "MEP")]
-    public RevitDuct(string family, string type, [SchemaMainParam] Line baseLine, string systemName, string systemType, Level level, double width, double height, double diameter, double velocity = 0, List<Parameter> parameters = null)
+    public RevitDuct(string family, string type, [SchemaMainParam] Line baseLine, string systemName, string systemType, Level level, double width, double height, double diameter, double velocity = 0, Base parameters = null)
     {
       this.baseLine = baseLine;
       this.family = family;

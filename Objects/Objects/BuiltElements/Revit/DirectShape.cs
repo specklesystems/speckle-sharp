@@ -9,7 +9,7 @@ namespace Objects.BuiltElements.Revit
   {
     public string name { get; set; }
     public RevitCategory category { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     [DetachProperty]
@@ -28,7 +28,7 @@ namespace Objects.BuiltElements.Revit
     /// <param name="baseGeometries">A list of base classes to represent the direct shape (only mesh and brep are allowed, anything else will be ignored.)</param>
     /// <param name="parameters">Optional Parameters for this instance.</param>
     [SchemaInfo("DirectShape by base geometries", "Creates a Revit DirectShape using a list of base geometry objects.", "Revit", "Families")]
-    public DirectShape(string name, RevitCategory category, List<Base> baseGeometries, List<Parameter> parameters = null)
+    public DirectShape(string name, RevitCategory category, List<Base> baseGeometries, Base parameters = null)
     {
       this.name = name;
       this.category = category;

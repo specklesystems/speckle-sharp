@@ -39,7 +39,7 @@ namespace Objects.BuiltElements.Revit
     public bool isSlanted { get; set; }
     public string family { get; set; }
     public string type { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public RevitColumn() { }
@@ -63,7 +63,7 @@ namespace Objects.BuiltElements.Revit
       [SchemaParamInfo("Only the lower point of this line will be used as base point.")][SchemaMainParam] ICurve baseLine,
       Level level, Level topLevel,
       double baseOffset = 0, double topOffset = 0, bool structural = false,
-      double rotation = 0, List<Parameter> parameters = null)
+      double rotation = 0, Base parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -78,7 +78,7 @@ namespace Objects.BuiltElements.Revit
     }
 
     [SchemaInfo("RevitColumn Slanted", "Creates a slanted Revit Column by curve.", "Revit", "Structure")]
-    public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, bool structural = false, List<Parameter> parameters = null)
+    public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, bool structural = false, Base parameters = null)
     {
       this.family = family;
       this.type = type;

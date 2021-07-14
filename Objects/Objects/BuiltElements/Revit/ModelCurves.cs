@@ -8,13 +8,13 @@ namespace Objects.BuiltElements.Revit.Curve
   {
     public ICurve baseCurve { get; set; }
     public string lineStyle { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public ModelCurve() { }
 
     [SchemaInfo("ModelCurve", "Creates a Revit model curve", "Revit", "Curves")]
-    public ModelCurve([SchemaMainParam] ICurve baseCurve, string lineStyle, List<Parameter> parameters = null)
+    public ModelCurve([SchemaMainParam] ICurve baseCurve, string lineStyle, Base parameters = null)
     {
       this.baseCurve = baseCurve;
       this.lineStyle = lineStyle;
@@ -26,13 +26,13 @@ namespace Objects.BuiltElements.Revit.Curve
   {
     public ICurve baseCurve { get; set; }
     public string lineStyle { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public DetailCurve() { }
 
     [SchemaInfo("DetailCurve", "Creates a Revit detail curve", "Revit", "Curves")]
-    public DetailCurve([SchemaMainParam] ICurve baseCurve, string lineStyle, List<Parameter> parameters = null)
+    public DetailCurve([SchemaMainParam] ICurve baseCurve, string lineStyle, Base parameters = null)
     {
       this.baseCurve = baseCurve;
       this.lineStyle = lineStyle;
@@ -43,13 +43,13 @@ namespace Objects.BuiltElements.Revit.Curve
   public class RoomBoundaryLine : Base
   {
     public ICurve baseCurve { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public RoomBoundaryLine() { }
 
     [SchemaInfo("RoomBoundaryLine", "Creates a Revit room boundary line", "Revit", "Curves")]
-    public RoomBoundaryLine([SchemaMainParam] ICurve baseCurve, List<Parameter> parameters = null)
+    public RoomBoundaryLine([SchemaMainParam] ICurve baseCurve, Base parameters = null)
     {
       this.baseCurve = baseCurve;
       this.parameters = parameters;

@@ -156,7 +156,7 @@ namespace Objects.Converter.Revit
         revitAc.Name,
         category,
         geometries.ToList(),
-        new List<Parameter>()
+        new Base()
       );
       GetAllRevitParamsAndIds(speckleAc, revitAc);
       speckleAc["type"] = revitAc.Name;

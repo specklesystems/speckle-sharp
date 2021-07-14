@@ -36,7 +36,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
   {
     public string family { get; set; }
     public string type { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
     public Level level { get; set; }
 
@@ -70,7 +70,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
       [SchemaParamInfo("Profile along which to extrude the roof")][SchemaMainParam] Line referenceLine,
       Level level,
       List<Base> elements = null,
-      List<Parameter> parameters = null)
+      Base parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -93,7 +93,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
     [SchemaInfo("RevitFootprintRoof", "Creates a Revit roof by outline", "Revit", "Architecture")]
     public RevitFootprintRoof([SchemaMainParam] ICurve outline, string family, string type, Level level, RevitLevel cutOffLevel = null, double slope = 0, List<ICurve> voids = null,
       List<Base> elements = null,
-      List<Parameter> parameters = null)
+      Base parameters = null)
     {
       this.outline = outline;
       this.voids = voids;

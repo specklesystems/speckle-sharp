@@ -147,21 +147,38 @@ namespace Objects.Converter.Revit
     /// potential conflicts when setting them back on the element</param>
     private void GetAllRevitParamsAndIds(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
     {
-      var parms = GetInstanceParams(revitElement, exclusions);
-      if (parms != null)
+      var instParams = GetInstanceParams(revitElement, exclusions);
+      var typeParams = speckleElement is Level ? null : GetTypeParams(revitElement);  //ignore type props of levels..!
+      var allParams = new Dictionary<string, Parameter>();
+
+      if (instParams != null)
+        instParams.ToList().ForEach(x => allParams.Add(x.Key, x.Value));
+
+      if (typeParams != null)
+        typeParams.ToList().ForEach(x => allParams.Add(x.Key, x.Value));
+
+      //sort by key
+      allParams = allParams.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+      Base paramBase = new Base();
+
+      foreach (var kv in allParams)
       {
-        speckleElement["parameters"] = parms;
+        try
+        {
+          paramBase[kv.Key] = kv.Value;
+        }
+        catch
+        {
+          //ignore
+        }
       }
 
-      var typeParams = GetTypeParams(revitElement);
-      if (typeParams != null && !(speckleElement is Level)) //ignore type props of levels..!
-      {
-        if ((List<Parameter>)speckleElement["parameters"] == null)
-          speckleElement["parameters"] = new List<Parameter>();
-        ((List<Parameter>)speckleElement["parameters"]).AddRange(typeParams);
 
-      }
 
+
+
+      if (paramBase.GetDynamicMembers().Any())
+        speckleElement["parameters"] = paramBase;
       speckleElement["elementId"] = revitElement.Id.ToString();
       speckleElement.applicationId = revitElement.UniqueId;
       speckleElement.units = ModelUnits;
@@ -169,23 +186,23 @@ namespace Objects.Converter.Revit
 
     //private List<string> alltimeExclusions = new List<string> { 
     //  "ELEM_CATEGORY_PARAM" };
-    private List<Parameter> GetInstanceParams(DB.Element element, List<string> exclusions)
+    private Dictionary<string, Parameter> GetInstanceParams(DB.Element element, List<string> exclusions)
     {
       return GetElementParams(element, false, exclusions);
     }
-    private List<Parameter> GetTypeParams(DB.Element element)
+    private Dictionary<string, Parameter> GetTypeParams(DB.Element element)
     {
       var elementType = Doc.GetElement(element.GetTypeId());
 
       if (elementType == null || elementType.Parameters == null)
       {
-        return new List<Parameter>();
+        return new Dictionary<string, Parameter>();
       }
       return GetElementParams(elementType, true);
 
     }
 
-    private List<Parameter> GetElementParams(DB.Element element, bool isTypeParameter = false, List<string> exclusions = null)
+    private Dictionary<string, Parameter> GetElementParams(DB.Element element, bool isTypeParameter = false, List<string> exclusions = null)
     {
       exclusions = (exclusions != null) ? exclusions : new List<string>();
 
@@ -196,7 +213,8 @@ namespace Objects.Converter.Revit
       //exclude parameters that failed to convert
       var speckleParameters = revitParameters.Select(x => ParameterToSpeckle(x, isTypeParameter))
         .Where(x => x != null);
-      return speckleParameters.OrderBy(x => x.name).ToList();
+
+      return speckleParameters.GroupBy(x => x.applicationId).Select(x => x.First()).ToDictionary(x => x.applicationId, x => x);
     }
 
     private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip)
@@ -220,7 +238,7 @@ namespace Objects.Converter.Revit
         isShared = rp.IsShared,
         isReadOnly = rp.IsReadOnly,
         isTypeParameter = isTypeParameter,
-        revitUnitType = rp.GetUnityTypeString() //eg UT_Length
+        applicationUnitType = rp.GetUnityTypeString() //eg UT_Length
       };
 
       switch (rp.StorageType)
@@ -230,7 +248,7 @@ namespace Objects.Converter.Revit
           var val = rp.AsDouble();
           try
           {
-            sp.revitUnit = rp.GetDisplayUnityTypeString(); //eg DUT_MILLIMITERS, this can throw!
+            sp.applicationUnit = rp.GetDisplayUnityTypeString(); //eg DUT_MILLIMITERS, this can throw!
             sp.value = RevitVersionHelper.ConvertFromInternalUnits(val, rp);
           }
           catch
@@ -278,8 +296,8 @@ namespace Objects.Converter.Revit
       if (revitElement == null)
         return;
 
-      var speckleParameters = speckleElement["parameters"] as List<Parameter>;
-      if (speckleParameters == null || !speckleParameters.Any())
+      var speckleParameters = speckleElement["parameters"] as Base;
+      if (speckleParameters == null || speckleParameters.GetDynamicMemberNames().Count() == 0)
         return;
 
       // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
@@ -295,8 +313,11 @@ namespace Objects.Converter.Revit
       var revitParameterByName = revitParameters.ToDictionary(x => x.Definition.Name, x => x);
 
       //only loop params we can set and that actually exist on the revit element
-      var filteredSpeckleParameters = speckleParameters.Where(x => !x.isReadOnly &&
-        (revitParameterById.ContainsKey(x.applicationId) || revitParameterByName.ContainsKey(x.name)));
+      var filteredSpeckleParameters = speckleParameters.GetMembers()
+        .Select(x => x.Value)
+        .Where(x => x is Parameter p)
+        .Cast<Parameter>()
+        .Where(x => !x.isReadOnly && (revitParameterById.ContainsKey(x.applicationId) || revitParameterByName.ContainsKey(x.name)));
 
       foreach (var sp in filteredSpeckleParameters)
       {
@@ -306,7 +327,7 @@ namespace Objects.Converter.Revit
           switch (rp.StorageType)
           {
             case StorageType.Double:
-              if (!string.IsNullOrEmpty(sp.revitUnit))
+              if (!string.IsNullOrEmpty(sp.applicationUnit))
               {
                 var val = RevitVersionHelper.ConvertToInternalUnits(sp);
                 rp.Set(val);

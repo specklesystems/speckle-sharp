@@ -12,7 +12,7 @@ namespace Objects.BuiltElements.Revit
     public List<Point> basePoints { get; set; }
     public bool flipped { get; set; }
     public string elementId { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
 
     [DetachProperty]
     public Mesh displayMesh { get; set; }
@@ -20,7 +20,7 @@ namespace Objects.BuiltElements.Revit
     public AdaptiveComponent() { }
 
     [SchemaInfo("AdaptiveComponent", "Creates a Revit adaptive component by points", "Revit", "Families")]
-    public AdaptiveComponent(string type, string family, List<Point> basePoints, bool flipped = false, List<Parameter> parameters = null)
+    public AdaptiveComponent(string type, string family, List<Point> basePoints, bool flipped = false, Base parameters = null)
     {
       this.type = type;
       this.family = family;

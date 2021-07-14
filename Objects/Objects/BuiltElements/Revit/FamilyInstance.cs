@@ -15,7 +15,7 @@ namespace Objects.BuiltElements.Revit
     public double rotation { get; set; }
     public bool facingFlipped { get; set; }
     public bool handFlipped { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     [DetachProperty]
@@ -29,7 +29,7 @@ namespace Objects.BuiltElements.Revit
     [SchemaInfo("FamilyInstance", "Creates a Revit family instance", "Revit", "Families")]
     public FamilyInstance(Point basePoint, string family, string type, Level level,
       double rotation = 0, bool facingFlipped = false, bool handFlipped = false,
-      List<Parameter> parameters = null)
+      Base parameters = null)
     {
       this.basePoint = basePoint;
       this.family = family;

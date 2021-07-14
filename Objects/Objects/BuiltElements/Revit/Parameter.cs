@@ -6,12 +6,13 @@ using System.Text;
 
 namespace Objects.BuiltElements.Revit
 {
+  //note: its applicationId in Revit is the BuiltInName or GUID for shared parameter
   public class Parameter : Base
   {
     public string name { get; set; }
     public object value { get; set; }
-    public string revitUnitType { get; set; } //eg UnitType UT_Length
-    public string revitUnit { get; set; } //DisplayUnitType eg DUT_MILLIMITERS
+    public string applicationUnitType { get; set; } //eg UnitType UT_Length
+    public string applicationUnit { get; set; } //DisplayUnitType eg DUT_MILLIMITERS
 
     /// <summary>
     /// If True it's a Shared Parameter, in which case the ApplicationId field will contain this parameter GUID, 

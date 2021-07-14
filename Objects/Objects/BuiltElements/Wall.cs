@@ -48,7 +48,7 @@ namespace Objects.BuiltElements.Revit
     public bool structural { get; set; }
     public Level level { get; set; }
     public Level topLevel { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public RevitWall() { }
@@ -72,7 +72,7 @@ namespace Objects.BuiltElements.Revit
     public RevitWall(string family, string type,
       [SchemaMainParam] ICurve baseLine, Level level, Level topLevel, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
-      List<Parameter> parameters = null)
+      Base parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -106,7 +106,7 @@ namespace Objects.BuiltElements.Revit
     public RevitWall(string family, string type,
       [SchemaMainParam] ICurve baseLine, Level level, double height, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
-      List<Parameter> parameters = null)
+      Base parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -129,7 +129,7 @@ namespace Objects.BuiltElements.Revit
     public Surface surface { get; set; }
     public Level level { get; set; }
     public LocationLine locationLine { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public RevitFaceWall() { }
@@ -139,7 +139,7 @@ namespace Objects.BuiltElements.Revit
       [SchemaParamInfo("Surface or single face Brep to use")][SchemaMainParam] Brep surface,
       Level level, LocationLine locationLine = LocationLine.Interior,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
-      List<Parameter> parameters = null)
+      Base parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -163,7 +163,7 @@ namespace Objects.BuiltElements.Revit
   //   public bool flipped { get; set; }
   //
   //   [SchemaOptional]
-  //   public List<Parameter> parameters { get; set; }
+  //   public Base parameters { get; set; }
   //
   //   [SchemaIgnore]
   //   public string elementId { get; set; }
@@ -174,7 +174,7 @@ namespace Objects.BuiltElements.Revit
   // public class RevitWallByPoint : Base
   // {
   //   [SchemaOptional]
-  //   public List<Parameter> parameters { get; set; }
+  //   public Base parameters { get; set; }
   //
   //   [SchemaIgnore]
   //   public string elementId { get; set; }

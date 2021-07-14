@@ -29,13 +29,13 @@ namespace Objects.BuiltElements.Revit
     public List<double> constructionPoints { get; set; } // used in constructor for revit native wires
     public string system { get; set; }
     public Level level { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public RevitWire() { }
 
     [SchemaInfo("RevitWire", "Creates a Revit wire from points and level", "Revit", "MEP")]
-    public RevitWire(List<double> constructionPoints, string family, string type, Level level, string wiringType = "Arc", List<Parameter> parameters = null)
+    public RevitWire(List<double> constructionPoints, string family, string type, Level level, string wiringType = "Arc", Base parameters = null)
     {
       this.constructionPoints = constructionPoints;
       this.family = family;

@@ -9,7 +9,7 @@ namespace Objects.BuiltElements.Revit
 {
   public class FreeformElement : Base , IDisplayMesh
   {
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     
     public string elementId { get; set; }
 
@@ -22,7 +22,7 @@ namespace Objects.BuiltElements.Revit
     public FreeformElement() { }
 
     [SchemaInfo("Freeform element", "Creates a Revit Freeform element using a Brep or a Mesh.", "Revit", "Families")]
-    public FreeformElement([SchemaMainParam] Base baseGeometry, List<Parameter> parameters = null)
+    public FreeformElement([SchemaMainParam] Base baseGeometry, Base parameters = null)
     {
       if (!IsValidObject(baseGeometry))
         throw new Exception("Freeform elements can only be created from BREPs or Meshes");

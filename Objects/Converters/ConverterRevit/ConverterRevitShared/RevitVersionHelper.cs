@@ -27,10 +27,10 @@ namespace Objects.Converter.Revit
     public static double ConvertToInternalUnits(Objects.BuiltElements.Revit.Parameter parameter)
     {
 #if !(REVIT2022)
-      Enum.TryParse(parameter.revitUnit, out DisplayUnitType sourceUnit);
+      Enum.TryParse(parameter.applicationUnit, out DisplayUnitType sourceUnit);
       return UnitUtils.ConvertToInternalUnits(Convert.ToDouble(parameter.value), sourceUnit);
 #else
-      var sourceUnit = new ForgeTypeId(parameter.revitUnit);
+      var sourceUnit = new ForgeTypeId(parameter.applicationUnit);
       return UnitUtils.ConvertToInternalUnits(Convert.ToDouble(parameter.value), sourceUnit);
 #endif
     }
