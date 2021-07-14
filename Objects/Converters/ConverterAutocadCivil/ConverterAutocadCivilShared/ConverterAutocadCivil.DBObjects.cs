@@ -1151,6 +1151,8 @@ namespace Objects.Converter.AutocadCivil
         definition = BlockRecordToSpeckle(btr);
         tr.Commit();
       }
+      if (definition == null)
+        return null;
 
       var instance = new BlockInstance()
       {
@@ -1206,6 +1208,10 @@ namespace Objects.Converter.AutocadCivil
 
     public BlockDefinition BlockRecordToSpeckle (BlockTableRecord record)
     {
+      // skip if this is from an external reference
+      if (record.IsFromExternalReference)
+        return null;
+
       // get geometry
       var geometry = new List<Base>();
       using (Transaction tr = Doc.TransactionManager.StartTransaction())
