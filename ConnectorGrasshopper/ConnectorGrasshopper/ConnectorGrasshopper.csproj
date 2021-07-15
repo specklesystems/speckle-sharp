@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Accounts\Accounts.AccountDetails.cs" />
+    <Compile Include="Accounts\Accounts.ManualAccount.cs" />
     <Compile Include="Accounts\Accounts.ListAccounts.cs" />
     <Compile Include="ComponentCategories.cs" />
     <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
@@ -207,6 +208,7 @@
   <ItemGroup>
     <None Include="Resources\receiveFromTransport.png" />
     <None Include="Resources\sendToTransport.png" />
+    <None Include="Resources\ManualAccount.png" />
     <Content Include="SchemaBuilder\SchemaBuilderGen.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>

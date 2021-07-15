@@ -36,6 +36,20 @@ namespace Speckle.Core.Credentials
 
     public Account() { }
 
+    /// <summary>
+    /// Simply checks important properties are not NullOrEmpty
+    /// </summary>
+    /// <returns></returns>
+    public bool IsValid()
+    {
+      return !string.IsNullOrEmpty(token) &&
+            !string.IsNullOrEmpty(userInfo.id) &&
+            !string.IsNullOrEmpty(userInfo.email) &&
+            !string.IsNullOrEmpty(userInfo.name) &&
+            !string.IsNullOrEmpty(serverInfo.url) &&
+            !string.IsNullOrEmpty(serverInfo.name);
+    }
+
     #region public methods
     public async Task<UserInfo> Validate()
     {
