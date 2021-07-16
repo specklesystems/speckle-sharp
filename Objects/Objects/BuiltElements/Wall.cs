@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -72,7 +73,7 @@ namespace Objects.BuiltElements.Revit
     public RevitWall(string family, string type,
       [SchemaMainParam] ICurve baseLine, Level level, Level topLevel, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
-      Base parameters = null)
+      List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -84,7 +85,7 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.topLevel = topLevel;
       this.elements = elements;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
 
     /// <summary>
@@ -106,7 +107,7 @@ namespace Objects.BuiltElements.Revit
     public RevitWall(string family, string type,
       [SchemaMainParam] ICurve baseLine, Level level, double height, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
-      Base parameters = null)
+      List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -118,7 +119,7 @@ namespace Objects.BuiltElements.Revit
       this.structural = structural;
       this.level = level;
       this.elements = elements;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 
@@ -139,7 +140,7 @@ namespace Objects.BuiltElements.Revit
       [SchemaParamInfo("Surface or single face Brep to use")][SchemaMainParam] Brep surface,
       Level level, LocationLine locationLine = LocationLine.Interior,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
-      Base parameters = null)
+      List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -147,7 +148,7 @@ namespace Objects.BuiltElements.Revit
       this.locationLine = locationLine;
       this.level = level;
       this.elements = elements;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 

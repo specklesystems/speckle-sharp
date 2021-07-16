@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -37,12 +38,12 @@ namespace Objects.BuiltElements.Revit
     public RevitBrace() { }
 
     [SchemaInfo("RevitBrace", "Creates a Revit brace by curve and base level.", "Revit", "Structure")]
-    public RevitBrace(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, Base parameters = null)
+    public RevitBrace(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
       this.baseLine = baseLine;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
       this.level = level;
     }
   }

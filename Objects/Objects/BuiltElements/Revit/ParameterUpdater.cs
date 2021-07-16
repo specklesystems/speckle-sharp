@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Kits;
+﻿using Objects.Utils;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -13,10 +14,10 @@ namespace Objects.BuiltElements.Revit
 
 
     [SchemaInfo("ParameterUpdater", "Updates parameters on a Revit element by id", "Revit", "Families")]
-    public ParameterUpdater([SchemaParamInfo("A Revit ElementId or UniqueId")] string id, Base parameters)
+    public ParameterUpdater([SchemaParamInfo("A Revit ElementId or UniqueId")] string id, List<Parameter> parameters)
     {
       this.revitId = id;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
 
     public ParameterUpdater()

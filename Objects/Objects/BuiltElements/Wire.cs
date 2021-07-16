@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -35,14 +36,14 @@ namespace Objects.BuiltElements.Revit
     public RevitWire() { }
 
     [SchemaInfo("RevitWire", "Creates a Revit wire from points and level", "Revit", "MEP")]
-    public RevitWire(List<double> constructionPoints, string family, string type, Level level, string wiringType = "Arc", Base parameters = null)
+    public RevitWire(List<double> constructionPoints, string family, string type, Level level, string wiringType = "Arc", List<Parameter> parameters = null)
     {
       this.constructionPoints = constructionPoints;
       this.family = family;
       this.type = type;
       this.level = level;
       this.wiringType = wiringType;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 }

@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -28,12 +29,12 @@ namespace Objects.BuiltElements.Revit
     /// <param name="baseGeometries">A list of base classes to represent the direct shape (only mesh and brep are allowed, anything else will be ignored.)</param>
     /// <param name="parameters">Optional Parameters for this instance.</param>
     [SchemaInfo("DirectShape by base geometries", "Creates a Revit DirectShape using a list of base geometry objects.", "Revit", "Families")]
-    public DirectShape(string name, RevitCategory category, List<Base> baseGeometries, Base parameters = null)
+    public DirectShape(string name, RevitCategory category, List<Base> baseGeometries, List<Parameter> parameters = null)
     {
       this.name = name;
       this.category = category;
       this.baseGeometries = baseGeometries.FindAll(IsValidObject);
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
 
     public bool IsValidObject(Base @base) =>

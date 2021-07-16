@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -41,7 +42,7 @@ namespace Objects.BuiltElements.Revit
     public RevitPipe() { }
 
     [SchemaInfo("RevitPipe", "Creates a Revit pipe", "Revit", "MEP")]
-    public RevitPipe(string family, string type, Line baseLine, double diameter, Level level,  string systemName = "", string systemType = "", Base parameters = null)
+    public RevitPipe(string family, string type, Line baseLine, double diameter, Level level,  string systemName = "", string systemType = "", List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -50,7 +51,7 @@ namespace Objects.BuiltElements.Revit
       this.systemName = systemName;
       this.systemType = systemType;
       this.level = level;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 }

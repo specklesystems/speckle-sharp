@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -45,13 +46,13 @@ namespace Objects.BuiltElements.Revit
     public RevitFloor(string family, string type, [SchemaMainParam] ICurve outline,
        Level level, bool structural = false, List<ICurve> voids = null,
       [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null,
-      Base parameters = null)
+      List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
       this.level = level;
       this.structural = structural;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
       this.outline = outline;
       this.voids = voids;
       this.elements = elements;

@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Kits;
+﻿using Objects.Utils;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -53,12 +54,12 @@ namespace Objects.BuiltElements.Revit
       [SchemaParamInfo("Level name. NOTE: updating level name is not supported")] string name,
       [SchemaParamInfo("Level elevation. NOTE: updating level elevation is not supported, a new one will be created unless another level at the new elevation already exists.")] double elevation,
       [SchemaParamInfo("If true, it creates an associated view in Revit. NOTE: only used when creating a level for the first time")] bool createView,
-      Base parameters = null)
+      List<Parameter> parameters = null)
     {
       this.name = name;
       this.elevation = elevation;
       this.createView = createView;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
       this.referenceOnly = false;
     }
 

@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -29,7 +30,7 @@ namespace Objects.BuiltElements.Revit
     [SchemaInfo("FamilyInstance", "Creates a Revit family instance", "Revit", "Families")]
     public FamilyInstance(Point basePoint, string family, string type, Level level,
       double rotation = 0, bool facingFlipped = false, bool handFlipped = false,
-      Base parameters = null)
+      List<Parameter> parameters = null)
     {
       this.basePoint = basePoint;
       this.family = family;
@@ -38,7 +39,7 @@ namespace Objects.BuiltElements.Revit
       this.rotation = rotation;
       this.facingFlipped = facingFlipped;
       this.handFlipped = handFlipped;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 }

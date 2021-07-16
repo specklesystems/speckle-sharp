@@ -138,7 +138,7 @@ namespace Objects.Converter.Revit
 
     #region ToSpeckle
     /// <summary>
-    /// Adds Instance and Type parameters, ElementId, ApplicationId and Units.
+    /// Adds Instance and Type parameters, ElementId, ApplicationInternalName and Units.
     /// </summary>
     /// <param name="speckleElement"></param>
     /// <param name="revitElement"></param>
@@ -214,7 +214,7 @@ namespace Objects.Converter.Revit
       var speckleParameters = revitParameters.Select(x => ParameterToSpeckle(x, isTypeParameter))
         .Where(x => x != null);
 
-      return speckleParameters.GroupBy(x => x.applicationId).Select(x => x.First()).ToDictionary(x => x.applicationId, x => x);
+      return speckleParameters.GroupBy(x => x.applicationInternalName).Select(x => x.First()).ToDictionary(x => x.applicationInternalName, x => x);
     }
 
     private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip)
@@ -234,7 +234,7 @@ namespace Objects.Converter.Revit
       var sp = new Parameter
       {
         name = rp.Definition.Name,
-        applicationId = GetParamInternalName(rp),
+        applicationInternalName = GetParamInternalName(rp),
         isShared = rp.IsShared,
         isReadOnly = rp.IsReadOnly,
         isTypeParameter = isTypeParameter,
@@ -317,11 +317,11 @@ namespace Objects.Converter.Revit
         .Select(x => x.Value)
         .Where(x => x is Parameter p)
         .Cast<Parameter>()
-        .Where(x => !x.isReadOnly && (revitParameterById.ContainsKey(x.applicationId) || revitParameterByName.ContainsKey(x.name)));
+        .Where(x => !x.isReadOnly && (revitParameterById.ContainsKey(x.applicationInternalName) || revitParameterByName.ContainsKey(x.name)));
 
       foreach (var sp in filteredSpeckleParameters)
       {
-        var rp = revitParameterById.ContainsKey(sp.applicationId) ? revitParameterById[sp.applicationId] : revitParameterByName[sp.name];
+        var rp = revitParameterById.ContainsKey(sp.applicationInternalName) ? revitParameterById[sp.applicationInternalName] : revitParameterByName[sp.name];
         try
         {
           switch (rp.StorageType)

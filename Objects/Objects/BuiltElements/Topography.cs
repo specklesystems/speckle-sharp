@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -34,10 +35,10 @@ namespace Objects.BuiltElements.Revit
     public RevitTopography() { }
 
     [SchemaInfo("RevitTopography", "Creates a Revit topography", "Revit", "Architecture")]
-    public RevitTopography([SchemaMainParam] Mesh displayMesh, Base parameters = null)
+    public RevitTopography([SchemaMainParam] Mesh displayMesh, List<Parameter> parameters = null)
     {
       this.displayMesh = displayMesh;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 }

@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -70,7 +71,7 @@ namespace Objects.BuiltElements.Revit
     /// <param name="parameters"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="width"/>, <paramref name="height"/>, and <paramref name="diameter"/> params</remarks>
     [SchemaInfo("RevitDuct", "Creates a Revit duct", "Revit", "MEP")]
-    public RevitDuct(string family, string type, [SchemaMainParam] Line baseLine, string systemName, string systemType, Level level, double width, double height, double diameter, double velocity = 0, Base parameters = null)
+    public RevitDuct(string family, string type, [SchemaMainParam] Line baseLine, string systemName, string systemType, Level level, double width, double height, double diameter, double velocity = 0, List<Parameter> parameters = null)
     {
       this.baseLine = baseLine;
       this.family = family;
@@ -81,7 +82,7 @@ namespace Objects.BuiltElements.Revit
       this.velocity = velocity;
       this.systemName = systemName;
       this.systemType = systemType;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
       this.level = level;
     }
   }

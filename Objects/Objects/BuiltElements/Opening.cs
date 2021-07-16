@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -60,12 +61,12 @@ namespace Objects.BuiltElements.Revit
     /// <param name="topLevel"></param>
     /// <param name="parameters"></param>
     [SchemaInfo("RevitShaft", "Creates a Revit shaft from a bottom and top level", "Revit", "Architecture")]
-    public RevitShaft([SchemaMainParam] ICurve outline, Level bottomLevel, Level topLevel, Base parameters = null)
+    public RevitShaft([SchemaMainParam] ICurve outline, Level bottomLevel, Level topLevel, List<Parameter> parameters = null)
     {
       this.outline = outline;
       this.bottomLevel = bottomLevel;
       this.topLevel = topLevel;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
 
     /*
@@ -78,12 +79,12 @@ namespace Objects.BuiltElements.Revit
     /// <param name="parameters"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
     [SchemaInfo("RevitShaft", "Creates a Revit shaft from a bottom level and height")]
-    public RevitShaft(ICurve outline, Level bottomLevel, double height, Base parameters = null)
+    public RevitShaft(ICurve outline, Level bottomLevel, double height, List<Parameter> parameters = null)
     {
       this.outline = outline;
       this.bottomLevel = bottomLevel;
       this.height = height;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
     */
   }

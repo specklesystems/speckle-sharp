@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -63,7 +64,7 @@ namespace Objects.BuiltElements.Revit
       [SchemaParamInfo("Only the lower point of this line will be used as base point.")][SchemaMainParam] ICurve baseLine,
       Level level, Level topLevel,
       double baseOffset = 0, double topOffset = 0, bool structural = false,
-      double rotation = 0, Base parameters = null)
+      double rotation = 0, List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
@@ -73,19 +74,19 @@ namespace Objects.BuiltElements.Revit
       this.topOffset = topOffset;
       this.structural = structural;
       this.rotation = rotation;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
       this.level = level;
     }
 
     [SchemaInfo("RevitColumn Slanted", "Creates a slanted Revit Column by curve.", "Revit", "Structure")]
-    public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, bool structural = false, Base parameters = null)
+    public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, bool structural = false, List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
       this.baseLine = baseLine;
       this.level = level;
       this.structural = structural;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 }

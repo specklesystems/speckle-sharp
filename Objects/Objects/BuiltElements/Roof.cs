@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -70,11 +71,11 @@ namespace Objects.BuiltElements.Revit.RevitRoof
       [SchemaParamInfo("Profile along which to extrude the roof")][SchemaMainParam] Line referenceLine,
       Level level,
       List<Base> elements = null,
-      Base parameters = null)
+      List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
       this.level = level;
       this.start = start;
       this.end = end;
@@ -93,14 +94,14 @@ namespace Objects.BuiltElements.Revit.RevitRoof
     [SchemaInfo("RevitFootprintRoof", "Creates a Revit roof by outline", "Revit", "Architecture")]
     public RevitFootprintRoof([SchemaMainParam] ICurve outline, string family, string type, Level level, RevitLevel cutOffLevel = null, double slope = 0, List<ICurve> voids = null,
       List<Base> elements = null,
-      Base parameters = null)
+      List<Parameter> parameters = null)
     {
       this.outline = outline;
       this.voids = voids;
       this.family = family;
       this.type = type;
       this.slope = slope;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
       this.level = level;
       this.cutOffLevel = cutOffLevel;
       this.elements = elements;

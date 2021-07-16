@@ -4,6 +4,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Objects.Utils;
 
 namespace Objects.BuiltElements.Revit
 {
@@ -22,12 +23,12 @@ namespace Objects.BuiltElements.Revit
     public FreeformElement() { }
 
     [SchemaInfo("Freeform element", "Creates a Revit Freeform element using a Brep or a Mesh.", "Revit", "Families")]
-    public FreeformElement([SchemaMainParam] Base baseGeometry, Base parameters = null)
+    public FreeformElement([SchemaMainParam] Base baseGeometry, List<Parameter> parameters = null)
     {
       if (!IsValidObject(baseGeometry))
         throw new Exception("Freeform elements can only be created from BREPs or Meshes");
       this.baseGeometry = baseGeometry;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
     
     public bool IsValid() => IsValidObject(baseGeometry);

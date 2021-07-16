@@ -155,8 +155,7 @@ namespace Objects.Converter.Revit
       var speckleAc = new DirectShape(
         revitAc.Name,
         category,
-        geometries.ToList(),
-        new Base()
+        geometries.ToList()
       );
       GetAllRevitParamsAndIds(speckleAc, revitAc);
       speckleAc["type"] = revitAc.Name;
