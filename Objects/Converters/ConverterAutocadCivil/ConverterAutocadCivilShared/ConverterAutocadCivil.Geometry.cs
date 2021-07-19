@@ -67,6 +67,11 @@ namespace Objects.Converter.AutocadCivil
       var u = units ?? ModelUnits;
       return new Point(point.X, point.Y, point.Z, u);
     }
+    public Point PointToSpeckle(Point2d point, string units = null)
+    {
+      var u = units ?? ModelUnits;
+      return new Point(point.X, point.Y, 0, u);
+    }
     public Point3d PointToNative(Point point)
     {
       var _point = new Point3d(ScaleToNative(point.x, point.units),
