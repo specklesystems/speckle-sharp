@@ -18,7 +18,6 @@
   Closing="{s:Action OnClosing}"
   FontFamily="{md:MaterialDesignFont}"
   Icon="Resources/s2block.ico"
-  Topmost="{Binding IsPinned, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
   TextElement.FontSize="13"
   TextElement.FontWeight="Normal"
   TextElement.Foreground="{DynamicResource MaterialDesignBody}"
@@ -53,7 +52,6 @@
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
           <ToggleButton Grid.Column="0" x:Name="MenuToggleButton"
@@ -77,50 +75,7 @@
             Style="{StaticResource MaterialDesignHeadline3TextBlock}"
             Text="{Binding ViewName, Converter={StaticResource StringToUpperConverter}}" />
 
-          <ToggleButton Grid.Column="3"
-            Width="25"
-            Height="25"
-            Margin="0 0 4 0 "
-            VerticalAlignment="Center"
-            Background="Transparent"
-            Foreground="Gray"
-            IsChecked="{Binding IsPinned, Mode=TwoWay}">
-            <ToggleButton.Style>
-              <Style TargetType="ToggleButton" BasedOn="{StaticResource
-                MaterialDesignActionToggleButton}">
-                <Style.Triggers>
-                  <Trigger Property="IsChecked"
-                    Value="True">
-                    <Setter Property="ToolTip"
-                      Value="Unpin this window from top" />
-                  </Trigger>
-                  <Trigger Property="IsChecked"
-                    Value="False">
-                    <Setter Property="ToolTip"
-                      Value="Pin this window to top" />
-                  </Trigger>
-                </Style.Triggers>
-              </Style>
-            </ToggleButton.Style>
-
-            <ToggleButton.Content>
-              <md:PackIcon Kind="Pin"
-                Width="16"
-                Height="16"
-                RenderTransformOrigin=".5,.5">
-                <md:PackIcon.RenderTransform>
-                  <RotateTransform Angle="45" />
-                </md:PackIcon.RenderTransform>
-              </md:PackIcon>
-            </ToggleButton.Content>
-            <md:ToggleButtonAssist.OnContent>
-              <md:PackIcon Kind="Pin"
-                Width="16"
-                Height="16"/>
-            </md:ToggleButtonAssist.OnContent>
-          </ToggleButton>
-
-          <Button Grid.Column="4" Width="30"
+          <Button Grid.Column="3" Width="30"
             Height="30"
             Margin="0 0 12 0 "
             md:ShadowAssist.ShadowDepth="Depth0"

@@ -1,4 +1,5 @@
-﻿using Rhino;
+﻿using System;
+using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
 using Speckle.DesktopUI;
@@ -101,7 +102,7 @@ namespace SpeckleRhino
         new App(Bootstrapper);
 
       Bootstrapper.Start(Application.Current);
+      Bootstrapper.SetParent(RhinoApp.MainWindowHandle());
     }
   }
-
 }

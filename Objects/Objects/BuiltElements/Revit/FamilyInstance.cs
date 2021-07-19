@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace Objects.BuiltElements.Revit
     public double rotation { get; set; }
     public bool facingFlipped { get; set; }
     public bool handFlipped { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     [DetachProperty]
@@ -38,7 +39,7 @@ namespace Objects.BuiltElements.Revit
       this.rotation = rotation;
       this.facingFlipped = facingFlipped;
       this.handFlipped = handFlipped;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 }

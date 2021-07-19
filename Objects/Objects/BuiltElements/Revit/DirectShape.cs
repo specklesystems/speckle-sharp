@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ namespace Objects.BuiltElements.Revit
   {
     public string name { get; set; }
     public RevitCategory category { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     [DetachProperty]
@@ -33,7 +34,7 @@ namespace Objects.BuiltElements.Revit
       this.name = name;
       this.category = category;
       this.baseGeometries = baseGeometries.FindAll(IsValidObject);
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
 
     public bool IsValidObject(Base @base) =>
