@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -34,7 +35,7 @@ namespace Objects.BuiltElements.Revit
     public string type { get; set; }
     public string systemName { get; set; }
     public string systemType { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
     public Level level { get; set; }
 
@@ -50,7 +51,7 @@ namespace Objects.BuiltElements.Revit
       this.systemName = systemName;
       this.systemType = systemType;
       this.level = level;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 }
