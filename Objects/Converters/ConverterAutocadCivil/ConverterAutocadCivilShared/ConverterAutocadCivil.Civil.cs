@@ -65,6 +65,8 @@ namespace Objects.Converter.AutocadCivil
       _alignment.stationEquations = equations;
       _alignment.stationEquationDirections = directions;
 
+      _alignment.units = ModelUnits;
+
       return _alignment;
     }
 
