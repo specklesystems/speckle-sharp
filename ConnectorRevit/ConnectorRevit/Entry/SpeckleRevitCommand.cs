@@ -17,11 +17,11 @@ namespace Speckle.ConnectorRevit.Entry
 
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
-      OpenOrFocusSpeckle();
+      OpenOrFocusSpeckle(commandData.Application);
       return Result.Succeeded;
     }
 
-    public static void OpenOrFocusSpeckle()
+    public static void OpenOrFocusSpeckle(UIApplication app)
     {
       try
       {
@@ -39,6 +39,7 @@ namespace Speckle.ConnectorRevit.Entry
           new DesktopUI.App(Bootstrapper);
 
         Bootstrapper.Start(Application.Current);
+        Bootstrapper.SetParent(app.MainWindowHandle);
       }
       catch (Exception e)
       {
