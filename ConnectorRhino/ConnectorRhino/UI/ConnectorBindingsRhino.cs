@@ -513,7 +513,14 @@ namespace SpeckleRhino
         conversionProgressDict["Conversion"]++;
         UpdateProgress(conversionProgressDict, state.Progress);
 
+        // set application ids, also set for speckle schema base object if it exists
         converted.applicationId = applicationId;
+        if (converted["@SpeckleSchema"] != null)
+        {
+          var newSchemaBase = converted["@SpeckleSchema"] as Base;
+          newSchemaBase.applicationId = applicationId;
+          converted["@SpeckleSchema"] = newSchemaBase;
+        }
 
         objCount++;
       }
