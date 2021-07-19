@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
-
-using Speckle.DesktopUI;
-using Speckle.ConnectorAutocadCivil.UI;
-
-using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.Runtime;
+using Speckle.ConnectorAutocadCivil.UI;
+using Speckle.DesktopUI;
+using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
 
 namespace Speckle.ConnectorAutocadCivil.Entry
 {
@@ -32,12 +31,13 @@ namespace Speckle.ConnectorAutocadCivil.Entry
           Bindings = Bindings
         };
 
-        if ( System.Windows.Application.Current != null )
-          new StyletAppLoader() {Bootstrapper = Bootstrapper};
+        if (System.Windows.Application.Current != null)
+          new StyletAppLoader() { Bootstrapper = Bootstrapper };
         else
           new DesktopUI.App(Bootstrapper);
 
         Bootstrapper.Start(System.Windows.Application.Current);
+        Bootstrapper.SetParent(Application.MainWindow.Handle);
       }
       catch (System.Exception e)
       {
