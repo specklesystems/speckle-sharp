@@ -312,12 +312,16 @@ namespace Objects.Converter.Revit
       var revitParameterById = revitParameters.ToDictionary(x => GetParamInternalName(x), x => x);
       var revitParameterByName = revitParameters.ToDictionary(x => x.Definition.Name, x => x);
 
-      //only loop params we can set and that actually exist on the revit element
+      // speckleParameters is a Base
+      // its member names will have for Key either a BuiltInName, GUID or Name of the parameter (depending onwhere it comes from)
+      // and as value the full Parameter object, that might come from Revit or SchemaBuilder
+      // We only loop params we can set and that actually exist on the revit element
       var filteredSpeckleParameters = speckleParameters.GetMembers()
+        .Where(x => revitParameterById.ContainsKey(x.Key) || revitParameterByName.ContainsKey(x.Key))
         .Select(x => x.Value)
         .Where(x => x is Parameter p)
         .Cast<Parameter>()
-        .Where(x => !x.isReadOnly && (revitParameterById.ContainsKey(x.applicationInternalName) || revitParameterByName.ContainsKey(x.name)));
+        .Where(x => !x.isReadOnly);
 
       foreach (var sp in filteredSpeckleParameters)
       {

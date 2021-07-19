@@ -22,7 +22,7 @@ namespace Objects.Utils
       foreach(Parameter p in parameters)
       {
         //if an applicationId is defined (BuiltInName) use that as key, otherwise use the display name
-          var key = string.IsNullOrEmpty(p.applicationId) ? p.name : p.applicationId;
+          var key = string.IsNullOrEmpty(p.applicationInternalName) ? p.name : p.applicationInternalName;
           if(string.IsNullOrEmpty(key) || @base[key]!=null)
               continue;
 

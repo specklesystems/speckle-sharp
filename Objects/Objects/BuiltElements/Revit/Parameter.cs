@@ -30,12 +30,11 @@ namespace Objects.BuiltElements.Revit
     public Parameter() { }
 
     [SchemaInfo("Parameter", "A Revit instance parameter to set on an element", "Revit", "Families")]
-    public Parameter(string name, object value,
-      [SchemaParamInfo("The Revit BuiltInParameter name or GUID (for shared parameters), if defined it will prevail over the name")] string internalName = "")
+    public Parameter([SchemaParamInfo("The Revit display name, BuiltInParameter name or GUID (for shared parameters)")] string name, object value)
     {
       this.name = name;
       this.value = value;
-      this.applicationId = internalName;
+      this.applicationInternalName = name;
     }
   }
 }
