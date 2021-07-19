@@ -331,9 +331,18 @@ namespace Objects.Converter.Revit
           switch (rp.StorageType)
           {
             case StorageType.Double:
+              // This is meant for parameters that come from Revit
+              // as they might use a lot more unit types that Speckle doesn't currently support
               if (!string.IsNullOrEmpty(sp.applicationUnit))
               {
                 var val = RevitVersionHelper.ConvertToInternalUnits(sp);
+                rp.Set(val);
+              }
+              // Parameter comes form schema builder,
+              // doesn't have an applicationUnit but just units
+              else if (!string.IsNullOrEmpty(sp.units))
+              {
+                var val = ScaleToNative(Convert.ToDouble(sp.value), sp.units);
                 rp.Set(val);
               }
               else
