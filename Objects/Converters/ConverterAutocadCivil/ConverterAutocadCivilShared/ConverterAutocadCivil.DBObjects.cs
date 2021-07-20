@@ -552,7 +552,10 @@ namespace Objects.Converter.AutocadCivil
           return LineToSpeckle(line, u);
 
         case AcadDB.Polyline polyline:
-          return PolylineToSpeckle(polyline);
+          if (polyline.IsOnlyLines)
+            return PolylineToSpeckle(polyline);
+          else 
+            return PolycurveToSpeckle(polyline);
 
         case AcadDB.Polyline2d polyline2d:
           return PolycurveToSpeckle(polyline2d);
