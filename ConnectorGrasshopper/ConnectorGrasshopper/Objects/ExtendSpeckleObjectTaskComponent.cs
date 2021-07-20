@@ -39,7 +39,6 @@ namespace ConnectorGrasshopper.Objects
       pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item));
     }
 
-
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       if (InPreSolve)
@@ -68,7 +67,8 @@ namespace ConnectorGrasshopper.Objects
         {
           var ighParam = Params.Input[i];
           var param = ighParam as GenericAccessParam;
-          var index = Params.IndexOfInputParam(param.Name);
+          //var index = Params.IndexOfInputParam(param.Name); // WTF, we have the index already in `i`.
+          //var index = i;
           var detachable = param.Detachable;
           var key = detachable ? "@" + param.NickName : param.NickName;
 
@@ -78,11 +78,12 @@ namespace ConnectorGrasshopper.Objects
           if (willOverwrite)
             AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
               $"Key {key} already exists in object at {path}[{targetIndex}], its value will be overwritten");
+          
           switch (param.Access)
           {
             case GH_ParamAccess.item:
               object value = null;
-              DA.GetData(index, ref value);
+              DA.GetData(i, ref value);
               if (!param.Optional && value == null)
               {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
@@ -94,7 +95,7 @@ namespace ConnectorGrasshopper.Objects
               break;
             case GH_ParamAccess.list:
               var values = new List<object>();
-              DA.GetDataList(index, values);
+              DA.GetDataList(i, values);
               if (!param.Optional)
               {
                 if (values.Count == 0)
