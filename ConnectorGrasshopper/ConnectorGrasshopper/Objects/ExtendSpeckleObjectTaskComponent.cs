@@ -67,8 +67,6 @@ namespace ConnectorGrasshopper.Objects
         {
           var ighParam = Params.Input[i];
           var param = ighParam as GenericAccessParam;
-          //var index = Params.IndexOfInputParam(param.Name); // WTF, we have the index already in `i`.
-          //var index = i;
           var detachable = param.Detachable;
           var key = detachable ? "@" + param.NickName : param.NickName;
 
