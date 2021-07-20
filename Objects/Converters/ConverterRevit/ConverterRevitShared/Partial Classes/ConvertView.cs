@@ -44,26 +44,23 @@ namespace Objects.Converter.Revit
         var forward = rv3d.GetSavedOrientation().ForwardDirection; // this is unit vector
         var up = rv3d.GetSavedOrientation().UpDirection; // this is unit vector
 
-        /* not accurate, will result in distorted camera axes if sent to rhino NOTE!! TRY USING THIS FOR ISO ONLY
         // get target
         var target = PointToSpeckle(CalculateTarget(rv3d, forward));
-        */
 
         speckleView = new View3D
         {
           origin = PointToSpeckle(rv3d.Origin),
           forwardDirection = VectorToSpeckle(forward, Speckle.Core.Kits.Units.None),
           upDirection = VectorToSpeckle(up, Speckle.Core.Kits.Units.None),
-          //target = target,
+          target = target,
           isOrthogonal = !rv3d.IsPerspective,
-          boundingBox = BoxToSpeckle(rv3d.CropBox)
+          boundingBox = BoxToSpeckle(rv3d.CropBox),
+          name = revitView.Name
         };
 
         // set props
         AttachViewParams(speckleView, rv3d);
       }
-
-      speckleView.name = revitView.Name;
 
       GetAllRevitParamsAndIds(speckleView, revitView);
       return speckleView;
