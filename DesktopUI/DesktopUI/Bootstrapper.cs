@@ -101,9 +101,13 @@ namespace Speckle.DesktopUI
       Launch();
       OnLaunch();
     }
+
+    public void SetParent(IntPtr parent)
+    {
+      var helper = new System.Windows.Interop.WindowInteropHelper(RootWindow);
+      helper.Owner = parent;
+    }
   }
-
-
 
   /// <summary>
   /// Taken from stylet and modified to not use the application.

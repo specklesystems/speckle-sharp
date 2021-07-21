@@ -39,7 +39,6 @@ namespace ConnectorGrasshopper.Objects
       pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item));
     }
 
-
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       if (InPreSolve)
@@ -68,7 +67,6 @@ namespace ConnectorGrasshopper.Objects
         {
           var ighParam = Params.Input[i];
           var param = ighParam as GenericAccessParam;
-          var index = Params.IndexOfInputParam(param.Name);
           var detachable = param.Detachable;
           var key = detachable ? "@" + param.NickName : param.NickName;
 
@@ -78,11 +76,12 @@ namespace ConnectorGrasshopper.Objects
           if (willOverwrite)
             AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
               $"Key {key} already exists in object at {path}[{targetIndex}], its value will be overwritten");
+          
           switch (param.Access)
           {
             case GH_ParamAccess.item:
               object value = null;
-              DA.GetData(index, ref value);
+              DA.GetData(i, ref value);
               if (!param.Optional && value == null)
               {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
@@ -94,7 +93,7 @@ namespace ConnectorGrasshopper.Objects
               break;
             case GH_ParamAccess.list:
               var values = new List<object>();
-              DA.GetDataList(index, values);
+              DA.GetDataList(i, values);
               if (!param.Optional)
               {
                 if (values.Count == 0)
@@ -252,6 +251,30 @@ namespace ConnectorGrasshopper.Objects
       }
 
       return @base;
+    }
+
+    private DebounceDispatcher nicknameChangeDebounce = new DebounceDispatcher();
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document); // This would set the converter already.
+      Params.ParameterChanged += (sender, args) =>
+      {
+        if (args.ParameterSide != GH_ParameterSide.Input || args.ParameterIndex == 0) return;
+        switch (args.OriginalArguments.Type)
+        {
+          case GH_ObjectEventType.NickName:
+            // This means the user is typing characters, debounce until it stops for 400ms before expiring the solution.
+            // Prevents UI from locking too soon while writing new names for inputs.
+            args.Parameter.Name = args.Parameter.NickName;
+            nicknameChangeDebounce.Debounce(400, (e) => ExpireSolution(true));
+            break;
+          case GH_ObjectEventType.NickNameAccepted:
+            args.Parameter.Name = args.Parameter.NickName;
+            ExpireSolution(true);
+            break;
+        }
+      };
     }
   }
 }

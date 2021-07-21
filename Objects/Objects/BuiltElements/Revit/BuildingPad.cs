@@ -11,7 +11,7 @@ namespace Objects.BuiltElements.Revit
     public List<ICurve> voids { get; set; } = new List<ICurve>();
     public string type { get; set; }
     public Level level { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     [DetachProperty]

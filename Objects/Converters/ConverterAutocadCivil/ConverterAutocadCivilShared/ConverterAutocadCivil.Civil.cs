@@ -9,31 +9,30 @@ using Autodesk.Civil.ApplicationServices;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 using Acad = Autodesk.AutoCAD.Geometry;
 
+using Alignment = Objects.BuiltElements.Alignment;
 using Interval = Objects.Primitive.Interval;
 using Polycurve = Objects.Geometry.Polycurve;
 using Curve = Objects.Geometry.Curve;
 using Point = Objects.Geometry.Point;
 using Brep = Objects.Geometry.Brep;
 using Mesh = Objects.Geometry.Mesh;
+using Polyline = Objects.Geometry.Polyline;
+using Station = Objects.BuiltElements.Station;
 
 namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
-    /*
     // stations
-    public Point StationToSpeckle(CivilDB.Station station)
+    public Station StationToSpeckle(CivilDB.Station station)
     {
-      var point = PointToSpeckle(station.Location);
-      if (station.DisplayName != null)
-        point["name"] = station.DisplayName;
-      if (station.Description != null)
-        point["description"] = station.Description;
-      point["type"] = station.StationType.ToString();
-      point["number"] = station.RawStation;
-      return point;
+      var _station = new Station();
+      _station.location = PointToSpeckle(station.Location);
+      _station.type = station.StationType.ToString();
+      _station.number = station.RawStation;
+
+      return _station;
     }
-    */
 
     public CivilDB.FeatureLine FeatureLineToNative(Polycurve polycurve)
     {
@@ -41,20 +40,34 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // alignments
-    public Base AlignmentToSpeckle(CivilDB.Alignment alignment)
+    public Alignment AlignmentToSpeckle(CivilDB.Alignment alignment)
     {
-      var curve = CurveToSpeckle(alignment.BaseCurve, ModelUnits) as Base;
+      var _alignment = new Alignment();
 
+      _alignment.baseCurve = CurveToSpeckle(alignment.BaseCurve, ModelUnits);
       if (alignment.DisplayName != null)
-        curve["name"] = alignment.DisplayName;
-      if (alignment.Description != null)
-        curve["description"] = alignment.Description;
+        _alignment.name = alignment.DisplayName;
       if (alignment.StartingStation != null)
-        curve["startStation"] = alignment.StartingStation;
+        _alignment.startStation  = alignment.StartingStation;
       if (alignment.EndingStation != null)
-        curve["endStation"] = alignment.EndingStation;
+        _alignment.endStation = alignment.EndingStation;
 
-      return curve;
+      // handle station equations
+      var equations = new List<double[]>();
+      var directions = new List<bool>();
+      foreach (var stationEquation in alignment.StationEquations)
+      {
+        var equation = new double[] { stationEquation.RawStationBack, stationEquation.StationBack, stationEquation.StationAhead };
+        equations.Add(equation);
+        bool equationIncreasing = (stationEquation.EquationType.Equals(CivilDB.StationEquationType.Increasing)) ? true : false;
+        directions.Add(equationIncreasing);
+      }
+      _alignment.stationEquations = equations;
+      _alignment.stationEquationDirections = directions;
+
+      _alignment.units = ModelUnits;
+
+      return _alignment;
     }
 
     // profiles

@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -39,7 +40,7 @@ namespace Objects.BuiltElements.Revit
     public bool isSlanted { get; set; }
     public string family { get; set; }
     public string type { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public RevitColumn() { }
@@ -73,7 +74,7 @@ namespace Objects.BuiltElements.Revit
       this.topOffset = topOffset;
       this.structural = structural;
       this.rotation = rotation;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
       this.level = level;
     }
 
@@ -85,7 +86,7 @@ namespace Objects.BuiltElements.Revit
       this.baseLine = baseLine;
       this.level = level;
       this.structural = structural;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 }

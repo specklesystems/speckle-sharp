@@ -10,6 +10,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
@@ -325,6 +326,9 @@ namespace Objects.Converter.RhinoGh
         case Surface o:
           return SurfaceToNative(o);
 
+        case Alignment o:
+          return CurveToNative(o.baseCurve);
+
         case ModelCurve o:
           return CurveToNative(o.baseCurve);
 
@@ -427,6 +431,7 @@ namespace Objects.Converter.RhinoGh
         case View3D _:
         case BlockDefinition _:
         case BlockInstance _:
+        case Alignment _:
           return true;
         
         default:

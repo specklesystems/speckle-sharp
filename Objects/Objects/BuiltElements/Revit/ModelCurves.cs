@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Kits;
+﻿using Objects.Utils;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 
@@ -8,7 +9,7 @@ namespace Objects.BuiltElements.Revit.Curve
   {
     public ICurve baseCurve { get; set; }
     public string lineStyle { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public ModelCurve() { }
@@ -18,7 +19,7 @@ namespace Objects.BuiltElements.Revit.Curve
     {
       this.baseCurve = baseCurve;
       this.lineStyle = lineStyle;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 
@@ -26,7 +27,7 @@ namespace Objects.BuiltElements.Revit.Curve
   {
     public ICurve baseCurve { get; set; }
     public string lineStyle { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public DetailCurve() { }
@@ -36,14 +37,14 @@ namespace Objects.BuiltElements.Revit.Curve
     {
       this.baseCurve = baseCurve;
       this.lineStyle = lineStyle;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 
   public class RoomBoundaryLine : Base
   {
     public ICurve baseCurve { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public RoomBoundaryLine() { }
@@ -52,7 +53,7 @@ namespace Objects.BuiltElements.Revit.Curve
     public RoomBoundaryLine([SchemaMainParam] ICurve baseCurve, List<Parameter> parameters = null)
     {
       this.baseCurve = baseCurve;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 }

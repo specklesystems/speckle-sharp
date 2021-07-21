@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -29,7 +30,7 @@ namespace Objects.BuiltElements.Revit
   public class RevitTopography : Topography
   {
     public string elementId { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
 
     public RevitTopography() { }
 
@@ -37,7 +38,7 @@ namespace Objects.BuiltElements.Revit
     public RevitTopography([SchemaMainParam] Mesh displayMesh, List<Parameter> parameters = null)
     {
       this.displayMesh = displayMesh;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 }

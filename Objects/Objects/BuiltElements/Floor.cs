@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace Objects.BuiltElements.Revit
     public string type { get; set; }
     public Level level { get; set; }
     public bool structural { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
     public RevitFloor() { }
 
@@ -51,7 +52,7 @@ namespace Objects.BuiltElements.Revit
       this.type = type;
       this.level = level;
       this.structural = structural;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
       this.outline = outline;
       this.voids = voids;
       this.elements = elements;
