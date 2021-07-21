@@ -33,6 +33,7 @@ namespace ConnectorGrasshopper.Ops
     public string ReceivedCommitId { get; set; }
     public string InputType { get; set; }
     public bool AutoReceive { get; set; }
+    public bool ConvertToNative { get; set; } = true;
     public override GH_Exposure Exposure => GH_Exposure.secondary | GH_Exposure.obscure;
 
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
@@ -49,7 +50,7 @@ namespace ConnectorGrasshopper.Ops
                 await ResetApiClient(StreamWrapper);
                 if (source == null)
                   CreateCancelationToken();
-                
+
                 // Get last commit from the branch
                 var b = ApiClient.BranchGet(source.Token, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
 
@@ -126,6 +127,12 @@ namespace ConnectorGrasshopper.Ops
       Menu_AppendItem(menu, "Select the converter you want to use:");
       var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
 
+      Menu_AppendItem(menu, $"{nameof(ConvertToNative)}", (s, e) =>
+      {
+        ConvertToNative = !ConvertToNative;
+        ExpireSolution(true);
+      }, true, ConvertToNative);
+
       foreach (var kit in kits)
         Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) =>
         {
@@ -168,7 +175,7 @@ namespace ConnectorGrasshopper.Ops
       writer.SetString("KitName", Kit.Name);
       var streamUrl = StreamWrapper != null ? StreamWrapper.ToString() : "";
       writer.SetString("StreamWrapper", streamUrl);
-
+      writer.SetBoolean(nameof(ConvertToNative), ConvertToNative);
       return base.Write(writer);
     }
 
@@ -202,6 +209,8 @@ namespace ConnectorGrasshopper.Ops
         }
       else
         SetDefaultKitAndConverter();
+
+      ConvertToNative = reader.GetBoolean(nameof(ConvertToNative));
 
       return base.Read(reader);
     }
@@ -291,8 +300,6 @@ namespace ConnectorGrasshopper.Ops
 
           return ReceivedObject;
         }, source.Token);
-
-
         TaskList.Add(task);
         return;
       }
@@ -314,23 +321,39 @@ namespace ConnectorGrasshopper.Ops
         //the active document may have changed
         Converter.SetContextDocument(RhinoDoc.ActiveDoc);
 
+        dynamic data = null;
         // case 1: it's an item that has a direct conversion method, eg a point
-        if (Converter.CanConvertToNative(ReceivedObject))
+        var canConvert = Converter.CanConvertToNative(ReceivedObject);
+        if (ConvertToNative)
         {
-          DA.SetData(0, Extras.Utilities.TryConvertItemToNative(ReceivedObject, Converter));
+          if (canConvert)
+          {
+            data = Extras.Utilities.TryConvertItemToNative(ReceivedObject, Converter);
+            DA.SetData(0, data);
+            return;
+          }
+          else
+          {
+            var members = ReceivedObject.GetDynamicMembers();
+
+            if (members.Count() == 1)
+            {
+              var treeBuilder = new TreeBuilder(Converter);
+              var tree = treeBuilder.Build(ReceivedObject[members.ElementAt(0)]);
+
+              DA.SetDataTree(0, tree);
+              return;
+            }
+          }
+        }
+        else
+        {
+          data = ReceivedObject;
+          DA.SetData(0, data);
           return;
         }
 
-        var members = ReceivedObject.GetDynamicMembers();
 
-        if (members.Count() == 1)
-        {
-          var treeBuilder = new TreeBuilder(Converter);
-          var tree = treeBuilder.Build(ReceivedObject[members.ElementAt(0)]);
-
-          DA.SetDataTree(0, tree);
-          return;
-        }
       }
     }
 
