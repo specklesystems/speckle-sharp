@@ -324,26 +324,24 @@ namespace ConnectorGrasshopper.Ops
         dynamic data = null;
         // case 1: it's an item that has a direct conversion method, eg a point
         var canConvert = Converter.CanConvertToNative(ReceivedObject);
-        if (ConvertToNative)
+
+        if (canConvert && !ConvertToNative)
         {
-          if (canConvert)
+          data = Extras.Utilities.TryConvertItemToNative(ReceivedObject, Converter);
+          DA.SetData(0, data);
+          return;
+        }
+        else if (!canConvert)
+        {
+          var members = ReceivedObject.GetDynamicMembers();
+
+          if (members.Count() == 1)
           {
-            data = Extras.Utilities.TryConvertItemToNative(ReceivedObject, Converter);
-            DA.SetData(0, data);
+            var treeBuilder = new TreeBuilder(Converter) { ConvertToNative = ConvertToNative };
+            var tree = treeBuilder.Build(ReceivedObject[members.ElementAt(0)]);
+
+            DA.SetDataTree(0, tree);
             return;
-          }
-          else
-          {
-            var members = ReceivedObject.GetDynamicMembers();
-
-            if (members.Count() == 1)
-            {
-              var treeBuilder = new TreeBuilder(Converter);
-              var tree = treeBuilder.Build(ReceivedObject[members.ElementAt(0)]);
-
-              DA.SetDataTree(0, tree);
-              return;
-            }
           }
         }
         else
