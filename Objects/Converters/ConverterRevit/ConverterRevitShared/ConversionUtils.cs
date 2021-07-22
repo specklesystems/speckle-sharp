@@ -317,15 +317,16 @@ namespace Objects.Converter.Revit
       // and as value the full Parameter object, that might come from Revit or SchemaBuilder
       // We only loop params we can set and that actually exist on the revit element
       var filteredSpeckleParameters = speckleParameters.GetMembers()
-        .Where(x => revitParameterById.ContainsKey(x.Key) || revitParameterByName.ContainsKey(x.Key))
-        .Select(x => x.Value)
-        .Where(x => x is Parameter p)
-        .Cast<Parameter>()
-        .Where(x => !x.isReadOnly);
+        .Where(x => revitParameterById.ContainsKey(x.Key) || revitParameterByName.ContainsKey(x.Key));
 
-      foreach (var sp in filteredSpeckleParameters)
+
+      foreach (var spk in filteredSpeckleParameters)
       {
-        var rp = revitParameterById.ContainsKey(sp.applicationInternalName) ? revitParameterById[sp.applicationInternalName] : revitParameterByName[sp.name];
+        var sp = spk.Value as Parameter;
+        if (sp == null || sp.isReadOnly)
+          continue;
+
+        var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
         try
         {
           switch (rp.StorageType)
