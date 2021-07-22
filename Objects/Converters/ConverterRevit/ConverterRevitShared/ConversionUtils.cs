@@ -526,14 +526,6 @@ namespace Objects.Converter.Revit
       {
         if (element is BuiltElements.Wall) // specifies the basic wall sub type as default
           match = types.Cast<WallType>().Where(o => o.Kind == WallKind.Basic).Cast<ElementType>().FirstOrDefault();
-        else if (element is BuiltElements.Revit.AdaptiveComponent)
-        {
-          var families = new FilteredElementCollector(Doc).OfClass(typeof(Family)).Cast<Family>().Where(o => AdaptiveComponentFamilyUtils.IsAdaptiveComponentFamily(o));
-          if (families != null)
-          {
-            types = families.Select(o => Doc.GetElement(o.GetTypeId()) as ElementType).ToList();
-          }
-        }
         if (match == null)
           match = types.First();
         ConversionErrors.Add(new Exception($"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}"));

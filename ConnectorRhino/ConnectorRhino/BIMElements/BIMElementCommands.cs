@@ -198,7 +198,7 @@ namespace SpeckleRhino
             var instance = doc.Objects.FindId(instanceId) as InstanceObject;
 
             // attach user string to block instance
-            ApplyAdaptiveComponent(instance, family, "type", doc);
+            ApplyAdaptiveComponent(instance, family, family, doc);
 
             // clear everything for next selection
             selectedObjects.Clear();

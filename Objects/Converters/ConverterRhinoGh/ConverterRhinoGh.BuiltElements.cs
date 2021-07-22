@@ -201,7 +201,7 @@ namespace Objects.Converter.RhinoGh
       string type = "Default";
       try { family = args[0]; type = args[1]; } catch { }
 
-      var points = instance.GetSubObjects().Select(o => PointToSpeckle(((Rhino.Geometry.Point)o.Geometry).Location), ModelUnits).ToList();
+      var points = instance.GetSubObjects().Select(o => PointToSpeckle(((Rhino.Geometry.Point)o.Geometry).Location)).ToList();
 
       var adaptiveComponent = new RV.AdaptiveComponent(type, family, points);
       adaptiveComponent.units = ModelUnits;
