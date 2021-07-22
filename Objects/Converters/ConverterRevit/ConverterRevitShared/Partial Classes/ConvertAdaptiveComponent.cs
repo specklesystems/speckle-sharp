@@ -16,8 +16,13 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(speckleAc.applicationId);
 
       string familyName = speckleAc["family"] as string != null ? speckleAc["family"] as string : "";
-
       DB.FamilySymbol familySymbol = GetElementType<DB.FamilySymbol>(speckleAc);
+      if (familySymbol.FamilyName != familyName)
+      {
+        ConversionErrors.Add(new Exception($"Could not find adaptive component {familyName}"));
+        return null;
+      }
+
       DB.FamilyInstance revitAc = null;
 
       //try update existing 

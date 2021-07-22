@@ -193,6 +193,14 @@ namespace Objects.Converter.RhinoGh
       RhinoObject obj = @object as RhinoObject;
       string schema = GetSchema(obj, out string[] args);
 
+      if (obj is InstanceObject)
+      {
+        if (schema == "AdaptiveComponent")
+            return InstanceToAdaptiveComponent(obj as InstanceObject, args);
+        else
+            throw new NotSupportedException();
+      }
+
       switch (obj.Geometry)
       {
         case RH.Curve o:
