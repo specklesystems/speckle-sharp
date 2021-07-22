@@ -1061,7 +1061,7 @@ namespace Speckle.Core.Api
     /// <param name="streamId">Id of the stream to get the object from</param> 
     /// <param name="objectId">Id of the object to get</param>
     /// <returns></returns>
-    public Task<Object> ObjectGet(string streamId, string objectId)
+    public Task<SpeckleObject> ObjectGet(string streamId, string objectId)
     {
       return ObjectGet(CancellationToken.None, streamId, objectId);
     }
@@ -1073,7 +1073,7 @@ namespace Speckle.Core.Api
     /// <param name="streamId">Id of the stream to get the object from</param>
     /// <param name="objectId">Id of the object to get</param>
     /// <returns></returns>
-    public async Task<Object> ObjectGet(CancellationToken cancellationToken, string streamId, string objectId)
+    public async Task<SpeckleObject> ObjectGet(CancellationToken cancellationToken, string streamId, string objectId)
     {
       try
       {
@@ -1111,7 +1111,7 @@ namespace Speckle.Core.Api
     /// <param name="streamId"></param>
     /// <param name="objectId"></param>
     /// <returns></returns>
-    public Task<Object> ObjectCountGet(string streamId, string objectId)
+    public Task<SpeckleObject> ObjectCountGet(string streamId, string objectId)
     {
       return ObjectCountGet(CancellationToken.None, streamId, objectId);
     }
@@ -1123,7 +1123,7 @@ namespace Speckle.Core.Api
     /// <param name="streamId"></param>
     /// <param name="objectId"></param>
     /// <returns></returns>
-    public async Task<Object> ObjectCountGet(CancellationToken cancellationToken, string streamId, string objectId)
+    public async Task<SpeckleObject> ObjectCountGet(CancellationToken cancellationToken, string streamId, string objectId)
     {
       try
       {
