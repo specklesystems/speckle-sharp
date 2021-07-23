@@ -606,7 +606,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           streamId = streamId,
           objectId = commitObjId,
           branchName = state.Branch.name,
-          message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from AutoCAD.",
+          message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
           sourceApplication = Utils.AutocadAppName
         };
 
