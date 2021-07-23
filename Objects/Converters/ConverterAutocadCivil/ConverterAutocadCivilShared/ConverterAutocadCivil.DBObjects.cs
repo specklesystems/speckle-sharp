@@ -1250,7 +1250,7 @@ namespace Objects.Converter.AutocadCivil
     public ObjectId BlockDefinitionToNativeDB(BlockDefinition definition)
     {
       // get modified definition name with commit info
-      var blockName = $"{Doc.UserData["commit"]} - {definition.name}";
+      var blockName = $"{Doc.UserData["commit"]} - {RemoveInvalidChars(definition.name)}";
 
       ObjectId blockId = ObjectId.Null;
       using (Transaction tr = Doc.TransactionManager.StartTransaction())
