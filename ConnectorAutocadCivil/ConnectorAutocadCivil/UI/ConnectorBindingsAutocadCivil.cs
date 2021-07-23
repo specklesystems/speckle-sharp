@@ -431,7 +431,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     private bool GetOrMakeLayer(string layerName, AcadDb.Transaction tr, out string cleanName)
     {
-      cleanName = Utils.RemoveInvalidLayerChars(layerName);
+      cleanName = Utils.RemoveInvalidChars(layerName);
       try
       {
         AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
