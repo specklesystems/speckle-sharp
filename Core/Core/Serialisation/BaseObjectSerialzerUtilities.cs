@@ -67,11 +67,174 @@ namespace Speckle.Core.Serialisation
       cachedTypes = new Dictionary<string, Type>();
     }
 
+    private static Dictionary<JsonProperty, bool> IsChunkableCache = new Dictionary<JsonProperty, bool>();
+
     #endregion
 
     #region Value handling
 
     internal static object HandleValue(JToken value, JsonSerializer serializer, CancellationToken CancellationToken, JsonProperty jsonProperty = null, string TypeDiscriminator = "speckle_type")
+    {
+      if (CancellationToken.IsCancellationRequested)
+      {
+        return null; // Check for cancellation
+      }
+
+      if (value is JValue jVal)
+      {
+        return jVal.Value;
+      }
+
+      if (jsonProperty != null)
+      {
+        bool isChunkable;
+        if (IsChunkableCache.ContainsKey(jsonProperty))
+        {
+          isChunkable = IsChunkableCache[jsonProperty];
+        }
+        else
+        {
+          isChunkable = jsonProperty.AttributeProvider != null ? jsonProperty.AttributeProvider.GetAttributes(typeof(Chunkable), true).Count != 0 : false;
+          IsChunkableCache[jsonProperty] = isChunkable;
+        }
+
+        if(value is JObject myObj)
+        {
+            if (myObj.Property(TypeDiscriminator) != null)
+            {
+              return value.ToObject(GetAtomicType(((JObject)value).GetValue(TypeDiscriminator).ToString()), serializer);
+            }
+            else
+            {
+              var dict = Activator.CreateInstance(jsonProperty.PropertyType) as IDictionary;
+              foreach (var prop in myObj)
+              {
+                if (CancellationToken.IsCancellationRequested)
+                {
+                  return null; // Check for cancellation
+                }
+                dict[prop.Key] = HandleValue(prop.Value, serializer, CancellationToken);
+              }
+              return dict;
+            }
+        }
+
+        if(value is JArray myArr)
+        {
+
+          var totalCount = myArr.Count;
+          if(isChunkable)
+          {
+            totalCount = 0;
+            foreach (JObject x in myArr)
+            {
+              totalCount += (x.GetValue("data") as JArray).Count;
+            }
+          }
+
+          var listInnerTypeOrArrType = jsonProperty.PropertyType.GenericTypeArguments.Length != 0 ? jsonProperty.PropertyType.GenericTypeArguments[0] : jsonProperty.PropertyType.GetElementType();
+
+          Array values = Array.CreateInstance(listInnerTypeOrArrType, totalCount);
+
+          int i = 0;
+          var innerTypeJp = new JsonProperty() { PropertyType = listInnerTypeOrArrType };
+
+          foreach (var val in myArr)
+          {
+            var temp = HandleValue(val, serializer, CancellationToken, innerTypeJp);
+            if (!isChunkable)
+            {
+              values.SetValue(temp, i++);
+            } else
+            {
+              var dc = temp as DataChunk;
+              foreach(var el in dc.data)
+              {
+                values.SetValue(el, i++);
+              }
+            }
+          }
+
+          if (jsonProperty.PropertyType.IsArray)
+          {
+            return values;
+          }
+          else
+          {
+            var list = Activator.CreateInstance(jsonProperty.PropertyType, new object[] { values });
+            return list;
+          }
+
+        }
+
+        return value.ToObject(jsonProperty.PropertyType);
+      }
+    
+
+      if(value is JArray jArr)
+      {
+        var arr = new List<object>();
+        foreach (var val in jArr)
+        {
+          if (CancellationToken.IsCancellationRequested)
+          {
+            return null; // Check for cancellation
+          }
+
+          if (CancellationToken.IsCancellationRequested)
+          {
+            return null; // Check for cancellation
+          }
+
+          if (val == null)
+          {
+            continue;
+          }
+
+          var item = HandleValue(val, serializer, CancellationToken);
+
+          if (item is DataChunk chunk)
+          {
+            arr.AddRange(chunk.data);
+          }
+          else
+          {
+            arr.Add(item);
+          }
+        }
+        return arr;
+      }
+
+      if(value is JObject jObj)
+      {
+        // If it's an object with type discriminator, it means it's a base class derived object, 
+        // so we need to pass in the current serialiser in. 
+        if (jObj.Property(TypeDiscriminator) != null)
+        {
+          return value.ToObject<Base>(serializer);
+        }
+        
+        var dict = new Dictionary<string, object>();
+        foreach (var prop in jObj)
+        {
+          if (CancellationToken.IsCancellationRequested)
+          {
+            return null; // Check for cancellation
+          }
+          dict[prop.Key] = HandleValue(prop.Value, serializer, CancellationToken);
+        }
+
+        return dict;
+      }
+
+      return null;
+    }
+
+    #endregion
+
+    #region handle value old
+
+    internal static object HandleValue2(JToken value, JsonSerializer serializer, CancellationToken CancellationToken, JsonProperty jsonProperty = null, string TypeDiscriminator = "speckle_type")
     {
       if (CancellationToken.IsCancellationRequested)
       {
@@ -117,7 +280,7 @@ namespace Speckle.Core.Serialisation
               continue;
             }
 
-            var item = HandleValue(val, serializer, CancellationToken);
+            var item = HandleValue2(val, serializer, CancellationToken);
 
             if (item is DataChunk chunk)
             {
@@ -127,16 +290,16 @@ namespace Speckle.Core.Serialisation
                 {
                   if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(dataItem.GetType()))
                   {
-                    addMethod.Invoke(arr, new object[ ] { dataItem });
+                    addMethod.Invoke(arr, new object[] { dataItem });
                   }
                   else
                   {
-                    addMethod.Invoke(arr, new object[ ] { Convert.ChangeType(dataItem, jsonProperty.PropertyType.GenericTypeArguments[0]) });
+                    addMethod.Invoke(arr, new object[] { Convert.ChangeType(dataItem, jsonProperty.PropertyType.GenericTypeArguments[0]) });
                   }
                 }
                 else
                 {
-                  addMethod.Invoke(arr, new object[ ] { dataItem });
+                  addMethod.Invoke(arr, new object[] { dataItem });
                 }
               }
             }
@@ -144,16 +307,16 @@ namespace Speckle.Core.Serialisation
             {
               if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(item.GetType()))
               {
-                addMethod.Invoke(arr, new object[ ] { item });
+                addMethod.Invoke(arr, new object[] { item });
               }
               else
               {
-                addMethod.Invoke(arr, new object[ ] { Convert.ChangeType(item, jsonProperty.PropertyType.GenericTypeArguments[0]) });
+                addMethod.Invoke(arr, new object[] { Convert.ChangeType(item, jsonProperty.PropertyType.GenericTypeArguments[0]) });
               }
             }
             else
             {
-              addMethod.Invoke(arr, new object[ ] { item });
+              addMethod.Invoke(arr, new object[] { item });
             }
           }
           return arr;
@@ -180,7 +343,7 @@ namespace Speckle.Core.Serialisation
               continue;
             }
 
-            var item = HandleValue(val, serializer, CancellationToken);
+            var item = HandleValue2(val, serializer, CancellationToken);
             if (item is DataChunk chunk)
             {
               foreach (var dataItem in chunk.data)
@@ -231,7 +394,7 @@ namespace Speckle.Core.Serialisation
               continue;
             }
 
-            var item = HandleValue(val, serializer, CancellationToken);
+            var item = HandleValue2(val, serializer, CancellationToken);
 
             if (item is DataChunk chunk)
             {
@@ -270,7 +433,7 @@ namespace Speckle.Core.Serialisation
           if (jsonProperty != null)
           {
             key = Convert.ChangeType(prop.Key, jsonProperty.PropertyType.GetGenericArguments()[0]);
-          }((IDictionary)dict)[key] = HandleValue(prop.Value, serializer, CancellationToken);
+          } ((IDictionary)dict)[key] = HandleValue2(prop.Value, serializer, CancellationToken);
         }
         return dict;
       }

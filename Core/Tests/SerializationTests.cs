@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
@@ -10,6 +12,43 @@ namespace Tests
   public class Serialization
   {
 
+    [Ignore("doesnt actually test anything")]
+    [Test]
+    public void Benchmark()
+    {
+
+      var test = new Base();
+      var ms = new List<Mesh>();
+      
+      int NUM_MESH = 10;
+      int NUM_VERT = 10_000;
+
+      for(int i = 0; i < NUM_MESH; i++)
+      {
+        var fm = new Mesh();
+        for(int j  = 0; j< NUM_VERT; j++)
+        {
+          //fm.Vertices.Add(i + j * 3.14);
+          fm.Points.Add(new Point(i, j, j * 3.14));
+        }
+        ms.Add(fm);
+      }
+
+      test["meshes"] = ms;
+
+      var serialised = Operations.Serialize(test);
+
+      Stopwatch sw = new Stopwatch();
+      sw.Start();
+
+      var deserialised = Operations.Deserialize(serialised);
+
+      sw.Stop();
+      Debug.WriteLine("RunTime in ms: " + sw.ElapsedMilliseconds);
+
+    }
+
+
     [Test]
     public void SimpleSerialization()
     {
@@ -19,7 +58,10 @@ namespace Tests
       var result = Operations.Serialize(table);
       var test = Operations.Deserialize(result);
 
-      Assert.AreEqual(test.GetId(), table.GetId());
+      var id1 = test.GetId();
+      var id2 = test.GetId();
+
+      Assert.AreEqual(id1, id2);
 
       var polyline = new Polyline();
       for (int i = 0; i < 100; i++)
@@ -94,6 +136,38 @@ namespace Tests
     }
 
     [Test]
+    public void SimpleInterfaceProp()
+    {
+      var cat = new SimpleInterfaceType();
+      var result = Operations.Serialize(cat);
+
+      var deserialisedFeline = Operations.Deserialize(result);
+    }
+
+    [Test]
+    public void IdentityChecks()
+    {
+      var pt1 = new Point();
+      var pts1 = Operations.Serialize(pt1);
+      var pt2 = Operations.Deserialize(pts1);
+      var pts2 = Operations.Serialize(pt2);
+
+      Assert.AreEqual(pts2, pts1);
+
+      var ln1 = new Line() { Start = new Point(), End = new Point(1, 1, 1) };
+      var ln1s = Operations.Serialize(ln1);
+      var ln2 = Operations.Deserialize(ln1s);
+      var lns2 = Operations.Serialize(ln2);
+
+      Assert.AreEqual(ln1s, lns2);
+
+      var id1 = ln1.GetId();
+      var id2 = ln2.GetId();
+
+      Assert.AreEqual(id1, id2);
+    }
+
+    [Test]
     public void InterfacePropHandling()
     {
       var cat = new PolygonalFeline();
@@ -104,7 +178,7 @@ namespace Tests
         End = new Point(42, 42, 42)
       };
 
-      for (int i = 0; i < 10; i++)
+      for (int i = 0; i < 3; i++)
       {
         cat.Claws[$"Claw number {i}"] = new Line { Start = new Point(i, i, i), End = new Point(i + 3.14, i + 3.14, i + 3.14) };
 
@@ -128,6 +202,9 @@ namespace Tests
 
       var deserialisedFeline = Operations.Deserialize(result);
 
+      var result2 = Operations.Serialize(deserialisedFeline);
+
+      Assert.AreEqual(result, result2);
       Assert.AreEqual(cat.GetId(), deserialisedFeline.GetId()); // If we're getting the same hash... we're probably fine!
     }
 
@@ -250,6 +327,26 @@ namespace Tests
         serialised.Contains("\"@nestedDetachableList\":[[[]]]");
 
       Assert.AreEqual(isCorrect, true);
+    }
+
+    [Test]
+    public void NestedLists()
+    {
+      var test = new TestObject();
+
+      var serialised = Operations.Serialize(test);
+      var cp = serialised;
+      var deserialised = Operations.Deserialize(serialised);
+      var cpp = deserialised;
+
+      Assert.AreEqual(test.GetId(), deserialised.GetId());
+    }
+
+    internal class TestObject : Base
+    {
+      public List<List<double>> nestedBoi { get; set; } = new List<List<double>>() { new List<double>() { 4, 2 } };
+      public List<double[]> nestedArr { get; set; } = new List<double[]>() { new double[] { 3, 3, 3 } };
+      public List<List<Base>> weirdCase { get; set; } = new List<List<Base>>() { new List<Base>() { new Point() } };
     }
 
   }

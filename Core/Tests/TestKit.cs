@@ -254,4 +254,9 @@ namespace Tests
 
     public PolygonalFeline() { }
   }
+
+  public class SimpleInterfaceType : Base
+  {
+    public ICurve Tail { get; set; } = new Polyline();
+  }
 }

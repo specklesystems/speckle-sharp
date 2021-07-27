@@ -25,6 +25,8 @@ namespace Speckle.Core.Serialisation
     /// </summary>
     public string TypeDiscriminator = "speckle_type";
 
+    public bool ForceIdGeneration { get; set; } = false;
+
     public CancellationToken CancellationToken { get; set; }
 
     /// <summary>
@@ -462,7 +464,9 @@ namespace Speckle.Core.Serialisation
         }
 
         var hash = Models.Utilities.hashString(jo.ToString());
-        if (!jo.ContainsKey("id"))
+        
+        // Only add the id IF needed 
+        if (!jo.ContainsKey("id") && WriteTransports!=null && WriteTransports.Count != 0 || ForceIdGeneration)
         {
           jo.Add("id", JToken.FromObject(hash));
         }

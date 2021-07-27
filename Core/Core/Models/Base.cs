@@ -44,6 +44,7 @@ namespace Speckle.Core.Models
       {
         s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
       }
+      s.ForceIdGeneration = true;
       var obj = JsonConvert.SerializeObject(this, t);
       return JObject.Parse(obj).GetValue("id").ToString();
     }

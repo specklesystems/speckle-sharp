@@ -143,13 +143,15 @@ namespace Speckle.Core.Models
     /// <returns></returns>
     public override IEnumerable<string> GetDynamicMemberNames()
     {
-      var names = new List<string>();
-      foreach (var kvp in properties) names.Add(kvp.Key);
+      var namesHS = new HashSet<string>();
+      foreach (var kvp in properties) namesHS.Add(kvp.Key);
 
       var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-      foreach (var pinfo in pinfos) names.Add(pinfo.Name);
+      foreach (var pinfo in pinfos) namesHS.Add(pinfo.Name);
 
-      names.Remove("Item"); // TODO: investigate why we get Item out?
+      namesHS.Remove("Item"); // TODO: investigate why we get Item out?
+      var names = namesHS.ToList();
+      names.Sort();
       return names;
     }
 
