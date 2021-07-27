@@ -128,7 +128,10 @@ namespace Objects.Converter.RhinoGh
           @base = PolylineToSpeckle(o) as Base;
           break;
         case NurbsCurve o:
-          @base = CurveToSpeckle(o) as Base;
+          if (o.TryGetEllipse(out RH.Ellipse ellipse))
+            @base = EllipseToSpeckle(ellipse);
+          else
+            @base = CurveToSpeckle(o) as Base;
           break;
         case PolylineCurve o:
           @base = PolylineToSpeckle(o);
