@@ -169,10 +169,10 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Ellipses
-    // TODO: fix major/minor vs x axis/yaxis distinction in conversions after speckle firstRadius & secondRadius def is set
     public Ellipse EllipseToSpeckle(AcadDB.Ellipse ellipse)
     {
-      var _ellipse = new Ellipse(PlaneToSpeckle(ellipse.GetPlane()), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits);
+      var plane = new Plane(ellipse.Center, ellipse.MajorAxis, ellipse.MinorAxis);
+      var _ellipse = new Ellipse(PlaneToSpeckle(plane), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits);
       _ellipse.domain = new Interval(ellipse.StartParam, ellipse.EndParam);
       _ellipse.length = ellipse.GetDistanceAtParameter(ellipse.EndParam);
       _ellipse.bbox = BoxToSpeckle(ellipse.GeometricExtents, true);
@@ -181,7 +181,8 @@ namespace Objects.Converter.AutocadCivil
     public AcadDB.Ellipse EllipseToNativeDB(Ellipse ellipse)
     {
       var normal = VectorToNative(ellipse.plane.normal);
-      var majorAxis = ScaleToNative((double)ellipse.firstRadius, ellipse.units) * VectorToNative(ellipse.plane.xdir);
+      var xAxisVector = VectorToNative(ellipse.plane.xdir);
+      var majorAxis = ScaleToNative((double)ellipse.firstRadius, ellipse.units) * xAxisVector.GetNormal();
       var radiusRatio = (double)ellipse.secondRadius / (double)ellipse.firstRadius;
       return new AcadDB.Ellipse(PointToNative(ellipse.plane.origin), normal, majorAxis, radiusRatio, 0, 2 * Math.PI);
     }
@@ -568,6 +569,9 @@ namespace Objects.Converter.AutocadCivil
 
         case AcadDB.Circle circle:
           return CircleToSpeckle(circle);
+
+        case AcadDB.Ellipse ellipse:
+          return EllipseToSpeckle(ellipse);
 
         case AcadDB.Spline spline:
           return SplineToSpeckle(spline);
