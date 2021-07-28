@@ -236,7 +236,7 @@ namespace Speckle.Core.Serialisation
         else
         {
           // dynamic properties
-          CallSiteCache.SetValue(jProperty.Name, obj, SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken));
+          ((Base)obj)[jProperty.Name] = SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken);
         }
       }
 

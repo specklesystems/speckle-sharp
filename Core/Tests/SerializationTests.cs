@@ -16,7 +16,6 @@ namespace Tests
     [Test]
     public void Benchmark()
     {
-
       var test = new Base();
       var ms = new List<Mesh>();
       
@@ -35,6 +34,8 @@ namespace Tests
       }
 
       test["meshes"] = ms;
+
+      Speckle.Core.Kits.KitManager.Initialize();
 
       var serialised = Operations.Serialize(test);
 

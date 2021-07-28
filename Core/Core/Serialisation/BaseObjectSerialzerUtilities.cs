@@ -32,8 +32,14 @@ namespace Speckle.Core.Serialisation
 
     }
 
+    private static Dictionary<string, Type> cachedAtomicTypes = new Dictionary<string, Type>();
+
     internal static Type GetAtomicType(string objFullType)
     {
+      if (cachedAtomicTypes.ContainsKey(objFullType))
+      {
+        return cachedAtomicTypes[objFullType];
+      }
       var objectTypes = objFullType.Split(':').Reverse();
       foreach (var typeName in objectTypes)
       {
@@ -42,6 +48,7 @@ namespace Speckle.Core.Serialisation
         var type = KitManager.Types.FirstOrDefault(tp => tp.FullName == typeName);
         if (type != null)
         {
+          cachedAtomicTypes[objFullType] = type;
           return type;
         }
       }
@@ -176,11 +183,6 @@ namespace Speckle.Core.Serialisation
         var arr = new List<object>();
         foreach (var val in jArr)
         {
-          if (CancellationToken.IsCancellationRequested)
-          {
-            return null; // Check for cancellation
-          }
-
           if (CancellationToken.IsCancellationRequested)
           {
             return null; // Check for cancellation
