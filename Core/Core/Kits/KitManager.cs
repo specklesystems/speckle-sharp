@@ -106,9 +106,7 @@ namespace Speckle.Core.Kits
       _initialized = true;
     }
 
-    #region Private Methods
-
-    private static void Initialize()
+    public static void Initialize()
     {
       if (!_initialized)
       {
@@ -116,6 +114,8 @@ namespace Speckle.Core.Kits
         _initialized = true;
       }
     }
+
+    #region Private Methods
 
     private static void Load()
     {
