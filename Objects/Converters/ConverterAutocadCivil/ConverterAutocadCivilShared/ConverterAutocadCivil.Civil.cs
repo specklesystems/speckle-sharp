@@ -53,12 +53,11 @@ namespace Objects.Converter.AutocadCivil
         _alignment.endStation = alignment.EndingStation;
 
       // handle station equations
-      var equations = new List<double[]>();
+      var equations = new List<double>();
       var directions = new List<bool>();
       foreach (var stationEquation in alignment.StationEquations)
       {
-        var equation = new double[] { stationEquation.RawStationBack, stationEquation.StationBack, stationEquation.StationAhead };
-        equations.Add(equation);
+        equations.AddRange(new List<double> { stationEquation.RawStationBack, stationEquation.StationBack, stationEquation.StationAhead });
         bool equationIncreasing = (stationEquation.EquationType.Equals(CivilDB.StationEquationType.Increasing)) ? true : false;
         directions.Add(equationIncreasing);
       }
