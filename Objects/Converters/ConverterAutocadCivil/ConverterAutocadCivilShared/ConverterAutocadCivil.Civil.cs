@@ -16,8 +16,10 @@ using Curve = Objects.Geometry.Curve;
 using Point = Objects.Geometry.Point;
 using Brep = Objects.Geometry.Brep;
 using Mesh = Objects.Geometry.Mesh;
+using Pipe = Objects.BuiltElements.Pipe;
 using Polyline = Objects.Geometry.Polyline;
 using Station = Objects.BuiltElements.Station;
+using Structure = Objects.BuiltElements.Structure;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -30,6 +32,7 @@ namespace Objects.Converter.AutocadCivil
       _station.location = PointToSpeckle(station.Location);
       _station.type = station.StationType.ToString();
       _station.number = station.RawStation;
+      _station.units = ModelUnits;
 
       return _station;
     }
@@ -84,6 +87,7 @@ namespace Objects.Converter.AutocadCivil
         curve["endStation"] = profile.EndingStation;
       curve["profileType"] = profile.ProfileType.ToString();
       curve["offset"] = profile.Offset;
+      curve.units = ModelUnits;
 
       return curve;
     }
@@ -97,7 +101,7 @@ namespace Objects.Converter.AutocadCivil
         curve["name"] = featureline.DisplayName;
       if (featureline.Description != null)
         curve["description"] = featureline.Description;
-
+      curve.units = ModelUnits;
       return curve;
     }
     /*
@@ -226,43 +230,50 @@ namespace Objects.Converter.AutocadCivil
     // structures
     public Mesh StructureToSpeckle(CivilDB.Structure structure)
     {
-      var mesh = SolidToSpeckle(structure.Solid3dBody);
+      var _structure = new Structure();
+
+      _structure.baseCurve = CurveToSpeckle(structure.BaseCurve, ModelUnits) as Curve;
+      _structure.location = PointToSpeckle(structure.Location, ModelUnits);
+      _structure.displayMesh = SolidToSpeckle(structure.Solid3dBody);
+      _structure.units = ModelUnits;
 
       // assign additional structure props
       try{
-      mesh["@baseCurve"] = CurveToSpeckle(structure.BaseCurve, ModelUnits) as Curve;
-      mesh["name"] = structure.DisplayName;
-      mesh["description"] = structure.Description;
-      mesh["connectedPipes"] = structure.ConnectedPipesCount;
-      mesh["@location"] = PointToSpeckle(structure.Location, ModelUnits);
-      mesh["station"] = structure.Station;
-      mesh["network"] = structure.NetworkName;
+      _structure["name"] = (structure.DisplayName != null) ? structure.DisplayName : "";
+      _structure["description"] = structure.Description;
+      _structure["connectedPipes"] = structure.ConnectedPipesCount;
+      _structure["station"] = structure.Station;
+      _structure["network"] = structure.NetworkName;
       }
       catch{}
 
-      return mesh;
+      return _structure;
     }
 
     // pipes
-    public Mesh PipeToSpeckle(CivilDB.Pipe pipe)
+    public Pipe PipeToSpeckle(CivilDB.Pipe pipe)
     {
-      var mesh = SolidToSpeckle(pipe.Solid3dBody);
+      var _pipe = new Pipe();
+      _pipe.baseCurve = CurveToSpeckle(pipe.BaseCurve, ModelUnits) as Curve;
+      _pipe.diameter = pipe.InnerDiameterOrWidth;
+      _pipe.length = pipe.Length3DToInsideEdge;
+      _pipe.displayMesh = SolidToSpeckle(pipe.Solid3dBody);
+      _pipe.units = ModelUnits;
 
       // assign additional structure props
       try{
-      mesh["@baseCurve"] = CurveToSpeckle(pipe.BaseCurve, ModelUnits) as Curve;
-      mesh["name"] = pipe.DisplayName;
-      mesh["description"] = pipe.Description;
-      mesh["flowDirection"] = pipe.FlowDirection.ToString();
-      mesh["flowRate"] = pipe.FlowRate;
-      mesh["network"] = pipe.NetworkName;
-      mesh["startOffset"] = pipe.StartOffset;
-      mesh["endOffset"] = pipe.EndOffset;
-      mesh["startStation"] = pipe.StartStation;
-      mesh["endStation"] = pipe.EndStation;
+      _pipe["name"] = (pipe.DisplayName != null) ? pipe.DisplayName : "";
+      _pipe["description"] = (pipe.DisplayName != null) ? pipe.Description : "";
+      _pipe["flowDirection"] = pipe.FlowDirection.ToString();
+      _pipe["flowRate"] = pipe.FlowRate;
+      _pipe["network"] = pipe.NetworkName;
+      _pipe["startOffset"] = pipe.StartOffset;
+      _pipe["endOffset"] = pipe.EndOffset;
+      _pipe["startStation"] = pipe.StartStation;
+      _pipe["endStation"] = pipe.EndStation;
       }
       catch{}
-      return mesh;
+      return _pipe;
     }
 
     // corridors
