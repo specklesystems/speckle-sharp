@@ -8,7 +8,7 @@ namespace Objects.BuiltElements
 {
   public class Pipe : Base, IDisplayMesh
   {
-    public Line baseLine { get; set; }
+    public ICurve baseCurve { get; set; }
     public double length { get; set; }
     public double diameter { get; set; }
 
@@ -17,9 +17,9 @@ namespace Objects.BuiltElements
     public Pipe() { }
 
     [SchemaInfo("Pipe", "Creates a Speckle pipe", "BIM", "MEP")]
-    public Pipe(Line baseLine, double length, double diameter, double flowrate = 0, double relativeRoughness = 0)
+    public Pipe(ICurve baseCurve, double length, double diameter, double flowrate = 0, double relativeRoughness = 0)
     {
-      this.baseLine = baseLine;
+      this.baseCurve = baseCurve;
       this.length = length;
       this.diameter = diameter;
     }
@@ -42,11 +42,11 @@ namespace Objects.BuiltElements.Revit
     public RevitPipe() { }
 
     [SchemaInfo("RevitPipe", "Creates a Revit pipe", "Revit", "MEP")]
-    public RevitPipe(string family, string type, Line baseLine, double diameter, Level level,  string systemName = "", string systemType = "", List<Parameter> parameters = null)
+    public RevitPipe(string family, string type, ICurve baseCurve, double diameter, Level level,  string systemName = "", string systemType = "", List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
-      this.baseLine = baseLine;
+      this.baseCurve = baseCurve;
       this.diameter = diameter;
       this.systemName = systemName;
       this.systemType = systemType;

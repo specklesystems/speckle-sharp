@@ -143,6 +143,25 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Line
+    public Line LineToSpeckle(Line2d line, string units = null)
+    {
+      var u = units ?? ModelUnits;
+
+      var startParam = line.GetParameterOf(line.StartPoint);
+      var endParam = line.GetParameterOf(line.EndPoint);
+      var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), u);
+      _line.length = line.GetLength(startParam, endParam);
+      _line.domain = IntervalToSpeckle(line.GetInterval());
+
+      return _line;
+    }
+    public Line LineToSpeckle(LineSegment2d line)
+    {
+      var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
+      _line.length = line.Length;
+      _line.domain = IntervalToSpeckle(line.GetInterval());
+      return _line;
+    }
     public Line LineToSpeckle(Line3d line, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -216,6 +235,17 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Arc
+    public Arc ArcToSpeckle(CircularArc2d arc)
+    {
+      var interval = arc.GetInterval();
+      var _arc = new Arc(PlaneToSpeckle(new AC.Plane(new Point3d(arc.Center.X, arc.Center.Y, 0), Vector3d.ZAxis)), arc.Radius, arc.StartAngle, arc.EndAngle, Math.Abs(arc.EndAngle - arc.StartAngle), ModelUnits);
+      _arc.startPoint = PointToSpeckle(arc.StartPoint);
+      _arc.endPoint = PointToSpeckle(arc.EndPoint);
+      _arc.midPoint = PointToSpeckle(arc.EvaluatePoint((interval.UpperBound - interval.LowerBound) / 2));
+      _arc.domain = IntervalToSpeckle(arc.GetInterval());
+      _arc.length = arc.GetLength(arc.GetParameterOf(arc.StartPoint), arc.GetParameterOf(arc.EndPoint));
+      return _arc;
+    }
     public Arc ArcToSpeckle(CircularArc3d arc)
     {
       var interval = arc.GetInterval();
@@ -277,6 +307,39 @@ namespace Objects.Converter.AutocadCivil
       if (curve.closed)
         _curve.MakeClosed();
       _curve.SetInterval(IntervalToNative(curve.domain));
+
+      return _curve;
+    }
+    public Curve NurbsToSpeckle(NurbCurve2d curve)
+    {
+      var _curve = new Curve();
+
+      // get control points
+      var points = new List<Point2d>();
+      for (int i = 0; i < curve.NumControlPoints; i++)
+        points.Add(curve.GetControlPointAt(i));
+
+      // get knots
+      var knots = new List<double>();
+      for (int i = 0; i < curve.NumKnots; i++)
+        knots.Add(curve.GetKnotAt(i));
+
+      // get weights
+      var weights = new List<double>();
+      for (int i = 0; i < curve.NumWeights; i++)
+        weights.Add(curve.GetWeightAt(i));
+
+      // set nurbs curve info
+      _curve.points = PointsToFlatArray(points).ToList();
+      _curve.knots = knots;
+      _curve.weights = weights;
+      _curve.degree = curve.Degree;
+      _curve.periodic = curve.IsPeriodic(out double period);
+      _curve.rational = curve.IsRational;
+      _curve.closed = curve.IsClosed();
+      _curve.length = curve.GetLength(curve.StartParameter, curve.EndParameter);
+      _curve.domain = IntervalToSpeckle(curve.GetInterval());
+      _curve.units = ModelUnits;
 
       return _curve;
     }
@@ -373,6 +436,21 @@ namespace Objects.Converter.AutocadCivil
           return ArcToSpeckle(arc);
         default:
           return NurbsToSpeckle(curve as NurbCurve3d);
+      }
+    }
+
+    public ICurve CurveToSpeckle(Curve2d curve, string units = null)
+    {
+      switch (curve)
+      {
+        case Line2d line:
+          return LineToSpeckle(line);
+        case LineSegment2d line:
+          return LineToSpeckle(line);
+        case CircularArc2d arc:
+          return ArcToSpeckle(arc);
+        default:
+          return NurbsToSpeckle(curve as NurbCurve2d);
       }
     }
 
