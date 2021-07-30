@@ -236,7 +236,16 @@ namespace Speckle.Core.Serialisation
 
     #region handle value old
 
-    internal static object HandleValue2(JToken value, JsonSerializer serializer, CancellationToken CancellationToken, JsonProperty jsonProperty = null, string TypeDiscriminator = "speckle_type")
+    /// <summary>
+    /// Do not use. Left here for now for quick flip in case of disaster cases. 
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="serializer"></param>
+    /// <param name="CancellationToken"></param>
+    /// <param name="jsonProperty"></param>
+    /// <param name="TypeDiscriminator"></param>
+    /// <returns></returns>
+    internal static object HandleValue_OLD(JToken value, JsonSerializer serializer, CancellationToken CancellationToken, JsonProperty jsonProperty = null, string TypeDiscriminator = "speckle_type")
     {
       if (CancellationToken.IsCancellationRequested)
       {
@@ -282,7 +291,7 @@ namespace Speckle.Core.Serialisation
               continue;
             }
 
-            var item = HandleValue2(val, serializer, CancellationToken);
+            var item = HandleValue_OLD(val, serializer, CancellationToken);
 
             if (item is DataChunk chunk)
             {
@@ -345,7 +354,7 @@ namespace Speckle.Core.Serialisation
               continue;
             }
 
-            var item = HandleValue2(val, serializer, CancellationToken);
+            var item = HandleValue_OLD(val, serializer, CancellationToken);
             if (item is DataChunk chunk)
             {
               foreach (var dataItem in chunk.data)
@@ -396,7 +405,7 @@ namespace Speckle.Core.Serialisation
               continue;
             }
 
-            var item = HandleValue2(val, serializer, CancellationToken);
+            var item = HandleValue_OLD(val, serializer, CancellationToken);
 
             if (item is DataChunk chunk)
             {
@@ -435,7 +444,7 @@ namespace Speckle.Core.Serialisation
           if (jsonProperty != null)
           {
             key = Convert.ChangeType(prop.Key, jsonProperty.PropertyType.GetGenericArguments()[0]);
-          } ((IDictionary)dict)[key] = HandleValue2(prop.Value, serializer, CancellationToken);
+          } ((IDictionary)dict)[key] = HandleValue_OLD(prop.Value, serializer, CancellationToken);
         }
         return dict;
       }
