@@ -228,24 +228,26 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // structures
-    public Mesh StructureToSpeckle(CivilDB.Structure structure)
+    public Structure StructureToSpeckle(CivilDB.Structure structure)
     {
+      // get ids pipes that are connected to this structure
+      var pipeIds = new List<string>();
+      for (int i = 0; i < structure.ConnectedPipesCount; i++)
+        pipeIds.Add(structure.get_ConnectedPipe(i).ToString());
+
       var _structure = new Structure();
 
-      _structure.baseCurve = CurveToSpeckle(structure.BaseCurve, ModelUnits) as Curve;
       _structure.location = PointToSpeckle(structure.Location, ModelUnits);
+      _structure.pipeIds = pipeIds;
       _structure.displayMesh = SolidToSpeckle(structure.Solid3dBody);
       _structure.units = ModelUnits;
 
       // assign additional structure props
-      try{
       _structure["name"] = (structure.DisplayName != null) ? structure.DisplayName : "";
-      _structure["description"] = structure.Description;
-      _structure["connectedPipes"] = structure.ConnectedPipesCount;
-      _structure["station"] = structure.Station;
-      _structure["network"] = structure.NetworkName;
-      }
-      catch{}
+      _structure["description"] = (structure.Description != null) ? structure.Description : "";
+      try{ _structure["grate"] = structure.Grate; } catch{ }
+      try{ _structure["station"] = structure.Station; } catch{ }
+      try{ _structure["network"] = structure.NetworkName; } catch{ }
 
       return _structure;
     }
@@ -261,18 +263,17 @@ namespace Objects.Converter.AutocadCivil
       _pipe.units = ModelUnits;
 
       // assign additional structure props
-      try{
       _pipe["name"] = (pipe.DisplayName != null) ? pipe.DisplayName : "";
       _pipe["description"] = (pipe.DisplayName != null) ? pipe.Description : "";
-      _pipe["flowDirection"] = pipe.FlowDirection.ToString();
-      _pipe["flowRate"] = pipe.FlowRate;
-      _pipe["network"] = pipe.NetworkName;
-      _pipe["startOffset"] = pipe.StartOffset;
-      _pipe["endOffset"] = pipe.EndOffset;
-      _pipe["startStation"] = pipe.StartStation;
-      _pipe["endStation"] = pipe.EndStation;
-      }
-      catch{}
+      try{ _pipe["shape"] = pipe.CrossSectionalShape.ToString(); } catch{ }
+      try{ _pipe["flowDirection"] = pipe.FlowDirection.ToString(); } catch{ }
+      try{ _pipe["flowRate"] = pipe.FlowRate; } catch{ }
+      try{ _pipe["network"] = pipe.NetworkName; } catch{ }
+      try{ _pipe["startOffset"] = pipe.StartOffset; } catch{ }
+      try{ _pipe["endOffset"] = pipe.EndOffset; } catch{ }
+      try{ _pipe["startStation"] = pipe.StartStation; } catch{ }
+      try{ _pipe["endStation"] = pipe.EndStation; } catch{ }
+
       return _pipe;
     }
 

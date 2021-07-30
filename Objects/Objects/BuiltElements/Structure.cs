@@ -10,11 +10,11 @@ namespace Objects.BuiltElements
 {
   public class Structure : Base, IDisplayMesh
   {
-    public ICurve baseCurve { get; set; }
     public Point location { get; set; }
-    public List<Pipe> pipes { get; set; }
+    public List<string> pipeIds { get; set; }
 
-    [DetachProperty] public Mesh displayMesh { get; set; }
+    [DetachProperty]
+    public Mesh displayMesh { get; set; }
 
     public Structure() { }
   }
