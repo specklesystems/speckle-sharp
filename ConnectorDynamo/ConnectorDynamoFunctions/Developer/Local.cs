@@ -18,7 +18,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
 
       var converter = new BatchConverter();
       var @base = converter.ConvertRecursivelyToSpeckle(data);
-      var objectId = Task.Run(async () => await Operations.Send(@base)).Result;
+      var objectId = Task.Run(async () => await Operations.Send(@base, disposeTransports: true)).Result;
 
       return objectId;
     }
@@ -33,7 +33,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     {
       Tracker.TrackPageview(Tracker.RECEIVE_LOCAL);
 
-      var @base = Task.Run(async () => await Operations.Receive(localDataId)).Result;
+      var @base = Task.Run(async () => await Operations.Receive(localDataId, disposeTransports: true)).Result;
       var converter = new BatchConverter();
       var data = converter.ConvertRecursivelyToNative(@base);
       return data;

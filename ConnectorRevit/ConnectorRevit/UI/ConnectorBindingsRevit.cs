@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Timers;
 using System.Collections.Generic;
+using System.Timers;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Speckle.ConnectorRevit.Entry;
+using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Models;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
-using Speckle.ConnectorRevit.Entry;
-using Speckle.ConnectorRevit.Storage;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -49,7 +49,6 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp.Application.DocumentOpened += Application_DocumentOpened;
       RevitApp.Application.DocumentClosed += Application_DocumentClosed;
 
-
       SelectionTimer = new Timer(1400) { AutoReset = true, Enabled = true };
       SelectionTimer.Elapsed += SelectionTimer_Elapsed;
       // TODO: Find a way to handle when document is closed via middle mouse click
@@ -76,8 +75,6 @@ namespace Speckle.ConnectorRevit.UI
 
     public override string GetFileName() => CurrentDoc.Document.Title;
 
-
-
     public override void SelectClientObjects(string args)
     {
       throw new NotImplementedException();
@@ -89,7 +86,7 @@ namespace Speckle.ConnectorRevit.UI
     private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
     {
 
-      if (e.Document == null || e.PreviousActiveView == null || GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView.Document))
+      if (e.Document == null || e.Document.IsFamilyDocument || e.PreviousActiveView == null || GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView.Document))
         return;
 
       var appEvent = new ApplicationEvent()
@@ -108,7 +105,7 @@ namespace Speckle.ConnectorRevit.UI
       if (CurrentDoc != null)
         return;
 
-      if (SpeckleRevitCommand.Bootstrapper != null && SpeckleRevitCommand.Bootstrapper.Application!=null)
+      if (SpeckleRevitCommand.Bootstrapper != null && SpeckleRevitCommand.Bootstrapper.Application != null)
         SpeckleRevitCommand.Bootstrapper.Application.MainWindow.Hide();
 
       var appEvent = new ApplicationEvent() { Type = ApplicationEvent.EventType.DocumentClosed };
@@ -117,15 +114,14 @@ namespace Speckle.ConnectorRevit.UI
 
     // this method is triggered when there are changes in the active document
     private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
-    {
-    }
+    { }
 
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
     {
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
       {
-        SpeckleRevitCommand.OpenOrFocusSpeckle();
+        SpeckleRevitCommand.OpenOrFocusSpeckle(RevitApp);
       }
 
       var appEvent = new ApplicationEvent()

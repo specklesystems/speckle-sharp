@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace Objects.BuiltElements.Revit
     public List<Point> basePoints { get; set; }
     public bool flipped { get; set; }
     public string elementId { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
 
     [DetachProperty]
     public Mesh displayMesh { get; set; }
@@ -26,7 +27,7 @@ namespace Objects.BuiltElements.Revit
       this.family = family;
       this.basePoints = basePoints;
       this.flipped = flipped;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 }

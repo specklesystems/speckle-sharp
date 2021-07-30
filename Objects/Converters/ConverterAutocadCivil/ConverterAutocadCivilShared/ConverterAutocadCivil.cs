@@ -5,6 +5,7 @@ using System.Linq;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Objects.Other;
+using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using BlockInstance = Objects.Other.BlockInstance;
 using BlockDefinition = Objects.Other.BlockDefinition;
@@ -180,6 +181,10 @@ public static string AutocadAppName = Applications.Autocad2022;
 
         case BlockDefinition o:
           return BlockDefinitionToNativeDB(o);
+
+        // TODO: add Civil3D directive to convert to alignment instead of curve
+        case Alignment o:
+          return CurveToNativeDB(o.baseCurve);
 
         default:
           throw new NotSupportedException();
@@ -362,6 +367,8 @@ public static string AutocadAppName = Applications.Autocad2022;
 
         case BlockDefinition _:
         case BlockInstance _:
+
+        case Alignment _:
           return true;
 
         default:

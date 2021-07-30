@@ -6,12 +6,14 @@ using System.Text;
 
 namespace Objects.BuiltElements.Revit
 {
+  
   public class Parameter : Base
   {
     public string name { get; set; }
     public object value { get; set; }
-    public string revitUnitType { get; set; } //eg UnitType UT_Length
-    public string revitUnit { get; set; } //DisplayUnitType eg DUT_MILLIMITERS
+    public string applicationUnitType { get; set; } //eg UnitType UT_Length
+    public string applicationUnit { get; set; } //DisplayUnitType eg DUT_MILLIMITERS
+    public string applicationInternalName { get; set; } //BuiltInParameterName or GUID for shared parameter
 
     /// <summary>
     /// If True it's a Shared Parameter, in which case the ApplicationId field will contain this parameter GUID, 
@@ -28,12 +30,11 @@ namespace Objects.BuiltElements.Revit
     public Parameter() { }
 
     [SchemaInfo("Parameter", "A Revit instance parameter to set on an element", "Revit", "Families")]
-    public Parameter(string name, object value,
-      [SchemaParamInfo("The Revit BuiltInParameter name or GUID (for shared parameters), if defined it will prevail over the name")] string internalName = "")
+    public Parameter([SchemaParamInfo("The Revit display name, BuiltInParameter name or GUID (for shared parameters)")] string name, object value)
     {
       this.name = name;
       this.value = value;
-      this.applicationId = internalName;
+      this.applicationInternalName = name;
     }
   }
 }

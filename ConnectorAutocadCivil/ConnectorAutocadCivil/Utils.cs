@@ -28,7 +28,7 @@ public static string AutocadAppName = Applications.Autocad2022;
     public static string AutocadAppName = Applications.Civil2022;
     public static string AppName = "Civil 3D";
 #endif
-    public static string invalidChars = @"<>/\:;""?*|=‘";
+    public static string invalidChars = @"<>/\:;""?*|=,‘";
 
     #region extension methods
 
@@ -223,11 +223,11 @@ public static string AutocadAppName = Applications.Autocad2022;
     }
 
     /// <summary>
-    /// Removes invalid characters for Autocad names
+    /// Removes invalid characters for Autocad layer and block names
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
-    public static string RemoveInvalidLayerChars(string str)
+    public static string RemoveInvalidChars(string str)
     {
       // using this to handle rhino nested layer syntax
       // replace "::" layer delimiter with "$" (acad standard)

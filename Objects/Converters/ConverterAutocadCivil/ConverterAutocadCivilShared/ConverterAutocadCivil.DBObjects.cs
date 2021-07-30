@@ -169,10 +169,10 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Ellipses
-    // TODO: fix major/minor vs x axis/yaxis distinction in conversions after speckle firstRadius & secondRadius def is set
     public Ellipse EllipseToSpeckle(AcadDB.Ellipse ellipse)
     {
-      var _ellipse = new Ellipse(PlaneToSpeckle(ellipse.GetPlane()), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits);
+      var plane = new Plane(ellipse.Center, ellipse.MajorAxis, ellipse.MinorAxis);
+      var _ellipse = new Ellipse(PlaneToSpeckle(plane), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits);
       _ellipse.domain = new Interval(ellipse.StartParam, ellipse.EndParam);
       _ellipse.length = ellipse.GetDistanceAtParameter(ellipse.EndParam);
       _ellipse.bbox = BoxToSpeckle(ellipse.GeometricExtents, true);
@@ -181,7 +181,8 @@ namespace Objects.Converter.AutocadCivil
     public AcadDB.Ellipse EllipseToNativeDB(Ellipse ellipse)
     {
       var normal = VectorToNative(ellipse.plane.normal);
-      var majorAxis = ScaleToNative((double)ellipse.firstRadius, ellipse.units) * VectorToNative(ellipse.plane.xdir);
+      var xAxisVector = VectorToNative(ellipse.plane.xdir);
+      var majorAxis = ScaleToNative((double)ellipse.firstRadius, ellipse.units) * xAxisVector.GetNormal();
       var radiusRatio = (double)ellipse.secondRadius / (double)ellipse.firstRadius;
       return new AcadDB.Ellipse(PointToNative(ellipse.plane.origin), normal, majorAxis, radiusRatio, 0, 2 * Math.PI);
     }
@@ -552,7 +553,10 @@ namespace Objects.Converter.AutocadCivil
           return LineToSpeckle(line, u);
 
         case AcadDB.Polyline polyline:
-          return PolylineToSpeckle(polyline);
+          if (polyline.IsOnlyLines)
+            return PolylineToSpeckle(polyline);
+          else 
+            return PolycurveToSpeckle(polyline);
 
         case AcadDB.Polyline2d polyline2d:
           return PolycurveToSpeckle(polyline2d);
@@ -565,6 +569,9 @@ namespace Objects.Converter.AutocadCivil
 
         case AcadDB.Circle circle:
           return CircleToSpeckle(circle);
+
+        case AcadDB.Ellipse ellipse:
+          return EllipseToSpeckle(ellipse);
 
         case AcadDB.Spline spline:
           return SplineToSpeckle(spline);
@@ -1151,6 +1158,8 @@ namespace Objects.Converter.AutocadCivil
         definition = BlockRecordToSpeckle(btr);
         tr.Commit();
       }
+      if (definition == null)
+        return null;
 
       var instance = new BlockInstance()
       {
@@ -1206,6 +1215,10 @@ namespace Objects.Converter.AutocadCivil
 
     public BlockDefinition BlockRecordToSpeckle (BlockTableRecord record)
     {
+      // skip if this is from an external reference
+      if (record.IsFromExternalReference)
+        return null;
+
       // get geometry
       var geometry = new List<Base>();
       using (Transaction tr = Doc.TransactionManager.StartTransaction())
@@ -1241,7 +1254,7 @@ namespace Objects.Converter.AutocadCivil
     public ObjectId BlockDefinitionToNativeDB(BlockDefinition definition)
     {
       // get modified definition name with commit info
-      var blockName = $"{Doc.UserData["commit"]} - {definition.name}";
+      var blockName = $"{Doc.UserData["commit"]} - {RemoveInvalidChars(definition.name)}";
 
       ObjectId blockId = ObjectId.Null;
       using (Transaction tr = Doc.TransactionManager.StartTransaction())

@@ -193,7 +193,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
         transport,
         onProgressAction: d => UpdateProgress(d, state.Progress),
         onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => state.Progress.Maximum = num),
-        onErrorAction: (message, exception) => { Exceptions.Add(exception); }
+        onErrorAction: (message, exception) => { Exceptions.Add(exception); },
+        disposeTransports: true
         );
 
       if (Exceptions.Count != 0)
@@ -430,7 +431,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     private bool GetOrMakeLayer(string layerName, AcadDb.Transaction tr, out string cleanName)
     {
-      cleanName = Utils.RemoveInvalidLayerChars(layerName);
+      cleanName = Utils.RemoveInvalidChars(layerName);
       try
       {
         AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
@@ -588,7 +589,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
         state.CancellationTokenSource.Token,
         transports,
         onProgressAction: dict => UpdateProgress(dict, state.Progress),
-        onErrorAction: (err, exception) => { Exceptions.Add(exception); }
+        onErrorAction: (err, exception) => { Exceptions.Add(exception); },
+        disposeTransports: true
         );
 
       if (Exceptions.Count != 0)
@@ -604,7 +606,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           streamId = streamId,
           objectId = commitObjId,
           branchName = state.Branch.name,
-          message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from AutoCAD.",
+          message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
           sourceApplication = Utils.AutocadAppName
         };
 

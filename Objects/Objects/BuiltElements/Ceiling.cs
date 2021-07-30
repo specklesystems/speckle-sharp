@@ -37,7 +37,7 @@ namespace Objects.BuiltElements.Revit
     public string type { get; set; }
     public Level level { get; set; }
     public double offset { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public RevitCeiling() { }

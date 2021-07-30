@@ -23,7 +23,7 @@ namespace Speckle.Core.Transports
   /// - preflight deltas on sending data
   /// - preflight deltas on receving/copying data to an existing transport? 
   /// </summary>
-  public class ServerTransport : IDisposable, ITransport
+  public class ServerTransport : IDisposable, ICloneable, ITransport
   {
     public string TransportName { get; set; } = "RemoteTransport";
 
@@ -506,12 +506,6 @@ namespace Speckle.Core.Transports
       return $"Server Transport @{Account.serverInfo.url}";
     }
 
-    public void Dispose()
-    {
-      // TODO: check if it's writing first? 
-      Client.Dispose();
-    }
-
     public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
     {
       var payload = new Dictionary<string, string>() { {"objects" , JsonConvert.SerializeObject(objectIds)}};
@@ -522,6 +516,23 @@ namespace Speckle.Core.Transports
       var hasObjectsJson = await response.Content.ReadAsStringAsync();
       var hasObjects = JsonConvert.DeserializeObject<Dictionary<string, bool>>(hasObjectsJson);
       return hasObjects;
+    }
+
+    public void Dispose()
+    {
+      // TODO: check if it's writing first? 
+      Client?.Dispose();
+      WriteTimer.Dispose();
+    }
+
+    public object Clone()
+    {
+      return new ServerTransport(Account, StreamId)
+      {
+        OnErrorAction = OnErrorAction,
+        OnProgressAction = OnProgressAction,
+        CancellationToken = CancellationToken
+      };
     }
 
     internal class Placeholder

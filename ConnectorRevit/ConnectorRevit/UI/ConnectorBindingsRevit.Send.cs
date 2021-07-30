@@ -143,7 +143,8 @@ namespace Speckle.ConnectorRevit.UI
           OperationErrors.Add(e); // TODO!
           state.Errors.Add(e);
           state.CancellationTokenSource.Cancel();
-        }
+        },
+        disposeTransports: true
         );
 
       if (OperationErrors.Count != 0)

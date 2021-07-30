@@ -21,6 +21,7 @@
     <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
     <Configurations>Debug;Release</Configurations>
     <Platforms>AnyCPU</Platforms>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <!--Do not publish a Core nuget when publishing Objects-->

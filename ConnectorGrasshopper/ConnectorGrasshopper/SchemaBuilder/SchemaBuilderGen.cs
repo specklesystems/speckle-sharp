@@ -208,7 +208,7 @@ public class ParameterSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("706f3fe9-f499-b07f-b682-febedbe38c9c");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.Parameter.ctor(System.String,System.Object,System.String)","Objects.BuiltElements.Revit.Parameter");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.Parameter.ctor(System.String,System.Object)","Objects.BuiltElements.Revit.Parameter");
         base.AddedToDocument(document);
     }
 }
