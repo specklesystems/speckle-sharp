@@ -13,8 +13,19 @@ namespace Objects.Converter.Revit
   {
     public List<ApplicationPlaceholderObject> PipeToNative(BuiltElements.Pipe specklePipe)
     {
+      // check if this is a line based pipe, return null if not
+      DB.Line baseLine = null;
+      switch (specklePipe.baseCurve)
+      {
+        case Line line:
+          baseLine = LineToNative(line);
+          break;
+        default:
+          ConversionErrors.Add(new Exception($"Pipe baseCurve is not a line"));
+          return null;
+      }
+
       // geometry
-      var baseLine = LineToNative(specklePipe.baseLine);
       var speckleRevitPipe = specklePipe as RevitPipe;
       var level = LevelToNative(speckleRevitPipe != null ? speckleRevitPipe.level : LevelFromCurve(baseLine));
 
@@ -76,7 +87,7 @@ namespace Objects.Converter.Revit
       // speckle pipe
       var specklePipe = new RevitPipe
       {
-        baseLine = baseLine,
+        baseCurve = baseLine,
         family = revitPipe.PipeType.FamilyName,
         type = revitPipe.PipeType.Name,
         systemName = revitPipe.MEPSystem.Name,
