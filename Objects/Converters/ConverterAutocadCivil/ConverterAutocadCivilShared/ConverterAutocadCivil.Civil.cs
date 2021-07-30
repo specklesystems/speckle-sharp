@@ -255,8 +255,21 @@ namespace Objects.Converter.AutocadCivil
     // pipes
     public Pipe PipeToSpeckle(CivilDB.Pipe pipe)
     {
+      // get the pipe curve
+      ICurve curve = null;
+      switch (pipe.SubEntityType)
+      {
+        case CivilDB.PipeSubEntityType.Straight:
+          var line = new Line(pipe.StartPoint, pipe.EndPoint);
+          curve = CurveToSpeckle(line);
+          break;
+        default:
+          curve = CurveToSpeckle(pipe.Spline);
+          break;
+      }
+
       var _pipe = new Pipe();
-      _pipe.baseCurve = CurveToSpeckle(pipe.BaseCurve, ModelUnits) as Curve;
+      _pipe.baseCurve = curve;
       _pipe.diameter = pipe.InnerDiameterOrWidth;
       _pipe.length = pipe.Length3DToInsideEdge;
       _pipe.displayMesh = SolidToSpeckle(pipe.Solid3dBody);
@@ -266,6 +279,7 @@ namespace Objects.Converter.AutocadCivil
       _pipe["name"] = (pipe.DisplayName != null) ? pipe.DisplayName : "";
       _pipe["description"] = (pipe.DisplayName != null) ? pipe.Description : "";
       try{ _pipe["shape"] = pipe.CrossSectionalShape.ToString(); } catch{ }
+      try{ _pipe["slope"] = pipe.Slope; } catch{ }
       try{ _pipe["flowDirection"] = pipe.FlowDirection.ToString(); } catch{ }
       try{ _pipe["flowRate"] = pipe.FlowRate; } catch{ }
       try{ _pipe["network"] = pipe.NetworkName; } catch{ }
