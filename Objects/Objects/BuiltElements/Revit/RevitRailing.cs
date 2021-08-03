@@ -18,6 +18,8 @@ namespace Objects.BuiltElements.Revit
     [DetachProperty]
     public Mesh displayMesh { get; set; }
 
+    public string units { get; set; }
+
     public RevitRailing() { }
 
     [SchemaInfo("Railing", "Creates a Revit railing by base curve.", "Revit", "Architecture")]

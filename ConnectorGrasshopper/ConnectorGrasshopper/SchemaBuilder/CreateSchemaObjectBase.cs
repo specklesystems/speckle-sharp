@@ -286,7 +286,7 @@ namespace ConnectorGrasshopper
       {
         schemaObject = SelectedConstructor.Invoke(cParamsValues.ToArray());
         ((Base)schemaObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
-        ((Base)schemaObject).units = units;
+        ((Base)schemaObject)["units"] = units;
       }
       catch (Exception e)
       {
@@ -302,7 +302,7 @@ namespace ConnectorGrasshopper
         {
           commitObj = ((Base) mainSchemaObj).ShallowCopy();
           commitObj["@SpeckleSchema"] = schemaObject;
-          commitObj.units = units;
+          commitObj["units"] = units;
         }
       }
       catch

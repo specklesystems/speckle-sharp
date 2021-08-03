@@ -19,6 +19,8 @@ namespace Objects.Other
     [DetachProperty]
     public List<Base> geometry { get; set; }
 
+    public string units { get; set; }
+
     public BlockDefinition() { }
   }
 
@@ -33,6 +35,8 @@ namespace Objects.Other
     /// The 4x4 transform matrix. Row-dominant, should have 16 values.
     /// </summary>
     public double[] transform { get; set; }
+
+    public string units { get; set; }
 
     [DetachProperty]
     public BlockDefinition blockDefinition { get; set; }

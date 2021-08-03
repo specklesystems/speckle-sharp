@@ -24,6 +24,8 @@ namespace Objects.Geometry
     public double area { get; set; }
     public double length { get; set; }
 
+    public string units { get; set; }
+
     public Polyline()
     {
 

@@ -17,6 +17,8 @@ namespace Objects.BuiltElements
     [DetachProperty]
     public Mesh displayMesh { get; set; }
 
+    public string units { get; set; }
+
     public Floor() { }
 
     [SchemaInfo("Floor", "Creates a Speckle floor", "BIM", "Architecture")]

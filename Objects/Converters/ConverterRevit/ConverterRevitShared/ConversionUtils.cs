@@ -181,7 +181,7 @@ namespace Objects.Converter.Revit
         speckleElement["parameters"] = paramBase;
       speckleElement["elementId"] = revitElement.Id.ToString();
       speckleElement.applicationId = revitElement.UniqueId;
-      speckleElement.units = ModelUnits;
+      speckleElement["units"] = ModelUnits;
     }
 
     //private List<string> alltimeExclusions = new List<string> { 

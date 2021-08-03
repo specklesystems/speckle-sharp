@@ -31,6 +31,8 @@ namespace Objects.Geometry
 
     public double volume { get; set; }
 
+    public string units { get; set; }
+
     public Mesh()
     {
 
