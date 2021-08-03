@@ -152,10 +152,10 @@ namespace Objects.Converter.Revit
       var allParams = new Dictionary<string, Parameter>();
 
       if (instParams != null)
-        instParams.ToList().ForEach(x => allParams.Add(x.Key, x.Value));
+        instParams.ToList().ForEach(x => { if (!allParams.ContainsKey(x.Key)) allParams.Add(x.Key, x.Value); });
 
       if (typeParams != null)
-        typeParams.ToList().ForEach(x => allParams.Add(x.Key, x.Value));
+        typeParams.ToList().ForEach(x => { if (!allParams.ContainsKey(x.Key)) allParams.Add(x.Key, x.Value); });
 
       //sort by key
       allParams = allParams.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
