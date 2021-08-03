@@ -145,7 +145,7 @@ namespace Objects.Converter.Revit
     /// <param name="exclusions">List of BuiltInParameters or GUIDs used to indicate what parameters NOT to get,
     /// we exclude all params already defined on the top level object to avoid duplication and 
     /// potential conflicts when setting them back on the element</param>
-    private void GetAllRevitParamsAndIds(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
+    public void GetAllRevitParamsAndIds(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
     {
       var instParams = GetInstanceParams(revitElement, exclusions);
       var typeParams = speckleElement is Level ? null : GetTypeParams(revitElement);  //ignore type props of levels..!
