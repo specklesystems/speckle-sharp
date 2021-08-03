@@ -60,7 +60,7 @@ namespace Speckle.Core.Api
     public string branchName { get; set; }
     public string objectId { get; set; }
     public string message { get; set; }
-    public string sourceApplication { get; set; } = "c#";
+    public string sourceApplication { get; set; } = ".net";
     public int totalChildrenCount { get; set; }
     public List<string> parents { get; set; }
 
