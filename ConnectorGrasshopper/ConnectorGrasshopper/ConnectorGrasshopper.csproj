@@ -54,6 +54,7 @@
     <Compile Include="ComponentCategories.cs" />
     <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
     <Compile Include="Conversion\Serialisation.SerialiseObject.cs" />
+    <Compile Include="Extras\DebounceDispatcher.cs" />
     <Compile Include="Extras\GenericAccessParam.cs" />
     <Compile Include="Conversion\Convert.ToNativeAsync.cs" />
     <Compile Include="Extras\Speckle.IGH_Goo.cs" />

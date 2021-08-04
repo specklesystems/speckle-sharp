@@ -42,7 +42,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection();
+        var selectedObjects = GetObjectSelection(ObjectType.Brep);
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Wall.ToString(), doc, false);
@@ -56,7 +56,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection();
+        var selectedObjects = GetObjectSelection(ObjectType.Brep);
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Floor.ToString(), doc, false);
@@ -70,7 +70,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection();
+        var selectedObjects = GetObjectSelection(ObjectType.Curve);
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Column.ToString(), doc, false);
@@ -84,7 +84,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection();
+        var selectedObjects = GetObjectSelection(ObjectType.Curve);
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Beam.ToString(), doc, false);
@@ -98,7 +98,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection();
+        var selectedObjects = GetObjectSelection(ObjectType.Brep);
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.FaceWall.ToString(), doc, false);
@@ -130,6 +130,88 @@ namespace SpeckleRhino
             selectedSchema = schemas[getOpt.Option().CurrentListOptionIndex];
 
         ApplySchema(selectedObjects, selectedSchema, doc, true);
+        return Result.Success;
+      }
+    }
+
+    public class CreateAdaptiveComponent : Command
+    {
+      public override string EnglishName => "CreateAdaptiveComponent";
+
+      protected override Result RunCommand(RhinoDoc doc, RunMode mode)
+      {
+        string family = "";
+
+        // Get family from user
+        var getFamily = new GetString();
+        getFamily.SetCommandPrompt("Enter Family name");
+        getFamily.Get();
+        family = getFamily.StringResult();
+        if (string.IsNullOrEmpty(family.Trim()))
+          return Result.Nothing;
+
+        // get point selection in and create blocks from each group
+        var getObj = new GetObject();
+        getObj.SetCommandPrompt("Select points in order");
+        getObj.SubObjectSelect = false;
+        getObj.GeometryFilter = ObjectType.Point;
+        getObj.OneByOnePostSelect = true;
+        List<RhinoObject> selectedObjects = new List<RhinoObject>();
+        for (; ; )
+        {
+          GetResult res = getObj.GetMultiple(3, 0);
+          if (res == GetResult.Object)
+          {
+            //make block from points and assign adaptive component schema
+            var blockName = $"AdaptiveComponent-{Guid.NewGuid()}";
+
+            // Gather all of the selected objects
+            var geometry = new List<Rhino.Geometry.GeometryBase>();
+            var attributes = new List<ObjectAttributes>();
+            for (int i = 0; i < getObj.ObjectCount; i++)
+            {
+              var rhinoObject = getObj.Object(i).Object();
+              if (rhinoObject != null)
+              {
+                geometry.Add(rhinoObject.Geometry);
+                attributes.Add(rhinoObject.Attributes);
+              }
+            }
+            var basePoint = geometry.First() as Rhino.Geometry.Point; // Use first selected point as basepoint
+
+            // Gather all of the selected objects and make definition
+            int definitionIndex = doc.InstanceDefinitions.Add(blockName, string.Empty, basePoint.Location, geometry, attributes);
+            if (definitionIndex < 0)
+            {
+              RhinoApp.WriteLine("Unable to create block definition ", blockName);
+              return Result.Failure;
+            }
+
+            // add the objects to a block instance
+            var transform = Rhino.Geometry.Transform.Translation(basePoint.Location - doc.ModelBasepoint);
+            Guid instanceId = doc.Objects.AddInstanceObject(definitionIndex, transform);
+            if (instanceId == Guid.Empty)
+            {
+              RhinoApp.WriteLine("Unable to create block instance ", blockName);
+              return Result.Failure;
+            }
+            var instance = doc.Objects.FindId(instanceId) as InstanceObject;
+
+            // attach user string to block instance
+            ApplyAdaptiveComponent(instance, family, family, doc);
+
+            // clear everything for next selection
+            selectedObjects.Clear();
+            getObj.ClearObjects();
+            continue;
+          }
+          else if (res == GetResult.Cancel)
+          {
+            break;
+          }
+          break;
+        }
+        
         return Result.Success;
       }
     }
@@ -275,7 +357,7 @@ namespace SpeckleRhino
     }
 
     #region helper methods
-    private static List<RhinoObject> GetObjectSelection()
+    private static List<RhinoObject> GetObjectSelection(ObjectType filter = ObjectType.AnyObject)
     {
       // Construct an objects getter
       var getObj = new GetObject();
@@ -285,6 +367,7 @@ namespace SpeckleRhino
       getObj.EnableClearObjectsOnEntry(false);
       getObj.EnableUnselectObjectsOnExit(false);
       getObj.DeselectAllBeforePostSelect = false;
+      getObj.GeometryFilter = filter;
 
       // Get objects
       for (; ; )
@@ -334,6 +417,15 @@ namespace SpeckleRhino
         foreach (RhinoObject obj in schemaFilter.SchemaDictionary[schema])
           WriteUserString(obj, schema);
       }
+    }
+
+    protected static void ApplyAdaptiveComponent(RhinoObject instance,  string family, string type, RhinoDoc ActiveDoc)
+    {
+      // assign this block instance an adaptive component speckle schema 
+      string uniqueName = $"AdaptiveComponent_{instance.Id.ToString().Substring(0, 5)}";
+      string value = $"AdaptiveComponent({family},{type})";
+
+      instance.Attributes.SetUserString(SpeckleSchemaKey, value);
     }
 
     private static void WriteUserString(RhinoObject obj, string schema, bool asDirectShape = false)

@@ -44,7 +44,7 @@ namespace Objects.BuiltElements
 //  {
 //    public bool createView { get; set; }
 
-//    public List<Parameter> parameters { get; set; }
+//    public Base parameters { get; set; }
 
 //    public string elementId { get; set; }
 
@@ -62,7 +62,7 @@ namespace Objects.BuiltElements
 //      this.name = name;
 //      this.elevation = elevation;
 //      this.createView = createView;
-//      this.parameters = parameters;
+//      this.parameters = parameters.ToBase();
 //      this.referenceOnly = false;
 //    }
 

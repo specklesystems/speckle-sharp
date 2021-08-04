@@ -1,4 +1,5 @@
 ﻿using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -48,7 +49,7 @@ namespace Objects.BuiltElements.Revit
     public bool structural { get; set; }
     public Level level { get; set; }
     public Level topLevel { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public RevitWall() { }
@@ -84,7 +85,7 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.topLevel = topLevel;
       this.elements = elements;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
 
     /// <summary>
@@ -118,7 +119,7 @@ namespace Objects.BuiltElements.Revit
       this.structural = structural;
       this.level = level;
       this.elements = elements;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 
@@ -129,7 +130,7 @@ namespace Objects.BuiltElements.Revit
     public Surface surface { get; set; }
     public Level level { get; set; }
     public LocationLine locationLine { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     public RevitFaceWall() { }
@@ -147,7 +148,7 @@ namespace Objects.BuiltElements.Revit
       this.locationLine = locationLine;
       this.level = level;
       this.elements = elements;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
   }
 
@@ -163,7 +164,7 @@ namespace Objects.BuiltElements.Revit
   //   public bool flipped { get; set; }
   //
   //   [SchemaOptional]
-  //   public List<Parameter> parameters { get; set; }
+  //   public Base parameters { get; set; }
   //
   //   [SchemaIgnore]
   //   public string elementId { get; set; }
@@ -174,7 +175,7 @@ namespace Objects.BuiltElements.Revit
   // public class RevitWallByPoint : Base
   // {
   //   [SchemaOptional]
-  //   public List<Parameter> parameters { get; set; }
+  //   public Base parameters { get; set; }
   //
   //   [SchemaIgnore]
   //   public string elementId { get; set; }

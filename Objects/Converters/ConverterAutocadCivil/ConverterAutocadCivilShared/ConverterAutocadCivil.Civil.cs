@@ -9,31 +9,33 @@ using Autodesk.Civil.ApplicationServices;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 using Acad = Autodesk.AutoCAD.Geometry;
 
+using Alignment = Objects.BuiltElements.Alignment;
 using Interval = Objects.Primitive.Interval;
 using Polycurve = Objects.Geometry.Polycurve;
 using Curve = Objects.Geometry.Curve;
 using Point = Objects.Geometry.Point;
 using Brep = Objects.Geometry.Brep;
 using Mesh = Objects.Geometry.Mesh;
+using Pipe = Objects.BuiltElements.Pipe;
+using Polyline = Objects.Geometry.Polyline;
+using Station = Objects.BuiltElements.Station;
+using Structure = Objects.BuiltElements.Structure;
 
 namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
-    /*
     // stations
-    public Point StationToSpeckle(CivilDB.Station station)
+    public Station StationToSpeckle(CivilDB.Station station)
     {
-      var point = PointToSpeckle(station.Location);
-      if (station.DisplayName != null)
-        point["name"] = station.DisplayName;
-      if (station.Description != null)
-        point["description"] = station.Description;
-      point["type"] = station.StationType.ToString();
-      point["number"] = station.RawStation;
-      return point;
+      var _station = new Station();
+      _station.location = PointToSpeckle(station.Location);
+      _station.type = station.StationType.ToString();
+      _station.number = station.RawStation;
+      _station.units = ModelUnits;
+
+      return _station;
     }
-    */
 
     public CivilDB.FeatureLine FeatureLineToNative(Polycurve polycurve)
     {
@@ -41,20 +43,33 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // alignments
-    public Base AlignmentToSpeckle(CivilDB.Alignment alignment)
+    public Alignment AlignmentToSpeckle(CivilDB.Alignment alignment)
     {
-      var curve = CurveToSpeckle(alignment.BaseCurve, ModelUnits) as Base;
+      var _alignment = new Alignment();
 
+      _alignment.baseCurve = CurveToSpeckle(alignment.BaseCurve, ModelUnits);
       if (alignment.DisplayName != null)
-        curve["name"] = alignment.DisplayName;
-      if (alignment.Description != null)
-        curve["description"] = alignment.Description;
+        _alignment.name = alignment.DisplayName;
       if (alignment.StartingStation != null)
-        curve["startStation"] = alignment.StartingStation;
+        _alignment.startStation  = alignment.StartingStation;
       if (alignment.EndingStation != null)
-        curve["endStation"] = alignment.EndingStation;
+        _alignment.endStation = alignment.EndingStation;
 
-      return curve;
+      // handle station equations
+      var equations = new List<double>();
+      var directions = new List<bool>();
+      foreach (var stationEquation in alignment.StationEquations)
+      {
+        equations.AddRange(new List<double> { stationEquation.RawStationBack, stationEquation.StationBack, stationEquation.StationAhead });
+        bool equationIncreasing = (stationEquation.EquationType.Equals(CivilDB.StationEquationType.Increasing)) ? true : false;
+        directions.Add(equationIncreasing);
+      }
+      _alignment.stationEquations = equations;
+      _alignment.stationEquationDirections = directions;
+
+      _alignment.units = ModelUnits;
+
+      return _alignment;
     }
 
     // profiles
@@ -72,6 +87,7 @@ namespace Objects.Converter.AutocadCivil
         curve["endStation"] = profile.EndingStation;
       curve["profileType"] = profile.ProfileType.ToString();
       curve["offset"] = profile.Offset;
+      curve.units = ModelUnits;
 
       return curve;
     }
@@ -85,7 +101,7 @@ namespace Objects.Converter.AutocadCivil
         curve["name"] = featureline.DisplayName;
       if (featureline.Description != null)
         curve["description"] = featureline.Description;
-
+      curve.units = ModelUnits;
       return curve;
     }
     /*
@@ -212,45 +228,67 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // structures
-    public Mesh StructureToSpeckle(CivilDB.Structure structure)
+    public Structure StructureToSpeckle(CivilDB.Structure structure)
     {
-      var mesh = SolidToSpeckle(structure.Solid3dBody);
+      // get ids pipes that are connected to this structure
+      var pipeIds = new List<string>();
+      for (int i = 0; i < structure.ConnectedPipesCount; i++)
+        pipeIds.Add(structure.get_ConnectedPipe(i).ToString());
+
+      var _structure = new Structure();
+
+      _structure.location = PointToSpeckle(structure.Location, ModelUnits);
+      _structure.pipeIds = pipeIds;
+      _structure.displayMesh = SolidToSpeckle(structure.Solid3dBody);
+      _structure.units = ModelUnits;
 
       // assign additional structure props
-      try{
-      mesh["@baseCurve"] = CurveToSpeckle(structure.BaseCurve, ModelUnits) as Curve;
-      mesh["name"] = structure.DisplayName;
-      mesh["description"] = structure.Description;
-      mesh["connectedPipes"] = structure.ConnectedPipesCount;
-      mesh["@location"] = PointToSpeckle(structure.Location, ModelUnits);
-      mesh["station"] = structure.Station;
-      mesh["network"] = structure.NetworkName;
-      }
-      catch{}
+      _structure["name"] = (structure.DisplayName != null) ? structure.DisplayName : "";
+      _structure["description"] = (structure.Description != null) ? structure.Description : "";
+      try{ _structure["grate"] = structure.Grate; } catch{ }
+      try{ _structure["station"] = structure.Station; } catch{ }
+      try{ _structure["network"] = structure.NetworkName; } catch{ }
 
-      return mesh;
+      return _structure;
     }
 
     // pipes
-    public Mesh PipeToSpeckle(CivilDB.Pipe pipe)
+    public Pipe PipeToSpeckle(CivilDB.Pipe pipe)
     {
-      var mesh = SolidToSpeckle(pipe.Solid3dBody);
+      // get the pipe curve
+      ICurve curve = null;
+      switch (pipe.SubEntityType)
+      {
+        case CivilDB.PipeSubEntityType.Straight:
+          var line = new Line(pipe.StartPoint, pipe.EndPoint);
+          curve = CurveToSpeckle(line);
+          break;
+        default:
+          curve = CurveToSpeckle(pipe.Spline);
+          break;
+      }
+
+      var _pipe = new Pipe();
+      _pipe.baseCurve = curve;
+      _pipe.diameter = pipe.InnerDiameterOrWidth;
+      _pipe.length = pipe.Length3DToInsideEdge;
+      _pipe.displayMesh = SolidToSpeckle(pipe.Solid3dBody);
+      _pipe.units = ModelUnits;
 
       // assign additional structure props
-      try{
-      mesh["@baseCurve"] = CurveToSpeckle(pipe.BaseCurve, ModelUnits) as Curve;
-      mesh["name"] = pipe.DisplayName;
-      mesh["description"] = pipe.Description;
-      mesh["flowDirection"] = pipe.FlowDirection.ToString();
-      mesh["flowRate"] = pipe.FlowRate;
-      mesh["network"] = pipe.NetworkName;
-      mesh["startOffset"] = pipe.StartOffset;
-      mesh["endOffset"] = pipe.EndOffset;
-      mesh["startStation"] = pipe.StartStation;
-      mesh["endStation"] = pipe.EndStation;
-      }
-      catch{}
-      return mesh;
+      _pipe["name"] = (pipe.DisplayName != null) ? pipe.DisplayName : "";
+      _pipe["description"] = (pipe.DisplayName != null) ? pipe.Description : "";
+      try{ _pipe["shape"] = pipe.CrossSectionalShape.ToString(); } catch{ }
+      try{ _pipe["slope"] = pipe.Slope; } catch{ }
+      try{ _pipe["flowDirection"] = pipe.FlowDirection.ToString(); } catch{ }
+      try{ _pipe["flowRate"] = pipe.FlowRate; } catch{ }
+      try{ _pipe["network"] = pipe.NetworkName; } catch{ }
+      try{ _pipe["startOffset"] = pipe.StartOffset; } catch{ }
+      try{ _pipe["endOffset"] = pipe.EndOffset; } catch{ }
+      try{ _pipe["startStation"] = pipe.StartStation; } catch{ }
+      try{ _pipe["endStation"] = pipe.EndStation; } catch{ }
+
+      return _pipe;
     }
 
     // corridors

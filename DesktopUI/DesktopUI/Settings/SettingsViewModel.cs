@@ -33,21 +33,21 @@ namespace Speckle.DesktopUI.Settings
         {
         name = "Docs",
         description = "Browse through the Speckle documentation on our website",
-        url = "https://speckle.guide/user/connectors.html#revit-rhino",
+        url = "https://speckle.guide/user/revit.html",
         icon = "FileDocument"
         },
         new HelpLink()
         {
         name = "Github",
         description = "Take a look at the source code or submit an issue in the repository",
-        url = "https://github.com/specklesystems/speckle-sharp/tree/master/DesktopUI",
+        url = "https://github.com/specklesystems/speckle-sharp/",
         icon = "Github"
         },
         new HelpLink()
         {
         name = "Forum",
         description = "Ask questions and join the discussion on our discourse forum",
-        url = "https://discourse.speckle.works/",
+        url = "https://speckle.community/",
         icon = "Forum"
         }
       };
@@ -87,7 +87,7 @@ namespace Speckle.DesktopUI.Settings
 
     public void ToggleTheme()
     {
-      if ( Globals.RootResourceDict != null )
+      if (Globals.RootResourceDict != null)
       {
         var theme = Globals.RootResourceDict.GetTheme();
         theme.SetBaseTheme(DarkMode ? Theme.Dark : Theme.Light);

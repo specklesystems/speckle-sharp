@@ -4,12 +4,13 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Objects.Utils;
 
 namespace Objects.BuiltElements.Revit
 {
   public class FreeformElement : Base , IDisplayMesh
   {
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     
     public string elementId { get; set; }
 
@@ -27,7 +28,7 @@ namespace Objects.BuiltElements.Revit
       if (!IsValidObject(baseGeometry))
         throw new Exception("Freeform elements can only be created from BREPs or Meshes");
       this.baseGeometry = baseGeometry;
-      this.parameters = parameters;
+      this.parameters = parameters.ToBase();
     }
     
     public bool IsValid() => IsValidObject(baseGeometry);

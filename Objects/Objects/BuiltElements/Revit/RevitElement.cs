@@ -13,7 +13,7 @@ namespace Objects.BuiltElements.Revit
     public string family { get; set; }
     public string type { get; set; }
     public string category { get; set; }
-    public List<Parameter> parameters { get; set; }
+    public Base parameters { get; set; }
     public string elementId { get; set; }
 
     [DetachProperty]

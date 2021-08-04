@@ -26,6 +26,8 @@ namespace Objects.Geometry
       }
       set
       {
+        if (value == null)
+          return;
         start = new Point(value[0], value[1], value[2]);
         end = new Point(value[3], value[4], value[5]);
       }

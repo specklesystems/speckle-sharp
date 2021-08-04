@@ -10,6 +10,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
@@ -137,7 +138,10 @@ namespace Objects.Converter.RhinoGh
           @base = PolylineToSpeckle(o) as Base;
           break;
         case NurbsCurve o:
-          @base = CurveToSpeckle(o) as Base;
+          if (o.TryGetEllipse(out RH.Ellipse ellipse))
+            @base = EllipseToSpeckle(ellipse);
+          else
+            @base = CurveToSpeckle(o) as Base;
           break;
         case PolylineCurve o:
           @base = PolylineToSpeckle(o);
@@ -201,6 +205,14 @@ namespace Objects.Converter.RhinoGh
       // get schema if it exists
       RhinoObject obj = @object as RhinoObject;
       string schema = GetSchema(obj, out string[] args);
+
+      if (obj is InstanceObject)
+      {
+        if (schema == "AdaptiveComponent")
+            return InstanceToAdaptiveComponent(obj as InstanceObject, args);
+        else
+            throw new NotSupportedException();
+      }
 
       switch (obj.Geometry)
       {
@@ -387,6 +399,9 @@ namespace Objects.Converter.RhinoGh
         case Surface o:
           return SurfaceToNative(o);
 
+        case Alignment o:
+          return CurveToNative(o.baseCurve);
+
         case ModelCurve o:
           return CurveToNative(o.baseCurve);
 
@@ -489,6 +504,7 @@ namespace Objects.Converter.RhinoGh
         case View3D _:
         case BlockDefinition _:
         case BlockInstance _:
+        case Alignment _:
           return true;
         
         default:

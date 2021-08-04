@@ -10,6 +10,8 @@ namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
+    public static string invalidChars = @"<>/\:;""?*|=,‘";
+
     #region units
     private string _modelUnits;
     public string ModelUnits
@@ -58,6 +60,21 @@ namespace Objects.Converter.AutocadCivil
     }
     #endregion
 
+    /// <summary>
+    /// Removes invalid characters for Autocad layer and block names
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static string RemoveInvalidChars(string str)
+    {
+      // using this to handle rhino nested layer syntax
+      // replace "::" layer delimiter with "$" (acad standard)
+      string cleanDelimiter = str.Replace("::", "$");
+
+      // remove all other invalid chars
+      return Regex.Replace(cleanDelimiter, $"[{invalidChars}]", string.Empty);
+    }
+
     public DisplayStyle GetStyle(DBObject obj)
     {
       var style = new DisplayStyle();
@@ -90,7 +107,7 @@ namespace Objects.Converter.AutocadCivil
 
         // get linetype
         style.linetype = entity.Linetype;
-        if (entity.Linetype == "BYLAYER")
+        if (entity.Linetype.ToUpper() == "BYLAYER")
         {
           using(Transaction tr = Doc.Database.TransactionManager.StartTransaction())
           {

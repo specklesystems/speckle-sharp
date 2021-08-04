@@ -37,12 +37,12 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private double ScaleToNative(double value, string units)
+    public double ScaleToNative(double value, string units)
     {
       return UnitUtils.ConvertToInternalUnits(value, new ForgeTypeId(UnitsToNative(units)));
     }
 
-    private double ScaleToSpeckle(double value)
+    public double ScaleToSpeckle(double value)
     {
       return UnitUtils.ConvertFromInternalUnits(value, RevitLengthTypeId);
     }
@@ -54,7 +54,7 @@ namespace Objects.Converter.Revit
         return Speckle.Core.Kits.Units.Millimeters;
       else if (typeId == UnitTypeId.Centimeters.TypeId)
         return Speckle.Core.Kits.Units.Centimeters;
-      else if (typeId == UnitTypeId.Meters.TypeId)
+      else if (typeId == UnitTypeId.Meters.TypeId || typeId == UnitTypeId.MetersCentimeters.TypeId)
         return Speckle.Core.Kits.Units.Meters;
       else if (typeId == UnitTypeId.Inches.TypeId || typeId == UnitTypeId.FractionalInches.TypeId)
         return Speckle.Core.Kits.Units.Inches;
@@ -117,7 +117,7 @@ namespace Objects.Converter.Revit
     /// <param name="value"></param>
     /// <param name="units"></param>
     /// <returns></returns>
-    private double ScaleToNative(double value, string units)
+    public double ScaleToNative(double value, string units)
     {
       return UnitUtils.ConvertToInternalUnits(value, UnitsToNative(units));
     }
@@ -130,7 +130,7 @@ namespace Objects.Converter.Revit
     /// <param name="value"></param>
     /// <param name="units"></param>
     /// <returns></returns>
-    private double ScaleToNative(double value, DisplayUnitType units)
+    public double ScaleToNative(double value, DisplayUnitType units)
     {
       return UnitUtils.ConvertToInternalUnits(value, units);
     }
@@ -143,7 +143,7 @@ namespace Objects.Converter.Revit
     /// <param name="value"></param>
     /// <param name="units"></param>
     /// <returns></returns>
-    private double ScaleToSpeckle(double value)
+    public double ScaleToSpeckle(double value)
     {
       return UnitUtils.ConvertFromInternalUnits(value, RevitLengthTypeId);
     }
@@ -157,6 +157,8 @@ namespace Objects.Converter.Revit
         case DisplayUnitType.DUT_CENTIMETERS:
           return Speckle.Core.Kits.Units.Centimeters;
         case DisplayUnitType.DUT_METERS:
+          return Speckle.Core.Kits.Units.Meters;
+        case DisplayUnitType.DUT_METERS_CENTIMETERS:
           return Speckle.Core.Kits.Units.Meters;
         case DisplayUnitType.DUT_DECIMAL_INCHES:
           return Speckle.Core.Kits.Units.Inches;

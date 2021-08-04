@@ -45,14 +45,6 @@ namespace Speckle.DesktopUI
       set => SetAndNotify(ref _mainButton_Checked, value);
     }
 
-    private bool _isPinned = true;
-
-    public bool IsPinned
-    {
-      get => _isPinned;
-      set => SetAndNotify(ref _isPinned, value);
-    }
-
     public readonly Dictionary<string, IScreen> Pages = new Dictionary<string, IScreen>();
 
     public RootViewModel(IWindowManager windowManager, IEventAggregator events, IViewModelFactory viewModelFactory, ConnectorBindings bindings)
