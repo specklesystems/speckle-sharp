@@ -22,6 +22,7 @@ namespace Objects.Geometry
     public double area { get; set; }
 
     public double volume { get; set; }
+    public string units { get; set; }
 
     public Box() { }
 

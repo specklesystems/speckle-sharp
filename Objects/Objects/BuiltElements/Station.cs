@@ -14,6 +14,8 @@ namespace Objects.BuiltElements
     public string type { get; set; }
     public Point location { get; set; }
 
+    public string units { get; set; }
+
     public Station() { }
   }
 }
