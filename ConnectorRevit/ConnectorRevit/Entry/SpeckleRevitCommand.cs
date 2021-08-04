@@ -10,7 +10,7 @@ using Stylet.Xaml;
 namespace Speckle.ConnectorRevit.Entry
 {
   [Transaction(TransactionMode.Manual)]
-  public class SpeckleRevitCommand : IExternalCommand
+  public class HelpCommand : IExternalCommand
   {
     public static Bootstrapper Bootstrapper { get; set; }
     public static ConnectorBindingsRevit Bindings { get; set; }

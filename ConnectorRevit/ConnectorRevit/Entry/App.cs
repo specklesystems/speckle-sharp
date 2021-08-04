@@ -29,18 +29,42 @@ namespace Speckle.ConnectorRevit.Entry
       // Fires an init event, where we can get the UIApp
       UICtrlApp.Idling += Initialise;
 
-      var SpecklePanel = application.CreateRibbonPanel("Speckle 2");
-      var SpeckleButton = SpecklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
+      var specklePanel = application.CreateRibbonPanel("Speckle 2");
+      var speckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(HelpCommand).FullName)) as PushButton;
+      string path = typeof(App).Assembly.Location;
 
-      if (SpeckleButton != null)
+      if (speckleButton != null)
       {
-        string path = typeof(App).Assembly.Location;
-        SpeckleButton.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
-        SpeckleButton.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
-        SpeckleButton.ToolTip = "Speckle Connector for Revit";
-        SpeckleButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
-        SpeckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
+        speckleButton.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
+        speckleButton.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
+        speckleButton.ToolTip = "Speckle Connector for Revit";
+        speckleButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+        speckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
+
+
+      PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
+      helpPulldown.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help16.png", path);
+      helpPulldown.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help32.png", path);
+
+
+      PushButton forum = helpPulldown.AddPushButton(new PushButtonData("forum", "Community Forum", typeof(App).Assembly.Location, typeof(ForumCommand).FullName)) as PushButton;
+      forum.ToolTip = "Check out our Community Forum! Opens a page in your web browser.";
+      forum.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.forum16.png", path);
+      forum.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.forum32.png", path);
+
+      PushButton tutorials = helpPulldown.AddPushButton(new PushButtonData("tutorials", "Tutorials", typeof(App).Assembly.Location, typeof(TutorialsCommand).FullName)) as PushButton;
+      tutorials.ToolTip = "Check out our tutorials! Opens a page in your web browser.";
+      tutorials.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.tutorials16.png", path);
+      tutorials.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.tutorials32.png", path);
+
+      PushButton docs = helpPulldown.AddPushButton(new PushButtonData("docs", "Docs", typeof(App).Assembly.Location, typeof(DocsCommand).FullName)) as PushButton;
+      docs.ToolTip = "Check out our documentation! Opens a page in your web browser.";
+      docs.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.docs16.png", path);
+      docs.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.docs32.png", path);
+
+ 
+      
 
       return Result.Succeeded;
     }
@@ -51,9 +75,9 @@ namespace Speckle.ConnectorRevit.Entry
       AppInstance = sender as UIApplication;
 
       // Set up bindings now as they subscribe to some document events and it's better to do it now
-      SpeckleRevitCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
-      var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
-      SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
+      HelpCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
+      var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(HelpCommand.Bindings));
+      HelpCommand.Bindings.SetExecutorAndInit(eventHandler);
     }
 
     public Result OnShutdown(UIControlledApplication application)
