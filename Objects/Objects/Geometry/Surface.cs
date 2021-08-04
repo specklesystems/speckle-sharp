@@ -23,6 +23,8 @@ namespace Objects.Geometry
     public bool closedU { get; set; } //
     public bool closedV { get; set; } //
 
+    public string units { get; set; }
+
     public Surface()
     {
       this.applicationId = null;

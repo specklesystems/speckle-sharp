@@ -16,6 +16,8 @@ namespace Objects.BuiltElements
     [DetachProperty]
     public List<Base> elements { get; set; }
 
+    public string units { get; set; }
+
     public Ceiling() { }
 
     [SchemaInfo("Ceiling", "Creates a Speckle ceiling", "BIM", "Architecture")]

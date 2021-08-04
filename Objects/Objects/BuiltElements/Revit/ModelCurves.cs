@@ -12,6 +12,8 @@ namespace Objects.BuiltElements.Revit.Curve
     public Base parameters { get; set; }
     public string elementId { get; set; }
 
+    public string units { get; set; }
+
     public ModelCurve() { }
 
     [SchemaInfo("ModelCurve", "Creates a Revit model curve", "Revit", "Curves")]
@@ -30,6 +32,8 @@ namespace Objects.BuiltElements.Revit.Curve
     public Base parameters { get; set; }
     public string elementId { get; set; }
 
+    public string units { get; set; }
+
     public DetailCurve() { }
 
     [SchemaInfo("DetailCurve", "Creates a Revit detail curve", "Revit", "Curves")]
@@ -46,6 +50,8 @@ namespace Objects.BuiltElements.Revit.Curve
     public ICurve baseCurve { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
+
+    public string units { get; set; }
 
     public RoomBoundaryLine() { }
 

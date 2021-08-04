@@ -11,6 +11,8 @@ namespace Objects.BuiltElements
   {
     public string name { get; set; }
     public double elevation { get; set; }
+
+    public string units { get; set; }
     //public List<Base> elements { get; set; }
 
     public Level() { }

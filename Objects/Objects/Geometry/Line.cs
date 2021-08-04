@@ -40,6 +40,8 @@ namespace Objects.Geometry
     public double area { get; set; }
     public double length { get; set; }
 
+    public string units { get; set; }
+
     public Point start { get; set; }
     public Point end { get; set; }
     public Line() { }

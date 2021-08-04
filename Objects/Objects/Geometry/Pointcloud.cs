@@ -22,6 +22,8 @@ namespace Objects.Geometry
 
     public Box bbox { get; set; }
 
+    public string units { get; set; }
+
     public Pointcloud()
     {
     }
