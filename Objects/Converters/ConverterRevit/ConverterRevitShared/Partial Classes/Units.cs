@@ -37,12 +37,12 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private double ScaleToNative(double value, string units)
+    public double ScaleToNative(double value, string units)
     {
       return UnitUtils.ConvertToInternalUnits(value, new ForgeTypeId(UnitsToNative(units)));
     }
 
-    private double ScaleToSpeckle(double value)
+    public double ScaleToSpeckle(double value)
     {
       return UnitUtils.ConvertFromInternalUnits(value, RevitLengthTypeId);
     }
@@ -117,7 +117,7 @@ namespace Objects.Converter.Revit
     /// <param name="value"></param>
     /// <param name="units"></param>
     /// <returns></returns>
-    private double ScaleToNative(double value, string units)
+    public double ScaleToNative(double value, string units)
     {
       return UnitUtils.ConvertToInternalUnits(value, UnitsToNative(units));
     }
@@ -130,7 +130,7 @@ namespace Objects.Converter.Revit
     /// <param name="value"></param>
     /// <param name="units"></param>
     /// <returns></returns>
-    private double ScaleToNative(double value, DisplayUnitType units)
+    public double ScaleToNative(double value, DisplayUnitType units)
     {
       return UnitUtils.ConvertToInternalUnits(value, units);
     }
@@ -143,7 +143,7 @@ namespace Objects.Converter.Revit
     /// <param name="value"></param>
     /// <param name="units"></param>
     /// <returns></returns>
-    private double ScaleToSpeckle(double value)
+    public double ScaleToSpeckle(double value)
     {
       return UnitUtils.ConvertFromInternalUnits(value, RevitLengthTypeId);
     }

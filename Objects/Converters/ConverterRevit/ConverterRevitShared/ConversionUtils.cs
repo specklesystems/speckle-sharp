@@ -145,17 +145,17 @@ namespace Objects.Converter.Revit
     /// <param name="exclusions">List of BuiltInParameters or GUIDs used to indicate what parameters NOT to get,
     /// we exclude all params already defined on the top level object to avoid duplication and 
     /// potential conflicts when setting them back on the element</param>
-    private void GetAllRevitParamsAndIds(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
+    public void GetAllRevitParamsAndIds(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
     {
       var instParams = GetInstanceParams(revitElement, exclusions);
       var typeParams = speckleElement is Level ? null : GetTypeParams(revitElement);  //ignore type props of levels..!
       var allParams = new Dictionary<string, Parameter>();
 
       if (instParams != null)
-        instParams.ToList().ForEach(x => allParams.Add(x.Key, x.Value));
+        instParams.ToList().ForEach(x => { if (!allParams.ContainsKey(x.Key)) allParams.Add(x.Key, x.Value); });
 
       if (typeParams != null)
-        typeParams.ToList().ForEach(x => allParams.Add(x.Key, x.Value));
+        typeParams.ToList().ForEach(x => { if (!allParams.ContainsKey(x.Key)) allParams.Add(x.Key, x.Value); });
 
       //sort by key
       allParams = allParams.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
