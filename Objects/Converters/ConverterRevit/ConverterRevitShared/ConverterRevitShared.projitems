@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPipe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRevitElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertArea.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertProfileWall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWire.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\FreeformElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\UpdateParameter.cs" />

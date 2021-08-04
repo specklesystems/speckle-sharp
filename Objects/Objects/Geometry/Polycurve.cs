@@ -44,17 +44,13 @@ namespace Objects.Geometry
 
       for (var i = 0; i < polyline.points.Count - 1; i++)
       {
-        //close poly
-        if (i == polyline.points.Count - 1 && polyline.closed)
-        {
-          var line = new Line(polyline.points[i], polyline.points[0], polyline.units);
+        var line = new Line(polyline.points[i], polyline.points[i + 1], polyline.units);
           polycurve.segments.Add(line);
-        }
-        else
-        {
-          var line = new Line(polyline.points[i], polyline.points[i + 1], polyline.units);
-          polycurve.segments.Add(line);
-        }
+      }
+      if (polyline.closed)
+      {
+        var line = new Line(polyline.points[polyline.points.Count - 1], polyline.points[0], polyline.units);
+        polycurve.segments.Add(line);
       }
 
       return polycurve;
