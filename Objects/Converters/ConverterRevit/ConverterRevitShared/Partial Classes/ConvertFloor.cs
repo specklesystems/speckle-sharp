@@ -25,11 +25,12 @@ namespace Objects.Converter.Revit
       var outline = CurveToNative(speckleFloor.outline);
 
       DB.Level level;
-
+      XYZ normal = null;
       if (speckleFloor is RevitFloor speckleRevitFloor)
       {
         level = LevelToNative(speckleRevitFloor.level);
         structural = speckleRevitFloor.structural;
+        normal = VectorToNative(speckleRevitFloor.normal);
       }
       else
       {
@@ -54,7 +55,7 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        revitFloor = Doc.Create.NewFloor(outline, floorType, level, structural);
+        revitFloor = (normal != null) ? Doc.Create.NewFloor(outline, floorType, level, structural, normal) : Doc.Create.NewFloor(outline, floorType, level, structural);
       }
 
       Doc.Regenerate();
@@ -92,6 +93,7 @@ namespace Objects.Converter.Revit
 
       speckleFloor.level = ConvertAndCacheLevel(revitFloor, BuiltInParameter.LEVEL_PARAM);
       speckleFloor.structural = GetParamValue<bool>(revitFloor, BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);
+      speckleFloor.normal = VectorToSpeckle(revitFloor.GetNormalAtVerticalProjectionPoint(XYZ.Zero, FloorFace.Top).Normalize());
 
       GetAllRevitParamsAndIds(speckleFloor, revitFloor, new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL" });
 
