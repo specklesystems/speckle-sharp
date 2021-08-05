@@ -42,7 +42,6 @@ namespace Objects.BuiltElements.Revit
     public bool structural { get; set; }
     public double slope { get; set; }
     public Line slopeDirection { get; set; }
-    public Vector normal { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
     public RevitFloor() { }
