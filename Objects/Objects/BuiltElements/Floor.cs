@@ -40,6 +40,8 @@ namespace Objects.BuiltElements.Revit
     public string type { get; set; }
     public Level level { get; set; }
     public bool structural { get; set; }
+    public double slope { get; set; }
+    public Line slopeDirection { get; set; }
     public Vector normal { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
@@ -47,7 +49,7 @@ namespace Objects.BuiltElements.Revit
 
     [SchemaInfo("RevitFloor", "Creates a Revit floor by outline and level", "Revit", "Architecture")]
     public RevitFloor(string family, string type, [SchemaMainParam] ICurve outline,
-       Level level, bool structural = false, Vector normal = null, List<ICurve> voids = null,
+       Level level, bool structural = false, double slope = 0, Line slopeDirection = null, List<ICurve> voids = null,
       [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null,
       List<Parameter> parameters = null)
     {
@@ -55,7 +57,8 @@ namespace Objects.BuiltElements.Revit
       this.type = type;
       this.level = level;
       this.structural = structural;
-      this.normal = normal;
+      this.slope = slope;
+      this.slopeDirection = slopeDirection;
       this.parameters = parameters.ToBase();
       this.outline = outline;
       this.voids = voids;
