@@ -108,7 +108,7 @@ namespace Objects.BuiltElements.Revit
     [SchemaInfo("RevitWall by curve and height", "Creates an unconnected Revit wall.", "Revit", "Architecture")]
     public RevitWall(string family, string type,
       [SchemaMainParam] ICurve baseLine, Level level, double height, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
-      [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
+      [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base> elements = null,
       List<Parameter> parameters = null)
     {
       this.family = family;
@@ -141,13 +141,44 @@ namespace Objects.BuiltElements.Revit
     public RevitFaceWall(string family, string type,
       [SchemaParamInfo("Surface or single face Brep to use")][SchemaMainParam] Brep surface,
       Level level, LocationLine locationLine = LocationLine.Interior,
-      [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
+      [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base> elements = null,
       List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
       this.surface = surface.Surfaces[0];
       this.locationLine = locationLine;
+      this.level = level;
+      this.elements = elements;
+      this.parameters = parameters.ToBase();
+    }
+  }
+
+  public class RevitProfileWall : Wall
+  {
+    public string family { get; set; }
+    public string type { get; set; }
+    public Polycurve profile { get; set; }
+    public Level level { get; set; }
+    public LocationLine locationLine { get; set; }
+    public bool structural { get; set; }
+    public Base parameters { get; set; }
+    public string elementId { get; set; }
+
+    public RevitProfileWall() { }
+
+    [SchemaInfo("RevitWall by profile", "Creates a Revit wall from a profile.", "Revit", "Architecture")]
+    public RevitProfileWall(string family, string type,
+      [SchemaParamInfo("Profile to use")][SchemaMainParam] Polycurve profile, Level level,
+      LocationLine locationLine = LocationLine.Interior, bool structural = false,
+      [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base> elements = null,
+      List<Parameter> parameters = null)
+    {
+      this.family = family;
+      this.type = type;
+      this.profile = profile;
+      this.locationLine = locationLine;
+      this.structural = structural;
       this.level = level;
       this.elements = elements;
       this.parameters = parameters.ToBase();

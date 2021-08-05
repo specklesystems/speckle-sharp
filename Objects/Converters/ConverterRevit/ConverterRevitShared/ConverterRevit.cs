@@ -284,6 +284,9 @@ namespace Objects.Converter.Revit
         case BE.Topography o:
           return TopographyToNative(o);
 
+        case BER.RevitProfileWall o:
+          return ProfileWallToNative(o);
+
         case BER.RevitFaceWall o:
           return FaceWallToNative(o);
 
@@ -400,6 +403,7 @@ namespace Objects.Converter.Revit
         BE.Roof _ => true,
         BE.Topography _ => true,
         BER.RevitFaceWall _ => true,
+        BER.RevitProfileWall _ => true,
         BE.Wall _ => true,
         BE.Duct _ => true,
         BE.Pipe _ => true,
