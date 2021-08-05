@@ -50,19 +50,19 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
       }
 
-      DB.Floor revitFloor;
+      DB.Floor revitFloor = null;
       if (floorType == null)
       {
         if (slope != 0 && slopeDirection != null)
           revitFloor = Doc.Create.NewSlab(outline, level, slopeDirection, slope, structural);
-        else
+        if (revitFloor == null)
           revitFloor = Doc.Create.NewFloor(outline, structural);
       }
       else
       {
         if (slope != 0 && slopeDirection != null)
           revitFloor = Doc.Create.NewSlab(outline, level, slopeDirection, slope, structural);
-        else
+        if (revitFloor == null)
           revitFloor = Doc.Create.NewFloor(outline, floorType, level, structural);
       }
 
