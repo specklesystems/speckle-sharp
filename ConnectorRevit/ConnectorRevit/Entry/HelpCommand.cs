@@ -7,6 +7,7 @@ using Autodesk.Revit.UI;
 using Speckle.ConnectorRevit.UI;
 using Speckle.DesktopUI;
 using Stylet.Xaml;
+using System.IO;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -37,6 +38,17 @@ namespace Speckle.ConnectorRevit.Entry
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
       Process.Start("https://speckle.systems/tutorials/");
+      return Result.Succeeded;
+    }
+  }
+
+  [Transaction(TransactionMode.Manual)]
+  public class ManagerCommand : IExternalCommand
+  {
+
+    public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
+    {
+      Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "speckle-manager", "SpeckleManager.exe"));
       return Result.Succeeded;
     }
   }
