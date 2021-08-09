@@ -1,28 +1,41 @@
 ﻿using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConverterGSA
 {
   public class ConverterGSA : ISpeckleConverter
   {
-    public string Description => throw new NotImplementedException();
+    #region ISpeckleConverter props
 
-    public string Name => throw new NotImplementedException();
+    public string Description => "Default Speckle Kit for GSA";
+    public string Name => nameof(ConverterGSA);
+    public string Author => "Arup";
+    public string WebsiteOrEmail => "https://www.oasys-software.com/";
 
-    public string Author => throw new NotImplementedException();
+    public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
-    public string WebsiteOrEmail => throw new NotImplementedException();
+    #endregion ISpeckleConverter props
 
-    public HashSet<Exception> ConversionErrors => throw new NotImplementedException();
+    public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+
+    public Dictionary<Type, Func<GsaRecord, List<Base>>> ToSpeckleFns;
+
+    public ConverterGSA()
+    {
+      ToSpeckleFns = new Dictionary<Type, Func<GsaRecord, List<Base>>>()
+        {
+          { typeof(GsaNode), GsaNodeToSpeckle }
+        };
+    }
 
     public bool CanConvertToNative(Base @object)
     {
-      throw new NotImplementedException();
+      var t = @object.GetType();
+      return (t.IsSubclassOf(typeof(GsaRecord)) && ToSpeckleFns.ContainsKey(t));
     }
 
     public bool CanConvertToSpeckle(object @object)
@@ -47,7 +60,13 @@ namespace ConverterGSA
 
     public List<Base> ConvertToSpeckle(List<object> objects)
     {
-      throw new NotImplementedException();
+      var native = objects.Where(o => o.GetType().IsSubclassOf(typeof(GsaRecord)));
+      if (native.Count() < objects.Count())
+      {
+        ConversionErrors.Add(new Exception("Non-native objects: " + (objects.Count() - native.Count())));
+        objects = native.ToList();
+      }
+      return objects.SelectMany(x => ToSpeckle((GsaRecord)x)).ToList();
     }
 
     public IEnumerable<string> GetServicedApplications()
@@ -60,14 +79,22 @@ namespace ConverterGSA
       throw new NotImplementedException();
     }
 
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects)
-    {
-      throw new NotImplementedException();
-    }
+    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
 
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects)
     {
       throw new NotImplementedException();
+    }
+
+    private List<Base> ToSpeckle(GsaRecord nativeObject)
+    {
+      var nativeType = nativeObject.GetType();
+      return ToSpeckleFns[nativeType](nativeObject);
+    }
+
+    public List<Base> GsaNodeToSpeckle(GsaRecord nativeObject)
+    {
+      return new List<Base>();
     }
   }
 }

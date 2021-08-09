@@ -1,21 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
-using Moq;
 using Speckle.GSA.API;
+using Speckle.Core.Kits;
 
 namespace ConverterGSATests
 {
   public abstract class SpeckleConversionFixture : IDisposable
   {
+    protected ISpeckleConverter converter;
+    protected GsaModelMock gsaModelMock = new GsaModelMock();
+
     public SpeckleConversionFixture()
     {
+      /*  For possible future use
       var gsaModelMock = new Mock<IGSAModel>();
       gsaModelMock.SetupGet(x => x.GwaDelimiter).Returns('\t');
-      Instance.GsaModel = gsaModelMock.Object;
+      */
+      converter = new ConverterGSA.ConverterGSA();
+      Instance.GsaModel = gsaModelMock;
     }
 
     public void Dispose()
