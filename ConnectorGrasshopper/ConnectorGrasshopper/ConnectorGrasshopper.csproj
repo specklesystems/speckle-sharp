@@ -207,6 +207,10 @@
   <ItemGroup>
     <None Include="Resources\receiveFromTransport.png" />
     <None Include="Resources\sendToTransport.png" />
+    <None Include="Resources\docs16.png" />
+    <None Include="Resources\forum16.png" />
+    <None Include="Resources\help16.png" />
+    <None Include="Resources\tutorials16.png" />
     <Content Include="SchemaBuilder\SchemaBuilderGen.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
