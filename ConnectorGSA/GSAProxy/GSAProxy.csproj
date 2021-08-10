@@ -31,8 +31,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Interop.Gsa_10_1">
+      <HintPath>..\Resource\Interop.Gsa_10_1.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,8 +46,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cache\GsaCache.cs" />
     <Compile Include="GsaModel.cs" />
+    <Compile Include="GsaProxy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Results\CsvAssembly.cs" />
+    <Compile Include="Results\CsvElem1d.cs" />
+    <Compile Include="Results\CsvElem2d.cs" />
+    <Compile Include="Results\CsvNode.cs" />
+    <Compile Include="Results\CsvRecord.cs" />
+    <Compile Include="Results\Enums.cs" />
+    <Compile Include="Results\Results1dProcessor.cs" />
+    <Compile Include="Results\Results2dProcessor.cs" />
+    <Compile Include="Results\ResultsAssemblyProcessor.cs" />
+    <Compile Include="Results\ResultsNodeProcessor.cs" />
+    <Compile Include="Results\ResultsProcessorBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Speckle.GSA.API\Speckle.GSA.API.csproj">
@@ -52,6 +70,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="GwaSchema\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CsvHelper">
+      <Version>27.1.1</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,14 +1,15 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GSAProxy")]
+[assembly: AssemblyTitle("ConnectorGSATests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("GSAProxy")]
+[assembly: AssemblyProduct("ConnectorGSATests")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("11db7d37-a6ed-4c8a-b354-d9fb3c82386c")]
+[assembly: Guid("0d38ede4-d922-4cdd-b9b2-c65156fd25cb")]
 
 // Version information for an assembly consists of the following four values:
 //

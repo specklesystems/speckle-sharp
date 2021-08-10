@@ -119,7 +119,9 @@
     [StringValue("RIGID")]
     RIGID,
     [StringValue("USER_VEHICLE")]
-    USER_VEHICLE
+    USER_VEHICLE,
+    [StringValue("UNIT_DATA")]
+    UNIT_DATA
   }
 
   public enum Restraint

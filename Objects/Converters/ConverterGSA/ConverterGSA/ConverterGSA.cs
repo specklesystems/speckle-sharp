@@ -28,6 +28,8 @@ namespace ConverterGSA
     {
       ToSpeckleFns = new Dictionary<Type, Func<GsaRecord, List<Base>>>()
         {
+          { typeof(GsaNode), GsaNodeToSpeckle },
+          { typeof(GsaNode), GsaNodeToSpeckle },
           { typeof(GsaNode), GsaNodeToSpeckle }
         };
     }
@@ -94,6 +96,8 @@ namespace ConverterGSA
 
     public List<Base> GsaNodeToSpeckle(GsaRecord nativeObject)
     {
+      var gsaNode = (GsaNode)nativeObject;
+
       return new List<Base>();
     }
   }

@@ -3,7 +3,7 @@ using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 
-namespace GSAProxy
+namespace GsaProxy
 {
   public class GsaModel : IGSAModel
   {
