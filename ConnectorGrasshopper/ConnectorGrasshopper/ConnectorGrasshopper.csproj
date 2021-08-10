@@ -254,6 +254,12 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="BeforeRebuild">
+    <Message Text="Restoring T4 tool..." Importance="high" />
+    <Exec Command="dotnet tool restore" />
+    <Message Text="Generating T4 templates..." Importance="high" />
+    <Exec Command="dotnet t4 -o $(SolutionDir)ConnectorGrasshopper\SchemaBuilder\SchemaBuilderGen.cs $(SolutionDir)ConnectorGrasshopper\SchemaBuilder\SchemaBuilderGen.tt -P=$(SolutionDir)ConnectorGrasshopper\SchemaBuilder" />
+  </Target>
   <Target Name="Clean">
     <RemoveDir Directories="$(TargetDir);$(AppData)\Grasshopper\Libraries\SpeckleGrasshopper2" />
   </Target>
@@ -273,8 +279,5 @@
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
     <PostBuildEvent>cp "$(TargetPath)" "$(TargetDir)$(TargetName).gha"</PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PreBuildEvent>dotnet t4 -o $(SolutionDir)ConnectorGrasshopper/SchemaBuilder/SchemaBuilderGen.cs $(SolutionDir)ConnectorGrasshopper/SchemaBuilder/SchemaBuilderGen.tt -P=$(SolutionDir)ConnectorGrasshopper/SchemaBuilder</PreBuildEvent>
   </PropertyGroup>
 </Project>
