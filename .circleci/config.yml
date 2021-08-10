@@ -76,6 +76,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             {"regex": "ConnectorRhino/.*", "param_name": "run_connector_rhino"},
             {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"}
           ]'
+          base-branch: 'main'
   
   build-core:
     executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
