@@ -1,4 +1,4 @@
-﻿#if (CIVIL2021 || CIVIL2022)
+﻿//#if (CIVIL2021 || CIVIL2022)
 using System.Collections.Generic;
 using System.Linq;
 
@@ -93,6 +93,9 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // featurelines
+    // TODO: add as builtelements class
+    // point code (check if this is display name or entity name)
+    // TODO: figure out how to extract 3d featureline instead of base curve
     public Base FeatureLineToSpeckle(CivilDB.FeatureLine featureline)
     {
       var curve = CurveToSpeckle(featureline.BaseCurve, ModelUnits) as Base;
@@ -288,10 +291,18 @@ namespace Objects.Converter.AutocadCivil
       try{ _pipe["startStation"] = pipe.StartStation; } catch{ }
       try{ _pipe["endStation"] = pipe.EndStation; } catch{ }
 
+      // add start and end structure ids
+
       return _pipe;
     }
 
+    // pipe network: (name, description)
+    // list<pipeIds>
+    // list<structureIds>
+    // 
+
     // corridors
+    // displaymesh: mesh representation corridor solid
     public Base CorridorToSpeckle(CivilDB.Corridor corridor)
     {
       var _corridor = new Base();
@@ -302,7 +313,7 @@ namespace Objects.Converter.AutocadCivil
         foreach (var baseline in corridor.Baselines)
         {
           Base convertedBaseline = null;
-          if (baseline.IsFeatureLineBased())
+          if (baseline.IsFeatureLineBased()) // featurelines will only be created if assembly has point codes
           {
             var featureline = tr.GetObject(baseline.FeatureLineId, OpenMode.ForRead) as CivilDB.FeatureLine;
             convertedBaseline = FeatureLineToSpeckle(featureline);
