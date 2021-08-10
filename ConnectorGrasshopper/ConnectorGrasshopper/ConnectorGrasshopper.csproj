@@ -275,6 +275,6 @@
     <PostBuildEvent>cp "$(TargetPath)" "$(TargetDir)$(TargetName).gha"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>t4 -o $(SolutionDir)ConnectorGrasshopper/SchemaBuilder/SchemaBuilderGen.cs $(SolutionDir)ConnectorGrasshopper/SchemaBuilder/SchemaBuilderGen.tt -P=$(SolutionDir)ConnectorGrasshopper/SchemaBuilder</PreBuildEvent>
+    <PreBuildEvent>dotnet t4 -o $(SolutionDir)ConnectorGrasshopper/SchemaBuilder/SchemaBuilderGen.cs $(SolutionDir)ConnectorGrasshopper/SchemaBuilder/SchemaBuilderGen.tt -P=$(SolutionDir)ConnectorGrasshopper/SchemaBuilder</PreBuildEvent>
   </PropertyGroup>
 </Project>
