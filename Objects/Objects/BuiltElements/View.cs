@@ -23,6 +23,8 @@ namespace Objects.BuiltElements
     public Box boundingBox { get; set; } // x is right, y is top of screen, z is towards viewer
     public bool isOrthogonal { get; set; } = false;
 
+    public string units { get; set; }
+
     public View3D() { }
   }
 

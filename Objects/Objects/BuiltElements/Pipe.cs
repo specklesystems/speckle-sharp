@@ -14,6 +14,8 @@ namespace Objects.BuiltElements
 
     [DetachProperty] public Mesh displayMesh { get; set; }
 
+    public string units { get; set; }
+
     public Pipe() { }
 
     [SchemaInfo("Pipe", "Creates a Speckle pipe", "BIM", "MEP")]

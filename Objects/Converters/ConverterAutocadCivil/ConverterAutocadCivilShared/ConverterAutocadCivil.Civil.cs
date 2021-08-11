@@ -87,7 +87,7 @@ namespace Objects.Converter.AutocadCivil
         curve["endStation"] = profile.EndingStation;
       curve["profileType"] = profile.ProfileType.ToString();
       curve["offset"] = profile.Offset;
-      curve.units = ModelUnits;
+      curve["units"] = ModelUnits;
 
       return curve;
     }
@@ -101,7 +101,7 @@ namespace Objects.Converter.AutocadCivil
         curve["name"] = featureline.DisplayName;
       if (featureline.Description != null)
         curve["description"] = featureline.Description;
-      curve.units = ModelUnits;
+      curve["units"] = ModelUnits;
       return curve;
     }
     /*
@@ -327,7 +327,7 @@ namespace Objects.Converter.AutocadCivil
         _corridor["name"] = corridor.DisplayName;
       if (corridor.Description != null)
         _corridor["description"] = corridor.Description;
-      _corridor.units = ModelUnits;
+      _corridor["units"] = ModelUnits;
 
       return _corridor;
     }
