@@ -233,6 +233,13 @@ namespace Objects.Converter.Revit
         case Geometry.Mesh o:
           return DirectShapeToNative(o);
 
+        // non revit built elems
+        case BE.Alignment o:
+          return ModelCurveToNative(o.baseCurve);
+
+        case BE.Structure o:
+          return DirectShapeToNative(o.displayMesh);
+
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
@@ -383,6 +390,9 @@ namespace Objects.Converter.Revit
         ICurve _ => true,
         Geometry.Brep _ => true,
         Geometry.Mesh _ => true,
+        // non revit built elems
+        BE.Structure _ => true,
+        BE.Alignment _ => true,
         //built elems
         BER.AdaptiveComponent _ => true,
         BE.Beam _ => true,
