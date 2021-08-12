@@ -1,14 +1,14 @@
 ﻿<#@ template debug="false" hostspecific="false" language="C#" #>
 <#@ output extension=".cs" #>
 <#@ assembly name="System.Core" #>
-<#@ assembly name="$(SolutionDir)ConnectorGrasshopper\bin\SpeckleConnectorGrasshopper.dll" #>
+<#@ assembly name="..\..\ConnectorGrasshopperUtils\bin\ConnectorGrasshopperUtils.dll" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Collections" #>
 <#@ import namespace="System.Drawing" #>
 <#@ import namespace="System.Reflection" #>
-<#@ import namespace="ConnectorGrasshopper" #>
+<#@ import namespace="ConnectorGrasshopperUtils" #>
 
 <#
     var allTypes = CSOUtils.ListAvailableTypes();
@@ -26,6 +26,7 @@
 
 using System;
 using Grasshopper.Kernel;
+using ConnectorGrasshopperUtils;
 
 namespace ConnectorGrasshopper {
 

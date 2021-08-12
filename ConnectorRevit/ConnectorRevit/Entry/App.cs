@@ -63,8 +63,13 @@ namespace Speckle.ConnectorRevit.Entry
       docs.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.docs16.png", path);
       docs.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.docs32.png", path);
 
- 
-      
+      PushButton manager = helpPulldown.AddPushButton(new PushButtonData("manager", "Manager", typeof(App).Assembly.Location, typeof(ManagerCommand).FullName)) as PushButton;
+      manager.ToolTip = "Manage accounts and connectors. Opens SpeckleManager.";
+      manager.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
+      manager.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
+
+
+
 
       return Result.Succeeded;
     }

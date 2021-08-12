@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
+using ConnectorGrasshopperUtils;
 using GH_IO.Serialization;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
