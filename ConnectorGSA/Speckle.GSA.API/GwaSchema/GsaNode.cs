@@ -16,7 +16,7 @@ namespace Speckle.GSA.API.GwaSchema
     public double Z;
     public NodeRestraint NodeRestraint;
     public List<AxisDirection6> Restraints;
-    public AxisRefType AxisRefType;
+    public NodeAxisRefType AxisRefType;
     public int? AxisIndex;
     public double? MeshSize;
     public int? SpringPropertyIndex;
@@ -58,7 +58,7 @@ namespace Speckle.GSA.API.GwaSchema
       }
       else
       {
-        AxisRefType = AxisRefType.Global;
+        AxisRefType = NodeAxisRefType.Global;
       }
 
       items = remainingItems;
@@ -105,7 +105,7 @@ namespace Speckle.GSA.API.GwaSchema
       {
         numRemainingParameters = 3;
       }
-      else if (AxisRefType == AxisRefType.Local || AxisRefType == AxisRefType.Reference)
+      else if (AxisRefType == NodeAxisRefType.XElevation || AxisRefType == NodeAxisRefType.YElevation || AxisRefType == NodeAxisRefType.Vertical || AxisRefType == NodeAxisRefType.Reference)
       {
         numRemainingParameters = 2;
       }
@@ -160,13 +160,13 @@ namespace Speckle.GSA.API.GwaSchema
 
     private string AddAxis()
     {
-      if (AxisRefType == AxisRefType.Reference)
+      if (AxisRefType == NodeAxisRefType.Reference)
       {
         return AxisIndex.ToString();
       }
-      else if (AxisRefType == AxisRefType.NotSet)
+      else if (AxisRefType == NodeAxisRefType.NotSet)
       {
-        return AxisRefType.Global.ToString().ToUpperInvariant();
+        return NodeAxisRefType.Global.ToString().ToUpperInvariant();
       }
       return AxisRefType.ToString().ToUpperInvariant();
     }
@@ -214,19 +214,29 @@ namespace Speckle.GSA.API.GwaSchema
 
     private bool AddAxis(string v)
     {
-      if (v.Trim().Equals(AxisRefType.Global.ToString(), StringComparison.InvariantCultureIgnoreCase))
+      if (v.Trim().Equals("GLOBAL", StringComparison.InvariantCultureIgnoreCase))
       {
-        AxisRefType = AxisRefType.Global;
+        AxisRefType = NodeAxisRefType.Global;
         return true;
       }
-      if (v.Trim().Equals(AxisRefType.Local.ToString(), StringComparison.InvariantCultureIgnoreCase))
+      if (v.Trim().Equals("X_ELEV", StringComparison.InvariantCultureIgnoreCase))
       {
-        AxisRefType = AxisRefType.Local;
+        AxisRefType = NodeAxisRefType.XElevation;
+        return true;
+      }
+      if (v.Trim().Equals("Y_ELEV", StringComparison.InvariantCultureIgnoreCase))
+      {
+        AxisRefType = NodeAxisRefType.YElevation;
+        return true;
+      }
+      if (v.Trim().Equals("VERTICAL", StringComparison.InvariantCultureIgnoreCase))
+      {
+        AxisRefType = NodeAxisRefType.Vertical;
         return true;
       }
       else
       {
-        AxisRefType = AxisRefType.Reference;
+        AxisRefType = NodeAxisRefType.Reference;
         return AddNullableIndex(v, out AxisIndex);
       }
     }
