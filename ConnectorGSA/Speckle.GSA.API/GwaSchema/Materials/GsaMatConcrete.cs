@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-
-
-namespace Speckle.GSA.API.GwaSchema
+﻿namespace Speckle.GSA.API.GwaSchema
 {
   public class GsaMatConcrete : GsaRecord_
   {

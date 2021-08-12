@@ -56,7 +56,8 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     #region to_gwa_fns
     private bool AddMat(ref List<string> items)
     {
-      if (!record.Mat.Gwa(out var gwa))
+      var gsaMatParser = new GsaMatParser(record.Mat);
+      if (!gsaMatParser.Gwa(out var gwa))
       {
         return false;
       }
@@ -70,7 +71,8 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     {
       record.Mat = new GsaMat();
       Join(items, out var matGwa);
-      if (!record.Mat.FromGwa(matGwa, out remainingItems))
+      var gsaMatParser = new GsaMatParser();
+      if (!gsaMatParser.FromGwa(matGwa, out remainingItems))
       {
         remainingItems = items;
         return false;

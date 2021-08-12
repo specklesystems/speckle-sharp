@@ -29,8 +29,6 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
     private List<GsaCacheRecord> validRecords { get => records.Where(r => r != null).ToList(); }
 
-    
-
     public GsaCache()  { }
 
     public bool Upsert(ProxyGwaLine proxyGwaLine)
@@ -179,7 +177,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       try
       {
         var gsaBaseType = typeof(GwaParser<GsaRecord_>);
-        var gsaAttributeType = typeof(GsaType);
+        var gsaAttributeType = typeof(GwaParsers.GsaType);
 
         types = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, (typeof(IGwaParser))) 
           && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
@@ -196,7 +194,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
     private bool GetSchemaTypes(List<Type> assemblyTypes, out List<Type> schemaTypes)
     {
-      var gsaAttributeType = typeof(GsaType);
+      var gsaAttributeType = typeof(GwaParsers.GsaType);
       try
       {
         schemaTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, (typeof(IGwaParser)))

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-
-namespace Speckle.GSA.API.GwaSchema
+﻿namespace Speckle.GSA.API.GwaSchema
 {
   public class GsaAxis : GsaRecord_
   {

@@ -13,10 +13,6 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     public bool Latest { get; set; }
     public bool Previous { get; set; }
 
-    public string StreamId { get => string.IsNullOrEmpty(streamIdOverride) ? GsaRecord.StreamId : streamIdOverride; }
-
-    private string streamIdOverride;
-
     //This one provides a valid value for sending even if there is no SID attached to the GSA record itself
     public string ApplicationId { get => GsaRecord == null ? "" : string.IsNullOrEmpty(GsaRecord.ApplicationId)
         ? Helper.FormatApplicationId(Keyword, GsaRecord.Index.Value) : GsaRecord.ApplicationId; }

@@ -54,5 +54,27 @@ namespace Speckle.ConnectorGSA.Proxy
     {
       return v.HasValue && v > 0;
     }
+
+    public static string GridExpansionToString(this GridExpansion expansion)
+    {
+      switch (expansion)
+      {
+        case GridExpansion.PlaneAspect: return "PLANE_ASPECT";
+        case GridExpansion.PlaneSmooth: return "PLANE_SMOOTH";
+        case GridExpansion.PlaneCorner: return "PLANE_CORNER";
+        default: return "LEGACY";
+      }
+    }
+
+    public static GridExpansion StringToGridExpansion(string expansion)
+    {
+      switch (expansion)
+      {
+        case "PLANE_ASPECT": return GridExpansion.PlaneAspect;
+        case "PLANE_SMOOTH": return GridExpansion.PlaneSmooth;
+        case "PLANE_CORNER": return GridExpansion.PlaneCorner;
+        default: return GridExpansion.Legacy;
+      }
+    }
   }
 }
