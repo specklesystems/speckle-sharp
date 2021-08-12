@@ -321,6 +321,7 @@ public static string AutocadAppName = Applications.Autocad2022;
               return true;
 
 #if (CIVIL2021 || CIVIL2022)
+// NOTE: C3D pressure pipes and pressure fittings API under development
             case CivilDB.FeatureLine _:
             case CivilDB.Corridor _:
             case CivilDB.Structure _:
