@@ -227,6 +227,16 @@
     Reference
   }
 
+  public enum NodeAxisRefType
+  {
+    NotSet = 0,
+    Global,
+    XElevation,
+    YElevation,
+    Vertical,
+    Reference
+  }
+
   public enum InfType
   {
     NotSet = 0,

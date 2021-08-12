@@ -43,7 +43,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
       else
       {
-        record.AxisRefType = AxisRefType.Global;
+        record.AxisRefType = NodeAxisRefType.Global;
       }
 
       items = remainingItems;
@@ -90,8 +90,9 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       {
         numRemainingParameters = 3;
       }
-      else if (record.AxisRefType == AxisRefType.Local || record.AxisRefType == AxisRefType.Reference)
-      {
+      else if (record.AxisRefType == NodeAxisRefType.XElevation || record.AxisRefType == NodeAxisRefType.YElevation 
+          || record.AxisRefType == NodeAxisRefType.Vertical || record.AxisRefType == NodeAxisRefType.Reference)
+          {
         numRemainingParameters = 2;
       }
       else if ((record.Restraints != null && record.Restraints.Count() > 0) || record.NodeRestraint != NodeRestraint.Free)
@@ -150,11 +151,11 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
     private string AddAxis()
     {
-      if (record.AxisRefType == AxisRefType.Reference)
+      if (record.AxisRefType == NodeAxisRefType.Reference)
       {
         return record.AxisIndex.ToString();
       }
-      else if (record.AxisRefType == AxisRefType.NotSet)
+      else if (record.AxisRefType == NodeAxisRefType.NotSet)
       {
         return AxisRefType.Global.ToString().ToUpperInvariant();
       }
@@ -204,19 +205,29 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
     private bool AddAxis(string v)
     {
-      if (v.Trim().Equals(AxisRefType.Global.ToString(), StringComparison.InvariantCultureIgnoreCase))
+      if (v.Trim().Equals("GLOBAL", StringComparison.InvariantCultureIgnoreCase))
       {
-        record.AxisRefType = AxisRefType.Global;
+        record.AxisRefType = NodeAxisRefType.Global;
         return true;
       }
-      if (v.Trim().Equals(AxisRefType.Local.ToString(), StringComparison.InvariantCultureIgnoreCase))
+      if (v.Trim().Equals("X_ELEV", StringComparison.InvariantCultureIgnoreCase))
       {
-        record.AxisRefType = AxisRefType.Local;
+        record.AxisRefType = NodeAxisRefType.XElevation;
+        return true;
+      }
+      if (v.Trim().Equals("Y_ELEV", StringComparison.InvariantCultureIgnoreCase))
+      {
+        record.AxisRefType = NodeAxisRefType.YElevation;
+        return true;
+      }
+      if (v.Trim().Equals("VERTICAL", StringComparison.InvariantCultureIgnoreCase))
+      {
+        record.AxisRefType = NodeAxisRefType.Vertical;
         return true;
       }
       else
       {
-        record.AxisRefType = AxisRefType.Reference;
+        record.AxisRefType = NodeAxisRefType.Reference;
         return AddNullableIndex(v, out record.AxisIndex);
       }
     }

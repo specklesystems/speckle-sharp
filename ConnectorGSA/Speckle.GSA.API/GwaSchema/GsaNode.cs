@@ -11,7 +11,7 @@ namespace Speckle.GSA.API.GwaSchema
     public double Z;
     public NodeRestraint NodeRestraint;
     public List<AxisDirection6> Restraints;
-    public AxisRefType AxisRefType;
+    public NodeAxisRefType AxisRefType;
     public int? AxisIndex;
     public double? MeshSize;
     public int? SpringPropertyIndex;

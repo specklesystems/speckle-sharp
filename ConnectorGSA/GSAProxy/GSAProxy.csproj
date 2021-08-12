@@ -55,6 +55,8 @@
     <Compile Include="GwaParsers\GsaAssemblyParser.cs" />
     <Compile Include="GwaParsers\GsaAxisParser.cs" />
     <Compile Include="GwaParsers\GsaLoadCaseParser.cs" />
+    <Compile Include="GwaParsers\GsaMatConcreteParser.cs" />
+    <Compile Include="GwaParsers\GsaMatSteelParser.cs" />
     <Compile Include="GwaParsers\GsaNodeParser.cs" />
     <Compile Include="GwaParsers\GsaPropMassParser.cs" />
     <Compile Include="GwaParsers\GsaPropSprParser.cs" />
