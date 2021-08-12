@@ -72,7 +72,22 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       RibbonPanelSource panel = CreateButtonPanel("Speckle 2", tab);
       if (panel == null)
         return;
-      RibbonButton button = CreateButton("Connector " + Utils.AppName, "Speckle", panel);
+      RibbonButton button = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, "Speckle Connector for " + Utils.AppName, "logo");
+
+      // help and resources buttons
+      RibbonSplitButton helpButton = new RibbonSplitButton();
+      helpButton.Text = "Help & Resources";
+      helpButton.Image = LoadPngImgSource("help16.png");
+      helpButton.LargeImage = LoadPngImgSource("help32.png");
+      helpButton.ShowImage = true;
+      helpButton.ShowText = true;
+      helpButton.Size = RibbonItemSize.Large;
+      helpButton.Orientation = Orientation.Vertical;
+
+      RibbonButton community = CreateButton("Community", "https://speckle.community", null, helpButton, "Check out our community forum! Opens a page in your web browser", "forum");
+      RibbonButton tutorials = CreateButton("Tutorials", "https://speckle.systems/tutorials", null, helpButton, "Check out our tutorials! Opens a page in your web browser", "tutorials");
+      RibbonButton docs = CreateButton("Docs", "https://speckle.guide/user/autocadcivil.html", null, helpButton, "Check out our documentation! Opens a page in your web browser", "docs");
+      panel.Items.Add(helpButton);
     }
 
     public void Terminate()
@@ -105,27 +120,36 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       return source;
     }
 
-    private RibbonButton CreateButton(string name, string CommandParameter, RibbonPanelSource source)
+    private RibbonButton CreateButton(string name, string CommandParameter, RibbonPanelSource sourcePanel = null, RibbonSplitButton sourceButton = null, string tooltip = "", string imageName = "")
     {
       var button = new RibbonButton();
 
       // ribbon panel source info assignment
       button.Text = name;
       button.Id = name;
-      button.CommandParameter = CommandParameter;
       button.ShowImage = true;
       button.ShowText = true;
-      button.ToolTip = "Speckle Connector for " + Utils.AppName;
+      button.ToolTip = tooltip;
       button.Size = RibbonItemSize.Large;
-      button.Orientation = Orientation.Vertical;
-      button.Image = LoadPngImgSource("logo16.png");
-      button.LargeImage = LoadPngImgSource("logo32.png");
-
-      // add command to the button
-      button.CommandHandler = new ButtonCommandHandler();
+      button.Image = LoadPngImgSource(imageName + "16.png");
+      button.LargeImage = LoadPngImgSource(imageName + "32.png");
 
       // add ribbon button pannel to the ribbon panel source
-      source.Items.Add(button);
+      if (sourcePanel != null)
+      {
+        button.Orientation = Orientation.Vertical;
+        button.CommandParameter = CommandParameter;
+        button.CommandHandler = new ButtonCommandHandler();
+        sourcePanel.Items.Add(button);
+
+      }
+      else if (sourceButton != null)
+      {
+        button.Orientation = Orientation.Horizontal;
+        button.CommandParameter = "_browser " + CommandParameter;
+        button.CommandHandler = new ButtonCommandHandler();
+        sourceButton.Items.Add(button);
+      }
       return button;
     }
 
