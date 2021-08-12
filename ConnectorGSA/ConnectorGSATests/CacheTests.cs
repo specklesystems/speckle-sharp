@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json;
-using Speckle.ConnectorGSA.Proxy;
+﻿using Moq;
+using Newtonsoft.Json;
 using Speckle.GSA.API;
+using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,21 +10,26 @@ using Xunit;
 
 namespace ConnectorGSATests
 {
-
   public class CacheTests : SpeckleConnectorFixture
   {
     [Fact]
     public void HydrateCache()
     {
+      var gsaModelMock = new Mock<IGSAModel>();
+      gsaModelMock.SetupGet(x => x.GwaDelimiter).Returns('\t');
+      gsaModelMock.Setup(x => x.ConvertGSAList(It.IsAny<string>(), It.IsAny<GSAEntity>())).Returns(new Func<string, GSAEntity, List<int>>(ConvertGSAList));
+      Instance.GsaModel = gsaModelMock.Object;
+
       var proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
       proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), false);
 
       var data = proxy.GetGwaData(DesignLayerKeywords, false);
       var erroredIndices = new List<int>();
 
+      Speckle.ConnectorGSA.Proxy.Cache.GsaCache cache;
       try
       {
-        var cache = new GsaCache();
+        cache = new Speckle.ConnectorGSA.Proxy.Cache.GsaCache();
 
         for (int i = 0; i < data.Count(); i++)
         {
@@ -39,6 +45,22 @@ namespace ConnectorGSATests
       }
 
       Assert.Empty(erroredIndices);
+    }
+    public static List<int> ConvertGSAList(string list, GSAEntity type)
+    {
+      var elements = list.Split(new[] { ' ' });
+
+      var indices = new List<int>();
+      foreach (var e in elements)
+      {
+        if (e.All(c => char.IsDigit(c)) && int.TryParse(e, out int index))
+        {
+          indices.Add(index);
+        }
+      }
+
+      //It's assumed for now that any list of GSA indices that would correspond to the App IDs in the list would be a sequence from 1
+      return indices;
     }
 
     /*

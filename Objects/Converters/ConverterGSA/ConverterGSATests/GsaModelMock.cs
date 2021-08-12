@@ -12,7 +12,7 @@ namespace ConverterGSATests
     public Func<double, double, double, int> NodeAtFn;
     public Dictionary<GwaKeyword, List<int>> IndicesByKeyword;
     public Dictionary<GwaKeyword, Dictionary<int, string>> ApplicationIdsByKeywordId;
-    public Dictionary<GwaKeyword, Dictionary<int, GsaRecord>> NativesByKeywordId;
+    public Dictionary<GwaKeyword, Dictionary<int, GsaRecord_>> NativesByKeywordId;
 
     protected Dictionary<ResultGroup, Dictionary<int, Dictionary<string, Dictionary<string, object>>>> resultsData;
 
@@ -26,7 +26,7 @@ namespace ConverterGSATests
 
     public override string GetApplicationId(GwaKeyword keyword, int index) => ApplicationIdsByKeywordId[keyword][index];
 
-    public override GsaRecord GetNative(GwaKeyword keyword, int index) => NativesByKeywordId[keyword][index];
+    public override GsaRecord_ GetNative(GwaKeyword keyword, int index) => NativesByKeywordId[keyword][index];
 
     public override bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null)
     {

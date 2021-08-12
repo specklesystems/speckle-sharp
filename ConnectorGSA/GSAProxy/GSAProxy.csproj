@@ -47,8 +47,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cache\GsaCache.cs" />
+    <Compile Include="Cache\GsaCacheRecord.cs" />
+    <Compile Include="Cache\TypeTreeCollection.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="GsaModel.cs" />
     <Compile Include="GsaProxy.cs" />
+    <Compile Include="GwaParsers\GsaAssemblyParser.cs" />
+    <Compile Include="GwaParsers\GsaAxisParser.cs" />
+    <Compile Include="GwaParsers\GsaLoadCaseParser.cs" />
+    <Compile Include="GwaParsers\GsaNodeParser.cs" />
+    <Compile Include="GwaParsers\GsaPropMassParser.cs" />
+    <Compile Include="GwaParsers\GsaPropSprParser.cs" />
+    <Compile Include="GwaParsers\GwaParser.cs" />
+    <Compile Include="GwaParsers\Helper.cs" />
+    <Compile Include="GwaParsers\IGwaParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Results\CsvAssembly.cs" />
     <Compile Include="Results\CsvElem1d.cs" />
@@ -68,9 +80,7 @@
       <Name>Speckle.GSA.API</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="GwaSchema\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <PackageReference Include="CsvHelper">
       <Version>27.1.1</Version>

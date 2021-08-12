@@ -1,27 +1,16 @@
-﻿using System;
+﻿using Speckle.GSA.API;
+using Speckle.GSA.API.GwaSchema;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Speckle.GSA.API.GwaSchema
+namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
-  public abstract class GsaRecord
+  public abstract class GwaParser<T> : IGwaParser where T : GsaRecord_
   {
-    public int? Index;
-    public int Version;
-    public string Sid;
-    public string ApplicationId;
-    public string StreamId;
-
-    //Not all objects have names, so it's up to the concrete classes to include a property which uses this field.
-    //It's included here so the AddName method can be included in this abstract class, saving its repetition in concrete classes
-    protected string name;
-
-    protected GwaSetCommandType gwaSetCommandType;
-    protected string keyword;  //Useful in string rather than enum form for use in creating GWA commands
-
-    public string Keyword => this.keyword;
-    public GwaSetCommandType GwaSetCommandType => this.gwaSetCommandType;
+    public Type GsaSchemaType { get => typeof(T); }
+    public GsaRecord_ Record { get => record; }
 
     protected static readonly string SID_APPID_TAG = "speckle_app_id";
     protected static readonly string SID_STRID_TAG = "speckle_stream_id";
@@ -30,10 +19,16 @@ namespace Speckle.GSA.API.GwaSchema
 
     public abstract bool Gwa(out List<string> gwa, bool includeSet = false);
 
-    public GsaRecord()
+    protected T record;
+    protected string keyword;
+    protected GwaSetCommandType gwaSetCommandType;
+
+    public GwaParser(T record)
     {
-      keyword = GetType().GetAttribute<GsaType>("Keyword").ToString();
-      Enum.TryParse(GetType().GetAttribute<GsaType>("SetCommandType").ToString(), out gwaSetCommandType);
+      this.record = record;
+
+      keyword = this.GetType().GetAttribute<GsaType>("Keyword").ToString();
+      Enum.TryParse(this.GetType().GetAttribute<GsaType>("SetCommandType").ToString(), out gwaSetCommandType);
     }
 
     #region basic_common_fns
@@ -46,18 +41,18 @@ namespace Speckle.GSA.API.GwaSchema
       {
         if (gwaSetCommandType == GwaSetCommandType.SetAt)
         {
-          items.AddRange(new[] { "SET_AT", Index.ToString() });
+          items.AddRange(new[] { "SET_AT", record.Index.ToString() });
         }
         else
         {
           items.Add("SET");
         }
       }
-      var sid = FormatSidTags(StreamId, ApplicationId);
-      items.Add((string.IsNullOrEmpty(keywordOverride) ? keyword : keywordOverride) + "." + Version + ((string.IsNullOrEmpty(sid)) ? "" : ":" + sid));
+      var sid = FormatSidTags(record.StreamId, record.ApplicationId);
+      items.Add((string.IsNullOrEmpty(keywordOverride) ? keyword : keywordOverride) + "." + record.Version + ((string.IsNullOrEmpty(sid)) ? "" : ":" + sid));
       if (gwaSetCommandType == GwaSetCommandType.Set)
       {
-        items.Add(Index.ToString());
+        items.Add(record.Index.ToString());
       }
       return true;
     }
@@ -81,7 +76,7 @@ namespace Speckle.GSA.API.GwaSchema
 
           if (int.TryParse(items[1], out var foundIndex))
           {
-            Index = foundIndex;
+            record.Index = foundIndex;
           }
 
           //For SET_ATs the format is SET_AT <index> <keyword> .., so remove the first two
@@ -110,7 +105,7 @@ namespace Speckle.GSA.API.GwaSchema
         {
           return false;
         }
-        Index = index;
+        record.Index = index;
         items.Remove(items[0]);
       }
 
@@ -181,7 +176,7 @@ namespace Speckle.GSA.API.GwaSchema
       //for members, the group is used
 
       var allIndices = Instance.GsaModel.LookupIndices(
-        (Instance.GsaModel.Layer == GSALayer.Design) ? GetKeyword<GsaMemb>() : GetKeyword<GsaEl>()).Distinct().OrderBy(i => i).ToList();
+        (Instance.GsaModel.Layer == GSALayer.Design) ? Helper.GetKeyword<GsaMemb>() : Helper.GetKeyword<GsaEl>()).Distinct().OrderBy(i => i).ToList();
 
       if (entities.Distinct().OrderBy(i => i).SequenceEqual(allIndices))
       {
@@ -203,7 +198,7 @@ namespace Speckle.GSA.API.GwaSchema
       //Unlike other keywords which have entity type as a parameter, this keyword (at least for version 2) still has "element list" which means, 
       //for members, the group is used
 
-      var allIndices = Instance.GsaModel.LookupIndices(GetKeyword<GsaNode>()).Distinct().OrderBy(i => i).ToList();
+      var allIndices = Instance.GsaModel.LookupIndices(Helper.GetKeyword<GsaNode>()).Distinct().OrderBy(i => i).ToList();
 
       if (indices.Distinct().OrderBy(i => i).SequenceEqual(allIndices))
       {
@@ -237,11 +232,13 @@ namespace Speckle.GSA.API.GwaSchema
 
     #region common_from_gwa_fns
 
+    /*
     protected bool AddName(string v)
     {
-      name = (string.IsNullOrEmpty(v)) ? null : v;
+      record.name = (string.IsNullOrEmpty(v)) ? null : v;
       return true;
     }
+    */
 
     protected bool AddName(string v, out string name)
     {
@@ -274,9 +271,9 @@ namespace Speckle.GSA.API.GwaSchema
         keywordAndVersion = v.Substring(0, delimIndex);
         var sidTags = v.Substring(delimIndex);
         var match = Regex.Match(sidTags, "(?<={" + SID_STRID_TAG + ":).*?(?=})");
-        StreamId = (!string.IsNullOrEmpty(match.Value)) ? match.Value : null;
+        record.StreamId = (!string.IsNullOrEmpty(match.Value)) ? match.Value : null;
         match = Regex.Match(sidTags, "(?<={" + SID_APPID_TAG + ":).*?(?=})");
-        ApplicationId = (!string.IsNullOrEmpty(match.Value)) ? match.Value : null;
+        record.ApplicationId = (!string.IsNullOrEmpty(match.Value)) ? match.Value : null;
       }
       else
       {
@@ -291,14 +288,14 @@ namespace Speckle.GSA.API.GwaSchema
       }
       if (kwSplit.Count() > 1)
       {
-        if (!int.TryParse(kwSplit[1], out Version))
+        if (!int.TryParse(kwSplit[1], out record.Version))
         {
           return false;
         }
       }
       else
       {
-        Version = 1;
+        record.Version = 1;
       }
       return true;
     }
@@ -310,7 +307,7 @@ namespace Speckle.GSA.API.GwaSchema
       {
         if (entityItems.Count() == 1 && entityItems.First().Equals("all", StringComparison.InvariantCultureIgnoreCase))
         {
-          indices = Instance.GsaModel.LookupIndices(GetKeyword<GsaMemb>()).ToList();
+          indices = Instance.GsaModel.LookupIndices(Helper.GetKeyword<GsaMemb>()).ToList();
         }
         else
         {
@@ -323,7 +320,7 @@ namespace Speckle.GSA.API.GwaSchema
       else
       {
         indices = (entityItems.Count() == 1 && entityItems.First().Equals("all", StringComparison.InvariantCultureIgnoreCase))
-          ? Instance.GsaModel.LookupIndices(GetKeyword<GsaEl>()).ToList()
+          ? Instance.GsaModel.LookupIndices(Helper.GetKeyword<GsaEl>()).ToList()
           : Instance.GsaModel.ConvertGSAList(v, GSAEntity.ELEMENT).ToList();
       }
       return true;
@@ -333,7 +330,7 @@ namespace Speckle.GSA.API.GwaSchema
     {
       var entityItems = v.Split(' ');
       indices = (entityItems.Count() == 1 && entityItems.First().Equals("all", StringComparison.InvariantCultureIgnoreCase))
-          ? Instance.GsaModel.LookupIndices(GetKeyword<GsaNode>()).ToList()
+          ? Instance.GsaModel.LookupIndices(Helper.GetKeyword<GsaNode>()).ToList()
           : Instance.GsaModel.ConvertGSAList(v, GSAEntity.NODE).ToList();
       return true;
     }
@@ -500,6 +497,7 @@ namespace Speckle.GSA.API.GwaSchema
     #endregion
 
     #region static_methods
+
     private static string FormatApplicationIdSidTag(string value)
     {
       return (string.IsNullOrEmpty(value) ? null : "{" + SID_APPID_TAG + ":" + value.Replace(" ", "") + "}");
@@ -525,42 +523,6 @@ namespace Speckle.GSA.API.GwaSchema
       }
       return string.IsNullOrEmpty(sidTags) ? null : sidTags;
     }
-
-    public static GwaKeyword GetKeyword<T>()
-    {
-      return (GwaKeyword)typeof(T).GetAttribute<GsaType>("Keyword");
-    }
-
-    public static GwaKeyword GetGwaKeyword(Type t)
-    {
-      return (GwaKeyword)t.GetAttribute<GsaType>("Keyword");
-    }
-
-    public static bool IsAnalysisLayer(Type t)
-    {
-      return (bool)t.GetAttribute<GsaType>("AnalysisLayer");
-    }
-
-    public static bool IsDesignLayer(Type t)
-    {
-      return (bool)t.GetAttribute<GsaType>("DesignLayer");
-    }
-
-    public static GwaKeyword[] GetReferencedKeywords(Type t)
-    {
-      return (GwaKeyword[])t.GetAttribute<GsaType>("ReferencedKeywords");
-    }
-
-    public static GwaSetCommandType GetGwaSetCommandType<T>()
-    {
-      return (GwaSetCommandType)typeof(T).GetAttribute<GsaType>("SetCommandType");
-    }
-
-    public static bool IsSelfContained(Type t)
-    {
-      return (bool)t.GetAttribute<GsaType>("SelfContained");
-    }
     #endregion
-
   }
 }

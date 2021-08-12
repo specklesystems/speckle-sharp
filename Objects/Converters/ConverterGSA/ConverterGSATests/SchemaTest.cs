@@ -21,9 +21,9 @@ namespace ConverterGSATests
     {
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      gsaModelMock.NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
+      gsaModelMock.NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord_>>
       {
-        { GwaKeyword.PROP_MASS, new Dictionary<int, GsaRecord>
+        { GwaKeyword.PROP_MASS, new Dictionary<int, GsaRecord_>
           { { 1, new GsaPropMass() { Index = 1, Mass = 10 } } }
         }
       };

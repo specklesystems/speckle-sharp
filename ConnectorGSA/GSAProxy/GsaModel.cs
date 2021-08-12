@@ -29,17 +29,12 @@ namespace GsaProxy
       throw new NotImplementedException();
     }
 
-    public GsaRecord Get(GwaKeyword keyword, int index)
-    {
-      throw new NotImplementedException();
-    }
-
     public string GetApplicationId(GwaKeyword keyword, int index)
     {
       throw new NotImplementedException();
     }
 
-    public GsaRecord GetNative(GwaKeyword keyword, int index)
+    public GsaRecord_ GetNative(GwaKeyword keyword, int index)
     {
       throw new NotImplementedException();
     }

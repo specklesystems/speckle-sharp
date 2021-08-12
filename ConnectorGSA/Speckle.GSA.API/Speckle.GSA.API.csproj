@@ -78,6 +78,7 @@
     <Compile Include="GwaSchema\Materials\GsaMat.cs" />
     <Compile Include="GwaSchema\Materials\GsaMatConcrete.cs" />
     <Compile Include="GwaSchema\Materials\GsaMatSteel.cs" />
+    <Compile Include="GwaSchema\GsaRecord_.cs" />
     <Compile Include="GwaSchema\OtherGsaClasses.cs" />
     <Compile Include="GwaSchema\Properties\GsaProp2d.cs" />
     <Compile Include="GwaSchema\Properties\GsaPropMass.cs" />

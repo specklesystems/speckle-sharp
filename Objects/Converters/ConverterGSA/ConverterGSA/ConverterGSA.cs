@@ -22,14 +22,12 @@ namespace ConverterGSA
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
-    public Dictionary<Type, Func<GsaRecord, List<Base>>> ToSpeckleFns;
+    public Dictionary<Type, Func<GsaRecord_, List<Base>>> ToSpeckleFns;
 
     public ConverterGSA()
     {
-      ToSpeckleFns = new Dictionary<Type, Func<GsaRecord, List<Base>>>()
+      ToSpeckleFns = new Dictionary<Type, Func<GsaRecord_, List<Base>>>()
         {
-          { typeof(GsaNode), GsaNodeToSpeckle },
-          { typeof(GsaNode), GsaNodeToSpeckle },
           { typeof(GsaNode), GsaNodeToSpeckle }
         };
     }
@@ -62,13 +60,13 @@ namespace ConverterGSA
 
     public List<Base> ConvertToSpeckle(List<object> objects)
     {
-      var native = objects.Where(o => o.GetType().IsSubclassOf(typeof(GsaRecord)));
+      var native = objects.Where(o => o.GetType().IsSubclassOf(typeof(GsaRecord_)));
       if (native.Count() < objects.Count())
       {
         ConversionErrors.Add(new Exception("Non-native objects: " + (objects.Count() - native.Count())));
         objects = native.ToList();
       }
-      return objects.SelectMany(x => ToSpeckle((GsaRecord)x)).ToList();
+      return objects.SelectMany(x => ToSpeckle((GsaRecord_)x)).ToList();
     }
 
     public IEnumerable<string> GetServicedApplications()
@@ -88,13 +86,13 @@ namespace ConverterGSA
       throw new NotImplementedException();
     }
 
-    private List<Base> ToSpeckle(GsaRecord nativeObject)
+    private List<Base> ToSpeckle(GsaRecord_ nativeObject)
     {
       var nativeType = nativeObject.GetType();
       return ToSpeckleFns[nativeType](nativeObject);
     }
 
-    public List<Base> GsaNodeToSpeckle(GsaRecord nativeObject)
+    public List<Base> GsaNodeToSpeckle(GsaRecord_ nativeObject)
     {
       var gsaNode = (GsaNode)nativeObject;
 
