@@ -83,11 +83,12 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       helpButton.ShowText = true;
       helpButton.Size = RibbonItemSize.Large;
       helpButton.Orientation = Orientation.Vertical;
-
-      RibbonButton community = CreateButton("Community", "https://speckle.community", null, helpButton, "Check out our community forum! Opens a page in your web browser", "forum");
-      RibbonButton tutorials = CreateButton("Tutorials", "https://speckle.systems/tutorials", null, helpButton, "Check out our tutorials! Opens a page in your web browser", "tutorials");
-      RibbonButton docs = CreateButton("Docs", "https://speckle.guide/user/autocadcivil.html", null, helpButton, "Check out our documentation! Opens a page in your web browser", "docs");
       panel.Items.Add(helpButton);
+
+      RibbonButton community = CreateButton("Community", "SpeckleCommunity", null, helpButton, "Check out our community forum! Opens a page in your web browser", "forum");
+      RibbonButton tutorials = CreateButton("Tutorials", "SpeckleTutorials", null, helpButton, "Check out our tutorials! Opens a page in your web browser", "tutorials");
+      RibbonButton docs = CreateButton("Docs", "SpeckleDocs", null, helpButton, "Check out our documentation! Opens a page in your web browser", "docs");
+      
     }
 
     public void Terminate()
@@ -139,15 +140,15 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       {
         button.Orientation = Orientation.Vertical;
         button.CommandParameter = CommandParameter;
-        button.CommandHandler = new ButtonCommandHandler();
+        button.CommandHandler = new ButtonCommandHandler(CommandParameter);
         sourcePanel.Items.Add(button);
 
       }
       else if (sourceButton != null)
       {
         button.Orientation = Orientation.Horizontal;
-        button.CommandParameter = "_browser " + CommandParameter;
-        button.CommandHandler = new ButtonCommandHandler();
+        button.CommandParameter = CommandParameter;
+        button.CommandHandler = new ButtonCommandHandler(CommandParameter);
         sourceButton.Items.Add(button);
       }
       return button;
@@ -172,13 +173,34 @@ namespace Speckle.ConnectorAutocadCivil.Entry
 
     public class ButtonCommandHandler : System.Windows.Input.ICommand
     {
+      private string commandParameter;
+
+      public ButtonCommandHandler(string commandParameter)
+      {
+        this.commandParameter = commandParameter;
+      }
+
       public event System.EventHandler CanExecuteChanged;
 
       public void Execute(object parameter)
       {
         RibbonButton btn = parameter as RibbonButton;
         if (btn != null)
-          SpeckleAutocadCommand.SpeckleCommand();
+          switch (commandParameter)
+          {
+            case "Speckle":
+              SpeckleAutocadCommand.SpeckleCommand();
+              break;
+            case "SpeckleCommunity":
+              SpeckleAutocadCommand.SpeckleCommunity();
+              break;
+            case "SpeckleTutorials":
+              SpeckleAutocadCommand.SpeckleTutorials();
+              break;
+            case "SpeckleDocs":
+              SpeckleAutocadCommand.SpeckleDocs();
+              break;
+          }
       }
 
       public bool CanExecute(object parameter) => true;
