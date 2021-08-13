@@ -13,6 +13,7 @@ using Alignment = Objects.BuiltElements.Alignment;
 using Interval = Objects.Primitive.Interval;
 using Polycurve = Objects.Geometry.Polycurve;
 using Curve = Objects.Geometry.Curve;
+using Featureline = Objects.BuiltElements.Featureline;
 using Point = Objects.Geometry.Point;
 using Brep = Objects.Geometry.Brep;
 using Mesh = Objects.Geometry.Mesh;
@@ -35,11 +36,6 @@ namespace Objects.Converter.AutocadCivil
       _station.units = ModelUnits;
 
       return _station;
-    }
-
-    public CivilDB.FeatureLine FeatureLineToNative(Polycurve polycurve)
-    {
-      return null;
     }
 
     // alignments
@@ -93,42 +89,36 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // featurelines
-    public Base FeatureLineToSpeckle(CivilDB.FeatureLine featureline)
+    public Featureline FeatureLineToSpeckle(CivilDB.FeatureLine featureline)
     {
-      var curve = CurveToSpeckle(featureline.BaseCurve, ModelUnits) as Base;
+      var _featureline = new Featureline();
 
-      if (featureline.DisplayName != null)
-        curve["name"] = featureline.DisplayName;
-      if (featureline.Description != null)
-        curve["description"] = featureline.Description;
-      curve["units"] = ModelUnits;
-      return curve;
+      _featureline.baseCurve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
+      _featureline.name = (featureline.DisplayName != null) ? featureline.DisplayName : "";
+      _featureline["description"] = (featureline.Description != null) ? featureline.Description : "";
+      _featureline.units = ModelUnits;
+
+      List<Point> piPoints = new List<Point>();
+      List<Point> elevationPoints = new List<Point>();
+      
+      foreach (Autodesk.AutoCAD.Geometry.Point3d point in featureline.GetPoints(Autodesk.Civil.FeatureLinePointType.PIPoint))
+        piPoints.Add(PointToSpeckle(point));
+      foreach (Autodesk.AutoCAD.Geometry.Point3d point in featureline.GetPoints(Autodesk.Civil.FeatureLinePointType.ElevationPoint))
+        elevationPoints.Add(PointToSpeckle(point));
+      if (piPoints.Count > 0)
+        _featureline[@"piPoints"] = piPoints;
+      if (elevationPoints.Count > 0)
+        _featureline[@"elevationPoints"] = elevationPoints;
+
+      try { _featureline["site"] = featureline.SiteId; } catch { }
+
+      return _featureline;
     }
-    /*
-    public Polycurve FeatureLineToSpeckle(CivilDB.FeatureLine featureLine)
+
+    public CivilDB.FeatureLine FeatureLineToNative(Polycurve polycurve)
     {
-      var polycurve = new Polycurve() { closed = featureLine.Closed };
-
-      // extract segment curves
-      var segments = new List<ICurve>();
-      var exploded = new DBObjectCollection();
-      featureLine.Explode(exploded);
-      for (int i = 0; i < exploded.Count; i++)
-        segments.Add((ICurve)ConvertToSpeckle(exploded[i]));
-      polycurve.segments = segments;
-
-      // TODO: additional params to attach
-      try
-      {
-        var grade = new Interval(featureLine.MinGrade, featureLine.MaxGrade);
-        var elevation = new Interval(featureLine.MinElevation, featureLine.MaxElevation);
-        var name = featureLine.DisplayName;
-      }
-      catch { }
-
-      return polycurve;
+      return null;
     }
-    */
 
     // surfaces
     public Mesh SurfaceToSpeckle(CivilDB.TinSurface surface)
@@ -253,6 +243,7 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // pipes
+    // TODO: add pressurepipes and pressure fittings when they become supported by C3D api
     public Pipe PipeToSpeckle(CivilDB.Pipe pipe)
     {
       // get the pipe curve
@@ -278,20 +269,25 @@ namespace Objects.Converter.AutocadCivil
       // assign additional structure props
       _pipe["name"] = (pipe.DisplayName != null) ? pipe.DisplayName : "";
       _pipe["description"] = (pipe.DisplayName != null) ? pipe.Description : "";
-      try{ _pipe["shape"] = pipe.CrossSectionalShape.ToString(); } catch{ }
-      try{ _pipe["slope"] = pipe.Slope; } catch{ }
-      try{ _pipe["flowDirection"] = pipe.FlowDirection.ToString(); } catch{ }
-      try{ _pipe["flowRate"] = pipe.FlowRate; } catch{ }
-      try{ _pipe["network"] = pipe.NetworkName; } catch{ }
-      try{ _pipe["startOffset"] = pipe.StartOffset; } catch{ }
-      try{ _pipe["endOffset"] = pipe.EndOffset; } catch{ }
-      try{ _pipe["startStation"] = pipe.StartStation; } catch{ }
-      try{ _pipe["endStation"] = pipe.EndStation; } catch{ }
+      try { _pipe["shape"] = pipe.CrossSectionalShape.ToString(); } catch { }
+      try { _pipe["slope"] = pipe.Slope; } catch { }
+      try { _pipe["flowDirection"] = pipe.FlowDirection.ToString(); } catch { }
+      try { _pipe["flowRate"] = pipe.FlowRate; } catch { }
+      try { _pipe["network"] = pipe.NetworkName; } catch { }
+      try { _pipe["startOffset"] = pipe.StartOffset; } catch { }
+      try { _pipe["endOffset"] = pipe.EndOffset; } catch { }
+      try { _pipe["startStation"] = pipe.StartStation; } catch { }
+      try { _pipe["endStation"] = pipe.EndStation; } catch { }
+      try { _pipe["startStructure"] = pipe.StartStructureId.ToString(); } catch { }
+      try { _pipe["endStructure"] = pipe.EndStructureId.ToString(); } catch { }
+
+      // add start and end structure ids
 
       return _pipe;
     }
 
     // corridors
+    // displaymesh: mesh representation corridor solid
     public Base CorridorToSpeckle(CivilDB.Corridor corridor)
     {
       var _corridor = new Base();
@@ -301,8 +297,10 @@ namespace Objects.Converter.AutocadCivil
       {
         foreach (var baseline in corridor.Baselines)
         {
-          Base convertedBaseline = null;
-          if (baseline.IsFeatureLineBased())
+          Base convertedBaseline = new Base();
+
+          /* this is just for construction, not relevant info
+          if (baseline.IsFeatureLineBased()) // featurelines will only be created if assembly has point codes
           {
             var featureline = tr.GetObject(baseline.FeatureLineId, OpenMode.ForRead) as CivilDB.FeatureLine;
             convertedBaseline = FeatureLineToSpeckle(featureline);
@@ -312,26 +310,54 @@ namespace Objects.Converter.AutocadCivil
             var alignment = tr.GetObject(baseline.AlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
             convertedBaseline = AlignmentToSpeckle(alignment);
           }
-          if (convertedBaseline != null)
-          {
-            convertedBaseline["stations"] = baseline.SortedStations();
-            baselines.Add(convertedBaseline);
-          }
+          */
+
+          // get the collection of featurelines for this baseline
+          var featurelines = new List<Featureline>();
+          foreach (var mainFeaturelineCollection in baseline.MainBaselineFeatureLines.FeatureLineCollectionMap) // main featurelines
+            foreach (var featureline in mainFeaturelineCollection)
+              featurelines.Add(GetCorridorFeatureline(featureline));
+          foreach (var offsetFeaturelineCollection in baseline.OffsetBaselineFeatureLinesCol) // offset featurelines
+            foreach (var featurelineCollection in offsetFeaturelineCollection.FeatureLineCollectionMap)
+              foreach (var featureline in featurelineCollection)
+                featurelines.Add(GetCorridorFeatureline(featureline, true));
+
+          convertedBaseline[@"featurelines"] = featurelines;
+          convertedBaseline["type"] = baseline.BaselineType.ToString();
+          convertedBaseline.applicationId = baseline.baselineGUID.ToString();
+          try { convertedBaseline["stations"] = baseline.SortedStations(); } catch { }
+
+          baselines.Add(convertedBaseline);
         }
 
         tr.Commit();
       }
-
+      
       _corridor["@baselines"] = baselines;
-      if (corridor.DisplayName != null)
-        _corridor["name"] = corridor.DisplayName;
-      if (corridor.Description != null)
-        _corridor["description"] = corridor.Description;
+      _corridor["name"] = (corridor.DisplayName != null) ? corridor.DisplayName : "";
+      _corridor["description"] = (corridor.Description != null) ? corridor.Description : "";
       _corridor["units"] = ModelUnits;
 
       return _corridor;
     }
 
+    private Featureline GetCorridorFeatureline(CivilDB.CorridorFeatureLine featureline = null, bool isOffset = false)
+    {
+      // construct the 3d polyline
+      var collection = new Acad.Point3dCollection();
+      foreach (var point in featureline.FeatureLinePoints)
+        collection.Add(point.XYZ);
+      var polyline = new Polyline3d(Poly3dType.SimplePoly, collection, false);
+
+      // create featureline
+      var _featureline = new Featureline();
+      _featureline.baseCurve = PolylineToSpeckle(polyline);
+      _featureline.name = featureline.CodeName;
+      _featureline.units = ModelUnits;
+      _featureline["isOffset"] = isOffset;
+
+      return _featureline;
+    }
   }
 }
 #endif
