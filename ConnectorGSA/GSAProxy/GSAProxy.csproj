@@ -48,6 +48,8 @@
   <ItemGroup>
     <Compile Include="Cache\GsaCache.cs" />
     <Compile Include="Cache\GsaCacheRecord.cs" />
+    <Compile Include="Cache\IPairCollection.cs" />
+    <Compile Include="Cache\PairCollection.cs" />
     <Compile Include="Cache\TypeTreeCollection.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="GsaModel.cs" />
