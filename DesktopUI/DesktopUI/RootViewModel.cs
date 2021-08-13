@@ -52,9 +52,9 @@ namespace Speckle.DesktopUI
       _windowManager = windowManager;
       _viewModelFactory = viewModelFactory;
       Bindings = bindings;
-      
+
       DisplayName = "Speckle " + bindings.GetHostAppName();
-      
+
       LoadPages();
 
       ActivateItem(Pages["streams"]);
@@ -89,7 +89,7 @@ namespace Speckle.DesktopUI
       base.ActivateItem(item);
       ViewName = item.DisplayName;
 
-      if ( ActiveItem is AllStreamsViewModel  )
+      if (ActiveItem is AllStreamsViewModel)
       {
         MainButtonIcon = SettingsIcon;
         MainButton_Checked = false;
@@ -103,29 +103,35 @@ namespace Speckle.DesktopUI
 
     public void GoToSettingsOrBack()
     {
-      if( ActiveItem is StreamViewModel )
-        ActivateItem(Pages[ "streams" ]);
+      if (ActiveItem is StreamViewModel)
+        ActivateItem(Pages["streams"]);
       else
-        ActivateItem( ActiveItem is AllStreamsViewModel ? Pages[ "settings" ] : Pages[ "streams" ] );
+        ActivateItem(ActiveItem is AllStreamsViewModel ? Pages["settings"] : Pages["streams"]);
     }
 
-    public void GoToStreamViewPage( StreamViewModel streamItem)
+    public void GoToStreamViewPage(StreamViewModel streamItem)
     {
       ActivateItem(streamItem);
     }
 
     public void RefreshActiveView()
     {
-      ( ( SettingsViewModel ) Pages[ "settings" ] ).Refresh();
-      ( ( AllStreamsViewModel ) Pages[ "streams" ] ).RefreshPage();
-      if ( ActiveItem is StreamViewModel streamViewModel)
+      ((SettingsViewModel)Pages["settings"]).Refresh();
+      ((AllStreamsViewModel)Pages["streams"]).RefreshPage();
+      if (ActiveItem is StreamViewModel streamViewModel)
         streamViewModel.Refresh();
+
+    }
+
+    public void GetHelp()
+    {
+      System.Diagnostics.Process.Start("https://speckle.community/new-topic?title=I%20need%20help%20with...&category=help&body=Hello+there%21+Some+tips+on+asking+for+help+on+our+forum%3A%0D%0A%0D%0A%2AWhat+happened+and+what+where+you+expecting%3F+Does+it+happen+all+the+times+or+only+some+times%3F+What%27s+the+version+of+this+connector%3F+What+Speckle+server+are+you+using%3F+Can+you+share+with+us+sample+files%2Fstreams+with+instructions+on+how+to+reproduce+it%3F%2A%0D%0A%0D%0AThanks+for+helping+us+make+a+better+Speckle%21");
 
     }
 
     public void Handle(StreamRemovedEvent message)
     {
-      ActivateItem(Pages[ "streams" ]);
+      ActivateItem(Pages["streams"]);
     }
 
     public void Handle(ShowNotificationEvent message)
