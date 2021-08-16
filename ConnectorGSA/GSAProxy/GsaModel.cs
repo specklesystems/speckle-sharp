@@ -1,7 +1,7 @@
 ﻿using Speckle.GSA.API;
-using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
+using Speckle.GSA.API.GwaSchema;
 
 namespace GsaProxy
 {

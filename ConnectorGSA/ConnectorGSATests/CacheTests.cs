@@ -1,8 +1,7 @@
-﻿using Moq;
-using Newtonsoft.Json;
+﻿using Speckle.ConnectorGSA.Proxy.Cache;
+using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,9 +14,6 @@ namespace ConnectorGSATests
     [Fact]
     public void HydrateCache()
     {
-      var gsaModelMock = new Mock<IGSAModel>();
-      gsaModelMock.SetupGet(x => x.GwaDelimiter).Returns('\t');
-      gsaModelMock.Setup(x => x.ConvertGSAList(It.IsAny<string>(), It.IsAny<GSAEntity>())).Returns(new Func<string, GSAEntity, List<int>>(ConvertGSAList));
       Instance.GsaModel = gsaModelMock.Object;
 
       var proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
@@ -26,10 +22,10 @@ namespace ConnectorGSATests
       var data = proxy.GetGwaData(DesignLayerKeywords, false);
       var erroredIndices = new List<int>();
 
-      Speckle.ConnectorGSA.Proxy.Cache.GsaCache cache;
+      GsaCache cache;
       try
       {
-        cache = new Speckle.ConnectorGSA.Proxy.Cache.GsaCache();
+        cache = new GsaCache();
 
         for (int i = 0; i < data.Count(); i++)
         {
@@ -45,22 +41,6 @@ namespace ConnectorGSATests
       }
 
       Assert.Empty(erroredIndices);
-    }
-    public static List<int> ConvertGSAList(string list, GSAEntity type)
-    {
-      var elements = list.Split(new[] { ' ' });
-
-      var indices = new List<int>();
-      foreach (var e in elements)
-      {
-        if (e.All(c => char.IsDigit(c)) && int.TryParse(e, out int index))
-        {
-          indices.Add(index);
-        }
-      }
-
-      //It's assumed for now that any list of GSA indices that would correspond to the App IDs in the list would be a sequence from 1
-      return indices;
     }
 
     /*
@@ -88,63 +68,93 @@ namespace ConnectorGSATests
       Assert.Equal(expectedAs, expandedLoadCases.Where(c => char.ToLowerInvariant(c[0]) == 'a').Count());
       Assert.Equal(expectedCs, expandedLoadCases.Where(c => char.ToLowerInvariant(c[0]) == 'c').Count());
     }
+    */
 
     [Fact]
     public void ReserveMultipleIndicesSet()
     {
+      Instance.GsaModel = gsaModelMock.Object;
       var cache = new GsaCache();
 
-      cache.Upsert("MEMB", 1, "MEMB.8:{speckle_app_id:Slab0}\t1\tSlab 0\tNO_RGB\tSLAB\t1\t6\t36 37 38 39 40 41 42\t0\t0\t5\tMESH\tLINEAR\t0\t0\t0\t0\t0\tACTIVE\tNO\t0\tALL", "abcdefgh", "Slab0", GwaSetCommandType.Set);
+      var parser = new GsaMembParser();
+      //MEMB.8:{speckle_app_id:Slab0}\t6\tSlab 0\tNO_RGB\tSLAB\tALL\t1\t6\t36 37 38 39 40 41 42\t0\t0\t5\tYES\tLINEAR\t0\t0\t0\t0\t0\t0\tACTIVE\t0\tNO\tREBAR_2D.1\t0.03\t0.03\t0
+      //Assert.True(parser.FromGwa("MEMB.8:{speckle_app_id:Slab0}\t1\tSlab 0\tNO_RGB\tSLAB\t1\t6\t36 37 38 39 40 41 42\t0\t0\t5\tMESH\tLINEAR\t0\t0\t0\t0\t0\tACTIVE\tNO\t0\tALL"));
+      Assert.True(parser.FromGwa("MEMB.8:{speckle_app_id:Slab0}\t6\tSlab 0\tNO_RGB\tSLAB\tALL\t1\t6\t36 37 38 39 40 41 42\t0\t0\t5\tYES\tLINEAR\t0\t0\t0\t0\t0\t0\tACTIVE\t0\tNO\tREBAR_2D.1\t0.03\t0.03\t0"));
+      parser.Record.StreamId = "abcdefgh";
+      cache.Upsert(GwaKeyword.MEMB, parser.Record);
 
       var newIndices = new List<int>
       {
-        cache.ResolveIndex("MEMB", "Slab1"),
-        cache.ResolveIndex("MEMB", "Slab2"),
-        cache.ResolveIndex("MEMB", "Slab3")
+        cache.ResolveIndex(GwaKeyword.MEMB, "Slab1"),
+        cache.ResolveIndex(GwaKeyword.MEMB, "Slab2"),
+        cache.ResolveIndex(GwaKeyword.MEMB, "Slab3")
       };
 
-      Assert.Equal(1, cache.LookupIndices("MEMB").Where(i => i.HasValue).Select(i => i.Value).Count());
-      Assert.Equal(1, cache.LookupIndices("MEMB", new[] { "Slab0", "Slab1", "Slab2", "Slab3", "Slab4" }).Where(i => i.HasValue).Select(i => i.Value).Count());
+      Assert.Single(cache.LookupIndices(GwaKeyword.MEMB).Where(i => i.HasValue).Select(i => i.Value));
+      Assert.Single(cache.LookupIndices(GwaKeyword.MEMB, new[] { "Slab0", "Slab1", "Slab2", "Slab3", "Slab4" }).Where(i => i.HasValue).Select(i => i.Value));
 
       //Try upserting a latest record before converting a provisional to latest
-      Assert.True(cache.Upsert("MEMB", 5, "MEMB.8:{speckle_app_id:Slab4}\t5\tSlab 4\tNO_RGB\tSLAB\t1\t6\t36 37 38 39 40 41 42\t0\t0\t5\tMESH\tLINEAR\t0\t0\t0\t0\t0\tACTIVE\tNO\t0\tALL", "abcdefgh", "Slab4", GwaSetCommandType.Set));
-      Assert.Equal(2, cache.LookupIndices("MEMB").Where(i => i.HasValue).Select(i => i.Value).Count());
-      Assert.Equal(2, cache.LookupIndices("MEMB", new[] { "Slab0", "Slab1", "Slab2", "Slab3", "Slab4" }).Where(i => i.HasValue).Select(i => i.Value).Count());
 
+      parser = new GsaMembParser();
+      Assert.True(parser.FromGwa("MEMB.8:{speckle_app_id:Slab4}\t5\tSlab 4\tNO_RGB\tSLAB\tALL\t1\t10\t64 65 66 67 68 69 70\t0\t0\t5\tYES\tLINEAR\t0\t0\t0\t0\t0\t0\tACTIVE\t0\tNO\tREBAR_2D.1\t0.03\t0.03\t0"));
+      parser.Record.StreamId = "abcdefgh";
+      Assert.True(cache.Upsert(GwaKeyword.MEMB, parser.Record));
+      Assert.Equal(2, cache.LookupIndices(GwaKeyword.MEMB).Where(i => i.HasValue).Select(i => i.Value).Count());
+      Assert.Equal(2, cache.LookupIndices(GwaKeyword.MEMB, new[] { "Slab0", "Slab1", "Slab2", "Slab3", "Slab4" }).Where(i => i.HasValue).Select(i => i.Value).Count());
+
+      parser = new GsaMembParser();
       //Now convert a provisional to latest and check that the number of records hasn't increased
-      Assert.True(cache.Upsert("MEMB", 2, "MEMB.8:{speckle_app_id:Slab1}\t2\tSlab 1\tNO_RGB\tSLAB\t1\t6\t36 37 38 39 40 41 42\t0\t0\t5\tMESH\tLINEAR\t0\t0\t0\t0\t0\tACTIVE\tNO\t0\tALL", "abcdefgh", "Slab1", GwaSetCommandType.Set));
-      Assert.Equal(3, cache.LookupIndices("MEMB").Where(i => i.HasValue).Select(i => i.Value).Count());
-      Assert.Equal(3, cache.LookupIndices("MEMB", new[] { "Slab0", "Slab1", "Slab2", "Slab3", "Slab4" }).Where(i => i.HasValue).Select(i => i.Value).Count());
+      Assert.True(parser.FromGwa("MEMB.8:{speckle_app_id:Slab1}\t2\tSlab 1\tNO_RGB\tSLAB\tALL\t1\t7\t43 44 45 46 47 48 49\t0\t0\t5\tYES\tLINEAR\t0\t0\t0\t0\t0\t0\tACTIVE\t0\tNO\tREBAR_2D.1\t0.03\t0.03\t0"));
+      //Note: the index here (2) will class with what should have been provisionally created for slab2.  So the cache should let this new upsert record
+      //claim index 2, and what was provisionally created at that index should be moved to the first free index, which now would be 1
+      parser.Record.StreamId = "abcdefgh";
+      Assert.True(cache.Upsert(GwaKeyword.MEMB, parser.Record));
+
+      Assert.Equal(3, cache.LookupIndices(GwaKeyword.MEMB).Where(i => i.HasValue).Select(i => i.Value).Count());
+      Assert.Equal(3, cache.LookupIndices(GwaKeyword.MEMB, new[] { "Slab0", "Slab1", "Slab2", "Slab3", "Slab4" }).Where(i => i.HasValue).Select(i => i.Value).Count());
 
       //Check that asking to resolve a previously-created provisional index returns that same one
-      Assert.Equal(3, cache.ResolveIndex("MEMB", "Slab2"));
+      Assert.Equal(1, cache.ResolveIndex(GwaKeyword.MEMB, "Slab2"));
 
       //Check that the next index recognises (and doesn't re-use) the current provisional indices
-      Assert.Equal(6, cache.ResolveIndex("MEMB"));
+      Assert.Equal(4, cache.ResolveIndex(GwaKeyword.MEMB));
     }
 
     [Fact]
     public void ReserveMultipleIndicesSetAt()
     {
+      Instance.GsaModel = gsaModelMock.Object;
       var cache = new GsaCache();
+      var parser = new GsaLoad2dThermalParser();
+      Assert.True(parser.FromGwa("LOAD_2D_THERMAL.2\tGeneral\tG6\t3\tDZ\t239\t509"));
+      parser.Record.Index = 1;
+      parser.Record.StreamId = "abcdefgh";
+      Assert.True(cache.Upsert(GwaKeyword.LOAD_2D_THERMAL, parser.Record));
 
-      cache.Upsert("LOAD_2D_THERMAL", 1, "LOAD_2D_THERMAL.2\tGeneral\tG6\t3\tDZ\t239\t509", "abcdefgh", "", GwaSetCommandType.SetAt);
-
-      cache.ResolveIndex("LOAD_2D_THERMAL");
-      cache.ResolveIndex("LOAD_2D_THERMAL");
+      cache.ResolveIndex(GwaKeyword.LOAD_2D_THERMAL);
+      cache.ResolveIndex(GwaKeyword.LOAD_2D_THERMAL);
 
       //Try upserting a latest record before converting a provisional to latest
-      Assert.True(cache.Upsert("LOAD_2D_THERMAL", 4, "LOAD_2D_THERMAL.2\tGeneral\tG7\t3\tDZ\t239\t509", "abcdefgh", "Slab4", GwaSetCommandType.Set));
-      Assert.Equal(2, cache.LookupIndices("LOAD_2D_THERMAL").Where(i => i.HasValue).Select(i => i.Value).Count());
+      parser = new GsaLoad2dThermalParser();
+      Assert.True(parser.FromGwa("LOAD_2D_THERMAL.2\tGeneral\tG7\t3\tDZ\t239\t509"));
+      parser.Record.Index = 4;
+      parser.Record.StreamId = "abcdefgh";
+      Assert.True(cache.Upsert(GwaKeyword.LOAD_2D_THERMAL, parser.Record));
+      Assert.Equal(2, cache.LookupIndices(GwaKeyword.LOAD_2D_THERMAL).Where(i => i.HasValue).Select(i => i.Value).Count());
 
       //Now convert a provisional to latest and check that the number of records hasn't increased
-      Assert.True(cache.Upsert("LOAD_2D_THERMAL", 3, "LOAD_2D_THERMAL.2\tGeneral\tG6 G7 G8 G9 G10\t3\tDZ\t239\t509", "abcdefgh", "Slab1", GwaSetCommandType.Set));
-      Assert.Equal(3, cache.LookupIndices("LOAD_2D_THERMAL").Where(i => i.HasValue).Select(i => i.Value).Count());
+      parser = new GsaLoad2dThermalParser();
+      Assert.True(parser.FromGwa("LOAD_2D_THERMAL.2\tGeneral\tG6 G7 G8 G9 G10\t3\tDZ\t239\t509"));
+      parser.Record.Index = 3;
+      parser.Record.StreamId = "abcdefgh";
+      Assert.True(cache.Upsert(GwaKeyword.LOAD_2D_THERMAL, parser.Record));
+      Assert.Equal(3, cache.LookupIndices(GwaKeyword.LOAD_2D_THERMAL).Where(i => i.HasValue).Select(i => i.Value).Count());
 
       //Check that the next index recognises (and doesn't re-use) the current provisional indices
-      Assert.Equal(5, cache.ResolveIndex("LOAD_2D_THERMAL"));
+      Assert.Equal(5, cache.ResolveIndex(GwaKeyword.LOAD_2D_THERMAL));
     }
 
+    /*
     [Fact]
     public void GenerateDesignCache()
     {

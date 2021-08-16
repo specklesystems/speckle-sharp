@@ -1,13 +1,18 @@
 ﻿using Speckle.GSA.API;
-using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using Speckle.GSA.API.GwaSchema;
 
 namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
   public static class Helper
   {
+    public static IEnumerable<Type> GetEnumerableOfType<T>() where T : class
+    {
+      return Assembly.GetAssembly(typeof(T)).GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(T)));
+    }
     public static string FormatApplicationId(string keyword, IEnumerable<int> indices, int parentIndex = 0)
     {
       return ("gsa/" + keyword + "-" + string.Join("-", indices) + ((parentIndex > 0) ? "_" + parentIndex : ""));
@@ -18,15 +23,18 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       return ("gsa/" + keyword.GetStringValue() + "-" + index);
     }
 
-    public static GwaKeyword GetKeyword<U>()
+    /*
+    public static GwaKeyword GetKeyword<U>() where U: IGwaParser
     {
       return (GwaKeyword)typeof(U).GetAttribute<GsaType>("Keyword");
     }
+    */
 
     public static GwaKeyword GetGwaKeyword(Type t)
     {
       return (GwaKeyword)t.GetAttribute<GsaType>("Keyword");
     }
+
 
     public static bool IsAnalysisLayer(Type t)
     {

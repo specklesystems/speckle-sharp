@@ -2,7 +2,6 @@
 using Speckle.ConnectorGSA.Proxy.Results;
 using Speckle.ConnectorGSA.Results;
 using Speckle.GSA.API;
-using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Speckle.GSA.API.GwaSchema;
 
 namespace Speckle.ConnectorGSA.Proxy
 {

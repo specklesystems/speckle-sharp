@@ -1,13 +1,13 @@
 ﻿using Speckle.GSA.API;
-using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Speckle.GSA.API.GwaSchema;
 
 namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
-  public abstract class GwaParser<T> : IGwaParser where T : GsaRecord_
+  public abstract class GwaParser<T> : IGwaParser where T: GsaRecord_
   {
     public Type GsaSchemaType { get => typeof(T); }
     public GsaRecord_ Record { get => record; }
@@ -176,7 +176,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       //for members, the group is used
 
       var allIndices = Instance.GsaModel.LookupIndices(
-        (Instance.GsaModel.Layer == GSALayer.Design) ? Helper.GetKeyword<GsaMemb>() : Helper.GetKeyword<GsaEl>()).Distinct().OrderBy(i => i).ToList();
+        (Instance.GsaModel.Layer == GSALayer.Design) ? GwaKeyword.MEMB : GwaKeyword.EL).Distinct().OrderBy(i => i).ToList();
 
       if (entities.Distinct().OrderBy(i => i).SequenceEqual(allIndices))
       {
@@ -198,7 +198,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       //Unlike other keywords which have entity type as a parameter, this keyword (at least for version 2) still has "element list" which means, 
       //for members, the group is used
 
-      var allIndices = Instance.GsaModel.LookupIndices(Helper.GetKeyword<GsaNode>()).Distinct().OrderBy(i => i).ToList();
+      var allIndices = Instance.GsaModel.LookupIndices(GwaKeyword.NODE).Distinct().OrderBy(i => i).ToList();
 
       if (indices.Distinct().OrderBy(i => i).SequenceEqual(allIndices))
       {
@@ -307,7 +307,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       {
         if (entityItems.Count() == 1 && entityItems.First().Equals("all", StringComparison.InvariantCultureIgnoreCase))
         {
-          indices = Instance.GsaModel.LookupIndices(Helper.GetKeyword<GsaMemb>()).ToList();
+          indices = Instance.GsaModel.LookupIndices(GwaKeyword.MEMB).ToList();
         }
         else
         {
@@ -320,7 +320,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       else
       {
         indices = (entityItems.Count() == 1 && entityItems.First().Equals("all", StringComparison.InvariantCultureIgnoreCase))
-          ? Instance.GsaModel.LookupIndices(Helper.GetKeyword<GsaEl>()).ToList()
+          ? Instance.GsaModel.LookupIndices(GwaKeyword.EL).ToList()
           : Instance.GsaModel.ConvertGSAList(v, GSAEntity.ELEMENT).ToList();
       }
       return true;
@@ -330,7 +330,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     {
       var entityItems = v.Split(' ');
       indices = (entityItems.Count() == 1 && entityItems.First().Equals("all", StringComparison.InvariantCultureIgnoreCase))
-          ? Instance.GsaModel.LookupIndices(Helper.GetKeyword<GsaNode>()).ToList()
+          ? Instance.GsaModel.LookupIndices(GwaKeyword.NODE).ToList()
           : Instance.GsaModel.ConvertGSAList(v, GSAEntity.NODE).ToList();
       return true;
     }

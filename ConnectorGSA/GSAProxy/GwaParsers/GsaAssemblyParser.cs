@@ -1,8 +1,8 @@
 ﻿using Speckle.GSA.API;
-using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Speckle.GSA.API.GwaSchema;
 
 namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
@@ -71,7 +71,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       //The old mechanism of using "G_" in the entities field to signify members is understood to be superseded by the inclusion of the entity type
       //parameter as of version 3.
 
-      var allIndices = Instance.GsaModel.LookupIndices(record.Type == GSAEntity.MEMBER ? Helper.GetKeyword<GsaMemb>() : Helper.GetKeyword<GsaEl>())
+      var allIndices = Instance.GsaModel.LookupIndices(record.Type == GSAEntity.MEMBER ? GwaKeyword.MEMB : GwaKeyword.EL)
         .Distinct().OrderBy(i => i).ToList();
 
       if (record.Entities.Distinct().OrderBy(i => i).SequenceEqual(allIndices))
@@ -133,8 +133,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     private List<int> GetStoreyIndices()
     {
       //Since there is no way in the GSA COM API to resolve list specification ("1 2 to 8" etc) of grid surfaces, the cache needs to be used
-      var gridPlaneKw = Helper.GetKeyword<GsaGridPlane>();
-      var allGridPlaneIndices = Instance.GsaModel.LookupIndices(gridPlaneKw).ToList();
+      var allGridPlaneIndices = Instance.GsaModel.LookupIndices(GwaKeyword.GRID_PLANE).ToList();
       var storeyIndices = new List<int>();
 
       return storeyIndices.Distinct().OrderBy(i => i).ToList();

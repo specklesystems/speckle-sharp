@@ -1,14 +1,32 @@
-﻿using Speckle.GSA.API.GwaSchema;
+﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Speckle.ConnectorGSA.Proxy
 {
   public static class Extensions
   {
+    /// <summary>
+    /// Splits lists, keeping entities encapsulated by "" together.
+    /// </summary>
+    /// <param name="list">String to split</param>
+    /// <param name="delimiter">Delimiter</param>
+    /// <returns>Array of strings containing list entries</returns>
+    public static string[] ListSplit(this string list, string delimiter)
+    {
+      return Regex.Split(list, delimiter + "(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+    }
+
+    public static string[] ListSplit(this string list, char delimiter)
+    {
+      return Regex.Split(list, delimiter + "(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+    }
+
     /// <summary>
     /// Will get the string value for a given enums value, this will
     /// only work if you assign the StringValue attribute to

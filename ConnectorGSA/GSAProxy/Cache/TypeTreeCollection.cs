@@ -28,12 +28,13 @@ namespace Speckle.ConnectorGSA.Proxy
       this.validValues = new HashSet<T>(validValues);
     }
 
-    public List<List<T>> Generations(bool bottomUp = true)
+    public List<List<T>> Generations_old(bool bottomUp = true)
     {
       var retList = new List<List<T>>();
 
       var currGen = LeafNodes;
-      retList.Add(currGen.Select(n => n.Value).ToList());
+      var addedValues = currGen.Select(n => n.Value).ToList();
+      retList.Add(addedValues);
 
       bool genAdded;
       do
@@ -51,10 +52,62 @@ namespace Speckle.ConnectorGSA.Proxy
         }
         if (genAdded)
         {
-          retList.Add(nextGen.Keys.ToList());
+          retList.Add(nextGen.Keys.Where(k => !addedValues.Contains(k)).ToList());
+          /*
+          var toBeAdded = nextGen.Keys.Where(k => !addedValues.Contains(k)).ToList();
+          if (toBeAdded.Count > 0)
+          {
+            retList.Add(toBeAdded);
+            addedValues.AddRange(toBeAdded);
+          }
+          */
           currGen = nextGen.Values.ToList();
         }
       } while (genAdded);
+
+      return retList;
+    }
+
+    public List<List<T>> Generations(bool bottomUp = true)
+    {
+      var retList = new List<List<T>>();
+
+      var currGen = RootNodes;
+      var addedValues = currGen.Select(n => n.Value).ToList();
+      retList.Add(addedValues);
+
+      bool genAdded;
+      do
+      {
+        genAdded = false;
+        var nextGen = new Dictionary<T, TreeNode<T>>();
+        foreach (var n in currGen.Where(n => !n.IsLeaf && n.Children != null && n.Children.Count > 0))
+        {
+          foreach (var c in n.Children)
+          {
+            if (!nextGen.ContainsKey(c.Value))
+            {
+              nextGen.Add(c.Value, nodes[c.Value]);
+              genAdded = true;
+            }
+          }
+        }
+        if (genAdded)
+        {
+          retList.Add(nextGen.Keys.Where(k => !addedValues.Contains(k)).ToList());
+          /*
+          var toBeAdded = nextGen.Keys.Where(k => !addedValues.Contains(k)).ToList();
+          if (toBeAdded.Count > 0)
+          {
+            retList.Add(toBeAdded);
+            addedValues.AddRange(toBeAdded);
+          }
+          */
+          currGen = nextGen.Values.ToList();
+        }
+      } while (genAdded);
+
+      retList.Reverse();
 
       return retList;
     }

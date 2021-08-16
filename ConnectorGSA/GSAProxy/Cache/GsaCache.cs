@@ -1,4 +1,5 @@
 ﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
@@ -47,11 +48,11 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       if (!initialised && !initialisedError)
       {
         if (!GetAssemblyTypes(out var assemblyTypes)
-          || !GetSchemaTypes(assemblyTypes, out var schemaTypes)
-          || !GetTypeTrees(schemaTypes, out var typeTreeCollection)
-          || !PopulateTxTypeGenerations(typeTreeCollection)
+          //|| !GetSchemaTypes(assemblyTypes, out var schemaTypes)
           || !GetParserTypes(assemblyTypes, out var parserTypes)
-          || !PopulateSchemaKeywords(schemaTypes)
+          || !GetTypeTrees(parserTypes, out var typeTreeCollection)
+          || !PopulateTxTypeGenerations(typeTreeCollection)
+          || !PopulateSchemaKeywords(parserTypes)
           || !PopulateTxTypeParsers(parserTypes))
         {
           initialisedError = true;
@@ -109,7 +110,10 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
         types = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, (typeof(IGwaParser)))
           && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
-          && SchemaKeywords.Contains(Helper.GetGwaKeyword(t))).ToList();
+          //&& SchemaKeywords.Contains(Helper.GetGwaKeyword(t))).ToList();
+          && Helper.IsSelfContained(t)
+          && !t.IsAbstract
+          ).ToList();
 
         return true;
       }
@@ -120,6 +124,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       }
     }
 
+    /*
     private bool GetSchemaTypes(List<Type> assemblyTypes, out List<Type> schemaTypes)
     {
       var gsaAttributeType = typeof(GwaParsers.GsaType);
@@ -135,10 +140,17 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       }
       return (schemaTypes != null && schemaTypes.Count() > 0);
     }
+    */
 
-    private bool PopulateSchemaKeywords(List<Type> schemaTypes)
+    //Yes the schema keywords are stored with their *parsers*
+    private bool PopulateSchemaKeywords(List<Type> parserTypes)
     {
-      this.SchemaKeywords = new HashSet<GwaKeyword>(schemaTypes.Select(st => Helper.GetGwaKeyword(st)));
+      var gwaParserInterface = typeof(IGwaParser);
+      if (parserTypes.Any(t => !t.InheritsOrImplements(gwaParserInterface)))
+      {
+        return false;
+      }
+      this.SchemaKeywords = new HashSet<GwaKeyword>(parserTypes.Select(st => Helper.GetGwaKeyword(st)));
       return (this.SchemaKeywords != null & this.SchemaKeywords.Count > 0);
     }
 
@@ -236,7 +248,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
         return true;
       }
-      catch
+      catch (Exception ex)
       {
         return false;
       }
@@ -253,10 +265,24 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
         }
         if (provisionals.ContainsKey(keyword))
         {
+          if (!string.IsNullOrEmpty(record.ApplicationId) && provisionals[keyword].ContainsRight(record.ApplicationId))
+          {
+            provisionals[keyword].RemoveRight(record.ApplicationId);
+          }
+          //In most cases where there is an Application ID and the provisional index matches the one of the new record, the call above will have removed
+          //its index from the provisionals table.  But in the odd case where a different index is specified than the one that was assigned to the application ID,
+          //the existing one at that index needs to be moved
           if (provisionals[keyword].ContainsLeft(record.Index.Value))
           {
             provisionals[keyword].RemoveLeft(record.Index.Value);
+            //Only move the reservation if there is an Application ID involved
+            if (provisionals[keyword].FindRight(record.Index.Value, out string right) && !string.IsNullOrEmpty(right))
+            {
+              var newIndex = FindNextFreeIndexForProvisional(keyword);
+              UpsertProvisional(keyword, newIndex, right);
+            }
           }
+          
           if (provisionals[keyword].Count() == 0)
           {
             provisionals.Remove(keyword);
@@ -272,9 +298,13 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       return false;
     }
 
+    //Assumptions:
+    //- this is called within a lock
+    //- the record has already been added
     private bool UpdateIndexTables(GwaKeyword kw, int gsaIndex, string streamId, string applicationId)
     {
-      var newColIndex = records.Count();
+      //Minus one because the record has already been added
+      var newColIndex = records.Count() - 1;
       var trimmedAppId = string.IsNullOrEmpty(applicationId) ? applicationId : applicationId.Replace(" ", "");
 
       if (!collectionIndicesByKw.ContainsKey(kw))
@@ -531,6 +561,22 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     #endregion
 
     #region reservation
+
+    private int FindNextFreeIndexForProvisional(GwaKeyword keyword)
+    {
+      var indices = GetRecordIndexHashSet(keyword);
+      var highestProvisional = HighestProvisional(keyword);
+      var highestIndex = Math.Max((indices.Count() == 0) ? 0 : indices.Max(), highestProvisional ?? 0);
+      for (int i = 1; i <= highestIndex; i++)
+      {
+        if (!indices.Contains(i) && !ProvisionalContains(keyword, i))
+        {
+          return i;
+        }
+      }
+      return highestIndex + 1;
+    }
+
     public int ResolveIndex(GwaKeyword keyword, string applicationId = "")
     {
       lock(cacheLock)
@@ -546,7 +592,10 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
               return provisionalIndex.Value;
             }
             //No matches in either previous or latest
-            //var indices = GetIndices(kw);
+            var newIndex = FindNextFreeIndexForProvisional(keyword);
+            UpsertProvisional(keyword, newIndex, appId);
+            return newIndex;
+            /*
             var indices = GetRecordIndexHashSet(keyword);
             var highestProvisional = HighestProvisional(keyword);
             var highestIndex = Math.Max((indices.Count() == 0) ? 0 : indices.Max(), highestProvisional ?? 0);
@@ -560,6 +609,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
             }
             UpsertProvisional(keyword, highestIndex + 1, appId);
             return highestIndex + 1;
+            */
           }
           else
           {

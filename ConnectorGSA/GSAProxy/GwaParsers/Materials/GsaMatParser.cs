@@ -1,4 +1,5 @@
-﻿using Speckle.GSA.API.GwaSchema;
+﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
