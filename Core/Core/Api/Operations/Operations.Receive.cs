@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Sentry;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 
@@ -53,7 +54,9 @@ namespace Speckle.Core.Api
     {
       Log.AddBreadcrumb("Receive");
 
-      var (serializer, settings) = GetSerializerInstance();
+      //var (serializer, settings) = GetSerializerInstance();
+
+      var serializer = new BaseObjectSerializerV2();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
@@ -81,7 +84,7 @@ namespace Speckle.Core.Api
         if (partial.__closure != null)
           onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
 
-        var localRes = JsonConvert.DeserializeObject<Base>(objString, settings);
+        var localRes = serializer.Deserialize(objString); // JsonConvert.DeserializeObject<Base>(objString, settings);
 
         if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dispLocal) dispLocal.Dispose();
         if (disposeTransports && remoteTransport != null && remoteTransport is IDisposable dispRempte) dispRempte.Dispose();
@@ -106,7 +109,7 @@ namespace Speckle.Core.Api
       await localTransport.WriteComplete();
 
       // Proceed to deserialise the object, now safely knowing that all its children are present in the local (fast) transport. 
-      var res = JsonConvert.DeserializeObject<Base>(objString, settings);
+      var res = serializer.Deserialize(objString); // JsonConvert.DeserializeObject<Base>(objString, settings);
 
       if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dl) dl.Dispose();
       if (disposeTransports && remoteTransport is IDisposable dr) dr.Dispose();
