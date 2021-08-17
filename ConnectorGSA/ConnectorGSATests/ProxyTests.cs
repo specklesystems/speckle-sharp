@@ -37,7 +37,7 @@ namespace ConnectorGSATests
 
       var data = proxy.GetGwaData(DesignLayerKeywords, false);
 
-      Assert.Equal(190, data.Count());
+      Assert.Equal(188, data.Count());
       proxy.Close();
     }
   }

@@ -25,6 +25,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     private readonly Dictionary<GwaKeyword, HashSet<int>> collectionIndicesByKw = new Dictionary<GwaKeyword, HashSet<int>>();
     private readonly Dictionary<GwaKeyword, Dictionary<int, HashSet<int>>> collectionIndicesByKwGsaId = new Dictionary<GwaKeyword, Dictionary<int, HashSet<int>>>();
     private readonly Dictionary<string, HashSet<int>> collectionIndicesByApplicationId = new Dictionary<string, HashSet<int>>();
+
     private readonly Dictionary<int, HashSet<int>> collectionIndicesByStreamIdIndex = new Dictionary<int, HashSet<int>>();
     //private readonly Dictionary<string, HashSet<int>> collectionIndicesBySpeckleTypeName = new Dictionary<string, HashSet<int>>();
 
@@ -210,7 +211,10 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
         var matchingRecords = new List<GsaCacheRecord>();
         lock(cacheLock)
         {
-          matchingRecords = GetAllRecords(keyword, record.Index.Value);
+          if (GetAllRecords(keyword, record.Index.Value, out var foundRecords) && foundRecords != null && foundRecords.Count > 0)
+          {
+            matchingRecords = foundRecords;
+          }
         }
 
         if (matchingRecords.Count() > 0)
@@ -372,6 +376,21 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     #endregion
 
     #region lookup
+    public bool GetNative(GwaKeyword keyword, int index, out GsaRecord gsaRecord)
+    {
+      if (GetAllRecords(keyword, index, out var foundRecords))
+      {
+        var latestFound = foundRecords.Where(r => r.Latest);
+        if (latestFound.Count() > 0)
+        {
+          gsaRecord = latestFound.First().GsaRecord;
+          return true;
+        }
+      }
+      gsaRecord = null;
+      return false;
+    }
+
     public int? LookupIndex(GwaKeyword keyword, string applicationId)
     {
       lock (cacheLock)
@@ -394,6 +413,17 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       {
         return (GetRecordIndices(keyword).Select(k => (int?)k).ToList());
       }
+    }
+
+    public string GetApplicationId(GwaKeyword kw, int gsaIndex)
+    {
+      if (!collectionIndicesByKwGsaId.ContainsKey(kw) || collectionIndicesByKwGsaId[kw] == null
+       || !collectionIndicesByKwGsaId[kw].ContainsKey(gsaIndex) || collectionIndicesByKwGsaId[kw][gsaIndex] == null
+       || collectionIndicesByKwGsaId[kw][gsaIndex].Count == 0)
+      {
+        return "";
+      }
+      return collectionIndicesByKwGsaId[kw][gsaIndex].OrderBy(i => i).Select(i => records[i].ApplicationId).FirstOrDefault();
     }
 
     //To be fed into the proxy- assume the proxy knows about which keywords are SET and which are SET_AT
@@ -510,15 +540,17 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       return returnData;
     }
 
-    private List<GsaCacheRecord> GetAllRecords(GwaKeyword kw, int gsaIndex)
+    private bool GetAllRecords(GwaKeyword kw, int gsaIndex, out List<GsaCacheRecord> foundRecords)
     {
       if (!collectionIndicesByKwGsaId.ContainsKey(kw) || collectionIndicesByKwGsaId[kw] == null
         || !collectionIndicesByKwGsaId[kw].ContainsKey(gsaIndex) || collectionIndicesByKwGsaId[kw][gsaIndex] == null
         || collectionIndicesByKwGsaId[kw][gsaIndex].Count == 0)
       {
-        return new List<GsaCacheRecord>();
+        foundRecords = null;
+        return false;
       }
-      return collectionIndicesByKwGsaId[kw][gsaIndex].Select(i => records[i]).ToList();
+      foundRecords = collectionIndicesByKwGsaId[kw][gsaIndex].Select(i => records[i]).ToList();
+      return true;
     }
 
     private List<GsaCacheRecord> GetAllRecords(GwaKeyword kw, string applicationId)

@@ -1,12 +1,18 @@
 ﻿using Speckle.GSA.API;
-using System;
 using System.Collections.Generic;
 using Speckle.GSA.API.GwaSchema;
+using Speckle.ConnectorGSA.Proxy.Cache;
+using System.Linq;
 
 namespace GsaProxy
 {
   public class GsaModel : IGSAModel
   {
+    public static IGSAModel Instance = new GsaModel();
+
+    private static readonly GsaCache Cache = new GsaCache();
+    private static readonly Speckle.ConnectorGSA.Proxy.GsaProxy Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
+
     public GSALayer Layer { get; set; }
 
     public char GwaDelimiter { get => '\t'; }
@@ -19,44 +25,30 @@ namespace GsaProxy
     public bool ResultInLocalAxis { get; set; }
     public int Result1DNumPosition { get; set; }
 
-    public bool ClearResults(ResultGroup group)
+    public GsaModel()
     {
-      throw new NotImplementedException();
+      if (Speckle.GSA.API.Instance.GsaModel == null)
+      {
+        Speckle.GSA.API.Instance.GsaModel = this;
+      }
     }
 
-    public List<int> ConvertGSAList(string list, GSAEntity entityType)
-    {
-      throw new NotImplementedException();
-    }
+    public bool ClearResults(ResultGroup group) => Proxy.ClearResults(group);
 
-    public string GetApplicationId(GwaKeyword keyword, int index)
-    {
-      throw new NotImplementedException();
-    }
+    public List<int> ConvertGSAList(string list, GSAEntity entityType) => Proxy.ConvertGSAList(list, entityType).ToList();
 
-    public GsaRecord GetNative(GwaKeyword keyword, int index)
-    {
-      throw new NotImplementedException();
-    }
+    public string GetApplicationId(GwaKeyword keyword, int index) => Cache.GetApplicationId(keyword, index);
+
+    public GsaRecord GetNative(GwaKeyword keyword, int index) => Cache.GetNative(keyword, index, out var gsaRecord) ? gsaRecord : null;
 
     public bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1)
-    {
-      throw new NotImplementedException();
-    }
+      => Proxy.GetResultHierarchy(group, index, out valueHierarchy, dimension);
 
     public bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null)
-    {
-      throw new NotImplementedException();
-    }
+      => Proxy.LoadResults(group, out numErrorRows, cases, elemIds);
 
-    public List<int> LookupIndices(GwaKeyword keyword)
-    {
-      throw new NotImplementedException();
-    }
+    public List<int> LookupIndices(GwaKeyword keyword) => Cache.LookupIndices(keyword).Where(i => i.HasValue && i.Value > 0).Select(i => i.Value).ToList();
 
-    public int NodeAt(double x, double y, double z, double coincidenceTol)
-    {
-      throw new NotImplementedException();
-    }
+    public int NodeAt(double x, double y, double z, double coincidenceTol) => Proxy.NodeAt(x, y, z, coincidenceTol);
   }
 }
