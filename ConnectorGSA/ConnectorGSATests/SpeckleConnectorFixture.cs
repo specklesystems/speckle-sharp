@@ -1,4 +1,5 @@
 ﻿using Moq;
+using Speckle.ConnectorGSA.Proxy.Cache;
 using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
 using System;
@@ -17,12 +18,14 @@ namespace ConnectorGSATests
 
     //protected GsaModelMock
     protected Mock<IGSAModel> gsaModelMock;
+    protected GsaCache cache;
 
     public SpeckleConnectorFixture()
     {
       gsaModelMock = new Mock<IGSAModel>();
       gsaModelMock.SetupGet(x => x.GwaDelimiter).Returns('\t');
       gsaModelMock.Setup(x => x.ConvertGSAList(It.IsAny<string>(), It.IsAny<GSAEntity>())).Returns(new Func<string, GSAEntity, List<int>>(ConvertGSAList));
+      gsaModelMock.Setup(x => x.LookupIndices(It.IsAny<GwaKeyword>())).Returns((GwaKeyword kw) => cache.LookupIndices(kw).Where(i => i.HasValue).Select(i => i.Value).ToList());
     }
 
     protected static GwaKeyword[] DesignLayerKeywords = new GwaKeyword[] {
@@ -35,7 +38,6 @@ namespace ConnectorGSATests
       GwaKeyword.LOAD_GRAVITY,
       GwaKeyword.PROP_SPR,
       GwaKeyword.ANAL,
-      GwaKeyword.TASK,
       GwaKeyword.GEN_REST,
       GwaKeyword.ANAL_STAGE,
       GwaKeyword.LOAD_GRID_LINE,
@@ -47,13 +49,13 @@ namespace ConnectorGSATests
       GwaKeyword.LOAD_GRID_AREA,
       GwaKeyword.LOAD_2D_FACE,
       GwaKeyword.PROP_2D,
+      GwaKeyword.SECTION,
       GwaKeyword.MAT_STEEL,
       GwaKeyword.MAT_CONCRETE,
       GwaKeyword.LOAD_BEAM,
       GwaKeyword.LOAD_NODE,
       GwaKeyword.COMBINATION,
       GwaKeyword.LOAD_TITLE,
-      GwaKeyword.PROP_SEC,
       GwaKeyword.PROP_MASS,
       GwaKeyword.GRID_LINE
     };

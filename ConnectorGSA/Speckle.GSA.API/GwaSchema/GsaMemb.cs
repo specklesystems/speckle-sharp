@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaMemb : GsaRecord_
+  public class GsaMemb : GsaRecord
   {
     //Not supporting: 3D members, or 2D reinforcement
     public string Name { get => name; set { name = value; } }

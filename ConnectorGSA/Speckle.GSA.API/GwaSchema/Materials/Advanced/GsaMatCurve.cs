@@ -1,6 +1,6 @@
 ﻿namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaMatCurve : GsaRecord_
+  public class GsaMatCurve : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public Dimension Abscissa;

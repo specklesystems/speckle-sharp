@@ -1,6 +1,6 @@
 ﻿namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaAxis : GsaRecord_
+  public class GsaAxis : GsaRecord
   {
     //Only supporting cartesian at this stage
     public string Name { get => name; set { name = value; } }

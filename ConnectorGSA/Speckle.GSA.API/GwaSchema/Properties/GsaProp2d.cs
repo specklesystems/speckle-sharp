@@ -1,6 +1,6 @@
 ﻿namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaProp2d : GsaRecord_
+  public class GsaProp2d : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public Colour Colour = Colour.NO_RGB;

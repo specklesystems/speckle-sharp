@@ -126,6 +126,8 @@
 
   public enum Restraint
   {
+    [StringValue("Free")]
+    Free,
     [StringValue("Fixed")]
     Fixed,
     [StringValue("Pinned")]

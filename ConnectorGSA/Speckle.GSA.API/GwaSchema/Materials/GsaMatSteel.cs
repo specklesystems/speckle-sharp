@@ -1,6 +1,6 @@
 ﻿namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaMatSteel : GsaRecord_
+  public class GsaMatSteel : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public GsaMat Mat;

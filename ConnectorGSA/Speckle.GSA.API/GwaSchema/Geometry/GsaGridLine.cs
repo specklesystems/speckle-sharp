@@ -1,6 +1,6 @@
 ﻿namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaGridLine : GsaRecord_
+  public class GsaGridLine : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public GridLineType Type;

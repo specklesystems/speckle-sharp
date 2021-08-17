@@ -105,7 +105,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     {
       try
       {
-        var gsaBaseType = typeof(GwaParser<GsaRecord_>);
+        var gsaBaseType = typeof(GwaParser<GsaRecord>);
         var gsaAttributeType = typeof(GwaParsers.GsaType);
 
         types = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, (typeof(IGwaParser)))
@@ -189,7 +189,12 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
       if (parser.FromGwa(proxyGwaLine.GwaWithoutSet) && parser.Record != null)
       {
-        Add(proxyGwaLine.Keyword, parser.Record, true);
+        //For the SET_AT keyworsd
+        if (!parser.Record.Index.HasValue && proxyGwaLine.Index > 0)
+        {
+          parser.Record.Index = proxyGwaLine.Index;
+        }
+        return Add(proxyGwaLine.Keyword, parser.Record, true);
       }
 
       return false;
@@ -198,7 +203,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
     //Called by the kit
     //Not every record has stream IDs (like generated nodes)
-    public bool Upsert(GwaKeyword keyword, GsaRecord_ record, bool? latest = true)
+    public bool Upsert(GwaKeyword keyword, GsaRecord record, bool? latest = true)
     {
       try
       {
@@ -254,7 +259,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       }
     }
 
-    private bool Add(GwaKeyword keyword, GsaRecord_ record, bool? latest = true)
+    private bool Add(GwaKeyword keyword, GsaRecord record, bool? latest = true)
     {
       lock (cacheLock)
       {
@@ -292,7 +297,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       return true;
     }
 
-    private bool Equals(GsaRecord_ a, GsaRecord_ b)
+    private bool Equals(GsaRecord a, GsaRecord b)
     {
       //TO DO
       return false;

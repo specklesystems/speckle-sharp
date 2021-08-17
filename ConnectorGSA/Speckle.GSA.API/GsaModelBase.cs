@@ -22,7 +22,7 @@ namespace Speckle.GSA.API
 
     public abstract List <int> ConvertGSAList(string list, GSAEntity entityType);
 
-    public abstract GsaRecord_ GetNative(GwaKeyword keyword, int index);
+    public abstract GsaRecord GetNative(GwaKeyword keyword, int index);
 
     public abstract string GetApplicationId(GwaKeyword keyword, int index);
 

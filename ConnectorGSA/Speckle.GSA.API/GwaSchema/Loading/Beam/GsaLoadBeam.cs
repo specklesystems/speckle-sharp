@@ -2,7 +2,7 @@
 
 namespace Speckle.GSA.API.GwaSchema
 {
-  public abstract class GsaLoadBeam : GsaRecord_
+  public abstract class GsaLoadBeam : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public List<int> Entities = new List<int>();

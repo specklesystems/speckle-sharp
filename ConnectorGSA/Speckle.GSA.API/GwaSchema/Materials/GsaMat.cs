@@ -1,6 +1,6 @@
 ﻿namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaMat : GsaRecord_
+  public class GsaMat : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public double? E;

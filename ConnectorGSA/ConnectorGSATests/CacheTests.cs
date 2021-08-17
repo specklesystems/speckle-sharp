@@ -1,4 +1,5 @@
-﻿using Speckle.ConnectorGSA.Proxy.Cache;
+﻿using Speckle.ConnectorGSA.Proxy;
+using Speckle.ConnectorGSA.Proxy.Cache;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
@@ -20,9 +21,8 @@ namespace ConnectorGSATests
       proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), false);
 
       var data = proxy.GetGwaData(DesignLayerKeywords, false);
-      var erroredIndices = new List<int>();
+      var errored = new Dictionary<int, ProxyGwaLine>();
 
-      GsaCache cache;
       try
       {
         cache = new GsaCache();
@@ -31,7 +31,7 @@ namespace ConnectorGSATests
         {
           if (!cache.Upsert(data[i]))
           {
-            erroredIndices.Add(i);
+            errored.Add(i, data[i]);
           }
         }
       }
@@ -40,7 +40,7 @@ namespace ConnectorGSATests
         proxy.Close();
       }
 
-      Assert.Empty(erroredIndices);
+      Assert.Empty(errored);
     }
 
     /*
@@ -74,7 +74,7 @@ namespace ConnectorGSATests
     public void ReserveMultipleIndicesSet()
     {
       Instance.GsaModel = gsaModelMock.Object;
-      var cache = new GsaCache();
+      cache = new GsaCache();
 
       var parser = new GsaMembParser();
       //MEMB.8:{speckle_app_id:Slab0}\t6\tSlab 0\tNO_RGB\tSLAB\tALL\t1\t6\t36 37 38 39 40 41 42\t0\t0\t5\tYES\tLINEAR\t0\t0\t0\t0\t0\t0\tACTIVE\t0\tNO\tREBAR_2D.1\t0.03\t0.03\t0

@@ -2,7 +2,7 @@
 
 namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaGenRest : GsaRecord_
+  public class GsaGenRest : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public RestraintCondition X;

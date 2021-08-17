@@ -2,7 +2,7 @@
 
 namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaUserVehicle : GsaRecord_
+  public class GsaUserVehicle : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public double? Width;

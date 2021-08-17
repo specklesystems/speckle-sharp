@@ -2,7 +2,7 @@
 
 namespace Speckle.GSA.API.GwaSchema
 {
-  public abstract class GsaSectionComponentBase : GsaRecord_
+  public abstract class GsaSectionComponentBase : GsaRecord
   {
   }
 }

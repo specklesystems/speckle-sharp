@@ -1,6 +1,6 @@
 ﻿namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaPropMass : GsaRecord_
+  public class GsaPropMass : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public double Mass;

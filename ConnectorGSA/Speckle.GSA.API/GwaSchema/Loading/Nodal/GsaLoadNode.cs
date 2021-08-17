@@ -2,7 +2,7 @@
 
 namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaLoadNode : GsaRecord_
+  public class GsaLoadNode : GsaRecord
   {
     //As many of these should be nullable, or in the case of enums, a "NotSet" option, to facilitate merging objects received from Speckle 
     //with existing objects in the GSA model

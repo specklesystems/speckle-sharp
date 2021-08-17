@@ -2,7 +2,7 @@
 
 namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaAnalStage : GsaRecord_
+  public class GsaAnalStage : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public Colour Colour;

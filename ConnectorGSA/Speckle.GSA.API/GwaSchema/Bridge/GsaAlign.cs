@@ -2,7 +2,7 @@
 
 namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaAlign : GsaRecord_
+  public class GsaAlign : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public int? GridSurfaceIndex;

@@ -33,11 +33,11 @@ namespace ConverterGSA
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
-    public Dictionary<Type, Func<GsaRecord_, List<Base>>> ToSpeckleFns;
+    public Dictionary<Type, Func<GsaRecord, List<Base>>> ToSpeckleFns;
 
     public ConverterGSA()
     {
-      ToSpeckleFns = new Dictionary<Type, Func<GsaRecord_, List<Base>>>()
+      ToSpeckleFns = new Dictionary<Type, Func<GsaRecord, List<Base>>>()
         {
           { typeof(GsaNode), GsaNodeToSpeckle },
           { typeof(GsaAxis), GsaAxisToSpeckle },
@@ -77,13 +77,13 @@ namespace ConverterGSA
 
     public List<Base> ConvertToSpeckle(List<object> objects)
     {
-      var native = objects.Where(o => o.GetType().IsSubclassOf(typeof(GsaRecord_)));
+      var native = objects.Where(o => o.GetType().IsSubclassOf(typeof(GsaRecord)));
       if (native.Count() < objects.Count())
       {
         ConversionErrors.Add(new Exception("Non-native objects: " + (objects.Count() - native.Count())));
         objects = native.ToList();
       }
-      return objects.SelectMany(x => ToSpeckle((GsaRecord_)x)).ToList();
+      return objects.SelectMany(x => ToSpeckle((GsaRecord)x)).ToList();
     }
 
     public IEnumerable<string> GetServicedApplications() => new string[] { AppName };
@@ -101,14 +101,14 @@ namespace ConverterGSA
     }
 
     #region ToSpeckle
-    private List<Base> ToSpeckle(GsaRecord_ nativeObject)
+    private List<Base> ToSpeckle(GsaRecord nativeObject)
     {
       var nativeType = nativeObject.GetType();
       return ToSpeckleFns[nativeType](nativeObject);
     }
 
     #region Geometry
-    public List<Base> GsaNodeToSpeckle(GsaRecord_ nativeObject)
+    public List<Base> GsaNodeToSpeckle(GsaRecord nativeObject)
     {
       var node = GsaNodeToSpeckle((GsaNode)nativeObject);
       return new List<Base>() { node };
@@ -147,7 +147,7 @@ namespace ConverterGSA
       return speckleNode;
     }
 
-    public List<Base> GsaAxisToSpeckle(GsaRecord_ nativeObject)
+    public List<Base> GsaAxisToSpeckle(GsaRecord nativeObject)
     {
       var axis = GsaAxisToSpeckle((GsaAxis)nativeObject);
       return new List<Base>() { axis };
@@ -186,7 +186,7 @@ namespace ConverterGSA
     #endregion
 
     #region Materials
-    public List<Base> GsaMaterialSteelToSpeckle(GsaRecord_ nativeObject)
+    public List<Base> GsaMaterialSteelToSpeckle(GsaRecord nativeObject)
     {
       var steel = GsaMaterialSteelToSpeckle((GsaMatSteel)nativeObject);
       return new List<Base>() { steel };
@@ -234,7 +234,7 @@ namespace ConverterGSA
       return speckleSteel;
     }
 
-    public List<Base> GsaMaterialConcreteToSpeckle(GsaRecord_ nativeObject)
+    public List<Base> GsaMaterialConcreteToSpeckle(GsaRecord nativeObject)
     {
       var concrete = GsaMaterialConcreteToSpeckle((GsaMatConcrete)nativeObject);
       return new List<Base>() { concrete };
@@ -274,7 +274,7 @@ namespace ConverterGSA
     #endregion
 
     #region Property
-    public List<Base> GsaPropertyMassToSpeckle(GsaRecord_ nativeObject)
+    public List<Base> GsaPropertyMassToSpeckle(GsaRecord nativeObject)
     {
       var propMass = GsaPropertyMassToSpeckle((GsaPropMass)nativeObject);
       return new List<Base>() { propMass };
@@ -307,7 +307,7 @@ namespace ConverterGSA
       return specklePropertyMass;
     }
 
-    public List<Base> GsaPropertySpringToSpeckle(GsaRecord_ nativeObject)
+    public List<Base> GsaPropertySpringToSpeckle(GsaRecord nativeObject)
     {
       var propSpring = GsaPropertySpringToSpeckle((GsaPropSpr)nativeObject);
       return new List<Base>() { propSpring };
@@ -606,13 +606,13 @@ namespace ConverterGSA
       }
       return code.ToString();
     }
+
     private static Restraint UpdateSpringStiffness(Restraint restraint, GsaNode gsaNode)
     {
       //Spring Stiffness
       if (gsaNode.SpringPropertyIndex.HasValue && gsaNode.SpringPropertyIndex.Value > 0 )
       {
-        var springKw = GsaRecord.GetKeyword<GsaPropSpr>();
-        var gsaRecord = Instance.GsaModel.GetNative(springKw, gsaNode.SpringPropertyIndex.Value);
+        var gsaRecord = Instance.GsaModel.GetNative(GwaKeyword.PROP_SPR, gsaNode.SpringPropertyIndex.Value);
         if (gsaRecord.GetType() != typeof(GsaPropSpr) )
         {
           return restraint; 

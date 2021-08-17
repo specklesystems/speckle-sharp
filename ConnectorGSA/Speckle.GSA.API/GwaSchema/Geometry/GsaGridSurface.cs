@@ -2,7 +2,7 @@
 
 namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaGridSurface : GsaRecord_
+  public class GsaGridSurface : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public GridPlaneAxisRefType PlaneRefType;

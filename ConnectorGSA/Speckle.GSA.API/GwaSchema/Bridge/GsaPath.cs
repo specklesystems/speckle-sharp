@@ -1,6 +1,6 @@
 ﻿namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaPath : GsaRecord_
+  public class GsaPath : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public PathType Type;

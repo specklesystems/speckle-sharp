@@ -7,10 +7,10 @@ using Speckle.GSA.API.GwaSchema;
 
 namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
-  public abstract class GwaParser<T> : IGwaParser where T: GsaRecord_
+  public abstract class GwaParser<T> : IGwaParser where T: GsaRecord
   {
-    public Type GsaSchemaType { get => typeof(T); }
-    public GsaRecord_ Record { get => record; }
+    public virtual Type GsaSchemaType { get => typeof(T); }
+    public GsaRecord Record { get => record; }
 
     protected static readonly string SID_APPID_TAG = "speckle_app_id";
     protected static readonly string SID_STRID_TAG = "speckle_stream_id";

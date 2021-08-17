@@ -13,6 +13,13 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     {
       return Assembly.GetAssembly(typeof(T)).GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(T)));
     }
+
+    public static IEnumerable<Type> GetTypesImplementingInterface<T>()
+    {
+      var interfaceType = typeof(T);
+      return Assembly.GetAssembly(interfaceType).GetTypes().Where(t => !t.IsInterface && t.InheritsOrImplements(interfaceType));
+    }
+
     public static string FormatApplicationId(string keyword, IEnumerable<int> indices, int parentIndex = 0)
     {
       return ("gsa/" + keyword + "-" + string.Join("-", indices) + ((parentIndex > 0) ? "_" + parentIndex : ""));

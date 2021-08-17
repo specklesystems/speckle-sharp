@@ -91,7 +91,6 @@
     <Compile Include="GwaParsers\GwaParser.cs" />
     <Compile Include="GwaParsers\Helper.cs" />
     <Compile Include="GwaParsers\IGwaParser.cs" />
-    <Compile Include="GwaParsers\Properties\GsaSectionComponentBaseParser.cs" />
     <Compile Include="GwaParsers\Properties\GsaSectionParser.cs" />
     <Compile Include="GwaParsers\Properties\GsaSectionCompParser.cs" />
     <Compile Include="GwaParsers\Properties\GsaSectionConcParser.cs" />
@@ -99,6 +98,7 @@
     <Compile Include="GwaParsers\Properties\GsaSectionLinkParser.cs" />
     <Compile Include="GwaParsers\Properties\GsaSectionSteelParser.cs" />
     <Compile Include="GwaParsers\Properties\GsaSectionTmplParser.cs" />
+    <Compile Include="GwaParsers\Properties\ISectionComponentGwaParser.cs" />
     <Compile Include="GwaParsers\TasksAndCases\GsaAnalParser.cs" />
     <Compile Include="GwaParsers\TasksAndCases\GsaCombinationParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

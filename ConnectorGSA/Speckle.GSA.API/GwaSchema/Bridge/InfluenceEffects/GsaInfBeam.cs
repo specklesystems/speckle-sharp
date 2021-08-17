@@ -1,6 +1,6 @@
 ﻿namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaInfBeam : GsaRecord_
+  public class GsaInfBeam : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public int? Action;

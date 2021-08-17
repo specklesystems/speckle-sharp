@@ -1,6 +1,6 @@
 ﻿namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaLoadCase : GsaRecord_
+  public class GsaLoadCase : GsaRecord
   {
     public StructuralLoadCaseType CaseType;
     public string Title;

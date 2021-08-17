@@ -3,7 +3,7 @@
 namespace Speckle.GSA.API.GwaSchema
 {
   //polygon references not supported yet
-  public class GsaRigid : GsaRecord_
+  public class GsaRigid : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public int? PrimaryNode;

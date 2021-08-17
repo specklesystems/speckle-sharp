@@ -3,7 +3,7 @@
 
 namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaMatCurveParam : GsaRecord_
+  public class GsaMatCurveParam : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public List<MatCurveParamType> Model;

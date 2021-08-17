@@ -2,7 +2,7 @@
 
 namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaLoad2dFace : GsaRecord_
+  public class GsaLoad2dFace : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public List<int> Entities;

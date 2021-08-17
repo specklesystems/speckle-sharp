@@ -6,7 +6,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
   public interface IGwaParser
   {
-    GsaRecord_ Record { get; }
+    GsaRecord Record { get; }
     Type GsaSchemaType { get; }
     bool FromGwa(string gwa);
     bool Gwa(out List<string> gwa, bool includeSet = false);

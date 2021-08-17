@@ -13,13 +13,11 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
     public GsaSectionParser() : base(new GsaSection()) { }
 
-    //private List<Type> sectionCompTypes = new List<Type>() {  typeof(Section)}
-    private static readonly List<Type> SectionCompTypes = Helper.GetEnumerableOfType<GsaSectionComponentBase>().ToList();
-    //private static readonly List<Type> SectionCompTypeParsers = Helper.GetEnumerableOfType<GsaSectionComponentBaseParser>().ToList();
-    private static readonly Dictionary<Type, Type> SectionCompTypeParsers = Helper.GetEnumerableOfType<GsaSectionComponentBaseParser>()
-      .ToDictionary(p => ((IGwaParser)p).GsaSchemaType, p => p);
+    private static readonly List<Type> sectionParsers = Helper.GetTypesImplementingInterface<ISectionComponentGwaParser>().ToList();
+    private static readonly Dictionary<GwaKeyword, Type> sectionCompParserByKeyword = sectionParsers.ToDictionary(p => Helper.GetGwaKeyword(p), p => p);
+    private static readonly Dictionary<Type, Type> sectionParsersByType = sectionParsers.ToDictionary(p => p.BaseType.GetGenericArguments().First(), p => p);
 
-    //Notes abou the documentation:
+    //Notes about the documentation:
     //- it leaves out the last 3 parameters
     //- mistakenly leaves out the pipe between 'slab' and 'num'
     //- the 'num' doesn't seem to represent the number of components at all (e.g. it is 1 even with 3 components), just whether there's at least one
@@ -96,7 +94,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     {
       foreach (var comp in record.Components)
       {
-        var sectionCompParser = (GsaSectionComponentBaseParser)Activator.CreateInstance(SectionCompTypeParsers[comp.GetType()]);
+        var sectionCompParser = (ISectionComponentGwaParser)Activator.CreateInstance(sectionParsersByType[comp.GetType()]);
         if (sectionCompParser.GwaItems(out var compItems, false, false))
         {
           items.AddRange(compItems);
@@ -118,16 +116,16 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       //This will only catch the section component keywords that have been implemented.  This will mean the GWA of any other as-yet-not-implemented
       //section components will be the trailing end of either the SECTION proper or one of the implemented section components.
       //This will be picked up later - for now just return the partitions based on the implemented section types' keywords
-      var sectionCompTypesByKeywords = SectionCompTypes.ToDictionary(t => (GwaKeyword)t.GetAttribute<GsaType>("Keyword"), t => t);
+      //var sectionCompTypesByKeywords = SectionCompTypes.ToDictionary(t => (GwaKeyword)t.GetAttribute<GsaType>("Keyword"), t => t);
 
       //First break up the GWA into the SECTION proper and the components
-      var sectionCompStartIndicesTypes = new Dictionary<int, Type>();
-      foreach (var sckw in sectionCompTypesByKeywords.Keys)
+      var sectionCompStartIndicesTypes = new Dictionary<int, GwaKeyword>();
+      foreach (var sckw in sectionCompParserByKeyword.Keys)
       {
         var index = gwa.IndexOf(sckw.GetStringValue());
         if (index > 0)
         {
-          sectionCompStartIndicesTypes.Add(index, sectionCompTypesByKeywords[sckw]);
+          sectionCompStartIndicesTypes.Add(index, sckw);
         }
       }
       var orderedComponentStartIndices = sectionCompStartIndicesTypes.Keys.OrderBy(i => i).ToList();
@@ -148,8 +146,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       var partitionIndex = 1;
       foreach (var i in orderedComponentStartIndices)
       {
-        //var sectionComp = (GsaSectionComponentBase)Activator.CreateInstance(sectionCompStartIndicesTypes[i]);
-        var sectionCompParser = (GsaSectionComponentBaseParser)Activator.CreateInstance(SectionCompTypeParsers[sectionCompStartIndicesTypes[i]]);
+        var sectionCompParser = (IGwaParser)Activator.CreateInstance(sectionCompParserByKeyword[sectionCompStartIndicesTypes[i]]);
         sectionCompParser.FromGwa(gwaPieces[partitionIndex++]);
         startIndex = i;
 

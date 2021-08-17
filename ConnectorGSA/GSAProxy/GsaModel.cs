@@ -34,7 +34,7 @@ namespace GsaProxy
       throw new NotImplementedException();
     }
 
-    public GsaRecord_ GetNative(GwaKeyword keyword, int index)
+    public GsaRecord GetNative(GwaKeyword keyword, int index)
     {
       throw new NotImplementedException();
     }

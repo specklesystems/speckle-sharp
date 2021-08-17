@@ -1,7 +1,7 @@
 ﻿namespace Speckle.GSA.API.GwaSchema
 {
   //polygon references not supported yet
-  public class GsaLoadGridArea : GsaRecord_
+  public class GsaLoadGridArea : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public int? GridSurfaceIndex;

@@ -2,7 +2,7 @@
 
 namespace Speckle.GSA.API.GwaSchema
 {
-  public partial class GsaAssembly : GsaRecord_
+  public partial class GsaAssembly : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
     public GSAEntity Type;

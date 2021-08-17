@@ -26,12 +26,12 @@ namespace ConverterGSATests
     {
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      gsaModelMock.NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord_>>
+      gsaModelMock.NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
       {
-        { GwaKeyword.PROP_MASS, new Dictionary<int, GsaRecord_>
+        { GwaKeyword.PROP_MASS, new Dictionary<int, GsaRecord>
           { { 1, new GsaPropMass() { Index = 1, Mass = 10 } } }
         },
-        { GwaKeyword.PROP_SPR, new Dictionary<int, GsaRecord_>
+        { GwaKeyword.PROP_SPR, new Dictionary<int, GsaRecord>
           { { 1, new GsaPropSpr() { Index = 1, Stiffnesses = new Dictionary<AxisDirection6, double>{ { AxisDirection6.XX, 10 } } } } }
         } 
       };

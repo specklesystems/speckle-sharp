@@ -1,5 +1,6 @@
 ﻿using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,8 +9,10 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
   //The term "section component" here is a name applied to both the group as a whole as well as one member of the group, 
   //but the latter is shortened to SectionComp to distinguish them here
   [GsaType(GwaKeyword.SECTION_LINK, GwaSetCommandType.Set, false, true, true)]
-  public class SectionLinkParser : GsaSectionComponentBaseParser
+  public class SectionLinkParser : GwaParser<SectionLink>, ISectionComponentGwaParser
   {
+    //public override Type GsaSchemaType { get => typeof(SectionLink); }
+
     public SectionLinkParser(SectionLink sectionLink) : base(sectionLink) { }
 
     public SectionLinkParser() : base(new SectionLink()) { }
@@ -26,7 +29,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     }
 
     //Note: the ref argument is missing when the GWA was embedded within a SECTION command, hence the addition of the additional boolean argument
-    public override bool GwaItems(out List<string> items, bool includeSet = false, bool includeRef = false)
+    public bool GwaItems(out List<string> items, bool includeSet = false, bool includeRef = false)
     {
       items = new List<string>();
 

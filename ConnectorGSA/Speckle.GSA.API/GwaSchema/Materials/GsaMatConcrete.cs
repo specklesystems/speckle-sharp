@@ -1,6 +1,6 @@
 ﻿namespace Speckle.GSA.API.GwaSchema
 {
-  public class GsaMatConcrete : GsaRecord_
+  public class GsaMatConcrete : GsaRecord
   {
     //Based on the example below, the current documentation doesn't align with the GSA 10.1 keyword example. 
     //A bug ticket has been placed with the GSA developers. This class will need to be updated once the documentation is up to date
