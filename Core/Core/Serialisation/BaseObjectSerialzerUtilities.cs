@@ -19,6 +19,7 @@ namespace Speckle.Core.Serialisation
     #region Getting Types
 
     private static Dictionary<string, Type> cachedTypes = new Dictionary<string, Type>();
+    private static Dictionary<string, Dictionary<string, System.Reflection.PropertyInfo>> typeProperties = new Dictionary<string, Dictionary<string, System.Reflection.PropertyInfo>>();
 
     internal static Type GetType(string objFullType)
     {
@@ -47,6 +48,19 @@ namespace Speckle.Core.Serialisation
       }
 
       return typeof(Base);
+    }
+    internal static Dictionary<string, System.Reflection.PropertyInfo> GetTypePropeties(string objFullType)
+    {
+      if (!typeProperties.ContainsKey(objFullType))
+      {
+        Dictionary<string, System.Reflection.PropertyInfo> ret = new Dictionary<string, System.Reflection.PropertyInfo>();
+        Type type = GetType(objFullType);
+        System.Reflection.PropertyInfo[] properties = type.GetProperties();
+        foreach (System.Reflection.PropertyInfo prop in properties)
+          ret[prop.Name.ToLower()] = prop;
+        typeProperties[objFullType] = ret;
+      }
+      return typeProperties[objFullType];
     }
 
     internal static Type GetSytemOrSpeckleType(string typeName)

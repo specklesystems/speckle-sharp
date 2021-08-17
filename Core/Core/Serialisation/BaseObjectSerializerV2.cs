@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -9,7 +11,7 @@ using Speckle.Core.Transports;
 
 namespace Speckle.Core.Serialisation
 {
-  class BaseObjectSerializerV2
+  public class BaseObjectSerializerV2
   {
     /// <summary>
     /// Property that describes the type of the object.
@@ -35,13 +37,19 @@ namespace Speckle.Core.Serialisation
       using (JsonDocument doc = JsonDocument.Parse(objectJson))
       {
         object converted = ConvertJsonElement(doc.RootElement);
+        OnProgressAction?.Invoke("DS", 1);
         return converted as Base;
       }
     }
 
     private object ConvertJsonElement(JsonElement doc)
     {
-      switch(doc.ValueKind)
+      if (CancellationToken.IsCancellationRequested)
+      {
+        return null; // Check for cancellation
+      }
+
+      switch (doc.ValueKind)
       {
         case JsonValueKind.Undefined:
         case JsonValueKind.Null:
@@ -63,7 +71,15 @@ namespace Speckle.Core.Serialisation
           foreach (JsonElement value in doc.EnumerateArray())
           {
             object convertedValue = ConvertJsonElement(value);
-            retList.Add(convertedValue);
+
+            if (convertedValue is DataChunk)
+            {
+              retList.AddRange(((DataChunk)convertedValue).data);
+            }
+            else
+            {
+              retList.Add(convertedValue);
+            }
           }
           return retList;
 
@@ -89,20 +105,43 @@ namespace Speckle.Core.Serialisation
 
     private Base Dict2Base(Dictionary<string, object> dictObj)
     {
-      Type type = SerializationUtilities.GetType(dictObj[TypeDiscriminator] as String);
+      String typeName = dictObj[TypeDiscriminator] as String;
+      Type type = SerializationUtilities.GetType(typeName);
       Base baseObj = Activator.CreateInstance(type) as Base;
 
       dictObj.Remove(TypeDiscriminator);
       dictObj.Remove("__closure");
 
+      Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(typeName);
+
       foreach (KeyValuePair<string, object> entry in dictObj)
       {
-        
-        // TODO: Assign it to `baseObj` property
+        string lowerPropertyName = entry.Key.ToLower();
+        if (staticProperties.ContainsKey(lowerPropertyName) && staticProperties[lowerPropertyName].CanWrite)
+        {
+          PropertyInfo property = staticProperties[lowerPropertyName];
+          Type targetValueType = property.PropertyType;
+          object convertedValue;
+          bool conversionOk = ValueConverter.ConvertValue(targetValueType, entry.Value, out convertedValue);
+          if (conversionOk)
+          {
+            property.SetValue(baseObj, convertedValue);
+          }
+          else
+          {
+            // Cannot convert the value in the json to the static property type
+            CallSiteCache.SetValue(entry.Key, baseObj, entry.Value);
+          }
+        }
+        else
+        {
+          // No writable property with this name
+          CallSiteCache.SetValue(entry.Key, baseObj, entry.Value);
+        }
       }
-      ((dynamic)baseObj).dataDict = dictObj;
 
       return baseObj;
     }
+
   }
 }
