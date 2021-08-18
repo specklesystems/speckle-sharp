@@ -33,13 +33,18 @@ namespace GsaProxy
       }
     }
 
+    #region cache_related
+    public string GetApplicationId<T>(int index) => Cache.GetApplicationId<T>(index);
+
+    public GsaRecord GetNative<T>(int index) => Cache.GetNative<T>(index, out var gsaRecord) ? gsaRecord : null;
+
+    public List<int> LookupIndices<T>() => Cache.LookupIndices<T>().Where(i => i.HasValue && i.Value > 0).Select(i => i.Value).ToList();
+    #endregion
+
+    #region proxy_related
     public bool ClearResults(ResultGroup group) => Proxy.ClearResults(group);
 
     public List<int> ConvertGSAList(string list, GSAEntity entityType) => Proxy.ConvertGSAList(list, entityType).ToList();
-
-    public string GetApplicationId(GwaKeyword keyword, int index) => Cache.GetApplicationId(keyword, index);
-
-    public GsaRecord GetNative(GwaKeyword keyword, int index) => Cache.GetNative(keyword, index, out var gsaRecord) ? gsaRecord : null;
 
     public bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1)
       => Proxy.GetResultHierarchy(group, index, out valueHierarchy, dimension);
@@ -47,8 +52,7 @@ namespace GsaProxy
     public bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null)
       => Proxy.LoadResults(group, out numErrorRows, cases, elemIds);
 
-    public List<int> LookupIndices(GwaKeyword keyword) => Cache.LookupIndices(keyword).Where(i => i.HasValue && i.Value > 0).Select(i => i.Value).ToList();
-
     public int NodeAt(double x, double y, double z, double coincidenceTol) => Proxy.NodeAt(x, y, z, coincidenceTol);
+    #endregion
   }
 }

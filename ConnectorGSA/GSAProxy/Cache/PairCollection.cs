@@ -6,17 +6,14 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 {
   //This is designed to maximise performance when speed of searching values (i.e. as opposed to keys) is important.  It is trying to be faster than a SortedList
   //Note: it assumes both keys and values are unique
-  internal class PairCollection<U, V> : IPairCollection<U, V> where U : IComparable<U> where V : IComparable<V>
+  internal class PairCollection<U, V> : IPairCollection<U, V> 
   {
-    private readonly Dictionary<U, V> lefts = new Dictionary<U, V>();
-    private readonly Dictionary<V, U> rights = new Dictionary<V, U>();
-    private readonly object dictLock = new object();
+    protected readonly Dictionary<U, V> lefts = new Dictionary<U, V>();
+    protected readonly Dictionary<V, U> rights = new Dictionary<V, U>();
+    protected readonly object dictLock = new object();
 
-    private U maxLeft;
-    private V maxRight;
-
-    private readonly bool uIsNullable;
-    private readonly bool vIsNullable;
+    protected readonly bool uIsNullable;
+    protected readonly bool vIsNullable;
 
     public PairCollection()
     {
@@ -40,9 +37,6 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       }
     }
 
-    public U MaxLeft() => maxLeft;
-    public V MaxRight() => maxRight;
-
     public List<U> Lefts
     {
       get
@@ -65,37 +59,27 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       }
     }
 
-    public void Add(U u, V v)
+    public virtual void Add(U u, V v)
     {
       lock (dictLock)
       {
         if (!(uIsNullable && u == null))
         {
           lefts.Add(u, v);
-          if (lefts.Count() == 0 || u.CompareTo(maxLeft) > 0)
-          {
-            maxLeft = u;
-          }
         }
         if (!(vIsNullable && v == null))
         {
-          rights.Add(v, u);
-          if (rights.Count() == 0 || v.CompareTo(maxRight) > 0)
-          {
-            maxRight = v;
-          }
+          rights.Add(v, u);          
         }
       }
     }
 
-    public void Clear()
+    public virtual void Clear()
     {
       lock (dictLock)
       {
         lefts.Clear();
         rights.Clear();
-        maxLeft = default;
-        maxRight = default;
       }
     }
 
@@ -180,23 +164,15 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     }
 
     #region inside_lock_private_fns
-    private void Remove(U u, V v)
+    protected virtual void Remove(U u, V v)
     {
       if (!(uIsNullable && u == null))
       {
         lefts.Remove(u);
-        if (u.CompareTo(maxLeft) == 0)
-        {
-          maxLeft = lefts.Count() == 0 ? default : lefts.Keys.Max();
-        }
       }
       if (!(vIsNullable && v == null))
       {
         rights.Remove(v);
-        if (v.CompareTo(maxRight) == 0)
-        {
-          maxRight = rights.Count() == 0 ? default : rights.Keys.Max();
-        }
       }
     }
     #endregion

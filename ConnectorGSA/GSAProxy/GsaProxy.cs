@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Speckle.GSA.API.GwaSchema;
+using Speckle.ConnectorGSA.Proxy.GwaParsers;
 
 namespace Speckle.ConnectorGSA.Proxy
 {

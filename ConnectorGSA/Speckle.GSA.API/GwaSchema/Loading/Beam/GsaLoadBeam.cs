@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Speckle.GSA.API.GwaSchema
 {
@@ -12,7 +13,7 @@ namespace Speckle.GSA.API.GwaSchema
     public bool Projected;
     public AxisDirection6 LoadDirection;
 
-    protected GwaKeyword childKeyword;
+    protected Type childType;
   }
 
   public class GsaLoadBeamPoint : GsaLoadBeam
@@ -22,7 +23,7 @@ namespace Speckle.GSA.API.GwaSchema
 
     public GsaLoadBeamPoint() : base()
     {
-      childKeyword = GwaKeyword.LOAD_BEAM_POINT;
+      childType = typeof(GsaLoadBeamPoint);
       Version = 2;
     }
   }
@@ -33,7 +34,7 @@ namespace Speckle.GSA.API.GwaSchema
 
     public GsaLoadBeamUdl() : base()
     {
-      childKeyword = GwaKeyword.LOAD_BEAM_UDL;
+      childType = typeof(GsaLoadBeamUdl);
       Version = 2;
     }
   }
@@ -45,7 +46,7 @@ namespace Speckle.GSA.API.GwaSchema
 
     public GsaLoadBeamLine() : base()
     {
-      childKeyword = GwaKeyword.LOAD_BEAM_LINE;
+      childType = typeof(GsaLoadBeamLine);
       Version = 2;
     }
   }
@@ -64,7 +65,7 @@ namespace Speckle.GSA.API.GwaSchema
   {
     public GsaLoadBeamPatch() : base()
     {
-      childKeyword = GwaKeyword.LOAD_BEAM_PATCH;
+      childType = typeof(GsaLoadBeamPatch);
       Version = 2;
     }
   }
@@ -73,7 +74,7 @@ namespace Speckle.GSA.API.GwaSchema
   {
     public GsaLoadBeamTrilin() : base()
     {
-      childKeyword = GwaKeyword.LOAD_BEAM_TRILIN;
+      childType = typeof(GsaLoadBeamTrilin);
       Version = 2;
     }
   }

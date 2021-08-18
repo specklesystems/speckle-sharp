@@ -1,13 +1,11 @@
 ﻿using Speckle.GSA.API.GwaSchema;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 
 namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
-  //Check when implementing: is TASK truly a referenced keyword?
-  [GsaType(GwaKeyword.COMBINATION, GwaSetCommandType.Set, true, GwaKeyword.LOAD_TITLE, GwaKeyword.TASK)]
+  [GsaType(GwaKeyword.COMBINATION, GwaSetCommandType.Set, true, GwaKeyword.LOAD_TITLE)]
   public class GsaCombinationParser : GwaParser<GsaCombination>
   {
     public GsaCombinationParser(GsaCombination gsaCombination) : base(gsaCombination) { }

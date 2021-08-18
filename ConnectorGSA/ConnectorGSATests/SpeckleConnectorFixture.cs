@@ -1,5 +1,5 @@
-﻿using Moq;
-using Speckle.ConnectorGSA.Proxy.Cache;
+﻿using Speckle.ConnectorGSA.Proxy.Cache;
+using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
 using System;
@@ -16,16 +16,13 @@ namespace ConnectorGSATests
     protected string modelWithoutResultsFile = "Structural Demo.gwb";
     protected string modelWithResultsFile = "Structural Demo Results.gwb";
 
-    //protected GsaModelMock
-    protected Mock<IGSAModel> gsaModelMock;
-    protected GsaCache cache;
+    protected GsaModelMock GsaModelMock = new GsaModelMock();
+    protected GsaCache cache => GsaModelMock.cache;
+    protected Speckle.ConnectorGSA.Proxy.GsaProxy proxy { get => GsaModelMock.proxy; set => GsaModelMock.proxy = value; }
 
     public SpeckleConnectorFixture()
     {
-      gsaModelMock = new Mock<IGSAModel>();
-      gsaModelMock.SetupGet(x => x.GwaDelimiter).Returns('\t');
-      gsaModelMock.Setup(x => x.ConvertGSAList(It.IsAny<string>(), It.IsAny<GSAEntity>())).Returns(new Func<string, GSAEntity, List<int>>(ConvertGSAList));
-      gsaModelMock.Setup(x => x.LookupIndices(It.IsAny<GwaKeyword>())).Returns((GwaKeyword kw) => cache.LookupIndices(kw).Where(i => i.HasValue).Select(i => i.Value).ToList());
+      Instance.GsaModel = new GsaModelMock();
     }
 
     protected static GwaKeyword[] DesignLayerKeywords = new GwaKeyword[] {

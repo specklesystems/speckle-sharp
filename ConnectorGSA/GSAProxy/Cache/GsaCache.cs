@@ -1,5 +1,4 @@
 ﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
-using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
@@ -12,11 +11,12 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     public List<List<GwaKeyword>> TxTypeDependencyGenerations { get; private set; } = new List<List<GwaKeyword>>();
     public int NumRecords { get => validRecords.Where(r => r.Latest).Count(); }
 
+    //Lookup tables used when the kit calls methods which pass in GwaSchema types, and when the connector upserts based on keywords
+    private IPairCollection<GwaKeyword, Type> SchemaTypeByKeyword = new PairCollection<GwaKeyword, Type>();
     //Used in ordering calls to ToSpeckle()
-    private HashSet<GwaKeyword> SchemaKeywords;  //Just the keywords which are in the supported full dependency trees
-    private Dictionary<GwaKeyword, Type> TypeParsers = new Dictionary<GwaKeyword, Type>();
-    private bool initialised = false;
-    private bool initialisedError = false;  //To ensure initialisation is only attempted once.
+    // [ Schema type, Parser type ]
+    private Dictionary<Type, Type> ParsersBySchemaType = new Dictionary<Type, Type>();
+    private Dictionary<GwaKeyword, Type> ParsersByKeyword = new Dictionary<GwaKeyword, Type>();
 
     private List<GsaCacheRecord> records = new List<GsaCacheRecord>();
     private List<string> foundStreamIds = new List<string>();  // To avoid storing stream ID strings multiple times
@@ -30,7 +30,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     //private readonly Dictionary<string, HashSet<int>> collectionIndicesBySpeckleTypeName = new Dictionary<string, HashSet<int>>();
 
     // < keyword , { < index, app_id >, < index, app_id >, ... } >
-    private readonly Dictionary<GwaKeyword, IPairCollection<int, string>> provisionals = new Dictionary<GwaKeyword, IPairCollection<int, string>>();
+    private readonly Dictionary<GwaKeyword, IPairCollectionComparable<int, string>> provisionals = new Dictionary<GwaKeyword, IPairCollectionComparable<int, string>>();
 
     //Hardcoded for now to use current 10.1 keywords - to be reviewed
     private static readonly GwaKeyword analKeyword = GwaKeyword.ANAL;
@@ -39,9 +39,10 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     private List<GsaCacheRecord> validRecords { get => records.Where(r => r != null).ToList(); }
 
     private object cacheLock = new object();
+    private bool initialised = false;
+    private bool initialisedError = false;  //To ensure initialisation is only attempted once.
 
     public GsaCache()  { }
-
 
     #region init
     private bool InitialiseIfNecessary()
@@ -49,7 +50,6 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       if (!initialised && !initialisedError)
       {
         if (!GetAssemblyTypes(out var assemblyTypes)
-          //|| !GetSchemaTypes(assemblyTypes, out var schemaTypes)
           || !GetParserTypes(assemblyTypes, out var parserTypes)
           || !GetTypeTrees(parserTypes, out var typeTreeCollection)
           || !PopulateTxTypeGenerations(typeTreeCollection)
@@ -66,8 +66,8 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
     private bool PopulateTxTypeParsers(List<Type> parserTypes)
     {
-      //TxTypeParsers = parserTypes.ToDictionary(pt => Helper.GetGwaKeyword(pt), pt => pt.BaseType.GenericTypeArguments.First());
-      TypeParsers = parserTypes.ToDictionary(pt => Helper.GetGwaKeyword(pt), pt => pt);
+      ParsersByKeyword = parserTypes.ToDictionary(pt => Helper.GetGwaKeyword(pt), pt => pt);
+      ParsersBySchemaType = parserTypes.ToDictionary(pt => pt.BaseType.GenericTypeArguments.First(), pt => pt);
       return true;
     }
 
@@ -83,7 +83,6 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
         return false;
       }
       TxTypeDependencyGenerations = gens;
-      SchemaKeywords = new HashSet<GwaKeyword>(gens.SelectMany(g => g));
       return true;
     }
 
@@ -111,7 +110,6 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
         types = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, (typeof(IGwaParser)))
           && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
-          //&& SchemaKeywords.Contains(Helper.GetGwaKeyword(t))).ToList();
           && Helper.IsSelfContained(t)
           && !t.IsAbstract
           ).ToList();
@@ -125,24 +123,6 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       }
     }
 
-    /*
-    private bool GetSchemaTypes(List<Type> assemblyTypes, out List<Type> schemaTypes)
-    {
-      var gsaAttributeType = typeof(GwaParsers.GsaType);
-      try
-      {
-        schemaTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, (typeof(IGwaParser)))
-            && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)).ToList();
-      }
-      catch
-      {
-        schemaTypes = null;
-        return false;
-      }
-      return (schemaTypes != null && schemaTypes.Count() > 0);
-    }
-    */
-
     //Yes the schema keywords are stored with their *parsers*
     private bool PopulateSchemaKeywords(List<Type> parserTypes)
     {
@@ -151,11 +131,22 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       {
         return false;
       }
-      this.SchemaKeywords = new HashSet<GwaKeyword>(parserTypes.Select(st => Helper.GetGwaKeyword(st)));
-      return (this.SchemaKeywords != null & this.SchemaKeywords.Count > 0);
+
+      var completeDependencyTreeKeywords = new HashSet<GwaKeyword>(TxTypeDependencyGenerations.SelectMany(g => g));
+
+      this.SchemaTypeByKeyword = new PairCollection<GwaKeyword, Type>();
+      foreach (var pt in parserTypes)
+      {
+        var kw = Helper.GetGwaKeyword(pt);
+        if (completeDependencyTreeKeywords.Contains(kw))
+        {
+          this.SchemaTypeByKeyword.Add(Helper.GetGwaKeyword(pt), pt.BaseType.GetGenericArguments().First());
+        }
+      }
+      return (this.SchemaTypeByKeyword != null && this.SchemaTypeByKeyword.Lefts.Count > 0 && this.SchemaTypeByKeyword.Rights.Count > 0);
     }
 
-    public bool GetTypeTrees(List<Type> schemaTypes, out TypeTreeCollection<GwaKeyword> retCol)
+    private bool GetTypeTrees(List<Type> schemaTypes, out TypeTreeCollection<GwaKeyword> retCol)
     {
       try
       {
@@ -181,12 +172,12 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     //This Upsert is only called when hydrating the cache from the GSA instance
     public bool Upsert(ProxyGwaLine proxyGwaLine)
     {
-      if (!InitialiseIfNecessary() || !SchemaKeywords.Contains(proxyGwaLine.Keyword) || !TypeParsers.ContainsKey(proxyGwaLine.Keyword))
+      if (!InitialiseIfNecessary() || !this.SchemaTypeByKeyword.ContainsLeft(proxyGwaLine.Keyword) || !ParsersByKeyword.ContainsKey(proxyGwaLine.Keyword))
       {
         return false;
       }
 
-      var parser = (IGwaParser)Activator.CreateInstance(TypeParsers[proxyGwaLine.Keyword]);
+      var parser = (IGwaParser)Activator.CreateInstance(ParsersByKeyword[proxyGwaLine.Keyword]);
 
       if (parser.FromGwa(proxyGwaLine.GwaWithoutSet) && parser.Record != null)
       {
@@ -204,8 +195,13 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
     //Called by the kit
     //Not every record has stream IDs (like generated nodes)
-    public bool Upsert(GwaKeyword keyword, GsaRecord record, bool? latest = true)
+    public bool Upsert<T>(GsaRecord record, bool? latest = true)
     {
+      if (!InitialiseIfNecessary() || !this.SchemaTypeByKeyword.ContainsRight(typeof(T)) || !SchemaTypeByKeyword.FindLeft(typeof(T), out var keyword)
+        || !ParsersBySchemaType.ContainsKey(typeof(T)))
+      {
+        return false;
+      }
       try
       {
         var matchingRecords = new List<GsaCacheRecord>();
@@ -369,16 +365,17 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     {
       if (!provisionals.ContainsKey(keyword))
       {
-        provisionals.Add(keyword, new PairCollection<int, string>());
+        provisionals.Add(keyword, new PairCollectionComparable<int, string>());
       }
       provisionals[keyword].Add(index, applicationId);
     }
     #endregion
 
     #region lookup
-    public bool GetNative(GwaKeyword keyword, int index, out GsaRecord gsaRecord)
+    public bool GetNative<T>(int index, out GsaRecord gsaRecord)
     {
-      if (GetAllRecords(keyword, index, out var foundRecords))
+      if (InitialiseIfNecessary() && this.SchemaTypeByKeyword.FindLeft(typeof(T), out var keyword) 
+        && GetAllRecords(keyword, index, out var foundRecords))
       {
         var latestFound = foundRecords.Where(r => r.Latest);
         if (latestFound.Count() > 0)
@@ -391,33 +388,49 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       return false;
     }
 
-    public int? LookupIndex(GwaKeyword keyword, string applicationId)
+    public int? LookupIndex<T>(string applicationId)
     {
+      if (!InitialiseIfNecessary() || !SchemaTypeByKeyword.ContainsRight(typeof(T)) 
+        || !SchemaTypeByKeyword.FindLeft(typeof(T), out var keyword))
+      {
+        return null;
+      }
       lock (cacheLock)
       {
         return (ValidAppId(applicationId, out string appId) ? GetRecordIndex(keyword, appId) : null);
       }
     }
 
-    public List<int?> LookupIndices(GwaKeyword keyword, IEnumerable<string> applicationIds)
+    public List<int?> LookupIndices<T>(IEnumerable<string> applicationIds)
     {
+      if (!InitialiseIfNecessary() || !SchemaTypeByKeyword.ContainsRight(typeof(T))
+        || !SchemaTypeByKeyword.FindLeft(typeof(T), out var keyword))
+      {
+        return null;
+      }
       lock (cacheLock)
       {
         return (ValidAppIds(applicationIds, out List<string> appIds) ? GetRecordIndices(keyword, appIds) : new List<int?>());
       }
     }
 
-    public List<int?> LookupIndices(GwaKeyword keyword)
+    public List<int?> LookupIndices<T>()
     {
+      if (!InitialiseIfNecessary() || !SchemaTypeByKeyword.ContainsRight(typeof(T))
+        || !SchemaTypeByKeyword.FindLeft(typeof(T), out var keyword))
+      {
+        return null;
+      }
       lock (cacheLock)
       {
         return (GetRecordIndices(keyword).Select(k => (int?)k).ToList());
       }
     }
 
-    public string GetApplicationId(GwaKeyword kw, int gsaIndex)
+    public string GetApplicationId<T>(int gsaIndex)
     {
-      if (!collectionIndicesByKwGsaId.ContainsKey(kw) || collectionIndicesByKwGsaId[kw] == null
+      if (!InitialiseIfNecessary() || !this.SchemaTypeByKeyword.FindLeft(typeof(T), out GwaKeyword kw)
+       || !collectionIndicesByKwGsaId.ContainsKey(kw) || collectionIndicesByKwGsaId[kw] == null
        || !collectionIndicesByKwGsaId[kw].ContainsKey(gsaIndex) || collectionIndicesByKwGsaId[kw][gsaIndex] == null
        || collectionIndicesByKwGsaId[kw][gsaIndex].Count == 0)
       {
@@ -430,6 +443,10 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     //[ keyword, index, GWA line(s) ]
     public List<Tuple<GwaKeyword, int, List<string>>> GetExpiredData()
     {
+      if (!initialised)
+      {
+        return null;
+      }
       lock (cacheLock)
       {
         var matchingRecords = validRecords.Where(r => IsAlterable(r.Keyword, r.ApplicationId) && r.Previous == true && r.Latest == false).ToList();
@@ -439,6 +456,10 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
     public List<Tuple<GwaKeyword, int, List<string>>> GetDeletableData()
     {
+      if (!initialised)
+      {
+        return null;
+      }
       lock (cacheLock)
       {
         var matchingRecords = validRecords.Where(r => IsAlterable(r.Keyword, r.ApplicationId) && r.Latest == true).ToList();
@@ -448,7 +469,8 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
     private int? GetRecordIndex(GwaKeyword kw, string applicationId)
     {
-      if (string.IsNullOrEmpty(applicationId) || !collectionIndicesByApplicationId.ContainsKey(applicationId) || !collectionIndicesByKw.ContainsKey(kw))
+      if (!InitialiseIfNecessary() || string.IsNullOrEmpty(applicationId) || !collectionIndicesByApplicationId.ContainsKey(applicationId) 
+        || !collectionIndicesByKw.ContainsKey(kw))
       {
         return null;
       }
@@ -527,9 +549,9 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
       for (int i = 0; i < records.Count(); i++)
       {
-        if (TypeParsers.ContainsKey(records[i].Keyword))
+        if (ParsersByKeyword.ContainsKey(records[i].Keyword))
         {
-          var parser = (IGwaParser)Activator.CreateInstance(TypeParsers[records[i].Keyword]);
+          var parser = (IGwaParser)Activator.CreateInstance(ParsersByKeyword[records[i].Keyword]);
           if (parser.Gwa(out var gwa) && gwa != null && gwa.Count > 0)
           {
             returnData.Add(new Tuple<GwaKeyword, int, List<string>>
@@ -632,21 +654,6 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
             var newIndex = FindNextFreeIndexForProvisional(keyword);
             UpsertProvisional(keyword, newIndex, appId);
             return newIndex;
-            /*
-            var indices = GetRecordIndexHashSet(keyword);
-            var highestProvisional = HighestProvisional(keyword);
-            var highestIndex = Math.Max((indices.Count() == 0) ? 0 : indices.Max(), highestProvisional ?? 0);
-            for (int i = 1; i <= highestIndex; i++)
-            {
-              if (!indices.Contains(i) && !ProvisionalContains(keyword, i))
-              {
-                UpsertProvisional(keyword, i, appId);
-                return i;
-              }
-            }
-            UpsertProvisional(keyword, highestIndex + 1, appId);
-            return highestIndex + 1;
-            */
           }
           else
           {

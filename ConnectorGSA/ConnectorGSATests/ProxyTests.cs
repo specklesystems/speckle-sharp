@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Xunit;
-using Speckle.ConnectorGSA;
-using Speckle.GSA.API.GwaSchema;
 using System.IO;
+using Speckle.ConnectorGSA.Proxy.GwaParsers;
 
 namespace ConnectorGSATests
 {

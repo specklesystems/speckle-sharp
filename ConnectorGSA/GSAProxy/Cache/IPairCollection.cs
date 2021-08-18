@@ -16,6 +16,10 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     //These are ordered by insertion order
     List<U> Lefts { get; }
     List<V> Rights { get; }
+  }
+  
+  internal interface IPairCollectionComparable<U, V> : IPairCollection<U,V>
+  {
     //These methods are quite specific - TODO: review if this needs to be handled differently
     U MaxLeft();
     V MaxRight();

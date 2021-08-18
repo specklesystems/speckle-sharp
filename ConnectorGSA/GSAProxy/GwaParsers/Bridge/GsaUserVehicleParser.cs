@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
-  [GsaType(GwaKeyword.USER_VEHICLE, GwaSetCommandType.Set, true, GwaKeyword.LOAD_TITLE, GwaKeyword.TASK)]
+  [GsaType(GwaKeyword.USER_VEHICLE, GwaSetCommandType.Set, true)]
   public class GsaUserVehicleParser : GwaParser<GsaUserVehicle>
   {
     public GsaUserVehicleParser(GsaUserVehicle gsaUserVehicle) : base(gsaUserVehicle) { }
@@ -26,7 +26,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //Loop through remaining items and add items to AxlePosition, AxleOffset, AxleLeft, AxleRight lists
-      record.AxlePosition = new List<double>();
+      record.AxlePosition = new List<double>(); 
       record.AxleOffset = new List<double>();
       record.AxleLeft = new List<double>();
       record.AxleRight = new List<double>();

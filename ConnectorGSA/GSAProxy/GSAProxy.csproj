@@ -50,6 +50,7 @@
     <Compile Include="Cache\GsaCacheRecord.cs" />
     <Compile Include="Cache\IPairCollection.cs" />
     <Compile Include="Cache\PairCollection.cs" />
+    <Compile Include="Cache\PairCollectionComparable.cs" />
     <Compile Include="Cache\TypeTreeCollection.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="GsaModel.cs" />
@@ -62,11 +63,13 @@
     <Compile Include="GwaParsers\Bridge\InfluenceEffects\GsaInfNodeParser.cs" />
     <Compile Include="GwaParsers\Constraints\GsaGenRestParser.cs" />
     <Compile Include="GwaParsers\Constraints\GsaRigidParser.cs" />
+    <Compile Include="GwaParsers\Enums.cs" />
     <Compile Include="GwaParsers\Geometry\GsaGridLineParser.cs" />
     <Compile Include="GwaParsers\Geometry\GsaGridPlaneParser.cs" />
     <Compile Include="GwaParsers\Geometry\GsaGridSurfaceParser.cs" />
     <Compile Include="GwaParsers\GsaAssemblyParser.cs" />
     <Compile Include="GwaParsers\Geometry\GsaAxisParser.cs" />
+    <Compile Include="GwaParsers\GsaElParser.cs" />
     <Compile Include="GwaParsers\GsaMembParser.cs" />
     <Compile Include="GwaParsers\GsaType.cs" />
     <Compile Include="GwaParsers\Loading\2dElement\GsaLoad2dFaceParser.cs" />

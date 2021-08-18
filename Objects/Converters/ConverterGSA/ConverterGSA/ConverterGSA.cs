@@ -10,7 +10,6 @@ using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
 using Restraint = Objects.Structural.Geometry.Restraint;
 using Objects.Structural.Materials;
 
@@ -137,7 +136,7 @@ namespace ConverterGSA
       };
       if (gsaNode.Index.HasValue)
       {
-        speckleNode.applicationId = Instance.GsaModel.GetApplicationId(GwaKeyword.NODE, gsaNode.Index.Value);
+        speckleNode.applicationId = Instance.GsaModel.GetApplicationId<GsaNode>(gsaNode.Index.Value);
       }
 
       //GSANode specific members
@@ -177,7 +176,7 @@ namespace ConverterGSA
       };
       if (gsaAxis.Index.HasValue)
       {
-        speckleAxis.applicationId = Instance.GsaModel.GetApplicationId(GwaKeyword.AXIS, gsaAxis.Index.Value);
+        speckleAxis.applicationId = Instance.GsaModel.GetApplicationId<GsaAxis>(gsaAxis.Index.Value);
       }
 
       if (gsaAxis.XDirX.HasValue && gsaAxis.XDirY.HasValue && gsaAxis.XDirZ.HasValue && gsaAxis.XYDirX.HasValue && gsaAxis.XYDirY.HasValue && gsaAxis.XYDirZ.HasValue)
@@ -237,7 +236,7 @@ namespace ConverterGSA
 
       if (gsaEl.Index.HasValue)
       {
-        speckleElemenet2d.applicationId = Instance.GsaModel.GetApplicationId(GwaKeyword.EL, gsaEl.Index.Value);
+        speckleElemenet2d.applicationId = Instance.GsaModel.GetApplicationId<GsaEl>(gsaEl.Index.Value);
       }
       if (gsaEl.PropertyIndex.HasValue) speckleElemenet2d.property = GetProperty2dFromIndex(gsaEl.PropertyIndex.Value);
       if (gsaEl.OffsetZ.HasValue) speckleElemenet2d.offset = gsaEl.OffsetZ.Value;
@@ -392,7 +391,7 @@ namespace ConverterGSA
 
       if (gsaProp2d.Index.HasValue)
       {
-        speckleProperty2D.applicationId = Instance.GsaModel.GetApplicationId(GwaKeyword.PROP_2D, gsaProp2d.Index.Value);
+        speckleProperty2D.applicationId = Instance.GsaModel.GetApplicationId<GsaProp2d>(gsaProp2d.Index.Value);
       }
       if (gsaProp2d.Thickness.HasValue) speckleProperty2D.thickness = gsaProp2d.Thickness.Value;
       if (gsaProp2d.GradeIndex.HasValue) speckleProperty2D.material = GetMaterialFromIndex(gsaProp2d.GradeIndex.Value, gsaProp2d.MatType);
@@ -620,7 +619,7 @@ namespace ConverterGSA
       //Spring Stiffness
       if (gsaNode.SpringPropertyIndex.HasValue && gsaNode.SpringPropertyIndex.Value > 0)
       {
-        var gsaRecord = Instance.GsaModel.GetNative(GwaKeyword.PROP_SPR, gsaNode.SpringPropertyIndex.Value);
+        var gsaRecord = Instance.GsaModel.GetNative<GsaPropSpr>(gsaNode.SpringPropertyIndex.Value);
         if (gsaRecord.GetType() != typeof(GsaPropSpr))
         {
           return restraint;
@@ -677,7 +676,7 @@ namespace ConverterGSA
     private Node GetNodeFromIndex(int index)
     {
       Node speckleNode = null;
-      var gsaNode = Instance.GsaModel.GetNative(GwaKeyword.NODE, index);
+      var gsaNode = Instance.GsaModel.GetNative<GsaNode>(index);
       if (gsaNode != null) speckleNode = GsaNodeToSpeckle((GsaNode)gsaNode);
 
       return speckleNode;
@@ -687,7 +686,7 @@ namespace ConverterGSA
     #region Axis
     private Axis GetAxisFromIndex(int index)
     {
-      var gsaAxis = Instance.GsaModel.GetNative(GwaKeyword.AXIS, index);
+      var gsaAxis = Instance.GsaModel.GetNative<GsaAxis>(index);
       if (gsaAxis.GetType() != typeof(GsaAxis))
       {
         return null;
@@ -786,12 +785,12 @@ namespace ConverterGSA
       //Convert gsa material to speckle material
       if (type == Property2dMaterialType.Steel)
       {
-        gsaMat = Instance.GsaModel.GetNative(GwaKeyword.MAT_STEEL, index);
+        gsaMat = Instance.GsaModel.GetNative<GsaMatSteel>(index);
         if (gsaMat != null) speckleMaterial = GsaMaterialSteelToSpeckle((GsaMatSteel)gsaMat);
       }
       else if (type == Property2dMaterialType.Concrete)
       {
-        gsaMat = Instance.GsaModel.GetNative(GwaKeyword.MAT_CONCRETE, index);
+        gsaMat = Instance.GsaModel.GetNative<GsaMatConcrete>(index);
         if (gsaMat != null) speckleMaterial = GsaMaterialConcreteToSpeckle((GsaMatConcrete)gsaMat);
       }
 
@@ -934,7 +933,7 @@ namespace ConverterGSA
     private Property2D GetProperty2dFromIndex(int index)
     {
       Property2D speckleProperty2d = null;
-      var gsaProp2d = Instance.GsaModel.GetNative(GwaKeyword.PROP_2D, index);
+      var gsaProp2d = Instance.GsaModel.GetNative<GsaProp2d>(index);
       if (gsaProp2d != null) speckleProperty2d = GsaProperty2dToSpeckle((GsaProp2d)gsaProp2d);
 
       return speckleProperty2d;
