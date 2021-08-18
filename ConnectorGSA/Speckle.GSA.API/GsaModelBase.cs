@@ -1,5 +1,4 @@
 ﻿using Speckle.GSA.API.GwaSchema;
-using System;
 using System.Collections.Generic;
 
 namespace Speckle.GSA.API
@@ -22,13 +21,13 @@ namespace Speckle.GSA.API
 
     public abstract List <int> ConvertGSAList(string list, GSAEntity entityType);
 
-    public abstract GsaRecord GetNative(GwaKeyword keyword, int index);
+    public abstract GsaRecord GetNative<T>(int index);
 
-    public abstract string GetApplicationId(GwaKeyword keyword, int index);
+    public abstract string GetApplicationId<T>(int index);
 
     public abstract bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1);
 
-    public abstract List<int> LookupIndices(GwaKeyword keyword);
+    public abstract List<int> LookupIndices<T>();
 
     public abstract int NodeAt(double x, double y, double z, double coincidenceTol);
 

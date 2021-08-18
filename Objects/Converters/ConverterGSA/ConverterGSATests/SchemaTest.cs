@@ -12,6 +12,7 @@ using Restraint = Objects.Structural.Geometry.Restraint;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.Properties;
 using Objects.Structural.Materials;
+using Speckle.ConnectorGSA.Proxy.GwaParsers;
 
 namespace ConverterGSATests
 {

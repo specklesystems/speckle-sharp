@@ -363,3 +363,9 @@ ConnectorDynamo/ConnectorDynamo/dist/
 *.rhl
 
 speckle-sharp-ci-tools
+
+# GSA files
+GPUCache/
+GSAExport/
+
+*.orig

@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Speckle.GSA.API.GwaSchema;
+using System;
 
 
-namespace Speckle.GSA.API.GwaSchema
+namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
   [AttributeUsage(AttributeTargets.Class)]
   public class GsaType : Attribute

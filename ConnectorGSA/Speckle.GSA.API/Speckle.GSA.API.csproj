@@ -61,8 +61,6 @@
     <Compile Include="GwaSchema\GsaEl.cs" />
     <Compile Include="GwaSchema\GsaMemb.cs" />
     <Compile Include="GwaSchema\GsaNode.cs" />
-    <Compile Include="GwaSchema\GsaRecord.cs" />
-    <Compile Include="GwaSchema\GsaType.cs" />
     <Compile Include="GwaSchema\Loading\2dElement\GsaLoad2dFace.cs" />
     <Compile Include="GwaSchema\Loading\2dElement\GsaLoad2dThermal.cs" />
     <Compile Include="GwaSchema\Loading\Beam\GsaLoadBeam.cs" />
@@ -78,6 +76,7 @@
     <Compile Include="GwaSchema\Materials\GsaMat.cs" />
     <Compile Include="GwaSchema\Materials\GsaMatConcrete.cs" />
     <Compile Include="GwaSchema\Materials\GsaMatSteel.cs" />
+    <Compile Include="GwaSchema\GsaRecord.cs" />
     <Compile Include="GwaSchema\OtherGsaClasses.cs" />
     <Compile Include="GwaSchema\Properties\GsaProp2d.cs" />
     <Compile Include="GwaSchema\Properties\GsaPropMass.cs" />

@@ -20,9 +20,9 @@ namespace Speckle.GSA.API
     int Result1DNumPosition { get; set; }
 
     //Cache
-    GsaRecord GetNative(GwaKeyword keyword, int index);
-    string GetApplicationId(GwaKeyword keyword, int index);
-    List<int> LookupIndices(GwaKeyword keyword);
+    GsaRecord GetNative<T>(int index);
+    string GetApplicationId<T>(int index);
+    List<int> LookupIndices<T>();
 
     //Offered by GSA itself
     List<int> ConvertGSAList(string list, GSAEntity entityType);
