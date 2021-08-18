@@ -21,11 +21,15 @@ namespace Objects.BuiltElements
         public Level upperLimit { get; set; }
         public double limitOffset { get; set; } = 0;
         public ICurve boundary { get; set; }
+        public string spaceType { get; set; }
+
+        [DetachProperty]
         public List<SpaceSeparationLine> separationLines { get; set; } 
         //missing Phase? Associated Room? Zone?
 
         [DetachProperty]
         public Mesh displayMesh { get; set; }
+        public string units { get; set; }
         public Space() { }
 
         [SchemaInfo("Space", "Creates a Speckle space", "BIM", "MEP")]
@@ -36,22 +40,15 @@ namespace Objects.BuiltElements
             this.basePoint = basePoint;
             this.level = level;
         }
-    }
-}
 
-namespace Objects.BuiltElements.Revit
-{
-    public class RevitSpace : Space
-    {
-        public string elementId { get; set; }
-        public List<Parameter> parameters { get; set; }
-        public RevitSpace() { }
-
-        [SchemaInfo("RevitSpace", "Creates a Revit space", "Revit", "MEP")]
-        public RevitSpace([SchemaMainParam] Mesh displayMesh, List<Parameter> parameters = null)
+        [SchemaInfo("Space with space separation lines", "Creates a Speckle space with separation lines", "BIM", "MEP")]
+        public Space(string name, string number, Point basePoint, [SchemaMainParam] List<SpaceSeparationLine> separationLines, Level level)
         {
-            this.displayMesh = displayMesh;
-            this.parameters = parameters;
+            this.name = name;
+            this.number = number;
+            this.basePoint = basePoint;
+            this.separationLines = separationLines;
+            this.level = level;
         }
     }
 }

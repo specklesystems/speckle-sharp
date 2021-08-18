@@ -207,24 +207,39 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
       var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
-      //delete and re-create line
-      //TODO: check if can be modified
+      // try update existing (update of model curve geometry curve based on speckle curve)
       if (docObj != null)
       {
-        Doc.Delete(docObj.Id);
+          try
+          {
+              var docCurve = docObj as DB.ModelCurve;
+              var speckleGeom = baseCurve.get_Item(0);
+              var revitGeom = docCurve.GeometryCurve;
+              if (speckleGeom != revitGeom)
+              {
+                  docCurve.SetGeometryCurve(speckleGeom, false);
+              }
+              return new ApplicationPlaceholderObject()
+              { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docCurve.UniqueId, NativeObject = docCurve };
+          }
+          catch
+          {
+              //delete and re-create line as fallback
+              Doc.Delete(docObj.Id);
+          }
       }
 
       try
       {
-        var res = Doc.Create.NewSpaceBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
-        return new ApplicationPlaceholderObject()
-        { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res };
+          var res = Doc.Create.NewSpaceBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
+          return new ApplicationPlaceholderObject()
+          { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res };
       }
       catch (Exception)
       {
-        ConversionErrors.Add(new Exception("Space separation line creation failed\nView is not valid for space separation line creation."));
-        throw;
-      }
+          ConversionErrors.Add(new Exception("Space separation line creation failed\nView is not valid for space separation line creation."));
+          throw;
+      }        
     }
 
     /// <summary>
