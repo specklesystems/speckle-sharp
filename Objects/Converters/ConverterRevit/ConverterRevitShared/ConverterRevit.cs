@@ -207,6 +207,24 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNative(Base @object)
     {
+      //Family Document
+      if (Doc.IsFamilyDocument)
+      {
+        switch (@object)
+        {
+          case ICurve o:
+            return ModelCurveToNative(o);
+          case Geometry.Brep o:
+            return FreeformElementToNativeFamily(o);
+          case Geometry.Mesh o:
+            return FreeformElementToNativeFamily(o);
+          default:
+            return null;
+
+        }
+      }
+
+      //Project Document
       // schema check
       var speckleSchema = @object["@SpeckleSchema"] as Base;
       if (speckleSchema != null)
@@ -378,7 +396,21 @@ namespace Objects.Converter.Revit
 
     public bool CanConvertToNative(Base @object)
     {
+      //Family Document
+      if (Doc.IsFamilyDocument)
+      {
+        return @object
+        switch
+        {
+          ICurve _ => true,
+          Geometry.Brep _ => true,
+          Geometry.Mesh _ => true,
+          _ => false
+        };
+      }
 
+
+      //Project Document
       var schema = @object["@SpeckleSchema"] as Base; // check for contained schema
       if (schema != null)
         return CanConvertToNative(schema);

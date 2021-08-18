@@ -70,10 +70,10 @@ namespace Objects.Converter.Revit
       {
         return ModelCurvesFromEnumerator(CurveToNative(speckleLine).GetEnumerator(), speckleLine);
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         // use display value if curve fails (prob a closed, periodic curve or a non-planar nurbs)
-        return ModelCurvesFromEnumerator(CurveToNative(( ( Geometry.Curve ) speckleLine ).displayValue).GetEnumerator(),
+        return ModelCurvesFromEnumerator(CurveToNative(((Geometry.Curve)speckleLine).displayValue).GetEnumerator(),
           speckleLine);
       }
     }
@@ -81,15 +81,27 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> ModelCurvesFromEnumerator(IEnumerator curveEnum, ICurve speckleLine)
     {
       var placeholders = new List<ApplicationPlaceholderObject>();
-      while ( curveEnum.MoveNext() && curveEnum.Current != null )
+      while (curveEnum.MoveNext() && curveEnum.Current != null)
       {
         var curve = curveEnum.Current as DB.Curve;
         // Curves must be bound in order to be valid model curves
-        if ( !curve.IsBound ) curve.MakeBound(speckleLine.domain.start ?? 0, speckleLine.domain.end ?? Math.PI * 2);
-        DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
+        if (!curve.IsBound) curve.MakeBound(speckleLine.domain.start ?? 0, speckleLine.domain.end ?? Math.PI * 2);
+        DB.ModelCurve revitCurve = null;
+
+        if (Doc.IsFamilyDocument)
+        {
+          revitCurve = Doc.FamilyCreate.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
+        }
+        else
+        {
+          revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
+        }
+
+
         placeholders.Add(new ApplicationPlaceholderObject()
         {
-          applicationId = ( speckleLine as Base ).applicationId, ApplicationGeneratedId = revitCurve.UniqueId,
+          applicationId = (speckleLine as Base).applicationId,
+          ApplicationGeneratedId = revitCurve.UniqueId,
           NativeObject = revitCurve
         });
       }
