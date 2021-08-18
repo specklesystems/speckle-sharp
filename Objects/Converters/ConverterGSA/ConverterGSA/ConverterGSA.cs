@@ -124,38 +124,32 @@ namespace ConverterGSA
       return new List<Base>() { node };
     }
 
-    public GSANode GsaNodeToSpeckle(GsaNode gsaNode, string units = null)
+    public Node GsaNodeToSpeckle(GsaNode gsaNode, string units = null)
     {
       //Node specific members
-      var speckleNode = new GSANode()
+      var speckleNode = new Node()
       {
         name = gsaNode.Name,
         basePoint = new Point(gsaNode.X, gsaNode.Y, gsaNode.Z, units),
         constraintAxis = GetConstraintAxis(gsaNode),
         restraint = GetRestraint(gsaNode)
       };
-      if (gsaNode.Index.HasValue)
+      if (IsIndex(gsaNode.Index))
       {
         speckleNode.applicationId = Instance.GsaModel.GetApplicationId<GsaNode>(gsaNode.Index.Value);
       }
 
-      //GSANode specific members
-      speckleNode.colour = gsaNode.Colour.ToString();
+      //Dynamic properties (TO DO: update Schema)
+      speckleNode["colour"] = gsaNode.Colour.ToString();
 
-      if (gsaNode.MeshSize.HasValue && gsaNode.MeshSize.Value > 0)
-      {
-        speckleNode.localElementSize = gsaNode.MeshSize.Value;
-      }
+      if (IsPositive(gsaNode.MeshSize))
+        speckleNode["localElementSize"] = gsaNode.MeshSize.Value;
 
-      if (gsaNode.SpringPropertyIndex.HasValue && gsaNode.SpringPropertyIndex.Value > 0)
-      {
-        speckleNode.springPropertyRef = gsaNode.SpringPropertyIndex.Value.ToString();
-      }      
-      
-      if (gsaNode.MassPropertyIndex.HasValue && gsaNode.MassPropertyIndex.Value > 0)
-      {
-        speckleNode.massPropertyRef = gsaNode.MassPropertyIndex.Value.ToString();
-      }
+      if (IsIndex(gsaNode.MassPropertyIndex))
+        speckleNode["propertyMass"] = GetPropertyMassFromIndex(gsaNode.MassPropertyIndex.Value);
+
+      if (IsIndex(gsaNode.SpringPropertyIndex))
+        speckleNode["propertySpring"] = GetPropertySpringFromIndex(gsaNode.SpringPropertyIndex.Value);
 
       return speckleNode;
     }
@@ -174,7 +168,7 @@ namespace ConverterGSA
         name = gsaAxis.Name,
         axisType = AxisType.Cartesian,
       };
-      if (gsaAxis.Index.HasValue)
+      if (IsIndex(gsaAxis.Index))
       {
         speckleAxis.applicationId = Instance.GsaModel.GetApplicationId<GsaAxis>(gsaAxis.Index.Value);
       }
@@ -206,39 +200,40 @@ namespace ConverterGSA
     {
       if (Is3dElement(gsaEl)) //3D element
       {
-        return GsaElemenet3dToSpeckle(gsaEl);
+        return GsaElement3dToSpeckle(gsaEl);
       }
       else if (Is2dElement(gsaEl)) // 2D element
       {
-        return GsaElemenet2dToSpeckle(gsaEl);
+        return GsaElement2dToSpeckle(gsaEl);
       }
       else //1D element
       {
-        return GsaElemenet1dToSpeckle(gsaEl);
+        return GsaElement1dToSpeckle(gsaEl);
       }
     }
 
-    public Element1D GsaElemenet1dToSpeckle(GsaEl gsaEl)
+    public Element1D GsaElement1dToSpeckle(GsaEl gsaEl)
     {
       //TODO
       return new Element1D();
     }
 
-    public Element2D GsaElemenet2dToSpeckle(GsaEl gsaEl)
+    public Element2D GsaElement2dToSpeckle(GsaEl gsaEl)
     {
       var speckleElemenet2d = new Element2D()
       {
         name = gsaEl.Name,
         type = (ElementType2D)Enum.Parse(typeof(ElementType2D), gsaEl.Type.ToString()),
-        parent = new Base(),
-        displayMesh = new Mesh()
+        parent = new Base(), //TO DO: add parent
+        displayMesh = new Mesh(), //TO DO: add display mesh
+        baseMesh = new Mesh() //TO DO: add base mesh
       };
 
-      if (gsaEl.Index.HasValue)
+      if (IsIndex(gsaEl.Index))
       {
         speckleElemenet2d.applicationId = Instance.GsaModel.GetApplicationId<GsaEl>(gsaEl.Index.Value);
       }
-      if (gsaEl.PropertyIndex.HasValue) speckleElemenet2d.property = GetProperty2dFromIndex(gsaEl.PropertyIndex.Value);
+      if (IsIndex(gsaEl.PropertyIndex)) speckleElemenet2d.property = GetProperty2dFromIndex(gsaEl.PropertyIndex.Value);
       if (gsaEl.OffsetZ.HasValue) speckleElemenet2d.offset = gsaEl.OffsetZ.Value;
       if (gsaEl.Angle.HasValue) speckleElemenet2d.orientationAngle = gsaEl.Angle.Value;
       speckleElemenet2d.topology = gsaEl.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
@@ -246,7 +241,7 @@ namespace ConverterGSA
       return speckleElemenet2d;
     }
 
-    public Element3D GsaElemenet3dToSpeckle(GsaEl gsaEl)
+    public Element3D GsaElement3dToSpeckle(GsaEl gsaEl)
     {
       //TODO
       return new Element3D();
@@ -292,7 +287,6 @@ namespace ConverterGSA
       //
       var speckleSteel = new Steel()
       {
-        applicationId = gsaMatSteel.ApplicationId,
         name = gsaMatSteel.Name,
         grade = "",                                 //grade can be determined from gsaMatSteel.Mat.Name (assuming the user doesn't change the default value): e.g. "350(AS3678)"
         type = MaterialType.Steel,
@@ -302,9 +296,12 @@ namespace ConverterGSA
         ultimateStrength = gsaMatSteel.Fu.Value,
         maxStrain = gsaMatSteel.EpsP.Value
       };
+      if (IsIndex(gsaMatSteel.Index))
+      {
+        speckleSteel.applicationId = Instance.GsaModel.GetApplicationId<GsaMatSteel>(gsaMatSteel.Index.Value);
+      }
 
       //the following properties are stored in multiple locations in GSA
-      //youngs modulus
       speckleSteel.youngsModulus = GetPropValue<double>(gsaMatSteel.Mat, "E");
       speckleSteel.poissonsRatio = GetPropValue<double>(gsaMatSteel.Mat, "Nu");
       speckleSteel.shearModulus = GetPropValue<double>(gsaMatSteel.Mat, "G");
@@ -327,7 +324,6 @@ namespace ConverterGSA
 
       var speckleConcrete = new Concrete()
       {
-        applicationId = gsaMatConcrete.ApplicationId,
         name = gsaMatConcrete.Name,
         grade = "",                                 //grade can be determined from gsaMatConcrete.Mat.Name (assuming the user doesn't change the default value): e.g. "32 MPa"
         type = MaterialType.Concrete,
@@ -339,6 +335,10 @@ namespace ConverterGSA
         tensileStrength = gsaMatConcrete.Fcdt.Value,
         flexuralStrength = 0
       };
+      if (IsIndex(gsaMatConcrete.Index))
+      {
+        speckleConcrete.applicationId = Instance.GsaModel.GetApplicationId<GsaMatConcrete>(gsaMatConcrete.Index.Value);
+      }
 
       //the following properties are stored in multiple locations in GSA
       speckleConcrete.youngsModulus = GetPropValue<double>(gsaMatConcrete.Mat, "E");
@@ -364,9 +364,14 @@ namespace ConverterGSA
     {
       var speckleProperty1D = new Property1D()
       {
-        applicationId = gsaSection.ApplicationId,
         name = gsaSection.Name
       };
+      if (IsIndex(gsaSection.Index))
+      {
+        speckleProperty1D.applicationId = Instance.GsaModel.GetApplicationId<GsaSection>(gsaSection.Index.Value);
+      }
+
+      //TO DO: add definition for Property1D
 
       return speckleProperty1D;
     }
@@ -384,20 +389,21 @@ namespace ConverterGSA
         name = gsaProp2d.Name,
         colour = gsaProp2d.Colour.ToString(),
         zOffset = gsaProp2d.RefZ,
-        grade = "", // GetGrade(gsaProp2d);
+        grade = "", // TO DO: what is grade used for?
         orientationAxis = GetOrientationAxis(gsaProp2d),
         refSurface = GetReferenceSurface(gsaProp2d)
       };
 
-      if (gsaProp2d.Index.HasValue)
+      if (IsIndex(gsaProp2d.Index))
       {
         speckleProperty2D.applicationId = Instance.GsaModel.GetApplicationId<GsaProp2d>(gsaProp2d.Index.Value);
       }
-      if (gsaProp2d.Thickness.HasValue) speckleProperty2D.thickness = gsaProp2d.Thickness.Value;
-      if (gsaProp2d.GradeIndex.HasValue) speckleProperty2D.material = GetMaterialFromIndex(gsaProp2d.GradeIndex.Value, gsaProp2d.MatType);
+      if (IsPositive(gsaProp2d.Thickness)) speckleProperty2D.thickness = gsaProp2d.Thickness.Value;
+      if (IsIndex(gsaProp2d.GradeIndex)) speckleProperty2D.material = GetMaterialFromIndex(gsaProp2d.GradeIndex.Value, gsaProp2d.MatType);
       if (gsaProp2d.Type != Property2dType.NotSet) speckleProperty2D.type = (PropertyType2D)Enum.Parse(typeof(PropertyType2D), gsaProp2d.Type.ToString());
 
       //Currently no way in the speckle object to disinguish between the value and a percentage.
+      //TO DO: update schema to distinguish between value and percentage
       speckleProperty2D.modifierInPlane = GetModifier(gsaProp2d, "InPlane");
       speckleProperty2D.modifierBending = GetModifier(gsaProp2d, "Bending");
       speckleProperty2D.modifierShear = GetModifier(gsaProp2d, "Shear");
@@ -418,7 +424,6 @@ namespace ConverterGSA
     {
       var specklePropertyMass = new PropertyMass()
       {
-        applicationId = gsaPropMass.ApplicationId,
         name = gsaPropMass.Name,
         mass = gsaPropMass.Mass,
         inertiaXX = gsaPropMass.Ixx,
@@ -428,14 +433,22 @@ namespace ConverterGSA
         inertiaYZ = gsaPropMass.Iyz,
         inertiaZX = gsaPropMass.Izx
       };
+      if (IsIndex(gsaPropMass.Index))
+      {
+        specklePropertyMass.applicationId = Instance.GsaModel.GetApplicationId<GsaPropMass>(gsaPropMass.Index.Value);
+      }
 
       //Mass modifications
       if (gsaPropMass.Mod == MassModification.Modified)
       {
         specklePropertyMass.massModified = true;
-        if (gsaPropMass.ModXPercentage.HasValue) specklePropertyMass.massModifierX = gsaPropMass.ModXPercentage.Value;
-        if (gsaPropMass.ModYPercentage.HasValue) specklePropertyMass.massModifierY = gsaPropMass.ModYPercentage.Value;
-        if (gsaPropMass.ModZPercentage.HasValue) specklePropertyMass.massModifierZ = gsaPropMass.ModZPercentage.Value;
+        if (IsPositive(gsaPropMass.ModXPercentage)) specklePropertyMass.massModifierX = gsaPropMass.ModXPercentage.Value;
+        if (IsPositive(gsaPropMass.ModYPercentage)) specklePropertyMass.massModifierY = gsaPropMass.ModYPercentage.Value;
+        if (IsPositive(gsaPropMass.ModZPercentage)) specklePropertyMass.massModifierZ = gsaPropMass.ModZPercentage.Value;
+      }
+      else
+      {
+        specklePropertyMass.massModified = false;
       }
 
       return specklePropertyMass;
@@ -452,10 +465,13 @@ namespace ConverterGSA
       //Apply properties common to all spring types
       var specklePropertySpring = new PropertySpring()
       {
-        applicationId = gsaPropSpr.ApplicationId,
         name = gsaPropSpr.Name,
         dampingRatio = gsaPropSpr.DampingRatio.Value
       };
+      if (IsIndex(gsaPropSpr.Index))
+      {
+        specklePropertySpring.applicationId = Instance.GsaModel.GetApplicationId<GsaPropSpr>(gsaPropSpr.Index.Value);
+      }
 
       //Dictionary of fns used to apply spring type specific properties. 
       //Functions will pass by reference specklePropertySpring and make the necessary changes to it
@@ -496,32 +512,18 @@ namespace ConverterGSA
     #endregion
 
     #region ToNative
-    public GsaNode NodeToNative(GSANode speckleNode)
-    {
-      var gsaNode = new GsaNode();
-      gsaNode.Name = speckleNode.name;
-      gsaNode.ApplicationId = speckleNode.applicationId;
-      gsaNode.X = speckleNode.basePoint.x;
-      gsaNode.Y = speckleNode.basePoint.y;
-      gsaNode.Z = speckleNode.basePoint.z;
-      //gsaNode.NodeRestraint = NodeRestraint.Pin;
-      //gsaNode.Restraints = null;
-      //gsaNode.AxisIndex = null;
-      //gsaNode.AxisRefType = AxisRefType.Global;
-      //gsaNode.Colour = Colour.NO_RGB;
-      //gsaNode.MassPropertyIndex = null;
-      //gsaNode.SpringPropertyIndex = null;
-      //gsaNode.MeshSize = null;
-
-      return gsaNode;
-    }
-    //TODO: implement conversion code for other objects
+    //TO DO: implement conversion code for ToNative
     #endregion
 
     #region Helper
     #region ToSpeckle
     #region Geometry
     #region Node
+    /// <summary>
+    /// Conversion of node restraint from GSA to Speckle
+    /// </summary>
+    /// <param name="gsaNode">GsaNode object with the restraint definition to be converted</param>
+    /// <returns></returns>
     private static Restraint GetRestraint(GsaNode gsaNode)
     {
       Restraint restraint;
@@ -549,9 +551,15 @@ namespace ConverterGSA
 
       return restraint;
     }
+
+    /// <summary>
+    /// Conversion of node constraint axis from GSA to Speckle
+    /// </summary>
+    /// <param name="gsaNode">GsaNode object with the constraint axis definition to be converted</param>
+    /// <returns></returns>
     private Plane GetConstraintAxis(GsaNode gsaNode)
     {
-      Plane axis;
+      Plane speckleAxis;
       Point origin;
       Vector xdir, ydir, normal;
 
@@ -562,7 +570,7 @@ namespace ConverterGSA
         xdir = new Vector(0, 1, 0);
         ydir = new Vector(0, 0, 1);
         normal = new Vector(1, 0, 0);
-        axis = new Plane(origin, normal, xdir, ydir);
+        speckleAxis = new Plane(origin, normal, xdir, ydir);
       }
       else if (gsaNode.AxisRefType == NodeAxisRefType.YElevation)
       {
@@ -570,20 +578,26 @@ namespace ConverterGSA
         xdir = new Vector(-1, 0, 0);
         ydir = new Vector(0, 0, 1);
         normal = new Vector(0, 1, 0);
-        axis = new Plane(origin, normal, xdir, ydir);
+        speckleAxis = new Plane(origin, normal, xdir, ydir);
       }
-      else if (gsaNode.AxisRefType == NodeAxisRefType.Reference && gsaNode.AxisIndex.HasValue && gsaNode.AxisIndex.Value > 0)
+      else if (gsaNode.AxisRefType == NodeAxisRefType.Reference && IsIndex(gsaNode.AxisIndex))
       {
-        axis = GetAxisFromIndex(gsaNode.AxisIndex.Value).definition;
+        speckleAxis = GetAxisFromIndex(gsaNode.AxisIndex.Value).definition;
       }
       else
       {
         //Default global coordinates for case: Global or NotSet
-        axis = GlobalAxis().definition;
+        speckleAxis = GlobalAxis().definition;
       }
 
-      return axis;
+      return speckleAxis;
     }
+
+    /// <summary>
+    /// Speckle structural schema restraint code
+    /// </summary>
+    /// <param name="gsaNode">GsaNode object with the restraint definition to be converted</param>
+    /// <returns></returns>
     private static string GetCustomRestraintCode(GsaNode gsaNode)
     {
       var code = "RRRRRR".ToCharArray();
@@ -614,10 +628,17 @@ namespace ConverterGSA
       return code.ToString();
     }
 
-    private static Restraint UpdateSpringStiffness(Restraint restraint, GsaNode gsaNode)
+    /// <summary>
+    /// Add GSA spring stiffness definition to Speckle restraint definition.
+    /// Deprecated: Using GSANode instead of Node, so spring stiffness no longer stored in Restraint
+    /// </summary>
+    /// <param name="restraint">Restraint speckle object to be updated</param>
+    /// <param name="gsaNode">GsaNode object with spring stiffness definition</param>
+    /// <returns></returns>
+    private Restraint UpdateSpringStiffness(Restraint restraint, GsaNode gsaNode)
     {
       //Spring Stiffness
-      if (gsaNode.SpringPropertyIndex.HasValue && gsaNode.SpringPropertyIndex.Value > 0)
+      if (IsIndex(gsaNode.SpringPropertyIndex))
       {
         var gsaRecord = Instance.GsaModel.GetNative<GsaPropSpr>(gsaNode.SpringPropertyIndex.Value);
         if (gsaRecord.GetType() != typeof(GsaPropSpr))
@@ -673,6 +694,11 @@ namespace ConverterGSA
       return restraint;
     }
 
+    /// <summary>
+    /// Get Speckle node object from GSA node index
+    /// </summary>
+    /// <param name="index">GSA node index</param>
+    /// <returns></returns>
     private Node GetNodeFromIndex(int index)
     {
       Node speckleNode = null;
@@ -684,6 +710,11 @@ namespace ConverterGSA
     #endregion
 
     #region Axis
+    /// <summary>
+    /// Get Speckle axis object from GSA axis index
+    /// </summary>
+    /// <param name="index">GSA axis index</param>
+    /// <returns></returns>
     private Axis GetAxisFromIndex(int index)
     {
       var gsaAxis = Instance.GsaModel.GetNative<GsaAxis>(index);
@@ -694,6 +725,10 @@ namespace ConverterGSA
       return GsaAxisToSpeckle((GsaAxis)gsaAxis);
     }
 
+    /// <summary>
+    /// Speckle global axis definition
+    /// </summary>
+    /// <returns></returns>
     private static Axis GlobalAxis()
     {
       //Default global coordinates for case: Global or NotSet
@@ -714,14 +749,31 @@ namespace ConverterGSA
     #endregion
 
     #region Elements
+    /// <summary>
+    /// Determine if object represents a 2D element
+    /// </summary>
+    /// <param name="gsaEl">GsaEl object containing the element definition</param>
+    /// <returns></returns>
     public bool Is2dElement(GsaEl gsaEl)
     {
       return (gsaEl.Type == ElementType.Triangle3 || gsaEl.Type == ElementType.Triangle6 || gsaEl.Type == ElementType.Quad4 || gsaEl.Type == ElementType.Quad8);
     }
+
+    /// <summary>
+    /// Determine if object represents a 3D element
+    /// </summary>
+    /// <param name="gsaEl">GsaEl object containing the element definition</param>
+    /// <returns></returns>
     public bool Is3dElement(GsaEl gsaEl)
     {
       return (gsaEl.Type == ElementType.Brick8 || gsaEl.Type == ElementType.Pyramid5 || gsaEl.Type == ElementType.Tetra4 || gsaEl.Type == ElementType.Wedge6);
     }
+
+    /// <summary>
+    /// Determine if object represents a 1D element
+    /// </summary>
+    /// <param name="gsaEl">GsaEl object containing the element definition</param>
+    /// <returns></returns>
     public bool Is1dElement(GsaEl gsaEl)
     {
       return (gsaEl.Type == ElementType.Bar || gsaEl.Type == ElementType.Beam || gsaEl.Type == ElementType.Cable || gsaEl.Type == ElementType.Damper || 
@@ -738,6 +790,13 @@ namespace ConverterGSA
     //Some material properties are stored in either GsaMat or GsaMatAnal
     //The GetPropValue<T>(GsaMat gsaMat, string name) method will find the value stored in gsaMat."name"
     //if null or default for type T, then will find the value in gsaMat.Prop."name"
+
+    /// <summary>
+    /// Return the value of a property from any object
+    /// </summary>
+    /// <param name="obj">object to be searched</param>
+    /// <param name="name">name of the property for which you want the value</param>
+    /// <returns></returns>
     public static object GetPropValue(object obj, string name)
     {
       foreach (string part in name.Split('.'))
@@ -752,6 +811,14 @@ namespace ConverterGSA
       }
       return obj;
     }
+
+    /// <summary>
+    /// Return the value of a property from a GsaMat object
+    /// </summary>
+    /// <typeparam name="T">data type to be returned</typeparam>
+    /// <param name="gsaMat">GsaMat object to be searched</param>
+    /// <param name="name">name of the property for which you want the value</param>
+    /// <returns></returns>
     public static T GetPropValue<T>(GsaMat gsaMat, string name)
     {
       var retval = GetPropValue(gsaMat, name);
@@ -763,6 +830,14 @@ namespace ConverterGSA
       // throws InvalidCastException if types are incompatible
       return (T)retval;
     }
+
+    /// <summary>
+    /// Return the value of a property from a GsaMatAnal object
+    /// </summary>
+    /// <typeparam name="T">data type to be returned</typeparam>
+    /// <param name="gsaMat">GsaMatAnal object to be searched</param>
+    /// <param name="name">name of the property for which you want the value</param>
+    /// <returns></returns>
     public static T GetPropValue<T>(GsaMatAnal gsaMatAnal, string name)
     {
       object retval = GetPropValue(gsaMatAnal, name);
@@ -771,10 +846,23 @@ namespace ConverterGSA
       // throws InvalidCastException if types are incompatible
       return (T)retval;
     }
+
+    /// <summary>
+    /// Determines if a value is default for the data type
+    /// </summary>
+    /// <typeparam name="T">data type</typeparam>
+    /// <param name="value">vale to test</param>
+    /// <returns></returns>
     static bool IsNullOrDefault<T>(T value)
     {
       return object.Equals(value, default(T));
     }
+
+    /// <summary>
+    /// Get Speckle material object from GSA material index
+    /// </summary>
+    /// <param name="index">GSA material index</param>
+    /// <returns></returns>
     private Material GetMaterialFromIndex(int index, Property2dMaterialType type)
     {
       //Initialise
@@ -800,30 +888,78 @@ namespace ConverterGSA
 
     #region Properties
     #region Spring
+    /// <summary>
+    /// Get Speckle PropertySpring object from GSA property spring index
+    /// </summary>
+    /// <param name="index">GSA property spring index</param>
+    /// <returns></returns>
+    private PropertySpring GetPropertySpringFromIndex(int index)
+    {
+      PropertySpring specklePropertySpring = null;
+      var gsaPropSpr = Instance.GsaModel.GetNative<GsaPropSpr>(index);
+      if (gsaPropSpr != null) specklePropertySpring = GsaPropertySpringToSpeckle((GsaPropSpr)gsaPropSpr);
+
+      return specklePropertySpring;
+    }
+
+    /// <summary>
+    /// Set properties for an axial spring
+    /// </summary>
+    /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
+    /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
+    /// <returns></returns>
     private bool SetProprtySpringAxial(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Axial;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
       return true;
     }
+
+    /// <summary>
+    /// Set properties for a torsional spring
+    /// </summary>
+    /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
+    /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
+    /// <returns></returns>
     private bool SetPropertySpringTorsional(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Torsional;
       specklePropertySpring.stiffnessXX = gsaPropSpr.Stiffnesses[AxisDirection6.XX];
       return true;
     }
+
+    /// <summary>
+    /// Set properties for a compression only spring
+    /// </summary>
+    /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
+    /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
+    /// <returns></returns>
     private bool SetProprtySpringCompression(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.CompressionOnly;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
       return true;
     }
+
+    /// <summary>
+    /// Set properties for a tension only spring
+    /// </summary>
+    /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
+    /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
+    /// <returns></returns>
     private bool SetProprtySpringTension(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.TensionOnly;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
       return true;
     }
+
+    /// <summary>
+    /// Set properties for a lockup spring
+    /// </summary>
+    /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
+    /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
+    /// <returns></returns>
     private bool SetProprtySpringLockup(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       //Also for LOCKUP, there are positive and negative parameters, but these aren't supported yet
@@ -833,12 +969,26 @@ namespace ConverterGSA
       specklePropertySpring.negativeLockup = 0;
       return true;
     }
+
+    /// <summary>
+    /// Set properties for a gap spring
+    /// </summary>
+    /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
+    /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
+    /// <returns></returns>
     private bool SetProprtySpringGap(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Gap;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
       return true;
     }
+
+    /// <summary>
+    /// Set properties for a friction spring
+    /// </summary>
+    /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
+    /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
+    /// <returns></returns>
     private bool SetProprtySpringFriction(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Friction;
@@ -848,6 +998,13 @@ namespace ConverterGSA
       specklePropertySpring.frictionCoefficient = gsaPropSpr.FrictionCoeff.Value;
       return true;
     }
+
+    /// <summary>
+    /// Set properties for a general spring
+    /// </summary>
+    /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
+    /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
+    /// <returns></returns>
     private bool SetProprtySpringGeneral(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.General;
@@ -867,7 +1024,28 @@ namespace ConverterGSA
     }
     #endregion
 
+    #region Mass
+    /// <summary>
+    /// Get Speckle PropertyMass object from GSA property mass index
+    /// </summary>
+    /// <param name="index">GSA property mass index</param>
+    /// <returns></returns>
+    private PropertyMass GetPropertyMassFromIndex(int index)
+    {
+      PropertyMass specklePropertyMass = null;
+      var gsaPropMass = Instance.GsaModel.GetNative<GsaPropMass>(index);
+      if (gsaPropMass != null) specklePropertyMass = GsaPropertyMassToSpeckle((GsaPropMass)gsaPropMass);
+
+      return specklePropertyMass;
+    }
+    #endregion
+
     #region Property2D
+    /// <summary>
+    /// Converts the GsaProp2d reference surface to Speckle
+    /// </summary>
+    /// <param name="gsaProp2d">GsaProp2d object with reference surface definition</param>
+    /// <returns></returns>
     private ReferenceSurface GetReferenceSurface(GsaProp2d gsaProp2d)
     {
       var refenceSurface = ReferenceSurface.Middle; //default
@@ -883,6 +1061,11 @@ namespace ConverterGSA
       return refenceSurface;
     }
 
+    /// <summary>
+    /// Convert GSA 2D element reference axis to Speckle
+    /// </summary>
+    /// <param name="gsaProp2d">GsaProp2d object with reference axis definition</param>
+    /// <returns></returns>
     private Axis GetOrientationAxis(GsaProp2d gsaProp2d)
     {
       //Cartesian coordinate system is the only one supported.
@@ -897,7 +1080,7 @@ namespace ConverterGSA
         //TO DO: handle local reference axis case
         //Local would be a different coordinate system for each element that gsaProp2d was assigned to
       }
-      else if (gsaProp2d.AxisRefType == AxisRefType.Reference && gsaProp2d.AxisIndex.HasValue && gsaProp2d.AxisIndex.Value > 0)
+      else if (gsaProp2d.AxisRefType == AxisRefType.Reference && IsIndex(gsaProp2d.AxisIndex))
       {
         orientationAxis = GetAxisFromIndex(gsaProp2d.AxisIndex.Value);
       }
@@ -910,6 +1093,12 @@ namespace ConverterGSA
       return orientationAxis;
     }
 
+    /// <summary>
+    /// Return the value of a 2D property modifier
+    /// </summary>
+    /// <param name="gsaProp2d">GsaProp2d object to be searched</param>
+    /// <param name="name">name of the property which you want the value</param>
+    /// <returns></returns>
     private double GetModifier(GsaProp2d gsaProp2d, string name)
     {
       //gsaProp2d has a number of modifiers, e.g. InPlane, InPlaneStiffnessPercentage, Bending, ...
@@ -930,6 +1119,11 @@ namespace ConverterGSA
       return (double)info.GetValue(gsaProp2d);
     }
 
+    /// <summary>
+    /// Get Speckle Property2D object from GSA property 2D index
+    /// </summary>
+    /// <param name="index">GSA property 2D index</param>
+    /// <returns></returns>
     private Property2D GetProperty2dFromIndex(int index)
     {
       Property2D speckleProperty2d = null;
@@ -946,7 +1140,32 @@ namespace ConverterGSA
     #endregion
 
     #region Other
+    /// <summary>
+    /// Test if a nullable integer has a value and is positive
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    private bool IsIndex(int? index)
+    {
+      return (index.HasValue && index.Value > 0);
+    }
+
+    /// <summary>
+    /// Test if a nullable double has a value and is positive
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    private bool IsPositive(double? value)
+    {
+      return (value.HasValue && value.Value > 0);
+    }
     #region Vector
+    /// <summary>
+    /// Returns the cross product of two vectors
+    /// </summary>
+    /// <param name="a">vector 1</param>
+    /// <param name="b">vector 2</param>
+    /// <returns></returns>
     private Vector CrossProduct(Vector a, Vector b)
     {
       Vector c = new Vector()
@@ -958,11 +1177,22 @@ namespace ConverterGSA
       return c;
     }
 
+    /// <summary>
+    /// Returns the dot product of two vectors
+    /// </summary>
+    /// <param name="a">Vector 1</param>
+    /// <param name="b">Vector 2</param>
+    /// <returns></returns>
     private double DotProduct(Vector a, Vector b)
     {
       return a.x * b.x + a.y * b.y + a.z * b.z;
     }
 
+    /// <summary>
+    /// Returns a unit vector in the same direction as A
+    /// </summary>
+    /// <param name="a">Vector to be scaled</param>
+    /// <returns></returns>
     private Vector UnitVector(Vector a)
     {
       var l = Norm(a);
@@ -975,6 +1205,11 @@ namespace ConverterGSA
       return b;
     }
 
+    /// <summary>
+    /// Returns the length of a vector
+    /// </summary>
+    /// <param name="a">vector whose length is desired</param>
+    /// <returns></returns>
     private double Norm(Vector a)
     {
       return Math.Sqrt(DotProduct(a, a));

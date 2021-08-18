@@ -56,13 +56,14 @@ namespace ConverterGSATests
     {
       try
       {
-        var assembly = GetType().Assembly; //This assembly
+        var gwaParserType = typeof(IGwaParser);
+        var assembly = gwaParserType.Assembly; //This assembly
         var assemblyTypes = assembly.GetTypes().ToList();
 
         var gsaBaseType = typeof(GwaParser<GsaRecord>);
         var gsaAttributeType = typeof(GsaType);
 
-        var parserTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, (typeof(IGwaParser)))
+        var parserTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, gwaParserType)
           && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
           && Helper.IsSelfContained(t)
           && !t.IsAbstract
