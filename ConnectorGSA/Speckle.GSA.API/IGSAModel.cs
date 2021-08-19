@@ -8,7 +8,7 @@ namespace Speckle.GSA.API
     //PROPERTIES
 
     //Settings - general
-    GSALayer Layer { get; }
+    GSALayer Layer { get; set; }
     string Units { get; set; }
     double CoincidentNodeAllowance { get; set; }
 

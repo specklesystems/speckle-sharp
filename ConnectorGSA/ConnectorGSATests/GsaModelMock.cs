@@ -24,7 +24,7 @@ namespace ConnectorGSATests
     public char GwaDelimiter { get => '\t'; }
 
     public GsaCache cache = new GsaCache();
-    public Speckle.ConnectorGSA.Proxy.GsaProxy proxy { get; set; }
+    public Speckle.ConnectorGSA.Proxy.GsaProxy proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
 
     #region mock_fns
     //Default function - just gets the integers from the list where it can

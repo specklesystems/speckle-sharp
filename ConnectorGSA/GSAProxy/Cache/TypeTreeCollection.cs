@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Speckle.GSA.API;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Speckle.ConnectorGSA.Proxy
 {
-  public class TreeNode<T>
+  internal class TreeNode<T>
   {
     public TreeNode<T> Parent = null;
     public List<TreeNode<T>> Children = new List<TreeNode<T>>();
@@ -12,11 +14,12 @@ namespace Speckle.ConnectorGSA.Proxy
     public T Value;
   }
 
-  public class TypeTreeCollection<T>
+  internal class TypeTreeCollection<T>
   {
-    public List<TreeNode<T>> RootNodes { get => roots.Select(t => nodes[t]).ToList(); }
-    public List<TreeNode<T>> LeafNodes { get => leaves.Select(t => nodes[t]).ToList(); }
-    public List<T> Errored { get; } = new List<T>();
+    internal List<TreeNode<T>> RootNodes { get => roots.Select(t => nodes[t]).ToList(); }
+    internal List<TreeNode<T>> LeafNodes { get => leaves.Select(t => nodes[t]).ToList(); }
+    internal List<T> AllValues { get => nodes.Keys.ToList(); }
+    internal List<T> Errored { get; } = new List<T>();
 
     private readonly HashSet<T> validValues;
     private readonly Dictionary<T, TreeNode<T>> nodes = new Dictionary<T, TreeNode<T>>();
@@ -28,47 +31,7 @@ namespace Speckle.ConnectorGSA.Proxy
       this.validValues = new HashSet<T>(validValues);
     }
 
-    public List<List<T>> Generations_old(bool bottomUp = true)
-    {
-      var retList = new List<List<T>>();
-
-      var currGen = LeafNodes;
-      var addedValues = currGen.Select(n => n.Value).ToList();
-      retList.Add(addedValues);
-
-      bool genAdded;
-      do
-      {
-        genAdded = false;
-        var nextGen = new Dictionary<T, TreeNode<T>>();
-        foreach (var n in currGen.Where(n => !n.IsRoot))
-        {
-          var parent = n.Parent.Value;
-          if (!nextGen.ContainsKey(parent))
-          {
-            nextGen.Add(parent, nodes[parent]);
-            genAdded = true;
-          }
-        }
-        if (genAdded)
-        {
-          retList.Add(nextGen.Keys.Where(k => !addedValues.Contains(k)).ToList());
-          /*
-          var toBeAdded = nextGen.Keys.Where(k => !addedValues.Contains(k)).ToList();
-          if (toBeAdded.Count > 0)
-          {
-            retList.Add(toBeAdded);
-            addedValues.AddRange(toBeAdded);
-          }
-          */
-          currGen = nextGen.Values.ToList();
-        }
-      } while (genAdded);
-
-      return retList;
-    }
-
-    public List<List<T>> Generations(bool bottomUp = true)
+    internal List<List<T>> Generations(bool bottomUp = true)
     {
       var retList = new List<List<T>>();
 
@@ -95,14 +58,6 @@ namespace Speckle.ConnectorGSA.Proxy
         if (genAdded)
         {
           retList.Add(nextGen.Keys.Where(k => !addedValues.Contains(k)).ToList());
-          /*
-          var toBeAdded = nextGen.Keys.Where(k => !addedValues.Contains(k)).ToList();
-          if (toBeAdded.Count > 0)
-          {
-            retList.Add(toBeAdded);
-            addedValues.AddRange(toBeAdded);
-          }
-          */
           currGen = nextGen.Values.ToList();
         }
       } while (genAdded);
@@ -112,7 +67,7 @@ namespace Speckle.ConnectorGSA.Proxy
       return retList;
     }
 
-    public bool Integrate(T parent, IEnumerable<T> children)
+    internal bool Integrate(T parent, IEnumerable<T> children)
     {
       if (!validValues.Contains(parent) || !children.All(c => validValues.Contains(c)))
       {
@@ -159,6 +114,54 @@ namespace Speckle.ConnectorGSA.Proxy
         }
       }
       return (Errored.Count == 0);
+    }
+
+    private bool GetSubtree(T v, ref List<T> values)
+    {
+      if (nodes.ContainsKey(v))
+      {
+        values.Add(v);
+        if (nodes[v].Children != null && nodes[v].Children.Count > 0)
+        {
+          foreach (var c in nodes[v].Children.Select(cn => cn.Value))
+          {
+            if (!GetSubtree(c, ref values))
+            {
+              return false;
+            }
+          }
+        }
+      }
+      return true;
+    }
+
+    internal bool Remove(params T[] vs)
+    {
+      foreach (var v in vs)
+      {
+        if (!nodes.ContainsKey(v))
+        {
+          continue;
+        }
+        if (nodes[v].Parent != null)
+        {
+          nodes[v].Parent.Children.Remove(nodes[v]);
+        }
+        if (leaves.Contains(v))
+        {
+          leaves.Remove(v);
+          nodes.Remove(v);
+        }
+        else
+        {
+          var valuesToRemove = new List<T>();
+          if (GetSubtree(v, ref valuesToRemove))
+          {
+            valuesToRemove.ForEach(vtr => nodes.Remove(vtr));
+          }
+        }
+      }
+      return true;
     }
   }
 }

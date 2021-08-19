@@ -13,17 +13,17 @@ namespace GsaProxy
     private static readonly GsaCache Cache = new GsaCache();
     private static readonly Speckle.ConnectorGSA.Proxy.GsaProxy Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
 
-    public GSALayer Layer { get; set; }
+    public GSALayer Layer { get; set; } = GSALayer.Design;
 
     public char GwaDelimiter { get => '\t'; }
 
-    public string Units { get; set; }
+    public string Units { get; set; } = "mm";
     public double CoincidentNodeAllowance { get; set; }
     public List<ResultType> ResultTypes { get; set; }
     public StreamContentConfig StreamSendConfig { get; set; }
     public List<string> ResultCases { get; set; }
     public bool ResultInLocalAxis { get; set; }
-    public int Result1DNumPosition { get; set; }
+    public int Result1DNumPosition { get; set; } = 3;
 
     public GsaModel()
     {

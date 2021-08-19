@@ -30,10 +30,10 @@ namespace ConnectorGSATests
       var proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
       proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), false);
 
-      var data = proxy.GetGwaData(DesignLayerKeywords, false);
-
-      Assert.Equal(188, data.Count());
+      Assert.True(proxy.GetGwaData(Speckle.GSA.API.GSALayer.Design, false, out var records));
       proxy.Close();
+
+      Assert.Equal(188, records.Count());
     }
   }
 }
