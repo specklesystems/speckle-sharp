@@ -12,18 +12,17 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Speckle.GSA.API.GwaSchema;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
-using Speckle.ConnectorGSA.Proxy.Cache;
 
 namespace Speckle.ConnectorGSA.Proxy
 {
   public class GsaProxy
   {
-    public List<List<GwaKeyword>> TxTypeDependencyGenerations { get; private set; } = new List<List<GwaKeyword>>();
-    public List<Type> SchemaTypes { get => SchemaTypeByKeyword.Rights; }
+    //Used by the app in ordering the calling of the conversion code
+    public List<List<Type>> TxTypeDependencyGenerations { get; private set; } = new List<List<Type>>();
+    public List<Type> SchemaTypes { get => ParsersBySchemaType.Keys.ToList(); }
 
-    private Dictionary<Type, Type> ParsersBySchemaType = new Dictionary<Type, Type>();
-    private Dictionary<GwaKeyword, Type> ParsersByKeyword = new Dictionary<GwaKeyword, Type>();
-    private IPairCollection<GwaKeyword, Type> SchemaTypeByKeyword = new PairCollection<GwaKeyword, Type>();
+    private Dictionary<Type, Type> ParsersBySchemaType = new Dictionary<Type, Type>();  //Used for writing to the GSA instance
+    private Dictionary<GwaKeyword, Type> ParsersByKeyword = new Dictionary<GwaKeyword, Type>(); //Used for reading from the GSA instance
     private bool initialised = false;
     private bool initialisedError = false;  //To ensure initialisation is only attempted once.
     private GSALayer prevLayer;
@@ -147,11 +146,6 @@ namespace Speckle.ConnectorGSA.Proxy
 
     private string SpeckleGsaVersion;
     private string units = "m";
-
-    public GsaProxy()
-    {
-      
-    }
 
     #region File Operations
     /// <summary>
@@ -380,15 +374,22 @@ namespace Speckle.ConnectorGSA.Proxy
 
         var gsaBaseType = typeof(GwaParser<GsaRecord>);
         var gsaAttributeType = typeof(GsaType);
+        var gwaParserInterfaceType = typeof(IGwaParser);
 
-        var parserTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, (typeof(IGwaParser)))
+        var parserTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, gwaParserInterfaceType)
           && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
           && Helper.IsSelfContained(t)
           && ((layer == GSALayer.Design) && Helper.IsDesignLayer(t) || (layer == GSALayer.Analysis) && Helper.IsDesignLayer(t))
           && !t.IsAbstract
-          ).ToList();
+          ).ToDictionary(pt => pt, pt => Helper.GetGwaKeyword(pt));
 
-        var kwDict = parserTypes.ToDictionary(st => Helper.GetGwaKeyword(st), st => Helper.GetReferencedKeywords(st));
+        var layerKeywords = parserTypes.Values.ToList();
+        var kwDict = new Dictionary<GwaKeyword, GwaKeyword[]>();
+        foreach (var pt in parserTypes.Keys)
+        {
+          var allRefKw = Helper.GetReferencedKeywords(pt).Where(kw => layerKeywords.Any(k => k == kw)).ToArray();
+          kwDict.Add(parserTypes[pt], allRefKw);
+        }
 
         var retCol = new TypeTreeCollection<GwaKeyword>(kwDict.Keys);
         foreach (var kw in kwDict.Keys)
@@ -401,135 +402,19 @@ namespace Speckle.ConnectorGSA.Proxy
         {
           return false;
         }
-        TxTypeDependencyGenerations = gens;
 
-        var gwaParserInterface = typeof(IGwaParser);
-        if (parserTypes.Any(t => !t.InheritsOrImplements(gwaParserInterface)))
+        ParsersByKeyword = parserTypes.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+        ParsersBySchemaType = parserTypes.Keys.ToDictionary(pt => pt.BaseType.GenericTypeArguments.First(), pt => pt);
+
+        TxTypeDependencyGenerations.Clear();
+        foreach (var gen in gens)
         {
-          return false;
+          TxTypeDependencyGenerations.Add(gen.Select(kw => ParsersByKeyword[kw].BaseType.GenericTypeArguments.First()).ToList());
         }
-
-        var completeDependencyTreeKeywords = new HashSet<GwaKeyword>(TxTypeDependencyGenerations.SelectMany(g => g));
-
-        this.SchemaTypeByKeyword = new PairCollection<GwaKeyword, Type>();
-        foreach (var pt in parserTypes)
-        {
-          var kw = Helper.GetGwaKeyword(pt);
-          if (completeDependencyTreeKeywords.Contains(kw))
-          {
-            this.SchemaTypeByKeyword.Add(Helper.GetGwaKeyword(pt), pt.BaseType.GetGenericArguments().First());
-          }
-        }
-
-        ParsersByKeyword = parserTypes.ToDictionary(pt => Helper.GetGwaKeyword(pt), pt => pt);
-        ParsersBySchemaType = parserTypes.ToDictionary(pt => pt.BaseType.GenericTypeArguments.First(), pt => pt);
 
         initialised = true;
       }
       return (initialised && !initialisedError);
-    }
-
-    private bool GetAssemblyTypes(out List<Type> types)
-    {
-      try
-      {
-        var assembly = GetType().Assembly; //This assembly
-        types = assembly.GetTypes().ToList();
-        return true;
-      }
-      catch
-      {
-        types = null;
-        return false;
-      }
-    }
-
-    private bool GetParserTypes(List<Type> assemblyTypes, out List<Type> types)
-    {
-      try
-      {
-        var gsaBaseType = typeof(GwaParser<GsaRecord>);
-        var gsaAttributeType = typeof(GsaType);
-
-        types = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, (typeof(IGwaParser)))
-          && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
-          && Helper.IsSelfContained(t)
-          //&& ((layer == GSALayer.Design) && Helper.IsDesignLayer(t) || (layer == GSALayer.Analysis) && Helper.IsDesignLayer(t))
-          && !t.IsAbstract
-          ).ToList();
-
-        return true;
-      }
-      catch
-      {
-        types = null;
-        return false;
-      }
-    }
-
-    private bool GetTypeTrees(List<Type> parserTypes, out TypeTreeCollection<GwaKeyword> retCol)
-    {
-      try
-      {
-        var kwDict = parserTypes.ToDictionary(st => Helper.GetGwaKeyword(st), st => Helper.GetReferencedKeywords(st));
-
-        retCol = new TypeTreeCollection<GwaKeyword>(kwDict.Keys);
-        foreach (var kw in kwDict.Keys)
-        {
-          retCol.Integrate(kw, kwDict[kw]);
-        }
-
-        return true;
-      }
-      catch
-      {
-        retCol = null;
-        return false;
-      }
-    }
-
-    private bool PopulateTxTypeParsers(List<Type> parserTypes)
-    {
-      ParsersByKeyword = parserTypes.ToDictionary(pt => Helper.GetGwaKeyword(pt), pt => pt);
-      ParsersBySchemaType = parserTypes.ToDictionary(pt => pt.BaseType.GenericTypeArguments.First(), pt => pt);
-      return true;
-    }
-
-    private bool PopulateTxTypeGenerations(TypeTreeCollection<GwaKeyword> col)
-    {
-      if (col == null)
-      {
-        return false;
-      }
-      var gens = col.Generations();
-      if (gens == null || gens.Count == 0)
-      {
-        return false;
-      }
-      TxTypeDependencyGenerations = gens;
-      return true;
-    }
-
-    private bool PopulateSchemaKeywords(List<Type> parserTypes, GSALayer layer)
-    {
-      var gwaParserInterface = typeof(IGwaParser);
-      if (parserTypes.Any(t => !t.InheritsOrImplements(gwaParserInterface)))
-      {
-        return false;
-      }
-
-      var completeDependencyTreeKeywords = new HashSet<GwaKeyword>(TxTypeDependencyGenerations.SelectMany(g => g));
-
-      this.SchemaTypeByKeyword = new PairCollection<GwaKeyword, Type>();
-      foreach (var pt in parserTypes)
-      {
-        var kw = Helper.GetGwaKeyword(pt);
-        if (completeDependencyTreeKeywords.Contains(kw))
-        {
-          this.SchemaTypeByKeyword.Add(Helper.GetGwaKeyword(pt), pt.BaseType.GetGenericArguments().First());
-        }
-      }
-      return (this.SchemaTypeByKeyword != null && this.SchemaTypeByKeyword.Lefts.Count > 0 && this.SchemaTypeByKeyword.Rights.Count > 0);
     }
     #endregion
 
@@ -601,7 +486,7 @@ namespace Speckle.ConnectorGSA.Proxy
         Parallel.ForEach(gwaLines, gwa =>
         {
           if (ParseGeneralGwa(gwa, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string appId, out string gwaWithoutSet, out string keywordAndVersion)
-            && keyword.HasValue && SchemaTypeByKeyword.ContainsLeft(keyword.Value))
+            && keyword.HasValue && ParsersByKeyword.ContainsKey(keyword.Value))
           {
             index = index ?? 0;
             var originalSid = "";
