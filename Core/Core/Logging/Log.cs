@@ -23,11 +23,11 @@ namespace Speckle.Core.Logging
 
       var env = "production";
       var debug = false;
-      #if DEBUG
-            env = "dev";
-            dsn = null;
-            debug = true;
-      #endif
+#if DEBUG
+      env = "dev";
+      dsn = null;
+      debug = true;
+#endif
 
       SentrySdk.Init(o =>
       {
@@ -35,8 +35,10 @@ namespace Speckle.Core.Logging
         o.Environment = env;
         o.Debug = debug;
         o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        o.StackTraceMode = StackTraceMode.Enhanced;
+        o.AttachStacktrace = true;
       });
-      
+
       SentrySdk.ConfigureScope(scope =>
       {
         scope.User = new User { Id = Setup.SUUID, };
