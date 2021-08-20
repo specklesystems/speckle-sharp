@@ -23,14 +23,17 @@ namespace Speckle.Core.Serialisation
 
     internal static Type GetType(string objFullType)
     {
-      if (cachedTypes.ContainsKey(objFullType))
+      lock (cachedTypes)
       {
-        return cachedTypes[objFullType];
-      }
-      var type = GetAtomicType(objFullType);
-      cachedTypes[objFullType] = type;
-      return type;
+        if (cachedTypes.ContainsKey(objFullType))
+        {
+          return cachedTypes[objFullType];
+        }
 
+        var type = GetAtomicType(objFullType);
+        cachedTypes[objFullType] = type;
+        return type;
+      }
     }
 
     internal static Type GetAtomicType(string objFullType)
@@ -51,16 +54,19 @@ namespace Speckle.Core.Serialisation
     }
     internal static Dictionary<string, System.Reflection.PropertyInfo> GetTypePropeties(string objFullType)
     {
-      if (!typeProperties.ContainsKey(objFullType))
+      lock (typeProperties)
       {
-        Dictionary<string, System.Reflection.PropertyInfo> ret = new Dictionary<string, System.Reflection.PropertyInfo>();
-        Type type = GetType(objFullType);
-        System.Reflection.PropertyInfo[] properties = type.GetProperties();
-        foreach (System.Reflection.PropertyInfo prop in properties)
-          ret[prop.Name.ToLower()] = prop;
-        typeProperties[objFullType] = ret;
+        if (!typeProperties.ContainsKey(objFullType))
+        {
+          Dictionary<string, System.Reflection.PropertyInfo> ret = new Dictionary<string, System.Reflection.PropertyInfo>();
+          Type type = GetType(objFullType);
+          System.Reflection.PropertyInfo[] properties = type.GetProperties();
+          foreach (System.Reflection.PropertyInfo prop in properties)
+            ret[prop.Name.ToLower()] = prop;
+          typeProperties[objFullType] = ret;
+        }
+        return typeProperties[objFullType];
       }
-      return typeProperties[objFullType];
     }
 
     internal static Type GetSytemOrSpeckleType(string typeName)
@@ -339,24 +345,27 @@ namespace Speckle.Core.Serialisation
 
     public static void SetValue(string propertyName, object target, object value)
     {
-      CallSite<Func<CallSite, object, object, object>> site;
-
-      lock(setters)
+      lock (setters)
       {
-        if (!setters.TryGetValue(propertyName, out site))
+        CallSite<Func<CallSite, object, object, object>> site;
+
+        lock (setters)
         {
-          var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetMember(CSharpBinderFlags.None,
-            propertyName, typeof(CallSiteCache),
-            new List<CSharpArgumentInfo>
-            {
+          if (!setters.TryGetValue(propertyName, out site))
+          {
+            var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetMember(CSharpBinderFlags.None,
+              propertyName, typeof(CallSiteCache),
+              new List<CSharpArgumentInfo>
+              {
               CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
               CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
-            });
-          setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(binder);
+              });
+            setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(binder);
+          }
         }
-      }
 
-      site.Target(site, target, value);
+        site.Target(site, target, value);
+      }
     }
   }
 }

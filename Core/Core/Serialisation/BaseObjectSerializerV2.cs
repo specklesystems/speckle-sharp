@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
@@ -31,18 +32,95 @@ namespace Speckle.Core.Serialisation
 
     public Action<string, Exception> OnErrorAction { get; set; }
 
+    private DeserializationWorkerThreads WorkerThreads;
+    private bool Busy = false;
+    // id -> Base if already deserialized or id -> Task<object> if was handled by a bg thread
+    private Dictionary<string, object> DeserializedObjects;
 
-    public Base Deserialize(String objectJson)
+    public BaseObjectSerializerV2()
+    {
+      
+    }
+
+    public Base Deserialize(String rootObjectJson)
+    {
+      if (Busy)
+        throw new Exception("A serializer instance can deserialize only 1 object at a time. Consider creating multiple serializer instances");
+      try
+      {
+        Busy = true;
+        DeserializedObjects = new Dictionary<string, object>();
+        WorkerThreads = new DeserializationWorkerThreads(this);
+        WorkerThreads.Start();
+
+        List<(string, int)> closures = GetClosures(rootObjectJson);
+        closures.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+        foreach (var closure in closures)
+        {
+          string objId = closure.Item1;
+          string objJson = ReadTransport.GetObject(objId);
+          object deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
+          lock (DeserializedObjects)
+          {
+            DeserializedObjects[objId] = deserializedOrPromise;
+          }
+        }
+
+        object ret = DeserializeTransportObject(rootObjectJson);
+        return ret as Base;
+      }
+      finally
+      {
+        DeserializedObjects = null;
+        WorkerThreads.Dispose();
+        WorkerThreads = null;
+        Busy = false;
+      }
+    }
+
+    private List<(string, int)> GetClosures(string rootObjectJson)
+    {
+      try
+      {
+        using (JsonDocument doc = JsonDocument.Parse(rootObjectJson))
+        {
+          List<(string, int)> closureList = new List<(string, int)>();
+          JsonElement closures = doc.RootElement.GetProperty("__closure");
+          foreach(JsonProperty prop in closures.EnumerateObject())
+          {
+            closureList.Add((prop.Name, prop.Value.GetInt32()));
+          }
+          return closureList;
+        }
+      }
+      catch
+      {
+        return null;
+      }
+    }
+
+    private object DeserializeTransportObjectProxy(String objectJson)
+    {
+      // Try background work
+      Task<object> bgResult = WorkerThreads.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson);
+      if (bgResult != null)
+        return bgResult;
+
+      // Sync
+      return DeserializeTransportObject(objectJson);
+    }
+
+    internal object DeserializeTransportObject(String objectJson)
     {
       using (JsonDocument doc = JsonDocument.Parse(objectJson))
       {
         object converted = ConvertJsonElement(doc.RootElement);
         OnProgressAction?.Invoke("DS", 1);
-        return converted as Base;
+        return converted;
       }
     }
 
-    private object ConvertJsonElement(JsonElement doc)
+    public object ConvertJsonElement(JsonElement doc)
     {
       if (CancellationToken.IsCancellationRequested)
       {
@@ -64,16 +142,17 @@ namespace Speckle.Core.Serialisation
           return doc.GetString();
 
         case JsonValueKind.Number:
-          return doc.GetDouble();
+          return doc.GetDecimal();
 
         case JsonValueKind.Array:
           List<object> retList = new List<object>(doc.GetArrayLength());
+
           foreach (JsonElement value in doc.EnumerateArray())
           {
             object convertedValue = ConvertJsonElement(value);
-
             if (convertedValue is DataChunk)
             {
+              retList.Capacity += ((DataChunk)convertedValue).data.Count - 1;
               retList.AddRange(((DataChunk)convertedValue).data);
             }
             else
@@ -81,24 +160,54 @@ namespace Speckle.Core.Serialisation
               retList.Add(convertedValue);
             }
           }
+
           return retList;
 
         case JsonValueKind.Object:
           Dictionary<string, object> dict = new Dictionary<string, object>();
-          foreach (JsonProperty prop in doc.EnumerateObject())
-            dict[prop.Name] = ConvertJsonElement(prop.Value);
 
+          foreach (JsonProperty prop in doc.EnumerateObject())
+          {
+            if (prop.Name == "__closure")
+              continue;
+              dict[prop.Name] = ConvertJsonElement(prop.Value);
+          }
+          
           if (!dict.ContainsKey(TypeDiscriminator))
             return dict;
 
           if ((dict[TypeDiscriminator] as String) == "reference" && dict.ContainsKey("referencedId"))
           {
-            string objectJson = ReadTransport.GetObject(dict["referencedId"] as String);
-            return Deserialize(objectJson);
+            string objId = dict["referencedId"] as String;
+            object deserialized = null;
+            lock (DeserializedObjects)
+            {
+              if (DeserializedObjects.ContainsKey(objId))
+                deserialized = DeserializedObjects[objId];
+            }
+            if (deserialized != null && deserialized is Task<object>)
+            {
+              deserialized = ((Task<object>)deserialized).Result;
+              lock (DeserializedObjects)
+              {
+                DeserializedObjects[objId] = deserialized;
+              }
+            }
+
+            if (deserialized != null)
+              return deserialized;
+
+            // This reference was not already deserialized. Do it now in sync mode
+            string objectJson = ReadTransport.GetObject(objId);
+            deserialized = DeserializeTransportObject(objectJson);
+            lock(DeserializedObjects)
+            {
+              DeserializedObjects[objId] = deserialized;
+            }
+            return deserialized;
           }
 
           return Dict2Base(dict);
-
       }
       return null;
     }
@@ -130,7 +239,7 @@ namespace Speckle.Core.Serialisation
           else
           {
             // Cannot convert the value in the json to the static property type
-            CallSiteCache.SetValue(entry.Key, baseObj, entry.Value);
+            throw new Exception(String.Format("Cannot deserialize {0} to {0}", entry.Value.GetType().FullName, targetValueType.FullName));
           }
         }
         else
