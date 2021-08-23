@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Restraint = Objects.Structural.Geometry.Restraint;
 using Objects.Structural.Materials;
+using MemberType = Objects.Structural.Geometry.MemberType;
 
 namespace ConverterGSA
 {
@@ -364,13 +365,27 @@ namespace ConverterGSA
     {
       var speckleProperty1D = new Property1D()
       {
-        name = gsaSection.Name
+        name = gsaSection.Name,
+        colour = gsaSection.Colour.ToString(),
+        memberType = MemberType.Generic1D,
+        material = new Material(),
+        grade = "",
+        profile = new SectionProfile(),
+        referencePoint = GetReferencePoint(gsaSection.ReferencePoint),
+        offsetZ = gsaSection.RefZ.Value,
+        area = 0,
+        Iyy = 0,
+        Izz = 0,
+        J = 0,
+        Ky = 0,
+        Kz = 0
       };
-      if (IsIndex(gsaSection.Index))
-      {
-        speckleProperty1D.applicationId = Instance.GsaModel.GetApplicationId<GsaSection>(gsaSection.Index.Value);
-      }
 
+
+      if (IsIndex(gsaSection.Index)) speckleProperty1D.applicationId = Instance.GsaModel.GetApplicationId<GsaSection>(gsaSection.Index.Value);
+      if (gsaSection.RefY.HasValue) speckleProperty1D.offsetY = gsaSection.RefY.Value;
+      if (gsaSection.RefZ.HasValue) speckleProperty1D.offsetZ = gsaSection.RefZ.Value;
+      
       //TO DO: add definition for Property1D
 
       return speckleProperty1D;
@@ -1037,6 +1052,21 @@ namespace ConverterGSA
       if (gsaPropMass != null) specklePropertyMass = GsaPropertyMassToSpeckle((GsaPropMass)gsaPropMass);
 
       return specklePropertyMass;
+    }
+    #endregion
+
+    #region Property1D
+    private BaseReferencePoint GetReferencePoint(ReferencePoint gsaReferencePoint)
+    {
+      switch(gsaReferencePoint)
+      {
+        case ReferencePoint.BottomCentre:
+          return BaseReferencePoint.BotCentre;
+        case ReferencePoint.BottomLeft:
+          return BaseReferencePoint.BotLeft;
+        default:
+          return BaseReferencePoint.Centroid;
+      }
     }
     #endregion
 

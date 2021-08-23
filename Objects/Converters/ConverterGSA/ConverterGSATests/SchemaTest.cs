@@ -13,6 +13,7 @@ using Objects.Structural.GSA.Geometry;
 using Objects.Structural.Properties;
 using Objects.Structural.Materials;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using MemberType = Objects.Structural.Geometry.MemberType;
 
 namespace ConverterGSATests
 {
@@ -351,6 +352,65 @@ namespace ConverterGSATests
     #endregion
 
     #region Property
+    [Fact]
+    public void GsaProperty1D()
+    {
+      //Define GSA objects
+      var gsaMatSteel = GsaMatSteelExample();
+      var gsaSection = GsaSectionExample();
+
+      //Set up context 
+      gsaModelMock.Layer = GSALayer.Design;
+      gsaModelMock.NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
+      {
+        { GwaKeyword.MAT_STEEL, new Dictionary<int, GsaRecord>
+          { { 1, gsaMatSteel } }
+        },
+        { GwaKeyword.SECTION, new Dictionary<int, GsaRecord>
+          { { 1, gsaSection } }
+        }
+      };
+      gsaModelMock.IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
+      {
+        { GwaKeyword.MAT_STEEL, new List<int> { 1 } },
+        { GwaKeyword.SECTION, new List<int> { 1 } }
+      };
+      gsaModelMock.ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      {
+        { GwaKeyword.SECTION, new Dictionary<int, string>
+          { { 1, "section 1" } }
+        },
+        { GwaKeyword.MAT_STEEL, new Dictionary<int, string>
+          { { 1, "steel 1" } }
+        }
+      };
+
+      var structuralObjects = converter.ConvertToSpeckle(new List<object> { gsaSection });
+
+      Assert.Empty(converter.ConversionErrors);
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is Property1D);
+
+      var speckleProperty1D = (Property1D)structuralObjects.FirstOrDefault(so => so is Property1D);
+
+      //Checks
+      Assert.Equal("section 1", speckleProperty1D.applicationId);
+      Assert.Equal(gsaSection.Colour.ToString(), speckleProperty1D.colour);
+      Assert.Equal(MemberType.Generic1D, speckleProperty1D.memberType);
+      Assert.Equal("steel 1", speckleProperty1D.material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("", speckleProperty1D.grade);
+      Assert.Equal("", speckleProperty1D.profile.applicationId); //assume tests are done elsewhere
+      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D.referencePoint);
+      Assert.Equal(0, speckleProperty1D.offsetY);
+      Assert.Equal(0, speckleProperty1D.offsetZ);
+      Assert.Equal(0, speckleProperty1D.area);
+      Assert.Equal(0, speckleProperty1D.Iyy);
+      Assert.Equal(0, speckleProperty1D.Izz);
+      Assert.Equal(0, speckleProperty1D.J);
+      Assert.Equal(0, speckleProperty1D.Ky);
+      Assert.Equal(0, speckleProperty1D.Kz);
+    }
+
     [Fact]
     public void GsaProperty2D()
     {
@@ -839,6 +899,64 @@ namespace ConverterGSATests
         ShearStiffnessPercentage = 1,
         InPlaneStiffnessPercentage = 1,
         VolumePercentage = 1
+      };
+    }
+
+    private GsaSection GsaSectionExample()
+    {
+      return new GsaSection()
+      {
+        Index = 1,
+        Name = "1",
+        Colour = Colour.NO_RGB,
+        Type = Section1dType.Generic,
+        //PoolIndex = 0,
+        ReferencePoint = ReferencePoint.Centroid,
+        RefY = 0,
+        RefZ = 0,
+        Mass = 0,
+        Fraction = 1,
+        Cost = 0,
+        Left = 0,
+        Right = 0,
+        Slab = 0,
+        Components = new List<GsaSectionComponentBase>()
+        {
+          new SectionComp()
+          {
+            Name = "",
+            //MatAnalIndex = 0,
+            MaterialType = Section1dMaterialType.STEEL,
+            MaterialIndex = 1,
+            OffsetY = 0,
+            OffsetZ = 0,
+            Rotation = 0,
+            Reflect = ComponentReflection.NONE,
+            //Pool = 0,
+            TaperType = Section1dTaperType.NONE,
+            //TaperPos = 0
+            ProfileGroup = Section1dProfileGroup.Catalogue,
+            ProfileDetails = new ProfileDetailsCatalogue()
+            {
+              Group = Section1dProfileGroup.Catalogue,
+              /**/
+            },
+            /*
+            new SectionSteel()
+            {
+              GradeIndex = 1,
+              PlasElas = 1,
+              NetGross = 1,
+              Beta = 0.4,
+              Type = SectionSteelSectionType.HotRolled,
+              Plate = SectionSteelPlateType.Undefined,
+              Locked = false
+            }
+            */
+
+          }
+        },
+        Environ = false
       };
     }
 
