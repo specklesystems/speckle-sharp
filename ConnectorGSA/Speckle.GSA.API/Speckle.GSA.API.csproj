@@ -92,7 +92,9 @@
     <Compile Include="GwaSchema\StringValue.cs" />
     <Compile Include="GwaSchema\TasksAndCases\GsaAnal.cs" />
     <Compile Include="GwaSchema\TasksAndCases\GsaCombination.cs" />
+    <Compile Include="IGSACache.cs" />
     <Compile Include="IGSAModel.cs" />
+    <Compile Include="IGSAProxy.cs" />
     <Compile Include="Instance.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

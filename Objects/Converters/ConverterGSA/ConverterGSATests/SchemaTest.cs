@@ -31,7 +31,7 @@ namespace ConverterGSATests
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      gsaModelMock.ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.AXIS, new Dictionary<int, string>
           { { 1, "axis 1" } }
@@ -69,7 +69,7 @@ namespace ConverterGSATests
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      gsaModelMock.NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
+      ((GsaProxyMock)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
       {
         { GwaKeyword.PROP_MASS, new Dictionary<int, GsaRecord>
           { { 1, gsaPropMass } }
@@ -78,12 +78,12 @@ namespace ConverterGSATests
           { { 1, gsaPropSpr } }
         } 
       };
-      gsaModelMock.IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
+      ((GsaProxyMock)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
       {
         { GwaKeyword.PROP_SPR, new List<int> { 1 } },
         { GwaKeyword.PROP_MASS, new List<int> { 1 } }
       };
-      gsaModelMock.ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.NODE, new Dictionary<int, string>
           { { 1, "node 1" } }
@@ -148,7 +148,7 @@ namespace ConverterGSATests
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      gsaModelMock.NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
+      ((GsaProxyMock)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
       {
         { GwaKeyword.NODE, new Dictionary<int, GsaRecord>
           { { 1, gsaNodes[0] },
@@ -170,7 +170,7 @@ namespace ConverterGSATests
           { { 1, gsaPropSpr } }
         }
       };
-      gsaModelMock.IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
+      ((GsaProxyMock)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
       {
         { GwaKeyword.NODE, new List<int> { 1, 2, 3, 4, 5 } },
         { GwaKeyword.EL, new List<int> { 1, 2 } },
@@ -179,7 +179,7 @@ namespace ConverterGSATests
         { GwaKeyword.PROP_SPR, new List<int> { 1 } },
         { GwaKeyword.PROP_MASS, new List<int> { 1 } }
       };
-      gsaModelMock.ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.NODE, new Dictionary<int, string>
           { { 1, "node 1" }, { 2, "node 2" }, { 3, "node 3" }, { 4, "node 4" }, { 5, "node 5" } }
@@ -277,7 +277,7 @@ namespace ConverterGSATests
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      gsaModelMock.ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.MAT_CONCRETE, new Dictionary<int, string>
           { { 1, "concrete 1" } }
@@ -317,7 +317,7 @@ namespace ConverterGSATests
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      gsaModelMock.ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.MAT_STEEL, new Dictionary<int, string>
           { { 1, "steel 1" } }
@@ -360,17 +360,17 @@ namespace ConverterGSATests
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      gsaModelMock.NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
+      ((GsaProxyMock)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
       {
         { GwaKeyword.MAT_STEEL, new Dictionary<int, GsaRecord>
           { { 1, gsaMatSteel } }
         }
       };
-      gsaModelMock.IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
+      ((GsaProxyMock)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
       {
         { GwaKeyword.MAT_STEEL, new List<int> { 1 } }
       };
-      gsaModelMock.ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.PROP_2D, new Dictionary<int, string>
           { { 1, "property 2D 1" } }
@@ -417,7 +417,7 @@ namespace ConverterGSATests
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      gsaModelMock.ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.PROP_MASS, new Dictionary<int, string>
           { { 1, "property mass 1" } }
@@ -455,7 +455,7 @@ namespace ConverterGSATests
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      gsaModelMock.ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.PROP_SPR, new Dictionary<int, string>
           { { 1, "property spring 1" } }

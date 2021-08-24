@@ -48,6 +48,7 @@
     <Compile Include="GsaModelMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProxyTests.cs" />
+    <Compile Include="SendTests.cs" />
     <Compile Include="SpeckleConnectorFixture.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +74,22 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj">
+      <Project>{a2c8730a-b605-483e-914e-61f3ed7954d9}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Objects\Converters\ConverterGSA\ConverterGSA\ConverterGSA.csproj">
+      <Project>{6e561e4f-a3b4-4277-a2f7-b934a4141394}</Project>
+      <Name>ConverterGSA</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
+      <Project>{60be029e-1f31-4473-8b68-a745a43af179}</Project>
+      <Name>Objects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ConnectorGSA\ConnectorGSA.csproj">
+      <Project>{1ba03be5-f893-46a3-b569-4fab87f0b60e}</Project>
+      <Name>ConnectorGSA</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GSAProxy\GSAProxy.csproj">
       <Project>{11db7d37-a6ed-4c8a-b354-d9fb3c82386c}</Project>
       <Name>GSAProxy</Name>

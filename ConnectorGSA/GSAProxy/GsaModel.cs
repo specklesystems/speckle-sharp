@@ -3,27 +3,19 @@ using System.Collections.Generic;
 using Speckle.GSA.API.GwaSchema;
 using Speckle.ConnectorGSA.Proxy.Cache;
 using System.Linq;
+using System;
 
 namespace GsaProxy
 {
-  public class GsaModel : IGSAModel
+  public class GsaModel : GsaModelBase
   {
     public static IGSAModel Instance = new GsaModel();
 
-    private static readonly GsaCache Cache = new GsaCache();
-    private static readonly Speckle.ConnectorGSA.Proxy.GsaProxy Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
+    private static IGSACache cache = new GsaCache();
+    private static IGSAProxy proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
 
-    public GSALayer Layer { get; set; }
-
-    public char GwaDelimiter { get => '\t'; }
-
-    public string Units { get; set; }
-    public double CoincidentNodeAllowance { get; set; }
-    public List<ResultType> ResultTypes { get; set; }
-    public StreamContentConfig StreamSendConfig { get; set; }
-    public List<string> ResultCases { get; set; }
-    public bool ResultInLocalAxis { get; set; }
-    public int Result1DNumPosition { get; set; }
+    public override IGSACache Cache { get => cache; set => cache = value; }
+    public override IGSAProxy Proxy { get => proxy; set => proxy = value; }
 
     public GsaModel()
     {
@@ -33,26 +25,41 @@ namespace GsaProxy
       }
     }
 
+    /*
     #region cache_related
-    public string GetApplicationId<T>(int index) => Cache.GetApplicationId<T>(index);
+    public override string GetApplicationId<T>(int index) => Cache.GetApplicationId<T>(index);
 
-    public GsaRecord GetNative<T>(int index) => Cache.GetNative<T>(index, out var gsaRecord) ? gsaRecord : null;
+    public override GsaRecord GetNative<T>(int index) => Cache.GetNative<T>(index, out var gsaRecord) ? gsaRecord : null;
 
-    public List<int> LookupIndices<T>() => Cache.LookupIndices<T>().Where(i => i.HasValue && i.Value > 0).Select(i => i.Value).ToList();
+    public override bool GetNative(Type t, int index, out GsaRecord gsaRecords) => Cache.GetNative(t, index, out gsaRecords);
+
+    public override bool GetNative(Type t, out List<GsaRecord> gsaRecords) => Cache.GetNative(t, out gsaRecords);
+
+    public override bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
+      => Proxy.GetGwaData(nodeApplicationIdFilter, out records, incrementProgress);
+
+    public override bool SetSpeckleObjects(GsaRecord gsaRecord, IEnumerable<object> speckleObjects) => Cache.SetSpeckleObjects(gsaRecord, speckleObjects);
+
+    public override List<int> LookupIndices<T>() => Cache.LookupIndices<T>().Select(i => i.Value).ToList();
     #endregion
 
     #region proxy_related
-    public bool ClearResults(ResultGroup group) => Proxy.ClearResults(group);
+    public override bool ClearResults(ResultGroup group) => Proxy.ClearResults(group);
 
-    public List<int> ConvertGSAList(string list, GSAEntity entityType) => Proxy.ConvertGSAList(list, entityType).ToList();
+    public override List<int> ConvertGSAList(string list, GSAEntity entityType) => Proxy.ConvertGSAList(list, entityType).ToList();
 
-    public bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1)
+    public override bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1)
       => Proxy.GetResultHierarchy(group, index, out valueHierarchy, dimension);
 
-    public bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null)
+    public override bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null)
       => Proxy.LoadResults(group, out numErrorRows, cases, elemIds);
 
-    public int NodeAt(double x, double y, double z, double coincidenceTol) => Proxy.NodeAt(x, y, z, coincidenceTol);
+    public override int NodeAt(double x, double y, double z, double coincidenceTol) => Proxy.NodeAt(x, y, z, coincidenceTol);
+
+    
+
+
     #endregion
+    */
   }
 }

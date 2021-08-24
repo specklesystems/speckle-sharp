@@ -15,8 +15,18 @@ using Speckle.ConnectorGSA.Proxy.GwaParsers;
 
 namespace Speckle.ConnectorGSA.Proxy
 {
-  public class GsaProxy
+  public class GsaProxy : IGSAProxy
   {
+    //Used by the app in ordering the calling of the conversion code
+    public List<List<Type>> TxTypeDependencyGenerations { get; private set; } = new List<List<Type>>();
+    public List<Type> SchemaTypes { get => ParsersBySchemaType.Keys.ToList(); }
+
+    private Dictionary<Type, Type> ParsersBySchemaType = new Dictionary<Type, Type>();  //Used for writing to the GSA instance
+    private Dictionary<GwaKeyword, Type> ParsersByKeyword = new Dictionary<GwaKeyword, Type>(); //Used for reading from the GSA instance
+    private bool initialised = false;
+    private bool initialisedError = false;  //To ensure initialisation is only attempted once.
+    private GSALayer prevLayer;
+
     #region static_data
     private static readonly string SID_APPID_TAG = "speckle_app_id";
     private static readonly string SID_STRID_TAG = "speckle_stream_id";
@@ -122,6 +132,8 @@ namespace Speckle.ConnectorGSA.Proxy
     // --
 
     public string FilePath { get; set; }
+
+    char IGSAProxy.GwaDelimiter => throw new NotImplementedException();
 
     //Results-related
     private string resultDir = null;
@@ -248,9 +260,12 @@ namespace Speckle.ConnectorGSA.Proxy
 
     #region gsa_list_resolution
 
-    public int[] ConvertGSAList(string list, GSAEntity type)
+    public List<int> ConvertGSAList(string list, GSAEntity type)
     {
-      if (list == null) return new int[0];
+      if (list == null)
+      {
+        return new List<int>();
+      }
 
       string[] pieces = list.ListSplit(" ");
       pieces = pieces.Where(s => !string.IsNullOrEmpty(s)).ToArray();
@@ -299,10 +314,10 @@ namespace Speckle.ConnectorGSA.Proxy
         }
       }
 
-      return items.ToArray();
+      return items;
     }
 
-    private int[] ConvertNamedGSAList(string list, GSAEntity type)
+    private List<int> ConvertNamedGSAList(string list, GSAEntity type)
     {
       list = list.Trim(new char[] { '"', ' ' });
 
@@ -324,10 +339,10 @@ namespace Speckle.ConnectorGSA.Proxy
           return ExecuteWithLock(() =>
           {
             GSAObject.EntitiesInList("\"" + list + "\"", (GsaEntity)type, out int[] itemTemp);
-            return (itemTemp == null) ? new int[0] : (int[])itemTemp;
+            return (itemTemp == null) ? new List<int>() : itemTemp.ToList();
           });
         }
-        catch { return new int[0]; }
+        catch { return new List<int>(); }
       }
     }
 
@@ -354,105 +369,90 @@ namespace Speckle.ConnectorGSA.Proxy
     }
     #endregion
 
-    #region extracting_gwa
-
-    public static bool ParseGeneralGwa(string fullGwa, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string applicationId, 
-      out string gwaWithoutSet, out string keywordAndVersion)
+    #region type_dependency_tree
+    private bool Initialise(GSALayer layer)
     {
-      var pieces = fullGwa.ListSplit(GsaProxy.GwaDelimiter).ToList();
-      keyword = null;
-      version = null;
-      keywordAndVersion = "";
-      streamId = "";
-      applicationId = "";
-      index = null;
-      gwaWithoutSet = fullGwa;
-
-      if (pieces.Count() < 2)
+      if (!initialised && !initialisedError)
       {
-        return false;
-      }
+        var assembly = GetType().Assembly; //This assembly
+        var assemblyTypes = assembly.GetTypes().ToList();
 
-      //Remove the Set for the purpose of this method
-      if (pieces[0].StartsWith("set", StringComparison.InvariantCultureIgnoreCase))
-      {
-        if (pieces[0].StartsWith("set_at", StringComparison.InvariantCultureIgnoreCase))
+        var gsaBaseType = typeof(GwaParser<GsaRecord>);
+        var gsaAttributeType = typeof(GsaType);
+        var gwaParserInterfaceType = typeof(IGwaParser);
+
+        var parserTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, gwaParserInterfaceType)
+          && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
+          && Helper.IsSelfContained(t)
+          && ((layer == GSALayer.Design) && Helper.IsDesignLayer(t) || (layer == GSALayer.Analysis) && Helper.IsDesignLayer(t))
+          && !t.IsAbstract
+          ).ToDictionary(pt => pt, pt => Helper.GetGwaKeyword(pt));
+
+        var layerKeywords = parserTypes.Values.ToList();
+        var kwDict = new Dictionary<GwaKeyword, GwaKeyword[]>();
+        foreach (var pt in parserTypes.Keys)
         {
-          if (int.TryParse(pieces[1], out int foundIndex))
-          {
-            index = foundIndex;
-          }
+          var allRefKw = Helper.GetReferencedKeywords(pt).Where(kw => layerKeywords.Any(k => k == kw)).ToArray();
+          kwDict.Add(parserTypes[pt], allRefKw);
+        }
 
-          //For SET_ATs the format is SET_AT <index> <keyword> .., so remove the first two
-          pieces.Remove(pieces[1]);
-          pieces.Remove(pieces[0]);
+        var retCol = new TypeTreeCollection<GwaKeyword>(kwDict.Keys);
+        foreach (var kw in kwDict.Keys)
+        {
+          retCol.Integrate(kw, kwDict[kw]);
+        }
+
+        var gens = retCol.Generations();
+        if (gens == null || gens.Count == 0)
+        {
+          return false;
+        }
+
+        ParsersByKeyword = parserTypes.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+        ParsersBySchemaType = parserTypes.Keys.ToDictionary(pt => pt.BaseType.GenericTypeArguments.First(), pt => pt);
+
+        TxTypeDependencyGenerations.Clear();
+        foreach (var gen in gens)
+        {
+          TxTypeDependencyGenerations.Add(gen.Select(kw => ParsersByKeyword[kw].BaseType.GenericTypeArguments.First()).ToList());
+        }
+
+        initialised = true;
+      }
+      return (initialised && !initialisedError);
+    }
+    #endregion
+
+    #region extract_gwa_fns
+
+    //Tuple: keyword | index | Application ID | GWA command | Set or Set At
+    public bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
+    {
+      GSALayer layer = Instance.GsaModel.Layer;
+      if (layer != prevLayer || !initialised)
+      {
+        if (!Initialise(layer))
+        {
+          records = null;
+          initialisedError = true;
+          //Already tried this layer once and it was an error, so don't try again
+          return false;
         }
         else
         {
-          if (int.TryParse(pieces[2], out int foundIndex))
-          {
-            index = foundIndex;
-          }
-
-          pieces.Remove(pieces[0]);
+          prevLayer = layer;
         }
-      }
-      else
-      {
-        if (int.TryParse(pieces[1], out int foundIndex))
-        {
-          index = foundIndex;
-        }
+        initialised = true;
+        initialisedError = false;
       }
 
-      var delimIndex = pieces[0].IndexOf(':');
-      var hasSid = (delimIndex > 0);
-      keywordAndVersion = hasSid ? pieces[0].Substring(0, delimIndex) : pieces[0];
-
-      if (!string.IsNullOrEmpty(keywordAndVersion))
-      {
-        var keywordPieces = keywordAndVersion.Split('.');
-        if (keywordPieces.Count() == 2 && keywordPieces.Last().All(c => char.IsDigit(c))
-          && int.TryParse(keywordPieces.Last(), out int ver)
-          && keywordPieces.First().TryParseStringValue(out GwaKeyword kw))
-        {
-          version = ver;
-          keyword = kw;
-
-          if (hasSid)
-          {
-            //An SID has been found
-            var sidTags = pieces[0].Substring(delimIndex);
-            var match = Regex.Match(sidTags, "(?<={" + SID_STRID_TAG + ":).*?(?=})");
-            streamId = (!string.IsNullOrEmpty(match.Value)) ? match.Value : "";
-            match = Regex.Match(sidTags, "(?<={" + SID_APPID_TAG + ":).*?(?=})");
-            applicationId = (!string.IsNullOrEmpty(match.Value)) ? match.Value : "";
-          }
-
-          foreach (var groupKeyword in IrregularKeywordGroups.Keys)
-          {
-            if (IrregularKeywordGroups[groupKeyword].Contains(keyword.Value))
-            {
-              keyword = groupKeyword;
-              break;
-            }
-          }
-          gwaWithoutSet = string.Join(GwaDelimiter.ToString(), pieces);
-          return true;
-        }
-      }
-
-      return false;
-    }
-
-    //Tuple: keyword | index | Application ID | GWA command | Set or Set At
-    public List<ProxyGwaLine> GetGwaData(IEnumerable<GwaKeyword> keywords, bool nodeApplicationIdFilter, IProgress<int> incrementProgress = null)
-    {
+      var retRecords = new List<GsaRecord>();
       var dataLock = new object();
-      var data = new List<ProxyGwaLine>();
       var setKeywords = new List<GwaKeyword>();
       var setAtKeywords = new List<GwaKeyword>();
       var tempKeywordIndexCache = new Dictionary<GwaKeyword, List<int>>();
+
+      var keywords = ParsersByKeyword.Keys.ToList();
 
       foreach (var kw in keywords)
       {
@@ -472,26 +472,27 @@ namespace Speckle.ConnectorGSA.Proxy
         var isNode = (setKeywords[i] == GwaKeyword.NODE);
         var isElement = (setKeywords[i] == GwaKeyword.EL);
 
-        string[] gwaRecords;
+        string[] gwaLines;
 
         try
         {
-          gwaRecords = ExecuteWithLock(() => ((string)GSAObject.GwaCommand(newCommand)).Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries));
+          gwaLines = ExecuteWithLock(() => ((string)GSAObject.GwaCommand(newCommand)).Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries));
         }
         catch
         {
-          gwaRecords = new string[0];
+          gwaLines = new string[0];
         }
 
+        //TO DO: review if this line is even needed anymore
         if (setKeywords[i] == GwaKeyword.UNIT_DATA)
         {
-          return gwaRecords.Select(r => new ProxyGwaLine() { GwaWithoutSet = r, Keyword = GwaKeyword.UNIT_DATA }).ToList();
+          continue;
         }
 
-        Parallel.ForEach(gwaRecords, gwa =>
+        Parallel.ForEach(gwaLines, gwa =>
         {
           if (ParseGeneralGwa(gwa, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string appId, out string gwaWithoutSet, out string keywordAndVersion)
-            && keyword.HasValue)
+            && keyword.HasValue && ParsersByKeyword.ContainsKey(keyword.Value))
           {
             index = index ?? 0;
             var originalSid = "";
@@ -550,14 +551,14 @@ namespace Speckle.ConnectorGSA.Proxy
 
               if (!(nodeApplicationIdFilter == true && isNode && string.IsNullOrEmpty(appId)))
               {
-                var line = new ProxyGwaLine()
+                var parser = (IGwaParser)Activator.CreateInstance(ParsersByKeyword[keyword.Value]);
+                parser.FromGwa(gwa);
+                if (!parser.Record.Index.HasValue && index.HasValue)
                 {
-                  Keyword = keyword.Value,
-                  Index = index.Value,
-                  StreamId = streamId,
-                  ApplicationId = appId,
-                  GwaWithoutSet = gwaWithoutSet
-                };
+                  parser.Record.Index = index.Value;
+                }
+                parser.Record.StreamId = streamId;
+                parser.Record.ApplicationId = appId;
 
                 lock (dataLock)
                 {
@@ -567,7 +568,7 @@ namespace Speckle.ConnectorGSA.Proxy
                   }
                   if (!tempKeywordIndexCache[keyword.Value].Contains(index.Value))
                   {
-                    data.Add(line);
+                    retRecords.Add(parser.Record);
                     tempKeywordIndexCache[keyword.Value].Add(index.Value);
                   }
                 }
@@ -590,16 +591,16 @@ namespace Speckle.ConnectorGSA.Proxy
         {
           var newCommand = string.Join(GwaDelimiter.ToString(), new[] { "GET", setAtKeywords[i].GetStringValue(), j.ToString() });
 
-          var gwaRecord = "";
+          var gwaLine = "";
           try
           {
-            gwaRecord = (string)ExecuteWithLock(() => GSAObject.GwaCommand(newCommand));
+            gwaLine = (string)ExecuteWithLock(() => GSAObject.GwaCommand(newCommand));
           }
           catch { }
 
-          if (gwaRecord != "")
+          if (gwaLine != "")
           {
-            ParseGeneralGwa(gwaRecord, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string appId, out string gwaWithoutSet, 
+            ParseGeneralGwa(gwaLine, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string appId, out string gwaWithoutSet, 
               out string keywordAndVersion);
 
             if (keyword == setAtKeywords[i])
@@ -633,14 +634,14 @@ namespace Speckle.ConnectorGSA.Proxy
                 gwaWithoutSet.Replace(originalSid, newSid);
               }
 
-              var line = new ProxyGwaLine()
+              var parser = (IGwaParser)Activator.CreateInstance(ParsersByKeyword[keyword.Value]);
+              parser.FromGwa(gwaLine);
+              if (!parser.Record.Index.HasValue)
               {
-                Keyword = setAtKeywords[i],
-                Index = j,
-                StreamId = streamId,
-                ApplicationId = appId,
-                GwaWithoutSet = gwaWithoutSet
-              };
+                parser.Record.Index = j;
+              }
+              parser.Record.StreamId = streamId;
+              parser.Record.ApplicationId = appId;
 
               lock (dataLock)
               {
@@ -650,7 +651,7 @@ namespace Speckle.ConnectorGSA.Proxy
                 }
                 if (!tempKeywordIndexCache[setAtKeywords[i]].Contains(j))
                 {
-                  data.Add(line);
+                  retRecords.Add(parser.Record);
                   tempKeywordIndexCache[setAtKeywords[i]].Add(j);
                 }
               }
@@ -662,23 +663,8 @@ namespace Speckle.ConnectorGSA.Proxy
           incrementProgress.Report(1);
         }
       }
-
-      return data;
-    }
-
-    public string FormatApplicationIdSidTag(string value)
-    {
-      return (string.IsNullOrEmpty(value) ? "" : "{" + SID_APPID_TAG + ":" + value.Replace(" ", "") + "}");
-    }
-
-    public string FormatStreamIdSidTag(string value)
-    {
-      return (string.IsNullOrEmpty(value) ? "" : "{" + SID_STRID_TAG + ":" + value.Replace(" ", "") + "}");
-    }
-
-    public string FormatSidTags(string streamId = "", string applicationId = "")
-    {
-      return FormatStreamIdSidTag(streamId) + FormatApplicationIdSidTag(applicationId);
+      records = retRecords;
+      return true; 
     }
 
     private string FormatApplicationId(string keyword, int index, string applicationId)
@@ -692,6 +678,25 @@ namespace Speckle.ConnectorGSA.Proxy
     {
       var pieces = gwaRecord.Split(GwaDelimiter);
       return (int.TryParse(pieces[1], out int index)) ? index : 0;
+    }
+
+    private bool GetUnitDataGwa(out List<string> gwa)
+    {
+      var newCommand = "GET_ALL" + GwaDelimiter + GwaKeyword.UNIT_DATA.GetStringValue();
+
+      string[] gwaLines;
+
+      try
+      {
+        gwaLines = ExecuteWithLock(() => ((string)GSAObject.GwaCommand(newCommand)).Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries));
+      }
+      catch
+      {
+        gwa = null;
+        return false;
+      }
+      gwa = gwaLines.ToList();
+      return true;
     }
     #endregion
 
@@ -983,16 +988,18 @@ namespace Speckle.ConnectorGSA.Proxy
 
     private bool ProcessUnitGwaData()
     {
-      var unitGwaLines = GetGwaData(new[] { GwaKeyword.UNIT_DATA }, false);
-      if (unitGwaLines == null || unitGwaLines.Count() == 0)
+      if (!GetUnitDataGwa(out var unitGwaLines) || unitGwaLines == null || unitGwaLines.Count() == 0)
       {
         return false;
       }
       unitData.Clear();
 
-      foreach (var gwa in unitGwaLines.Select(l => l.GwaWithoutSet).ToList())
+      foreach (var gwa in unitGwaLines)
       {
-        var pieces = gwa.Split(GwaDelimiter);
+        var firstDelimiterIndex = gwa.IndexOf(GwaDelimiter);
+        var gwaLine = (gwa.StartsWith("set", StringComparison.InvariantCultureIgnoreCase)) ? gwa.Substring(firstDelimiterIndex) : gwa;
+
+        var pieces = gwaLine.Split(GwaDelimiter);
 
         if (Enum.TryParse(pieces[1], true, out ResultUnitType rut) && float.TryParse(pieces.Last(), out float factor))
         {
@@ -1044,14 +1051,111 @@ namespace Speckle.ConnectorGSA.Proxy
       }
     }
     #endregion
-  }
 
-  public struct ProxyGwaLine
-  {
-    public GwaKeyword Keyword;
-    public int Index;
-    public string StreamId;
-    public string ApplicationId;
-    public string GwaWithoutSet;
+    #region static_fns
+    public static bool ParseGeneralGwa(string fullGwa, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string applicationId,
+      out string gwaWithoutSet, out string keywordAndVersion)
+    {
+      var pieces = fullGwa.ListSplit(GsaProxy.GwaDelimiter).ToList();
+      keyword = null;
+      version = null;
+      keywordAndVersion = "";
+      streamId = "";
+      applicationId = "";
+      index = null;
+      gwaWithoutSet = fullGwa;
+
+      if (pieces.Count() < 2)
+      {
+        return false;
+      }
+
+      //Remove the Set for the purpose of this method
+      if (pieces[0].StartsWith("set", StringComparison.InvariantCultureIgnoreCase))
+      {
+        if (pieces[0].StartsWith("set_at", StringComparison.InvariantCultureIgnoreCase))
+        {
+          if (int.TryParse(pieces[1], out int foundIndex))
+          {
+            index = foundIndex;
+          }
+
+          //For SET_ATs the format is SET_AT <index> <keyword> .., so remove the first two
+          pieces.Remove(pieces[1]);
+          pieces.Remove(pieces[0]);
+        }
+        else
+        {
+          if (int.TryParse(pieces[2], out int foundIndex))
+          {
+            index = foundIndex;
+          }
+
+          pieces.Remove(pieces[0]);
+        }
+      }
+      else
+      {
+        if (int.TryParse(pieces[1], out int foundIndex))
+        {
+          index = foundIndex;
+        }
+      }
+
+      var delimIndex = pieces[0].IndexOf(':');
+      var hasSid = (delimIndex > 0);
+      keywordAndVersion = hasSid ? pieces[0].Substring(0, delimIndex) : pieces[0];
+
+      if (!string.IsNullOrEmpty(keywordAndVersion))
+      {
+        var keywordPieces = keywordAndVersion.Split('.');
+        if (keywordPieces.Count() == 2 && keywordPieces.Last().All(c => char.IsDigit(c))
+          && int.TryParse(keywordPieces.Last(), out int ver)
+          && keywordPieces.First().TryParseStringValue(out GwaKeyword kw))
+        {
+          version = ver;
+          keyword = kw;
+
+          if (hasSid)
+          {
+            //An SID has been found
+            var sidTags = pieces[0].Substring(delimIndex);
+            var match = Regex.Match(sidTags, "(?<={" + SID_STRID_TAG + ":).*?(?=})");
+            streamId = (!string.IsNullOrEmpty(match.Value)) ? match.Value : "";
+            match = Regex.Match(sidTags, "(?<={" + SID_APPID_TAG + ":).*?(?=})");
+            applicationId = (!string.IsNullOrEmpty(match.Value)) ? match.Value : "";
+          }
+
+          foreach (var groupKeyword in IrregularKeywordGroups.Keys)
+          {
+            if (IrregularKeywordGroups[groupKeyword].Contains(keyword.Value))
+            {
+              keyword = groupKeyword;
+              break;
+            }
+          }
+          gwaWithoutSet = string.Join(GwaDelimiter.ToString(), pieces);
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    public static string FormatApplicationIdSidTag(string value)
+    {
+      return (string.IsNullOrEmpty(value) ? "" : "{" + SID_APPID_TAG + ":" + value.Replace(" ", "") + "}");
+    }
+
+    public static string FormatStreamIdSidTag(string value)
+    {
+      return (string.IsNullOrEmpty(value) ? "" : "{" + SID_STRID_TAG + ":" + value.Replace(" ", "") + "}");
+    }
+
+    public static string FormatSidTags(string streamId = "", string applicationId = "")
+    {
+      return FormatStreamIdSidTag(streamId) + FormatApplicationIdSidTag(applicationId);
+    }
+    #endregion
   }
 }

@@ -17,8 +17,8 @@ namespace ConnectorGSATests
     protected string modelWithResultsFile = "Structural Demo Results.gwb";
 
     protected GsaModelMock GsaModelMock = new GsaModelMock();
-    protected GsaCache cache => GsaModelMock.cache;
-    protected Speckle.ConnectorGSA.Proxy.GsaProxy proxy { get => GsaModelMock.proxy; set => GsaModelMock.proxy = value; }
+    protected IGSACache cache => GsaModelMock.Cache;
+    protected IGSAProxy proxy { get => GsaModelMock.Proxy; set => GsaModelMock.Proxy = value; }
 
     public SpeckleConnectorFixture()
     {
