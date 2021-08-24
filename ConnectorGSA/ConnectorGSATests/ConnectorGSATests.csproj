@@ -86,6 +86,10 @@
       <Project>{60be029e-1f31-4473-8b68-a745a43af179}</Project>
       <Name>Objects</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ConnectorGSA\ConnectorGSA.csproj">
+      <Project>{1ba03be5-f893-46a3-b569-4fab87f0b60e}</Project>
+      <Name>ConnectorGSA</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GSAProxy\GSAProxy.csproj">
       <Project>{11db7d37-a6ed-4c8a-b354-d9fb3c82386c}</Project>
       <Name>GSAProxy</Name>

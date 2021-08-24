@@ -1,6 +1,7 @@
 ﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API.GwaSchema;
 using System;
+using System.Collections.Generic;
 
 namespace Speckle.ConnectorGSA.Proxy.Cache
 {

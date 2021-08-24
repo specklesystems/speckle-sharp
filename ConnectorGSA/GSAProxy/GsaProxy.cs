@@ -15,7 +15,7 @@ using Speckle.ConnectorGSA.Proxy.GwaParsers;
 
 namespace Speckle.ConnectorGSA.Proxy
 {
-  public class GsaProxy
+  public class GsaProxy : IGSAProxy
   {
     //Used by the app in ordering the calling of the conversion code
     public List<List<Type>> TxTypeDependencyGenerations { get; private set; } = new List<List<Type>>();
@@ -132,6 +132,8 @@ namespace Speckle.ConnectorGSA.Proxy
     // --
 
     public string FilePath { get; set; }
+
+    char IGSAProxy.GwaDelimiter => throw new NotImplementedException();
 
     //Results-related
     private string resultDir = null;
@@ -258,9 +260,12 @@ namespace Speckle.ConnectorGSA.Proxy
 
     #region gsa_list_resolution
 
-    public int[] ConvertGSAList(string list, GSAEntity type)
+    public List<int> ConvertGSAList(string list, GSAEntity type)
     {
-      if (list == null) return new int[0];
+      if (list == null)
+      {
+        return new List<int>();
+      }
 
       string[] pieces = list.ListSplit(" ");
       pieces = pieces.Where(s => !string.IsNullOrEmpty(s)).ToArray();
@@ -309,10 +314,10 @@ namespace Speckle.ConnectorGSA.Proxy
         }
       }
 
-      return items.ToArray();
+      return items;
     }
 
-    private int[] ConvertNamedGSAList(string list, GSAEntity type)
+    private List<int> ConvertNamedGSAList(string list, GSAEntity type)
     {
       list = list.Trim(new char[] { '"', ' ' });
 
@@ -334,10 +339,10 @@ namespace Speckle.ConnectorGSA.Proxy
           return ExecuteWithLock(() =>
           {
             GSAObject.EntitiesInList("\"" + list + "\"", (GsaEntity)type, out int[] itemTemp);
-            return (itemTemp == null) ? new int[0] : (int[])itemTemp;
+            return (itemTemp == null) ? new List<int>() : itemTemp.ToList();
           });
         }
-        catch { return new int[0]; }
+        catch { return new List<int>(); }
       }
     }
 
@@ -421,8 +426,9 @@ namespace Speckle.ConnectorGSA.Proxy
     #region extract_gwa_fns
 
     //Tuple: keyword | index | Application ID | GWA command | Set or Set At
-    public bool GetGwaData(GSALayer layer, bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
+    public bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
     {
+      GSALayer layer = Instance.GsaModel.Layer;
       if (layer != prevLayer || !initialised)
       {
         if (!Initialise(layer))

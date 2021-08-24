@@ -1,4 +1,5 @@
-﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
+﻿using Speckle.ConnectorGSA.Proxy.Cache;
+using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
 using System;
@@ -9,6 +10,12 @@ namespace ConverterGSATests
 {
   public class GsaModelMock : GsaModelBase
   {
+    public override IGSACache Cache { get; set; } = new GsaCache();
+    public override IGSAProxy Proxy { get; set; } = new GsaProxyMock();
+  }
+
+  internal class GsaProxyMock : IGSAProxy
+    {
     //Assign these in each test to control what the methods below (called by the kit) return
     public Func<string, GSAEntity, List<int>> ConverterGSAListFn;
     public Func<double, double, double, int> NodeAtFn;
@@ -20,37 +27,35 @@ namespace ConverterGSATests
     protected Dictionary<GwaKeyword, Type> TypesByKeyword;
     protected Dictionary<Type, GwaKeyword> KeywordsByType;
 
-    public GsaModelMock()
+    public List<List<Type>> TxTypeDependencyGenerations => throw new NotImplementedException();
+
+    public char GwaDelimiter => throw new NotImplementedException();
+
+    public GsaProxyMock()
     {
       PopulateTypesKeywords();
     }
 
-    #region interface_fns
-    //Assumption: don't need coincidenceTol for testing
-    public override int NodeAt(double x, double y, double z, double coincidenceTol) => NodeAtFn(x, y, z);
+    
+    public bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
+    {
+      records = null;
+      return true;
+    }
 
-    public override List<int> ConvertGSAList(string list, GSAEntity entityType) => ConverterGSAListFn(list, entityType);
-
-    public override List<int> LookupIndices<T>() => IndicesByKeyword[KeywordsByType[typeof(T)]];
-
-    public override string GetApplicationId<T>(int index) => ApplicationIdsByKeywordId[KeywordsByType[typeof(T)]][index];
-
-    public override GsaRecord GetNative<T>(int index) => NativesByKeywordId[KeywordsByType[typeof(T)]][index];
-
-    public override bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null)
+    public bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null)
     {
       numErrorRows = 0;
       return true;
     }
 
-    public override bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1)
+    public bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1)
     {
       valueHierarchy = resultsData[group][index];
       return true;
     }
 
-    public override bool ClearResults(ResultGroup group) => true;
-    #endregion
+    public bool ClearResults(ResultGroup group) => true;
 
     protected bool PopulateTypesKeywords()
     {
@@ -97,8 +102,8 @@ namespace ConverterGSATests
 
       
 
-  #region test_config_fns
-  public bool AddResultData(ResultGroup group, int index, Dictionary<string, Dictionary<string, object>> valueHierarchy)
+    #region test_config_fns
+    public bool AddResultData(ResultGroup group, int index, Dictionary<string, Dictionary<string, object>> valueHierarchy)
     {
       if (resultsData == null)
       {
@@ -123,6 +128,26 @@ namespace ConverterGSATests
       IndicesByKeyword = null;
       ApplicationIdsByKeywordId = null;
       NativesByKeywordId = null;
+    }
+
+    public bool OpenFile(string path, bool showWindow = true, object gsaInstance = null)
+    {
+      return true;
+    }
+
+    public List<int> ConvertGSAList(string list, GSAEntity entityType)
+    {
+      return new List<int>() { 1 };
+    }
+
+    public int NodeAt(double x, double y, double z, double coincidenceTol)
+    {
+      return 1;
+    }
+
+    public void Close()
+    {
+      
     }
 
     #endregion

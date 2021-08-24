@@ -1,10 +1,14 @@
-﻿using Speckle.Core.Api;
+﻿using ConnectorGSA;
+using GsaProxy;
+using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.GSA.API;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,61 +16,94 @@ using Xunit;
 
 namespace ConnectorGSATests
 {
-  public class SendTests
+  public class SendTests : SpeckleConnectorFixture
   {
-    [Fact]
-    public void SendTest()
+    private static string testStreamMarker = "Test";
+    private static string testStreamDelimiter = "-";
+
+    private async Task<string> GetNewStreamName(Client client, Account account)
     {
+      var usersStreamsOnServer = await client.StreamsGet();
+      var testStreamNames = usersStreamsOnServer.Where(s => s.name.StartsWith(testStreamMarker)).Select(s => s.name).ToList();
+      int testStreamNewNum = 0;
+      if (testStreamNames.Count == 0)
+      {
+        testStreamNewNum = 1;
+      }
+      else
+      {
+        var testStreamNums = new List<int>();
+        foreach (var n in testStreamNames)
+        {
+          var pieces = n.Split(new[] { testStreamDelimiter }, StringSplitOptions.RemoveEmptyEntries);
+          foreach (var p in pieces)
+          {
+            if (int.TryParse(p, out int testStreamNum) && testStreamNum > 0)
+            {
+              testStreamNums.Add(testStreamNum);
+              break;
+            }
+          }
+        }
+        testStreamNewNum = testStreamNums.Max() + 1;
+      }
+
+      return string.Join(testStreamDelimiter, testStreamMarker, testStreamNewNum);
+    }
+
+    [Fact]
+    public async void SendTest()
+    {
+      Instance.GsaModel.Layer = GSALayer.Design;
+      Instance.GsaModel.Proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), true);
+
+      var commitObj = Commands.Convert();
+
       var account = AccountManager.GetDefaultAccount();
       var client = new Client(account);
-      var converter = new ConverterGSA.ConverterGSA();
-      var objs = new List<SpeckleObject>() { new SpeckleObject { applicationId = "test_210820_01" }, new SpeckleObject { applicationId = "test_210820_02" } };
-      var errors = new List<string>();
+      var streamState = await NewStream(client, account);
+      var transports = new List<ITransport>() { new ServerTransport(streamState.Client.Account, streamState.Stream.id) };
 
-      var streamId = client.StreamCreate(new StreamCreateInput()
-      {
-        name = "Test-210820-01",
-        description = "Testing",
-        isPublic = true
-      }).Result;
+      await Commands.Send(commitObj, streamState, transports);
+      
+    }
 
-      var commit = new Base();
-      var bucket = "Test objects";
-      commit[$"{bucket}"] = objs;
-
-      var stream = client.StreamGet(streamId).Result;
-
-      var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
-
-      var commitObjId = Operations.Send(
-        @object: commit,
-        transports: transports,
-        onErrorAction: (s, e) =>
-        {
-          errors.Add(e.Message);
-        },
-        disposeTransports: true
-        ).Result;
-
-      var actualCommit = new CommitCreateInput
-      {
-        streamId = streamId,
-        objectId = commitObjId,
-        branchName = "TestBranch",
-        message = "Pushed it real good",
-        sourceApplication = Applications.GSA
-      };
-
-      //if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
+    private async Task<StreamState> NewStream(Client client, Account account)
+    {
+      var newStreamName = await GetNewStreamName(client, account);
+      string streamId = "";
+      Speckle.Core.Api.Stream stream = null;
+      StreamState streamState = null;
 
       try
       {
-        var commitId = client.CommitCreate(actualCommit).Result;
+        streamId = await client.StreamCreate(new StreamCreateInput()
+        {
+          name = newStreamName,
+          description = "Stream created as part of automated tests",
+          isPublic = false
+        });
+
+        stream = await client.StreamGet(streamId);
+
+        streamState = new StreamState() { Client = client, Stream = stream };
       }
       catch (Exception e)
       {
-        errors.Add(e.Message);
+        try
+        {
+          if (!string.IsNullOrEmpty(streamId))
+          {
+            await client.StreamDelete(streamId);
+          }
+        }
+        catch
+        {
+          // POKEMON! (server is prob down)
+        }
       }
+
+      return streamState;
     }
   }
 }

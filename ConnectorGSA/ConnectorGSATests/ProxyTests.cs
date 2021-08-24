@@ -2,6 +2,7 @@
 using Xunit;
 using System.IO;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.GSA.API;
 
 namespace ConnectorGSATests
 {
@@ -27,10 +28,11 @@ namespace ConnectorGSATests
     [Fact]
     public void TestProxyGetDataForCache()
     {
+      Instance.GsaModel.Layer = GSALayer.Design;
       var proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
       proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), false);
 
-      Assert.True(proxy.GetGwaData(Speckle.GSA.API.GSALayer.Design, false, out var records));
+      Assert.True(proxy.GetGwaData(false, out var records));
       proxy.Close();
 
       Assert.Equal(188, records.Count());
