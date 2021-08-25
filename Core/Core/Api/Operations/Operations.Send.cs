@@ -8,6 +8,7 @@ using Sentry;
 using Sentry;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
@@ -69,7 +70,8 @@ namespace Speckle.Core.Api
         transports.Insert(0, new SQLiteTransport() { TransportName = "LC" });
       }
 
-      var(serializer, settings) = GetSerializerInstance();
+      // var(serializer, settings) = GetSerializerInstance();
+      var serializer = new BaseObjectSerializerV2();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = Operations.GetInternalProgressAction(localProgressDict, onProgressAction);
@@ -88,7 +90,8 @@ namespace Speckle.Core.Api
         serializer.WriteTransports.Add(t);
       }
 
-      var obj = JsonConvert.SerializeObject(@object, settings);
+      // var obj = JsonConvert.SerializeObject(@object, settings);
+      string obj = serializer.Serialize(@object);
 
       var transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
 

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Models;
@@ -24,7 +26,7 @@ namespace Speckle.Core.Serialisation
     /// <summary>
     /// The sync transport. This transport will be used synchronously. 
     /// </summary>
-    public ITransport ReadTransport { get; set; }
+    public List<ITransport> WriteTransports { get; set; } = new List<ITransport>();
 
     public int TotalProcessedCount = 0;
 
@@ -32,225 +34,278 @@ namespace Speckle.Core.Serialisation
 
     public Action<string, Exception> OnErrorAction { get; set; }
 
-    private DeserializationWorkerThreads WorkerThreads;
-    private bool Busy = false;
-    // id -> Base if already deserialized or id -> Task<object> if was handled by a bg thread
-    private Dictionary<string, object> DeserializedObjects;
+    private Regex ChunkPropertyNameRegex = new Regex(@"^@\((\d*)\)");
+
+    private Dictionary<string, List<(PropertyInfo, bool, bool, int)>> TypedPropertiesCache = new Dictionary<string, List<(PropertyInfo, bool, bool, int)>>();
+    private List<Dictionary<string, int>> ParentClosures = new List<Dictionary<string, int>>();
 
     public BaseObjectSerializerV2()
     {
-      
+
     }
 
-    public Base Deserialize(String rootObjectJson)
+    public string Serialize(Base baseObj)
     {
-      if (Busy)
-        throw new Exception("A serializer instance can deserialize only 1 object at a time. Consider creating multiple serializer instances");
-      try
-      {
-        Busy = true;
-        DeserializedObjects = new Dictionary<string, object>();
-        WorkerThreads = new DeserializationWorkerThreads(this);
-        WorkerThreads.Start();
-
-        List<(string, int)> closures = GetClosures(rootObjectJson);
-        closures.Sort((a, b) => b.Item2.CompareTo(a.Item2));
-        foreach (var closure in closures)
-        {
-          string objId = closure.Item1;
-          string objJson = ReadTransport.GetObject(objId);
-          object deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
-          lock (DeserializedObjects)
-          {
-            DeserializedObjects[objId] = deserializedOrPromise;
-          }
-        }
-
-        object ret = DeserializeTransportObject(rootObjectJson);
-        return ret as Base;
-      }
-      finally
-      {
-        DeserializedObjects = null;
-        WorkerThreads.Dispose();
-        WorkerThreads = null;
-        Busy = false;
-      }
+      Dictionary<string, object> converted = PreserializeObject(baseObj) as Dictionary<string, object>;
+      String serialized = Dict2Json(converted);
+      StoreObject(converted["id"] as string, serialized);
+      return serialized;
     }
 
-    private List<(string, int)> GetClosures(string rootObjectJson)
+    public object PreserializeObject(object obj)
     {
-      try
-      {
-        using (JsonDocument doc = JsonDocument.Parse(rootObjectJson))
-        {
-          List<(string, int)> closureList = new List<(string, int)>();
-          JsonElement closures = doc.RootElement.GetProperty("__closure");
-          foreach(JsonProperty prop in closures.EnumerateObject())
-          {
-            closureList.Add((prop.Name, prop.Value.GetInt32()));
-          }
-          return closureList;
-        }
-      }
-      catch
-      {
+      if (obj == null)
         return null;
-      }
-    }
+      Type type = obj.GetType();
+      if (type.IsPrimitive || obj is string)
+        return obj;
 
-    private object DeserializeTransportObjectProxy(String objectJson)
-    {
-      // Try background work
-      Task<object> bgResult = WorkerThreads.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson);
-      if (bgResult != null)
-        return bgResult;
-
-      // Sync
-      return DeserializeTransportObject(objectJson);
-    }
-
-    internal object DeserializeTransportObject(String objectJson)
-    {
-      using (JsonDocument doc = JsonDocument.Parse(objectJson))
+      if (obj is Base)
       {
-        object converted = ConvertJsonElement(doc.RootElement);
-        OnProgressAction?.Invoke("DS", 1);
-        return converted;
-      }
-    }
-
-    public object ConvertJsonElement(JsonElement doc)
-    {
-      if (CancellationToken.IsCancellationRequested)
-      {
-        return null; // Check for cancellation
+        // Complex enough to deserve its own function
+        return PreserializeBase((Base)obj);
       }
 
-      switch (doc.ValueKind)
+      if (obj is IDictionary)
       {
-        case JsonValueKind.Undefined:
-        case JsonValueKind.Null:
-          return null;
-
-        case JsonValueKind.True:
-          return true;
-        case JsonValueKind.False:
-          return false;
-
-        case JsonValueKind.String:
-          return doc.GetString();
-
-        case JsonValueKind.Number:
-          return doc.GetDecimal();
-
-        case JsonValueKind.Array:
-          List<object> retList = new List<object>(doc.GetArrayLength());
-
-          foreach (JsonElement value in doc.EnumerateArray())
-          {
-            object convertedValue = ConvertJsonElement(value);
-            if (convertedValue is DataChunk)
-            {
-              retList.Capacity += ((DataChunk)convertedValue).data.Count - 1;
-              retList.AddRange(((DataChunk)convertedValue).data);
-            }
-            else
-            {
-              retList.Add(convertedValue);
-            }
-          }
-
-          return retList;
-
-        case JsonValueKind.Object:
-          Dictionary<string, object> dict = new Dictionary<string, object>();
-
-          foreach (JsonProperty prop in doc.EnumerateObject())
-          {
-            if (prop.Name == "__closure")
-              continue;
-              dict[prop.Name] = ConvertJsonElement(prop.Value);
-          }
-          
-          if (!dict.ContainsKey(TypeDiscriminator))
-            return dict;
-
-          if ((dict[TypeDiscriminator] as String) == "reference" && dict.ContainsKey("referencedId"))
-          {
-            string objId = dict["referencedId"] as String;
-            object deserialized = null;
-            lock (DeserializedObjects)
-            {
-              if (DeserializedObjects.ContainsKey(objId))
-                deserialized = DeserializedObjects[objId];
-            }
-            if (deserialized != null && deserialized is Task<object>)
-            {
-              deserialized = ((Task<object>)deserialized).Result;
-              lock (DeserializedObjects)
-              {
-                DeserializedObjects[objId] = deserialized;
-              }
-            }
-
-            if (deserialized != null)
-              return deserialized;
-
-            // This reference was not already deserialized. Do it now in sync mode
-            string objectJson = ReadTransport.GetObject(objId);
-            deserialized = DeserializeTransportObject(objectJson);
-            lock(DeserializedObjects)
-            {
-              DeserializedObjects[objId] = deserialized;
-            }
-            return deserialized;
-          }
-
-          return Dict2Base(dict);
+        Dictionary<string, object> ret = new Dictionary<string, object>(((IDictionary)obj).Count);
+        foreach (DictionaryEntry kvp in (IDictionary)obj)
+          ret[kvp.Key.ToString()] = PreserializeObject(kvp.Value);
+        return ret;
       }
-      return null;
-    }
 
-    private Base Dict2Base(Dictionary<string, object> dictObj)
-    {
-      String typeName = dictObj[TypeDiscriminator] as String;
-      Type type = SerializationUtilities.GetType(typeName);
-      Base baseObj = Activator.CreateInstance(type) as Base;
-
-      dictObj.Remove(TypeDiscriminator);
-      dictObj.Remove("__closure");
-
-      Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(typeName);
-
-      foreach (KeyValuePair<string, object> entry in dictObj)
+      if (obj is IEnumerable)
       {
-        string lowerPropertyName = entry.Key.ToLower();
-        if (staticProperties.ContainsKey(lowerPropertyName) && staticProperties[lowerPropertyName].CanWrite)
-        {
-          PropertyInfo property = staticProperties[lowerPropertyName];
-          Type targetValueType = property.PropertyType;
-          object convertedValue;
-          bool conversionOk = ValueConverter.ConvertValue(targetValueType, entry.Value, out convertedValue);
-          if (conversionOk)
-          {
-            property.SetValue(baseObj, convertedValue);
-          }
-          else
-          {
-            // Cannot convert the value in the json to the static property type
-            throw new Exception(String.Format("Cannot deserialize {0} to {0}", entry.Value.GetType().FullName, targetValueType.FullName));
-          }
-        }
+        List<object> ret;
+        if (type is IList)
+          ret = new List<object>(((IList)obj).Count);
         else
-        {
-          // No writable property with this name
-          CallSiteCache.SetValue(entry.Key, baseObj, entry.Value);
-        }
+          ret = new List<object>();
+        foreach (object element in ((IEnumerable)obj))
+          ret.Add(PreserializeObject(element));
+        return ret;
       }
 
-      return baseObj;
+      if (obj is ObjectReference)
+      {
+        Dictionary<string, object> ret = new Dictionary<string, object>();
+        ret["speckle_type"] = ((ObjectReference)obj).speckle_type;
+        ret["referencedId"] = ((ObjectReference)obj).referencedId;
+        return ret;
+      }
+
+      if (obj is Enum)
+      {
+        return (int)obj;
+      }
+
+      throw new Exception("Unsupported value in serialization: " + type.ToString());
     }
 
+    public object PreserializeBase(Base baseObj)
+    {
+      Dictionary<string, object> convertedBase = new Dictionary<string, object>();
+      Dictionary<string, int> closure = new Dictionary<string, int>();
+      ParentClosures.Add(closure);
+
+      List<(PropertyInfo, bool, bool, int)> typedProperties = GetTypedPropertiesWithCache(baseObj);
+      IEnumerable<string> dynamicProperties = baseObj.GetDynamicMembers();
+      
+      // propertyName -> (originalValue, isDetachable, isChunkable, chunkSize)
+      Dictionary<string, (object, bool, bool, int)> allProperties = new Dictionary<string, (object, bool, bool, int)>();
+
+      // Construct `allProperties`: Add typed properties
+      foreach ((PropertyInfo propertyInfo, bool isDetachable, bool isChunkable, int chunkSize) in typedProperties)
+      {
+        object baseValue = propertyInfo.GetValue(baseObj);
+        allProperties[propertyInfo.Name] = (baseValue, isDetachable, isChunkable, chunkSize);
+      }
+
+      // Construct `allProperties`: Add dynamic properties
+      foreach (string propName in dynamicProperties)
+      {
+        object baseValue = baseObj[propName];
+        bool isDetachable = propName.StartsWith("@");
+        bool isChunkable = false;
+        int chunkSize = 1000;
+
+        if (ChunkPropertyNameRegex.IsMatch(propName))
+        {
+          var match = ChunkPropertyNameRegex.Match(propName);
+          isChunkable = int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
+        }
+        allProperties[propName] = (baseValue, isDetachable, isChunkable, chunkSize);
+      }
+
+      // Convert all properties
+      foreach (var prop in allProperties)
+      {
+        object convertedValue = PreserializeBasePropertyValue(prop.Value.Item1, prop.Value.Item2, prop.Value.Item3, prop.Value.Item4);
+        convertedBase[prop.Key] = convertedValue;
+      }
+
+      if (closure.Count > 0)
+        convertedBase["__closure"] = closure;
+      ParentClosures.RemoveAt(ParentClosures.Count - 1);
+
+      return convertedBase;
+    }
+    
+    private object PreserializeBasePropertyValue(object baseValue, bool isDetachable, bool isChunkable, int chunkSize)
+    {
+      object convertedValue = PreserializeObject(baseValue);
+
+      // If there are no WriteTransports, keep everything attached.
+      if (WriteTransports == null || WriteTransports.Count == 0)
+        return convertedValue;
+
+      if (convertedValue is List<object> && isChunkable) // TODO: Q: Chunkable implies detachable? (no reason to chunk if not detaching DataChunks?)
+      {
+        List<object> fullList = (List<object>)convertedValue;
+        int chunkCount = fullList.Count % chunkSize == 0 ? fullList.Count / chunkSize : fullList.Count / chunkSize + 1;
+        List<object> ret = new List<object>(chunkCount);
+
+        for (int iChunk = 0; iChunk < chunkCount; iChunk++)
+        {
+          int startIdx = iChunk * chunkSize;
+          int endIdx = (iChunk + 1) * chunkSize;
+          if (endIdx > fullList.Count) endIdx = fullList.Count;
+
+          // Construct a DataChunk object
+          DataChunk crtChunk = new DataChunk();
+          crtChunk.data = new List<object>(endIdx - startIdx);
+          for (int i = startIdx; i < endIdx; i++)
+            crtChunk.data.Add(fullList[i]);
+
+          // Convert it to Dictionary
+          Dictionary<string, object> convertedChunk = PreserializeObject(crtChunk) as Dictionary<string, object>;
+          // Compute id and serialize
+          string chunkJson = Dict2Json(convertedChunk);
+          // Store in transports
+          StoreObject(convertedChunk["id"] as string, chunkJson);
+          // Make a reference to the detached chunk and store as a Dictionary in the returned list
+          ObjectReference crtChunkRef = new ObjectReference() { referencedId = convertedChunk["id"] as string };
+          object crtChunkRefConverted = PreserializeObject(crtChunkRef);
+          ret.Add(crtChunkRefConverted);
+          UpdateParentClosures(convertedChunk["id"] as string);
+        }
+        return ret;
+      }
+      
+      if (convertedValue is List<object> && isDetachable)
+      {
+        List<object> fullList = (List<object>)convertedValue;
+        List<object> ret = new List<object>(fullList.Count);
+        foreach (object element in fullList)
+        {
+          if (!(element is Dictionary<string, object>))
+          {
+            ret.Add(element);
+            continue;
+          }
+          string elementJson = Dict2Json((Dictionary<string, object>)element);
+          // Store in transports
+          string elementId = ((Dictionary<string, object>)element)["id"] as string;
+          StoreObject(elementId, elementJson);
+          // Make a reference to the detached chunk and store as a Dictionary in the returned list
+          ObjectReference crtChunkRef = new ObjectReference() { referencedId = elementId };
+          object crtChunkRefConverted = PreserializeObject(crtChunkRef);
+          ret.Add(crtChunkRefConverted);
+          UpdateParentClosures(elementId);
+        }
+        return ret;
+      }
+
+      if (convertedValue is Dictionary<string, object> && isDetachable)
+      {
+        Dictionary<string, object> convertedValueAsDict = (Dictionary<string, object>)convertedValue;
+        // Compute id and serialize
+        string json = Dict2Json(convertedValueAsDict);
+        StoreObject(convertedValueAsDict["id"] as string, json);
+        ObjectReference objRef = new ObjectReference() { referencedId = convertedValueAsDict["id"] as string };
+        object objRefConverted = PreserializeObject(objRef);
+        UpdateParentClosures(convertedValueAsDict["id"] as string);
+        return objRefConverted;
+      }
+
+      return convertedValue;
+    }
+
+    private void UpdateParentClosures(string objectId)
+    {
+      for (int parentLevel = 0; parentLevel < ParentClosures.Count; parentLevel++)
+      {
+        int childDepth = ParentClosures.Count - parentLevel;
+        if (!ParentClosures[parentLevel].ContainsKey(objectId))
+          ParentClosures[parentLevel][objectId] = childDepth;
+        ParentClosures[parentLevel][objectId] = Math.Min(ParentClosures[parentLevel][objectId], childDepth);
+      }
+    }
+
+    private string ComputeId(Dictionary<string, object> obj)
+    {
+      string serialized = JsonSerializer.Serialize<Dictionary<string, object>>(obj);
+      string hash = Models.Utilities.hashString(serialized);
+      return hash;
+    }
+
+    private string Dict2Json(Dictionary<string, object> obj)
+    {
+      // TODO: Q: Compute and add id to all Bases, or just the Detached ones?
+      obj["id"] = ComputeId(obj);
+      string serialized = JsonSerializer.Serialize<Dictionary<string, object>>(obj);
+      return serialized;
+    }
+
+    private void StoreObject(string objectId, string objectJson)
+    {
+      foreach (var transport in WriteTransports)
+      {
+        transport.SaveObject(objectId, objectJson);
+      }
+    }
+
+
+    // (propertyInfo, isDetachable, isChunkable, chunkSize)
+    private List<(PropertyInfo, bool, bool, int)> GetTypedPropertiesWithCache(Base baseObj)
+    {
+      Type type = baseObj.GetType();
+      IEnumerable<PropertyInfo> typedProperties = baseObj.GetInstanceMembers();
+
+      if (TypedPropertiesCache.ContainsKey(type.FullName))
+        return TypedPropertiesCache[type.FullName];
+
+      List<(PropertyInfo, bool, bool, int)> ret = new List<(PropertyInfo, bool, bool, int)>();
+
+      foreach (PropertyInfo typedProperty in typedProperties)
+      {
+        if (typedProperty.Name.StartsWith("__") || typedProperty.Name == "id")
+          continue;
+
+        // Check JsonIgnore like this to cover both Newtonsoft JsonIgnore and System.Text.Json JsonIgnore
+        // TODO: replace JsonIgnore from newtonsoft with JsonIgnore from Sys, and check this more properly.
+        bool jsonIgnore = false;
+        foreach (object attr in typedProperty.GetCustomAttributes(true))
+          if (attr.GetType().Name.Contains("JsonIgnore"))
+          {
+            jsonIgnore = true;
+            break;
+          }
+        if (jsonIgnore)
+          continue;
+
+        object baseValue = typedProperty.GetValue(baseObj);
+
+        List<DetachProperty> detachableAttributes = typedProperty.GetCustomAttributes<DetachProperty>(true).ToList();
+        List<Chunkable> chunkableAttributes = typedProperty.GetCustomAttributes<Chunkable>(true).ToList();
+        bool isDetachable = detachableAttributes.Count > 0 && detachableAttributes[0].Detachable;
+        bool isChunkable = chunkableAttributes.Count > 0;
+        int chunkSize = isChunkable ? chunkableAttributes[0].MaxObjCountPerChunk : 1000;
+        ret.Add((typedProperty, isDetachable, isChunkable, chunkSize));
+      }
+
+      TypedPropertiesCache[type.FullName] = ret;
+      return ret;
+    }
   }
 }

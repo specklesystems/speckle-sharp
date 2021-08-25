@@ -10,6 +10,9 @@ namespace Speckle.Core.Serialisation
 
     public static bool ConvertValue(Type type, object value, out object convertedValue)
     {
+      // TODO: Document list of supported values in the SDK. (and grow it as needed)
+      // TODO: Test / implement Dictionaries
+
       convertedValue = null;
       Type valueType = value.GetType();
 

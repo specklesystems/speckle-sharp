@@ -18,13 +18,13 @@ namespace Speckle.Core.Serialisation
     public int ThreadCount { get; set; } = Environment.ProcessorCount;
 
     private List<Thread> Threads = new List<Thread>();
-    private BaseObjectSerializerV2 Serializer;
+    private BaseObjectDeserializerV2 Serializer;
 
     private object LockFreeThreads = new object();
     private int FreeThreadCount = 0;
     private BlockingCollection<(WorkerThreadTaskType, object, TaskCompletionSource<object>)> Tasks = new BlockingCollection<(WorkerThreadTaskType, object, TaskCompletionSource<object>)>();
 
-    public DeserializationWorkerThreads(BaseObjectSerializerV2 serializer)
+    public DeserializationWorkerThreads(BaseObjectDeserializerV2 serializer)
     {
       Serializer = serializer;
     }
