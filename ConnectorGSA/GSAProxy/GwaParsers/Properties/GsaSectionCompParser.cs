@@ -117,16 +117,19 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       {
         record.ProfileDetails = new ProfileDetailsExplicit();
         record.ProfileDetails.FromDesc(v);
+        record.ProfileGroup = Section1dProfileGroup.Explicit;
       }
       else if (sectionProfileGroup == Section1dProfileGroup.Perimeter)
       {
         record.ProfileDetails = new ProfileDetailsPerimeter();
         record.ProfileDetails.FromDesc(v);
+        record.ProfileGroup = Section1dProfileGroup.Perimeter;
       }
       else if (sectionProfileGroup == Section1dProfileGroup.Catalogue)
       {
         record.ProfileDetails = new ProfileDetailsCatalogue();
         record.ProfileDetails.FromDesc(v);
+        record.ProfileGroup = Section1dProfileGroup.Catalogue;
       }
       else
       {
@@ -206,6 +209,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
             break;
         }
         record.ProfileDetails.FromDesc(v);
+        record.ProfileGroup = Section1dProfileGroup.Standard;
       }
       return true;
     }

@@ -357,7 +357,7 @@ namespace ConverterGSATests
     {
       //Define GSA objects
       var gsaMatSteel = GsaMatSteelExample();
-      var gsaSection = GsaSectionExample();
+      var gsaSection = GsaCatalogueSectionExample();
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
@@ -399,7 +399,7 @@ namespace ConverterGSATests
       Assert.Equal(MemberType.Generic1D, speckleProperty1D.memberType);
       Assert.Equal("steel 1", speckleProperty1D.material.applicationId); //assume tests are done elsewhere
       Assert.Equal("", speckleProperty1D.grade);
-      Assert.Equal("", speckleProperty1D.profile.applicationId); //assume tests are done elsewhere
+      Assert.Equal(((ProfileDetailsCatalogue)((SectionComp)gsaSection.Components[0]).ProfileDetails).Profile, speckleProperty1D.profile.shapeDescription);
       Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D.referencePoint);
       Assert.Equal(0, speckleProperty1D.offsetY);
       Assert.Equal(0, speckleProperty1D.offsetZ);
@@ -409,6 +409,8 @@ namespace ConverterGSATests
       Assert.Equal(0, speckleProperty1D.J);
       Assert.Equal(0, speckleProperty1D.Ky);
       Assert.Equal(0, speckleProperty1D.Kz);
+
+      //TO DO: update once modifiers have been included in the section definition
     }
 
     [Fact]
@@ -902,7 +904,7 @@ namespace ConverterGSATests
       };
     }
 
-    private GsaSection GsaSectionExample()
+    private GsaSection GsaCatalogueSectionExample()
     {
       return new GsaSection()
       {
@@ -939,21 +941,19 @@ namespace ConverterGSATests
             ProfileDetails = new ProfileDetailsCatalogue()
             {
               Group = Section1dProfileGroup.Catalogue,
-              /**/
-            },
-            /*
-            new SectionSteel()
-            {
-              GradeIndex = 1,
-              PlasElas = 1,
-              NetGross = 1,
-              Beta = 0.4,
-              Type = SectionSteelSectionType.HotRolled,
-              Plate = SectionSteelPlateType.Undefined,
-              Locked = false
+              Profile = "CAT A-UB 610UB125 19981201"
             }
-            */
-
+          },
+          new SectionSteel()
+          {
+            //GradeIndex = 0,
+            PlasElas = 1,
+            NetGross = 1,
+            Exposed = 1,
+            Beta = 0.4,
+            Type = SectionSteelSectionType.HotRolled,
+            Plate = SectionSteelPlateType.Undefined,
+            Locked = false
           }
         },
         Environ = false

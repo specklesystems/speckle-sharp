@@ -363,30 +363,36 @@ namespace ConverterGSA
 
     public Property1D GsaSectionToSpeckle(GsaSection gsaSection)
     {
+      //TO DO: update code to handle modifiers once SECTION_MOD (or SECTION_ANAL) keyword is supported
       var speckleProperty1D = new Property1D()
       {
         name = gsaSection.Name,
         colour = gsaSection.Colour.ToString(),
         memberType = MemberType.Generic1D,
-        material = new Material(),
         grade = "",
-        profile = new SectionProfile(),
         referencePoint = GetReferencePoint(gsaSection.ReferencePoint),
-        offsetZ = gsaSection.RefZ.Value,
-        area = 0,
-        Iyy = 0,
-        Izz = 0,
-        J = 0,
-        Ky = 0,
-        Kz = 0
       };
 
+      if ( IsIndex(gsaSection.Index) ) speckleProperty1D.applicationId = Instance.GsaModel.GetApplicationId<GsaSection>(gsaSection.Index.Value);
+      if ( gsaSection.RefY.HasValue ) speckleProperty1D.offsetY = gsaSection.RefY.Value;
+      if ( gsaSection.RefZ.HasValue ) speckleProperty1D.offsetZ = gsaSection.RefZ.Value;
 
-      if (IsIndex(gsaSection.Index)) speckleProperty1D.applicationId = Instance.GsaModel.GetApplicationId<GsaSection>(gsaSection.Index.Value);
-      if (gsaSection.RefY.HasValue) speckleProperty1D.offsetY = gsaSection.RefY.Value;
-      if (gsaSection.RefZ.HasValue) speckleProperty1D.offsetZ = gsaSection.RefZ.Value;
-      
-      //TO DO: add definition for Property1D
+      var gsaSectionComp = (SectionComp)gsaSection.Components.Find(x => x.GetType() == typeof(SectionComp));
+      speckleProperty1D.profile = GetProfile(gsaSectionComp.ProfileDetails);
+      if ( gsaSectionComp.MaterialIndex.HasValue )
+      {
+        speckleProperty1D.material = GetMaterialFromIndex(gsaSectionComp.MaterialIndex.Value, gsaSectionComp.MaterialType);
+      }
+      if ( gsaSectionComp.ProfileGroup == Section1dProfileGroup.Explicit )
+      {
+        var gsaProfile = (ProfileDetailsExplicit)gsaSectionComp.ProfileDetails;
+        if ( gsaProfile.Area.HasValue ) speckleProperty1D.area = gsaProfile.Area.Value;
+        if ( gsaProfile.Iyy.HasValue ) speckleProperty1D.Iyy = gsaProfile.Iyy.Value;
+        if ( gsaProfile.Izz.HasValue ) speckleProperty1D.Izz = gsaProfile.Izz.Value;
+        if ( gsaProfile.J.HasValue ) speckleProperty1D.J = gsaProfile.J.Value;
+        if ( gsaProfile.Ky.HasValue ) speckleProperty1D.Ky = gsaProfile.Ky.Value;
+        if ( gsaProfile.Kz.HasValue ) speckleProperty1D.Kz = gsaProfile.Kz.Value;
+      }
 
       return speckleProperty1D;
     }
@@ -877,6 +883,7 @@ namespace ConverterGSA
     /// Get Speckle material object from GSA material index
     /// </summary>
     /// <param name="index">GSA material index</param>
+    /// <param name="type">GSA material type</param>
     /// <returns></returns>
     private Material GetMaterialFromIndex(int index, Property2dMaterialType type)
     {
@@ -892,6 +899,34 @@ namespace ConverterGSA
         if (gsaMat != null) speckleMaterial = GsaMaterialSteelToSpeckle((GsaMatSteel)gsaMat);
       }
       else if (type == Property2dMaterialType.Concrete)
+      {
+        gsaMat = Instance.GsaModel.GetNative<GsaMatConcrete>(index);
+        if (gsaMat != null) speckleMaterial = GsaMaterialConcreteToSpeckle((GsaMatConcrete)gsaMat);
+      }
+
+      return speckleMaterial;
+    }
+
+    /// <summary>
+    /// Get Speckle material object from GSA material index
+    /// </summary>
+    /// <param name="index">GSA material index</param>
+    /// <param name="type">GSA material type</param>
+    /// <returns></returns>
+    private Material GetMaterialFromIndex(int index, Section1dMaterialType type)
+    {
+      //Initialise
+      GsaRecord gsaMat;
+      Material speckleMaterial = null;
+
+      //Get material based on type and gsa index
+      //Convert gsa material to speckle material
+      if (type == Section1dMaterialType.STEEL)
+      {
+        gsaMat = Instance.GsaModel.GetNative<GsaMatSteel>(index);
+        if (gsaMat != null) speckleMaterial = GsaMaterialSteelToSpeckle((GsaMatSteel)gsaMat);
+      }
+      else if (type == Section1dMaterialType.CONCRETE)
       {
         gsaMat = Instance.GsaModel.GetNative<GsaMatConcrete>(index);
         if (gsaMat != null) speckleMaterial = GsaMaterialConcreteToSpeckle((GsaMatConcrete)gsaMat);
@@ -1067,6 +1102,16 @@ namespace ConverterGSA
         default:
           return BaseReferencePoint.Centroid;
       }
+    }
+
+    private SectionProfile GetProfile(ProfileDetails gsaProfile)
+    {
+      var speckleProfile = new SectionProfile()
+      {
+        shapeDescription = gsaProfile.ToDesc()
+      };
+
+      return speckleProfile;
     }
     #endregion
 
