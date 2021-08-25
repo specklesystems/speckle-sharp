@@ -103,6 +103,7 @@ namespace Speckle.GSA.API.GwaSchema
 
   public class ProfileDetailsCatalogue : ProfileDetails
   {
+    public string Profile;
     public ProfileDetailsCatalogue()
     {
       Group = Section1dProfileGroup.Catalogue;
@@ -110,17 +111,23 @@ namespace Speckle.GSA.API.GwaSchema
 
     public override bool FromDesc(string desc)
     {
+      //Example: desc = CAT A-UB 610UB125 19981201
+      Profile = desc;
       return true;
     }
 
     public override string ToDesc()
     {
-      return "";
+      return Profile;
     }
   }
 
   public class ProfileDetailsPerimeter : ProfileDetails
   {
+    public string Type;
+    public List<string> Actions;
+    public List<double?> Y;
+    public List<double?> Z;
     public ProfileDetailsPerimeter()
     {
       Group = Section1dProfileGroup.Perimeter;
@@ -128,12 +135,49 @@ namespace Speckle.GSA.API.GwaSchema
 
     public override bool FromDesc(string desc)
     {
+      //Examples: 
+      //
+      // Perimeter
+      //    desc = GEO P M(-50|-50) L(50|-50) L(50|50) L(-50|50) M(-40|-40) L(40|-40) L(40|40) L(-40|40)
+      //
+      // Line Segment
+      //    desc = GEO L(mm) T(5) M(0|0) L(100|0) L(100|100) L(0|100) L(0|0)
+      var items = Split(desc);
+      Actions = new List<string>();
+      Y = new List<double?>();
+      Z = new List<double?>();
+      Type = items[1];
+
+      for (var i = 2; i < items.Count(); i++)
+      {
+        Actions.Add(items[i].Split('(')[0]);
+        if (Actions.Last() == "T")
+        {
+          Y.Add(items[i].Split('(')[1].Split(')')[0].ToDouble());
+          Z.Add(null);
+        }
+        else
+        {
+          Y.Add(items[i].Split('(')[1].Split('|')[0].ToDouble());
+          Z.Add(items[i].Split('|')[1].Split(')')[0].ToDouble());
+        }
+      }
+
       return true;
     }
 
     public override string ToDesc()
     {
-      return "";
+      var v = "GEO " + Type;
+      
+      for (var i = 0; i < Actions.Count(); i++)
+      {
+        v += " " + Actions[i] + "(" + Y[i].ToString();
+        if (Actions[i] != "T") v += "|" + Z[i].ToString();
+        v += ")";
+      }
+
+      return v;
     }
   }
 
@@ -280,13 +324,12 @@ namespace Speckle.GSA.API.GwaSchema
   public class ProfileDetailsTaperI : ProfileDetailsStandard 
   {
     public double? d => GetValue(values, 0);
-    public double? b => GetValue(values, 1); 
-    public double? bt => GetValue(values, 2); 
-    public double? bb => GetValue(values, 3); 
-    public double? twt => GetValue(values, 4); 
-    public double? twb => GetValue(values, 5); 
-    public double? tft => GetValue(values, 6); 
-    public double? tfb => GetValue(values, 7); 
+    public double? bt => GetValue(values, 1); 
+    public double? bb => GetValue(values, 2); 
+    public double? twt => GetValue(values, 3); 
+    public double? twb => GetValue(values, 4); 
+    public double? tft => GetValue(values, 5); 
+    public double? tfb => GetValue(values, 6); 
   }
   
   public class ProfileDetailsSecant : ProfileDetailsStandard 
@@ -335,13 +378,14 @@ namespace Speckle.GSA.API.GwaSchema
   {
     public double? dt => GetValue(values, 0);
     public double? bt => GetValue(values, 1);
-    public double? tw => GetValue(values, 2);
+    public double? twt=> GetValue(values, 2);
     public double? tft => GetValue(values, 3);
     public double? db => GetValue(values, 4);
     public double? bb => GetValue(values, 5);
-    public double? tfb => GetValue(values, 6);
-    public double? ds => GetValue(values, 7);
-    public double? p => GetValue(values, 8);
+    public double? twb => GetValue(values, 6);
+    public double? tfb => GetValue(values, 7);
+    public double? ds => GetValue(values, 8);
+    public double? p => GetValue(values, 9);
   }
 
   public class ProfileDetailsSheetPile: ProfileDetailsStandard
