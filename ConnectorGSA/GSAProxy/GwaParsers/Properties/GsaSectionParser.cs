@@ -94,7 +94,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     {
       foreach (var comp in record.Components)
       {
-        var sectionCompParser = (ISectionComponentGwaParser)Activator.CreateInstance(sectionParsersByType[comp.GetType()]);
+        var sectionCompParser = (ISectionComponentGwaParser)Activator.CreateInstance(sectionParsersByType[comp.GetType()], comp);
         if (sectionCompParser.GwaItems(out var compItems, false, false))
         {
           items.AddRange(compItems);

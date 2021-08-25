@@ -1378,7 +1378,7 @@ namespace ConnectorGSATests
       }
     }
 
-    [Fact (Skip = "Bugs")]
+    [Fact]
     public void GsaSectionSimple()
     {
       var gwa1 = "SECTION.7\t3\tNO_RGB\tSTD GZ 10 3 3 1.5 1.6 1\t1D_GENERIC\t0\tCENTROID\t0\t0\t0\t1\t0\t0\t0\t0\t1\tSECTION_COMP.4\t\t0\tGENERIC\t0\tSTD GZ 10 3 3 1.5 1.6 1\t0\t0\t0\tY_AXIS\t0\tNONE\t0\t0\t0\tNO_ENVIRON";
