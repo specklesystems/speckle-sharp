@@ -110,6 +110,11 @@ namespace ConnectorGSATests
     {
     }
 
+    public string GenerateApplicationId(Type schemaType, int gsaIndex)
+    {
+      return "";
+    }
+
     #endregion
   }
 }

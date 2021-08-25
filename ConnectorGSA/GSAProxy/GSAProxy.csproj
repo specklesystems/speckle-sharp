@@ -48,9 +48,9 @@
   <ItemGroup>
     <Compile Include="Cache\GsaCache.cs" />
     <Compile Include="Cache\GsaCacheRecord.cs" />
-    <Compile Include="Cache\IPairCollection.cs" />
-    <Compile Include="Cache\PairCollection.cs" />
-    <Compile Include="Cache\PairCollectionComparable.cs" />
+    <Compile Include="IPairCollection.cs" />
+    <Compile Include="PairCollection.cs" />
+    <Compile Include="PairCollectionComparable.cs" />
     <Compile Include="Cache\TypeTreeCollection.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="GsaModel.cs" />

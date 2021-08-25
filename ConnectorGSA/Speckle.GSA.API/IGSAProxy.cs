@@ -9,6 +9,8 @@ namespace Speckle.GSA.API
     bool OpenFile(string path, bool showWindow = true, object gsaInstance = null);
     bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null);
 
+    string GenerateApplicationId(Type schemaType, int gsaIndex);
+
     List<List<Type>> TxTypeDependencyGenerations { get; }
 
 

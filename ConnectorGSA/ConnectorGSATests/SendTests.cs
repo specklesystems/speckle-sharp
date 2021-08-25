@@ -54,10 +54,22 @@ namespace ConnectorGSATests
     [Fact]
     public async void SendTest()
     {
+      Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
       Instance.GsaModel.Layer = GSALayer.Design;
       Instance.GsaModel.Proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), true);
 
-      var commitObj = Commands.Convert();
+      Base commitObj = null;
+      try
+      {
+        commitObj = Commands.Convert();
+      }
+      catch { }
+      finally
+      {
+        Instance.GsaModel.Proxy.Close();
+      }
+
+      Assert.NotNull(commitObj);
 
       var account = AccountManager.GetDefaultAccount();
       var client = new Client(account);

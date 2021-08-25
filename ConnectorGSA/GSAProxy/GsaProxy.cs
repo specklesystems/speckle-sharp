@@ -22,7 +22,8 @@ namespace Speckle.ConnectorGSA.Proxy
     public List<Type> SchemaTypes { get => ParsersBySchemaType.Keys.ToList(); }
 
     private Dictionary<Type, Type> ParsersBySchemaType = new Dictionary<Type, Type>();  //Used for writing to the GSA instance
-    private Dictionary<GwaKeyword, Type> ParsersByKeyword = new Dictionary<GwaKeyword, Type>(); //Used for reading from the GSA instance
+    //private Dictionary<GwaKeyword, Type> ParsersByKeyword = new Dictionary<GwaKeyword, Type>(); //Used for reading from the GSA instance
+    private IPairCollection<GwaKeyword, Type> ParsersSchemaType = new PairCollection<GwaKeyword, Type>();
     private bool initialised = false;
     private bool initialisedError = false;  //To ensure initialisation is only attempted once.
     private GSALayer prevLayer;
@@ -30,6 +31,7 @@ namespace Speckle.ConnectorGSA.Proxy
     #region static_data
     private static readonly string SID_APPID_TAG = "speckle_app_id";
     private static readonly string SID_STRID_TAG = "speckle_stream_id";
+    private static readonly char _GwaDelimiter = '\t';
 
     public static Dictionary<ResultType, string> ResultTypeStrings = new Dictionary<ResultType, string>
     {
@@ -48,8 +50,6 @@ namespace Speckle.ConnectorGSA.Proxy
       { ResultType.Element2dProjectedStressTop, "2D Element Projected Stress - Top" },
       { ResultType.AssemblyForcesAndMoments, "Assembly Forces and Moments" }
     };
-
-    public static readonly char GwaDelimiter = '\t';
 
     //These are the exceptions to the rule that, in GSA, all records that relate to each table (i.e. the set with mutually-exclusive indices) have the same keyword
     public static Dictionary<GwaKeyword, GwaKeyword[]> IrregularKeywordGroups = new Dictionary<GwaKeyword, GwaKeyword[]> {
@@ -89,7 +89,7 @@ namespace Speckle.ConnectorGSA.Proxy
         var nodeIndex = proxy.NodeAt(coordValue, coordValue, coordValue, unitCoincidentDict[u]);
         float factor = 1;
         var gwa = proxy.GetGwaForNode(nodeIndex);
-        var pieces = gwa.Split(GsaProxy.GwaDelimiter);
+        var pieces = gwa.Split(_GwaDelimiter);
         if (float.TryParse(pieces.Last(), out float z1))
         {
           if (z1 != coordValue)
@@ -99,7 +99,7 @@ namespace Speckle.ConnectorGSA.Proxy
             nodeIndex = proxy.NodeAt(coordValue * factorCandidate, coordValue * factorCandidate, coordValue * factorCandidate, 1 * factorCandidate);
 
             gwa = proxy.GetGwaForNode(nodeIndex);
-            pieces = gwa.Split(GsaProxy.GwaDelimiter);
+            pieces = gwa.Split(_GwaDelimiter);
 
             if (float.TryParse(pieces.Last(), out float z2) && z2 == 1000)
             {
@@ -133,7 +133,7 @@ namespace Speckle.ConnectorGSA.Proxy
 
     public string FilePath { get; set; }
 
-    char IGSAProxy.GwaDelimiter => throw new NotImplementedException();
+    public char GwaDelimiter { get => _GwaDelimiter; }
 
     //Results-related
     private string resultDir = null;
@@ -328,7 +328,7 @@ namespace Speckle.ConnectorGSA.Proxy
 
         string res = newPieces.FirstOrDefault();
 
-        string[] pieces = res.Split(GsaProxy.GwaDelimiter);
+        string[] pieces = res.Split(GwaDelimiter);
 
         return ConvertGSAList(pieces[pieces.Length - 1], type);
       }
@@ -408,13 +408,26 @@ namespace Speckle.ConnectorGSA.Proxy
           return false;
         }
 
-        ParsersByKeyword = parserTypes.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+        foreach (var kvp in parserTypes)
+        {
+          ParsersSchemaType.Add(kvp.Value, kvp.Key);
+        }
         ParsersBySchemaType = parserTypes.Keys.ToDictionary(pt => pt.BaseType.GenericTypeArguments.First(), pt => pt);
 
         TxTypeDependencyGenerations.Clear();
         foreach (var gen in gens)
         {
-          TxTypeDependencyGenerations.Add(gen.Select(kw => ParsersByKeyword[kw].BaseType.GenericTypeArguments.First()).ToList());
+          var genParserTypes = new List<Type>();
+
+          foreach (var keyword in gen.Where(kw => ParsersSchemaType.ContainsLeft(kw)))
+          {
+            if (ParsersSchemaType.FindRight(keyword, out Type pt))
+            {
+              var schemaType = pt.BaseType.GenericTypeArguments.First();
+              genParserTypes.Add(schemaType);
+            }
+          }
+          TxTypeDependencyGenerations.Add(genParserTypes);
         }
 
         initialised = true;
@@ -424,6 +437,18 @@ namespace Speckle.ConnectorGSA.Proxy
     #endregion
 
     #region extract_gwa_fns
+
+    public string GenerateApplicationId(Type schemaType, int gsaIndex)
+    {
+      if (!ParsersSchemaType.ContainsRight(schemaType))
+      {
+        return "";
+      }
+      ParsersSchemaType.FindLeft(schemaType, out GwaKeyword kw);
+
+      var appId = "gsa/" + kw + "-" + gsaIndex;
+      return appId;
+    }
 
     //Tuple: keyword | index | Application ID | GWA command | Set or Set At
     public bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
@@ -452,7 +477,8 @@ namespace Speckle.ConnectorGSA.Proxy
       var setAtKeywords = new List<GwaKeyword>();
       var tempKeywordIndexCache = new Dictionary<GwaKeyword, List<int>>();
 
-      var keywords = ParsersByKeyword.Keys.ToList();
+      //var keywords = ParsersByKeyword.Keys.ToList();
+      var keywords = ParsersSchemaType.Lefts;
 
       foreach (var kw in keywords)
       {
@@ -468,7 +494,7 @@ namespace Speckle.ConnectorGSA.Proxy
 
       for (int i = 0; i < setKeywords.Count(); i++)
       {
-        var newCommand = "GET_ALL" + GsaProxy.GwaDelimiter + setKeywords[i];
+        var newCommand = "GET_ALL" + GwaDelimiter + setKeywords[i];
         var isNode = (setKeywords[i] == GwaKeyword.NODE);
         var isElement = (setKeywords[i] == GwaKeyword.EL);
 
@@ -492,7 +518,7 @@ namespace Speckle.ConnectorGSA.Proxy
         Parallel.ForEach(gwaLines, gwa =>
         {
           if (ParseGeneralGwa(gwa, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string appId, out string gwaWithoutSet, out string keywordAndVersion)
-            && keyword.HasValue && ParsersByKeyword.ContainsKey(keyword.Value))
+            && keyword.HasValue && ParsersSchemaType.ContainsLeft(keyword.Value))
           {
             index = index ?? 0;
             var originalSid = "";
@@ -549,9 +575,9 @@ namespace Speckle.ConnectorGSA.Proxy
                 }
               }
 
-              if (!(nodeApplicationIdFilter == true && isNode && string.IsNullOrEmpty(appId)))
+              if (!(nodeApplicationIdFilter == true && isNode && string.IsNullOrEmpty(appId)) && ParsersSchemaType.FindRight(keyword.Value, out Type t))
               {
-                var parser = (IGwaParser)Activator.CreateInstance(ParsersByKeyword[keyword.Value]);
+                var parser = (IGwaParser)Activator.CreateInstance(t);
                 parser.FromGwa(gwa);
                 if (!parser.Record.Index.HasValue && index.HasValue)
                 {
@@ -603,7 +629,7 @@ namespace Speckle.ConnectorGSA.Proxy
             ParseGeneralGwa(gwaLine, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string appId, out string gwaWithoutSet, 
               out string keywordAndVersion);
 
-            if (keyword == setAtKeywords[i])
+            if (keyword == setAtKeywords[i] && ParsersSchemaType.FindRight(setAtKeywords[i], out Type t))
             {
               var kwStr = keyword.Value.GetStringValue();
               var originalSid = "";
@@ -634,7 +660,7 @@ namespace Speckle.ConnectorGSA.Proxy
                 gwaWithoutSet.Replace(originalSid, newSid);
               }
 
-              var parser = (IGwaParser)Activator.CreateInstance(ParsersByKeyword[keyword.Value]);
+              var parser = (IGwaParser)Activator.CreateInstance(t);
               parser.FromGwa(gwaLine);
               if (!parser.Record.Index.HasValue)
               {
@@ -836,16 +862,16 @@ namespace Speckle.ConnectorGSA.Proxy
     /// <returns>GSA model title</returns>
     public string GetTitle()
     {
-      string res = (string)ExecuteWithLock(() => GSAObject.GwaCommand("GET" + GsaProxy.GwaDelimiter + "TITLE"));
+      string res = (string)ExecuteWithLock(() => GSAObject.GwaCommand("GET" + GwaDelimiter + "TITLE"));
 
-      string[] pieces = res.ListSplit(GsaProxy.GwaDelimiter);
+      string[] pieces = res.ListSplit(GwaDelimiter);
 
       return pieces.Length > 1 ? pieces[1] : "My GSA Model";
     }
 
     public string[] GetTolerances()
     {
-      return ((string)ExecuteWithLock(() => GSAObject.GwaCommand("GET" + GsaProxy.GwaDelimiter + "TOL"))).ListSplit(GsaProxy.GwaDelimiter);
+      return ((string)ExecuteWithLock(() => GSAObject.GwaCommand("GET" + GwaDelimiter + "TOL"))).ListSplit(GwaDelimiter);
     }
 
     /// <summary>
@@ -1056,7 +1082,7 @@ namespace Speckle.ConnectorGSA.Proxy
     public static bool ParseGeneralGwa(string fullGwa, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string applicationId,
       out string gwaWithoutSet, out string keywordAndVersion)
     {
-      var pieces = fullGwa.ListSplit(GsaProxy.GwaDelimiter).ToList();
+      var pieces = fullGwa.ListSplit(_GwaDelimiter).ToList();
       keyword = null;
       version = null;
       keywordAndVersion = "";
@@ -1134,7 +1160,7 @@ namespace Speckle.ConnectorGSA.Proxy
               break;
             }
           }
-          gwaWithoutSet = string.Join(GwaDelimiter.ToString(), pieces);
+          gwaWithoutSet = string.Join(_GwaDelimiter.ToString(), pieces);
           return true;
         }
       }

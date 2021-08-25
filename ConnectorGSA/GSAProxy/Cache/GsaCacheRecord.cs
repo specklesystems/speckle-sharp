@@ -16,9 +16,18 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
     public bool IsAlterable { get => !string.IsNullOrEmpty(GsaRecord.ApplicationId) || GsaRecord.ApplicationId.StartsWith("gsa"); }
 
+    public string GeneratedApplicationId { get; set; }
+
     //This one provides a valid value for sending even if there is no SID attached to the GSA record itself
-    public string ApplicationId { get => GsaRecord == null ? "" : string.IsNullOrEmpty(GsaRecord.ApplicationId)
-        ? Helper.FormatApplicationId(this.Type, GsaRecord.Index.Value) : GsaRecord.ApplicationId; }
+    //public string ApplicationId
+    //{
+    //  get => (GsaRecord == null) ? "" : string.IsNullOrEmpty(GsaRecord.ApplicationId) ? GeneratedApplicationId : GsaRecord.ApplicationId;
+    //}
+    public string ApplicationId
+    {
+      get => GsaRecord == null ? "" : string.IsNullOrEmpty(GsaRecord.ApplicationId) 
+        ? Helper.FormatApplicationId(Type, GsaRecord.Index.Value) : GsaRecord.ApplicationId;
+    }
 
     public GsaCacheRecord(GsaRecord gsaRecord, bool previous = false, bool latest = true)
     {

@@ -143,13 +143,13 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
         var newIndexStart = objects.Count();
         foreach (var speckleType in objectsByType.Keys)
         {
-          if (!objectIndicesBySchemaTypesGsaId.ContainsKey(speckleType))
+          if (!objectIndicesBySchemaTypesGsaId.ContainsKey(t))
           {
-            objectIndicesBySchemaTypesGsaId.Add(speckleType, new Dictionary<int, HashSet<int>>());
+            objectIndicesBySchemaTypesGsaId.Add(t, new Dictionary<int, HashSet<int>>());
           }
-          if (!objectIndicesBySchemaTypesGsaId[speckleType].ContainsKey(gsaIndex))
+          if (!objectIndicesBySchemaTypesGsaId[t].ContainsKey(gsaIndex))
           {
-            objectIndicesBySchemaTypesGsaId[speckleType].Add(gsaIndex, new HashSet<int>());
+            objectIndicesBySchemaTypesGsaId[t].Add(gsaIndex, new HashSet<int>());
           }
           if (!objectIndicesByType.ContainsKey(speckleType))
           {

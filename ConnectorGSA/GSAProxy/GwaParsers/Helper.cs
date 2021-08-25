@@ -20,16 +20,20 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       return Assembly.GetAssembly(interfaceType).GetTypes().Where(t => !t.IsInterface && t.InheritsOrImplements(interfaceType));
     }
 
+    /*
     public static string FormatApplicationId(Type t, IEnumerable<int> indices, int parentIndex = 0)
     {
       var keyword = GetGwaKeyword(t);
       return ("gsa/" + keyword + "-" + string.Join("-", indices) + ((parentIndex > 0) ? "_" + parentIndex : ""));
     }
+    */
 
     public static string FormatApplicationId(Type t, int index)
     {
-      var keyword = GetGwaKeyword(t);
-      return ("gsa/" + keyword.GetStringValue() + "-" + index);
+      //var keyword = GetGwaKeyword(t);
+      //return ("gsa/" + keyword.GetStringValue() + "-" + index);
+
+      return Instance.GsaModel.Proxy.GenerateApplicationId(t, index);
     }
 
     /*

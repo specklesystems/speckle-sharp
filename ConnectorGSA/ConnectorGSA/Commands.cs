@@ -41,22 +41,29 @@ namespace ConnectorGSA
 
         foreach (var t in nativeObjsByType.Keys)
         {
+          var speckleObjsBucket = new List<Base>();
           foreach (var nativeObj in nativeObjsByType[t])
           {
-            var speckleObjsBucket = new List<Base>();
-            if (converter.CanConvertToSpeckle(nativeObj))
+            try
             {
-              var speckleObjs = converter.ConvertToSpeckle(new List<object> { nativeObj });
-              if (speckleObjs != null && speckleObjs.Count > 0)
+              if (converter.CanConvertToSpeckle(nativeObj))
               {
-                speckleObjsBucket.AddRange(speckleObjs);
-                Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, speckleObjs.Cast<object>());
+                var speckleObjs = converter.ConvertToSpeckle(new List<object> { nativeObj });
+                if (speckleObjs != null && speckleObjs.Count > 0)
+                {
+                  speckleObjsBucket.AddRange(speckleObjs);
+                  Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, speckleObjs.Cast<object>());
+                }
               }
             }
-            if (speckleObjsBucket.Count > 0)
+            catch (Exception ex)
             {
-              commit[$"{t.Name}"] = speckleObjsBucket;
+
             }
+          }
+          if (speckleObjsBucket.Count > 0)
+          {
+            commit[$"{t.Name}"] = speckleObjsBucket;
           }
         }
       }
