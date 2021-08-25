@@ -226,7 +226,7 @@ namespace ConnectorGrasshopper.Ops
       }
     }
 
-    private bool foundKit = false;
+    private bool foundKit;
     private void SetDefaultKitAndConverter()
     {
       try

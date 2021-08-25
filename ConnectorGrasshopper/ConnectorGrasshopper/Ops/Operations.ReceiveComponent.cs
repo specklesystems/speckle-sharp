@@ -243,7 +243,7 @@ namespace ConnectorGrasshopper.Ops
       ExpireSolution(true);
     }
 
-    private bool foundKit = false;
+    private bool foundKit;
     private void SetDefaultKitAndConverter()
     {
       try
