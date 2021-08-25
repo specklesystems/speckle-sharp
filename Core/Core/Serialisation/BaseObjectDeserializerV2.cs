@@ -49,7 +49,7 @@ namespace Speckle.Core.Serialisation
     public Base Deserialize(String rootObjectJson)
     {
       if (Busy)
-        throw new Exception("A serializer instance can deserialize only 1 object at a time. Consider creating multiple serializer instances");
+        throw new Exception("A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances");
       try
       {
         Busy = true;

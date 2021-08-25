@@ -28,16 +28,17 @@ namespace Speckle.Core.Serialisation
     /// </summary>
     public List<ITransport> WriteTransports { get; set; } = new List<ITransport>();
 
-    public int TotalProcessedCount = 0;
-
+    // TODO: Q: progress discussion when serializing
     public Action<string, int> OnProgressAction { get; set; }
 
+    // TODO: Q: error handling discussion
     public Action<string, Exception> OnErrorAction { get; set; }
 
     private Regex ChunkPropertyNameRegex = new Regex(@"^@\((\d*)\)");
 
     private Dictionary<string, List<(PropertyInfo, bool, bool, int)>> TypedPropertiesCache = new Dictionary<string, List<(PropertyInfo, bool, bool, int)>>();
     private List<Dictionary<string, int>> ParentClosures = new List<Dictionary<string, int>>();
+    private bool Busy = false;
 
     public BaseObjectSerializerV2()
     {
@@ -46,17 +47,32 @@ namespace Speckle.Core.Serialisation
 
     public string Serialize(Base baseObj)
     {
-      Dictionary<string, object> converted = PreserializeObject(baseObj) as Dictionary<string, object>;
-      String serialized = Dict2Json(converted);
-      StoreObject(converted["id"] as string, serialized);
-      return serialized;
+      if (Busy)
+        throw new Exception("A serializer instance can serialize only 1 object at a time. Consider creating multiple serializer instances");
+      try
+      {
+        Busy = true;
+        Dictionary<string, object> converted = PreserializeObject(baseObj) as Dictionary<string, object>;
+        String serialized = Dict2Json(converted);
+        StoreObject(converted["id"] as string, serialized);
+        return serialized;
+      }
+      finally
+      {
+        ParentClosures = new List<Dictionary<string, int>>(); // cleanup in case of exceptions
+        Busy = false;
+      }
     }
 
+    // `Preserialize` means transforming all objects into the final form that will appear in json, with basic .net objects
+    // (primitives, lists and dictionaries with string keys)
     public object PreserializeObject(object obj)
     {
-      if (obj == null)
+      // handle null objects and also check for cancelation
+      if (obj == null || CancellationToken.IsCancellationRequested)
         return null;
       Type type = obj.GetType();
+
       if (type.IsPrimitive || obj is string)
         return obj;
 
@@ -259,6 +275,8 @@ namespace Speckle.Core.Serialisation
 
     private void StoreObject(string objectId, string objectJson)
     {
+      if (WriteTransports == null)
+        return;
       foreach (var transport in WriteTransports)
       {
         transport.SaveObject(objectId, objectJson);
