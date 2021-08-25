@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -144,6 +144,11 @@ namespace ConnectorGrasshopper.Objects
     public override void ComputeData()
     {
       //Ensure converter document is up to date
+      if (Kit == null)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
+        return;
+      }
       if (Converter == null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No converter was provided. Conversions are disabled.");
