@@ -162,17 +162,20 @@ namespace ConnectorGrasshopper.Ops
       base.AddedToDocument(document);
     }
 
+    private bool foundKit;
     private void SetDefaultKitAndConverter()
     {
-      Kit = KitManager.GetDefaultKit();
       try
       {
+        Kit = KitManager.GetDefaultKit();
         Converter = Kit.LoadConverter(Applications.Rhino);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        foundKit = true;
       }
       catch
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+        foundKit = false;
       }
     }
 
@@ -187,7 +190,13 @@ namespace ConnectorGrasshopper.Ops
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       DA.DisableGapLogic();
-
+      
+      if (!foundKit)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
+        return;
+      }
+      
       if (RunCount == 1)
       {
         CreateCancelationToken();
