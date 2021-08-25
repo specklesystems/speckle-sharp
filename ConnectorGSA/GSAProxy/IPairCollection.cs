@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Speckle.ConnectorGSA.Proxy.Cache
+namespace Speckle.ConnectorGSA.Proxy
 {
   internal interface IPairCollection<U, V>
   {

@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Speckle.ConnectorGSA.Proxy;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Speckle.ConnectorGSA.Proxy.Cache
+namespace Speckle.ConnectorGSA.Proxy
 {
   //This is designed to maximise performance when speed of searching values (i.e. as opposed to keys) is important.  It is trying to be faster than a SortedList
   //Note: it assumes both keys and values are unique

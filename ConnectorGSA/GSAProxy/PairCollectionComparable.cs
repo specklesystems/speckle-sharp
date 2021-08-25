@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Speckle.ConnectorGSA.Proxy.Cache
+namespace Speckle.ConnectorGSA.Proxy
 {
   internal class PairCollectionComparable<U, V> : PairCollection<U,V>, IPairCollectionComparable<U, V> where U : IComparable<U> where V : IComparable<V>
   {

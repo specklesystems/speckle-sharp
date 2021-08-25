@@ -68,7 +68,7 @@ namespace ConverterGSA
 
     public bool CanConvertToSpeckle(object @object)
     {
-      throw new NotImplementedException();
+      return true;
     }
 
     public object ConvertToNative(Base @object)
@@ -94,7 +94,16 @@ namespace ConverterGSA
         ConversionErrors.Add(new Exception("Non-native objects: " + (objects.Count() - native.Count())));
         objects = native.ToList();
       }
-      return objects.SelectMany(x => ToSpeckle((GsaRecord)x)).ToList();
+      var retList = new List<Base>();
+      foreach (var x in objects)
+      {
+        var speckleObjects = ToSpeckle((GsaRecord)x);
+        if (speckleObjects != null && speckleObjects.Count > 0)
+        {
+          retList.AddRange(speckleObjects.Where(so => so != null));
+        }
+      }
+      return retList;
     }
 
     public IEnumerable<string> GetServicedApplications() => new string[] { AppName };
@@ -115,7 +124,7 @@ namespace ConverterGSA
     private List<Base> ToSpeckle(GsaRecord nativeObject)
     {
       var nativeType = nativeObject.GetType();
-      return ToSpeckleFns[nativeType](nativeObject);
+      return ToSpeckleFns.ContainsKey(nativeType) ? ToSpeckleFns[nativeType](nativeObject) : null;
     }
 
     #region Geometry
@@ -330,12 +339,21 @@ namespace ConverterGSA
         type = MaterialType.Concrete,
         designCode = "",                            //designCode can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" -> "AS3600"
         codeYear = "",                              //codeYear can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" - "2018"
-        compressiveStrength = gsaMatConcrete.Fc.Value,
-        maxStrain = gsaMatConcrete.EpsU.Value,
-        maxAggregateSize = gsaMatConcrete.Agg.Value,
-        tensileStrength = gsaMatConcrete.Fcdt.Value,
         flexuralStrength = 0
       };
+      if (gsaMatConcrete.EpsU.HasValue)
+      {
+        speckleConcrete.maxStrain = gsaMatConcrete.EpsU.Value;
+      }
+      if (gsaMatConcrete.Agg.HasValue)
+      {
+        speckleConcrete.maxAggregateSize = gsaMatConcrete.Agg.Value;
+      }
+      if (gsaMatConcrete.Fcdt.HasValue)
+      {
+        speckleConcrete.tensileStrength = gsaMatConcrete.Fcdt.Value;
+      }
+       
       if (IsIndex(gsaMatConcrete.Index))
       {
         speckleConcrete.applicationId = Instance.GsaModel.GetApplicationId<GsaMatConcrete>(gsaMatConcrete.Index.Value);
@@ -843,7 +861,7 @@ namespace ConverterGSA
     public static T GetPropValue<T>(GsaMat gsaMat, string name)
     {
       var retval = GetPropValue(gsaMat, name);
-      if (IsNullOrDefault((T)retval))
+      if (retval == null)
       {
         return GetPropValue<T>(gsaMat.Prop, name);
       }
