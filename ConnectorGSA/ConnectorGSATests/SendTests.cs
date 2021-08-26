@@ -58,17 +58,21 @@ namespace ConnectorGSATests
       Instance.GsaModel.Layer = GSALayer.Design;
       Instance.GsaModel.Proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), true);
 
+      bool loaded = false;
       Base commitObj = null;
       try
       {
-        commitObj = Commands.Convert();
+        loaded = Commands.LoadDataFromFile();
       }
       catch { }
       finally
       {
         Instance.GsaModel.Proxy.Close();
       }
+      //Putting the assert here so that the exception catching can trigger a closing of the GSA file first before any failure of this assertion stops this test
+      Assert.True(loaded);
 
+      commitObj = Commands.ConvertToSpeckle();
       Assert.NotNull(commitObj);
 
       var account = AccountManager.GetDefaultAccount();

@@ -12,6 +12,12 @@ namespace ConnectorGSATests
   public class CacheTests : SpeckleConnectorFixture
   {
     [Fact]
+    public void SpeckleObjectTest()
+    {
+      
+    }
+
+    [Fact]
     public void HydrateCache()
     {
       Instance.GsaModel.Layer = GSALayer.Design;

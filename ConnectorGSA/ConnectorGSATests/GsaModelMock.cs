@@ -80,7 +80,7 @@ namespace ConnectorGSATests
 
     public List<List<Type>> TxTypeDependencyGenerations => throw new NotImplementedException();
 
-    public char GwaDelimiter => throw new NotImplementedException();
+    public char GwaDelimiter => '\t';
     #endregion
 
     #region proxy_related
