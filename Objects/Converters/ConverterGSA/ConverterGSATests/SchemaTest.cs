@@ -32,7 +32,7 @@ namespace ConverterGSATests
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.AXIS, new Dictionary<int, string>
           { { 1, "axis 1" } }
@@ -64,13 +64,13 @@ namespace ConverterGSATests
     public void GsaNode()
     {
       //Define GSA objects
-      var gsaNode = GsaNodeExample(1)[0];
-      var gsaPropMass = GsaPropMassExample();
-      var gsaPropSpr = GsaPropSprExample();
+      var gsaNode = GsaNodeExamples(1, "node 1")[0];
+      var gsaPropMass = GsaPropMassExample("property mass 1");
+      var gsaPropSpr = GsaPropSprExample("property spring 1");
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMock)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
       {
         { GwaKeyword.PROP_MASS, new Dictionary<int, GsaRecord>
           { { 1, gsaPropMass } }
@@ -79,12 +79,12 @@ namespace ConverterGSATests
           { { 1, gsaPropSpr } }
         } 
       };
-      ((GsaProxyMock)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
       {
         { GwaKeyword.PROP_SPR, new List<int> { 1 } },
         { GwaKeyword.PROP_MASS, new List<int> { 1 } }
       };
-      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.NODE, new Dictionary<int, string>
           { { 1, "node 1" } }
@@ -140,71 +140,36 @@ namespace ConverterGSATests
     public void GsaElement2D()
     {
       //Define GSA objects
-      var gsaMatSteel = GsaMatSteelExample();
-      var gsaProp2d = GsaProp2dExample();
-      var gsaEl = GsaElementExample(2);
-      var gsaNodes = GsaNodeExample(5);
-      var gsaPropMass = GsaPropMassExample();
-      var gsaPropSpr = GsaPropSprExample();
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
 
-      //Set up context 
-      gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMock)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
-      {
-        { GwaKeyword.NODE, new Dictionary<int, GsaRecord>
-          { { 1, gsaNodes[0] },
-            { 2, gsaNodes[1] },
-            { 3, gsaNodes[2] },
-            { 4, gsaNodes[3] },
-            { 5, gsaNodes[4] }  }
-        },
-        { GwaKeyword.PROP_2D, new Dictionary<int, GsaRecord>
-          { { 1, gsaProp2d } }
-        },
-        { GwaKeyword.MAT_STEEL, new Dictionary<int, GsaRecord>
-          { { 1, gsaMatSteel } }
-        },
-        { GwaKeyword.PROP_MASS, new Dictionary<int, GsaRecord>
-          { { 1, gsaPropMass } }
-        },
-        { GwaKeyword.PROP_SPR, new Dictionary<int, GsaRecord>
-          { { 1, gsaPropSpr } }
-        }
-      };
-      ((GsaProxyMock)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
-      {
-        { GwaKeyword.NODE, new List<int> { 1, 2, 3, 4, 5 } },
-        { GwaKeyword.EL, new List<int> { 1, 2 } },
-        { GwaKeyword.MAT_STEEL, new List<int> { 1 } },
-        { GwaKeyword.PROP_2D, new List<int> { 1 } },
-        { GwaKeyword.PROP_SPR, new List<int> { 1 } },
-        { GwaKeyword.PROP_MASS, new List<int> { 1 } }
-      };
-      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
-      {
-        { GwaKeyword.NODE, new Dictionary<int, string>
-          { { 1, "node 1" }, { 2, "node 2" }, { 3, "node 3" }, { 4, "node 4" }, { 5, "node 5" } }
-        },
-        { GwaKeyword.MAT_STEEL, new Dictionary<int, string>
-          { { 1, "steel material 1" } }
-        },
-        { GwaKeyword.EL, new Dictionary<int, string>
-          { { 1, "element 1" }, { 2, "element 2" } }
-        },
-        { GwaKeyword.PROP_2D, new Dictionary<int, string>
-          { { 1, "property 2D 1" } }
-        },
-        { GwaKeyword.PROP_SPR, new Dictionary<int, string>
-          { { 1, "property spring 1" } }
-        },
-        { GwaKeyword.PROP_MASS, new Dictionary<int, string>
-          { { 1, "property mass 1" } }
-        }
-      };
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
 
-      var structuralObjects = converter.ConvertToSpeckle(gsaEl.Select(el => (object)el).ToList());
+      //Gen #2
+      var gsaNodes = GsaNodeExamples(5, "node 1", "node 2", "node 3", "node 4" , "node 5");
+      gsaRecords.AddRange(gsaNodes);
+      var gsaProp2d = GsaProp2dExample("property 2D 1");
+      gsaRecords.Add(gsaProp2d);
 
-      Assert.Empty(converter.ConversionErrors);
+      // Gen #3
+      var gsaEls = GsaElement2dExamples(2, "element 1", "element 2");
+      gsaRecords.AddRange(gsaEls);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects);
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
       Assert.NotEmpty(structuralObjects);
       Assert.Contains(structuralObjects, so => so is Element2D);
 
@@ -214,12 +179,12 @@ namespace ConverterGSATests
       // Element 1
       //===========
       Assert.Equal("element 1", speckleElement2D[0].applicationId);
-      Assert.Equal(gsaEl[0].Name, speckleElement2D[0].name);
+      Assert.Equal(gsaEls[0].Name, speckleElement2D[0].name);
       //baseMesh
       Assert.Equal("property 2D 1", speckleElement2D[0].property.applicationId);
       Assert.Equal(ElementType2D.Quad4, speckleElement2D[0].type);
-      Assert.Equal(gsaEl[0].OffsetZ.Value, speckleElement2D[0].offset);
-      Assert.Equal(gsaEl[0].Angle.Value, speckleElement2D[0].orientationAngle);
+      Assert.Equal(gsaEls[0].OffsetZ.Value, speckleElement2D[0].offset);
+      Assert.Equal(gsaEls[0].Angle.Value, speckleElement2D[0].orientationAngle);
       //parent
       Assert.Equal("node 1", speckleElement2D[0].topology[0].applicationId);
       Assert.Equal(gsaNodes[0].X, speckleElement2D[0].topology[0].basePoint.x);
@@ -243,12 +208,12 @@ namespace ConverterGSATests
       // Element 2
       //===========
       Assert.Equal("element 2", speckleElement2D[1].applicationId);
-      Assert.Equal(gsaEl[0].Name, speckleElement2D[1].name);
+      Assert.Equal(gsaEls[0].Name, speckleElement2D[1].name);
       //baseMesh
       Assert.Equal("property 2D 1", speckleElement2D[1].property.applicationId);
       Assert.Equal(ElementType2D.Triangle3, speckleElement2D[1].type);
-      Assert.Equal(gsaEl[0].OffsetZ.Value, speckleElement2D[1].offset);
-      Assert.Equal(gsaEl[0].Angle.Value, speckleElement2D[1].orientationAngle);
+      Assert.Equal(gsaEls[0].OffsetZ.Value, speckleElement2D[1].offset);
+      Assert.Equal(gsaEls[0].Angle.Value, speckleElement2D[1].orientationAngle);
       //parent
       Assert.Equal("node 1", speckleElement2D[1].topology[0].applicationId);
       Assert.Equal(gsaNodes[0].X, speckleElement2D[1].topology[0].basePoint.x);
@@ -274,11 +239,11 @@ namespace ConverterGSATests
     public void GsaMatConcrete()
     {
       //Define GSA objects
-      var gsaMatConcrete = GsaMatConcreteExample();
+      var gsaMatConcrete = GsaMatConcreteExample("concrete 1");
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.MAT_CONCRETE, new Dictionary<int, string>
           { { 1, "concrete 1" } }
@@ -314,11 +279,11 @@ namespace ConverterGSATests
     public void GsaMatSteel()
     {
       //Define GSA objects
-      var gsaMatSteel = GsaMatSteelExample();
+      var gsaMatSteel = GsaMatSteelExample("steel 1");
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.MAT_STEEL, new Dictionary<int, string>
           { { 1, "steel 1" } }
@@ -356,12 +321,12 @@ namespace ConverterGSATests
     public void GsaProperty1D()
     {
       //Define GSA objects
-      var gsaMatSteel = GsaMatSteelExample();
-      var gsaSection = GsaCatalogueSectionExample();
+      var gsaMatSteel = GsaMatSteelExample("steel 1");
+      var gsaSection = GsaCatalogueSectionExample("section 1");
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMock)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
       {
         { GwaKeyword.MAT_STEEL, new Dictionary<int, GsaRecord>
           { { 1, gsaMatSteel } }
@@ -370,12 +335,12 @@ namespace ConverterGSATests
           { { 1, gsaSection } }
         }
       };
-      ((GsaProxyMock)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
       {
         { GwaKeyword.MAT_STEEL, new List<int> { 1 } },
         { GwaKeyword.SECTION, new List<int> { 1 } }
       };
-      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.SECTION, new Dictionary<int, string>
           { { 1, "section 1" } }
@@ -417,22 +382,22 @@ namespace ConverterGSATests
     public void GsaProperty2D()
     {
       //Define GSA objects
-      var gsaMatSteel = GsaMatSteelExample();
-      var gsaProp2d = GsaProp2dExample();
+      var gsaMatSteel = GsaMatSteelExample("steel 1");
+      var gsaProp2d = GsaProp2dExample("property 2D 1");
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMock)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
       {
         { GwaKeyword.MAT_STEEL, new Dictionary<int, GsaRecord>
           { { 1, gsaMatSteel } }
         }
       };
-      ((GsaProxyMock)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
       {
         { GwaKeyword.MAT_STEEL, new List<int> { 1 } }
       };
-      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.PROP_2D, new Dictionary<int, string>
           { { 1, "property 2D 1" } }
@@ -475,11 +440,11 @@ namespace ConverterGSATests
     public void GsaPropMass()
     {
       //Define GSA objects
-      var gsaPropMass = GsaPropMassExample();
+      var gsaPropMass = GsaPropMassExample("property mass 1");
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.PROP_MASS, new Dictionary<int, string>
           { { 1, "property mass 1" } }
@@ -513,11 +478,11 @@ namespace ConverterGSATests
     public void GsaPropSpr()
     {
       //Define GSA objects
-      var gsaProSpr = GsaPropSprExample();
+      var gsaProSpr = GsaPropSprExample("property spring 1");
 
       //Set up context 
       gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMock)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
       {
         { GwaKeyword.PROP_SPR, new Dictionary<int, string>
           { { 1, "property spring 1" } }
@@ -582,7 +547,7 @@ namespace ConverterGSATests
       };
     }
 
-    private List<GsaEl> GsaElementExample(int numberOfElements)
+    private List<GsaEl> GsaElement2dExamples(int numberOfElements, params string[] appIds)
     {
       var gsaEl = new List<GsaEl> {
         new GsaEl()
@@ -616,10 +581,14 @@ namespace ConverterGSATests
           ParentIndex = 1
         }
       };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaEl[i].ApplicationId = appIds[i];
+      }
       return gsaEl.GetRange(0, numberOfElements);
     }
 
-    private List<GsaNode> GsaNodeExample(int numberOfNodes)
+    private List<GsaNode> GsaNodeExamples(int numberOfNodes, params string[] appIds)
     {
       var gsaNodes = new List<GsaNode>
       {
@@ -694,6 +663,10 @@ namespace ConverterGSATests
           MassPropertyIndex = 1
         },
       };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaNodes[i].ApplicationId = appIds[i];
+      }
       return gsaNodes.GetRange(0, numberOfNodes);
     }
     #endregion
@@ -702,11 +675,12 @@ namespace ConverterGSATests
     #endregion
 
     #region Materials
-    private GsaMatConcrete GsaMatConcreteExample()
+    private GsaMatConcrete GsaMatConcreteExample(string appId)
     {
       return new GsaMatConcrete()
       {
         Index = 1,
+        ApplicationId = appId,
         Name = "1",
         Mat = new GsaMat()
         {
@@ -801,11 +775,12 @@ namespace ConverterGSATests
       };
     }
 
-    private GsaMatSteel GsaMatSteelExample()
+    private GsaMatSteel GsaMatSteelExample(string appId)
     {
       return new GsaMatSteel()
       {
         Index = 1,
+        ApplicationId = appId,
         Name = "1",
         Mat = new GsaMat()
         {
@@ -880,12 +855,13 @@ namespace ConverterGSATests
     #endregion
 
     #region Properties
-    private GsaProp2d GsaProp2dExample()
+    private GsaProp2d GsaProp2dExample(string appId)
     {
       return new GsaProp2d()
       {
         Index = 1,
         Name = "1",
+        ApplicationId = appId,
         Colour = Colour.NO_RGB,
         Type = Property2dType.Shell,
         AxisRefType = AxisRefType.Global,
@@ -904,12 +880,13 @@ namespace ConverterGSATests
       };
     }
 
-    private GsaSection GsaCatalogueSectionExample()
+    private GsaSection GsaCatalogueSectionExample(string appId)
     {
       return new GsaSection()
       {
         Index = 1,
         Name = "1",
+        ApplicationId = appId,
         Colour = Colour.NO_RGB,
         Type = Section1dType.Generic,
         //PoolIndex = 0,
@@ -960,11 +937,12 @@ namespace ConverterGSATests
       };
     }
 
-    private GsaPropMass GsaPropMassExample()
+    private GsaPropMass GsaPropMassExample(string appId)
     {
       return new GsaPropMass()
       {
         Index = 1,
+        ApplicationId = appId,
         Mass = 10,
         Ixx = 0,
         Iyy = 0,
@@ -979,11 +957,12 @@ namespace ConverterGSATests
       };
     }
 
-    private GsaPropSpr GsaPropSprExample()
+    private GsaPropSpr GsaPropSprExample(string appId)
     {
       return new GsaPropSpr()
       {
         Index = 1,
+        ApplicationId = appId,
         Name = "1",
         Colour = Colour.NO_RGB,
         PropertyType = StructuralSpringPropertyType.General,

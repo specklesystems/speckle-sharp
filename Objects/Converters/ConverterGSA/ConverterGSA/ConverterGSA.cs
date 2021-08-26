@@ -83,6 +83,14 @@ namespace ConverterGSA
 
     public Base ConvertToSpeckle(object @object)
     {
+      if (@object is List<GsaRecord>)
+      {
+        //by calling this method with List<GsaRecord>, it is assumed that either:
+        //- the caller doesn't care about retrieving any Speckle objects, since a conversion could result in multiple and this method only gives back the first
+        //- the caller expects the conversion to only result in one Speckle object anyway
+        var objects = ConvertToSpeckle(((List<GsaRecord>)@object).Cast<object>().ToList());
+        return objects.First();
+      }
       throw new NotImplementedException();
     }
 
@@ -740,11 +748,14 @@ namespace ConverterGSA
     /// <returns></returns>
     private Node GetNodeFromIndex(int index)
     {
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaNode, Node>(index, out var speckleObjects)) ? speckleObjects.First() : null;
+      /*
       Node speckleNode = null;
       var gsaNode = Instance.GsaModel.GetNative<GsaNode>(index);
       if (gsaNode != null) speckleNode = GsaNodeToSpeckle((GsaNode)gsaNode);
 
       return speckleNode;
+      */
     }
     #endregion
 
@@ -1219,11 +1230,12 @@ namespace ConverterGSA
     /// <returns></returns>
     private Property2D GetProperty2dFromIndex(int index)
     {
+      /*
       Property2D speckleProperty2d = null;
       var gsaProp2d = Instance.GsaModel.GetNative<GsaProp2d>(index);
       if (gsaProp2d != null) speckleProperty2d = GsaProperty2dToSpeckle((GsaProp2d)gsaProp2d);
-
-      return speckleProperty2d;
+      */
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaProp2d, Property2D>(index, out var speckleObjects)) ? speckleObjects.First() : null;
     }
     #endregion
     #endregion

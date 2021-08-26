@@ -16,12 +16,15 @@ namespace ConnectorGSA
   {
     public static object Assert { get; private set; }
 
-    public static Base Convert()
+    public static bool LoadDataFromFile()
+    {
+      return UpdateCache();
+    }
+
+    public static Base ConvertToSpeckle()
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.GSA);
-
-      UpdateCache();
 
       //Get send native type dependencies
       var typeDependencyGenerations = Instance.GsaModel.Proxy.TxTypeDependencyGenerations;

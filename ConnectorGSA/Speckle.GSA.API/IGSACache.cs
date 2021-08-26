@@ -9,13 +9,17 @@ namespace Speckle.GSA.API
     GsaRecord GetNative<T>(int index);
     bool GetNative(Type t, int index, out GsaRecord gsaRecord);
     bool GetNative(Type t, out List<GsaRecord> gsaRecords);
+    bool GetSpeckleObjects<T>(int index, out List<object> objects);
+    bool GetSpeckleObjects<T,U>(int index, out List<U> objects);
+    bool GetSpeckleObjects(out List<object> objects);
 
     string GetApplicationId<T>(int index);
     List<int> LookupIndices<T>();
     List<int?> LookupIndices<T>(IEnumerable<string> applicationIds);
-    bool SetSpeckleObjects(GsaRecord gsaRecords, IEnumerable<object> speckleObjects);
+    bool SetSpeckleObjects(GsaRecord gsaRecord, IEnumerable<object> speckleObjects);
 
     bool Upsert(GsaRecord gsaRecord);
+    bool Upsert(IEnumerable<GsaRecord> gsaRecords);
     int ResolveIndex<T>(string applicationId = "");
   }
 }

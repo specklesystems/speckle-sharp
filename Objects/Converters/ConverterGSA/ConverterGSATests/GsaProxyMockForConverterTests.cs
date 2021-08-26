@@ -11,10 +11,10 @@ namespace ConverterGSATests
   public class GsaModelMock : GsaModelBase
   {
     public override IGSACache Cache { get; set; } = new GsaCache();
-    public override IGSAProxy Proxy { get; set; } = new GsaProxyMock();
+    public override IGSAProxy Proxy { get; set; } = new GsaProxyMockForConverterTests();
   }
 
-  internal class GsaProxyMock : IGSAProxy
+  internal class GsaProxyMockForConverterTests : IGSAProxy
     {
     //Assign these in each test to control what the methods below (called by the kit) return
     public Func<string, GSAEntity, List<int>> ConverterGSAListFn;
@@ -31,7 +31,7 @@ namespace ConverterGSATests
 
     public char GwaDelimiter => throw new NotImplementedException();
 
-    public GsaProxyMock()
+    public GsaProxyMockForConverterTests()
     {
       PopulateTypesKeywords();
     }
@@ -59,6 +59,7 @@ namespace ConverterGSATests
 
     protected bool PopulateTypesKeywords()
     {
+      /*  there is no reference to ConnectorGSA, which would be needed here
       try
       {
         var gwaParserType = typeof(IGwaParser);
@@ -98,6 +99,8 @@ namespace ConverterGSATests
       {
         return false;
       }
+      */
+      return true;
     }
 
       
