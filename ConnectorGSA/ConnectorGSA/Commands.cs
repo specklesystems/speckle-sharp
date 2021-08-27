@@ -6,6 +6,7 @@ using Speckle.Core.Transports;
 using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,11 +22,35 @@ namespace ConnectorGSA
       return UpdateCache();
     }
 
-    public static Base ConvertToSpeckle()
+    public static bool ConvertToNative(ISpeckleConverter converter)
     {
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.GSA);
+      //With the attached objects in speckle objects, there is no type dependency needed on the receive side, so just convert each object
 
+      if (Instance.GsaModel.Cache.GetSpeckleObjects(out var speckleObjects))
+      {
+        foreach (var so in speckleObjects.Cast<Base>())
+        {
+          try
+          {
+            if (converter.CanConvertToNative(so))
+            {
+              var nativeObjects = converter.ConvertToNative(new List<Base> { so }).Cast<GsaRecord>().ToList();
+              var appId = string.IsNullOrEmpty(so.applicationId) ? so.id : so.applicationId;
+              Instance.GsaModel.Cache.SetNatives(so.GetType(), appId, nativeObjects);
+            }
+          }
+          catch (Exception ex)
+          {
+
+          }
+        } 
+      }
+
+      return true;
+    }
+
+    public static Base ConvertToSpeckle(ISpeckleConverter converter)
+    {
       //Get send native type dependencies
       var typeDependencyGenerations = Instance.GsaModel.Proxy.TxTypeDependencyGenerations;
 
@@ -55,7 +80,7 @@ namespace ConnectorGSA
                 if (speckleObjs != null && speckleObjs.Count > 0)
                 {
                   speckleObjsBucket.AddRange(speckleObjs);
-                  Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, speckleObjs.Cast<object>());
+                  Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, speckleObjs.ToDictionary(so => so.applicationId, so => (object)so)); ;
                 }
               }
             }
@@ -113,15 +138,27 @@ namespace ConnectorGSA
       return;
     }
 
-    public static async Task<StreamState> ReceiveStream(StreamState state)
+    public static async Task Receive(string commitId, StreamState state, ITransport transport)
     {
+      //Receive and write Speckle objects into cache
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.GSA);
-      var transport = new ServerTransport(state.Client.Account, state.Stream.id);
+      var errors = new List<string>();
 
-      var stream = await state.Client.StreamGet(state.Stream.id);
+      var commitObject = await Operations.Receive(
+          commitId,
+          transport,
+          onErrorAction: (s, e) =>
+          {
+            errors.Add(e.Message);
+          },
+          disposeTransports: true
+          );
 
-      return state;
+
+      var receivedObjects = FlattenCommitObject(commitObject, converter);
+
+      Instance.GsaModel.Cache.Upsert(receivedObjects.ToDictionary(ro => string.IsNullOrEmpty(ro.applicationId) ? ro.id : ro.applicationId, ro => (object)ro));
     }
 
     private static bool UpdateCache()
@@ -146,6 +183,49 @@ namespace ConnectorGSA
       {
         return false;
       }
+    }
+
+    private static List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    {
+      List<Base> objects = new List<Base>();
+
+      if (obj is Base @base)
+      {
+        if (converter.CanConvertToNative(@base))
+        {
+          objects.Add(@base);
+
+          return objects;
+        }
+        else
+        {
+          foreach (var prop in @base.GetDynamicMembers())
+          {
+            objects.AddRange(FlattenCommitObject(@base[prop], converter));
+          }
+          return objects;
+        }
+      }
+
+      if (obj is List<object> list)
+      {
+        foreach (var listObj in list)
+        {
+          objects.AddRange(FlattenCommitObject(listObj, converter));
+        }
+        return objects;
+      }
+
+      if (obj is IDictionary dict)
+      {
+        foreach (DictionaryEntry kvp in dict)
+        {
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
+        }
+        return objects;
+      }
+
+      return objects;
     }
   }
 }

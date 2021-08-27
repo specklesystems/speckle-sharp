@@ -165,7 +165,7 @@ namespace ConverterGSATests
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
         Assert.Empty(converter.ConversionErrors);
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects);
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(o => o.applicationId, o => (object) o));
       }
 
       Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));

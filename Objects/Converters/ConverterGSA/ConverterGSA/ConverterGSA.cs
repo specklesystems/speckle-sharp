@@ -34,6 +34,7 @@ namespace ConverterGSA
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
     public Dictionary<Type, Func<GsaRecord, List<Base>>> ToSpeckleFns;
+    public Dictionary<Type, Func<Base, List<GsaRecord>>> ToNativeFns;
 
     public ConverterGSA()
     {
@@ -58,27 +59,46 @@ namespace ConverterGSA
 
           //TODO: add methods for other GSA keywords
         };
+
+      ToNativeFns = new Dictionary<Type, Func<Base, List<GsaRecord>>>()
+      {
+        {  typeof(Axis), AxisToNative }
+      };
     }
 
     public bool CanConvertToNative(Base @object)
     {
       var t = @object.GetType();
-      return (t.IsSubclassOf(typeof(GsaRecord)) && ToSpeckleFns.ContainsKey(t));
+      return ToNativeFns.ContainsKey(t);
     }
 
     public bool CanConvertToSpeckle(object @object)
     {
-      return true;
+      var t = @object.GetType();
+      return (t.IsSubclassOf(typeof(GsaRecord)) && ToSpeckleFns.ContainsKey(t));
     }
 
     public object ConvertToNative(Base @object)
     {
-      throw new NotImplementedException();
+      var t = @object.GetType();
+      return ToNativeFns[t](@object);
     }
 
     public List<object> ConvertToNative(List<Base> objects)
     {
-      throw new NotImplementedException();
+      var retList = new List<object>();
+      foreach (var obj in objects)
+      {
+        var natives = ConvertToNative(obj);
+        if (natives != null)
+        {
+          if (natives is List<GsaRecord>)
+          {
+            retList.AddRange(((List<GsaRecord>)natives).Cast<object>());
+          }
+        }
+      }
+      return retList;
     }
 
     public Base ConvertToSpeckle(object @object)
@@ -560,6 +580,27 @@ namespace ConverterGSA
 
     #region ToNative
     //TO DO: implement conversion code for ToNative
+
+    private List<GsaRecord> AxisToNative(Base @object)
+    {
+      var axis = (Axis)@object;
+
+      var index = Instance.GsaModel.Cache.ResolveIndex<GsaAxis>(axis.applicationId);
+
+      return new List<GsaRecord>
+      {
+        new GsaAxis()
+        {
+          ApplicationId = axis.applicationId,
+          Name = axis.name,
+          Index = index,
+          OriginX = axis.definition.origin.x,
+          OriginY = axis.definition.origin.y,
+          OriginZ = axis.definition.origin.z
+        }
+      };
+    }
+
     #endregion
 
     #region Helper

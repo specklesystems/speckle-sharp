@@ -22,7 +22,7 @@ namespace ConnectorGSATests
 
     public SpeckleConnectorFixture()
     {
-      Instance.GsaModel = new GsaModelMock();
+      Instance.GsaModel = GsaModelMock;
     }
 
     protected static GwaKeyword[] DesignLayerKeywords = new GwaKeyword[] {
