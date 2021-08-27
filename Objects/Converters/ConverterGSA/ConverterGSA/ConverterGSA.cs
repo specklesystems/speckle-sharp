@@ -13,6 +13,7 @@ using System.Linq;
 using Restraint = Objects.Structural.Geometry.Restraint;
 using Objects.Structural.Materials;
 using MemberType = Objects.Structural.Geometry.MemberType;
+using System.Runtime.InteropServices;
 
 namespace ConverterGSA
 {
@@ -214,10 +215,10 @@ namespace ConverterGSA
       if (gsaAxis.XDirX.HasValue && gsaAxis.XDirY.HasValue && gsaAxis.XDirZ.HasValue && gsaAxis.XYDirX.HasValue && gsaAxis.XYDirY.HasValue && gsaAxis.XYDirZ.HasValue)
       {
         var origin = new Point(gsaAxis.OriginX, gsaAxis.OriginY, gsaAxis.OriginZ);
-        var xdir = UnitVector(new Vector(gsaAxis.XDirX.Value, gsaAxis.XDirY.Value, gsaAxis.XDirZ.Value));
-        var ydir = UnitVector(new Vector(gsaAxis.XYDirX.Value, gsaAxis.XYDirY.Value, gsaAxis.XYDirZ.Value));
-        var normal = UnitVector(CrossProduct(xdir, ydir));
-        ydir = UnitVector(CrossProduct(normal, xdir));
+        var xdir = Vector.UnitVector(new Vector(gsaAxis.XDirX.Value, gsaAxis.XDirY.Value, gsaAxis.XDirZ.Value));
+        var ydir = Vector.UnitVector(new Vector(gsaAxis.XYDirX.Value, gsaAxis.XYDirY.Value, gsaAxis.XYDirZ.Value));
+        var normal = Vector.UnitVector(xdir * ydir);
+        ydir = -Vector.UnitVector(xdir * normal);
         speckleAxis.definition = new Plane(origin, normal, xdir, ydir);
       }
       else
@@ -252,13 +253,52 @@ namespace ConverterGSA
 
     public Element1D GsaElement1dToSpeckle(GsaEl gsaEl)
     {
-      //TODO
-      return new Element1D();
+      var speckleElement1d = new Element1D()
+      {
+        name = gsaEl.Name,
+        type = GetElement1dType(gsaEl.Type),
+        end1Releases = GetRestraint(gsaEl.Releases1),
+        end2Releases = GetRestraint(gsaEl.Releases2),
+        end1Offset = new Vector(),
+        end2Offset = new Vector(),
+        orientationAngle = 0, //default
+        parent = new Base(), //TO DO: add parent
+        end1Node = GetNodeFromIndex(gsaEl.NodeIndices[0]),
+        end2Node = GetNodeFromIndex(gsaEl.NodeIndices[1]),
+        topology = new List<Node>(),
+        displayMesh = new Mesh() //TO DO: add display mesh
+      };
+
+      if (IsIndex(gsaEl.Index))
+      {
+        speckleElement1d.applicationId = Instance.GsaModel.GetApplicationId<GsaEl>(gsaEl.Index.Value);
+      }
+
+      //Section
+      if (gsaEl.PropertyIndex.HasValue) speckleElement1d.property = GetProperty1dFromIndex(gsaEl.PropertyIndex.Value);
+
+      //Nodes
+      if (gsaEl.Angle.HasValue) speckleElement1d.orientationAngle = gsaEl.Angle.Value;
+      if (gsaEl.OrientationNodeIndex.HasValue) speckleElement1d.orientationNode = GetNodeFromIndex(gsaEl.OrientationNodeIndex.Value);
+      foreach (var index in gsaEl.NodeIndices) speckleElement1d.topology.Add(GetNodeFromIndex(index));
+
+      //Local Axis
+      speckleElement1d.localAxis = GetLocalAxis(speckleElement1d.end1Node, speckleElement1d.end2Node, speckleElement1d.orientationNode, Radians(speckleElement1d.orientationAngle));
+
+      //Offsets
+      if (gsaEl.End1OffsetX.HasValue) speckleElement1d.end1Offset.x = gsaEl.End1OffsetX.Value;
+      if (gsaEl.OffsetY.HasValue) speckleElement1d.end1Offset.y = gsaEl.OffsetY.Value;
+      if (gsaEl.OffsetZ.HasValue) speckleElement1d.end1Offset.z = gsaEl.OffsetZ.Value;
+      if (gsaEl.End2OffsetX.HasValue) speckleElement1d.end2Offset.x = gsaEl.End2OffsetX.Value;
+      if (gsaEl.OffsetY.HasValue) speckleElement1d.end2Offset.y = gsaEl.OffsetY.Value;
+      if (gsaEl.OffsetZ.HasValue) speckleElement1d.end2Offset.z = gsaEl.OffsetZ.Value;
+
+      return speckleElement1d;
     }
 
     public Element2D GsaElement2dToSpeckle(GsaEl gsaEl)
     {
-      var speckleElemenet2d = new Element2D()
+      var speckleElement2d = new Element2D()
       {
         name = gsaEl.Name,
         type = (ElementType2D)Enum.Parse(typeof(ElementType2D), gsaEl.Type.ToString()),
@@ -269,14 +309,14 @@ namespace ConverterGSA
 
       if (IsIndex(gsaEl.Index))
       {
-        speckleElemenet2d.applicationId = Instance.GsaModel.GetApplicationId<GsaEl>(gsaEl.Index.Value);
+        speckleElement2d.applicationId = Instance.GsaModel.GetApplicationId<GsaEl>(gsaEl.Index.Value);
       }
-      if (IsIndex(gsaEl.PropertyIndex)) speckleElemenet2d.property = GetProperty2dFromIndex(gsaEl.PropertyIndex.Value);
-      if (gsaEl.OffsetZ.HasValue) speckleElemenet2d.offset = gsaEl.OffsetZ.Value;
-      if (gsaEl.Angle.HasValue) speckleElemenet2d.orientationAngle = gsaEl.Angle.Value;
-      speckleElemenet2d.topology = gsaEl.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
+      if (IsIndex(gsaEl.PropertyIndex)) speckleElement2d.property = GetProperty2dFromIndex(gsaEl.PropertyIndex.Value);
+      if (gsaEl.OffsetZ.HasValue) speckleElement2d.offset = gsaEl.OffsetZ.Value;
+      if (gsaEl.Angle.HasValue) speckleElement2d.orientationAngle = gsaEl.Angle.Value;
+      speckleElement2d.topology = gsaEl.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
 
-      return speckleElemenet2d;
+      return speckleElement2d;
     }
 
     public Element3D GsaElement3dToSpeckle(GsaEl gsaEl)
@@ -340,11 +380,11 @@ namespace ConverterGSA
       }
 
       //the following properties are stored in multiple locations in GSA
-      speckleSteel.youngsModulus = GetPropValue<double>(gsaMatSteel.Mat, "E");
-      speckleSteel.poissonsRatio = GetPropValue<double>(gsaMatSteel.Mat, "Nu");
-      speckleSteel.shearModulus = GetPropValue<double>(gsaMatSteel.Mat, "G");
-      speckleSteel.density = GetPropValue<double>(gsaMatSteel.Mat, "Rho");
-      speckleSteel.thermalExpansivity = GetPropValue<double>(gsaMatSteel.Mat, "Alpha");
+      if (Choose(gsaMatSteel.Mat.E, gsaMatSteel.Mat.Prop.E, out var E)) speckleSteel.youngsModulus = E;
+      if (Choose(gsaMatSteel.Mat.Nu, gsaMatSteel.Mat.Prop.Nu, out var Nu)) speckleSteel.poissonsRatio = Nu;
+      if (Choose(gsaMatSteel.Mat.G, gsaMatSteel.Mat.Prop.G, out var G)) speckleSteel.shearModulus = G;
+      if (Choose(gsaMatSteel.Mat.Rho, gsaMatSteel.Mat.Prop.Rho, out var Rho)) speckleSteel.density = Rho;
+      if (Choose(gsaMatSteel.Mat.Alpha, gsaMatSteel.Mat.Prop.Alpha, out var Alpha)) speckleSteel.thermalExpansivity = Alpha;
 
       return speckleSteel;
     }
@@ -369,30 +409,20 @@ namespace ConverterGSA
         codeYear = "",                              //codeYear can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" - "2018"
         flexuralStrength = 0
       };
-      if (gsaMatConcrete.EpsU.HasValue)
-      {
-        speckleConcrete.maxStrain = gsaMatConcrete.EpsU.Value;
-      }
-      if (gsaMatConcrete.Agg.HasValue)
-      {
-        speckleConcrete.maxAggregateSize = gsaMatConcrete.Agg.Value;
-      }
-      if (gsaMatConcrete.Fcdt.HasValue)
-      {
-        speckleConcrete.tensileStrength = gsaMatConcrete.Fcdt.Value;
-      }
-       
-      if (IsIndex(gsaMatConcrete.Index))
-      {
-        speckleConcrete.applicationId = Instance.GsaModel.GetApplicationId<GsaMatConcrete>(gsaMatConcrete.Index.Value);
-      }
+      if (IsIndex(gsaMatConcrete.Index)) speckleConcrete.applicationId = Instance.GsaModel.GetApplicationId<GsaMatConcrete>(gsaMatConcrete.Index.Value);
+
+      //the following properties might be null
+      if (gsaMatConcrete.Fc.HasValue) speckleConcrete.compressiveStrength = gsaMatConcrete.Fc.Value;
+      if (gsaMatConcrete.EpsU.HasValue) speckleConcrete.maxStrain = gsaMatConcrete.EpsU.Value;
+      if (gsaMatConcrete.Agg.HasValue) speckleConcrete.maxAggregateSize = gsaMatConcrete.Agg.Value;
+      if (gsaMatConcrete.Fcdt.HasValue) speckleConcrete.tensileStrength = gsaMatConcrete.Fcdt.Value;
 
       //the following properties are stored in multiple locations in GSA
-      speckleConcrete.youngsModulus = GetPropValue<double>(gsaMatConcrete.Mat, "E");
-      speckleConcrete.poissonsRatio = GetPropValue<double>(gsaMatConcrete.Mat, "Nu");
-      speckleConcrete.shearModulus = GetPropValue<double>(gsaMatConcrete.Mat, "G");
-      speckleConcrete.density = GetPropValue<double>(gsaMatConcrete.Mat, "Rho");
-      speckleConcrete.thermalExpansivity = GetPropValue<double>(gsaMatConcrete.Mat, "Alpha");
+      if (Choose(gsaMatConcrete.Mat.E, gsaMatConcrete.Mat.Prop.E, out var E)) speckleConcrete.youngsModulus = E;
+      if (Choose(gsaMatConcrete.Mat.Nu, gsaMatConcrete.Mat.Prop.Nu, out var Nu)) speckleConcrete.poissonsRatio = Nu;
+      if (Choose(gsaMatConcrete.Mat.G, gsaMatConcrete.Mat.Prop.G, out var G)) speckleConcrete.shearModulus = G;
+      if (Choose(gsaMatConcrete.Mat.Rho, gsaMatConcrete.Mat.Prop.Rho, out var Rho)) speckleConcrete.density = Rho;
+      if (Choose(gsaMatConcrete.Mat.Alpha, gsaMatConcrete.Mat.Prop.Alpha, out var Alpha)) speckleConcrete.thermalExpansivity = Alpha;
 
       return speckleConcrete;
     }
@@ -415,29 +445,29 @@ namespace ConverterGSA
         name = gsaSection.Name,
         colour = gsaSection.Colour.ToString(),
         memberType = MemberType.Generic1D,
-        grade = "",
+        grade = "", // TO DO: what is grade used for?
         referencePoint = GetReferencePoint(gsaSection.ReferencePoint),
       };
 
-      if ( IsIndex(gsaSection.Index) ) speckleProperty1D.applicationId = Instance.GsaModel.GetApplicationId<GsaSection>(gsaSection.Index.Value);
-      if ( gsaSection.RefY.HasValue ) speckleProperty1D.offsetY = gsaSection.RefY.Value;
-      if ( gsaSection.RefZ.HasValue ) speckleProperty1D.offsetZ = gsaSection.RefZ.Value;
+      if (IsIndex(gsaSection.Index)) speckleProperty1D.applicationId = Instance.GsaModel.GetApplicationId<GsaSection>(gsaSection.Index.Value);
+      if (gsaSection.RefY.HasValue) speckleProperty1D.offsetY = gsaSection.RefY.Value;
+      if (gsaSection.RefZ.HasValue) speckleProperty1D.offsetZ = gsaSection.RefZ.Value;
 
       var gsaSectionComp = (SectionComp)gsaSection.Components.Find(x => x.GetType() == typeof(SectionComp));
       speckleProperty1D.profile = GetProfile(gsaSectionComp.ProfileDetails);
-      if ( gsaSectionComp.MaterialIndex.HasValue )
+      if (gsaSectionComp.MaterialIndex.HasValue)
       {
         speckleProperty1D.material = GetMaterialFromIndex(gsaSectionComp.MaterialIndex.Value, gsaSectionComp.MaterialType);
       }
-      if ( gsaSectionComp.ProfileGroup == Section1dProfileGroup.Explicit )
+      if (gsaSectionComp.ProfileGroup == Section1dProfileGroup.Explicit)
       {
         var gsaProfile = (ProfileDetailsExplicit)gsaSectionComp.ProfileDetails;
-        if ( gsaProfile.Area.HasValue ) speckleProperty1D.area = gsaProfile.Area.Value;
-        if ( gsaProfile.Iyy.HasValue ) speckleProperty1D.Iyy = gsaProfile.Iyy.Value;
-        if ( gsaProfile.Izz.HasValue ) speckleProperty1D.Izz = gsaProfile.Izz.Value;
-        if ( gsaProfile.J.HasValue ) speckleProperty1D.J = gsaProfile.J.Value;
-        if ( gsaProfile.Ky.HasValue ) speckleProperty1D.Ky = gsaProfile.Ky.Value;
-        if ( gsaProfile.Kz.HasValue ) speckleProperty1D.Kz = gsaProfile.Kz.Value;
+        if (gsaProfile.Area.HasValue) speckleProperty1D.area = gsaProfile.Area.Value;
+        if (gsaProfile.Iyy.HasValue) speckleProperty1D.Iyy = gsaProfile.Iyy.Value;
+        if (gsaProfile.Izz.HasValue) speckleProperty1D.Izz = gsaProfile.Izz.Value;
+        if (gsaProfile.J.HasValue) speckleProperty1D.J = gsaProfile.J.Value;
+        if (gsaProfile.Ky.HasValue) speckleProperty1D.Ky = gsaProfile.Ky.Value;
+        if (gsaProfile.Kz.HasValue) speckleProperty1D.Kz = gsaProfile.Kz.Value;
       }
 
       return speckleProperty1D;
@@ -469,12 +499,11 @@ namespace ConverterGSA
       if (IsIndex(gsaProp2d.GradeIndex)) speckleProperty2D.material = GetMaterialFromIndex(gsaProp2d.GradeIndex.Value, gsaProp2d.MatType);
       if (gsaProp2d.Type != Property2dType.NotSet) speckleProperty2D.type = (PropertyType2D)Enum.Parse(typeof(PropertyType2D), gsaProp2d.Type.ToString());
 
-      //Currently no way in the speckle object to disinguish between the value and a percentage.
-      //TO DO: update schema to distinguish between value and percentage
-      speckleProperty2D.modifierInPlane = GetModifier(gsaProp2d, "InPlane");
-      speckleProperty2D.modifierBending = GetModifier(gsaProp2d, "Bending");
-      speckleProperty2D.modifierShear = GetModifier(gsaProp2d, "Shear");
-      speckleProperty2D.modifierVolume = GetModifier(gsaProp2d, "Volume");
+      //Only supporting Percentage modifiers
+      if (gsaProp2d.InPlaneStiffnessPercentage.HasValue) speckleProperty2D.modifierInPlane = gsaProp2d.InPlaneStiffnessPercentage.Value;
+      if (gsaProp2d.BendingStiffnessPercentage.HasValue) speckleProperty2D.modifierBending = gsaProp2d.BendingStiffnessPercentage.Value;
+      if (gsaProp2d.ShearStiffnessPercentage.HasValue) speckleProperty2D.modifierShear = gsaProp2d.ShearStiffnessPercentage.Value;
+      if (gsaProp2d.VolumePercentage.HasValue) speckleProperty2D.modifierVolume = gsaProp2d.VolumePercentage.Value;
 
       return speckleProperty2D;
     }
@@ -641,6 +670,45 @@ namespace ConverterGSA
     }
 
     /// <summary>
+    /// Conversion of 1D element end releases from GSA to Speckle restraint
+    /// </summary>
+    /// <param name="release">Dictionary of release codes</param>
+    /// <returns></returns>
+    private static Restraint GetRestraint(Dictionary<AxisDirection6, ReleaseCode> release)
+    {
+      var code = new List<string>() { "F", "F", "F", "F", "F", "F" }; //Default
+      if (release != null)
+      {
+        foreach (var k in release.Keys.ToList())
+        {
+          switch (k)
+          {
+            case AxisDirection6.X:
+              code[0] = release[k].GetStringValue();
+              break;
+            case AxisDirection6.Y:
+              code[1] = release[k].GetStringValue();
+              break;
+            case AxisDirection6.Z:
+              code[2] = release[k].GetStringValue();
+              break;
+            case AxisDirection6.XX:
+              code[3] = release[k].GetStringValue();
+              break;
+            case AxisDirection6.YY:
+              code[4] = release[k].GetStringValue();
+              break;
+            case AxisDirection6.ZZ:
+              code[5] = release[k].GetStringValue();
+              break;
+          }
+        }
+      }
+
+      return new Restraint(string.Join("", code));
+    }
+
+    /// <summary>
     /// Conversion of node constraint axis from GSA to Speckle
     /// </summary>
     /// <param name="gsaNode">GsaNode object with the constraint axis definition to be converted</param>
@@ -651,20 +719,27 @@ namespace ConverterGSA
       Point origin;
       Vector xdir, ydir, normal;
 
-      //TO DO: check with oasys that the definitions for X_ELEV and Y_ELEV are correct
       if (gsaNode.AxisRefType == NodeAxisRefType.XElevation)
       {
         origin = new Point(0, 0, 0);
-        xdir = new Vector(0, 1, 0);
+        xdir = new Vector(0, -1, 0);
         ydir = new Vector(0, 0, 1);
-        normal = new Vector(1, 0, 0);
+        normal = new Vector(-1, 0, 0);
         speckleAxis = new Plane(origin, normal, xdir, ydir);
       }
       else if (gsaNode.AxisRefType == NodeAxisRefType.YElevation)
       {
         origin = new Point(0, 0, 0);
-        xdir = new Vector(-1, 0, 0);
+        xdir = new Vector(1, 0, 0);
         ydir = new Vector(0, 0, 1);
+        normal = new Vector(0, -1, 0);
+        speckleAxis = new Plane(origin, normal, xdir, ydir);
+      }
+      else if (gsaNode.AxisRefType == NodeAxisRefType.Vertical)
+      {
+        origin = new Point(0, 0, 0);
+        xdir = new Vector(0, 0, 1);
+        ydir = new Vector(1, 0, 0);
         normal = new Vector(0, 1, 0);
         speckleAxis = new Plane(origin, normal, xdir, ydir);
       }
@@ -789,7 +864,8 @@ namespace ConverterGSA
     /// <returns></returns>
     private Node GetNodeFromIndex(int index)
     {
-      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaNode, Node>(index, out var speckleObjects)) ? speckleObjects.First() : null;
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaNode, Node>(index, out var speckleObjects) && speckleObjects != null && speckleObjects.Count > 0) 
+        ? speckleObjects.First() : null;
       /*
       Node speckleNode = null;
       var gsaNode = Instance.GsaModel.GetNative<GsaNode>(index);
@@ -871,6 +947,83 @@ namespace ConverterGSA
         gsaEl.Type == ElementType.Link || gsaEl.Type == ElementType.Rod || gsaEl.Type == ElementType.Spacer || gsaEl.Type == ElementType.Spring || 
         gsaEl.Type == ElementType.Strut || gsaEl.Type == ElementType.Tie);
     }
+
+    private ElementType1D GetElement1dType(ElementType gsaType)
+    {
+      ElementType1D speckleType;
+
+      switch (gsaType)
+      {
+        case ElementType.Bar:
+          speckleType = ElementType1D.Bar;
+          break;
+        case ElementType.Cable:
+          speckleType = ElementType1D.Cable;
+          break;
+        case ElementType.Damper:
+          speckleType = ElementType1D.Damper;
+          break;
+        case ElementType.Link:
+          speckleType = ElementType1D.Link;
+          break;
+        case ElementType.Rod:
+          speckleType = ElementType1D.Rod;
+          break;
+        case ElementType.Spacer:
+          speckleType = ElementType1D.Spacer;
+          break;
+        case ElementType.Spring:
+          speckleType = ElementType1D.Spring;
+          break;
+        case ElementType.Strut:
+          speckleType = ElementType1D.Strut;
+          break;
+        case ElementType.Tie:
+          speckleType = ElementType1D.Tie;
+          break;
+        default:
+          speckleType = ElementType1D.Beam;
+          break;
+      }
+
+      return speckleType;
+    }
+
+    /// <summary>
+    /// Get the local axis for a 1D element
+    /// </summary>
+    /// <param name="n1">end1Node</param>
+    /// <param name="n2">end2Node</param>
+    /// <param name="n3">orientationNode</param>
+    /// <param name="angle">orientationAngle in radians</param>
+    /// <returns></returns>
+    private Plane GetLocalAxis(Node n1, Node n2, Node n3, double angle)
+    {
+      var normal = new Vector(0, 0, 1); //default
+
+      var p1 = n1.basePoint;
+      var p2 = n2.basePoint;
+      var origin = new Point(p1.x, p1.y, p1.z);
+      var xdir = Vector.UnitVector(new Vector(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z));
+
+      //Update normal if orientation node exists
+      if (n3 != null)
+      {
+        var p3 = n3.basePoint;
+        normal = Vector.UnitVector(new Vector(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z));
+      }
+
+      //Apply rotation angle
+      if (angle != 0) normal = Vector.UnitVector(Rotate(normal, xdir, angle));
+
+      //xdir and normal define a plane:
+      // *ensure normal is perpendicular to xdir on that plane
+      // *ensure ydir is normal to the plane
+      var ydir = -Vector.UnitVector(xdir * normal);
+      normal = Vector.UnitVector(xdir * ydir);
+
+      return new Plane(origin, normal, xdir, ydir);
+    }
     #endregion
     #endregion
 
@@ -879,74 +1032,31 @@ namespace ConverterGSA
 
     #region Materials
     //Some material properties are stored in either GsaMat or GsaMatAnal
-    //The GetPropValue<T>(GsaMat gsaMat, string name) method will find the value stored in gsaMat."name"
-    //if null or default for type T, then will find the value in gsaMat.Prop."name"
 
     /// <summary>
-    /// Return the value of a property from any object
+    /// Return true if either v1 or v2 has a value.
     /// </summary>
-    /// <param name="obj">object to be searched</param>
-    /// <param name="name">name of the property for which you want the value</param>
+    /// <param name="v1">value to take precidence if not null</param>
+    /// <param name="v2">value to take if v1 is null</param>
+    /// <param name="v">returned value</param>
     /// <returns></returns>
-    public static object GetPropValue(object obj, string name)
+    public bool Choose(double? v1, double? v2, out double v)
     {
-      foreach (string part in name.Split('.'))
+      if (v1.HasValue)
       {
-        if (obj == null) { return null; }
-
-        var type = obj.GetType();
-        var info = type.GetField(part);
-        if (info == null) { return null; }
-
-        obj = info.GetValue(obj);
+        v = v1.Value;
+        return true;
       }
-      return obj;
-    }
-
-    /// <summary>
-    /// Return the value of a property from a GsaMat object
-    /// </summary>
-    /// <typeparam name="T">data type to be returned</typeparam>
-    /// <param name="gsaMat">GsaMat object to be searched</param>
-    /// <param name="name">name of the property for which you want the value</param>
-    /// <returns></returns>
-    public static T GetPropValue<T>(GsaMat gsaMat, string name)
-    {
-      var retval = GetPropValue(gsaMat, name);
-      if (retval == null)
+      else if (v2.HasValue)
       {
-        return GetPropValue<T>(gsaMat.Prop, name);
+        v = v2.Value;
+        return true;
       }
-
-      // throws InvalidCastException if types are incompatible
-      return (T)retval;
-    }
-
-    /// <summary>
-    /// Return the value of a property from a GsaMatAnal object
-    /// </summary>
-    /// <typeparam name="T">data type to be returned</typeparam>
-    /// <param name="gsaMat">GsaMatAnal object to be searched</param>
-    /// <param name="name">name of the property for which you want the value</param>
-    /// <returns></returns>
-    public static T GetPropValue<T>(GsaMatAnal gsaMatAnal, string name)
-    {
-      object retval = GetPropValue(gsaMatAnal, name);
-      if (retval == null) { return default(T); }
-
-      // throws InvalidCastException if types are incompatible
-      return (T)retval;
-    }
-
-    /// <summary>
-    /// Determines if a value is default for the data type
-    /// </summary>
-    /// <typeparam name="T">data type</typeparam>
-    /// <param name="value">vale to test</param>
-    /// <returns></returns>
-    static bool IsNullOrDefault<T>(T value)
-    {
-      return object.Equals(value, default(T));
+      else
+      {
+        v = 0;
+        return false;
+      }
     }
 
     /// <summary>
@@ -1183,6 +1293,20 @@ namespace ConverterGSA
 
       return speckleProfile;
     }
+
+    /// <summary>
+    /// Get Speckle Property1D object from GSA property 1D index
+    /// </summary>
+    /// <param name="index">GSA property 1D index</param>
+    /// <returns></returns>
+    private Property1D GetProperty1dFromIndex(int index)
+    {
+      Property1D speckleProperty1d = null;
+      var gsaSection = Instance.GsaModel.GetNative<GsaSection>(index);
+      if (gsaSection != null) speckleProperty1d = GsaSectionToSpeckle((GsaSection)gsaSection);
+
+      return speckleProperty1d;
+    }
     #endregion
 
     #region Property2D
@@ -1239,32 +1363,6 @@ namespace ConverterGSA
     }
 
     /// <summary>
-    /// Return the value of a 2D property modifier
-    /// </summary>
-    /// <param name="gsaProp2d">GsaProp2d object to be searched</param>
-    /// <param name="name">name of the property which you want the value</param>
-    /// <returns></returns>
-    private double GetModifier(GsaProp2d gsaProp2d, string name)
-    {
-      //gsaProp2d has a number of modifiers, e.g. InPlane, InPlaneStiffnessPercentage, Bending, ...
-      //either the value or the percentage field stores the modifier, e.g. either "InPlane" or "InPlaneStiffnessPercentage" is null and the other has a value
-      //this method returns that value
-      var info = gsaProp2d.GetType().GetField(name);
-      if (info.GetValue(gsaProp2d) == null)
-      {
-        if (name == "Volume")
-        {
-          info = gsaProp2d.GetType().GetField(name + "Percentage");
-        }
-        else
-        {
-          info = gsaProp2d.GetType().GetField(name + "StiffnessPercentage");
-        }
-      }
-      return (double)info.GetValue(gsaProp2d);
-    }
-
-    /// <summary>
     /// Get Speckle Property2D object from GSA property 2D index
     /// </summary>
     /// <param name="index">GSA property 2D index</param>
@@ -1305,60 +1403,36 @@ namespace ConverterGSA
     {
       return (value.HasValue && value.Value > 0);
     }
+
+    /// <summary>
+    /// Convert angle from degrees to radians
+    /// </summary>
+    /// <param name="degrees">angle in degrees</param>
+    /// <returns></returns>
+    private double Radians(double degrees)
+    {
+      return Math.PI * degrees / 180;
+    }
     #region Vector
-    /// <summary>
-    /// Returns the cross product of two vectors
-    /// </summary>
-    /// <param name="a">vector 1</param>
-    /// <param name="b">vector 2</param>
-    /// <returns></returns>
-    private Vector CrossProduct(Vector a, Vector b)
-    {
-      Vector c = new Vector()
-      {
-        x = a.y * b.z - a.z * b.y,
-        y = a.z * b.x - a.x * b.z,
-        z = a.x * b.y - a.y * b.x
-      };
-      return c;
-    }
 
     /// <summary>
-    /// Returns the dot product of two vectors
+    /// Rotate vector V by an angle Theta about unit vector K using right hand rule
     /// </summary>
-    /// <param name="a">Vector 1</param>
-    /// <param name="b">Vector 2</param>
+    /// <param name="v">vector to be rotated</param>
+    /// <param name="k">unit vector defining axis of rotation</param>
+    /// <param name="theta">rotation angle (radians)</param>
     /// <returns></returns>
-    private double DotProduct(Vector a, Vector b)
+    private Vector Rotate(Vector v, Vector k, double theta)
     {
-      return a.x * b.x + a.y * b.y + a.z * b.z;
-    }
+      //Rodrigues' rotation formula
+      //https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
 
-    /// <summary>
-    /// Returns a unit vector in the same direction as A
-    /// </summary>
-    /// <param name="a">Vector to be scaled</param>
-    /// <returns></returns>
-    private Vector UnitVector(Vector a)
-    {
-      var l = Norm(a);
-      Vector b = new Vector()
-      {
-        x = a.x / l,
-        y = a.y / l,
-        z = a.z / l
-      };
-      return b;
-    }
+      k = Vector.UnitVector(k); //ensure axis of rotation is a unit vector
+      var v_rot1 = v * Math.Cos(theta);
+      var v_rot2 = (k * v) * Math.Sin(theta);
+      var v_rot3 = k * (Vector.DotProduct(k, v) * (1 - Math.Sin(theta)));
 
-    /// <summary>
-    /// Returns the length of a vector
-    /// </summary>
-    /// <param name="a">vector whose length is desired</param>
-    /// <returns></returns>
-    private double Norm(Vector a)
-    {
-      return Math.Sqrt(DotProduct(a, a));
+      return v_rot1 + v_rot2 + v_rot3;
     }
     #endregion
     #endregion

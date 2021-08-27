@@ -14,6 +14,8 @@ using Objects.Structural.Properties;
 using Objects.Structural.Materials;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using MemberType = Objects.Structural.Geometry.MemberType;
+using Xunit.Sdk;
+using Speckle.Core.Kits;
 
 namespace ConverterGSATests
 {
@@ -28,20 +30,25 @@ namespace ConverterGSATests
     public void GsaAxis()
     {
       //Define GSA objects
-      var gsaAxis = GsaAxisExample();
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
 
-      //Set up context 
-      gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      var gsaAxis = GsaAxisExample("axis 1");
+      gsaRecords.Add(gsaAxis);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
       {
-        { GwaKeyword.AXIS, new Dictionary<int, string>
-          { { 1, "axis 1" } }
-        }
-      };
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
 
-      var structuralObjects = converter.ConvertToSpeckle(new List<object> { gsaAxis });
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
 
-      Assert.Empty(converter.ConversionErrors);
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
       Assert.NotEmpty(structuralObjects);
       Assert.Contains(structuralObjects, so => so is Axis);
 
@@ -64,42 +71,29 @@ namespace ConverterGSATests
     public void GsaNode()
     {
       //Define GSA objects
-      var gsaNode = GsaNodeExamples(1, "node 1")[0];
-      var gsaPropMass = GsaPropMassExample("property mass 1");
-      var gsaPropSpr = GsaPropSprExample("property spring 1");
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
 
-      //Set up context 
-      gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
-      {
-        { GwaKeyword.PROP_MASS, new Dictionary<int, GsaRecord>
-          { { 1, gsaPropMass } }
-        },
-        { GwaKeyword.PROP_SPR, new Dictionary<int, GsaRecord>
-          { { 1, gsaPropSpr } }
-        } 
-      };
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
-      {
-        { GwaKeyword.PROP_SPR, new List<int> { 1 } },
-        { GwaKeyword.PROP_MASS, new List<int> { 1 } }
-      };
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
-      {
-        { GwaKeyword.NODE, new Dictionary<int, string>
-          { { 1, "node 1" } }
-        },
-        { GwaKeyword.PROP_SPR, new Dictionary<int, string>
-          { { 1, "property spring 1" } }
-        },
-        { GwaKeyword.PROP_MASS, new Dictionary<int, string>
-          { { 1, "property mass 1" } }
-        }
-      };
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
 
-      var structuralObjects = converter.ConvertToSpeckle(new List<object> { gsaNode });
+      //Gen #2
+      var gsaNodes = GsaNodeExamples(1, "node 1");
+      gsaRecords.AddRange(gsaNodes);
 
-      Assert.Empty(converter.ConversionErrors);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
       Assert.NotEmpty(structuralObjects);
       Assert.Contains(structuralObjects, so => so is Node);
 
@@ -107,10 +101,10 @@ namespace ConverterGSATests
 
       //Base properties
       Assert.Equal("node 1", speckleNode.applicationId);
-      Assert.Equal(gsaNode.Name, speckleNode.name);
-      Assert.Equal(gsaNode.X, speckleNode.basePoint.x);
-      Assert.Equal(gsaNode.Y, speckleNode.basePoint.y);
-      Assert.Equal(gsaNode.Z, speckleNode.basePoint.z);
+      Assert.Equal(gsaNodes[0].Name, speckleNode.name);
+      Assert.Equal(gsaNodes[0].X, speckleNode.basePoint.x);
+      Assert.Equal(gsaNodes[0].Y, speckleNode.basePoint.y);
+      Assert.Equal(gsaNodes[0].Z, speckleNode.basePoint.z);
       Assert.Equal(new Restraint(RestraintType.Pinned).code, speckleNode.restraint.code);
 
       //Axis - global
@@ -128,8 +122,8 @@ namespace ConverterGSATests
       Assert.Equal(0, speckleNode.constraintAxis.ydir.z);
 
       //Dynamic properties
-      Assert.Equal(gsaNode.Colour.ToString(), speckleNode["colour"]);
-      Assert.Equal(gsaNode.MeshSize.Value, speckleNode["localElementSize"]);
+      Assert.Equal(gsaNodes[0].Colour.ToString(), speckleNode["colour"]);
+      Assert.Equal(gsaNodes[0].MeshSize.Value, speckleNode["localElementSize"]);
       var specklePropertySpring = speckleNode["propertySpring"] as PropertySpring;
       Assert.Equal("property spring 1", specklePropertySpring.applicationId); //assume conversion code for GsaPropSpr is tested elsewhere
       var specklePropertyMass = speckleNode["propertyMass"] as PropertyMass;
@@ -137,7 +131,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void GsaElement2D()
+    public void GsaElement2d()
     {
       //Define GSA objects
       //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
@@ -229,6 +223,106 @@ namespace ConverterGSATests
       Assert.Equal(gsaNodes[4].Z, speckleElement2D[1].topology[2].basePoint.z);
       //displayMesh
     }
+
+    [Fact]
+    public void GsaElement1d()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+
+      //Gen #2
+      var gsaNodes = GsaNodeExamples(3, "node 1", "node 2", "node 3");
+      gsaRecords.AddRange(gsaNodes);
+      var gsaSection = GsaCatalogueSectionExample("section 1");
+      gsaRecords.Add(gsaSection);
+
+      // Gen #3
+      var gsaEls = GsaElement1dExamples(2, "element 1", "element 2");
+      gsaRecords.AddRange(gsaEls);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is Element1D);
+
+      var speckleElement1d = structuralObjects.FindAll(so => so is Element1D).Select(so => (Element1D)so).ToList();
+
+      //Checks - Element 1
+      Assert.Equal("element 1", speckleElement1d[0].applicationId);
+      Assert.Equal("node 1", speckleElement1d[0].end1Node.applicationId); //assume conversion to Node is tested elsewhere
+      Assert.Equal("node 2", speckleElement1d[0].end2Node.applicationId); //assume conversion to Node is tested elsewhere
+      Assert.Equal("node 1", speckleElement1d[0].topology[0].applicationId);
+      Assert.Equal("node 2", speckleElement1d[0].topology[1].applicationId);
+      Assert.Equal(0, speckleElement1d[0].end1Offset.x);
+      Assert.Equal(0, speckleElement1d[0].end1Offset.y);
+      Assert.Equal(0, speckleElement1d[0].end1Offset.z);
+      Assert.Equal(0, speckleElement1d[0].end2Offset.x);
+      Assert.Equal(0, speckleElement1d[0].end2Offset.y);
+      Assert.Equal(0, speckleElement1d[0].end2Offset.z);
+      Assert.Equal("FFFFFF", speckleElement1d[0].end1Releases.code);
+      Assert.Equal("FFFFFF", speckleElement1d[0].end2Releases.code);
+      Assert.Equal(0, speckleElement1d[0].localAxis.origin.x, 6);
+      Assert.Equal(0, speckleElement1d[0].localAxis.origin.y, 6);
+      Assert.Equal(0, speckleElement1d[0].localAxis.origin.z, 6);
+      Assert.Equal(1, speckleElement1d[0].localAxis.xdir.x, 6);
+      Assert.Equal(0, speckleElement1d[0].localAxis.xdir.y, 6);
+      Assert.Equal(0, speckleElement1d[0].localAxis.xdir.z, 6);
+      Assert.Equal(0, speckleElement1d[0].localAxis.ydir.x, 6);
+      Assert.Equal(1, speckleElement1d[0].localAxis.ydir.y, 6);
+      Assert.Equal(0, speckleElement1d[0].localAxis.ydir.z, 6);
+      Assert.Equal(0, speckleElement1d[0].localAxis.normal.x, 6);
+      Assert.Equal(0, speckleElement1d[0].localAxis.normal.y, 6);
+      Assert.Equal(1, speckleElement1d[0].localAxis.normal.z, 6);
+      Assert.Equal(0, speckleElement1d[0].orientationAngle);
+      Assert.Null(speckleElement1d[0].orientationNode);
+      Assert.Equal("section 1", speckleElement1d[0].property.applicationId); //assume conversion to Property1d is tested elsewhere
+
+      //Checks - Element 2
+      Assert.Equal("element 2", speckleElement1d[1].applicationId);
+      Assert.Equal("node 2", speckleElement1d[1].end1Node.applicationId); //assume conversion to Node is tested elsewhere
+      Assert.Equal("node 3", speckleElement1d[1].end2Node.applicationId); //assume conversion to Node is tested elsewhere
+      Assert.Equal("node 2", speckleElement1d[1].topology[0].applicationId);
+      Assert.Equal("node 3", speckleElement1d[1].topology[1].applicationId);
+      Assert.Equal(0, speckleElement1d[1].end1Offset.x);
+      Assert.Equal(0, speckleElement1d[1].end1Offset.y);
+      Assert.Equal(0, speckleElement1d[1].end1Offset.z);
+      Assert.Equal(0, speckleElement1d[1].end2Offset.x);
+      Assert.Equal(0, speckleElement1d[1].end2Offset.y);
+      Assert.Equal(0, speckleElement1d[1].end2Offset.z);
+      Assert.Equal("FFFFFF", speckleElement1d[1].end1Releases.code);
+      Assert.Equal("FFFFFF", speckleElement1d[1].end2Releases.code);
+      Assert.Equal(1, speckleElement1d[1].localAxis.origin.x, 6);
+      Assert.Equal(0, speckleElement1d[1].localAxis.origin.y, 6);
+      Assert.Equal(0, speckleElement1d[1].localAxis.origin.z, 6);
+      Assert.Equal(0, speckleElement1d[1].localAxis.xdir.x, 6);
+      Assert.Equal(1, speckleElement1d[1].localAxis.xdir.y, 6);
+      Assert.Equal(0, speckleElement1d[1].localAxis.xdir.z, 6);
+      Assert.Equal(0, speckleElement1d[1].localAxis.ydir.x, 6);
+      Assert.Equal(0, speckleElement1d[1].localAxis.ydir.y, 6);
+      Assert.Equal(1, speckleElement1d[1].localAxis.ydir.z, 6);
+      Assert.Equal(1, speckleElement1d[1].localAxis.normal.x, 6);
+      Assert.Equal(0, speckleElement1d[1].localAxis.normal.y, 6);
+      Assert.Equal(0, speckleElement1d[1].localAxis.normal.z, 6);
+      Assert.Equal(90, speckleElement1d[1].orientationAngle);
+      Assert.Null(speckleElement1d[1].orientationNode);
+      Assert.Equal("section 1", speckleElement1d[1].property.applicationId); //assume conversion to Property1d is tested elsewhere
+    }
     #endregion
 
     #region Loading
@@ -239,20 +333,25 @@ namespace ConverterGSATests
     public void GsaMatConcrete()
     {
       //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
       var gsaMatConcrete = GsaMatConcreteExample("concrete 1");
+      gsaRecords.Add(gsaMatConcrete);
 
-      //Set up context 
-      gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
       {
-        { GwaKeyword.MAT_CONCRETE, new Dictionary<int, string>
-          { { 1, "concrete 1" } }
-        }
-      };
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
 
-      var structuralObjects = converter.ConvertToSpeckle(new List<object> { gsaMatConcrete });
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
 
-      Assert.Empty(converter.ConversionErrors);
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
       Assert.NotEmpty(structuralObjects);
       Assert.Contains(structuralObjects, so => so is Concrete);
 
@@ -279,20 +378,25 @@ namespace ConverterGSATests
     public void GsaMatSteel()
     {
       //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
       var gsaMatSteel = GsaMatSteelExample("steel 1");
+      gsaRecords.Add(gsaMatSteel);
 
-      //Set up context 
-      gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
       {
-        { GwaKeyword.MAT_STEEL, new Dictionary<int, string>
-          { { 1, "steel 1" } }
-        }
-      };
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
 
-      var structuralObjects = converter.ConvertToSpeckle(new List<object> { gsaMatSteel });
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
 
-      Assert.Empty(converter.ConversionErrors);
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
       Assert.NotEmpty(structuralObjects);
       Assert.Contains(structuralObjects, so => so is Steel);
 
@@ -321,38 +425,28 @@ namespace ConverterGSATests
     public void GsaProperty1D()
     {
       //Define GSA objects
-      var gsaMatSteel = GsaMatSteelExample("steel 1");
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+
+      //Gen #2
       var gsaSection = GsaCatalogueSectionExample("section 1");
+      gsaRecords.Add(gsaSection);
 
-      //Set up context 
-      gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
-      {
-        { GwaKeyword.MAT_STEEL, new Dictionary<int, GsaRecord>
-          { { 1, gsaMatSteel } }
-        },
-        { GwaKeyword.SECTION, new Dictionary<int, GsaRecord>
-          { { 1, gsaSection } }
-        }
-      };
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
-      {
-        { GwaKeyword.MAT_STEEL, new List<int> { 1 } },
-        { GwaKeyword.SECTION, new List<int> { 1 } }
-      };
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
-      {
-        { GwaKeyword.SECTION, new Dictionary<int, string>
-          { { 1, "section 1" } }
-        },
-        { GwaKeyword.MAT_STEEL, new Dictionary<int, string>
-          { { 1, "steel 1" } }
-        }
-      };
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      var structuralObjects = converter.ConvertToSpeckle(new List<object> { gsaSection });
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
 
-      Assert.Empty(converter.ConversionErrors);
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
       Assert.NotEmpty(structuralObjects);
       Assert.Contains(structuralObjects, so => so is Property1D);
 
@@ -362,7 +456,7 @@ namespace ConverterGSATests
       Assert.Equal("section 1", speckleProperty1D.applicationId);
       Assert.Equal(gsaSection.Colour.ToString(), speckleProperty1D.colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D.memberType);
-      Assert.Equal("steel 1", speckleProperty1D.material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D.material.applicationId); //assume tests are done elsewhere
       Assert.Equal("", speckleProperty1D.grade);
       Assert.Equal(((ProfileDetailsCatalogue)((SectionComp)gsaSection.Components[0]).ProfileDetails).Profile, speckleProperty1D.profile.shapeDescription);
       Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D.referencePoint);
@@ -382,34 +476,28 @@ namespace ConverterGSATests
     public void GsaProperty2D()
     {
       //Define GSA objects
-      var gsaMatSteel = GsaMatSteelExample("steel 1");
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+
+      //Gen #2
       var gsaProp2d = GsaProp2dExample("property 2D 1");
+      gsaRecords.Add(gsaProp2d);
 
-      //Set up context 
-      gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
-      {
-        { GwaKeyword.MAT_STEEL, new Dictionary<int, GsaRecord>
-          { { 1, gsaMatSteel } }
-        }
-      };
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
-      {
-        { GwaKeyword.MAT_STEEL, new List<int> { 1 } }
-      };
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
-      {
-        { GwaKeyword.PROP_2D, new Dictionary<int, string>
-          { { 1, "property 2D 1" } }
-        },
-        { GwaKeyword.MAT_STEEL, new Dictionary<int, string>
-          { { 1, "steel 1" } }
-        }
-      };
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      var structuralObjects = converter.ConvertToSpeckle(new List<object> { gsaProp2d });
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
 
-      Assert.Empty(converter.ConversionErrors);
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
       Assert.NotEmpty(structuralObjects);
       Assert.Contains(structuralObjects, so => so is Property2D);
 
@@ -420,7 +508,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaProp2d.Name, speckleProperty2D.name);
       Assert.Equal(gsaProp2d.Colour.ToString(), speckleProperty2D.colour);
       Assert.Equal(gsaProp2d.Thickness.Value, speckleProperty2D.thickness);
-      Assert.Equal("steel 1", speckleProperty2D.material.applicationId); //assume conversion of material is covered by another test
+      Assert.Equal("steel material 1", speckleProperty2D.material.applicationId); //assume conversion of material is covered by another test
       Assert.Equal("", speckleProperty2D.grade);
       Assert.Null(speckleProperty2D.orientationAxis.applicationId); //no application ID for global coordinate system
       Assert.Equal(PropertyType2D.Shell, speckleProperty2D.type);
@@ -440,20 +528,25 @@ namespace ConverterGSATests
     public void GsaPropMass()
     {
       //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
       var gsaPropMass = GsaPropMassExample("property mass 1");
+      gsaRecords.Add(gsaPropMass);
 
-      //Set up context 
-      gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
       {
-        { GwaKeyword.PROP_MASS, new Dictionary<int, string>
-          { { 1, "property mass 1" } }
-        }
-      };
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
 
-      var structuralObjects = converter.ConvertToSpeckle(new List<object> { gsaPropMass });
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
 
-      Assert.Empty(converter.ConversionErrors);
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
       Assert.NotEmpty(structuralObjects);
       Assert.Contains(structuralObjects, so => so is PropertyMass);
 
@@ -478,20 +571,25 @@ namespace ConverterGSATests
     public void GsaPropSpr()
     {
       //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
       var gsaProSpr = GsaPropSprExample("property spring 1");
+      gsaRecords.Add(gsaProSpr);
 
-      //Set up context 
-      gsaModelMock.Layer = GSALayer.Design;
-      ((GsaProxyMockForConverterTests)gsaModelMock.Proxy).ApplicationIdsByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, string>>
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
       {
-        { GwaKeyword.PROP_SPR, new Dictionary<int, string>
-          { { 1, "property spring 1" } }
-        }
-      };
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
 
-      var structuralObjects = converter.ConvertToSpeckle(new List<object> { gsaProSpr });
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
 
-      Assert.Empty(converter.ConversionErrors);
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
       Assert.NotEmpty(structuralObjects);
       Assert.Contains(structuralObjects, so => so is PropertySpring);
 
@@ -529,11 +627,12 @@ namespace ConverterGSATests
 
     #region helper
     #region Geometry
-    private GsaAxis GsaAxisExample()
+    private GsaAxis GsaAxisExample(string appId)
     {
       return new GsaAxis()
       {
         Index = 1,
+        ApplicationId = appId,
         Name = "1",
         OriginX = 0,
         OriginY = 0,
@@ -577,6 +676,47 @@ namespace ConverterGSATests
           OrientationNodeIndex = 0,
           Angle = 0,
           ReleaseInclusion = ReleaseInclusion.NotIncluded,
+          OffsetZ = 0,
+          ParentIndex = 1
+        }
+      };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaEl[i].ApplicationId = appIds[i];
+      }
+      return gsaEl.GetRange(0, numberOfElements);
+    }
+
+    private List<GsaEl> GsaElement1dExamples(int numberOfElements, params string[] appIds)
+    {
+      var gsaEl = new List<GsaEl>()
+      {
+        new GsaEl()
+        {
+          Index = 1,
+          Name = "1",
+          Colour = Colour.NO_RGB,
+          Type = ElementType.Beam,
+          PropertyIndex = 1,
+          Group = 1,
+          NodeIndices = new List<int>() { 1, 2 },
+          ReleaseInclusion = ReleaseInclusion.NotIncluded,
+          OffsetY = 0,
+          OffsetZ = 0,
+          ParentIndex = 1
+        },
+        new GsaEl()
+        {
+          Index = 2,
+          Name = "2",
+          Colour = Colour.NO_RGB,
+          Type = ElementType.Beam,
+          PropertyIndex = 1,
+          Group = 1,
+          NodeIndices = new List<int>() { 2, 3 },
+          Angle = 90,
+          ReleaseInclusion = ReleaseInclusion.NotIncluded,
+          OffsetY = 0,
           OffsetZ = 0,
           ParentIndex = 1
         }
