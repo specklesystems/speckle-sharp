@@ -14,6 +14,7 @@ namespace Speckle.GSA.API
     bool GetSpeckleObjects(out List<object> objects);
 
     string GetApplicationId<T>(int index);
+    string GetApplicationId(Type t, int gsaIndex);
     List<int> LookupIndices<T>();
     List<int?> LookupIndices<T>(IEnumerable<string> applicationIds);
     bool SetSpeckleObjects(GsaRecord gsaRecord, Dictionary<string, object> objectsByApplicationId);
