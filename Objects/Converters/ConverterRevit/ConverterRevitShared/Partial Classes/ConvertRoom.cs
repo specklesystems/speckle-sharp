@@ -19,10 +19,11 @@ namespace Objects.Converter.Revit
 
       if (revitRoom == null)
       {
-        revitRoom = Doc.Create.NewRoom(level, new UV(speckleRoom.center.x, speckleRoom.center.y));
+        var point = PointToNative(speckleRoom.center);
+        revitRoom = Doc.Create.NewRoom(level, new UV(point.X, point.Y));
       }
 
-     
+
       revitRoom.Name = speckleRoom.name;
       revitRoom.Number = speckleRoom.number;
 
