@@ -15,11 +15,11 @@ namespace Objects.Converter.Revit
     {
       var revitRoom = GetExistingElementByApplicationId(speckleRoom.applicationId) as DB.Room;
       var level = LevelToNative(speckleRoom.level);
-
+      var center = PointToNative(speckleRoom.center);
 
       if (revitRoom == null)
       {
-        revitRoom = Doc.Create.NewRoom(level, new UV(speckleRoom.center.x, speckleRoom.center.y));
+        revitRoom = Doc.Create.NewRoom(level, new UV(center.X, center.Y));
       }
 
      

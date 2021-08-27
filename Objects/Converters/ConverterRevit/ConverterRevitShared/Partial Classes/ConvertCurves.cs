@@ -207,26 +207,27 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
       var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
-      // try update existing (update of model curve geometry curve based on speckle curve)
+      // try update existing (update model curve geometry curve based on speckle curve)
       if (docObj != null)
       {
-          try
+        try
+        {
+          var docCurve = docObj as DB.ModelCurve;
+          var revitGeom = docCurve.GeometryCurve;
+          var speckleGeom = baseCurve.get_Item(0);
+          bool fullOverlap = speckleGeom.Intersect(revitGeom) == SetComparisonResult.Equal;
+          if (!fullOverlap)
           {
-              var docCurve = docObj as DB.ModelCurve;
-              var speckleGeom = baseCurve.get_Item(0);
-              var revitGeom = docCurve.GeometryCurve;
-              if (speckleGeom != revitGeom)
-              {
-                  docCurve.SetGeometryCurve(speckleGeom, false);
-              }
-              return new ApplicationPlaceholderObject()
-              { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docCurve.UniqueId, NativeObject = docCurve };
+              docCurve.SetGeometryCurve(speckleGeom, false);
           }
-          catch
-          {
-              //delete and re-create line as fallback
+          return new ApplicationPlaceholderObject()
+          { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docCurve.UniqueId, NativeObject = docCurve };
+        }
+        catch
+        {
+              //delete and try to create new line as fallback
               Doc.Delete(docObj.Id);
-          }
+        }
       }
 
       try

@@ -455,6 +455,7 @@ namespace Objects.Converter.Revit
         BERC.ModelCurve _ => true,
         BE.Opening _ => true,
         BERC.RoomBoundaryLine _ => true,
+        BERC.SpaceSeparationLine _ => true,
         BE.Roof _ => true,
         BE.Topography _ => true,
         BER.RevitFaceWall _ => true,

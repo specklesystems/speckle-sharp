@@ -14,18 +14,16 @@ namespace Objects.BuiltElements
         public string number { get; set; }
         public double area { get; set; }
         public double volume { get; set; }
-        public bool isUnbounded { get; set; }
         public Point basePoint { get; set; }
         public Level level { get; set; }
         public double baseOffset { get; set; } = 0;
         public Level upperLimit { get; set; }
-        public double limitOffset { get; set; } = 0;
+        public double limitOffset { get; set; } = 0; 
         public ICurve boundary { get; set; }
         public string spaceType { get; set; }
+        public string zoneId { get; set; } 
 
-        [DetachProperty]
-        public List<SpaceSeparationLine> separationLines { get; set; } 
-        //missing Phase? Associated Room? Zone?
+        // additional properties to add: also inclue space separation lines here? Phase? Associated Room? Zone object instead of id?
 
         [DetachProperty]
         public Mesh displayMesh { get; set; }
@@ -41,14 +39,16 @@ namespace Objects.BuiltElements
             this.level = level;
         }
 
-        [SchemaInfo("Space with space separation lines", "Creates a Speckle space with separation lines", "BIM", "MEP")]
-        public Space(string name, string number, Point basePoint, [SchemaMainParam] List<SpaceSeparationLine> separationLines, Level level)
+        [SchemaInfo("Space with upper limit and offset parameters", "Creates a Speckle space with the specified upper limit and offsets", "BIM", "MEP")]
+        public Space(string name, string number, [SchemaMainParam] Point basePoint, Level level, Level upperLimit, double limitOffset, double baseOffset)
         {
             this.name = name;
             this.number = number;
             this.basePoint = basePoint;
-            this.separationLines = separationLines;
             this.level = level;
+            this.upperLimit = upperLimit;
+            this.limitOffset = limitOffset;
+            this.baseOffset = baseOffset;
         }
     }
 }
