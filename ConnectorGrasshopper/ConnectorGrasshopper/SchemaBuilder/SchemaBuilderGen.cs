@@ -462,19 +462,6 @@ public class RevitShaftSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
-public class RevitSpaceSchemaComponent: CreateSchemaObjectBase {
-     
-    public RevitSpaceSchemaComponent(): base("RevitSpace", "RevitSpace", "Creates a Revit space", "Speckle 2 Revit", "MEP") { }
-    
-    public override Guid ComponentGuid => new Guid("378a7eb4-4c87-07fc-4bbf-97ffd07107b0");
-    
-    public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitSpace.ctor(Objects.Geometry.Mesh,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitSpace");
-        base.AddedToDocument(document);
-    }
-}
-
-// This is generated code:
 public class RevitTopographySchemaComponent: CreateSchemaObjectBase {
      
     public RevitTopographySchemaComponent(): base("RevitTopography", "RevitTopography", "Creates a Revit topography", "Speckle 2 Revit", "Architecture") { }
@@ -574,6 +561,19 @@ public class SpaceSchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Space.ctor(System.String,System.String,Objects.Geometry.Point,Objects.BuiltElements.Level)","Objects.BuiltElements.Space");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class Space1SchemaComponent: CreateSchemaObjectBase {
+     
+    public Space1SchemaComponent(): base("Space with upper limit and offset parameters", "Space with upper limit and offset parameters", "Creates a Speckle space with the specified upper limit and offsets", "Speckle 2 BIM", "MEP") { }
+    
+    public override Guid ComponentGuid => new Guid("8f7b0323-3533-e7cd-ae43-0bdeb34f3570");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Space.ctor(System.String,System.String,Objects.Geometry.Point,Objects.BuiltElements.Level,Objects.BuiltElements.Level,System.Double,System.Double)","Objects.BuiltElements.Space");
         base.AddedToDocument(document);
     }
 }
