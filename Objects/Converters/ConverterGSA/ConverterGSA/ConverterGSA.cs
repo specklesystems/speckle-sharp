@@ -14,6 +14,8 @@ using Restraint = Objects.Structural.Geometry.Restraint;
 using Objects.Structural.Materials;
 using MemberType = Objects.Structural.Geometry.MemberType;
 using System.Runtime.InteropServices;
+using Objects.Structural.Loading;
+using System.CodeDom;
 
 namespace ConverterGSA
 {
@@ -40,23 +42,30 @@ namespace ConverterGSA
     public ConverterGSA()
     {
       ToSpeckleFns = new Dictionary<Type, Func<GsaRecord, List<Base>>>()
-        {
-          //Geometry
-          { typeof(GsaAxis), GsaAxisToSpeckle },
-          { typeof(GsaNode), GsaNodeToSpeckle },
-          { typeof(GsaEl), GsaElementToSpeckle },
-          //Loading
-
-          //Material
-          { typeof(GsaMatSteel), GsaMaterialSteelToSpeckle },
-          { typeof(GsaMatConcrete), GsaMaterialConcreteToSpeckle },
-          //Property
-          { typeof(GsaSection), GsaSectionToSpeckle },
-          { typeof(GsaProp2d), GsaProperty2dToSpeckle },
-          //{ typeof(GsaProp3d), GsaProperty3dToSpeckle }, not supported yet
-          { typeof(GsaPropMass), GsaPropertyMassToSpeckle },
-          { typeof(GsaPropSpr), GsaPropertySpringToSpeckle },
-          //Result
+      {
+        //Geometry
+        { typeof(GsaAxis), GsaAxisToSpeckle },
+        { typeof(GsaNode), GsaNodeToSpeckle },
+        { typeof(GsaEl), GsaElementToSpeckle },
+        //Loading
+        { typeof(GsaLoadCase), GsaLoadCaseToSpeckle },
+        { typeof(GsaLoad2dFace), GsaFaceLoadToSpeckle },
+        { typeof(GsaLoadBeamPoint), GsaBeamLoadToSpeckle },
+        { typeof(GsaLoadBeamUdl), GsaBeamLoadToSpeckle },
+        { typeof(GsaLoadBeamLine), GsaBeamLoadToSpeckle },
+        { typeof(GsaLoadBeamPatch), GsaBeamLoadToSpeckle },
+        { typeof(GsaLoadBeamTrilin), GsaBeamLoadToSpeckle },
+        { typeof(GsaLoadNode), GsaNodeLoadToSpeckle },
+        //Material
+        { typeof(GsaMatSteel), GsaMaterialSteelToSpeckle },
+        { typeof(GsaMatConcrete), GsaMaterialConcreteToSpeckle },
+        //Property
+        { typeof(GsaSection), GsaSectionToSpeckle },
+        { typeof(GsaProp2d), GsaProperty2dToSpeckle },
+        //{ typeof(GsaProp3d), GsaProperty3dToSpeckle }, not supported yet
+        { typeof(GsaPropMass), GsaPropertyMassToSpeckle },
+        { typeof(GsaPropSpr), GsaPropertySpringToSpeckle },
+        //Result
 
           //TODO: add methods for other GSA keywords
         };
@@ -173,22 +182,13 @@ namespace ConverterGSA
         constraintAxis = GetConstraintAxis(gsaNode),
         restraint = GetRestraint(gsaNode)
       };
-      if (IsIndex(gsaNode.Index))
-      {
-        speckleNode.applicationId = Instance.GsaModel.GetApplicationId<GsaNode>(gsaNode.Index.Value);
-      }
+      if (gsaNode.Index.IsIndex()) speckleNode.applicationId = Instance.GsaModel.GetApplicationId<GsaNode>(gsaNode.Index.Value);
 
       //Dynamic properties (TO DO: update Schema)
       speckleNode["colour"] = gsaNode.Colour.ToString();
-
-      if (IsPositive(gsaNode.MeshSize))
-        speckleNode["localElementSize"] = gsaNode.MeshSize.Value;
-
-      if (IsIndex(gsaNode.MassPropertyIndex))
-        speckleNode["propertyMass"] = GetPropertyMassFromIndex(gsaNode.MassPropertyIndex.Value);
-
-      if (IsIndex(gsaNode.SpringPropertyIndex))
-        speckleNode["propertySpring"] = GetPropertySpringFromIndex(gsaNode.SpringPropertyIndex.Value);
+      if (gsaNode.MeshSize.IsPositive()) speckleNode["localElementSize"] = gsaNode.MeshSize.Value;
+      if (gsaNode.MassPropertyIndex.IsIndex()) speckleNode["propertyMass"] = GetPropertyMassFromIndex(gsaNode.MassPropertyIndex.Value);
+      if (gsaNode.SpringPropertyIndex.IsIndex()) speckleNode["propertySpring"] = GetPropertySpringFromIndex(gsaNode.SpringPropertyIndex.Value);
 
       return speckleNode;
     }
@@ -207,18 +207,14 @@ namespace ConverterGSA
         name = gsaAxis.Name,
         axisType = AxisType.Cartesian,
       };
-      if (IsIndex(gsaAxis.Index))
-      {
-        speckleAxis.applicationId = Instance.GsaModel.GetApplicationId<GsaAxis>(gsaAxis.Index.Value);
-      }
-
+      if (gsaAxis.Index.IsIndex()) speckleAxis.applicationId = Instance.GsaModel.GetApplicationId<GsaAxis>(gsaAxis.Index.Value);
       if (gsaAxis.XDirX.HasValue && gsaAxis.XDirY.HasValue && gsaAxis.XDirZ.HasValue && gsaAxis.XYDirX.HasValue && gsaAxis.XYDirY.HasValue && gsaAxis.XYDirZ.HasValue)
       {
         var origin = new Point(gsaAxis.OriginX, gsaAxis.OriginY, gsaAxis.OriginZ);
-        var xdir = Vector.UnitVector(new Vector(gsaAxis.XDirX.Value, gsaAxis.XDirY.Value, gsaAxis.XDirZ.Value));
-        var ydir = Vector.UnitVector(new Vector(gsaAxis.XYDirX.Value, gsaAxis.XYDirY.Value, gsaAxis.XYDirZ.Value));
-        var normal = Vector.UnitVector(xdir * ydir);
-        ydir = -Vector.UnitVector(xdir * normal);
+        var xdir = (new Vector(gsaAxis.XDirX.Value, gsaAxis.XDirY.Value, gsaAxis.XDirZ.Value)).UnitVector();
+        var ydir = (new Vector(gsaAxis.XYDirX.Value, gsaAxis.XYDirY.Value, gsaAxis.XYDirZ.Value)).UnitVector();
+        var normal = (xdir * ydir).UnitVector();
+        ydir = -(xdir * normal).UnitVector();
         speckleAxis.definition = new Plane(origin, normal, xdir, ydir);
       }
       else
@@ -237,11 +233,11 @@ namespace ConverterGSA
 
     public Base GsaElementToSpeckle(GsaEl gsaEl)
     {
-      if (Is3dElement(gsaEl)) //3D element
+      if (gsaEl.Is3dElement()) //3D element
       {
         return GsaElement3dToSpeckle(gsaEl);
       }
-      else if (Is2dElement(gsaEl)) // 2D element
+      else if (gsaEl.Is2dElement()) // 2D element
       {
         return GsaElement2dToSpeckle(gsaEl);
       }
@@ -269,23 +265,12 @@ namespace ConverterGSA
         displayMesh = new Mesh() //TO DO: add display mesh
       };
 
-      if (IsIndex(gsaEl.Index))
-      {
-        speckleElement1d.applicationId = Instance.GsaModel.GetApplicationId<GsaEl>(gsaEl.Index.Value);
-      }
-
-      //Section
+      if (gsaEl.Index.IsIndex()) speckleElement1d.applicationId = Instance.GsaModel.GetApplicationId<GsaEl>(gsaEl.Index.Value);
       if (gsaEl.PropertyIndex.HasValue) speckleElement1d.property = GetProperty1dFromIndex(gsaEl.PropertyIndex.Value);
-
-      //Nodes
       if (gsaEl.Angle.HasValue) speckleElement1d.orientationAngle = gsaEl.Angle.Value;
       if (gsaEl.OrientationNodeIndex.HasValue) speckleElement1d.orientationNode = GetNodeFromIndex(gsaEl.OrientationNodeIndex.Value);
       foreach (var index in gsaEl.NodeIndices) speckleElement1d.topology.Add(GetNodeFromIndex(index));
-
-      //Local Axis
-      speckleElement1d.localAxis = GetLocalAxis(speckleElement1d.end1Node, speckleElement1d.end2Node, speckleElement1d.orientationNode, Radians(speckleElement1d.orientationAngle));
-
-      //Offsets
+      speckleElement1d.localAxis = GetLocalAxis(speckleElement1d.end1Node, speckleElement1d.end2Node, speckleElement1d.orientationNode, speckleElement1d.orientationAngle.Radians());
       if (gsaEl.End1OffsetX.HasValue) speckleElement1d.end1Offset.x = gsaEl.End1OffsetX.Value;
       if (gsaEl.OffsetY.HasValue) speckleElement1d.end1Offset.y = gsaEl.OffsetY.Value;
       if (gsaEl.OffsetZ.HasValue) speckleElement1d.end1Offset.z = gsaEl.OffsetZ.Value;
@@ -307,11 +292,8 @@ namespace ConverterGSA
         baseMesh = new Mesh() //TO DO: add base mesh
       };
 
-      if (IsIndex(gsaEl.Index))
-      {
-        speckleElement2d.applicationId = Instance.GsaModel.GetApplicationId<GsaEl>(gsaEl.Index.Value);
-      }
-      if (IsIndex(gsaEl.PropertyIndex)) speckleElement2d.property = GetProperty2dFromIndex(gsaEl.PropertyIndex.Value);
+      if (gsaEl.Index.IsIndex()) speckleElement2d.applicationId = Instance.GsaModel.GetApplicationId<GsaEl>(gsaEl.Index.Value);
+      if (gsaEl.PropertyIndex.IsIndex()) speckleElement2d.property = GetProperty2dFromIndex(gsaEl.PropertyIndex.Value);
       if (gsaEl.OffsetZ.HasValue) speckleElement2d.offset = gsaEl.OffsetZ.Value;
       if (gsaEl.Angle.HasValue) speckleElement2d.orientationAngle = gsaEl.Angle.Value;
       speckleElement2d.topology = gsaEl.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
@@ -327,14 +309,141 @@ namespace ConverterGSA
     #endregion
 
     #region Loading
+    public List<Base> GsaLoadCaseToSpeckle(GsaRecord nativeObject)
+    {
+      var speckleloadCase = GsaLoadCaseToSpeckle((GsaLoadCase)nativeObject);
+      return new List<Base>() { speckleloadCase };
+    }
+
+    public LoadCase GsaLoadCaseToSpeckle(GsaLoadCase gsaLoadCase)
+    {
+      //TO DO: update once GsaLoadCase has been updated
+      var speckleLoadCase = new LoadCase()
+      {
+        name = gsaLoadCase.Title,
+        loadType = GetLoadType(gsaLoadCase.CaseType),
+        source = "", 
+        actionType = ActionType.None,
+        description = ""
+      };
+
+      if (gsaLoadCase.Index.IsIndex()) speckleLoadCase.applicationId = Instance.GsaModel.GetApplicationId<GsaLoadCase>(gsaLoadCase.Index.Value);
+
+      return speckleLoadCase;
+    }
+
+    public List<Base> GsaFaceLoadToSpeckle(GsaRecord nativeObject)
+    {
+      var speckleFaceLoad = GsaFaceLoadToSpeckle((GsaLoad2dFace)nativeObject);
+      return new List<Base>() { speckleFaceLoad };
+    }
+
+    public FaceLoad GsaFaceLoadToSpeckle(GsaLoad2dFace gsaLoad2dFace)
+    {
+      var speckleFaceLoad = new FaceLoad()
+      {
+        name = gsaLoad2dFace.Name,
+        elements = new List<Base>(),
+        loadType = GetAreaLoadType(gsaLoad2dFace.Type),
+        direction = GetDirection(gsaLoad2dFace.LoadDirection),
+        loadAxisType = GetLoadAxisType(gsaLoad2dFace.AxisRefType),
+        isProjected = gsaLoad2dFace.Projected,
+        values = gsaLoad2dFace.Values,
+        
+      };
+      if (gsaLoad2dFace.Index.IsIndex()) speckleFaceLoad.applicationId = Instance.GsaModel.GetApplicationId<GsaLoad2dFace>(gsaLoad2dFace.Index.Value);
+      if (gsaLoad2dFace.LoadCaseIndex.IsIndex()) speckleFaceLoad.loadCase = GetLoadCaseFromIndex(gsaLoad2dFace.LoadCaseIndex.Value);
+
+      if (gsaLoad2dFace.AxisRefType == AxisRefType.Reference && gsaLoad2dFace.AxisIndex.IsIndex())
+      {
+        speckleFaceLoad.loadAxis = GetAxisFromIndex(gsaLoad2dFace.AxisIndex.Value);
+      }
+      if (gsaLoad2dFace.Type == Load2dFaceType.Point && gsaLoad2dFace.R.HasValue && gsaLoad2dFace.S.HasValue)
+      {
+        speckleFaceLoad.positions = new List<double>() { gsaLoad2dFace.R.Value, gsaLoad2dFace.S.Value };
+      }
+      foreach (var index in gsaLoad2dFace.Entities)
+      {
+        speckleFaceLoad.elements.Add(GetElement2DFromIndex(index));
+      }
+
+      return speckleFaceLoad;
+    }
+
+    public List<Base> GsaBeamLoadToSpeckle(GsaRecord nativeObject)
+    {
+      
+      var speckleBeamLoad = GsaBeamLoadToSpeckle((GsaLoadBeam)nativeObject);
+      return new List<Base>() { speckleBeamLoad };
+    }
+
+    public BeamLoad GsaBeamLoadToSpeckle(GsaLoadBeam gsaLoadBeam)
+    {
+      var type = gsaLoadBeam.GetType();
+      var speckleBeamLoad = new BeamLoad()
+      {
+        name = gsaLoadBeam.Name,
+        elements = new List<Base>(),
+        loadType = GetBeamLoadType(type),
+        direction = GetDirection(gsaLoadBeam.LoadDirection),
+        loadAxisType = GetLoadAxisType(gsaLoadBeam.AxisRefType),
+        isProjected = gsaLoadBeam.Projected,
+      };
+
+      if (gsaLoadBeam.Index.IsIndex()) speckleBeamLoad.applicationId = Instance.GsaModel.Cache.GetApplicationId(type, gsaLoadBeam.Index.Value);
+      if (gsaLoadBeam.LoadCaseIndex.IsIndex()) speckleBeamLoad.loadCase = GetLoadCaseFromIndex(gsaLoadBeam.LoadCaseIndex.Value);
+      if (gsaLoadBeam.AxisRefType == LoadBeamAxisRefType.Reference && gsaLoadBeam.AxisIndex.IsIndex())
+      {
+        speckleBeamLoad.loadAxis = GetAxisFromIndex(gsaLoadBeam.AxisIndex.Value);
+      }
+      if (GetLoadBeamValues(gsaLoadBeam, out var v)) speckleBeamLoad.values = v;
+      if (GetLoadBeamPositions(gsaLoadBeam, out var p)) speckleBeamLoad.positions = p;
+      foreach (var index in gsaLoadBeam.Entities)
+      {
+        speckleBeamLoad.elements.Add(GetElement1DFromIndex(index));
+      }
+
+      return speckleBeamLoad;
+    }
+
+    public List<Base> GsaNodeLoadToSpeckle(GsaRecord nativeObject)
+    {
+      var speckleNodeLoad = GsaNodeLoadToSpeckle((GsaLoadNode)nativeObject);
+      return new List<Base>() { speckleNodeLoad };
+    }
+
+    public NodeLoad GsaNodeLoadToSpeckle(GsaLoadNode gsaLoadNode)
+    {
+      var speckleNodeLoad = new NodeLoad()
+      {
+        name = gsaLoadNode.Name,
+        direction = GetDirection(gsaLoadNode.LoadDirection),
+        nodes = new List<Node>()
+      };
+
+      if (gsaLoadNode.Index.IsIndex()) speckleNodeLoad.applicationId = Instance.GsaModel.GetApplicationId<GsaLoadNode>(gsaLoadNode.Index.Value);
+      if (gsaLoadNode.LoadCaseIndex.IsIndex()) speckleNodeLoad.loadCase = GetLoadCaseFromIndex(gsaLoadNode.LoadCaseIndex.Value);
+      if (gsaLoadNode.Value.HasValue) speckleNodeLoad.value = new List<double>() { gsaLoadNode.Value.Value };
+      if (gsaLoadNode.GlobalAxis)
+      {
+        speckleNodeLoad.loadAxis = GlobalAxis();
+      }
+      else if (gsaLoadNode.AxisIndex.IsIndex())
+      {
+        speckleNodeLoad.loadAxis = GetAxisFromIndex(gsaLoadNode.AxisIndex.Value);
+      }
+      foreach (var index in gsaLoadNode.NodeIndices)
+      {
+        speckleNodeLoad.nodes.Add(GetNodeFromIndex(index));
+      }
+
+      return speckleNodeLoad;
+    }
+
+
     //TODO: implement conversion code for loading objects
-    /* AreaLoad
-     * BeamLoad
-     * FaceLoad
-     * GravityLoad
-     * LoadCase
+    /* GravityLoad
      * LoadCombination
-     * NodeLoad
      */
     #endregion
 
@@ -374,10 +483,7 @@ namespace ConverterGSA
         ultimateStrength = gsaMatSteel.Fu.Value,
         maxStrain = gsaMatSteel.EpsP.Value
       };
-      if (IsIndex(gsaMatSteel.Index))
-      {
-        speckleSteel.applicationId = Instance.GsaModel.GetApplicationId<GsaMatSteel>(gsaMatSteel.Index.Value);
-      }
+      if (gsaMatSteel.Index.IsIndex()) speckleSteel.applicationId = Instance.GsaModel.GetApplicationId<GsaMatSteel>(gsaMatSteel.Index.Value);
 
       //the following properties are stored in multiple locations in GSA
       if (Choose(gsaMatSteel.Mat.E, gsaMatSteel.Mat.Prop == null ? null : gsaMatSteel.Mat.Prop.E, out var E)) speckleSteel.youngsModulus = E;
@@ -409,7 +515,7 @@ namespace ConverterGSA
         codeYear = "",                              //codeYear can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" - "2018"
         flexuralStrength = 0
       };
-      if (IsIndex(gsaMatConcrete.Index)) speckleConcrete.applicationId = Instance.GsaModel.GetApplicationId<GsaMatConcrete>(gsaMatConcrete.Index.Value);
+      if (gsaMatConcrete.Index.IsIndex()) speckleConcrete.applicationId = Instance.GsaModel.GetApplicationId<GsaMatConcrete>(gsaMatConcrete.Index.Value);
 
       //the following properties might be null
       if (gsaMatConcrete.Fc.HasValue) speckleConcrete.compressiveStrength = gsaMatConcrete.Fc.Value;
@@ -449,7 +555,7 @@ namespace ConverterGSA
         referencePoint = GetReferencePoint(gsaSection.ReferencePoint),
       };
 
-      if (IsIndex(gsaSection.Index)) speckleProperty1D.applicationId = Instance.GsaModel.GetApplicationId<GsaSection>(gsaSection.Index.Value);
+      if (gsaSection.Index.IsIndex()) speckleProperty1D.applicationId = Instance.GsaModel.GetApplicationId<GsaSection>(gsaSection.Index.Value);
       if (gsaSection.RefY.HasValue) speckleProperty1D.offsetY = gsaSection.RefY.Value;
       if (gsaSection.RefZ.HasValue) speckleProperty1D.offsetZ = gsaSection.RefZ.Value;
 
@@ -491,12 +597,12 @@ namespace ConverterGSA
         refSurface = GetReferenceSurface(gsaProp2d)
       };
 
-      if (IsIndex(gsaProp2d.Index))
+      if (gsaProp2d.Index.IsIndex())
       {
         speckleProperty2D.applicationId = Instance.GsaModel.GetApplicationId<GsaProp2d>(gsaProp2d.Index.Value);
       }
-      if (IsPositive(gsaProp2d.Thickness)) speckleProperty2D.thickness = gsaProp2d.Thickness.Value;
-      if (IsIndex(gsaProp2d.GradeIndex)) speckleProperty2D.material = GetMaterialFromIndex(gsaProp2d.GradeIndex.Value, gsaProp2d.MatType);
+      if (gsaProp2d.Thickness.IsPositive()) speckleProperty2D.thickness = gsaProp2d.Thickness.Value;
+      if (gsaProp2d.GradeIndex.IsIndex()) speckleProperty2D.material = GetMaterialFromIndex(gsaProp2d.GradeIndex.Value, gsaProp2d.MatType);
       if (gsaProp2d.Type != Property2dType.NotSet) speckleProperty2D.type = (PropertyType2D)Enum.Parse(typeof(PropertyType2D), gsaProp2d.Type.ToString());
 
       //Only supporting Percentage modifiers
@@ -529,7 +635,7 @@ namespace ConverterGSA
         inertiaYZ = gsaPropMass.Iyz,
         inertiaZX = gsaPropMass.Izx
       };
-      if (IsIndex(gsaPropMass.Index))
+      if (gsaPropMass.Index.IsIndex())
       {
         specklePropertyMass.applicationId = Instance.GsaModel.GetApplicationId<GsaPropMass>(gsaPropMass.Index.Value);
       }
@@ -538,9 +644,9 @@ namespace ConverterGSA
       if (gsaPropMass.Mod == MassModification.Modified)
       {
         specklePropertyMass.massModified = true;
-        if (IsPositive(gsaPropMass.ModXPercentage)) specklePropertyMass.massModifierX = gsaPropMass.ModXPercentage.Value;
-        if (IsPositive(gsaPropMass.ModYPercentage)) specklePropertyMass.massModifierY = gsaPropMass.ModYPercentage.Value;
-        if (IsPositive(gsaPropMass.ModZPercentage)) specklePropertyMass.massModifierZ = gsaPropMass.ModZPercentage.Value;
+        if (gsaPropMass.ModXPercentage.IsPositive()) specklePropertyMass.massModifierX = gsaPropMass.ModXPercentage.Value;
+        if (gsaPropMass.ModYPercentage.IsPositive()) specklePropertyMass.massModifierY = gsaPropMass.ModYPercentage.Value;
+        if (gsaPropMass.ModZPercentage.IsPositive()) specklePropertyMass.massModifierZ = gsaPropMass.ModZPercentage.Value;
       }
       else
       {
@@ -564,7 +670,7 @@ namespace ConverterGSA
         name = gsaPropSpr.Name,
         dampingRatio = gsaPropSpr.DampingRatio.Value
       };
-      if (IsIndex(gsaPropSpr.Index))
+      if (gsaPropSpr.Index.IsIndex())
       {
         specklePropertySpring.applicationId = Instance.GsaModel.GetApplicationId<GsaPropSpr>(gsaPropSpr.Index.Value);
       }
@@ -743,7 +849,7 @@ namespace ConverterGSA
         normal = new Vector(0, 1, 0);
         speckleAxis = new Plane(origin, normal, xdir, ydir);
       }
-      else if (gsaNode.AxisRefType == NodeAxisRefType.Reference && IsIndex(gsaNode.AxisIndex))
+      else if (gsaNode.AxisRefType == NodeAxisRefType.Reference && gsaNode.AxisIndex.IsIndex())
       {
         speckleAxis = GetAxisFromIndex(gsaNode.AxisIndex.Value).definition;
       }
@@ -801,7 +907,7 @@ namespace ConverterGSA
     private Restraint UpdateSpringStiffness(Restraint restraint, GsaNode gsaNode)
     {
       //Spring Stiffness
-      if (IsIndex(gsaNode.SpringPropertyIndex))
+      if (gsaNode.SpringPropertyIndex.IsIndex())
       {
         var gsaRecord = Instance.GsaModel.GetNative<GsaPropSpr>(gsaNode.SpringPropertyIndex.Value);
         if (gsaRecord.GetType() != typeof(GsaPropSpr))
@@ -866,13 +972,6 @@ namespace ConverterGSA
     {
       return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaNode, Node>(index, out var speckleObjects) && speckleObjects != null && speckleObjects.Count > 0) 
         ? speckleObjects.First() : null;
-      /*
-      Node speckleNode = null;
-      var gsaNode = Instance.GsaModel.GetNative<GsaNode>(index);
-      if (gsaNode != null) speckleNode = GsaNodeToSpeckle((GsaNode)gsaNode);
-
-      return speckleNode;
-      */
     }
     #endregion
 
@@ -885,7 +984,7 @@ namespace ConverterGSA
     private Axis GetAxisFromIndex(int index)
     {
       var gsaAxis = Instance.GsaModel.GetNative<GsaAxis>(index);
-      if (gsaAxis.GetType() != typeof(GsaAxis))
+      if (gsaAxis == null || gsaAxis.GetType() != typeof(GsaAxis))
       {
         return null;
       }
@@ -917,35 +1016,23 @@ namespace ConverterGSA
 
     #region Elements
     /// <summary>
-    /// Determine if object represents a 2D element
+    /// Get Speckle Element2D object from GSA element index
     /// </summary>
-    /// <param name="gsaEl">GsaEl object containing the element definition</param>
+    /// <param name="index">GSA element index</param>
     /// <returns></returns>
-    public bool Is2dElement(GsaEl gsaEl)
+    private Element2D GetElement2DFromIndex(int index)
     {
-      return (gsaEl.Type == ElementType.Triangle3 || gsaEl.Type == ElementType.Triangle6 || gsaEl.Type == ElementType.Quad4 || gsaEl.Type == ElementType.Quad8);
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaEl, Element2D>(index, out var speckleObjects)) ? speckleObjects.First() : null;
     }
 
     /// <summary>
-    /// Determine if object represents a 3D element
+    /// Get Speckle Element1D object from GSA element index
     /// </summary>
-    /// <param name="gsaEl">GsaEl object containing the element definition</param>
+    /// <param name="index">GSA element index</param>
     /// <returns></returns>
-    public bool Is3dElement(GsaEl gsaEl)
+    private Element1D GetElement1DFromIndex(int index)
     {
-      return (gsaEl.Type == ElementType.Brick8 || gsaEl.Type == ElementType.Pyramid5 || gsaEl.Type == ElementType.Tetra4 || gsaEl.Type == ElementType.Wedge6);
-    }
-
-    /// <summary>
-    /// Determine if object represents a 1D element
-    /// </summary>
-    /// <param name="gsaEl">GsaEl object containing the element definition</param>
-    /// <returns></returns>
-    public bool Is1dElement(GsaEl gsaEl)
-    {
-      return (gsaEl.Type == ElementType.Bar || gsaEl.Type == ElementType.Beam || gsaEl.Type == ElementType.Cable || gsaEl.Type == ElementType.Damper || 
-        gsaEl.Type == ElementType.Link || gsaEl.Type == ElementType.Rod || gsaEl.Type == ElementType.Spacer || gsaEl.Type == ElementType.Spring || 
-        gsaEl.Type == ElementType.Strut || gsaEl.Type == ElementType.Tie);
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaEl, Element1D>(index, out var speckleObjects)) ? speckleObjects.First() : null;
     }
 
     private ElementType1D GetElement1dType(ElementType gsaType)
@@ -1004,23 +1091,23 @@ namespace ConverterGSA
       var p1 = n1.basePoint;
       var p2 = n2.basePoint;
       var origin = new Point(p1.x, p1.y, p1.z);
-      var xdir = Vector.UnitVector(new Vector(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z));
+      var xdir = (new Vector(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z)).UnitVector();
 
       //Update normal if orientation node exists
       if (n3 != null)
       {
         var p3 = n3.basePoint;
-        normal = Vector.UnitVector(new Vector(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z));
+        normal = (new Vector(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z)).UnitVector();
       }
 
       //Apply rotation angle
-      if (angle != 0) normal = Vector.UnitVector(Rotate(normal, xdir, angle));
+      if (angle != 0) normal = normal.Rotate(xdir, angle).UnitVector();
 
       //xdir and normal define a plane:
       // *ensure normal is perpendicular to xdir on that plane
       // *ensure ydir is normal to the plane
-      var ydir = -Vector.UnitVector(xdir * normal);
-      normal = Vector.UnitVector(xdir * ydir);
+      var ydir = -(xdir * normal).UnitVector();
+      normal = (xdir * ydir).UnitVector();
 
       return new Plane(origin, normal, xdir, ydir);
     }
@@ -1028,6 +1115,192 @@ namespace ConverterGSA
     #endregion
 
     #region Loading
+    private LoadType GetLoadType(StructuralLoadCaseType gsaLoadType)
+    {
+      switch (gsaLoadType)
+      {
+        case StructuralLoadCaseType.Dead:
+          return LoadType.Dead;
+        case StructuralLoadCaseType.Earthquake:
+          return LoadType.SeismicStatic;
+        case StructuralLoadCaseType.Live:
+          return LoadType.Live;
+        case StructuralLoadCaseType.Rain:
+          return LoadType.Rain;
+        case StructuralLoadCaseType.Snow:
+          return LoadType.Snow;
+        case StructuralLoadCaseType.Soil:
+          return LoadType.Soil;
+        case StructuralLoadCaseType.Thermal:
+          return LoadType.Thermal;
+        case StructuralLoadCaseType.Wind:
+          return LoadType.Wind;
+        default:
+          return LoadType.None;
+      }
+    }
+
+    private AreaLoadType GetAreaLoadType(Load2dFaceType gsaType)
+    {
+      switch (gsaType)
+      {
+        case Load2dFaceType.General:
+          return AreaLoadType.Variable;
+        case Load2dFaceType.Point:
+          return AreaLoadType.Point;
+        default:
+          return AreaLoadType.Constant;
+      }
+    }
+
+    private LoadDirection GetDirection(AxisDirection3 gsaDirection)
+    {
+      switch (gsaDirection)
+      {
+        case AxisDirection3.X:
+          return LoadDirection.X;
+        case AxisDirection3.Y:
+          return LoadDirection.Y;
+        case AxisDirection3.Z:
+        default:
+          return LoadDirection.Z;
+      }
+    }
+
+    private LoadDirection GetDirection(AxisDirection6 gsaDirection)
+    {
+      switch (gsaDirection)
+      {
+        case AxisDirection6.X:
+          return LoadDirection.X;
+        case AxisDirection6.Y:
+          return LoadDirection.Y;
+        case AxisDirection6.Z:
+          return LoadDirection.Z;
+        case AxisDirection6.XX:
+          return LoadDirection.XX;
+        case AxisDirection6.YY:
+          return LoadDirection.YY;
+        case AxisDirection6.ZZ:
+        default:
+          return LoadDirection.ZZ;
+      }
+    }
+
+    private LoadAxisType GetLoadAxisType(AxisRefType gsaType)
+    {
+      //TO DO: update when there are more options for LoadAxisType
+      switch (gsaType)
+      {
+        case AxisRefType.Local:
+          return LoadAxisType.Local;
+        case AxisRefType.Reference:
+        case AxisRefType.NotSet:
+        case AxisRefType.Global:
+        default:
+          return LoadAxisType.Global;
+      }
+    }
+
+    private LoadAxisType GetLoadAxisType(LoadBeamAxisRefType gsaType)
+    {
+      //TO DO: update when there are more options for LoadAxisType
+      switch (gsaType)
+      {
+        case LoadBeamAxisRefType.Local:
+          return LoadAxisType.Local;
+        case LoadBeamAxisRefType.Reference:
+        case LoadBeamAxisRefType.Natural:
+        case LoadBeamAxisRefType.NotSet:
+        case LoadBeamAxisRefType.Global:
+        default:
+          return LoadAxisType.Global;
+      }
+    }
+
+    private LoadCase GetLoadCaseFromIndex(int index)
+    {
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaLoadCase, LoadCase>(index, out var speckleObjects)) ? speckleObjects.First() : null;
+    }
+
+    private BeamLoadType GetBeamLoadType(Type t)
+    {
+      if (t == typeof(GsaLoadBeamPoint))
+      {
+        return BeamLoadType.Point;
+      }
+      else if (t == typeof(GsaLoadBeamLine))
+      {
+        return BeamLoadType.Linear;
+      }
+      else if (t == typeof(GsaLoadBeamPatch))
+      {
+        return BeamLoadType.Patch;
+      }
+      else if (t == typeof(GsaLoadBeamTrilin))
+      {
+        return BeamLoadType.TriLinear;
+      }
+      else
+      {
+        return BeamLoadType.Uniform;
+      }
+    }
+
+    private bool GetLoadBeamPositions(GsaLoadBeam gsaLoadBeam, out List<double> positions)
+    {
+      positions = new List<double>();
+      var type = gsaLoadBeam.GetType();
+      if (type == typeof(GsaLoadBeamPoint))
+      {
+        positions.Add(((GsaLoadBeamPoint)gsaLoadBeam).Position);
+        return true;
+      }
+      else if (type == typeof(GsaLoadBeamPatch) || type == typeof(GsaLoadBeamPatchTrilin))
+      {
+        var lb = (GsaLoadBeamPatchTrilin)gsaLoadBeam;
+        positions.Add(lb.Position1);
+        positions.Add(lb.Position2Percent);
+        return true;
+      }
+      return false;
+    }
+
+    private bool GetLoadBeamValues(GsaLoadBeam gsaLoadBeam, out List<double> values)
+    {
+      values = new List<double>();
+      double? v;
+      var type = gsaLoadBeam.GetType();
+      if (type == typeof(GsaLoadBeamPoint))
+      {
+        v = ((GsaLoadBeamPoint)gsaLoadBeam).Load;
+        if (v.HasValue)
+        { 
+          values.Add(v.Value);
+          return true;
+        }
+      }
+      else if (type == typeof(GsaLoadBeamUdl))
+      {
+        v = ((GsaLoadBeamUdl)gsaLoadBeam).Load;
+        if (v.HasValue)
+        {
+          values.Add(v.Value);
+          return true;
+        }
+      }
+      else if (type == typeof(GsaLoadBeamPatch) || type == typeof(GsaLoadBeamPatchTrilin))
+      {
+        var lb = (GsaLoadBeamPatchTrilin)gsaLoadBeam;
+        if (lb.Load1.HasValue && lb.Load2.HasValue)
+        {
+          values.Add(lb.Load1.Value);
+          values.Add(lb.Load2.Value);
+          return true;
+        }
+      }
+      return false;
+    }
     #endregion
 
     #region Materials
@@ -1349,7 +1622,7 @@ namespace ConverterGSA
         //TO DO: handle local reference axis case
         //Local would be a different coordinate system for each element that gsaProp2d was assigned to
       }
-      else if (gsaProp2d.AxisRefType == AxisRefType.Reference && IsIndex(gsaProp2d.AxisIndex))
+      else if (gsaProp2d.AxisRefType == AxisRefType.Reference && gsaProp2d.AxisIndex.IsIndex())
       {
         orientationAxis = GetAxisFromIndex(gsaProp2d.AxisIndex.Value);
       }
@@ -1369,11 +1642,6 @@ namespace ConverterGSA
     /// <returns></returns>
     private Property2D GetProperty2dFromIndex(int index)
     {
-      /*
-      Property2D speckleProperty2d = null;
-      var gsaProp2d = Instance.GsaModel.GetNative<GsaProp2d>(index);
-      if (gsaProp2d != null) speckleProperty2d = GsaProperty2dToSpeckle((GsaProp2d)gsaProp2d);
-      */
       return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaProp2d, Property2D>(index, out var speckleObjects)) ? speckleObjects.First() : null;
     }
     #endregion
@@ -1383,59 +1651,6 @@ namespace ConverterGSA
     #region ToNative
     #endregion
 
-    #region Other
-    /// <summary>
-    /// Test if a nullable integer has a value and is positive
-    /// </summary>
-    /// <param name="index"></param>
-    /// <returns></returns>
-    private bool IsIndex(int? index)
-    {
-      return (index.HasValue && index.Value > 0);
-    }
-
-    /// <summary>
-    /// Test if a nullable double has a value and is positive
-    /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    private bool IsPositive(double? value)
-    {
-      return (value.HasValue && value.Value > 0);
-    }
-
-    /// <summary>
-    /// Convert angle from degrees to radians
-    /// </summary>
-    /// <param name="degrees">angle in degrees</param>
-    /// <returns></returns>
-    private double Radians(double degrees)
-    {
-      return Math.PI * degrees / 180;
-    }
-    #region Vector
-
-    /// <summary>
-    /// Rotate vector V by an angle Theta about unit vector K using right hand rule
-    /// </summary>
-    /// <param name="v">vector to be rotated</param>
-    /// <param name="k">unit vector defining axis of rotation</param>
-    /// <param name="theta">rotation angle (radians)</param>
-    /// <returns></returns>
-    private Vector Rotate(Vector v, Vector k, double theta)
-    {
-      //Rodrigues' rotation formula
-      //https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
-
-      k = Vector.UnitVector(k); //ensure axis of rotation is a unit vector
-      var v_rot1 = v * Math.Cos(theta);
-      var v_rot2 = (k * v) * Math.Sin(theta);
-      var v_rot3 = k * (Vector.DotProduct(k, v) * (1 - Math.Sin(theta)));
-
-      return v_rot1 + v_rot2 + v_rot3;
-    }
-    #endregion
-    #endregion
     #endregion
   }
 }
