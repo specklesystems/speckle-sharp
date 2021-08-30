@@ -380,11 +380,11 @@ namespace ConverterGSA
       }
 
       //the following properties are stored in multiple locations in GSA
-      if (Choose(gsaMatSteel.Mat.E, gsaMatSteel.Mat.Prop.E, out var E)) speckleSteel.youngsModulus = E;
-      if (Choose(gsaMatSteel.Mat.Nu, gsaMatSteel.Mat.Prop.Nu, out var Nu)) speckleSteel.poissonsRatio = Nu;
-      if (Choose(gsaMatSteel.Mat.G, gsaMatSteel.Mat.Prop.G, out var G)) speckleSteel.shearModulus = G;
-      if (Choose(gsaMatSteel.Mat.Rho, gsaMatSteel.Mat.Prop.Rho, out var Rho)) speckleSteel.density = Rho;
-      if (Choose(gsaMatSteel.Mat.Alpha, gsaMatSteel.Mat.Prop.Alpha, out var Alpha)) speckleSteel.thermalExpansivity = Alpha;
+      if (Choose(gsaMatSteel.Mat.E, gsaMatSteel.Mat.Prop == null ? null : gsaMatSteel.Mat.Prop.E, out var E)) speckleSteel.youngsModulus = E;
+      if (Choose(gsaMatSteel.Mat.Nu, gsaMatSteel.Mat.Prop == null ? null : gsaMatSteel.Mat.Prop.Nu, out var Nu)) speckleSteel.poissonsRatio = Nu;
+      if (Choose(gsaMatSteel.Mat.G, gsaMatSteel.Mat.Prop == null ? null : gsaMatSteel.Mat.Prop.G, out var G)) speckleSteel.shearModulus = G;
+      if (Choose(gsaMatSteel.Mat.Rho, gsaMatSteel.Mat.Prop == null ? null : gsaMatSteel.Mat.Prop.Rho, out var Rho)) speckleSteel.density = Rho;
+      if (Choose(gsaMatSteel.Mat.Alpha, gsaMatSteel.Mat.Prop == null ? null : gsaMatSteel.Mat.Prop.Alpha, out var Alpha)) speckleSteel.thermalExpansivity = Alpha;
 
       return speckleSteel;
     }
@@ -418,11 +418,11 @@ namespace ConverterGSA
       if (gsaMatConcrete.Fcdt.HasValue) speckleConcrete.tensileStrength = gsaMatConcrete.Fcdt.Value;
 
       //the following properties are stored in multiple locations in GSA
-      if (Choose(gsaMatConcrete.Mat.E, gsaMatConcrete.Mat.Prop.E, out var E)) speckleConcrete.youngsModulus = E;
-      if (Choose(gsaMatConcrete.Mat.Nu, gsaMatConcrete.Mat.Prop.Nu, out var Nu)) speckleConcrete.poissonsRatio = Nu;
-      if (Choose(gsaMatConcrete.Mat.G, gsaMatConcrete.Mat.Prop.G, out var G)) speckleConcrete.shearModulus = G;
-      if (Choose(gsaMatConcrete.Mat.Rho, gsaMatConcrete.Mat.Prop.Rho, out var Rho)) speckleConcrete.density = Rho;
-      if (Choose(gsaMatConcrete.Mat.Alpha, gsaMatConcrete.Mat.Prop.Alpha, out var Alpha)) speckleConcrete.thermalExpansivity = Alpha;
+      if (Choose(gsaMatConcrete.Mat.E, gsaMatConcrete.Mat.Prop == null ? null : gsaMatConcrete.Mat.Prop.E, out var E)) speckleConcrete.youngsModulus = E;
+      if (Choose(gsaMatConcrete.Mat.Nu, gsaMatConcrete.Mat.Prop == null ? null : gsaMatConcrete.Mat.Prop.Nu, out var Nu)) speckleConcrete.poissonsRatio = Nu;
+      if (Choose(gsaMatConcrete.Mat.G, gsaMatConcrete.Mat.Prop == null ? null : gsaMatConcrete.Mat.Prop.G, out var G)) speckleConcrete.shearModulus = G;
+      if (Choose(gsaMatConcrete.Mat.Rho, gsaMatConcrete.Mat.Prop == null ? null : gsaMatConcrete.Mat.Prop.Rho, out var Rho)) speckleConcrete.density = Rho;
+      if (Choose(gsaMatConcrete.Mat.Alpha, gsaMatConcrete.Mat.Prop == null ? null : gsaMatConcrete.Mat.Prop.Alpha, out var Alpha)) speckleConcrete.thermalExpansivity = Alpha;
 
       return speckleConcrete;
     }

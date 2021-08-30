@@ -72,67 +72,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     //Called by the kit
     //Not every record has stream IDs (like generated nodes)
     public bool Upsert(GsaRecord record, bool? latest = true) => UpsertInternal(record, latest, out int? _);
-    /*
-    {
-      var t = record.GetType();
-      try
-      {
-        var matchingRecords = new List<GsaCacheRecord>();
-        lock (cacheLock)
-        {
-          if (GetAllRecords(t, record.Index.Value, out var foundRecords) && foundRecords != null && foundRecords.Count > 0)
-          {
-            matchingRecords = foundRecords;
-          }
-        }
-
-        if (matchingRecords.Count() > 0)
-        {
-          var equalRecords = matchingRecords.Where(r => Equals(r.GsaRecord, record)).ToList();
-          if (equalRecords.Count() == 1)
-          {
-            //There should just be one equal record
-
-            //There is no change to the record but it clearly means it's part of the latest
-            if (latest.HasValue)
-            {
-              lock (cacheLock)
-              {
-                equalRecords.First().Latest = latest.Value;
-              }
-            }
-
-            return true;
-          }
-          else if (equalRecords.Count() == 0)
-          {
-            lock (cacheLock)
-            {
-              //These will be return at the next call to GetToBeDeletedGwa() and removed at the next call to Snapshot()
-              foreach (var r in matchingRecords)
-              {
-                r.Latest = false;
-              }
-            }
-          }
-          else if (equalRecords.Count() > 1)
-          {
-            throw new Exception("Unexpected multiple matches found in upsert of cache records");
-          }
-        }
-
-        //if there is no matching or no equal records, then add it as a new one
-        Add(t, record, out int addedIndex, true);
-
-        return true;
-      }
-      catch (Exception ex)
-      {
-        return false;
-      }
-    }
-    */
-
+    
     #endregion
 
     #region speckle
@@ -213,66 +153,16 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
         }
       }
 
-      //var colIndices = recordIndicesBySchemaTypeGsaId[t][gsaIndex];
-
-      //objects = new List<object>();
-      //objectIndicesByType = new Dictionary<Type, HashSet<int>>();
-      //objectIndicesBySchemaTypesGsaId
-
       foreach (var appId in speckleObjects.Keys)
       {
         var speckleType = speckleObjects[appId].GetType();
-        if (UpsertInternal(speckleObjects[appId], speckleType, appId, out int? upsertedIndex))
+        if (UpsertInternal(speckleObjects[appId], speckleType, appId, out int? upsertedIndex) && upsertedIndex.HasValue)
         {
           lock (cacheLock)
           {
-            if (!objectIndicesByType.ContainsKey(speckleType))
-            {
-              objectIndicesByType.Add(speckleType, new HashSet<int>());
-            }
+            objectIndicesBySchemaTypesGsaId[t][gsaIndex].Add(upsertedIndex.Value);
           }
         }
-        /*
-      var objectsByType = speckleObjects.GroupBy(so => so.GetType()).ToDictionary(g => g.Key, g => g.ToList());
-
-      lock (cacheLock)
-      {
-        var newIndexStart = objects.Count();
-        foreach (var speckleType in objectsByType.Keys)
-        {
-          if (!objectIndicesBySchemaTypesGsaId.ContainsKey(t))
-          {
-            objectIndicesBySchemaTypesGsaId.Add(t, new Dictionary<int, HashSet<int>>());
-          }
-          if (!objectIndicesBySchemaTypesGsaId[t].ContainsKey(gsaIndex))
-          {
-            objectIndicesBySchemaTypesGsaId[t].Add(gsaIndex, new HashSet<int>());
-          }
-          if (!objectIndicesByType.ContainsKey(speckleType))
-          {
-            objectIndicesByType.Add(speckleType, new HashSet<int>());
-          }
-
-          var numSpeckleObjects = objectsByType[speckleType].Count();
-
-          objects.AddRange(objectsByType[speckleType]);
-          var newSpeckleObjectIndices = Enumerable.Range(newIndexStart, numSpeckleObjects);
-
-          foreach (var nsoi in newSpeckleObjectIndices)
-          {
-            if (!objectIndicesByType[speckleType].Contains(nsoi))
-            {
-              objectIndicesByType[speckleType].Add(nsoi);
-            }
-            if (!objectIndicesBySchemaTypesGsaId[t][gsaIndex].Contains(nsoi))
-            {
-              objectIndicesBySchemaTypesGsaId[t][gsaIndex].Add(nsoi);
-            }
-          }
-
-          newIndexStart += numSpeckleObjects;
-        }
-        */
       }
       return true;
     }
