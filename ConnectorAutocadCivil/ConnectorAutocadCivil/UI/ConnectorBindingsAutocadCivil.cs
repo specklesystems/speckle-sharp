@@ -110,24 +110,30 @@ namespace Speckle.ConnectorAutocadCivil.UI
     public override List<string> GetSelectedObjects()
     {
       var objs = new List<string>();
-      PromptSelectionResult selection = Doc.Editor.SelectImplied();
-      if (selection.Status == PromptStatus.OK)
-        objs = selection.Value.GetHandles();
+      if (Doc != null)
+      {
+        PromptSelectionResult selection = Doc.Editor.SelectImplied();
+        if (selection.Status == PromptStatus.OK)
+          objs = selection.Value.GetHandles();
+      }
       return objs;
     }
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
       var layers = new List<string>();
-      using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      if (Doc != null)
       {
-        AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
-        foreach (AcadDb.ObjectId objId in lyrTbl)
+        using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
         {
-          AcadDb.LayerTableRecord lyrTblRec = tr.GetObject(objId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTableRecord;
-          layers.Add(lyrTblRec.Name);
+          AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
+          foreach (AcadDb.ObjectId objId in lyrTbl)
+          {
+            AcadDb.LayerTableRecord lyrTblRec = tr.GetObject(objId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTableRecord;
+            layers.Add(lyrTblRec.Name);
+          }
+          tr.Commit();
         }
-        tr.Commit();
       }
       return new List<ISelectionFilter>()
       {
@@ -161,6 +167,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override async Task<StreamState> ReceiveStream(StreamState state)
     {
+      if (Doc == null)
+      {
+        state.Errors.Add(new Exception($"No Document is open."));
+        return null;
+      }
+
       Exceptions.Clear();
 
       var kit = KitManager.GetDefaultKit();
