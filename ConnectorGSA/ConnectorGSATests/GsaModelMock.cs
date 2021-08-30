@@ -84,6 +84,17 @@ namespace ConnectorGSATests
     #endregion
 
     #region proxy_related
+
+    public bool NewFile(bool showWindow = true, object gsaInstance = null) => true;
+
+    public bool OpenFile(string path, bool showWindow = true, object gsaInstance = null) => true;
+
+    public bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
+    {
+      records = new List<GsaRecord>();
+      return true;
+    }
+
     public bool ClearResults(ResultGroup group) => (ClearResultsFn != null) ? ClearResultsFn(group) : throw new NotImplementedException();
 
     public List<int> ConvertGSAList(string list, GSAEntity entityType)
@@ -98,21 +109,13 @@ namespace ConnectorGSATests
     public int NodeAt(double x, double y, double z, double coincidenceTol)
       => (NodeAtFn != null) ? NodeAtFn(x, y, z, coincidenceTol) : throw new NotImplementedException();
 
-    public bool OpenFile(string path, bool showWindow = true, object gsaInstance = null) => true;
-
-    public bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
+    public string GenerateApplicationId(Type schemaType, int gsaIndex)
     {
-      records = new List<GsaRecord>();
-      return true;
+      return "";
     }
 
     public void Close()
     {
-    }
-
-    public string GenerateApplicationId(Type schemaType, int gsaIndex)
-    {
-      return "";
     }
 
     #endregion

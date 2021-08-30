@@ -4,7 +4,6 @@ using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ConverterGSATests
 {
@@ -36,7 +35,26 @@ namespace ConverterGSATests
       PopulateTypesKeywords();
     }
 
-    
+    public bool NewFile(bool showWindow = true, object gsaInstance = null) => true;
+    public bool OpenFile(string path, bool showWindow = true, object gsaInstance = null) => true;
+
+    public List<int> ConvertGSAList(string list, GSAEntity entityType) => new List<int>() { 1 };
+
+    public int NodeAt(double x, double y, double z, double coincidenceTol) => 1;
+
+    public void Close() { }
+
+    public string GenerateApplicationId(Type schemaType, int gsaIndex) => "";
+
+    public void Clear()
+    {
+      ConverterGSAListFn = null;
+      NodeAtFn = null;
+      IndicesByKeyword = null;
+      ApplicationIdsByKeywordId = null;
+      NativesByKeywordId = null;
+    }
+
     public bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
     {
       records = null;
@@ -122,40 +140,6 @@ namespace ConverterGSATests
       }
       resultsData[group][index] = valueHierarchy;
       return true;
-    }
-
-    public void Clear()
-    {
-      ConverterGSAListFn = null;
-      NodeAtFn = null;
-      IndicesByKeyword = null;
-      ApplicationIdsByKeywordId = null;
-      NativesByKeywordId = null;
-    }
-
-    public bool OpenFile(string path, bool showWindow = true, object gsaInstance = null)
-    {
-      return true;
-    }
-
-    public List<int> ConvertGSAList(string list, GSAEntity entityType)
-    {
-      return new List<int>() { 1 };
-    }
-
-    public int NodeAt(double x, double y, double z, double coincidenceTol)
-    {
-      return 1;
-    }
-
-    public void Close()
-    {
-      
-    }
-
-    public string GenerateApplicationId(Type schemaType, int gsaIndex)
-    {
-      return "";
     }
 
     #endregion

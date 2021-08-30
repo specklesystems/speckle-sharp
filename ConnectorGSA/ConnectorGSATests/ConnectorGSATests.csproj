@@ -46,6 +46,7 @@
     <Compile Include="GsaModelMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProxyTests.cs" />
+    <Compile Include="ReceiveTests.cs" />
     <Compile Include="SendTests.cs" />
     <Compile Include="SchemaTests.cs" />
     <Compile Include="SpeckleConnectorFixture.cs" />
@@ -84,6 +85,7 @@
     <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
       <Project>{60be029e-1f31-4473-8b68-a745a43af179}</Project>
       <Name>Objects</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\ConnectorGSA\ConnectorGSA.csproj">
       <Project>{1ba03be5-f893-46a3-b569-4fab87f0b60e}</Project>

@@ -37,6 +37,7 @@ namespace ConverterGSA
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
     public Dictionary<Type, Func<GsaRecord, List<Base>>> ToSpeckleFns;
+    public Dictionary<Type, Func<Base, List<GsaRecord>>> ToNativeFns;
 
     public ConverterGSA()
     {
@@ -68,27 +69,46 @@ namespace ConverterGSA
 
           //TODO: add methods for other GSA keywords
         };
+
+      ToNativeFns = new Dictionary<Type, Func<Base, List<GsaRecord>>>()
+      {
+        {  typeof(Axis), AxisToNative }
+      };
     }
 
     public bool CanConvertToNative(Base @object)
     {
       var t = @object.GetType();
-      return (t.IsSubclassOf(typeof(GsaRecord)) && ToSpeckleFns.ContainsKey(t));
+      return ToNativeFns.ContainsKey(t);
     }
 
     public bool CanConvertToSpeckle(object @object)
     {
-      return true;
+      var t = @object.GetType();
+      return (t.IsSubclassOf(typeof(GsaRecord)) && ToSpeckleFns.ContainsKey(t));
     }
 
     public object ConvertToNative(Base @object)
     {
-      throw new NotImplementedException();
+      var t = @object.GetType();
+      return ToNativeFns[t](@object);
     }
 
     public List<object> ConvertToNative(List<Base> objects)
     {
-      throw new NotImplementedException();
+      var retList = new List<object>();
+      foreach (var obj in objects)
+      {
+        var natives = ConvertToNative(obj);
+        if (natives != null)
+        {
+          if (natives is List<GsaRecord>)
+          {
+            retList.AddRange(((List<GsaRecord>)natives).Cast<object>());
+          }
+        }
+      }
+      return retList;
     }
 
     public Base ConvertToSpeckle(object @object)
@@ -465,11 +485,11 @@ namespace ConverterGSA
       if (gsaMatSteel.Index.IsIndex()) speckleSteel.applicationId = Instance.GsaModel.GetApplicationId<GsaMatSteel>(gsaMatSteel.Index.Value);
 
       //the following properties are stored in multiple locations in GSA
-      if (Choose(gsaMatSteel.Mat.E, gsaMatSteel.Mat.Prop.E, out var E)) speckleSteel.youngsModulus = E;
-      if (Choose(gsaMatSteel.Mat.Nu, gsaMatSteel.Mat.Prop.Nu, out var Nu)) speckleSteel.poissonsRatio = Nu;
-      if (Choose(gsaMatSteel.Mat.G, gsaMatSteel.Mat.Prop.G, out var G)) speckleSteel.shearModulus = G;
-      if (Choose(gsaMatSteel.Mat.Rho, gsaMatSteel.Mat.Prop.Rho, out var Rho)) speckleSteel.density = Rho;
-      if (Choose(gsaMatSteel.Mat.Alpha, gsaMatSteel.Mat.Prop.Alpha, out var Alpha)) speckleSteel.thermalExpansivity = Alpha;
+      if (Choose(gsaMatSteel.Mat.E, gsaMatSteel.Mat.Prop == null ? null : gsaMatSteel.Mat.Prop.E, out var E)) speckleSteel.youngsModulus = E;
+      if (Choose(gsaMatSteel.Mat.Nu, gsaMatSteel.Mat.Prop == null ? null : gsaMatSteel.Mat.Prop.Nu, out var Nu)) speckleSteel.poissonsRatio = Nu;
+      if (Choose(gsaMatSteel.Mat.G, gsaMatSteel.Mat.Prop == null ? null : gsaMatSteel.Mat.Prop.G, out var G)) speckleSteel.shearModulus = G;
+      if (Choose(gsaMatSteel.Mat.Rho, gsaMatSteel.Mat.Prop == null ? null : gsaMatSteel.Mat.Prop.Rho, out var Rho)) speckleSteel.density = Rho;
+      if (Choose(gsaMatSteel.Mat.Alpha, gsaMatSteel.Mat.Prop == null ? null : gsaMatSteel.Mat.Prop.Alpha, out var Alpha)) speckleSteel.thermalExpansivity = Alpha;
 
       return speckleSteel;
     }
@@ -503,11 +523,11 @@ namespace ConverterGSA
       if (gsaMatConcrete.Fcdt.HasValue) speckleConcrete.tensileStrength = gsaMatConcrete.Fcdt.Value;
 
       //the following properties are stored in multiple locations in GSA
-      if (Choose(gsaMatConcrete.Mat.E, gsaMatConcrete.Mat.Prop.E, out var E)) speckleConcrete.youngsModulus = E;
-      if (Choose(gsaMatConcrete.Mat.Nu, gsaMatConcrete.Mat.Prop.Nu, out var Nu)) speckleConcrete.poissonsRatio = Nu;
-      if (Choose(gsaMatConcrete.Mat.G, gsaMatConcrete.Mat.Prop.G, out var G)) speckleConcrete.shearModulus = G;
-      if (Choose(gsaMatConcrete.Mat.Rho, gsaMatConcrete.Mat.Prop.Rho, out var Rho)) speckleConcrete.density = Rho;
-      if (Choose(gsaMatConcrete.Mat.Alpha, gsaMatConcrete.Mat.Prop.Alpha, out var Alpha)) speckleConcrete.thermalExpansivity = Alpha;
+      if (Choose(gsaMatConcrete.Mat.E, gsaMatConcrete.Mat.Prop == null ? null : gsaMatConcrete.Mat.Prop.E, out var E)) speckleConcrete.youngsModulus = E;
+      if (Choose(gsaMatConcrete.Mat.Nu, gsaMatConcrete.Mat.Prop == null ? null : gsaMatConcrete.Mat.Prop.Nu, out var Nu)) speckleConcrete.poissonsRatio = Nu;
+      if (Choose(gsaMatConcrete.Mat.G, gsaMatConcrete.Mat.Prop == null ? null : gsaMatConcrete.Mat.Prop.G, out var G)) speckleConcrete.shearModulus = G;
+      if (Choose(gsaMatConcrete.Mat.Rho, gsaMatConcrete.Mat.Prop == null ? null : gsaMatConcrete.Mat.Prop.Rho, out var Rho)) speckleConcrete.density = Rho;
+      if (Choose(gsaMatConcrete.Mat.Alpha, gsaMatConcrete.Mat.Prop == null ? null : gsaMatConcrete.Mat.Prop.Alpha, out var Alpha)) speckleConcrete.thermalExpansivity = Alpha;
 
       return speckleConcrete;
     }
@@ -694,6 +714,27 @@ namespace ConverterGSA
 
     #region ToNative
     //TO DO: implement conversion code for ToNative
+
+    private List<GsaRecord> AxisToNative(Base @object)
+    {
+      var axis = (Axis)@object;
+
+      var index = Instance.GsaModel.Cache.ResolveIndex<GsaAxis>(axis.applicationId);
+
+      return new List<GsaRecord>
+      {
+        new GsaAxis()
+        {
+          ApplicationId = axis.applicationId,
+          Name = axis.name,
+          Index = index,
+          OriginX = axis.definition.origin.x,
+          OriginY = axis.definition.origin.y,
+          OriginZ = axis.definition.origin.z
+        }
+      };
+    }
+
     #endregion
 
     #region Helper
@@ -928,7 +969,8 @@ namespace ConverterGSA
     /// <returns></returns>
     private Node GetNodeFromIndex(int index)
     {
-      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaNode, Node>(index, out var speckleObjects)) ? speckleObjects.First() : null;
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaNode, Node>(index, out var speckleObjects) && speckleObjects != null && speckleObjects.Count > 0) 
+        ? speckleObjects.First() : null;
     }
     #endregion
 

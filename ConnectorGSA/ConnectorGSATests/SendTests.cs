@@ -21,7 +21,7 @@ namespace ConnectorGSATests
     private static string testStreamMarker = "Test";
     private static string testStreamDelimiter = "-";
 
-    private async Task<string> GetNewStreamName(Client client, Account account)
+    private async Task<string> GetNewStreamName(Client client)
     {
       var usersStreamsOnServer = await client.StreamsGet();
       var testStreamNames = usersStreamsOnServer.Where(s => s.name.StartsWith(testStreamMarker)).Select(s => s.name).ToList();
@@ -72,21 +72,23 @@ namespace ConnectorGSATests
       //Putting the assert here so that the exception catching can trigger a closing of the GSA file first before any failure of this assertion stops this test
       Assert.True(loaded);
 
-      commitObj = Commands.ConvertToSpeckle();
+      var kit = KitManager.GetDefaultKit();
+      var converter = kit.LoadConverter(Applications.GSA);
+      commitObj = Commands.ConvertToSpeckle(converter);
       Assert.NotNull(commitObj);
 
       var account = AccountManager.GetDefaultAccount();
       var client = new Client(account);
-      var streamState = await NewStream(client, account);
+      var streamState = await NewStream(client);
       var transports = new List<ITransport>() { new ServerTransport(streamState.Client.Account, streamState.Stream.id) };
 
       await Commands.Send(commitObj, streamState, transports);
       
     }
 
-    private async Task<StreamState> NewStream(Client client, Account account)
+    private async Task<StreamState> NewStream(Client client)
     {
-      var newStreamName = await GetNewStreamName(client, account);
+      var newStreamName = await GetNewStreamName(client);
       string streamId = "";
       Speckle.Core.Api.Stream stream = null;
       StreamState streamState = null;

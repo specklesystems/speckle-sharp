@@ -155,9 +155,9 @@ namespace Speckle.ConnectorGSA.Proxy
     /// </summary>
     /// <param name="emailAddress">User email address</param>
     /// <param name="serverAddress">Speckle server address</param>
-    public void NewFile(bool showWindow = true, object gsaInstance = null)
+    public bool NewFile(bool showWindow = true, object gsaInstance = null)
     {
-      ExecuteWithLock(() =>
+      return ExecuteWithLock(() =>
       {
         if (GSAObject != null)
         {
@@ -177,12 +177,18 @@ namespace Speckle.ConnectorGSA.Proxy
                 .Split(new char[] { '\n' })[0]
                 .Split(new char[] { GwaDelimiter }, StringSplitOptions.RemoveEmptyEntries)[1]);
 
-        GSAObject.NewFile();
-        GSAObject.SetLocale(Locale.LOC_EN_GB);
-        if (showWindow)
+        var retCode = GSAObject.NewFile();
+        if (retCode == 0)
         {
-          GSAObject.DisplayGsaWindow(true);
+          // 0 = successful opening
+          GSAObject.SetLocale(Locale.LOC_EN_GB);
+          if (showWindow)
+          {
+            GSAObject.DisplayGsaWindow(true);
+          }
+          return true;
         }
+        return false;
       });
     }
 
