@@ -72,7 +72,8 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       RibbonPanelSource panel = CreateButtonPanel("Speckle 2", tab);
       if (panel == null)
         return;
-      RibbonButton button = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, "Speckle Connector for " + Utils.AppName, "logo");
+      RibbonToolTip speckleTip = CreateToolTip("Speckle", "Speckle Connector for " + Utils.AppName);
+      RibbonButton button = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, speckleTip, "logo");
 
       // help and resources buttons
       RibbonSplitButton helpButton = new RibbonSplitButton();
@@ -85,9 +86,12 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       helpButton.Orientation = Orientation.Vertical;
       panel.Items.Add(helpButton);
 
-      RibbonButton community = CreateButton("Community", "SpeckleCommunity", null, helpButton, "Check out our community forum! Opens a page in your web browser", "forum");
-      RibbonButton tutorials = CreateButton("Tutorials", "SpeckleTutorials", null, helpButton, "Check out our tutorials! Opens a page in your web browser", "tutorials");
-      RibbonButton docs = CreateButton("Docs", "SpeckleDocs", null, helpButton, "Check out our documentation! Opens a page in your web browser", "docs");
+      RibbonToolTip communityTip = CreateToolTip("Community", "Check out our community forum! Opens a page in your web browser.");
+      RibbonToolTip tutorialsTip = CreateToolTip("Tutorials", "Check out our tutorials! Opens a page in your web browser");
+      RibbonToolTip docsTip = CreateToolTip("Docs", "Check out our documentation! Opens a page in your web browser");
+      RibbonButton community = CreateButton("Community", "SpeckleCommunity", null, helpButton, communityTip, "forum");
+      RibbonButton tutorials = CreateButton("Tutorials", "SpeckleTutorials", null, helpButton, tutorialsTip, "tutorials");
+      RibbonButton docs = CreateButton("Docs", "SpeckleDocs", null, helpButton, docsTip, "docs");
       
     }
 
@@ -121,7 +125,19 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       return source;
     }
 
-    private RibbonButton CreateButton(string name, string CommandParameter, RibbonPanelSource sourcePanel = null, RibbonSplitButton sourceButton = null, string tooltip = "", string imageName = "")
+    private RibbonToolTip CreateToolTip(string title, string content)
+    {
+      RibbonToolTip toolTip = new RibbonToolTip();
+
+      //toolTip.Command = "";
+      toolTip.Title = title;
+      toolTip.Content = content;
+      toolTip.IsHelpEnabled = true; // Without this "Press F1 for help" does not appear in the tooltip
+
+      return toolTip;
+    }
+
+    private RibbonButton CreateButton(string name, string CommandParameter, RibbonPanelSource sourcePanel = null, RibbonSplitButton sourceButton = null, RibbonToolTip tooltip = null, string imageName = "")
     {
       var button = new RibbonButton();
 
@@ -131,6 +147,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       button.ShowImage = true;
       button.ShowText = true;
       button.ToolTip = tooltip;
+      button.HelpSource = new System.Uri("https://speckle.guide/user/autocadcivil.html");
       button.Size = RibbonItemSize.Large;
       button.Image = LoadPngImgSource(imageName + "16.png");
       button.LargeImage = LoadPngImgSource(imageName + "32.png");
