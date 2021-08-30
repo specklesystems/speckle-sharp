@@ -204,12 +204,12 @@ namespace ConverterGSATests
       // Element 2
       //===========
       Assert.Equal("element 2", speckleElement2D[1].applicationId);
-      Assert.Equal(gsaEls[0].Name, speckleElement2D[1].name);
+      Assert.Equal(gsaEls[1].Name, speckleElement2D[1].name);
       //baseMesh
       Assert.Equal("property 2D 1", speckleElement2D[1].property.applicationId);
       Assert.Equal(ElementType2D.Triangle3, speckleElement2D[1].type);
-      Assert.Equal(gsaEls[0].OffsetZ.Value, speckleElement2D[1].offset);
-      Assert.Equal(gsaEls[0].Angle.Value, speckleElement2D[1].orientationAngle);
+      Assert.Equal(gsaEls[1].OffsetZ.Value, speckleElement2D[1].offset);
+      Assert.Equal(gsaEls[1].Angle.Value, speckleElement2D[1].orientationAngle);
       //parent
       Assert.Equal("node 2", speckleElement2D[1].topology[0].applicationId);
       Assert.Equal(gsaNodes[0].X, speckleElement2D[1].topology[0].basePoint.x);
@@ -346,7 +346,7 @@ namespace ConverterGSATests
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
         Assert.Empty(converter.ConversionErrors);
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects);
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
 
       Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
@@ -403,7 +403,7 @@ namespace ConverterGSATests
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
         Assert.Empty(converter.ConversionErrors);
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects);
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
 
       Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
@@ -484,7 +484,7 @@ namespace ConverterGSATests
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
         Assert.Empty(converter.ConversionErrors);
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects);
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
 
       Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
@@ -512,7 +512,7 @@ namespace ConverterGSATests
 
       //Checks - Element 2
       Assert.Equal("load beam 2", speckleBeamLoads[1].applicationId);
-      Assert.Equal("1", speckleBeamLoads[1].name);
+      Assert.Equal("2", speckleBeamLoads[1].name);
       Assert.Equal("load case 1", speckleBeamLoads[1].loadCase.applicationId);
       Assert.Single(speckleBeamLoads[1].elements);
       Assert.Equal("element 2", speckleBeamLoads[1].elements[0].applicationId);
@@ -569,7 +569,7 @@ namespace ConverterGSATests
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
         Assert.Empty(converter.ConversionErrors);
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects);
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
 
       Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
@@ -595,7 +595,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaLoadNodess[1].Name, speckleNodeLoads[1].name);
       Assert.Equal("load case 1", speckleNodeLoads[1].loadCase.applicationId);  //assume conversion of load case is tested elsewhere
       Assert.Single(speckleNodeLoads[1].nodes);
-      Assert.Equal("node 1", speckleNodeLoads[1].nodes[1].applicationId); //assume conversion of node is tested elsewhere
+      Assert.Equal("node 1", speckleNodeLoads[1].nodes[0].applicationId); //assume conversion of node is tested elsewhere
       Assert.Equal("axis 1", speckleNodeLoads[1].loadAxis.applicationId); //assume conversion of axis is tested elsewhere
       Assert.Equal(LoadDirection.X, speckleNodeLoads[1].direction);
       Assert.Single(speckleNodeLoads[1].value);

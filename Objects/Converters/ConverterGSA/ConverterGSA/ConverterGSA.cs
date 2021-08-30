@@ -418,6 +418,7 @@ namespace ConverterGSA
       {
         name = gsaLoadNode.Name,
         direction = GetDirection(gsaLoadNode.LoadDirection),
+        nodes = new List<Node>()
       };
 
       if (gsaLoadNode.Index.IsIndex()) speckleNodeLoad.applicationId = Instance.GsaModel.GetApplicationId<GsaLoadNode>(gsaLoadNode.Index.Value);
@@ -983,7 +984,7 @@ namespace ConverterGSA
     private Axis GetAxisFromIndex(int index)
     {
       var gsaAxis = Instance.GsaModel.GetNative<GsaAxis>(index);
-      if (gsaAxis.GetType() != typeof(GsaAxis))
+      if (gsaAxis == null || gsaAxis.GetType() != typeof(GsaAxis))
       {
         return null;
       }

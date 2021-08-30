@@ -489,17 +489,6 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       return recordIndicesBySchemaTypeGsaId[t][gsaIndex].OrderBy(i => i).Select(i => records[i].ApplicationId).FirstOrDefault();
     }
 
-    public string GetApplicationId(Type t, int gsaIndex)
-    {
-      if (!recordIndicesBySchemaTypeGsaId.ContainsKey(t) || recordIndicesBySchemaTypeGsaId[t] == null
-       || !recordIndicesBySchemaTypeGsaId[t].ContainsKey(gsaIndex) || recordIndicesBySchemaTypeGsaId[t][gsaIndex] == null
-       || recordIndicesBySchemaTypeGsaId[t][gsaIndex].Count == 0)
-      {
-        return "";
-      }
-      return recordIndicesBySchemaTypeGsaId[t][gsaIndex].OrderBy(i => i).Select(i => records[i].ApplicationId).FirstOrDefault();
-    }
-
     //To be fed into the proxy- assume the proxy knows about which keywords are SET and which are SET_AT
     //[ keyword, index, GWA line(s) ]
     public List<GsaRecord> GetExpiredRecords()
