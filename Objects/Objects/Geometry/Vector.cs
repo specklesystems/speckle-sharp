@@ -110,39 +110,5 @@ namespace Objects.Geometry
     }
     public static Vector operator *(double s, Vector a) => new Vector(s * a.x, s * a.y, s * a.z, a.units);
     public static Vector operator *(Vector a, double s) => s * a;
-
-    //Other useful functions for vectors
-    /// <summary>
-    /// Returns the dot product of two vectors
-    /// </summary>
-    /// <param name="a">Vector 1</param>
-    /// <param name="b">Vector 2</param>
-    /// <returns></returns>
-    public static double DotProduct(Vector a, Vector b) => a.x * b.x + a.y * b.y + a.z * b.z;
-
-    /// <summary>
-    /// Returns a unit vector in the same direction as A
-    /// </summary>
-    /// <param name="a">Vector to be scaled</param>
-    /// <returns></returns>
-    public static Vector UnitVector(Vector a)
-    {
-      var l = Norm(a);
-      Vector b = new Vector()
-      {
-        x = a.x / l,
-        y = a.y / l,
-        z = a.z / l,
-        units = a.units
-      };
-      return b;
-    }
-
-    /// <summary>
-    /// Returns the length of a vector
-    /// </summary>
-    /// <param name="a">vector whose length is desired</param>
-    /// <returns></returns>
-    public static double Norm(Vector a) => Math.Sqrt(DotProduct(a, a));
   }
 }
