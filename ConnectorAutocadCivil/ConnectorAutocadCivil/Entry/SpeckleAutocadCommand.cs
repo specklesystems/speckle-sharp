@@ -50,7 +50,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     {
       try
       {
-        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.community _enter", false, false, true);
+        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.community ", false, false, true);
       }
       catch { }
     }
@@ -60,7 +60,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     {
       try
       {
-        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.systems/tutorials _enter", false, false, true);
+        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.systems/tutorials ", false, false, true);
       }
       catch { }
     }
@@ -70,7 +70,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     {
       try
       {
-        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.guide/user/autocadcivil.html", false, false, true);
+        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.guide/user/autocadcivil.html ", false, false, true);
       }
       catch { }
     }
