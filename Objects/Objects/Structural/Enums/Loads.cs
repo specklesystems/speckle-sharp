@@ -43,7 +43,6 @@ namespace Objects.Structural.Loading
         TriLinear
     }
 
-
     public enum AreaLoadType
     {
         Constant,
@@ -59,6 +58,15 @@ namespace Objects.Structural.Loading
         XX,
         YY,
         ZZ
+    }
+
+    public enum CombinationType
+    {
+        LinearAdd,
+        Envelope,
+        AbsoluteAdd,
+        SRSS,
+        RangeAdd // what's this?
     }
 }
 
