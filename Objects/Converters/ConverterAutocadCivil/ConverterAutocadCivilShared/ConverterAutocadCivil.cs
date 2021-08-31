@@ -17,6 +17,7 @@ using Hatch = Objects.Other.Hatch;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;
+using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
@@ -162,9 +163,9 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Curve o:
           return CurveToNativeDB(o);
 
-          /*
-        //case Surface o: 
-        //  return SurfaceToNative(o);
+        /*
+        case Surface o: 
+          return SurfaceToNative(o);
 
         case Brep o:
           if (o.displayMesh != null)
@@ -172,8 +173,8 @@ public static string AutocadAppName = Applications.Autocad2022;
           else
             return null;
 
-        //case Mesh o: // unstable, do not use for now
-        //  return MeshToNativeDB(o);
+        case Mesh o: // unstable, do not use for now
+          return MeshToNativeDB(o);
         */
 
         case BlockInstance o:
@@ -184,6 +185,9 @@ public static string AutocadAppName = Applications.Autocad2022;
 
         // TODO: add Civil3D directive to convert to alignment instead of curve
         case Alignment o:
+          return CurveToNativeDB(o.baseCurve);
+
+        case ModelCurve o:
           return CurveToNativeDB(o.baseCurve);
 
         default:
@@ -370,6 +374,8 @@ public static string AutocadAppName = Applications.Autocad2022;
         case BlockInstance _:
 
         case Alignment _:
+
+        case ModelCurve _:
           return true;
 
         default:
