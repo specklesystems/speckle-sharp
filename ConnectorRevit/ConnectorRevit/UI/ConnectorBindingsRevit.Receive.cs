@@ -187,7 +187,7 @@ namespace Speckle.ConnectorRevit.UI
         {
           conversionProgressDict["Conversion"]++;
           // wrapped in a dispatcher not to block the ui
-          HelpCommand.Bootstrapper.RootWindow.Dispatcher.Invoke(() =>
+          SpeckleRevitCommand.Bootstrapper.RootWindow.Dispatcher.Invoke(() =>
           {
             UpdateProgress(conversionProgressDict, state.Progress);
           }, System.Windows.Threading.DispatcherPriority.Background);
