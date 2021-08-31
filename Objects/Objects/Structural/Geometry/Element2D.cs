@@ -7,7 +7,7 @@ using Objects.Structural.Properties;
 
 namespace Objects.Structural.Geometry
 {
-    public class Element2D : Base, IDisplayMesh
+    public class Element2D : Base
     {        
         public string name { get; set; }
         public Mesh baseMesh { get; set; } //rhino - parent mesh? elements (including props/materias) explicitly defined in a list
@@ -24,8 +24,6 @@ namespace Objects.Structural.Geometry
         [DetachProperty]
         public List<Node> topology { get; set; }
 
-        [DetachProperty]
-        public Mesh displayMesh { get; set; }
         public Element2D() { }
         public Element2D(Mesh baseMesh)
         {
