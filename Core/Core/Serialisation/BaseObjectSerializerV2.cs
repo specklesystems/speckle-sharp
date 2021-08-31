@@ -14,8 +14,23 @@ using Speckle.Core.Transports;
 
 namespace Speckle.Core.Serialisation
 {
+
   public class BaseObjectSerializerV2
   {
+    public struct DetachInfo
+    {
+      public DetachInfo(bool isDetachable, bool isChunkable, int chunkSize)
+      {
+        IsDetachable = isDetachable || isChunkable;
+        IsChunkable = isChunkable;
+        ChunkSize = chunkSize;
+      }
+
+      public bool IsDetachable;
+      public bool IsChunkable;
+      public int ChunkSize;
+    }
+
     /// <summary>
     /// Property that describes the type of the object.
     /// </summary>
@@ -28,21 +43,19 @@ namespace Speckle.Core.Serialisation
     /// </summary>
     public List<ITransport> WriteTransports { get; set; } = new List<ITransport>();
 
-    // TODO: Q: progress discussion when serializing
     public Action<string, int> OnProgressAction { get; set; }
 
-    // TODO: Q: error handling discussion
     public Action<string, Exception> OnErrorAction { get; set; }
 
     private Regex ChunkPropertyNameRegex = new Regex(@"^@\((\d*)\)");
 
-    private Dictionary<string, List<(PropertyInfo, bool, bool, int)>> TypedPropertiesCache = new Dictionary<string, List<(PropertyInfo, bool, bool, int)>>();
+    private Dictionary<string, List<(PropertyInfo, DetachInfo)>> TypedPropertiesCache = new Dictionary<string, List<(PropertyInfo, DetachInfo)>>();
     private List<Dictionary<string, int>> ParentClosures = new List<Dictionary<string, int>>();
     private bool Busy = false;
 
     public BaseObjectSerializerV2()
     {
-
+      
     }
 
     public string Serialize(Base baseObj)
@@ -52,7 +65,7 @@ namespace Speckle.Core.Serialisation
       try
       {
         Busy = true;
-        Dictionary<string, object> converted = PreserializeObject(baseObj) as Dictionary<string, object>;
+        Dictionary<string, object> converted = PreserializeObject(baseObj, true) as Dictionary<string, object>;
         String serialized = Dict2Json(converted);
         StoreObject(converted["id"] as string, serialized);
         return serialized;
@@ -66,7 +79,7 @@ namespace Speckle.Core.Serialisation
 
     // `Preserialize` means transforming all objects into the final form that will appear in json, with basic .net objects
     // (primitives, lists and dictionaries with string keys)
-    public object PreserializeObject(object obj)
+    public object PreserializeObject(object obj, bool computeClosures = false, DetachInfo inheritedDetachInfo = default(DetachInfo))
     {
       // handle null objects and also check for cancelation
       if (obj == null || CancellationToken.IsCancellationRequested)
@@ -79,26 +92,32 @@ namespace Speckle.Core.Serialisation
       if (obj is Base)
       {
         // Complex enough to deserve its own function
-        return PreserializeBase((Base)obj);
+        return PreserializeBase((Base)obj, computeClosures, inheritedDetachInfo);
       }
 
       if (obj is IDictionary)
       {
         Dictionary<string, object> ret = new Dictionary<string, object>(((IDictionary)obj).Count);
         foreach (DictionaryEntry kvp in (IDictionary)obj)
-          ret[kvp.Key.ToString()] = PreserializeObject(kvp.Value);
+        {
+          object converted = PreserializeObject(kvp.Value, inheritedDetachInfo: inheritedDetachInfo);
+          if (converted != null)
+            ret[kvp.Key.ToString()] = converted;
+        }
         return ret;
       }
 
       if (obj is IEnumerable)
       {
         List<object> ret;
-        if (type is IList)
+        if (obj is IList)
           ret = new List<object>(((IList)obj).Count);
+        else if (obj is Array)
+          ret = new List<object>(((Array)obj).Length);
         else
           ret = new List<object>();
         foreach (object element in ((IEnumerable)obj))
-          ret.Add(PreserializeObject(element));
+          ret.Add(PreserializeObject(element, inheritedDetachInfo: inheritedDetachInfo));
         return ret;
       }
 
@@ -118,23 +137,24 @@ namespace Speckle.Core.Serialisation
       throw new Exception("Unsupported value in serialization: " + type.ToString());
     }
 
-    public object PreserializeBase(Base baseObj)
+    public object PreserializeBase(Base baseObj, bool computeClosures = false, DetachInfo inheritedDetachInfo = default(DetachInfo))
     {
       Dictionary<string, object> convertedBase = new Dictionary<string, object>();
       Dictionary<string, int> closure = new Dictionary<string, int>();
-      ParentClosures.Add(closure);
+      if (computeClosures || inheritedDetachInfo.IsDetachable)
+        ParentClosures.Add(closure);
 
-      List<(PropertyInfo, bool, bool, int)> typedProperties = GetTypedPropertiesWithCache(baseObj);
+      List<(PropertyInfo, DetachInfo)> typedProperties = GetTypedPropertiesWithCache(baseObj);
       IEnumerable<string> dynamicProperties = baseObj.GetDynamicMembers();
       
       // propertyName -> (originalValue, isDetachable, isChunkable, chunkSize)
-      Dictionary<string, (object, bool, bool, int)> allProperties = new Dictionary<string, (object, bool, bool, int)>();
+      Dictionary<string, (object, DetachInfo)> allProperties = new Dictionary<string, (object, DetachInfo)>();
 
       // Construct `allProperties`: Add typed properties
-      foreach ((PropertyInfo propertyInfo, bool isDetachable, bool isChunkable, int chunkSize) in typedProperties)
+      foreach ((PropertyInfo propertyInfo, DetachInfo detachInfo) in typedProperties)
       {
         object baseValue = propertyInfo.GetValue(baseObj);
-        allProperties[propertyInfo.Name] = (baseValue, isDetachable, isChunkable, chunkSize);
+        allProperties[propertyInfo.Name] = (baseValue, detachInfo);
       }
 
       // Construct `allProperties`: Add dynamic properties
@@ -150,101 +170,65 @@ namespace Speckle.Core.Serialisation
           var match = ChunkPropertyNameRegex.Match(propName);
           isChunkable = int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
         }
-        allProperties[propName] = (baseValue, isDetachable, isChunkable, chunkSize);
+        allProperties[propName] = (baseValue, new DetachInfo(isDetachable, isChunkable, chunkSize));
       }
 
       // Convert all properties
       foreach (var prop in allProperties)
       {
-        object convertedValue = PreserializeBasePropertyValue(prop.Value.Item1, prop.Value.Item2, prop.Value.Item3, prop.Value.Item4);
-        convertedBase[prop.Key] = convertedValue;
+        object convertedValue = PreserializeBasePropertyValue(prop.Value.Item1, prop.Value.Item2);
+        if (convertedValue != null)
+          convertedBase[prop.Key] = convertedValue;
       }
 
       if (closure.Count > 0)
         convertedBase["__closure"] = closure;
-      ParentClosures.RemoveAt(ParentClosures.Count - 1);
+      if (computeClosures || inheritedDetachInfo.IsDetachable)
+        ParentClosures.RemoveAt(ParentClosures.Count - 1);
+
+      if (inheritedDetachInfo.IsDetachable && WriteTransports != null && WriteTransports.Count > 0)
+      {
+        string json = Dict2Json(convertedBase);
+        StoreObject(convertedBase["id"] as string, json);
+        ObjectReference objRef = new ObjectReference() { referencedId = convertedBase["id"] as string };
+        object objRefConverted = PreserializeObject(objRef);
+        UpdateParentClosures(convertedBase["id"] as string);
+        OnProgressAction?.Invoke("S", 1);
+        return objRefConverted;
+      }
 
       return convertedBase;
     }
     
-    private object PreserializeBasePropertyValue(object baseValue, bool isDetachable, bool isChunkable, int chunkSize)
+    private object PreserializeBasePropertyValue(object baseValue, DetachInfo detachInfo)
     {
-      object convertedValue = PreserializeObject(baseValue);
+      bool computeClosuresForChild = (detachInfo.IsDetachable || detachInfo.IsChunkable) && WriteTransports != null && WriteTransports.Count > 0;
 
       // If there are no WriteTransports, keep everything attached.
       if (WriteTransports == null || WriteTransports.Count == 0)
-        return convertedValue;
+        return PreserializeObject(baseValue, inheritedDetachInfo: detachInfo);
 
-      if (convertedValue is List<object> && isChunkable) // TODO: Q: Chunkable implies detachable? (no reason to chunk if not detaching DataChunks?)
+      if (baseValue is IEnumerable && detachInfo.IsChunkable)
       {
-        List<object> fullList = (List<object>)convertedValue;
-        int chunkCount = fullList.Count % chunkSize == 0 ? fullList.Count / chunkSize : fullList.Count / chunkSize + 1;
-        List<object> ret = new List<object>(chunkCount);
-
-        for (int iChunk = 0; iChunk < chunkCount; iChunk++)
+        List<object> chunks = new List<object>();
+        DataChunk crtChunk = new DataChunk();
+        crtChunk.data = new List<object>(detachInfo.ChunkSize);
+        foreach (object element in (IEnumerable)baseValue)
         {
-          int startIdx = iChunk * chunkSize;
-          int endIdx = (iChunk + 1) * chunkSize;
-          if (endIdx > fullList.Count) endIdx = fullList.Count;
-
-          // Construct a DataChunk object
-          DataChunk crtChunk = new DataChunk();
-          crtChunk.data = new List<object>(endIdx - startIdx);
-          for (int i = startIdx; i < endIdx; i++)
-            crtChunk.data.Add(fullList[i]);
-
-          // Convert it to Dictionary
-          Dictionary<string, object> convertedChunk = PreserializeObject(crtChunk) as Dictionary<string, object>;
-          // Compute id and serialize
-          string chunkJson = Dict2Json(convertedChunk);
-          // Store in transports
-          StoreObject(convertedChunk["id"] as string, chunkJson);
-          // Make a reference to the detached chunk and store as a Dictionary in the returned list
-          ObjectReference crtChunkRef = new ObjectReference() { referencedId = convertedChunk["id"] as string };
-          object crtChunkRefConverted = PreserializeObject(crtChunkRef);
-          ret.Add(crtChunkRefConverted);
-          UpdateParentClosures(convertedChunk["id"] as string);
+          crtChunk.data.Add(element);
+          if (crtChunk.data.Count >= detachInfo.ChunkSize)
+          {
+            chunks.Add(crtChunk);
+            crtChunk = new DataChunk();
+            crtChunk.data = new List<object>(detachInfo.ChunkSize);
+          }
         }
-        return ret;
+        if (crtChunk.data.Count > 0)
+          chunks.Add(crtChunk);
+        return PreserializeObject(chunks, inheritedDetachInfo: new DetachInfo(true, false, 0));
       }
       
-      if (convertedValue is List<object> && isDetachable)
-      {
-        List<object> fullList = (List<object>)convertedValue;
-        List<object> ret = new List<object>(fullList.Count);
-        foreach (object element in fullList)
-        {
-          if (!(element is Dictionary<string, object>))
-          {
-            ret.Add(element);
-            continue;
-          }
-          string elementJson = Dict2Json((Dictionary<string, object>)element);
-          // Store in transports
-          string elementId = ((Dictionary<string, object>)element)["id"] as string;
-          StoreObject(elementId, elementJson);
-          // Make a reference to the detached chunk and store as a Dictionary in the returned list
-          ObjectReference crtChunkRef = new ObjectReference() { referencedId = elementId };
-          object crtChunkRefConverted = PreserializeObject(crtChunkRef);
-          ret.Add(crtChunkRefConverted);
-          UpdateParentClosures(elementId);
-        }
-        return ret;
-      }
-
-      if (convertedValue is Dictionary<string, object> && isDetachable)
-      {
-        Dictionary<string, object> convertedValueAsDict = (Dictionary<string, object>)convertedValue;
-        // Compute id and serialize
-        string json = Dict2Json(convertedValueAsDict);
-        StoreObject(convertedValueAsDict["id"] as string, json);
-        ObjectReference objRef = new ObjectReference() { referencedId = convertedValueAsDict["id"] as string };
-        object objRefConverted = PreserializeObject(objRef);
-        UpdateParentClosures(convertedValueAsDict["id"] as string);
-        return objRefConverted;
-      }
-
-      return convertedValue;
+      return PreserializeObject(baseValue, inheritedDetachInfo: detachInfo);
     }
 
     private void UpdateParentClosures(string objectId)
@@ -267,7 +251,6 @@ namespace Speckle.Core.Serialisation
 
     private string Dict2Json(Dictionary<string, object> obj)
     {
-      // TODO: Q: Compute and add id to all Bases, or just the Detached ones?
       obj["id"] = ComputeId(obj);
       string serialized = JsonSerializer.Serialize<Dictionary<string, object>>(obj);
       return serialized;
@@ -285,7 +268,7 @@ namespace Speckle.Core.Serialisation
 
 
     // (propertyInfo, isDetachable, isChunkable, chunkSize)
-    private List<(PropertyInfo, bool, bool, int)> GetTypedPropertiesWithCache(Base baseObj)
+    private List<(PropertyInfo, DetachInfo)> GetTypedPropertiesWithCache(Base baseObj)
     {
       Type type = baseObj.GetType();
       IEnumerable<PropertyInfo> typedProperties = baseObj.GetInstanceMembers();
@@ -293,7 +276,7 @@ namespace Speckle.Core.Serialisation
       if (TypedPropertiesCache.ContainsKey(type.FullName))
         return TypedPropertiesCache[type.FullName];
 
-      List<(PropertyInfo, bool, bool, int)> ret = new List<(PropertyInfo, bool, bool, int)>();
+      List<(PropertyInfo, DetachInfo)> ret = new List<(PropertyInfo, DetachInfo)>();
 
       foreach (PropertyInfo typedProperty in typedProperties)
       {
@@ -319,7 +302,7 @@ namespace Speckle.Core.Serialisation
         bool isDetachable = detachableAttributes.Count > 0 && detachableAttributes[0].Detachable;
         bool isChunkable = chunkableAttributes.Count > 0;
         int chunkSize = isChunkable ? chunkableAttributes[0].MaxObjCountPerChunk : 1000;
-        ret.Add((typedProperty, isDetachable, isChunkable, chunkSize));
+        ret.Add((typedProperty, new DetachInfo(isDetachable, isChunkable, chunkSize)));
       }
 
       TypedPropertiesCache[type.FullName] = ret;

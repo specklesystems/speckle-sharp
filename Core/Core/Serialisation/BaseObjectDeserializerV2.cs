@@ -146,7 +146,10 @@ namespace Speckle.Core.Serialisation
           return doc.GetString();
 
         case JsonValueKind.Number:
-          return doc.GetDecimal();
+          long i64value;
+          if (doc.TryGetInt64(out i64value))
+            return i64value;
+          return doc.GetDouble();
 
         case JsonValueKind.Array:
           List<object> retList = new List<object>(doc.GetArrayLength());
@@ -243,7 +246,7 @@ namespace Speckle.Core.Serialisation
           else
           {
             // Cannot convert the value in the json to the static property type
-            throw new Exception(String.Format("Cannot deserialize {0} to {0}", entry.Value.GetType().FullName, targetValueType.FullName));
+            throw new Exception(String.Format("Cannot deserialize {0} to {1}", entry.Value.GetType().FullName, targetValueType.FullName));
           }
         }
         else
