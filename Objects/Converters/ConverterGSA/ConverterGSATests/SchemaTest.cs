@@ -212,13 +212,13 @@ namespace ConverterGSATests
       Assert.Equal(gsaEls[1].Angle.Value, speckleElement2D[1].orientationAngle);
       //parent
       Assert.Equal("node 2", speckleElement2D[1].topology[0].applicationId);
-      Assert.Equal(gsaNodes[0].X, speckleElement2D[1].topology[0].basePoint.x);
-      Assert.Equal(gsaNodes[0].Y, speckleElement2D[1].topology[0].basePoint.y);
-      Assert.Equal(gsaNodes[0].Z, speckleElement2D[1].topology[0].basePoint.z);
+      Assert.Equal(gsaNodes[1].X, speckleElement2D[1].topology[0].basePoint.x);
+      Assert.Equal(gsaNodes[1].Y, speckleElement2D[1].topology[0].basePoint.y);
+      Assert.Equal(gsaNodes[1].Z, speckleElement2D[1].topology[0].basePoint.z);
       Assert.Equal("node 3", speckleElement2D[1].topology[1].applicationId);
-      Assert.Equal(gsaNodes[1].X, speckleElement2D[1].topology[1].basePoint.x);
-      Assert.Equal(gsaNodes[1].Y, speckleElement2D[1].topology[1].basePoint.y);
-      Assert.Equal(gsaNodes[1].Z, speckleElement2D[1].topology[1].basePoint.z);
+      Assert.Equal(gsaNodes[2].X, speckleElement2D[1].topology[1].basePoint.x);
+      Assert.Equal(gsaNodes[2].Y, speckleElement2D[1].topology[1].basePoint.y);
+      Assert.Equal(gsaNodes[2].Z, speckleElement2D[1].topology[1].basePoint.z);
       Assert.Equal("node 5", speckleElement2D[1].topology[2].applicationId);
       Assert.Equal(gsaNodes[4].X, speckleElement2D[1].topology[2].basePoint.x);
       Assert.Equal(gsaNodes[4].Y, speckleElement2D[1].topology[2].basePoint.y);
@@ -465,6 +465,7 @@ namespace ConverterGSATests
       gsaRecords.Add(GsaPropMassExample("property mass 1"));
       gsaRecords.Add(GsaPropSprExample("property spring 1"));
       gsaRecords.Add(GsaLoadCaseExamples(1, "load case 1").First());
+      gsaRecords.Add(GsaAxisExample("axis 1"));
 
       //Gen #2
       gsaRecords.AddRange(GsaNodeExamples(3, "node 1", "node 2", "node 3"));
@@ -522,7 +523,7 @@ namespace ConverterGSATests
       Assert.Equal(LoadAxisType.Global, speckleBeamLoads[1].loadAxisType);
       Assert.False(speckleBeamLoads[1].isProjected);
       Assert.Single(speckleBeamLoads[1].values);
-      Assert.Equal(((GsaLoadBeamUdl)gsaLoadBeams[0]).Load, speckleBeamLoads[1].values[0]);
+      Assert.Equal(((GsaLoadBeamUdl)gsaLoadBeams[1]).Load, speckleBeamLoads[1].values[0]);
       Assert.Null(speckleBeamLoads[1].positions);
 
       //Checks - Element 3
@@ -537,8 +538,8 @@ namespace ConverterGSATests
       Assert.Equal(LoadAxisType.Local, speckleBeamLoads[2].loadAxisType);
       Assert.False(speckleBeamLoads[2].isProjected);
       Assert.Equal(2, speckleBeamLoads[2].values.Count());
-      Assert.Equal(((GsaLoadBeamLine)gsaLoadBeams[0]).Load1, speckleBeamLoads[2].values[0]);
-      Assert.Equal(((GsaLoadBeamLine)gsaLoadBeams[0]).Load2, speckleBeamLoads[2].values[1]);
+      Assert.Equal(((GsaLoadBeamLine)gsaLoadBeams[2]).Load1, speckleBeamLoads[2].values[0]);
+      Assert.Equal(((GsaLoadBeamLine)gsaLoadBeams[2]).Load2, speckleBeamLoads[2].values[1]);
       Assert.Null(speckleBeamLoads[2].positions);
     }
 
@@ -590,7 +591,7 @@ namespace ConverterGSATests
       Assert.Single(speckleNodeLoads[0].value);
       Assert.Equal(gsaLoadNodess[0].Value, speckleNodeLoads[0].value[0]);
 
-      //Checks - Load 1
+      //Checks - Load 2
       Assert.Equal("load node 2", speckleNodeLoads[1].applicationId);
       Assert.Equal(gsaLoadNodess[1].Name, speckleNodeLoads[1].name);
       Assert.Equal("load case 1", speckleNodeLoads[1].loadCase.applicationId);  //assume conversion of load case is tested elsewhere
@@ -600,6 +601,106 @@ namespace ConverterGSATests
       Assert.Equal(LoadDirection.X, speckleNodeLoads[1].direction);
       Assert.Single(speckleNodeLoads[1].value);
       Assert.Equal(gsaLoadNodess[1].Value, speckleNodeLoads[1].value[0]);
+    }
+
+    [Fact]
+    public void GsaGravityLoad()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.Add(GsaLoadCaseExamples(1, "load case 1").First());
+
+      //Gen #2
+      gsaRecords.AddRange(GsaNodeExamples(5, "node 1", "node 2", "node 3", "node 4", "node 5"));
+      gsaRecords.Add(GsaProp2dExample("property 2D 1"));
+
+      //Gen #3
+      gsaRecords.AddRange(GsaElement2dExamples(2, "element 1", "element 2"));
+
+      //Gen #4
+      var gsaLoadGravity = GsaLoadGravityExample("load gravity 1");
+      gsaRecords.Add(gsaLoadGravity);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GravityLoad);
+
+      var speckleGravityLoad = structuralObjects.FindAll(so => so is GravityLoad).Select(so => (GravityLoad)so).ToList().First();
+
+      //Checks
+      Assert.Equal("load gravity 1", speckleGravityLoad.applicationId);
+      Assert.Equal("load case 1", speckleGravityLoad.loadCase.applicationId);
+      Assert.Equal(2, speckleGravityLoad.elements.Count());
+      Assert.Equal("element 1", speckleGravityLoad.elements[0].applicationId);
+      Assert.Equal("element 2", speckleGravityLoad.elements[1].applicationId);
+      Assert.Equal(5, speckleGravityLoad.nodes.Count());
+      Assert.Equal("node 1", speckleGravityLoad.nodes[0].applicationId);
+      Assert.Equal("node 2", speckleGravityLoad.nodes[1].applicationId);
+      Assert.Equal("node 3", speckleGravityLoad.nodes[2].applicationId);
+      Assert.Equal("node 4", speckleGravityLoad.nodes[3].applicationId);
+      Assert.Equal("node 5", speckleGravityLoad.nodes[4].applicationId);
+      Assert.Equal(0, speckleGravityLoad.gravityFactors.x);
+      Assert.Equal(0, speckleGravityLoad.gravityFactors.y);
+      Assert.Equal(-1, speckleGravityLoad.gravityFactors.z);
+    }
+
+    [Fact]
+    public void GsaCombination()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+
+      //Gen #2
+      var gsaCombination = GsaCombinationExamples(2, "combo 1", "combo 2");
+      gsaRecords.AddRange(gsaCombination);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is LoadCombination);
+
+      var speckleLoadCombination = structuralObjects.FindAll(so => so is LoadCombination).Select(so => (LoadCombination)so).ToList();
+
+      //Checks - Combination 1
+      Assert.Equal("combo 1", speckleLoadCombination[0].applicationId);
+      Assert.Equal(gsaCombination[0].Name, speckleLoadCombination[0].name);
+      Assert.Equal(new Dictionary<string, double> { { "Dead", 1 }, { "Live", 0.2 } }, speckleLoadCombination[0].caseFactors);
+
+      //Checks - Combination 2
+      Assert.Equal("combo 2", speckleLoadCombination[1].applicationId);
+      Assert.Equal(gsaCombination[1].Name, speckleLoadCombination[1].name);
+      Assert.Equal(new Dictionary<string, double> { { "Combination 1", 1.3 }, { "Dead", 1 }, { "Live", 1 } }, speckleLoadCombination[1].caseFactors);
     }
     #endregion
 
@@ -897,6 +998,7 @@ namespace ConverterGSATests
     [Fact]
     public void GsaNodeResultsOnly()
     {
+
     }
     #endregion
 
@@ -1258,6 +1360,50 @@ namespace ConverterGSATests
         gsaLoadNodes[i].ApplicationId = appIds[i];
       }
       return gsaLoadNodes.GetRange(0, numberOfLoads);
+    }
+
+    private GsaLoadGravity GsaLoadGravityExample(string appId)
+    {
+      return new GsaLoadGravity()
+      {
+        ApplicationId = appId,
+        Index = 1,
+        Name = "1",
+        Entities = new List<int>() { 1, 2 },
+        Nodes = new List<int>() { 1, 2, 3, 4, 5 },
+        LoadCaseIndex = 1,
+        X = 0,
+        Y = 0,
+        Z = -1
+      };
+    }
+
+    private List<GsaCombination> GsaCombinationExamples(int numberOfCombos, params string[] appIds)
+    {
+      var gsaCombo = new List<GsaCombination>()
+      {
+        new GsaCombination()
+        {
+          Index = 1,
+          Name = "Combination 1",
+          Desc = "A1 + 0.2A2",
+          //Bridge = false,
+          Note = ""
+        },
+        new GsaCombination()
+        {
+          Index = 2,
+          Name = "Combination 2",
+          Desc = "1.3C1 + (A1 to A2)",
+          //Bridge = false,
+          Note = ""
+        }
+      };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaCombo[i].ApplicationId = appIds[i];
+      }
+      return gsaCombo.GetRange(0, numberOfCombos);
     }
     #endregion
 

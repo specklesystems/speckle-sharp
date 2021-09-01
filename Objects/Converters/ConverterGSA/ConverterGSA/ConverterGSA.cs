@@ -56,6 +56,8 @@ namespace ConverterGSA
         { typeof(GsaLoadBeamPatch), GsaBeamLoadToSpeckle },
         { typeof(GsaLoadBeamTrilin), GsaBeamLoadToSpeckle },
         { typeof(GsaLoadNode), GsaNodeLoadToSpeckle },
+        { typeof(GsaLoadGravity), GsaGravityLoadToSpeckle },
+        { typeof(GsaCombination), GsaLoadCombinationToSpeckle },
         //Material
         { typeof(GsaMatSteel), GsaMaterialSteelToSpeckle },
         { typeof(GsaMatConcrete), GsaMaterialConcreteToSpeckle },
@@ -440,10 +442,63 @@ namespace ConverterGSA
       return speckleNodeLoad;
     }
 
+    public List<Base> GsaGravityLoadToSpeckle(GsaRecord nativeObject)
+    {
+      var speckleGravityLoad = GsaGravityLoadToSpeckle((GsaLoadGravity)nativeObject);
+      return new List<Base>() { speckleGravityLoad };
+    }
 
+    public GravityLoad GsaGravityLoadToSpeckle(GsaLoadGravity gsaLoadGravity)
+    {
+      var speckleGravityLoad = new GravityLoad()
+      {
+        name = gsaLoadGravity.Name,
+        elements = new List<Base>(),
+        nodes = new List<Base>(),
+        gravityFactors = GetGravityFactors(gsaLoadGravity)
+      };
+
+      if (gsaLoadGravity.Index.IsIndex()) speckleGravityLoad.applicationId = Instance.GsaModel.GetApplicationId<GsaLoadGravity>(gsaLoadGravity.Index.Value);
+      if (gsaLoadGravity.LoadCaseIndex.IsIndex()) speckleGravityLoad.loadCase = GetLoadCaseFromIndex(gsaLoadGravity.LoadCaseIndex.Value);
+      foreach (var index in gsaLoadGravity.Entities)
+      {
+        try
+        {
+          speckleGravityLoad.elements.Add(GetElement1DFromIndex(index));
+        }
+        catch
+        {
+          speckleGravityLoad.elements.Add(GetElement2DFromIndex(index));
+        }
+      }
+      foreach (var index in gsaLoadGravity.Nodes)
+      {
+        speckleGravityLoad.nodes.Add(GetNodeFromIndex(index));
+      }
+
+      return speckleGravityLoad;
+    }
+
+    public List<Base> GsaLoadCombinationToSpeckle(GsaRecord nativeObject)
+    {
+      var speckleLoadCombination = GsaLoadCombinationToSpeckle((GsaCombination)nativeObject);
+      return new List<Base>() { speckleLoadCombination };
+    }
+
+    public LoadCombination GsaLoadCombinationToSpeckle(GsaCombination gsaCombination)
+    {
+      var speckleLoadCombination = new LoadCombination()
+      {
+        name = gsaCombination.Name,
+        caseFactors = GetLoadCombinationFactors(gsaCombination.Desc)
+      };
+      
+      if (gsaCombination.Index.IsIndex()) speckleLoadCombination.applicationId = Instance.GsaModel.GetApplicationId<GsaCombination>(gsaCombination.Index.Value);
+
+      return speckleLoadCombination;
+    }
     //TODO: implement conversion code for loading objects
-    /* GravityLoad
-     * LoadCombination
+    /* LoadCombination
      */
     #endregion
 
@@ -635,10 +690,7 @@ namespace ConverterGSA
         inertiaYZ = gsaPropMass.Iyz,
         inertiaZX = gsaPropMass.Izx
       };
-      if (gsaPropMass.Index.IsIndex())
-      {
-        specklePropertyMass.applicationId = Instance.GsaModel.GetApplicationId<GsaPropMass>(gsaPropMass.Index.Value);
-      }
+      if (gsaPropMass.Index.IsIndex()) specklePropertyMass.applicationId = Instance.GsaModel.GetApplicationId<GsaPropMass>(gsaPropMass.Index.Value);
 
       //Mass modifications
       if (gsaPropMass.Mod == MassModification.Modified)
@@ -670,10 +722,7 @@ namespace ConverterGSA
         name = gsaPropSpr.Name,
         dampingRatio = gsaPropSpr.DampingRatio.Value
       };
-      if (gsaPropSpr.Index.IsIndex())
-      {
-        specklePropertySpring.applicationId = Instance.GsaModel.GetApplicationId<GsaPropSpr>(gsaPropSpr.Index.Value);
-      }
+      if (gsaPropSpr.Index.IsIndex()) specklePropertySpring.applicationId = Instance.GsaModel.GetApplicationId<GsaPropSpr>(gsaPropSpr.Index.Value);
 
       //Dictionary of fns used to apply spring type specific properties. 
       //Functions will pass by reference specklePropertySpring and make the necessary changes to it
@@ -686,15 +735,11 @@ namespace ConverterGSA
         { StructuralSpringPropertyType.Gap, SetProprtySpringGap },
         { StructuralSpringPropertyType.Friction, SetProprtySpringFriction },
         { StructuralSpringPropertyType.General, SetProprtySpringGeneral }
-        //MATRIX not yet supported
         //CONNECT not yet supported
       };
 
       //Apply spring type specific properties
-      if (fns.ContainsKey(gsaPropSpr.PropertyType))
-      {
-        fns[gsaPropSpr.PropertyType](gsaPropSpr, specklePropertySpring);
-      }
+      if (fns.ContainsKey(gsaPropSpr.PropertyType)) fns[gsaPropSpr.PropertyType](gsaPropSpr, specklePropertySpring);
 
       return specklePropertySpring;
     }
@@ -1289,6 +1334,16 @@ namespace ConverterGSA
           return true;
         }
       }
+      else if (type == typeof(GsaLoadBeamLine))
+      {
+        var lb = (GsaLoadBeamLine)gsaLoadBeam;
+        if (lb.Load1.HasValue && lb.Load2.HasValue)
+        {
+          values.Add(lb.Load1.Value);
+          values.Add(lb.Load2.Value);
+          return true;
+        }
+      }
       else if (type == typeof(GsaLoadBeamPatch) || type == typeof(GsaLoadBeamPatchTrilin))
       {
         var lb = (GsaLoadBeamPatchTrilin)gsaLoadBeam;
@@ -1300,6 +1355,145 @@ namespace ConverterGSA
         }
       }
       return false;
+    }
+
+    private Vector GetGravityFactors(GsaLoadGravity gsaLoadGravity)
+    {
+      var speckleGravityFactors =  new Vector(0, 0, 0);
+      if (gsaLoadGravity.X.HasValue) speckleGravityFactors.x = gsaLoadGravity.X.Value;
+      if (gsaLoadGravity.Y.HasValue) speckleGravityFactors.y = gsaLoadGravity.Y.Value;
+      if (gsaLoadGravity.Z.HasValue) speckleGravityFactors.z = gsaLoadGravity.Z.Value;
+
+      return speckleGravityFactors;
+    }
+
+    private Dictionary<string,double> GetLoadCombinationFactors(string Desc)
+    {
+      var speckleCaseFactors = new Dictionary<string, double>();
+      int gsaIndex;
+      LoadCase speckleLoadCase;
+      LoadCombination speckleLoadCombination;
+
+      var gsaCaseFactors = ParseLoadDescription(Desc);
+
+      foreach (var key in gsaCaseFactors.Keys)
+      {
+        gsaIndex = Convert.ToInt32(key.Substring(1));
+        if (key[0] == 'A')
+        {
+          speckleLoadCase = GetLoadCaseFromIndex(gsaIndex);
+          speckleCaseFactors.Add(speckleLoadCase.name, gsaCaseFactors[key]);
+        }
+        else if (key[0] == 'C')
+        {
+          speckleLoadCombination = GetLoadCombinationFromIndex(gsaIndex);
+          speckleCaseFactors.Add(speckleLoadCombination.name, gsaCaseFactors[key]);
+        }
+      }
+
+      return speckleCaseFactors;
+    }
+
+    private LoadCombination GetLoadCombinationFromIndex(int index)
+    {
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaCombination, LoadCombination>(index, out var speckleObjects)) ? speckleObjects.First() : null;
+    }
+
+    /// <summary>
+    /// Seperates the load description into a dictionary of the case/task/combo identifier and their factors.
+    /// </summary>
+    /// <param name="list">Load description.</param>
+    /// <param name="currentMultiplier">Factor to multiply the entire list by.</param>
+    /// <returns></returns>
+    public static Dictionary<string, double> ParseLoadDescription(string list, double currentMultiplier = 1)
+    {
+      var ret = new Dictionary<string, double>();
+
+      list = list.Replace(" ", "");
+
+      double multiplier = 1;
+      var negative = false;
+
+      for (var pos = 0; pos < list.Count(); pos++)
+      {
+        var currChar = list[pos];
+
+        if (currChar >= '0' && currChar <= '9') //multiplier
+        {
+          var mult = "";
+          mult += currChar.ToString();
+
+          pos++;
+          while (pos < list.Count() && ((list[pos] >= '0' && list[pos] <= '9') || list[pos] == '.'))
+            mult += list[pos++].ToString();
+          pos--;
+
+          multiplier = mult.ToDouble();
+        }
+        else if (currChar >= 'A' && currChar <= 'Z') //GSA load case or load combination identifier
+        {
+          var loadDesc = "";
+          loadDesc += currChar.ToString();
+
+          pos++;
+          while (pos < list.Count() && list[pos] >= '0' && list[pos] <= '9')
+            loadDesc += list[pos++].ToString();
+          pos--;
+
+          var actualFactor = multiplier == 0 ? 1 : multiplier;
+          actualFactor *= currentMultiplier;
+          actualFactor = negative ? -1 * actualFactor : actualFactor;
+
+          ret.Add(loadDesc, actualFactor);
+
+          multiplier = 0;
+          negative = false;
+        }
+        else if (currChar == '-') //negative operator
+          negative = !negative;
+        else if (currChar == 't') //to operator (i.e. add all load cases between the first and second identifier
+        {
+          if (list[++pos] == 'o')
+          {
+            var prevDesc = ret.Last();
+
+            var type = prevDesc.Key[0].ToString();
+            var start = Convert.ToInt32(prevDesc.Key.Substring(1)) + 1;
+
+            var endDesc = "";
+
+            pos++;
+            pos++;
+            while (pos < list.Count() && list[pos] >= '0' && list[pos] <= '9')
+              endDesc += list[pos++].ToString();
+            pos--;
+
+            var end = Convert.ToInt32(endDesc);
+
+            for (var i = start; i <= end; i++)
+              ret.Add(type + i.ToString(), prevDesc.Value);
+          }
+        }
+        else if (currChar == '(') //process part inside brackets
+        {
+          var actualFactor = multiplier == 0 ? 1 : multiplier;
+          actualFactor *= currentMultiplier;
+          actualFactor = negative ? -1 * actualFactor : actualFactor;
+
+          ret.AddRange(ParseLoadDescription(string.Join("", list.Skip(pos + 1)), actualFactor));
+
+          pos++;
+          while (pos < list.Count() && list[pos] != ')')
+            pos++;
+
+          multiplier = 0;
+          negative = false;
+        }
+        else if (currChar == ')')
+          return ret;
+      }
+
+      return ret;
     }
     #endregion
 
