@@ -66,8 +66,8 @@ namespace Objects.Structural.GSA.Loading
         public int nativeId { get; set; }
         public GSANodeLoad() { }
 
-        [SchemaInfo("GSANodeLoad", "Creates a Speckle node load for GSA")]
-        public GSANodeLoad(int nativeId, string name, LoadCase loadCase, List<GSANode> nodes, LoadDirection direction, List<double> value)
+        [SchemaInfo("GSANodeLoad", "Creates a Speckle node load for GSA", "GSA", "Loading")]
+        public GSANodeLoad(int nativeId, string name, LoadCase loadCase, List<GSANode> nodes, LoadDirection direction, double value)
         {
             this.nativeId = nativeId;
             this.name = name;
@@ -78,8 +78,8 @@ namespace Objects.Structural.GSA.Loading
             this.value = value;            
         }
 
-        [SchemaInfo("GSANodeLoad (user-defined axis)", "Creates a Speckle node load (user-defined axis) for GSA")]
-        public GSANodeLoad(int nativeId, string name, LoadCase loadCase, List<Node> nodes, Axis loadAxis, LoadDirection direction, List<double> value)
+        [SchemaInfo("GSANodeLoad (user-defined axis)", "Creates a Speckle node load (user-defined axis) for GSA", "GSA", "Loading")]
+        public GSANodeLoad(int nativeId, string name, LoadCase loadCase, List<Node> nodes, Axis loadAxis, LoadDirection direction, double value)
         {
             this.nativeId = nativeId;
             this.name = name;

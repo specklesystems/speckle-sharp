@@ -23,12 +23,10 @@ namespace Objects.Structural.Geometry
 
         [DetachProperty]
         public PropertyDamper damperProperty { get; set; }
-        public double localElementSize { get; set; }
-        public string colour { get; set; }
         public Node() { }
 
-        [SchemaInfo("Node", "Creates a Speckle structural node")]
-        public Node([SchemaMainParam] Point basePoint, 
+        [SchemaInfo("Node", "Creates a Speckle structural node", "Structural", "Geometry")]
+        public Node(Point basePoint,
             string name = null,
             [SchemaParamInfo("If null, restraint condition defaults to free/fully released")]  Restraint restraint = null, 
             [SchemaParamInfo("If null, axis defaults to world xy (z axis defines the vertical direction, positive direction is up)")] Plane constraintAxis = null)
@@ -40,7 +38,7 @@ namespace Objects.Structural.Geometry
         }
 
         [SchemaInfo("Node with properties", "Creates a Speckle structural node with spring, mass and/or damper properties", "Structural", "Geometry")]
-        public Node([SchemaMainParam] Point basePoint,
+        public Node(Point basePoint,
             string name = null,
             [SchemaParamInfo("If null, restraint condition defaults to free/fully released")] Restraint restraint = null,
             [SchemaParamInfo("If null, axis defaults to world xy (z axis defines the vertical direction, positive direction is up)")] Plane constraintAxis = null,

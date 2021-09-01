@@ -78,6 +78,27 @@ namespace Objects.Structural.Properties
             }
         }
 
+        public class TSectionProfile : SectionProfile
+        {
+            public double depth { get; set; }
+            public double width { get; set; }
+            public double webThickness { get; set; }
+            public double flangeThickness { get; set; }
+
+            public TSectionProfile() { }
+
+            [SchemaInfo("TSectionProfile", "Creates a Speckle structural T section profile", "Structural", "Properties")]
+            public TSectionProfile(string name, double depth, double width, double webThickness, double flangeThickness)
+            {
+                this.name = name;
+                this.depth = depth;
+                this.width = width;
+                this.webThickness = webThickness;
+                this.flangeThickness = flangeThickness;
+                this.shapeType = ShapeType.TSection;
+            }
+        }
+
     }
 
 

@@ -11,16 +11,8 @@ namespace Objects.Structural.GSA.Geometry
     public class GSANode : Node
     {
         public int nativeId { get; set; }
-        public int group { get; set; }
-
-        //[DetachProperty]
-        //public PropertySpring springProperty { get; set; }
-        //[DetachProperty]
-        //public PropertyMass massProperty { get; set; }
-        //[DetachProperty]
-        //public PropertyDamper damperProperty { get; set; }
-        //public double localElementSize { get; set; }
-        //public string colour { get; set; }
+        public double localElementSize { get; set; }
+        public string colour { get; set; }
         public GSANode() { }
 
         /// <summary>
