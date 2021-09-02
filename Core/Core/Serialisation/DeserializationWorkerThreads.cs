@@ -97,7 +97,7 @@ namespace Speckle.Core.Serialisation
 
       if (canStartTask)
       {
-        TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+        TaskCompletionSource<object> tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         Tasks.Add((taskType, inputValue, tcs));
         return tcs.Task;
       }

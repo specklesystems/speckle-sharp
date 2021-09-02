@@ -57,6 +57,7 @@ namespace Speckle.Core.Transports
 
     public async Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
     {
+      return "";
       if (CancellationToken.IsCancellationRequested)
         return null;
 
@@ -100,8 +101,9 @@ namespace Speckle.Core.Transports
       var childrenFoundMap = await targetTransport.HasObjects(childrenIds);
       List<string> newChildrenIds = new List<string>(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
 
-      targetTransport.BeginWrite();
 
+      targetTransport.BeginWrite();
+      /*
       // Get the children that are not already in the targetTransport
       List<string> childrenIdBatch = new List<string>(DOWNLOAD_BATCH_SIZE);
       bool downloadBatchResult;
@@ -126,6 +128,7 @@ namespace Speckle.Core.Transports
       targetTransport.SaveObject(hash, rootObjectStr);
       await targetTransport.WriteComplete();
       return rootObjectStr;
+      */
     }
 
     public string GetObject(string id)

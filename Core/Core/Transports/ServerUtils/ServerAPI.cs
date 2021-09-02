@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -12,10 +13,8 @@ using System.Threading.Tasks;
 
 namespace Speckle.Core.Transports.ServerUtils
 {
-  internal class ServerAPI : IDisposable
+  public class ServerApi : IDisposable, IServerApi
   {
-    public delegate bool CbObjectDownloaded(string id, string json);
-
     private int BATCH_SIZE_HAS_OBJECTS = 1000;
     private int BATCH_SIZE_GET_OBJECTS = 1000;
     private int MAX_OBJECT_SIZE = 10_000_000;
@@ -35,7 +34,7 @@ namespace Speckle.Core.Transports.ServerUtils
     /// </summary>
     public Action<int, int> OnBatchSent { get; set; }
 
-    public ServerAPI(string baseUri, string authorizationToken, int timeoutSeconds = 60, CancellationToken cancellationToken = default(CancellationToken))
+    public ServerApi(string baseUri, string authorizationToken, int timeoutSeconds = 60, CancellationToken cancellationToken = default(CancellationToken))
     {
       BaseUri = baseUri;
       CancellationToken = cancellationToken;
@@ -78,13 +77,13 @@ namespace Speckle.Core.Transports.ServerUtils
       return rootObjectStr;
     }
 
-    public async Task GetObjects(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
+    public async Task DownloadObjects(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
     {
       if (objectIds.Count == 0)
         return;
       if (objectIds.Count < BATCH_SIZE_GET_OBJECTS)
       {
-        await GetObjectsImpl(streamId, objectIds, onObjectCallback);
+        await DownloadObjectsImpl(streamId, objectIds, onObjectCallback);
         return;
       }
 
@@ -93,15 +92,15 @@ namespace Speckle.Core.Transports.ServerUtils
       {
         if (crtRequest.Count >= BATCH_SIZE_GET_OBJECTS)
         {
-          await GetObjectsImpl(streamId, crtRequest, onObjectCallback);
+          await DownloadObjectsImpl(streamId, crtRequest, onObjectCallback);
           crtRequest = new List<string>();
         }
         crtRequest.Add(id);
       }
-      await GetObjectsImpl(streamId, crtRequest, onObjectCallback);
+      await DownloadObjectsImpl(streamId, crtRequest, onObjectCallback);
     }
 
-    private async Task GetObjectsImpl(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
+    private async Task DownloadObjectsImpl(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
     {
       if (CancellationToken.IsCancellationRequested)
         return;
@@ -166,6 +165,9 @@ namespace Speckle.Core.Transports.ServerUtils
       if (CancellationToken.IsCancellationRequested)
         return new Dictionary<string, bool>();
 
+      Stopwatch sw = new Stopwatch(); // TODO: remove
+      sw.Start();
+
       string objectsPostParameter = JsonSerializer.Serialize<List<string>>(objectIds);
       var payload = new Dictionary<string, string>() { { "objects", objectsPostParameter } };
       string serializedPayload = JsonSerializer.Serialize<Dictionary<string, string>>(payload);
@@ -181,6 +183,8 @@ namespace Speckle.Core.Transports.ServerUtils
         foreach (JsonProperty prop in doc.RootElement.EnumerateObject())
           hasObjects[prop.Name] = prop.Value.GetBoolean();
       }
+      Console.WriteLine($"HasObject request in {sw.ElapsedMilliseconds / 1000.0} sec");
+
       return hasObjects;
     }
 
