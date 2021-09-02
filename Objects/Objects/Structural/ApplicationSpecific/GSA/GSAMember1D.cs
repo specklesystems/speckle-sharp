@@ -13,7 +13,6 @@ namespace Objects.Structural.GSA.Geometry //GSA.Geometry?
         public int nativeId { get; set; }
         public int group { get; set; }
         public string colour { get; set; }
-        public string action { get; set; }
         public bool isDummy { get; set; }
         public bool intersectsWithOthers { get; set; }
         public double targetMeshSize { get; set; }
