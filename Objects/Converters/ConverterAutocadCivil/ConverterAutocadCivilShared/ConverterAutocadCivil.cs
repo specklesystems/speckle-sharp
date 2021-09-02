@@ -152,7 +152,11 @@ public static string AutocadAppName = Applications.Autocad2022;
           return PolylineToNativeDB(o);
 
         case Polycurve o:
-          return PolycurveToNativeDB(o);
+          var splineSegments = o.segments.Where(s => s is Curve);
+          if (splineSegments.Count() > 0)
+            return PolycurveSplineToNativeDB(o);
+          else
+            return PolycurveToNativeDB(o);
 
         //case Interval o: // TODO: NOT TESTED
         //  return IntervalToNative(o);
@@ -172,10 +176,10 @@ public static string AutocadAppName = Applications.Autocad2022;
             return MeshToNativeDB(o.displayMesh);
           else
             return null;
+        */
 
         case Mesh o: // unstable, do not use for now
           return MeshToNativeDB(o);
-        */
 
         case BlockInstance o:
           return BlockInstanceToNativeDB(o, out BlockReference refernce);
@@ -368,7 +372,7 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Polycurve _:
         case Curve _:
         //case Brep _:
-        //case Mesh _:
+        case Mesh _:
 
         case BlockDefinition _:
         case BlockInstance _:

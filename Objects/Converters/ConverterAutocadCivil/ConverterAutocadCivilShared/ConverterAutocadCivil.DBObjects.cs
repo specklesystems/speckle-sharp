@@ -377,13 +377,11 @@ namespace Objects.Converter.AutocadCivil
 
     // polylines can only support curve segments of type circular arc
     // currently, this will collapse 3d polycurves into 2d since there is no polycurve class that can contain 3d polylines with nonlinear segments
-    // TODO: to preserve 3d polycurves, will have to convert segments individually, append to the document, and join. This will convert to spline if 3d with curved segments.
-    // TODO: figure out how to handle polycurves with spline segments
     public AcadDB.Polyline PolycurveToNativeDB(Polycurve polycurve) 
     {
       AcadDB.Polyline polyline = new AcadDB.Polyline() { Closed = polycurve.closed };
       var plane = new Autodesk.AutoCAD.Geometry.Plane(Point3d.Origin, Vector3d.ZAxis.TransformBy(Doc.Editor.CurrentUserCoordinateSystem)); // TODO: check this 
-
+      
       // add all vertices
       for (int i = 0; i < polycurve.segments.Count; i++)
       {
@@ -408,6 +406,23 @@ namespace Objects.Converter.AutocadCivil
 
       return polyline;
     }
+    // handles polycurves with spline segments: bakes segments individually and then joins
+    // TODO: can use this for 3d polycurves with arc segments (needs an IsPlanar property)
+    public AcadDB.Spline PolycurveSplineToNativeDB(Polycurve polycurve)
+    {
+      AcadDB.Curve firstSegment = CurveToNativeDB(polycurve.segments[0]);
+      List<AcadDB.Curve> otherSegments = new List<AcadDB.Curve>();
+      for (int i = 1; i < polycurve.segments.Count; i++)
+      {
+        var converted = CurveToNativeDB(polycurve.segments[i]);
+        if (converted == null)
+          return null;
+        otherSegments.Add(converted);
+      }
+      firstSegment.JoinEntities(otherSegments.ToArray());
+      return firstSegment.Spline;
+    }
+
     // calculates bulge direction: (-) clockwise, (+) counterclockwise
     int BulgeDirection(Point start, Point mid, Point end)
     {
