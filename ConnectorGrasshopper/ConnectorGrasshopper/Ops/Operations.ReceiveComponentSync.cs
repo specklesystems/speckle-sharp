@@ -288,37 +288,19 @@ namespace ConnectorGrasshopper.Ops
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Run out of time!");
       }
-      else if (!GetSolveResults(DA, out Speckle.Core.Models.Base ReceivedObject))
+      else if (!GetSolveResults(DA, out Speckle.Core.Models.Base @base))
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not running multithread");
       }
       else
       {
-        if (ReceivedObject == null)
+        if (@base == null)
           return;
-        ReceivedObjectId = ReceivedObject.id;
+        ReceivedObjectId = @base.id;
 
         //the active document may have changed
         Converter?.SetContextDocument(RhinoDoc.ActiveDoc);
-        GH_Structure<IGH_Goo> data;
-
-        if (Converter != null && Converter.CanConvertToNative(ReceivedObject))
-        {
-          var converted = Converter.ConvertToNative(ReceivedObject);
-          data = new GH_Structure<IGH_Goo>();
-          data.Append(Extras.Utilities.TryConvertItemToNative(converted, Converter));
-        }
-        else if (ReceivedObject.GetDynamicMembers().Count() == 1)
-        {
-          var treeBuilder = new TreeBuilder(Converter);
-          var tree = treeBuilder.Build(ReceivedObject[ReceivedObject.GetDynamicMembers().ElementAt(0)]);
-          data = tree;
-        }
-        else
-        {
-          data = new GH_Structure<IGH_Goo>();
-          data.Append(new GH_SpeckleBase(ReceivedObject));
-        }
+        var data = Extras.Utilities.ConvertToTree(Converter, @base);
 
         DA.SetDataTree(0, data);
       }
@@ -333,12 +315,6 @@ namespace ConnectorGrasshopper.Ops
     {
       IGH_Goo DataInput = null;
       var check = DA.GetData(0, ref DataInput);
-      //if (DataInput.IsEmpty)
-      //{
-      //  StreamWrapper = null;
-      //  TriggerAutoSave();
-      //  return;
-      //}
 
       var ghGoo = DataInput;
       if (ghGoo == null) return;

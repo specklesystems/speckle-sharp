@@ -1,4 +1,4 @@
-using Grasshopper.Kernel.Types;
+﻿using Grasshopper.Kernel.Types;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -352,6 +352,29 @@ namespace ConnectorGrasshopper.Extras
       var type = @object.GetType();
       return (typeof(IEnumerable).IsAssignableFrom(type) && !typeof(IDictionary).IsAssignableFrom(type) &&
               type != typeof(string));
+    }
+
+    public static GH_Structure<IGH_Goo> ConvertToTree(ISpeckleConverter Converter, Base @base)
+    {
+      GH_Structure<IGH_Goo> data;
+      if (Converter.CanConvertToNative(@base))
+      {
+        var converted = Converter.ConvertToNative(@base);
+        data = new GH_Structure<IGH_Goo>();
+        data.Append(Utilities.TryConvertItemToNative(converted, Converter));
+      }
+      else if (@base.GetDynamicMembers().Count() == 1)
+      {
+        var treeBuilder = new TreeBuilder(Converter) { ConvertToNative = Converter != null};
+        var tree = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);
+        data = tree;
+      }
+      else
+      {
+        data = new GH_Structure<IGH_Goo>();
+        data.Append(new GH_SpeckleBase(@base));
+      }
+      return data;
     }
   }
 }

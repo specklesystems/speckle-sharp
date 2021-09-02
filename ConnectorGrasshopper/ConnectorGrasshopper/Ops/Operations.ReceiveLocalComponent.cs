@@ -111,7 +111,7 @@ namespace ConnectorGrasshopper.Ops
       {
         Parent.Message = "Receiving...";
         var Converter = (Parent as ReceiveLocalComponent).Converter;
-        
+
         Base @base = null;
 
         try
@@ -120,28 +120,12 @@ namespace ConnectorGrasshopper.Ops
         }
         catch (Exception e)
         {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,"Failed to receive local data."));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Failed to receive local data."));
           Done();
           return;
         }
 
-        if (Converter.CanConvertToNative(@base))
-        {
-          var converted = Converter.ConvertToNative(@base);
-          data = new GH_Structure<IGH_Goo>();
-          data.Append(Utilities.TryConvertItemToNative(converted, Converter));
-        }
-        else if (@base.GetDynamicMembers().Count() == 1)
-        {
-          var treeBuilder = new TreeBuilder(Converter);
-          var tree = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);
-          data = tree;
-        }
-        else
-        {
-          data = new GH_Structure<IGH_Goo>();
-          data.Append(new GH_SpeckleBase(@base));
-        }
+        data = Utilities.ConvertToTree(Converter, @base);
       }
       catch (Exception e)
       {
