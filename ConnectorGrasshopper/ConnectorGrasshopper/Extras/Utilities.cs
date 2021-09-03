@@ -365,18 +365,26 @@ namespace ConnectorGrasshopper.Extras
       var data = new GH_Structure<IGH_Goo>();
 
       // Use the converter
+      // case 1: it's an item that has a direct conversion method, eg a point
       if (Converter != null && Converter.CanConvertToNative(@base))
       {
         var converted = Converter.ConvertToNative(@base);
         data.Append(TryConvertItemToNative(converted, Converter));
       }
       // We unpack automatically since we auto-wrapped it initially
+      // case 2: it's a wrapper Base
+      //       2a: if there's only one member unpack it
+      //       2b: otherwise return dictionary of unpacked members
       else if (@base.IsWrapper())
       {
         var treeBuilder = new TreeBuilder(Converter) { ConvertToNative = Converter != null};
         data = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);
       }
       // Simple pass the SpeckleBase
+      // TODO: the base object has multiple members,
+      // therefore create a matching structure via the output ports, similar to 
+      // running the expando object
+      // then run the treebuilder for each port
       else
       {
         data.Append(new GH_SpeckleBase(@base));

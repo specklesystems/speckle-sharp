@@ -17,13 +17,10 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class ReceiveLocalComponent : GH_AsyncComponent
+  public class ReceiveLocalComponent : SelectKitAsyncComponentBase
   {
     public override GH_Exposure Exposure => GH_Exposure.tertiary | GH_Exposure.obscure;
 
-    public ISpeckleConverter Converter;
-
-    public ISpeckleKit Kit;
     public ReceiveLocalComponent() : base("Local Receive", "LR",
       "Receives data locally, without the need of a Speckle Server. NOTE: updates will not be automatically received.",
       ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SEND_RECEIVE)
