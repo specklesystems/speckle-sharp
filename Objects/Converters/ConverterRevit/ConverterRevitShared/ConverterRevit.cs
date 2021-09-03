@@ -99,7 +99,8 @@ namespace Objects.Converter.Revit
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
           {
             returnObject = RoomBoundaryLineToSpeckle(o);
-          } else if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_MEPSpaceSeparationLines)
+          } 
+          else if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_MEPSpaceSeparationLines)
           {
             returnObject = SpaceSeparationLineToSpeckle(o);
           }

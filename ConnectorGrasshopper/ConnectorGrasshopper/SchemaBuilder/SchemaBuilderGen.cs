@@ -568,7 +568,7 @@ public class SpaceSchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class Space1SchemaComponent: CreateSchemaObjectBase {
      
-    public Space1SchemaComponent(): base("Space with upper limit and offset parameters", "Space with upper limit and offset parameters", "Creates a Speckle space with the specified upper limit and offsets", "Speckle 2 BIM", "MEP") { }
+    public Space1SchemaComponent(): base("Space with top level and offset parameters", "Space with top level and offset parameters", "Creates a Speckle space with the specified top level and offsets", "Speckle 2 BIM", "MEP") { }
     
     public override Guid ComponentGuid => new Guid("8f7b0323-3533-e7cd-ae43-0bdeb34f3570");
     
