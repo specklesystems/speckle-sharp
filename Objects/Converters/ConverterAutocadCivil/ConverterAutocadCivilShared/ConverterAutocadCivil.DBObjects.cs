@@ -169,10 +169,10 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Ellipses
-    // TODO: fix major/minor vs x axis/yaxis distinction in conversions after speckle firstRadius & secondRadius def is set
     public Ellipse EllipseToSpeckle(AcadDB.Ellipse ellipse)
     {
-      var _ellipse = new Ellipse(PlaneToSpeckle(ellipse.GetPlane()), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits);
+      var plane = new Plane(ellipse.Center, ellipse.MajorAxis, ellipse.MinorAxis);
+      var _ellipse = new Ellipse(PlaneToSpeckle(plane), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits);
       _ellipse.domain = new Interval(ellipse.StartParam, ellipse.EndParam);
       _ellipse.length = ellipse.GetDistanceAtParameter(ellipse.EndParam);
       _ellipse.bbox = BoxToSpeckle(ellipse.GeometricExtents, true);
@@ -181,7 +181,8 @@ namespace Objects.Converter.AutocadCivil
     public AcadDB.Ellipse EllipseToNativeDB(Ellipse ellipse)
     {
       var normal = VectorToNative(ellipse.plane.normal);
-      var majorAxis = ScaleToNative((double)ellipse.firstRadius, ellipse.units) * VectorToNative(ellipse.plane.xdir);
+      var xAxisVector = VectorToNative(ellipse.plane.xdir);
+      var majorAxis = ScaleToNative((double)ellipse.firstRadius, ellipse.units) * xAxisVector.GetNormal();
       var radiusRatio = (double)ellipse.secondRadius / (double)ellipse.firstRadius;
       return new AcadDB.Ellipse(PointToNative(ellipse.plane.origin), normal, majorAxis, radiusRatio, 0, 2 * Math.PI);
     }
@@ -376,13 +377,11 @@ namespace Objects.Converter.AutocadCivil
 
     // polylines can only support curve segments of type circular arc
     // currently, this will collapse 3d polycurves into 2d since there is no polycurve class that can contain 3d polylines with nonlinear segments
-    // TODO: to preserve 3d polycurves, will have to convert segments individually, append to the document, and join. This will convert to spline if 3d with curved segments.
-    // TODO: figure out how to handle polycurves with spline segments
     public AcadDB.Polyline PolycurveToNativeDB(Polycurve polycurve) 
     {
       AcadDB.Polyline polyline = new AcadDB.Polyline() { Closed = polycurve.closed };
       var plane = new Autodesk.AutoCAD.Geometry.Plane(Point3d.Origin, Vector3d.ZAxis.TransformBy(Doc.Editor.CurrentUserCoordinateSystem)); // TODO: check this 
-
+      
       // add all vertices
       for (int i = 0; i < polycurve.segments.Count; i++)
       {
@@ -407,6 +406,23 @@ namespace Objects.Converter.AutocadCivil
 
       return polyline;
     }
+    // handles polycurves with spline segments: bakes segments individually and then joins
+    // TODO: can use this for 3d polycurves with arc segments (needs an IsPlanar property)
+    public AcadDB.Spline PolycurveSplineToNativeDB(Polycurve polycurve)
+    {
+      AcadDB.Curve firstSegment = CurveToNativeDB(polycurve.segments[0]);
+      List<AcadDB.Curve> otherSegments = new List<AcadDB.Curve>();
+      for (int i = 1; i < polycurve.segments.Count; i++)
+      {
+        var converted = CurveToNativeDB(polycurve.segments[i]);
+        if (converted == null)
+          return null;
+        otherSegments.Add(converted);
+      }
+      firstSegment.JoinEntities(otherSegments.ToArray());
+      return firstSegment.Spline;
+    }
+
     // calculates bulge direction: (-) clockwise, (+) counterclockwise
     int BulgeDirection(Point start, Point mid, Point end)
     {
@@ -568,6 +584,9 @@ namespace Objects.Converter.AutocadCivil
 
         case AcadDB.Circle circle:
           return CircleToSpeckle(circle);
+
+        case AcadDB.Ellipse ellipse:
+          return EllipseToSpeckle(ellipse);
 
         case AcadDB.Spline spline:
           return SplineToSpeckle(spline);
@@ -1250,7 +1269,7 @@ namespace Objects.Converter.AutocadCivil
     public ObjectId BlockDefinitionToNativeDB(BlockDefinition definition)
     {
       // get modified definition name with commit info
-      var blockName = $"{Doc.UserData["commit"]} - {definition.name}";
+      var blockName = $"{Doc.UserData["commit"]} - {RemoveInvalidChars(definition.name)}";
 
       ObjectId blockId = ObjectId.Null;
       using (Transaction tr = Doc.TransactionManager.StartTransaction())

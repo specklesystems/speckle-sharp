@@ -192,6 +192,23 @@ namespace Objects.Converter.RhinoGh
       return new RV.RevitFaceWall(family, type, BrepToSpeckle(brep), null) { units = ModelUnits };
     }
 
+    public RV.AdaptiveComponent InstanceToAdaptiveComponent(InstanceObject instance, string[] args)
+    {
+      if (args.Length == 0)
+        return null;
+
+      string family = "Default";
+      string type = "Default";
+      try { family = args[0]; type = args[1]; } catch { }
+
+      var points = instance.GetSubObjects().Select(o => PointToSpeckle(((Rhino.Geometry.Point)o.Geometry).Location)).ToList();
+
+      var adaptiveComponent = new RV.AdaptiveComponent(type, family, points);
+      adaptiveComponent.units = ModelUnits;
+
+      return adaptiveComponent;
+    }
+
     public RV.DirectShape BrepToDirectShape(RH.Brep brep, string[] args)
     {
       if (args.Length == 0)

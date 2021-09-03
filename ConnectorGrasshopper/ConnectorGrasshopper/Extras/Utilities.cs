@@ -187,10 +187,15 @@ namespace ConnectorGrasshopper.Extras
       if (subclass) 
         return @base;
       var copy = @base.ShallowCopy();
-      copy.GetMembers().ToList().ForEach(keyval =>
+      var keyValuePairs = copy.GetMembers().ToList();
+      keyValuePairs.ForEach(keyval =>
       {
         // TODO: Handle dicts!!
-        if (keyval.Value is IList list)
+        var value = keyval.Value;
+        if (value == null)
+          // TODO: Handle null values in properties here. For now, we just ignore that prop in the object
+          return;
+        if (value is IList list)
         {
           var converted = new List<object>();
           foreach (var item in list)
@@ -200,17 +205,18 @@ namespace ConnectorGrasshopper.Extras
           }
 
           copy[keyval.Key] = converted;
-        } else if (typeof(IDictionary).IsAssignableFrom(keyval.Value.GetType()))
+        } 
+        else if (typeof(IDictionary).IsAssignableFrom(value.GetType()))
         {
           var converted = new Dictionary<string, object>();
-          foreach(DictionaryEntry kvp in keyval.Value as IDictionary)
+          foreach(DictionaryEntry kvp in value as IDictionary)
           {
             converted[kvp.Key.ToString()] = TryConvertItemToSpeckle(kvp.Value, converter, true);
           }
           copy[keyval.Key] = converted;
         }
         else
-          copy[keyval.Key] = TryConvertItemToSpeckle(keyval.Value, converter, true);
+          copy[keyval.Key] = TryConvertItemToSpeckle(value, converter, true);
       });
       return copy;
     }

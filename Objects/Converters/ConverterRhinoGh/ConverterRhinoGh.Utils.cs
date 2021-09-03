@@ -66,6 +66,7 @@ namespace Objects.Converter.RhinoGh
       args = null;
 
       // user string has format "DirectShape{[family], [type]}" if it is a directshape conversion
+      // user string has format "AdaptiveComponent{[family], [type]}" if it is an adaptive component conversion
       // otherwise, it is just the schema type name
       string schema = obj.Attributes.GetUserString(SpeckleSchemaKey);
 
@@ -95,7 +96,7 @@ namespace Objects.Converter.RhinoGh
 
     private void SetUnits(Base geom)
     {
-      geom.units = ModelUnits;
+      geom["units"] = ModelUnits;
     }
 
     private double ScaleToNative(double value, string units)

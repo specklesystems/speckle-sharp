@@ -12,6 +12,8 @@ namespace Objects.BuiltElements
     public ICurve baseLine { get; set; }
     public string label { get; set; }
 
+    public string units { get; set; }
+
     public GridLine() { }
 
     [SchemaInfo("GridLine", "Creates a Speckle grid line", "BIM", "Other")]

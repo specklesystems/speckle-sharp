@@ -18,14 +18,16 @@ namespace Objects.BuiltElements
     public double endStation { get; set; }
 
     /// <summary>
-    /// Station equation arrays should contain doubles indicating raw station back, station back, and station ahead
+    /// Station equation list contains doubles indicating raw station back, station back, and station ahead for each station equation
     /// </summary>
-    public List<double[]> stationEquations { get; set; }
+    public List<double> stationEquations { get; set; }
 
     /// <summary>
     /// Station equation direction for the corresponding station equation should be true for increasing or false for decreasing
     /// </summary>
     public List<bool> stationEquationDirections { get; set; }
+
+    public string units { get; set; }
 
     public Alignment() { }
 

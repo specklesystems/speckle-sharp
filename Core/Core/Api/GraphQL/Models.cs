@@ -60,7 +60,7 @@ namespace Speckle.Core.Api
     public string branchName { get; set; }
     public string objectId { get; set; }
     public string message { get; set; }
-    public string sourceApplication { get; set; }
+    public string sourceApplication { get; set; } = ".net";
     public int totalChildrenCount { get; set; }
     public List<string> parents { get; set; }
 
@@ -112,7 +112,7 @@ namespace Speckle.Core.Api
     /// </summary>
     public Commits commits { get; set; }
 
-    public Object @object { get; set; }
+    public SpeckleObject @object { get; set; }
 
     public override string ToString()
     {
@@ -168,7 +168,7 @@ namespace Speckle.Core.Api
     }
   }
 
-  public class Object
+  public class SpeckleObject
   {
     public string id { get; set; }
     public string speckleType { get; set; }

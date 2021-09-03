@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
       //try to get element using ElementId
       int intId;
 
-      if (int.TryParse(paramUpdater.revitId, out intId))
+      if (int.TryParse(paramUpdater.elementId, out intId))
       {
         var elemId = new ElementId(intId);
         element = Doc.GetElement(elemId);
@@ -30,12 +30,12 @@ namespace Objects.Converter.Revit
       //try to get element using UniqueId
       if (element == null)
       {
-        element = Doc.GetElement(paramUpdater.revitId);
+        element = Doc.GetElement(paramUpdater.elementId);
       }
 
       if (element == null)
       {
-        ConversionErrors.Add(new System.Exception($"Could not find element to update: Element Id = {paramUpdater.revitId}"));
+        ConversionErrors.Add(new System.Exception($"Could not find element to update: Element Id = {paramUpdater.elementId}"));
         return;
       }
 

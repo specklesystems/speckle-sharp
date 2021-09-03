@@ -12,6 +12,8 @@ namespace Objects.BuiltElements
   {
     public ICurve outline { get; set; }
 
+    public string units { get; set; }
+
     public Opening() { }
 
     //[SchemaInfo("Opening", "Creates a Speckle opening")]

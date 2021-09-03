@@ -32,7 +32,7 @@
             <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="50" />
+                <ColumnDefinition Width="65" />
               </Grid.ColumnDefinitions>
               <md:PackIcon Grid.Column="0"
                 Width="24"

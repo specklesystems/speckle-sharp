@@ -207,6 +207,24 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNative(Base @object)
     {
+      //Family Document
+      if (Doc.IsFamilyDocument)
+      {
+        switch (@object)
+        {
+          case ICurve o:
+            return ModelCurveToNative(o);
+          case Geometry.Brep o:
+            return FreeformElementToNativeFamily(o);
+          case Geometry.Mesh o:
+            return FreeformElementToNativeFamily(o);
+          default:
+            return null;
+
+        }
+      }
+
+      //Project Document
       // schema check
       var speckleSchema = @object["@SpeckleSchema"] as Base;
       if (speckleSchema != null)
@@ -233,6 +251,13 @@ namespace Objects.Converter.Revit
         case Geometry.Mesh o:
           return DirectShapeToNative(o);
 
+        // non revit built elems
+        case BE.Alignment o:
+          return ModelCurveToNative(o.baseCurve);
+
+        case BE.Structure o:
+          return DirectShapeToNative(o.displayMesh);
+
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
@@ -245,6 +270,11 @@ namespace Objects.Converter.Revit
 
         case BE.Column o:
           return ColumnToNative(o);
+
+#if REVIT2022
+        case BE.Ceiling o:
+          return CeilingToNative(o);
+#endif
 
         case BERC.DetailCurve o:
           return DetailCurveToNative(o);
@@ -278,6 +308,9 @@ namespace Objects.Converter.Revit
 
         case BE.Topography o:
           return TopographyToNative(o);
+
+        case BER.RevitProfileWall o:
+          return ProfileWallToNative(o);
 
         case BER.RevitFaceWall o:
           return FaceWallToNative(o);
@@ -363,7 +396,21 @@ namespace Objects.Converter.Revit
 
     public bool CanConvertToNative(Base @object)
     {
+      //Family Document
+      if (Doc.IsFamilyDocument)
+      {
+        return @object
+        switch
+        {
+          ICurve _ => true,
+          Geometry.Brep _ => true,
+          Geometry.Mesh _ => true,
+          _ => false
+        };
+      }
 
+
+      //Project Document
       var schema = @object["@SpeckleSchema"] as Base; // check for contained schema
       if (schema != null)
         return CanConvertToNative(schema);
@@ -375,11 +422,17 @@ namespace Objects.Converter.Revit
         ICurve _ => true,
         Geometry.Brep _ => true,
         Geometry.Mesh _ => true,
+        // non revit built elems
+        BE.Structure _ => true,
+        BE.Alignment _ => true,
         //built elems
         BER.AdaptiveComponent _ => true,
         BE.Beam _ => true,
         BE.Brace _ => true,
         BE.Column _ => true,
+#if REVIT2022
+        BE.Ceiling _ => true,
+#endif
         BERC.DetailCurve _ => true,
         BER.DirectShape _ => true,
         BER.FreeformElement _ => true,
@@ -392,6 +445,7 @@ namespace Objects.Converter.Revit
         BE.Roof _ => true,
         BE.Topography _ => true,
         BER.RevitFaceWall _ => true,
+        BER.RevitProfileWall _ => true,
         BE.Wall _ => true,
         BE.Duct _ => true,
         BE.Pipe _ => true,

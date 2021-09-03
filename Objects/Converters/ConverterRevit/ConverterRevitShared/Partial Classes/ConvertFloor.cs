@@ -18,18 +18,21 @@ namespace Objects.Converter.Revit
     {
       if (speckleFloor.outline == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only outline based Floor are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Floor is missing an outline.");
       }
 
       bool structural = false;
       var outline = CurveToNative(speckleFloor.outline);
 
       DB.Level level;
-
+      double slope = 0;
+      DB.Line slopeDirection = null;
       if (speckleFloor is RevitFloor speckleRevitFloor)
       {
         level = LevelToNative(speckleRevitFloor.level);
         structural = speckleRevitFloor.structural;
+        slope = speckleRevitFloor.slope;
+        slopeDirection = (speckleRevitFloor.slopeDirection != null) ? LineToNative(speckleRevitFloor.slopeDirection) : null;
       }
       else
       {
@@ -47,14 +50,20 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
       }
 
-      DB.Floor revitFloor;
+      DB.Floor revitFloor = null;
       if (floorType == null)
       {
-        revitFloor = Doc.Create.NewFloor(outline, structural);
+        if (slope != 0 && slopeDirection != null)
+          revitFloor = Doc.Create.NewSlab(outline, level, slopeDirection, slope, structural);
+        if (revitFloor == null)
+          revitFloor = Doc.Create.NewFloor(outline, structural);
       }
       else
       {
-        revitFloor = Doc.Create.NewFloor(outline, floorType, level, structural);
+        if (slope != 0 && slopeDirection != null)
+          revitFloor = Doc.Create.NewSlab(outline, level, slopeDirection, slope, structural);
+        if (revitFloor == null)
+          revitFloor = Doc.Create.NewFloor(outline, floorType, level, structural);
       }
 
       Doc.Regenerate();
@@ -102,7 +111,8 @@ namespace Objects.Converter.Revit
       return speckleFloor;
     }
 
-    //Nesting the various profiles into a polycurve segments
+    // Nesting the various profiles into a polycurve segments. 
+    // TODO: **These should be HORIZONTAL on the floor level!** otherwise sloped floors will not be converted back to native properly
     private List<ICurve> GetProfiles(DB.CeilingAndFloor floor)
     {
       var profiles = new List<ICurve>();
@@ -120,7 +130,6 @@ namespace Objects.Converter.Revit
           {
             continue;
           }
-
           poly.segments.Add(CurveToSpeckle(c));
         }
         profiles.Add(poly);

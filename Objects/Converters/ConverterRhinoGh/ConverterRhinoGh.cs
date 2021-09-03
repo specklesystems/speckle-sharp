@@ -128,7 +128,10 @@ namespace Objects.Converter.RhinoGh
           @base = PolylineToSpeckle(o) as Base;
           break;
         case NurbsCurve o:
-          @base = CurveToSpeckle(o) as Base;
+          if (o.TryGetEllipse(out RH.Ellipse ellipse))
+            @base = EllipseToSpeckle(ellipse);
+          else
+            @base = CurveToSpeckle(o) as Base;
           break;
         case PolylineCurve o:
           @base = PolylineToSpeckle(o);
@@ -192,6 +195,14 @@ namespace Objects.Converter.RhinoGh
       // get schema if it exists
       RhinoObject obj = @object as RhinoObject;
       string schema = GetSchema(obj, out string[] args);
+
+      if (obj is InstanceObject)
+      {
+        if (schema == "AdaptiveComponent")
+            return InstanceToAdaptiveComponent(obj as InstanceObject, args);
+        else
+            throw new NotSupportedException();
+      }
 
       switch (obj.Geometry)
       {

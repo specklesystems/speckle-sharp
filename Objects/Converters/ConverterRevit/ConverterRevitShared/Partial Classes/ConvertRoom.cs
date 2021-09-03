@@ -17,13 +17,12 @@ namespace Objects.Converter.Revit
       var level = LevelToNative(speckleRoom.level);
 
 
-      //TODO: support updating rooms
-      if (revitRoom != null)
+      if (revitRoom == null)
       {
-        Doc.Delete(revitRoom.Id);
+        var point = PointToNative(speckleRoom.center);
+        revitRoom = Doc.Create.NewRoom(level, new UV(point.X, point.Y));
       }
 
-      revitRoom = Doc.Create.NewRoom(level, new UV(speckleRoom.center.x, speckleRoom.center.y));
 
       revitRoom.Name = speckleRoom.name;
       revitRoom.Number = speckleRoom.number;

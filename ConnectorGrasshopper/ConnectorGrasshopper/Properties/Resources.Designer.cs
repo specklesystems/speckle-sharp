@@ -143,6 +143,16 @@ namespace ConnectorGrasshopper.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap docs16 {
+            get {
+                object obj = ResourceManager.GetObject("docs16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ExpandSpeckleObject {
             get {
                 object obj = ResourceManager.GetObject("ExpandSpeckleObject", resourceCulture);
@@ -173,9 +183,29 @@ namespace ConnectorGrasshopper.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap forum16 {
+            get {
+                object obj = ResourceManager.GetObject("forum16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap GetObjectValueByKey {
             get {
                 object obj = ResourceManager.GetObject("GetObjectValueByKey", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap help16 {
+            get {
+                object obj = ResourceManager.GetObject("help16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -446,6 +476,16 @@ namespace ConnectorGrasshopper.Properties {
         internal static System.Drawing.Bitmap ToSpeckle {
             get {
                 object obj = ResourceManager.GetObject("ToSpeckle", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap tutorials16 {
+            get {
+                object obj = ResourceManager.GetObject("tutorials16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

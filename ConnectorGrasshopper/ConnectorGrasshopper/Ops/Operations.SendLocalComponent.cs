@@ -73,20 +73,32 @@ namespace ConnectorGrasshopper.Ops
       ExpireSolution(true);
     }
 
+    public bool foundKit;
     private void SetDefaultKitAndConverter()
     {
-      Kit = KitManager.GetDefaultKit();
       try
       {
+        Kit = KitManager.GetDefaultKit();
         Converter = Kit.LoadConverter(Applications.Rhino);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        foundKit = true;
       }
       catch
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+        foundKit = false;
       }
     }
-
+    
+    protected override void SolveInstance(IGH_DataAccess DA)
+    {
+      if (!foundKit)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
+        return;
+      }
+      base.SolveInstance(DA);
+    }
     protected override void BeforeSolveInstance()
     {
       Tracker.TrackPageview(Tracker.SEND_LOCAL);

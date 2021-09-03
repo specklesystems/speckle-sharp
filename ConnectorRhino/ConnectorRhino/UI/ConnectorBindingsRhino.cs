@@ -386,6 +386,22 @@ namespace SpeckleRhino
                 }
               }
             }
+            /* Not implemented since revit displaymesh objs do not have render materials attached
+            else
+            {
+              Base render = obj[@"renderMaterial"] as Base;
+              if (render != null)
+              {
+                var color = render["diffuse"] as int?;
+
+                if (color != null)
+                {
+                  attributes.ColorSource = ObjectColorSource.ColorFromObject;
+                  attributes.ObjectColor = System.Drawing.Color.FromArgb((int)color);
+                }
+              }
+            }
+            */
 
             // handle schema
             string schema = obj["SpeckleSchema"] as string;
@@ -460,13 +476,13 @@ namespace SpeckleRhino
           {
             if (!converter.CanConvertToSpeckle(obj))
             {
-              state.Errors.Add(new Exception($"Objects of type ${obj.Geometry.ObjectType.ToString()} are not supported"));
+              state.Errors.Add(new Exception($"Objects of type ${obj.Geometry.ObjectType} are not supported"));
               continue;
             }
             converted = converter.ConvertToSpeckle(obj);
             if (converted == null)
             {
-              state.Errors.Add(new Exception($"Failed to convert object ${applicationId} of type ${obj.Geometry.ObjectType.ToString()}."));
+              state.Errors.Add(new Exception($"Failed to convert object ${applicationId} of type ${obj.Geometry.ObjectType}."));
               continue;
             }
 

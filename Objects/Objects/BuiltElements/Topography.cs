@@ -15,6 +15,8 @@ namespace Objects.BuiltElements
     [DetachProperty]
     public Mesh displayMesh { get; set; } = new Mesh();
 
+    public string units { get; set; }
+
     public Topography() { }
 
     [SchemaInfo("Topography", "Creates a Speckle topography", "BIM", "Architecture")]

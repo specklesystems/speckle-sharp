@@ -126,7 +126,7 @@ namespace Objects.Converter.Revit
       //undo offset transform
       else if (elem is Wall w)
       {
-        var revitOffset = ScaleToNative((double)offset, ((Base)w.baseLine).units);
+        var revitOffset = ScaleToNative((double)offset, ((Base)w.baseLine)["units"] as string);
         XYZ vector = new XYZ(0, 0, -revitOffset);
         Transform tf = Transform.CreateTranslation(vector);
         curve = curve.CreateTransformed(tf);
