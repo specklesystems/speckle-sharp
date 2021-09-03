@@ -17,15 +17,15 @@ namespace Objects.Converter.Revit
             var revitSpace = GetExistingElementByApplicationId(speckleSpace.applicationId) as DB.Space;
             var level = LevelToNative(speckleSpace.level);
             var basePoint = PointToNative(speckleSpace.basePoint);
-            var upperLimit = LevelToNative(speckleSpace.upperLimit);
+            var upperLimit = LevelToNative(speckleSpace.topLevel);
 
             // create new space if none existing, include zone information if available
             if (revitSpace == null)
             {                
                 revitSpace = Doc.Create.NewSpace(level, new UV(basePoint.X, basePoint.Y));
-                if (speckleSpace.zoneId != null)
+                if (speckleSpace.zoneName != null)
                 {
-                    var speckleZone = Doc.GetElement(speckleSpace.zoneId) as DB.Zone;
+                    var speckleZone = new FilteredElementCollector(Doc).OfClass(typeof(DB.Zone)).Cast<DB.Zone>().Where(z => z.Name == speckleSpace.zoneName).FirstOrDefault();
                     if (speckleZone != null) // else space is added to default zone
                     {
                         var spaceSet = new DB.SpaceSet();
@@ -58,8 +58,8 @@ namespace Objects.Converter.Revit
             // if user does not specify an UpperLimit level, assume use of default UpperLimit (current level) and default offset values (base offset of 0, limit offset is distance to next level above)
             if(upperLimit != null)
             {
-                revitSpace.get_Parameter(BuiltInParameter.ROOM_UPPER_LEVEL).Set(upperLimit.Id); // not sure why, don't actually seem to be able to set the UpperLimit property when UpperLimit is the same as Level - it stays null after assignment!
-                revitSpace.LimitOffset = ScaleToNative(speckleSpace.limitOffset, speckleSpace.units);
+                TrySetParam(revitSpace, BuiltInParameter.ROOM_UPPER_LEVEL, upperLimit); // not sure why, don't actually seem to be able to set the UpperLimit property when UpperLimit is null and UpperLimit level to be provided is the same as the Level level - it stays null after assignment!
+                revitSpace.LimitOffset = ScaleToNative(speckleSpace.topOffset, speckleSpace.units);
                 revitSpace.BaseOffset = ScaleToNative(speckleSpace.baseOffset, speckleSpace.units);
             }  
 
@@ -99,14 +99,18 @@ namespace Objects.Converter.Revit
             speckleSpace.number = revitSpace.Number;
             speckleSpace.basePoint = (Point)LocationToSpeckle(revitSpace);
             speckleSpace.level = ConvertAndCacheLevel(revitSpace.LevelId);
-            speckleSpace.upperLimit = ConvertAndCacheLevel(revitSpace.get_Parameter(BuiltInParameter.ROOM_UPPER_LEVEL).AsElementId());
+            speckleSpace.topLevel = ConvertAndCacheLevel(revitSpace.get_Parameter(BuiltInParameter.ROOM_UPPER_LEVEL).AsElementId());
             speckleSpace.baseOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_LOWER_OFFSET); 
-            speckleSpace.limitOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_UPPER_OFFSET);
-            speckleSpace.boundary = profiles[0];
+            speckleSpace.topOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_UPPER_OFFSET);
+            speckleSpace.outline = profiles[0];
+            if (profiles.Count > 1)
+            {
+                speckleSpace.voids = profiles.Skip(1).ToList();
+            }
             speckleSpace.area = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_AREA);
             speckleSpace.volume = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_VOLUME);
             speckleSpace.spaceType = revitSpace.SpaceType.ToString();
-            speckleSpace.zoneId = revitSpace.Zone.Id.ToString();
+            speckleSpace.zoneName = revitSpace.Zone.Name;
 
             GetAllRevitParamsAndIds(speckleSpace, revitSpace);
             speckleSpace.displayMesh = GetElementDisplayMesh(revitSpace);

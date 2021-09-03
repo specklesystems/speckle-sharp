@@ -17,11 +17,12 @@ namespace Objects.BuiltElements
         public Point basePoint { get; set; }
         public Level level { get; set; }
         public double baseOffset { get; set; } = 0;
-        public Level upperLimit { get; set; }
-        public double limitOffset { get; set; } = 0; 
-        public ICurve boundary { get; set; }
+        public Level topLevel { get; set; } // corresponds to UpperLimit property in Revit api
+        public double topOffset { get; set; } = 0; // corresponds to LimitOffset property in Revit api
+        public List<ICurve> voids { get; set; } = new List<ICurve>();
+        public ICurve outline { get; set; }
         public string spaceType { get; set; }
-        public string zoneId { get; set; } 
+        public string zoneName { get; set; } 
 
         // additional properties to add: also inclue space separation lines here? Phase? Associated Room? Zone object instead of id?
 
@@ -39,15 +40,15 @@ namespace Objects.BuiltElements
             this.level = level;
         }
 
-        [SchemaInfo("Space with upper limit and offset parameters", "Creates a Speckle space with the specified upper limit and offsets", "BIM", "MEP")]
-        public Space(string name, string number, [SchemaMainParam] Point basePoint, Level level, Level upperLimit, double limitOffset, double baseOffset)
+        [SchemaInfo("Space with top level and offset parameters", "Creates a Speckle space with the specified top level and offsets", "BIM", "MEP")]
+        public Space(string name, string number, [SchemaMainParam] Point basePoint, Level level, Level topLevel, double topOffset, double baseOffset)
         {
             this.name = name;
             this.number = number;
             this.basePoint = basePoint;
             this.level = level;
-            this.upperLimit = upperLimit;
-            this.limitOffset = limitOffset;
+            this.topLevel = topLevel;
+            this.topOffset = topOffset;
             this.baseOffset = baseOffset;
         }
     }
