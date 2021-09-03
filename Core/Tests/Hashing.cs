@@ -77,6 +77,7 @@ namespace Tests
     }
 
     [Test(Description = "Checks to see if abstract object wrappers actually work.")]
+    [Ignore("not supported anymore")]
     public void AbstractHashing()
     {
       var nk1 = new NonKitClass();

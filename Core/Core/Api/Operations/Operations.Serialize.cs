@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Speckle.Core.Models;
+using Speckle.Core.Serialisation;
 
 namespace Speckle.Core.Api
 {
@@ -26,12 +27,21 @@ namespace Speckle.Core.Api
     /// <param name="object"></param>
     /// <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
     /// <returns>A json string representation of the object.</returns>
-    public static string Serialize(Base @object, CancellationToken cancellationToken)
+    public static string Serialize(Base @object, CancellationToken cancellationToken, SerializerVersion serializerVersion = SerializerVersion.V2)
     {
-      var (serializer, settings) = GetSerializerInstance();
-      serializer.CancellationToken = cancellationToken;
+      if (serializerVersion == SerializerVersion.V1)
+      {
+        var (serializer, settings) = GetSerializerInstance();
+        serializer.CancellationToken = cancellationToken;
 
-      return JsonConvert.SerializeObject(@object, settings);
+        return JsonConvert.SerializeObject(@object, settings);
+      }
+      else
+      {
+        var serializer = new BaseObjectSerializerV2();
+        serializer.CancellationToken = cancellationToken;
+        return serializer.Serialize(@object);
+      }
     }
 
 
@@ -75,11 +85,20 @@ namespace Speckle.Core.Api
     /// <param name="object">The json string representation of a speckle object that you want to deserialise.</param>
     /// <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
     /// <returns></returns>
-    public static Base Deserialize(string @object, CancellationToken cancellationToken)
+    public static Base Deserialize(string @object, CancellationToken cancellationToken, SerializerVersion serializerVersion = SerializerVersion.V2)
     {
-      var (serializer, settings) = GetSerializerInstance();
-      serializer.CancellationToken = cancellationToken;
-      return JsonConvert.DeserializeObject<Base>(@object, settings);
+      if (serializerVersion == SerializerVersion.V1)
+      {
+        var (serializer, settings) = GetSerializerInstance();
+        serializer.CancellationToken = cancellationToken;
+        return JsonConvert.DeserializeObject<Base>(@object, settings);
+      }
+      else
+      {
+        var deserializer = new BaseObjectDeserializerV2();
+        deserializer.CancellationToken = cancellationToken;
+        return deserializer.Deserialize(@object);
+      }
     }
 
     /// <summary>

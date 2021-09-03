@@ -100,7 +100,7 @@ namespace Speckle.Core.Serialisation
       }
       catch
       {
-        return null;
+        return new List<(string, int)>();
       }
     }
 

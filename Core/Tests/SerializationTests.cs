@@ -64,6 +64,7 @@ namespace Tests
     }
 
     [Test]
+    [Ignore("not supported anymore")]
     public void SerialisationAbstractObjects()
     {
       var nk = new NonKitClass() { TestProp = "Hello", Numbers = new List<int>() { 1, 2, 3, 4, 5 } };

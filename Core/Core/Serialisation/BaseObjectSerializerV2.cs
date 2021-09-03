@@ -160,6 +160,8 @@ namespace Speckle.Core.Serialisation
       // Construct `allProperties`: Add dynamic properties
       foreach (string propName in dynamicProperties)
       {
+        if (propName.StartsWith("__"))
+          continue;
         object baseValue = baseObj[propName];
         bool isDetachable = propName.StartsWith("@");
         bool isChunkable = false;

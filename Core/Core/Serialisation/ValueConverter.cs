@@ -12,9 +12,10 @@ namespace Speckle.Core.Serialisation
     public static bool ConvertValue(Type type, object value, out object convertedValue)
     {
       // TODO: Document list of supported values in the SDK. (and grow it as needed)
-      // TODO: Test / implement Dictionaries
 
       convertedValue = null;
+      if (value == null)
+        return true;
       Type valueType = value.GetType();
 
       if (type.IsAssignableFrom(valueType))
@@ -70,9 +71,10 @@ namespace Speckle.Core.Serialisation
         #endregion
       }
 
-      // Handle List<>
+      // Handle List<?>
       if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
       {
+        if (!isList) return false;
         Type listElementType = type.GenericTypeArguments[0];
         IList ret = Activator.CreateInstance(type, new object[] { valueList.Count }) as IList;
         foreach (object inputListElement in valueList)
@@ -81,6 +83,29 @@ namespace Speckle.Core.Serialisation
           if (!ConvertValue(listElementType, inputListElement, out convertedListElement))
             return false;
           ret.Add(convertedListElement);
+        }
+        convertedValue = ret;
+        return true;
+      }
+
+      // Handle Dictionary<string,?>
+      if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+      {
+        if (!(value is Dictionary<string, object>))
+          return false;
+        Dictionary<string, object> valueDict = (Dictionary<string, object>)value;
+
+        if (type.GenericTypeArguments[0] != typeof(string))
+          throw new Exception("Dictionaries with non-string keys are not supported");
+        Type dictValueType = type.GenericTypeArguments[1];
+        IDictionary ret = Activator.CreateInstance(type) as IDictionary;
+
+        foreach (KeyValuePair<string, object> kv in valueDict)
+        {
+          object convertedDictValue;
+          if (!ConvertValue(dictValueType, kv.Value, out convertedDictValue))
+            return false;
+          ret[kv.Key] = convertedDictValue;
         }
         convertedValue = ret;
         return true;
