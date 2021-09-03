@@ -365,14 +365,13 @@ namespace ConnectorGrasshopper.Extras
       var data = new GH_Structure<IGH_Goo>();
 
       // Use the converter
-      var v = Converter.CanConvertToNative(@base);
-      if (Converter != null && v)
+      if (Converter != null && Converter.CanConvertToNative(@base))
       {
         var converted = Converter.ConvertToNative(@base);
         data.Append(TryConvertItemToNative(converted, Converter));
       }
       // We unpack automatically since we auto-wrapped it initially
-      else if (@base.IsWrapper)
+      else if (@base.IsWrapper())
       {
         var treeBuilder = new TreeBuilder(Converter) { ConvertToNative = Converter != null};
         data = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);

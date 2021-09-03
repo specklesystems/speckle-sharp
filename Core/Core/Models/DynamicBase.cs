@@ -17,12 +17,6 @@ namespace Speckle.Core.Models
   /// </summary>
   public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   {
-    public int PropertyCount => properties.Count;
-
-    /// <summary>
-    /// Currently we assume having only 1 property means we auto-wrap it around a DynamicBase, therefore is a wrapper. This might change in the future.
-    /// </summary>
-    public bool IsWrapper => PropertyCount == 1;
     /// <summary>
     /// The actual property bag, where dynamically added props are stored.
     /// </summary>
@@ -229,6 +223,11 @@ namespace Speckle.Core.Models
       foreach (var kvp in properties)
         yield return kvp.Key;
     }
+
+    /// <summary>
+    /// Currently we assume having only 1 property means we auto-wrap it around a DynamicBase, therefore is a wrapper. This might change in the future.
+    /// </summary>
+    public bool IsWrapper() => properties.Count == 1;
 
   }
 
