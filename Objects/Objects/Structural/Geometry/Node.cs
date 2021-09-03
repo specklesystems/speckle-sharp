@@ -23,6 +23,7 @@ namespace Objects.Structural.Geometry
 
         [DetachProperty]
         public PropertyDamper damperProperty { get; set; }
+        public string units { get; set; }
         public Node() { }
 
         [SchemaInfo("Node", "Creates a Speckle structural node", "Structural", "Geometry")]

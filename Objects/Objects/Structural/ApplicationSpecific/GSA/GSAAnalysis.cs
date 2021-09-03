@@ -46,7 +46,7 @@ namespace Objects.Structural.GSA.Analysis
         [SchemaInfo("AnalysisTask", "Creates a Speckle structural analysis task for GSA", "GSA", "Analysis")]
         public Task(int nativeId, string name)
         {
-            this.name = name;
+            this.nativeId = nativeId;
             this.name = name;
         }
     }
@@ -63,7 +63,7 @@ namespace Objects.Structural.GSA.Analysis
         RitzPDelta,
         Mass,
         Stability,
-        StabilityPDetla,
+        StabilityPDelta,
         BucklingNonLinear,
         Influence
     }

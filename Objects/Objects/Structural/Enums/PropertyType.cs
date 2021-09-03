@@ -73,9 +73,11 @@ namespace Objects.Structural
     {
         Rectangular,
         Circular,
-        ISection,
-        TSection,
+        I,
+        Tee,
         Angle,
+        Channel,
+        Perimeter,
         Catalogue,
         Explicit
     }

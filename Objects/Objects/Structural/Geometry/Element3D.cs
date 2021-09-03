@@ -22,6 +22,7 @@ namespace Objects.Structural.Geometry
 
         [DetachProperty]
         public List<Node> topology { get; set; }
+        public string units { get; set; }
 
         public Element3D() { }
         public Element3D(Mesh baseMesh)
