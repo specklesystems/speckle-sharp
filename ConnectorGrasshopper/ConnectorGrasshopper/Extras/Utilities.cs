@@ -354,24 +354,32 @@ namespace ConnectorGrasshopper.Extras
               type != typeof(string));
     }
 
+    /// <summary>
+    /// Workflow for casting a Base into a GH_Structure, taking into account potential Convertions. Pass Converter as null if you don't care for conversion.
+    /// </summary>
+    /// <param name="Converter"></param>
+    /// <param name="base"></param>
+    /// <returns></returns>
     public static GH_Structure<IGH_Goo> ConvertToTree(ISpeckleConverter Converter, Base @base)
     {
-      GH_Structure<IGH_Goo> data;
-      if (Converter.CanConvertToNative(@base))
+      var data = new GH_Structure<IGH_Goo>();
+
+      // Use the converter
+      var v = Converter.CanConvertToNative(@base);
+      if (Converter != null && v)
       {
         var converted = Converter.ConvertToNative(@base);
-        data = new GH_Structure<IGH_Goo>();
-        data.Append(Utilities.TryConvertItemToNative(converted, Converter));
+        data.Append(TryConvertItemToNative(converted, Converter));
       }
-      else if (@base.GetDynamicMembers().Count() == 1)
+      // We unpack automatically since we auto-wrapped it initially
+      else if (@base.IsWrapper)
       {
         var treeBuilder = new TreeBuilder(Converter) { ConvertToNative = Converter != null};
-        var tree = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);
-        data = tree;
+        data = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);
       }
+      // Simple pass the SpeckleBase
       else
       {
-        data = new GH_Structure<IGH_Goo>();
         data.Append(new GH_SpeckleBase(@base));
       }
       return data;
