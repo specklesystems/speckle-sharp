@@ -72,7 +72,7 @@ namespace Objects.Converter.RhinoGh
       {
         material = GetMaterial(ro);
         style = GetStyle(ro);
-
+        
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
           schema = ConvertToSpeckleBE(ro);
 
