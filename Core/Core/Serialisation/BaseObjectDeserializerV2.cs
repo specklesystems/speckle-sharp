@@ -38,6 +38,7 @@ namespace Speckle.Core.Serialisation
     private bool Busy = false;
     // id -> Base if already deserialized or id -> Task<object> if was handled by a bg thread
     private Dictionary<string, object> DeserializedObjects;
+    private object CallbackLock = new object();
 
     private Regex ChunkPropertyNameRegex = new Regex(@"^@\((\d*)\)");
 
@@ -119,7 +120,10 @@ namespace Speckle.Core.Serialisation
       using (JsonDocument doc = JsonDocument.Parse(objectJson))
       {
         object converted = ConvertJsonElement(doc.RootElement);
-        OnProgressAction?.Invoke("DS", 1);
+        lock (CallbackLock)
+        {
+          OnProgressAction?.Invoke("DS", 1);
+        }
         return converted;
       }
     }
@@ -152,20 +156,22 @@ namespace Speckle.Core.Serialisation
           return doc.GetDouble();
 
         case JsonValueKind.Array:
-          List<object> retList = new List<object>(doc.GetArrayLength());
-
+          List<object> jsonList = new List<object>(doc.GetArrayLength());
+          int retListCount = 0;
           foreach (JsonElement value in doc.EnumerateArray())
           {
             object convertedValue = ConvertJsonElement(value);
-            if (convertedValue is DataChunk)
-            {
-              retList.Capacity += ((DataChunk)convertedValue).data.Count - 1;
-              retList.AddRange(((DataChunk)convertedValue).data);
-            }
+            retListCount += (convertedValue is DataChunk) ? ((DataChunk)convertedValue).data.Count : 1;
+            jsonList.Add(convertedValue);
+          }
+
+          List<object> retList = new List<object>(retListCount);
+          foreach(object jsonObj in jsonList)
+          {
+            if (jsonObj is DataChunk)
+              retList.AddRange(((DataChunk)jsonObj).data);
             else
-            {
-              retList.Add(convertedValue);
-            }
+              retList.Add(jsonObj);
           }
 
           return retList;

@@ -81,10 +81,11 @@ namespace Objects.Converter.RhinoGh
     // Rh Capture?
     public Rhino.Geometry.Point PointToNative(Point pt)
     {
+      double scaleFactor = ScaleToNative(1, pt.units);
       var myPoint = new Rhino.Geometry.Point(new Point3d(
-        ScaleToNative(pt.x, pt.units),
-        ScaleToNative(pt.y, pt.units),
-        ScaleToNative(pt.z, pt.units)));
+        pt.x * scaleFactor,
+        pt.y * scaleFactor,
+        pt.z * scaleFactor));
 
       return myPoint;
     }
@@ -689,11 +690,18 @@ namespace Objects.Converter.RhinoGh
     }
     public RH.PointCloud PointcloudToNative(Pointcloud pointcloud)
     {
-      var points = pointcloud.GetPoints().Select(o => PointToNative(o).Location).ToList();
-      var _pointcloud = new RH.PointCloud(points);
+      int numPoints = pointcloud.points.Count / 3;
+      List<double> sPoints = pointcloud.points;
+      Point3d[] rhPoints = new Point3d[numPoints];
+      double scaleFactor = ScaleToNative(1, pointcloud.units);
 
-      if (pointcloud.colors.Count == points.Count)
-        for (int i = 0; i < points.Count; i++)
+      for (int i = 0; i < numPoints; i++)
+        rhPoints[i] = new Point3d(sPoints[3 * i] * scaleFactor, sPoints[3 * i + 1] * scaleFactor, sPoints[3 * i + 2] * scaleFactor);
+
+      var _pointcloud = new RH.PointCloud(rhPoints);
+
+      if (pointcloud.colors.Count == rhPoints.Length)
+        for (int i = 0; i < rhPoints.Length; i++)
           _pointcloud[i].Color = System.Drawing.Color.FromArgb(pointcloud.colors[i]);
 
       return _pointcloud;
