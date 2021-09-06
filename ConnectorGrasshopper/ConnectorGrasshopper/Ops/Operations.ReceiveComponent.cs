@@ -132,7 +132,7 @@ namespace ConnectorGrasshopper.Ops
       writer.SetBoolean("AutoReceive", AutoReceive);
       writer.SetString("CurrentComponentState", CurrentComponentState);
       
-      writer.SetString("KitName", Kit.Name);
+      writer.SetString("KitName", Kit?.Name);
       var streamUrl = StreamWrapper != null ? StreamWrapper.ToString() : "";
       writer.SetString("StreamWrapper", streamUrl);
       writer.SetString("LastInfoMessage", LastInfoMessage);
@@ -190,7 +190,7 @@ namespace ConnectorGrasshopper.Ops
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Select the converter you want to use:");
+      Menu_AppendItem(menu, "Select the converter you want to use:",null,null,false,false);
       var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
 
       foreach (var kit in kits)
@@ -243,6 +243,7 @@ namespace ConnectorGrasshopper.Ops
       ExpireSolution(true);
     }
 
+    private bool foundKit;
     private void SetDefaultKitAndConverter()
     {
       try
@@ -250,16 +251,24 @@ namespace ConnectorGrasshopper.Ops
         Kit = KitManager.GetDefaultKit();
         Converter = Kit.LoadConverter(Applications.Rhino);
         Converter.SetContextDocument(RhinoDoc.ActiveDoc);
+        foundKit = true;
       }
       catch
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+        foundKit = false;
       }
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       DA.DisableGapLogic();
+
+      if (!foundKit)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
+        return;
+      }
       // We need to call this always in here to be able to react and set events :/
       ParseInput(DA);
 
