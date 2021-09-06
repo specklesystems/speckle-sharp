@@ -7,30 +7,30 @@ using Objects.Structural.Materials;
 
 namespace Objects.Structural.Properties
 {
-    public class SectionProfile : Base //section description
+    public class SectionProfile : Base //section profile description
     {
-        public string name { get; set; }
-        public string shapeDescription { get; set; } //not needed anymore?
+        public string name { get; set; }        
         public ShapeType shapeType { get; set; }
+        public double area { get; set; }
+        public double Iyy { get; set; }
+        public double Izz { get; set; }
+        public double J { get; set; }
+        public double Ky { get; set; }
+        public double Kz { get; set; }
         public double weight { get; set; } //section weight, ex. kg/m
+        public string units { get; set; }
         public SectionProfile() { }
 
-        [SchemaInfo("SectionProfile", "Creates a Speckle structural 1D element section profile", "Structural", "Properties")]
-        public SectionProfile(string shapeDescription)
-        {
-            this.shapeDescription = shapeDescription;
-        }
-
-        public class RectangularProfile : SectionProfile
+        public class Rectangular : SectionProfile
         {            
             public double depth { get; set; }
             public double width { get; set; }
             public double thickness { get; set; }
 
-            public RectangularProfile() { }
+            public Rectangular() { }
 
-            [SchemaInfo("RectangularProfile", "Creates a Speckle structural rectangular section profile", "Structural", "Properties")]
-            public RectangularProfile(string name, double depth, double width, double thickness)
+            [SchemaInfo("Rectangular", "Creates a Speckle structural rectangular section profile", "Structural", "Properties")]
+            public Rectangular(string name, double depth, double width, double thickness)
             {
                 this.name = name;                
                 this.depth = depth;
@@ -40,15 +40,15 @@ namespace Objects.Structural.Properties
             }
         }
 
-        public class CircularProfile : SectionProfile
+        public class Circular : SectionProfile
         {
             public double radius { get; set; }
             public double thickness { get; set; }
 
-            public CircularProfile() { }
+            public Circular() { }
 
-            [SchemaInfo("CircularProfile", "Creates a Speckle structural circular section profile", "Structural", "Properties")]
-            public CircularProfile(string name, double radius, double thickness)
+            [SchemaInfo("Circular", "Creates a Speckle structural circular section profile", "Structural", "Properties")]
+            public Circular(string name, double radius, double thickness)
             {
                 this.name = name;
                 this.radius = radius;
@@ -57,45 +57,144 @@ namespace Objects.Structural.Properties
             }
         }
 
-        public class ISectionProfile : SectionProfile
+        public class ISection : SectionProfile
         {
             public double depth { get; set; }
             public double width { get; set; }
             public double webThickness { get; set; }
             public double flangeThickness { get; set; }
 
-            public ISectionProfile() { }
+            public ISection() { }
 
-            [SchemaInfo("ISectionProfile", "Creates a Speckle structural I section profile", "Structural", "Properties")]
-            public ISectionProfile(string name, double depth, double width, double webThickness, double flangeThickness)
+            [SchemaInfo("ISection", "Creates a Speckle structural I section profile", "Structural", "Properties")]
+            public ISection(string name, double depth, double width, double webThickness, double flangeThickness)
             {
                 this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.webThickness = webThickness;
                 this.flangeThickness = flangeThickness;
-                this.shapeType = ShapeType.ISection;
+                this.shapeType = ShapeType.I;
             }
         }
 
-        public class TSectionProfile : SectionProfile
+        public class Tee : SectionProfile
         {
             public double depth { get; set; }
             public double width { get; set; }
             public double webThickness { get; set; }
             public double flangeThickness { get; set; }
 
-            public TSectionProfile() { }
+            public Tee() { }
 
-            [SchemaInfo("TSectionProfile", "Creates a Speckle structural T section profile", "Structural", "Properties")]
-            public TSectionProfile(string name, double depth, double width, double webThickness, double flangeThickness)
+            [SchemaInfo("Tee", "Creates a Speckle structural Tee section profile", "Structural", "Properties")]
+            public Tee(string name, double depth, double width, double webThickness, double flangeThickness)
             {
                 this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.webThickness = webThickness;
                 this.flangeThickness = flangeThickness;
-                this.shapeType = ShapeType.TSection;
+                this.shapeType = ShapeType.Tee;
+            }
+        }
+
+        public class Angle : SectionProfile
+        {
+            public double depth { get; set; }
+            public double width { get; set; }
+            public double webThickness { get; set; }
+            public double flangeThickness { get; set; }
+
+            public Angle() { }
+
+            [SchemaInfo("Angle", "Creates a Speckle structural angle section profile", "Structural", "Properties")]
+            public Angle(string name, double depth, double width, double webThickness, double flangeThickness)
+            {
+                this.name = name;
+                this.depth = depth;
+                this.width = width;
+                this.webThickness = webThickness;
+                this.flangeThickness = flangeThickness;
+                this.shapeType = ShapeType.Angle;
+            }
+        }
+
+        public class Channel : SectionProfile
+        {
+            public double depth { get; set; }
+            public double width { get; set; }
+            public double webThickness { get; set; }
+            public double flangeThickness { get; set; }
+
+            public Channel() { }
+
+            [SchemaInfo("Channel", "Creates a Speckle structural channel section profile", "Structural", "Properties")]
+            public Channel(string name, double depth, double width, double webThickness, double flangeThickness)
+            {
+                this.name = name;
+                this.depth = depth;
+                this.width = width;
+                this.webThickness = webThickness;
+                this.flangeThickness = flangeThickness;
+                this.shapeType = ShapeType.Channel;
+            }
+        }
+        public class Perimeter : SectionProfile
+        {
+            public ICurve outline { get; set; }
+            public List<ICurve> voids { get; set; } = new List<ICurve>();
+
+            public Perimeter() { }
+
+            [SchemaInfo("Perimeter", "Creates a Speckle structural section profile defined by a perimeter curve and, if applicable, a list of void curves", "Structural", "Properties")]
+            public Perimeter(string name, ICurve outline, List<ICurve> voids = null)
+            {
+                this.name = name;
+                this.outline = outline;
+                this.voids = voids;
+            }
+        }
+        public class Catalogue : SectionProfile
+        {
+            public string description { get; set; } // a description string for a catalogue section, per a to be defined convention for industry-typical, commonly manufactured sections - SAF Formcodes, Oasys profiles?
+            public string catalogueName { get; set; } // ex. AISC, could be enum value
+            public string sectionType { get; set; } // ex. W shapes, could be enum value
+            public string sectionName { get; set; } // ex. W44x335, could be enum value
+
+            public Catalogue() { }
+
+            [SchemaInfo("Catalogue", "Creates a Speckle structural section profile based on a catalogue section description", "Structural", "Properties")]
+            public Catalogue(string description)
+            {
+                this.description = description;
+            }
+
+            [SchemaInfo("Catalogue", "Creates a Speckle structural section profile based on a catalogue section description", "Structural", "Properties")]
+            public Catalogue(string name, string catalogueName, string sectionType, string sectionName)
+            {
+                this.name = name;
+                this.catalogueName = catalogueName;
+                this.sectionType = sectionType;
+                this.sectionName = sectionName;
+            }
+        }
+
+        public class Explicit : SectionProfile
+        {
+            public Explicit() { }
+
+            [SchemaInfo("Explicit", "Creates a Speckle structural section profile based on explicitly defining geometric properties", "Structural", "Properties")]
+            public Explicit(string name, double area, double Iyy, double Izz, double J, double Ky, double Kz)
+            {
+                this.name = name;
+                this.area = area;
+                this.Iyy = Iyy;
+                this.Izz = Izz;
+                this.J = J;
+                this.Ky = Ky;
+                this.Kz = Kz;
+                this.shapeType = ShapeType.Explicit;
             }
         }
     }

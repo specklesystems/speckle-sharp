@@ -34,7 +34,7 @@ namespace Objects.Structural.Geometry
 
         [DetachProperty]
         public List<Node> topology { get; set; }
-
+        public string units { get; set; }
         public Element1D() { }
         public Element1D(ICurve baseLine)
         {

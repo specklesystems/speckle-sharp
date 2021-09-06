@@ -6,7 +6,7 @@ using Objects.Geometry;
 
 namespace Objects.Structural.Loading
 {
-    public class LoadCase : Base
+    public class LoadCase : Base // or LoadPattern? (per CSI)
     {
         public string name { get; set; } //load case title, ex. "Dead load"
         public LoadType loadType { get; set; } //Dead load              

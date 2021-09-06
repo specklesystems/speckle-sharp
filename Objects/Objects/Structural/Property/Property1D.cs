@@ -20,12 +20,6 @@ namespace Objects.Structural.Properties
         public BaseReferencePoint referencePoint { get; set; }
         public double offsetY { get; set; } = 0; //offset from reference point
         public double offsetZ { get; set; } = 0; //offset from reference point
-        public double area { get; set; }
-        public double Iyy { get; set; }
-        public double Izz { get; set; }
-        public double J { get; set; }
-        public double Ky { get; set; }
-        public double Kz { get; set; }
 
         public Property1D() { }
 
