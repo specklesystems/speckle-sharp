@@ -49,6 +49,9 @@
     <Compile Include="Cache\GsaCache.cs" />
     <Compile Include="Cache\GsaCacheRecord.cs" />
     <Compile Include="IPairCollection.cs" />
+    <Compile Include="Merger\GsaRecordMerger.cs" />
+    <Compile Include="Merger\IgnoreNullResolver.cs" />
+    <Compile Include="Merger\IGsaRecordMerger.cs" />
     <Compile Include="PairCollection.cs" />
     <Compile Include="PairCollectionComparable.cs" />
     <Compile Include="Cache\TypeTreeCollection.cs" />
@@ -125,6 +128,9 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <PackageReference Include="AutoMapper">
+      <Version>10.1.1</Version>
+    </PackageReference>
     <PackageReference Include="CsvHelper">
       <Version>27.1.1</Version>
     </PackageReference>

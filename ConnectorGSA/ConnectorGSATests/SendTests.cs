@@ -1,110 +1,251 @@
 ﻿using ConnectorGSA;
-using GsaProxy;
+using Objects.Structural.Geometry;
+using Objects.Structural.Loading;
+using Objects.Structural.Materials;
+using Objects.Structural.Properties;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.GSA.API;
+using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace ConnectorGSATests
 {
+  //Issues with sending:
+  // - members vs elements - i.e. layers
+  // - meaningful nodes - if selected, then only nodes with mass or spring properties, or with results, or with application IDs (previously received) should be sent
+  // - combining line elements into polylines - including merging of results (fine for lines as they don't interfere with visualisation in the Speckle online viewer)
+  // - combining 2D elements into a mesh - only if there are no results for these elements (if there are then leave them as elements)
+  // - results - embedded, separated into a different bucket or, if resultsOnly, then no model needs to be sent
+  //Other notes:
+  // - stream IDs saved with any native object are ignored during sending - it's the send config settings that determine what is sent
   public class SendTests : SpeckleConnectorFixture
   {
-    private static string testStreamMarker = "Test";
-    private static string testStreamDelimiter = "-";
+    //Sending scenarios
 
-    private async Task<string> GetNewStreamName(Client client)
+    [Fact]
+    public async Task SendDesignLayer()
     {
-      var usersStreamsOnServer = await client.StreamsGet();
-      var testStreamNames = usersStreamsOnServer.Where(s => s.name.StartsWith(testStreamMarker)).Select(s => s.name).ToList();
-      int testStreamNewNum = 0;
-      if (testStreamNames.Count == 0)
-      {
-        testStreamNewNum = 1;
-      }
-      else
-      {
-        var testStreamNums = new List<int>();
-        foreach (var n in testStreamNames)
-        {
-          var pieces = n.Split(new[] { testStreamDelimiter }, StringSplitOptions.RemoveEmptyEntries);
-          foreach (var p in pieces)
-          {
-            if (int.TryParse(p, out int testStreamNum) && testStreamNum > 0)
-            {
-              testStreamNums.Add(testStreamNum);
-              break;
-            }
-          }
-        }
-        testStreamNewNum = testStreamNums.Max() + 1;
-      }
+      //Configure settings for this transmission
+      Instance.GsaModel.Layer = GSALayer.Design;
 
-      return string.Join(testStreamDelimiter, testStreamMarker, testStreamNewNum);
+      var memoryTransport = new MemoryTransport();
+      var result = await CoordinateSend(converter, memoryTransport);
+
+      Assert.True(result.Loaded);
+      Assert.True(result.Converted);
+      Assert.True(result.Sent);
+      Assert.NotEmpty(result.ConvertedObjects);
+
+      var numExpectedByObjectType = new Dictionary<Type, int>()
+      {
+        { typeof(Axis), 3 },
+        { typeof(Concrete), 1 },
+        { typeof(PropertySpring), 8 },
+        { typeof(Property1D), 1 },
+        { typeof(Property2D), 1 },
+        { typeof(Node), 7 },
+        { typeof(LoadCase), 3 },
+      };
+
+      var objectsByType = result.ConvertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
+
+      foreach (var t in numExpectedByObjectType.Keys)
+      {
+        Assert.True(objectsByType.ContainsKey(t));
+        Assert.NotNull(objectsByType[t]);
+        Assert.Equal(numExpectedByObjectType[t], objectsByType[t].Count());
+      }
     }
 
     [Fact]
-    public async void SendTest()
+    public void ReadResults()
     {
-      Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
-      Instance.GsaModel.Layer = GSALayer.Design;
-      Instance.GsaModel.Proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), true);
+      Instance.GsaModel.Layer = GSALayer.Analysis;
+      Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy(); //Use a real proxy
+      Instance.GsaModel.Proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithResultsFile), true);
 
       bool loaded = false;
-      Base commitObj = null;
+      var resultTypesByGroup = GetResultGroupType();
+      var hierarchiesByResultGroup = resultTypesByGroup.Keys.ToDictionary(g => g, 
+        g => new List<Dictionary<string, Dictionary<string, object>>>());
+
       try
       {
-        loaded = Commands.LoadDataFromFile();
+        loaded = Commands.LoadDataFromFile(resultTypesByGroup.Keys, resultTypesByGroup.Keys.SelectMany(g => resultTypesByGroup[g]));
+      }
+      catch(Exception ex) 
+      { 
+      }
+      finally
+      {
+        Instance.GsaModel.Proxy.Close();
+      }
+
+      var indices = Instance.GsaModel.Cache.LookupIndices<GsaAssembly>();
+      if (indices != null && indices.Count() > 0)
+      {
+        foreach (var i in indices)
+        {
+          if (Instance.GsaModel.Proxy.GetResultHierarchy(ResultGroup.Assembly, i, out var valueHierarchy))
+          {
+            hierarchiesByResultGroup[ResultGroup.Assembly].Add(valueHierarchy);
+          }
+        }
+      }
+      indices = Instance.GsaModel.Cache.LookupIndices<GsaNode>();
+      if (indices != null && indices.Count() > 0)
+      {
+        foreach (var i in indices)
+        {
+          if (Instance.GsaModel.Proxy.GetResultHierarchy(ResultGroup.Node, i, out var valueHierarchy))
+          {
+            hierarchiesByResultGroup[ResultGroup.Node].Add(valueHierarchy);
+          }
+        }
+      }
+      indices = Instance.GsaModel.Cache.LookupIndices<GsaEl>();
+      if (indices != null && indices.Count() > 0)
+      {
+        foreach (var i in indices)
+        {
+          if (Instance.GsaModel.Proxy.GetResultHierarchy(ResultGroup.Element1d, i, out var valueHierarchy, 1))
+          {
+            hierarchiesByResultGroup[ResultGroup.Element1d].Add(valueHierarchy);
+          }
+          if (Instance.GsaModel.Proxy.GetResultHierarchy(ResultGroup.Element2d, i, out valueHierarchy, 2))
+          {
+            hierarchiesByResultGroup[ResultGroup.Element2d].Add(valueHierarchy);
+          }
+        }
+      }
+
+      Assert.True(hierarchiesByResultGroup.Keys.All(g => hierarchiesByResultGroup[g].Count > 0));
+    }
+
+    private async Task<CoordinateSendResult> CoordinateSend(ISpeckleConverter converter, params ITransport[] nonServerTransports)
+    {
+      var result = new CoordinateSendResult();
+
+      Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy(); //Use a real proxy
+      Instance.GsaModel.Proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), true);
+
+      result.Loaded = false;
+      try
+      {
+        result.Loaded = Commands.LoadDataFromFile();
       }
       catch { }
       finally
       {
         Instance.GsaModel.Proxy.Close();
       }
-      //Putting the assert here so that the exception catching can trigger a closing of the GSA file first before any failure of this assertion stops this test
-      Assert.True(loaded);
+      if (!result.Loaded)
+      {
+        return result;
+      }
 
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.GSA);
-      commitObj = Commands.ConvertToSpeckle(converter);
-      Assert.NotNull(commitObj);
+      var commitObj = Commands.ConvertToSpeckle(converter);
+      result.Converted = (commitObj != null);
+      if (commitObj == null)
+      {
+        return result;
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out result.ConvertedObjects));
 
       var account = AccountManager.GetDefaultAccount();
       var client = new Client(account);
-      var streamState = await NewStream(client);
-      var transports = new List<ITransport>() { new ServerTransport(streamState.Client.Account, streamState.Stream.id) };
+      result.StreamState = await PrepareStream(client);
 
-      await Commands.Send(commitObj, streamState, transports);
-      
+      result.Sent = await Commands.Send(commitObj, result.StreamState,
+        (new List<ITransport> { new ServerTransport(account, result.StreamState.Stream.id) }).Concat(nonServerTransports));
+
+      return result;
+
     }
 
-    private async Task<StreamState> NewStream(Client client)
+    private Dictionary<ResultGroup, List<ResultType>> GetResultGroupType()
     {
-      var newStreamName = await GetNewStreamName(client);
+      var resultGroups = Enum.GetValues(typeof(ResultGroup)).Cast<ResultGroup>().Where(g => g != ResultGroup.Unknown).ToList();
+      var resultTypes = new Dictionary<ResultGroup, List<ResultType>>();
+      foreach (var g in resultGroups)
+      {
+        resultTypes.Add(g, new List<ResultType>());
+      }
+
+      foreach (var rt in Enum.GetValues(typeof(ResultType)).Cast<ResultType>())
+      {
+        var rtStr = rt.ToString();
+        if (rtStr.Contains("1d"))
+        {
+          resultTypes[ResultGroup.Element1d].Add(rt);
+        }
+        else if (rtStr.Contains("2d"))
+        {
+          resultTypes[ResultGroup.Element2d].Add(rt);
+        }
+        else if (rtStr.Contains("Assembly"))
+        {
+          resultTypes[ResultGroup.Assembly].Add(rt);
+        }
+        else
+        {
+          resultTypes[ResultGroup.Node].Add(rt);
+        }
+      }
+      return resultTypes;
+    }
+
+    private struct CoordinateSendResult
+    {
+      public bool Loaded;
+      public bool Converted;
+      public bool Sent;
+      public List<object> ConvertedObjects;
+      public StreamState StreamState;
+    }
+
+    private async Task<StreamState> PrepareStream(Client client)
+    {
+      var usersStreamsOnServer = await client.StreamsGet();
+      var matchingStreams = usersStreamsOnServer.Where(s => s.name.StartsWith(testStreamMarker));
+
+      Speckle.Core.Api.Stream stream;
+      if (matchingStreams.Count() > 0)
+      {
+        stream = matchingStreams.First();
+      }
+      else
+      {
+        stream = await NewStream(client);
+      }
+
+      return new StreamState() { Client = client, Stream = stream };
+    }
+
+    private async Task<Speckle.Core.Api.Stream> NewStream(Client client)
+    {
       string streamId = "";
-      Speckle.Core.Api.Stream stream = null;
-      StreamState streamState = null;
 
       try
       {
         streamId = await client.StreamCreate(new StreamCreateInput()
         {
-          name = newStreamName,
+          name = testStreamMarker,
           description = "Stream created as part of automated tests",
           isPublic = false
         });
 
-        stream = await client.StreamGet(streamId);
+        return await client.StreamGet(streamId);
 
-        streamState = new StreamState() { Client = client, Stream = stream };
       }
       catch (Exception e)
       {
@@ -121,7 +262,7 @@ namespace ConnectorGSATests
         }
       }
 
-      return streamState;
+      return null;
     }
   }
 }

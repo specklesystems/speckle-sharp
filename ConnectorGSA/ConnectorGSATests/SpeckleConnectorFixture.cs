@@ -1,5 +1,6 @@
 ﻿using Speckle.ConnectorGSA.Proxy.Cache;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.Core.Kits;
 using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
 using System;
@@ -10,6 +11,7 @@ namespace ConnectorGSATests
 {
   public class SpeckleConnectorFixture
   {
+    protected static string testStreamMarker = "AutomatedTest";
     protected string TestDataDirectory { get => AppDomain.CurrentDomain.BaseDirectory.TrimEnd(new[] { '\\' }) + @"\..\..\..\TestModels\"; }
 
     protected string designLayerExpectedFile = "DesignLayerSpeckleObjects.json";
@@ -19,10 +21,13 @@ namespace ConnectorGSATests
     protected GsaModelMock GsaModelMock = new GsaModelMock();
     protected IGSACache cache => GsaModelMock.Cache;
     protected IGSAProxy proxy { get => GsaModelMock.Proxy; set => GsaModelMock.Proxy = value; }
+    protected ISpeckleConverter converter;
 
     public SpeckleConnectorFixture()
     {
       Instance.GsaModel = GsaModelMock;
+      //converter = KitManager.GetDefaultKit().LoadConverter(Applications.GSA);
+      converter = new ConverterGSA.ConverterGSA();
     }
 
     protected static GwaKeyword[] DesignLayerKeywords = new GwaKeyword[] {

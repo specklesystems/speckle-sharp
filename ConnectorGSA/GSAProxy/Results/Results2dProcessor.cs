@@ -56,6 +56,11 @@ namespace Speckle.ConnectorGSA.Results
     //the hierarchy to compile, to be converted, is
     public override bool LoadFromFile(out int numErrorRows, bool parallel = true)
     {
+      if (!File.Exists(filePath))
+      {
+        numErrorRows = 0;
+        return false;
+      }
       var reader = new StreamReader(filePath);
 
       var tasks = new List<Task>();

@@ -94,17 +94,18 @@ namespace ConnectorGSATests
       records = new List<GsaRecord>();
       return true;
     }
+    public bool PrepareResults(IEnumerable<ResultType> resultTypes, int numBeamPoints = 3) => true;
+
+    public bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null)
+      => (LoadResultsFn != null) ? LoadResultsFn(group, out numErrorRows, cases, elemIds) : throw new NotImplementedException();
+
+    public bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1)
+      => (GetResultHierarchyFn != null) ? GetResultHierarchyFn(group, index, out valueHierarchy, dimension) : throw new NotImplementedException();
 
     public bool ClearResults(ResultGroup group) => (ClearResultsFn != null) ? ClearResultsFn(group) : throw new NotImplementedException();
 
     public List<int> ConvertGSAList(string list, GSAEntity entityType)
       => (ConvertGSAListFn != null) ? ConvertGSAListFn(list, entityType).ToList() : throw new NotImplementedException();
-
-    public bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1)
-      => (GetResultHierarchyFn != null) ? GetResultHierarchyFn(group, index, out valueHierarchy, dimension) : throw new NotImplementedException();
-
-    public bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null)
-      => (LoadResultsFn != null) ? LoadResultsFn(group, out numErrorRows, cases, elemIds) : throw new NotImplementedException();
 
     public int NodeAt(double x, double y, double z, double coincidenceTol)
       => (NodeAtFn != null) ? NodeAtFn(x, y, z, coincidenceTol) : throw new NotImplementedException();

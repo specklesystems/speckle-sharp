@@ -17,9 +17,28 @@ namespace ConnectorGSA
   {
     public static object Assert { get; private set; }
 
-    public static bool LoadDataFromFile()
+    public static bool LoadDataFromFile(IEnumerable<ResultGroup> resultGroups = null, IEnumerable<ResultType> resultTypes = null)
     {
-      return UpdateCache();
+      var loadedCache = UpdateCache();
+      int cumulativeErrorRows = 0;
+
+      if (resultGroups != null && resultGroups.Any() && resultTypes != null && resultTypes.Any())
+      {
+        if (!Instance.GsaModel.Proxy.PrepareResults(resultTypes, Instance.GsaModel.Result1DNumPosition + 2))
+        {
+          return false;
+        }
+        foreach (var g in resultGroups)
+        {
+          if (!Instance.GsaModel.Proxy.LoadResults(g, out int numErrorRows) || numErrorRows > 0)
+          {
+            return false;
+          }
+          cumulativeErrorRows += numErrorRows;
+        }
+      }
+
+      return (loadedCache && (cumulativeErrorRows == 0));
     }
 
     public static bool ConvertToNative(ISpeckleConverter converter)
@@ -54,11 +73,11 @@ namespace ConnectorGSA
       //Get send native type dependencies
       var typeDependencyGenerations = Instance.GsaModel.Proxy.TxTypeDependencyGenerations;
 
-      var nativeObjsByType = new Dictionary<Type, List<GsaRecord>>();
       var commit = new Base();
 
       foreach (var gen in typeDependencyGenerations)
       {
+        var nativeObjsByType = new Dictionary<Type, List<GsaRecord>>();
         foreach (var t in gen)
         {
           if (Instance.GsaModel.Cache.GetNative(t, out var gsaRecords))
@@ -80,7 +99,7 @@ namespace ConnectorGSA
                 if (speckleObjs != null && speckleObjs.Count > 0)
                 {
                   speckleObjsBucket.AddRange(speckleObjs);
-                  Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, speckleObjs.ToDictionary(so => so.applicationId, so => (object)so)); ;
+                  Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, speckleObjs.ToDictionary(so => so.applicationId, so => (object)so));
                 }
               }
             }
@@ -98,16 +117,14 @@ namespace ConnectorGSA
       return commit;
     }
 
-    public static async Task Send(Base commitObj, StreamState state, List<ITransport> transports)
+    public static async Task<bool> Send(Base commitObj, StreamState state, IEnumerable<ITransport> transports)
     {
-      var errors = new List<string>();
-
       var commitObjId = await Operations.Send(
         @object: commitObj,
-        transports: transports,
+        transports: transports.ToList(),
         onErrorAction: (s, e) =>
         {
-          errors.Add(e.Message);
+          state.Errors.Add(e);
         },
         disposeTransports: true
         );
@@ -131,34 +148,35 @@ namespace ConnectorGSA
         }
         catch (Exception e)
         {
-          errors.Add(e.Message);
+          state.Errors.Add(e);
         }
       }
 
-      return;
+      return (state.Errors.Count == 0);
     }
 
-    public static async Task Receive(string commitId, StreamState state, ITransport transport)
+    public static async Task<bool> Receive(string commitId, StreamState state, ITransport transport, Func<Base, bool> IsSingleObjectFn)
     {
-      //Receive and write Speckle objects into cache
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.GSA);
-      var errors = new List<string>();
-
       var commitObject = await Operations.Receive(
           commitId,
           transport,
           onErrorAction: (s, e) =>
           {
-            errors.Add(e.Message);
+            state.Errors.Add(e);
           },
           disposeTransports: true
           );
 
+      if (commitObject != null)
+      {
+        var receivedObjects = FlattenCommitObject(commitObject, IsSingleObjectFn);
 
-      var receivedObjects = FlattenCommitObject(commitObject, converter);
-
-      Instance.GsaModel.Cache.Upsert(receivedObjects.ToDictionary(ro => string.IsNullOrEmpty(ro.applicationId) ? ro.id : ro.applicationId, ro => (object)ro));
+        return (Instance.GsaModel.Cache.Upsert(receivedObjects.ToDictionary(
+            ro => string.IsNullOrEmpty(ro.applicationId) ? ro.id : ro.applicationId, 
+            ro => (object)ro))
+          && receivedObjects != null && receivedObjects.Any() && state.Errors.Count == 0);
+      }
+      return false;
     }
 
     private static bool UpdateCache()
@@ -185,13 +203,13 @@ namespace ConnectorGSA
       }
     }
 
-    private static List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    private static List<Base> FlattenCommitObject(object obj, Func<Base, bool> IsSingleObjectFn)
     {
       List<Base> objects = new List<Base>();
 
       if (obj is Base @base)
       {
-        if (converter.CanConvertToNative(@base))
+        if (IsSingleObjectFn(@base))
         {
           objects.Add(@base);
 
@@ -201,7 +219,7 @@ namespace ConnectorGSA
         {
           foreach (var prop in @base.GetDynamicMembers())
           {
-            objects.AddRange(FlattenCommitObject(@base[prop], converter));
+            objects.AddRange(FlattenCommitObject(@base[prop], IsSingleObjectFn));
           }
           return objects;
         }
@@ -211,7 +229,7 @@ namespace ConnectorGSA
       {
         foreach (var listObj in list)
         {
-          objects.AddRange(FlattenCommitObject(listObj, converter));
+          objects.AddRange(FlattenCommitObject(listObj, IsSingleObjectFn));
         }
         return objects;
       }
@@ -220,7 +238,7 @@ namespace ConnectorGSA
       {
         foreach (DictionaryEntry kvp in dict)
         {
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
+          objects.AddRange(FlattenCommitObject(kvp.Value, IsSingleObjectFn));
         }
         return objects;
       }

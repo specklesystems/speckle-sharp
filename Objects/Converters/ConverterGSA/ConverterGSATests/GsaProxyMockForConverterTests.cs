@@ -61,6 +61,8 @@ namespace ConverterGSATests
       return true;
     }
 
+    public bool PrepareResults(IEnumerable<ResultType> resultTypes, int numBeamPoints = 3) => true;
+
     public bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null)
     {
       numErrorRows = 0;

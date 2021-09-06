@@ -47,6 +47,11 @@ namespace Speckle.ConnectorGSA.Results
 
     protected bool LoadFromFile<T>(out int numErrorRows, bool parallel = true) where T: CsvRecord
     {
+      if (!File.Exists(filePath))
+      {
+        numErrorRows = 0;
+        return false;
+      }
       var reader = new StreamReader(filePath);
 
       var tasks = new List<Task>();
