@@ -69,5 +69,18 @@ namespace Objects.Structural
         BotRight
     }
 
+    public enum ShapeType
+    {
+        Rectangular,
+        Circular,
+        I,
+        Tee,
+        Angle,
+        Channel,
+        Perimeter,
+        Catalogue,
+        Explicit
+    }
+
 }
 

@@ -12,7 +12,7 @@ namespace Objects.Structural.Loading
 
         [DetachProperty]
         public LoadCase loadCase { get; set; }
-
+        public string units { get; set; }
         public Load() { }
 
         [SchemaInfo("Load", "Creates a Speckle structural load", "Structural", "Loading")]

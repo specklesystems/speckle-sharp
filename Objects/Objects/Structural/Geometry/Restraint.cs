@@ -15,6 +15,7 @@ namespace Objects.Structural.Geometry
         public double stiffnessXX { get; set; }
         public double stiffnessYY { get; set; }
         public double stiffnessZZ { get; set; }
+        public string units { get; set; }
         public Restraint() { }
 
         [SchemaInfo("Restraint (by code)", "Creates a Speckle restraint object", "Structural", "Geometry")]
