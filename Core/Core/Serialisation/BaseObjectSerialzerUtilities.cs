@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Threading;
 using Microsoft.CSharp.RuntimeBinder;
 using Speckle.Core.Kits;
@@ -19,7 +21,8 @@ namespace Speckle.Core.Serialisation
     #region Getting Types
 
     private static Dictionary<string, Type> cachedTypes = new Dictionary<string, Type>();
-    private static Dictionary<string, Dictionary<string, System.Reflection.PropertyInfo>> typeProperties = new Dictionary<string, Dictionary<string, System.Reflection.PropertyInfo>>();
+    private static Dictionary<string, Dictionary<string, PropertyInfo>> typeProperties = new Dictionary<string, Dictionary<string, PropertyInfo>>();
+    private static Dictionary<string, List<MethodInfo>> onDeserializedCallbacks = new Dictionary<string, List<MethodInfo>>();
 
     internal static Type GetType(string objFullType)
     {
@@ -52,20 +55,44 @@ namespace Speckle.Core.Serialisation
 
       return typeof(Base);
     }
-    internal static Dictionary<string, System.Reflection.PropertyInfo> GetTypePropeties(string objFullType)
+
+    internal static Dictionary<string, PropertyInfo> GetTypePropeties(string objFullType)
     {
       lock (typeProperties)
       {
         if (!typeProperties.ContainsKey(objFullType))
         {
-          Dictionary<string, System.Reflection.PropertyInfo> ret = new Dictionary<string, System.Reflection.PropertyInfo>();
+          Dictionary<string, PropertyInfo> ret = new Dictionary<string, PropertyInfo>();
           Type type = GetType(objFullType);
-          System.Reflection.PropertyInfo[] properties = type.GetProperties();
-          foreach (System.Reflection.PropertyInfo prop in properties)
+          PropertyInfo[] properties = type.GetProperties();
+          foreach (PropertyInfo prop in properties)
             ret[prop.Name.ToLower()] = prop;
           typeProperties[objFullType] = ret;
         }
         return typeProperties[objFullType];
+      }
+    }
+
+    internal static List<MethodInfo> GetOnDeserializedCallbacks(string objFullType)
+    {
+      // return new List<MethodInfo>();
+      lock (onDeserializedCallbacks)
+      {
+        // System.Runtime.Serialization.Ca
+        if (!onDeserializedCallbacks.ContainsKey(objFullType))
+        {
+          List<MethodInfo> ret = new List<MethodInfo>();
+          Type type = GetType(objFullType);
+          MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+          foreach (MethodInfo method in methods)
+          {
+            List<OnDeserializedAttribute> onDeserializedAttributes = method.GetCustomAttributes<OnDeserializedAttribute>(true).ToList();
+            if (onDeserializedAttributes.Count > 0)
+              ret.Add(method);
+          }
+          onDeserializedCallbacks[objFullType] = ret;
+        }
+        return onDeserializedCallbacks[objFullType];
       }
     }
 

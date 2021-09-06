@@ -235,6 +235,7 @@ namespace Speckle.Core.Serialisation
       dictObj.Remove("__closure");
 
       Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(typeName);
+      List<MethodInfo> onDeserializedCallbacks = SerializationUtilities.GetOnDeserializedCallbacks(typeName);
 
       foreach (KeyValuePair<string, object> entry in dictObj)
       {
@@ -260,6 +261,11 @@ namespace Speckle.Core.Serialisation
           // No writable property with this name
           CallSiteCache.SetValue(entry.Key, baseObj, entry.Value);
         }
+      }
+
+      foreach(MethodInfo onDeserialized in onDeserializedCallbacks)
+      {
+        onDeserialized.Invoke(baseObj, new object[] { null });
       }
 
       return baseObj;
