@@ -1,53 +1,68 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Objects.Converter.RhinoGh7</AssemblyName>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Objects.Converter.RhinoGh</RootNamespace>
-    <PackageId>Speckle.Objects.Converter.RhinoGh7</PackageId>
-    <Version>2.1.0</Version>
-    <Authors>Speckle</Authors>
-    <Company>SpeckleSpeckle</Company>
-    <Product>Objects.Converter.RhinoGh7</Product>
-    <Description>Converter for Rhino and Grasshopper</Description>
-    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
-    <PackageIcon>logo.png</PackageIcon>
-    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>speckle objects converter rhino grasshopper gh</PackageTags>
+    <AssemblyName>Objects.Converter.RhinoGh7</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;RHINOGH7</DefineConstants>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;RHINOGH7</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\logo.png" Link="logo.png">
-      <PackagePath></PackagePath>
-      <Pack>True</Pack>
-    </None>
-    <None Include="..\..\..\..\logo.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
+    <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="7.9.21222.15001" />
-    <PackageReference Include="RhinoCommon" Version="7.9.21222.15001" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+    <Content Include="logo.png" />
   </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Grasshopper">
+      <Version>7.4.21078.1001</Version>
+    </PackageReference>
+    <PackageReference Include="RhinoCommon">
+      <Version>7.4.21078.1001</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj">
+      <Project>{7ef0c96c-1fd9-42b2-85ce-bfd9b10dac06}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj">
+      <Project>{95c2153a-642e-4779-90c0-bff56fc561a9}</Project>
+      <Name>Objects</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems" Label="Shared" />
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
-  </Target>
-
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /Y /S "$(TargetDir)$(AssemblyName).dll" "$(AppData)\Speckle\Kits\Objects\"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

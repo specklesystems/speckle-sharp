@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ConnectorRhino7")]
+[assembly: AssemblyTitle("ConverterRhinoGh7")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ConnectorRhino7")]
+[assembly: AssemblyProduct("ConverterRhinoGh7")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("702f43fd-a0dd-4551-b7eb-43e297622a48")]
+[assembly: Guid("5405f028-8c0a-4b96-82fc-5bbfb02b4bcc")]
 
 // Version information for an assembly consists of the following four values:
 //

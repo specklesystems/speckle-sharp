@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ConnectorRhino</RootNamespace>
     <AssemblyName>SpeckleConnectorRhino</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -61,10 +62,10 @@
       <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="RhinoCommon">
-      <Version>7.9.21222.15001</Version>
+      <Version>7.4.21078.1001</Version>
     </PackageReference>
     <PackageReference Include="RhinoWindows">
-      <Version>7.9.21222.15001</Version>
+      <Version>7.4.21078.1001</Version>
     </PackageReference>
     <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework">
       <Version>1.0.115</Version>

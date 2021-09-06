@@ -47,19 +47,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterRhinoGh", "Convert
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterRhinoGhShared", "Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.shproj", "{B74CB8C1-187B-46A6-B20B-92B8C129F3EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRhinoGh6", "Converters\ConverterRhinoGh\ConverterRhinoGh6\ConverterRhinoGh6.csproj", "{5882D156-1AA7-4F1F-8340-8726B8E5B34C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhinoGh6", "Converters\ConverterRhinoGh\ConverterRhinoGh6\ConverterRhinoGh6.csproj", "{5882D156-1AA7-4F1F-8340-8726B8E5B34C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRhinoGh7", "Converters\ConverterRhinoGh\ConverterRhinoGh7\ConverterRhinoGh7.csproj", "{19FDA393-DE86-4FC9-90C0-D9AFC4D9D582}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRhinoGh7", "Converters\ConverterRhinoGh\ConverterRhinoGh7\ConverterRhinoGh7.csproj", "{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{0bcb32cf-a3cf-4a6a-a9f8-dfe5d85d608c}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{13f93c20-793c-4f2d-b836-68d7744063df}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{156ff86c-8531-46d0-aa23-97db326bc591}*SharedItemsImports = 5
-		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{19fda393-de86-4fc9-90c0-d9afc4d9d582}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{2c68e80f-38f4-41d0-9b38-473031d1b541}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{2d0f9f8a-2e89-4780-978a-cd92d6d7b843}*SharedItemsImports = 13
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
+		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{2e66472e-5a50-4208-b5e7-da843d6fa1ad}*SharedItemsImports = 4
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{4f16a993-7d11-4565-a2a5-910899919e00}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{4f16a993-7d11-4565-a2a5-910899919e00}*SharedItemsImports = 5
 		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{5882d156-1aa7-4f1f-8340-8726b8e5b34c}*SharedItemsImports = 5
@@ -126,10 +126,10 @@ Global
 		{5882D156-1AA7-4F1F-8340-8726B8E5B34C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5882D156-1AA7-4F1F-8340-8726B8E5B34C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5882D156-1AA7-4F1F-8340-8726B8E5B34C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{19FDA393-DE86-4FC9-90C0-D9AFC4D9D582}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{19FDA393-DE86-4FC9-90C0-D9AFC4D9D582}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{19FDA393-DE86-4FC9-90C0-D9AFC4D9D582}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{19FDA393-DE86-4FC9-90C0-D9AFC4D9D582}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -155,7 +155,7 @@ Global
 		{1A35077C-2936-4A3D-8D48-65F39F76D999} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 		{B74CB8C1-187B-46A6-B20B-92B8C129F3EE} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
 		{5882D156-1AA7-4F1F-8340-8726B8E5B34C} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
-		{19FDA393-DE86-4FC9-90C0-D9AFC4D9D582} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
+		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}
