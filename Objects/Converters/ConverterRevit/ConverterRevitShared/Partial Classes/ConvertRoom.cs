@@ -15,14 +15,15 @@ namespace Objects.Converter.Revit
     {
       var revitRoom = GetExistingElementByApplicationId(speckleRoom.applicationId) as DB.Room;
       var level = LevelToNative(speckleRoom.level);
-      var basePoint = PointToNative(speckleRoom.basePoint);
+
 
       if (revitRoom == null)
       {
-        revitRoom = Doc.Create.NewRoom(level, new UV(basePoint.X, basePoint.Y));
+        var point = PointToNative(speckleRoom.center);
+        revitRoom = Doc.Create.NewRoom(level, new UV(point.X, point.Y));
       }
 
-     
+
       revitRoom.Name = speckleRoom.name;
       revitRoom.Number = speckleRoom.number;
 
@@ -50,11 +51,10 @@ namespace Objects.Converter.Revit
 
       speckleRoom.name = revitRoom.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
       speckleRoom.number = revitRoom.Number;
-      speckleRoom.basePoint = (Point)LocationToSpeckle(revitRoom);
+      speckleRoom.center = (Point)LocationToSpeckle(revitRoom);
       speckleRoom.level = ConvertAndCacheLevel(revitRoom, BuiltInParameter.ROOM_LEVEL_ID);
       speckleRoom.outline = profiles[0];
       speckleRoom.area = GetParamValue<double>(revitRoom, BuiltInParameter.ROOM_AREA);
-      speckleRoom.volume = GetParamValue<double>(revitRoom, BuiltInParameter.ROOM_VOLUME);
       if (profiles.Count > 1)
       {
         speckleRoom.voids = profiles.Skip(1).ToList();
