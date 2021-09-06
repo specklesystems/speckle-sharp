@@ -15,8 +15,8 @@ namespace Speckle.Core.Transports.ServerUtils
 {
   public class ServerApi : IDisposable, IServerApi
   {
-    private int BATCH_SIZE_HAS_OBJECTS = 1000;
-    private int BATCH_SIZE_GET_OBJECTS = 1000;
+    private int BATCH_SIZE_HAS_OBJECTS = 100000;
+    private int BATCH_SIZE_GET_OBJECTS = 10000;
     private int MAX_OBJECT_SIZE = 10_000_000;
     private int MAX_MULTIPART_COUNT = 50;
     private int MAX_MULTIPART_SIZE = 1_000_000;
@@ -79,6 +79,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
     public async Task DownloadObjects(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
     {
+
       if (objectIds.Count == 0)
         return;
       if (objectIds.Count < BATCH_SIZE_GET_OBJECTS)
@@ -98,10 +99,13 @@ namespace Speckle.Core.Transports.ServerUtils
         crtRequest.Add(id);
       }
       await DownloadObjectsImpl(streamId, crtRequest, onObjectCallback);
+
     }
 
     private async Task DownloadObjectsImpl(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
     {
+      // Stopwatch sw = new Stopwatch(); sw.Start();
+
       if (CancellationToken.IsCancellationRequested)
         return;
 
@@ -113,10 +117,13 @@ namespace Speckle.Core.Transports.ServerUtils
 
       Dictionary<string, string> postParameters = new Dictionary<string, string>();
       postParameters.Add("objects", JsonSerializer.Serialize<List<string>>(objectIds));
-      childrenHttpMessage.Content = new FormUrlEncodedContent(postParameters);
+      string serializedPayload = JsonSerializer.Serialize<Dictionary<string, string>>(postParameters);
+      childrenHttpMessage.Content = new StringContent(serializedPayload, Encoding.UTF8, "application/json");
       childrenHttpMessage.Headers.Add("Accept", "text/plain");
 
       HttpResponseMessage childrenHttpResponse = await Client.SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
+
+
       childrenHttpResponse.EnsureSuccessStatusCode();
 
       Stream childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync();
@@ -137,8 +144,11 @@ namespace Speckle.Core.Transports.ServerUtils
           }
         }
       }
+
+      // Console.WriteLine($"ServerApi::DownloadObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
+
     }
-    
+
     public async Task<Dictionary<string, bool>> HasObjects(string streamId, List<string> objectIds)
     {
       if (objectIds.Count <= BATCH_SIZE_HAS_OBJECTS)
@@ -157,6 +167,12 @@ namespace Speckle.Core.Transports.ServerUtils
           crtBatch = new List<string>(BATCH_SIZE_HAS_OBJECTS);
         }
       }
+      if (crtBatch.Count > 0)
+      {
+        Dictionary<string, bool> batchResult = await HasObjectsImpl(streamId, crtBatch);
+        foreach (KeyValuePair<string, bool> kv in batchResult)
+          ret[kv.Key] = kv.Value;
+      }
       return ret;
     }
 
@@ -165,8 +181,7 @@ namespace Speckle.Core.Transports.ServerUtils
       if (CancellationToken.IsCancellationRequested)
         return new Dictionary<string, bool>();
 
-      Stopwatch sw = new Stopwatch(); // TODO: remove
-      sw.Start();
+      // Stopwatch sw = new Stopwatch(); sw.Start();
 
       string objectsPostParameter = JsonSerializer.Serialize<List<string>>(objectIds);
       var payload = new Dictionary<string, string>() { { "objects", objectsPostParameter } };
@@ -183,7 +198,7 @@ namespace Speckle.Core.Transports.ServerUtils
         foreach (JsonProperty prop in doc.RootElement.EnumerateObject())
           hasObjects[prop.Name] = prop.Value.GetBoolean();
       }
-      Console.WriteLine($"HasObject request in {sw.ElapsedMilliseconds / 1000.0} sec");
+      // Console.WriteLine($"ServerApi::HasObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
 
       return hasObjects;
     }
@@ -255,6 +270,8 @@ namespace Speckle.Core.Transports.ServerUtils
 
     private async Task UploadObjectsImpl(string streamId, List<List<(string, string)>> multipartedObjects)
     {
+      // Stopwatch sw = new Stopwatch(); sw.Start();
+
       if (CancellationToken.IsCancellationRequested)
         return;
 
@@ -298,6 +315,14 @@ namespace Speckle.Core.Transports.ServerUtils
       message.Content = multipart;
       var response = await Client.SendAsync(message, CancellationToken);
       response.EnsureSuccessStatusCode();
+
+      // // TODO: remove
+      // int totalObjCount = 0;
+      // foreach(var ttt in multipartedObjects)
+      // {
+      //   totalObjCount += ttt.Count;
+      // }
+      // Console.WriteLine($"ServerApi::UploadObjects({totalObjCount}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
     }
 
     public void Dispose()

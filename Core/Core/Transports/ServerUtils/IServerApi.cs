@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Speckle.Core.Transports.ServerUtils
 {
-  public delegate bool CbObjectDownloaded(string id, string json);
+  public delegate void CbObjectDownloaded(string id, string json);
 
   internal interface IServerApi
   {

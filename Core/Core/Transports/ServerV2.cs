@@ -8,9 +8,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
+using Speckle.Core.Transports.ServerUtils;
 
 namespace Speckle.Core.Transports
 {
+  public class ServerTransport : ServerTransportV2
+  {
+    public ServerTransport(Account account, string streamId, int timeoutSeconds = 60) : base(account, streamId, timeoutSeconds)
+    {
+    }
+  }
+
   public class ServerTransportV2 : IDisposable, ICloneable, ITransport
   {
     public string TransportName { get; set; } = "RemoteTransport";
@@ -21,7 +29,17 @@ namespace Speckle.Core.Transports
     public Account Account { get; set; }
     public string BaseUri { get; private set; }
     public string StreamId { get; set; }
-    private HttpClient Client { get; set; }
+
+    public int TimeoutSeconds { get; set; }
+    private string AuthorizationToken { get; set; }
+
+    public ParallelServerApi Api { get; private set; }
+
+    private bool ShouldSendThreadRun = false;
+    private bool IsWriteComplete = false;
+    private Thread SendingThread = null;
+    private object SendBufferLock = new object();
+    private List<(string, string)> SendBuffer = new List<(string, string)>();
 
     public ServerTransportV2(Account account, string streamId, int timeoutSeconds = 60)
     {
@@ -35,100 +53,55 @@ namespace Speckle.Core.Transports
 
       BaseUri = baseUri;
       StreamId = streamId;
+      AuthorizationToken = authorizationToken;
+      TimeoutSeconds = timeoutSeconds;
 
-      Client = new HttpClient(new HttpClientHandler()
-      {
-        AutomaticDecompression = System.Net.DecompressionMethods.GZip,
-      })
-      {
-        BaseAddress = new Uri(baseUri),
-        Timeout = new TimeSpan(0, 0, timeoutSeconds),
+      Api = new ParallelServerApi(BaseUri, AuthorizationToken, TimeoutSeconds);
+      Api.OnBatchSent = (num, size) => {
+        OnProgressAction?.Invoke(TransportName, num);
       };
-
-      if (authorizationToken.ToLowerInvariant().Contains("bearer"))
-      {
-        Client.DefaultRequestHeaders.Add("Authorization", authorizationToken);
-      }
-      else
-      {
-        Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authorizationToken}");
-      }
     }
 
     public async Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
     {
-      return "";
       if (CancellationToken.IsCancellationRequested)
         return null;
 
-      // Get root object
-      var rootHttpMessage = new HttpRequestMessage()
+      using(ParallelServerApi api = new ParallelServerApi(BaseUri, AuthorizationToken, TimeoutSeconds))
       {
-        RequestUri = new Uri($"/objects/{StreamId}/{id}/single", UriKind.Relative),
-        Method = HttpMethod.Get,
-      };
-      HttpResponseMessage rootHttpResponse = null;
-      try
-      {
-        rootHttpResponse = await Client.SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken);
-        rootHttpResponse.EnsureSuccessStatusCode();
-      }
-      catch (Exception e)
-      {
-        OnErrorAction?.Invoke(TransportName, e);
-        return null;
-      }
-
-      // Parse children ids
-      String rootObjectStr = await rootHttpResponse.Content.ReadAsStringAsync();
-      List<string> childrenIds = new List<string>();
-      try
-      {
-        using (JsonDocument doc = JsonDocument.Parse(rootObjectStr))
+        api.CancellationToken = CancellationToken;
+        try
         {
-          JsonElement closures = doc.RootElement.GetProperty("__closure");
-          foreach (JsonProperty prop in closures.EnumerateObject())
-            childrenIds.Add(prop.Name);
+          string rootObjectJson = await api.DownloadSingleObject(StreamId, id);
+          List<string> childrenIds = ParseChildrenIds(rootObjectJson);
+          onTotalChildrenCountKnown?.Invoke(childrenIds.Count);
+
+          // Check which children are not already in the local transport
+          var childrenFoundMap = await targetTransport.HasObjects(childrenIds);
+          List<string> newChildrenIds = new List<string>(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
+
+          targetTransport.BeginWrite();
+
+          await api.DownloadObjects(StreamId, newChildrenIds, (string id, string json) =>
+          {
+            targetTransport.SaveObject(id, json);
+            OnProgressAction?.Invoke(TransportName, 1);
+          });
+
+          targetTransport.SaveObject(id, rootObjectJson);
+
+          await targetTransport.WriteComplete();
+          targetTransport.EndWrite();
+
+          return rootObjectJson;
         }
-      }
-      catch
-      {
-        // empty children list if no __closure key is found
-      }
-      onTotalChildrenCountKnown?.Invoke(childrenIds.Count);
-
-      // Check which children are not already in the local transport
-      var childrenFoundMap = await targetTransport.HasObjects(childrenIds);
-      List<string> newChildrenIds = new List<string>(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
-
-
-      targetTransport.BeginWrite();
-      /*
-      // Get the children that are not already in the targetTransport
-      List<string> childrenIdBatch = new List<string>(DOWNLOAD_BATCH_SIZE);
-      bool downloadBatchResult;
-      foreach (var objectId in newChildrenIds)
-      {
-        childrenIdBatch.Add(objectId);
-        if (childrenIdBatch.Count >= DOWNLOAD_BATCH_SIZE)
+        catch (Exception e)
         {
-          downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport);
-          if (!downloadBatchResult)
-            return null;
-          childrenIdBatch = new List<string>(DOWNLOAD_BATCH_SIZE);
-        }
-      }
-      if (childrenIdBatch.Count > 0)
-      {
-        downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport);
-        if (!downloadBatchResult)
+          OnErrorAction?.Invoke(TransportName, e);
           return null;
+        }
       }
 
-      targetTransport.SaveObject(hash, rootObjectStr);
-      await targetTransport.WriteComplete();
-      return rootObjectStr;
-      */
     }
 
     public string GetObject(string id)
@@ -137,46 +110,57 @@ namespace Speckle.Core.Transports
       {
         return null;
       }
-
-      var message = new HttpRequestMessage()
-      {
-        RequestUri = new Uri($"/objects/{StreamId}/{id}/single", UriKind.Relative),
-        Method = HttpMethod.Get,
-      };
-
-      var response = Client.SendAsync(message, HttpCompletionOption.ResponseContentRead, CancellationToken).Result.Content;
-      return response.ReadAsStringAsync().Result;
+      return Api.DownloadSingleObject(StreamId, id).Result;
     }
 
-    public Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+    public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
     {
-      throw new NotImplementedException();
+      return await Api.HasObjects(StreamId, objectIds);
     }
 
     public void SaveObject(string id, string serializedObject)
     {
-      throw new NotImplementedException();
+      lock (SendBufferLock)
+      {
+        SendBuffer.Add((id, serializedObject));
+        IsWriteComplete = false;
+      }
     }
 
     public void SaveObject(string id, ITransport sourceTransport)
     {
-      throw new NotImplementedException();
+      SaveObject(id, sourceTransport.GetObject(id));
     }
 
     public void BeginWrite()
     {
-      
+      if (ShouldSendThreadRun || SendingThread != null)
+        throw new Exception("ServerTransport already sending");
+      ShouldSendThreadRun = true;
+      SendingThread = new Thread(new ThreadStart(SendingThreadMain));
+      SendingThread.IsBackground = true;
+      SendingThread.Start();
     }
 
-    public Task WriteComplete()
+    public async Task WriteComplete()
     {
-      List<Task> pendingTasks = new List<Task>();
-      return Task.WhenAll(pendingTasks);
+      while (true)
+      {
+        lock(SendBufferLock)
+        {
+          if (IsWriteComplete)
+            return;
+        }
+        await Task.Delay(50);
+      }
     }
 
     public void EndWrite()
     {
-      
+      if (!ShouldSendThreadRun || SendingThread == null)
+        throw new Exception("ServerTransport not sending");
+      ShouldSendThreadRun = false;
+      SendingThread.Join();
     }
 
     public override string ToString()
@@ -194,9 +178,85 @@ namespace Speckle.Core.Transports
       };
     }
 
+    private List<string> ParseChildrenIds(string json)
+    {
+      List<string> childrenIds = new List<string>();
+      try
+      {
+        using (JsonDocument doc = JsonDocument.Parse(json))
+        {
+          JsonElement closures = doc.RootElement.GetProperty("__closure");
+          foreach (JsonProperty prop in closures.EnumerateObject())
+            childrenIds.Add(prop.Name);
+        }
+      }
+      catch
+      {
+        // empty children list if no __closure key is found
+      }
+      return childrenIds;
+    }
+
+    private async void SendingThreadMain()
+    {
+      while (true)
+      {
+        if (!ShouldSendThreadRun || CancellationToken.IsCancellationRequested)
+        {
+          return;
+        }
+        List<(string, string)> buffer = null;
+        lock (SendBufferLock)
+        {
+          if (SendBuffer.Count > 0)
+          {
+            buffer = SendBuffer;
+            SendBuffer = new List<(string, string)>();
+          }
+          else
+          {
+            IsWriteComplete = true;
+          }
+        }
+        if (buffer == null)
+        {
+          Thread.Sleep(100);
+          continue;
+        }
+        try
+        {
+          List<string> objectIds = new List<string>(buffer.Count);
+          foreach ((string id, string json) in buffer)
+            objectIds.Add(id);
+
+          Dictionary<string, bool> hasObjects = await Api.HasObjects(StreamId, objectIds);
+
+          List<(string, string)> newObjects = new List<(string, string)>();
+          foreach ((string id, string json) in buffer)
+            if (!hasObjects[id])
+              newObjects.Add((id, json));
+
+          // Report the objects that are already on the server
+          OnProgressAction?.Invoke(TransportName, hasObjects.Count - newObjects.Count);
+
+          await Api.UploadObjects(StreamId, newObjects);
+        }
+        catch(Exception ex)
+        {
+          OnErrorAction?.Invoke(TransportName, ex);
+          return;
+        }
+      }
+    }
+
     public void Dispose()
     {
-      Client?.Dispose();
+      if (SendingThread != null)
+      {
+        ShouldSendThreadRun = false;
+        SendingThread.Join();
+      }
+      Api.Dispose();
     }
   }
 }
