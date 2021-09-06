@@ -98,9 +98,5 @@ namespace Objects.Structural.Properties
                 this.shapeType = ShapeType.TSection;
             }
         }
-
-    }
-
-
     }
 }
