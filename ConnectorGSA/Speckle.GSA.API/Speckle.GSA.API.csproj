@@ -41,6 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CsvSchema\CsvAssembly.cs" />
+    <Compile Include="CsvSchema\CsvElem1d.cs" />
+    <Compile Include="CsvSchema\CsvElem2d.cs" />
+    <Compile Include="CsvSchema\CsvNode.cs" />
+    <Compile Include="CsvSchema\CsvRecord.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="GsaModelBase.cs" />

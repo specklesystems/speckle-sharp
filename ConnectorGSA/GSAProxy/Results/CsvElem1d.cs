@@ -1,46 +1,41 @@
 ﻿using CsvHelper.Configuration.Attributes;
-using System;
-
+using Speckle.GSA.API.CsvSchema;
 
 namespace Speckle.ConnectorGSA.Results
 {
-  public class CsvElem1d : CsvRecord
+  public class CsvElem1dAnnotated : CsvElem1d
   {
+    [Name("id")]
+    public override int ElemId { get; set; }
+
+    [Name("case_id")]
+    public override string CaseId { get; set; }
+
     [Name("disp_x")]
-    public float? Ux { get; set; }
+    public override float? Ux { get; set; }
 
     [Name("disp_y")]
-    public float? Uy { get; set; }
+    public override float? Uy { get; set; }
 
     [Name("disp_z")]
-    public float? Uz { get; set; }
-
-    public float? U { get => Magnitude(Ux, Uy, Uz); }
+    public override float? Uz { get; set; }
 
     [Name("force_x")]
-    public float? Fx { get; set; }
+    public override float? Fx { get; set; }
 
     [Name("force_y")]
-    public float? Fy { get; set; }
+    public override float? Fy { get; set; }
 
     [Name("force_z")]
-    public float? Fz { get; set; }
-
-    public float? F { get => Magnitude(Fx, Fy, Fz); }
+    public override float? Fz { get; set; }
 
     [Name("moment_x")]
-    public float? Mxx { get; set; }
+    public override float? Mxx { get; set; }
 
     [Name("moment_y")]
-    public float? Myy { get; set; }
+    public override float? Myy { get; set; }
 
     [Name("moment_z")]
-    public float? Mzz { get; set; }
-
-    public float? M { get => Magnitude(Mxx, Myy, Mzz); }
-
-    public float? Fyz { get => Magnitude(Fy, Fz); }
-
-    public float? Myz { get => Magnitude(Myy, Mzz); }
+    public override float? Mzz { get; set; }
   }
 }

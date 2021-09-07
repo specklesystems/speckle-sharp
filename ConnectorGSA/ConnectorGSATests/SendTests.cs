@@ -8,6 +8,7 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Transports;
 using Speckle.GSA.API;
+using Speckle.GSA.API.CsvSchema;
 using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
@@ -74,15 +75,15 @@ namespace ConnectorGSATests
 
       bool loaded = false;
       var resultTypesByGroup = GetResultGroupType();
-      var hierarchiesByResultGroup = resultTypesByGroup.Keys.ToDictionary(g => g, 
-        g => new List<Dictionary<string, Dictionary<string, object>>>());
+      var csvRecordsByGroup = resultTypesByGroup.Keys.ToDictionary(g => g,
+        g => new List<CsvRecord>());
 
       try
       {
         loaded = Commands.LoadDataFromFile(resultTypesByGroup.Keys, resultTypesByGroup.Keys.SelectMany(g => resultTypesByGroup[g]));
       }
-      catch(Exception ex) 
-      { 
+      catch (Exception ex)
+      {
       }
       finally
       {
@@ -94,9 +95,9 @@ namespace ConnectorGSATests
       {
         foreach (var i in indices)
         {
-          if (Instance.GsaModel.Proxy.GetResultHierarchy(ResultGroup.Assembly, i, out var valueHierarchy))
+          if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Assembly, i, out var records))
           {
-            hierarchiesByResultGroup[ResultGroup.Assembly].Add(valueHierarchy);
+            csvRecordsByGroup[ResultGroup.Assembly].AddRange(records);
           }
         }
       }
@@ -105,9 +106,9 @@ namespace ConnectorGSATests
       {
         foreach (var i in indices)
         {
-          if (Instance.GsaModel.Proxy.GetResultHierarchy(ResultGroup.Node, i, out var valueHierarchy))
+          if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Node, i, out var records))
           {
-            hierarchiesByResultGroup[ResultGroup.Node].Add(valueHierarchy);
+            csvRecordsByGroup[ResultGroup.Node].AddRange(records);
           }
         }
       }
@@ -116,18 +117,18 @@ namespace ConnectorGSATests
       {
         foreach (var i in indices)
         {
-          if (Instance.GsaModel.Proxy.GetResultHierarchy(ResultGroup.Element1d, i, out var valueHierarchy, 1))
+          if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Element1d, i, out var records))
           {
-            hierarchiesByResultGroup[ResultGroup.Element1d].Add(valueHierarchy);
+            csvRecordsByGroup[ResultGroup.Element1d].AddRange(records);
           }
-          if (Instance.GsaModel.Proxy.GetResultHierarchy(ResultGroup.Element2d, i, out valueHierarchy, 2))
+          if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Element2d, i, out records))
           {
-            hierarchiesByResultGroup[ResultGroup.Element2d].Add(valueHierarchy);
+            csvRecordsByGroup[ResultGroup.Element2d].AddRange(records);
           }
         }
       }
 
-      Assert.True(hierarchiesByResultGroup.Keys.All(g => hierarchiesByResultGroup[g].Count > 0));
+      Assert.True(csvRecordsByGroup.Keys.All(g => csvRecordsByGroup[g].Count > 0));
     }
 
     private async Task<CoordinateSendResult> CoordinateSend(ISpeckleConverter converter, params ITransport[] nonServerTransports)

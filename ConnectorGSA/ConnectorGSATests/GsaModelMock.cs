@@ -1,5 +1,6 @@
 ﻿using Speckle.ConnectorGSA.Proxy.Cache;
 using Speckle.GSA.API;
+using Speckle.GSA.API.CsvSchema;
 using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
@@ -117,6 +118,16 @@ namespace ConnectorGSATests
 
     public void Close()
     {
+    }
+
+    public bool GetResultRecords(ResultGroup group, int index, out List<CsvRecord> records)
+    {
+      throw new NotImplementedException();
+    }
+
+    public bool GetResultRecords(ResultGroup group, int index, string loadCase, out List<CsvRecord> records)
+    {
+      throw new NotImplementedException();
     }
 
     #endregion

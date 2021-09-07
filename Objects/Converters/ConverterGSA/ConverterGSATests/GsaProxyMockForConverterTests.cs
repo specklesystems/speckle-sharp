@@ -1,6 +1,7 @@
 ﻿using Speckle.ConnectorGSA.Proxy.Cache;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API;
+using Speckle.GSA.API.CsvSchema;
 using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace ConverterGSATests
   }
 
   internal class GsaProxyMockForConverterTests : IGSAProxy
-    {
+  {
     //Assign these in each test to control what the methods below (called by the kit) return
     public Func<string, GSAEntity, List<int>> ConverterGSAListFn;
     public Func<double, double, double, int> NodeAtFn;
@@ -142,6 +143,16 @@ namespace ConverterGSATests
       }
       resultsData[group][index] = valueHierarchy;
       return true;
+    }
+
+    public bool GetResultRecords(ResultGroup group, int index, out List<CsvRecord> records)
+    {
+      throw new NotImplementedException();
+    }
+
+    public bool GetResultRecords(ResultGroup group, int index, string loadCase, out List<CsvRecord> records)
+    {
+      throw new NotImplementedException();
     }
 
     #endregion

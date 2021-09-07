@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Speckle.GSA.API.GwaSchema;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.GSA.API.CsvSchema;
 
 namespace Speckle.ConnectorGSA.Proxy
 {
@@ -145,7 +146,7 @@ namespace Speckle.ConnectorGSA.Proxy
 
     //Results-related
     private string resultDir = null;
-    private Dictionary<ResultGroup, ResultsProcessorBase> resultProcessors = new Dictionary<ResultGroup, ResultsProcessorBase>();
+    private Dictionary<ResultGroup, IResultsProcessor> resultProcessors = new Dictionary<ResultGroup, IResultsProcessor>();
     private List<ResultType> allResultTypes;
 
     private List<string> cases = null;
@@ -992,10 +993,32 @@ namespace Speckle.ConnectorGSA.Proxy
       return resultProcessors[group].LoadFromFile(out numErrorRows);
     }
 
+    /*
     public bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1)
     {
       valueHierarchy = (resultProcessors.ContainsKey(group)) ? resultProcessors[group].GetResultHierarchy(index) : new Dictionary<string, Dictionary<string, object>>();
       return (valueHierarchy != null && valueHierarchy.Count > 0);
+    }
+    */
+
+    public bool GetResultRecords(ResultGroup group, int index, string loadCase, out List<CsvRecord> records)
+    {
+      if (resultProcessors.ContainsKey(group) && resultProcessors[group].GetResultRecords(index, loadCase, out records))
+      {
+        return true;
+      }
+      records = null;
+      return false;
+    }
+
+    public bool GetResultRecords(ResultGroup group, int index, out List<CsvRecord> records)
+    {
+      if (resultProcessors.ContainsKey(group) && resultProcessors[group].GetResultRecords(index, out records))
+      {
+        return true;
+      }
+      records = null;
+      return false;
     }
 
     public bool ClearResults(ResultGroup group)
@@ -1212,6 +1235,7 @@ namespace Speckle.ConnectorGSA.Proxy
     {
       return FormatStreamIdSidTag(streamId) + FormatApplicationIdSidTag(applicationId);
     }
+
     #endregion
   }
 }
