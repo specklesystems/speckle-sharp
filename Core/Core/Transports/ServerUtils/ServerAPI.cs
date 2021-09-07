@@ -281,7 +281,7 @@ namespace Speckle.Core.Transports.ServerUtils
         Method = HttpMethod.Post
       };
 
-      var multipart = new MultipartFormDataContent("--obj--");
+      var multipart = new MultipartFormDataContent();
 
       int mpId = 0;
       foreach (List<(string, string)> mpData in multipartedObjects)

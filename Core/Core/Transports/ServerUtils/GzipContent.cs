@@ -46,6 +46,7 @@ namespace Speckle.Core.Transports.ServerUtils
           await content.CopyToAsync(gzip);
         else
           await (new System.Net.Http.StringContent(string.Empty)).CopyToAsync(gzip);
+        await gzip.FlushAsync();
       }
     }
 
