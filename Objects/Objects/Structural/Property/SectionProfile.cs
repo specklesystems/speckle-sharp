@@ -25,17 +25,19 @@ namespace Objects.Structural.Properties
         {            
             public double depth { get; set; }
             public double width { get; set; }
-            public double thickness { get; set; }
+            public double webThickness { get; set; } // tw 
+            public double flangeThickness { get; set; } // tf
 
             public Rectangular() { }
 
             [SchemaInfo("Rectangular", "Creates a Speckle structural rectangular section profile", "Structural", "Properties")]
-            public Rectangular(string name, double depth, double width, double thickness)
+            public Rectangular(string name, double depth, double width, double webThickness, double flangeThickness)
             {
                 this.name = name;                
                 this.depth = depth;
                 this.width = width;
-                this.thickness = thickness;
+                this.webThickness = webThickness;
+                this.flangeThickness = flangeThickness;
                 this.shapeType = ShapeType.Rectangular;
             }
         }
@@ -166,13 +168,13 @@ namespace Objects.Structural.Properties
 
             public Catalogue() { }
 
-            [SchemaInfo("Catalogue", "Creates a Speckle structural section profile based on a catalogue section description", "Structural", "Properties")]
+            [SchemaInfo("Catalogue (by description)", "Creates a Speckle structural section profile based on a catalogue section description", "Structural", "Properties")]
             public Catalogue(string description)
             {
                 this.description = description;
             }
 
-            [SchemaInfo("Catalogue", "Creates a Speckle structural section profile based on a catalogue section description", "Structural", "Properties")]
+            [SchemaInfo("Catalogue", "Creates a Speckle structural section profile", "Structural", "Properties")]
             public Catalogue(string name, string catalogueName, string sectionType, string sectionName)
             {
                 this.name = name;
