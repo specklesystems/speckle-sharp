@@ -4,8 +4,12 @@ using Speckle.Core.Models;
 using System.Collections.Generic;
 using Objects.Geometry;
 
-namespace Objects.Structural
+namespace Objects.Structural.Analysis
 {
-
+    public enum UnitsType
+    {
+        Metric,
+        Imperial
+    }
 }
 

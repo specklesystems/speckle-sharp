@@ -12,6 +12,7 @@ namespace Objects.Structural.Results
         [DetachProperty]
         public List<Result3D> results3D { get; set; }
         public ResultSet3D() { }
+        [SchemaInfo("ResultSet3D", "Creates a Speckle 3D element result set object", "Structural", "Results")]
         public ResultSet3D(List<Result3D> results3D)
         {
             this.results3D = results3D;

@@ -4,6 +4,7 @@ using Speckle.Core.Models;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Properties;
+using Objects.Structural.Properties.Profiles;
 using Objects.Structural.Materials;
 
 namespace Objects.Structural.GSA.Properties

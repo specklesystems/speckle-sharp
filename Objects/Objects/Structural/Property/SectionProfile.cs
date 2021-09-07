@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
 
-namespace Objects.Structural.Properties
+namespace Objects.Structural.Properties.Profiles
 {
     public class SectionProfile : Base //section profile description
     {
@@ -30,7 +30,7 @@ namespace Objects.Structural.Properties
 
             public Rectangular() { }
 
-            [SchemaInfo("Rectangular", "Creates a Speckle structural rectangular section profile", "Structural", "Properties")]
+            [SchemaInfo("Rectangular", "Creates a Speckle structural rectangular section profile", "Structural", "Section Profile")]
             public Rectangular(string name, double depth, double width, double webThickness, double flangeThickness)
             {
                 this.name = name;                
@@ -49,7 +49,7 @@ namespace Objects.Structural.Properties
 
             public Circular() { }
 
-            [SchemaInfo("Circular", "Creates a Speckle structural circular section profile", "Structural", "Properties")]
+            [SchemaInfo("Circular", "Creates a Speckle structural circular section profile", "Structural", "Section Profile")]
             public Circular(string name, double radius, double thickness)
             {
                 this.name = name;
@@ -68,7 +68,7 @@ namespace Objects.Structural.Properties
 
             public ISection() { }
 
-            [SchemaInfo("ISection", "Creates a Speckle structural I section profile", "Structural", "Properties")]
+            [SchemaInfo("ISection", "Creates a Speckle structural I section profile", "Structural", "Section Profile")]
             public ISection(string name, double depth, double width, double webThickness, double flangeThickness)
             {
                 this.name = name;
@@ -89,7 +89,7 @@ namespace Objects.Structural.Properties
 
             public Tee() { }
 
-            [SchemaInfo("Tee", "Creates a Speckle structural Tee section profile", "Structural", "Properties")]
+            [SchemaInfo("Tee", "Creates a Speckle structural Tee section profile", "Structural", "Section Profile")]
             public Tee(string name, double depth, double width, double webThickness, double flangeThickness)
             {
                 this.name = name;
@@ -110,7 +110,7 @@ namespace Objects.Structural.Properties
 
             public Angle() { }
 
-            [SchemaInfo("Angle", "Creates a Speckle structural angle section profile", "Structural", "Properties")]
+            [SchemaInfo("Angle", "Creates a Speckle structural angle section profile", "Structural", "Section Profile")]
             public Angle(string name, double depth, double width, double webThickness, double flangeThickness)
             {
                 this.name = name;
@@ -131,7 +131,7 @@ namespace Objects.Structural.Properties
 
             public Channel() { }
 
-            [SchemaInfo("Channel", "Creates a Speckle structural channel section profile", "Structural", "Properties")]
+            [SchemaInfo("Channel", "Creates a Speckle structural channel section profile", "Structural", "Section Profile")]
             public Channel(string name, double depth, double width, double webThickness, double flangeThickness)
             {
                 this.name = name;
@@ -150,7 +150,7 @@ namespace Objects.Structural.Properties
 
             public Perimeter() { }
 
-            [SchemaInfo("Perimeter", "Creates a Speckle structural section profile defined by a perimeter curve and, if applicable, a list of void curves", "Structural", "Properties")]
+            [SchemaInfo("Perimeter", "Creates a Speckle structural section profile defined by a perimeter curve and, if applicable, a list of void curves", "Structural", "Section Profile")]
             public Perimeter(string name, ICurve outline, List<ICurve> voids = null)
             {
                 this.name = name;
@@ -168,13 +168,13 @@ namespace Objects.Structural.Properties
 
             public Catalogue() { }
 
-            [SchemaInfo("Catalogue (by description)", "Creates a Speckle structural section profile based on a catalogue section description", "Structural", "Properties")]
+            [SchemaInfo("Catalogue (by description)", "Creates a Speckle structural section profile based on a catalogue section description", "Structural", "Section Profile")]
             public Catalogue(string description)
             {
                 this.description = description;
             }
 
-            [SchemaInfo("Catalogue", "Creates a Speckle structural section profile", "Structural", "Properties")]
+            [SchemaInfo("Catalogue", "Creates a Speckle structural section profile", "Structural", "Section Profile")]
             public Catalogue(string name, string catalogueName, string sectionType, string sectionName)
             {
                 this.name = name;
@@ -188,7 +188,7 @@ namespace Objects.Structural.Properties
         {
             public Explicit() { }
 
-            [SchemaInfo("Explicit", "Creates a Speckle structural section profile based on explicitly defining geometric properties", "Structural", "Properties")]
+            [SchemaInfo("Explicit", "Creates a Speckle structural section profile based on explicitly defining geometric properties", "Structural", "Section Profile")]
             public Explicit(string name, double area, double Iyy, double Izz, double J, double Ky, double Kz)
             {
                 this.name = name;
