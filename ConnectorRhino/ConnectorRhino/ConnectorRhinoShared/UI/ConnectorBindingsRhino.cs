@@ -134,7 +134,7 @@ namespace SpeckleRhino
       return objs;
     }
 
-    public override string GetHostAppName() => Applications.Rhino;
+    public override string GetHostAppName() => Utils.RhinoAppName;
 
     public override string GetDocumentId()
     {
@@ -190,7 +190,7 @@ namespace SpeckleRhino
     public override async Task<StreamState> ReceiveStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.Rhino);
+      var converter = kit.LoadConverter(Utils.RhinoAppName);
 
       if (converter == null)
       {

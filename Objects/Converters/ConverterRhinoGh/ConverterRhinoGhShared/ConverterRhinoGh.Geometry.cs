@@ -618,6 +618,31 @@ namespace Objects.Converter.RhinoGh
       return speckleMesh;
     }
 
+#if RHINO7
+    public Mesh MeshToSpeckle(RH.SubD mesh, string units = null)
+    {
+      var u = units ?? ModelUnits;
+
+      var vertices = new List<Point3d>();
+      foreach (var subDVertex in mesh.Vertices)
+      {
+        vertices.Add(subDVertex.ControlNetPoint);
+      }
+      var verts = PointsToFlatArray(vertices);
+
+      var Faces = mesh.Faces.SelectMany(face =>
+      {
+        if (face.VertexCount == 4) return new int[] { 1, mesh.Vertices.FindIndex(face.VertexAt(0)), mesh.Vertices.FindIndex(face.VertexAt(1)), vertices.FindIndex(face.VertexAt(2)), vertices.FindIndex(face.VertexAt(3)) };
+        return new int[] { 0, vertices.FindIndex(face.VertexAt(0)), vertices.FindIndex(face.VertexAt(1)), vertices.FindIndex(face.VertexAt(2)) };
+      }).ToArray();
+
+      var speckleMesh = new Mesh(verts, Faces, null, null, u);
+      speckleMesh.bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)), u);
+
+      return speckleMesh;
+    }
+#endif
+
     public RH.Mesh MeshToNative(Mesh mesh)
     {
       RH.Mesh m = new RH.Mesh();
@@ -742,7 +767,7 @@ namespace Objects.Converter.RhinoGh
       joinedMesh.Vertices.CombineIdentical(true, true);
       joinedMesh.Compact();
 
-      var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: Applications.Rhino, units: u);
+      var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: RhinoAppName, units: u);
 
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices

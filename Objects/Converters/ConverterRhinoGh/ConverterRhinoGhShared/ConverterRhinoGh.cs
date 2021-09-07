@@ -37,12 +37,20 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh : ISpeckleConverter
   {
+#if RHINO6
+    public static string RhinoAppName = Applications.Rhino6;
+    public static string GrasshopperAppName = Applications.Grasshopper6;
+#elif RHINO7
+    public static string RhinoAppName = Applications.Rhino7;
+    public static string GrasshopperAppName = Applications.Grasshopper7;
+#endif
+
     public string Description => "Default Speckle Kit for Rhino & Grasshopper";
     public string Name => nameof(ConverterRhinoGh);
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
 
-    public IEnumerable<string> GetServicedApplications() => new string[] { Applications.Rhino, Applications.Grasshopper };
+    public IEnumerable<string> GetServicedApplications() => new string[] { RhinoAppName, GrasshopperAppName };
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
@@ -148,6 +156,14 @@ namespace Objects.Converter.RhinoGh
         case RH.Mesh o:
           @base = MeshToSpeckle(o);
           break;
+#if RHINO7
+        case RH.SubD o:
+          if (o.HasBrepForm)
+            @base = BrepToSpeckle(o.ToBrep());
+          else
+            @base = MeshToSpeckle(o);
+          break;
+#endif
         case RH.Extrusion o:
           @base = BrepToSpeckle(o);
           break;
@@ -396,6 +412,9 @@ namespace Objects.Converter.RhinoGh
         case NurbsCurve _:
         case RH.Box _:
         case RH.Mesh _:
+#if RHINO7
+case RH.SubD _:
+#endif
         case RH.Extrusion _:
         case RH.Brep _:
         case NurbsSurface _:

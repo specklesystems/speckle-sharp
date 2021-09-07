@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Objects.Converter.RhinoGh6</AssemblyName>
-    <RootNamespace>Objects.Converter.RhinoGh</RootNamespace>
-    <PackageId>Speckle.Objects.Converter.RhinoGh6</PackageId>
+    <AssemblyName>Objects.Converter.Rhino6</AssemblyName>
+    <RootNamespace>Objects.Converter.Rhino</RootNamespace>
+    <PackageId>Speckle.Objects.Converter.Rhino6</PackageId>
     <Version>2.1.0</Version>
     <Authors>Speckle</Authors>
     <Description>Converter for Rhino and Grasshopper</Description>
@@ -18,7 +18,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;RHINOGH6</DefineConstants>
+    <DefineConstants>TRACE;RHINO6</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;RHINO6</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

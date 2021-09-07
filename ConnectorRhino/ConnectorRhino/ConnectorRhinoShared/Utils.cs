@@ -13,6 +13,13 @@ namespace SpeckleRhino
 {
   public static class Utils
   {
+#if RHINO6
+    public static string RhinoAppName = Applications.Rhino6;
+    public static string AppName = "Rhino";
+#elif RHINO7
+    public static string RhinoAppName = Applications.Rhino7;
+    public static string AppName = "Rhino";
+#endif
     #region extension methods
     /// <summary>
     /// Finds a layer from its full path
