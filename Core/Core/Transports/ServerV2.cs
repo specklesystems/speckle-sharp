@@ -26,6 +26,9 @@ namespace Speckle.Core.Transports
     public Action<string, int> OnProgressAction { get; set; }
     public Action<string, Exception> OnErrorAction { get; set; }
 
+    public int TotalSentBytes { get; set; } = 0;
+    public int SavedObjectCount { get; private set; } = 0;
+
     public Account Account { get; set; }
     public string BaseUri { get; private set; }
     public string StreamId { get; set; }
@@ -60,6 +63,8 @@ namespace Speckle.Core.Transports
       Api = new ParallelServerApi(BaseUri, AuthorizationToken, TimeoutSeconds);
       Api.OnBatchSent = (num, size) => {
         OnProgressAction?.Invoke(TransportName, num);
+        TotalSentBytes += size;
+        SavedObjectCount += num;
       };
     }
 
@@ -137,6 +142,9 @@ namespace Speckle.Core.Transports
     {
       if (ShouldSendThreadRun || SendingThread != null)
         throw new Exception("ServerTransport already sending");
+      TotalSentBytes = 0;
+      SavedObjectCount = 0;
+
       ShouldSendThreadRun = true;
       SendingThread = new Thread(new ThreadStart(SendingThreadMain));
       SendingThread.IsBackground = true;
@@ -241,6 +249,8 @@ namespace Speckle.Core.Transports
           OnProgressAction?.Invoke(TransportName, hasObjects.Count - newObjects.Count);
 
           await Api.UploadObjects(StreamId, newObjects);
+
+          
         }
         catch(Exception ex)
         {
