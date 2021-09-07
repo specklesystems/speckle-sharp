@@ -430,7 +430,7 @@ namespace SpeckleRhino
     public override async Task<StreamState> SendStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.Rhino);
+      var converter = kit.LoadConverter(Utils.RhinoAppName);
       converter.SetContextDocument(Doc);
       Exceptions.Clear();
 
@@ -584,7 +584,7 @@ namespace SpeckleRhino
         objectId = commitObjId,
         branchName = state.Branch.name,
         message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from Rhino.",
-        sourceApplication = Applications.Rhino
+        sourceApplication = Utils.RhinoAppName
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }

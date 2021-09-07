@@ -624,16 +624,18 @@ namespace Objects.Converter.RhinoGh
       var u = units ?? ModelUnits;
 
       var vertices = new List<Point3d>();
-      foreach (var subDVertex in mesh.Vertices)
+      var subDVertices = new List<SubDVertex>();
+      for(int i = 0 ; i < mesh.Vertices.Count; i++)
       {
-        vertices.Add(subDVertex.ControlNetPoint);
+        vertices.Add(mesh.Vertices.Find(i).ControlNetPoint);
+        subDVertices.Add(mesh.Vertices.Find(i));
       }
       var verts = PointsToFlatArray(vertices);
 
       var Faces = mesh.Faces.SelectMany(face =>
       {
-        if (face.VertexCount == 4) return new int[] { 1, mesh.Vertices.FindIndex(face.VertexAt(0)), mesh.Vertices.FindIndex(face.VertexAt(1)), vertices.FindIndex(face.VertexAt(2)), vertices.FindIndex(face.VertexAt(3)) };
-        return new int[] { 0, vertices.FindIndex(face.VertexAt(0)), vertices.FindIndex(face.VertexAt(1)), vertices.FindIndex(face.VertexAt(2)) };
+        if (face.VertexCount == 4) return new int[] { 1, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)), subDVertices.IndexOf(face.VertexAt(3)) };
+        return new int[] { 0, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)) };
       }).ToArray();
 
       var speckleMesh = new Mesh(verts, Faces, null, null, u);

@@ -159,7 +159,7 @@ namespace Objects.Converter.RhinoGh
 #if RHINO7
         case RH.SubD o:
           if (o.HasBrepForm)
-            @base = BrepToSpeckle(o.ToBrep());
+            @base = BrepToSpeckle(o.ToBrep(new SubDToBrepOptions()));
           else
             @base = MeshToSpeckle(o);
           break;
