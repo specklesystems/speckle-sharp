@@ -16,27 +16,27 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorRhinoShared", "ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.shproj", "{B7376EC8-5D3E-47D2-96A7-748552F14C39}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRhino6", "ConnectorRhino6\ConnectorRhino6.csproj", "{D648BB69-B992-4D34-906E-7A547374B86C}"
-	ProjectSection(ProjectDependencies) = postProject
-		{883DFE7C-529F-4608-BF9A-086D7DB63BFF} = {883DFE7C-529F-4608-BF9A-086D7DB63BFF}
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterRhinoGh", "ConverterRhinoGh", "{F415936B-1E0C-4218-B8A8-E54F15549BBB}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterRhinoGhShared", "..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.shproj", "{B74CB8C1-187B-46A6-B20B-92B8C129F3EE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhinoGh6", "..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGh6\ConverterRhinoGh6.csproj", "{883DFE7C-529F-4608-BF9A-086D7DB63BFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRhino7", "ConnectorRhino7\ConnectorRhino7.csproj", "{BD4DC7A6-DB3E-409D-BA8F-B831E36731B6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhinoGh7", "..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGh7\ConverterRhinoGh7.csproj", "{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino6", "..\Objects\Converters\ConverterRhinoGh\ConverterRhino6\ConverterRhino6.csproj", "{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRhino7", "ConnectorRhino7\ConnectorRhino7.csproj", "{BD4DC7A6-DB3E-409D-BA8F-B831E36731B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino7", "..\Objects\Converters\ConverterRhinoGh\ConverterRhino7\ConverterRhino7.csproj", "{6C851417-514B-4E45-9553-408377535B68}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRhino7Test", "ConnectorRhino7Test\ConnectorRhino7Test.csproj", "{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{2e66472e-5a50-4208-b5e7-da843d6fa1ad}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{883dfe7c-529f-4608-bf9a-086d7db63bff}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{6c851417-514b-4e45-9553-408377535b68}*SharedItemsImports = 5
+		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{a64acbf9-db82-4839-af99-57ed2e7989f4}*SharedItemsImports = 4
 		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{b7376ec8-5d3e-47d2-96a7-748552f14c39}*SharedItemsImports = 13
 		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b74cb8c1-187b-46a6-b20b-92b8c129f3ee}*SharedItemsImports = 13
 		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{d648bb69-b992-4d34-906e-7a547374b86c}*SharedItemsImports = 4
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{f1703d03-3edb-4389-add9-39c52c6aea19}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,22 +77,6 @@ Global
 		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|x64.ActiveCfg = Release|Any CPU
 		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|x64.Build.0 = Release|Any CPU
-		{883DFE7C-529F-4608-BF9A-086D7DB63BFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{883DFE7C-529F-4608-BF9A-086D7DB63BFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{883DFE7C-529F-4608-BF9A-086D7DB63BFF}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{883DFE7C-529F-4608-BF9A-086D7DB63BFF}.Debug|x64.Build.0 = Debug|Any CPU
-		{883DFE7C-529F-4608-BF9A-086D7DB63BFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{883DFE7C-529F-4608-BF9A-086D7DB63BFF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{883DFE7C-529F-4608-BF9A-086D7DB63BFF}.Release|x64.ActiveCfg = Release|Any CPU
-		{883DFE7C-529F-4608-BF9A-086D7DB63BFF}.Release|x64.Build.0 = Release|Any CPU
-		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}.Debug|x64.Build.0 = Debug|Any CPU
-		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}.Release|x64.ActiveCfg = Release|Any CPU
-		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD}.Release|x64.Build.0 = Release|Any CPU
 		{BD4DC7A6-DB3E-409D-BA8F-B831E36731B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BD4DC7A6-DB3E-409D-BA8F-B831E36731B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD4DC7A6-DB3E-409D-BA8F-B831E36731B6}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -101,6 +85,30 @@ Global
 		{BD4DC7A6-DB3E-409D-BA8F-B831E36731B6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BD4DC7A6-DB3E-409D-BA8F-B831E36731B6}.Release|x64.ActiveCfg = Release|Any CPU
 		{BD4DC7A6-DB3E-409D-BA8F-B831E36731B6}.Release|x64.Build.0 = Release|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Debug|x64.Build.0 = Debug|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Release|x64.ActiveCfg = Release|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Release|x64.Build.0 = Release|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Debug|x64.Build.0 = Debug|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Release|x64.ActiveCfg = Release|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Release|x64.Build.0 = Release|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Debug|x64.Build.0 = Debug|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Release|x64.ActiveCfg = Release|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,9 +120,10 @@ Global
 		{D648BB69-B992-4D34-906E-7A547374B86C} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
 		{F415936B-1E0C-4218-B8A8-E54F15549BBB} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
 		{B74CB8C1-187B-46A6-B20B-92B8C129F3EE} = {F415936B-1E0C-4218-B8A8-E54F15549BBB}
-		{883DFE7C-529F-4608-BF9A-086D7DB63BFF} = {F415936B-1E0C-4218-B8A8-E54F15549BBB}
-		{2E66472E-5A50-4208-B5E7-DA843D6FA1AD} = {F415936B-1E0C-4218-B8A8-E54F15549BBB}
 		{BD4DC7A6-DB3E-409D-BA8F-B831E36731B6} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19} = {F415936B-1E0C-4218-B8A8-E54F15549BBB}
+		{6C851417-514B-4E45-9553-408377535B68} = {F415936B-1E0C-4218-B8A8-E54F15549BBB}
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1BFED19F-741B-4E11-95C0-753E2058B3D2}

@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D648BB69-B992-4D34-906E-7A547374B86C}</ProjectGuid>
+    <ProjectGuid>{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SpeckleConnectorRhino</RootNamespace>
@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;RHINO6</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;RHINO7</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
@@ -28,29 +28,21 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;RHINO6</DefineConstants>
+    <DefineConstants>TRACE;RHINO7</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Drawing" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj">
-      <Project>{6321ca2d-5275-42a3-a034-170a0040e19e}</Project>
-      <Name>Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\DesktopUI\DesktopUI\DesktopUI.csproj">
-      <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
-      <Name>DesktopUI</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MSBuild.AssemblyVersion">
@@ -62,10 +54,10 @@
       <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="RhinoCommon">
-      <Version>6.28.20199.17141</Version>
+      <Version>7.4.21078.1001</Version>
     </PackageReference>
     <PackageReference Include="RhinoWindows">
-      <Version>6.28.20199.17141</Version>
+      <Version>7.4.21078.1001</Version>
     </PackageReference>
     <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework">
       <Version>1.0.115</Version>
@@ -73,6 +65,16 @@
     <PackageReference Include="System.Data.SQLite.Core">
       <Version>1.0.115</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj">
+      <Project>{6321ca2d-5275-42a3-a034-170a0040e19e}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DesktopUI\DesktopUI\DesktopUI.csproj">
+      <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
+      <Name>DesktopUI</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
