@@ -42,7 +42,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       ui.CancelSendStreamButton.Click += CancelSendStreamButtonClick;
 
 
-      nodeView.grid.ContextMenu.Items.Add(new Separator());
+      //nodeView.grid.ContextMenu.Items.Add(new Separator());
     }
 
     private void CancelSendStreamButtonClick(object sender, RoutedEventArgs e)
