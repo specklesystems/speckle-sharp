@@ -193,6 +193,56 @@ namespace Objects.Converter.Revit
 
     }
 
+    public SpaceSeparationLine SpaceSeparationLineToSpeckle(DB.ModelCurve revitCurve)
+    {
+      var speckleCurve = new SpaceSeparationLine(CurveToSpeckle(revitCurve.GeometryCurve));
+      speckleCurve.elementId = revitCurve.Id.ToString();
+      speckleCurve.applicationId = revitCurve.UniqueId;
+      speckleCurve.units = ModelUnits;
+      return speckleCurve;
+    }
+
+    public ApplicationPlaceholderObject SpaceSeparationLineToNative(SpaceSeparationLine speckleCurve)
+    {
+      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
+      var baseCurve = CurveToNative(speckleCurve.baseCurve);
+
+      // try update existing (update model curve geometry curve based on speckle curve)
+      if (docObj != null)
+      {
+        try
+        {
+          var docCurve = docObj as DB.ModelCurve;
+          var revitGeom = docCurve.GeometryCurve;
+          var speckleGeom = baseCurve.get_Item(0);
+          bool fullOverlap = speckleGeom.Intersect(revitGeom) == SetComparisonResult.Equal;
+          if (!fullOverlap)
+          {
+              docCurve.SetGeometryCurve(speckleGeom, false);
+          }
+          return new ApplicationPlaceholderObject()
+          { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docCurve.UniqueId, NativeObject = docCurve };
+        }
+        catch
+        {
+              //delete and try to create new line as fallback
+              Doc.Delete(docObj.Id);
+        }
+      }
+
+      try
+      {
+          var res = Doc.Create.NewSpaceBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
+          return new ApplicationPlaceholderObject()
+          { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res };
+      }
+      catch (Exception)
+      {
+          ConversionErrors.Add(new Exception("Space separation line creation failed\nView is not valid for space separation line creation."));
+          throw;
+      }        
+    }
+
     /// <summary>
     /// Credits: Grevit
     /// Creates a new Sketch Plane from a Curve
