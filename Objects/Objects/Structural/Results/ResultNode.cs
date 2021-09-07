@@ -19,7 +19,7 @@ namespace Objects.Structural.Results
         public List<ResultNode> resultsNode { get; set; }
         public ResultSetNode() { }
 
-        [SchemaInfo("ResultSetNode", "Creates a Speckle node result set object")]
+        [SchemaInfo("ResultSetNode", "Creates a Speckle node result set object", "Structural", "Results")]
         public ResultSetNode(List<ResultNode> resultsNode)
         {
             this.resultsNode = resultsNode;
@@ -62,7 +62,7 @@ namespace Objects.Structural.Results
         public double accZZ { get; set; }
         public ResultNode() { }
 
-        [SchemaInfo("ResultNode (load case)", "Creates a Speckle structural nodal result object")]
+        [SchemaInfo("ResultNode (load case)", "Creates a Speckle structural nodal result object", "Structural", "Results")]
         public ResultNode(LoadCase resultCase, Node node, double dispX, double dispY, double dispZ, double rotXX, double rotYY, double rotZZ, double reactionX, double reactionY, double reactionZ, double reactionXX, double reactionYY, double reactionZZ, double constraintX, double constraintY, double constraintZ, double constraintXX, double constraintYY, double constraintZZ, double velX, double velY, double velZ, double velXX, double velYY, double velZZ, double accX, double accY, double accZ, double accXX, double accYY, double accZZ)
         {
             this.resultCase = resultCase;
@@ -99,7 +99,7 @@ namespace Objects.Structural.Results
             this.accZZ = accZZ;
         }
 
-        [SchemaInfo("ResultNode (load combination)", "Creates a Speckle structural nodal result object")]
+        [SchemaInfo("ResultNode (load combination)", "Creates a Speckle structural nodal result object", "Structural", "Results")]
         public ResultNode(LoadCombination resultCase, Node node, double dispX, double dispY, double dispZ, double rotXX, double rotYY, double rotZZ, double reactionX, double reactionY, double reactionZ, double reactionXX, double reactionYY, double reactionZZ, double constraintX, double constraintY, double constraintZ, double constraintXX, double constraintYY, double constraintZZ, double velX, double velY, double velZ, double velXX, double velYY, double velZZ, double accX, double accY, double accZ, double accXX, double accYY, double accZZ)
         {
             this.resultCase = resultCase;

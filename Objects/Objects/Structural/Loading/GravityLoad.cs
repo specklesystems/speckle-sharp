@@ -17,7 +17,7 @@ namespace Objects.Structural.Loading
         public Vector gravityFactors { get; set; }
         public GravityLoad(){}
 
-        [SchemaInfo("GravityLoad", "Creates a Speckle structural gravity load (applied to all nodes and elements)")]
+        [SchemaInfo("GravityLoad", "Creates a Speckle structural gravity load (applied to all nodes and elements)", "Structural", "Loading")]
         public GravityLoad(string name, LoadCase loadCase, Vector gravityFactors = null)
         {
             this.name = name;
@@ -25,7 +25,7 @@ namespace Objects.Structural.Loading
             this.gravityFactors = gravityFactors == null ? new Vector(0, 0, -1) : gravityFactors;
         }
 
-        [SchemaInfo("GravityLoad (specified elements)", "Creates a Speckle structural gravity load (applied to specified elements)")]
+        [SchemaInfo("GravityLoad (specified elements)", "Creates a Speckle structural gravity load (applied to specified elements)", "Structural", "Loading")]
         public GravityLoad(string name, LoadCase loadCase, List<Base> elements, Vector gravityFactors = null)
         {
             this.name = name;
@@ -34,7 +34,7 @@ namespace Objects.Structural.Loading
             this.gravityFactors = gravityFactors == null ? new Vector(0, 0, -1) : gravityFactors;
         }
 
-        [SchemaInfo("GravityLoad (specified elements and nodes)", "Creates a Speckle structural gravity load (applied to specified nodes and elements)")]
+        [SchemaInfo("GravityLoad (specified elements and nodes)", "Creates a Speckle structural gravity load (applied to specified nodes and elements)", "Structural", "Loading")]
         public GravityLoad(string name, LoadCase loadCase, List<Base> elements, List<Base> nodes, Vector gravityFactors = null)
         {
             this.name = name;

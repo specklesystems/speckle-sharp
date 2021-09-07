@@ -35,13 +35,13 @@ namespace Objects.Structural.Properties
         public double frictionCoefficient { get; set; }
         public PropertySpring() { }
 
-        [SchemaInfo("PropertySpring", "Creates a Speckle structural spring property")]
+        [SchemaInfo("PropertySpring", "Creates a Speckle structural spring property", "Structural", "Properties")]
         public PropertySpring(string name)
         {
             this.name = name;
         }
 
-        [SchemaInfo("PropertySpring (linear/elastic)", "Creates a Speckle structural spring property (linear/elastic spring)")]
+        [SchemaInfo("PropertySpring (linear/elastic)", "Creates a Speckle structural spring property (linear/elastic spring)", "Structural", "Properties")]
         public PropertySpring(string name, double stiffnessX = 0, double stiffnessY = 0, double stiffnessZ = 0, double stiffnessXX = 0, double stiffnessYY = 0, double stiffnessZZ = 0, double dampingRatio = 0)
         {
             this.name = name;
@@ -55,7 +55,7 @@ namespace Objects.Structural.Properties
             this.dampingRatio = dampingRatio;
         }
 
-        [SchemaInfo("PropertySpring (non-linear)", "Creates a Speckle structural spring property (non-linear spring)")]
+        [SchemaInfo("PropertySpring (non-linear)", "Creates a Speckle structural spring property (non-linear spring)", "Structural", "Properties")]
         public PropertySpring(string name, double springCurveX = 0, double stiffnessX = 0, double springCurveY = 0, double stiffnessY = 0, double springCurveZ = 0, double stiffnessZ = 0, double springCurveXX = 0, double stiffnessXX = 0, double springCurveYY = 0, double stiffnessYY = 0, double springCurveZZ = 0, double stiffnessZZ = 0, double dampingRatio = 0)
         {
             this.name = name;

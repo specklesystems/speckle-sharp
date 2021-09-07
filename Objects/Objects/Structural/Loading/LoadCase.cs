@@ -15,7 +15,7 @@ namespace Objects.Structural.Loading
         public string description { get; set; } //category as alternative, ex. Offices – Cat.B, assembly area     
         public LoadCase() { }
 
-        [SchemaInfo("LoadCase", "Creates a Speckle structural load case")]
+        [SchemaInfo("LoadCase", "Creates a Speckle structural load case", "Structural", "Loading")]
         public LoadCase(string name, LoadType loadType, string source = null, ActionType actionType = ActionType.None, string description = null) 
         {
             this.name = name;

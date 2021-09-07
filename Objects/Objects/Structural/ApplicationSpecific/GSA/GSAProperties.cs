@@ -4,6 +4,7 @@ using Speckle.Core.Models;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Properties;
+using Objects.Structural.Properties.Profiles;
 using Objects.Structural.Materials;
 
 namespace Objects.Structural.GSA.Properties
@@ -41,7 +42,7 @@ namespace Objects.Structural.GSA.Properties
         public string colour { get; set; }
         public GSAProperty2D() { }
 
-        [SchemaInfo("GSAProperty2D", "Creates a Speckle structural 2D element property for GSA")]
+        [SchemaInfo("GSAProperty2D", "Creates a Speckle structural 2D element property for GSA", "GSA", "Properties")]
         public GSAProperty2D(int nativeId, string name, Material material, double thickness)
         {
             this.nativeId = nativeId;

@@ -18,7 +18,7 @@ namespace Objects.Structural.Materials
         public double maxStrain { get; set; }
         public Steel() { }
 
-        [SchemaInfo("Steel", "Creates a Speckle structural material for steel (to be used in structural analysis models)")]
+        [SchemaInfo("Steel", "Creates a Speckle structural material for steel (to be used in structural analysis models)", "Structural", "Materials")]
         public Steel(string name, string grade = null, double yieldStrength = 0, double ultimateStrength = 0, double density = 0, double youngsModulus = 0, double shearModulus = 0, double poissonsRatio = 0, double thermalExpansivity = 0) 
         {
             this.name = name;

@@ -18,13 +18,13 @@ namespace Objects.Structural.Geometry
         public string units { get; set; }
         public Restraint() { }
 
-        [SchemaInfo("Restraint (by code)", "Creates a Speckle restraint object")]
+        [SchemaInfo("Restraint (by code)", "Creates a Speckle restraint object", "Structural", "Geometry")]
         public Restraint([SchemaParamInfo("A 6-character string to describe the restraint condition (F = Fixed, R = Released) for each degree of freedom - the first 3 characters represent translational degrees of freedom in the X, Y, and Z axes and the last 3 characters represent rotational degrees of freedom about the X, Y, and Z axes (ex. FFFRRR denotes a pinned condition, FFFFFF denotes a fixed condition)")] string code)
         {
             this.code = code.ToUpper();
         }
 
-        [SchemaInfo("Restraint (by code and stiffness)", "Creates a Speckle restraint object (to describe support conditions with an explicit stiffness)")]
+        [SchemaInfo("Restraint (by code and stiffness)", "Creates a Speckle restraint object (to describe support conditions with an explicit stiffness)", "Structural", "Geometry")]
         public Restraint([SchemaParamInfo("A 6-character string to describe the restraint condition (F = Fixed, R = Released, K = Stiffness) for each degree of freedom - the first 3 characters represent translational degrees of freedom in the X, Y, and Z axes and the last 3 characters represent rotational degrees of freedom about the X, Y, and Z axes (ex. FFSRRR denotes fixed translation about the x and y axis, a spring stiffness for translation in the z axis and releases for all rotational degrees of freedom)")] string code, 
             [SchemaParamInfo("Applies only if the restraint code character for translation in x is 'K'")] double stiffnessX = 0, 
             [SchemaParamInfo("Applies only if the restraint code character for translation in y is 'K'")] double stiffnessY = 0, 
@@ -42,7 +42,7 @@ namespace Objects.Structural.Geometry
             this.stiffnessZZ = code[5] == 'K' || code[5] == 'k' ? stiffnessZZ : 0;
         }
 
-        [SchemaInfo("Restraint (by enum)", "Creates a Speckle restraint object (for pinned condition or fixed condition)")]
+        [SchemaInfo("Restraint (by enum)", "Creates a Speckle restraint object (for pinned condition or fixed condition)", "Structural", "Geometry")]
         public Restraint(RestraintType restraintType)
         {
             if (restraintType == RestraintType.Free)

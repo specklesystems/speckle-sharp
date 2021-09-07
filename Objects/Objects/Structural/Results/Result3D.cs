@@ -12,6 +12,7 @@ namespace Objects.Structural.Results
         [DetachProperty]
         public List<Result3D> results3D { get; set; }
         public ResultSet3D() { }
+        [SchemaInfo("ResultSet3D", "Creates a Speckle 3D element result set object", "Structural", "Results")]
         public ResultSet3D(List<Result3D> results3D)
         {
             this.results3D = results3D;
@@ -34,7 +35,7 @@ namespace Objects.Structural.Results
         public double stressZX { get; set; }
         public Result3D() { }
 
-        [SchemaInfo("Result3D (load case)", "Creates a Speckle 3D element result object (for load case)")]
+        [SchemaInfo("Result3D (load case)", "Creates a Speckle 3D element result object (for load case)", "Structural", "Results")]
         public Result3D(Element3D element, LoadCase resultCase, List<double> position, double dispX, double dispY, double dispZ, double stressXX, double stressYY, double stressZZ, double stressXY, double stressYZ, double stressZX)
         {
             this.element = element;
@@ -51,7 +52,7 @@ namespace Objects.Structural.Results
             this.stressZX = stressZX;
         }
 
-        [SchemaInfo("Result3D (load combination)", "Creates a Speckle 3D element result object (for load combination)")]
+        [SchemaInfo("Result3D (load combination)", "Creates a Speckle 3D element result object (for load combination)", "Structural", "Results")]
         public Result3D(Element3D element, LoadCombination resultCase, List<double> position, double dispX, double dispY, double dispZ, double stressXX, double stressYY, double stressZZ, double stressXY, double stressYZ, double stressZX)
         {
             this.element = element;

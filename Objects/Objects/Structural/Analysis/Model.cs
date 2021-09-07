@@ -46,7 +46,7 @@ namespace Objects.Structural.Analysis
         /// <param name="restraints"></param>
         /// <param name="properties"></param>
         /// <param name="materials"></param>
-        [SchemaInfo("Model", "Creates a Speckle structural model object")]
+        [SchemaInfo("Model", "Creates a Speckle structural model object", "Structural", "Analysis")]
         public Model(ModelInfo specs, List<Base> nodes, List<Base> elements, List<Base> loads, List<Base> restraints, List<Base> properties, List<Base> materials) 
         {
             this.specs = specs;

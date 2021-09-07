@@ -22,13 +22,13 @@ namespace Objects.Structural.Properties
         public double massModifierZ { get; set; }
         public PropertyMass() { }
 
-        [SchemaInfo("PropertyMass", "Creates a Speckle structural mass property")]
+        [SchemaInfo("PropertyMass", "Creates a Speckle structural mass property", "Structural", "Properties")]
         public PropertyMass(string name)
         {
             this.name = name;
         }
 
-        [SchemaInfo("PropertyMass (general)", "Creates a Speckle structural mass property")]
+        [SchemaInfo("PropertyMass (general)", "Creates a Speckle structural mass property", "Structural", "Properties")]
         public PropertyMass(string name, double mass, double inertiaXX = 0, double inertiaYY = 0, double inertiaZZ = 0, double inertiaXY = 0, double inertiaYZ = 0, double inertiaZX = 0, bool massModified = false, double massModifierX = 0, double massModifierY = 0, double massModifierZ = 0)
         {
             this.name = name;

@@ -13,7 +13,7 @@ namespace Objects.Structural.Results
         public List<Result1D> results1D { get; set; }
         public ResultSet1D() { }
 
-        [SchemaInfo("ResultSet1D", "Creates a Speckle 1D element result set object")]
+        [SchemaInfo("ResultSet1D", "Creates a Speckle 1D element result set object", "Structural", "Results")]
         public ResultSet1D(List<Result1D> results1D)
         {
             this.results1D = results1D;
@@ -48,7 +48,7 @@ namespace Objects.Structural.Results
         public double combinedStressMin { get; set; } //minimum extreme fibre longitudinal stress due to axial forces and transverse bending
         public Result1D() { }
 
-        [SchemaInfo("Result1D (load case)", "Creates a Speckle 1D element result object (for load case)")]
+        [SchemaInfo("Result1D (load case)", "Creates a Speckle 1D element result object (for load case)", "Structural", "Results")]
         public Result1D(Element1D element, LoadCase resultCase, double position, double dispX, double dispY, double dispZ, double rotXX, double rotYY, double rotZZ, double forceX, double forceY, double forceZ, double momentXX, double momentYY, double momentZZ, double axialStress, double shearStressY, double shearStressZ, double bendingStressYPos, double bendingStressYNeg, double bendingStressZPos, double bendingStressZNeg, double combinedStressMax, double combinedStressMin)
         {
             this.element = element;
@@ -77,7 +77,7 @@ namespace Objects.Structural.Results
             this.combinedStressMin = combinedStressMin;
         }
 
-        [SchemaInfo("Result1D (load combination)", "Creates a Speckle 1D element result object (for load combination)")]
+        [SchemaInfo("Result1D (load combination)", "Creates a Speckle 1D element result object (for load combination)", "Structural", "Results")]
         public Result1D(Element1D element, LoadCombination resultCase, double position, double dispX, double dispY, double dispZ, double rotXX, double rotYY, double rotZZ, double forceX, double forceY, double forceZ, double momentXX, double momentYY, double momentZZ, double axialStress, double shearStressY, double shearStressZ, double bendingStressYPos, double bendingStressYNeg, double bendingStressZPos, double bendingStressZNeg, double combinedStressMax, double combinedStressMin)
         {
             this.element = element;
