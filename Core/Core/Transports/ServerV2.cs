@@ -44,6 +44,7 @@ namespace Speckle.Core.Transports
     public ServerTransportV2(Account account, string streamId, int timeoutSeconds = 60)
     {
       Account = account;
+      CancellationToken = CancellationToken.None;
       Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
     }
 

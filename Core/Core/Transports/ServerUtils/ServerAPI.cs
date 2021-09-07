@@ -34,10 +34,10 @@ namespace Speckle.Core.Transports.ServerUtils
     /// </summary>
     public Action<int, int> OnBatchSent { get; set; }
 
-    public ServerApi(string baseUri, string authorizationToken, int timeoutSeconds = 60, CancellationToken cancellationToken = default(CancellationToken))
+    public ServerApi(string baseUri, string authorizationToken, int timeoutSeconds = 60)
     {
       BaseUri = baseUri;
-      CancellationToken = cancellationToken;
+      CancellationToken = CancellationToken.None;
 
       Client = new HttpClient(new HttpClientHandler()
       {

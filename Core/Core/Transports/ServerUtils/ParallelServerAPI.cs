@@ -38,6 +38,7 @@ namespace Speckle.Core.Transports.ServerUtils
       AuthToken = authorizationToken;
       TimeoutSeconds = timeoutSeconds;
       NumThreads = numThreads;
+      CancellationToken = CancellationToken.None;
 
       Tasks = new BlockingCollection<(ServerApiOperation, object, TaskCompletionSource<object>)>(numBufferedOperations);
     }
@@ -84,9 +85,10 @@ namespace Speckle.Core.Transports.ServerUtils
 
     private void ThreadMain()
     {
-      using (ServerApi api = new ServerApi(BaseUri, AuthToken, TimeoutSeconds, CancellationToken))
+      using (ServerApi api = new ServerApi(BaseUri, AuthToken, TimeoutSeconds))
       {
         api.OnBatchSent = (num, size) => { lock (CallbackLock) OnBatchSent(num, size); };
+        api.CancellationToken = CancellationToken;
 
         while (true)
         {
