@@ -14,7 +14,6 @@ namespace Objects.Structural.Properties
 
         [DetachProperty]
         public Material material { get; set; }
-        public string grade { get; set; } //design material
 
         [DetachProperty]
         public SectionProfile profile { get; set; } //section description

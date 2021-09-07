@@ -31,7 +31,7 @@ namespace Objects.Structural.Properties.Profiles
             public Rectangular() { }
 
             [SchemaInfo("Rectangular", "Creates a Speckle structural rectangular section profile", "Structural", "Section Profile")]
-            public Rectangular(string name, double depth, double width, double webThickness, double flangeThickness)
+            public Rectangular(string name, double depth, double width, double webThickness = 0, double flangeThickness = 0)
             {
                 this.name = name;                
                 this.depth = depth;
@@ -45,16 +45,16 @@ namespace Objects.Structural.Properties.Profiles
         public class Circular : SectionProfile
         {
             public double radius { get; set; }
-            public double thickness { get; set; }
+            public double wallThickness { get; set; }
 
             public Circular() { }
 
             [SchemaInfo("Circular", "Creates a Speckle structural circular section profile", "Structural", "Section Profile")]
-            public Circular(string name, double radius, double thickness)
+            public Circular(string name, double radius, double wallThickness = 0)
             {
                 this.name = name;
                 this.radius = radius;
-                this.thickness = thickness;
+                this.wallThickness = wallThickness;
                 this.shapeType = ShapeType.Circular;
             }
         }
