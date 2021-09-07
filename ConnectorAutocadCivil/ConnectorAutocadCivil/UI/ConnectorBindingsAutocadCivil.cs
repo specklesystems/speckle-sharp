@@ -95,7 +95,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return objs;
     }
 
-    public override string GetHostAppName() => Utils.AutocadAppName;
+    public override string GetHostAppName() => Utils.AutocadAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
 
     public override string GetDocumentId()
     {
@@ -304,7 +304,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                     {
                       convertedEntity.LineWeight = Utils.GetLineWeight((double)lineWidth);
                     }
-                      
+
                     if (lineType != null)
                     {
                       if (lineTypeDictionary.ContainsKey(lineType))
@@ -374,7 +374,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               foundConvertibleMember = true;
             }
           }
-          if (!foundConvertibleMember && count == totalMembers ) // this was an unsupported geo
+          if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
             state.Errors.Add(new Exception($"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
           return objects;
         }
@@ -384,7 +384,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         count = 0;
         foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count )) ;
+          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count));
         return objects;
       }
 
