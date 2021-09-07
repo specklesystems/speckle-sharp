@@ -671,9 +671,9 @@ namespace ConnectorGrasshopper.Ops
             continue;
           }
 
-          var mb = st.TotalSentBytes / 1e6;
-          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
-            $"{t.TransportName} avg {(mb / (stopwatch.ElapsedMilliseconds / 1000f)):0.00} MB/s");
+          // var mb = st.TotalSentBytes / 1e6;
+          // Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
+          //  $"{t.TransportName} avg {(mb / (stopwatch.ElapsedMilliseconds / 1000f)):0.00} MB/s");
         }
       }
     }
