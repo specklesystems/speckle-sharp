@@ -84,7 +84,7 @@ namespace Speckle.ConnectorGSA.Proxy
     //Set to defaults, which will be updated at calibration
     private static readonly Dictionary<string, float> UnitNodeAtFactors = new Dictionary<string, float>();
 
-    public static void CalibrateNodeAt()
+    public void CalibrateNodeAt()
     {
       float coordValue = 1000;
       var unitCoincidentDict = new Dictionary<string, float>() { { "mm", 20 }, { "cm", 1 }, { "in", 1 }, { "m", 0.1f } };
@@ -245,7 +245,7 @@ namespace Speckle.ConnectorGSA.Proxy
       return true;
     }
 
-    public int SaveAs(string filePath) => ExecuteWithLock(() => GSAObject.SaveAs(filePath));
+    public bool SaveAs(string filePath) => ExecuteWithLock(() => GSAObject.SaveAs(filePath) == 0);
 
     /// <summary>
     /// Close GSA file.
@@ -1035,6 +1035,15 @@ namespace Speckle.ConnectorGSA.Proxy
       return false;
     }
 
+    public bool Clear()
+    {
+      resultProcessors.Clear();
+      GC.Collect();
+      initialised = false;
+      initialisedError = false;
+      return true;
+    }
+
     private bool ClearResultsDirectory()
     {
       var di = new DirectoryInfo(resultDir);
@@ -1114,6 +1123,11 @@ namespace Speckle.ConnectorGSA.Proxy
 
     #region lock-related
     private readonly object syncLock = new object();
+
+    public GsaProxy()
+    {
+    }
+
     protected T ExecuteWithLock<T>(Func<T> f)
     {
       lock (syncLock)

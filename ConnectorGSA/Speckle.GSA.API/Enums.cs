@@ -12,6 +12,21 @@ namespace Speckle.GSA.API
     Analysis
   }
 
+  public enum MessageLevel
+  {
+    Debug,
+    Information,
+    Error,
+    Fatal
+  }
+
+  public enum MessageIntent
+  {
+    Display,
+    TechnicalLog,
+    Telemetry
+  }
+
   public enum StreamContentConfig
   {
     None = 0,

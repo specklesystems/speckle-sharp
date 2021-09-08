@@ -24,6 +24,7 @@ using Xunit.Sdk;
 using Speckle.Core.Kits;
 using ConverterGSA;
 using Speckle.ConnectorGSA.Proxy.Merger;
+using Speckle.GSA.API.CsvSchema;
 
 namespace ConverterGSATests
 {
@@ -1361,6 +1362,36 @@ namespace ConverterGSATests
     [Fact]
     public void GsaNodeEmbeddedResults()
     {
+      var resultRecords = new List<CsvRecord>()
+      {
+        new CsvNode()
+        {
+          CaseId = "A1",
+          ElemId = 23,
+          Ux = 1,
+          Uy = 2,
+          Uz = 3
+        },
+        new CsvNode()
+        {
+          CaseId = "A2",
+          ElemId = 23,
+          Ux = 1,
+          Uy = 2,
+          Uz = 3
+        }
+      };
+      ((GsaProxyMockForConverterTests)Instance.GsaModel.Proxy).AddResultData(ResultGroup.Node, resultRecords);
+
+      //---
+      
+      Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Node, 23, out var foundResultRecords);
+      Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Node, 23, "A1", out var foundA1ResultRecords);
+
+      //---
+
+      Assert.Equal(2, foundResultRecords.Count());
+      Assert.Single(foundA1ResultRecords);
     }
 
     [Fact]

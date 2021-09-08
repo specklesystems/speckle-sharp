@@ -12,6 +12,7 @@ namespace Speckle.GSA.API
     GSALayer Layer { get; set; }
     string Units { get; set; }
     double CoincidentNodeAllowance { get; set; }
+    int LoggingMinimumLevel { get; set; }
 
     //Settings - results
     List<ResultType> ResultTypes { get; set; }

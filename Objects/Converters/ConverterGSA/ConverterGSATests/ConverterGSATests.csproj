@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GsaModelMock.cs" />
     <Compile Include="GsaProxyMockForConverterTests.cs" />
     <Compile Include="SchemaTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

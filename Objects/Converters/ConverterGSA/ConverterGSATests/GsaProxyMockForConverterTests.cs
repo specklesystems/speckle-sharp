@@ -1,19 +1,13 @@
-﻿using Speckle.ConnectorGSA.Proxy.Cache;
-using Speckle.ConnectorGSA.Proxy.GwaParsers;
+﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API;
 using Speckle.GSA.API.CsvSchema;
 using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ConverterGSATests
 {
-  public class GsaModelMock : GsaModelBase
-  {
-    public override IGSACache Cache { get; set; } = new GsaCache();
-    public override IGSAProxy Proxy { get; set; } = new GsaProxyMockForConverterTests();
-  }
-
   internal class GsaProxyMockForConverterTests : IGSAProxy
   {
     //Assign these in each test to control what the methods below (called by the kit) return
@@ -23,9 +17,9 @@ namespace ConverterGSATests
     public Dictionary<GwaKeyword, Dictionary<int, string>> ApplicationIdsByKeywordId;
     public Dictionary<GwaKeyword, Dictionary<int, GsaRecord>> NativesByKeywordId;
 
-    protected Dictionary<ResultGroup, Dictionary<int, Dictionary<string, Dictionary<string, object>>>> resultsData;
-    protected Dictionary<GwaKeyword, Type> TypesByKeyword;
-    protected Dictionary<Type, GwaKeyword> KeywordsByType;
+    protected Dictionary<ResultGroup, Dictionary<int, Dictionary<string, List<CsvRecord>>>> resultsData;
+    //protected Dictionary<GwaKeyword, Type> TypesByKeyword;
+    //protected Dictionary<Type, GwaKeyword> KeywordsByType;
 
     public List<List<Type>> TxTypeDependencyGenerations => throw new NotImplementedException();
 
@@ -62,6 +56,7 @@ namespace ConverterGSATests
       return true;
     }
 
+    #region results
     public bool PrepareResults(IEnumerable<ResultType> resultTypes, int numBeamPoints = 3) => true;
 
     public bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null)
@@ -70,13 +65,39 @@ namespace ConverterGSATests
       return true;
     }
 
-    public bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1)
+    public bool GetResultRecords(ResultGroup group, int index, out List<CsvRecord> records)
     {
-      valueHierarchy = resultsData[group][index];
+      if (resultsData.ContainsKey(group) && resultsData[group].ContainsKey(index))
+      {
+        records = resultsData[group][index].SelectMany(kvp => kvp.Value).ToList();
+        return true;
+      }
+      records = null;
+      return false;
+    }
+
+    public bool GetResultRecords(ResultGroup group, int index, string loadCase, out List<CsvRecord> records)
+    {
+      if (resultsData.ContainsKey(group) && resultsData[group].ContainsKey(index) && resultsData[group][index].ContainsKey(loadCase))
+      {
+        records = resultsData[group][index][loadCase];
+        return true;
+      }
+      records = null;
+      return false;
+    }
+
+    public bool ClearResults(ResultGroup group)
+    {
+      if (resultsData.ContainsKey(group))
+      {
+        resultsData[group].Clear();
+        resultsData.Remove(group);
+      }
       return true;
     }
 
-    public bool ClearResults(ResultGroup group) => true;
+    #endregion
 
     protected bool PopulateTypesKeywords()
     {
@@ -127,33 +148,37 @@ namespace ConverterGSATests
       
 
     #region test_config_fns
-    public bool AddResultData(ResultGroup group, int index, Dictionary<string, Dictionary<string, object>> valueHierarchy)
+    public bool AddResultData(ResultGroup group, List<CsvRecord> records)
     {
       if (resultsData == null)
       {
-        resultsData = new Dictionary<ResultGroup, Dictionary<int, Dictionary<string, Dictionary<string, object>>>>();
+        resultsData = new Dictionary<ResultGroup, Dictionary<int, Dictionary<string, List<CsvRecord>>>>();
       }
       if (!resultsData.ContainsKey(group))
       {
-        resultsData.Add(group, new Dictionary<int, Dictionary<string, Dictionary<string, object>>>());
+        resultsData.Add(group, new Dictionary<int, Dictionary<string, List<CsvRecord>>>());
       }
-      if (!resultsData[group].ContainsKey(index))
+
+      var recordsByIndexLoadCase = records.GroupBy(r => r.ElemId).ToDictionary(g1 => g1.Key, g1 => g1.GroupBy(gr => gr.CaseId)
+      .ToDictionary(g2 => g2.Key, g2 => g2.ToList()));
+
+      foreach (var index in recordsByIndexLoadCase.Keys)
       {
-        resultsData[group].Add(index, new Dictionary<string, Dictionary<string, object>>());
+        if (!resultsData[group].ContainsKey(index))
+        {
+          resultsData[group].Add(index, new Dictionary<string, List<CsvRecord>>());
+        }
+        resultsData[group][index] = recordsByIndexLoadCase[index];
       }
-      resultsData[group][index] = valueHierarchy;
+      
       return true;
     }
 
-    public bool GetResultRecords(ResultGroup group, int index, out List<CsvRecord> records)
-    {
-      throw new NotImplementedException();
-    }
+    public void CalibrateNodeAt() { }
 
-    public bool GetResultRecords(ResultGroup group, int index, string loadCase, out List<CsvRecord> records)
-    {
-      throw new NotImplementedException();
-    }
+    public bool SaveAs(string filePath) => true;
+
+    bool IGSAProxy.Clear() => true;
 
     #endregion
   }

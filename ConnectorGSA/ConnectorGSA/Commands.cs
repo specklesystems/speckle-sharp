@@ -17,6 +17,27 @@ namespace ConnectorGSA
   {
     public static object Assert { get; private set; }
 
+    public static bool OpenFile(string filePath, bool visible, string emailAddress, string restApi, out List<StreamState> receiverStreamInfo, out List<StreamState> senderStreamInfo)
+    {
+      receiverStreamInfo = null;
+      senderStreamInfo = null;
+
+      Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy(); //Use a real proxy
+      var opened = Instance.GsaModel.Proxy.OpenFile(filePath, visible);
+      if (!opened)
+      {
+        
+        return false;
+      }
+      return true;
+    }
+
+    public static bool CloseFile(string filePath, bool visible)
+    {
+      Instance.GsaModel.Proxy.Close();
+      return Instance.GsaModel.Proxy.Clear();
+    }
+
     public static bool LoadDataFromFile(IEnumerable<ResultGroup> resultGroups = null, IEnumerable<ResultType> resultTypes = null)
     {
       var loadedCache = UpdateCache();
