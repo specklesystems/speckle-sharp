@@ -4,6 +4,8 @@ using Objects.Structural.Geometry;
 using Objects.Structural.Loading;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties;
+using Objects.Structural.Properties.Profiles;
+using static Objects.Structural.Properties.Profiles.SectionProfile;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.GSA.Loading;
 using Objects.Structural.GSA.Properties;
@@ -16,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Restraint = Objects.Structural.Geometry.Restraint;
 using MemberType = Objects.Structural.Geometry.MemberType;
+using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
 using System.Runtime.InteropServices;
 using System.CodeDom;
 
@@ -50,6 +53,7 @@ namespace ConverterGSA
         { typeof(GsaAxis), GsaAxisToSpeckle },
         { typeof(GsaNode), GsaNodeToSpeckle },
         { typeof(GsaEl), GsaElementToSpeckle },
+        { typeof(GsaMemb), GsaMemberToSpeckle },
         //Loading
         { typeof(GsaLoadCase), GsaLoadCaseToSpeckle },
         { typeof(GsaLoad2dFace), GsaFaceLoadToSpeckle },
@@ -392,6 +396,111 @@ namespace ConverterGSA
       //TODO
       return new GSAElement3D();
     }
+
+    public List<Base> GsaMemberToSpeckle(GsaRecord nativeObject)
+    {
+      var member = GsaMemberToSpeckle((GsaMemb)nativeObject);
+      return new List<Base>() { member };
+    }
+
+    public Base GsaMemberToSpeckle(GsaMemb gsaMemb)
+    {
+      if (gsaMemb.Is1dMember()) // 1D member
+      {
+        return GsaMember1dToSpeckle(gsaMemb);
+      }
+      else if (gsaMemb.Is2dMember()) // 2D element
+      {
+        return GsaMember2dToSpeckle(gsaMemb);
+      }
+      else
+      {
+        return new Base();
+      }
+    }
+
+    public GSAMember1D GsaMember1dToSpeckle(GsaMemb gsaMemb)
+    {
+      var speckleMember1d = new GSAMember1D()
+      {
+        //-- App agnostic --
+        name = gsaMemb.Name,
+        baseLine = null,
+        type = GetMemberType(gsaMemb.Type),
+        end1Releases = GetRestraint(gsaMemb.Releases1, gsaMemb.Stiffnesses1),
+        end2Releases = GetRestraint(gsaMemb.Releases2, gsaMemb.Stiffnesses2),
+        end1Offset = new Vector(),
+        end2Offset = new Vector(),
+        orientationAngle = 0, //default
+        parent = new Base(),
+        end1Node = GetNodeFromIndex(gsaMemb.NodeIndices[0]),
+        end2Node = GetNodeFromIndex(gsaMemb.NodeIndices[1]),
+        topology = gsaMemb.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList(),
+        units = "",
+
+        //-- GSA specific --
+        colour = gsaMemb.Colour.ToString(),
+        isDummy = gsaMemb.Dummy,
+        intersectsWithOthers = gsaMemb.IsIntersector,
+      };
+
+      //-- App agnostic --
+      if (gsaMemb.Index.IsIndex()) speckleMember1d.applicationId = Instance.GsaModel.GetApplicationId<GsaMemb>(gsaMemb.Index.Value);
+      if (gsaMemb.PropertyIndex.IsIndex()) speckleMember1d.property = GetProperty1dFromIndex(gsaMemb.PropertyIndex.Value);
+      if (gsaMemb.OrientationNodeIndex.IsIndex()) speckleMember1d.orientationNode = GetNodeFromIndex(gsaMemb.OrientationNodeIndex.Value);
+      if (gsaMemb.Angle.HasValue) speckleMember1d.orientationAngle = gsaMemb.Angle.Value;
+      speckleMember1d.localAxis = GetLocalAxis(speckleMember1d.end1Node, speckleMember1d.end2Node, speckleMember1d.orientationNode, speckleMember1d.orientationAngle.Radians());
+      if (gsaMemb.End1OffsetX.HasValue) speckleMember1d.end1Offset.x = gsaMemb.End1OffsetX.Value;
+      if (gsaMemb.OffsetY.HasValue) speckleMember1d.end1Offset.y = gsaMemb.OffsetY.Value;
+      if (gsaMemb.OffsetZ.HasValue) speckleMember1d.end1Offset.z = gsaMemb.OffsetZ.Value;
+      if (gsaMemb.End2OffsetX.HasValue) speckleMember1d.end2Offset.x = gsaMemb.End2OffsetX.Value;
+      if (gsaMemb.OffsetY.HasValue) speckleMember1d.end2Offset.y = gsaMemb.OffsetY.Value;
+      if (gsaMemb.OffsetZ.HasValue) speckleMember1d.end2Offset.z = gsaMemb.OffsetZ.Value;
+
+      //-- GSA specific --
+      if (gsaMemb.Index.IsIndex()) speckleMember1d.nativeId = gsaMemb.Index.Value;
+      if (gsaMemb.Group.IsIndex()) speckleMember1d.group = gsaMemb.Group.Value;
+      if (gsaMemb.MeshSize.IsPositive()) speckleMember1d.targetMeshSize = gsaMemb.MeshSize.Value;
+
+      //Unsupported interim schema members
+      //gsaMemb.Exposure
+      //gsaMemb.Voids
+      //gsaMemb.PointNodeIndices
+      //gsaMemb.Polylines
+      //gsaMemb.AdditionalAreas
+      //gsaMemb.AnalysisType
+      //gsaMemb.Fire
+      //gsaMemb.LimitingTemperature
+      //gsaMemb.CreationFromStartDays
+      //gsaMemb.StartOfDryingDays
+      //gsaMemb.AgeAtLoadingDays
+      //gsaMemb.RemovedAtDays
+      //gsaMemb.RestraintEnd1
+      //gsaMemb.RestraintEnd2
+      //gsaMemb.EffectiveLengthType
+      //gsaMemb.LoadHeight
+      //gsaMemb.LoadHeightReferencePoint
+      //gsaMemb.MemberHasOffsets
+      //gsaMemb.End1AutomaticOffset
+      //gsaMemb.End2AutomaticOffset
+      //gsaMemb.EffectiveLengthYY
+      //gsaMemb.PercentageYY
+      //gsaMemb.EffectiveLengthZZ
+      //gsaMemb.PercentageZZ
+      //gsaMemb.EffectiveLengthLateralTorsional
+      //gsaMemb.FractionLateralTorsional
+      //gsaMemb.SpanRestraints
+      //gsaMemb.PointRestraints
+
+      return speckleMember1d;
+    }
+
+    public GSAMember2D GsaMember2dToSpeckle(GsaMemb gsaMemb)
+    {
+      var speckleMember2d = new GSAMember2D();
+      if (gsaMemb.Index.IsIndex()) speckleMember2d.applicationId = Instance.GsaModel.GetApplicationId<GsaMemb>(gsaMemb.Index.Value);
+      return speckleMember2d;
+    }
     #endregion
 
     #region Loading
@@ -708,7 +817,6 @@ namespace ConverterGSA
         //-- App agnostic --
         name = gsaSection.Name,
         memberType = MemberType.Generic1D,
-        grade = "", // TO DO: what is grade used for?
         referencePoint = GetReferencePoint(gsaSection.ReferencePoint),
 
         //-- GSA specific --
@@ -721,18 +829,14 @@ namespace ConverterGSA
       if (gsaSection.RefY.HasValue) speckleProperty1D.offsetY = gsaSection.RefY.Value;
       if (gsaSection.RefZ.HasValue) speckleProperty1D.offsetZ = gsaSection.RefZ.Value;
       var gsaSectionComp = (SectionComp)gsaSection.Components.Find(x => x.GetType() == typeof(SectionComp));
-      speckleProperty1D.profile = GetProfile(gsaSectionComp.ProfileDetails);
       if (gsaSectionComp.MaterialIndex.IsIndex()) speckleProperty1D.material = GetMaterialFromIndex(gsaSectionComp.MaterialIndex.Value, gsaSectionComp.MaterialType);
-      if (gsaSectionComp.ProfileGroup == Section1dProfileGroup.Explicit)
-      {
-        var gsaProfile = (ProfileDetailsExplicit)gsaSectionComp.ProfileDetails;
-        if (gsaProfile.Area.HasValue) speckleProperty1D.area = gsaProfile.Area.Value;
-        if (gsaProfile.Iyy.HasValue) speckleProperty1D.Iyy = gsaProfile.Iyy.Value;
-        if (gsaProfile.Izz.HasValue) speckleProperty1D.Izz = gsaProfile.Izz.Value;
-        if (gsaProfile.J.HasValue) speckleProperty1D.J = gsaProfile.J.Value;
-        if (gsaProfile.Ky.HasValue) speckleProperty1D.Ky = gsaProfile.Ky.Value;
-        if (gsaProfile.Kz.HasValue) speckleProperty1D.Kz = gsaProfile.Kz.Value;
-      }
+      var fns = new Dictionary<Section1dProfileGroup, Func<ProfileDetails, SectionProfile>>
+      { { Section1dProfileGroup.Catalogue, GetProfileCatalogue },
+        { Section1dProfileGroup.Explicit, GetProfileExplicit },
+        { Section1dProfileGroup.Perimeter, GetProfilePerimeter },
+        { Section1dProfileGroup.Standard, GetProfileStandard }
+      };
+      if (fns.ContainsKey(gsaSectionComp.ProfileGroup)) speckleProperty1D.profile = fns[gsaSectionComp.ProfileGroup](gsaSectionComp.ProfileDetails);
 
       //-- GSA specific --
       if (gsaSection.Index.IsIndex()) speckleProperty1D.nativeId = gsaSection.Index.Value;
@@ -757,7 +861,6 @@ namespace ConverterGSA
         name = gsaProp2d.Name,
         colour = gsaProp2d.Colour.ToString(),
         zOffset = gsaProp2d.RefZ,
-        grade = "", // TO DO: what is grade used for?
         orientationAxis = GetOrientationAxis(gsaProp2d),
         refSurface = GetReferenceSurface(gsaProp2d),
 
@@ -1310,6 +1413,13 @@ namespace ConverterGSA
       var speckleMesh = new Mesh(vertices.ToArray(), faces.SelectMany(o => o).ToArray(), null, null, units);
 
       return speckleMesh;
+    }
+    #endregion
+
+    #region Member
+    private ElementType1D GetMemberType(GwaMemberType gsaMemberType)
+    {
+      return ElementType1D.Beam;
     }
     #endregion
     #endregion
@@ -1912,16 +2022,6 @@ namespace ConverterGSA
       }
     }
 
-    private SectionProfile GetProfile(ProfileDetails gsaProfile)
-    {
-      var speckleProfile = new SectionProfile()
-      {
-        shapeDescription = gsaProfile.ToDesc()
-      };
-
-      return speckleProfile;
-    }
-
     /// <summary>
     /// Get Speckle Property1D object from GSA property 1D index
     /// </summary>
@@ -1935,6 +2035,210 @@ namespace ConverterGSA
 
       return speckleProperty1d;
     }
+
+    #region Profiles
+    private SectionProfile GetProfileCatalogue(ProfileDetails gsaProfile)
+    {
+      var p = (ProfileDetailsCatalogue)gsaProfile;
+      var items = p.Profile.Split(' ');
+      var speckleProfile = new Catalogue()
+      {
+        shapeType = ShapeType.Catalogue,
+        description = p.Profile,
+        catalogueName = items[1].Split('-')[0],
+        sectionType = items[1].Split('-')[1],
+        sectionName = items[2],
+      };
+      return speckleProfile;
+    }
+    private SectionProfile GetProfileExplicit(ProfileDetails gsaProfile)
+    {
+      var p = (ProfileDetailsExplicit)gsaProfile;
+
+      var speckleProfile = new Explicit()
+      {
+        shapeType = ShapeType.Explicit,
+      };
+
+      if (p.Area.HasValue) speckleProfile.area = p.Area.Value;
+      if (p.Iyy.HasValue) speckleProfile.Iyy = p.Iyy.Value;
+      if (p.Izz.HasValue) speckleProfile.Izz = p.Izz.Value;
+      if (p.J.HasValue) speckleProfile.J = p.J.Value;
+      if (p.Ky.HasValue) speckleProfile.Ky = p.Ky.Value;
+      if (p.Kz.HasValue) speckleProfile.Kz = p.Kz.Value;
+
+      return speckleProfile;
+    }
+    private SectionProfile GetProfilePerimeter(ProfileDetails gsaProfile)
+    {
+      var gsaProfilePerimeter = (ProfileDetailsPerimeter)gsaProfile;
+      var speckleProfile = new Perimeter()
+      {
+        shapeType = ShapeType.Perimeter,
+        voids = new List<Objects.ICurve>(),
+      };
+
+      if (gsaProfilePerimeter.Type[0] == 'P') //Perimeter
+      {
+        var isVoid = false;
+        var outline = new List<double>();
+        var voids = new List<List<double>>();
+        for (var i = 0; i < gsaProfilePerimeter.Actions.Count(); i++)
+        {
+          if (gsaProfilePerimeter.Actions[i] == "M" && i != 0) isVoid = true;
+          if (gsaProfilePerimeter.Actions[i] == "M" && isVoid) voids.Add(new List<double>());
+
+          if (gsaProfilePerimeter.Y[i].HasValue && gsaProfilePerimeter.Z[i].HasValue)
+          {
+            if (!isVoid)
+            {
+              outline.Add(0);
+              outline.Add(gsaProfilePerimeter.Y[i].Value);
+              outline.Add(gsaProfilePerimeter.Z[i].Value);
+            }
+            else
+            {
+              voids.Last().Add(0);
+              voids.Last().Add(gsaProfilePerimeter.Y[i].Value);
+              voids.Last().Add(gsaProfilePerimeter.Z[i].Value);
+            }
+          }
+        }
+        speckleProfile.outline = new Curve() { points = outline };
+        foreach (var v in voids) speckleProfile.voids.Add(new Curve() { points = v });
+      }
+      else if (gsaProfilePerimeter.Type[0] == 'L') //Line Segment
+      {
+        //TO DO:
+      }
+
+      return speckleProfile;
+    }
+    private SectionProfile GetProfileStandard(ProfileDetails gsaProfile)
+    {
+      var p = (ProfileDetailsStandard)gsaProfile;
+      var speckleProfile = new SectionProfile();
+      var fns = new Dictionary<Section1dStandardProfileType, Func<ProfileDetailsStandard, SectionProfile>>
+      { { Section1dStandardProfileType.Rectangular, GetProfileStandardRectangluar },
+        { Section1dStandardProfileType.RectangularHollow, GetProfileStandardRHS },
+        { Section1dStandardProfileType.Circular, GetProfileStandardCircular },
+        { Section1dStandardProfileType.CircularHollow, GetProfileStandardCHS },
+        { Section1dStandardProfileType.ISection, GetProfileStandardISection },
+        { Section1dStandardProfileType.Tee, GetProfileStandardTee },
+        { Section1dStandardProfileType.Angle, GetProfileStandardAngle },
+        { Section1dStandardProfileType.Channel, GetProfileStandardChannel },
+        //TO DO: implement other standard sections as more sections are supported
+      };
+      if (fns.ContainsKey(p.ProfileType)) speckleProfile = fns[p.ProfileType](p);
+
+      return speckleProfile;
+    }
+    private SectionProfile GetProfileStandardRectangluar(ProfileDetailsStandard gsaProfile)
+    {
+      var p = (ProfileDetailsRectangular)gsaProfile;
+      var speckleProfile = new Rectangular()
+      {
+        name = "",
+        shapeType = ShapeType.Rectangular,
+      };
+      if (p.b.HasValue) speckleProfile.width = p.b.Value;
+      if (p.d.HasValue) speckleProfile.depth = p.d.Value;
+      return speckleProfile;
+    }
+    private SectionProfile GetProfileStandardRHS(ProfileDetailsStandard gsaProfile)
+    {
+      var p = (ProfileDetailsTwoThickness)gsaProfile;
+      var speckleProfile = new Rectangular()
+      {
+        name = "",
+        shapeType = ShapeType.Rectangular,
+      };
+      if (p.b.HasValue) speckleProfile.width = p.b.Value;
+      if (p.d.HasValue) speckleProfile.depth = p.d.Value;
+      if (p.tw.HasValue) speckleProfile.webThickness = p.tw.Value;
+      if (p.tf.HasValue) speckleProfile.flangeThickness = p.tf.Value;
+      return speckleProfile;
+    }
+    private SectionProfile GetProfileStandardCircular(ProfileDetailsStandard gsaProfile)
+    {
+      var p = (ProfileDetailsCircular)gsaProfile;
+      var speckleProfile = new Circular()
+      {
+        name = "",
+        shapeType = ShapeType.Circular,
+      };
+      if (p.d.HasValue) speckleProfile.radius = p.d.Value / 2;
+      return speckleProfile;
+    }
+    private SectionProfile GetProfileStandardCHS(ProfileDetailsStandard gsaProfile)
+    {
+      var p = (ProfileDetailsCircularHollow)gsaProfile;
+      var speckleProfile = new Circular()
+      {
+        name = "",
+        shapeType = ShapeType.Circular,
+      };
+      if (p.d.HasValue) speckleProfile.radius = p.d.Value / 2;
+      if (p.t.HasValue) speckleProfile.wallThickness = p.t.Value;
+      return speckleProfile;
+    }
+    private SectionProfile GetProfileStandardISection(ProfileDetailsStandard gsaProfile)
+    {
+      var p = (ProfileDetailsTwoThickness)gsaProfile;
+      var speckleProfile = new ISection()
+      {
+        name = "",
+        shapeType = ShapeType.I,
+      };
+      if (p.b.HasValue) speckleProfile.width = p.b.Value;
+      if (p.d.HasValue) speckleProfile.depth = p.d.Value;
+      if (p.tw.HasValue) speckleProfile.webThickness = p.tw.Value;
+      if (p.tf.HasValue) speckleProfile.flangeThickness = p.tf.Value;
+      return speckleProfile;
+    }
+    private SectionProfile GetProfileStandardTee(ProfileDetailsStandard gsaProfile)
+    {
+      var p = (ProfileDetailsTwoThickness)gsaProfile;
+      var speckleProfile = new Tee()
+      {
+        name = "",
+        shapeType = ShapeType.Tee,
+      };
+      if (p.b.HasValue) speckleProfile.width = p.b.Value;
+      if (p.d.HasValue) speckleProfile.depth = p.d.Value;
+      if (p.tw.HasValue) speckleProfile.webThickness = p.tw.Value;
+      if (p.tf.HasValue) speckleProfile.flangeThickness = p.tf.Value;
+      return speckleProfile;
+    }
+    private SectionProfile GetProfileStandardAngle(ProfileDetailsStandard gsaProfile)
+    {
+      var p = (ProfileDetailsTwoThickness)gsaProfile;
+      var speckleProfile = new Angle()
+      {
+        name = "",
+        shapeType = ShapeType.Angle,
+      };
+      if (p.b.HasValue) speckleProfile.width = p.b.Value;
+      if (p.d.HasValue) speckleProfile.depth = p.d.Value;
+      if (p.tw.HasValue) speckleProfile.webThickness = p.tw.Value;
+      if (p.tf.HasValue) speckleProfile.flangeThickness = p.tf.Value;
+      return speckleProfile;
+    }
+    private SectionProfile GetProfileStandardChannel(ProfileDetailsStandard gsaProfile)
+    {
+      var p = (ProfileDetailsTwoThickness)gsaProfile;
+      var speckleProfile = new Channel()
+      {
+        name = "",
+        shapeType = ShapeType.Channel,
+      };
+      if (p.b.HasValue) speckleProfile.width = p.b.Value;
+      if (p.d.HasValue) speckleProfile.depth = p.d.Value;
+      if (p.tw.HasValue) speckleProfile.webThickness = p.tw.Value;
+      if (p.tf.HasValue) speckleProfile.flangeThickness = p.tf.Value;
+      return speckleProfile;
+    }
+    #endregion
     #endregion
 
     #region Property2D

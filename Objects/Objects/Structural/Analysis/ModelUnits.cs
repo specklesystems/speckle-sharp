@@ -86,10 +86,4 @@ namespace Objects.Structural.Analysis
             this.energy = energy;
         }
     }
-
-    public enum UnitsType
-    {
-        Metric,
-        Imperial
-    }
 }
