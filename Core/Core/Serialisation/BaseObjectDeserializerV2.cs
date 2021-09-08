@@ -115,7 +115,7 @@ namespace Speckle.Core.Serialisation
       return DeserializeTransportObject(objectJson);
     }
 
-    internal object DeserializeTransportObject(String objectJson)
+    public object DeserializeTransportObject(String objectJson)
     {
       using (JsonDocument doc = JsonDocument.Parse(objectJson))
       {

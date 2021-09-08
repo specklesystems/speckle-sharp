@@ -107,10 +107,22 @@ namespace Speckle.Core.Api
     /// <param name="objectArr"></param>
     /// <returns></returns>
     [Obsolete("Please use the Deserialize(Base @object) function. This function will be removed in later versions.")]
-    public static List<Base> DeserializeArray(string objectArr)
+    public static List<Base> DeserializeArray(string objectArr, SerializerVersion serializerVersion = SerializerVersion.V2)
     {
-      var (_, settings) = GetSerializerInstance();
-      return JsonConvert.DeserializeObject<List<Base>>(objectArr, settings);
+      if (serializerVersion == SerializerVersion.V1)
+      {
+        var (_, settings) = GetSerializerInstance();
+        return JsonConvert.DeserializeObject<List<Base>>(objectArr, settings);
+      }
+      else
+      {
+        var deserializer = new BaseObjectDeserializerV2();
+        List<object> deserialized = deserializer.DeserializeTransportObject(objectArr) as List<object>;
+        List<Base> ret = new List<Base>();
+        foreach (object obj in deserialized)
+          ret.Add((Base)obj);
+        return ret;
+      }
     }
 
     /// <summary>

@@ -53,6 +53,8 @@ namespace Speckle.Core.Serialisation
     private List<Dictionary<string, int>> ParentClosures = new List<Dictionary<string, int>>();
     private bool Busy = false;
 
+    private HashSet<object> ParentObjects = new HashSet<object>();
+
     public BaseObjectSerializerV2()
     {
       
@@ -73,6 +75,7 @@ namespace Speckle.Core.Serialisation
       finally
       {
         ParentClosures = new List<Dictionary<string, int>>(); // cleanup in case of exceptions
+        ParentObjects = new HashSet<object>();
         Busy = false;
       }
     }
@@ -84,6 +87,7 @@ namespace Speckle.Core.Serialisation
       // handle null objects and also check for cancelation
       if (obj == null || CancellationToken.IsCancellationRequested)
         return null;
+
       Type type = obj.GetType();
 
       if (type.IsPrimitive || obj is string)
@@ -139,6 +143,11 @@ namespace Speckle.Core.Serialisation
 
     public object PreserializeBase(Base baseObj, bool computeClosures = false, DetachInfo inheritedDetachInfo = default(DetachInfo))
     {
+      // handle circular references
+      if (ParentObjects.Contains(baseObj))
+        return null;
+      ParentObjects.Add(baseObj);
+
       Dictionary<string, object> convertedBase = new Dictionary<string, object>();
       Dictionary<string, int> closure = new Dictionary<string, int>();
       if (computeClosures || inheritedDetachInfo.IsDetachable)
@@ -179,14 +188,15 @@ namespace Speckle.Core.Serialisation
       foreach (var prop in allProperties)
       {
         object convertedValue = PreserializeBasePropertyValue(prop.Value.Item1, prop.Value.Item2);
-        if (convertedValue != null)
-          convertedBase[prop.Key] = convertedValue;
+        convertedBase[prop.Key] = convertedValue;
       }
 
       if (closure.Count > 0)
         convertedBase["__closure"] = closure;
       if (computeClosures || inheritedDetachInfo.IsDetachable)
         ParentClosures.RemoveAt(ParentClosures.Count - 1);
+
+      ParentObjects.Remove(baseObj);
 
       if (inheritedDetachInfo.IsDetachable && WriteTransports != null && WriteTransports.Count > 0)
       {
