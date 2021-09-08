@@ -11,6 +11,9 @@ namespace Speckle.ConnectorGSA.Results
     [Name("case_id")]
     public override string CaseId { get; set; }
 
+    [Name("position_r")]
+    public override string PosR { get; set; }
+
     [Name("disp_x")]
     public override float? Ux { get; set; }
 

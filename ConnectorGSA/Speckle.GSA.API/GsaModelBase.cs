@@ -1,6 +1,7 @@
 ﻿using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Speckle.GSA.API
 {
@@ -14,6 +15,36 @@ namespace Speckle.GSA.API
     public string Units { get; set; } = "mm";
     public double CoincidentNodeAllowance { get; set; }
     public List<ResultType> ResultTypes { get; set; }
+    public List<ResultGroup> ResultGroups
+    {
+      get
+      {
+        var retList = new List<ResultGroup>();
+        if (ResultTypes != null && ResultTypes.Count > 0)
+        {
+          foreach (var rts in ResultTypes.Select(rt => rt.ToString().ToLower()))
+          {
+            if (rts.Contains("1d") && !retList.Contains(ResultGroup.Element1d))
+            {
+              retList.Add(ResultGroup.Element1d);
+            }
+            else if (rts.Contains("2d") && !retList.Contains(ResultGroup.Element2d))
+            {
+              retList.Add(ResultGroup.Element2d);
+            }
+            else if (rts.Contains("assembly") && !retList.Contains(ResultGroup.Assembly))
+            {
+              retList.Add(ResultGroup.Element2d);
+            }
+            else if (!retList.Contains(ResultGroup.Node))
+            {
+              retList.Add(ResultGroup.Node);
+            }
+          }
+        }
+        return retList;
+      }
+    }
     public StreamContentConfig StreamSendConfig { get; set; }
     public List<string> ResultCases { get; set; }
     public bool ResultInLocalAxis { get; set; }
