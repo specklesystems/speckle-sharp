@@ -14,7 +14,6 @@ namespace Objects.Structural.Properties
 
         [DetachProperty]
         public Material material { get; set; }
-        public string grade { get; set; } //grade
 
         [DetachProperty]
         public Axis orientationAxis { get; set; }

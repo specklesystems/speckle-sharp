@@ -374,13 +374,13 @@ namespace ConverterGSATests
       //TO DO: update once GSAAssembly is updated
 
       //Checks - Assembly 2
-      Assert.Equal("assembly 2", speckleAssemblies[0].applicationId);
-      Assert.Equal(gsaAssemblies[0].Index, speckleAssemblies[0].nativeId);
-      Assert.Equal("node 2", speckleAssemblies[0].end1Node.applicationId);
-      Assert.Equal("node 3", speckleAssemblies[0].end2Node.applicationId);
-      Assert.Equal("node 4", speckleAssemblies[0].orientationNode.applicationId);
-      Assert.Single(speckleAssemblies[0].entities);
-      Assert.Equal("element 1", speckleAssemblies[0].entities[0].applicationId);
+      Assert.Equal("assembly 2", speckleAssemblies[1].applicationId);
+      Assert.Equal(gsaAssemblies[1].Index, speckleAssemblies[1].nativeId);
+      Assert.Equal("node 2", speckleAssemblies[1].end1Node.applicationId);
+      Assert.Equal("node 3", speckleAssemblies[1].end2Node.applicationId);
+      Assert.Equal("node 4", speckleAssemblies[1].orientationNode.applicationId);
+      Assert.Single(speckleAssemblies[1].entities);
+      Assert.Equal("element 1", speckleAssemblies[1].entities[0].applicationId);
     }
 
     [Fact]
