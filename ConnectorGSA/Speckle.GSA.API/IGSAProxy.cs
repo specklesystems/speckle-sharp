@@ -23,12 +23,15 @@ namespace Speckle.GSA.API
     char GwaDelimiter { get; }
 
     //METHODS
+    void CalibrateNodeAt();
     bool PrepareResults(IEnumerable<ResultType> resultTypes, int numBeamPoints = 3);
     bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null);
     //bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1);
     bool GetResultRecords(ResultGroup group, int index, out List<CsvRecord> records);
     bool GetResultRecords(ResultGroup group, int index, string loadCase, out List<CsvRecord> records);
     bool ClearResults(ResultGroup group);
+    bool SaveAs(string filePath);
+    bool Clear();
 
     void Close();
   }

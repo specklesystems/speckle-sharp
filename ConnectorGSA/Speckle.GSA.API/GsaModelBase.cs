@@ -20,6 +20,7 @@ namespace Speckle.GSA.API
     public int Result1DNumPosition { get; set; } = 3;
 
     public char GwaDelimiter { get; set; } = '\t';
+    public int LoggingMinimumLevel { get; set; }
 
     public virtual GsaRecord GetNative<T>(int value) => Cache.GetNative<T>(value);
     public virtual List<int> LookupIndices<T>() => Cache.LookupIndices<T>();

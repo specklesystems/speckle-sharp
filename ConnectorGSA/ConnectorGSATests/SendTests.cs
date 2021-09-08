@@ -67,11 +67,48 @@ namespace ConnectorGSATests
     }
 
     [Fact]
+    public async Task SendAnalysisLayerWithSeparateResults()
+    {
+      //Configure settings for this transmission
+      Instance.GsaModel.Layer = GSALayer.Design;
+      Instance.GsaModel.ResultTypes = new List<ResultType>() { ResultType.NodalDisplacements };
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelWithTabularResults;
+
+      var memoryTransport = new MemoryTransport();
+      var result = await CoordinateSend(converter, memoryTransport);
+
+      Assert.True(result.Loaded);
+      Assert.True(result.Converted);
+      Assert.True(result.Sent);
+      Assert.NotEmpty(result.ConvertedObjects);
+
+      var numExpectedByObjectType = new Dictionary<Type, int>()
+      {
+        { typeof(Axis), 3 },
+        { typeof(Concrete), 1 },
+        { typeof(PropertySpring), 8 },
+        { typeof(Property1D), 1 },
+        { typeof(Property2D), 1 },
+        { typeof(Node), 7 },
+        { typeof(LoadCase), 3 },
+      };
+
+      var objectsByType = result.ConvertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
+
+      foreach (var t in numExpectedByObjectType.Keys)
+      {
+        Assert.True(objectsByType.ContainsKey(t));
+        Assert.NotNull(objectsByType[t]);
+        Assert.Equal(numExpectedByObjectType[t], objectsByType[t].Count());
+      }
+    }
+
+    [Fact]
     public void ReadResults()
     {
       Instance.GsaModel.Layer = GSALayer.Analysis;
-      Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy(); //Use a real proxy
-      Instance.GsaModel.Proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithResultsFile), true);
+
+      Commands.OpenFile(Path.Combine(TestDataDirectory, modelWithResultsFile), true, "", "", out _, out _); //Use a real proxy
 
       bool loaded = false;
       var resultTypesByGroup = GetResultGroupType();

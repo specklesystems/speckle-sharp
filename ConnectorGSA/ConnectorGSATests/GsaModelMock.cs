@@ -14,31 +14,6 @@ namespace ConnectorGSATests
   {
     public override IGSACache Cache { get; set; } = new GsaCache();
     public override IGSAProxy Proxy { get; set; } = new GsaProxyMock();
-
-    /*
-    #region cache_related
-    public override string GetApplicationId<T>(int index) => Cache.GetApplicationId<T>(index);
-
-    public override GsaRecord GetNative<T>(int index) => Cache.GetNative<T>(index, out var gsaRecord) ? gsaRecord : null;
-
-    public override bool GetNative(Type t, int index, out GsaRecord gsaRecord) => Cache.GetNative(t, index, out gsaRecord);
-
-    public override bool GetNative(Type t, out List<GsaRecord> gsaRecords) => cache.GetNative(t, out gsaRecords);
-
-    public override bool SetSpeckleObjects(GsaRecord gsaRecords, IEnumerable<object> speckleObjects)
-    {
-      return true;
-    }
-    
-
-    public override bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
-      => proxy.GetGwaData(nodeApplicationIdFilter, out records, incrementProgress);
-
-    public override  List<int> LookupIndices<T>() => cache.LookupIndices<T>();
-    #endregion
-    */
-
-
   }
 
   public class GsaProxyMock : IGSAProxy
@@ -61,14 +36,20 @@ namespace ConnectorGSATests
     };
 
     //Need to create delegate types since Func<> doesn't deal with out parameters
-    public delegate bool GetResultHierarchyDelegate(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1);
+    public delegate bool GetResultRecordsDelegate(ResultGroup group, int index, out List<CsvRecord> Records);
+    public delegate bool GetResultRecordsByLoadCaseDelegate(ResultGroup group, int index, string loadCase, out List<CsvRecord> Records);
     public delegate bool LoadResultsDelegate(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null);
 
-    public Func<ResultGroup, bool> ClearResultsFn = (ResultGroup rg) => true;
-    public GetResultHierarchyDelegate GetResultHierarchyFn =
-      (ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension) =>
+    public GetResultRecordsDelegate GetResultRecordsFn =
+      (ResultGroup group, int index, out List<CsvRecord> records) =>
       {
-        valueHierarchy = new Dictionary<string, Dictionary<string, object>>();
+        records = new List<CsvRecord>();
+        return true;
+      };
+    public GetResultRecordsByLoadCaseDelegate GetResultRecordsByLoadCaseFn =
+      (ResultGroup group, int index, string loadCase, out List<CsvRecord> records) =>
+      {
+        records = new List<CsvRecord>();
         return true;
       };
     public LoadResultsDelegate LoadResultsFn =
@@ -77,6 +58,7 @@ namespace ConnectorGSATests
         numErrorRows = 0;
         return true;
       };
+    public Func<ResultGroup, bool> ClearResultsFn = (ResultGroup rg) => true;
     public Func<double, double, double, double, int> NodeAtFn = (double x, double y, double z, double coincidenceTol) => 1;
 
     public List<List<Type>> TxTypeDependencyGenerations => throw new NotImplementedException();
@@ -100,8 +82,11 @@ namespace ConnectorGSATests
     public bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null)
       => (LoadResultsFn != null) ? LoadResultsFn(group, out numErrorRows, cases, elemIds) : throw new NotImplementedException();
 
-    public bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1)
-      => (GetResultHierarchyFn != null) ? GetResultHierarchyFn(group, index, out valueHierarchy, dimension) : throw new NotImplementedException();
+    public bool GetResultRecords(ResultGroup group, int index, out List<CsvRecord> records)
+      => (GetResultRecordsFn != null) ? GetResultRecordsFn(group, index, out records) : throw new NotImplementedException();
+
+    public bool GetResultRecords(ResultGroup group, int index, string loadCase, out List<CsvRecord> records)
+      => (GetResultRecordsByLoadCaseFn != null) ? GetResultRecordsByLoadCaseFn(group, index, loadCase, out records) : throw new NotImplementedException();
 
     public bool ClearResults(ResultGroup group) => (ClearResultsFn != null) ? ClearResultsFn(group) : throw new NotImplementedException();
 
@@ -111,24 +96,15 @@ namespace ConnectorGSATests
     public int NodeAt(double x, double y, double z, double coincidenceTol)
       => (NodeAtFn != null) ? NodeAtFn(x, y, z, coincidenceTol) : throw new NotImplementedException();
 
-    public string GenerateApplicationId(Type schemaType, int gsaIndex)
-    {
-      return "";
-    }
+    public string GenerateApplicationId(Type schemaType, int gsaIndex) => "";
 
-    public void Close()
-    {
-    }
+    public void Close() { }
 
-    public bool GetResultRecords(ResultGroup group, int index, out List<CsvRecord> records)
-    {
-      throw new NotImplementedException();
-    }
+    public void CalibrateNodeAt() { }
 
-    public bool GetResultRecords(ResultGroup group, int index, string loadCase, out List<CsvRecord> records)
-    {
-      throw new NotImplementedException();
-    }
+    public bool SaveAs(string filePath) => true;
+
+    public bool Clear() => true;
 
     #endregion
   }
