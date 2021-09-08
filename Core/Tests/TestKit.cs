@@ -9,23 +9,6 @@ using static Speckle.Core.Models.Utilities;
 
 namespace Tests
 {
-
-  /// <summary>
-  /// Class used to test the abstract object.
-  /// </summary>
-  public class NonKitClass
-  {
-    public string TestProp { get; set; } = "WOW THIS IS NOT A DRILL";
-
-    public List<int> Numbers { get; set; } = new List<int>();
-
-    //public Point MixedUp { get; set; } = new Point(0, 1, 0);
-
-    public NonKitClass()
-    {
-    }
-  }
-
   /// <summary>
   /// Simple speckle kit (no conversions) used in tests.
   /// </summary>
