@@ -1,12 +1,10 @@
 ﻿using Speckle.ConnectorGSA.Proxy.Results;
 using Speckle.GSA.API;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Speckle.ConnectorGSA.Results
 {
-  public class ResultsAssemblyProcessor : ResultsProcessorBase
+  public class ResultsAssemblyProcessor : ResultsProcessorBase<CsvAssemblyAnnotated>
   {
     public override ResultGroup Group => ResultGroup.Assembly;
 
@@ -15,38 +13,30 @@ namespace Speckle.ConnectorGSA.Results
     {
       if (resultTypes == null || resultTypes.Contains(ResultType.AssemblyForcesAndMoments))
       {
-        this.resultTypes = new List<ResultType>()
+        this.resultTypes = new HashSet<ResultType>
         {
           ResultType.AssemblyForcesAndMoments
         };
       }
-
-      ColumnValuesFns = new Dictionary<ResultType, Func<List<int>, Dictionary<string, object>>>()
-      {
-        { ResultType.AssemblyForcesAndMoments, ResultTypeColumnValues_AssemblyForcesAndMoments }
-      };
     }
-    public override bool LoadFromFile(out int numErrorRows, bool parallel = true)
-      => base.LoadFromFile<CsvAssembly>(out numErrorRows, parallel);
 
-    #region column_values_fns
-
-    protected Dictionary<string, object> ResultTypeColumnValues_AssemblyForcesAndMoments(List<int> indices)
+    protected override bool Scale(CsvAssemblyAnnotated record)
     {
-      var factors = GetFactors(ResultUnitType.Length);
-      var retDict = new Dictionary<string, object>
+      //The way this method is written is different to its counterpart in other result processor classes because there is only one result type
+      if (!resultTypes.Contains(ResultType.AssemblyForcesAndMoments))
       {
-        { "fx", indices.Select(i => ApplyFactors(((CsvAssembly)Records[i]).Fx, factors)).Cast<object>().ToList() },
-        { "fy", indices.Select(i => ApplyFactors(((CsvAssembly)Records[i]).Fy, factors)).Cast<object>().ToList() },
-        { "fz", indices.Select(i => ApplyFactors(((CsvAssembly)Records[i]).Fz, factors)).Cast<object>().ToList() },
-        { "frc", indices.Select(i => ApplyFactors(((CsvAssembly)Records[i]).Frc, factors)).Cast<object>().ToList() },
-        { "mxx", indices.Select(i => ApplyFactors(((CsvAssembly)Records[i]).Mxx, factors)).Cast<object>().ToList() },
-        { "myy", indices.Select(i => ApplyFactors(((CsvAssembly)Records[i]).Myy, factors)).Cast<object>().ToList() },
-        { "mzz", indices.Select(i => ApplyFactors(((CsvAssembly)Records[i]).Mzz, factors)).Cast<object>().ToList() },
-        { "mom", indices.Select(i => ApplyFactors(((CsvAssembly)Records[i]).Mom, factors)).Cast<object>().ToList() },
-      };
-      return retDict;
+        return false;
+      }
+      var factors = GetFactors(ResultUnitType.Length);
+      record.Fx = ApplyFactors(record.Fx, factors);
+      record.Fy = ApplyFactors(record.Fy, factors);
+      record.Fz = ApplyFactors(record.Fz, factors);
+      record.Mxx = ApplyFactors(record.Mxx, factors);
+      record.Myy = ApplyFactors(record.Myy, factors);
+      record.Mzz = ApplyFactors(record.Mzz, factors);
+      //The rest are calculated, and the scaling should be correct since the other inputs they're based on have been scaled above
+      return true;
     }
-    #endregion
+    
   }
 }

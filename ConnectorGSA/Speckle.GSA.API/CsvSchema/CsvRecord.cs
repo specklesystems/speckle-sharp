@@ -1,16 +1,13 @@
-﻿using CsvHelper.Configuration.Attributes;
-using System;
+﻿using System;
 using System.Linq;
 
-namespace Speckle.ConnectorGSA.Results
+namespace Speckle.GSA.API.CsvSchema
 {
-  public class CsvRecord
+  public abstract class CsvRecord
   {
-    [Name("id")]
-    public int ElemId { get; set; }
+    public virtual int ElemId { get; set; }
 
-    [Name("case_id")]
-    public string CaseId { get; set; }
+    public virtual string CaseId { get; set; }
 
     protected float? Magnitude(params float?[] dims)
     {
@@ -44,7 +41,7 @@ namespace Speckle.ConnectorGSA.Results
     }
 
     protected double? Magnitude(params double?[] dims)
-    { 
+    {
       if (dims.Any(v => !v.HasValue))
       {
         return null;

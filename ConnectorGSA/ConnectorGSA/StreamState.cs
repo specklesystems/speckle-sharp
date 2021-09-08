@@ -18,7 +18,9 @@ namespace ConnectorGSA
     public bool IsReceiving { get; set; }
 
     public Speckle.Core.Api.Stream Stream { get; set; }
-    
+
+    public List<Exception> Errors { get; set; } = new List<Exception>();
+
     public Client Client
     {
       get => _client;

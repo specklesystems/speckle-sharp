@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using Speckle.ConnectorGSA.Proxy.Results;
 using Speckle.GSA.API;
+using Speckle.GSA.API.CsvSchema;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,16 +11,16 @@ using System.Threading.Tasks;
 
 namespace Speckle.ConnectorGSA.Results
 {
-  public abstract class ResultsProcessorBase
+  public abstract class ResultsProcessorBase<T> : IResultsProcessor where T : CsvRecord
   {
     protected string filePath;
     protected HashSet<string> cases;
     protected HashSet<int> elemIds;
     protected Dictionary<int, CsvRecord> Records = new Dictionary<int, CsvRecord>();
-    protected Dictionary<ResultType, Func<List<int>, Dictionary<string, object>>> ColumnValuesFns;
+
     protected Dictionary<ResultUnitType, double> unitData;
     protected List<string> orderedCases = null; // will be updated in the first call to GetResultHierarchy
-    protected List<ResultType> resultTypes;
+    protected HashSet<ResultType> resultTypes;
     protected const int significantDigits = 6;
 
     protected Dictionary<int, Dictionary<string, List<int>>> RecordIndices = new Dictionary<int, Dictionary<string, List<int>>>();
@@ -43,10 +44,18 @@ namespace Speckle.ConnectorGSA.Results
       this.unitData = unitData;
     }
 
-    public abstract bool LoadFromFile(out int numErrorRows, bool parallel = true);
+    //public abstract bool LoadFromFile(out int numErrorRows, bool parallel = true);
 
-    protected bool LoadFromFile<T>(out int numErrorRows, bool parallel = true) where T: CsvRecord
+    protected abstract bool Scale(T record);
+
+    //protected bool LoadFromFile(out int numErrorRows, bool parallel = true) where T: CsvRecord
+    public bool LoadFromFile(out int numErrorRows, bool parallel = true)
     {
+      if (!File.Exists(filePath))
+      {
+        numErrorRows = 0;
+        return false;
+      }
       var reader = new StreamReader(filePath);
 
       var tasks = new List<Task>();
@@ -81,6 +90,7 @@ namespace Speckle.ConnectorGSA.Results
 
           if (successfulRead)
           {
+            Scale(record);
             if (elemIds == null && !foundElems.Contains(record.ElemId))
             {
               foundElems.Add(record.ElemId);
@@ -124,38 +134,52 @@ namespace Speckle.ConnectorGSA.Results
       return true;
     }
 
-    // For both embedded and separate results, the format needs to be, per element:
-    // [ load_case [ result_type [ column [ values ] ] ] ]
-    public virtual Dictionary<string, Dictionary<string, object>> GetResultHierarchy(int elemId)
+    public bool GetResultRecords(int index, string loadCase, out List<CsvRecord> records)
     {
-      var retDict = new Dictionary<string, Dictionary<string, object>>();
-
-      if (!RecordIndices.ContainsKey(elemId))
+      if (GetResultRecords(index, loadCase, out List<T> localRecords))
       {
-        return null;
+        records = localRecords.Cast<CsvRecord>().ToList();
+        return true;
       }
-
-      foreach (var caseId in orderedCases)
-      {
-        var indices = (RecordIndices[elemId].ContainsKey(caseId)) ? RecordIndices[elemId][caseId] : null;
-
-        if (indices != null && indices.Count > 0)
-        {
-          var rtDict = new Dictionary<string, object>(resultTypes.Count * 2);
-          foreach (var rt in resultTypes)
-          {
-            var name = ResultTypeName(rt);
-            if (!string.IsNullOrEmpty(name))
-            {
-              rtDict.Add(name, ColumnValuesFns[rt](indices));
-            }
-          }
-          retDict.Add(caseId, rtDict);
-        }
-      }
-
-      return retDict;
+      records = null;
+      return false;
     }
+
+    public bool GetResultRecords(int index, out List<CsvRecord> records)
+    {
+      if (GetResultRecords(index, out List<T> localRecords))
+      {
+        records = localRecords.Cast<CsvRecord>().ToList();
+        return true;
+      }
+      records = null;
+      return false;
+    }
+
+    public virtual bool GetResultRecords(int index, string loadCase, out List<T> records)
+    {
+      if (RecordIndices.ContainsKey(index) && RecordIndices[index] != null && RecordIndices[index].ContainsKey(loadCase) 
+        && RecordIndices[index][loadCase] != null && RecordIndices[index][loadCase].Count > 0)
+      {
+        records = RecordIndices[index][loadCase].Select(i => (T)Records[i]).ToList();
+        return true;
+      }
+      records = null;
+      return false;
+    }
+
+    public virtual bool GetResultRecords(int index, out List<T> records)
+    {
+      if (RecordIndices.ContainsKey(index) && RecordIndices[index]  != null && RecordIndices[index].Count > 0)
+      {
+        records = RecordIndices[index].Keys.SelectMany(k => RecordIndices[index][k].Select(i => (T)Records[i])).ToList();
+        return true;
+      }
+      records = null;
+      return false;
+    }
+
+
     protected float? ApplyFactors(float? val, List<double> factors)
     {
       if (!val.HasValue)

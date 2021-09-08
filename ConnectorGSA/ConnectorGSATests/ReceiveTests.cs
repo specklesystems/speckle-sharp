@@ -1,73 +1,143 @@
 ﻿using ConnectorGSA;
+using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.ConnectorGSA.Proxy.Merger;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Transports;
 using Speckle.GSA.API;
+using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using Stream = Speckle.Core.Api.Stream;
 
 namespace ConnectorGSATests
 {
+  //Issues with receiving:
+  // - members vs elements - i.e. layers
+  // - polylines - design layer: write multi-node lines; for analysis layer: break up into multiple line elements
+  // - meshes - design layer: write 2D element using outside lines only (the GSA does meshing after all);
+  //            for analysis layer: write faces of mesh as elements
+  // - merging of existing objects with newly-received ones before writing back to the GSA instance, only for relevant streams
+  //Other notes:
+  // - results are ignored
   public class ReceiveTests : SpeckleConnectorFixture
   {
     [Fact]
-    public async void ReceiveTest()
+    public async void ReceiveDesignLayer()
     {
       Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
       Instance.GsaModel.Layer = GSALayer.Design;
 
-      var testObj = new SpeckleObject();
+      /* these lines would cause the libraries in %AppData% to be loaded, including the objects.dll library, which contains types
+      * which C# would recognise as being different to the ones used in the converter code
+      * */
+      //var kit = KitManager.GetDefaultKit();
+      //var converter = kit.LoadConverter(Applications.GSA);
+
+      var result = await CoordinateReceive(converter);
+
+      Assert.True(result.Received);
+      Assert.True(result.Converted);
+      Assert.NotEmpty(result.ConvertedObjects);
+
+      var numExpectedByObjectType = new Dictionary<Type, int>()
+      {
+        { typeof(GsaAxis), 3 },
+        { typeof(GsaMatConcrete), 1 },
+        { typeof(GsaPropSec), 8 },
+        { typeof(GsaSection), 1 },
+        { typeof(GsaProp2d), 1 },
+        { typeof(GsaNode), 7 },
+        { typeof(GsaLoadCase), 3 },
+      };
+
+      var objectsByType = result.ConvertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
+
+      foreach (var t in numExpectedByObjectType.Keys)
+      {
+        Assert.True(objectsByType.ContainsKey(t));
+        Assert.NotNull(objectsByType[t]);
+        Assert.Equal(numExpectedByObjectType[t], objectsByType[t].Count());
+      }
+    }
+
+    public async Task<CoordinateReceiveResult> CoordinateReceive(ISpeckleConverter converter)
+    {
+      var result = new CoordinateReceiveResult();
+      Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
 
       var account = AccountManager.GetDefaultAccount();
       var client = new Client(account);
-      var streamState = await LatestStream(client);
+      var streamState = await GetTestStream(client);
 
       //var branchName = streamState.Stream.branches.items.First().name;
       //var branch = await client.BranchGet(streamState.Stream.id, branchName, 1);
       var commitId = streamState.Stream.branch.commits.items.FirstOrDefault().referencedObject;
-     
+
       var transport = new ServerTransport(streamState.Client.Account, streamState.Stream.id);
 
-      await Commands.Receive(commitId, streamState, transport);
+      result.Received = await Commands.Receive(commitId, streamState, transport, converter.CanConvertToNative);
+      if (result.Received)
+      {
+        result.Converted = Commands.ConvertToNative(converter);
+      }
+      if (!result.Received || !result.Converted)
+      {
+        return result;
+      }
 
-      /* these lines would cause the libraries in %AppData% to be loaded, including the objects.dll library, which contains types
-       * which C# would recognise as being different to the ones used in the converter code
-       * */
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.GSA);
-      
-      Commands.ConvertToNative(converter);
+      var nativeTypeGenerations = Instance.GsaModel.Proxy.TxTypeDependencyGenerations;
+      var natives = new List<GsaRecord>();
+      foreach (var gen in nativeTypeGenerations)
+      {
+        foreach (var t in gen)
+        {
+          if (Instance.GsaModel.Cache.GetNative(t, out var currNatives) && currNatives != null && currNatives.Any())
+          {
+            natives.AddRange(currNatives);
+          }
+        }
+      }
 
-      //Instance.GsaModel.Proxy.NewFile(true);
+      if (natives.Any())
+      {
+        result.ConvertedObjects = natives;
+      }
+
+      return result;
     }
 
-    private async Task<StreamState> LatestStream(Client client)
+    
+    private async Task<StreamState> GetTestStream(Client client)
     {
       StreamState streamState = null;
-      Stream latestStream = null;
+      Speckle.Core.Api.Stream testStream = null;
 
       try
       {
         var streams = await client.StreamsGet(1);
-        latestStream = streams.First();
+        testStream = streams.FirstOrDefault(s => s.name.Contains(testStreamMarker));
 
-        var branches = await client.StreamGetBranches(latestStream.id, 1);
-        latestStream.branch = branches.First();
+        var branches = await client.StreamGetBranches(testStream.id, 1);
+        testStream.branch = branches.First();
       }
       catch (Exception e)
       {
-        
+
       }
 
-      streamState = new StreamState() { Client = client, Stream = latestStream };
+      streamState = new StreamState() { Client = client, Stream = testStream };
       return streamState;
+    }
+
+    public struct CoordinateReceiveResult
+    {
+      public bool Received;
+      public bool Converted;
+      public List<GsaRecord> ConvertedObjects;
     }
   }
 }

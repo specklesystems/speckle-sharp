@@ -12,15 +12,24 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Speckle.GSA.API.GwaSchema;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.GSA.API.CsvSchema;
 
 namespace Speckle.ConnectorGSA.Proxy
 {
   public class GsaProxy : IGSAProxy
   {
     //Used by the app in ordering the calling of the conversion code
-    public List<List<Type>> TxTypeDependencyGenerations { get; private set; } = new List<List<Type>>();
+    public List<List<Type>> TxTypeDependencyGenerations
+    {
+      get
+      {
+        InitialiseIfNecessary();
+        return NativeTypeDependencyGenerations;
+      }
+    }
     public List<Type> SchemaTypes { get => ParsersBySchemaType.Keys.ToList(); }
 
+    private List<List<Type>> NativeTypeDependencyGenerations; //leaves first, all the way up to roots
     private Dictionary<Type, Type> ParsersBySchemaType = new Dictionary<Type, Type>();  //Used for writing to the GSA instance
     //private Dictionary<GwaKeyword, Type> ParsersByKeyword = new Dictionary<GwaKeyword, Type>(); //Used for reading from the GSA instance
     private IPairCollection<GwaKeyword, Type> ParsersSchemaType = new PairCollection<GwaKeyword, Type>();
@@ -137,7 +146,7 @@ namespace Speckle.ConnectorGSA.Proxy
 
     //Results-related
     private string resultDir = null;
-    private Dictionary<ResultGroup, ResultsProcessorBase> resultProcessors = new Dictionary<ResultGroup, ResultsProcessorBase>();
+    private Dictionary<ResultGroup, IResultsProcessor> resultProcessors = new Dictionary<ResultGroup, IResultsProcessor>();
     private List<ResultType> allResultTypes;
 
     private List<string> cases = null;
@@ -390,7 +399,7 @@ namespace Speckle.ConnectorGSA.Proxy
         var parserTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, gwaParserInterfaceType)
           && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
           && Helper.IsSelfContained(t)
-          && ((layer == GSALayer.Design) && Helper.IsDesignLayer(t) || (layer == GSALayer.Analysis) && Helper.IsDesignLayer(t))
+          && ((layer == GSALayer.Design && Helper.IsDesignLayer(t)) || (layer == GSALayer.Analysis && Helper.IsAnalysisLayer(t)))
           && !t.IsAbstract
           ).ToDictionary(pt => pt, pt => Helper.GetGwaKeyword(pt));
 
@@ -420,7 +429,14 @@ namespace Speckle.ConnectorGSA.Proxy
         }
         ParsersBySchemaType = parserTypes.Keys.ToDictionary(pt => pt.BaseType.GenericTypeArguments.First(), pt => pt);
 
-        TxTypeDependencyGenerations.Clear();
+        if (NativeTypeDependencyGenerations == null)
+        {
+          NativeTypeDependencyGenerations = new List<List<Type>>();
+        }
+        else
+        {
+          NativeTypeDependencyGenerations.Clear();
+        }
         foreach (var gen in gens)
         {
           var genParserTypes = new List<Type>();
@@ -433,7 +449,7 @@ namespace Speckle.ConnectorGSA.Proxy
               genParserTypes.Add(schemaType);
             }
           }
-          TxTypeDependencyGenerations.Add(genParserTypes);
+          NativeTypeDependencyGenerations.Add(genParserTypes);
         }
 
         initialised = true;
@@ -459,22 +475,10 @@ namespace Speckle.ConnectorGSA.Proxy
     //Tuple: keyword | index | Application ID | GWA command | Set or Set At
     public bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
     {
-      GSALayer layer = Instance.GsaModel.Layer;
-      if (layer != prevLayer || !initialised)
+      if (!InitialiseIfNecessary())
       {
-        if (!Initialise(layer))
-        {
-          records = null;
-          initialisedError = true;
-          //Already tried this layer once and it was an error, so don't try again
-          return false;
-        }
-        else
-        {
-          prevLayer = layer;
-        }
-        initialised = true;
-        initialisedError = false;
+        records = null;
+        return false;
       }
 
       var retRecords = new List<GsaRecord>();
@@ -699,6 +703,27 @@ namespace Speckle.ConnectorGSA.Proxy
       return true; 
     }
 
+    private bool InitialiseIfNecessary()
+    {
+      GSALayer layer = Instance.GsaModel.Layer;
+      if (layer != prevLayer || !initialised)
+      {
+        if (!Initialise(layer))
+        {
+          initialisedError = true;
+          //Already tried this layer once and it was an error, so don't try again
+          return false;
+        }
+        else
+        {
+          prevLayer = layer;
+        }
+        initialised = true;
+        initialisedError = false;
+      }
+      return true;
+    }
+
     private string FormatApplicationId(string keyword, int index, string applicationId)
     {
       //It has been observed that sometimes GET commands don't include the SID despite there being one.  For some (but not all)
@@ -920,10 +945,10 @@ namespace Speckle.ConnectorGSA.Proxy
 
     #region results
 
-    public bool PrepareResults(List<ResultType> resultTypes, int numBeamPoints = 3)
+    public bool PrepareResults(IEnumerable<ResultType> resultTypes, int numBeamPoints = 3)
     {
       this.resultDir = Path.Combine(Environment.CurrentDirectory, "GSAExport");
-      this.allResultTypes = resultTypes;
+      this.allResultTypes = resultTypes.ToList();
 
       ProcessUnitGwaData();
 
@@ -964,14 +989,36 @@ namespace Speckle.ConnectorGSA.Proxy
       {
         return false;
       }
-      resultProcessors[group].LoadFromFile(out numErrorRows);
-      return true;
+      
+      return resultProcessors[group].LoadFromFile(out numErrorRows);
     }
 
+    /*
     public bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1)
     {
       valueHierarchy = (resultProcessors.ContainsKey(group)) ? resultProcessors[group].GetResultHierarchy(index) : new Dictionary<string, Dictionary<string, object>>();
       return (valueHierarchy != null && valueHierarchy.Count > 0);
+    }
+    */
+
+    public bool GetResultRecords(ResultGroup group, int index, string loadCase, out List<CsvRecord> records)
+    {
+      if (resultProcessors.ContainsKey(group) && resultProcessors[group].GetResultRecords(index, loadCase, out records))
+      {
+        return true;
+      }
+      records = null;
+      return false;
+    }
+
+    public bool GetResultRecords(ResultGroup group, int index, out List<CsvRecord> records)
+    {
+      if (resultProcessors.ContainsKey(group) && resultProcessors[group].GetResultRecords(index, out records))
+      {
+        return true;
+      }
+      records = null;
+      return false;
     }
 
     public bool ClearResults(ResultGroup group)
@@ -1188,6 +1235,7 @@ namespace Speckle.ConnectorGSA.Proxy
     {
       return FormatStreamIdSidTag(streamId) + FormatApplicationIdSidTag(applicationId);
     }
+
     #endregion
   }
 }
