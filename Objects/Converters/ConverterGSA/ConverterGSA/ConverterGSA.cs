@@ -4,7 +4,8 @@ using Objects.Structural.Geometry;
 using Objects.Structural.Loading;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties;
-using static Objects.Structural.Properties.SectionProfile;
+using Objects.Structural.Properties.Profiles;
+using static Objects.Structural.Properties.Profiles.SectionProfile;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.GSA.Loading;
 using Objects.Structural.GSA.Properties;
@@ -816,7 +817,6 @@ namespace ConverterGSA
         //-- App agnostic --
         name = gsaSection.Name,
         memberType = MemberType.Generic1D,
-        grade = "", // TO DO: what is grade used for?
         referencePoint = GetReferencePoint(gsaSection.ReferencePoint),
 
         //-- GSA specific --
@@ -861,7 +861,6 @@ namespace ConverterGSA
         name = gsaProp2d.Name,
         colour = gsaProp2d.Colour.ToString(),
         zOffset = gsaProp2d.RefZ,
-        grade = "", // TO DO: what is grade used for?
         orientationAxis = GetOrientationAxis(gsaProp2d),
         refSurface = GetReferenceSurface(gsaProp2d),
 
@@ -2156,8 +2155,8 @@ namespace ConverterGSA
       };
       if (p.b.HasValue) speckleProfile.width = p.b.Value;
       if (p.d.HasValue) speckleProfile.depth = p.d.Value;
-      if (p.tw.HasValue) speckleProfile.thickness = p.tw.Value;
-      if (p.tf.HasValue) speckleProfile.thickness = p.tf.Value;
+      if (p.tw.HasValue) speckleProfile.webThickness = p.tw.Value;
+      if (p.tf.HasValue) speckleProfile.flangeThickness = p.tf.Value;
       return speckleProfile;
     }
     private SectionProfile GetProfileStandardCircular(ProfileDetailsStandard gsaProfile)
@@ -2180,7 +2179,7 @@ namespace ConverterGSA
         shapeType = ShapeType.Circular,
       };
       if (p.d.HasValue) speckleProfile.radius = p.d.Value / 2;
-      if (p.t.HasValue) speckleProfile.thickness = p.t.Value;
+      if (p.t.HasValue) speckleProfile.wallThickness = p.t.Value;
       return speckleProfile;
     }
     private SectionProfile GetProfileStandardISection(ProfileDetailsStandard gsaProfile)
