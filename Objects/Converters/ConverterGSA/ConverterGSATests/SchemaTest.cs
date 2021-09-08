@@ -12,6 +12,7 @@ using Restraint = Objects.Structural.Geometry.Restraint;
 using Objects.Structural.Loading;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties;
+using static Objects.Structural.Properties.SectionProfile;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.GSA.Loading;
 using Objects.Structural.GSA.Properties;
@@ -394,7 +395,7 @@ namespace ConverterGSATests
       gsaRecords.Add(GsaPropSprExample("property spring 1"));
 
       //Gen #2
-      gsaRecords.AddRange(GsaNodeExamples(5, "node 1", "node 2", "node 3", "node 4"));
+      gsaRecords.AddRange(GsaNodeExamples(5, "node 1", "node 2", "node 3", "node 4", "node 5"));
       gsaRecords.Add(GsaProp2dExample("prop 2D 1"));
       gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
 
@@ -425,7 +426,7 @@ namespace ConverterGSATests
       Assert.Equal("member 1", speckleMembers1D[0].applicationId);
 
       //Checks - Member 2
-      Assert.Equal("member 2", speckleMembers2D[0].applicationId);
+      //Assert.Equal("member 2", speckleMembers2D[0].applicationId);
     }
 
     #endregion
@@ -924,8 +925,19 @@ namespace ConverterGSATests
       gsaRecords.Add(GsaMatSteelExample("steel material 1"));
 
       //Gen #2
-      var gsaSection = GsaCatalogueSectionExample("section 1");
-      gsaRecords.Add(gsaSection);
+      var gsaSection = new List<GsaSection>();
+      gsaSection.Add(GsaCatalogueSectionExample("section 1"));
+      gsaSection.Add(GsaExplicitSectionExample("section 2"));
+      gsaSection.Add(GsaPerimeterSectionExample("section 3"));
+      gsaSection.Add(GsaRectangularSectionExample("section 4"));
+      gsaSection.Add(GsaRectangularHollowSectionExample("section 5"));
+      gsaSection.Add(GsaCircularSectionExample("section 6"));
+      gsaSection.Add(GsaCircularHollowSectionExample("section 7"));
+      gsaSection.Add(GsaISectionSectionExample("section 8"));
+      gsaSection.Add(GsaTSectionSectionExample("section 9"));
+      gsaSection.Add(GsaAngleSectionExample("section 10"));
+      gsaSection.Add(GsaChannelSectionExample("section 11"));
+      gsaRecords.AddRange(gsaSection);
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
@@ -942,30 +954,227 @@ namespace ConverterGSATests
       Assert.NotEmpty(structuralObjects);
       Assert.Contains(structuralObjects, so => so is GSAProperty1D);
 
-      var speckleProperty1D = (GSAProperty1D)structuralObjects.FirstOrDefault(so => so is GSAProperty1D);
-
-      //Checks
-      Assert.Equal("section 1", speckleProperty1D.applicationId);
-      Assert.Equal(gsaSection.Colour.ToString(), speckleProperty1D.colour);
-      Assert.Equal(MemberType.Generic1D, speckleProperty1D.memberType);
-      Assert.Equal("steel material 1", speckleProperty1D.material.applicationId); //assume tests are done elsewhere
-      Assert.Equal("", speckleProperty1D.grade);
-      Assert.Equal(((ProfileDetailsCatalogue)((SectionComp)gsaSection.Components[0]).ProfileDetails).Profile, speckleProperty1D.profile.shapeDescription);
-      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D.referencePoint);
-      Assert.Equal(0, speckleProperty1D.offsetY);
-      Assert.Equal(0, speckleProperty1D.offsetZ);
-      Assert.Equal(0, speckleProperty1D.area);
-      Assert.Equal(0, speckleProperty1D.Iyy);
-      Assert.Equal(0, speckleProperty1D.Izz);
-      Assert.Equal(0, speckleProperty1D.J);
-      Assert.Equal(0, speckleProperty1D.Ky);
-      Assert.Equal(0, speckleProperty1D.Kz);
-      Assert.Equal(gsaSection.Index.Value, speckleProperty1D.nativeId);
-      Assert.Equal(gsaSection.Mass.Value, speckleProperty1D.additionalMass); 
-      Assert.Equal(gsaSection.Cost.Value, speckleProperty1D.cost);
-      Assert.Equal(0, speckleProperty1D.poolRef);
+      var speckleProperty1D = structuralObjects.FindAll(so => so is GSAProperty1D).Select(so => (GSAProperty1D)so).ToList();
 
       //TO DO: update once modifiers have been included in the section definition
+      //Check
+      #region Catalogue
+      Assert.Equal("section 1", speckleProperty1D[0].applicationId);
+      Assert.Equal(gsaSection[0].Colour.ToString(), speckleProperty1D[0].colour);
+      Assert.Equal(MemberType.Generic1D, speckleProperty1D[0].memberType);
+      Assert.Equal("steel material 1", speckleProperty1D[0].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("", speckleProperty1D[0].grade);
+      Assert.Equal(ShapeType.Catalogue, speckleProperty1D[0].profile.shapeType);
+      var gsaProfileCatalogue = (ProfileDetailsCatalogue)((SectionComp)gsaSection[0].Components[0]).ProfileDetails;
+      Assert.Equal(gsaProfileCatalogue.Profile, ((Catalogue)speckleProperty1D[0].profile).description);
+      Assert.Equal(gsaProfileCatalogue.Profile.Split(' ')[1].Split('-')[0], ((Catalogue)speckleProperty1D[0].profile).catalogueName);
+      Assert.Equal(gsaProfileCatalogue.Profile.Split(' ')[1].Split('-')[1], ((Catalogue)speckleProperty1D[0].profile).sectionType);
+      Assert.Equal(gsaProfileCatalogue.Profile.Split(' ')[2], ((Catalogue)speckleProperty1D[0].profile).sectionName);
+      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D[0].referencePoint);
+      Assert.Equal(0, speckleProperty1D[0].offsetY);
+      Assert.Equal(0, speckleProperty1D[0].offsetZ);
+      Assert.Equal(gsaSection[0].Index.Value, speckleProperty1D[0].nativeId);
+      Assert.Equal(gsaSection[0].Mass.Value, speckleProperty1D[0].additionalMass); 
+      Assert.Equal(gsaSection[0].Cost.Value, speckleProperty1D[0].cost);
+      Assert.Null(speckleProperty1D[0].poolRef);
+      #endregion
+      #region Explicit
+      Assert.Equal("section 2", speckleProperty1D[1].applicationId);
+      Assert.Equal(gsaSection[1].Colour.ToString(), speckleProperty1D[1].colour);
+      Assert.Equal(MemberType.Generic1D, speckleProperty1D[1].memberType);
+      Assert.Equal("steel material 1", speckleProperty1D[1].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("", speckleProperty1D[1].grade);
+      Assert.Equal(ShapeType.Explicit, speckleProperty1D[1].profile.shapeType);
+      var gsaProfileExplicit = (ProfileDetailsExplicit)((SectionComp)gsaSection[1].Components[0]).ProfileDetails;
+      Assert.Equal(gsaProfileExplicit.Area.Value, ((Explicit)speckleProperty1D[1].profile).area);
+      Assert.Equal(gsaProfileExplicit.Iyy.Value, ((Explicit)speckleProperty1D[1].profile).Iyy);
+      Assert.Equal(gsaProfileExplicit.Izz.Value, ((Explicit)speckleProperty1D[1].profile).Izz);
+      Assert.Equal(gsaProfileExplicit.J.Value, ((Explicit)speckleProperty1D[1].profile).J);
+      Assert.Equal(gsaProfileExplicit.Ky.Value, ((Explicit)speckleProperty1D[1].profile).Ky);
+      Assert.Equal(gsaProfileExplicit.Kz.Value, ((Explicit)speckleProperty1D[1].profile).Kz);
+      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D[1].referencePoint);
+      Assert.Equal(0, speckleProperty1D[1].offsetY);
+      Assert.Equal(0, speckleProperty1D[1].offsetZ);
+      Assert.Equal(gsaSection[1].Index.Value, speckleProperty1D[1].nativeId);
+      Assert.Equal(gsaSection[1].Mass.Value, speckleProperty1D[1].additionalMass);
+      Assert.Equal(gsaSection[1].Cost.Value, speckleProperty1D[1].cost);
+      Assert.Null(speckleProperty1D[1].poolRef);
+      #endregion
+      #region Perimeter
+      Assert.Equal("section 3", speckleProperty1D[2].applicationId);
+      Assert.Equal(gsaSection[2].Colour.ToString(), speckleProperty1D[2].colour);
+      Assert.Equal(MemberType.Generic1D, speckleProperty1D[2].memberType);
+      Assert.Equal("steel material 1", speckleProperty1D[2].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("", speckleProperty1D[2].grade);
+      Assert.Equal(ShapeType.Perimeter, speckleProperty1D[2].profile.shapeType);
+      var gsaProfilePerimeter = (ProfileDetailsPerimeter)((SectionComp)gsaSection[2].Components[0]).ProfileDetails;
+      // TO DO: test ((Perimeter)speckleProperty1D[2].profile).outline
+      //             ((Perimeter)speckleProperty1D[2].profile).voids
+      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D[2].referencePoint);
+      Assert.Equal(0, speckleProperty1D[2].offsetY);
+      Assert.Equal(0, speckleProperty1D[2].offsetZ);
+      Assert.Equal(gsaSection[2].Index.Value, speckleProperty1D[2].nativeId);
+      Assert.Equal(gsaSection[2].Mass.Value, speckleProperty1D[2].additionalMass);
+      Assert.Equal(gsaSection[2].Cost.Value, speckleProperty1D[2].cost);
+      Assert.Null(speckleProperty1D[2].poolRef);
+      #endregion
+      #region Standard
+      #region Rectangular
+      Assert.Equal("section 4", speckleProperty1D[3].applicationId);
+      Assert.Equal(gsaSection[3].Colour.ToString(), speckleProperty1D[3].colour);
+      Assert.Equal(MemberType.Generic1D, speckleProperty1D[3].memberType);
+      Assert.Equal("steel material 1", speckleProperty1D[3].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("", speckleProperty1D[3].grade);
+      Assert.Equal(ShapeType.Rectangular, speckleProperty1D[3].profile.shapeType);
+      var gsaProfileRectangular = (ProfileDetailsRectangular)((SectionComp)gsaSection[3].Components[0]).ProfileDetails;
+      Assert.Equal(gsaProfileRectangular.b.Value, ((Rectangular)speckleProperty1D[3].profile).width);
+      Assert.Equal(gsaProfileRectangular.d.Value, ((Rectangular)speckleProperty1D[3].profile).depth);
+      Assert.Equal(0, ((Rectangular)speckleProperty1D[3].profile).thickness);
+      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D[3].referencePoint);
+      Assert.Equal(0, speckleProperty1D[3].offsetY);
+      Assert.Equal(0, speckleProperty1D[3].offsetZ);
+      Assert.Equal(gsaSection[3].Index.Value, speckleProperty1D[3].nativeId);
+      Assert.Equal(gsaSection[3].Mass.Value, speckleProperty1D[3].additionalMass);
+      Assert.Equal(gsaSection[3].Cost.Value, speckleProperty1D[3].cost);
+      Assert.Null(speckleProperty1D[3].poolRef);
+      #endregion
+      #region Rectangular Hollow
+      Assert.Equal("section 5", speckleProperty1D[4].applicationId);
+      Assert.Equal(gsaSection[4].Colour.ToString(), speckleProperty1D[4].colour);
+      Assert.Equal(MemberType.Generic1D, speckleProperty1D[4].memberType);
+      Assert.Equal("steel material 1", speckleProperty1D[4].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("", speckleProperty1D[4].grade);
+      Assert.Equal(ShapeType.Rectangular, speckleProperty1D[4].profile.shapeType);
+      var gsaProfileRHS = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[4].Components[0]).ProfileDetails;
+      Assert.Equal(gsaProfileRHS.b.Value, ((Rectangular)speckleProperty1D[4].profile).width);
+      Assert.Equal(gsaProfileRHS.d.Value, ((Rectangular)speckleProperty1D[4].profile).depth);
+      //TO DO: update rectangle to have two thicknesses - Assert.Equal(gsaProfileRHS.tw.Value, ((Rectangular)speckleProperty1D[4].profile).thickness);
+      Assert.Equal(gsaProfileRHS.tf.Value, ((Rectangular)speckleProperty1D[4].profile).thickness);
+      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D[4].referencePoint);
+      Assert.Equal(0, speckleProperty1D[4].offsetY);
+      Assert.Equal(0, speckleProperty1D[4].offsetZ);
+      Assert.Equal(gsaSection[4].Index.Value, speckleProperty1D[4].nativeId);
+      Assert.Equal(gsaSection[4].Mass.Value, speckleProperty1D[4].additionalMass);
+      Assert.Equal(gsaSection[4].Cost.Value, speckleProperty1D[4].cost);
+      Assert.Null(speckleProperty1D[4].poolRef);
+      #endregion
+      #region Circular
+      Assert.Equal("section 6", speckleProperty1D[5].applicationId);
+      Assert.Equal(gsaSection[5].Colour.ToString(), speckleProperty1D[5].colour);
+      Assert.Equal(MemberType.Generic1D, speckleProperty1D[5].memberType);
+      Assert.Equal("steel material 1", speckleProperty1D[5].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("", speckleProperty1D[5].grade);
+      Assert.Equal(ShapeType.Circular, speckleProperty1D[5].profile.shapeType);
+      var gsaProfileCircular = (ProfileDetailsCircular)((SectionComp)gsaSection[5].Components[0]).ProfileDetails;
+      Assert.Equal(gsaProfileCircular.d.Value / 2, ((Circular)speckleProperty1D[5].profile).radius);
+      Assert.Equal(0, ((Circular)speckleProperty1D[5].profile).thickness);
+      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D[5].referencePoint);
+      Assert.Equal(0, speckleProperty1D[5].offsetY);
+      Assert.Equal(0, speckleProperty1D[5].offsetZ);
+      Assert.Equal(gsaSection[5].Index.Value, speckleProperty1D[5].nativeId);
+      Assert.Equal(gsaSection[5].Mass.Value, speckleProperty1D[5].additionalMass);
+      Assert.Equal(gsaSection[5].Cost.Value, speckleProperty1D[5].cost);
+      Assert.Null(speckleProperty1D[3].poolRef);
+      #endregion
+      #region Circular Hollow
+      Assert.Equal("section 7", speckleProperty1D[6].applicationId);
+      Assert.Equal(gsaSection[6].Colour.ToString(), speckleProperty1D[6].colour);
+      Assert.Equal(MemberType.Generic1D, speckleProperty1D[6].memberType);
+      Assert.Equal("steel material 1", speckleProperty1D[6].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("", speckleProperty1D[6].grade);
+      Assert.Equal(ShapeType.Circular, speckleProperty1D[6].profile.shapeType);
+      var gsaProfileCHS = (ProfileDetailsCircularHollow)((SectionComp)gsaSection[6].Components[0]).ProfileDetails;
+      Assert.Equal(gsaProfileCHS.d.Value / 2, ((Circular)speckleProperty1D[6].profile).radius);
+      Assert.Equal(gsaProfileCHS.t.Value, ((Circular)speckleProperty1D[6].profile).thickness);
+      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D[6].referencePoint);
+      Assert.Equal(0, speckleProperty1D[6].offsetY);
+      Assert.Equal(0, speckleProperty1D[6].offsetZ);
+      Assert.Equal(gsaSection[6].Index.Value, speckleProperty1D[6].nativeId);
+      Assert.Equal(gsaSection[6].Mass.Value, speckleProperty1D[6].additionalMass);
+      Assert.Equal(gsaSection[6].Cost.Value, speckleProperty1D[6].cost);
+      Assert.Null(speckleProperty1D[6].poolRef);
+      #endregion
+      #region I Section
+      Assert.Equal("section 8", speckleProperty1D[7].applicationId);
+      Assert.Equal(gsaSection[7].Colour.ToString(), speckleProperty1D[7].colour);
+      Assert.Equal(MemberType.Generic1D, speckleProperty1D[7].memberType);
+      Assert.Equal("steel material 1", speckleProperty1D[7].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("", speckleProperty1D[7].grade);
+      Assert.Equal(ShapeType.I, speckleProperty1D[7].profile.shapeType);
+      var gsaProfileISection = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[7].Components[0]).ProfileDetails;
+      Assert.Equal(gsaProfileISection.b.Value, ((ISection)speckleProperty1D[7].profile).width);
+      Assert.Equal(gsaProfileISection.d.Value, ((ISection)speckleProperty1D[7].profile).depth);
+      Assert.Equal(gsaProfileISection.tw.Value, ((ISection)speckleProperty1D[7].profile).webThickness);
+      Assert.Equal(gsaProfileISection.tf.Value, ((ISection)speckleProperty1D[7].profile).flangeThickness);
+      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D[7].referencePoint);
+      Assert.Equal(0, speckleProperty1D[7].offsetY);
+      Assert.Equal(0, speckleProperty1D[7].offsetZ);
+      Assert.Equal(gsaSection[7].Index.Value, speckleProperty1D[7].nativeId);
+      Assert.Equal(gsaSection[7].Mass.Value, speckleProperty1D[7].additionalMass);
+      Assert.Equal(gsaSection[7].Cost.Value, speckleProperty1D[7].cost);
+      Assert.Null(speckleProperty1D[7].poolRef);
+      #endregion
+      #region T Section
+      Assert.Equal("section 9", speckleProperty1D[8].applicationId);
+      Assert.Equal(gsaSection[8].Colour.ToString(), speckleProperty1D[8].colour);
+      Assert.Equal(MemberType.Generic1D, speckleProperty1D[8].memberType);
+      Assert.Equal("steel material 1", speckleProperty1D[8].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("", speckleProperty1D[8].grade);
+      Assert.Equal(ShapeType.Tee, speckleProperty1D[8].profile.shapeType);
+      var gsaProfileTSection = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[8].Components[0]).ProfileDetails;
+      Assert.Equal(gsaProfileTSection.b.Value, ((Tee)speckleProperty1D[8].profile).width);
+      Assert.Equal(gsaProfileTSection.d.Value, ((Tee)speckleProperty1D[8].profile).depth);
+      Assert.Equal(gsaProfileTSection.tw.Value, ((Tee)speckleProperty1D[8].profile).webThickness);
+      Assert.Equal(gsaProfileTSection.tf.Value, ((Tee)speckleProperty1D[8].profile).flangeThickness);
+      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D[8].referencePoint);
+      Assert.Equal(0, speckleProperty1D[8].offsetY);
+      Assert.Equal(0, speckleProperty1D[8].offsetZ);
+      Assert.Equal(gsaSection[8].Index.Value, speckleProperty1D[8].nativeId);
+      Assert.Equal(gsaSection[8].Mass.Value, speckleProperty1D[8].additionalMass);
+      Assert.Equal(gsaSection[8].Cost.Value, speckleProperty1D[8].cost);
+      Assert.Null(speckleProperty1D[8].poolRef);
+      #endregion
+      #region Angle
+      Assert.Equal("section 10", speckleProperty1D[9].applicationId);
+      Assert.Equal(gsaSection[9].Colour.ToString(), speckleProperty1D[9].colour);
+      Assert.Equal(MemberType.Generic1D, speckleProperty1D[9].memberType);
+      Assert.Equal("steel material 1", speckleProperty1D[9].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("", speckleProperty1D[9].grade);
+      Assert.Equal(ShapeType.Angle, speckleProperty1D[9].profile.shapeType);
+      var gsaProfileAngle = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[9].Components[0]).ProfileDetails;
+      Assert.Equal(gsaProfileAngle.b.Value, ((Angle)speckleProperty1D[9].profile).width);
+      Assert.Equal(gsaProfileAngle.d.Value, ((Angle)speckleProperty1D[9].profile).depth);
+      Assert.Equal(gsaProfileAngle.tw.Value, ((Angle)speckleProperty1D[9].profile).webThickness);
+      Assert.Equal(gsaProfileAngle.tf.Value, ((Angle)speckleProperty1D[9].profile).flangeThickness);
+      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D[3].referencePoint);
+      Assert.Equal(0, speckleProperty1D[9].offsetY);
+      Assert.Equal(0, speckleProperty1D[9].offsetZ);
+      Assert.Equal(gsaSection[9].Index.Value, speckleProperty1D[9].nativeId);
+      Assert.Equal(gsaSection[9].Mass.Value, speckleProperty1D[9].additionalMass);
+      Assert.Equal(gsaSection[9].Cost.Value, speckleProperty1D[9].cost);
+      Assert.Null(speckleProperty1D[9].poolRef);
+      #endregion
+      #region Channel
+      Assert.Equal("section 11", speckleProperty1D[10].applicationId);
+      Assert.Equal(gsaSection[10].Colour.ToString(), speckleProperty1D[10].colour);
+      Assert.Equal(MemberType.Generic1D, speckleProperty1D[10].memberType);
+      Assert.Equal("steel material 1", speckleProperty1D[10].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("", speckleProperty1D[10].grade);
+      Assert.Equal(ShapeType.Channel, speckleProperty1D[10].profile.shapeType);
+      var gsaProfileChannel = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[10].Components[0]).ProfileDetails;
+      Assert.Equal(gsaProfileChannel.b.Value, ((Channel)speckleProperty1D[10].profile).width);
+      Assert.Equal(gsaProfileChannel.d.Value, ((Channel)speckleProperty1D[10].profile).depth);
+      Assert.Equal(gsaProfileChannel.tw.Value, ((Channel)speckleProperty1D[10].profile).webThickness);
+      Assert.Equal(gsaProfileChannel.tf.Value, ((Channel)speckleProperty1D[10].profile).flangeThickness);
+      Assert.Equal(BaseReferencePoint.Centroid, speckleProperty1D[10].referencePoint);
+      Assert.Equal(0, speckleProperty1D[10].offsetY);
+      Assert.Equal(0, speckleProperty1D[10].offsetZ);
+      Assert.Equal(gsaSection[10].Index.Value, speckleProperty1D[10].nativeId);
+      Assert.Equal(gsaSection[10].Mass.Value, speckleProperty1D[10].additionalMass);
+      Assert.Equal(gsaSection[10].Cost.Value, speckleProperty1D[10].cost);
+      Assert.Null(speckleProperty1D[3].poolRef);
+      #endregion
+      #endregion
     }
 
     [Fact]
@@ -1942,6 +2151,328 @@ namespace ConverterGSATests
             Exposed = 1,
             Beta = 0.4,
             Type = SectionSteelSectionType.HotRolled,
+            Plate = SectionSteelPlateType.Undefined,
+            Locked = false
+          }
+        },
+        Environ = false
+      };
+    }
+
+    private GsaSection GsaExplicitSectionExample(string appId)
+    {
+      return new GsaSection()
+      {
+        Index = 2,
+        Name = "2",
+        ApplicationId = appId,
+        Colour = Colour.NO_RGB,
+        Type = Section1dType.Generic,
+        //PoolIndex = 0,
+        ReferencePoint = ReferencePoint.Centroid,
+        RefY = 0,
+        RefZ = 0,
+        Mass = 0,
+        Fraction = 1,
+        Cost = 0,
+        Left = 0,
+        Right = 0,
+        Slab = 0,
+        Components = new List<GsaSectionComponentBase>()
+        {
+          new SectionComp()
+          {
+            Name = "",
+            //MatAnalIndex = 0,
+            MaterialType = Section1dMaterialType.STEEL,
+            MaterialIndex = 1,
+            OffsetY = 0,
+            OffsetZ = 0,
+            Rotation = 0,
+            Reflect = ComponentReflection.NONE,
+            //Pool = 0,
+            TaperType = Section1dTaperType.NONE,
+            //TaperPos = 0
+            ProfileGroup = Section1dProfileGroup.Explicit,
+            ProfileDetails = new ProfileDetailsExplicit()
+            {
+              Group = Section1dProfileGroup.Explicit,
+              Area = 1,
+              Iyy = 2,
+              Izz = 3,
+              J = 4,
+              Ky = 5,
+              Kz = 6
+            }
+          },
+          new SectionSteel()
+          {
+            //GradeIndex = 0,
+            PlasElas = 1,
+            NetGross = 1,
+            Exposed = 1,
+            Beta = 0.4,
+            Type = SectionSteelSectionType.Undefined,
+            Plate = SectionSteelPlateType.Undefined,
+            Locked = false
+          }
+        },
+        Environ = false
+      };
+    }
+
+    private GsaSection GsaPerimeterSectionExample(string appId)
+    {
+      return new GsaSection()
+      {
+        Index = 3,
+        Name = "3",
+        ApplicationId = appId,
+        Colour = Colour.NO_RGB,
+        Type = Section1dType.Generic,
+        //PoolIndex = 0,
+        ReferencePoint = ReferencePoint.Centroid,
+        RefY = 0,
+        RefZ = 0,
+        Mass = 0,
+        Fraction = 1,
+        Cost = 0,
+        Left = 0,
+        Right = 0,
+        Slab = 0,
+        Components = new List<GsaSectionComponentBase>()
+        {
+          new SectionComp()
+          {
+            Name = "",
+            //MatAnalIndex = 0,
+            MaterialType = Section1dMaterialType.STEEL,
+            MaterialIndex = 1,
+            OffsetY = 0,
+            OffsetZ = 0,
+            Rotation = 0,
+            Reflect = ComponentReflection.NONE,
+            //Pool = 0,
+            TaperType = Section1dTaperType.NONE,
+            //TaperPos = 0
+            ProfileGroup = Section1dProfileGroup.Perimeter,
+            ProfileDetails = new ProfileDetailsPerimeter()
+            {
+              Group = Section1dProfileGroup.Perimeter,
+              Type = "P",
+              Actions = new List<string>(){ "M", "L", "L", "L", "M", "L", "L", "L" },
+              Y = new List<double?>(){ -50, 50, 50, -50, -40, 40, 40, -40 },
+              Z = new List<double?>(){ -50, -50, 50, 50, -40, -40, 40, 40}
+            }
+          },
+          new SectionSteel()
+          {
+            //GradeIndex = 0,
+            PlasElas = 1,
+            NetGross = 1,
+            Exposed = 1,
+            Beta = 0.4,
+            Type = SectionSteelSectionType.Undefined,
+            Plate = SectionSteelPlateType.Undefined,
+            Locked = false
+          }
+        },
+        Environ = false
+      };
+    }
+
+    private GsaSection GsaStandardSectionExample(string appId)
+    {
+      return new GsaSection()
+      {
+        Index = 1,
+        Name = "1",
+        ApplicationId = appId,
+        Colour = Colour.NO_RGB,
+        Type = Section1dType.Generic,
+        //PoolIndex = 0,
+        ReferencePoint = ReferencePoint.Centroid,
+        RefY = 0,
+        RefZ = 0,
+        Mass = 0,
+        Fraction = 1,
+        Cost = 0,
+        Left = 0,
+        Right = 0,
+        Slab = 0,
+        Components = new List<GsaSectionComponentBase>()
+        {
+          new SectionComp()
+          {
+            Name = "",
+            //MatAnalIndex = 0,
+            MaterialType = Section1dMaterialType.STEEL,
+            MaterialIndex = 1,
+            OffsetY = 0,
+            OffsetZ = 0,
+            Rotation = 0,
+            Reflect = ComponentReflection.NONE,
+            //Pool = 0,
+            TaperType = Section1dTaperType.NONE,
+            //TaperPos = 0
+            ProfileGroup = Section1dProfileGroup.Standard,
+          },
+          new SectionSteel()
+          {
+            //GradeIndex = 0,
+            PlasElas = 1,
+            NetGross = 1,
+            Exposed = 1,
+            Beta = 0.4,
+            Type = SectionSteelSectionType.Undefined,
+            Plate = SectionSteelPlateType.Undefined,
+            Locked = false
+          }
+        },
+        Environ = false
+      };
+    }
+
+    private GsaSection GsaRectangularSectionExample(string appId)
+    {
+      var gsaProfile = new ProfileDetailsRectangular();
+      gsaProfile.FromDesc("STD R 100 50");
+      var gsaSection = GsaStandardSectionExample(appId);
+      gsaSection.Index = 4;
+      gsaSection.Name = "4";
+      ((SectionComp)gsaSection.Components[0]).ProfileDetails = gsaProfile;
+      return gsaSection;
+    }
+
+    private GsaSection GsaRectangularHollowSectionExample(string appId)
+    {
+      var gsaProfile = new ProfileDetailsTwoThickness();
+      gsaProfile.FromDesc("STD RHS 100 50 5 10");
+      var gsaSection = GsaStandardSectionExample(appId);
+      gsaSection.Index = 5;
+      gsaSection.Name = "5";
+      ((SectionComp)gsaSection.Components[0]).ProfileDetails = gsaProfile;
+      return gsaSection;
+    }
+
+    private GsaSection GsaCircularSectionExample(string appId)
+    {
+      var gsaProfile = new ProfileDetailsCircular();
+      gsaProfile.FromDesc("STD C 100");
+      var gsaSection = GsaStandardSectionExample(appId);
+      gsaSection.Index = 6;
+      gsaSection.Name = "6";
+      ((SectionComp)gsaSection.Components[0]).ProfileDetails = gsaProfile;
+      return gsaSection;
+    }
+
+    private GsaSection GsaCircularHollowSectionExample(string appId)
+    {
+      var gsaProfile = new ProfileDetailsCircularHollow();
+      gsaProfile.FromDesc("STD CHS 100 5");
+      var gsaSection = GsaStandardSectionExample(appId);
+      gsaSection.Index = 7;
+      gsaSection.Name = "7";
+      ((SectionComp)gsaSection.Components[0]).ProfileDetails = gsaProfile;
+      return gsaSection;
+    }
+
+    private GsaSection GsaISectionSectionExample(string appId)
+    {
+      var gsaProfile = new ProfileDetailsTwoThickness();
+      gsaProfile.FromDesc("STD I 100 50 5 10");
+      var gsaSection = GsaStandardSectionExample(appId);
+      gsaSection.Index = 8;
+      gsaSection.Name = "8";
+      ((SectionComp)gsaSection.Components[0]).ProfileDetails = gsaProfile;
+      return gsaSection;
+    }
+
+    private GsaSection GsaTSectionSectionExample(string appId)
+    {
+      var gsaProfile = new ProfileDetailsTwoThickness();
+      gsaProfile.FromDesc("STD T 100 50 5 10");
+      var gsaSection = GsaStandardSectionExample(appId);
+      gsaSection.Index = 9;
+      gsaSection.Name = "9";
+      ((SectionComp)gsaSection.Components[0]).ProfileDetails = gsaProfile;
+      return gsaSection;
+    }
+
+    private GsaSection GsaAngleSectionExample(string appId)
+    {
+      var gsaProfile = new ProfileDetailsTwoThickness();
+      gsaProfile.FromDesc("STD A 100 50 5 10");
+      var gsaSection = GsaStandardSectionExample(appId);
+      gsaSection.Index = 10;
+      gsaSection.Name = "10";
+      ((SectionComp)gsaSection.Components[0]).ProfileDetails = gsaProfile;
+      return gsaSection;
+    }
+
+    private GsaSection GsaChannelSectionExample(string appId)
+    {
+      var gsaProfile = new ProfileDetailsTwoThickness();
+      gsaProfile.FromDesc("STD CH 100 50 5 10");
+      var gsaSection = GsaStandardSectionExample(appId);
+      gsaSection.Index = 11;
+      gsaSection.Name = "11";
+      ((SectionComp)gsaSection.Components[0]).ProfileDetails = gsaProfile;
+      return gsaSection;
+    }
+
+    private GsaSection GsaLineSegmentSectionExample(string appId)
+    {
+      return new GsaSection()
+      {
+        Index = 1,
+        Name = "1",
+        ApplicationId = appId,
+        Colour = Colour.NO_RGB,
+        Type = Section1dType.Generic,
+        //PoolIndex = 0,
+        ReferencePoint = ReferencePoint.Centroid,
+        RefY = 0,
+        RefZ = 0,
+        Mass = 0,
+        Fraction = 1,
+        Cost = 0,
+        Left = 0,
+        Right = 0,
+        Slab = 0,
+        Components = new List<GsaSectionComponentBase>()
+        {
+          new SectionComp()
+          {
+            Name = "",
+            //MatAnalIndex = 0,
+            MaterialType = Section1dMaterialType.STEEL,
+            MaterialIndex = 1,
+            OffsetY = 0,
+            OffsetZ = 0,
+            Rotation = 0,
+            Reflect = ComponentReflection.NONE,
+            //Pool = 0,
+            TaperType = Section1dTaperType.NONE,
+            //TaperPos = 0
+            ProfileGroup = Section1dProfileGroup.Perimeter,
+            ProfileDetails = new ProfileDetailsPerimeter()
+            {
+              Group = Section1dProfileGroup.Perimeter,
+              Type = "L(mm)",
+              Actions = new List<string>(){ "T", "M", "L", "L", "L", "L" },
+              Y = new List<double?>(){ 10, -45, 45, 45, -45, -45 },
+              Z = new List<double?>(){ null, -45, -45, 45, 45, -45}
+            }
+          },
+          new SectionSteel()
+          {
+            //GradeIndex = 0,
+            PlasElas = 1,
+            NetGross = 1,
+            Exposed = 1,
+            Beta = 0.4,
+            Type = SectionSteelSectionType.Undefined,
             Plate = SectionSteelPlateType.Undefined,
             Locked = false
           }

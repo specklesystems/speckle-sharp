@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Objects.Geometry;
 using Speckle.GSA.API.GwaSchema;
+using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
 
 namespace ConverterGSA
 {
@@ -61,6 +62,21 @@ namespace ConverterGSA
       return (gsaEl.Type == ElementType.Bar || gsaEl.Type == ElementType.Beam || gsaEl.Type == ElementType.Cable || gsaEl.Type == ElementType.Damper ||
         gsaEl.Type == ElementType.Link || gsaEl.Type == ElementType.Rod || gsaEl.Type == ElementType.Spacer || gsaEl.Type == ElementType.Spring ||
         gsaEl.Type == ElementType.Strut || gsaEl.Type == ElementType.Tie);
+    }
+
+    public static bool Is1dMember(this GsaMemb gsaMemb)
+    {
+      return (gsaMemb.Type == GwaMemberType.Beam || gsaMemb.Type == GwaMemberType.Column || gsaMemb.Type == GwaMemberType.Generic1d || gsaMemb.Type == GwaMemberType.Void1d);
+    }
+
+    public static bool Is2dMember(this GsaMemb gsaMemb)
+    {
+      return (gsaMemb.Type == GwaMemberType.Generic2d || gsaMemb.Type == GwaMemberType.Slab || gsaMemb.Type == GwaMemberType.Void2d || gsaMemb.Type == GwaMemberType.Wall);
+    }
+
+    public static bool Is3dMember(this GsaMemb gsaMemb)
+    {
+      return (gsaMemb.Type == GwaMemberType.Generic3d);
     }
 
     public static bool IsGlobal(this Plane p)
