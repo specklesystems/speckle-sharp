@@ -39,10 +39,10 @@ namespace Objects.Converter.RhinoGh
   {
 #if RHINO6
     public static string RhinoAppName = Applications.Rhino6;
-    public static string GrasshopperAppName = Applications.Grasshopper6;
+    public static string GrasshopperAppName = Applications.Grasshopper;
 #elif RHINO7
     public static string RhinoAppName = Applications.Rhino7;
-    public static string GrasshopperAppName = Applications.Grasshopper7;
+    public static string GrasshopperAppName = Applications.Grasshopper;
 #endif
 
     public string Description => "Default Speckle Kit for Rhino & Grasshopper";
@@ -50,7 +50,15 @@ namespace Objects.Converter.RhinoGh
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
 
-    public IEnumerable<string> GetServicedApplications() => new string[] { RhinoAppName, GrasshopperAppName };
+    public IEnumerable<string> GetServicedApplications()
+    {
+      
+#if RHINO6
+      return new string[] {RhinoAppName, Applications.Grasshopper};
+#elif RHINO7
+      return new string[] {RhinoAppName};
+#endif   
+    }
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 

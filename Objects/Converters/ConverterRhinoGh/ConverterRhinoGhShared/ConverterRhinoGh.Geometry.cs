@@ -895,7 +895,7 @@ namespace Objects.Converter.RhinoGh
       try
       {
         // TODO: Provenance exception is meaningless now, must change for provenance build checks.
-        // if (brep.provenance != Speckle.Core.Kits.Applications.Rhino)
+        // if (brep.provenance != Speckle.Core.Kits.Applications.Rhino6)
         //   throw new Exception("Unknown brep provenance: " + brep.provenance +
         //                       ". Don't know how to convert from one to the other.");
 
