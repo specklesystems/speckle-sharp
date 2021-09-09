@@ -98,7 +98,6 @@ namespace Tests
     [Test]
     public void GetLocalAccount()
     {
-      Assert.AreEqual(1, 2);
       var acc = AccountManager.GetAccounts().Where(x => x.userInfo.id == "123345").FirstOrDefault();
 
       Assert.AreEqual("https://sample.com", acc.serverInfo.url);
