@@ -37,15 +37,28 @@ namespace Speckle.Core.Models
     /// </summary>
     /// <param name="decompose">If true, will decompose the object in the process of hashing.</param>
     /// <returns></returns>
-    public string GetId(bool decompose = false)
+    public string GetId(bool decompose = false, SerializerVersion serializerVersion = SerializerVersion.V2)
     {
-      var (s, t) = Operations.GetSerializerInstance();
-      if (decompose)
+      if (serializerVersion == SerializerVersion.V1)
       {
-        s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
+        var (s, t) = Operations.GetSerializerInstance();
+        if (decompose)
+        {
+          s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
+        }
+        var obj = JsonConvert.SerializeObject(this, t);
+        return JObject.Parse(obj).GetValue("id").ToString();
       }
-      var obj = JsonConvert.SerializeObject(this, t);
-      return JObject.Parse(obj).GetValue("id").ToString();
+      else
+      {
+        var s = new Serialisation.BaseObjectSerializerV2();
+        if (decompose)
+        {
+          s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
+        }
+        var obj = s.Serialize(this);
+        return JObject.Parse(obj).GetValue("id").ToString();
+      }
     }
 
     /// <summary>

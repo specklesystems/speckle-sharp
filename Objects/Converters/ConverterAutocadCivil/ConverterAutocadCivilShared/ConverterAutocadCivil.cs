@@ -180,6 +180,7 @@ public static string AutocadAppName = Applications.Autocad2022;
 
         case Mesh o:
           return MeshToNativeDB(o);
+        */
 
         case BlockInstance o:
           return BlockInstanceToNativeDB(o, out BlockReference refernce);
