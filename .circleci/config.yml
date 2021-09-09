@@ -122,6 +122,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults
       - store_test_results:
           path: TestResults
+      - store_artifacts:
+          path: TestResults
 
   build-objects:
     executor:
