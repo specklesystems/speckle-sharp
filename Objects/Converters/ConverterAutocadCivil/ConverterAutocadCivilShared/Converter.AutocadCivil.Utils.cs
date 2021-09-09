@@ -75,6 +75,14 @@ namespace Objects.Converter.AutocadCivil
       return Regex.Replace(cleanDelimiter, $"[{invalidChars}]", string.Empty);
     }
 
+    /*
+    public static bool Append(this DBObject obj, ObjectId toAppend)
+    {
+      // get model space
+
+    }
+    */
+
     public DisplayStyle GetStyle(DBObject obj)
     {
       var style = new DisplayStyle();

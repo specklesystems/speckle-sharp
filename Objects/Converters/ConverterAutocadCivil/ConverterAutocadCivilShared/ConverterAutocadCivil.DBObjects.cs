@@ -195,14 +195,14 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Polycurves
-    public Polyline PolylineToSpeckle(AcadDB.Polyline polyline) // AC polylines can have arc segments, this treats all segments as lines
+    public Polyline PolylineToSpeckle(AcadDB.Polyline polyline) 
     {
       List<Point3d> vertices = new List<Point3d>();
       for (int i = 0; i < polyline.NumberOfVertices; i++)
         vertices.Add(polyline.GetPoint3dAt(i));
 
       var _polyline = new Polyline(PointsToFlatArray(vertices), ModelUnits);
-      _polyline.closed = polyline.Closed;
+      _polyline.closed = vertices.First().Equals(vertices.Last()) ? true : false;// hatch boundary polylines are not closed, cannot rely on .Closed prop
       _polyline.length = polyline.Length;
       _polyline.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
 
@@ -666,6 +666,7 @@ namespace Objects.Converter.AutocadCivil
 
         _hatch.SetDatabaseDefaults();
         // try get hatch pattern
+        var cat = HatchPatterns.ValidPatternName(hatch.pattern);
         switch (HatchPatterns.ValidPatternName(hatch.pattern))
         {
           case PatPatternCategory.kCustomdef:
@@ -685,6 +686,8 @@ namespace Objects.Converter.AutocadCivil
         _hatch.PatternScale = hatch.scale;
         _hatch.AppendLoop(HatchLoopTypes.Default, curveIds);
         _hatch.EvaluateHatch(true);
+
+        // delete created hatch curve
 
         tr.Commit();
       }
@@ -899,19 +902,23 @@ namespace Objects.Converter.AutocadCivil
         tr.AddNewlyCreatedDBObject(_mesh, true);
 
         // add polyfacemesh vertices
-        
         for (int i = 0; i < vertices.Count; i++)
         {
           var vertex = new PolyFaceMeshVertex(points[i]);
-          try
+          if (mesh.colors.Count > 0)
           {
-            Color color = Color.FromArgb(mesh.colors[i]);
-            vertex.Color = Autodesk.AutoCAD.Colors.Color.FromRgb(color.R, color.G, color.B);
+            try
+            {
+              Color color = Color.FromArgb(mesh.colors[i]);
+              vertex.Color = Autodesk.AutoCAD.Colors.Color.FromRgb(color.R, color.G, color.B);
+            }
+            catch { }
           }
-          catch { }
-          _mesh.AppendVertex(vertex);
-          tr.AddNewlyCreatedDBObject(vertex, true);
-          vertex.Dispose();
+          if (vertex.IsNewObject)
+          {
+            _mesh.AppendVertex(vertex);
+            tr.AddNewlyCreatedDBObject(vertex, true);
+          }
         }
 
         // add polyfacemesh faces. vertex index starts at 1 sigh
@@ -931,16 +938,17 @@ namespace Objects.Converter.AutocadCivil
           }
           if (face != null)
           {
-            _mesh.AppendFaceRecord(face);
-            tr.AddNewlyCreatedDBObject(face, true);
+            if (face.IsNewObject)
+            {
+              _mesh.AppendFaceRecord(face);
+              tr.AddNewlyCreatedDBObject(face, true);
+            }
           }
-          face.Dispose();
         }
 
         tr.Commit();
       }
-      
-      
+     
       return _mesh;
     }
 
@@ -1292,6 +1300,7 @@ namespace Objects.Converter.AutocadCivil
 
           // add geometry
           blckTbl.UpgradeOpen();
+          var bakedGeometry = new ObjectIdCollection(); // this is to contain block def geometry that is already added to doc space during conversion
           foreach (var geo in definition.geometry)
           {
             if (CanConvertToNative(geo))
@@ -1307,13 +1316,17 @@ namespace Objects.Converter.AutocadCivil
                   converted = ConvertToNative(geo) as Entity;
                   break;
               }
-              
+
               if (converted == null)
                 continue;
-              btr.AppendEntity(converted);
+              else if (!converted.IsNewObject && !(converted is BlockReference))
+                bakedGeometry.Add(converted.Id);
+              else
+                btr.AppendEntity(converted);
             }
           }
           blockId = blckTbl.Add(btr);
+          btr.AssumeOwnershipOf(bakedGeometry); // add in baked geo
           tr.AddNewlyCreatedDBObject(btr, true);
           blckTbl.Dispose();
         }

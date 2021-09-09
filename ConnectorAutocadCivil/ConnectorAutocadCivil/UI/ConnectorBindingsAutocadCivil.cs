@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Collections;
 
+
 using Speckle.Newtonsoft.Json;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
@@ -36,8 +37,14 @@ namespace Speckle.ConnectorAutocadCivil.UI
     /// </summary>
     public List<Exception> Exceptions { get; set; } = new List<Exception>();
 
+    // AutoCAD API should only be called on the main thread.
+    // Not doing so results in botched conversions for any that require adding objects to Document model space before modifying (eg adding vertices and faces for meshes)
+    // There's no easy way to access main thread from document object, therefore we are creating a control during Connector Bindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread
+    public System.Windows.Forms.Control Control; 
     public ConnectorBindingsAutocad() : base()
     {
+      Control = new System.Windows.Forms.Control();
+      Control.CreateControl();
     }
 
     public void SetExecutorAndInit()
@@ -214,6 +221,20 @@ namespace Speckle.ConnectorAutocadCivil.UI
         RaiseNotification($"Encountered error: {Exceptions.Last().Message}");
       }
 
+      // invoke conversions on the main thread via control
+      if (Control.InvokeRequired)
+        Control.Invoke(new ConversionDelegate(ConvertCommit), new object[] { commitObject, converter, state, stream, id });
+      else
+        ConvertCommit(commitObject, converter, state, stream, id);
+
+      return state;
+    }
+
+    // main thread operations
+
+    delegate void ConversionDelegate(Base commitObject, ISpeckleConverter converter, StreamState state, Stream stream, string id);
+    private void ConvertCommit(Base commitObject, ISpeckleConverter converter, StreamState state, Stream stream, string id)
+    {
       using (DocumentLock l = Doc.LockDocument())
       {
         using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
@@ -340,10 +361,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           tr.Commit();
         }
       }
-
-      return state;
     }
-
     // Recurses through the commit object and flattens it. Returns list of Base objects with their bake layers
     private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state, ref int count, bool foundConvertibleMember = false)
     {
