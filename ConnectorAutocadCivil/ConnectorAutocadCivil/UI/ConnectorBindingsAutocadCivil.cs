@@ -204,8 +204,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
         id = res.id;
       }
 
-      //var commit = state.Commit;
-
       var commitObject = await Operations.Receive(
         referencedObject,
         state.CancellationTokenSource.Token,
@@ -229,8 +227,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       return state;
     }
-
-    // main thread operations
 
     delegate void ConversionDelegate(Base commitObject, ISpeckleConverter converter, StreamState state, Stream stream, string id);
     private void ConvertCommit(Base commitObject, ISpeckleConverter converter, StreamState state, Stream stream, string id)
