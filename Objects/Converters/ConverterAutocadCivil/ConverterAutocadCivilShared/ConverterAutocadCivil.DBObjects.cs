@@ -195,14 +195,14 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Polycurves
-    public Polyline PolylineToSpeckle(AcadDB.Polyline polyline) // AC polylines can have arc segments, this treats all segments as lines
+    public Polyline PolylineToSpeckle(AcadDB.Polyline polyline) 
     {
       List<Point3d> vertices = new List<Point3d>();
       for (int i = 0; i < polyline.NumberOfVertices; i++)
         vertices.Add(polyline.GetPoint3dAt(i));
 
       var _polyline = new Polyline(PointsToFlatArray(vertices), ModelUnits);
-      _polyline.closed = polyline.Closed;
+      _polyline.closed = vertices.First().Equals(vertices.Last()) ? true : false;// hatch boundary polylines are not closed, cannot rely on .Closed prop
       _polyline.length = polyline.Length;
       _polyline.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
 
@@ -635,59 +635,56 @@ namespace Objects.Converter.AutocadCivil
     }
     public AcadDB.Hatch HatchToNativeDB(Hatch hatch)
     {
-      var _hatch = new AcadDB.Hatch();
-      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
+
+      // convert curves
+      var curveIds = new ObjectIdCollection();
+      var curves = new List<DBObject>();
+      foreach (var curve in hatch.curves)
       {
-        BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-        BlockTableRecord modelSpaceRecord = (BlockTableRecord)tr.GetObject(blckTbl[BlockTableRecord.ModelSpace], AcadDB.OpenMode.ForWrite);
-
-        // convert curves
-        var curveIds = new ObjectIdCollection();
-        foreach (var curve in hatch.curves)
+        var converted = CurveToNativeDB(curve);
+        if (converted == null || !converted.Closed)
+          return null;
+        if (converted.IsNewObject)
         {
-          var converted = CurveToNativeDB(curve);
-          if (converted == null || !converted.Closed)
+          var curveId = modelSpaceRecord.Append(converted);
+          if (curveId.IsValid)
           {
-            tr.Commit();
-            return null;
-          }
-          if (converted.IsNewObject)
-          {
-            var curveId = modelSpaceRecord.AppendEntity(converted);
-            tr.AddNewlyCreatedDBObject(converted, true);
-            if (curveId.IsValid)
-              curveIds.Add(curveId);
+            curveIds.Add(curveId);
+            curves.Add(converted);
           }
         }
-
-        // add hatch to modelspace
-        modelSpaceRecord.AppendEntity(_hatch);
-        tr.AddNewlyCreatedDBObject(_hatch, true);
-
-        _hatch.SetDatabaseDefaults();
-        // try get hatch pattern
-        switch (HatchPatterns.ValidPatternName(hatch.pattern))
-        {
-          case PatPatternCategory.kCustomdef:
-            _hatch.SetHatchPattern(HatchPatternType.CustomDefined, hatch.pattern);
-            break;
-          case PatPatternCategory.kPredef:
-            _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
-            break;
-          case PatPatternCategory.kUserdef:
-            _hatch.SetHatchPattern(HatchPatternType.UserDefined, hatch.pattern);
-            break;
-          default:
-            _hatch.SetHatchPattern(HatchPatternType.PreDefined, "SOLID");
-            break;
-        }
-        _hatch.PatternAngle = hatch.rotation;
-        _hatch.PatternScale = hatch.scale;
-        _hatch.AppendLoop(HatchLoopTypes.Default, curveIds);
-        _hatch.EvaluateHatch(true);
-
-        tr.Commit();
       }
+
+      // add hatch to modelspace
+      var _hatch = new AcadDB.Hatch();
+      modelSpaceRecord.Append(_hatch);
+
+      _hatch.SetDatabaseDefaults();
+      // try get hatch pattern
+      switch (HatchPatterns.ValidPatternName(hatch.pattern))
+      {
+        case PatPatternCategory.kCustomdef:
+          _hatch.SetHatchPattern(HatchPatternType.CustomDefined, hatch.pattern);
+          break;
+        case PatPatternCategory.kPredef:
+          _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
+          break;
+        case PatPatternCategory.kUserdef:
+          _hatch.SetHatchPattern(HatchPatternType.UserDefined, hatch.pattern);
+          break;
+        default:
+          _hatch.SetHatchPattern(HatchPatternType.PreDefined, "SOLID");
+          break;
+      }
+      _hatch.PatternAngle = hatch.rotation;
+      _hatch.PatternScale = hatch.scale;
+      _hatch.AppendLoop(HatchLoopTypes.Default, curveIds);
+      _hatch.EvaluateHatch(true);
+
+      // delete created hatch curves
+      foreach (DBObject curve in curves)
+        curve.Erase();
 
       return _hatch;
     }
@@ -899,19 +896,23 @@ namespace Objects.Converter.AutocadCivil
         tr.AddNewlyCreatedDBObject(_mesh, true);
 
         // add polyfacemesh vertices
-        
         for (int i = 0; i < vertices.Count; i++)
         {
           var vertex = new PolyFaceMeshVertex(points[i]);
-          try
+          if (mesh.colors.Count > 0)
           {
-            Color color = Color.FromArgb(mesh.colors[i]);
-            vertex.Color = Autodesk.AutoCAD.Colors.Color.FromRgb(color.R, color.G, color.B);
+            try
+            {
+              Color color = Color.FromArgb(mesh.colors[i]);
+              vertex.Color = Autodesk.AutoCAD.Colors.Color.FromRgb(color.R, color.G, color.B);
+            }
+            catch { }
           }
-          catch { }
-          _mesh.AppendVertex(vertex);
-          tr.AddNewlyCreatedDBObject(vertex, true);
-          vertex.Dispose();
+          if (vertex.IsNewObject)
+          {
+            _mesh.AppendVertex(vertex);
+            tr.AddNewlyCreatedDBObject(vertex, true);
+          }
         }
 
         // add polyfacemesh faces. vertex index starts at 1 sigh
@@ -931,16 +932,17 @@ namespace Objects.Converter.AutocadCivil
           }
           if (face != null)
           {
-            _mesh.AppendFaceRecord(face);
-            tr.AddNewlyCreatedDBObject(face, true);
+            if (face.IsNewObject)
+            {
+              _mesh.AppendFaceRecord(face);
+              tr.AddNewlyCreatedDBObject(face, true);
+            }
           }
-          face.Dispose();
         }
 
         tr.Commit();
       }
-      
-      
+     
       return _mesh;
     }
 
@@ -1205,25 +1207,18 @@ namespace Objects.Converter.AutocadCivil
         transform[i] = ScaleToNative(transform[i], instance.units);
       Matrix3d convertedTransform = new Matrix3d(transform);
 
-      
-      using (Transaction tr = Doc.TransactionManager.StartTransaction())
-      {
-        BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-        BlockTableRecord modelSpaceRecord = (BlockTableRecord)tr.GetObject(blckTbl[BlockTableRecord.ModelSpace], AcadDB.OpenMode.ForWrite);
+      // add block reference
+      BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
+      BlockReference br = new BlockReference(insertionPoint, definitionId);
+      br.BlockTransform = convertedTransform;
+      ObjectId id = ObjectId.Null;
+      if (AppendToModelSpace)
+        id = modelSpaceRecord.Append(br);
 
-        BlockReference br = new BlockReference(insertionPoint, definitionId);
-        br.BlockTransform = convertedTransform;
-        if (AppendToModelSpace)
-        {
-          modelSpaceRecord.AppendEntity(br);
-          tr.AddNewlyCreatedDBObject(br, true);
-        }
-        
-        result = "success";
+      // return
+      result = "success";
+      if ((id.IsValid && !id.IsNull) || !AppendToModelSpace)
         reference = br;
-
-        tr.Commit();
-      }
 
       return result;
     }
@@ -1292,6 +1287,7 @@ namespace Objects.Converter.AutocadCivil
 
           // add geometry
           blckTbl.UpgradeOpen();
+          var bakedGeometry = new ObjectIdCollection(); // this is to contain block def geometry that is already added to doc space during conversion
           foreach (var geo in definition.geometry)
           {
             if (CanConvertToNative(geo))
@@ -1307,13 +1303,17 @@ namespace Objects.Converter.AutocadCivil
                   converted = ConvertToNative(geo) as Entity;
                   break;
               }
-              
+
               if (converted == null)
                 continue;
-              btr.AppendEntity(converted);
+              else if (!converted.IsNewObject && !(converted is BlockReference))
+                bakedGeometry.Add(converted.Id);
+              else
+                btr.AppendEntity(converted);
             }
           }
           blockId = blckTbl.Add(btr);
+          btr.AssumeOwnershipOf(bakedGeometry); // add in baked geo
           tr.AddNewlyCreatedDBObject(btr, true);
           blckTbl.Dispose();
         }
