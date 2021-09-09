@@ -67,13 +67,12 @@ namespace Tests
     public void IgnoreCircularReferences()
     {
       var pt = new Point(1, 2, 3);
-      ((dynamic)pt).circle = pt;
+      pt["circle"] = pt;
 
       var test = Operations.Serialize(pt);
 
       var result = Operations.Deserialize(test);
-      var circle = ((dynamic)result).circle;
-
+      var circle = result["circle"];
       Assert.Null(circle);
     }
 
