@@ -176,10 +176,10 @@ public static string AutocadAppName = Applications.Autocad2022;
             return MeshToNativeDB(o.displayMesh);
           else
             return null;
-        */
 
         case Mesh o: // unstable, do not use for now
           return MeshToNativeDB(o);
+        */
 
         case BlockInstance o:
           return BlockInstanceToNativeDB(o, out BlockReference refernce);
@@ -372,7 +372,7 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Polycurve _:
         case Curve _:
         //case Brep _:
-        case Mesh _:
+        //case Mesh _:
 
         case BlockDefinition _:
         case BlockInstance _:
