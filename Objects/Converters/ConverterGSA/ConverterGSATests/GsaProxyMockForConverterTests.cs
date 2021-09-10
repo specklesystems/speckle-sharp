@@ -67,7 +67,7 @@ namespace ConverterGSATests
 
     public bool GetResultRecords(ResultGroup group, int index, out List<CsvRecord> records)
     {
-      if (resultsData.ContainsKey(group) && resultsData[group].ContainsKey(index))
+      if (resultsData != null && resultsData.ContainsKey(group) && resultsData[group].ContainsKey(index))
       {
         records = resultsData[group][index].SelectMany(kvp => kvp.Value).ToList();
         return true;
