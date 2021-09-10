@@ -21,6 +21,9 @@ using MemberType = Objects.Structural.Geometry.MemberType;
 using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
 using System.Runtime.InteropServices;
 using System.CodeDom;
+using Objects.Structural.Results;
+using Speckle.GSA.API.CsvSchema;
+using Speckle.Core.Api;
 
 namespace ConverterGSA
 {
@@ -232,8 +235,15 @@ namespace ConverterGSA
 
     public List<Base> GsaNodeToSpeckle(GsaRecord nativeObject)
     {
-      var node = GsaNodeToSpeckle((GsaNode)nativeObject);
-      return new List<Base>() { node };
+      var speckleObjects = new List<Base>();
+      var gsaNode = (GsaNode)nativeObject;
+      if (gsaNode.Index.IsIndex())
+      {
+        var speckleNode = GsaNodeToSpeckle(gsaNode);
+        speckleObjects.Add(speckleNode);
+        if (GsaNodeResultToSpeckle(gsaNode.Index.Value, speckleNode, out var speckleResults)) speckleObjects.AddRange(speckleResults);
+      }
+      return speckleObjects;
     }
 
     public GSANode GsaNodeToSpeckle(GsaNode gsaNode, string units = null)
@@ -296,24 +306,31 @@ namespace ConverterGSA
 
     public List<Base> GsaElementToSpeckle(GsaRecord nativeObject)
     {
-      var element = GsaElementToSpeckle((GsaEl)nativeObject);
-      return new List<Base>() { element };
-    }
+      var gsaEl = (GsaEl)nativeObject;
+      var speckleObjects = new List<Base>();
 
-    public Base GsaElementToSpeckle(GsaEl gsaEl)
-    {
-      if (gsaEl.Is3dElement()) //3D element
+      if (gsaEl.Index.IsIndex())
       {
-        return GsaElement3dToSpeckle(gsaEl);
+        if (gsaEl.Is3dElement()) //3D element
+        {
+          var speckleElement3d = GsaElement3dToSpeckle(gsaEl);
+          speckleObjects.Add(speckleElement3d);
+          if (GsaElement3dResultToSpeckle(gsaEl.Index.Value, speckleElement3d, out var speckleResults)) speckleObjects.AddRange(speckleResults);
+        }
+        else if (gsaEl.Is2dElement()) // 2D element
+        {
+          var speckleElement2d = GsaElement2dToSpeckle(gsaEl);
+          speckleObjects.Add(speckleElement2d);
+          if (GsaElement2dResultToSpeckle(gsaEl.Index.Value, speckleElement2d, out var speckleResults)) speckleObjects.AddRange(speckleResults);
+        }
+        else //1D element
+        {
+          var speckleElement1d = GsaElement1dToSpeckle(gsaEl);
+          speckleObjects.Add(speckleElement1d);
+          if (GsaElement1dResultToSpeckle(gsaEl.Index.Value, speckleElement1d, out var speckleResults)) speckleObjects.AddRange(speckleResults);
+        }
       }
-      else if (gsaEl.Is2dElement()) // 2D element
-      {
-        return GsaElement2dToSpeckle(gsaEl);
-      }
-      else //1D element
-      {
-        return GsaElement1dToSpeckle(gsaEl);
-      }
+      return speckleObjects;
     }
 
     public GSAElement1D GsaElement1dToSpeckle(GsaEl gsaEl)
@@ -399,24 +416,25 @@ namespace ConverterGSA
 
     public List<Base> GsaMemberToSpeckle(GsaRecord nativeObject)
     {
-      var member = GsaMemberToSpeckle((GsaMemb)nativeObject);
-      return new List<Base>() { member };
-    }
+      var gsaMemb = (GsaMemb)nativeObject;
+      var speckleObjects = new List<Base>();
 
-    public Base GsaMemberToSpeckle(GsaMemb gsaMemb)
-    {
-      if (gsaMemb.Is1dMember()) // 1D member
+      if (gsaMemb.Index.IsIndex())
       {
-        return GsaMember1dToSpeckle(gsaMemb);
+        if (gsaMemb.Is1dMember()) //1D element
+        {
+          speckleObjects.Add(GsaMember1dToSpeckle(gsaMemb));
+        }
+        else if (gsaMemb.Is2dMember()) // 2D element
+        {
+          speckleObjects.Add(GsaMember2dToSpeckle(gsaMemb));
+        }
+        else //3D element
+        {
+          //TO DO: implement once 3D elements are supported
+        }
       }
-      else if (gsaMemb.Is2dMember()) // 2D element
-      {
-        return GsaMember2dToSpeckle(gsaMemb);
-      }
-      else
-      {
-        return new Base();
-      }
+      return speckleObjects;
     }
 
     public GSAMember1D GsaMember1dToSpeckle(GsaMemb gsaMemb)
@@ -426,7 +444,7 @@ namespace ConverterGSA
         //-- App agnostic --
         name = gsaMemb.Name,
         baseLine = null,
-        type = GetMemberType(gsaMemb.Type),
+        type = GetMember1dType(gsaMemb.Type),
         end1Releases = GetRestraint(gsaMemb.Releases1, gsaMemb.Stiffnesses1),
         end2Releases = GetRestraint(gsaMemb.Releases2, gsaMemb.Stiffnesses2),
         end1Offset = new Vector(),
@@ -497,8 +515,50 @@ namespace ConverterGSA
 
     public GSAMember2D GsaMember2dToSpeckle(GsaMemb gsaMemb)
     {
-      var speckleMember2d = new GSAMember2D();
+      var speckleMember2d = new GSAMember2D()
+      {
+        //-- App agnostic --
+        name = gsaMemb.Name,
+        type = GetMember2dType(gsaMemb.Type),
+        parent = new Base(), //TO DO: add parent
+        displayMesh = new Mesh(), //TO DO: add display mesh
+        baseMesh = new Mesh(), //TO DO: add base mesh
+        orientationAngle = 0, //default
+        topology = gsaMemb.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList(),
+        units = "",
+
+        //-- GSA specific --
+        colour = gsaMemb.Colour.ToString(),
+        isDummy = gsaMemb.Dummy,
+        intersectsWithOthers = gsaMemb.IsIntersector,
+      };
+
+      //-- App agnostic --
       if (gsaMemb.Index.IsIndex()) speckleMember2d.applicationId = Instance.GsaModel.GetApplicationId<GsaMemb>(gsaMemb.Index.Value);
+      if (gsaMemb.PropertyIndex.IsIndex()) speckleMember2d.property = GetProperty2dFromIndex(gsaMemb.PropertyIndex.Value);
+      if (gsaMemb.Offset2dZ.HasValue) speckleMember2d.offset = gsaMemb.Offset2dZ.Value;
+      if (gsaMemb.Angle.HasValue) speckleMember2d.orientationAngle = gsaMemb.Angle.Value;
+
+      //-- GSA specific --
+      if (gsaMemb.Index.IsIndex()) speckleMember2d.nativeId = gsaMemb.Index.Value;
+      if (gsaMemb.Group.IsIndex()) speckleMember2d.group = gsaMemb.Group.Value;
+      if (gsaMemb.MeshSize.IsPositive()) speckleMember2d.targetMeshSize = gsaMemb.MeshSize.Value;
+
+      //Unsupported interim schema members
+      //gsaMemb.Exposure
+      //gsaMemb.Voids
+      //gsaMemb.PointNodeIndices
+      //gsaMemb.Polylines
+      //gsaMemb.AdditionalAreas
+      //gsaMemb.AnalysisType
+      //gsaMemb.Fire
+      //gsaMemb.LimitingTemperature
+      //gsaMemb.CreationFromStartDays
+      //gsaMemb.StartOfDryingDays
+      //gsaMemb.AgeAtLoadingDays
+      //gsaMemb.RemovedAtDays
+      //gsaMemb.OffsetAutomaticInternal
+
       return speckleMember2d;
     }
     #endregion
@@ -966,12 +1026,214 @@ namespace ConverterGSA
     #endregion
 
     #region Results
+    public bool GsaNodeResultToSpeckle(int gsaNodeIndex, Node speckleNode, out List<ResultNode> speckleResults)
+    {
+      speckleResults = null;
+      if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Node, gsaNodeIndex, out var csvRecords))
+      {
+        speckleResults = new List<ResultNode>();
+        var gsaNodeResults = csvRecords.FindAll(so => so is CsvNode).Select(so => (CsvNode)so).ToList();
+        foreach (var gsaResult in gsaNodeResults)
+        {
+          var result = new ResultNode()
+          {
+            description = "", //???
+            permutation = "", //???
+            node = speckleNode,
+          };
+
+          var gsaCaseIndex = Convert.ToInt32(gsaResult.CaseId.Substring(1));
+          if (gsaResult.CaseId[0] == 'A')
+          {
+            result.resultCase = GetLoadCaseFromIndex(gsaCaseIndex);
+          }
+          else if (gsaResult.CaseId[0] == 'C')
+          {
+            result.resultCase = GetLoadCombinationFromIndex(gsaCaseIndex);
+          }
+          result.applicationId = speckleNode.applicationId + "_" + result.resultCase.applicationId;
+
+          //displacements / rotations
+          if (gsaResult.Ux.HasValue) result.dispX = gsaResult.Ux.Value;
+          if (gsaResult.Uy.HasValue) result.dispY = gsaResult.Uy.Value;
+          if (gsaResult.Uz.HasValue) result.dispZ = gsaResult.Uz.Value;
+          if (gsaResult.Rxx.HasValue) result.rotXX = gsaResult.Rxx.Value;
+          if (gsaResult.Ryy.HasValue) result.rotYY = gsaResult.Ryy.Value;
+          if (gsaResult.Rzz.HasValue) result.rotZZ = gsaResult.Rzz.Value;
+
+          //velocities
+          if (gsaResult.Vx.HasValue) result.velX = gsaResult.Vx.Value;
+          if (gsaResult.Vy.HasValue) result.velY = gsaResult.Vy.Value;
+          if (gsaResult.Vz.HasValue) result.velZ = gsaResult.Vz.Value;
+          if (gsaResult.Vxx.HasValue) result.velXX = gsaResult.Vxx.Value;
+          if (gsaResult.Vyy.HasValue) result.velYY = gsaResult.Vyy.Value;
+          if (gsaResult.Vzz.HasValue) result.velZZ = gsaResult.Vzz.Value;
+
+          //accelerations
+          if (gsaResult.Ax.HasValue) result.accX = gsaResult.Ax.Value;
+          if (gsaResult.Ay.HasValue) result.accY = gsaResult.Ay.Value;
+          if (gsaResult.Az.HasValue) result.accZ = gsaResult.Az.Value;
+          if (gsaResult.Axx.HasValue) result.accXX = gsaResult.Axx.Value;
+          if (gsaResult.Ayy.HasValue) result.accYY = gsaResult.Ayy.Value;
+          if (gsaResult.Azz.HasValue) result.accZZ = gsaResult.Azz.Value;
+
+          //reactions forces/moments
+          if (gsaResult.Fx_Reac.HasValue) result.reactionX = gsaResult.Fx_Reac.Value;
+          if (gsaResult.Fy_Reac.HasValue) result.reactionY = gsaResult.Fy_Reac.Value;
+          if (gsaResult.Fz_Reac.HasValue) result.reactionZ = gsaResult.Fz_Reac.Value;
+          if (gsaResult.Mxx_Reac.HasValue) result.reactionXX = gsaResult.Mxx_Reac.Value;
+          if (gsaResult.Myy_Reac.HasValue) result.reactionYY = gsaResult.Myy_Reac.Value;
+          if (gsaResult.Mzz_Reac.HasValue) result.reactionZZ = gsaResult.Mzz_Reac.Value;
+
+          //constraint forces/moments
+          if (gsaResult.Fx_Cons.HasValue) result.constraintX = gsaResult.Fx_Cons.Value;
+          if (gsaResult.Fy_Cons.HasValue) result.constraintY = gsaResult.Fy_Cons.Value;
+          if (gsaResult.Fz_Cons.HasValue) result.constraintZ = gsaResult.Fz_Cons.Value;
+          if (gsaResult.Mxx_Cons.HasValue) result.constraintXX = gsaResult.Mxx_Cons.Value;
+          if (gsaResult.Myy_Cons.HasValue) result.constraintYY = gsaResult.Myy_Cons.Value;
+          if (gsaResult.Mzz_Cons.HasValue) result.constraintZZ = gsaResult.Mzz_Cons.Value;
+
+          speckleResults.Add(result);
+        }
+        return true;
+      }
+      return false;
+    }
+
+    public bool GsaElement1dResultToSpeckle(int gsaElementIndex, Element1D speckleElement, out List<Result1D> speckleResults)
+    {
+      speckleResults = null;
+      //Instance.GsaModel.Result1DNumPosition = 2;
+      int count = 0;
+      if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Element1d, gsaElementIndex, out var csvRecord))
+      {
+        speckleResults = new List<Result1D>();
+        var gsaElement1dResults = csvRecord.FindAll(so => so is CsvElem1d).Select(so => (CsvElem1d)so).ToList();
+        foreach (var gsaResult in gsaElement1dResults)
+        {
+          var result = new Result1D()
+          {
+            description = "", //???
+            permutation = "", //???
+            element = speckleElement,
+            position = Convert.ToDouble(count++), //TO DO: to be replaced with gsaResult.Pos when schema is updated
+          };
+
+          var gsaCaseIndex = Convert.ToInt32(gsaResult.CaseId.Substring(1));
+          if (gsaResult.CaseId[0] == 'A')
+          {
+            result.resultCase = GetLoadCaseFromIndex(gsaCaseIndex);
+          }
+          else if (gsaResult.CaseId[0] == 'C')
+          {
+            result.resultCase = GetLoadCombinationFromIndex(gsaCaseIndex);
+          }
+          result.applicationId = speckleElement.applicationId + "_" + result.resultCase.applicationId + "_" + result.position.ToString();
+
+          //displacements
+          if (gsaResult.Ux.HasValue) result.dispX = gsaResult.Ux.Value;
+          if (gsaResult.Uy.HasValue) result.dispY = gsaResult.Uy.Value;
+          if (gsaResult.Uz.HasValue) result.dispZ = gsaResult.Uz.Value;
+
+          //forces
+          if (gsaResult.Fx.HasValue) result.forceX = gsaResult.Fx.Value;
+          if (gsaResult.Fy.HasValue) result.forceY = gsaResult.Fy.Value;
+          if (gsaResult.Fz.HasValue) result.forceZ = gsaResult.Fz.Value;
+
+          //moments
+          if (gsaResult.Mxx.HasValue) result.momentXX = gsaResult.Mxx.Value;
+          if (gsaResult.Myy.HasValue) result.momentYY = gsaResult.Myy.Value;
+          if (gsaResult.Mzz.HasValue) result.momentZZ = gsaResult.Mzz.Value;
+
+          speckleResults.Add(result);
+        }
+        return true;
+      }
+      return false;
+    }
+
+    public bool GsaElement2dResultToSpeckle(int gsaElementIndex, Element2D speckleElement, out List<Result2D> speckleResults)
+    {
+      speckleResults = null;
+      if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Element2d, gsaElementIndex, out var csvRecord))
+      {
+        speckleResults = new List<Result2D>();
+        var gsaElement2dResults = csvRecord.FindAll(so => so is CsvElem2d).Select(so => (CsvElem2d)so).ToList();
+        foreach (var gsaResult in gsaElement2dResults)
+        {
+          var result = new Result2D()
+          {
+            description = "", //???
+            permutation = "", //???
+            element = speckleElement,
+          };
+
+          if (gsaResult.PosR.HasValue && gsaResult.PosS.HasValue) result.position = new List<double>() { gsaResult.PosR.Value, gsaResult.PosS.Value };
+
+          var gsaCaseIndex = Convert.ToInt32(gsaResult.CaseId.Substring(1));
+          if (gsaResult.CaseId[0] == 'A')
+          {
+            result.resultCase = GetLoadCaseFromIndex(gsaCaseIndex);
+          }
+          else if (gsaResult.CaseId[0] == 'C')
+          {
+            result.resultCase = GetLoadCombinationFromIndex(gsaCaseIndex);
+          }
+          result.applicationId = speckleElement.applicationId + "_" + result.resultCase.applicationId + "_" + result.position[0].ToString() + "_" + result.position[1].ToString();
+
+          //displacements
+          if (gsaResult.Ux.HasValue) result.dispX = gsaResult.Ux.Value;
+          if (gsaResult.Uy.HasValue) result.dispY = gsaResult.Uy.Value;
+          if (gsaResult.Uz.HasValue) result.dispZ = gsaResult.Uz.Value;
+
+          //forces
+          if (gsaResult.Nx.HasValue) result.forceXX = gsaResult.Nx.Value;
+          if (gsaResult.Ny.HasValue) result.forceYY = gsaResult.Ny.Value;
+          if (gsaResult.Nxy.HasValue) result.forceXY = gsaResult.Nxy.Value;
+          if (gsaResult.Qx.HasValue) result.shearX = gsaResult.Qx.Value;
+          if (gsaResult.Qy.HasValue) result.shearY = gsaResult.Qy.Value;
+
+          //moments
+          if (gsaResult.Mx.HasValue) result.momentXX = gsaResult.Mx.Value;
+          if (gsaResult.My.HasValue) result.momentYY = gsaResult.My.Value;
+          if (gsaResult.Mxy.HasValue) result.momentXY = gsaResult.Mxy.Value;
+
+          //stresses
+          if (gsaResult.Xx_b.HasValue) result.stressBotXX = gsaResult.Xx_b.Value;
+          if (gsaResult.Yy_b.HasValue) result.stressBotYY = gsaResult.Yy_b.Value;
+          if (gsaResult.Zz_b.HasValue) result.stressBotZZ = gsaResult.Zz_b.Value;
+          if (gsaResult.Xy_b.HasValue) result.stressBotXY = gsaResult.Xy_b.Value;
+          if (gsaResult.Yz_b.HasValue) result.stressBotYZ = gsaResult.Yz_b.Value;
+          if (gsaResult.Zx_b.HasValue) result.stressBotZX = gsaResult.Zx_b.Value;
+          if (gsaResult.Xx_m.HasValue) result.stressMidXX = gsaResult.Xx_m.Value;
+          if (gsaResult.Yy_m.HasValue) result.stressMidYY = gsaResult.Yy_m.Value;
+          if (gsaResult.Zz_m.HasValue) result.stressMidZZ = gsaResult.Zz_m.Value;
+          if (gsaResult.Xy_m.HasValue) result.stressMidXY = gsaResult.Xy_m.Value;
+          if (gsaResult.Yz_m.HasValue) result.stressMidYZ = gsaResult.Yz_m.Value;
+          if (gsaResult.Zx_m.HasValue) result.stressMidZX = gsaResult.Zx_m.Value;
+          if (gsaResult.Xx_t.HasValue) result.stressTopXX = gsaResult.Xx_t.Value;
+          if (gsaResult.Yy_t.HasValue) result.stressTopYY = gsaResult.Yy_t.Value;
+          if (gsaResult.Zz_t.HasValue) result.stressTopZZ = gsaResult.Zz_t.Value;
+          if (gsaResult.Xy_t.HasValue) result.stressTopXY = gsaResult.Xy_t.Value;
+          if (gsaResult.Yz_t.HasValue) result.stressTopYZ = gsaResult.Yz_t.Value;
+          if (gsaResult.Zx_t.HasValue) result.stressTopZX = gsaResult.Zx_t.Value;
+
+          speckleResults.Add(result);
+        }
+        return true;
+      }
+      return false;
+    }
+
+    public bool GsaElement3dResultToSpeckle(int gsaElementIndex, Element3D speckleElement, out List<Result3D> speckleResults)
+    {
+      //TO DO: update when 3D elements are supported
+      speckleResults = null;
+      return false;
+    }
+
     //TODO: implement conversion code for result objects
-    /* Result1D
-     * Result2D
-     * Result3D
-     * ResultGlobal
-     * ResultNode
+    /* ResultGlobal
      */
     #endregion
     #endregion
@@ -1417,9 +1679,14 @@ namespace ConverterGSA
     #endregion
 
     #region Member
-    private ElementType1D GetMemberType(GwaMemberType gsaMemberType)
+    private ElementType1D GetMember1dType(GwaMemberType gsaMemberType)
     {
       return ElementType1D.Beam;
+    }
+
+    private ElementType2D GetMember2dType(GwaMemberType gsaMemberType)
+    {
+      return ElementType2D.Quad4;
     }
     #endregion
     #endregion
