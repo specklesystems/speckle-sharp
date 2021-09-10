@@ -1565,24 +1565,26 @@ namespace ConverterGSATests
       //Checks
       for (var i = 0; i < speckleElement1dResult.Count(); i++)
       {
+        var gsaResult = (CsvElem1d)gsaElement1dResults[i];
+
         //result description
-        Assert.Equal("element 1_load case 1_" + i.ToString(), speckleElement1dResult[i].applicationId);
+        Assert.Equal("element 1_load case 1_" + gsaResult.PosR, speckleElement1dResult[i].applicationId);
         Assert.Equal("", speckleElement1dResult[i].permutation);
         Assert.Equal("", speckleElement1dResult[i].description);
         Assert.Equal("element 1", speckleElement1dResult[i].element.applicationId);
-        Assert.Equal(i.ToDouble(), speckleElement1dResult[i].position);
+        Assert.Equal(gsaResult.PosR.ToDouble(), speckleElement1dResult[i].position);
         Assert.Equal("load case 1", speckleElement1dResult[i].resultCase.applicationId);
 
         //results
-        Assert.Equal(((CsvElem1d)gsaElement1dResults[i]).Ux.Value, speckleElement1dResult[i].dispX);
-        Assert.Equal(((CsvElem1d)gsaElement1dResults[i]).Uy.Value, speckleElement1dResult[i].dispY);
-        Assert.Equal(((CsvElem1d)gsaElement1dResults[i]).Uz.Value, speckleElement1dResult[i].dispZ);
-        Assert.Equal(((CsvElem1d)gsaElement1dResults[i]).Fx.Value, speckleElement1dResult[i].forceX);
-        Assert.Equal(((CsvElem1d)gsaElement1dResults[i]).Fy.Value, speckleElement1dResult[i].forceY);
-        Assert.Equal(((CsvElem1d)gsaElement1dResults[i]).Fz.Value, speckleElement1dResult[i].forceZ);
-        Assert.Equal(((CsvElem1d)gsaElement1dResults[i]).Mxx.Value, speckleElement1dResult[i].momentXX);
-        Assert.Equal(((CsvElem1d)gsaElement1dResults[i]).Myy.Value, speckleElement1dResult[i].momentYY);
-        Assert.Equal(((CsvElem1d)gsaElement1dResults[i]).Mzz.Value, speckleElement1dResult[i].momentZZ);
+        Assert.Equal(gsaResult.Ux.Value, speckleElement1dResult[i].dispX);
+        Assert.Equal(gsaResult.Uy.Value, speckleElement1dResult[i].dispY);
+        Assert.Equal(gsaResult.Uz.Value, speckleElement1dResult[i].dispZ);
+        Assert.Equal(gsaResult.Fx.Value, speckleElement1dResult[i].forceX);
+        Assert.Equal(gsaResult.Fy.Value, speckleElement1dResult[i].forceY);
+        Assert.Equal(gsaResult.Fz.Value, speckleElement1dResult[i].forceZ);
+        Assert.Equal(gsaResult.Mxx.Value, speckleElement1dResult[i].momentXX);
+        Assert.Equal(gsaResult.Myy.Value, speckleElement1dResult[i].momentYY);
+        Assert.Equal(gsaResult.Mzz.Value, speckleElement1dResult[i].momentZZ);
 
         //results - Not currently supported
         Assert.Equal(0, speckleElement1dResult[i].axialStress);
@@ -3017,6 +3019,7 @@ namespace ConverterGSATests
             {
               CaseId = "A" + (ic + 1).ToString(),
               ElemId = ie + 1,
+              PosR = ip.ToString(),
               Ux = ic * 1000 + ie * 100 + ip * 10 + 1,
               Uy = ic * 1000 + ie * 100 + ip * 10 + 2,
               Uz = ic * 1000 + ie * 100 + ip * 10 + 3,

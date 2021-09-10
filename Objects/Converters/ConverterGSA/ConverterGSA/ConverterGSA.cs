@@ -1104,7 +1104,6 @@ namespace ConverterGSA
     {
       speckleResults = null;
       //Instance.GsaModel.Result1DNumPosition = 2;
-      int count = 0;
       if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Element1d, gsaElementIndex, out var csvRecord))
       {
         speckleResults = new List<Result1D>();
@@ -1116,7 +1115,7 @@ namespace ConverterGSA
             description = "", //???
             permutation = "", //???
             element = speckleElement,
-            position = Convert.ToDouble(count++), //TO DO: to be replaced with gsaResult.Pos when schema is updated
+            position = gsaResult.PosR.ToDouble(),
           };
 
           var gsaCaseIndex = Convert.ToInt32(gsaResult.CaseId.Substring(1));
