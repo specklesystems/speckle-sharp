@@ -202,7 +202,7 @@ namespace Objects.Converter.AutocadCivil
         vertices.Add(polyline.GetPoint3dAt(i));
 
       var _polyline = new Polyline(PointsToFlatArray(vertices), ModelUnits);
-      _polyline.closed = vertices.First().Equals(vertices.Last()) ? true : false;// hatch boundary polylines are not closed, cannot rely on .Closed prop
+      _polyline.closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint) ? true : false; // hatch boundary polylines are not closed, cannot rely on .Closed prop
       _polyline.length = polyline.Length;
       _polyline.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
 
@@ -250,7 +250,7 @@ namespace Objects.Converter.AutocadCivil
       }
 
       var _polyline = new Polyline(PointsToFlatArray(vertices), ModelUnits);
-      _polyline.closed = polyline.Closed;
+      _polyline.closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint) ? true : false;
       _polyline.length = polyline.Length;
       _polyline.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
 
@@ -1169,10 +1169,16 @@ namespace Objects.Converter.AutocadCivil
 
       // get record
       BlockDefinition definition = null;
+      var attributes = new Dictionary<string, string>();
       using (Transaction tr = Doc.TransactionManager.StartTransaction())
       {
         BlockTableRecord btr = (BlockTableRecord)tr.GetObject(reference.BlockTableRecord, OpenMode.ForRead);
         definition = BlockRecordToSpeckle(btr);
+        foreach (ObjectId id in reference.AttributeCollection)
+        {
+          AttributeReference attRef = (AttributeReference)tr.GetObject(id, OpenMode.ForRead);
+          attributes.Add(attRef.Tag, attRef.TextString);
+        }
         tr.Commit();
       }
       if (definition == null)
@@ -1185,6 +1191,10 @@ namespace Objects.Converter.AutocadCivil
         blockDefinition = definition,
         units = ModelUnits
       };
+      
+      // add attributes
+      foreach (var attribute in attributes)
+        instance[attribute.Key] = attribute.Value;
 
       return instance;
     }
