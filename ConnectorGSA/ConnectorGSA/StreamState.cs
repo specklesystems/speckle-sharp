@@ -14,7 +14,9 @@ namespace ConnectorGSA
     private string branchName = "main";
     private Client _client;
 
+    [JsonProperty]
     public bool IsSending { get; set; }
+    [JsonProperty]
     public bool IsReceiving { get; set; }
 
     public Speckle.Core.Api.Stream Stream { get; set; }
@@ -45,6 +47,18 @@ namespace ConnectorGSA
     public StreamState()
     {
 
+    }
+
+    public bool Equals(StreamState other)
+    {
+      if (Stream != null && other.Stream != null && Client != null && other.Client != null)
+      {
+        return ((Stream.id == other.Stream.id) && (IsReceiving == other.IsReceiving) && (IsSending == other.IsSending) 
+          && (Client != null && Client.Account != null && Client.Account.userInfo != null)
+          && (other.Client != null && other.Client.Account != null && other.Client.Account.userInfo != null)
+          && (Client.Account.userInfo.id == other.Client.Account.userInfo.id));
+      }
+      return false;
     }
 
     [JsonConstructor]

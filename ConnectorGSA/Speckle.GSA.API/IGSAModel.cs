@@ -13,8 +13,10 @@ namespace Speckle.GSA.API
     string Units { get; set; }
     double CoincidentNodeAllowance { get; set; }
     int LoggingMinimumLevel { get; set; }
+    bool SendOnlyMeaningfulNodes { get; set; }
 
     //Settings - results
+    bool SendResults { get; }
     List<ResultType> ResultTypes { get; set; }
     List<ResultGroup> ResultGroups { get; }
     StreamContentConfig StreamSendConfig { get; set; }
@@ -26,6 +28,7 @@ namespace Speckle.GSA.API
     IGSACache Cache { get; set; }
 
     IGSAProxy Proxy { get; set; }
+    IGSAMessenger Messenger { get; set; }
 
     //TEMP
     GsaRecord GetNative<T>(int value);

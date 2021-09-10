@@ -31,9 +31,7 @@ namespace Speckle.GSA.API
   {
     None = 0,
     ModelOnly = 1,
-    ModelWithEmbeddedResults = 2,
-    ModelWithTabularResults = 3,
-    TabularResultsOnly = 4
+    ModelAndResults = 2
   }
 
   public enum ResultGroup

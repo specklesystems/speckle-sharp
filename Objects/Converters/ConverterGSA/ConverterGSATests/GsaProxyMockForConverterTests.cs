@@ -180,6 +180,12 @@ namespace ConverterGSATests
 
     bool IGSAProxy.Clear() => true;
 
+    public string GetTopLevelSid() => "";
+
+    public bool SetTopLevelSid(string sidRecord) => true;
+
+    public bool Save() => true;
+
     #endregion
   }
 }

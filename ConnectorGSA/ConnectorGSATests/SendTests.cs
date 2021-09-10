@@ -33,7 +33,7 @@ namespace ConnectorGSATests
     //Sending scenarios
 
     [Fact]
-    public async Task SendDesignLayer()
+    public async Task SendDesignLayer() //model only
     {
       //Configure settings for this transmission
       Instance.GsaModel.Layer = GSALayer.Design;
@@ -67,13 +67,52 @@ namespace ConnectorGSATests
       }
     }
 
+    //Note: this is elements embedded in result objects - not the other way around
+    //TO DO - implement the use of the Model objects
+    [Fact]
+    public async Task SendBothLayersModelOnly()
+    {
+      //Configure settings for this transmission
+      Instance.GsaModel.Layer = GSALayer.Analysis;
+
+      var memoryTransport = new MemoryTransport();
+      var result = await CoordinateSend(modelWithoutResultsFile, converter, memoryTransport);
+
+      Assert.True(result.Loaded);
+      Assert.True(result.Converted);
+      Assert.True(result.Sent);
+      Assert.NotEmpty(result.ConvertedObjects);
+
+      var numExpectedByObjectType = new Dictionary<Type, int>()
+      {
+        { typeof(Axis), 3 },
+        { typeof(Concrete), 1 },
+        { typeof(PropertySpring), 8 },
+        { typeof(Property1D), 1 },
+        { typeof(Property2D), 1 },
+        { typeof(Node), 7 },
+        { typeof(LoadCase), 3 },
+        { typeof(Element2D), 3297 }
+      };
+
+      var objectsByType = result.ConvertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
+
+      foreach (var t in numExpectedByObjectType.Keys)
+      {
+        Assert.True(objectsByType.ContainsKey(t));
+        Assert.NotNull(objectsByType[t]);
+        Assert.Equal(numExpectedByObjectType[t], objectsByType[t].Count());
+      }
+    }
+
+    //TO DO: rename this as SendAnalysisLayerWithResults
     [Fact]
     public async Task SendAnalysisLayerWithSeparateResults()
     {
       //Configure settings for this transmission
       Instance.GsaModel.Layer = GSALayer.Analysis;
       Instance.GsaModel.ResultTypes = new List<ResultType>() { ResultType.NodalDisplacements };
-      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelWithTabularResults;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
 
       var memoryTransport = new MemoryTransport();
       var result = await CoordinateSend(modelWithResultsFile, converter, memoryTransport);
@@ -110,7 +149,7 @@ namespace ConnectorGSATests
     {
       Instance.GsaModel.Layer = GSALayer.Analysis;
 
-      Commands.OpenFile(Path.Combine(TestDataDirectory, modelWithResultsFile), true, "", "", out _, out _); //Use a real proxy
+      Commands.OpenFile(Path.Combine(TestDataDirectory, modelWithResultsFile), true); //Use a real proxy
 
       bool loaded = false;
       var resultTypesByGroup = GetResultGroupType();
@@ -215,7 +254,7 @@ namespace ConnectorGSATests
       returnInfo.StreamState = await PrepareStream(client);
 
       returnInfo.Sent = await Commands.Send(commitObj, returnInfo.StreamState,
-        (new List<ITransport> { new ServerTransport(account, returnInfo.StreamState.Stream.id) }).Concat(nonServerTransports));
+        (new ITransport[] { new ServerTransport(account, returnInfo.StreamState.Stream.id) }).Concat(nonServerTransports).ToArray());
 
       return returnInfo;
 
@@ -282,9 +321,7 @@ namespace ConnectorGSATests
 
     private bool SendResults()
     {
-      return ((Instance.GsaModel.StreamSendConfig == StreamContentConfig.ModelWithEmbeddedResults
-        || Instance.GsaModel.StreamSendConfig == StreamContentConfig.ModelWithTabularResults
-        || Instance.GsaModel.StreamSendConfig == StreamContentConfig.TabularResultsOnly)
+      return ((Instance.GsaModel.StreamSendConfig == StreamContentConfig.ModelAndResults)
         && Instance.GsaModel.ResultTypes != null && Instance.GsaModel.ResultTypes.Count > 0);
     }
 

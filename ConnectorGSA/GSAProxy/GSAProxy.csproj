@@ -56,7 +56,6 @@
     <Compile Include="PairCollectionComparable.cs" />
     <Compile Include="Cache\TypeTreeCollection.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="GsaModel.cs" />
     <Compile Include="GsaProxy.cs" />
     <Compile Include="GwaParsers\AnalysisStages\GsaAnalStageParser.cs" />
     <Compile Include="GwaParsers\Bridge\GsaAlignParser.cs" />

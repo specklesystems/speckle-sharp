@@ -10,6 +10,8 @@ namespace Speckle.GSA.API
     bool NewFile(bool showWindow = true, object gsaInstance = null);
     bool OpenFile(string path, bool showWindow = true, object gsaInstance = null);
     bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null);
+    string GetTopLevelSid();
+    bool SetTopLevelSid(string sidRecord);
 
     string GenerateApplicationId(Type schemaType, int gsaIndex);
 
@@ -31,6 +33,7 @@ namespace Speckle.GSA.API
     bool GetResultRecords(ResultGroup group, int index, string loadCase, out List<CsvRecord> records);
     bool ClearResults(ResultGroup group);
     bool SaveAs(string filePath);
+    bool Save();
     bool Clear();
 
     void Close();
