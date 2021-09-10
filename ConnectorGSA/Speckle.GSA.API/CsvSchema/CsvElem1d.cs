@@ -2,6 +2,8 @@
 {
   public class CsvElem1d : CsvRecord
   {
+    public virtual string PosR { get; set; }
+
     public virtual float? Ux { get; set; }
 
     public virtual float? Uy { get; set; }

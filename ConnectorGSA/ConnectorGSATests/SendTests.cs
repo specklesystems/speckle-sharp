@@ -3,6 +3,7 @@ using Objects.Structural.Geometry;
 using Objects.Structural.Loading;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties;
+using Objects.Structural.Results;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -38,7 +39,7 @@ namespace ConnectorGSATests
       Instance.GsaModel.Layer = GSALayer.Design;
 
       var memoryTransport = new MemoryTransport();
-      var result = await CoordinateSend(converter, memoryTransport);
+      var result = await CoordinateSend(modelWithoutResultsFile, converter, memoryTransport);
 
       Assert.True(result.Loaded);
       Assert.True(result.Converted);
@@ -70,12 +71,12 @@ namespace ConnectorGSATests
     public async Task SendAnalysisLayerWithSeparateResults()
     {
       //Configure settings for this transmission
-      Instance.GsaModel.Layer = GSALayer.Design;
+      Instance.GsaModel.Layer = GSALayer.Analysis;
       Instance.GsaModel.ResultTypes = new List<ResultType>() { ResultType.NodalDisplacements };
       Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelWithTabularResults;
 
       var memoryTransport = new MemoryTransport();
-      var result = await CoordinateSend(converter, memoryTransport);
+      var result = await CoordinateSend(modelWithResultsFile, converter, memoryTransport);
 
       Assert.True(result.Loaded);
       Assert.True(result.Converted);
@@ -91,6 +92,7 @@ namespace ConnectorGSATests
         { typeof(Property2D), 1 },
         { typeof(Node), 7 },
         { typeof(LoadCase), 3 },
+        { typeof(ResultNode), 10 }  //Needs to be reviewed
       };
 
       var objectsByType = result.ConvertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
@@ -168,45 +170,54 @@ namespace ConnectorGSATests
       Assert.True(csvRecordsByGroup.Keys.All(g => csvRecordsByGroup[g].Count > 0));
     }
 
-    private async Task<CoordinateSendResult> CoordinateSend(ISpeckleConverter converter, params ITransport[] nonServerTransports)
+    private async Task<CoordinateSendReturnInfo> CoordinateSend(string testFileName, ISpeckleConverter converter, params ITransport[] nonServerTransports)
     {
-      var result = new CoordinateSendResult();
+      var returnInfo = new CoordinateSendReturnInfo();
 
       Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy(); //Use a real proxy
-      Instance.GsaModel.Proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), true);
+      Instance.GsaModel.Proxy.OpenFile(Path.Combine(TestDataDirectory, testFileName), true);
 
-      result.Loaded = false;
+      if (SendResults())
+      {
+        Instance.GsaModel.Proxy.PrepareResults(Instance.GsaModel.ResultTypes, Instance.GsaModel.Result1DNumPosition + 2);
+        foreach (var rg in Instance.GsaModel.ResultGroups)
+        {
+          Instance.GsaModel.Proxy.LoadResults(rg, out int numErrorRows);
+        }
+      }
+
+      returnInfo.Loaded = false;
       try
       {
-        result.Loaded = Commands.LoadDataFromFile();
+        returnInfo.Loaded = Commands.LoadDataFromFile();
       }
       catch { }
       finally
       {
         Instance.GsaModel.Proxy.Close();
       }
-      if (!result.Loaded)
+      if (!returnInfo.Loaded)
       {
-        return result;
+        return returnInfo;
       }
 
       var commitObj = Commands.ConvertToSpeckle(converter);
-      result.Converted = (commitObj != null);
+      returnInfo.Converted = (commitObj != null);
       if (commitObj == null)
       {
-        return result;
+        return returnInfo;
       }
 
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out result.ConvertedObjects));
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out returnInfo.ConvertedObjects));
 
       var account = AccountManager.GetDefaultAccount();
       var client = new Client(account);
-      result.StreamState = await PrepareStream(client);
+      returnInfo.StreamState = await PrepareStream(client);
 
-      result.Sent = await Commands.Send(commitObj, result.StreamState,
-        (new List<ITransport> { new ServerTransport(account, result.StreamState.Stream.id) }).Concat(nonServerTransports));
+      returnInfo.Sent = await Commands.Send(commitObj, returnInfo.StreamState,
+        (new List<ITransport> { new ServerTransport(account, returnInfo.StreamState.Stream.id) }).Concat(nonServerTransports));
 
-      return result;
+      return returnInfo;
 
     }
 
@@ -242,7 +253,7 @@ namespace ConnectorGSATests
       return resultTypes;
     }
 
-    private struct CoordinateSendResult
+    private struct CoordinateSendReturnInfo
     {
       public bool Loaded;
       public bool Converted;
@@ -267,6 +278,14 @@ namespace ConnectorGSATests
       }
 
       return new StreamState() { Client = client, Stream = stream };
+    }
+
+    private bool SendResults()
+    {
+      return ((Instance.GsaModel.StreamSendConfig == StreamContentConfig.ModelWithEmbeddedResults
+        || Instance.GsaModel.StreamSendConfig == StreamContentConfig.ModelWithTabularResults
+        || Instance.GsaModel.StreamSendConfig == StreamContentConfig.TabularResultsOnly)
+        && Instance.GsaModel.ResultTypes != null && Instance.GsaModel.ResultTypes.Count > 0);
     }
 
     private async Task<Speckle.Core.Api.Stream> NewStream(Client client)

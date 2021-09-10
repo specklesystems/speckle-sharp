@@ -16,6 +16,7 @@ namespace Speckle.GSA.API
 
     //Settings - results
     List<ResultType> ResultTypes { get; set; }
+    List<ResultGroup> ResultGroups { get; }
     StreamContentConfig StreamSendConfig { get; set; }
     List<string> ResultCases { get; set; }
     bool ResultInLocalAxis { get; set; }
