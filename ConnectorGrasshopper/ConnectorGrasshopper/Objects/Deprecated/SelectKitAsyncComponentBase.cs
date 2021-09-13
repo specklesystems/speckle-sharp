@@ -78,7 +78,7 @@ namespace ConnectorGrasshopper.Objects
     {
       try
       {
-        var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+        var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
         Menu_AppendSeparator(menu);
         Menu_AppendItem(menu, "Select the converter you want to use:");
@@ -110,7 +110,7 @@ namespace ConnectorGrasshopper.Objects
       if (kitName == Kit?.Name) return;
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       SelectedKitName = Kit.Name;
-      Converter = Kit.LoadConverter(Applications.Rhino);
+      Converter = Kit.LoadConverter(Applications.Rhino6);
       Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
       Message = $"Using the {Kit.Name} Converter";
     }

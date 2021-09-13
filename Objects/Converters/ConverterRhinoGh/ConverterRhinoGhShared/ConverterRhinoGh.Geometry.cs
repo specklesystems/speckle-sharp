@@ -619,6 +619,33 @@ namespace Objects.Converter.RhinoGh
       return speckleMesh;
     }
 
+#if RHINO7
+    public Mesh MeshToSpeckle(RH.SubD mesh, string units = null)
+    {
+      var u = units ?? ModelUnits;
+
+      var vertices = new List<Point3d>();
+      var subDVertices = new List<SubDVertex>();
+      for(int i = 0 ; i < mesh.Vertices.Count; i++)
+      {
+        vertices.Add(mesh.Vertices.Find(i).ControlNetPoint);
+        subDVertices.Add(mesh.Vertices.Find(i));
+      }
+      var verts = PointsToFlatArray(vertices);
+
+      var Faces = mesh.Faces.SelectMany(face =>
+      {
+        if (face.VertexCount == 4) return new int[] { 1, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)), subDVertices.IndexOf(face.VertexAt(3)) };
+        return new int[] { 0, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)) };
+      }).ToArray();
+
+      var speckleMesh = new Mesh(verts, Faces, null, null, u);
+      speckleMesh.bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)), u);
+
+      return speckleMesh;
+    }
+#endif
+
     public RH.Mesh MeshToNative(Mesh mesh)
     {
       RH.Mesh m = new RH.Mesh();
@@ -750,7 +777,7 @@ namespace Objects.Converter.RhinoGh
       joinedMesh.Vertices.CombineIdentical(true, true);
       joinedMesh.Compact();
 
-      var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: Applications.Rhino, units: u);
+      var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: RhinoAppName, units: u);
 
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices
@@ -876,7 +903,7 @@ namespace Objects.Converter.RhinoGh
       try
       {
         // TODO: Provenance exception is meaningless now, must change for provenance build checks.
-        // if (brep.provenance != Speckle.Core.Kits.Applications.Rhino)
+        // if (brep.provenance != Speckle.Core.Kits.Applications.Rhino6)
         //   throw new Exception("Unknown brep provenance: " + brep.provenance +
         //                       ". Don't know how to convert from one to the other.");
 

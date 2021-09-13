@@ -71,7 +71,7 @@ namespace ConnectorGrasshopper.Ops
       }
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino);
+      Converter = Kit.LoadConverter(Applications.Rhino6);
 
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
@@ -82,7 +82,7 @@ namespace ConnectorGrasshopper.Ops
       Menu_AppendSeparator(menu);
       var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:");
       menuItem.Enabled = false;
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
       foreach (var kit in kits)
       {
@@ -168,7 +168,7 @@ namespace ConnectorGrasshopper.Ops
       try
       {
         Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(Applications.Rhino);
+        Converter = Kit.LoadConverter(Applications.Rhino6);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         foundKit = true;
       }
