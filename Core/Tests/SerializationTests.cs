@@ -64,32 +64,15 @@ namespace Tests
     }
 
     [Test]
-    public void SerialisationAbstractObjects()
-    {
-      var nk = new NonKitClass() { TestProp = "Hello", Numbers = new List<int>() { 1, 2, 3, 4, 5 } };
-      var abs = new Abstract(nk);
-
-      var transport = new MemoryTransport();
-
-      var abs_serialized = Operations.Serialize(abs);
-      var abs_deserialized = Operations.Deserialize(abs_serialized);
-      var abs_se_deserializes = Operations.Serialize(abs_deserialized);
-
-      Assert.AreEqual(abs.GetId(), abs_deserialized.GetId());
-      Assert.AreEqual(abs.@base.GetType(), ((Abstract)abs_deserialized).@base.GetType());
-    }
-
-    [Test]
     public void IgnoreCircularReferences()
     {
       var pt = new Point(1, 2, 3);
-      ((dynamic)pt).circle = pt;
+      pt["circle"] = pt;
 
       var test = Operations.Serialize(pt);
 
       var result = Operations.Deserialize(test);
-      var circle = ((dynamic)result).circle;
-
+      var circle = result["circle"];
       Assert.Null(circle);
     }
 
