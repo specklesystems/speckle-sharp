@@ -52,25 +52,32 @@ namespace ConnectorGSA
       var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
       var allSs = JsonConvert.DeserializeObject<List<StreamState>>(sid);
 
-      var merged = new List<StreamState>();
-      foreach (var ss in streamStates)
+      if (allSs == null || allSs.Count() == 0)
       {
-        var matching = allSs.FirstOrDefault(s => s.Equals(ss));
-        if (matching != null)
-        {
-          if (matching.IsReceiving != ss.IsReceiving)
-          {
-            matching.IsReceiving = true;  //This is merging of two booleans, where a true value is to be set if any are true
-          }
-          if(matching.IsSending != ss.IsSending)
-          {
-            matching.IsSending = true;  //This is merging of two booleans, where a true value is to be set if any are true
-          }
-          merged.Add(ss);
-        }
+        allSs = streamStates;
       }
+      else
+      {
+        var merged = new List<StreamState>();
+        foreach (var ss in streamStates)
+        {
+          var matching = allSs.FirstOrDefault(s => s.Equals(ss));
+          if (matching != null)
+          {
+            if (matching.IsReceiving != ss.IsReceiving)
+            {
+              matching.IsReceiving = true;  //This is merging of two booleans, where a true value is to be set if any are true
+            }
+            if (matching.IsSending != ss.IsSending)
+            {
+              matching.IsSending = true;  //This is merging of two booleans, where a true value is to be set if any are true
+            }
+            merged.Add(ss);
+          }
+        }
 
-      allSs = allSs.Union(streamStates.Except(merged)).ToList();
+        allSs = allSs.Union(streamStates.Except(merged)).ToList();
+      }
 
       var newSid = JsonConvert.SerializeObject(allSs);
       return Instance.GsaModel.Proxy.SetTopLevelSid(newSid);
@@ -82,9 +89,9 @@ namespace ConnectorGSA
       return Instance.GsaModel.Proxy.Clear();
     }
 
-    public static bool LoadDataFromFile(IEnumerable<ResultGroup> resultGroups = null, IEnumerable<ResultType> resultTypes = null)
+    public static bool LoadDataFromFile(bool onlyNodesWithApplicationIds = true, IEnumerable<ResultGroup> resultGroups = null, IEnumerable<ResultType> resultTypes = null)
     {
-      var loadedCache = UpdateCache();
+      var loadedCache = UpdateCache(onlyNodesWithApplicationIds);
       int cumulativeErrorRows = 0;
 
       if (resultGroups != null && resultGroups.Any() && resultTypes != null && resultTypes.Any())
@@ -244,13 +251,13 @@ namespace ConnectorGSA
       return false;
     }
 
-    private static bool UpdateCache()
+    private static bool UpdateCache(bool onlyNodesWithApplicationIds = true)
     {
       var errored = new Dictionary<int, GsaRecord>();
 
       try
       {
-        if (Instance.GsaModel.Proxy.GetGwaData(true, out var records))
+        if (Instance.GsaModel.Proxy.GetGwaData(onlyNodesWithApplicationIds, out var records))
         {
           for (int i = 0; i < records.Count(); i++)
           {

@@ -434,7 +434,7 @@ namespace Speckle.ConnectorGSA.Proxy
         var parserTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, gwaParserInterfaceType)
           && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
           && Helper.IsSelfContained(t)
-          && ((layer == GSALayer.Design && Helper.IsDesignLayer(t)) || (layer == GSALayer.Analysis && Helper.IsAnalysisLayer(t)))
+          && ((layer == GSALayer.DesignOnly && Helper.IsDesignLayer(t)) || (layer == GSALayer.BothLayers))
           && !t.IsAbstract
           ).ToDictionary(pt => pt, pt => Helper.GetGwaKeyword(pt));
 
@@ -982,7 +982,7 @@ namespace Speckle.ConnectorGSA.Proxy
     public bool SetUnits(string units)
     {
       this.units = units;
-      short retCode;
+      int retCode;
       lock(syncLock)
       {
         var retCode1 = GSAObject.GwaCommand(string.Join(GwaDelimiter.ToString(), new[] { "SET", "UNIT_DATA", "LENGTH", units }));

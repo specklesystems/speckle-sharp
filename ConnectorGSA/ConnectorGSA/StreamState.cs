@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace ConnectorGSA
 {
+  [JsonObject(MemberSerialization.OptIn)]
   public class StreamState
   {
     private string branchName = "main";

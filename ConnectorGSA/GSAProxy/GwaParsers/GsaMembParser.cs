@@ -6,7 +6,7 @@ using Speckle.GSA.API.GwaSchema;
 
 namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
-  [GsaType(GwaKeyword.MEMB, GwaSetCommandType.Set, true, true, false, GwaKeyword.PROP_SPR, GwaKeyword.SECTION, GwaKeyword.PROP_2D)]
+  [GsaType(GwaKeyword.MEMB, GwaSetCommandType.Set, true, true, false, GwaKeyword.NODE, GwaKeyword.PROP_SPR, GwaKeyword.SECTION, GwaKeyword.PROP_2D)]
   public class GsaMembParser : GwaParser<GsaMemb>
   {
     //Not supporting: 3D members, or 2D reinforcement

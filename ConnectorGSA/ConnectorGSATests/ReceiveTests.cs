@@ -30,7 +30,7 @@ namespace ConnectorGSATests
     public async void ReceiveDesignModelOnly()
     {
       Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
-      Instance.GsaModel.Layer = GSALayer.Design;
+      Instance.GsaModel.Layer = GSALayer.DesignOnly;
 
       /* these lines would cause the libraries in %AppData% to be loaded, including the objects.dll library, which contains types
       * which C# would recognise as being different to the ones used in the converter code

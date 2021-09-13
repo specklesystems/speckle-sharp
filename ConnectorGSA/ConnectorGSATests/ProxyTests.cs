@@ -3,6 +3,7 @@ using Xunit;
 using System.IO;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API;
+using Speckle.ConnectorGSA.Proxy;
 
 namespace ConnectorGSATests
 {
@@ -28,7 +29,7 @@ namespace ConnectorGSATests
     [Fact]
     public void TestProxyGetDataForCache()
     {
-      Instance.GsaModel.Layer = GSALayer.Design;
+      Instance.GsaModel.Layer = GSALayer.DesignOnly;
       var proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
       proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), false);
 
@@ -36,6 +37,31 @@ namespace ConnectorGSATests
       proxy.Close();
 
       Assert.Equal(188, records.Count());
+    }
+
+    [Fact]
+    public void TestDependencyTreeSimple()
+    {
+      var chars = new[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g' };
+      var t = new TypeTreeCollection<char>(chars);
+      t.Integrate('a', 'c', 'd');
+      t.Integrate('c', 'e', 'f');
+      var generations = t.Generations();
+    }
+
+    [Fact]
+    public void TestDependencyTreeComplex()
+    {
+      var chars = new[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g' };
+      var t = new TypeTreeCollection<char>(chars);
+      t.Integrate('a', 'c', 'd', 'f');
+      t.Integrate('c', 'f', 'g');
+      t.Integrate('d', 'g');
+      t.Integrate('b', 'd', 'e');
+      var generations = t.Generations().Select(g => g.OrderBy(v => v).ToList()).ToList();
+      Assert.Equal(new[] { 'a', 'b' }, generations[2]);
+      Assert.Equal(new[] { 'c', 'd', 'e' }, generations[1]);
+      Assert.Equal(new[] { 'f', 'g' }, generations[0]);
     }
   }
 }

@@ -1,4 +1,5 @@
 ﻿using ConnectorGSA;
+using Newtonsoft.Json;
 using Objects.Structural.Geometry;
 using Objects.Structural.Loading;
 using Objects.Structural.Materials;
@@ -30,13 +31,64 @@ namespace ConnectorGSATests
   // - stream IDs saved with any native object are ignored during sending - it's the send config settings that determine what is sent
   public class SendTests : SpeckleConnectorFixture
   {
+    [Fact]
+    public void TestSerialisation()
+    {
+      var account = AccountManager.GetDefaultAccount();
+      var ss = new StreamState(account.userInfo.id, "http://v2.speckle.arup.com");
+      var ssString = JsonConvert.SerializeObject(ss);
+    }
     //Sending scenarios
+
+    [Fact]
+    public void HeadlessSendDesignLayer()
+    {
+      var headless = new Headless();
+      var cliResult = headless.RunCLI("sender",
+        "--server", v2ServerUrl,
+        "--file", Path.Combine(TestDataDirectory, modelWithoutResultsFile),
+        "--saveAs", Path.Combine(TestDataDirectory, modelWithoutResultsFile.Split('.').First() + "_test.gwb"),
+        "--designLayerOnly");
+
+      Assert.True(cliResult);
+    }
+
+    [Fact]
+    public void HeadlessSendBothLayers()
+    {
+      var headless = new Headless();
+      var account = AccountManager.GetDefaultAccount();
+      var cliResult = headless.RunCLI("sender",
+        "--server", account.serverInfo.url,
+        "--email", account.userInfo.email,
+        "--token", account.refreshToken,
+        "--file", Path.Combine(TestDataDirectory, modelWithoutResultsFile));
+
+      Assert.True(cliResult);
+    }
+
+    [Fact]
+    public void HeadlessSendBothLayersWithResults()
+    {
+      var headless = new Headless();
+      var account = AccountManager.GetDefaultAccount();
+      var cliResult = headless.RunCLI("sender",
+        "--server", account.serverInfo.url,
+        "--email", account.userInfo.email,
+        "--token", account.refreshToken,
+        "--file", Path.Combine(TestDataDirectory, modelWithoutResultsFile),
+        "--result", "\"Nodal Displacements\",\"Element 1d Force\",\"Element 2d Displacement\",\"Assembly Forces And Moments\"",
+        "--resultCases", "A1,C1",
+        "--result1DNumPosition", "3");
+
+      Assert.True(cliResult);
+    }
 
     [Fact]
     public async Task SendDesignLayer() //model only
     {
       //Configure settings for this transmission
-      Instance.GsaModel.Layer = GSALayer.Design;
+      Instance.GsaModel.Layer = GSALayer.DesignOnly;
 
       var memoryTransport = new MemoryTransport();
       var result = await CoordinateSend(modelWithoutResultsFile, converter, memoryTransport);
@@ -73,7 +125,7 @@ namespace ConnectorGSATests
     public async Task SendBothLayersModelOnly()
     {
       //Configure settings for this transmission
-      Instance.GsaModel.Layer = GSALayer.Analysis;
+      Instance.GsaModel.Layer = GSALayer.BothLayers;
 
       var memoryTransport = new MemoryTransport();
       var result = await CoordinateSend(modelWithoutResultsFile, converter, memoryTransport);
@@ -110,7 +162,7 @@ namespace ConnectorGSATests
     public async Task SendAnalysisLayerWithSeparateResults()
     {
       //Configure settings for this transmission
-      Instance.GsaModel.Layer = GSALayer.Analysis;
+      Instance.GsaModel.Layer = GSALayer.BothLayers;
       Instance.GsaModel.ResultTypes = new List<ResultType>() { ResultType.NodalDisplacements };
       Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
 
@@ -147,7 +199,7 @@ namespace ConnectorGSATests
     [Fact]
     public void ReadResults()
     {
-      Instance.GsaModel.Layer = GSALayer.Analysis;
+      Instance.GsaModel.Layer = GSALayer.BothLayers;
 
       Commands.OpenFile(Path.Combine(TestDataDirectory, modelWithResultsFile), true); //Use a real proxy
 
@@ -158,7 +210,7 @@ namespace ConnectorGSATests
 
       try
       {
-        loaded = Commands.LoadDataFromFile(resultTypesByGroup.Keys, resultTypesByGroup.Keys.SelectMany(g => resultTypesByGroup[g]));
+        loaded = Commands.LoadDataFromFile(false, resultTypesByGroup.Keys, resultTypesByGroup.Keys.SelectMany(g => resultTypesByGroup[g]));
       }
       catch (Exception ex)
       {
@@ -228,7 +280,7 @@ namespace ConnectorGSATests
       returnInfo.Loaded = false;
       try
       {
-        returnInfo.Loaded = Commands.LoadDataFromFile();
+        returnInfo.Loaded = Commands.LoadDataFromFile(false);
       }
       catch { }
       finally

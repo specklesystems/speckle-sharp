@@ -56,7 +56,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       {
         return "ELEMENT";
       }
-      else if (Instance.GsaModel.Layer == GSALayer.Design)
+      else if (Instance.GsaModel.Layer == GSALayer.DesignOnly)
       {
         return "MEMBER";
       }

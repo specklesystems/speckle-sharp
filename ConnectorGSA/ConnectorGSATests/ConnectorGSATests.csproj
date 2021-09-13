@@ -86,7 +86,7 @@
     <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
       <Project>{60be029e-1f31-4473-8b68-a745a43af179}</Project>
       <Name>Objects</Name>
-      <Private>True</Private>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\ConnectorGSA\ConnectorGSA.csproj">
       <Project>{1ba03be5-f893-46a3-b569-4fab87f0b60e}</Project>

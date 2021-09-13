@@ -88,12 +88,12 @@ namespace ConnectorGSA
         Console.Write("--server <server>\t\tAddress of Speckle server\n");
         Console.Write("--email <email>\t\t\tEmail of account\n");
         Console.Write("--token <token>\t\tJWT token\n");
-        Console.Write("--file <path>\t\t\tFile to open. If file does not exist, a new one will be created\n");
+        Console.Write("--file <path>\t\t\tFile path to open\n");        
         Console.WriteLine("\n");
         Console.Write("Optional arguments:\n");
-        Console.Write("--layer [analysis|design]\tSet which layer to write to. Default is design layer\n");
+        Console.Write("--saveAs <path>\t\t\tFile path to save file with stream information.  Default is to use file\n");
+        Console.Write("--designLayerOnly\t\tIgnores analysis information.  Default is to send all data from both layers\n");
         Console.Write("--sendAllNodes\t\t\tSend all nodes in model. Default is to send only 'meaningful' nodes\n");
-        Console.Write("--separateStreams\t\tSeparate model into different streams\n");
         Console.Write("--result <options>\t\tType of result to send. Each input should be in quotation marks. Comma-delimited\n");
         Console.Write("--resultCases <cases>\t\tCases to extract results from. Comma-delimited\n");
         Console.Write("--resultInLocalAxis\t\tSend results calculated at the local axis. Default is global\n");
@@ -117,7 +117,7 @@ namespace ConnectorGSA
         }
       }
 
-      foreach (var a in (new [] { "server", "email", "token", "file" }))
+      foreach (var a in (new [] { "server", "file" }))
       {
         if (!argPairs.ContainsKey(a))
         {
@@ -128,15 +128,30 @@ namespace ConnectorGSA
       #endregion
 
       // Login
-      EmailAddress = argPairs["email"];
-      RestApi = argPairs["server"];
-      ApiToken = argPairs["token"];
-      var streamIds = argPairs["streamIDs"].Split(new char[] { ',' });
+      if (argPairs.ContainsKey("email"))
+      {
+        EmailAddress = argPairs["email"];
+      }
+      if (argPairs.ContainsKey("server"))
+      {
+        RestApi = argPairs["server"];
+      }
+      if (argPairs.ContainsKey("token"))
+      {
+        ApiToken = argPairs["token"];
+      }
 
-      userInfo = AccountManager.GetUserInfo(ApiToken, RestApi).Result;
-      Account account = (userInfo == null || string.IsNullOrEmpty(userInfo.id)) 
-        ? AccountManager.GetDefaultAccount() 
-        : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userInfo.id);
+      Account account;
+      if (string.IsNullOrEmpty(RestApi) || string.IsNullOrEmpty(ApiToken))
+      {
+        account = AccountManager.GetDefaultAccount();
+        userInfo = account.userInfo;
+      }
+      else
+      {
+        userInfo = AccountManager.GetUserInfo(ApiToken, RestApi).Result;
+        account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userInfo.id);
+      }
       
       var client = new Client(account);
 
@@ -153,6 +168,8 @@ namespace ConnectorGSA
         return false;
       }
 
+      var saveAsFilePath = (argPairs.ContainsKey("saveAs")) ? argPairs["saveAs"] : filePath;
+
       if (sendReceive == SendReceive.Receive)
       {
         Instance.GsaModel.Proxy.NewFile(false);
@@ -160,11 +177,11 @@ namespace ConnectorGSA
         Instance.GsaModel.Messenger.Message(MessageIntent.Display, MessageLevel.Information, "Created new file.");
 
         //Ensure this new file has a file name, and internally sets the file name in the proxy
-        Instance.GsaModel.Proxy.SaveAs(filePath);
+        Instance.GsaModel.Proxy.SaveAs(saveAsFilePath);
       }
       else
       {
-        Commands.OpenFile(filePath, true);
+        Commands.OpenFile(filePath, false);
       }
       #endregion
 
@@ -180,9 +197,22 @@ namespace ConnectorGSA
       bool cliResult = false;
       if (sendReceive == SendReceive.Receive)
       {
+        var streamIds = argPairs["streamIDs"].Split(new char[] { ',' });
+
         //There seem to be some issues with HTTP requests down the line if this is run on the initial (UI) thread, so this ensures it runs on another thread
         cliResult = Task.Run(() =>
         {
+          //Load data to cause merging
+          try
+          {
+            Commands.LoadDataFromFile(true);
+          }
+          catch { }
+          finally
+          {
+            Instance.GsaModel.Proxy.Close();
+          }
+
           foreach (var streamId in streamIds)
           {
             var streamState = new StreamState(userInfo.id, RestApi) { Stream = new Speckle.Core.Api.Stream() { id = streamId } };
@@ -217,7 +247,7 @@ namespace ConnectorGSA
 
           try
           {
-            Commands.LoadDataFromFile();
+            Commands.LoadDataFromFile(false); //Ensure all nodes
           }
           catch { }
           finally
@@ -252,7 +282,7 @@ namespace ConnectorGSA
       }
 
       Commands.UpsertSavedReceptionStreamInfo(true, null, streamStates);
-      Instance.GsaModel.Proxy.Save();
+      Instance.GsaModel.Proxy.SaveAs(saveAsFilePath);
       Instance.GsaModel.Proxy.Close();
 
       return cliResult;
@@ -302,7 +332,7 @@ namespace ConnectorGSA
     {
       //This will create the logger
       Instance.GsaModel.LoggingMinimumLevel = 4; //Debug
-      Instance.GsaModel.Layer = (argPairs.ContainsKey("layer") && (argPairs["layer"].ToLower() == "analysis")) ? GSALayer.Analysis : GSALayer.Design;
+      Instance.GsaModel.Layer = GSALayer.BothLayers;  //Unless overridden below
       //TO DO: enable is as a command line argument
       Instance.GsaModel.Units = "m";
 
@@ -314,7 +344,10 @@ namespace ConnectorGSA
           return false;
         }
 
-        Instance.GsaModel.Layer = ((argPairs.ContainsKey("layer")) && (argPairs["layer"].ToLower() == "analysis")) ? GSALayer.Analysis : GSALayer.Design;
+        if (argPairs.ContainsKey("designLayerOnly"))
+        {
+          Instance.GsaModel.Layer = GSALayer.DesignOnly;
+        }
         if (argPairs.ContainsKey("nodeAllowance") && double.TryParse(argPairs["nodeAllowance"], out double nodeAllowance))
         {
           Instance.GsaModel.CoincidentNodeAllowance = nodeAllowance;

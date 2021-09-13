@@ -174,7 +174,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
       //Unlike other keywords which have entity type as a parameter, this keyword (at least for version 2) still has "element list" which means, 
       //for members, the group is used
-      var allIndices = ((Instance.GsaModel.Layer == GSALayer.Design) 
+      var allIndices = ((Instance.GsaModel.Layer == GSALayer.DesignOnly) 
         ? Instance.GsaModel.Cache.LookupIndices<GsaMemb>()
         : Instance.GsaModel.Cache.LookupIndices<GsaEl>()).Distinct().OrderBy(i => i).ToList();
 
@@ -182,7 +182,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       {
         return "all";
       }
-      return (Instance.GsaModel.Layer == GSALayer.Design)
+      return (Instance.GsaModel.Layer == GSALayer.DesignOnly)
         ? string.Join(" ", entities.Select(i => "G" + i))
         : string.Join(" ", entities);
     }
@@ -303,7 +303,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     protected bool AddEntities(string v, out List<int> indices)
     {
       var entityItems = v.Split(' ');
-      if (Instance.GsaModel.Layer == GSALayer.Design)
+      if (Instance.GsaModel.Layer == GSALayer.DesignOnly)
       {
         if (entityItems.Count() == 1 && entityItems.First().Equals("all", StringComparison.InvariantCultureIgnoreCase))
         {
