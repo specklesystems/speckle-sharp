@@ -99,6 +99,10 @@ namespace Objects.Converter.Revit
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
           {
             returnObject = RoomBoundaryLineToSpeckle(o);
+          } 
+          else if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_MEPSpaceSeparationLines)
+          {
+            returnObject = SpaceSeparationLineToSpeckle(o);
           }
           else
           {
@@ -126,6 +130,9 @@ namespace Objects.Converter.Revit
           break;
         case DB.Mechanical.Duct o:
           returnObject = DuctToSpeckle(o);
+          break;
+        case DB.Mechanical.Space o:
+          returnObject = SpaceToSpeckle(o);
           break;
         case DB.Plumbing.Pipe o:
           returnObject = PipeToSpeckle(o);
@@ -303,6 +310,9 @@ namespace Objects.Converter.Revit
         case BERC.RoomBoundaryLine o:
           return RoomBoundaryLineToNative(o);
 
+        case BERC.SpaceSeparationLine o:
+          return SpaceSeparationLineToNative(o);
+
         case BE.Roof o:
           return RoofToNative(o);
 
@@ -343,6 +353,9 @@ namespace Objects.Converter.Revit
         case BE.GridLine o:
           return GridLineToNative(o);
 
+        case BE.Space o:
+            return SpaceToNative(o);
+
         // other
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
@@ -375,6 +388,7 @@ namespace Objects.Converter.Revit
         DB.Architecture.TopographySurface _ => true,
         DB.Wall _ => true,
         DB.Mechanical.Duct _ => true,
+        DB.Mechanical.Space _ => true,
         DB.Plumbing.Pipe _ => true,
         DB.Electrical.Wire _ => true,
         DB.CurtainGridLine _ => true, //these should be handled by curtain walls
@@ -442,6 +456,7 @@ namespace Objects.Converter.Revit
         BERC.ModelCurve _ => true,
         BE.Opening _ => true,
         BERC.RoomBoundaryLine _ => true,
+        BERC.SpaceSeparationLine _ => true,
         BE.Roof _ => true,
         BE.Topography _ => true,
         BER.RevitFaceWall _ => true,
@@ -455,6 +470,7 @@ namespace Objects.Converter.Revit
         BE.View3D _ => true,
         BE.Room _ => true,
         BE.GridLine _ => true,
+        BE.Space _ => true,
         Other.BlockInstance _ => true,
         _ => false
 

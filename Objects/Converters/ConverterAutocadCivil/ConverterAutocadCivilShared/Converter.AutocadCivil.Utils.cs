@@ -8,6 +8,23 @@ using Speckle.Core.Models;
 
 namespace Objects.Converter.AutocadCivil
 {
+  public static class Utils
+  {
+    public static BlockTableRecord GetModelSpace(this Database db)
+    {
+      return (BlockTableRecord)SymbolUtilityServices.GetBlockModelSpaceId(db).GetObject(OpenMode.ForWrite);
+    }
+    public static ObjectId Append(this BlockTableRecord owner, Entity entity)
+    {
+      if (!entity.IsNewObject)
+        return entity.Id;
+      var tr = owner.Database.TransactionManager.TopTransaction;
+      var id = owner.AppendEntity(entity);
+      tr.AddNewlyCreatedDBObject(entity, true);
+      return id;
+    }
+  }
+
   public partial class ConverterAutocadCivil
   {
     public static string invalidChars = @"<>/\:;""?*|=,‘";

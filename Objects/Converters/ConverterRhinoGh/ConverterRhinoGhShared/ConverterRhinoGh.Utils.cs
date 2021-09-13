@@ -33,8 +33,8 @@ namespace Objects.Converter.RhinoGh
       renderMaterial.emissive = material.EmissionColor.ToArgb();
       renderMaterial.opacity = 1 - material.Transparency;
       renderMaterial.metalness = material.Reflectivity;
-
-      if (material.Name.ToLower().Contains("glass") && renderMaterial.opacity == 0)
+      
+      if (material.Name != null && material.Name.ToLower().Contains("glass") && renderMaterial.opacity == 0)
       {
         renderMaterial.opacity = 0.3;
       }

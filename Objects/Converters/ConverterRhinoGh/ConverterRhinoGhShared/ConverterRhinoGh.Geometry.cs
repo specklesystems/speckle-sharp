@@ -81,10 +81,11 @@ namespace Objects.Converter.RhinoGh
     // Rh Capture?
     public Rhino.Geometry.Point PointToNative(Point pt)
     {
+      double scaleFactor = ScaleToNative(1, pt.units);
       var myPoint = new Rhino.Geometry.Point(new Point3d(
-        ScaleToNative(pt.x, pt.units),
-        ScaleToNative(pt.y, pt.units),
-        ScaleToNative(pt.z, pt.units)));
+        pt.x * scaleFactor,
+        pt.y * scaleFactor,
+        pt.z * scaleFactor));
 
       return myPoint;
     }
@@ -618,6 +619,33 @@ namespace Objects.Converter.RhinoGh
       return speckleMesh;
     }
 
+#if RHINO7
+    public Mesh MeshToSpeckle(RH.SubD mesh, string units = null)
+    {
+      var u = units ?? ModelUnits;
+
+      var vertices = new List<Point3d>();
+      var subDVertices = new List<SubDVertex>();
+      for(int i = 0 ; i < mesh.Vertices.Count; i++)
+      {
+        vertices.Add(mesh.Vertices.Find(i).ControlNetPoint);
+        subDVertices.Add(mesh.Vertices.Find(i));
+      }
+      var verts = PointsToFlatArray(vertices);
+
+      var Faces = mesh.Faces.SelectMany(face =>
+      {
+        if (face.VertexCount == 4) return new int[] { 1, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)), subDVertices.IndexOf(face.VertexAt(3)) };
+        return new int[] { 0, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)) };
+      }).ToArray();
+
+      var speckleMesh = new Mesh(verts, Faces, null, null, u);
+      speckleMesh.bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)), u);
+
+      return speckleMesh;
+    }
+#endif
+
     public RH.Mesh MeshToNative(Mesh mesh)
     {
       RH.Mesh m = new RH.Mesh();
@@ -689,11 +717,18 @@ namespace Objects.Converter.RhinoGh
     }
     public RH.PointCloud PointcloudToNative(Pointcloud pointcloud)
     {
-      var points = pointcloud.GetPoints().Select(o => PointToNative(o).Location).ToList();
-      var _pointcloud = new RH.PointCloud(points);
+      int numPoints = pointcloud.points.Count / 3;
+      List<double> sPoints = pointcloud.points;
+      Point3d[] rhPoints = new Point3d[numPoints];
+      double scaleFactor = ScaleToNative(1, pointcloud.units);
 
-      if (pointcloud.colors.Count == points.Count)
-        for (int i = 0; i < points.Count; i++)
+      for (int i = 0; i < numPoints; i++)
+        rhPoints[i] = new Point3d(sPoints[3 * i] * scaleFactor, sPoints[3 * i + 1] * scaleFactor, sPoints[3 * i + 2] * scaleFactor);
+
+      var _pointcloud = new RH.PointCloud(rhPoints);
+
+      if (pointcloud.colors.Count == rhPoints.Length)
+        for (int i = 0; i < rhPoints.Length; i++)
           _pointcloud[i].Color = System.Drawing.Color.FromArgb(pointcloud.colors[i]);
 
       return _pointcloud;
@@ -742,7 +777,7 @@ namespace Objects.Converter.RhinoGh
       joinedMesh.Vertices.CombineIdentical(true, true);
       joinedMesh.Compact();
 
-      var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: Applications.Rhino, units: u);
+      var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: RhinoAppName, units: u);
 
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices
@@ -868,7 +903,7 @@ namespace Objects.Converter.RhinoGh
       try
       {
         // TODO: Provenance exception is meaningless now, must change for provenance build checks.
-        // if (brep.provenance != Speckle.Core.Kits.Applications.Rhino)
+        // if (brep.provenance != Speckle.Core.Kits.Applications.Rhino6)
         //   throw new Exception("Unknown brep provenance: " + brep.provenance +
         //                       ". Don't know how to convert from one to the other.");
 

@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>b74cb8c1-187b-46a6-b20b-92b8c129f3ee</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ConverterRhinoGhShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.BuiltElements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Geometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Other.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Utils.cs" />
+  </ItemGroup>
+</Project>
