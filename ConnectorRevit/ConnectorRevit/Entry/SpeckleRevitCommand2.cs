@@ -9,11 +9,11 @@ using Autodesk.Revit.UI;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
+using DesktopUI2;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Revit.Async;
 using Speckle.ConnectorRevit.UI;
-using Speckle.DesktopUI;
 using Stylet.Xaml;
 using Application = Autodesk.Revit.ApplicationServices.Application;
 
@@ -24,6 +24,7 @@ namespace Speckle.ConnectorRevit.Entry
   {
 
     public static Window MainWindow { get; private set; }
+    public static ConnectorBindingsRevit2 Bindings { get; set; }
     private static Avalonia.Application AvaloniaApp { get; set; }
     UIApplication uiapp;
 
@@ -58,16 +59,17 @@ namespace Speckle.ConnectorRevit.Entry
     {
       if (MainWindow == null)
       {
-        var viewModel = new MainWindowViewModel(new ConnectorBindingsRevit2(uiapp));
+
+        var viewModel = new MainWindowViewModel(Bindings);
         MainWindow = new MainWindow
         {
           DataContext = viewModel
         };
 
-        AvaloniaApp.Run(MainWindow);
+        Task.Run(() => AvaloniaApp.Run(MainWindow));
       }
-      else
-        MainWindow.Show();
+
+      MainWindow.Show();
     }
 
     private static void AppMain(Avalonia.Application app, string[] args)

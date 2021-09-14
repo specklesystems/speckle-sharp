@@ -180,7 +180,7 @@ namespace Speckle.ConnectorRevit.UI
         //await state.RefreshStream();
         state.PreviousCommitId = commitId;
 
-        WriteStateToFile();
+        //WriteStateToFile();
         //RaiseNotification($"{convertedCount} objects sent to Speckle 🚀");
       }
       catch (Exception e)

@@ -22,6 +22,14 @@ namespace Speckle.ConnectorRevit.UI
 
     public Timer SelectionTimer;
 
+
+    public List<Exception> ConversionErrors { get; set; } = new List<Exception>();
+
+    /// <summary>
+    /// Keeps track of errors in the operations of send/receive.
+    /// </summary>
+    public List<Exception> OperationErrors { get; set; } = new List<Exception>();
+
     public ConnectorBindingsRevit2(UIApplication revitApp) : base()
     {
       RevitApp = revitApp;
@@ -54,6 +62,16 @@ namespace Speckle.ConnectorRevit.UI
     public override void SelectClientObjects(string args)
     {
       throw new NotImplementedException();
+    }
+
+
+    public override List<StreamState> GetStreamsInFile()
+    {
+      var streams = new List<StreamState>();
+      if (CurrentDoc != null)
+        streams = StreamStateManager2.ReadState(CurrentDoc.Document);
+
+      return streams;
     }
 
 

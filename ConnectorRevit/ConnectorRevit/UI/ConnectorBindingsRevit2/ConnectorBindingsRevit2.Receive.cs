@@ -136,11 +136,11 @@ namespace Speckle.ConnectorRevit.UI
       {
         //await state.RefreshStream();
 
-        WriteStateToFile();
+        //WriteStateToFile();
       }
       catch (Exception e)
       {
-        WriteStateToFile();
+        //WriteStateToFile();
         //state.Errors.Add(e);
         //Globals.Notify($"Receiving done, but failed to update stream from server.\n{e.Message}");
       }
