@@ -42,6 +42,18 @@ namespace Speckle.ConnectorRevit.Entry
         speckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 
+      //desktopui 2
+      var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2 New Ui", "Revit Connector - New UI!", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
+
+      if (speckleButton2 != null)
+      {
+        speckleButton2.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
+        speckleButton2.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
+        speckleButton2.ToolTip = "Speckle Connector for Revit - With a new UI";
+        speckleButton2.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+        speckleButton2.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
+      }
+
 
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
       helpPulldown.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help16.png", path);
@@ -80,9 +92,14 @@ namespace Speckle.ConnectorRevit.Entry
       AppInstance = sender as UIApplication;
 
       // Set up bindings now as they subscribe to some document events and it's better to do it now
-      SpeckleRevitCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
-      var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
-      SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
+      //SpeckleRevitCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
+      //var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
+      //SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
+
+      SpeckleRevitCommand2.Bindings = new ConnectorBindingsRevit2(AppInstance);
+      //var eventHandler2 = ExternalEvent.Create(new SpeckleExternalEventHandler2(SpeckleRevitCommand2.Bindings));
+      //SpeckleRevitCommand2.Bindings.SetExecutorAndInit(eventHandler2);
+
     }
 
     public Result OnShutdown(UIControlledApplication application)
