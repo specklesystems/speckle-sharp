@@ -64,7 +64,9 @@ namespace Speckle.Core.Api
 
       try
       {
-        JsonDocument.Parse("{}");
+        //try using v2, it is not currently supported in Revit 2019 and 2020
+        if (serializerVersion == SerializerVersion.V2)
+          using (var doc = JsonDocument.Parse("{}")) { }
       }
       catch
       {
