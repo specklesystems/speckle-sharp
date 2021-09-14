@@ -34,7 +34,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\HelpCommand.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ExternalEventHandler2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\ErrorEater.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExternalEventHandler.cs" />

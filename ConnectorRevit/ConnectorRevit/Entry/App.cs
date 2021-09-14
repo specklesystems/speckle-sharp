@@ -91,14 +91,15 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling -= Initialise;
       AppInstance = sender as UIApplication;
 
-      // Set up bindings now as they subscribe to some document events and it's better to do it now
-      //SpeckleRevitCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
-      //var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
-      //SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
+      AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
-      SpeckleRevitCommand2.Bindings = new ConnectorBindingsRevit2(AppInstance);
-      //var eventHandler2 = ExternalEvent.Create(new SpeckleExternalEventHandler2(SpeckleRevitCommand2.Bindings));
-      //SpeckleRevitCommand2.Bindings.SetExecutorAndInit(eventHandler2);
+      // Set up bindings now as they subscribe to some document events and it's better to do it now
+      SpeckleRevitCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
+      var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
+      SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
+
+      //pre build app, so that it's faster to open up
+      SpeckleRevitCommand2.InitAvalonia();
 
     }
 
@@ -120,6 +121,20 @@ namespace Speckle.ConnectorRevit.Entry
       catch { }
 
       return null;
+    }
+
+    static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+    {
+      Assembly a = null;
+      var name = args.Name.Split(',')[0];
+      string path = Path.GetDirectoryName(typeof(App).Assembly.Location);
+
+      string assemblyFile = Path.Combine(path, name + ".dll");
+
+      if (File.Exists(assemblyFile))
+        a = Assembly.LoadFrom(assemblyFile);
+
+      return a;
     }
   }
 

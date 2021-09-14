@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Timers;
 using Autodesk.Revit.DB;
@@ -100,8 +101,8 @@ namespace Speckle.ConnectorRevit.UI
       if (CurrentDoc != null)
         return;
 
-      if (SpeckleRevitCommand.Bootstrapper != null && SpeckleRevitCommand.Bootstrapper.Application != null)
-        SpeckleRevitCommand.Bootstrapper.Application.MainWindow.Hide();
+      if (SpeckleRevitCommand2.MainWindow != null)
+        SpeckleRevitCommand2.MainWindow.Hide();
 
       //var appEvent = new ApplicationEvent() { Type = ApplicationEvent.EventType.DocumentClosed };
       // NotifyUi(appEvent);
@@ -114,18 +115,10 @@ namespace Speckle.ConnectorRevit.UI
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
     {
       var streams = GetStreamsInFile();
-      if (streams != null && streams.Count != 0)
+      if (streams.Any())
       {
-        SpeckleRevitCommand.OpenOrFocusSpeckle(RevitApp);
+        SpeckleRevitCommand2.CreateOrFocusSpeckle();
       }
-
-      //var appEvent = new ApplicationEvent()
-      //{
-      //  Type = ApplicationEvent.EventType.DocumentOpened,
-      //  DynamicInfo = streams
-      //};
-
-      //NotifyUi(appEvent);
     }
 
     public override List<MenuItem> GetCustomStreamMenuItems()

@@ -14,7 +14,7 @@ namespace Speckle.ConnectorRevit.Storage
   /// </summary>
   public static class StreamStateManager2
   {
-    readonly static Guid ID = new Guid("{5D453471-1F20-44CE-B1D0-BBD2BDE4616A}");
+    readonly static Guid ID = new Guid("4EF264B9-5AA0-4B99-A6E7-C82ACEB26DE2");
 
     /// <summary>
     /// Returns all the speckle stream states present in the current document.
@@ -110,7 +110,7 @@ namespace Speckle.ConnectorRevit.Storage
   /// </summary>
   public static class StreamStateListSchema2
   {
-    static readonly Guid schemaGuid = new Guid("{F29ABD4E-C2DA-4F6A-A301-C70F1C32128D}");
+    static readonly Guid schemaGuid = new Guid("C48D05AE-8068-4B9A-A790-B4B2F605126B");
 
     public static Schema GetSchema()
     {
@@ -132,7 +132,7 @@ namespace Speckle.ConnectorRevit.Storage
   /// </summary>
   static class DSUniqueSchemaStreamStateStorage2
   {
-    static readonly Guid schemaGuid = new Guid("{174C7EEE-EC5E-4A3F-894A-C801871AEDB8}");
+    static readonly Guid schemaGuid = new Guid("C0DA9F31-83A7-4775-807B-4430446E694F");
 
     public static Schema GetSchema()
     {

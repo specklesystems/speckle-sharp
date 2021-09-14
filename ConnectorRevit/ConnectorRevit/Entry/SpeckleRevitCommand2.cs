@@ -23,9 +23,14 @@ namespace Speckle.ConnectorRevit.Entry
   public class SpeckleRevitCommand2 : IExternalCommand
   {
 
-    private static Window MainWindow = null;
-    public static ConnectorBindingsRevit2 Bindings { get; set; }
+    public static Window MainWindow { get; private set; }
+    private static Avalonia.Application AvaloniaApp { get; set; }
     UIApplication uiapp;
+
+    public static async void InitAvalonia()
+    {
+      BuildAvaloniaApp().Start(AppMain, null);
+    }
 
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
       .UsePlatformDetect()
@@ -40,54 +45,37 @@ namespace Speckle.ConnectorRevit.Entry
       //Always initialize RevitTask ahead of time within Revit API context
       RevitTask.Initialize();
       uiapp = commandData.Application;
-      UIDocument uidoc = uiapp.ActiveUIDocument;
-      Application app = uiapp.Application;
+      //UIDocument uidoc = uiapp.ActiveUIDocument;
+      //Application app = uiapp.Application;
+      //Document doc = uidoc.Document;
 
-      Document doc = uidoc.Document;
-      try
-      {
-        AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+      CreateOrFocusSpeckle();
 
-        if (MainWindow == null)
-        {
-          BuildAvaloniaApp().Start(AppMain, null);
-        }
-        else
-          MainWindow.Show();
-
-      }
-      catch (Exception e)
-      {
-
-      }
       return Result.Succeeded;
     }
 
-    void AppMain(Avalonia.Application app, string[] args)
+    public static void CreateOrFocusSpeckle()
     {
-      var viewModel = new MainWindowViewModel(Bindings);
-      MainWindow = new MainWindow
+      if (MainWindow == null)
       {
-        DataContext = viewModel
-      };
-      MainWindow.Show();
+        var viewModel = new MainWindowViewModel(new ConnectorBindingsRevit2(uiapp));
+        MainWindow = new MainWindow
+        {
+          DataContext = viewModel
+        };
 
-      Task.Run(() => app.Run(MainWindow));
+        AvaloniaApp.Run(MainWindow);
+      }
+      else
+        MainWindow.Show();
     }
 
-    static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+    private static void AppMain(Avalonia.Application app, string[] args)
     {
-      Assembly a = null;
-      var name = args.Name.Split(',')[0];
-      string path = Path.GetDirectoryName(typeof(App).Assembly.Location);
-
-      string assemblyFile = Path.Combine(path, name + ".dll");
-
-      if (File.Exists(assemblyFile))
-        a = Assembly.LoadFrom(assemblyFile);
-
-      return a;
+      AvaloniaApp = app;
     }
+
+
   }
 
 }
