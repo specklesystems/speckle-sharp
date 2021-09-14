@@ -5,14 +5,15 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using System.Linq;
 using ConnectorETABSShared.UI;
+using ETABSv1;
 
 namespace ConnectorETABSShared.Util
 {
     class ConnectorETABSUtils
     {
-#if ETABS18
+#if ETABSV18
         public static string ETABSAppName = Applications.ETABSv18;
-#else
+#elif ETABSV19
         public static string ETABSAppName = Applications.ETABSv19;
 #endif
 

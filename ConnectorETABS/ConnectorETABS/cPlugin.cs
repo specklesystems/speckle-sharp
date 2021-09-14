@@ -15,7 +15,7 @@ using ConnectorETABSShared.Util;
 using ConnectorETABSShared.UI;
 
 
-namespace ConnectorETABS
+namespace Speckle.ConnectorETABS
 {
     public class cPlugin
     {

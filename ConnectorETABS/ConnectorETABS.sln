@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorETABS", "ConnectorETABS\ConnectorETABS.csproj", "{99559C24-CEFA-4F5B-BDB3-2536EB2FD2C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorETABSv18", "ConnectorETABS\ConnectorETABSv18.csproj", "{99559C24-CEFA-4F5B-BDB3-2536EB2FD2C9}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorETABSShared", "ConnectorETABSShared\ConnectorETABSShared.shproj", "{CF75D8D2-10D8-4419-9345-D7A830550D16}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects", "..\Objects\Objects\Objects.csproj", "{1EEBBB85-C84F-4AE1-A949-963DC78357A3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopUI", "..\DesktopUI\DesktopUI\DesktopUI.csproj", "{A97C3046-2D55-4C49-AB40-A3C2194B82FA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ETABSVersionProjects", "ETABSVersionProjects", "{E6B4D3C7-38B3-4F6C-AE8B-44851E42C0C8}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -64,6 +66,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{99559C24-CEFA-4F5B-BDB3-2536EB2FD2C9} = {E6B4D3C7-38B3-4F6C-AE8B-44851E42C0C8}
 		{E2D3978E-ACA5-4900-BF72-CE2028A316E5} = {2B74877F-8676-4777-9620-451CAE7DD7B2}
 		{1EEBBB85-C84F-4AE1-A949-963DC78357A3} = {2B74877F-8676-4777-9620-451CAE7DD7B2}
 		{A97C3046-2D55-4C49-AB40-A3C2194B82FA} = {2B74877F-8676-4777-9620-451CAE7DD7B2}
