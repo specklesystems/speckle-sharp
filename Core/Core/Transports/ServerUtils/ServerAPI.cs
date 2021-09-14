@@ -7,9 +7,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Speckle.Newtonsoft.Json;
+using Speckle.Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Transports.ServerUtils
 {
@@ -116,8 +117,8 @@ namespace Speckle.Core.Transports.ServerUtils
       };
 
       Dictionary<string, string> postParameters = new Dictionary<string, string>();
-      postParameters.Add("objects", JsonSerializer.Serialize<List<string>>(objectIds));
-      string serializedPayload = JsonSerializer.Serialize<Dictionary<string, string>>(postParameters);
+      postParameters.Add("objects", JsonConvert.SerializeObject(objectIds));
+      string serializedPayload = JsonConvert.SerializeObject(postParameters);
       childrenHttpMessage.Content = new StringContent(serializedPayload, Encoding.UTF8, "application/json");
       childrenHttpMessage.Headers.Add("Accept", "text/plain");
 
@@ -183,9 +184,9 @@ namespace Speckle.Core.Transports.ServerUtils
 
       // Stopwatch sw = new Stopwatch(); sw.Start();
 
-      string objectsPostParameter = JsonSerializer.Serialize<List<string>>(objectIds);
+      string objectsPostParameter = JsonConvert.SerializeObject(objectIds);
       var payload = new Dictionary<string, string>() { { "objects", objectsPostParameter } };
-      string serializedPayload = JsonSerializer.Serialize<Dictionary<string, string>>(payload);
+      string serializedPayload = JsonConvert.SerializeObject(payload);
       var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
       var response = await Client.PostAsync(uri, new StringContent(serializedPayload, Encoding.UTF8, "application/json"), CancellationToken);
       response.EnsureSuccessStatusCode();
@@ -193,11 +194,10 @@ namespace Speckle.Core.Transports.ServerUtils
       var hasObjectsJson = await response.Content.ReadAsStringAsync();
       Dictionary<string, bool> hasObjects = new Dictionary<string, bool>();
 
-      using (JsonDocument doc = JsonDocument.Parse(hasObjectsJson))
-      {
-        foreach (JsonProperty prop in doc.RootElement.EnumerateObject())
-          hasObjects[prop.Name] = prop.Value.GetBoolean();
-      }
+      JObject doc = JObject.Parse(hasObjectsJson);
+      foreach(KeyValuePair<string, JToken> prop in doc)
+        hasObjects[prop.Key] = (bool)prop.Value;
+
       // Console.WriteLine($"ServerApi::HasObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
 
       return hasObjects;

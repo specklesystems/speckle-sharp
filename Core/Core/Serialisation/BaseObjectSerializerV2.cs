@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Serialisation
 {
@@ -257,7 +256,7 @@ namespace Speckle.Core.Serialisation
 
     private string ComputeId(Dictionary<string, object> obj)
     {
-      string serialized = JsonSerializer.Serialize<Dictionary<string, object>>(obj);
+      string serialized = JsonConvert.SerializeObject(obj);
       string hash = Models.Utilities.hashString(serialized);
       return hash;
     }
@@ -265,7 +264,7 @@ namespace Speckle.Core.Serialisation
     private string Dict2Json(Dictionary<string, object> obj)
     {
       obj["id"] = ComputeId(obj);
-      string serialized = JsonSerializer.Serialize<Dictionary<string, object>>(obj);
+      string serialized = JsonConvert.SerializeObject(obj);
       return serialized;
     }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Sentry;
@@ -61,18 +60,6 @@ namespace Speckle.Core.Api
     public static async Task<Base> Receive(string objectId, CancellationToken cancellationToken, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null, bool disposeTransports = false, SerializerVersion serializerVersion = SerializerVersion.V2)
     {
       Log.AddBreadcrumb("Receive");
-
-      try
-      {
-        //try using v2, it is not currently supported in Revit 2019 and 2020
-        if (serializerVersion == SerializerVersion.V2)
-          using (var doc = JsonDocument.Parse("{}")) { }
-      }
-      catch
-      {
-        //force V1 in case V2 is not supported
-        serializerVersion = SerializerVersion.V1;
-      }
 
       BaseObjectSerializer serializer = null;
       JsonSerializerSettings settings = null;
