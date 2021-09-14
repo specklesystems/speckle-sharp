@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Sentry;
@@ -61,6 +62,18 @@ namespace Speckle.Core.Api
     {
       Log.AddBreadcrumb("Receive");
 
+      try
+      {
+        //try using v2, it is not currently supported in Revit 2019 and 2020
+        if (serializerVersion == SerializerVersion.V2)
+          using (var doc = JsonDocument.Parse("{}")) { }
+      }
+      catch
+      {
+        //force V1 in case V2 is not supported
+        serializerVersion = SerializerVersion.V1;
+      }
+
       BaseObjectSerializer serializer = null;
       JsonSerializerSettings settings = null;
       BaseObjectDeserializerV2 serializerV2 = null;
@@ -109,11 +122,11 @@ namespace Speckle.Core.Api
         if (serializerVersion == SerializerVersion.V1)
           localRes = JsonConvert.DeserializeObject<Base>(objString, settings);
         else
-          localRes = serializerV2.Deserialize(objString); 
+          localRes = serializerV2.Deserialize(objString);
 
         if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dispLocal) dispLocal.Dispose();
         if (disposeTransports && remoteTransport != null && remoteTransport is IDisposable dispRempte) dispRempte.Dispose();
-        
+
         return localRes;
       }
       else if (remoteTransport == null)
