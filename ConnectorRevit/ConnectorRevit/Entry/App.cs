@@ -13,6 +13,7 @@ using Autodesk.Revit.UI;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.ConnectorRevit.UI;
 using Speckle.DesktopUI;
+using Revit.Async;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -25,6 +26,9 @@ namespace Speckle.ConnectorRevit.Entry
 
     public Result OnStartup(UIControlledApplication application)
     {
+      //Always initialize RevitTask ahead of time within Revit API context
+      RevitTask.Initialize();
+
       UICtrlApp = application;
       // Fires an init event, where we can get the UIApp
       UICtrlApp.Idling += Initialise;

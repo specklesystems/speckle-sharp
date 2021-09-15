@@ -62,8 +62,8 @@ namespace Speckle.ConnectorRevit.UI
       if (e.Document == null || e.Document.IsFamilyDocument || e.PreviousActiveView == null || GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView.Document))
         return;
 
-      SavedStreamStates = GetStreamsInFile();
-      UpdateSavedStreams();
+      var streams = GetStreamsInFile();
+      UpdateSavedStreams(streams);
       //var appEvent = new ApplicationEvent()
       //{
       //  Type = ApplicationEvent.EventType.ViewActivated,
@@ -99,8 +99,7 @@ namespace Speckle.ConnectorRevit.UI
         SpeckleRevitCommand2.CreateOrFocusSpeckle();
       }
 
-      SavedStreamStates = GetStreamsInFile();
-      UpdateSavedStreams();
+      UpdateSavedStreams(streams);
 
       //var appEvent = new ApplicationEvent()
       //{

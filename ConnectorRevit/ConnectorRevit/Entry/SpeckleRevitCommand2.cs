@@ -12,7 +12,6 @@ using Avalonia.ReactiveUI;
 using DesktopUI2;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
-using Revit.Async;
 using Speckle.ConnectorRevit.UI;
 using Stylet.Xaml;
 using Application = Autodesk.Revit.ApplicationServices.Application;
@@ -43,8 +42,6 @@ namespace Speckle.ConnectorRevit.Entry
 
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
-      //Always initialize RevitTask ahead of time within Revit API context
-      RevitTask.Initialize();
       uiapp = commandData.Application;
       //UIDocument uidoc = uiapp.ActiveUIDocument;
       //Application app = uiapp.Application;

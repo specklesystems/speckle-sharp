@@ -39,14 +39,15 @@ namespace Speckle.ConnectorRevit.UI
 
       return new List<ISelectionFilter>
       {
-        new ListSelectionFilter {Slug="category", Name = "Cat", Icon = "Category", Values = categories, Description="Adds all objects belonging to the selected categories"},
+        new ManualSelectionFilter(),
+        new ListSelectionFilter {Slug="category", Name = "Category", Icon = "Category", Values = categories, Description="Adds all objects belonging to the selected categories"},
         new ListSelectionFilter {Slug="view", Name = "View", Icon = "RemoveRedEye", Values = views, Description="Adds all objects visible in the selected views" },
-        new ListSelectionFilter {Slug="project-info", Name = "P. Info", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels, views and family names to the stream"},
+        new ListSelectionFilter {Slug="project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels, views and family names to the stream"},
         new PropertySelectionFilter
         {
           Slug="param",
-          Name = "Param",
-          Description="Adds  all objects satisfying the selected parameter",
+          Name = "Parameter",
+          Description="Adds all objects satisfying the selected parameter",
           Icon = "FilterList",
           Values = parameters,
           Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
