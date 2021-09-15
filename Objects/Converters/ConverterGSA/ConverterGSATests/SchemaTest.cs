@@ -17,6 +17,7 @@ using static Objects.Structural.Properties.Profiles.SectionProfile;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.GSA.Loading;
 using Objects.Structural.GSA.Properties;
+using Objects.Structural.GSA.Other;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
 using MemberType = Objects.Structural.Geometry.MemberType;
@@ -26,6 +27,7 @@ using ConverterGSA;
 using Speckle.ConnectorGSA.Proxy.Merger;
 using Speckle.GSA.API.CsvSchema;
 using Objects.Structural.Results;
+using Speckle.Core.Models;
 
 namespace ConverterGSATests
 {
@@ -481,6 +483,234 @@ namespace ConverterGSATests
       Assert.Equal(gsaMembers[1].MeshSize.Value, speckleMember2d.targetMeshSize);
     }
 
+    [Fact]
+     public void GsaGridLine()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      var gsaGridLines = GsaGridLineExamples(2, "grid line 1", "grid line 2");
+      gsaRecords.AddRange(gsaGridLines);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAGridLine);
+
+      var speckleGridLines = structuralObjects.FindAll(so => so is GSAGridLine).Select(so => (GSAGridLine)so).ToList();
+
+      //Checks - grid line 1
+      Assert.Equal("grid line 1", speckleGridLines[0].applicationId);
+      Assert.Equal(gsaGridLines[0].Name, speckleGridLines[0].name);
+      Assert.Equal(gsaGridLines[0].Index.Value, speckleGridLines[0].nativeId);
+      var speckleLine = (Line)speckleGridLines[0].line;
+      Assert.Equal(gsaGridLines[0].XCoordinate.Value, speckleLine.start.x);
+      Assert.Equal(gsaGridLines[0].YCoordinate.Value, speckleLine.start.y);
+      Assert.Equal(0, speckleLine.start.z);
+      Assert.Equal(gsaGridLines[0].XCoordinate.Value + gsaGridLines[0].Length.Value * Math.Cos(gsaGridLines[0].Theta1.Value.Radians()), speckleLine.end.x);
+      Assert.Equal(gsaGridLines[0].YCoordinate.Value + gsaGridLines[0].Length.Value * Math.Sin(gsaGridLines[0].Theta1.Value.Radians()), speckleLine.end.y);
+      Assert.Equal(0, speckleLine.end.z);
+
+      //Checks - grid line 2
+      Assert.Equal("grid line 2", speckleGridLines[1].applicationId);
+      Assert.Equal(gsaGridLines[1].Name, speckleGridLines[1].name);
+      Assert.Equal(gsaGridLines[1].Index.Value, speckleGridLines[1].nativeId);
+      var speckleArc = (Arc)speckleGridLines[1].line;
+      Assert.Equal(gsaGridLines[1].XCoordinate.Value + gsaGridLines[1].Length * Math.Cos(gsaGridLines[1].Theta1.Value.Radians()), speckleArc.startPoint.x);
+      Assert.Equal(gsaGridLines[1].YCoordinate.Value + gsaGridLines[1].Length * Math.Sin(gsaGridLines[1].Theta1.Value.Radians()), speckleArc.startPoint.y);
+      Assert.Equal(0, speckleArc.startPoint.z);
+      Assert.Equal(gsaGridLines[1].XCoordinate.Value + gsaGridLines[1].Length * Math.Cos(gsaGridLines[1].Theta2.Value.Radians()), speckleArc.endPoint.x);
+      Assert.Equal(gsaGridLines[1].YCoordinate.Value + gsaGridLines[1].Length * Math.Sin(gsaGridLines[1].Theta2.Value.Radians()), speckleArc.endPoint.y);
+      Assert.Equal(0, speckleArc.endPoint.z);
+      Assert.Equal(gsaGridLines[1].Length.Value, speckleArc.radius);
+      Assert.Equal(gsaGridLines[1].Theta1.Value.Radians(), speckleArc.startAngle);
+      Assert.Equal(gsaGridLines[1].Theta2.Value.Radians(), speckleArc.endAngle);
+      Assert.True(speckleArc.plane.IsGlobal());
+    }
+
+    [Fact]
+    public void GsaGridPlane()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+
+      //Gen #2
+      var gsaGridPlanes = GsaGridPlaneExamples(2, "grid plane 1", "grid plane 2");
+      gsaRecords.AddRange(gsaGridPlanes);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAGridPlane);
+
+      var speckleGridPlanes = structuralObjects.FindAll(so => so is GSAGridPlane).Select(so => (GSAGridPlane)so).ToList();
+
+      //Checks - grid plane 1
+      Assert.Equal("grid plane 1", speckleGridPlanes[0].applicationId);
+      Assert.Equal(gsaGridPlanes[0].Name, speckleGridPlanes[0].name);
+      Assert.Equal(gsaGridPlanes[0].Index.Value, speckleGridPlanes[0].nativeId);
+      Assert.True(speckleGridPlanes[0].axis.definition.IsGlobal());
+      Assert.Equal(gsaGridPlanes[0].Elevation.Value, speckleGridPlanes[0].elevation);
+      Assert.Equal(gsaGridPlanes[0].StoreyToleranceBelow.ToString(), speckleGridPlanes[0].storeyToleranceBelow);
+      Assert.Equal(gsaGridPlanes[0].StoreyToleranceAbove.ToString(), speckleGridPlanes[0].storeyToleranceAbove);
+
+      //Checks - grid plane 2
+      Assert.Equal("grid plane 2", speckleGridPlanes[1].applicationId);
+      Assert.Equal(gsaGridPlanes[1].Name, speckleGridPlanes[1].name);
+      Assert.Equal(gsaGridPlanes[1].Index.Value, speckleGridPlanes[1].nativeId);
+      Assert.Equal("axis 1", speckleGridPlanes[1].axis.applicationId);
+      Assert.Equal(gsaGridPlanes[1].Elevation.Value, speckleGridPlanes[1].elevation);
+      Assert.Equal("", speckleGridPlanes[1].storeyToleranceBelow);
+      Assert.Equal("", speckleGridPlanes[1].storeyToleranceAbove);
+    }
+
+    [Fact]
+    public void GsaGridSurface()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+
+      //Gen #2
+      gsaRecords.AddRange(GsaNodeExamples(4, "node 1", "node 2", "node 3", "node 4"));
+      gsaRecords.Add(GsaProp2dExample("prop 2D 1"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      gsaRecords.Add(GsaGridPlaneExamples(1, "grid plane 1").FirstOrDefault());
+
+      //Gen #3
+      gsaRecords.Add(GsaElement1dExamples(1, "beam 1").FirstOrDefault());
+      var gsaElement2d = GsaElement2dExamples(1, "quad 1").FirstOrDefault();
+      gsaElement2d.Index = 2;
+      gsaRecords.Add(gsaElement2d);
+
+      //Gen #4
+      var gsaGridSurfaces = GsaGridSurfaceExamples(2, "grid surface 1", "grid surface 2");
+      gsaRecords.AddRange(gsaGridSurfaces);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAGridSurface);
+
+      var speckleGridSurfaces = structuralObjects.FindAll(so => so is GSAGridSurface).Select(so => (GSAGridSurface)so).ToList();
+
+      //Checks - grid surface 1
+      Assert.Equal("grid surface 1", speckleGridSurfaces[0].applicationId);
+      Assert.Equal(gsaGridSurfaces[0].Name, speckleGridSurfaces[0].name);
+      Assert.Equal(gsaGridSurfaces[0].Index.Value, speckleGridSurfaces[0].nativeId);
+      Assert.True(speckleGridSurfaces[0].gridPlane.axis.definition.IsGlobal());
+      Assert.Equal(gsaGridSurfaces[0].Tolerance.Value, speckleGridSurfaces[0].tolerance);
+      Assert.Equal(gsaGridSurfaces[0].Angle.Value, speckleGridSurfaces[0].spanDirection);
+      Assert.Equal(LoadExpansion.PlaneAspect, speckleGridSurfaces[0].loadExpansion);
+      Assert.Equal(GridSurfaceSpanType.OneWay, speckleGridSurfaces[0].span);
+      Assert.Equal(gsaGridSurfaces[0].Entities.Count(), speckleGridSurfaces[0].elements.Count());
+      Assert.Equal("beam 1", speckleGridSurfaces[0].elements[0].applicationId);
+
+      //Checks - grid surface 2
+      Assert.Equal("grid surface 2", speckleGridSurfaces[1].applicationId);
+      Assert.Equal(gsaGridSurfaces[1].Name, speckleGridSurfaces[1].name);
+      Assert.Equal(gsaGridSurfaces[1].Index.Value, speckleGridSurfaces[1].nativeId);
+      Assert.Equal("grid plane 1", speckleGridSurfaces[1].gridPlane.applicationId);
+      Assert.Equal(gsaGridSurfaces[1].Tolerance.Value, speckleGridSurfaces[1].tolerance);
+      Assert.Equal(gsaGridSurfaces[1].Angle.Value, speckleGridSurfaces[1].spanDirection);
+      Assert.Equal(LoadExpansion.PlaneAspect, speckleGridSurfaces[1].loadExpansion);
+      Assert.Equal(GridSurfaceSpanType.TwoWay, speckleGridSurfaces[1].span);
+      Assert.Equal(gsaGridSurfaces[0].Entities.Count(), speckleGridSurfaces[1].elements.Count());
+      Assert.Equal("quad 1", speckleGridSurfaces[1].elements[0].applicationId);
+    }
+
+    [Fact]
+    public void GsaPolyline()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaGridPlaneExamples(1, "grid plane 1").FirstOrDefault());
+
+      //Gen #2
+      var gsaPolylines = GsaPolylineExamples(2, "polyline 1", "polyline 2");
+      gsaRecords.AddRange(gsaPolylines);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAPolyline);
+
+      var specklePolylines = structuralObjects.FindAll(so => so is GSAPolyline).Select(so => (GSAPolyline)so).ToList();
+      Assert.Equal(gsaPolylines.Count(), specklePolylines.Count());
+
+      //Checks - polyline 1
+      Assert.Equal("polyline 1", specklePolylines[0].applicationId);
+      Assert.Equal(gsaPolylines[0].Name, specklePolylines[0].name);
+      Assert.Equal(gsaPolylines[0].Index.Value, specklePolylines[0].nativeId);
+      Assert.Equal(gsaPolylines[0].Colour.ToString(), specklePolylines[0].colour);
+      Assert.Null(specklePolylines[0].gridPlane);
+      Assert.Equal(gsaPolylines[0].Units, specklePolylines[0].units);
+      Assert.Equal(gsaPolylines[0].Values, specklePolylines[0].value);
+
+      //Checks - polyline 2
+      Assert.Equal("polyline 2", specklePolylines[1].applicationId);
+      Assert.Equal(gsaPolylines[1].Name, specklePolylines[1].name);
+      Assert.Equal(gsaPolylines[1].Index.Value, specklePolylines[1].nativeId);
+      Assert.Equal(gsaPolylines[1].Colour.ToString(), specklePolylines[1].colour);
+      Assert.Equal("grid plane 1", specklePolylines[1].gridPlane.applicationId);
+      Assert.Equal(gsaPolylines[1].Units, specklePolylines[1].units);
+      Assert.Equal(gsaPolylines[1].Values, specklePolylines[1].value);
+    }
     #endregion
 
     #region Loading
@@ -870,6 +1100,292 @@ namespace ConverterGSATests
       Assert.Equal(new Dictionary<string, double> { { "Combination 1", 1.3 }, { "Dead", 1 }, { "Live", 1 } }, speckleLoadCombination[1].caseFactors);
       Assert.Equal(CombinationType.LinearAdd, speckleLoadCombination[1].combinationType);
       Assert.Equal(gsaCombinations[1].Index.Value, speckleLoadCombination[1].nativeId);
+    }
+
+    [Fact]
+    public void GsaGridPointLoad()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+
+      //Gen #2
+      gsaRecords.AddRange(GsaNodeExamples(2, "node 1", "node 2"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      gsaRecords.Add(GsaGridPlaneExamples(1, "grid plane 1").FirstOrDefault());
+
+      //Gen #3
+      gsaRecords.Add(GsaElement1dExamples(1, "beam 1").FirstOrDefault());
+
+      //Gen #4
+      gsaRecords.Add(GsaGridSurfaceExamples(1, "grid surface 1").FirstOrDefault());
+
+      //Gen #5
+      var gsaLoadGridPoints = GsaLoadGridPointExamples(2, "load grid point 1", "load grid point 2");
+      gsaRecords.AddRange(gsaLoadGridPoints);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAGridPointLoad);
+
+      var speckleGridPointLoads = structuralObjects.FindAll(so => so is GSAGridPointLoad).Select(so => (GSAGridPointLoad)so).ToList();
+      Assert.Equal(gsaLoadGridPoints.Count(), speckleGridPointLoads.Count());
+
+      //Checks - Load grid point 1
+      Assert.Equal("load grid point 1", speckleGridPointLoads[0].applicationId);
+      Assert.Equal(gsaLoadGridPoints[0].Index.Value, speckleGridPointLoads[0].nativeId);
+      Assert.Equal(gsaLoadGridPoints[0].Name, speckleGridPointLoads[0].name);
+      Assert.Equal("grid surface 1", speckleGridPointLoads[0].gridSurface.applicationId);
+      Assert.Equal(gsaLoadGridPoints[0].X.Value, speckleGridPointLoads[0].position.x);
+      Assert.Equal(gsaLoadGridPoints[0].Y.Value, speckleGridPointLoads[0].position.y);
+      Assert.Equal("load case 1", speckleGridPointLoads[0].loadCase.applicationId);
+      Assert.True(speckleGridPointLoads[0].loadAxis.definition.IsGlobal());
+      Assert.Equal(LoadDirection.Z, speckleGridPointLoads[0].direction);
+      Assert.Equal(gsaLoadGridPoints[0].Value.Value, speckleGridPointLoads[0].value);
+
+      //Checks - Load grid point 2
+      Assert.Equal("load grid point 2", speckleGridPointLoads[1].applicationId);
+      Assert.Equal(gsaLoadGridPoints[1].Index.Value, speckleGridPointLoads[1].nativeId);
+      Assert.Equal(gsaLoadGridPoints[1].Name, speckleGridPointLoads[1].name);
+      Assert.Equal("grid surface 1", speckleGridPointLoads[1].gridSurface.applicationId);
+      Assert.Equal(gsaLoadGridPoints[1].X.Value, speckleGridPointLoads[1].position.x);
+      Assert.Equal(gsaLoadGridPoints[1].Y.Value, speckleGridPointLoads[1].position.y);
+      Assert.Equal("load case 2", speckleGridPointLoads[1].loadCase.applicationId);
+      Assert.Equal("axis 1", speckleGridPointLoads[1].loadAxis.applicationId);
+      Assert.Equal(LoadDirection.Z, speckleGridPointLoads[1].direction);
+      Assert.Equal(gsaLoadGridPoints[1].Value.Value, speckleGridPointLoads[1].value);
+    }
+
+    [Fact]
+    public void GsaGridLineLoad()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+
+      //Gen #2
+      gsaRecords.AddRange(GsaNodeExamples(2, "node 1", "node 2"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      gsaRecords.Add(GsaGridPlaneExamples(1, "grid plane 1").FirstOrDefault());
+
+      //Gen #3
+      gsaRecords.Add(GsaPolylineExamples(1, "polyline 1").FirstOrDefault());
+      gsaRecords.Add(GsaElement1dExamples(1, "beam 1").FirstOrDefault());
+
+      //Gen #4
+      gsaRecords.Add(GsaGridSurfaceExamples(1, "grid surface 1").FirstOrDefault());
+
+      //Gen #5
+      var gsaLoadGridLines = GsaLoadGridLineExamples(2, "load grid line 1", "load grid line 2");
+      gsaRecords.AddRange(gsaLoadGridLines);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAGridLineLoad);
+
+      var speckleGridLineLoads = structuralObjects.FindAll(so => so is GSAGridLineLoad).Select(so => (GSAGridLineLoad)so).ToList();
+      Assert.Equal(gsaLoadGridLines.Count(), speckleGridLineLoads.Count());
+
+      //Checks - Load grid line 1
+      Assert.Equal("load grid line 1", speckleGridLineLoads[0].applicationId);
+      Assert.Equal(gsaLoadGridLines[0].Index.Value, speckleGridLineLoads[0].nativeId);
+      Assert.Equal(gsaLoadGridLines[0].Name, speckleGridLineLoads[0].name);
+      Assert.Equal("grid surface 1", speckleGridLineLoads[0].gridSurface.applicationId);
+      Assert.Equal("polyline 1", speckleGridLineLoads[0].polyline.applicationId);
+      Assert.Equal("load case 1", speckleGridLineLoads[0].loadCase.applicationId);
+      Assert.True(speckleGridLineLoads[0].loadAxis.definition.IsGlobal());
+      Assert.Equal(gsaLoadGridLines[0].Projected, speckleGridLineLoads[0].isProjected);
+      Assert.Equal(LoadDirection.Z, speckleGridLineLoads[0].direction);
+      Assert.Equal(2, speckleGridLineLoads[0].values.Count());
+      Assert.Equal(gsaLoadGridLines[0].Value1.Value, speckleGridLineLoads[0].values[0]);
+      Assert.Equal(gsaLoadGridLines[0].Value2.Value, speckleGridLineLoads[0].values[1]);
+
+      //Checks - Load grid line 2
+      Assert.Equal("load grid line 2", speckleGridLineLoads[1].applicationId);
+      Assert.Equal(gsaLoadGridLines[1].Index.Value, speckleGridLineLoads[1].nativeId);
+      Assert.Equal(gsaLoadGridLines[1].Name, speckleGridLineLoads[1].name);
+      Assert.Equal("grid surface 1", speckleGridLineLoads[1].gridSurface.applicationId);
+      Assert.Equal(new List<double>() { 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0 }, speckleGridLineLoads[1].polyline.value);
+      Assert.Equal("load case 2", speckleGridLineLoads[1].loadCase.applicationId);
+      Assert.Equal("axis 1", speckleGridLineLoads[1].loadAxis.applicationId);
+      Assert.Equal(gsaLoadGridLines[1].Projected, speckleGridLineLoads[1].isProjected);
+      Assert.Equal(LoadDirection.Z, speckleGridLineLoads[1].direction);
+      Assert.Equal(2, speckleGridLineLoads[1].values.Count());
+      Assert.Equal(gsaLoadGridLines[1].Value1.Value, speckleGridLineLoads[1].values[0]);
+      Assert.Equal(gsaLoadGridLines[1].Value2.Value, speckleGridLineLoads[1].values[1]);
+    }
+
+    [Fact]
+    public void GsaGridAreaLoad()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+
+      //Gen #2
+      gsaRecords.AddRange(GsaNodeExamples(2, "node 1", "node 2"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      gsaRecords.Add(GsaGridPlaneExamples(1, "grid plane 1").FirstOrDefault());
+
+      //Gen #3
+      gsaRecords.Add(GsaPolylineExamples(1, "polyline 1").FirstOrDefault());
+      gsaRecords.Add(GsaElement1dExamples(1, "beam 1").FirstOrDefault());
+
+      //Gen #4
+      gsaRecords.Add(GsaGridSurfaceExamples(1, "grid surface 1").FirstOrDefault());
+
+      //Gen #5
+      var gsaLoadGridAreas = GsaLoadGridAreaExamples(2, "load grid area 1", "load grid area 2");
+      gsaRecords.AddRange(gsaLoadGridAreas);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAGridAreaLoad);
+
+      var speckleGridAreaLoads = structuralObjects.FindAll(so => so is GSAGridAreaLoad).Select(so => (GSAGridAreaLoad)so).ToList();
+      Assert.Equal(gsaLoadGridAreas.Count(), speckleGridAreaLoads.Count());
+
+      //Checks - Load grid area 1
+      Assert.Equal("load grid area 1", speckleGridAreaLoads[0].applicationId);
+      Assert.Equal(gsaLoadGridAreas[0].Index.Value, speckleGridAreaLoads[0].nativeId);
+      Assert.Equal(gsaLoadGridAreas[0].Name, speckleGridAreaLoads[0].name);
+      Assert.True(speckleGridAreaLoads[0].loadAxis.definition.IsGlobal());
+      Assert.Equal(gsaLoadGridAreas[0].Projected, speckleGridAreaLoads[0].isProjected);
+      Assert.Equal(LoadDirection.Z, speckleGridAreaLoads[0].direction);
+      Assert.Null(speckleGridAreaLoads[0].polyline);
+      Assert.Equal("grid surface 1", speckleGridAreaLoads[0].gridSurface.applicationId);
+      Assert.Equal("load case 1", speckleGridAreaLoads[0].loadCase.applicationId);
+      Assert.Equal(gsaLoadGridAreas[0].Value.Value, speckleGridAreaLoads[0].value);
+
+      //Checks - Load grid area 2
+      Assert.Equal("load grid area 2", speckleGridAreaLoads[1].applicationId);
+      Assert.Equal(gsaLoadGridAreas[1].Index.Value, speckleGridAreaLoads[1].nativeId);
+      Assert.Equal(gsaLoadGridAreas[1].Name, speckleGridAreaLoads[1].name);
+      Assert.Equal("axis 1", speckleGridAreaLoads[1].loadAxis.applicationId);
+      Assert.Equal(gsaLoadGridAreas[1].Projected, speckleGridAreaLoads[1].isProjected);
+      Assert.Equal(LoadDirection.Z, speckleGridAreaLoads[1].direction);
+      Assert.Equal("polyline 1", speckleGridAreaLoads[1].polyline.applicationId);
+      Assert.Equal("grid surface 1", speckleGridAreaLoads[1].gridSurface.applicationId);
+      Assert.Equal("load case 2", speckleGridAreaLoads[1].loadCase.applicationId);
+      Assert.Equal(gsaLoadGridAreas[1].Value.Value, speckleGridAreaLoads[1].value);
+    }
+
+    [Fact]
+    public void GsaThermal2dLoad()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+
+      //Gen #2
+      gsaRecords.Add(GsaProp2dExample("property 2D 1"));
+      gsaRecords.AddRange(GsaNodeExamples(4, "node 1", "node 2", "node 3", "node 4"));
+
+      //Gen #3
+      gsaRecords.Add(GsaElement2dExamples(1, "element 1").FirstOrDefault());
+
+      //Gen #4
+      var gsaLoadThermal = GsaLoad2dThermalExamples(2, "load thermal 1", "load thermal 2");
+      gsaRecords.AddRange(gsaLoadThermal);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAThermal2dLoad);
+
+      var speckleThermalLoads = structuralObjects.FindAll(so => so is GSAThermal2dLoad).Select(so => (GSAThermal2dLoad)so).ToList();
+      Assert.Equal(gsaLoadThermal.Count(), speckleThermalLoads.Count());
+
+      //Checks - Load thermal 1
+      Assert.Equal("load thermal 1", speckleThermalLoads[0].applicationId);
+      Assert.Equal(gsaLoadThermal[0].Index.Value, speckleThermalLoads[0].nativeId);
+      Assert.Equal(gsaLoadThermal[0].Name, speckleThermalLoads[0].name);
+      Assert.Equal(gsaLoadThermal[0].Entities.Count(), speckleThermalLoads[0].elements.Count());
+      Assert.Equal("element 1", speckleThermalLoads[0].elements[0].applicationId);
+      Assert.Equal("load case 1", speckleThermalLoads[0].loadCase.applicationId);
+      Assert.Equal(Thermal2dLoadType.Uniform, speckleThermalLoads[0].type);
+      Assert.Equal(gsaLoadThermal[0].Values, speckleThermalLoads[0].values);
+
+      //Checks - Load thermal 2
+      Assert.Equal("load thermal 2", speckleThermalLoads[1].applicationId);
+      Assert.Equal(gsaLoadThermal[1].Index.Value, speckleThermalLoads[1].nativeId);
+      Assert.Equal(gsaLoadThermal[1].Name, speckleThermalLoads[1].name);
+      Assert.Equal(gsaLoadThermal[1].Entities.Count(), speckleThermalLoads[1].elements.Count());
+      Assert.Equal("element 1", speckleThermalLoads[1].elements[0].applicationId);
+      Assert.Equal("load case 2", speckleThermalLoads[1].loadCase.applicationId);
+      Assert.Equal(Thermal2dLoadType.Gradient, speckleThermalLoads[1].type);
+      Assert.Equal(gsaLoadThermal[1].Values, speckleThermalLoads[1].values);
     }
     #endregion
 
@@ -2096,6 +2612,148 @@ namespace ConverterGSATests
       }
       return gsaMembs.GetRange(0, numberOfMembers);
     }
+
+    private List<GsaGridLine> GsaGridLineExamples(int numOfGridLines, params string[] appIds)
+    {
+      var gsaGridLines = new List<GsaGridLine>()
+      { 
+        new GsaGridLine()
+        {
+          Index = 1,
+          Name = "1",
+          Type = GridLineType.Line,
+          XCoordinate = 0,
+          YCoordinate = 0,
+          Length = 1,
+          Theta1 = 0,
+          //Theta2 = null,
+        },
+        new GsaGridLine()
+        {
+          Index = 2,
+          Name = "2",
+          Type = GridLineType.Arc,
+          XCoordinate = 0,
+          YCoordinate = 0,
+          Length = 1,
+          Theta1 = 0,
+          Theta2 = 30,
+        }
+      };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaGridLines[i].ApplicationId = appIds[i];
+      }
+      return gsaGridLines.GetRange(0, numOfGridLines);
+    }
+
+    private List<GsaGridPlane> GsaGridPlaneExamples(int numOfGridPlanes, params string[] appIds)
+    {
+      var gsaGridPlanes = new List<GsaGridPlane>()
+      {
+        new GsaGridPlane()
+        {
+          Index = 1,
+          Name = "1",
+          Type = GridPlaneType.Storey,
+          AxisRefType = GridPlaneAxisRefType.Global,
+          //AxisIndex = null,
+          Elevation = 0,
+          StoreyToleranceBelowAuto = false,
+          StoreyToleranceBelow = 0.1,
+          StoreyToleranceAboveAuto = false,
+          StoreyToleranceAbove = 0.1,
+        },
+        new GsaGridPlane()
+        {
+          Index = 2,
+          Name = "2",
+          Type = GridPlaneType.General,
+          AxisRefType = GridPlaneAxisRefType.Reference,
+          AxisIndex = 1,
+          Elevation = 0,
+          StoreyToleranceBelowAuto = false,
+          //StoreyToleranceBelow = null,
+          StoreyToleranceAboveAuto = false,
+          //StoreyToleranceAbove = null,
+        }
+      };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaGridPlanes[i].ApplicationId = appIds[i];
+      }
+      return gsaGridPlanes.GetRange(0, numOfGridPlanes);
+    }
+
+    private List<GsaGridSurface> GsaGridSurfaceExamples(int numOfGridSurfaces, params string[] appIds)
+    {
+      var gsaGridSurfaces = new List<GsaGridSurface>()
+      {
+        new GsaGridSurface()
+        {
+          Index = 1,
+          Name = "1",
+          PlaneRefType = GridPlaneAxisRefType.Global,
+          //PlaneIndex = null,
+          Type = GridSurfaceElementsType.OneD,
+          Entities = new List<int>(){ 1 },
+          Tolerance = 0.01,
+          Span = GridSurfaceSpan.One,
+          Angle = 0,
+          Expansion = GridExpansion.PlaneAspect,
+        },
+        new GsaGridSurface()
+        {
+          Index = 2,
+          Name = "2",
+          PlaneRefType = GridPlaneAxisRefType.Reference,
+          PlaneIndex = 1,
+          Type = GridSurfaceElementsType.TwoD,
+          Entities = new List<int>(){ 2 },
+          Tolerance = 0.01,
+          Span = GridSurfaceSpan.Two,
+          Angle = 0,
+          Expansion = GridExpansion.PlaneAspect,
+        }
+      };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaGridSurfaces[i].ApplicationId = appIds[i];
+      }
+      return gsaGridSurfaces.GetRange(0, numOfGridSurfaces);
+    }
+
+    private List<GsaPolyline> GsaPolylineExamples(int numPolylines, params string[] appIds)
+    {
+      var gsaPolylines = new List<GsaPolyline>()
+      {
+        new GsaPolyline()
+        {
+          Index = 1,
+          Name = "1",
+          Colour = Colour.NO_RGB,
+          GridPlaneIndex = null,
+          NumDim = 2,
+          Values = new List<double>() { 0, 0, 1, 0, 1, 1, 0, 1 },
+          Units = "m",
+        },
+        new GsaPolyline()
+        {
+          Index = 2,
+          Name = "2",
+          Colour = Colour.NO_RGB,
+          GridPlaneIndex = 1,
+          NumDim = 3,
+          Values = new List<double>() { 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1 },
+          Units = "m",
+        }
+      };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaPolylines[i].ApplicationId = appIds[i];
+      }
+      return gsaPolylines.GetRange(0, numPolylines);
+    }
     #endregion
 
     #region Loading
@@ -2298,6 +2956,160 @@ namespace ConverterGSATests
         gsaCombo[i].ApplicationId = appIds[i];
       }
       return gsaCombo.GetRange(0, numberOfCombos);
+    }
+
+    private List<GsaLoadGridArea> GsaLoadGridAreaExamples(int numOfLoads, params string[] appIds)
+    {
+      var gsaLoads = new List<GsaLoadGridArea>()
+      {
+        new GsaLoadGridArea()
+        {
+          Index = 1,
+          Name = "1",
+          GridSurfaceIndex = 1,
+          Area = LoadAreaOption.Plane,
+          //PolygonIndex = null,
+          Polygon = "",
+          LoadCaseIndex = 1,
+          AxisRefType = AxisRefType.Global,
+          //AxisIndex = null,
+          Projected = false,
+          LoadDirection = AxisDirection3.Z,
+          Value = 1,
+        },
+        new GsaLoadGridArea()
+        {
+          Index = 2,
+          Name = "2",
+          GridSurfaceIndex = 1,
+          Area = LoadAreaOption.PolyRef,
+          PolygonIndex = 1,
+          Polygon = "",
+          LoadCaseIndex = 2,
+          AxisRefType = AxisRefType.Reference,
+          AxisIndex = 1,
+          Projected = false,
+          LoadDirection = AxisDirection3.Z,
+          Value = 2,
+        }
+      };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaLoads[i].ApplicationId = appIds[i];
+      }
+      return gsaLoads.GetRange(0, numOfLoads);
+    }
+
+    private List<GsaLoadGridLine> GsaLoadGridLineExamples(int numOfLoads, params string[] appIds)
+    {
+      var gsaLoads = new List<GsaLoadGridLine>()
+      {
+        new GsaLoadGridLine()
+        {
+          Index = 1,
+          Name = "1",
+          GridSurfaceIndex = 1,
+          Line = LoadLineOption.PolyRef,
+          Polygon = "",
+          PolygonIndex = 1,
+          LoadCaseIndex = 1,
+          AxisRefType = AxisRefType.Global,
+          //AxisIndex = null,
+          Projected = false,
+          LoadDirection = AxisDirection3.Z,
+          Value1 = 1,
+          Value2 = 2,
+        },
+        new GsaLoadGridLine()
+        {
+          Index = 2,
+          Name = "2",
+          GridSurfaceIndex = 1,
+          Line = LoadLineOption.Polygon,
+          Polygon = "(0,0) (1,0) (1,1) (0,1)(m)",
+          //PolygonIndex = null,
+          LoadCaseIndex = 2,
+          AxisRefType = AxisRefType.Reference,
+          AxisIndex = 1,
+          Projected = false,
+          LoadDirection = AxisDirection3.Z,
+          Value1 = 3,
+          Value2 = 4,
+        }
+      };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaLoads[i].ApplicationId = appIds[i];
+      }
+      return gsaLoads.GetRange(0, numOfLoads);
+    }
+
+    private List<GsaLoadGridPoint> GsaLoadGridPointExamples(int numOfLoads, params string[] appIds)
+    {
+      var gsaLoads = new List<GsaLoadGridPoint>()
+      {
+        new GsaLoadGridPoint()
+        {
+          Index = 1,
+          Name = "1",
+          GridSurfaceIndex = 1,
+          X = 0,
+          Y = 0,
+          LoadCaseIndex = 1,
+          AxisRefType = AxisRefType.Global,
+          //AxisIndex = null,
+          LoadDirection = AxisDirection3.Z,
+          Value = 1
+        },
+        new GsaLoadGridPoint()
+        {
+          Index = 2,
+          Name = "2",
+          GridSurfaceIndex = 1,
+          X = 0,
+          Y = 0,
+          LoadCaseIndex = 2,
+          AxisRefType = AxisRefType.Reference,
+          AxisIndex = 1,
+          LoadDirection = AxisDirection3.Z,
+          Value = 2
+        }
+      };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaLoads[i].ApplicationId = appIds[i];
+      }
+      return gsaLoads.GetRange(0, numOfLoads);
+    }
+
+    private List<GsaLoad2dThermal> GsaLoad2dThermalExamples(int numOfLoads, params string[] appIds)
+    {
+      var gsaLoads = new List<GsaLoad2dThermal>()
+      {
+        new GsaLoad2dThermal()
+        {
+          Index = 1,
+          Name = "1",
+          Entities = new List<int>(){ 1 },
+          LoadCaseIndex = 1,
+          Type = Load2dThermalType.Uniform,
+          Values = new List<double>(){ 1 },
+        },
+        new GsaLoad2dThermal()
+        {
+          Index = 2,
+          Name = "2",
+          Entities = new List<int>(){ 1 },
+          LoadCaseIndex = 2,
+          Type = Load2dThermalType.Gradient,
+          Values = new List<double>(){ 1, 2 },
+        }
+      };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaLoads[i].ApplicationId = appIds[i];
+      }
+      return gsaLoads.GetRange(0, numOfLoads);
     }
     #endregion
 
