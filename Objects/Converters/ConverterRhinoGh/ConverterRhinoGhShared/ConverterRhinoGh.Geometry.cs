@@ -420,7 +420,13 @@ namespace Objects.Converter.RhinoGh
         try
         {
           //let the converter pick the best type of curve
-          myPolyc.AppendSegment((RH.Curve)ConvertToNative((Base)segment));
+          var convertedSegment = (RH.Curve)ConvertToNative((Base)segment);
+          var result = myPolyc.AppendSegment(convertedSegment);
+          if (result != true)
+          {
+            var endpoint = myPolyc.PointAtEnd;
+            var convertedEnd = convertedSegment.PointAtEnd;
+          }
         }
         catch
         { }
@@ -429,7 +435,12 @@ namespace Objects.Converter.RhinoGh
       if (p.domain != null)
         myPolyc.Domain = IntervalToNative(p.domain);
 
-      return myPolyc;
+      // try removing tolerance based join issues
+      var simplifiedPoly = (PolyCurve)myPolyc.Simplify(CurveSimplifyOptions.AdjustG1, Doc.ModelAbsoluteTolerance, Doc.ModelAngleToleranceRadians);
+      if (!myPolyc.IsValid)
+        myPolyc = (PolyCurve)myPolyc.Simplify(CurveSimplifyOptions.AdjustG1, Doc.ModelAbsoluteTolerance, Doc.ModelAngleToleranceRadians);
+
+      return simplifiedPoly;
     }
 
     // Curve

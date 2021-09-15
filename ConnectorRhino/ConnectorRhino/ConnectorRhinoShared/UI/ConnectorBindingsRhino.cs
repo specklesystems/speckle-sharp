@@ -354,7 +354,7 @@ namespace SpeckleRhino
 
       if (convertedRH != null)
       {
-        if (convertedRH.IsValid)
+        if (convertedRH.IsValidWithLog(out string log))
         {
           Layer bakeLayer = Doc.GetLayer(layerPath, true);
           if (bakeLayer != null)
@@ -415,7 +415,7 @@ namespace SpeckleRhino
             state.Errors.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
         }
         else
-          state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: invalid object props"));
+          state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log}"));
       }
       else if (converted == null)
       {
