@@ -29,11 +29,11 @@ namespace ConnectorGSATests
     [Fact]
     public void TestProxyGetDataForCache()
     {
-      Instance.GsaModel.Layer = GSALayer.DesignOnly;
-      var proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
+      Instance.GsaModel.StreamLayer = GSALayer.Design;
+      var proxy = new GsaProxy();
       proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), false);
 
-      Assert.True(proxy.GetGwaData(false, out var records));
+      Assert.True(proxy.GetGwaData(out var records));
       proxy.Close();
 
       Assert.Equal(188, records.Count());

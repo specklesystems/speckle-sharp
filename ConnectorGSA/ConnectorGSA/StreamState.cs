@@ -44,6 +44,13 @@ namespace ConnectorGSA
     public string UserId { get; private set; }
     [JsonProperty]
     public string ServerUrl { get; private set; }
+    [JsonProperty]
+    public string StreamId { get => Stream.id;
+      set
+      {
+        Stream = new Speckle.Core.Api.Stream() { id = value };
+      }
+    }
 
     public StreamState()
     {

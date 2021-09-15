@@ -20,7 +20,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //LOAD_GRAVITY.3 | name | elemlist | nodelist | case | x | y | z
-      return FromGwaByFuncs(remainingItems, out var _, AddName, (v) => AddEntities(v, out record.Entities), (v) => AddNodes(v, out record.Nodes), 
+      return FromGwaByFuncs(remainingItems, out var _, AddName, (v) => AddEntities(v, out record.MemberIndices, out record.ElementIndices), (v) => AddNodes(v, out record.Nodes), 
         (v) => AddNullableIndex(v, out record.LoadCaseIndex), (v) => AddNullableDoubleValue(v, out record.X), 
         (v) => AddNullableDoubleValue(v, out record.Y), (v) => AddNullableDoubleValue(v, out record.Z));
     }
@@ -34,7 +34,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //LOAD_GRAVITY.3 | name | elemlist | nodelist | case | x | y | z
-      AddItems(ref items, record.Name, AddEntities(record.Entities), AddNodes(record.Nodes), record.LoadCaseIndex ?? 0, record.X ?? 0, record.Y ?? 0, record.Z ?? 0);
+      AddItems(ref items, record.Name, AddEntities(record.MemberIndices, record.ElementIndices), AddNodes(record.Nodes), record.LoadCaseIndex ?? 0, record.X ?? 0, record.Y ?? 0, record.Z ?? 0);
 
       gwa = Join(items, out var gwaLine) ? new List<string>() { gwaLine } : new List<string>();
       return (gwa.Count() > 0);

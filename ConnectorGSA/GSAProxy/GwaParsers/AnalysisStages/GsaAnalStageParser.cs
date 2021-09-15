@@ -19,8 +19,8 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //ANAL_STAGE.3 | stage | name | colour | list | phi | time | lock
-      return FromGwaByFuncs(remainingItems, out var _, AddName, (v) => AddColour(v, out record.Colour), (v) => AddEntities(v, out record.List), 
-        (v) => AddNullableDoubleValue(v, out record.Phi), (v) => AddNullableIntValue(v, out record.Days), (v) => AddEntities(v, out record.Lock));
+      return FromGwaByFuncs(remainingItems, out var _, AddName, (v) => AddColour(v, out record.Colour), (v) => AddEntities(v, out record.MemberIndices, out record.ElementIndices), 
+        (v) => AddNullableDoubleValue(v, out record.Phi), (v) => AddNullableIntValue(v, out record.Days), (v) => AddEntities(v, out record.LockMemberIndices, out record.LockElementIndices));
     }
 
     public override bool Gwa(out List<string> gwa, bool includeSet = false)
@@ -32,7 +32,8 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //ANAL_STAGE.3 | stage | name | colour | list | phi | time | lock
-      AddItems(ref items, record.Name, Colour.NO_RGB.ToString(), AddEntities(record.List), record.Phi ?? 0, record.Days ?? 0, AddEntities(record.Lock));
+      AddItems(ref items, record.Name, Colour.NO_RGB.ToString(), AddEntities(record.MemberIndices, record.ElementIndices), record.Phi ?? 0, record.Days ?? 0, 
+        AddEntities(record.LockMemberIndices, record.LockElementIndices));
 
       gwa = Join(items, out var gwaLine) ? new List<string>() { gwaLine } : new List<string>();
       return (gwa.Count() > 0);

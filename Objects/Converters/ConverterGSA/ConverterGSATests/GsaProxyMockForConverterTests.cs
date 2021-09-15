@@ -50,7 +50,7 @@ namespace ConverterGSATests
       NativesByKeywordId = null;
     }
 
-    public bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
+    public bool GetGwaData(out List<GsaRecord> records, IProgress<int> incrementProgress = null)
     {
       records = null;
       return true;
@@ -145,7 +145,7 @@ namespace ConverterGSATests
       return true;
     }
 
-      
+    public List<List<Type>> GetTxTypeDependencyGenerations(GSALayer layer) => new List<List<Type>>();
 
     #region test_config_fns
     public bool AddResultData(ResultGroup group, List<CsvRecord> records)

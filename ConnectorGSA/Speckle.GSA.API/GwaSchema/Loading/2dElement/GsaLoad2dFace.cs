@@ -5,7 +5,8 @@ namespace Speckle.GSA.API.GwaSchema
   public class GsaLoad2dFace : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
-    public List<int> Entities;
+    public List<int> ElementIndices;
+    public List<int> MemberIndices;
     public int? LoadCaseIndex;
     public AxisRefType AxisRefType;
     public int? AxisIndex;

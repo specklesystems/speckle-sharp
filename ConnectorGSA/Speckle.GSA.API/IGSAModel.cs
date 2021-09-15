@@ -9,7 +9,7 @@ namespace Speckle.GSA.API
     //PROPERTIES
 
     //Settings - general
-    GSALayer Layer { get; set; }
+    GSALayer StreamLayer { get; set; }
     string Units { get; set; }
     double CoincidentNodeAllowance { get; set; }
     int LoggingMinimumLevel { get; set; }

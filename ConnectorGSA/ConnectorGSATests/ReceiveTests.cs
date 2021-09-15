@@ -1,6 +1,4 @@
 ﻿using ConnectorGSA;
-using Speckle.ConnectorGSA.Proxy.GwaParsers;
-using Speckle.ConnectorGSA.Proxy.Merger;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -30,7 +28,7 @@ namespace ConnectorGSATests
     public async void ReceiveDesignModelOnly()
     {
       Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
-      Instance.GsaModel.Layer = GSALayer.DesignOnly;
+      Instance.GsaModel.StreamLayer = GSALayer.Design;
 
       /* these lines would cause the libraries in %AppData% to be loaded, including the objects.dll library, which contains types
       * which C# would recognise as being different to the ones used in the converter code
@@ -41,7 +39,7 @@ namespace ConnectorGSATests
       var account = AccountManager.GetDefaultAccount();
       var client = new Client(account);
 
-      var nativeTypeGenerations = Instance.GsaModel.Proxy.TxTypeDependencyGenerations;
+      var nativeTypeGenerations = Instance.GsaModel.Proxy.GetTxTypeDependencyGenerations(GSALayer.Design);
 
       var numExpectedByObjectType = new Dictionary<Type, int>()
       {
@@ -171,7 +169,7 @@ namespace ConnectorGSATests
         return result;
       }
 
-      var nativeTypeGenerations = Instance.GsaModel.Proxy.TxTypeDependencyGenerations;
+      var nativeTypeGenerations = Instance.GsaModel.Proxy.GetTxTypeDependencyGenerations(GSALayer.Both);
       var natives = new List<GsaRecord>();
       foreach (var gen in nativeTypeGenerations)
       {

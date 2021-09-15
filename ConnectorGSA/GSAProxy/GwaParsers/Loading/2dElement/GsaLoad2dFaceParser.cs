@@ -21,7 +21,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       var items = remainingItems;
 
       //LOAD_2D_FACE.2 | name | list | case | axis | type | proj | dir | value(n) | r | s
-      if (!FromGwaByFuncs(items, out remainingItems, AddName, (v) => AddEntities(v, out record.Entities), AddCase, AddAxis, AddType, AddProj, AddDir))
+      if (!FromGwaByFuncs(items, out remainingItems, AddName, (v) => AddEntities(v, out record.MemberIndices, out record.ElementIndices), AddCase, AddAxis, AddType, AddProj, AddDir))
       { 
         return false;
       }
@@ -64,7 +64,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //LOAD_2D_FACE.2 | name | list | case | axis | type | proj | dir | value(n) | r | s
-      AddItems(ref items, record.Name, AddEntities(record.Entities), record.LoadCaseIndex ?? 0, AddAxis(), AddType(), AddProj(), record.LoadDirection, AddValues());
+      AddItems(ref items, record.Name, AddEntities(record.MemberIndices, record.ElementIndices), record.LoadCaseIndex ?? 0, AddAxis(), AddType(), AddProj(), record.LoadDirection, AddValues());
       if (record.Type == Load2dFaceType.Point)
       {
         AddItems(ref items, record.R, record.S);

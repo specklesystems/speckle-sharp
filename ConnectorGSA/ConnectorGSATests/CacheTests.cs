@@ -20,7 +20,7 @@ namespace ConnectorGSATests
     [Fact]
     public void HydrateCache()
     {
-      Instance.GsaModel.Layer = GSALayer.DesignOnly;
+      Instance.GsaModel.StreamLayer = GSALayer.Design;
       proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
       var errored = new Dictionary<int, GsaRecord>();
 
@@ -28,7 +28,7 @@ namespace ConnectorGSATests
       {
         proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), false);
 
-        Assert.True(proxy.GetGwaData(false, out var records));
+        Assert.True(proxy.GetGwaData(out var records));
 
         for (int i = 0; i < records.Count(); i++)
         {

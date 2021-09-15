@@ -18,24 +18,15 @@ namespace Speckle.ConnectorGSA.Proxy
 {
   public class GsaProxy : IGSAProxy
   {
-    //Used by the app in ordering the calling of the conversion code
-    public List<List<Type>> TxTypeDependencyGenerations
-    {
-      get
-      {
-        InitialiseIfNecessary();
-        return NativeTypeDependencyGenerations;
-      }
-    }
-    public List<Type> SchemaTypes { get => ParsersBySchemaType.Keys.ToList(); }
+    //public List<Type> SchemaTypes { get => ParsersBySchemaType.Keys.ToList(); }
 
-    private List<List<Type>> NativeTypeDependencyGenerations; //leaves first, all the way up to roots
+    private Dictionary<GSALayer, List<List<Type>>> nativeTypeDependencyGenerations; //leaves first, all the way up to roots
+
     private Dictionary<Type, Type> ParsersBySchemaType = new Dictionary<Type, Type>();  //Used for writing to the GSA instance
-    //private Dictionary<GwaKeyword, Type> ParsersByKeyword = new Dictionary<GwaKeyword, Type>(); //Used for reading from the GSA instance
     private IPairCollection<GwaKeyword, Type> ParsersSchemaType = new PairCollection<GwaKeyword, Type>();
     private bool initialised = false;
     private bool initialisedError = false;  //To ensure initialisation is only attempted once.
-    private GSALayer prevLayer;
+    //private GSALayer prevLayer;
 
     #region static_data
     private static readonly string SID_APPID_TAG = "speckle_app_id";
@@ -163,6 +154,13 @@ namespace Speckle.ConnectorGSA.Proxy
 
     private string SpeckleGsaVersion;
     private string units = "m";
+
+    //Used in ordering the calling of the conversion code
+    public List<List<Type>> GetTxTypeDependencyGenerations(GSALayer layer)
+    {
+      InitialiseIfNecessary();
+      return nativeTypeDependencyGenerations[layer];
+    }
 
     #region File Operations
     /// <summary>
@@ -434,7 +432,9 @@ namespace Speckle.ConnectorGSA.Proxy
         var parserTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, gwaParserInterfaceType)
           && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
           && Helper.IsSelfContained(t)
-          && ((layer == GSALayer.DesignOnly && Helper.IsDesignLayer(t)) || (layer == GSALayer.BothLayers))
+          && (layer == GSALayer.Both
+            || (layer == GSALayer.Design && Helper.IsDesignLayer(t)) 
+            || (layer == GSALayer.Analysis && Helper.IsAnalysisLayer(t)))
           && !t.IsAbstract
           ).ToDictionary(pt => pt, pt => Helper.GetGwaKeyword(pt));
 
@@ -460,18 +460,22 @@ namespace Speckle.ConnectorGSA.Proxy
 
         foreach (var kvp in parserTypes)
         {
-          ParsersSchemaType.Add(kvp.Value, kvp.Key);
+          if (!ParsersSchemaType.ContainsLeft(kvp.Value))
+          {
+            ParsersSchemaType.Add(kvp.Value, kvp.Key);
+          }
         }
         ParsersBySchemaType = parserTypes.Keys.ToDictionary(pt => pt.BaseType.GenericTypeArguments.First(), pt => pt);
 
-        if (NativeTypeDependencyGenerations == null)
+        if (nativeTypeDependencyGenerations == null)
         {
-          NativeTypeDependencyGenerations = new List<List<Type>>();
+          nativeTypeDependencyGenerations = new Dictionary<GSALayer, List<List<Type>>>();
         }
-        else
+        if (!nativeTypeDependencyGenerations.ContainsKey(layer))
         {
-          NativeTypeDependencyGenerations.Clear();
+          nativeTypeDependencyGenerations.Add(layer, new List<List<Type>>());
         }
+
         foreach (var gen in gens)
         {
           var genParserTypes = new List<Type>();
@@ -484,12 +488,10 @@ namespace Speckle.ConnectorGSA.Proxy
               genParserTypes.Add(schemaType);
             }
           }
-          NativeTypeDependencyGenerations.Add(genParserTypes);
+          nativeTypeDependencyGenerations[layer].Add(genParserTypes);
         }
-
-        initialised = true;
       }
-      return (initialised && !initialisedError);
+      return (!initialisedError);
     }
     #endregion
 
@@ -508,7 +510,7 @@ namespace Speckle.ConnectorGSA.Proxy
     }
 
     //Tuple: keyword | index | Application ID | GWA command | Set or Set At
-    public bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
+    public bool GetGwaData(out List<GsaRecord> records, IProgress<int> incrementProgress = null)
     {
       if (!InitialiseIfNecessary())
       {
@@ -629,7 +631,7 @@ namespace Speckle.ConnectorGSA.Proxy
                 }
               }
 
-              if (!(nodeApplicationIdFilter == true && isNode && string.IsNullOrEmpty(appId)) && ParsersSchemaType.FindRight(keyword.Value, out Type t))
+              if (ParsersSchemaType.FindRight(keyword.Value, out Type t))
               {
                 var parser = (IGwaParser)Activator.CreateInstance(t);
                 parser.FromGwa(gwa);
@@ -762,22 +764,13 @@ namespace Speckle.ConnectorGSA.Proxy
 
     private bool InitialiseIfNecessary()
     {
-      GSALayer layer = Instance.GsaModel.Layer;
-      if (layer != prevLayer || !initialised)
+      if (!Initialise(GSALayer.Design) || !Initialise(GSALayer.Analysis) || !Initialise(GSALayer.Both))
       {
-        if (!Initialise(layer))
-        {
-          initialisedError = true;
-          //Already tried this layer once and it was an error, so don't try again
-          return false;
-        }
-        else
-        {
-          prevLayer = layer;
-        }
-        initialised = true;
-        initialisedError = false;
+        initialisedError = true;
+        //Already tried this layer once and it was an error, so don't try again
+        return false;
       }
+      initialised = true;
       return true;
     }
 
@@ -914,7 +907,16 @@ namespace Speckle.ConnectorGSA.Proxy
       {
         lock(syncLock)
         {
-          sid = (string)GSAObject.GwaCommand("GET" + GwaDelimiter + "SID");
+          var gwa = (string)GSAObject.GwaCommand("GET" + GwaDelimiter + "SID");
+          sid = gwa.Substring(gwa.IndexOf(GwaDelimiter) + 1).Replace("\"\"", "\"");
+          if (sid[0] == '"')
+          {
+            sid = sid.Substring(1);
+          }
+          if (sid.Last() == '"')
+          {
+            sid = sid.Substring(0, (sid.Length - 1));
+          }
         }
       }
       catch

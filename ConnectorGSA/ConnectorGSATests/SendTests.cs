@@ -5,6 +5,7 @@ using Objects.Structural.Loading;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties;
 using Objects.Structural.Results;
+using Speckle.ConnectorGSA.Proxy;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -31,13 +32,11 @@ namespace ConnectorGSATests
   // - stream IDs saved with any native object are ignored during sending - it's the send config settings that determine what is sent
   public class SendTests : SpeckleConnectorFixture
   {
-    [Fact]
-    public void TestSerialisation()
+    private string saveAsAlternativeFilepath(string fn)
     {
-      var account = AccountManager.GetDefaultAccount();
-      var ss = new StreamState(account.userInfo.id, "http://v2.speckle.arup.com");
-      var ssString = JsonConvert.SerializeObject(ss);
+      return Path.Combine(TestDataDirectory, fn.Split('.').First() + "_test.gwb");
     }
+    
     //Sending scenarios
 
     [Fact]
@@ -47,7 +46,7 @@ namespace ConnectorGSATests
       var cliResult = headless.RunCLI("sender",
         "--server", v2ServerUrl,
         "--file", Path.Combine(TestDataDirectory, modelWithoutResultsFile),
-        "--saveAs", Path.Combine(TestDataDirectory, modelWithoutResultsFile.Split('.').First() + "_test.gwb"),
+        "--saveAs", saveAsAlternativeFilepath(modelWithoutResultsFile),
         "--designLayerOnly");
 
       Assert.True(cliResult);
@@ -61,8 +60,9 @@ namespace ConnectorGSATests
       var cliResult = headless.RunCLI("sender",
         "--server", account.serverInfo.url,
         "--email", account.userInfo.email,
-        "--token", account.refreshToken,
-        "--file", Path.Combine(TestDataDirectory, modelWithoutResultsFile));
+        "--token", account.token,
+        "--file", Path.Combine(TestDataDirectory, modelWithoutResultsFile),
+        "--saveAs", saveAsAlternativeFilepath(modelWithoutResultsFile));
 
       Assert.True(cliResult);
     }
@@ -75,8 +75,9 @@ namespace ConnectorGSATests
       var cliResult = headless.RunCLI("sender",
         "--server", account.serverInfo.url,
         "--email", account.userInfo.email,
-        "--token", account.refreshToken,
-        "--file", Path.Combine(TestDataDirectory, modelWithoutResultsFile),
+        "--token", account.token,
+        "--file", Path.Combine(TestDataDirectory, modelWithResultsFile),
+        "--saveAs", saveAsAlternativeFilepath(modelWithResultsFile),
         "--result", "\"Nodal Displacements\",\"Element 1d Force\",\"Element 2d Displacement\",\"Assembly Forces And Moments\"",
         "--resultCases", "A1,C1",
         "--result1DNumPosition", "3");
@@ -88,7 +89,7 @@ namespace ConnectorGSATests
     public async Task SendDesignLayer() //model only
     {
       //Configure settings for this transmission
-      Instance.GsaModel.Layer = GSALayer.DesignOnly;
+      Instance.GsaModel.StreamLayer = GSALayer.Design;
 
       var memoryTransport = new MemoryTransport();
       var result = await CoordinateSend(modelWithoutResultsFile, converter, memoryTransport);
@@ -125,7 +126,7 @@ namespace ConnectorGSATests
     public async Task SendBothLayersModelOnly()
     {
       //Configure settings for this transmission
-      Instance.GsaModel.Layer = GSALayer.BothLayers;
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
 
       var memoryTransport = new MemoryTransport();
       var result = await CoordinateSend(modelWithoutResultsFile, converter, memoryTransport);
@@ -162,7 +163,7 @@ namespace ConnectorGSATests
     public async Task SendAnalysisLayerWithSeparateResults()
     {
       //Configure settings for this transmission
-      Instance.GsaModel.Layer = GSALayer.BothLayers;
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
       Instance.GsaModel.ResultTypes = new List<ResultType>() { ResultType.NodalDisplacements };
       Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
 
@@ -199,7 +200,7 @@ namespace ConnectorGSATests
     [Fact]
     public void ReadResults()
     {
-      Instance.GsaModel.Layer = GSALayer.BothLayers;
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
 
       Commands.OpenFile(Path.Combine(TestDataDirectory, modelWithResultsFile), true); //Use a real proxy
 
@@ -210,7 +211,7 @@ namespace ConnectorGSATests
 
       try
       {
-        loaded = Commands.LoadDataFromFile(false, resultTypesByGroup.Keys, resultTypesByGroup.Keys.SelectMany(g => resultTypesByGroup[g]));
+        loaded = Commands.LoadDataFromFile(resultTypesByGroup.Keys, resultTypesByGroup.Keys.SelectMany(g => resultTypesByGroup[g]));
       }
       catch (Exception ex)
       {
@@ -261,6 +262,26 @@ namespace ConnectorGSATests
       Assert.True(csvRecordsByGroup.Keys.All(g => csvRecordsByGroup[g].Count > 0));
     }
 
+    [Fact]
+    public void TestDeserialisation()
+    {
+      Instance.GsaModel.Proxy = new GsaProxy();
+      Instance.GsaModel.Proxy.OpenFile(saveAsAlternativeFilepath(modelWithoutResultsFile));
+      try
+      {
+        var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
+        var ss = JsonConvert.DeserializeObject<List<StreamState>>(sid);
+      }
+      catch (Exception ex)
+      {
+
+      }
+      finally
+      {
+        Instance.GsaModel.Proxy.Close();
+      }
+    }
+
     private async Task<CoordinateSendReturnInfo> CoordinateSend(string testFileName, ISpeckleConverter converter, params ITransport[] nonServerTransports)
     {
       var returnInfo = new CoordinateSendReturnInfo();
@@ -280,7 +301,7 @@ namespace ConnectorGSATests
       returnInfo.Loaded = false;
       try
       {
-        returnInfo.Loaded = Commands.LoadDataFromFile(false);
+        returnInfo.Loaded = Commands.LoadDataFromFile();
       }
       catch { }
       finally

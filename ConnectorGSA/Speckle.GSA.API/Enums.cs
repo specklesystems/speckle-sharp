@@ -2,8 +2,9 @@
 {
   public enum GSALayer
   {
-    DesignOnly,
-    BothLayers
+    Design,
+    Analysis,
+    Both
   }
 
   public enum MessageLevel

@@ -6,7 +6,8 @@ namespace Speckle.GSA.API.GwaSchema
   {
     public string Name { get => name; set { name = value; } }
     public GSAEntity Type;
-    public List<int> Entities = new List<int>();
+    public List<int> ElementIndices = new List<int>();
+    public List<int> MemberIndices = new List<int>();
     public int? Topo1;
     public int? Topo2;
     public int? OrientNode;

@@ -50,7 +50,17 @@ namespace ConnectorGSA
     public static bool UpsertSavedReceptionStreamInfo(bool? receive, bool? send, List<StreamState> streamStates)
     {
       var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
-      var allSs = JsonConvert.DeserializeObject<List<StreamState>>(sid);
+      List<StreamState> allSs = null;
+      try
+      {
+        allSs = JsonConvert.DeserializeObject<List<StreamState>>(sid);
+      }
+      catch (JsonException ex)
+      {
+        //Could not deserialise, probably because it has a v1-format of stream information.  In this case, ignore the info
+
+        //TO DO: write technical long line here
+      }
 
       if (allSs == null || allSs.Count() == 0)
       {
@@ -89,9 +99,9 @@ namespace ConnectorGSA
       return Instance.GsaModel.Proxy.Clear();
     }
 
-    public static bool LoadDataFromFile(bool onlyNodesWithApplicationIds = true, IEnumerable<ResultGroup> resultGroups = null, IEnumerable<ResultType> resultTypes = null)
+    public static bool LoadDataFromFile(IEnumerable<ResultGroup> resultGroups = null, IEnumerable<ResultType> resultTypes = null)
     {
-      var loadedCache = UpdateCache(onlyNodesWithApplicationIds);
+      var loadedCache = UpdateCache();
       int cumulativeErrorRows = 0;
 
       if (resultGroups != null && resultGroups.Any() && resultTypes != null && resultTypes.Any())
@@ -142,10 +152,26 @@ namespace ConnectorGSA
 
     public static Base ConvertToSpeckle(ISpeckleConverter converter)
     {
-      //Get send native type dependencies
-      var typeDependencyGenerations = Instance.GsaModel.Proxy.TxTypeDependencyGenerations;
+      if (!Instance.GsaModel.Cache.GetNatives(out List<GsaRecord> gsaRecords))
+      {
+        return null;
+      }
+
+      var convertedObjects = converter.ConvertToSpeckle(gsaRecords.Cast<object>().ToList());
+      var convertedObjectsByType = convertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
 
       var commit = new Base();
+
+      foreach(var t in convertedObjectsByType.Keys)
+      {
+        commit[$"{t.Name}"] = convertedObjectsByType[t];
+      }
+
+      return commit;
+
+      /*
+      //Get send native type dependencies
+      var typeDependencyGenerations = Instance.GsaModel.Proxy.GetTxTypeDependencyGenerations(Instance.GsaModel.StreamLayer);
 
       foreach (var gen in typeDependencyGenerations)
       {
@@ -187,6 +213,7 @@ namespace ConnectorGSA
         }
       }
       return commit;
+      */
     }
 
     public static async Task<bool> Send(Base commitObj, StreamState state, params ITransport[] transports)
@@ -257,7 +284,7 @@ namespace ConnectorGSA
 
       try
       {
-        if (Instance.GsaModel.Proxy.GetGwaData(onlyNodesWithApplicationIds, out var records))
+        if (Instance.GsaModel.Proxy.GetGwaData(out var records))
         {
           for (int i = 0; i < records.Count(); i++)
           {

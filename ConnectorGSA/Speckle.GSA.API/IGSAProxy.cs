@@ -9,13 +9,13 @@ namespace Speckle.GSA.API
   {
     bool NewFile(bool showWindow = true, object gsaInstance = null);
     bool OpenFile(string path, bool showWindow = true, object gsaInstance = null);
-    bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null);
+    bool GetGwaData(out List<GsaRecord> records, IProgress<int> incrementProgress = null);
     string GetTopLevelSid();
     bool SetTopLevelSid(string sidRecord);
 
     string GenerateApplicationId(Type schemaType, int gsaIndex);
 
-    List<List<Type>> TxTypeDependencyGenerations { get; }
+    List<List<Type>> GetTxTypeDependencyGenerations(GSALayer layer);
 
 
     //Offered by GSA itself

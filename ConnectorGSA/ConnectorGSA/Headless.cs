@@ -75,7 +75,6 @@ namespace ConnectorGSA
         Console.Write("--streamIDs <streamIDs>\t\tComma-delimited ID of streams to be received\n");
         Console.WriteLine("\n");
         Console.Write("Optional arguments:\n");
-        Console.Write("--layer [analysis|design]\tSet which layer to write to. Default is design layer\n");
         Console.Write("--nodeAllowance <distance>\tMax distance before nodes are not merged\n");
         return true;
       }
@@ -203,15 +202,7 @@ namespace ConnectorGSA
         cliResult = Task.Run(() =>
         {
           //Load data to cause merging
-          try
-          {
-            Commands.LoadDataFromFile(true);
-          }
-          catch { }
-          finally
-          {
-            Instance.GsaModel.Proxy.Close();
-          }
+          Commands.LoadDataFromFile(); //Ensure all nodes
 
           foreach (var streamId in streamIds)
           {
@@ -231,7 +222,7 @@ namespace ConnectorGSA
           return true;
         }).Result;
       }
-      else
+      else //Send
       {
         //There seem to be some issues with HTTP requests down the line if this is run on the initial (UI) thread, so this ensures it runs on another thread
         cliResult = Task.Run(() =>
@@ -245,15 +236,7 @@ namespace ConnectorGSA
             }
           }
 
-          try
-          {
-            Commands.LoadDataFromFile(false); //Ensure all nodes
-          }
-          catch { }
-          finally
-          {
-            Instance.GsaModel.Proxy.Close();
-          }
+          Commands.LoadDataFromFile(); //Ensure all nodes
 
           var commitObj = Commands.ConvertToSpeckle(converter);
 
@@ -332,7 +315,7 @@ namespace ConnectorGSA
     {
       //This will create the logger
       Instance.GsaModel.LoggingMinimumLevel = 4; //Debug
-      Instance.GsaModel.Layer = GSALayer.BothLayers;  //Unless overridden below
+      Instance.GsaModel.StreamLayer = GSALayer.Both;  //Unless overridden below
       //TO DO: enable is as a command line argument
       Instance.GsaModel.Units = "m";
 
@@ -344,10 +327,6 @@ namespace ConnectorGSA
           return false;
         }
 
-        if (argPairs.ContainsKey("designLayerOnly"))
-        {
-          Instance.GsaModel.Layer = GSALayer.DesignOnly;
-        }
         if (argPairs.ContainsKey("nodeAllowance") && double.TryParse(argPairs["nodeAllowance"], out double nodeAllowance))
         {
           Instance.GsaModel.CoincidentNodeAllowance = nodeAllowance;
@@ -358,6 +337,15 @@ namespace ConnectorGSA
         if (argPairs.ContainsKey("sendAllNodes"))
         {
           Instance.GsaModel.SendOnlyMeaningfulNodes = false;
+        }
+
+        if (argPairs.ContainsKey("designLayerOnly"))
+        {
+          Instance.GsaModel.StreamLayer = GSALayer.Design;
+        }
+        else
+        {
+          Instance.GsaModel.StreamLayer = GSALayer.Both;
         }
 
         if (argPairs.ContainsKey("result"))

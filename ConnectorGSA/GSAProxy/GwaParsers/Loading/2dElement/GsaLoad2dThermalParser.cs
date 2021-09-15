@@ -20,7 +20,8 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       var items = remainingItems;
 
       //LOAD_2D_THERMAL.2 | name | list | case | type | values(n)
-      if (!FromGwaByFuncs(items, out remainingItems, AddName, (v) => AddEntities(v, out record.Entities), (v) => AddNullableIndex(v, out record.LoadCaseIndex), AddType))
+      if (!FromGwaByFuncs(items, out remainingItems, AddName, (v) => AddEntities(v, out record.MemberIndices, out record.ElementIndices), 
+        (v) => AddNullableIndex(v, out record.LoadCaseIndex), AddType))
       {
         return false;
       }
@@ -53,7 +54,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //LOAD_2D_THERMAL.2 | name | list | case | type | values(n)
-      AddItems(ref items, record.Name, AddEntities(record.Entities), record.LoadCaseIndex ?? 0, record.Type.GetStringValue(), AddValues());
+      AddItems(ref items, record.Name, AddEntities(record.MemberIndices, record.ElementIndices), record.LoadCaseIndex ?? 0, record.Type.GetStringValue(), AddValues());
 
       gwa = (Join(items, out var gwaLine)) ? new List<string>() { gwaLine } : new List<string>();
       return gwa.Count() > 0;

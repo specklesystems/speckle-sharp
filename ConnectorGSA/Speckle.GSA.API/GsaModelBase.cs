@@ -7,7 +7,7 @@ namespace Speckle.GSA.API
 {
   public abstract class GsaModelBase : IGSAModel
   {
-    public GSALayer Layer { get; set; } = GSALayer.DesignOnly;
+    public GSALayer StreamLayer { get; set; } = GSALayer.Design;
 
     public abstract IGSACache Cache { get; set; }
     public abstract IGSAProxy Proxy { get; set; }

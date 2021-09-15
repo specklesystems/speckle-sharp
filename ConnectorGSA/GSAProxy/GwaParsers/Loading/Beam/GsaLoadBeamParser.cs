@@ -30,7 +30,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       //Common fields across all of them: name | list | case | axis | proj | dir
       return (FromGwaByFuncs(items, out remainingItems, 
         AddName, 
-        (v) => AddEntities(v, out record.Entities), 
+        (v) => AddEntities(v, out record.MemberIndices, out record.ElementIndices), 
         (v) => (AddNullableIndex(v, out record.LoadCaseIndex)),
         AddAxis,
         AddProj, 
@@ -53,7 +53,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       //LOAD_BEAM_TRILIN.2 | name | list | case | axis | proj | dir | pos_1 | value_1 | pos_2 | value_2
 
       //Common fields across all of them: name | list | case | axis | proj | dir
-      AddItems(ref items, record.Name, AddEntities(record.Entities),
+      AddItems(ref items, record.Name, AddEntities(record.MemberIndices, record.ElementIndices),
         record.LoadCaseIndex ?? 0,
         AddAxis(),
         record.Projected ? "YES" : "NO", 
