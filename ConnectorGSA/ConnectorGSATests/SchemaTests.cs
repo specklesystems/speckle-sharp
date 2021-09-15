@@ -85,10 +85,10 @@ namespace ConnectorGSATests
         analStages.Add((GsaAnalStage)l.Record);
       }
       Assert.Equal(Colour.NO_RGB, analStages[0].Colour);
-      Assert.Equal(new List<int>(), analStages[0].List);
+      Assert.Equal(new List<int>(), analStages[0].ElementIndices);
       Assert.Equal(0, analStages[0].Phi);
       Assert.Equal(0, analStages[0].Days);
-      Assert.Equal(new List<int>(), analStages[0].Lock);
+      Assert.Equal(new List<int>(), analStages[0].LockElementIndices);
 
       for (int i = 0; i < analStages.Count(); i++)
       {
@@ -184,8 +184,8 @@ namespace ConnectorGSATests
       Assert.Equal(RestraintCondition.Free, genRests[0].XX);
       Assert.Equal(RestraintCondition.Free, genRests[0].YY);
       Assert.Equal(RestraintCondition.Free, genRests[0].ZZ);
-      genRests[0].Node = new List<int>() { 1, 2, 3 }; //assume node list is tested elsewhere
-      Assert.Equal(new List<int>() { 1 }, genRests[0].Stage);
+      genRests[0].NodeIndices = new List<int>() { 1, 2, 3 }; //assume node list is tested elsewhere
+      Assert.Equal(new List<int>() { 1 }, genRests[0].StageIndices);
 
       for (int i = 0; i < genRests.Count(); i++)
       {
@@ -404,7 +404,7 @@ namespace ConnectorGSATests
       {
         Index = 1,
         Name = "+10% connections",
-        Entities = new List<int> { 1, 2 }, //all
+        ElementIndices = new List<int> { 1, 2 }, //all
         Nodes = new List<int> { 1, 2 }, //all
         LoadCaseIndex = 1,
         Z = -1.100000024

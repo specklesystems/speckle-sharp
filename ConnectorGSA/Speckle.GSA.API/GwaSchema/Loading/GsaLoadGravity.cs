@@ -5,7 +5,8 @@ namespace Speckle.GSA.API.GwaSchema
   public class GsaLoadGravity : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
-    public List<int> Entities = new List<int>();
+    public List<int> ElementIndices = new List<int>();
+    public List<int> MemberIndices = new List<int>();
     public List<int> Nodes = new List<int>();
     public int? LoadCaseIndex;
     public double? X;

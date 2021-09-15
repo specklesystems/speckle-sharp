@@ -164,17 +164,39 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
     #region common_to_gwa_fns
 
-    protected string AddEntities(List<int> entities)
+    protected string AddEntities(List<int> memberIndices, List<int> elementIndices)
     {
       //For now assume that an empty list means "all"
-      if (entities == null || entities.Count() == 0)
+      if ((memberIndices == null || memberIndices.Count() == 0) && (elementIndices == null || elementIndices.Count() == 0))
       {
         return "all";
       }
 
+      var entityLists = new List<string>();
+      if (memberIndices != null && memberIndices.Count > 0)
+      {
+        var listStr = AddEntities(memberIndices, GSALayer.Design);
+        if (!string.IsNullOrEmpty(listStr))
+        {
+          entityLists.Add(listStr);
+        }
+      }
+      if (elementIndices != null && elementIndices.Count > 0)
+      {
+        var listStr = AddEntities(memberIndices, GSALayer.Analysis);
+        if (!string.IsNullOrEmpty(listStr))
+        {
+          entityLists.Add(listStr);
+        }
+      }
+      return string.Join(" ", entityLists);
+    }
+
+    private string AddEntities(List<int> entities, GSALayer layer)
+    {
       //Unlike other keywords which have entity type as a parameter, this keyword (at least for version 2) still has "element list" which means, 
       //for members, the group is used
-      var allIndices = ((Instance.GsaModel.Layer == GSALayer.Design) 
+      var allIndices = ((layer == GSALayer.Design) 
         ? Instance.GsaModel.Cache.LookupIndices<GsaMemb>()
         : Instance.GsaModel.Cache.LookupIndices<GsaEl>()).Distinct().OrderBy(i => i).ToList();
 
@@ -182,7 +204,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       {
         return "all";
       }
-      return (Instance.GsaModel.Layer == GSALayer.Design)
+      return (layer == GSALayer.Design)
         ? string.Join(" ", entities.Select(i => "G" + i))
         : string.Join(" ", entities);
     }
@@ -300,10 +322,16 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       return true;
     }
 
-    protected bool AddEntities(string v, out List<int> indices)
+    protected bool AddEntities(string v, out List<int> memberIndices, out List<int> elementIndices)
+    {
+      elementIndices = null;
+      return (AddEntities(v, GSALayer.Design, out memberIndices) && AddEntities(v, GSALayer.Analysis, out elementIndices));
+    }
+
+    private bool AddEntities(string v, GSALayer layer, out List<int> indices)
     {
       var entityItems = v.Split(' ');
-      if (Instance.GsaModel.Layer == GSALayer.Design)
+      if (layer == GSALayer.Design)
       {
         if (entityItems.Count() == 1 && entityItems.First().Equals("all", StringComparison.InvariantCultureIgnoreCase))
         {

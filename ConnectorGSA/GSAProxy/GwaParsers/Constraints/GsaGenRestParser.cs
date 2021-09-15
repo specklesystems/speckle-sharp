@@ -22,7 +22,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //GEN_REST.2 | name | x | y | z | xx | yy | zz | list | stage
-      return FromGwaByFuncs(remainingItems, out var _, AddName, AddX, AddY, AddZ, AddXX, AddYY, AddZZ, (v) => AddEntities(v, out record.Node), AddStage);
+      return FromGwaByFuncs(remainingItems, out var _, AddName, AddX, AddY, AddZ, AddXX, AddYY, AddZZ, (v) => AddNodes(v, out record.NodeIndices), AddStage);
     }
 
     public override bool Gwa(out List<string> gwa, bool includeSet = false)
@@ -44,17 +44,17 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     #region to_gwa_fns
     private string AddNode()
     {
-      if (record.Node != null && record.Node.Count() > 0)
+      if (record.NodeIndices != null && record.NodeIndices.Count() > 0)
       {
-        return string.Join(" ", record.Node);
+        return string.Join(" ", record.NodeIndices);
       }
       return "";
     }
     private string AddStage()
     {
-      if (record.Stage != null && record.Stage.Count() > 0)
+      if (record.StageIndices != null && record.StageIndices.Count() > 0)
       {
-        return string.Join(" ", record.Stage);
+        return string.Join(" ", record.StageIndices);
       }
       return "";
     }
@@ -132,16 +132,16 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       var entityItems = v.Split(' ');
       if (entityItems.Count() == 1 && entityItems.First().Equals("all", StringComparison.InvariantCultureIgnoreCase))
       {
-        record.Stage = Instance.GsaModel.LookupIndices<GsaAnalStage>().ToList();
+        record.StageIndices = Instance.GsaModel.LookupIndices<GsaAnalStage>().ToList();
       }
       else
       {
-        record.Stage = new List<int>();
+        record.StageIndices = new List<int>();
         foreach (var item in entityItems)
         {
           if (int.TryParse(item, out var s) && s > 0)
           {
-            record.Stage.Add(s);
+            record.StageIndices.Add(s);
           }
         }
       }

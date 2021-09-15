@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Speckle.GSA.API
+﻿namespace Speckle.GSA.API
 {
   public enum GSALayer
   {
     Design,
-    Analysis
+    Analysis,
+    Both
   }
 
   public enum MessageLevel
@@ -31,9 +26,7 @@ namespace Speckle.GSA.API
   {
     None = 0,
     ModelOnly = 1,
-    ModelWithEmbeddedResults = 2,
-    ModelWithTabularResults = 3,
-    TabularResultsOnly = 4
+    ModelAndResults = 2
   }
 
   public enum ResultGroup

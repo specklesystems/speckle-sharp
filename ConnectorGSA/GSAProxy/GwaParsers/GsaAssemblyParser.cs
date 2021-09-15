@@ -22,7 +22,8 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       var items = remainingItems;
 
       //ASSEMBLY.3 | num | name | type | entity | topo_1 | topo_2 |
-      return FromGwaByFuncs(items, out _, AddName, AddType, AddEntities, (v) => AddNullableIndex(v, out record.Topo1), (v) => AddNullableIndex(v, out record.Topo2),
+      return FromGwaByFuncs(items, out _, AddName, AddType, (v) => AddEntities(v, out record.MemberIndices, out record.ElementIndices), 
+        (v) => AddNullableIndex(v, out record.Topo1), (v) => AddNullableIndex(v, out record.Topo2),
         // orient_node | int_topo | size_y | size_z | curve_type | 
         (v) => AddNullableIndex(v, out record.OrientNode), AddIntTopo, (v) => double.TryParse(v, out record.SizeY), (v) => double.TryParse(v, out record.SizeZ), AddCurveType,
         // curve_order | point_defn | points
@@ -38,7 +39,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //ASSEMBLY.3 | num | name | type | entity | topo_1 | topo_2 | orient_node | int_topo | size_y | size_z | curve_type | curve_order | point_defn | points
-      AddItems(ref items, record.Name, AddType(), AddEntities(), record.Topo1, record.Topo2, record.OrientNode, AddIntTopo(), 
+      AddItems(ref items, record.Name, AddType(), AddEntities(record.MemberIndices, record.ElementIndices), record.Topo1, record.Topo2, record.OrientNode, AddIntTopo(), 
         record.SizeY, record.SizeZ, AddCurveType(), record.CurveOrder ?? 0, AddPointDefn(), AddPoints());
 
       gwa = (Join(items, out var gwaLine)) ? new List<string>() { gwaLine } : new List<string>();
@@ -56,7 +57,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       {
         return "ELEMENT";
       }
-      else if (Instance.GsaModel.Layer == GSALayer.Design)
+      else if (Instance.GsaModel.StreamLayer == GSALayer.Design)
       {
         return "MEMBER";
       }
@@ -64,21 +65,6 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       {
         return "ELEMENT";
       }
-    }
-
-    public string AddEntities()
-    {
-      //The old mechanism of using "G_" in the entities field to signify members is understood to be superseded by the inclusion of the entity type
-      //parameter as of version 3.
-
-      var allIndices = ((record.Type == GSAEntity.MEMBER) ? Instance.GsaModel.LookupIndices<GsaMemb>() : Instance.GsaModel.LookupIndices<GsaEl>())
-        .Distinct().OrderBy(i => i).ToList();
-
-      if (record.Entities.Distinct().OrderBy(i => i).SequenceEqual(allIndices))
-      {
-        return "all";
-      }
-      return string.Join(" ", record.Entities);
     }
 
     private string AddIntTopo()
@@ -162,12 +148,6 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
         record.Type = GSAEntity.NotSet;
       }
       return true;
-    }
-
-    private bool AddEntities(string v)
-    {
-      record.Entities = Instance.GsaModel.ConvertGSAList(v.Replace("G", ""), record.Type).ToList();
-      return record.Entities != null;
     }
 
     private bool AddIntTopo(string v)

@@ -7,9 +7,10 @@ namespace Speckle.GSA.API.GwaSchema
     public string Name { get => name; set { name = value; } }
     public GridPlaneAxisRefType PlaneRefType;
     public int? PlaneIndex;
-    public GridSurfaceElementsType Type;  
+    public GridSurfaceElementsType Type;
     //public bool AllIndices = false;
-    public List<int> Entities = new List<int>();
+    public List<int> ElementIndices = new List<int>();
+    public List<int> MemberIndices = new List<int>();
     public double? Tolerance;
     public GridSurfaceSpan Span;
     public double? Angle;  //Degrees

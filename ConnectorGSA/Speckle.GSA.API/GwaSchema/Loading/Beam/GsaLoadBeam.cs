@@ -6,7 +6,8 @@ namespace Speckle.GSA.API.GwaSchema
   public abstract class GsaLoadBeam : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
-    public List<int> Entities = new List<int>();
+    public List<int> ElementIndices = new List<int>();
+    public List<int> MemberIndices = new List<int>();
     public int? LoadCaseIndex;
     public LoadBeamAxisRefType AxisRefType;
     public int? AxisIndex;

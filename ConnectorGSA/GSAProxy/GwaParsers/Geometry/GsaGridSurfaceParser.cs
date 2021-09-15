@@ -24,7 +24,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //GRID_SURFACE.1 | num | name | plane | type | elements | tol | span | angle | grid
-      return FromGwaByFuncs(remainingItems, out var _, AddName, AddPlane, AddType, (v) => AddEntities(v, out record.Entities), AddTol, AddSpan, AddAngle, AddGrid);
+      return FromGwaByFuncs(remainingItems, out var _, AddName, AddPlane, AddType, (v) => AddEntities(v, out record.MemberIndices, out record.ElementIndices), AddTol, AddSpan, AddAngle, AddGrid);
     }
 
     public override bool Gwa(out List<string> gwa, bool includeSet = false)
@@ -39,7 +39,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       AddItems(ref items, record.Name,
         AddPlane(),
         ((record.Type == GridSurfaceElementsType.OneD) ? 1 : 2).ToString(),
-        AddEntities(record.Entities),
+        AddEntities(record.MemberIndices, record.ElementIndices),
         record.Tolerance ?? 0, AddSpan(),
         AddAngle(),
         record.Expansion.GridExpansionToString());

@@ -9,12 +9,15 @@ using System.Threading.Tasks;
 
 namespace ConnectorGSA
 {
+  [JsonObject(MemberSerialization.OptIn)]
   public class StreamState
   {
     private string branchName = "main";
     private Client _client;
 
+    [JsonProperty]
     public bool IsSending { get; set; }
+    [JsonProperty]
     public bool IsReceiving { get; set; }
 
     public Speckle.Core.Api.Stream Stream { get; set; }
@@ -41,10 +44,29 @@ namespace ConnectorGSA
     public string UserId { get; private set; }
     [JsonProperty]
     public string ServerUrl { get; private set; }
+    [JsonProperty]
+    public string StreamId { get => Stream.id;
+      set
+      {
+        Stream = new Speckle.Core.Api.Stream() { id = value };
+      }
+    }
 
     public StreamState()
     {
 
+    }
+
+    public bool Equals(StreamState other)
+    {
+      if (Stream != null && other.Stream != null && Client != null && other.Client != null)
+      {
+        return ((Stream.id == other.Stream.id) && (IsReceiving == other.IsReceiving) && (IsSending == other.IsSending) 
+          && (Client != null && Client.Account != null && Client.Account.userInfo != null)
+          && (other.Client != null && other.Client.Account != null && other.Client.Account.userInfo != null)
+          && (Client.Account.userInfo.id == other.Client.Account.userInfo.id));
+      }
+      return false;
     }
 
     [JsonConstructor]

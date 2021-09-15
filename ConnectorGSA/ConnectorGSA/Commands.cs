@@ -1,4 +1,4 @@
-﻿using GsaProxy;
+﻿using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -17,11 +17,8 @@ namespace ConnectorGSA
   {
     public static object Assert { get; private set; }
 
-    public static bool OpenFile(string filePath, bool visible, string emailAddress, string restApi, out List<StreamState> receiverStreamInfo, out List<StreamState> senderStreamInfo)
+    public static bool OpenFile(string filePath, bool visible)
     {
-      receiverStreamInfo = null;
-      senderStreamInfo = null;
-
       Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy(); //Use a real proxy
       var opened = Instance.GsaModel.Proxy.OpenFile(filePath, visible);
       if (!opened)
@@ -30,6 +27,70 @@ namespace ConnectorGSA
         return false;
       }
       return true;
+    }
+
+    public static bool ExtractSavedReceptionStreamInfo(string userId, string restApi, bool? receive, bool? send, out List<StreamState> streamStates)
+    {
+      var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
+      var allSaved = JsonConvert.DeserializeObject<List<StreamState>>(sid);
+
+      //So currently it assumes that a new user for this file will have a new stream created for them, even if other users saved this file with their stream info
+      streamStates = allSaved.Where(ss => ((ss.UserId == userId) && ss.ServerUrl.Equals(restApi, StringComparison.InvariantCultureIgnoreCase))).ToList();
+      if (receive.HasValue)
+      {
+        streamStates = streamStates.Where(ss => ss.IsReceiving == receive.Value).ToList();
+      }
+      if (send.HasValue)
+      {
+        streamStates = streamStates.Where(ss => ss.IsSending == send.Value).ToList();
+      }
+      return (streamStates != null && streamStates.Count > 0);
+    }
+
+    public static bool UpsertSavedReceptionStreamInfo(bool? receive, bool? send, List<StreamState> streamStates)
+    {
+      var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
+      List<StreamState> allSs = null;
+      try
+      {
+        allSs = JsonConvert.DeserializeObject<List<StreamState>>(sid);
+      }
+      catch (JsonException ex)
+      {
+        //Could not deserialise, probably because it has a v1-format of stream information.  In this case, ignore the info
+
+        //TO DO: write technical long line here
+      }
+
+      if (allSs == null || allSs.Count() == 0)
+      {
+        allSs = streamStates;
+      }
+      else
+      {
+        var merged = new List<StreamState>();
+        foreach (var ss in streamStates)
+        {
+          var matching = allSs.FirstOrDefault(s => s.Equals(ss));
+          if (matching != null)
+          {
+            if (matching.IsReceiving != ss.IsReceiving)
+            {
+              matching.IsReceiving = true;  //This is merging of two booleans, where a true value is to be set if any are true
+            }
+            if (matching.IsSending != ss.IsSending)
+            {
+              matching.IsSending = true;  //This is merging of two booleans, where a true value is to be set if any are true
+            }
+            merged.Add(ss);
+          }
+        }
+
+        allSs = allSs.Union(streamStates.Except(merged)).ToList();
+      }
+
+      var newSid = JsonConvert.SerializeObject(allSs);
+      return Instance.GsaModel.Proxy.SetTopLevelSid(newSid);
     }
 
     public static bool CloseFile(string filePath, bool visible)
@@ -62,7 +123,7 @@ namespace ConnectorGSA
       return (loadedCache && (cumulativeErrorRows == 0));
     }
 
-    public static bool ConvertToNative(ISpeckleConverter converter)
+    public static bool ConvertToNative(ISpeckleConverter converter) //Includes writing to Cache
     {
       //With the attached objects in speckle objects, there is no type dependency needed on the receive side, so just convert each object
 
@@ -91,10 +152,26 @@ namespace ConnectorGSA
 
     public static Base ConvertToSpeckle(ISpeckleConverter converter)
     {
-      //Get send native type dependencies
-      var typeDependencyGenerations = Instance.GsaModel.Proxy.TxTypeDependencyGenerations;
+      if (!Instance.GsaModel.Cache.GetNatives(out List<GsaRecord> gsaRecords))
+      {
+        return null;
+      }
+
+      var convertedObjects = converter.ConvertToSpeckle(gsaRecords.Cast<object>().ToList());
+      var convertedObjectsByType = convertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
 
       var commit = new Base();
+
+      foreach(var t in convertedObjectsByType.Keys)
+      {
+        commit[$"{t.Name}"] = convertedObjectsByType[t];
+      }
+
+      return commit;
+
+      /*
+      //Get send native type dependencies
+      var typeDependencyGenerations = Instance.GsaModel.Proxy.GetTxTypeDependencyGenerations(Instance.GsaModel.StreamLayer);
 
       foreach (var gen in typeDependencyGenerations)
       {
@@ -136,9 +213,10 @@ namespace ConnectorGSA
         }
       }
       return commit;
+      */
     }
 
-    public static async Task<bool> Send(Base commitObj, StreamState state, IEnumerable<ITransport> transports)
+    public static async Task<bool> Send(Base commitObj, StreamState state, params ITransport[] transports)
     {
       var commitObjId = await Operations.Send(
         @object: commitObj,
@@ -200,13 +278,13 @@ namespace ConnectorGSA
       return false;
     }
 
-    private static bool UpdateCache()
+    private static bool UpdateCache(bool onlyNodesWithApplicationIds = true)
     {
       var errored = new Dictionary<int, GsaRecord>();
 
       try
       {
-        if (Instance.GsaModel.Proxy.GetGwaData(true, out var records))
+        if (Instance.GsaModel.Proxy.GetGwaData(out var records))
         {
           for (int i = 0; i < records.Count(); i++)
           {

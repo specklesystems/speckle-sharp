@@ -6,10 +6,12 @@ namespace Speckle.GSA.API.GwaSchema
   {
     public string Name { get => name; set { name = value; } }
     public Colour Colour;
-    public List<int> List;
+    public List<int> ElementIndices = new List<int>();
+    public List<int> MemberIndices = new List<int>();
     public double? Phi;
     public int? Days;
-    public List<int> Lock;
+    public List<int> LockMemberIndices;
+    public List<int> LockElementIndices;
 
     public GsaAnalStage()
     {

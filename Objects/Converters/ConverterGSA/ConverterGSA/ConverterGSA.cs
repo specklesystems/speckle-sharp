@@ -25,6 +25,9 @@ using System.CodeDom;
 using Objects.Structural.Results;
 using Speckle.GSA.API.CsvSchema;
 using Speckle.Core.Api;
+using Objects.Structural.Analysis;
+using Objects.Structural.GSA.Analysis;
+using Objects.Structural.GSA.Materials;
 
 namespace ConverterGSA
 {
@@ -47,6 +50,31 @@ namespace ConverterGSA
 
     public Dictionary<Type, Func<GsaRecord, List<Base>>> ToSpeckleFns;
     public Dictionary<Type, Func<Base, List<GsaRecord>>> ToNativeFns;
+
+    #region model_group
+    private enum ModelGroup
+    {
+      Nodes,
+      Elements,
+      Loads,
+      Restraints,
+      Properties,
+      Materials
+    }
+
+    //These are the groupings in the Model class, which are *Speckle* object types
+    private readonly Dictionary<ModelGroup, List<Type>> modelGroups = new Dictionary<ModelGroup, List<Type>>()
+    {
+      { ModelGroup.Nodes, new List<Type>() { typeof(GSANode) } },
+      { ModelGroup.Elements, new List<Type>() { typeof(GSAAssembly), typeof(Axis), typeof(GSAElement1D), typeof(GSAElement2D), typeof(GSAElement3D), typeof(GSAMember1D), typeof(GSAMember2D) } },
+      { ModelGroup.Loads, new List<Type>() 
+        { typeof(Case), typeof(Task), typeof(GSALoadCase), typeof(GSABeamLoad), typeof(GSAFaceLoad), typeof(GSAGravityLoad), typeof(GSALoadCase), typeof(GSALoadCombination), typeof(GSANodeLoad) } },
+      { ModelGroup.Restraints, new List<Type>() { typeof(Restraint) } },
+      { ModelGroup.Properties, new List<Type>() 
+        { typeof(GSAProperty1D), typeof(GSAProperty2D), typeof(SectionProfile), typeof(PropertyMass), typeof(PropertySpring), typeof(PropertyDamper), typeof(Property3D) } },
+      { ModelGroup.Materials, new List<Type>() { typeof(GSAMaterial), typeof(Concrete), typeof(Steel), typeof(Concrete) } }
+    };
+    #endregion
 
     public ConverterGSA()
     {
@@ -113,6 +141,8 @@ namespace ConverterGSA
       return ToNativeFns[t](@object);
     }
 
+    //Assume that this is called when a Model object is desired, rather than loose Speckle objects.
+    //The one thing that is needed here is an order, a set of generations ... 
     public List<object> ConvertToNative(List<Base> objects)
     {
       var retList = new List<object>();
@@ -151,17 +181,147 @@ namespace ConverterGSA
         ConversionErrors.Add(new Exception("Non-native objects: " + (objects.Count() - native.Count())));
         objects = native.ToList();
       }
+
+      //Assume that if only one object is passed in, then a standard ToSpeckle conversion on just that single object (which in GSA world, could result in multiple Base objects)
+      //If multiple objects are passed in, then assume a whole model is requested
+
       var retList = new List<Base>();
-      foreach (var x in objects)
+      if (objects.Count == 1)
       {
-        var speckleObjects = ToSpeckle((GsaRecord)x);
-        if (speckleObjects != null && speckleObjects.Count > 0)
+        foreach (var x in objects)
         {
-          retList.AddRange(speckleObjects.Where(so => so != null));
+          var speckleObjects = ToSpeckle((GsaRecord)x);
+          if (speckleObjects != null && speckleObjects.Count > 0)
+          {
+            retList.AddRange(speckleObjects.Where(so => so != null));
+          }
+        }
+        return retList;
+      }
+
+      //TO DO - fill in this more
+      var modelInfo = new ModelInfo()
+      {
+        application = "GSA",
+        settings = new ModelSettings()
+        {
+          coincidenceTolerance = 0.01
+        }
+      };
+
+      //Both layer options include sending of the design layer model (if present in GSA)
+      //TO DO - fill in this more
+      var model = new Model()
+      {
+        layerDescription = "Design Layer",
+        specs = modelInfo
+      };
+
+      if (ConvertToModel(objects.Cast<GsaRecord>().ToList(), GSALayer.Design, modelInfo, out Model designModel, out _))
+      {
+        retList.Add(designModel);
+      }
+
+      if (Instance.GsaModel.StreamLayer == GSALayer.Both)
+      {
+        if (ConvertToModel(objects.Cast<GsaRecord>().ToList(), GSALayer.Analysis, modelInfo, out Model analysisModel, out List<Base> resultObjects))
+        {
+          retList.Add(analysisModel);
+        }
+        if (Instance.GsaModel.StreamSendConfig == StreamContentConfig.ModelAndResults && resultObjects != null && resultObjects.Count > 0)
+        {
+          retList.AddRange(resultObjects);
         }
       }
+      
       return retList;
     }
+
+    private bool ConvertToModel(List<GsaRecord> gsaRecords, GSALayer layer, ModelInfo modelInfo, out Model retModel, out List<Base> resultObjects)
+    {
+      var typeGens = Instance.GsaModel.Proxy.GetTxTypeDependencyGenerations(layer);
+
+      var gsaRecordsByType = gsaRecords.GroupBy(r => r.GetType()).ToDictionary(r => r.Key, r => r.ToList());
+      var speckleObjsBucket = new List<Base>();
+
+      foreach (var gen in typeGens)
+      {
+        var genNativeObjsByType = new Dictionary<Type, List<GsaRecord>>();
+        foreach (var t in gen)
+        {
+          if (gsaRecordsByType.ContainsKey(t))
+          {
+            genNativeObjsByType.Add(t, gsaRecordsByType[t]);
+          }
+        }
+        
+        foreach (var t in genNativeObjsByType.Keys)
+        {
+          foreach (var nativeObj in genNativeObjsByType[t])
+          {
+            try
+            {
+              if (CanConvertToSpeckle(nativeObj))
+              {
+                var speckleObjs = ToSpeckle(nativeObj);
+                if (speckleObjs != null && speckleObjs.Count > 0)
+                {
+                  speckleObjsBucket.AddRange(speckleObjs);
+                  Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, speckleObjs.ToDictionary(so => so.applicationId, so => (object)so));
+                }
+              }
+            }
+            catch (Exception ex)
+            {
+
+            }
+          }
+        }
+      }
+
+      if (speckleObjsBucket.Count > 0)
+      {
+        var resultType = typeof(Result);
+        var allObjsByType = speckleObjsBucket.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
+        var foundResultTypes = allObjsByType.Keys.Where(o => o.GetType().IsAssignableFrom(resultType)).ToList();
+        var containsResults = (foundResultTypes != null && foundResultTypes.Count > 0);
+
+        var modelObjsByType = containsResults
+          ? allObjsByType.Keys.Except(foundResultTypes).ToDictionary(k => k, k => allObjsByType[k])
+          : allObjsByType;
+
+        resultObjects = containsResults ? foundResultTypes.SelectMany(t => allObjsByType[t]).ToList() : null;
+
+        var objectsByModelGroup = new Dictionary<ModelGroup, List<Base>>();
+
+        foreach (ModelGroup mg in Enum.GetValues(typeof(ModelGroup)))
+        {
+          objectsByModelGroup.Add(mg, null);
+          foreach (var sType in modelGroups[mg])
+          {
+            if (modelObjsByType.ContainsKey(sType))
+            {
+              if (objectsByModelGroup[mg] == null)
+              {
+                objectsByModelGroup[mg] = new List<Base>();
+              }
+              objectsByModelGroup[mg].AddRange(modelObjsByType[sType]);
+            }
+          }
+        }
+
+        retModel = new Model(modelInfo, objectsByModelGroup[ModelGroup.Nodes], objectsByModelGroup[ModelGroup.Elements],
+          objectsByModelGroup[ModelGroup.Loads], objectsByModelGroup[ModelGroup.Restraints],
+          objectsByModelGroup[ModelGroup.Properties], objectsByModelGroup[ModelGroup.Materials]);
+      }
+      else
+      {
+        retModel = null;
+        resultObjects = null;
+      }
+      return (retModel != null);
+    }
+
 
     public IEnumerable<string> GetServicedApplications() => new string[] { AppName };
 
@@ -218,7 +378,7 @@ namespace ConverterGSA
       if (gsaAssembly.Topo1.IsIndex())  speckleAssembly.end1Node = (GSANode)GetNodeFromIndex(gsaAssembly.Topo1.Value);
       if (gsaAssembly.Topo1.IsIndex()) speckleAssembly.end2Node = (GSANode)GetNodeFromIndex(gsaAssembly.Topo2.Value);
       if (gsaAssembly.OrientNode.IsIndex()) speckleAssembly.orientationNode = (GSANode)GetNodeFromIndex(gsaAssembly.OrientNode.Value);
-      if (gsaAssembly.Type == GSAEntity.ELEMENT) speckleAssembly.entities = gsaAssembly.Entities.Select(i => (Base)GetElement2DFromIndex(i)).ToList();
+      if (gsaAssembly.Type == GSAEntity.ELEMENT) speckleAssembly.entities = gsaAssembly.ElementIndices.Select(i => (Base)GetElement2DFromIndex(i)).ToList();
 
       if (gsaAssembly.PointDefn == PointDefinition.Points && gsaAssembly.NumberOfPoints.IsIndex())
       {
@@ -724,7 +884,7 @@ namespace ConverterGSA
       {
         //-- App agnostic --
         name = gsaLoad2dFace.Name,
-        elements = gsaLoad2dFace.Entities.Select(i => (Base)GetElement2DFromIndex(i)).ToList(),
+        elements = gsaLoad2dFace.ElementIndices.Select(i => (Base)GetElement2DFromIndex(i)).ToList(),
         loadType = GetAreaLoadType(gsaLoad2dFace.Type),
         direction = GetDirection(gsaLoad2dFace.LoadDirection),
         loadAxisType = GetLoadAxisType(gsaLoad2dFace.AxisRefType),
@@ -764,7 +924,7 @@ namespace ConverterGSA
       {
         //-- App agnostic --
         name = gsaLoadBeam.Name,
-        elements = gsaLoadBeam.Entities.Select(i => (Base)GetElement1DFromIndex(i)).ToList(),
+        elements = gsaLoadBeam.ElementIndices.Select(i => (Base)GetElement1DFromIndex(i)).ToList(),
         loadType = GetBeamLoadType(type),
         direction = GetDirection(gsaLoadBeam.LoadDirection),
         loadAxisType = GetLoadAxisType(gsaLoadBeam.AxisRefType),
@@ -842,7 +1002,7 @@ namespace ConverterGSA
       //-- App agnostic --
       if (gsaLoadGravity.Index.IsIndex()) speckleGravityLoad.applicationId = Instance.GsaModel.GetApplicationId<GsaLoadGravity>(gsaLoadGravity.Index.Value);
       if (gsaLoadGravity.LoadCaseIndex.IsIndex()) speckleGravityLoad.loadCase = GetLoadCaseFromIndex(gsaLoadGravity.LoadCaseIndex.Value);
-      foreach (var index in gsaLoadGravity.Entities)
+      foreach (var index in gsaLoadGravity.ElementIndices)
       {
         try
         {

@@ -11,8 +11,8 @@ namespace Speckle.GSA.API.GwaSchema
     public RestraintCondition XX;
     public RestraintCondition YY;
     public RestraintCondition ZZ;
-    public List<int> Node;
-    public List<int> Stage;
+    public List<int> NodeIndices;
+    public List<int> StageIndices;
 
     public GsaGenRest() : base()
     {

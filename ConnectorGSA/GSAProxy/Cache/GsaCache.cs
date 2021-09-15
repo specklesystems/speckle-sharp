@@ -41,7 +41,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
     private object cacheLock = new object();
 
-    public GsaCache()  {  }
+    public GsaCache() { }
 
     #region upsert
 
@@ -72,7 +72,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     //Called by the kit
     //Not every record has stream IDs (like generated nodes)
     public bool Upsert(GsaRecord record, bool? latest = true) => UpsertInternal(record, latest, out int? _);
-    
+
     #endregion
 
     #region speckle
@@ -133,7 +133,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       var t = gsaRecord.GetType();
       if (!gsaRecord.Index.HasValue)
       {
-        return false; 
+        return false;
       }
       var gsaIndex = gsaRecord.Index.Value;
       if (!ValidSchemaTypeGsaIndex(t, gsaIndex))
@@ -291,7 +291,7 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
               UpsertProvisional(t, newIndex, right);
             }
           }
-          
+
           if (provisionals[t].Count() == 0)
           {
             provisionals.Remove(t);
@@ -365,6 +365,12 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     #endregion
 
     #region lookup
+    public bool GetNatives(out List<GsaRecord> gsaRecords)
+    { 
+      gsaRecords = records.Where(r => r.Latest).Select(r => r.GsaRecord).ToList(); 
+      return true;
+    }
+
     public bool GetNative<T>(int index, out GsaRecord gsaRecord) => GetNative(typeof(T), index, out gsaRecord);
 
     public bool GetNative(Type t, int index, out GsaRecord gsaRecord)

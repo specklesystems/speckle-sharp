@@ -1,4 +1,5 @@
-﻿using Speckle.ConnectorGSA.Proxy.Cache;
+﻿using ConnectorGSA;
+using Speckle.ConnectorGSA.Proxy.Cache;
 using Speckle.GSA.API;
 using Speckle.GSA.API.CsvSchema;
 using Speckle.GSA.API.GwaSchema;
@@ -14,6 +15,7 @@ namespace ConnectorGSATests
   {
     public override IGSACache Cache { get; set; } = new GsaCache();
     public override IGSAProxy Proxy { get; set; } = new GsaProxyMock();
+    public override IGSAMessenger Messenger { get; set; } = new GsaMessenger();
   }
 
   public class GsaProxyMock : IGSAProxy
@@ -72,7 +74,7 @@ namespace ConnectorGSATests
 
     public bool OpenFile(string path, bool showWindow = true, object gsaInstance = null) => true;
 
-    public bool GetGwaData(bool nodeApplicationIdFilter, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
+    public bool GetGwaData(out List<GsaRecord> records, IProgress<int> incrementProgress = null)
     {
       records = new List<GsaRecord>();
       return true;
@@ -105,6 +107,13 @@ namespace ConnectorGSATests
     public bool SaveAs(string filePath) => true;
 
     public bool Clear() => true;
+
+    public string GetTopLevelSid() => "";
+    public bool SetTopLevelSid(string sidRecord) => true;
+
+    public bool Save() => true;
+
+    public List<List<Type>> GetTxTypeDependencyGenerations(GSALayer layer) => new List<List<Type>>();
 
     #endregion
   }

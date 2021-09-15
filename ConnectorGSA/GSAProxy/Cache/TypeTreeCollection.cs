@@ -7,14 +7,14 @@ namespace Speckle.ConnectorGSA.Proxy
 {
   internal class TreeNode<T>
   {
-    public TreeNode<T> Parent = null;
-    public List<TreeNode<T>> Children = new List<TreeNode<T>>();
-    public bool IsLeaf { get => Children.Count() == 0; }
-    public bool IsRoot { get => Parent == null; }
-    public T Value;
+    internal List<TreeNode<T>> Parents = new List<TreeNode<T>>();
+    internal List<TreeNode<T>> Children = new List<TreeNode<T>>();
+    internal bool IsLeaf { get => Children.Count() == 0; }
+    internal bool IsRoot { get => Parents.Count() == 0; }
+    internal T Value;
   }
 
-  internal class TypeTreeCollection<T>
+  public class TypeTreeCollection<T>
   {
     internal List<TreeNode<T>> RootNodes { get => roots.Select(t => nodes[t]).ToList(); }
     internal List<TreeNode<T>> LeafNodes { get => leaves.Select(t => nodes[t]).ToList(); }
@@ -31,13 +31,16 @@ namespace Speckle.ConnectorGSA.Proxy
       this.validValues = new HashSet<T>(validValues);
     }
 
-    internal List<List<T>> Generations(bool bottomUp = true)
+    public List<List<T>> Generations(bool bottomUp = true)
     {
       var retList = new List<List<T>>();
+
+      var retListFlattened = new List<T>();
 
       var currGen = RootNodes;
       var addedValues = currGen.Select(n => n.Value).ToList();
       retList.Add(addedValues);
+      retListFlattened.AddRange(addedValues);
 
       bool genAdded;
       do
@@ -46,7 +49,7 @@ namespace Speckle.ConnectorGSA.Proxy
         var nextGen = new Dictionary<T, TreeNode<T>>();
         foreach (var n in currGen.Where(n => !n.IsLeaf && n.Children != null && n.Children.Count > 0))
         {
-          foreach (var c in n.Children)
+          foreach (var c in n.Children.Where(c => c.Parents.All(p => retListFlattened.Contains(p.Value))))
           {
             if (!nextGen.ContainsKey(c.Value))
             {
@@ -57,7 +60,9 @@ namespace Speckle.ConnectorGSA.Proxy
         }
         if (genAdded)
         {
-          retList.Add(nextGen.Keys.Where(k => !addedValues.Contains(k)).ToList());
+          var toAdd = nextGen.Keys.Where(k => !addedValues.Contains(k));
+          retList.Add(toAdd.ToList());
+          retListFlattened.AddRange(toAdd);
           currGen = nextGen.Values.ToList();
         }
       } while (genAdded);
@@ -67,7 +72,7 @@ namespace Speckle.ConnectorGSA.Proxy
       return retList;
     }
 
-    internal bool Integrate(T parent, IEnumerable<T> children)
+    public bool Integrate(T parent, params T[] children)
     {
       if (!validValues.Contains(parent) || !children.All(c => validValues.Contains(c)))
       {
@@ -94,23 +99,27 @@ namespace Speckle.ConnectorGSA.Proxy
         var newChildren = children.Except(nodes[parent].Children.Select(c => c.Value));
         foreach (var nc in newChildren)
         {
-          if (nodes.ContainsKey(nc) && roots.Contains(nc))
+          if (nodes.ContainsKey(nc))
           {
             nodes[parent].Children.Add(nodes[nc]);
-            nodes[nc].Parent = nodes[parent];
-            roots.Remove(nc);
+            nodes[nc].Parents.Add(nodes[parent]);
+            if (roots.Contains(nc))
+            {
+              roots.Remove(nc);
+            }
           }
-          else if (!nodes.ContainsKey(nc))
+          else
           {
-            var node = new TreeNode<T>() { Value = nc, Parent = nodes[parent] };
+            var node = new TreeNode<T>() { Value = nc };
+            node.Parents.Add(nodes[parent]);
             nodes[parent].Children.Add(node);
             nodes.Add(nc, node);
             leaves.Add(nc);
           }
-          else if (!Errored.Contains(nc))
-          {
-            Errored.Add(nc);
-          }
+          //else if (!Errored.Contains(nc))
+          //{
+          //  Errored.Add(nc);
+          //}
         }
       }
       return (Errored.Count == 0);
@@ -143,9 +152,12 @@ namespace Speckle.ConnectorGSA.Proxy
         {
           continue;
         }
-        if (nodes[v].Parent != null)
+        if (nodes[v].Parents != null)
         {
-          nodes[v].Parent.Children.Remove(nodes[v]);
+          foreach (var p in nodes[v].Parents)
+          {
+            p.Children.Remove(nodes[v]);
+          }
         }
         if (leaves.Contains(v))
         {

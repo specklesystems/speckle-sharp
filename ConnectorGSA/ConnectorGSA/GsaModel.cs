@@ -4,8 +4,9 @@ using Speckle.GSA.API.GwaSchema;
 using Speckle.ConnectorGSA.Proxy.Cache;
 using System.Linq;
 using System;
+using Speckle.ConnectorGSA.Proxy;
 
-namespace GsaProxy
+namespace ConnectorGSA
 {
   public class GsaModel : GsaModelBase
   {
@@ -13,9 +14,11 @@ namespace GsaProxy
 
     private static IGSACache cache = new GsaCache();
     private static IGSAProxy proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
+    private static IGSAMessenger messenger = new GsaMessenger();
 
     public override IGSACache Cache { get => cache; set => cache = value; }
     public override IGSAProxy Proxy { get => proxy; set => proxy = value; }
+    public override IGSAMessenger Messenger { get => messenger; set => messenger = value; }
 
     public GsaModel()
     {

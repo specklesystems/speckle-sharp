@@ -7,10 +7,11 @@ namespace Speckle.GSA.API
 {
   public abstract class GsaModelBase : IGSAModel
   {
-    public GSALayer Layer { get; set; } = GSALayer.Design;
+    public GSALayer StreamLayer { get; set; } = GSALayer.Design;
 
     public abstract IGSACache Cache { get; set; }
     public abstract IGSAProxy Proxy { get; set; }
+    public abstract IGSAMessenger Messenger { get; set; }
 
     public string Units { get; set; } = "mm";
     public double CoincidentNodeAllowance { get; set; }
@@ -45,6 +46,7 @@ namespace Speckle.GSA.API
         return retList;
       }
     }
+    public bool SendResults { get => (ResultTypes != null && ResultTypes.Count > 0 && ResultCases != null && ResultCases.Count > 0); }
     public StreamContentConfig StreamSendConfig { get; set; }
     public List<string> ResultCases { get; set; }
     public bool ResultInLocalAxis { get; set; }
@@ -52,6 +54,8 @@ namespace Speckle.GSA.API
 
     public char GwaDelimiter { get; set; } = '\t';
     public int LoggingMinimumLevel { get; set; }
+    public bool SendOnlyMeaningfulNodes { get; set; }
+    
 
     public virtual GsaRecord GetNative<T>(int value) => Cache.GetNative<T>(value);
     public virtual List<int> LookupIndices<T>() => Cache.LookupIndices<T>();
