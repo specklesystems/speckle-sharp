@@ -2,11 +2,13 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using DesktopUI2;
 using DesktopUI2.Models;
+using DesktopUI2.ViewModels;
 using Revit.Async;
 using Speckle.ConnectorRevit.Entry;
 using Speckle.ConnectorRevit.Storage;
@@ -27,7 +29,7 @@ namespace Speckle.ConnectorRevit.UI
           using (Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State"))
           {
             t.Start();
-            StreamStateManager2.WriteStreamStateList(CurrentDoc.Document, SavedStreamsStates);
+            StreamStateManager2.WriteStreamStateList(CurrentDoc.Document, streams);
             t.Commit();
           }
 
@@ -60,8 +62,8 @@ namespace Speckle.ConnectorRevit.UI
       if (e.Document == null || e.Document.IsFamilyDocument || e.PreviousActiveView == null || GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView.Document))
         return;
 
-      var streams = GetStreamsInFile();
-      UpdateSavedStreams(streams);
+      SavedStreamStates = GetStreamsInFile();
+      UpdateSavedStreams();
       //var appEvent = new ApplicationEvent()
       //{
       //  Type = ApplicationEvent.EventType.ViewActivated,
@@ -97,7 +99,8 @@ namespace Speckle.ConnectorRevit.UI
         SpeckleRevitCommand2.CreateOrFocusSpeckle();
       }
 
-      UpdateSavedStreams(streams);
+      SavedStreamStates = GetStreamsInFile();
+      UpdateSavedStreams();
 
       //var appEvent = new ApplicationEvent()
       //{
