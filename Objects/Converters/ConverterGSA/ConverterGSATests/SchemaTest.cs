@@ -645,7 +645,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaGridSurfaces[0].Angle.Value, speckleGridSurfaces[0].spanDirection);
       Assert.Equal(LoadExpansion.PlaneAspect, speckleGridSurfaces[0].loadExpansion);
       Assert.Equal(GridSurfaceSpanType.OneWay, speckleGridSurfaces[0].span);
-      Assert.Equal(gsaGridSurfaces[0].Entities.Count(), speckleGridSurfaces[0].elements.Count());
+      Assert.Equal(gsaGridSurfaces[0].ElementIndices.Count(), speckleGridSurfaces[0].elements.Count());
       Assert.Equal("beam 1", speckleGridSurfaces[0].elements[0].applicationId);
 
       //Checks - grid surface 2
@@ -657,7 +657,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaGridSurfaces[1].Angle.Value, speckleGridSurfaces[1].spanDirection);
       Assert.Equal(LoadExpansion.PlaneAspect, speckleGridSurfaces[1].loadExpansion);
       Assert.Equal(GridSurfaceSpanType.TwoWay, speckleGridSurfaces[1].span);
-      Assert.Equal(gsaGridSurfaces[0].Entities.Count(), speckleGridSurfaces[1].elements.Count());
+      Assert.Equal(gsaGridSurfaces[0].ElementIndices.Count(), speckleGridSurfaces[1].elements.Count());
       Assert.Equal("quad 1", speckleGridSurfaces[1].elements[0].applicationId);
     }
 
@@ -1371,7 +1371,7 @@ namespace ConverterGSATests
       Assert.Equal("load thermal 1", speckleThermalLoads[0].applicationId);
       Assert.Equal(gsaLoadThermal[0].Index.Value, speckleThermalLoads[0].nativeId);
       Assert.Equal(gsaLoadThermal[0].Name, speckleThermalLoads[0].name);
-      Assert.Equal(gsaLoadThermal[0].Entities.Count(), speckleThermalLoads[0].elements.Count());
+      Assert.Equal(gsaLoadThermal[0].ElementIndices.Count(), speckleThermalLoads[0].elements.Count());
       Assert.Equal("element 1", speckleThermalLoads[0].elements[0].applicationId);
       Assert.Equal("load case 1", speckleThermalLoads[0].loadCase.applicationId);
       Assert.Equal(Thermal2dLoadType.Uniform, speckleThermalLoads[0].type);
@@ -1381,7 +1381,7 @@ namespace ConverterGSATests
       Assert.Equal("load thermal 2", speckleThermalLoads[1].applicationId);
       Assert.Equal(gsaLoadThermal[1].Index.Value, speckleThermalLoads[1].nativeId);
       Assert.Equal(gsaLoadThermal[1].Name, speckleThermalLoads[1].name);
-      Assert.Equal(gsaLoadThermal[1].Entities.Count(), speckleThermalLoads[1].elements.Count());
+      Assert.Equal(gsaLoadThermal[1].ElementIndices.Count(), speckleThermalLoads[1].elements.Count());
       Assert.Equal("element 1", speckleThermalLoads[1].elements[0].applicationId);
       Assert.Equal("load case 2", speckleThermalLoads[1].loadCase.applicationId);
       Assert.Equal(Thermal2dLoadType.Gradient, speckleThermalLoads[1].type);
@@ -2696,7 +2696,7 @@ namespace ConverterGSATests
           PlaneRefType = GridPlaneAxisRefType.Global,
           //PlaneIndex = null,
           Type = GridSurfaceElementsType.OneD,
-          Entities = new List<int>(){ 1 },
+          ElementIndices = new List<int>(){ 1 },
           Tolerance = 0.01,
           Span = GridSurfaceSpan.One,
           Angle = 0,
@@ -2709,7 +2709,7 @@ namespace ConverterGSATests
           PlaneRefType = GridPlaneAxisRefType.Reference,
           PlaneIndex = 1,
           Type = GridSurfaceElementsType.TwoD,
-          Entities = new List<int>(){ 2 },
+          ElementIndices = new List<int>(){ 2 },
           Tolerance = 0.01,
           Span = GridSurfaceSpan.Two,
           Angle = 0,
@@ -3090,7 +3090,7 @@ namespace ConverterGSATests
         {
           Index = 1,
           Name = "1",
-          Entities = new List<int>(){ 1 },
+          ElementIndices = new List<int>(){ 1 },
           LoadCaseIndex = 1,
           Type = Load2dThermalType.Uniform,
           Values = new List<double>(){ 1 },
@@ -3099,7 +3099,7 @@ namespace ConverterGSATests
         {
           Index = 2,
           Name = "2",
-          Entities = new List<int>(){ 1 },
+          ElementIndices = new List<int>(){ 1 },
           LoadCaseIndex = 2,
           Type = Load2dThermalType.Gradient,
           Values = new List<double>(){ 1, 2 },

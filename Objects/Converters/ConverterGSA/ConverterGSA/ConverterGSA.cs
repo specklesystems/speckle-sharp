@@ -806,11 +806,11 @@ namespace ConverterGSA
       if (gsaGridSurface.Angle.HasValue) speckleGridSurface.spanDirection = gsaGridSurface.Angle.Value;
       if (gsaGridSurface.Type == GridSurfaceElementsType.OneD)
       {
-        speckleGridSurface.elements = gsaGridSurface.Entities.Select(i => (Base)GetElement1DFromIndex(i)).ToList();
+        speckleGridSurface.elements = gsaGridSurface.ElementIndices.Select(i => (Base)GetElement1DFromIndex(i)).ToList();
       }
       else if (gsaGridSurface.Type == GridSurfaceElementsType.TwoD)
       {
-        speckleGridSurface.elements = gsaGridSurface.Entities.Select(i => (Base)GetElement2DFromIndex(i)).ToList();
+        speckleGridSurface.elements = gsaGridSurface.ElementIndices.Select(i => (Base)GetElement2DFromIndex(i)).ToList();
       }
       return speckleGridSurface;
     }
@@ -1058,7 +1058,7 @@ namespace ConverterGSA
       var speckleLoad = new GSAThermal2dLoad()
       {
         name = gsaLoad2dThermal.Name,
-        elements = gsaLoad2dThermal.Entities.Select(i => GetElement2DFromIndex(i)).ToList(),
+        elements = gsaLoad2dThermal.ElementIndices.Select(i => GetElement2DFromIndex(i)).ToList(),
         type = GetLoad2dThermalType(gsaLoad2dThermal.Type),
         values = gsaLoad2dThermal.Values,
       };
