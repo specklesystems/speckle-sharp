@@ -21,7 +21,7 @@ namespace Objects.Structural.GSA.Loading
             this.nativeId = nativeId;
             this.name = name;
             this.loadType = loadType;
-            this.source = source;
+            this.group = source;
             this.actionType = actionType;
             this.description = description;
         }
@@ -61,7 +61,7 @@ namespace Objects.Structural.GSA.Loading
         }
     }
 
-    public class GSANodeLoad : NodeLoad
+    public class GSANodeLoad : LoadNode
     {
         public int nativeId { get; set; }
         public GSANodeLoad() { }
@@ -91,7 +91,7 @@ namespace Objects.Structural.GSA.Loading
         }
     }
 
-    public class GSAGravityLoad : GravityLoad
+    public class GSAGravityLoad : LoadGravity
     {
         public int nativeId { get; set; }
         public GSAGravityLoad() { }
@@ -127,13 +127,13 @@ namespace Objects.Structural.GSA.Loading
         }
     }
 
-    public class GSAFaceLoad : FaceLoad
+    public class GSAFaceLoad : LoadFace
     {
         public int nativeId { get; set; }
         public GSAFaceLoad() { }
 
         [SchemaInfo("GSAFaceLoad", "Creates a Speckle structural face (2D elem/member) load for GSA", "GSA", "Loading")]
-        public GSAFaceLoad(int nativeId, LoadCase loadCase, List<Base> elements, AreaLoadType loadType, LoadDirection direction, LoadAxisType loadAxisType = LoadAxisType.Global,
+        public GSAFaceLoad(int nativeId, LoadCase loadCase, List<Base> elements, FaceLoadType loadType, LoadDirection direction, LoadAxisType loadAxisType = LoadAxisType.Global,
             [SchemaParamInfo("A list that represents load magnitude (number of values varies based on load type - Uniform: 1, Variable: 4 (corner nodes), Point: 1)")] List<double> values = null,
             [SchemaParamInfo("A list that represents load locations (number of values varies based on load type - Uniform: null, Variable: null, Point: 2)")] List<double> positions = null,
             bool isProjected = false)
@@ -150,7 +150,7 @@ namespace Objects.Structural.GSA.Loading
         }
     }
 
-    public class GSABeamLoad : BeamLoad
+    public class GSABeamLoad : LoadBeam
     {
         public int nativeId { get; set; }
         public GSABeamLoad() { }

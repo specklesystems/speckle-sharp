@@ -17,7 +17,7 @@ namespace Objects.Structural.GSA.Properties
         public double? cost { get; set; }        
         public int? poolRef { get; set; }
         public string colour { get; set; }
-        public GSAProperty1D() { }
+        public GSAProperty1D() { }        
 
         [SchemaInfo("GSAProperty1D", "Creates a Speckle structural 1D element property for GSA", "GSA", "Properties")]
         public GSAProperty1D(int nativeId, string name, Material material, SectionProfile profile, double cost = 0, double additionalMass = 0)
