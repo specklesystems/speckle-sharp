@@ -268,23 +268,16 @@ namespace Objects.Converter.RhinoGh
       return arc;
     }
 
-    public ArcCurve ArcToNative(Arc a)
+    public ArcCurve ArcToNative(Arc arc)
     {
-      RH.Arc arc = new RH.Arc(PlaneToNative(a.plane), ScaleToNative((double)a.radius, a.units), (double)a.angleRadians);
-      arc.StartAngle = (double)a.startAngle;
-      arc.EndAngle = (double)a.endAngle;
-      if (!arc.IsValid) // try with different method if not valid
-      {
-        arc = new RH.Arc(PointToNative(a.startPoint).Location, PointToNative(a.midPoint).Location, PointToNative(a.endPoint).Location);
-      }
-      var myArc = new ArcCurve(arc);
+      // RH.Arc arc = new RH.Arc(PlaneToNative(a.plane), ScaleToNative((double)a.radius, a.units), (double)a.angleRadians); Not using this constructor due to angle tolerance rounding issues
+      var _arc = new RH.Arc(PointToNative(arc.startPoint).Location, PointToNative(arc.midPoint).Location, PointToNative(arc.endPoint).Location);
 
-      if (a.domain != null)
-      {
-        myArc.Domain = IntervalToNative(a.domain);
-      }
+      var arcCurve = new ArcCurve(_arc);
+      if (arc.domain != null)
+        arcCurve.Domain = IntervalToNative(arc.domain);
 
-      return myArc;
+      return arcCurve;
     }
 
     //Ellipse
