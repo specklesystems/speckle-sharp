@@ -24,6 +24,8 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     GRID_SURFACE,
     [StringValue("GRID_PLANE")]
     GRID_PLANE,
+    [StringValue("POLYLINE")]
+    POLYLINE,
     [StringValue("EL")]
     EL,
     [StringValue("MEMB")]

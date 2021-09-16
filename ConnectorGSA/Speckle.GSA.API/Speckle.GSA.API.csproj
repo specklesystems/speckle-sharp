@@ -62,6 +62,7 @@
     <Compile Include="GwaSchema\Geometry\GsaGridLine.cs" />
     <Compile Include="GwaSchema\Geometry\GsaGridPlane.cs" />
     <Compile Include="GwaSchema\Geometry\GsaGridSurface.cs" />
+    <Compile Include="GwaSchema\Geometry\GsaPolyline.cs" />
     <Compile Include="GwaSchema\GsaAssembly.cs" />
     <Compile Include="GwaSchema\GsaEl.cs" />
     <Compile Include="GwaSchema\GsaMemb.cs" />

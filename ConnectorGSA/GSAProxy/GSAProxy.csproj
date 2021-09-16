@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Cache\GsaCache.cs" />
     <Compile Include="Cache\GsaCacheRecord.cs" />
+    <Compile Include="GwaParsers\Geometry\GsaPolylineParser.cs" />
     <Compile Include="IPairCollection.cs" />
     <Compile Include="Merger\GsaRecordMerger.cs" />
     <Compile Include="Merger\IgnoreNullResolver.cs" />
