@@ -24,19 +24,19 @@ namespace Objects.Structural.Results
         [DetachProperty]
         public Element3D element { get; set; }
         public List<double> position { get; set; } //relative position within element (x,y,z in range [0:1] to describe position)
-        public double dispX { get; set; }
-        public double dispY { get; set; }
-        public double dispZ { get; set; }
-        public double stressXX { get; set; } 
-        public double stressYY { get; set; }
-        public double stressZZ { get; set; } 
-        public double stressXY { get; set; } 
-        public double stressYZ { get; set; }
-        public double stressZX { get; set; }
+        public float? dispX { get; set; }
+        public float? dispY { get; set; }
+        public float? dispZ { get; set; }
+        public float? stressXX { get; set; } 
+        public float? stressYY { get; set; }
+        public float? stressZZ { get; set; } 
+        public float? stressXY { get; set; } 
+        public float? stressYZ { get; set; }
+        public float? stressZX { get; set; }
         public Result3D() { }
 
         [SchemaInfo("Result3D (load case)", "Creates a Speckle 3D element result object (for load case)", "Structural", "Results")]
-        public Result3D(Element3D element, LoadCase resultCase, List<double> position, double dispX, double dispY, double dispZ, double stressXX, double stressYY, double stressZZ, double stressXY, double stressYZ, double stressZX)
+        public Result3D(Element3D element, LoadCase resultCase, List<double> position, float dispX, float dispY, float dispZ, float stressXX, float stressYY, float stressZZ, float stressXY, float stressYZ, float stressZX)
         {
             this.element = element;
             this.resultCase = resultCase;
@@ -53,7 +53,7 @@ namespace Objects.Structural.Results
         }
 
         [SchemaInfo("Result3D (load combination)", "Creates a Speckle 3D element result object (for load combination)", "Structural", "Results")]
-        public Result3D(Element3D element, LoadCombination resultCase, List<double> position, double dispX, double dispY, double dispZ, double stressXX, double stressYY, double stressZZ, double stressXY, double stressYZ, double stressZX)
+        public Result3D(Element3D element, LoadCombination resultCase, List<double> position, float dispX, float dispY, float dispZ, float stressXX, float stressYY, float stressZZ, float stressXY, float stressYZ, float stressZX)
         {
             this.element = element;
             this.resultCase = resultCase;
