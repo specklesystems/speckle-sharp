@@ -50,7 +50,9 @@ namespace ConverterGSA
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
-    private Dictionary<Type, Func<GsaRecord, ToSpeckleResult>> ToSpeckleFns;
+    private delegate ToSpeckleResult ToSpeckleMethodDelegate(GsaRecord gsaRecord, GSALayer layer = GSALayer.Both);
+
+    private Dictionary<Type, ToSpeckleMethodDelegate> ToSpeckleFns;
     private Dictionary<Type, Func<Base, List<GsaRecord>>> ToNativeFns;
 
     #region model_group
@@ -80,7 +82,7 @@ namespace ConverterGSA
 
     public ConverterGSA()
     {
-      ToSpeckleFns = new Dictionary<Type, Func<GsaRecord, ToSpeckleResult>>()
+      ToSpeckleFns = new Dictionary<Type, ToSpeckleMethodDelegate>()
       {
         //Geometry
         { typeof(GsaAssembly), GsaAssemblyToSpeckle },
@@ -349,7 +351,7 @@ namespace ConverterGSA
     }
 
     #region Geometry
-    private ToSpeckleResult GsaAssemblyToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaAssemblyToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var assembly = GsaAssemblyToSpeckle((GsaAssembly)nativeObject);
       return new ToSpeckleResult(assembly);
@@ -404,7 +406,7 @@ namespace ConverterGSA
       return speckleAssembly;
     }
 
-    private ToSpeckleResult GsaNodeToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaNodeToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var speckleObjects = new List<Base>();
       var gsaNode = (GsaNode)nativeObject;
@@ -443,7 +445,7 @@ namespace ConverterGSA
       return speckleNode;
     }
 
-    private ToSpeckleResult GsaAxisToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaAxisToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var axis = GsaAxisToSpeckle((GsaAxis)nativeObject);
       return new ToSpeckleResult(axis);
@@ -475,7 +477,7 @@ namespace ConverterGSA
       return speckleAxis;
     }
 
-    private ToSpeckleResult GsaElementToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaElementToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaEl = (GsaEl)nativeObject;
       var speckleObjects = new List<Base>();
@@ -585,7 +587,7 @@ namespace ConverterGSA
       return new GSAElement3D();
     }
 
-    private ToSpeckleResult GsaMemberToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaMemberToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaMemb = (GsaMemb)nativeObject;
       var speckleObjects = new List<Base>();
@@ -733,7 +735,7 @@ namespace ConverterGSA
       return speckleMember2d;
     }
 
-    private ToSpeckleResult GsaGridLineToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaGridLineToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaGridLine = (GsaGridLine)nativeObject;
       var speckleObjects = new List<Base>();
@@ -757,7 +759,7 @@ namespace ConverterGSA
       return speckleGridLine;
     }
 
-    private ToSpeckleResult GsaGridPlaneToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaGridPlaneToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaGridPlane = (GsaGridPlane)nativeObject;
       var speckleObjects = new List<Base>();
@@ -784,7 +786,7 @@ namespace ConverterGSA
       return speckleGridPlane;
     }
 
-    private ToSpeckleResult GsaGridSurfaceToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaGridSurfaceToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaGridSurface = (GsaGridSurface)nativeObject;
       var speckleObjects = new List<Base>();
@@ -819,7 +821,7 @@ namespace ConverterGSA
       return speckleGridSurface;
     }
 
-    private ToSpeckleResult GsaPolylineToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaPolylineToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaPolyline = (GsaPolyline)nativeObject;
       var speckleObjects = new List<Base>();
@@ -848,7 +850,7 @@ namespace ConverterGSA
     #endregion
 
     #region Loading
-    private ToSpeckleResult GsaLoadCaseToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaLoadCaseToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var speckleloadCase = GsaLoadCaseToSpeckle((GsaLoadCase)nativeObject);
       return new ToSpeckleResult(speckleloadCase);
@@ -876,7 +878,7 @@ namespace ConverterGSA
       return speckleLoadCase;
     }
 
-    private ToSpeckleResult GsaFaceLoadToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaFaceLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var speckleFaceLoad = GsaFaceLoadToSpeckle((GsaLoad2dFace)nativeObject);
       return new ToSpeckleResult(speckleFaceLoad);
@@ -914,7 +916,7 @@ namespace ConverterGSA
       return speckleFaceLoad;
     }
 
-    private ToSpeckleResult GsaBeamLoadToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaBeamLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
 
       var speckleBeamLoad = GsaBeamLoadToSpeckle((GsaLoadBeam)nativeObject);
@@ -951,7 +953,7 @@ namespace ConverterGSA
       return speckleBeamLoad;
     }
 
-    private ToSpeckleResult GsaNodeLoadToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaNodeLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var speckleNodeLoad = GsaNodeLoadToSpeckle((GsaLoadNode)nativeObject);
       return new ToSpeckleResult(speckleNodeLoad);
@@ -986,7 +988,7 @@ namespace ConverterGSA
       return speckleNodeLoad;
     }
 
-    private ToSpeckleResult GsaGravityLoadToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaGravityLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var speckleGravityLoad = GsaGravityLoadToSpeckle((GsaLoadGravity)nativeObject);
       return new ToSpeckleResult(speckleGravityLoad);
@@ -1013,7 +1015,7 @@ namespace ConverterGSA
       return speckleGravityLoad;
     }
 
-    private ToSpeckleResult GsaLoadCombinationToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaLoadCombinationToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var speckleLoadCombination = GsaLoadCombinationToSpeckle((GsaCombination)nativeObject);
       return new ToSpeckleResult(speckleLoadCombination);
@@ -1038,7 +1040,7 @@ namespace ConverterGSA
       return speckleLoadCombination;
     }
 
-    private ToSpeckleResult GsaThermal2dLoadToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaThermal2dLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoad2dThermal = (GsaLoad2dThermal)nativeObject;
       var speckleObjects = new List<Base>();
@@ -1064,7 +1066,7 @@ namespace ConverterGSA
       return speckleLoad;
     }
 
-    private ToSpeckleResult GsaLoadGridAreaToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaLoadGridAreaToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoadGridArea = (GsaLoadGridArea)nativeObject;
       var speckleObjects = new List<Base>();
@@ -1093,7 +1095,7 @@ namespace ConverterGSA
       return speckleLoad;
     }
 
-    private ToSpeckleResult GsaLoadGridLineToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaLoadGridLineToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoadGridLine = (GsaLoadGridLine)nativeObject;
       var speckleObjects = new List<Base>();
@@ -1122,7 +1124,7 @@ namespace ConverterGSA
       return speckleLoad;
     }
 
-    private ToSpeckleResult GsaLoadGridPointToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaLoadGridPointToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoadGridPoint = (GsaLoadGridPoint)nativeObject;
       var speckleObjects = new List<Base>();
@@ -1152,7 +1154,7 @@ namespace ConverterGSA
     #endregion
 
     #region Materials
-    private ToSpeckleResult GsaMaterialSteelToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaMaterialSteelToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var steel = GsaMaterialSteelToSpeckle((GsaMatSteel)nativeObject);
       return new ToSpeckleResult(steel);
@@ -1206,7 +1208,7 @@ namespace ConverterGSA
     public double? Eh;*/
     }
 
-    private ToSpeckleResult GsaMaterialConcreteToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaMaterialConcreteToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var concrete = GsaMaterialConcreteToSpeckle((GsaMatConcrete)nativeObject);
       return new ToSpeckleResult(concrete);
@@ -1248,7 +1250,7 @@ namespace ConverterGSA
     #endregion
 
     #region Property
-    private ToSpeckleResult GsaSectionToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaSectionToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var section = GsaSectionToSpeckle((GsaSection)nativeObject);
       return new ToSpeckleResult(section);
@@ -1292,7 +1294,7 @@ namespace ConverterGSA
       return speckleProperty1D;
     }
 
-    private ToSpeckleResult GsaProperty2dToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaProperty2dToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var prop2d = GsaProperty2dToSpeckle((GsaProp2d)nativeObject);
       return new ToSpeckleResult(prop2d);
@@ -1334,7 +1336,7 @@ namespace ConverterGSA
 
     //Property3D: GSA keyword not supported yet
 
-    private ToSpeckleResult GsaPropertyMassToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaPropertyMassToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var propMass = GsaPropertyMassToSpeckle((GsaPropMass)nativeObject);
       return new ToSpeckleResult(propMass);
@@ -1371,7 +1373,7 @@ namespace ConverterGSA
       return specklePropertyMass;
     }
 
-    private ToSpeckleResult GsaPropertySpringToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaPropertySpringToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var propSpring = GsaPropertySpringToSpeckle((GsaPropSpr)nativeObject);
       return new ToSpeckleResult(propSpring);
