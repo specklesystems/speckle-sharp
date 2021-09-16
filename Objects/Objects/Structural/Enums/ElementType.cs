@@ -10,6 +10,7 @@ namespace Objects.Structural.Geometry
     {
         Beam,
         Bar,
+        Column,
         Rod,
         Spring,
         Tie,

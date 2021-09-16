@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Objects.Geometry;
 using Objects.Structural.Geometry;
 using ETABSv1;
 
@@ -9,7 +6,10 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
-
+        public void PointToNative(Node speckleStructNode)
+        {
+            throw new NotImplementedException(); 
+        }
         public Node PointToSpeckle(string name)
         {
            
@@ -32,7 +32,7 @@ namespace Objects.Converter.ETABS
             speckleStructNode.restraint.stiffnessZ = Convert.ToInt32(!restraints[4]);
             speckleStructNode.restraint.stiffnessZ = Convert.ToInt32(!restraints[5]);
 
-
+//TO DO: detach properties
             return speckleStructNode;
         }
     }
