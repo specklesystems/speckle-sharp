@@ -22,6 +22,7 @@ using MemberType = Objects.Structural.Geometry.MemberType;
 using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
 using AxisDirection6 = Objects.Structural.GSA.Other.AxisDirection6;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
+using GwaAxisDirection3 = Speckle.GSA.API.GwaSchema.AxisDirection3;
 using System.Runtime.InteropServices;
 using System.CodeDom;
 using Objects.Structural.Results;
@@ -1775,7 +1776,7 @@ namespace ConverterGSA
     /// </summary>
     /// <param name="release">Dictionary of release codes</param>
     /// <returns></returns>
-    private static Restraint GetRestraint(Dictionary<AxisDirection6, ReleaseCode> gsaRelease, List<double> gsaStiffness)
+    private static Restraint GetRestraint(Dictionary<GwaAxisDirection6, ReleaseCode> gsaRelease, List<double> gsaStiffness)
     {
       var code = new List<string>() { "F", "F", "F", "F", "F", "F" }; //Default
       int index = 0;
@@ -1785,22 +1786,22 @@ namespace ConverterGSA
         {
           switch (k)
           {
-            case AxisDirection6.X:
+            case GwaAxisDirection6.X:
               code[0] = gsaRelease[k].GetStringValue();
               break;
-            case AxisDirection6.Y:
+            case GwaAxisDirection6.Y:
               code[1] = gsaRelease[k].GetStringValue();
               break;
-            case AxisDirection6.Z:
+            case GwaAxisDirection6.Z:
               code[2] = gsaRelease[k].GetStringValue();
               break;
-            case AxisDirection6.XX:
+            case GwaAxisDirection6.XX:
               code[3] = gsaRelease[k].GetStringValue();
               break;
-            case AxisDirection6.YY:
+            case GwaAxisDirection6.YY:
               code[4] = gsaRelease[k].GetStringValue();
               break;
-            case AxisDirection6.ZZ:
+            case GwaAxisDirection6.ZZ:
               code[5] = gsaRelease[k].GetStringValue();
               break;
           }
@@ -1892,22 +1893,22 @@ namespace ConverterGSA
       {
         switch (gsaNode.Restraints[i])
         {
-          case AxisDirection6.X:
+          case GwaAxisDirection6.X:
             code[0] = 'F';
             break;
-          case AxisDirection6.Y:
+          case GwaAxisDirection6.Y:
             code[1] = 'F';
             break;
-          case AxisDirection6.Z:
+          case GwaAxisDirection6.Z:
             code[2] = 'F';
             break;
-          case AxisDirection6.XX:
+          case GwaAxisDirection6.XX:
             code[3] = 'F';
             break;
-          case AxisDirection6.YY:
+          case GwaAxisDirection6.YY:
             code[4] = 'F';
             break;
-          case AxisDirection6.ZZ:
+          case GwaAxisDirection6.ZZ:
             code[5] = 'F';
             break;
         }
@@ -1935,47 +1936,47 @@ namespace ConverterGSA
         var gsaSpring = (GsaPropSpr)gsaRecord;
 
         //Update spring stiffness
-        if (gsaSpring.Stiffnesses[AxisDirection6.X] > 0)
+        if (gsaSpring.Stiffnesses[GwaAxisDirection6.X] > 0)
         {
           var code = restraint.code.ToCharArray();
           code[0] = 'K';
           restraint.code = code.ToString();
-          restraint.stiffnessX = gsaSpring.Stiffnesses[AxisDirection6.X];
+          restraint.stiffnessX = gsaSpring.Stiffnesses[GwaAxisDirection6.X];
         }
-        if (gsaSpring.Stiffnesses[AxisDirection6.Y] > 0)
+        if (gsaSpring.Stiffnesses[GwaAxisDirection6.Y] > 0)
         {
           var code = restraint.code.ToCharArray();
           code[1] = 'K';
           restraint.code = code.ToString();
-          restraint.stiffnessY = gsaSpring.Stiffnesses[AxisDirection6.Y];
+          restraint.stiffnessY = gsaSpring.Stiffnesses[GwaAxisDirection6.Y];
         }
-        if (gsaSpring.Stiffnesses[AxisDirection6.Z] > 0)
+        if (gsaSpring.Stiffnesses[GwaAxisDirection6.Z] > 0)
         {
           var code = restraint.code.ToCharArray();
           code[2] = 'K';
           restraint.code = code.ToString();
-          restraint.stiffnessZ = gsaSpring.Stiffnesses[AxisDirection6.Z];
+          restraint.stiffnessZ = gsaSpring.Stiffnesses[GwaAxisDirection6.Z];
         }
-        if (gsaSpring.Stiffnesses[AxisDirection6.XX] > 0)
+        if (gsaSpring.Stiffnesses[GwaAxisDirection6.XX] > 0)
         {
           var code = restraint.code.ToCharArray();
           code[3] = 'K';
           restraint.code = code.ToString();
-          restraint.stiffnessXX = gsaSpring.Stiffnesses[AxisDirection6.XX];
+          restraint.stiffnessXX = gsaSpring.Stiffnesses[GwaAxisDirection6.XX];
         }
-        if (gsaSpring.Stiffnesses[AxisDirection6.YY] > 0)
+        if (gsaSpring.Stiffnesses[GwaAxisDirection6.YY] > 0)
         {
           var code = restraint.code.ToCharArray();
           code[4] = 'K';
           restraint.code = code.ToString();
-          restraint.stiffnessYY = gsaSpring.Stiffnesses[AxisDirection6.YY];
+          restraint.stiffnessYY = gsaSpring.Stiffnesses[GwaAxisDirection6.YY];
         }
-        if (gsaSpring.Stiffnesses[AxisDirection6.ZZ] > 0)
+        if (gsaSpring.Stiffnesses[GwaAxisDirection6.ZZ] > 0)
         {
           var code = restraint.code.ToCharArray();
           code[5] = 'K';
           restraint.code = code.ToString();
-          restraint.stiffnessZZ = gsaSpring.Stiffnesses[AxisDirection6.ZZ];
+          restraint.stiffnessZZ = gsaSpring.Stiffnesses[GwaAxisDirection6.ZZ];
         }
       }
       return restraint;
@@ -2484,35 +2485,35 @@ namespace ConverterGSA
       }
     }
 
-    private LoadDirection GetDirection(AxisDirection3 gsaDirection)
+    private LoadDirection GetDirection(GwaAxisDirection3 gsaDirection)
     {
       switch (gsaDirection)
       {
-        case AxisDirection3.X:
+        case GwaAxisDirection3.X:
           return LoadDirection.X;
-        case AxisDirection3.Y:
+        case GwaAxisDirection3.Y:
           return LoadDirection.Y;
-        case AxisDirection3.Z:
+        case GwaAxisDirection3.Z:
         default:
           return LoadDirection.Z;
       }
     }
 
-    private LoadDirection GetDirection(AxisDirection6 gsaDirection)
+    private LoadDirection GetDirection(GwaAxisDirection6 gsaDirection)
     {
       switch (gsaDirection)
       {
-        case AxisDirection6.X:
+        case GwaAxisDirection6.X:
           return LoadDirection.X;
-        case AxisDirection6.Y:
+        case GwaAxisDirection6.Y:
           return LoadDirection.Y;
-        case AxisDirection6.Z:
+        case GwaAxisDirection6.Z:
           return LoadDirection.Z;
-        case AxisDirection6.XX:
+        case GwaAxisDirection6.XX:
           return LoadDirection.XX;
-        case AxisDirection6.YY:
+        case GwaAxisDirection6.YY:
           return LoadDirection.YY;
-        case AxisDirection6.ZZ:
+        case GwaAxisDirection6.ZZ:
         default:
           return LoadDirection.ZZ;
       }
@@ -2956,7 +2957,7 @@ namespace ConverterGSA
     private bool SetProprtySpringAxial(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Axial;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
       return true;
     }
 
@@ -2969,7 +2970,7 @@ namespace ConverterGSA
     private bool SetPropertySpringTorsional(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Torsional;
-      specklePropertySpring.stiffnessXX = gsaPropSpr.Stiffnesses[AxisDirection6.XX];
+      specklePropertySpring.stiffnessXX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.XX];
       return true;
     }
 
@@ -2982,7 +2983,7 @@ namespace ConverterGSA
     private bool SetProprtySpringCompression(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.CompressionOnly;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
       return true;
     }
 
@@ -2995,7 +2996,7 @@ namespace ConverterGSA
     private bool SetProprtySpringTension(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.TensionOnly;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
       return true;
     }
 
@@ -3009,7 +3010,7 @@ namespace ConverterGSA
     {
       //Also for LOCKUP, there are positive and negative parameters, but these aren't supported yet
       specklePropertySpring.springType = PropertyTypeSpring.LockUp;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
       specklePropertySpring.positiveLockup = 0;
       specklePropertySpring.negativeLockup = 0;
       return true;
@@ -3024,7 +3025,7 @@ namespace ConverterGSA
     private bool SetProprtySpringGap(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Gap;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
       return true;
     }
 
@@ -3037,9 +3038,9 @@ namespace ConverterGSA
     private bool SetProprtySpringFriction(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Friction;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
-      specklePropertySpring.stiffnessY = gsaPropSpr.Stiffnesses[AxisDirection6.Y];
-      specklePropertySpring.stiffnessZ = gsaPropSpr.Stiffnesses[AxisDirection6.Z];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
+      specklePropertySpring.stiffnessY = gsaPropSpr.Stiffnesses[GwaAxisDirection6.Y];
+      specklePropertySpring.stiffnessZ = gsaPropSpr.Stiffnesses[GwaAxisDirection6.Z];
       specklePropertySpring.frictionCoefficient = gsaPropSpr.FrictionCoeff.Value;
       return true;
     }
@@ -3053,17 +3054,17 @@ namespace ConverterGSA
     private bool SetProprtySpringGeneral(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.General;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
       specklePropertySpring.springCurveX = 0;
-      specklePropertySpring.stiffnessY = gsaPropSpr.Stiffnesses[AxisDirection6.Y];
+      specklePropertySpring.stiffnessY = gsaPropSpr.Stiffnesses[GwaAxisDirection6.Y];
       specklePropertySpring.springCurveY = 0;
-      specklePropertySpring.stiffnessZ = gsaPropSpr.Stiffnesses[AxisDirection6.Z];
+      specklePropertySpring.stiffnessZ = gsaPropSpr.Stiffnesses[GwaAxisDirection6.Z];
       specklePropertySpring.springCurveZ = 0;
-      specklePropertySpring.stiffnessXX = gsaPropSpr.Stiffnesses[AxisDirection6.XX];
+      specklePropertySpring.stiffnessXX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.XX];
       specklePropertySpring.springCurveXX = 0;
-      specklePropertySpring.stiffnessYY = gsaPropSpr.Stiffnesses[AxisDirection6.YY];
+      specklePropertySpring.stiffnessYY = gsaPropSpr.Stiffnesses[GwaAxisDirection6.YY];
       specklePropertySpring.springCurveYY = 0;
-      specklePropertySpring.stiffnessZZ = gsaPropSpr.Stiffnesses[AxisDirection6.ZZ];
+      specklePropertySpring.stiffnessZZ = gsaPropSpr.Stiffnesses[GwaAxisDirection6.ZZ];
       specklePropertySpring.springCurveZZ = 0;
       return true;
     }
