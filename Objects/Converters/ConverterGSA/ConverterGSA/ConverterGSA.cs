@@ -22,6 +22,7 @@ using MemberType = Objects.Structural.Geometry.MemberType;
 using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
 using AxisDirection6 = Objects.Structural.GSA.Other.AxisDirection6;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
+using GwaAxisDirection3 = Speckle.GSA.API.GwaSchema.AxisDirection3;
 using System.Runtime.InteropServices;
 using System.CodeDom;
 using Objects.Structural.Results;
@@ -50,8 +51,10 @@ namespace ConverterGSA
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
-    public Dictionary<Type, Func<GsaRecord, List<Base>>> ToSpeckleFns;
-    public Dictionary<Type, Func<Base, List<GsaRecord>>> ToNativeFns;
+    private delegate ToSpeckleResult ToSpeckleMethodDelegate(GsaRecord gsaRecord, GSALayer layer = GSALayer.Both);
+
+    private Dictionary<Type, ToSpeckleMethodDelegate> ToSpeckleFns;
+    private Dictionary<Type, Func<Base, List<GsaRecord>>> ToNativeFns;
 
     #region model_group
     private enum ModelGroup
@@ -80,7 +83,7 @@ namespace ConverterGSA
 
     public ConverterGSA()
     {
-      ToSpeckleFns = new Dictionary<Type, Func<GsaRecord, List<Base>>>()
+      ToSpeckleFns = new Dictionary<Type, ToSpeckleMethodDelegate>()
       {
         //Geometry
         { typeof(GsaAssembly), GsaAssemblyToSpeckle },
@@ -192,7 +195,8 @@ namespace ConverterGSA
       {
         foreach (var x in objects)
         {
-          var speckleObjects = ToSpeckle((GsaRecord)x);
+          var toSpeckleResult = ToSpeckle((GsaRecord)x);
+          var speckleObjects = toSpeckleResult.ModelObjects;
           if (speckleObjects != null && speckleObjects.Count > 0)
           {
             retList.AddRange(speckleObjects.Where(so => so != null));
@@ -265,7 +269,8 @@ namespace ConverterGSA
             {
               if (CanConvertToSpeckle(nativeObj))
               {
-                var speckleObjs = ToSpeckle(nativeObj);
+                var toSpeckleResult = ToSpeckle(nativeObj);
+                var speckleObjs = toSpeckleResult.Objects;
                 if (speckleObjs != null && speckleObjs.Count > 0)
                 {
                   speckleObjsBucket.AddRange(speckleObjs);
@@ -340,20 +345,20 @@ namespace ConverterGSA
     }
 
     #region ToSpeckle
-    private List<Base> ToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult ToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var nativeType = nativeObject.GetType();
-      return ToSpeckleFns.ContainsKey(nativeType) ? ToSpeckleFns[nativeType](nativeObject) : null;
+      return ToSpeckleFns.ContainsKey(nativeType) ? ToSpeckleFns[nativeType](nativeObject, layer) : null;
     }
 
     #region Geometry
-    public List<Base> GsaAssemblyToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaAssemblyToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var assembly = GsaAssemblyToSpeckle((GsaAssembly)nativeObject);
-      return new List<Base>() { assembly };
+      return new ToSpeckleResult(assembly);
     }
 
-    public GSAAssembly GsaAssemblyToSpeckle(GsaAssembly gsaAssembly)
+    private GSAAssembly GsaAssemblyToSpeckle(GsaAssembly gsaAssembly)
     {
       var speckleAssembly = new GSAAssembly()
       {
@@ -402,7 +407,7 @@ namespace ConverterGSA
       return speckleAssembly;
     }
 
-    public List<Base> GsaNodeToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaNodeToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var speckleObjects = new List<Base>();
       var gsaNode = (GsaNode)nativeObject;
@@ -412,10 +417,10 @@ namespace ConverterGSA
         speckleObjects.Add(speckleNode);
         if (GsaNodeResultToSpeckle(gsaNode.Index.Value, speckleNode, out var speckleResults)) speckleObjects.AddRange(speckleResults);
       }
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
-    public GSANode GsaNodeToSpeckle(GsaNode gsaNode, string units = null)
+    private GSANode GsaNodeToSpeckle(GsaNode gsaNode, string units = null)
     {
       var speckleNode = new GSANode()
       {
@@ -441,13 +446,13 @@ namespace ConverterGSA
       return speckleNode;
     }
 
-    public List<Base> GsaAxisToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaAxisToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var axis = GsaAxisToSpeckle((GsaAxis)nativeObject);
-      return new List<Base>() { axis };
+      return new ToSpeckleResult(axis);
     }
 
-    public Axis GsaAxisToSpeckle(GsaAxis gsaAxis)
+    private Axis GsaAxisToSpeckle(GsaAxis gsaAxis)
     {
       //Only supporting cartesian coordinate systems at the moment
       var speckleAxis = new Axis()
@@ -473,7 +478,7 @@ namespace ConverterGSA
       return speckleAxis;
     }
 
-    public List<Base> GsaElementToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaElementToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaEl = (GsaEl)nativeObject;
       var speckleObjects = new List<Base>();
@@ -499,10 +504,10 @@ namespace ConverterGSA
           if (GsaElement1dResultToSpeckle(gsaEl.Index.Value, speckleElement1d, out var speckleResults)) speckleObjects.AddRange(speckleResults);
         }
       }
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
-    public GSAElement1D GsaElement1dToSpeckle(GsaEl gsaEl)
+    private GSAElement1D GsaElement1dToSpeckle(GsaEl gsaEl)
     {
       var speckleElement1d = new GSAElement1D()
       {
@@ -546,7 +551,7 @@ namespace ConverterGSA
       return speckleElement1d;
     }
 
-    public GSAElement2D GsaElement2dToSpeckle(GsaEl gsaEl)
+    private GSAElement2D GsaElement2dToSpeckle(GsaEl gsaEl)
     {
       var speckleElement2d = new GSAElement2D()
       {
@@ -577,13 +582,13 @@ namespace ConverterGSA
       return speckleElement2d;
     }
 
-    public GSAElement3D GsaElement3dToSpeckle(GsaEl gsaEl)
+    private GSAElement3D GsaElement3dToSpeckle(GsaEl gsaEl)
     {
       //TODO
       return new GSAElement3D();
     }
 
-    public List<Base> GsaMemberToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaMemberToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaMemb = (GsaMemb)nativeObject;
       var speckleObjects = new List<Base>();
@@ -603,10 +608,10 @@ namespace ConverterGSA
           //TO DO: implement once 3D elements are supported
         }
       }
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
-    public GSAMember1D GsaMember1dToSpeckle(GsaMemb gsaMemb)
+    private GSAMember1D GsaMember1dToSpeckle(GsaMemb gsaMemb)
     {
       var speckleMember1d = new GSAMember1D()
       {
@@ -682,7 +687,7 @@ namespace ConverterGSA
       return speckleMember1d;
     }
 
-    public GSAMember2D GsaMember2dToSpeckle(GsaMemb gsaMemb)
+    private GSAMember2D GsaMember2dToSpeckle(GsaMemb gsaMemb)
     {
       var speckleMember2d = new GSAMember2D()
       {
@@ -731,15 +736,15 @@ namespace ConverterGSA
       return speckleMember2d;
     }
 
-    public List<Base> GsaGridLineToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaGridLineToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaGridLine = (GsaGridLine)nativeObject;
       var speckleObjects = new List<Base>();
       speckleObjects.Add(GsaGridLineToSpeckle(gsaGridLine));
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
-    public GSAGridLine GsaGridLineToSpeckle(GsaGridLine gsaGridLine)
+    private GSAGridLine GsaGridLineToSpeckle(GsaGridLine gsaGridLine)
     {
       var speckleGridLine = new GSAGridLine()
       {
@@ -755,15 +760,15 @@ namespace ConverterGSA
       return speckleGridLine;
     }
 
-    public List<Base> GsaGridPlaneToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaGridPlaneToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaGridPlane = (GsaGridPlane)nativeObject;
       var speckleObjects = new List<Base>();
       speckleObjects.Add(GsaGridPlaneToSpeckle(gsaGridPlane));
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
-    public GSAGridPlane GsaGridPlaneToSpeckle(GsaGridPlane gsaGridPlane)
+    private GSAGridPlane GsaGridPlaneToSpeckle(GsaGridPlane gsaGridPlane)
     {
       var speckleGridPlane = new GSAGridPlane()
       {
@@ -782,15 +787,15 @@ namespace ConverterGSA
       return speckleGridPlane;
     }
 
-    public List<Base> GsaGridSurfaceToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaGridSurfaceToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaGridSurface = (GsaGridSurface)nativeObject;
       var speckleObjects = new List<Base>();
       speckleObjects.Add(GsaGridSurfaceToSpeckle(gsaGridSurface));
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
-    public GSAGridSurface GsaGridSurfaceToSpeckle(GsaGridSurface gsaGridSurface)
+    private GSAGridSurface GsaGridSurfaceToSpeckle(GsaGridSurface gsaGridSurface)
     {
       var speckleGridSurface = new GSAGridSurface()
       {
@@ -817,12 +822,12 @@ namespace ConverterGSA
       return speckleGridSurface;
     }
 
-    public List<Base> GsaPolylineToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaPolylineToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaPolyline = (GsaPolyline)nativeObject;
       var speckleObjects = new List<Base>();
       speckleObjects.Add(GsaPolylineToSpeckle(gsaPolyline));
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
     public GSAPolyline GsaPolylineToSpeckle(GsaPolyline gsaPolyline)
@@ -846,10 +851,10 @@ namespace ConverterGSA
     #endregion
 
     #region Loading
-    public List<Base> GsaLoadCaseToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaLoadCaseToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var speckleloadCase = GsaLoadCaseToSpeckle((GsaLoadCase)nativeObject);
-      return new List<Base>() { speckleloadCase };
+      return new ToSpeckleResult(speckleloadCase);
     }
 
     public GSALoadCase GsaLoadCaseToSpeckle(GsaLoadCase gsaLoadCase)
@@ -874,10 +879,10 @@ namespace ConverterGSA
       return speckleLoadCase;
     }
 
-    public List<Base> GsaFaceLoadToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaFaceLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var speckleFaceLoad = GsaFaceLoadToSpeckle((GsaLoad2dFace)nativeObject);
-      return new List<Base>() { speckleFaceLoad };
+      return new ToSpeckleResult(speckleFaceLoad);
     }
 
     public GSAFaceLoad GsaFaceLoadToSpeckle(GsaLoad2dFace gsaLoad2dFace)
@@ -912,11 +917,11 @@ namespace ConverterGSA
       return speckleFaceLoad;
     }
 
-    public List<Base> GsaBeamLoadToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaBeamLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
 
       var speckleBeamLoad = GsaBeamLoadToSpeckle((GsaLoadBeam)nativeObject);
-      return new List<Base>() { speckleBeamLoad };
+      return new ToSpeckleResult(speckleBeamLoad);
     }
 
     public GSABeamLoad GsaBeamLoadToSpeckle(GsaLoadBeam gsaLoadBeam)
@@ -949,10 +954,10 @@ namespace ConverterGSA
       return speckleBeamLoad;
     }
 
-    public List<Base> GsaNodeLoadToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaNodeLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var speckleNodeLoad = GsaNodeLoadToSpeckle((GsaLoadNode)nativeObject);
-      return new List<Base>() { speckleNodeLoad };
+      return new ToSpeckleResult(speckleNodeLoad);
     }
 
     public GSANodeLoad GsaNodeLoadToSpeckle(GsaLoadNode gsaLoadNode)
@@ -984,10 +989,10 @@ namespace ConverterGSA
       return speckleNodeLoad;
     }
 
-    public List<Base> GsaGravityLoadToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaGravityLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var speckleGravityLoad = GsaGravityLoadToSpeckle((GsaLoadGravity)nativeObject);
-      return new List<Base>() { speckleGravityLoad };
+      return new ToSpeckleResult(speckleGravityLoad);
     }
 
     public GSAGravityLoad GsaGravityLoadToSpeckle(GsaLoadGravity gsaLoadGravity)
@@ -1011,10 +1016,10 @@ namespace ConverterGSA
       return speckleGravityLoad;
     }
 
-    public List<Base> GsaLoadCombinationToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaLoadCombinationToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var speckleLoadCombination = GsaLoadCombinationToSpeckle((GsaCombination)nativeObject);
-      return new List<Base>() { speckleLoadCombination };
+      return new ToSpeckleResult(speckleLoadCombination);
     }
 
     public GSALoadCombination GsaLoadCombinationToSpeckle(GsaCombination gsaCombination)
@@ -1036,12 +1041,12 @@ namespace ConverterGSA
       return speckleLoadCombination;
     }
 
-    public List<Base> GsaThermal2dLoadToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaThermal2dLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoad2dThermal = (GsaLoad2dThermal)nativeObject;
       var speckleObjects = new List<Base>();
       speckleObjects.Add(GsaThermal2dLoadToSpeckle(gsaLoad2dThermal));
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
     public GSAThermal2dLoad GsaThermal2dLoadToSpeckle(GsaLoad2dThermal gsaLoad2dThermal)
@@ -1062,12 +1067,12 @@ namespace ConverterGSA
       return speckleLoad;
     }
 
-    public List<Base> GsaLoadGridAreaToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaLoadGridAreaToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoadGridArea = (GsaLoadGridArea)nativeObject;
       var speckleObjects = new List<Base>();
       speckleObjects.Add(GsaLoadGridAreaToSpeckle(gsaLoadGridArea));
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
     public GSAGridAreaLoad GsaLoadGridAreaToSpeckle(GsaLoadGridArea gsaLoad)
@@ -1091,12 +1096,12 @@ namespace ConverterGSA
       return speckleLoad;
     }
 
-    public List<Base> GsaLoadGridLineToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaLoadGridLineToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoadGridLine = (GsaLoadGridLine)nativeObject;
       var speckleObjects = new List<Base>();
       speckleObjects.Add(GsaLoadGridLineToSpeckle(gsaLoadGridLine));
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
     public GSAGridLineLoad GsaLoadGridLineToSpeckle(GsaLoadGridLine gsaLoad)
@@ -1120,12 +1125,12 @@ namespace ConverterGSA
       return speckleLoad;
     }
 
-    public List<Base> GsaLoadGridPointToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaLoadGridPointToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoadGridPoint = (GsaLoadGridPoint)nativeObject;
       var speckleObjects = new List<Base>();
       speckleObjects.Add(GsaLoadGridPointToSpeckle(gsaLoadGridPoint));
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
     public GSAGridPointLoad GsaLoadGridPointToSpeckle(GsaLoadGridPoint gsaLoad)
@@ -1150,10 +1155,10 @@ namespace ConverterGSA
     #endregion
 
     #region Materials
-    public List<Base> GsaMaterialSteelToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaMaterialSteelToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var steel = GsaMaterialSteelToSpeckle((GsaMatSteel)nativeObject);
-      return new List<Base>() { steel };
+      return new ToSpeckleResult(steel);
     }
 
     public Steel GsaMaterialSteelToSpeckle(GsaMatSteel gsaMatSteel)
@@ -1204,10 +1209,10 @@ namespace ConverterGSA
     public double? Eh;*/
     }
 
-    public List<Base> GsaMaterialConcreteToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaMaterialConcreteToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var concrete = GsaMaterialConcreteToSpeckle((GsaMatConcrete)nativeObject);
-      return new List<Base>() { concrete };
+      return new ToSpeckleResult(concrete);
     }
 
     public Concrete GsaMaterialConcreteToSpeckle(GsaMatConcrete gsaMatConcrete)
@@ -1246,10 +1251,10 @@ namespace ConverterGSA
     #endregion
 
     #region Property
-    public List<Base> GsaSectionToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaSectionToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var section = GsaSectionToSpeckle((GsaSection)nativeObject);
-      return new List<Base>() { section };
+      return new ToSpeckleResult(section);
     }
 
     public GSAProperty1D GsaSectionToSpeckle(GsaSection gsaSection)
@@ -1290,10 +1295,10 @@ namespace ConverterGSA
       return speckleProperty1D;
     }
 
-    public List<Base> GsaProperty2dToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaProperty2dToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var prop2d = GsaProperty2dToSpeckle((GsaProp2d)nativeObject);
-      return new List<Base>() { prop2d };
+      return new ToSpeckleResult(prop2d);
     }
 
     public GSAProperty2D GsaProperty2dToSpeckle(GsaProp2d gsaProp2d)
@@ -1332,10 +1337,10 @@ namespace ConverterGSA
 
     //Property3D: GSA keyword not supported yet
 
-    public List<Base> GsaPropertyMassToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaPropertyMassToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var propMass = GsaPropertyMassToSpeckle((GsaPropMass)nativeObject);
-      return new List<Base>() { propMass };
+      return new ToSpeckleResult(propMass);
     }
 
     public PropertyMass GsaPropertyMassToSpeckle(GsaPropMass gsaPropMass)
@@ -1369,10 +1374,10 @@ namespace ConverterGSA
       return specklePropertyMass;
     }
 
-    public List<Base> GsaPropertySpringToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaPropertySpringToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var propSpring = GsaPropertySpringToSpeckle((GsaPropSpr)nativeObject);
-      return new List<Base>() { propSpring };
+      return new ToSpeckleResult(propSpring);
     }
 
     public PropertySpring GsaPropertySpringToSpeckle(GsaPropSpr gsaPropSpr)
@@ -1409,7 +1414,7 @@ namespace ConverterGSA
     #endregion
 
     #region Results
-    public bool GsaNodeResultToSpeckle(int gsaNodeIndex, Node speckleNode, out List<ResultNode> speckleResults)
+    private bool GsaNodeResultToSpeckle(int gsaNodeIndex, Node speckleNode, out List<ResultNode> speckleResults)
     {
       speckleResults = null;
       if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Node, gsaNodeIndex, out var csvRecords))
@@ -1620,12 +1625,12 @@ namespace ConverterGSA
     #endregion
 
     #region Constraints
-    public List<Base> GsaRigidToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaRigidToSpeckle(GsaRecord nativeObject)
     {
       var speckleObjects = new List<Base>();
       var gsaRigid = (GsaRigid)nativeObject;
       speckleObjects.Add(GsaRigidToSpeckle(gsaRigid));
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
     public GSARigid GsaRigidToSpeckle(GsaRigid gsaRigid)
@@ -1647,12 +1652,12 @@ namespace ConverterGSA
       return speckleRigid;
     }
 
-    public List<Base> GsaGenRestToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaGenRestToSpeckle(GsaRecord nativeObject)
     {
       var speckleObjects = new List<Base>();
       var gsaGenRest = (GsaGenRest)nativeObject;
       speckleObjects.Add(GsaGenRestToSpeckle(gsaGenRest));
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
     public GSAGenRest GsaGenRestToSpeckle(GsaGenRest gsaGenRest)
@@ -1674,12 +1679,12 @@ namespace ConverterGSA
     #endregion
 
     #region Analysis Stage
-    public List<Base> GsaStageToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult GsaStageToSpeckle(GsaRecord nativeObject)
     {
       var speckleObjects = new List<Base>();
       var gsaStage = (GsaAnalStage)nativeObject;
       speckleObjects.Add(GsaStageToSpeckle(gsaStage));
-      return speckleObjects;
+      return new ToSpeckleResult(speckleObjects);
     }
 
     public GSAStage GsaStageToSpeckle(GsaAnalStage gsaStage)
@@ -1771,7 +1776,7 @@ namespace ConverterGSA
     /// </summary>
     /// <param name="release">Dictionary of release codes</param>
     /// <returns></returns>
-    private static Restraint GetRestraint(Dictionary<AxisDirection6, ReleaseCode> gsaRelease, List<double> gsaStiffness)
+    private static Restraint GetRestraint(Dictionary<GwaAxisDirection6, ReleaseCode> gsaRelease, List<double> gsaStiffness)
     {
       var code = new List<string>() { "F", "F", "F", "F", "F", "F" }; //Default
       int index = 0;
@@ -1781,22 +1786,22 @@ namespace ConverterGSA
         {
           switch (k)
           {
-            case AxisDirection6.X:
+            case GwaAxisDirection6.X:
               code[0] = gsaRelease[k].GetStringValue();
               break;
-            case AxisDirection6.Y:
+            case GwaAxisDirection6.Y:
               code[1] = gsaRelease[k].GetStringValue();
               break;
-            case AxisDirection6.Z:
+            case GwaAxisDirection6.Z:
               code[2] = gsaRelease[k].GetStringValue();
               break;
-            case AxisDirection6.XX:
+            case GwaAxisDirection6.XX:
               code[3] = gsaRelease[k].GetStringValue();
               break;
-            case AxisDirection6.YY:
+            case GwaAxisDirection6.YY:
               code[4] = gsaRelease[k].GetStringValue();
               break;
-            case AxisDirection6.ZZ:
+            case GwaAxisDirection6.ZZ:
               code[5] = gsaRelease[k].GetStringValue();
               break;
           }
@@ -1888,22 +1893,22 @@ namespace ConverterGSA
       {
         switch (gsaNode.Restraints[i])
         {
-          case AxisDirection6.X:
+          case GwaAxisDirection6.X:
             code[0] = 'F';
             break;
-          case AxisDirection6.Y:
+          case GwaAxisDirection6.Y:
             code[1] = 'F';
             break;
-          case AxisDirection6.Z:
+          case GwaAxisDirection6.Z:
             code[2] = 'F';
             break;
-          case AxisDirection6.XX:
+          case GwaAxisDirection6.XX:
             code[3] = 'F';
             break;
-          case AxisDirection6.YY:
+          case GwaAxisDirection6.YY:
             code[4] = 'F';
             break;
-          case AxisDirection6.ZZ:
+          case GwaAxisDirection6.ZZ:
             code[5] = 'F';
             break;
         }
@@ -1931,47 +1936,47 @@ namespace ConverterGSA
         var gsaSpring = (GsaPropSpr)gsaRecord;
 
         //Update spring stiffness
-        if (gsaSpring.Stiffnesses[AxisDirection6.X] > 0)
+        if (gsaSpring.Stiffnesses[GwaAxisDirection6.X] > 0)
         {
           var code = restraint.code.ToCharArray();
           code[0] = 'K';
           restraint.code = code.ToString();
-          restraint.stiffnessX = gsaSpring.Stiffnesses[AxisDirection6.X];
+          restraint.stiffnessX = gsaSpring.Stiffnesses[GwaAxisDirection6.X];
         }
-        if (gsaSpring.Stiffnesses[AxisDirection6.Y] > 0)
+        if (gsaSpring.Stiffnesses[GwaAxisDirection6.Y] > 0)
         {
           var code = restraint.code.ToCharArray();
           code[1] = 'K';
           restraint.code = code.ToString();
-          restraint.stiffnessY = gsaSpring.Stiffnesses[AxisDirection6.Y];
+          restraint.stiffnessY = gsaSpring.Stiffnesses[GwaAxisDirection6.Y];
         }
-        if (gsaSpring.Stiffnesses[AxisDirection6.Z] > 0)
+        if (gsaSpring.Stiffnesses[GwaAxisDirection6.Z] > 0)
         {
           var code = restraint.code.ToCharArray();
           code[2] = 'K';
           restraint.code = code.ToString();
-          restraint.stiffnessZ = gsaSpring.Stiffnesses[AxisDirection6.Z];
+          restraint.stiffnessZ = gsaSpring.Stiffnesses[GwaAxisDirection6.Z];
         }
-        if (gsaSpring.Stiffnesses[AxisDirection6.XX] > 0)
+        if (gsaSpring.Stiffnesses[GwaAxisDirection6.XX] > 0)
         {
           var code = restraint.code.ToCharArray();
           code[3] = 'K';
           restraint.code = code.ToString();
-          restraint.stiffnessXX = gsaSpring.Stiffnesses[AxisDirection6.XX];
+          restraint.stiffnessXX = gsaSpring.Stiffnesses[GwaAxisDirection6.XX];
         }
-        if (gsaSpring.Stiffnesses[AxisDirection6.YY] > 0)
+        if (gsaSpring.Stiffnesses[GwaAxisDirection6.YY] > 0)
         {
           var code = restraint.code.ToCharArray();
           code[4] = 'K';
           restraint.code = code.ToString();
-          restraint.stiffnessYY = gsaSpring.Stiffnesses[AxisDirection6.YY];
+          restraint.stiffnessYY = gsaSpring.Stiffnesses[GwaAxisDirection6.YY];
         }
-        if (gsaSpring.Stiffnesses[AxisDirection6.ZZ] > 0)
+        if (gsaSpring.Stiffnesses[GwaAxisDirection6.ZZ] > 0)
         {
           var code = restraint.code.ToCharArray();
           code[5] = 'K';
           restraint.code = code.ToString();
-          restraint.stiffnessZZ = gsaSpring.Stiffnesses[AxisDirection6.ZZ];
+          restraint.stiffnessZZ = gsaSpring.Stiffnesses[GwaAxisDirection6.ZZ];
         }
       }
       return restraint;
@@ -2480,35 +2485,35 @@ namespace ConverterGSA
       }
     }
 
-    private LoadDirection GetDirection(AxisDirection3 gsaDirection)
+    private LoadDirection GetDirection(GwaAxisDirection3 gsaDirection)
     {
       switch (gsaDirection)
       {
-        case AxisDirection3.X:
+        case GwaAxisDirection3.X:
           return LoadDirection.X;
-        case AxisDirection3.Y:
+        case GwaAxisDirection3.Y:
           return LoadDirection.Y;
-        case AxisDirection3.Z:
+        case GwaAxisDirection3.Z:
         default:
           return LoadDirection.Z;
       }
     }
 
-    private LoadDirection GetDirection(AxisDirection6 gsaDirection)
+    private LoadDirection GetDirection(GwaAxisDirection6 gsaDirection)
     {
       switch (gsaDirection)
       {
-        case AxisDirection6.X:
+        case GwaAxisDirection6.X:
           return LoadDirection.X;
-        case AxisDirection6.Y:
+        case GwaAxisDirection6.Y:
           return LoadDirection.Y;
-        case AxisDirection6.Z:
+        case GwaAxisDirection6.Z:
           return LoadDirection.Z;
-        case AxisDirection6.XX:
+        case GwaAxisDirection6.XX:
           return LoadDirection.XX;
-        case AxisDirection6.YY:
+        case GwaAxisDirection6.YY:
           return LoadDirection.YY;
-        case AxisDirection6.ZZ:
+        case GwaAxisDirection6.ZZ:
         default:
           return LoadDirection.ZZ;
       }
@@ -2952,7 +2957,7 @@ namespace ConverterGSA
     private bool SetProprtySpringAxial(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Axial;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
       return true;
     }
 
@@ -2965,7 +2970,7 @@ namespace ConverterGSA
     private bool SetPropertySpringTorsional(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Torsional;
-      specklePropertySpring.stiffnessXX = gsaPropSpr.Stiffnesses[AxisDirection6.XX];
+      specklePropertySpring.stiffnessXX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.XX];
       return true;
     }
 
@@ -2978,7 +2983,7 @@ namespace ConverterGSA
     private bool SetProprtySpringCompression(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.CompressionOnly;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
       return true;
     }
 
@@ -2991,7 +2996,7 @@ namespace ConverterGSA
     private bool SetProprtySpringTension(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.TensionOnly;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
       return true;
     }
 
@@ -3005,7 +3010,7 @@ namespace ConverterGSA
     {
       //Also for LOCKUP, there are positive and negative parameters, but these aren't supported yet
       specklePropertySpring.springType = PropertyTypeSpring.LockUp;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
       specklePropertySpring.positiveLockup = 0;
       specklePropertySpring.negativeLockup = 0;
       return true;
@@ -3020,7 +3025,7 @@ namespace ConverterGSA
     private bool SetProprtySpringGap(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Gap;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
       return true;
     }
 
@@ -3033,9 +3038,9 @@ namespace ConverterGSA
     private bool SetProprtySpringFriction(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Friction;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
-      specklePropertySpring.stiffnessY = gsaPropSpr.Stiffnesses[AxisDirection6.Y];
-      specklePropertySpring.stiffnessZ = gsaPropSpr.Stiffnesses[AxisDirection6.Z];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
+      specklePropertySpring.stiffnessY = gsaPropSpr.Stiffnesses[GwaAxisDirection6.Y];
+      specklePropertySpring.stiffnessZ = gsaPropSpr.Stiffnesses[GwaAxisDirection6.Z];
       specklePropertySpring.frictionCoefficient = gsaPropSpr.FrictionCoeff.Value;
       return true;
     }
@@ -3049,17 +3054,17 @@ namespace ConverterGSA
     private bool SetProprtySpringGeneral(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.General;
-      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[AxisDirection6.X];
+      specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
       specklePropertySpring.springCurveX = 0;
-      specklePropertySpring.stiffnessY = gsaPropSpr.Stiffnesses[AxisDirection6.Y];
+      specklePropertySpring.stiffnessY = gsaPropSpr.Stiffnesses[GwaAxisDirection6.Y];
       specklePropertySpring.springCurveY = 0;
-      specklePropertySpring.stiffnessZ = gsaPropSpr.Stiffnesses[AxisDirection6.Z];
+      specklePropertySpring.stiffnessZ = gsaPropSpr.Stiffnesses[GwaAxisDirection6.Z];
       specklePropertySpring.springCurveZ = 0;
-      specklePropertySpring.stiffnessXX = gsaPropSpr.Stiffnesses[AxisDirection6.XX];
+      specklePropertySpring.stiffnessXX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.XX];
       specklePropertySpring.springCurveXX = 0;
-      specklePropertySpring.stiffnessYY = gsaPropSpr.Stiffnesses[AxisDirection6.YY];
+      specklePropertySpring.stiffnessYY = gsaPropSpr.Stiffnesses[GwaAxisDirection6.YY];
       specklePropertySpring.springCurveYY = 0;
-      specklePropertySpring.stiffnessZZ = gsaPropSpr.Stiffnesses[AxisDirection6.ZZ];
+      specklePropertySpring.stiffnessZZ = gsaPropSpr.Stiffnesses[GwaAxisDirection6.ZZ];
       specklePropertySpring.springCurveZZ = 0;
       return true;
     }
@@ -3466,6 +3471,55 @@ namespace ConverterGSA
     #region ToNative
     #endregion
 
+    #endregion
+
+    #region private_classes
+    internal class ToSpeckleResult
+    {
+      public bool Success = true;
+      public List<Base> LayerAgnosticObjects;
+      public List<Base> DesignLayerOnlyObjects;
+      public List<Base> AnalysisLayerOnlyObjects;
+      public List<Base> ResultObjects;
+      public List<Base> ModelObjects
+      {
+        get
+        {
+          var objects = new List<Base>();
+          if (LayerAgnosticObjects != null)
+          {
+            objects.AddRange(LayerAgnosticObjects);
+          }
+          if (DesignLayerOnlyObjects != null)
+          {
+            objects.AddRange(DesignLayerOnlyObjects);
+          }
+          if (AnalysisLayerOnlyObjects != null)
+          {
+            objects.AddRange(AnalysisLayerOnlyObjects);
+          }
+          return objects;
+        }
+      }
+
+      public ToSpeckleResult(bool success)  //Used mainly when there is an error
+      {
+        this.Success = success;
+      }
+
+      public ToSpeckleResult(Base layerAgnosticObject)
+      {
+        this.LayerAgnosticObjects = new List<Base>() { layerAgnosticObject };
+      }
+
+      public ToSpeckleResult(List<Base> layerAgnosticObjects, List<Base> designLayerOnlyObjects = null, List<Base> analysisLayerOnlyObjects = null, List<Base> resultObjects = null)
+      {
+        this.DesignLayerOnlyObjects = designLayerOnlyObjects;
+        this.AnalysisLayerOnlyObjects = analysisLayerOnlyObjects;
+        this.LayerAgnosticObjects = layerAgnosticObjects;
+        this.ResultObjects = resultObjects;
+      }
+    }
     #endregion
   }
 }

@@ -21,6 +21,7 @@ using Objects.Structural.GSA.Other;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
 using MemberType = Objects.Structural.Geometry.MemberType;
+using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using Xunit.Sdk;
 using Speckle.Core.Kits;
 using ConverterGSA;
@@ -1863,12 +1864,12 @@ namespace ConverterGSATests
       Assert.Equal("property spring 1", specklePropertySpring.applicationId);
       Assert.Equal(gsaProSpr.Name, specklePropertySpring.name);
       Assert.Equal(gsaProSpr.PropertyType.ToString(), specklePropertySpring.springType.ToString());
-      Assert.Equal(gsaProSpr.Stiffnesses[AxisDirection6.X], specklePropertySpring.stiffnessX);
-      Assert.Equal(gsaProSpr.Stiffnesses[AxisDirection6.Y], specklePropertySpring.stiffnessY);
-      Assert.Equal(gsaProSpr.Stiffnesses[AxisDirection6.Z], specklePropertySpring.stiffnessZ);
-      Assert.Equal(gsaProSpr.Stiffnesses[AxisDirection6.XX], specklePropertySpring.stiffnessXX);
-      Assert.Equal(gsaProSpr.Stiffnesses[AxisDirection6.YY], specklePropertySpring.stiffnessYY);
-      Assert.Equal(gsaProSpr.Stiffnesses[AxisDirection6.ZZ], specklePropertySpring.stiffnessZZ);
+      Assert.Equal(gsaProSpr.Stiffnesses[GwaAxisDirection6.X], specklePropertySpring.stiffnessX);
+      Assert.Equal(gsaProSpr.Stiffnesses[GwaAxisDirection6.Y], specklePropertySpring.stiffnessY);
+      Assert.Equal(gsaProSpr.Stiffnesses[GwaAxisDirection6.Z], specklePropertySpring.stiffnessZ);
+      Assert.Equal(gsaProSpr.Stiffnesses[GwaAxisDirection6.XX], specklePropertySpring.stiffnessXX);
+      Assert.Equal(gsaProSpr.Stiffnesses[GwaAxisDirection6.YY], specklePropertySpring.stiffnessYY);
+      Assert.Equal(gsaProSpr.Stiffnesses[GwaAxisDirection6.ZZ], specklePropertySpring.stiffnessZZ);
       Assert.Equal(gsaProSpr.DampingRatio, specklePropertySpring.dampingRatio);
     }
     #endregion
@@ -2543,24 +2544,24 @@ namespace ConverterGSATests
           AgeAtLoadingDays = 0,
           RemovedAtDays = 0,
           Dummy = false,
-          Releases1 = new Dictionary<AxisDirection6, ReleaseCode>()
+          Releases1 = new Dictionary<GwaAxisDirection6, ReleaseCode>()
           {
-            { AxisDirection6.X, ReleaseCode.Fixed },
-            { AxisDirection6.Y, ReleaseCode.Fixed },
-            { AxisDirection6.Z, ReleaseCode.Fixed },
-            { AxisDirection6.XX, ReleaseCode.Fixed },
-            { AxisDirection6.YY, ReleaseCode.Fixed },
-            { AxisDirection6.ZZ, ReleaseCode.Fixed }
+            { GwaAxisDirection6.X, ReleaseCode.Fixed },
+            { GwaAxisDirection6.Y, ReleaseCode.Fixed },
+            { GwaAxisDirection6.Z, ReleaseCode.Fixed },
+            { GwaAxisDirection6.XX, ReleaseCode.Fixed },
+            { GwaAxisDirection6.YY, ReleaseCode.Fixed },
+            { GwaAxisDirection6.ZZ, ReleaseCode.Fixed }
           },
           //Stiffnesses1 = new List<double>(),
-          Releases2 = new Dictionary<AxisDirection6, ReleaseCode>()
+          Releases2 = new Dictionary<GwaAxisDirection6, ReleaseCode>()
           {
-            { AxisDirection6.X, ReleaseCode.Fixed },
-            { AxisDirection6.Y, ReleaseCode.Fixed },
-            { AxisDirection6.Z, ReleaseCode.Fixed },
-            { AxisDirection6.XX, ReleaseCode.Fixed },
-            { AxisDirection6.YY, ReleaseCode.Fixed },
-            { AxisDirection6.ZZ, ReleaseCode.Fixed }
+            { GwaAxisDirection6.X, ReleaseCode.Fixed },
+            { GwaAxisDirection6.Y, ReleaseCode.Fixed },
+            { GwaAxisDirection6.Z, ReleaseCode.Fixed },
+            { GwaAxisDirection6.XX, ReleaseCode.Fixed },
+            { GwaAxisDirection6.YY, ReleaseCode.Fixed },
+            { GwaAxisDirection6.ZZ, ReleaseCode.Fixed }
           },
           //Stiffnesses2 = new List<double>(),
           RestraintEnd1 = Speckle.GSA.API.GwaSchema.Restraint.Free,
@@ -2844,7 +2845,7 @@ namespace ConverterGSATests
           LoadCaseIndex = 1,
           AxisRefType = LoadBeamAxisRefType.Global,
           Projected = false,
-          LoadDirection = AxisDirection6.Z,
+          LoadDirection = GwaAxisDirection6.Z,
           Position = 0,
           Load = 1
         },
@@ -2857,7 +2858,7 @@ namespace ConverterGSATests
           AxisRefType = LoadBeamAxisRefType.Reference,
           AxisIndex = 1,
           Projected = false,
-          LoadDirection = AxisDirection6.X,
+          LoadDirection = GwaAxisDirection6.X,
           Load = 1,
         },
         new GsaLoadBeamLine()
@@ -2868,7 +2869,7 @@ namespace ConverterGSATests
           LoadCaseIndex = 1,
           AxisRefType = LoadBeamAxisRefType.Local,
           Projected = false,
-          LoadDirection = AxisDirection6.Y,
+          LoadDirection = GwaAxisDirection6.Y,
           Load1 = 1,
           Load2 = 2
         }
@@ -2892,7 +2893,7 @@ namespace ConverterGSATests
           NodeIndices = new List<int>() { 1 },
           GlobalAxis = true,
           //AxisIndex = null,
-          LoadDirection = AxisDirection6.Z,
+          LoadDirection = GwaAxisDirection6.Z,
           Value = 1
         },
         new GsaLoadNode()
@@ -2903,7 +2904,7 @@ namespace ConverterGSATests
           NodeIndices = new List<int>() { 1 },
           GlobalAxis = false,
           AxisIndex = 1,
-          LoadDirection = AxisDirection6.X,
+          LoadDirection = GwaAxisDirection6.X,
           Value = 1,
         }
       };
@@ -3727,13 +3728,14 @@ namespace ConverterGSATests
         Name = "1",
         Colour = Colour.NO_RGB,
         PropertyType = StructuralSpringPropertyType.General,
-        Stiffnesses = new Dictionary<AxisDirection6, double>
-        { { AxisDirection6.X, 10 },
-          { AxisDirection6.Y, 11 },
-          { AxisDirection6.Z, 12 },
-          { AxisDirection6.XX, 13 },
-          { AxisDirection6.YY, 14 },
-          { AxisDirection6.ZZ, 15 },
+        Stiffnesses = new Dictionary<Speckle.GSA.API.GwaSchema.AxisDirection6, double>
+        { 
+          { GwaAxisDirection6.X, 10 },
+          { GwaAxisDirection6.Y, 11 },
+          { GwaAxisDirection6.Z, 12 },
+          { GwaAxisDirection6.XX, 13 },
+          { GwaAxisDirection6.YY, 14 },
+          { GwaAxisDirection6.ZZ, 15 },
         },
         DampingRatio = 5
       };

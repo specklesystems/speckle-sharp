@@ -17,19 +17,20 @@ namespace ConnectorGSATests
     protected string designLayerExpectedFile = "DesignLayerSpeckleObjects.json";
     protected string modelWithoutResultsFile = "Structural Demo.gwb";
     protected string modelWithResultsFile = "Structural Demo Results.gwb";
-    
+
     protected string v2ServerUrl = "https://v2.speckle.arup.com";
 
     protected GsaModelMock GsaModelMock = new GsaModelMock();
     protected IGSACache cache => GsaModelMock.Cache;
     protected IGSAProxy proxy { get => GsaModelMock.Proxy; set => GsaModelMock.Proxy = value; }
-    protected ISpeckleConverter converter;
+
+    protected ISpeckleConverter converter {  get =>  kit.LoadConverter(Applications.GSA); }
+
+    public ISpeckleKit kit { get=> KitManager.GetDefaultKit(); }
 
     public SpeckleConnectorFixture()
     {
       Instance.GsaModel = GsaModelMock;
-      converter = KitManager.GetDefaultKit().LoadConverter(Applications.GSA);
-      //converter = new ConverterGSA.ConverterGSA();
     }
 
     protected static GwaKeyword[] DesignLayerKeywords = new GwaKeyword[] {
