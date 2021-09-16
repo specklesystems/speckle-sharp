@@ -117,4 +117,71 @@ namespace Objects.Structural.GSA.Other
     public GSAGridPlane gridPlane { get; set; }
     public GSAPolyline() { }
   }
+
+  public class GSARigid : Base
+  {
+    public string name { get; set; }
+    public int nativeId { get; set; }
+    public Node primaryNode { get; set; }
+    public List<Node> constrainedNodes { get; set; }
+    public Base parentMember { get; set; }
+    public List<GSAStage> stages { get; set; }
+    public RigidConstraint type { get; set; }
+    public Dictionary<AxisDirection6,List<AxisDirection6>> link { get; set; }
+    public GSARigid() { }
+  }
+
+  public enum AxisDirection6
+  {
+    NotSet = 0,
+    X,
+    Y,
+    Z,
+    XX,
+    YY,
+    ZZ
+  }
+
+  public enum RigidConstraint
+  {
+    NotSet = 0,
+    ALL,
+    XY_PLANE,
+    YZ_PLANE,
+    ZX_PLANE,
+    XY_PLATE,
+    YZ_PLATE,
+    ZX_PLATE,
+    PIN,
+    XY_PLANE_PIN,
+    YZ_PLANE_PIN,
+    ZX_PLANE_PIN,
+    XY_PLATE_PIN,
+    YZ_PLATE_PIN,
+    ZX_PLATE_PIN,
+    Custom
+  }
+
+  public class GSAGenRest : Base
+  {
+    public int nativeId { get; set; }
+    public string name { get; set; }
+    public Restraint restraint { get; set; }
+    public List<Node> nodes { get; set; }
+    public List<GSAStage> stages { get; set; }
+    public GSAGenRest() { }
+  }
+
+  public class GSAStage : Base
+  {
+    public int nativeId { get; set; }
+    public string name { get; set; }
+    public string colour { get; set; }
+    public List<Base> elements { get; set; }
+    public double creepFactor { get; set; }
+    public int stageTime { get; set; } //number of days
+    public List<Base> lockedElements { get; set; } //elements not part of the current analysis stage
+    public GSAStage() { }
+  }
+
 }
