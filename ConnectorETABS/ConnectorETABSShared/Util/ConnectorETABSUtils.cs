@@ -4,10 +4,11 @@ using System.Text;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using System.Linq;
-using ConnectorETABSShared.UI;
+using Speckle.ConnectorETABS.UI;
+using Objects.Converter.ETABS;
 using ETABSv1;
 
-namespace ConnectorETABSShared.Util
+namespace Speckle.ConnectorETABS.Util
 {
     class ConnectorETABSUtils
     {

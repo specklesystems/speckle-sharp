@@ -4,7 +4,7 @@ using System.Text;
 using System.Runtime.ExceptionServices;
 using ETABSv1;
 
-namespace ConnectorETABSShared.Util
+namespace Objects.Converter.ETABS
 {
     public class ConnectorETABSDocument : IDisposable
     {

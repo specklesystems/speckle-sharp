@@ -6,12 +6,14 @@
     <SharedGUID>cf75d8d2-10d8-4419-9345-d7a830550d16</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>ConnectorETABSShared</Import_RootNamespace>
+    <Import_RootNamespace>ConnectorETABS</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.ClientOperations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Util\ConnectorETABSDocument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.Recieve.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.Selection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Util\ConnectorETABSUtils.cs" />
   </ItemGroup>
 </Project>

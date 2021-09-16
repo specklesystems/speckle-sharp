@@ -1679,6 +1679,33 @@ public class SpaceSchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Space.ctor(System.String,System.String,Objects.Geometry.Point,Objects.BuiltElements.Level)","Objects.BuiltElements.Space");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class Space1SchemaComponent: CreateSchemaObjectBase {
+     
+    public Space1SchemaComponent(): base("Space with top level and offset parameters", "Space with top level and offset parameters", "Creates a Speckle space with the specified top level and offsets", "Speckle 2 BIM", "MEP") { }
+    
+    public override Guid ComponentGuid => new Guid("8f7b0323-3533-e7cd-ae43-0bdeb34f3570");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Space.ctor(System.String,System.String,Objects.Geometry.Point,Objects.BuiltElements.Level,Objects.BuiltElements.Level,System.Double,System.Double)","Objects.BuiltElements.Space");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class SpaceSeparationLineSchemaComponent: CreateSchemaObjectBase {
+     
+    public SpaceSeparationLineSchemaComponent(): base("SpaceSeparationLine", "SpaceSeparationLine", "Creates a Revit space separation line", "Speckle 2 Revit", "Curves") { }
+    
+    public override Guid ComponentGuid => new Guid("0bba13ce-5758-8513-42fd-9e0b3702a654");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.Curve.SpaceSeparationLine.ctor(Objects.ICurve,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.Curve.SpaceSeparationLine");
+        base.AddedToDocument(document);
     }
 }
 
@@ -1696,18 +1723,6 @@ public class SteelSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
-public class Space1SchemaComponent: CreateSchemaObjectBase {
-     
-    public Space1SchemaComponent(): base("Space with top level and offset parameters", "Space with top level and offset parameters", "Creates a Speckle space with the specified top level and offsets", "Speckle 2 BIM", "MEP") { }
-    
-    public override Guid ComponentGuid => new Guid("8f7b0323-3533-e7cd-ae43-0bdeb34f3570");
-    
-    public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Space.ctor(System.String,System.String,Objects.Geometry.Point,Objects.BuiltElements.Level,Objects.BuiltElements.Level,System.Double,System.Double)","Objects.BuiltElements.Space");
-    }
-}
-
-// This is generated code:
 public class TaskSchemaComponent: CreateSchemaObjectBase {
      
     public TaskSchemaComponent(): base("AnalysisTask", "AnalysisTask", "Creates a Speckle structural analysis task for GSA", "Speckle 2 GSA", "Analysis") { }
@@ -1717,18 +1732,6 @@ public class TaskSchemaComponent: CreateSchemaObjectBase {
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.GSA.Analysis.Task.ctor(System.Int32,System.String)","Objects.Structural.GSA.Analysis.Task");
         base.AddedToDocument(document);
-    }
-}
-
-// This is generated code:
-public class SpaceSeparationLineSchemaComponent: CreateSchemaObjectBase {
-     
-    public SpaceSeparationLineSchemaComponent(): base("SpaceSeparationLine", "SpaceSeparationLine", "Creates a Revit space separation line", "Speckle 2 Revit", "Curves") { }
-    
-    public override Guid ComponentGuid => new Guid("0bba13ce-5758-8513-42fd-9e0b3702a654");
-    
-    public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.Curve.SpaceSeparationLine.ctor(Objects.ICurve,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.Curve.SpaceSeparationLine");
     }
 }
 

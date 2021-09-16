@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorETABSv18", "ConnectorETABS\ConnectorETABSv18.csproj", "{99559C24-CEFA-4F5B-BDB3-2536EB2FD2C9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0EDCF0A3-85BB-4809-B9A4-2BD2B6DC838B} = {0EDCF0A3-85BB-4809-B9A4-2BD2B6DC838B}
+	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorETABSShared", "ConnectorETABSShared\ConnectorETABSShared.shproj", "{CF75D8D2-10D8-4419-9345-D7A830550D16}"
 EndProject
@@ -17,9 +20,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopUI", "..\DesktopUI\D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ETABSVersionProjects", "ETABSVersionProjects", "{E6B4D3C7-38B3-4F6C-AE8B-44851E42C0C8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterETABS", "ConverterETABS", "{B6BC60D6-47D6-4EAA-BA62-275B20564E84}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterETABSShared", "..\Objects\Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.shproj", "{7F5A5E2B-D74F-483D-8983-97DC049C6D28}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterETABSv18", "..\Objects\Converters\ConverterETABS\ConverterETABSv18\ConverterETABSv18.csproj", "{0EDCF0A3-85BB-4809-B9A4-2BD2B6DC838B}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\Objects\Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{0edcf0a3-85bb-4809-b9a4-2bd2b6dc838b}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{7f5a5e2b-d74f-483d-8983-97dc049c6d28}*SharedItemsImports = 13
 		ConnectorETABSShared\ConnectorETABSShared.projitems*{99559c24-cefa-4f5b-bdb3-2536eb2fd2c9}*SharedItemsImports = 4
+		..\Objects\Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{99559c24-cefa-4f5b-bdb3-2536eb2fd2c9}*SharedItemsImports = 4
 		ConnectorETABSShared\ConnectorETABSShared.projitems*{cf75d8d2-10d8-4419-9345-d7a830550d16}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +73,14 @@ Global
 		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Release|x64.ActiveCfg = Release|x64
 		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Release|x64.Build.0 = Release|x64
+		{0EDCF0A3-85BB-4809-B9A4-2BD2B6DC838B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EDCF0A3-85BB-4809-B9A4-2BD2B6DC838B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EDCF0A3-85BB-4809-B9A4-2BD2B6DC838B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0EDCF0A3-85BB-4809-B9A4-2BD2B6DC838B}.Debug|x64.Build.0 = Debug|Any CPU
+		{0EDCF0A3-85BB-4809-B9A4-2BD2B6DC838B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EDCF0A3-85BB-4809-B9A4-2BD2B6DC838B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EDCF0A3-85BB-4809-B9A4-2BD2B6DC838B}.Release|x64.ActiveCfg = Release|Any CPU
+		{0EDCF0A3-85BB-4809-B9A4-2BD2B6DC838B}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -70,6 +90,8 @@ Global
 		{E2D3978E-ACA5-4900-BF72-CE2028A316E5} = {2B74877F-8676-4777-9620-451CAE7DD7B2}
 		{1EEBBB85-C84F-4AE1-A949-963DC78357A3} = {2B74877F-8676-4777-9620-451CAE7DD7B2}
 		{A97C3046-2D55-4C49-AB40-A3C2194B82FA} = {2B74877F-8676-4777-9620-451CAE7DD7B2}
+		{7F5A5E2B-D74F-483D-8983-97DC049C6D28} = {B6BC60D6-47D6-4EAA-BA62-275B20564E84}
+		{0EDCF0A3-85BB-4809-B9A4-2BD2B6DC838B} = {B6BC60D6-47D6-4EAA-BA62-275B20564E84}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ADC3F8B1-44DA-41E6-8541-16514DFA4EF9}

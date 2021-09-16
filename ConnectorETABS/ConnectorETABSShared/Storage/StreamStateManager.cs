@@ -1,13 +1,14 @@
 ﻿using System;
-using ConnectorETABSShared.Util;
+using Speckle.ConnectorETABS.Util;
 using System.Collections.Generic;
 using Speckle.Core.Logging;
 using Speckle.DesktopUI.Utils;
 using Speckle.Newtonsoft.Json;
 using System.IO;
 using System.Text;
+using Objects.Converter.ETABS;
 
-namespace ConnectorETABSShared.Storage
+namespace ConnectorETABS.Storage
 {
     public static class StreamStateManager
     {

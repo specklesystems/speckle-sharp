@@ -11,8 +11,9 @@ using System.Windows;
 using System.Diagnostics;
 using Speckle.Core.Logging;
 
-using ConnectorETABSShared.Util;
-using ConnectorETABSShared.UI;
+using Speckle.ConnectorETABS.Util;
+using Speckle.ConnectorETABS.UI;
+using Objects.Converter.ETABS;
 
 
 namespace Speckle.ConnectorETABS
