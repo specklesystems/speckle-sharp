@@ -196,7 +196,7 @@ namespace ConverterGSA
         foreach (var x in objects)
         {
           var toSpeckleResult = ToSpeckle((GsaRecord)x);
-          var speckleObjects = toSpeckleResult.Objects;
+          var speckleObjects = toSpeckleResult.ModelObjects;
           if (speckleObjects != null && speckleObjects.Count > 0)
           {
             retList.AddRange(speckleObjects.Where(so => so != null));
@@ -345,10 +345,10 @@ namespace ConverterGSA
     }
 
     #region ToSpeckle
-    private ToSpeckleResult ToSpeckle(GsaRecord nativeObject)
+    private ToSpeckleResult ToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var nativeType = nativeObject.GetType();
-      return ToSpeckleFns.ContainsKey(nativeType) ? ToSpeckleFns[nativeType](nativeObject) : null;
+      return ToSpeckleFns.ContainsKey(nativeType) ? ToSpeckleFns[nativeType](nativeObject, layer) : null;
     }
 
     #region Geometry
@@ -3480,7 +3480,8 @@ namespace ConverterGSA
       public List<Base> LayerAgnosticObjects;
       public List<Base> DesignLayerOnlyObjects;
       public List<Base> AnalysisLayerOnlyObjects;
-      public List<Base> Objects
+      public List<Base> ResultObjects;
+      public List<Base> ModelObjects
       {
         get
         {
@@ -3511,11 +3512,12 @@ namespace ConverterGSA
         this.LayerAgnosticObjects = new List<Base>() { layerAgnosticObject };
       }
 
-      public ToSpeckleResult(List<Base> layerAgnosticObjects, List<Base> designLayerOnlyObjects = null, List<Base> analysisLayerOnlyObjects = null)
+      public ToSpeckleResult(List<Base> layerAgnosticObjects, List<Base> designLayerOnlyObjects = null, List<Base> analysisLayerOnlyObjects = null, List<Base> resultObjects = null)
       {
         this.DesignLayerOnlyObjects = designLayerOnlyObjects;
         this.AnalysisLayerOnlyObjects = analysisLayerOnlyObjects;
         this.LayerAgnosticObjects = layerAgnosticObjects;
+        this.ResultObjects = resultObjects;
       }
     }
     #endregion
