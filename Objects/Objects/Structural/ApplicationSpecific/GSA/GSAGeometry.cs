@@ -22,7 +22,7 @@ namespace Objects.Structural.GSA.Geometry
         }
     }
 
-    public class GSAGridPlane : Storey
+    public class GSAGridPlane : GSAStorey
     {
         public int nativeId { get; set; }
         public Axis axis { get; set; }
@@ -41,11 +41,11 @@ namespace Objects.Structural.GSA.Geometry
     {
         public int nativeId { get; set; }
         public Axis axis { get; set; }
-        public double toleranceBelow { get; set; }
-        public double toleranceAbove { get; set; }
+        public string toleranceBelow { get; set; }
+        public string toleranceAbove { get; set; }
         public GSAStorey() { }
 
-        public GSAStorey(int nativeId, string name, Axis axis, double elevation, double toleranceBelow, double toleranceAbove)
+        public GSAStorey(int nativeId, string name, Axis axis, double elevation, string toleranceBelow, string toleranceAbove)
         {            
             this.nativeId = nativeId;
             this.name = name;

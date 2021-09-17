@@ -31,6 +31,7 @@ using Speckle.Core.Api;
 using Objects.Structural.Analysis;
 using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Materials;
+using static Objects.Structural.GSA.Materials.GSAMaterial;
 using System.Collections;
 using System.Security.AccessControl;
 
@@ -749,15 +750,15 @@ namespace ConverterGSA
       var gsaGridLine = (GsaGridLine)nativeObject;
       var speckleGridLine = new GSAGridLine()
       {
-        name = gsaGridLine.Name,
+        label = gsaGridLine.Name,
       };
       if (gsaGridLine.Index.IsIndex())
       {
         speckleGridLine.applicationId = Instance.GsaModel.GetApplicationId<GsaGridLine>(gsaGridLine.Index.Value);
         speckleGridLine.nativeId = gsaGridLine.Index.Value;
       }
-      if (gsaGridLine.Type == GridLineType.Line) speckleGridLine.line = GetLine(gsaGridLine);
-      else if (gsaGridLine.Type == GridLineType.Arc) speckleGridLine.line = GetArc(gsaGridLine);
+      if (gsaGridLine.Type == GridLineType.Line) speckleGridLine.baseLine = GetLine(gsaGridLine);
+      else if (gsaGridLine.Type == GridLineType.Arc) speckleGridLine.baseLine = GetArc(gsaGridLine);
       return new ToSpeckleResult(speckleGridLine);
     }
 
@@ -768,8 +769,8 @@ namespace ConverterGSA
       {
         name = gsaGridPlane.Name,
         axis = GetGridPlaneAxis(gsaGridPlane.AxisRefType, gsaGridPlane.AxisIndex),
-        storeyToleranceBelow = GetStoreyTolerance(gsaGridPlane.StoreyToleranceBelow, gsaGridPlane.StoreyToleranceBelowAuto, gsaGridPlane.Type),
-        storeyToleranceAbove = GetStoreyTolerance(gsaGridPlane.StoreyToleranceAbove, gsaGridPlane.StoreyToleranceAboveAuto, gsaGridPlane.Type),
+        toleranceBelow = GetStoreyTolerance(gsaGridPlane.StoreyToleranceBelow, gsaGridPlane.StoreyToleranceBelowAuto, gsaGridPlane.Type),
+        toleranceAbove = GetStoreyTolerance(gsaGridPlane.StoreyToleranceAbove, gsaGridPlane.StoreyToleranceAboveAuto, gsaGridPlane.Type),
       };
       if (gsaGridPlane.Index.IsIndex())
       {
@@ -840,7 +841,6 @@ namespace ConverterGSA
         //-- App agnostic --
         name = gsaLoadCase.Title,
         loadType = GetLoadType(gsaLoadCase.CaseType),
-        source = "",
         actionType = ActionType.None,
         description = ""
       };
@@ -1096,7 +1096,7 @@ namespace ConverterGSA
       //  SPEC_STEEL_DESIGN.1	AS 4100-1998	YES	15	YES	15	15	YES	NO	NO	NO
       //
       var gsaSteel = (GsaMatSteel)nativeObject;
-      var speckleSteel = new Steel()
+      var speckleSteel = new GSASteel()
       {
         name = gsaSteel.Name,
         grade = "",                                 //grade can be determined from gsaMatSteel.Mat.Name (assuming the user doesn't change the default value): e.g. "350(AS3678)"
@@ -1110,7 +1110,7 @@ namespace ConverterGSA
       if (gsaSteel.Index.IsIndex()) speckleSteel.applicationId = Instance.GsaModel.GetApplicationId<GsaMatSteel>(gsaSteel.Index.Value);
 
       //the following properties are stored in multiple locations in GSA
-      if (Choose(gsaSteel.Mat.E, gsaSteel.Mat.Prop == null ? null : gsaSteel.Mat.Prop.E, out var E)) speckleSteel.youngsModulus = E;
+      if (Choose(gsaSteel.Mat.E, gsaSteel.Mat.Prop == null ? null : gsaSteel.Mat.Prop.E, out var E)) speckleSteel.elasticModulus = E;
       if (Choose(gsaSteel.Mat.Nu, gsaSteel.Mat.Prop == null ? null : gsaSteel.Mat.Prop.Nu, out var Nu)) speckleSteel.poissonsRatio = Nu;
       if (Choose(gsaSteel.Mat.G, gsaSteel.Mat.Prop == null ? null : gsaSteel.Mat.Prop.G, out var G)) speckleSteel.shearModulus = G;
       if (Choose(gsaSteel.Mat.Rho, gsaSteel.Mat.Prop == null ? null : gsaSteel.Mat.Prop.Rho, out var Rho)) speckleSteel.density = Rho;
@@ -1132,7 +1132,7 @@ namespace ConverterGSA
       //A lot of information in the gsa objects are currently ignored.
 
       var gsaConcrete = (GsaMatConcrete)nativeObject;
-      var speckleConcrete = new Concrete()
+      var speckleConcrete = new GSAConcrete()
       {
         name = gsaConcrete.Name,
         grade = "",                                 //grade can be determined from gsaMatConcrete.Mat.Name (assuming the user doesn't change the default value): e.g. "32 MPa"
@@ -1145,12 +1145,12 @@ namespace ConverterGSA
 
       //the following properties might be null
       if (gsaConcrete.Fc.HasValue) speckleConcrete.compressiveStrength = gsaConcrete.Fc.Value;
-      if (gsaConcrete.EpsU.HasValue) speckleConcrete.maxStrain = gsaConcrete.EpsU.Value;
+      if (gsaConcrete.EpsU.HasValue) speckleConcrete.maxCompressiveStrain = gsaConcrete.EpsU.Value;
       if (gsaConcrete.Agg.HasValue) speckleConcrete.maxAggregateSize = gsaConcrete.Agg.Value;
       if (gsaConcrete.Fcdt.HasValue) speckleConcrete.tensileStrength = gsaConcrete.Fcdt.Value;
 
       //the following properties are stored in multiple locations in GSA
-      if (Choose(gsaConcrete.Mat.E, gsaConcrete.Mat.Prop == null ? null : gsaConcrete.Mat.Prop.E, out var E)) speckleConcrete.youngsModulus = E;
+      if (Choose(gsaConcrete.Mat.E, gsaConcrete.Mat.Prop == null ? null : gsaConcrete.Mat.Prop.E, out var E)) speckleConcrete.elasticModulus = E;
       if (Choose(gsaConcrete.Mat.Nu, gsaConcrete.Mat.Prop == null ? null : gsaConcrete.Mat.Prop.Nu, out var Nu)) speckleConcrete.poissonsRatio = Nu;
       if (Choose(gsaConcrete.Mat.G, gsaConcrete.Mat.Prop == null ? null : gsaConcrete.Mat.Prop.G, out var G)) speckleConcrete.shearModulus = G;
       if (Choose(gsaConcrete.Mat.Rho, gsaConcrete.Mat.Prop == null ? null : gsaConcrete.Mat.Prop.Rho, out var Rho)) speckleConcrete.density = Rho;
@@ -1395,7 +1395,7 @@ namespace ConverterGSA
             description = "", //???
             permutation = "", //???
             element = speckleElement,
-            position = gsaResult.PosR.ToDouble(),
+            position = float.Parse(gsaResult.PosR),
           };
 
           var gsaCaseIndex = Convert.ToInt32(gsaResult.CaseId.Substring(1));
@@ -2118,8 +2118,8 @@ namespace ConverterGSA
           axisType = AxisType.Cartesian
         },
         elevation = 0,
-        storeyToleranceBelow = "",
-        storeyToleranceAbove = "",
+        toleranceBelow = "",
+        toleranceAbove = "",
       };
 
       if (gsaAxisType == GridPlaneAxisRefType.XElevation)
@@ -2336,16 +2336,16 @@ namespace ConverterGSA
       }
     }
 
-    private AreaLoadType GetAreaLoadType(Load2dFaceType gsaType)
+    private FaceLoadType GetAreaLoadType(Load2dFaceType gsaType)
     {
       switch (gsaType)
       {
         case Load2dFaceType.General:
-          return AreaLoadType.Variable;
+          return FaceLoadType.Variable;
         case Load2dFaceType.Point:
-          return AreaLoadType.Point;
+          return FaceLoadType.Point;
         default:
-          return AreaLoadType.Constant;
+          return FaceLoadType.Constant;
       }
     }
 
@@ -2364,17 +2364,17 @@ namespace ConverterGSA
       }
     }
 
-    private LoadDirection GetDirection(GwaAxisDirection3 gsaDirection)
+    private LoadDirection2D GetDirection(GwaAxisDirection3 gsaDirection)
     {
       switch (gsaDirection)
       {
         case GwaAxisDirection3.X:
-          return LoadDirection.X;
+          return LoadDirection2D.X;
         case GwaAxisDirection3.Y:
-          return LoadDirection.Y;
+          return LoadDirection2D.Y;
         case GwaAxisDirection3.Z:
         default:
-          return LoadDirection.Z;
+          return LoadDirection2D.Z;
       }
     }
 
