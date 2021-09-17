@@ -20,12 +20,6 @@ namespace Objects.BuiltElements
     public double volume { get ; set ; }
 
     public Rebar() { }
-
-    [SchemaInfo("Rebar", "Creates a Speckle rebar", "BIM", "Structure")]
-    public Rebar(List<ICurve> curves)
-    {
-      this.curves = curves;
-    }
   }
 }
 
