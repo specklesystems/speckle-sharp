@@ -52,6 +52,8 @@ namespace ConnectorGSA
       }
     }
 
+    public string Name { get; internal set; }
+
     public StreamState()
     {
 
@@ -104,6 +106,11 @@ namespace ConnectorGSA
       }
 
       return true;
+    }
+
+    public void SetName(string newName)
+    {
+
     }
 
   }

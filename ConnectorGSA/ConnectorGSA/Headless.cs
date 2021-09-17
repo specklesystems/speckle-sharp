@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Speckle.Core.Api;
+﻿using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Transports;
@@ -48,9 +47,9 @@ namespace ConnectorGSA
       if (cliMode == "-h")
       {
         Console.WriteLine("\n");
-        Console.WriteLine("Usage: SpeckleGSAUI.exe <command>\n\n" +
+        Console.WriteLine("Usage: ConnectorGSA.exe <command>\n\n" +
           "where <command> is one of: receiver, sender\n\n");
-        Console.Write("SpeckleGSAUI.exe <command> -h\thelp on <command>\n");
+        Console.Write("ConnectorGSA.exe <command> -h\thelp on <command>\n");
         return true;
       }
       if (cliMode != "receiver" && cliMode != "sender")
@@ -65,7 +64,7 @@ namespace ConnectorGSA
       if (sendReceive == SendReceive.Receive && argPairs.ContainsKey("h"))
       {
         Console.WriteLine("\n");
-        Console.WriteLine("Usage: SpeckleGSAUI.exe receiver\n");
+        Console.WriteLine("Usage: ConnectorGSA.exe receiver\n");
         Console.WriteLine("\n");
         Console.Write("Required arguments:\n");
         Console.Write("--server <server>\t\tAddress of Speckle server\n");
@@ -81,7 +80,7 @@ namespace ConnectorGSA
       else if (sendReceive == SendReceive.Send && argPairs.ContainsKey("h"))
       {
         Console.WriteLine("\n");
-        Console.WriteLine("Usage: SpeckleGSAUI.exe sender\n");
+        Console.WriteLine("Usage: ConnectorGSA.exe sender\n");
         Console.WriteLine("\n");
         Console.Write("Required arguments:\n");
         Console.Write("--server <server>\t\tAddress of Speckle server\n");

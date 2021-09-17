@@ -1,4 +1,5 @@
-﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
+﻿using Speckle.ConnectorGSA.Proxy;
+using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API;
 using Speckle.GSA.API.CsvSchema;
 using Speckle.GSA.API.GwaSchema;
@@ -20,9 +21,7 @@ namespace ConverterGSATests
     protected Dictionary<ResultGroup, Dictionary<int, Dictionary<string, List<CsvRecord>>>> resultsData;
     //protected Dictionary<GwaKeyword, Type> TypesByKeyword;
     //protected Dictionary<Type, GwaKeyword> KeywordsByType;
-
-    public List<List<Type>> TxTypeDependencyGenerations => throw new NotImplementedException();
-
+    
     public char GwaDelimiter => throw new NotImplementedException();
 
     public GsaProxyMockForConverterTests()
@@ -145,7 +144,11 @@ namespace ConverterGSATests
       return true;
     }
 
-    public List<List<Type>> GetTxTypeDependencyGenerations(GSALayer layer) => new List<List<Type>>();
+    public List<List<Type>> GetTxTypeDependencyGenerations(GSALayer layer)
+    {
+      var proxy = new GsaProxy();
+      return proxy.GetTxTypeDependencyGenerations(layer);
+    }
 
     #region test_config_fns
     public bool AddResultData(ResultGroup group, List<CsvRecord> records)
