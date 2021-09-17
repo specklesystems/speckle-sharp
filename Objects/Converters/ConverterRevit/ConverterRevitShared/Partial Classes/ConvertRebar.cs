@@ -144,12 +144,10 @@ namespace Objects.Converter.Revit
       }
 
       var speckleRebar = new RevitRebar();
+      speckleRebar.host = revitRebar.GetHostId().ToString();
       speckleRebar.type = Doc.GetElement(revitRebar.GetTypeId()).Name;
       speckleRebar.curves = curves;
-      if (accessor != null)
-        speckleRebar.shape = revitRebar.GetShapeId().ToString(); // rebar could contain bars with have multiple shapes!! need to handle this later
-      //speckleRebar.level = ConvertAndCacheLevel(revitRebar, DB.BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
-      //speckleRebar.displayMesh = GetElementMesh(revitRebar);
+      speckleRebar.shapes = revitRebar.GetAllRebarShapeIds().Select(o => o.ToString()).ToList(); // freeform rebar with bent workshop has multiple shapes
       speckleRebar.volume = revitRebar.Volume;
 
       GetAllRevitParamsAndIds(speckleRebar, revitRebar);

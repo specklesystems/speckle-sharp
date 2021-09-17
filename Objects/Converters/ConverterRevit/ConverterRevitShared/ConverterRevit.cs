@@ -310,9 +310,6 @@ namespace Objects.Converter.Revit
         case BE.Opening o:
           return OpeningToNative(o);
 
-        case BE.Rebar o:
-          return RebarToNative(o);
-
         case BERC.RoomBoundaryLine o:
           return RoomBoundaryLineToNative(o);
 
