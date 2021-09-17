@@ -1,0 +1,27 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Pages.HomeView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.HomeControls"
+  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels"
+  d:DesignHeight="450"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <Design.DataContext>
+    <viewModels:HomeViewModel />
+  </Design.DataContext>
+
+
+  <TabControl SelectedIndex="{Binding SelectedTab}">
+    <TabItem Header="All Streams">
+      <uc:AllStreams />
+    </TabItem>
+    <TabItem Header="Saved Streams" IsVisible="{Binding HasSavedStreams}">
+      <uc:SavedStreams />
+    </TabItem>
+  </TabControl>
+</UserControl>

@@ -64,12 +64,7 @@ namespace Speckle.ConnectorRevit.UI
 
       var streams = GetStreamsInFile();
       UpdateSavedStreams(streams);
-      //var appEvent = new ApplicationEvent()
-      //{
-      //  Type = ApplicationEvent.EventType.ViewActivated,
-      //  DynamicInfo = GetStreamsInFile()
-      //};
-      //NotifyUi(appEvent);
+
     }
 
     private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
@@ -83,8 +78,6 @@ namespace Speckle.ConnectorRevit.UI
       if (SpeckleRevitCommand2.MainWindow != null)
         SpeckleRevitCommand2.MainWindow.Hide();
 
-      //var appEvent = new ApplicationEvent() { Type = ApplicationEvent.EventType.DocumentClosed };
-      //NotifyUi(appEvent);
     }
 
     // this method is triggered when there are changes in the active document
@@ -100,14 +93,6 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       UpdateSavedStreams(streams);
-
-      //var appEvent = new ApplicationEvent()
-      //{
-      //  Type = ApplicationEvent.EventType.DocumentOpened,
-      //  DynamicInfo = streams
-      //};
-
-      //NotifyUi(appEvent);
     }
 
 

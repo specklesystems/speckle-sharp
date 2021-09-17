@@ -81,13 +81,13 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\desktopui2\DesktopUI2\DesktopUI2.csproj">
-      <Project>{2704c885-c705-449c-b60e-9b6e2cccafc0}</Project>
-      <Name>DesktopUI2</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{521d4aee-08cf-4913-bbe8-5511d176d126}</Project>
       <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj">
+      <Project>{aab81f89-c71c-4f8a-b256-6a23d19134a7}</Project>
+      <Name>DesktopUI2</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\DesktopUI\DesktopUI\DesktopUI.csproj">
       <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
