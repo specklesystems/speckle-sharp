@@ -512,11 +512,11 @@ namespace ConverterGSA
           var speckleElement3d = GsaElement3dToSpeckle(gsaEl);
           if (GsaElement3dResultToSpeckle(gsaEl.Index.Value, speckleElement3d, out var speckleResults))
           {
-            return new ToSpeckleResult(new List<Base>() { speckleElement3d }, null, null, speckleResults.Select(i => (Base)i).ToList());
+            return new ToSpeckleResult(analysisLayerOnlyObject: speckleElement3d, resultObjects: speckleResults.Select(i => (Base)i));
           }
           else
           {
-            return new ToSpeckleResult(speckleElement3d);
+            return new ToSpeckleResult(analysisLayerOnlyObject: speckleElement3d);
           }
         }
         else if (gsaEl.Is2dElement()) // 2D element
@@ -524,11 +524,11 @@ namespace ConverterGSA
           var speckleElement2d = GsaElement2dToSpeckle(gsaEl);
           if (GsaElement2dResultToSpeckle(gsaEl.Index.Value, speckleElement2d, out var speckleResults))
           {
-            return new ToSpeckleResult(new List<Base>() { speckleElement2d }, null, null, speckleResults.Select(i => (Base)i).ToList());
+            return new ToSpeckleResult(analysisLayerOnlyObject: speckleElement2d, resultObjects: speckleResults.Select(i => (Base)i));
           }
           else
           {
-            return new ToSpeckleResult(speckleElement2d);
+            return new ToSpeckleResult(null, null, speckleElement2d);
           }
         }
         else //1D element
@@ -536,11 +536,11 @@ namespace ConverterGSA
           var speckleElement1d = GsaElement1dToSpeckle(gsaEl);
           if (GsaElement1dResultToSpeckle(gsaEl.Index.Value, speckleElement1d, out var speckleResults))
           {
-            return new ToSpeckleResult(new List<Base>() { speckleElement1d }, null, null, speckleResults.Select(i => (Base)i).ToList());
+            return new ToSpeckleResult(analysisLayerOnlyObject: speckleElement1d, resultObjects: speckleResults.Select(i => (Base)i));
           }
           else
           {
-            return new ToSpeckleResult(speckleElement1d);
+            return new ToSpeckleResult(analysisLayerOnlyObject: speckleElement1d);
           }
         }
       }
@@ -636,11 +636,11 @@ namespace ConverterGSA
       {
         if (gsaMemb.Is1dMember()) //1D element
         {
-          return new ToSpeckleResult(GsaMember1dToSpeckle(gsaMemb));
+          return new ToSpeckleResult(designLayerOnlyObject: GsaMember1dToSpeckle(gsaMemb));
         }
         else if (gsaMemb.Is2dMember()) // 2D element
         {
-          return new ToSpeckleResult(GsaMember2dToSpeckle(gsaMemb));
+          return new ToSpeckleResult(designLayerOnlyObject: GsaMember2dToSpeckle(gsaMemb));
         }
         else //3D element
         {
@@ -3444,12 +3444,44 @@ namespace ConverterGSA
         this.LayerAgnosticObjects = new List<Base>() { layerAgnosticObject };
       }
 
-      public ToSpeckleResult(List<Base> layerAgnosticObjects, List<Base> designLayerOnlyObjects = null, List<Base> analysisLayerOnlyObjects = null, List<Base> resultObjects = null)
+      public ToSpeckleResult(IEnumerable<Base> layerAgnosticObjects = null, IEnumerable<Base> designLayerOnlyObjects = null, IEnumerable<Base> analysisLayerOnlyObjects = null, IEnumerable<Base> resultObjects = null)
       {
-        this.DesignLayerOnlyObjects = designLayerOnlyObjects;
-        this.AnalysisLayerOnlyObjects = analysisLayerOnlyObjects;
-        this.LayerAgnosticObjects = layerAgnosticObjects;
-        this.ResultObjects = resultObjects;
+        if (designLayerOnlyObjects != null)
+        {
+          this.DesignLayerOnlyObjects = designLayerOnlyObjects.ToList();
+        }
+        if (analysisLayerOnlyObjects != null)
+        {
+          this.AnalysisLayerOnlyObjects = analysisLayerOnlyObjects.ToList();
+        }
+        if (layerAgnosticObjects != null)
+        {
+          this.LayerAgnosticObjects = layerAgnosticObjects.ToList();
+        }
+        if (resultObjects != null)
+        {
+          this.ResultObjects = resultObjects.ToList();
+        }
+      }
+
+      public ToSpeckleResult(Base layerAgnosticObject = null, Base designLayerOnlyObject = null, Base analysisLayerOnlyObject = null, IEnumerable<Base> resultObjects = null)
+      {
+        if (designLayerOnlyObject != null)
+        {
+          this.DesignLayerOnlyObjects = new List<Base>() { designLayerOnlyObject };
+        }
+        if (analysisLayerOnlyObject != null)
+        {
+          this.AnalysisLayerOnlyObjects = new List<Base>() { analysisLayerOnlyObject };
+        }
+        if (layerAgnosticObject != null)
+        {
+          this.LayerAgnosticObjects = new List<Base>() { layerAgnosticObject };
+        }
+        if (resultObjects != null)
+        {
+          this.ResultObjects = resultObjects.ToList();
+        }
       }
 
       public List<Base> GetModelObjectsForLayer(GSALayer layer)
