@@ -35,20 +35,23 @@ namespace Objects.BuiltElements.Revit
   {
     public string family { get; set; }
     public string type { get; set; }
+    public string host { get; set; }
+    public string barType { get; set; }
+    public string barStyle { get; set; }
+    public string shape { get; set; } //if this exists, it is shape driven
     public Base parameters { get; set; }
     public string elementId { get; set; }
-    public Level level { get; set; }
 
     public RevitRebar() { }
 
     [SchemaInfo("RevitRebar", "Creates a Revit rebar from curves.", "Revit", "Structure")]
-    public RevitRebar(string family, string type, List<ICurve> curves, Level level, List<Parameter> parameters = null)
+    public RevitRebar(string family, string type, List<ICurve> curves, string host, List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
       this.curves = curves;
       this.parameters = parameters.ToBase();
-      this.level = level;
+      this.host = host;
     }
   }
 }

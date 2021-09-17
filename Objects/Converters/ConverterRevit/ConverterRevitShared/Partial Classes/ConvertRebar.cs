@@ -6,112 +6,150 @@ using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Rebar = Objects.BuiltElements.Rebar;
+using Line = Objects.Geometry.Line;
+using Arc = Objects.Geometry.Arc;
+using Polyline = Objects.Geometry.Polyline;
+using Polycurve = Objects.Geometry.Polycurve;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    /*
     public List<ApplicationPlaceholderObject> RebarToNative(Rebar speckleRebar)
     {
       if (speckleRebar.curves.Count == 0)
-      {
-        throw new Speckle.Core.Logging.SpeckleException("Rebar has no base curves");
-      }
+        throw new Speckle.Core.Logging.SpeckleException("Rebar has no base curves.");
 
-      DB.FamilySymbol familySymbol = GetElementType<DB.FamilySymbol>(speckleRebar);
-      var curves = speckleRebar.curves.Select(o => CurveToNative(o).get_Item(0));
-      DB.Level level = null;
-      DB.FamilyInstance revitRebar = null;
-
-      //comes from revit or schema builder, has these props
       var speckleRevitRebar = speckleRebar as RevitRebar;
-
       if (speckleRevitRebar != null)
-      {
-        level = GetLevelByName(speckleRevitRebar.level.name);
-      }
+        throw new Speckle.Core.Logging.SpeckleException("Rebar needs to be a Revit rebar.");
 
-      if (level == null)
-      {
-        level = LevelToNative(LevelFromCurve(baseLine));
-      }
+      var rebarType = speckleRevitRebar?.barType;
+      var barType = GetElementType<RebarBarType>(speckleRebar);
+      var rebarStyle = speckleRevitRebar?.barStyle == "StirrupTie" ? RebarStyle.StirrupTie : RebarStyle.Standard;
 
-      //try update existing 
+      // get construction curves (only works for revit rebar due to need for host)
+      var closedCurves = new List<DB.CurveArray>();
+      var openCurves = new List<DB.Curve>();
+      ProcessRebarCurves(speckleRebar, out openCurves, out closedCurves);
+
+      // find some way to test if curves should be converted to curve loops for freeform rebar or not for rebar from curves
+      var curveLoops = closedCurves.Select(o => CurveArrayToCurveLoop(o)).ToList();
+
+      DB.Structure.Rebar rebar = null;
+      
+      // get host element
+      var host = GetExistingElementByApplicationId(speckleRevitRebar.host);
+      if (host == null)
+        throw new Speckle.Core.Logging.SpeckleException("Rebar host not found.");
+
       var docObj = GetExistingElementByApplicationId(speckleRebar.applicationId);
-
       if (docObj != null)
       {
-        try
-        {
-          var revitType = Doc.GetElement(docObj.GetTypeId()) as DB.ElementType;
-
-          // if family changed, tough luck. delete and let us create a new one.
-          if (familySymbol.FamilyName != revitType.FamilyName)
-          {
-            Doc.Delete(docObj.Id);
-          }
-          else
-          {
-            revitRebar = (DB.FamilyInstance)docObj;
-            (revitRebar.Location as LocationCurve).Curve = baseLine;
-
-            // check for a type change
-            if (!string.IsNullOrEmpty(familySymbol.FamilyName) && familySymbol.FamilyName != revitType.Name)
-            {
-              revitRebar.ChangeTypeId(familySymbol.Id);
-            }
-          }
-        }
-        catch
-        {
-          //something went wrong, re-create it
-        }
+        rebar = (DB.Structure.Rebar)docObj;
+        // if the number of curves don't match, we need to create a new bar
+        if (rebar.Quantity != closedCurves.Count + openCurves.Count)
+          rebar = null;
       }
 
-      //create family instance
-      if (revitRebar == null)
+      // update curves if we can, only available in revit 2022
+#if REVIT2022
+      if (rebar != null)
       {
-        revitRebar = Doc.Create.NewFamilyInstance(baseLine, familySymbol, level, structuralType);
-        StructuralFramingUtils.DisallowJoinAtEnd(revitRebar, 0);
-        StructuralFramingUtils.DisallowJoinAtEnd(revitRebar, 1);
+        rebar.MoveBarInSet(0, DB.Transform.Identity);
       }
+#endif
 
-      //reference level, only for beams
-      TrySetParam(revitRebar, DB.BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
+      // create freeform from curveloops if they exist
+      if (curveLoops.Count > 0)
+      {
+        var result = RebarFreeFormValidationResult.Success;
+        rebar ??= DB.Structure.Rebar.CreateFreeForm(Doc, barType, host, curveLoops, out result);
+        if (result != RebarFreeFormValidationResult.Success)
+          throw new Speckle.Core.Logging.SpeckleException("Freeform Rebar could not be created from closed curves.");
+      }
+      else if (openCurves.Count > 0)
+      {
+        //rebar ??= DB.Structure.Rebar.CreateFromCurves(Doc, barType, host, curveLoops, out result);
+      }
+      else
+        throw new Speckle.Core.Logging.SpeckleException("No convertible rebar curves where found.");
 
       if (speckleRevitRebar != null)
+        SetInstanceParameters(rebar, speckleRevitRebar);
+
+      var placeholders = new List<ApplicationPlaceholderObject>
       {
-        SetInstanceParameters(revitRebar, speckleRevitRebar);
-      }
-
-      // TODO: get sub families, it's a family! 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRebar.applicationId, ApplicationGeneratedId = revitBeam.UniqueId, NativeObject = revitBeam } };
-
-      // TODO: nested elements.
+        new ApplicationPlaceholderObject
+          {applicationId = speckleRebar.applicationId, ApplicationGeneratedId = rebar.UniqueId, NativeObject = rebar}
+      };
 
       return placeholders;
     }
-    */
+
+    // need to test to see possible types of curves for rebar
+    private void ProcessRebarCurves(Rebar rebar, out List<DB.Curve> open, out List<DB.CurveArray> closed)
+    {
+      var _open = new List<DB.Curve>();
+      var _closed = new List<DB.CurveArray>();
+
+      foreach (var curve in rebar.curves)
+      {
+        var array = CurveToNative(curve);
+        switch (curve)
+        {
+          case Polyline o:
+            if (o.closed)
+              _closed.Add(array);
+            else
+            {
+              var iterator = array.ForwardIterator();
+              while (iterator.MoveNext())
+                _open.Add(iterator.Current as DB.Curve);
+            }
+            break;
+          case Polycurve o:
+            if (o.closed)
+              _closed.Add(array);
+            else
+            {
+              var iterator = array.ForwardIterator();
+              while (iterator.MoveNext())
+                _open.Add(iterator.Current as DB.Curve);
+            }
+            break;
+          default:
+            _open.Add(array.get_Item(0));
+            break;
+        }
+      }
+
+      open = _open; closed = _closed;
+    }
 
     private Base RebarToSpeckle(DB.Structure.Rebar revitRebar)
     {
       // get rebar centerline curves using transform
-      RebarShapeDrivenAccessor accessor = revitRebar.GetShapeDrivenAccessor();
       var bars = revitRebar.GetCenterlineCurves(true, true, true, MultiplanarOption.IncludeOnlyPlanarCurves, revitRebar.NumberOfBarPositions - 1);
       var curves = new List<ICurve>();
+
+      RebarShapeDrivenAccessor accessor = null;
+      if (revitRebar.IsRebarShapeDriven())
+        accessor = revitRebar.GetShapeDrivenAccessor();
+        
       for (int i = 0; i < bars.Count; i++)
       {
-        DB.Transform t = accessor.GetBarPositionTransform(i);
-        var bar = bars[i].CreateTransformed(t);
+        var bar = (accessor != null) ? bars[i].CreateTransformed(accessor.GetBarPositionTransform(i)) : bars[i];
         curves.Add(CurveToSpeckle(bar));
       }
 
       var speckleRebar = new RevitRebar();
       speckleRebar.type = Doc.GetElement(revitRebar.GetTypeId()).Name;
       speckleRebar.curves = curves;
-      speckleRebar.level = ConvertAndCacheLevel(revitRebar, DB.BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
-      speckleRebar.displayMesh = GetElementMesh(revitRebar);
+      if (accessor != null)
+        speckleRebar.shape = revitRebar.GetShapeId().ToString(); // rebar could contain bars with have multiple shapes!! need to handle this later
+      //speckleRebar.level = ConvertAndCacheLevel(revitRebar, DB.BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
+      //speckleRebar.displayMesh = GetElementMesh(revitRebar);
       speckleRebar.volume = revitRebar.Volume;
 
       GetAllRevitParamsAndIds(speckleRebar, revitRebar);
