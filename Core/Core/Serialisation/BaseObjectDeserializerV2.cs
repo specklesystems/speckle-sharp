@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Serialisation
 {
@@ -87,16 +86,15 @@ namespace Speckle.Core.Serialisation
     {
       try
       {
-        using (JsonDocument doc = JsonDocument.Parse(rootObjectJson))
+        List<(string, int)> closureList = new List<(string, int)>();
+        JObject doc1 = JObject.Parse(rootObjectJson);
+        foreach(JToken prop in doc1["__closure"])
         {
-          List<(string, int)> closureList = new List<(string, int)>();
-          JsonElement closures = doc.RootElement.GetProperty("__closure");
-          foreach (JsonProperty prop in closures.EnumerateObject())
-          {
-            closureList.Add((prop.Name, prop.Value.GetInt32()));
-          }
-          return closureList;
+          string childId = ((JProperty)prop).Name;
+          int childMinDepth = (int)((JProperty)prop).Value;
+          closureList.Add((childId, childMinDepth));
         }
+        return closureList;
       }
       catch
       {
@@ -117,48 +115,41 @@ namespace Speckle.Core.Serialisation
 
     public object DeserializeTransportObject(String objectJson)
     {
-      using (JsonDocument doc = JsonDocument.Parse(objectJson))
+      JObject doc1 = JObject.Parse(objectJson);
+      object converted = ConvertJsonElement(doc1);
+      lock (CallbackLock)
       {
-        object converted = ConvertJsonElement(doc.RootElement);
-        lock (CallbackLock)
-        {
-          OnProgressAction?.Invoke("DS", 1);
-        }
-        return converted;
+        OnProgressAction?.Invoke("DS", 1);
       }
+      return converted;
     }
 
-    public object ConvertJsonElement(JsonElement doc)
+    public object ConvertJsonElement(JToken doc)
     {
       if (CancellationToken.IsCancellationRequested)
       {
         return null; // Check for cancellation
       }
 
-      switch (doc.ValueKind)
+      switch(doc.Type)
       {
-        case JsonValueKind.Undefined:
-        case JsonValueKind.Null:
+        case JTokenType.Undefined:
+        case JTokenType.Null:
+        case JTokenType.None:
           return null;
-
-        case JsonValueKind.True:
-          return true;
-        case JsonValueKind.False:
-          return false;
-
-        case JsonValueKind.String:
-          return doc.GetString();
-
-        case JsonValueKind.Number:
-          long i64value;
-          if (doc.TryGetInt64(out i64value))
-            return i64value;
-          return doc.GetDouble();
-
-        case JsonValueKind.Array:
-          List<object> jsonList = new List<object>(doc.GetArrayLength());
+        case JTokenType.Boolean:
+          return (bool)doc;
+        case JTokenType.Integer:
+          return (long)doc;
+        case JTokenType.Float:
+          return (double)doc;
+        case JTokenType.String:
+          return (string)doc;
+        case JTokenType.Array:
+          JArray docAsArray = (JArray)doc;
+          List<object> jsonList = new List<object>(docAsArray.Count);
           int retListCount = 0;
-          foreach (JsonElement value in doc.EnumerateArray())
+          foreach(JToken value in docAsArray)
           {
             object convertedValue = ConvertJsonElement(value);
             retListCount += (convertedValue is DataChunk) ? ((DataChunk)convertedValue).data.Count : 1;
@@ -166,7 +157,7 @@ namespace Speckle.Core.Serialisation
           }
 
           List<object> retList = new List<object>(retListCount);
-          foreach(object jsonObj in jsonList)
+          foreach (object jsonObj in jsonList)
           {
             if (jsonObj is DataChunk)
               retList.AddRange(((DataChunk)jsonObj).data);
@@ -175,12 +166,12 @@ namespace Speckle.Core.Serialisation
           }
 
           return retList;
-
-        case JsonValueKind.Object:
+        case JTokenType.Object:
           Dictionary<string, object> dict = new Dictionary<string, object>();
 
-          foreach (JsonProperty prop in doc.EnumerateObject())
+          foreach (JToken propJToken in doc)
           {
+            JProperty prop = (JProperty)propJToken;
             if (prop.Name == "__closure")
               continue;
             dict[prop.Name] = ConvertJsonElement(prop.Value);
@@ -221,8 +212,9 @@ namespace Speckle.Core.Serialisation
           }
 
           return Dict2Base(dict);
+        default:
+          throw new Exception("Json value not supported: " + doc.Type.ToString());
       }
-      return null;
     }
 
     private Base Dict2Base(Dictionary<string, object> dictObj)
