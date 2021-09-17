@@ -3,7 +3,6 @@
   public class GsaInfBeam : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
-    public int? Action;
     public int? Element;
     public double? Position;
     public double? Factor;

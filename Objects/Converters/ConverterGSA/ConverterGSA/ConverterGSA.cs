@@ -5,7 +5,6 @@ using Objects.Structural.Loading;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties;
 using Objects.Structural.Properties.Profiles;
-using static Objects.Structural.Properties.Profiles.SectionProfile;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.GSA.Loading;
 using Objects.Structural.GSA.Properties;
@@ -31,7 +30,6 @@ using Speckle.Core.Api;
 using Objects.Structural.Analysis;
 using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Materials;
-using static Objects.Structural.GSA.Materials.GSAMaterial;
 using System.Collections;
 using System.Security.AccessControl;
 
@@ -128,6 +126,9 @@ namespace ConverterGSA
         { typeof(GsaGenRest), GsaGenRestToSpeckle },
         //Analysis Stage
         { typeof(GsaAnalStage), GsaStageToSpeckle },
+        //Bridge
+        { typeof(GsaInfBeam), GsaInfBeamToSpeckle },
+        { typeof(GsaInfNode), GsaInfNodeToSpeckle },
         //TODO: add methods for other GSA keywords
       };
 
@@ -1607,6 +1608,50 @@ namespace ConverterGSA
       if (gsaStage.Days.IsIndex()) speckleStage.stageTime = gsaStage.Days.Value;
 
       return new ToSpeckleResult(speckleStage); 
+    }
+    #endregion
+
+    #region Bridge
+    private ToSpeckleResult GsaInfBeamToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
+    {
+      var gsaInfBeam = (GsaInfBeam)nativeObject;
+      var speckleInfBeam = new GSAInfBeam()
+      {
+        name = gsaInfBeam.Name,
+        direction = GetDirection(gsaInfBeam.Direction),
+        type = GetInfluenceType(gsaInfBeam.Type),
+      };
+      if (gsaInfBeam.Index.IsIndex())
+      {
+        speckleInfBeam.applicationId = Instance.GsaModel.GetApplicationId<GsaInfBeam>(gsaInfBeam.Index.Value);
+        speckleInfBeam.nativeId = gsaInfBeam.Index.Value;
+      }
+      if (gsaInfBeam.Factor.HasValue) speckleInfBeam.factor = gsaInfBeam.Factor.Value;
+      if (gsaInfBeam.Position.Value >= 0 && gsaInfBeam.Position.Value <= 1) speckleInfBeam.position = gsaInfBeam.Position.Value;
+      if (gsaInfBeam.Element.IsIndex()) speckleInfBeam.element = GetElement1DFromIndex(gsaInfBeam.Element.Value);
+
+      return new ToSpeckleResult(speckleInfBeam);
+    }
+
+    private ToSpeckleResult GsaInfNodeToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
+    {
+      var gsaInfNode = (GsaInfNode)nativeObject;
+      var speckleInfBeam = new GSAInfNode()
+      {
+        name = gsaInfNode.Name,
+        direction = GetDirection(gsaInfNode.Direction),
+        type = GetInfluenceType(gsaInfNode.Type),
+        axis = GetAxis(gsaInfNode.AxisRefType, gsaInfNode.AxisIndex),
+      };
+      if (gsaInfNode.Index.IsIndex())
+      {
+        speckleInfBeam.applicationId = Instance.GsaModel.GetApplicationId<GsaInfNode>(gsaInfNode.Index.Value);
+        speckleInfBeam.nativeId = gsaInfNode.Index.Value;
+      }
+      if (gsaInfNode.Factor.HasValue) speckleInfBeam.factor = gsaInfNode.Factor.Value;
+      if (gsaInfNode.Node.IsIndex()) speckleInfBeam.node = GetNodeFromIndex(gsaInfNode.Node.Value);
+
+      return new ToSpeckleResult(speckleInfBeam);
     }
     #endregion
     #endregion
@@ -3396,6 +3441,21 @@ namespace ConverterGSA
     {
       return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaAnalStage, GSAStage>(index, out var speckleObjects) && speckleObjects != null && speckleObjects.Count > 0)
         ? speckleObjects.First() : null;
+    }
+    #endregion
+
+    #region Bridge
+    private InfluenceType GetInfluenceType(InfType gsaType)
+    {
+      switch(gsaType)
+      {
+        case InfType.DISP:
+          return InfluenceType.DISPLACEMENT;
+        case InfType.FORCE:
+          return InfluenceType.FORCE;
+        default:
+          return InfluenceType.NotSet;
+      }
     }
     #endregion
     #endregion

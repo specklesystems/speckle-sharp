@@ -9,6 +9,7 @@ using Objects.Structural.Materials;
 using Objects.Structural.Geometry;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.Loading;
+using System.Data.Common;
 
 //Place holder for classes prior to being added to the structural schema
 
@@ -135,6 +136,37 @@ namespace Objects.Structural.GSA.Other
     public int stageTime { get; set; } //number of days
     public List<Base> lockedElements { get; set; } //elements not part of the current analysis stage
     public GSAStage() { }
+  }
+
+  public class GSAInfluence : Base
+  {
+    public int nativeId { get; set; }
+    public string name { get; set; }
+    public double factor { get; set; }
+    public InfluenceType type { get; set; }
+    public LoadDirection direction { get; set; }
+    public GSAInfluence() { }
+  }
+
+  public class GSAInfBeam : GSAInfluence
+  {
+    public Element1D element { get; set; }
+    public double position { get; set; }
+    public GSAInfBeam() { }
+  }
+
+  public class GSAInfNode : GSAInfluence
+  {
+    public Node node { get; set; }
+    public Axis axis { get; set; }
+    public GSAInfNode() { }
+  }
+
+  public enum InfluenceType
+  {
+    NotSet = 0,
+    FORCE,
+    DISPLACEMENT
   }
 
 }

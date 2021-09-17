@@ -1,4 +1,5 @@
 ﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.ConnectorGSA.Proxy;
 using Speckle.GSA.API;
 using Speckle.GSA.API.CsvSchema;
 using Speckle.GSA.API.GwaSchema;
@@ -145,7 +146,11 @@ namespace ConverterGSATests
       return true;
     }
 
-    public List<List<Type>> GetTxTypeDependencyGenerations(GSALayer layer) => new List<List<Type>>();
+    public List<List<Type>> GetTxTypeDependencyGenerations(GSALayer layer)
+    {
+      var proxy = new GsaProxy();
+      return proxy.GetTxTypeDependencyGenerations(layer);
+    }
 
     #region test_config_fns
     public bool AddResultData(ResultGroup group, List<CsvRecord> records)
