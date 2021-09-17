@@ -24,7 +24,7 @@ namespace DesktopUI2.ViewModels
           ProgressSummary += $"{kvp.Key}: {kvp.Value} ";
         }
         //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
-        //ProgressSummary += $"Total: {Maximum}";
+        ProgressSummary += $"Total: {Max}";
         _progressDict = value;
         this.RaiseAndSetIfChanged(ref _progressDict, value);
       }
@@ -43,25 +43,24 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    //private bool _isIndeterminate = true;
+    private int _max = 100;
+    public int Max
+    {
+      get => _max;
+      set => this.RaiseAndSetIfChanged(ref _max, value);
+    }
 
-    //public bool IsIndeterminate
-    //{
-    //  get => _isIndeterminate;
-    //  set => this.RaiseAndSetIfChanged(ref _isIndeterminate, value);
-    //}
+    private bool _isIndeterminate = true;
+
+    public bool IsIndeterminate
+    {
+      get => _isIndeterminate;
+      set => this.RaiseAndSetIfChanged(ref _isIndeterminate, value);
+    }
 
     public bool IsProgressing { get => Value != 0; }
 
 
-    //public void Reset()
-    //{
-    //  //Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-    //  //{
-    //  Value = 0;
-    //  ProgressDict = new ConcurrentDictionary<string, int>();
-    //  //}, Avalonia.Threading.DispatcherPriority.MaxValue);
-    //}
 
     public void Update(ConcurrentDictionary<string, int> pd)
     {

@@ -93,6 +93,9 @@ namespace Speckle.ConnectorRevit.UI
 
       switch (filter.Slug)
       {
+        case "manual":
+          return filter.Selection.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null).ToList();
+
         case "all":
           selection.AddRange(doc.SupportedElements()); // includes levels
           selection.Add(doc.ProjectInformation);

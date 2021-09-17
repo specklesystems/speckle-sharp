@@ -57,9 +57,10 @@ namespace DesktopUI2
         Content = new ProgressBar()
         {
           Minimum = 0,
-          Maximum = 100,
           DataContext = dataContext,
-          [!ProgressBar.ValueProperty] = new Binding("Progress.Value")
+          [!ProgressBar.ValueProperty] = new Binding("Progress.Value"),
+          [!ProgressBar.MaximumProperty] = new Binding("Progress.Maximum"),
+          [!ProgressBar.IsIndeterminateProperty] = new Binding("Progress.IsIndeterminate")
         }
       });
 

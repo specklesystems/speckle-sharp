@@ -99,7 +99,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.10.7" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.7" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.7" />
-    <PackageReference Include="Material.Avalonia" Version="2.3.1" />
+    <PackageReference Include="Material.Avalonia" Version="2.3.0" />
     <PackageReference Include="Material.Icons.Avalonia" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>

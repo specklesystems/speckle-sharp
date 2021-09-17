@@ -37,18 +37,9 @@ namespace Speckle.ConnectorRevit.UI
       var streamId = state.StreamId;
       var client = state.Client;
 
-      var selectedObjects = new List<Element>();
+      var selectedObjects = GetSelectionFilterObjects(state.Filter);
+      state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
 
-      if (state.Filter != null)
-      {
-        selectedObjects = GetSelectionFilterObjects(state.Filter);
-        state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
-      }
-      else //selection was by cursor
-      {
-        // TODO: update state by removing any deleted or null object ids
-        selectedObjects = state.SelectedObjectIds.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null).ToList();
-      }
 
 
       if (!selectedObjects.Any())

@@ -151,7 +151,9 @@
                     Width="40"
                     Height="40"
                     Classes="Circle"
+                    IsIndeterminate="{Binding Progress.IsIndeterminate}"
                     IsVisible="{Binding Progress.IsProgressing}"
+                    Maximum="{Binding Progress.Max}"
                     Value="{Binding Progress.Value}" />
                 </Grid>
               </Grid>
