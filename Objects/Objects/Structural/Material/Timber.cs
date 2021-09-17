@@ -8,7 +8,7 @@ namespace Objects.Structural.Materials
 {
     public class Timber : Material
     {
-    //missing timber-specific properties?
+    //missing timber-specific properties? parallel to grain, perpendicular to grain 
     public string species { get; set; }
     public Timber() { }
 
