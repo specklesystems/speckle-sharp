@@ -467,7 +467,7 @@ namespace ConverterGSA
 
       if (GsaNodeResultToSpeckle(gsaNode.Index.Value, speckleNode, out var speckleResults))
       {
-        return new ToSpeckleResult(new List<Base>() { speckleNode }, null, null, speckleResults.Select(i => (Base)i).ToList());
+        return new ToSpeckleResult(layerAgnosticObject: speckleNode, resultObjects: speckleResults.Select(i => (Base)i));
       }
       else
       {
@@ -529,7 +529,7 @@ namespace ConverterGSA
           }
           else
           {
-            return new ToSpeckleResult(null, null, speckleElement2d);
+            return new ToSpeckleResult(analysisLayerOnlyObject: speckleElement2d);
           }
         }
         else //1D element
@@ -2149,8 +2149,8 @@ namespace ConverterGSA
           axisType = AxisType.Cartesian
         },
         elevation = 0,
-        toleranceBelow = "",
-        toleranceAbove = "",
+        toleranceBelow = null,
+        toleranceAbove = null,
       };
 
       if (gsaAxisType == GridPlaneAxisRefType.XElevation)
@@ -2216,19 +2216,19 @@ namespace ConverterGSA
         ? speckleObjects.First() : null;
     }
 
-    private string GetStoreyTolerance(double? gsaStoreyTolerance, bool gsaStoreyToleranceAuto, GridPlaneType gsaType)
+    private double? GetStoreyTolerance(double? gsaStoreyTolerance, bool gsaStoreyToleranceAuto, GridPlaneType gsaType)
     {
-      var speckleStoreyTolerance = ""; //default
+      double? speckleStoreyTolerance = null; //default
 
       if (gsaType == GridPlaneType.Storey)
       {
         if (gsaStoreyToleranceAuto)
         {
-          speckleStoreyTolerance = "auto";
+          speckleStoreyTolerance = null;
         }
         else if (gsaStoreyTolerance.HasValue)
         {
-          speckleStoreyTolerance = gsaStoreyTolerance.Value.ToString();
+          speckleStoreyTolerance = gsaStoreyTolerance.Value;
         }
       }
       return speckleStoreyTolerance;

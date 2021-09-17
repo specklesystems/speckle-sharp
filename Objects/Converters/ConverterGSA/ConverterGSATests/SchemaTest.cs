@@ -579,8 +579,8 @@ namespace ConverterGSATests
       Assert.Equal(gsaGridPlanes[0].Index.Value, speckleGridPlanes[0].nativeId);
       Assert.True(speckleGridPlanes[0].axis.definition.IsGlobal());
       Assert.Equal(gsaGridPlanes[0].Elevation.Value, speckleGridPlanes[0].elevation);
-      Assert.Equal(gsaGridPlanes[0].StoreyToleranceBelow.ToString(), speckleGridPlanes[0].toleranceBelow);
-      Assert.Equal(gsaGridPlanes[0].StoreyToleranceAbove.ToString(), speckleGridPlanes[0].toleranceAbove);
+      Assert.Equal(gsaGridPlanes[0].StoreyToleranceBelow, speckleGridPlanes[0].toleranceBelow.Value);
+      Assert.Equal(gsaGridPlanes[0].StoreyToleranceAbove, speckleGridPlanes[0].toleranceAbove.Value);
 
       //Checks - grid plane 2
       Assert.Equal("grid plane 2", speckleGridPlanes[1].applicationId);
@@ -588,8 +588,8 @@ namespace ConverterGSATests
       Assert.Equal(gsaGridPlanes[1].Index.Value, speckleGridPlanes[1].nativeId);
       Assert.Equal("axis 1", speckleGridPlanes[1].axis.applicationId);
       Assert.Equal(gsaGridPlanes[1].Elevation.Value, speckleGridPlanes[1].elevation);
-      Assert.Equal("", speckleGridPlanes[1].toleranceBelow);
-      Assert.Equal("", speckleGridPlanes[1].toleranceAbove);
+      Assert.Equal(false, speckleGridPlanes[1].toleranceBelow.HasValue);
+      Assert.Equal(false, speckleGridPlanes[1].toleranceAbove.HasValue);
     }
 
     [Fact]

@@ -41,11 +41,11 @@ namespace Objects.Structural.GSA.Geometry
     {
         public int nativeId { get; set; }
         public Axis axis { get; set; }
-        public string toleranceBelow { get; set; }
-        public string toleranceAbove { get; set; }
+        public double? toleranceBelow { get; set; } // null = "auto"
+        public double? toleranceAbove { get; set; } // null = "auto"
         public GSAStorey() { }
 
-        public GSAStorey(int nativeId, string name, Axis axis, double elevation, string toleranceBelow, string toleranceAbove)
+        public GSAStorey(int nativeId, string name, Axis axis, double elevation, double? toleranceBelow, double? toleranceAbove)
         {            
             this.nativeId = nativeId;
             this.name = name;
