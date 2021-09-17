@@ -1,10 +1,4 @@
-﻿using Speckle.Newtonsoft.Json;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System.Collections.Generic;
-using Objects.Geometry;
-
-namespace Objects.Structural.Loading
+﻿namespace Objects.Structural.Loading
 {
     public enum LoadType
     {
@@ -43,11 +37,18 @@ namespace Objects.Structural.Loading
         TriLinear
     }
 
-    public enum AreaLoadType
+    public enum FaceLoadType
     {
         Constant,
         Variable,
         Point
+    }
+
+    public enum LoadDirection2D
+    {
+        X,
+        Y,
+        Z
     }
 
     public enum LoadDirection

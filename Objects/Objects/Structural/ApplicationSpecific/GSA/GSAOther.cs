@@ -7,66 +7,19 @@ using Objects.Structural.Properties;
 using Objects.Structural.Properties.Profiles;
 using Objects.Structural.Materials;
 using Objects.Structural.Geometry;
+using Objects.Structural.GSA.Geometry;
 using Objects.Structural.Loading;
 
 //Place holder for classes prior to being added to the structural schema
 
 namespace Objects.Structural.GSA.Other
 {
-  public class GSAGridLine : Base
-  {
-    public string name { get; set; }
-    public int nativeId { get; set; }
-    public Base line { get; set; }
-    public GSAGridLine() { }
-  }
-
-  public class GSAGridPlane : Base
-  {
-    public string name { get; set; }
-    public int nativeId { get; set; }
-    public Axis axis { get; set; }
-    public double elevation { get; set; }
-    public string storeyToleranceBelow { get; set; }
-    public string storeyToleranceAbove { get; set; }
-    public GSAGridPlane() { }
-  }
-
-  public class GSAGridSurface : Base
-  {
-    public string name { get; set; }
-    public int nativeId { get; set; }
-    public GSAGridPlane gridPlane { get; set; }
-    public double tolerance { get; set; }
-    public double spanDirection { get; set; }
-    public LoadExpansion loadExpansion { get; set; }
-    public GridSurfaceSpanType span { get; set; }
-    public List<Base> elements { get; set; }
-    public GSAGridSurface() { }
-  }
-
-  public enum GridSurfaceSpanType
-  {
-    NotSet = 0,
-    OneWay,
-    TwoWay
-  }
-
-  public enum LoadExpansion
-  {
-    NotSet = 0,
-    Legacy = 1,
-    PlaneAspect = 2,
-    PlaneSmooth = 3,
-    PlaneCorner = 4
-  }
-
   public abstract class GSAGridLoad : Load
   {
     public int nativeId { get; set; }
     public GSAGridSurface gridSurface { get; set; }
     public Axis loadAxis { get; set; }
-    public LoadDirection direction { get; set; }
+    public LoadDirection2D direction { get; set; }
   }
 
   public class GSAGridPointLoad : GSAGridLoad

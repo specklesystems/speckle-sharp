@@ -12,6 +12,9 @@ namespace Objects.Structural.GSA.Geometry
     {
         public int nativeId { get; set; } //equiv to num record of gwa keyword        
         public string name { get; set; }
+
+        [DetachProperty]
+        [Chunkable(5000)]
         public List<Base> entities { get; set; } //nodes, elements, members
 
         [DetachProperty]
@@ -26,7 +29,7 @@ namespace Objects.Structural.GSA.Geometry
         public double sizeZ { get; set; }
         public string curveType { get; set; } // enum? circular or lagrange sufficient?
         public string curveOrder { get; set; }
-        public string pointDefinition { get; set; } // enum as well? points and spacing to start? 
+        public string pointDefinition { get; set; } // enum as well? points and spacing to start? || points and storeys to be supported
         public double points { get; set; } // or make this Base type to accomdate storey list and explicit range? or add sep property for those cases?
 
         public GSAAssembly() { }

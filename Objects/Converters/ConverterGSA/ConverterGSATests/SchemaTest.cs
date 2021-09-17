@@ -17,6 +17,7 @@ using static Objects.Structural.Properties.Profiles.SectionProfile;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.GSA.Loading;
 using Objects.Structural.GSA.Properties;
+using static Objects.Structural.GSA.Materials.GSAMaterial;
 using Objects.Structural.GSA.Other;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
@@ -514,9 +515,9 @@ namespace ConverterGSATests
 
       //Checks - grid line 1
       Assert.Equal("grid line 1", speckleGridLines[0].applicationId);
-      Assert.Equal(gsaGridLines[0].Name, speckleGridLines[0].name);
+      Assert.Equal(gsaGridLines[0].Name, speckleGridLines[0].label);
       Assert.Equal(gsaGridLines[0].Index.Value, speckleGridLines[0].nativeId);
-      var speckleLine = (Line)speckleGridLines[0].line;
+      var speckleLine = (Line)speckleGridLines[0].baseLine;
       Assert.Equal(gsaGridLines[0].XCoordinate.Value, speckleLine.start.x);
       Assert.Equal(gsaGridLines[0].YCoordinate.Value, speckleLine.start.y);
       Assert.Equal(0, speckleLine.start.z);
@@ -526,9 +527,9 @@ namespace ConverterGSATests
 
       //Checks - grid line 2
       Assert.Equal("grid line 2", speckleGridLines[1].applicationId);
-      Assert.Equal(gsaGridLines[1].Name, speckleGridLines[1].name);
+      Assert.Equal(gsaGridLines[1].Name, speckleGridLines[1].label);
       Assert.Equal(gsaGridLines[1].Index.Value, speckleGridLines[1].nativeId);
-      var speckleArc = (Arc)speckleGridLines[1].line;
+      var speckleArc = (Arc)speckleGridLines[1].baseLine;
       Assert.Equal(gsaGridLines[1].XCoordinate.Value + gsaGridLines[1].Length * Math.Cos(gsaGridLines[1].Theta1.Value.Radians()), speckleArc.startPoint.x);
       Assert.Equal(gsaGridLines[1].YCoordinate.Value + gsaGridLines[1].Length * Math.Sin(gsaGridLines[1].Theta1.Value.Radians()), speckleArc.startPoint.y);
       Assert.Equal(0, speckleArc.startPoint.z);
@@ -578,8 +579,8 @@ namespace ConverterGSATests
       Assert.Equal(gsaGridPlanes[0].Index.Value, speckleGridPlanes[0].nativeId);
       Assert.True(speckleGridPlanes[0].axis.definition.IsGlobal());
       Assert.Equal(gsaGridPlanes[0].Elevation.Value, speckleGridPlanes[0].elevation);
-      Assert.Equal(gsaGridPlanes[0].StoreyToleranceBelow.ToString(), speckleGridPlanes[0].storeyToleranceBelow);
-      Assert.Equal(gsaGridPlanes[0].StoreyToleranceAbove.ToString(), speckleGridPlanes[0].storeyToleranceAbove);
+      Assert.Equal(gsaGridPlanes[0].StoreyToleranceBelow, speckleGridPlanes[0].toleranceBelow.Value);
+      Assert.Equal(gsaGridPlanes[0].StoreyToleranceAbove, speckleGridPlanes[0].toleranceAbove.Value);
 
       //Checks - grid plane 2
       Assert.Equal("grid plane 2", speckleGridPlanes[1].applicationId);
@@ -587,8 +588,8 @@ namespace ConverterGSATests
       Assert.Equal(gsaGridPlanes[1].Index.Value, speckleGridPlanes[1].nativeId);
       Assert.Equal("axis 1", speckleGridPlanes[1].axis.applicationId);
       Assert.Equal(gsaGridPlanes[1].Elevation.Value, speckleGridPlanes[1].elevation);
-      Assert.Equal("", speckleGridPlanes[1].storeyToleranceBelow);
-      Assert.Equal("", speckleGridPlanes[1].storeyToleranceAbove);
+      Assert.Equal(false, speckleGridPlanes[1].toleranceBelow.HasValue);
+      Assert.Equal(false, speckleGridPlanes[1].toleranceAbove.HasValue);
     }
 
     [Fact]
@@ -746,7 +747,6 @@ namespace ConverterGSATests
       //Checks - Load case 1
       Assert.Equal("load case 1", speckleLoadCases[0].applicationId);
       Assert.Equal("Dead", speckleLoadCases[0].name);
-      Assert.Equal("", speckleLoadCases[0].source);
       Assert.Equal(ActionType.None, speckleLoadCases[0].actionType);
       Assert.Equal("", speckleLoadCases[0].description);
       Assert.Equal(gsaLoadCase[0].Index.Value, speckleLoadCases[0].nativeId);
@@ -754,7 +754,6 @@ namespace ConverterGSATests
       //Checks - Load case 2
       Assert.Equal("load case 2", speckleLoadCases[1].applicationId);
       Assert.Equal("Live", speckleLoadCases[1].name);
-      Assert.Equal("", speckleLoadCases[1].source);
       Assert.Equal(ActionType.None, speckleLoadCases[1].actionType);
       Assert.Equal("", speckleLoadCases[1].description);
       Assert.Equal(gsaLoadCase[1].Index.Value, speckleLoadCases[1].nativeId);
@@ -807,8 +806,8 @@ namespace ConverterGSATests
       Assert.Equal("1", speckleFaceLoads[0].name);
       Assert.Single(speckleFaceLoads[0].elements);
       Assert.Equal("element 1", speckleFaceLoads[0].elements[0].applicationId);
-      Assert.Equal(AreaLoadType.Constant, speckleFaceLoads[0].loadType);
-      Assert.Equal(LoadDirection.Z, speckleFaceLoads[0].direction);
+      Assert.Equal(FaceLoadType.Constant, speckleFaceLoads[0].loadType);
+      Assert.Equal(LoadDirection2D.Z, speckleFaceLoads[0].direction);
       Assert.Equal(LoadAxisType.Global, speckleFaceLoads[0].loadAxisType);
       Assert.False(speckleFaceLoads[0].isProjected);
       Assert.Equal(gsaLoad2dFace[0].Values, speckleFaceLoads[0].values);
@@ -821,8 +820,8 @@ namespace ConverterGSATests
       Assert.Equal("2", speckleFaceLoads[1].name);
       Assert.Single(speckleFaceLoads[1].elements);
       Assert.Equal("element 2", speckleFaceLoads[1].elements[0].applicationId);
-      Assert.Equal(AreaLoadType.Point, speckleFaceLoads[1].loadType);
-      Assert.Equal(LoadDirection.X, speckleFaceLoads[1].direction);
+      Assert.Equal(FaceLoadType.Point, speckleFaceLoads[1].loadType);
+      Assert.Equal(LoadDirection2D.X, speckleFaceLoads[1].direction);
       Assert.Equal(LoadAxisType.Global, speckleFaceLoads[1].loadAxisType);
       Assert.False(speckleFaceLoads[1].isProjected);
       Assert.Equal(gsaLoad2dFace[1].Values, speckleFaceLoads[1].values);
@@ -835,8 +834,8 @@ namespace ConverterGSATests
       Assert.Equal("3", speckleFaceLoads[2].name);
       Assert.Single(speckleFaceLoads[2].elements);
       Assert.Equal("element 3", speckleFaceLoads[2].elements[0].applicationId);
-      Assert.Equal(AreaLoadType.Variable, speckleFaceLoads[2].loadType);
-      Assert.Equal(LoadDirection.Y, speckleFaceLoads[2].direction);
+      Assert.Equal(FaceLoadType.Variable, speckleFaceLoads[2].loadType);
+      Assert.Equal(LoadDirection2D.Y, speckleFaceLoads[2].direction);
       Assert.Equal(LoadAxisType.Local, speckleFaceLoads[2].loadAxisType);
       Assert.False(speckleFaceLoads[2].isProjected);
       Assert.Equal(gsaLoad2dFace[2].Values, speckleFaceLoads[2].values);
@@ -1159,7 +1158,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaLoadGridPoints[0].Y.Value, speckleGridPointLoads[0].position.y);
       Assert.Equal("load case 1", speckleGridPointLoads[0].loadCase.applicationId);
       Assert.True(speckleGridPointLoads[0].loadAxis.definition.IsGlobal());
-      Assert.Equal(LoadDirection.Z, speckleGridPointLoads[0].direction);
+      Assert.Equal(LoadDirection2D.Z, speckleGridPointLoads[0].direction);
       Assert.Equal(gsaLoadGridPoints[0].Value.Value, speckleGridPointLoads[0].value);
 
       //Checks - Load grid point 2
@@ -1171,7 +1170,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaLoadGridPoints[1].Y.Value, speckleGridPointLoads[1].position.y);
       Assert.Equal("load case 2", speckleGridPointLoads[1].loadCase.applicationId);
       Assert.Equal("axis 1", speckleGridPointLoads[1].loadAxis.applicationId);
-      Assert.Equal(LoadDirection.Z, speckleGridPointLoads[1].direction);
+      Assert.Equal(LoadDirection2D.Z, speckleGridPointLoads[1].direction);
       Assert.Equal(gsaLoadGridPoints[1].Value.Value, speckleGridPointLoads[1].value);
     }
 
@@ -1232,7 +1231,7 @@ namespace ConverterGSATests
       Assert.Equal("load case 1", speckleGridLineLoads[0].loadCase.applicationId);
       Assert.True(speckleGridLineLoads[0].loadAxis.definition.IsGlobal());
       Assert.Equal(gsaLoadGridLines[0].Projected, speckleGridLineLoads[0].isProjected);
-      Assert.Equal(LoadDirection.Z, speckleGridLineLoads[0].direction);
+      Assert.Equal(LoadDirection2D.Z, speckleGridLineLoads[0].direction);
       Assert.Equal(2, speckleGridLineLoads[0].values.Count());
       Assert.Equal(gsaLoadGridLines[0].Value1.Value, speckleGridLineLoads[0].values[0]);
       Assert.Equal(gsaLoadGridLines[0].Value2.Value, speckleGridLineLoads[0].values[1]);
@@ -1246,7 +1245,7 @@ namespace ConverterGSATests
       Assert.Equal("load case 2", speckleGridLineLoads[1].loadCase.applicationId);
       Assert.Equal("axis 1", speckleGridLineLoads[1].loadAxis.applicationId);
       Assert.Equal(gsaLoadGridLines[1].Projected, speckleGridLineLoads[1].isProjected);
-      Assert.Equal(LoadDirection.Z, speckleGridLineLoads[1].direction);
+      Assert.Equal(LoadDirection2D.Z, speckleGridLineLoads[1].direction);
       Assert.Equal(2, speckleGridLineLoads[1].values.Count());
       Assert.Equal(gsaLoadGridLines[1].Value1.Value, speckleGridLineLoads[1].values[0]);
       Assert.Equal(gsaLoadGridLines[1].Value2.Value, speckleGridLineLoads[1].values[1]);
@@ -1306,7 +1305,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaLoadGridAreas[0].Name, speckleGridAreaLoads[0].name);
       Assert.True(speckleGridAreaLoads[0].loadAxis.definition.IsGlobal());
       Assert.Equal(gsaLoadGridAreas[0].Projected, speckleGridAreaLoads[0].isProjected);
-      Assert.Equal(LoadDirection.Z, speckleGridAreaLoads[0].direction);
+      Assert.Equal(LoadDirection2D.Z, speckleGridAreaLoads[0].direction);
       Assert.Null(speckleGridAreaLoads[0].polyline);
       Assert.Equal("grid surface 1", speckleGridAreaLoads[0].gridSurface.applicationId);
       Assert.Equal("load case 1", speckleGridAreaLoads[0].loadCase.applicationId);
@@ -1318,7 +1317,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaLoadGridAreas[1].Name, speckleGridAreaLoads[1].name);
       Assert.Equal("axis 1", speckleGridAreaLoads[1].loadAxis.applicationId);
       Assert.Equal(gsaLoadGridAreas[1].Projected, speckleGridAreaLoads[1].isProjected);
-      Assert.Equal(LoadDirection.Z, speckleGridAreaLoads[1].direction);
+      Assert.Equal(LoadDirection2D.Z, speckleGridAreaLoads[1].direction);
       Assert.Equal("polyline 1", speckleGridAreaLoads[1].polyline.applicationId);
       Assert.Equal("grid surface 1", speckleGridAreaLoads[1].gridSurface.applicationId);
       Assert.Equal("load case 2", speckleGridAreaLoads[1].loadCase.applicationId);
@@ -1415,9 +1414,9 @@ namespace ConverterGSATests
       Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
 
       Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is Concrete);
+      Assert.Contains(structuralObjects, so => so is GSAConcrete);
 
-      var speckleConcrete = (Concrete)structuralObjects.FirstOrDefault(so => so is Concrete);
+      var speckleConcrete = (GSAConcrete)structuralObjects.FirstOrDefault(so => so is GSAConcrete);
 
       Assert.Equal("concrete 1", speckleConcrete.applicationId);
       Assert.Equal("", speckleConcrete.grade);
@@ -1426,11 +1425,11 @@ namespace ConverterGSATests
       Assert.Equal("", speckleConcrete.codeYear);
       Assert.Equal(gsaMatConcrete.Fc.Value, speckleConcrete.compressiveStrength);
       Assert.Equal(gsaMatConcrete.Mat.Rho.Value, speckleConcrete.density);
-      Assert.Equal(gsaMatConcrete.Mat.E.Value, speckleConcrete.youngsModulus);
+      Assert.Equal(gsaMatConcrete.Mat.E.Value, speckleConcrete.elasticModulus);
       Assert.Equal(gsaMatConcrete.Mat.G.Value, speckleConcrete.shearModulus);
       Assert.Equal(gsaMatConcrete.Mat.Nu.Value, speckleConcrete.poissonsRatio);
       Assert.Equal(gsaMatConcrete.Mat.Alpha.Value, speckleConcrete.thermalExpansivity);
-      Assert.Equal(gsaMatConcrete.EpsU.Value, speckleConcrete.maxStrain);
+      Assert.Equal(gsaMatConcrete.EpsU.Value, speckleConcrete.maxCompressiveStrain);
       Assert.Equal(gsaMatConcrete.Agg.Value, speckleConcrete.maxAggregateSize);
       Assert.Equal(gsaMatConcrete.Fcdt.Value, speckleConcrete.tensileStrength);
       Assert.Equal(0, speckleConcrete.flexuralStrength);
@@ -1460,9 +1459,9 @@ namespace ConverterGSATests
       Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
 
       Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is Steel);
+      Assert.Contains(structuralObjects, so => so is GSASteel);
 
-      var speckleSteel = (Steel)structuralObjects.FirstOrDefault(so => so is Steel);
+      var speckleSteel = (GSASteel)structuralObjects.FirstOrDefault(so => so is GSASteel);
 
       Assert.Equal("steel 1", speckleSteel.applicationId);
       Assert.Equal("", speckleSteel.grade);
@@ -1472,7 +1471,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaMatSteel.Fy.Value, speckleSteel.yieldStrength);
       Assert.Equal(gsaMatSteel.Fu.Value, speckleSteel.ultimateStrength);
       Assert.Equal(gsaMatSteel.EpsP.Value, speckleSteel.maxStrain);
-      Assert.Equal(gsaMatSteel.Mat.E.Value, speckleSteel.youngsModulus);
+      Assert.Equal(gsaMatSteel.Mat.E.Value, speckleSteel.elasticModulus);
       Assert.Equal(gsaMatSteel.Mat.Nu.Value, speckleSteel.poissonsRatio);
       Assert.Equal(gsaMatSteel.Mat.G.Value, speckleSteel.shearModulus);
       Assert.Equal(gsaMatSteel.Mat.Rho.Value, speckleSteel.density);
@@ -2089,7 +2088,7 @@ namespace ConverterGSATests
         Assert.Equal("", speckleElement1dResult[i].permutation);
         Assert.Equal("", speckleElement1dResult[i].description);
         Assert.Equal("element 1", speckleElement1dResult[i].element.applicationId);
-        Assert.Equal(gsaResult.PosR.ToDouble(), speckleElement1dResult[i].position);
+        Assert.Equal(float.Parse(gsaResult.PosR), speckleElement1dResult[i].position);
         Assert.Equal("load case 1", speckleElement1dResult[i].resultCase.applicationId);
 
         //results
