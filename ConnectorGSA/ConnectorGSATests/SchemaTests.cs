@@ -248,7 +248,7 @@ namespace ConnectorGSATests
         Assert.True(l.FromGwa(g));
         infBeams.Add((GsaInfBeam)l.Record);
       }
-      Assert.Equal(1, infBeams[0].Action);
+      Assert.Equal(1, infBeams[0].Index);
       Assert.Equal(5316, infBeams[0].Element);
       Assert.Equal(0.5, infBeams[0].Position);
       Assert.Equal(1, infBeams[0].Factor);
@@ -276,7 +276,7 @@ namespace ConnectorGSATests
         Assert.True(l.FromGwa(g));
         infNodes.Add((GsaInfNode)l.Record);
       }
-      Assert.Equal(1, infNodes[0].Action);
+      Assert.Equal(1, infNodes[0].Index);
       Assert.Equal(1, infNodes[0].Node);
       Assert.Equal(1, infNodes[0].Factor);
       Assert.Equal(InfType.DISP, infNodes[0].Type);

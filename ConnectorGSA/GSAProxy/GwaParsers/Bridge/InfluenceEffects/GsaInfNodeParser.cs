@@ -32,7 +32,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //INF_NODE | name | action | node | factor | type | axis | dir
-      AddItems(ref items, record.Name, record.Action, record.Node, record.Factor, AddType(), AddAxis(), AddDirection());
+      AddItems(ref items, record.Name, record.Index, record.Node, record.Factor, AddType(), AddAxis(), AddDirection());
 
       gwa = Join(items, out var gwaLine) ? new List<string>() { gwaLine } : new List<string>();
       return (gwa.Count() > 0);
@@ -69,7 +69,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
     private bool AddAction(string v)
     {
-      record.Action = (int.TryParse(v, out var value) && value > 0) ? (int?)value : null;
+      record.Index = (int.TryParse(v, out var value) && value > 0) ? (int?)value : null;
       return true;
     }
 
@@ -93,7 +93,26 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
     private bool AddAxis(string v)
     {
-      record.AxisRefType = Enum.TryParse<AxisRefType>(v, true, out var refType) ? refType : AxisRefType.NotSet;
+      //record.AxisRefType = Enum.TryParse<AxisRefType>(v, true, out var refType) ? refType : AxisRefType.NotSet;
+      //return true;
+
+      if (v.Equals("global", StringComparison.InvariantCultureIgnoreCase))
+      {
+        record.AxisRefType = AxisRefType.Global;
+      }
+      else if (v.Equals("local", StringComparison.InvariantCultureIgnoreCase))
+      {
+        record.AxisRefType = AxisRefType.Local;
+      }
+      else if (int.TryParse(v, out var foundIndex) && foundIndex > 0)
+      {
+        record.AxisRefType = AxisRefType.Reference;
+        record.AxisIndex = foundIndex;
+      }
+      else
+      {
+        record.AxisRefType = AxisRefType.NotSet;
+      }
       return true;
     }
 

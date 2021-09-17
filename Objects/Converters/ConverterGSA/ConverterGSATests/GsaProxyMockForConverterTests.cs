@@ -1,5 +1,6 @@
 ﻿using Speckle.ConnectorGSA.Proxy;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.ConnectorGSA.Proxy;
 using Speckle.GSA.API;
 using Speckle.GSA.API.CsvSchema;
 using Speckle.GSA.API.GwaSchema;

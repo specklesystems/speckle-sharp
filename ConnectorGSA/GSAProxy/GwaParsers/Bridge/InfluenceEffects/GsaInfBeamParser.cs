@@ -33,7 +33,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //INF_BEAM.2 | name | action | elem | pos | factor | type | dir
-      AddItems(ref items, record.Name, record.Action, record.Element, AddPosition(), record.Factor, AddType(), AddDirection());
+      AddItems(ref items, record.Name, record.Index, record.Element, AddPosition(), record.Factor, AddType(), AddDirection());
 
       gwa = Join(items, out var gwaLine) ? new List<string>() { gwaLine } : new List<string>();
       return (gwa.Count() > 0);
@@ -65,7 +65,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
     private bool AddAction(string v)
     {
-      record.Action = (int.TryParse(v, out var value) && value > 0) ? (int?)value : null;
+      record.Index = (int.TryParse(v, out var value) && value > 0) ? (int?)value : null;
       return true;
     }
 
