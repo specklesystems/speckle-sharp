@@ -7,12 +7,15 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Views;
 using Material.Dialog;
+using Material.Dialog.Views;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -53,7 +56,20 @@ namespace DesktopUI2.ViewModels
       get => _streams;
       private set => this.RaiseAndSetIfChanged(ref _streams, value);
     }
+
     public bool HasSavedStreams => SavedStreams != null && SavedStreams.Any();
+
+    private string _searchQuery;
+
+    public string SearchQuery
+    {
+      get => _searchQuery;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _searchQuery, value);
+        SearchStreams().ConfigureAwait(false);
+      }
+    }
 
     //public Stream SelectedStream
     //{
@@ -172,13 +188,40 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception e)
       {
-        Utils.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+        Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
       }
       finally
       {
         InProgress = false;
       }
 
+
+    }
+
+    private async Task SearchStreams()
+    {
+      if (SearchQuery == "")
+      {
+        GetStreams().ConfigureAwait(false);
+        return;
+      }
+      if (SearchQuery.Length <= 2)
+        return;
+      InProgress = true;
+      try
+      {
+        var client = new Client(SelectedAccount);
+        Streams = await client.StreamSearch(SearchQuery);
+      }
+      catch (Exception)
+      {
+        // search prob returned no results
+        Streams = new List<Stream>();
+      }
+      finally
+      {
+        InProgress = false;
+      }
 
     }
 
@@ -253,6 +296,17 @@ namespace DesktopUI2.ViewModels
       }
 
     }
+
+    public void ClearSearchCommand()
+    {
+      SearchQuery = "";
+    }
+    public void ViewOnlineCommand(object parameter)
+    {
+      var stream = parameter as Stream;
+      Process.Start(new ProcessStartInfo($"{SelectedAccount.serverInfo.url.TrimEnd('/')}/streams/{stream.id}") { UseShellExecute = true });
+    }
+
     public void SendCommand(object parameter)
     {
       var streamState = new StreamState(SelectedAccount, parameter as Stream);
@@ -285,7 +339,7 @@ namespace DesktopUI2.ViewModels
       if (Uri.TryCreate(clipboard, UriKind.Absolute, out uri))
         defaultText = clipboard;
 
-      var result = await DialogHelper.CreateTextFieldDialog(new TextFieldDialogBuilderParams()
+      var dialog = DialogHelper.CreateTextFieldDialog(new TextFieldDialogBuilderParams()
       {
         ContentHeader = "Add stream by URL",
         SupportingText = "You can use a Stream, Branch, or Commit URL.",
@@ -313,7 +367,13 @@ namespace DesktopUI2.ViewModels
           Content = "CANCEL",
           Result = "cancel"
         },
-      }).ShowDialog(MainWindow.Instance);
+      });
+
+#if DEBUG
+      dialog.GetWindow().AttachDevTools(KeyGesture.Parse("CTRL+R"));
+#endif
+
+      var result = await dialog.ShowDialog(MainWindow.Instance);
 
       if (result.GetResult == "add")
       {
@@ -331,7 +391,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception e)
         {
-          Utils.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+          Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
     }

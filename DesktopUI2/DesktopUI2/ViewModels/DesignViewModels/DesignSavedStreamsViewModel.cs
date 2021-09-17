@@ -23,7 +23,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
          {
 
            Stream = new DesignStream{name = "Sample stream"},
-           StreamState = new StreamState(AccountManager.GetDefaultAccount(), new Speckle.Core.Api.Stream{id = "999" })
+           StreamState = new StreamState(null, new Speckle.Core.Api.Stream{id = "999" })
            {
              BranchName = "test",
              CommitId = "latest",
@@ -36,7 +36,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
          {
 
            Stream = new DesignStream{name = "BIM data is cool"},
-           StreamState = new StreamState(AccountManager.GetDefaultAccount(), new Speckle.Core.Api.Stream{id = "999" })
+           StreamState = new StreamState(null, new Speckle.Core.Api.Stream{id = "999" })
            {
              BranchName = "main",
            IsReceiver = false,

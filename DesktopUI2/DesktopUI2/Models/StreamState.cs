@@ -26,7 +26,8 @@ namespace DesktopUI2.Models
 
     public Client Client
     {
-      get {
+      get
+      {
         if (_client == null)
         {
           var account = AccountManager.GetAccounts(ServerUrl).FirstOrDefault(x => x.userInfo.id == UserId);
@@ -81,6 +82,12 @@ namespace DesktopUI2.Models
     [JsonProperty]
     public string ReferencedObject { get; set; }
 
+    /// <summary>
+    /// Last time the stream card was used to receive or send
+    /// </summary>
+    [JsonProperty]
+    public string LastUsed { get; set; }
+
 
     /// <summary>
     /// Allows clients to keep track of the previous commit id they created, and propagate it to the next one.
@@ -95,7 +102,7 @@ namespace DesktopUI2.Models
     public ISelectionFilter Filter { get; set; }
 
     //List of uniqueids of the currently selected objects
-    //if selection is by filter, the values are updated only upon sending
+    //the values are updated only upon sending
     [JsonProperty]
     public List<string> SelectedObjectIds { get; set; }
 

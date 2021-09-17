@@ -19,7 +19,9 @@
   <ItemGroup>
     <None Remove="App.xaml" />
     <None Remove="Styles\Button.xaml" />
+    <None Remove="Styles\ChipListBox.xaml" />
     <None Remove="Styles\ComboBox.xaml" />
+    <None Remove="Styles\Dialog.xaml" />
     <None Remove="Styles\FloatingButton.xaml" />
     <None Remove="Styles\ListBox.xaml" />
     <None Remove="Styles\MenuItem.xaml" />
@@ -36,6 +38,12 @@
     <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <AvaloniaResource Include="Styles\Button.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\Dialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\ChipListBox.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaResource>
     <AvaloniaResource Include="Styles\ListBox.xaml">

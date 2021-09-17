@@ -134,6 +134,7 @@ namespace DesktopUI2.ViewModels
       //get available filters from our bindings
       Filters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
       SelectedFilter = Filters[0];
+      IsReceiver = streamState.IsReceiver;
 
       GetBranchesAndRestoreState(streamState.Client, streamState);
     }
@@ -141,17 +142,9 @@ namespace DesktopUI2.ViewModels
 
     private async void GetBranchesAndRestoreState(Client client, StreamState streamState)
     {
-      //this is for design mode only
-      if (Design.IsDesignMode && Stream == null)
-      {
-        Stream = (await client.StreamsGet())[0];
-      }
       var branches = await client.StreamGetBranches(Stream.id, 100, 0);
       branches.Reverse();
       Branches = branches;
-
-      //restore state
-      IsReceiver = streamState.IsReceiver;
 
       var branch = Branches.FirstOrDefault(x => x.name == streamState.BranchName);
       if (branch != null)
@@ -215,7 +208,7 @@ namespace DesktopUI2.ViewModels
     private async void SendCommand()
     {
       Progress = new ProgressViewModel();
-      var dialog = Utils.SendReceiveDialog("Sending...", this);
+      var dialog = Dialogs.SendReceiveDialog("Sending...", this);
 
 
       _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
@@ -234,7 +227,7 @@ namespace DesktopUI2.ViewModels
     private async void ReceiveCommand()
     {
       Progress = new ProgressViewModel();
-      var dialog = Utils.SendReceiveDialog("Receiving...", this);
+      var dialog = Dialogs.SendReceiveDialog("Receiving...", this);
 
 
       _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>

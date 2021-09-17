@@ -9,11 +9,15 @@
   d:DesignHeight="450"
   d:DesignWidth="800"
   mc:Ignorable="d">
-  <StackPanel>
+  <UserControl.Styles>
+    <StyleInclude Source="/Styles/ChipListBox.xaml" />
+  </UserControl.Styles>
+  <Grid RowDefinitions="auto,auto,*,auto,auto">
     <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
 
 
     <TextBox
+      Grid.Row="1"
       Margin="0,8"
       Padding="0"
       assists:TextFieldAssist.CornerRadius="32"
@@ -36,7 +40,10 @@
 
 
 
-    <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto">
+    <ScrollViewer
+      Grid.Row="2"
+      MaxHeight="180"
+      VerticalScrollBarVisibility="Auto">
       <ListBox
         x:Name="ItemsListBox"
         Margin="0,0,0,8"
@@ -46,11 +53,12 @@
     </ScrollViewer>
 
     <TextBlock
-      Margin="0,12,0,8"
+      Grid.Row="3"
+      Margin="0,20,0,8"
       FontSize="14"
       FontWeight="Medium"
       Text="Current selection:" />
-    <TextBlock Text="{Binding Summary}" />
+    <TextBlock Grid.Row="4" Text="{Binding Summary}" />
 
-  </StackPanel>
+  </Grid>
 </UserControl>

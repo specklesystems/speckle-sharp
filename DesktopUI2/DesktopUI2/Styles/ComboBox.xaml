@@ -38,15 +38,32 @@
   </Style>
 
 
+  <Style Selector="ComboBox  /template/ ContentPresenter &gt; Grid">
+    <Setter Property="Margin" Value="0,0,20,0" />
+  </Style>
+
+
+
   <Design.PreviewWith>
     <Border
-      Width="360"
+      Width="200"
       Height="200"
       Padding="20">
       <StackPanel VerticalAlignment="Top">
-        <ComboBox PlaceholderText="Test">
+        <ComboBox PlaceholderText="TestTestTestTestTestTestTestTestTest">
+
+          <ComboBox.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="*">
+                <TextBlock
+                  Margin="0,0,10,0"
+                  Text="{Binding}"
+                  TextTrimming="CharacterEllipsis" />
+              </Grid>
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
           <ComboBox.Items>
-            <ComboBoxItem Content="Item 1" />
+            <ComboBoxItem Content="Item 1Item 1Item 1Item 1Item 1Item 1Item 1" />
             <ComboBoxItem Content="Item 2" />
             <ComboBoxItem Content="Item 3" />
           </ComboBox.Items>
