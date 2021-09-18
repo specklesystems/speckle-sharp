@@ -355,9 +355,19 @@ namespace ConnectorGSA
           Instance.GsaModel.ResultTypes = new List<ResultType>();
           foreach (var rs in resultStrings)
           {
-            if (Enum.TryParse(rs, true, out ResultType rt))
+            if (Enum.TryParse(rs.Replace(" ", ""), true, out ResultType rt) && !Instance.GsaModel.ResultTypes.Contains(rt))
             {
               Instance.GsaModel.ResultTypes.Add(rt);
+            }
+          }
+
+          if (argPairs.ContainsKey("resultCases"))
+          {
+            var validPrefixes = new[] { 'A', 'C' };
+            var cases = argPairs["resultCases"].Split(',').Select(c => c.Trim()).Where(c => validPrefixes.Any(vp => vp == char.ToUpper(c[0]))).ToList();
+            if (cases != null && cases.Count > 0)
+            {
+              Instance.GsaModel.ResultCases = cases;
             }
           }
 
