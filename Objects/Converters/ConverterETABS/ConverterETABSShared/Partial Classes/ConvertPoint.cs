@@ -35,5 +35,6 @@ namespace Objects.Converter.ETABS
 //TO DO: detach properties
             return speckleStructNode;
         }
+
     }
 }

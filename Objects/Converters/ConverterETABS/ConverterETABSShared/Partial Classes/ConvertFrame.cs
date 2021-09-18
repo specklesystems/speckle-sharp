@@ -7,6 +7,10 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
+        public void FrameToNative()
+        {
+            throw new NotImplementedException();
+        }
         public Element1D FrameToSpeckle(string Name)
         {
             var speckleStructFrame = new Element1D();
