@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using ConnectorGSA.Models;
+using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -343,6 +344,51 @@ namespace ConnectorGSA
       }
 
       return objects;
+    }
+
+    internal static async Task<List<StreamState>> GetStreamList(TabCoordinator coordinator, SpeckleAccountForUI account, Progress<MessageEventArgs> loggingProgress)
+    {
+      return new List<StreamState>();
+    }
+
+    internal static async Task<bool> NewFile(TabCoordinator coordinator, Progress<MessageEventArgs> loggingProgress)
+    {
+      return true;
+    }
+
+    internal static async Task<bool> ReadSavedStreamInfo(TabCoordinator coordinator, Progress<MessageEventArgs> loggingProgress)
+    {
+      return true;
+    }
+
+    internal static async Task<bool> SaveFile(TabCoordinator coordinator)
+    {
+      return true;
+    }
+
+    internal static async Task<bool> RenameStream(TabCoordinator coordinator, string streamId, string newStreamName, Progress<MessageEventArgs> loggingProgress)
+    {
+      return true;
+    }
+
+    internal static async Task<bool> CloneStream(TabCoordinator coordinator, string streamId, Progress<MessageEventArgs> loggingProgress)
+    {
+      return true;
+    }
+
+    internal static async Task<bool> SendTriggered(object gsaSenderCoordinator)
+    {
+      return true;
+    }
+
+    internal static async Task<bool> SendInitial(TabCoordinator coordinator, object gsaSenderCoordinator, Progress<StreamState> streamCreationProgress, Progress<StreamState> streamDeletionProgress, Progress<MessageEventArgs> loggingProgress, Progress<string> statusProgress, Progress<double> percentageProgress)
+    {
+      throw new NotImplementedException();
+    }
+
+    internal static async Task<bool> Receive(TabCoordinator coordinator, object continuousReceiverCoordinator, Progress<StreamState> streamCreationProgress, Progress<MessageEventArgs> loggingProgress, Progress<string> statusProgress, Progress<double> percentageProgress)
+    {
+      return true;
     }
   }
 }

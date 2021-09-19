@@ -25,19 +25,19 @@ namespace Speckle.GSA.API
         {
           foreach (var rts in ResultTypes.Select(rt => rt.ToString().ToLower()))
           {
-            if (rts.Contains("1d") && !retList.Contains(ResultGroup.Element1d))
+            if (rts.Contains("1d") && !retList.Contains(ResultGroup.Element1d) && !retList.Contains(ResultGroup.Element1d))
             {
               retList.Add(ResultGroup.Element1d);
             }
-            else if (rts.Contains("2d") && !retList.Contains(ResultGroup.Element2d))
+            else if (rts.Contains("2d") && !retList.Contains(ResultGroup.Element2d) && !retList.Contains(ResultGroup.Element2d))
             {
               retList.Add(ResultGroup.Element2d);
             }
-            else if (rts.Contains("assembly") && !retList.Contains(ResultGroup.Assembly))
+            else if (rts.Contains("assembly") && !retList.Contains(ResultGroup.Assembly) && !retList.Contains(ResultGroup.Assembly))
             {
-              retList.Add(ResultGroup.Element2d);
+              retList.Add(ResultGroup.Assembly);
             }
-            else if (!retList.Contains(ResultGroup.Node))
+            else if (!retList.Contains(ResultGroup.Node) && !retList.Contains(ResultGroup.Node))
             {
               retList.Add(ResultGroup.Node);
             }

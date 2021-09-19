@@ -367,5 +367,6 @@ speckle-sharp-ci-tools
 # GSA files
 GPUCache/
 GSAExport/
+*.lok
 
 *.orig

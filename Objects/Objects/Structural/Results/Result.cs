@@ -45,6 +45,8 @@ namespace Objects.Structural.Results
         [DetachProperty]
         public ResultSetNode resultsNode { get; set; } //nodal results
 
+        public ResultSetAll() { }
+
         public ResultSetAll(ResultSet1D results1D, ResultSet2D results2D, ResultSet3D results3D, ResultGlobal resultsGlobal, ResultSetNode resultsNode)
         {
             this.results1D = results1D;

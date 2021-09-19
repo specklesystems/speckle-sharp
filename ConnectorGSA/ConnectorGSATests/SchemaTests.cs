@@ -382,7 +382,7 @@ namespace ConnectorGSATests
     [Fact (Skip = "WIP")]
     public void GsaLoadGravitySimple()
     {
-      //((MockSettings)Initialiser.AppResources.Settings).TargetLayer = GSATargetLayer.Analysis;
+      //((MockSettings)Initialiser.AppResources.Settings).TargetLayer = GSALayer.Analysis;
 
       var gsaEls = GenerateMixedGsaEls();
       foreach (var gsaEl in gsaEls)

@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConverterGSA.cs" />
+    <Compile Include="ConverterGSA.ToNative.cs" />
+    <Compile Include="ConverterGSA.ToSpeckle.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

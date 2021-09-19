@@ -1947,12 +1947,16 @@ namespace ConverterGSATests
 
       //Convert
       Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
       var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
 
       //Get speckle results
       Assert.NotEmpty(speckleObjects);
-      Assert.Contains(speckleObjects, so => so is ResultNode);
-      var speckleNodeResults = speckleObjects.FindAll(so => so is ResultNode).Select(so => (ResultNode)so).ToList();
+      Assert.Contains(speckleObjects, so => so is ResultSetAll);
+      var rsa = (ResultSetAll) speckleObjects.FirstOrDefault(so => so is ResultSetAll);
+      Assert.NotNull(rsa.resultsNode);
+      Assert.NotEmpty(rsa.resultsNode.resultsNode);
+      var speckleNodeResults = rsa.resultsNode.resultsNode;
       Assert.Equal(2, speckleNodeResults.Count());
 
       //Checks - Results for node 1 - Load case A1
@@ -2027,51 +2031,55 @@ namespace ConverterGSATests
 
       //Convert
       Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
       var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
 
       //Get speckle results
       Assert.NotEmpty(speckleObjects);
-      Assert.Contains(speckleObjects, so => so is Result1D);
-      var speckleElement1dResult = speckleObjects.FindAll(so => so is Result1D).Select(so => (Result1D)so).ToList();
-      Assert.Equal(5, speckleElement1dResult.Count());
+      Assert.Contains(speckleObjects, so => so is ResultSetAll);
+      var rsa = (ResultSetAll)speckleObjects.FirstOrDefault(so => so is ResultSetAll);
+      Assert.NotNull(rsa.results1D);
+      Assert.NotEmpty(rsa.results1D.results1D);
+      var speckleElement1dResults = rsa.results1D.results1D;
+      Assert.Equal(5, speckleElement1dResults.Count());
 
       //Checks
-      for (var i = 0; i < speckleElement1dResult.Count(); i++)
+      for (var i = 0; i < speckleElement1dResults.Count(); i++)
       {
         var gsaResult = (CsvElem1d)gsaElement1dResults[i];
 
         //result description
-        Assert.Equal("element 1_load case 1_" + gsaResult.PosR, speckleElement1dResult[i].applicationId);
-        Assert.Equal("", speckleElement1dResult[i].permutation);
-        Assert.Equal("", speckleElement1dResult[i].description);
-        Assert.Equal("element 1", speckleElement1dResult[i].element.applicationId);
-        Assert.Equal(float.Parse(gsaResult.PosR), speckleElement1dResult[i].position);
-        Assert.Equal("load case 1", speckleElement1dResult[i].resultCase.applicationId);
+        Assert.Equal("element 1_load case 1_" + gsaResult.PosR, speckleElement1dResults[i].applicationId);
+        Assert.Equal("", speckleElement1dResults[i].permutation);
+        Assert.Equal("", speckleElement1dResults[i].description);
+        Assert.Equal("element 1", speckleElement1dResults[i].element.applicationId);
+        Assert.Equal(float.Parse(gsaResult.PosR), speckleElement1dResults[i].position);
+        Assert.Equal("load case 1", speckleElement1dResults[i].resultCase.applicationId);
 
         //results
-        Assert.Equal(gsaResult.Ux.Value, speckleElement1dResult[i].dispX);
-        Assert.Equal(gsaResult.Uy.Value, speckleElement1dResult[i].dispY);
-        Assert.Equal(gsaResult.Uz.Value, speckleElement1dResult[i].dispZ);
-        Assert.Equal(gsaResult.Fx.Value, speckleElement1dResult[i].forceX);
-        Assert.Equal(gsaResult.Fy.Value, speckleElement1dResult[i].forceY);
-        Assert.Equal(gsaResult.Fz.Value, speckleElement1dResult[i].forceZ);
-        Assert.Equal(gsaResult.Mxx.Value, speckleElement1dResult[i].momentXX);
-        Assert.Equal(gsaResult.Myy.Value, speckleElement1dResult[i].momentYY);
-        Assert.Equal(gsaResult.Mzz.Value, speckleElement1dResult[i].momentZZ);
+        Assert.Equal(gsaResult.Ux.Value, speckleElement1dResults[i].dispX);
+        Assert.Equal(gsaResult.Uy.Value, speckleElement1dResults[i].dispY);
+        Assert.Equal(gsaResult.Uz.Value, speckleElement1dResults[i].dispZ);
+        Assert.Equal(gsaResult.Fx.Value, speckleElement1dResults[i].forceX);
+        Assert.Equal(gsaResult.Fy.Value, speckleElement1dResults[i].forceY);
+        Assert.Equal(gsaResult.Fz.Value, speckleElement1dResults[i].forceZ);
+        Assert.Equal(gsaResult.Mxx.Value, speckleElement1dResults[i].momentXX);
+        Assert.Equal(gsaResult.Myy.Value, speckleElement1dResults[i].momentYY);
+        Assert.Equal(gsaResult.Mzz.Value, speckleElement1dResults[i].momentZZ);
 
         //results - Not currently supported
-        Assert.Null(speckleElement1dResult[i].axialStress);
-        Assert.Null(speckleElement1dResult[i].bendingStressYNeg);
-        Assert.Null(speckleElement1dResult[i].bendingStressYPos);
-        Assert.Null(speckleElement1dResult[i].bendingStressZNeg);
-        Assert.Null(speckleElement1dResult[i].bendingStressZPos);
-        Assert.Null(speckleElement1dResult[i].combinedStressMax);
-        Assert.Null(speckleElement1dResult[i].combinedStressMin);
-        Assert.Null(speckleElement1dResult[i].rotXX);
-        Assert.Null(speckleElement1dResult[i].rotYY);
-        Assert.Null(speckleElement1dResult[i].rotZZ);
-        Assert.Null(speckleElement1dResult[i].shearStressY);
-        Assert.Null(speckleElement1dResult[i].shearStressZ);
+        Assert.Null(speckleElement1dResults[i].axialStress);
+        Assert.Null(speckleElement1dResults[i].bendingStressYNeg);
+        Assert.Null(speckleElement1dResults[i].bendingStressYPos);
+        Assert.Null(speckleElement1dResults[i].bendingStressZNeg);
+        Assert.Null(speckleElement1dResults[i].bendingStressZPos);
+        Assert.Null(speckleElement1dResults[i].combinedStressMax);
+        Assert.Null(speckleElement1dResults[i].combinedStressMin);
+        Assert.Null(speckleElement1dResults[i].rotXX);
+        Assert.Null(speckleElement1dResults[i].rotYY);
+        Assert.Null(speckleElement1dResults[i].rotZZ);
+        Assert.Null(speckleElement1dResults[i].shearStressY);
+        Assert.Null(speckleElement1dResults[i].shearStressZ);
       }
     }
 
@@ -2103,12 +2111,16 @@ namespace ConverterGSATests
 
       //Convert
       Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
       var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
 
       //Get speckle results
       Assert.NotEmpty(speckleObjects);
-      Assert.Contains(speckleObjects, so => so is Result2D);
-      var speckleElement2dResults = speckleObjects.FindAll(so => so is Result2D).Select(so => (Result2D)so).ToList();
+      Assert.Contains(speckleObjects, so => so is ResultSetAll);
+      var rsa = (ResultSetAll)speckleObjects.FirstOrDefault(so => so is ResultSetAll);
+      Assert.NotNull(rsa.results2D);
+      Assert.NotEmpty(rsa.results2D.results2D);
+      var speckleElement2dResults = rsa.results2D.results2D;
       Assert.Equal(5, speckleElement2dResults.Count());
 
       //Checks

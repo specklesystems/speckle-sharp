@@ -35,9 +35,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -64,8 +61,27 @@
     <Compile Include="Headless.cs" />
     <Compile Include="IGSALocalMessenger.cs" />
     <Compile Include="MessageEventArgs.cs" />
+    <Compile Include="Models\DisplayLog.cs" />
+    <Compile Include="Models\DisplayLogItem.cs" />
+    <Compile Include="Models\Enums.cs" />
+    <Compile Include="Models\ResultSettingItem.cs" />
+    <Compile Include="Models\ResultSettings.cs" />
+    <Compile Include="Models\SpeckleAccountForUI.cs" />
+    <Compile Include="Models\StateMachine.cs" />
+    <Compile Include="Models\StreamList.cs" />
+    <Compile Include="Models\StreamListItem.cs" />
+    <Compile Include="Models\Tabs\ReceiverTab.cs" />
+    <Compile Include="Models\Tabs\SenderTab.cs" />
+    <Compile Include="Models\Tabs\TabBase.cs" />
+    <Compile Include="Models\Tabs\TabCoordinator.cs" />
     <Compile Include="StatusEventArgs.cs" />
     <Compile Include="StreamState.cs" />
+    <Compile Include="Utilities\DelegateCommand.cs" />
+    <Compile Include="Utilities\EnterKeyDownEventTrigger.cs" />
+    <Compile Include="Utilities\EnumConverter.cs" />
+    <Compile Include="Utilities\ProgressMessenger.cs" />
+    <Compile Include="Utilities\TextBoxEnterKeyUpdateBehaviour.cs" />
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -98,7 +114,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -120,6 +135,17 @@
       <Project>{b17705b9-0d8f-41c8-a868-d46ef3e45e40}</Project>
       <Name>Speckle.GSA.API</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Views\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf">
+      <Version>1.1.31</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.1</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
