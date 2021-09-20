@@ -27,6 +27,8 @@ namespace Objects.BuiltElements.Revit
     /// </summary>
     public bool isTypeParameter { get; set; } = false;
 
+    public string units { get; set; }
+
     public Parameter() { }
 
     [SchemaInfo("Parameter", "A Revit instance parameter to set on an element", "Revit", "Families")]

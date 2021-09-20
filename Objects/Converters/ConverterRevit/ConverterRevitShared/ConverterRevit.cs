@@ -246,6 +246,11 @@ namespace Objects.Converter.Revit
         case BE.Column o:
           return ColumnToNative(o);
 
+#if REVIT2022
+        case BE.Ceiling o:
+          return CeilingToNative(o);
+#endif
+
         case BERC.DetailCurve o:
           return DetailCurveToNative(o);
 
@@ -278,6 +283,9 @@ namespace Objects.Converter.Revit
 
         case BE.Topography o:
           return TopographyToNative(o);
+
+        case BER.RevitProfileWall o:
+          return ProfileWallToNative(o);
 
         case BER.RevitFaceWall o:
           return FaceWallToNative(o);
@@ -380,6 +388,9 @@ namespace Objects.Converter.Revit
         BE.Beam _ => true,
         BE.Brace _ => true,
         BE.Column _ => true,
+#if REVIT2022
+        BE.Ceiling _ => true,
+#endif
         BERC.DetailCurve _ => true,
         BER.DirectShape _ => true,
         BER.FreeformElement _ => true,
@@ -392,6 +403,7 @@ namespace Objects.Converter.Revit
         BE.Roof _ => true,
         BE.Topography _ => true,
         BER.RevitFaceWall _ => true,
+        BER.RevitProfileWall _ => true,
         BE.Wall _ => true,
         BE.Duct _ => true,
         BE.Pipe _ => true,

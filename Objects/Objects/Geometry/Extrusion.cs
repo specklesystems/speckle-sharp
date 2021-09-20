@@ -22,6 +22,8 @@ namespace Objects.Geometry
     public double area { get; set; }
     public double volume { get; set; }
 
+    public string units { get; set; }
+
     public Extrusion() { }
 
     public Extrusion(Base profile, double length, bool capped, string units = Units.Meters, string applicationId = null)

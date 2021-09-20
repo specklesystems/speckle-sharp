@@ -49,6 +49,8 @@ namespace Objects.Geometry
 
     public double length { get; set; }
 
+    public string units { get; set; }
+
     public Curve() { }
 
     public Curve(Polyline poly, string units = Units.Meters, string applicationId = null)

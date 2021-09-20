@@ -96,7 +96,7 @@ namespace Objects.Converter.RhinoGh
 
     private void SetUnits(Base geom)
     {
-      geom.units = ModelUnits;
+      geom["units"] = ModelUnits;
     }
 
     private double ScaleToNative(double value, string units)
