@@ -22,6 +22,8 @@ using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
 using AxisDirection6 = Objects.Structural.GSA.Other.AxisDirection6;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using GwaAxisDirection3 = Speckle.GSA.API.GwaSchema.AxisDirection3;
+using GwaPathType = Speckle.GSA.API.GwaSchema.PathType;
+using PathType = Objects.Structural.GSA.Other.PathType;
 using Objects.Structural.Materials;
 
 namespace ConverterGSA
@@ -77,6 +79,9 @@ namespace ConverterGSA
         //Bridge
         { typeof(GsaInfBeam), GsaInfBeamToSpeckle },
         { typeof(GsaInfNode), GsaInfNodeToSpeckle },
+        { typeof(GsaAlign), GsaAlignToSpeckle },
+        { typeof(GsaPath), GsaPathToSpeckle },
+        { typeof(GsaUserVehicle), GsaUserVehicleToSpeckle },
         //TODO: add methods for other GSA keywords
       };
     }
@@ -1349,10 +1354,73 @@ namespace ConverterGSA
 
       return new ToSpeckleResult(speckleInfBeam);
     }
+
+    private ToSpeckleResult GsaAlignToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
+    {
+      var gsaAlign = (GsaAlign)nativeObject;
+      var speckleAlign = new GSAAlign()
+      {
+        name = gsaAlign.Name,
+        chainage = gsaAlign.Chain,
+        curvature = gsaAlign.Curv,
+      };
+      if (gsaAlign.Index.IsIndex())
+      {
+        speckleAlign.applicationId = Instance.GsaModel.GetApplicationId<GsaAlign>(gsaAlign.Index.Value);
+        speckleAlign.nativeId = gsaAlign.Index.Value;
+      }
+      if (gsaAlign.GridSurfaceIndex.IsIndex()) speckleAlign.gridSurface = GetGridSurfaceFromIndex(gsaAlign.GridSurfaceIndex.Value);
+
+      return new ToSpeckleResult(speckleAlign);
+    }
+
+    private ToSpeckleResult GsaPathToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
+    {
+      var gsaPath = (GsaPath)nativeObject;
+      var specklePath = new GSAPath()
+      {
+        name = gsaPath.Name,
+        type = GetPathType(gsaPath.Type),
+      };
+      if (gsaPath.Index.IsIndex())
+      {
+        specklePath.applicationId = Instance.GsaModel.GetApplicationId<GsaPath>(gsaPath.Index.Value);
+        specklePath.nativeId = gsaPath.Index.Value;
+      }
+      if (gsaPath.Alignment.IsIndex()) specklePath.alignment = GetAlignmentFromIndex(gsaPath.Alignment.Value);
+      if (gsaPath.Group.IsIndex()) specklePath.group = gsaPath.Group.Value;
+      if (gsaPath.Left.HasValue) specklePath.left = gsaPath.Left.Value;
+      if (gsaPath.Right.HasValue) specklePath.right = gsaPath.Right.Value;
+      if (gsaPath.Factor.HasValue) specklePath.factor = gsaPath.Factor.Value;
+      if (gsaPath.NumMarkedLanes.HasValue && gsaPath.NumMarkedLanes > 0) specklePath.numMarkedLanes = gsaPath.NumMarkedLanes.Value;
+
+      return new ToSpeckleResult(specklePath);
+    }
+
+    private ToSpeckleResult GsaUserVehicleToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
+    {
+      var gsaUserVehicle = (GsaUserVehicle)nativeObject;
+      var speckleUserVehicle = new GSAUserVehicle()
+      {
+        name = gsaUserVehicle.Name,
+        axlePositions = gsaUserVehicle.AxlePosition,
+        axleOffsets = gsaUserVehicle.AxleOffset,
+        axleLeft = gsaUserVehicle.AxleLeft,
+        axleRight = gsaUserVehicle.AxleRight
+      };
+      if (gsaUserVehicle.Index.IsIndex())
+      {
+        speckleUserVehicle.applicationId = Instance.GsaModel.GetApplicationId<GsaUserVehicle>(gsaUserVehicle.Index.Value);
+        speckleUserVehicle.nativeId = gsaUserVehicle.Index.Value;
+      }
+      if (gsaUserVehicle.Width.IsPositive()) speckleUserVehicle.width = gsaUserVehicle.Width.Value;
+
+      return new ToSpeckleResult(speckleUserVehicle);
+    }
     #endregion
     #endregion
 
-    #region helper
+    #region Helper
     #region ToSpeckle
     #region Geometry
     #region Node
@@ -3127,6 +3195,33 @@ namespace ConverterGSA
         default:
           return InfluenceType.NotSet;
       }
+    }
+
+    private PathType GetPathType(GwaPathType gsaType)
+    {
+      switch(gsaType)
+      {
+        case GwaPathType.LANE:
+          return PathType.LANE;
+        case GwaPathType.FOOTWAY:
+          return PathType.FOOTWAY;
+        case GwaPathType.TRACK:
+          return PathType.TRACK;
+        case GwaPathType.VEHICLE:
+          return PathType.VEHICLE;
+        case GwaPathType.CWAY_1WAY:
+          return PathType.CWAY_1WAY;
+        case GwaPathType.CWAY_2WAY:
+          return PathType.CWAY_2WAY;
+        default:
+          return PathType.NotSet;
+      }
+    }
+
+    private GSAAlign GetAlignmentFromIndex(int index)
+    {
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaAlign, GSAAlign>(index, out var speckleObjects) && speckleObjects != null && speckleObjects.Count > 0)
+        ? speckleObjects.First() : null;
     }
     #endregion
     #endregion
