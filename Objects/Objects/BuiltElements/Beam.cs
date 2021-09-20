@@ -15,6 +15,8 @@ namespace Objects.BuiltElements
     [DetachProperty]
     public Mesh displayMesh { get; set; }
 
+    public string units { get; set; }
+
     public Beam() { }
 
     [SchemaInfo("Beam", "Creates a Speckle beam", "BIM", "Structure")]

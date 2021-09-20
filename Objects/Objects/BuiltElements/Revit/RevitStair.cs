@@ -29,6 +29,8 @@ namespace Objects.BuiltElements.Revit
     [DetachProperty]
     public Mesh displayMesh { get; set; }
 
+    public string units { get; set; }
+
     public RevitStair() { }
   }
 
@@ -52,6 +54,8 @@ namespace Objects.BuiltElements.Revit
     public Base parameters { get; set; }
     public string elementId { get; set; }
 
+    public string units { get; set; }
+
     public RevitStairRun() { }
   }
 
@@ -66,6 +70,8 @@ namespace Objects.BuiltElements.Revit
     public Base parameters { get; set; }
     public string elementId { get; set; }
 
+    public string units { get; set; }
+
     public RevitStairLanding() { }
   }
 
@@ -75,6 +81,8 @@ namespace Objects.BuiltElements.Revit
     public string type { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
+
+    public string units { get; set; }
 
     public RevitStairSupport() { }
   }

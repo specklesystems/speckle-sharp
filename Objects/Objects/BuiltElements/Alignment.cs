@@ -27,6 +27,8 @@ namespace Objects.BuiltElements
     /// </summary>
     public List<bool> stationEquationDirections { get; set; }
 
+    public string units { get; set; }
+
     public Alignment() { }
 
   }

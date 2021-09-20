@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Speckle.Core.Kits;
 
-namespace ConnectorGrasshopper
+namespace ConnectorGrasshopperUtils
 {
   public static class CSOUtils
   {

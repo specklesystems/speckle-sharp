@@ -18,6 +18,8 @@ namespace Objects.BuiltElements
     [DetachProperty]
     public Mesh displayMesh { get; set; }
 
+    public string units { get; set; }
+
     public Duct() { }
 
     /// <summary>
