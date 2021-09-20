@@ -1,5 +1,4 @@
 ﻿using ConnectorGSA;
-using Newtonsoft.Json;
 using Objects.Structural.Geometry;
 using Objects.Structural.Loading;
 using Objects.Structural.Materials;
@@ -9,16 +8,18 @@ using Speckle.ConnectorGSA.Proxy;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.GSA.API;
-using Speckle.GSA.API.CsvSchema;
-using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+
+//Note: this project directly references the Objects and ConverterGSA libraries, which the headless tests do not.  This is why they exist
+//      in another test project, which doesn't have these references and which uses the Core's own method of loading converters and kits
 
 namespace ConnectorGSATests
 {
@@ -31,65 +32,14 @@ namespace ConnectorGSATests
   //Other notes:
   // - stream IDs saved with any native object are ignored during sending - it's the send config settings that determine what is sent
   public class SendTests : SpeckleConnectorFixture
-  {
-    private string saveAsAlternativeFilepath(string fn)
-    {
-      return Path.Combine(TestDataDirectory, fn.Split('.').First() + "_test.gwb");
-    }
-    
-    //Sending scenarios
-
-    [Fact]
-    public void HeadlessSendDesignLayer()
-    {
-      var headless = new Headless();
-      var cliResult = headless.RunCLI("sender",
-        "--server", v2ServerUrl,
-        "--file", Path.Combine(TestDataDirectory, modelWithoutResultsFile),
-        "--saveAs", saveAsAlternativeFilepath(modelWithoutResultsFile),
-        "--designLayerOnly");
-
-      Assert.True(cliResult);
-    }
-
-    [Fact]
-    public void HeadlessSendBothLayers()
-    {
-      var headless = new Headless();
-      var account = AccountManager.GetDefaultAccount();
-      var cliResult = headless.RunCLI("sender",
-        "--server", account.serverInfo.url,
-        "--email", account.userInfo.email,
-        "--token", account.token,
-        "--file", Path.Combine(TestDataDirectory, modelWithoutResultsFile),
-        "--saveAs", saveAsAlternativeFilepath(modelWithoutResultsFile));
-
-      Assert.True(cliResult);
-    }
-
-    [Fact]
-    public void HeadlessSendBothLayersWithResults()
-    {
-      var headless = new Headless();
-      var account = AccountManager.GetDefaultAccount();
-      var cliResult = headless.RunCLI("sender",
-        "--server", account.serverInfo.url,
-        "--email", account.userInfo.email,
-        "--token", account.token,
-        "--file", Path.Combine(TestDataDirectory, modelWithResultsFile),
-        "--saveAs", saveAsAlternativeFilepath(modelWithResultsFile),
-        "--result", "\"Nodal Displacements\",\"Element 1d Force\",\"Element 2d Displacement\",\"Assembly Forces And Moments\"",
-        "--resultCases", "A1,C1",
-        "--result1DNumPosition", "3");
-
-      Assert.True(cliResult);
-    }
-
+  { 
     [Fact]
     public async Task SendDesignLayer() //model only
     {
       //Configure settings for this transmission
       Instance.GsaModel.StreamLayer = GSALayer.Design;
+
+      var converter = new ConverterGSA.ConverterGSA();
 
       var memoryTransport = new MemoryTransport();
       var result = await CoordinateSend(modelWithoutResultsFile, converter, memoryTransport);
@@ -97,7 +47,8 @@ namespace ConnectorGSATests
       Assert.True(result.Loaded);
       Assert.True(result.Converted);
       Assert.True(result.Sent);
-      Assert.NotEmpty(result.ConvertedObjects);
+      Assert.Single(result.ConvertedObjectsByStream.Keys);
+      Assert.NotEmpty(result.ConvertedObjectsByStream.Values);
 
       var numExpectedByObjectType = new Dictionary<Type, int>()
       {
@@ -110,7 +61,8 @@ namespace ConnectorGSATests
         { typeof(LoadCase), 3 },
       };
 
-      var objectsByType = result.ConvertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
+      var convertedObjects = ModelToSingleObjectsList((Base)result.ConvertedObjectsByStream.Values.First());
+      var objectsByType = convertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
 
       foreach (var t in numExpectedByObjectType.Keys)
       {
@@ -127,14 +79,15 @@ namespace ConnectorGSATests
     {
       //Configure settings for this transmission
       Instance.GsaModel.StreamLayer = GSALayer.Both;
-
+      var converter = new ConverterGSA.ConverterGSA();
       var memoryTransport = new MemoryTransport();
       var result = await CoordinateSend(modelWithoutResultsFile, converter, memoryTransport);
 
       Assert.True(result.Loaded);
       Assert.True(result.Converted);
       Assert.True(result.Sent);
-      Assert.NotEmpty(result.ConvertedObjects);
+      Assert.NotEmpty(result.ConvertedObjectsByStream.Values);
+      Assert.Equal(2, result.ConvertedObjectsByStream.Keys.Count);
 
       var numExpectedByObjectType = new Dictionary<Type, int>()
       {
@@ -148,7 +101,12 @@ namespace ConnectorGSATests
         { typeof(Element2D), 3297 }
       };
 
-      var objectsByType = result.ConvertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
+      //Just compare analysis objects
+      var objects = ModelToSingleObjectsList((Base)result.ConvertedObjectsByStream.Values.ToList()[1]);
+
+      var convertedObjects = (List<Base>) result.ConvertedObjectsByStream.First().Value;
+
+      var objectsByType = convertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
 
       foreach (var t in numExpectedByObjectType.Keys)
       {
@@ -166,14 +124,21 @@ namespace ConnectorGSATests
       Instance.GsaModel.StreamLayer = GSALayer.Both;
       Instance.GsaModel.ResultTypes = new List<ResultType>() { ResultType.NodalDisplacements };
       Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
-
+      var converter = new ConverterGSA.ConverterGSA();
       var memoryTransport = new MemoryTransport();
       var result = await CoordinateSend(modelWithResultsFile, converter, memoryTransport);
 
       Assert.True(result.Loaded);
       Assert.True(result.Converted);
       Assert.True(result.Sent);
-      Assert.NotEmpty(result.ConvertedObjects);
+      Assert.NotEmpty(result.ConvertedObjectsByStream.Values);
+      Assert.Equal(3, result.ConvertedObjectsByStream.Keys.Count);
+
+      var objs = result.ConvertedObjectsByStream.Values.Cast<Base>().ToList();
+      var analysisModel = objs[1];
+      var resultSetAll = objs[2];
+      var objects = ModelToSingleObjectsList(analysisModel);
+      var resultObjects = ResultToSingleResultObjectsList(resultSetAll);
 
       var numExpectedByObjectType = new Dictionary<Type, int>()
       {
@@ -187,7 +152,8 @@ namespace ConnectorGSATests
         { typeof(ResultNode), 10 }  //Needs to be reviewed
       };
 
-      var objectsByType = result.ConvertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
+      var convertedObjects = ModelToSingleObjectsList((Base)result.ConvertedObjectsByStream.Values.ToList()[1]);
+      var objectsByType = objects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
 
       foreach (var t in numExpectedByObjectType.Keys)
       {
@@ -197,96 +163,39 @@ namespace ConnectorGSATests
       }
     }
 
-    [Fact]
-    public void ReadResults()
+    private List<Base> ModelToSingleObjectsList(Base model)
     {
-      Instance.GsaModel.StreamLayer = GSALayer.Both;
-
-      Commands.OpenFile(Path.Combine(TestDataDirectory, modelWithResultsFile), true); //Use a real proxy
-
-      bool loaded = false;
-      var resultTypesByGroup = GetResultGroupType();
-      var csvRecordsByGroup = resultTypesByGroup.Keys.ToDictionary(g => g,
-        g => new List<CsvRecord>());
-
-      try
+      var retList = new List<Base>();
+      var memberGroups = new string[] { "nodes", "elements", "loads", "restraints", "properties", "materials" };
+      foreach (var mg in memberGroups)
       {
-        loaded = Commands.LoadDataFromFile(resultTypesByGroup.Keys, resultTypesByGroup.Keys.SelectMany(g => resultTypesByGroup[g]));
-      }
-      catch (Exception ex)
-      {
-      }
-      finally
-      {
-        Instance.GsaModel.Proxy.Close();
-      }
-
-      var indices = Instance.GsaModel.Cache.LookupIndices<GsaAssembly>();
-      if (indices != null && indices.Count() > 0)
-      {
-        foreach (var i in indices)
+        if (model[mg] != null)
         {
-          if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Assembly, i, out var records))
-          {
-            csvRecordsByGroup[ResultGroup.Assembly].AddRange(records);
-          }
+          retList.AddRange((List<Base>)model[mg]);
         }
       }
-      indices = Instance.GsaModel.Cache.LookupIndices<GsaNode>();
-      if (indices != null && indices.Count() > 0)
-      {
-        foreach (var i in indices)
-        {
-          if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Node, i, out var records))
-          {
-            csvRecordsByGroup[ResultGroup.Node].AddRange(records);
-          }
-        }
-      }
-      indices = Instance.GsaModel.Cache.LookupIndices<GsaEl>();
-      if (indices != null && indices.Count() > 0)
-      {
-        foreach (var i in indices)
-        {
-          if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Element1d, i, out var records))
-          {
-            csvRecordsByGroup[ResultGroup.Element1d].AddRange(records);
-          }
-          if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Element2d, i, out records))
-          {
-            csvRecordsByGroup[ResultGroup.Element2d].AddRange(records);
-          }
-        }
-      }
-
-      Assert.True(csvRecordsByGroup.Keys.All(g => csvRecordsByGroup[g].Count > 0));
+      return retList;
     }
 
-    [Fact]
-    public void TestDeserialisation()
+    private List<Base> ResultToSingleResultObjectsList(Base resultSetAll)
     {
-      Instance.GsaModel.Proxy = new GsaProxy();
-      Instance.GsaModel.Proxy.OpenFile(saveAsAlternativeFilepath(modelWithoutResultsFile));
-      try
+      var retList = new List<Base>();
+      var memberGroups = new string[] { "resultsNode", "results1D", "results2D" };
+      foreach (var mg in memberGroups)
       {
-        var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
-        var ss = JsonConvert.DeserializeObject<List<StreamState>>(sid);
+        if (((Base)resultSetAll[mg])[mg] != null)
+        {
+          retList.AddRange((List<Base>)((Base)resultSetAll[mg])[mg]);
+        }
       }
-      catch (Exception ex)
-      {
-
-      }
-      finally
-      {
-        Instance.GsaModel.Proxy.Close();
-      }
+      return retList;
     }
 
     private async Task<CoordinateSendReturnInfo> CoordinateSend(string testFileName, ISpeckleConverter converter, params ITransport[] nonServerTransports)
     {
       var returnInfo = new CoordinateSendReturnInfo();
 
-      Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy(); //Use a real proxy
+      Instance.GsaModel.Proxy = new GsaProxy(); //Use a real proxy
       Instance.GsaModel.Proxy.OpenFile(Path.Combine(TestDataDirectory, testFileName), true);
 
       if (SendResults())
@@ -313,56 +222,30 @@ namespace ConnectorGSATests
         return returnInfo;
       }
 
-      var commitObj = Commands.ConvertToSpeckle(converter);
-      returnInfo.Converted = (commitObj != null);
-      if (commitObj == null)
+      var commitObjs = Commands.ConvertToSpeckle(converter);
+      returnInfo.Converted = (commitObjs != null && commitObjs.Count > 0);
+      if (commitObjs == null)
       {
         return returnInfo;
       }
 
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out returnInfo.ConvertedObjects));
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var speckleObjects));
 
       var account = AccountManager.GetDefaultAccount();
       var client = new Client(account);
-      returnInfo.StreamState = await PrepareStream(client);
+      returnInfo.ConvertedObjectsByStream = new Dictionary<StreamState, object>();
 
-      returnInfo.Sent = await Commands.Send(commitObj, returnInfo.StreamState,
-        (new ITransport[] { new ServerTransport(account, returnInfo.StreamState.Stream.id) }).Concat(nonServerTransports).ToArray());
+      foreach (var co in commitObjs)
+      {
+        var streamState = await PrepareStream(client);
 
+        returnInfo.Sent = await Commands.Send(co, streamState,
+          (new ITransport[] { new ServerTransport(account, streamState.Stream.id) }).Concat(nonServerTransports).ToArray());
+
+        returnInfo.ConvertedObjectsByStream.Add(streamState, co);
+      }
       return returnInfo;
 
-    }
-
-    private Dictionary<ResultGroup, List<ResultType>> GetResultGroupType()
-    {
-      var resultGroups = Enum.GetValues(typeof(ResultGroup)).Cast<ResultGroup>().Where(g => g != ResultGroup.Unknown).ToList();
-      var resultTypes = new Dictionary<ResultGroup, List<ResultType>>();
-      foreach (var g in resultGroups)
-      {
-        resultTypes.Add(g, new List<ResultType>());
-      }
-
-      foreach (var rt in Enum.GetValues(typeof(ResultType)).Cast<ResultType>())
-      {
-        var rtStr = rt.ToString();
-        if (rtStr.Contains("1d"))
-        {
-          resultTypes[ResultGroup.Element1d].Add(rt);
-        }
-        else if (rtStr.Contains("2d"))
-        {
-          resultTypes[ResultGroup.Element2d].Add(rt);
-        }
-        else if (rtStr.Contains("Assembly"))
-        {
-          resultTypes[ResultGroup.Assembly].Add(rt);
-        }
-        else
-        {
-          resultTypes[ResultGroup.Node].Add(rt);
-        }
-      }
-      return resultTypes;
     }
 
     private struct CoordinateSendReturnInfo
@@ -370,8 +253,7 @@ namespace ConnectorGSATests
       public bool Loaded;
       public bool Converted;
       public bool Sent;
-      public List<object> ConvertedObjects;
-      public StreamState StreamState;
+      public Dictionary<StreamState, object> ConvertedObjectsByStream;
     }
 
     private async Task<StreamState> PrepareStream(Client client)

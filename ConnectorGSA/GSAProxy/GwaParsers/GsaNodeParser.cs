@@ -5,8 +5,8 @@ using System.Linq;
 
 namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
-  //The load case keyword dependency is there for the creation of results
-  [GsaType(GwaKeyword.NODE, GwaSetCommandType.Set, true, true, true, GwaKeyword.AXIS, GwaKeyword.PROP_MASS, GwaKeyword.PROP_SPR, GwaKeyword.LOAD_TITLE)]
+  //The load case & load combination keyword dependencies are there for the creation of results
+  [GsaType(GwaKeyword.NODE, GwaSetCommandType.Set, true, true, true, GwaKeyword.AXIS, GwaKeyword.PROP_MASS, GwaKeyword.PROP_SPR, GwaKeyword.LOAD_TITLE, GwaKeyword.COMBINATION)]
   public class GsaNodeParser : GwaParser<GsaNode>
   {
     private static readonly List<AxisDirection6> axisDirs = Enum.GetValues(typeof(AxisDirection6)).Cast<AxisDirection6>().Where(e => e != AxisDirection6.NotSet).ToList();

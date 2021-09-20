@@ -5,6 +5,7 @@ using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace ConnectorGSATests
@@ -24,9 +25,9 @@ namespace ConnectorGSATests
     protected IGSACache cache => GsaModelMock.Cache;
     protected IGSAProxy proxy { get => GsaModelMock.Proxy; set => GsaModelMock.Proxy = value; }
 
-    protected ISpeckleConverter converter {  get =>  kit.LoadConverter(Applications.GSA); }
+    //protected ISpeckleConverter converter {  get =>  kit.LoadConverter(Applications.GSA); }
 
-    public ISpeckleKit kit { get=> KitManager.GetDefaultKit(); }
+    //public ISpeckleKit kit { get=> KitManager.GetDefaultKit(); }
 
     public SpeckleConnectorFixture()
     {
@@ -80,6 +81,11 @@ namespace ConnectorGSATests
 
       //It's assumed for now that any list of GSA indices that would correspond to the App IDs in the list would be a sequence from 1
       return indices;
+    }
+
+    protected string saveAsAlternativeFilepath(string fn)
+    {
+      return Path.Combine(TestDataDirectory, fn.Split('.').First() + "_test.gwb");
     }
   }
 }

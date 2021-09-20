@@ -35,7 +35,7 @@ namespace ConnectorGSATests
       * */
       //var kit = KitManager.GetDefaultKit();
       //var converter = kit.LoadConverter(Applications.GSA);
-
+      var converter = new ConverterGSA.ConverterGSA();
       var account = AccountManager.GetDefaultAccount();
       var client = new Client(account);
 

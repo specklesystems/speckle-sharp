@@ -4,6 +4,12 @@ using System.IO;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API;
 using Speckle.ConnectorGSA.Proxy;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using ConnectorGSA;
+using Speckle.GSA.API.CsvSchema;
+using Speckle.GSA.API.GwaSchema;
 
 namespace ConnectorGSATests
 {
@@ -62,6 +68,123 @@ namespace ConnectorGSATests
       Assert.Equal(new[] { 'a', 'b' }, generations[2]);
       Assert.Equal(new[] { 'c', 'd', 'e' }, generations[1]);
       Assert.Equal(new[] { 'f', 'g' }, generations[0]);
+    }
+
+    [Fact]
+    public void ReadResults()
+    {
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+
+      Commands.OpenFile(Path.Combine(TestDataDirectory, modelWithResultsFile), true); //Use a real proxy
+
+      bool loaded = false;
+      var resultTypesByGroup = GetResultGroupType();
+      var csvRecordsByGroup = resultTypesByGroup.Keys.ToDictionary(g => g,
+        g => new List<CsvRecord>());
+
+      try
+      {
+        loaded = Commands.LoadDataFromFile(resultTypesByGroup.Keys, resultTypesByGroup.Keys.SelectMany(g => resultTypesByGroup[g]));
+      }
+      catch (Exception ex)
+      {
+      }
+      finally
+      {
+        Instance.GsaModel.Proxy.Close();
+      }
+
+      var indices = Instance.GsaModel.Cache.LookupIndices<GsaAssembly>();
+      if (indices != null && indices.Count() > 0)
+      {
+        foreach (var i in indices)
+        {
+          if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Assembly, i, out var records))
+          {
+            csvRecordsByGroup[ResultGroup.Assembly].AddRange(records);
+          }
+        }
+      }
+      indices = Instance.GsaModel.Cache.LookupIndices<GsaNode>();
+      if (indices != null && indices.Count() > 0)
+      {
+        foreach (var i in indices)
+        {
+          if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Node, i, out var records))
+          {
+            csvRecordsByGroup[ResultGroup.Node].AddRange(records);
+          }
+        }
+      }
+      indices = Instance.GsaModel.Cache.LookupIndices<GsaEl>();
+      if (indices != null && indices.Count() > 0)
+      {
+        foreach (var i in indices)
+        {
+          if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Element1d, i, out var records))
+          {
+            csvRecordsByGroup[ResultGroup.Element1d].AddRange(records);
+          }
+          if (Instance.GsaModel.Proxy.GetResultRecords(ResultGroup.Element2d, i, out records))
+          {
+            csvRecordsByGroup[ResultGroup.Element2d].AddRange(records);
+          }
+        }
+      }
+
+      Assert.True(csvRecordsByGroup.Keys.All(g => csvRecordsByGroup[g].Count > 0));
+    }
+
+    [Fact]
+    public void TestDeserialisation()
+    {
+      Instance.GsaModel.Proxy = new GsaProxy();
+      Instance.GsaModel.Proxy.OpenFile(saveAsAlternativeFilepath(modelWithoutResultsFile));
+      try
+      {
+        var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
+        var ss = JsonConvert.DeserializeObject<List<StreamState>>(sid);
+      }
+      catch (Exception ex)
+      {
+
+      }
+      finally
+      {
+        Instance.GsaModel.Proxy.Close();
+      }
+    }
+
+    private Dictionary<ResultGroup, List<ResultType>> GetResultGroupType()
+    {
+      var resultGroups = Enum.GetValues(typeof(ResultGroup)).Cast<ResultGroup>().Where(g => g != ResultGroup.Unknown).ToList();
+      var resultTypes = new Dictionary<ResultGroup, List<ResultType>>();
+      foreach (var g in resultGroups)
+      {
+        resultTypes.Add(g, new List<ResultType>());
+      }
+
+      foreach (var rt in Enum.GetValues(typeof(ResultType)).Cast<ResultType>())
+      {
+        var rtStr = rt.ToString();
+        if (rtStr.Contains("1d"))
+        {
+          resultTypes[ResultGroup.Element1d].Add(rt);
+        }
+        else if (rtStr.Contains("2d"))
+        {
+          resultTypes[ResultGroup.Element2d].Add(rt);
+        }
+        else if (rtStr.Contains("Assembly"))
+        {
+          resultTypes[ResultGroup.Assembly].Add(rt);
+        }
+        else
+        {
+          resultTypes[ResultGroup.Node].Add(rt);
+        }
+      }
+      return resultTypes;
     }
   }
 }
