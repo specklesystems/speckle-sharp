@@ -96,7 +96,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SchemaBuilder\CSOUtils.cs" />
     <Compile Include="SchemaBuilder\CSOViewModel.cs" />
     <Compile Include="SchemaBuilder\SchemaBuilderGen.cs">
       <AutoGen>True</AutoGen>
@@ -124,6 +123,10 @@
     <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj">
       <Project>{8f16a9a1-dc5f-4800-821c-336e6ccf8f9c}</Project>
       <Name>DiskTransport</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj">
+      <Project>{e2a8e961-6db6-4474-9e31-0c00feb4a067}</Project>
+      <Name>ConnectorGrasshopperUtils</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -207,6 +210,10 @@
   <ItemGroup>
     <None Include="Resources\receiveFromTransport.png" />
     <None Include="Resources\sendToTransport.png" />
+    <None Include="Resources\docs16.png" />
+    <None Include="Resources\forum16.png" />
+    <None Include="Resources\help16.png" />
+    <None Include="Resources\tutorials16.png" />
     <Content Include="SchemaBuilder\SchemaBuilderGen.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
@@ -247,6 +254,12 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="BeforeRebuild">
+    <Message Text="Restoring T4 tool..." Importance="high" />
+    <Exec Command="dotnet tool restore" />
+    <Message Text="Generating T4 templates..." Importance="high" />
+    <Exec Command="dotnet t4 -o $(SolutionDir)ConnectorGrasshopper\SchemaBuilder\SchemaBuilderGen.cs $(SolutionDir)ConnectorGrasshopper\SchemaBuilder\SchemaBuilderGen.tt -P=$(SolutionDir)ConnectorGrasshopper\SchemaBuilder" />
+  </Target>
   <Target Name="Clean">
     <RemoveDir Directories="$(TargetDir);$(AppData)\Grasshopper\Libraries\SpeckleGrasshopper2" />
   </Target>

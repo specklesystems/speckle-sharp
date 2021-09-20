@@ -27,6 +27,8 @@ namespace Objects.Geometry
 
     public Box bbox { get; set; }
 
+    public string units { get; set; }
+
     public Vector() { }
 
     public Vector(double x, double y, string units = Units.Meters, string applicationId = null)

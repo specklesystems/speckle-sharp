@@ -49,6 +49,8 @@ namespace Objects.Geometry
 
     public double z { get; set; }
 
+    public string units { get; set; }
+
     public List<double> ToList() => new List<double>() { x, y, z };
 
     public static Point FromList(List<double> list, string units) => new Point(list[0], list[1], list[2]);

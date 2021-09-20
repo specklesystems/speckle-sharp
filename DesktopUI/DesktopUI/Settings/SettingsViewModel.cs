@@ -32,9 +32,23 @@ namespace Speckle.DesktopUI.Settings
         new HelpLink()
         {
         name = "Docs",
-        description = "Browse through the Speckle documentation on our website",
+        description = "Browse through the documentation on the Speckle Guide",
         url = "https://speckle.guide/user/revit.html",
         icon = "FileDocument"
+        },
+        new HelpLink()
+        {
+          name = "Tutorials",
+          description = "Visit our tutorials portal for learning resources from beginner to advanced",
+          url = "https://speckle.systems/tutorials/",
+          icon = "GamepadVariant"
+        },
+        new HelpLink()
+        {
+        name = "Forum",
+        description = "Ask questions and join the discussion on our community forum",
+        url = "https://speckle.community/",
+        icon = "Forum"
         },
         new HelpLink()
         {
@@ -43,13 +57,6 @@ namespace Speckle.DesktopUI.Settings
         url = "https://github.com/specklesystems/speckle-sharp/",
         icon = "Github"
         },
-        new HelpLink()
-        {
-        name = "Forum",
-        description = "Ask questions and join the discussion on our discourse forum",
-        url = "https://speckle.community/",
-        icon = "Forum"
-        }
       };
     }
 

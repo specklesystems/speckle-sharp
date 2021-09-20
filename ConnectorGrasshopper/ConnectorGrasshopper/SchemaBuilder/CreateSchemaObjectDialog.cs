@@ -4,6 +4,7 @@ using Eto.Forms;
 using Eto.Drawing;
 using System.Linq;
 using System.Reflection;
+using ConnectorGrasshopperUtils;
 using Speckle.Core.Kits;
 
 namespace ConnectorGrasshopper
