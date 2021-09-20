@@ -169,4 +169,48 @@ namespace Objects.Structural.GSA.Other
     DISPLACEMENT
   }
 
+  public class GSAAlign : Base
+  {
+    public int nativeId { get; set; }
+    public string name { get; set; }
+    public GSAGridSurface gridSurface { get; set; }
+    public List<double> chainage { get; set; }
+    public List<double> curvature { get; set; }
+  }
+
+  public class GSAPath : Base
+  {
+    public int nativeId { get; set; }
+    public string name { get; set; }
+    public PathType type { get; set; }
+    public int group { get; set; }
+    public GSAAlign alignment { get; set; }
+    public double left { get; set; } //left / centre offset
+    public double right { get; set; } //right offset / gauge
+    public double factor { get; set; } //left factor
+    public int numMarkedLanes { get; set; }
+  }
+
+  public enum PathType
+  {
+    NotSet = 0,
+    LANE,
+    FOOTWAY,
+    TRACK,
+    VEHICLE,
+    CWAY_1WAY,
+    CWAY_2WAY
+  }
+
+
+  public class GSAUserVehicle : Base
+  {
+    public int nativeId { get; set; }
+    public string name { get; set; }
+    public double width { get; set; } //vehicle width
+    public List<double> axlePositions { get; set; }
+    public List<double> axleOffsets { get; set; } // offset from centreline
+    public List<double> axleLeft { get; set; } //load on left side
+    public List<double> axleRight { get; set; } //load on right side
+  }
 }
