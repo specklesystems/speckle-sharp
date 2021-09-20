@@ -252,7 +252,7 @@ namespace ConnectorGSA
             {
               try
               {
-                typeName = (string)obj["Name"];
+                name = string.Join(" ", (string)obj["layerDescription"], "Model");
               }
               catch
               {
