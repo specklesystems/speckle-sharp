@@ -22,6 +22,7 @@ using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
 using MemberType = Objects.Structural.Geometry.MemberType;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
+using AxisDirection6 = Objects.Structural.GSA.Other.AxisDirection6;
 using Xunit.Sdk;
 using Speckle.Core.Kits;
 using ConverterGSA;
@@ -2264,11 +2265,36 @@ namespace ConverterGSATests
 
       //Checks - rigid 1
       Assert.Equal("rigid 1", speckleRigids[0].applicationId);
+      Assert.Equal(gsaRigids[0].Index.Value, speckleRigids[0].nativeId);
+      Assert.Equal(gsaRigids[0].Name, speckleRigids[0].name);
+      Assert.Equal("node 1", speckleRigids[0].primaryNode.applicationId);
+      Assert.Equal(gsaRigids[0].ConstrainedNodes.Count(), speckleRigids[0].constrainedNodes.Count());
+      Assert.Equal("node 2", speckleRigids[0].constrainedNodes[0].applicationId);
+      Assert.Equal(gsaRigids[0].Stage.Count(), speckleRigids[0].stages.Count());
+      Assert.Equal("stage 1", speckleRigids[0].stages[0].applicationId);
+      Assert.Equal(RigidConstraint.ALL, speckleRigids[0].type);
+      Assert.Null(speckleRigids[0].link);
 
       //Checks - rigid 2
       Assert.Equal("rigid 2", speckleRigids[1].applicationId);
-
-      //TODO: complete checks
+      Assert.Equal(gsaRigids[1].Index.Value, speckleRigids[1].nativeId);
+      Assert.Equal(gsaRigids[1].Name, speckleRigids[1].name);
+      Assert.Equal("node 1", speckleRigids[1].primaryNode.applicationId);
+      Assert.Equal(gsaRigids[1].ConstrainedNodes.Count(), speckleRigids[1].constrainedNodes.Count());
+      Assert.Equal("node 2", speckleRigids[1].constrainedNodes[0].applicationId);
+      Assert.Equal(gsaRigids[1].Stage.Count(), speckleRigids[1].stages.Count());
+      Assert.Equal("stage 1", speckleRigids[1].stages[0].applicationId);
+      Assert.Equal(RigidConstraint.Custom, speckleRigids[1].type);
+      var link = new Dictionary<AxisDirection6, List<AxisDirection6>>()
+      {
+        { AxisDirection6.X, new List<AxisDirection6>() { AxisDirection6.X, AxisDirection6.YY, AxisDirection6.ZZ } },
+        { AxisDirection6.Y, new List<AxisDirection6>() { AxisDirection6.Y, AxisDirection6.XX, AxisDirection6.ZZ } },
+        { AxisDirection6.Z, new List<AxisDirection6>() { AxisDirection6.Z, AxisDirection6.XX, AxisDirection6.YY } },
+        { AxisDirection6.XX, new List<AxisDirection6>() { AxisDirection6.XX } },
+        { AxisDirection6.YY, new List<AxisDirection6>() { AxisDirection6.YY } },
+        { AxisDirection6.ZZ, new List<AxisDirection6>() { AxisDirection6.ZZ } },
+      };
+      Assert.Equal(link, speckleRigids[1].link);
     }
 
     [Fact]
@@ -2291,7 +2317,7 @@ namespace ConverterGSATests
       gsaRecords.AddRange(GsaElement1dExamples(2, "element 1", "element 2"));
 
       //Gen #4
-      gsaRecords.Add(GsaAnalStageExamples(1, "stage 1").FirstOrDefault());
+      gsaRecords.AddRange(GsaAnalStageExamples(2, "stage 1", "stage 2"));
 
       //Gen #5
       var gsaGenRests = GsaGenRestExamples(2, "gen rest 1", "gen rest 2");
@@ -2316,11 +2342,25 @@ namespace ConverterGSATests
 
       //Checks - rigid 1
       Assert.Equal("gen rest 1", speckleGenRests[0].applicationId);
+      Assert.Equal(gsaGenRests[0].Index.Value, speckleGenRests[0].nativeId);
+      Assert.Equal(gsaGenRests[0].Name, speckleGenRests[0].name);
+      Assert.Equal("FFFRRR", speckleGenRests[0].restraint.code);
+      Assert.Equal(gsaGenRests[0].NodeIndices.Count(), speckleGenRests[0].nodes.Count());
+      Assert.Equal("node 1", speckleGenRests[0].nodes[0].applicationId);
+      Assert.Equal(gsaGenRests[0].StageIndices.Count(), speckleGenRests[0].stages.Count());
+      Assert.Equal("stage 1", speckleGenRests[0].stages[0].applicationId);
 
       //Checks - rigid 2
       Assert.Equal("gen rest 2", speckleGenRests[1].applicationId);
-
-      //TODO: complete checks
+      Assert.Equal(gsaGenRests[1].Index.Value, speckleGenRests[1].nativeId);
+      Assert.Equal(gsaGenRests[1].Name, speckleGenRests[1].name);
+      Assert.Equal("FFFFFF", speckleGenRests[1].restraint.code);
+      Assert.Equal(gsaGenRests[1].NodeIndices.Count(), speckleGenRests[1].nodes.Count());
+      Assert.Equal("node 1", speckleGenRests[1].nodes[0].applicationId);
+      Assert.Equal("node 2", speckleGenRests[1].nodes[1].applicationId);
+      Assert.Equal(gsaGenRests[1].StageIndices.Count(), speckleGenRests[1].stages.Count());
+      Assert.Equal("stage 1", speckleGenRests[1].stages[0].applicationId);
+      Assert.Equal("stage 2", speckleGenRests[1].stages[1].applicationId);
     }
     #endregion
 
@@ -2363,13 +2403,20 @@ namespace ConverterGSATests
       Assert.NotEmpty(structuralObjects);
       Assert.Contains(structuralObjects, so => so is GSAStage);
 
-      var speckleStages = structuralObjects.FindAll(so => so is GSAStage).Select(so => (GSAStage)so).ToList();
+      //var speckleStage = structuralObjects.FindAll(so => so is GSAStage).Select(so => (GSAStage)so).ToList();
+      var speckleStage = (GSAStage)structuralObjects.FirstOrDefault(so => so is GSAStage);
 
-      //Checks - rigid 1
-      Assert.Equal("stage 1", speckleStages[0].applicationId);
-
-      //TODO: complete checks
-      //Run case with member indices
+      //Checks - stage 1
+      Assert.Equal("stage 1", speckleStage.applicationId);
+      Assert.Equal(gsaStage.Index.Value, speckleStage.nativeId);
+      Assert.Equal(gsaStage.Name, speckleStage.name);
+      Assert.Equal(gsaStage.Colour.ToString(), speckleStage.colour);
+      Assert.Equal(gsaStage.ElementIndices.Count(), speckleStage.elements.Count());
+      Assert.Equal("element 1", speckleStage.elements[0].applicationId);
+      Assert.Equal(gsaStage.LockElementIndices.Count(), speckleStage.lockedElements.Count());
+      Assert.Equal("element 2", speckleStage.lockedElements[0].applicationId);
+      Assert.Equal(gsaStage.Phi.Value, speckleStage.creepFactor);
+      Assert.Equal(gsaStage.Days.Value, speckleStage.stageTime);
     }
     #endregion
 
@@ -2469,7 +2516,7 @@ namespace ConverterGSATests
     }
     #endregion
 
-    #region helper
+    #region Helper
     #region Geometry
     private GsaAxis GsaAxisExample(string appId)
     {
@@ -4144,7 +4191,7 @@ namespace ConverterGSATests
         new GsaRigid()
         {
           Index = 2,
-          Name = "1",
+          Name = "2",
           PrimaryNode = 1,
           Type = RigidConstraintType.Custom,
           Link = new Dictionary<GwaAxisDirection6, List<GwaAxisDirection6>>()
@@ -4225,15 +4272,15 @@ namespace ConverterGSATests
         },
         new GsaAnalStage()
         {
-          Index = 1,
-          Name = "1",
+          Index = 2,
+          Name = "2",
           Colour = Colour.NO_RGB,
-          //ElementIndices = null,
-          MemberIndices = new List<int>(){ 1 },
+          ElementIndices = new List<int>(){ 1 },
+          //MemberIndices = new List<int>(){ 1 },
           Phi = 2,
           Days = 28,
-          //LockElementIndices = null,
-          LockMemberIndices = new List<int>() { 2 },
+          LockElementIndices = new List<int>(){ 2 },
+          //LockMemberIndices = new List<int>() { 2 },
         },
       };
       for (int i = 0; i < appIds.Count(); i++)

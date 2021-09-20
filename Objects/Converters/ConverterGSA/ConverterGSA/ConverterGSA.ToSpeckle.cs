@@ -1441,13 +1441,13 @@ namespace ConverterGSA
 
     private Restraint GetRestraint(GsaGenRest gsaGenRest)
     {
-      var code = new List<string>() { "F", "F", "F", "F", "F", "F" }; //Default
-      if (gsaGenRest.X == RestraintCondition.Constrained) code[0] = "R";
-      if (gsaGenRest.Y == RestraintCondition.Constrained) code[1] = "R";
-      if (gsaGenRest.Z == RestraintCondition.Constrained) code[2] = "R";
-      if (gsaGenRest.XX == RestraintCondition.Constrained) code[3] = "R";
-      if (gsaGenRest.YY == RestraintCondition.Constrained) code[4] = "R";
-      if (gsaGenRest.ZZ == RestraintCondition.Constrained) code[5] = "R";
+      var code = new List<string>() { "R", "R", "R", "R", "R", "R" }; //Default
+      if (gsaGenRest.X == RestraintCondition.Constrained) code[0] = "F";
+      if (gsaGenRest.Y == RestraintCondition.Constrained) code[1] = "F";
+      if (gsaGenRest.Z == RestraintCondition.Constrained) code[2] = "F";
+      if (gsaGenRest.XX == RestraintCondition.Constrained) code[3] = "F";
+      if (gsaGenRest.YY == RestraintCondition.Constrained) code[4] = "F";
+      if (gsaGenRest.ZZ == RestraintCondition.Constrained) code[5] = "F";
       return new Restraint(string.Join("", code));
     }
 
