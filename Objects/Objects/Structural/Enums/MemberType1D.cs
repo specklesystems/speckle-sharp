@@ -6,11 +6,15 @@ using Objects.Geometry;
 
 namespace Objects.Structural.Geometry
 {
-    public enum MemberType
+    public enum MemberType1D
     {
         Beam,
         Column,
-        Generic1D,
+        Generic1D
+    }
+
+    public enum MemberType2D
+    {
         Slab,
         Wall,
         Generic2D,

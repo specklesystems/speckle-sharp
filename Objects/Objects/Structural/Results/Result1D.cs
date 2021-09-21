@@ -24,32 +24,32 @@ namespace Objects.Structural.Results
     {
         [DetachProperty]
         public Element1D element { get; set; }
-        public double position { get; set; } //location along 1D element, normalised position (from 0 for end 1 to 1 for end 2)
-        public double dispX { get; set; }
-        public double dispY { get; set; }
-        public double dispZ { get; set; }
-        public double rotXX { get; set; }
-        public double rotYY { get; set; }
-        public double rotZZ { get; set; }
-        public double forceX { get; set; }
-        public double forceY { get; set; }
-        public double forceZ { get; set; }
-        public double momentXX { get; set; }
-        public double momentYY { get; set; }
-        public double momentZZ { get; set; }
-        public double axialStress { get; set; } //axial stress, ie. Fx/Area
-        public double shearStressY { get; set; } //shear stress, in minor axis dir, ie. Fy/Area
-        public double shearStressZ { get; set; } //shear stress, in major axis dir, ie. Fz/Area
-        public double bendingStressYPos { get; set; } //bending stress, about minor axis, ie. Myy/Iyy x Dz (Dz as distance from the centroid to the edge of the section in the +ve z direction)
-        public double bendingStressYNeg { get; set; } //bending stress, about minor axis, ie. Myy/Iyy x Dz (Dz as distance from the centroid to the edge of the section in the -ve z direction)
-        public double bendingStressZPos { get; set; } //bending stress, about major axis, ie. -Mzz/Izz x Dy (Dy as distance from the centroid to the edge of the section in the +ve y direction)
-        public double bendingStressZNeg { get; set; } //bending stress, about major axis, ie. -Mzz/Izz x Dy (Dy as distance from the centroid to the edge of the section in the -ve y direction)
-        public double combinedStressMax { get; set; } //maximum extreme fibre longitudinal stress due to axial forces and transverse bending
-        public double combinedStressMin { get; set; } //minimum extreme fibre longitudinal stress due to axial forces and transverse bending
+        public float? position { get; set; } //location along 1D element, normalised position (from 0 for end 1 to 1 for end 2)
+        public float? dispX { get; set; }
+        public float? dispY { get; set; }
+        public float? dispZ { get; set; }
+        public float? rotXX { get; set; }
+        public float? rotYY { get; set; }
+        public float? rotZZ { get; set; }
+        public float? forceX { get; set; }
+        public float? forceY { get; set; }
+        public float? forceZ { get; set; }
+        public float? momentXX { get; set; }
+        public float? momentYY { get; set; }
+        public float? momentZZ { get; set; }
+        public float? axialStress { get; set; } //axial stress, ie. Fx/Area
+        public float? shearStressY { get; set; } //shear stress, in minor axis dir, ie. Fy/Area
+        public float? shearStressZ { get; set; } //shear stress, in major axis dir, ie. Fz/Area
+        public float? bendingStressYPos { get; set; } //bending stress, about minor axis, ie. Myy/Iyy x Dz (Dz as distance from the centroid to the edge of the section in the +ve z direction)
+        public float? bendingStressYNeg { get; set; } //bending stress, about minor axis, ie. Myy/Iyy x Dz (Dz as distance from the centroid to the edge of the section in the -ve z direction)
+        public float? bendingStressZPos { get; set; } //bending stress, about major axis, ie. -Mzz/Izz x Dy (Dy as distance from the centroid to the edge of the section in the +ve y direction)
+        public float? bendingStressZNeg { get; set; } //bending stress, about major axis, ie. -Mzz/Izz x Dy (Dy as distance from the centroid to the edge of the section in the -ve y direction)
+        public float? combinedStressMax { get; set; } //maximum extreme fibre longitudinal stress due to axial forces and transverse bending
+        public float? combinedStressMin { get; set; } //minimum extreme fibre longitudinal stress due to axial forces and transverse bending
         public Result1D() { }
 
         [SchemaInfo("Result1D (load case)", "Creates a Speckle 1D element result object (for load case)", "Structural", "Results")]
-        public Result1D(Element1D element, LoadCase resultCase, double position, double dispX, double dispY, double dispZ, double rotXX, double rotYY, double rotZZ, double forceX, double forceY, double forceZ, double momentXX, double momentYY, double momentZZ, double axialStress, double shearStressY, double shearStressZ, double bendingStressYPos, double bendingStressYNeg, double bendingStressZPos, double bendingStressZNeg, double combinedStressMax, double combinedStressMin)
+        public Result1D(Element1D element, LoadCase resultCase, float position, float dispX, float dispY, float dispZ, float rotXX, float rotYY, float rotZZ, float forceX, float forceY, float forceZ, float momentXX, float momentYY, float momentZZ, float axialStress, float shearStressY, float shearStressZ, float bendingStressYPos, float bendingStressYNeg, float bendingStressZPos, float bendingStressZNeg, float combinedStressMax, float combinedStressMin)
         {
             this.element = element;
             this.resultCase = resultCase;
@@ -78,7 +78,7 @@ namespace Objects.Structural.Results
         }
 
         [SchemaInfo("Result1D (load combination)", "Creates a Speckle 1D element result object (for load combination)", "Structural", "Results")]
-        public Result1D(Element1D element, LoadCombination resultCase, double position, double dispX, double dispY, double dispZ, double rotXX, double rotYY, double rotZZ, double forceX, double forceY, double forceZ, double momentXX, double momentYY, double momentZZ, double axialStress, double shearStressY, double shearStressZ, double bendingStressYPos, double bendingStressYNeg, double bendingStressZPos, double bendingStressZNeg, double combinedStressMax, double combinedStressMin)
+        public Result1D(Element1D element, LoadCombination resultCase, float position, float dispX, float dispY, float dispZ, float rotXX, float rotYY, float rotZZ, float forceX, float forceY, float forceZ, float momentXX, float momentYY, float momentZZ, float axialStress, float shearStressY, float shearStressZ, float bendingStressYPos, float bendingStressYNeg, float bendingStressZPos, float bendingStressZNeg, float combinedStressMax, float combinedStressMin)
         {
             this.element = element;
             this.resultCase = resultCase;

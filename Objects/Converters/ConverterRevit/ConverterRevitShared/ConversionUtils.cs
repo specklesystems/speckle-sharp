@@ -224,8 +224,11 @@ namespace Objects.Converter.Revit
       if (rp == null || !rp.HasValue)
         return default;
 
-      return (T)ParameterToSpeckle(rp).value;
-
+      var value = ParameterToSpeckle(rp).value;
+      if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
+        return (T)Convert.ChangeType(value, typeof(int));
+      else
+        return (T)ParameterToSpeckle(rp).value;
     }
 
     //rp must HaveValue

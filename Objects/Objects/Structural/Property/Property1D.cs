@@ -10,7 +10,7 @@ namespace Objects.Structural.Properties
 {
     public class Property1D : Property //SectionProperty as alt class name
     {
-        public MemberType memberType { get; set; }
+        public MemberType1D memberType { get; set; }
 
         [DetachProperty]
         public Material material { get; set; }

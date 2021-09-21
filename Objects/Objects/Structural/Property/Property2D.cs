@@ -9,7 +9,8 @@ namespace Objects.Structural.Properties
 {
     public class Property2D : Property
     {
-        public PropertyType2D type { get; set; }
+        public MemberType2D type { get; set; }
+        public AnalysisType2D analysisType { get; set; }
         public double thickness { get; set; } //also thickness type? ex. waffle vs constant
 
         [DetachProperty]
@@ -32,11 +33,12 @@ namespace Objects.Structural.Properties
         }
 
         [SchemaInfo("Property2D", "Creates a Speckle structural 2D element property", "Structural", "Properties")]
-        public Property2D(string name, Material material, PropertyType2D type, double thickness)
+        public Property2D(string name, Material material, double thickness, MemberType2D type = MemberType2D.Slab, AnalysisType2D analysisType = AnalysisType2D.Shell)
         {
             this.name = name;
             this.material = material;
             this.type = type;
+            this.analysisType = analysisType;
             this.thickness = thickness;
         }
     }
