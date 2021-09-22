@@ -9,13 +9,14 @@ using Objects.Structural.GSA.Materials;
 using Objects.Structural.GSA.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural;
-using System.Text.RegularExpressions;
 using Objects.Geometry;
+using System.Text.RegularExpressions;
 using AutoMapper;
 using Objects.Structural.Properties.Profiles;
 using Speckle.GSA.API.GwaSchema;
 using Restraint = Objects.Structural.Geometry.Restraint;
 using MemberType = Objects.Structural.Geometry.MemberType;
+using Speckle.Core.Models;
 
 namespace ConverterGSATests
 {
@@ -30,11 +31,20 @@ namespace ConverterGSATests
       //TO DO: 
     }
 
-    [Fact(Skip = "Not implemented yet")]
+    [Fact]
     public void NodeToNative()
     {
       //TO DO: 
       var speckleNodes = SpeckleNodeExamples(2, "node 1", "node 2");
+      var gsaRecords = converter.ConvertToNative(speckleNodes.Select(n => (Base)n).ToList());
+
+      Assert.NotEmpty(gsaRecords);
+      Assert.Contains(gsaRecords, so => so is GsaNode);
+
+      var gsaNodes = gsaRecords.FindAll(r => r is GsaNode).Select(r => (GsaNode)r).ToList();
+      Assert.Equal("node 1", gsaNodes[0].ApplicationId);
+      Assert.Equal("node 2", gsaNodes[1].ApplicationId);
+      //TO DO: complete checks
     }
 
     [Fact(Skip = "Not implemented yet")]

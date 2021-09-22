@@ -4,8 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Objects.Geometry;
+using Objects.Structural;
+using Objects.Structural.Geometry;
+using Objects.Structural.GSA.Geometry;
+using Objects.Structural.GSA.Other;
+using Objects.Structural.Loading;
 using Speckle.GSA.API.GwaSchema;
 using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
+using GwaAxisDirection3 = Speckle.GSA.API.GwaSchema.AxisDirection3;
+using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
+using AxisDirection6 = Objects.Structural.GSA.Other.AxisDirection6;
+using PathType = Objects.Structural.GSA.Other.PathType;
+using GwaPathType = Speckle.GSA.API.GwaSchema.PathType;
 
 namespace ConverterGSA
 {
@@ -86,6 +96,368 @@ namespace ConverterGSA
         p.ydir.x == 0 && p.ydir.y == 1 && p.ydir.z == 0 &&
         p.normal.x == 0 && p.normal.y == 0 && p.normal.z == 1);
     }
+    #endregion
+
+    #region Enum conversions
+    #region ToSpeckle
+    public static ElementType1D ToSpeckle(this ElementType gsaType)
+    {
+      ElementType1D speckleType;
+
+      switch (gsaType)
+      {
+        case ElementType.Bar:
+          speckleType = ElementType1D.Bar;
+          break;
+        case ElementType.Cable:
+          speckleType = ElementType1D.Cable;
+          break;
+        case ElementType.Damper:
+          speckleType = ElementType1D.Damper;
+          break;
+        case ElementType.Link:
+          speckleType = ElementType1D.Link;
+          break;
+        case ElementType.Rod:
+          speckleType = ElementType1D.Rod;
+          break;
+        case ElementType.Spacer:
+          speckleType = ElementType1D.Spacer;
+          break;
+        case ElementType.Spring:
+          speckleType = ElementType1D.Spring;
+          break;
+        case ElementType.Strut:
+          speckleType = ElementType1D.Strut;
+          break;
+        case ElementType.Tie:
+          speckleType = ElementType1D.Tie;
+          break;
+        default:
+          speckleType = ElementType1D.Beam;
+          break;
+      }
+
+      return speckleType;
+    }
+
+    public static ElementType1D ToSpeckle1d(this GwaMemberType gsaMemberType)
+    {
+      return ElementType1D.Beam;
+    }
+
+    public static ElementType2D ToSpeckle2d(this GwaMemberType gsaMemberType)
+    {
+      return ElementType2D.Quad4;
+    }
+
+    public static GridSurfaceSpanType ToSpeckle(this GridSurfaceSpan gsaGridSurfaceSpan)
+    {
+      if (gsaGridSurfaceSpan == GridSurfaceSpan.One)
+      {
+        return GridSurfaceSpanType.OneWay;
+      }
+      else if (gsaGridSurfaceSpan == GridSurfaceSpan.Two)
+      {
+        return GridSurfaceSpanType.TwoWay;
+      }
+      else
+      {
+        return GridSurfaceSpanType.NotSet;
+      }
+    }
+
+    public static LoadExpansion ToSpeckle(this GridExpansion gsaExpansion)
+    {
+      if (gsaExpansion == GridExpansion.Legacy)
+      {
+        return LoadExpansion.Legacy;
+      }
+      else if (gsaExpansion == GridExpansion.PlaneAspect)
+      {
+        return LoadExpansion.PlaneAspect;
+      }
+      else if (gsaExpansion == GridExpansion.PlaneCorner)
+      {
+        return LoadExpansion.PlaneCorner;
+      }
+      else if (gsaExpansion == GridExpansion.PlaneSmooth)
+      {
+        return LoadExpansion.PlaneSmooth;
+      }
+      else
+      {
+        return LoadExpansion.NotSet;
+      }
+    }
+
+    public static LoadType ToSpeckle(this StructuralLoadCaseType gsaLoadType)
+    {
+      switch (gsaLoadType)
+      {
+        case StructuralLoadCaseType.Dead:
+          return LoadType.Dead;
+        case StructuralLoadCaseType.Earthquake:
+          return LoadType.SeismicStatic;
+        case StructuralLoadCaseType.Live:
+          return LoadType.Live;
+        case StructuralLoadCaseType.Rain:
+          return LoadType.Rain;
+        case StructuralLoadCaseType.Snow:
+          return LoadType.Snow;
+        case StructuralLoadCaseType.Soil:
+          return LoadType.Soil;
+        case StructuralLoadCaseType.Thermal:
+          return LoadType.Thermal;
+        case StructuralLoadCaseType.Wind:
+          return LoadType.Wind;
+        default:
+          return LoadType.None;
+      }
+    }
+
+    public static FaceLoadType ToSpeckle(this Load2dFaceType gsaType)
+    {
+      switch (gsaType)
+      {
+        case Load2dFaceType.General:
+          return FaceLoadType.Variable;
+        case Load2dFaceType.Point:
+          return FaceLoadType.Point;
+        default:
+          return FaceLoadType.Constant;
+      }
+    }
+
+    public static Thermal2dLoadType ToSpeckle(this Load2dThermalType gsaType)
+    {
+      switch (gsaType)
+      {
+        case Load2dThermalType.Uniform:
+          return Thermal2dLoadType.Uniform;
+        case Load2dThermalType.Gradient:
+          return Thermal2dLoadType.Gradient;
+        case Load2dThermalType.General:
+          return Thermal2dLoadType.General;
+        default:
+          return Thermal2dLoadType.NotSet;
+      }
+    }
+
+    public static LoadDirection2D ToSpeckle(this GwaAxisDirection3 gsaDirection)
+    {
+      switch (gsaDirection)
+      {
+        case GwaAxisDirection3.X:
+          return LoadDirection2D.X;
+        case GwaAxisDirection3.Y:
+          return LoadDirection2D.Y;
+        case GwaAxisDirection3.Z:
+        default:
+          return LoadDirection2D.Z;
+      }
+    }
+
+    public static LoadDirection ToSpeckleLoad(this GwaAxisDirection6 gsaDirection)
+    {
+      switch (gsaDirection)
+      {
+        case GwaAxisDirection6.X:
+          return LoadDirection.X;
+        case GwaAxisDirection6.Y:
+          return LoadDirection.Y;
+        case GwaAxisDirection6.Z:
+          return LoadDirection.Z;
+        case GwaAxisDirection6.XX:
+          return LoadDirection.XX;
+        case GwaAxisDirection6.YY:
+          return LoadDirection.YY;
+        case GwaAxisDirection6.ZZ:
+        default:
+          return LoadDirection.ZZ;
+      }
+    }
+
+    public static LoadAxisType ToSpeckle(this AxisRefType gsaType)
+    {
+      //TO DO: update when there are more options for LoadAxisType
+      switch (gsaType)
+      {
+        case AxisRefType.Local:
+          return LoadAxisType.Local;
+        case AxisRefType.Reference:
+        case AxisRefType.NotSet:
+        case AxisRefType.Global:
+        default:
+          return LoadAxisType.Global;
+      }
+    }
+
+    public static LoadAxisType ToSpeckle(this LoadBeamAxisRefType gsaType)
+    {
+      //TO DO: update when there are more options for LoadAxisType
+      switch (gsaType)
+      {
+        case LoadBeamAxisRefType.Local:
+          return LoadAxisType.Local;
+        case LoadBeamAxisRefType.Reference:
+        case LoadBeamAxisRefType.Natural:
+        case LoadBeamAxisRefType.NotSet:
+        case LoadBeamAxisRefType.Global:
+        default:
+          return LoadAxisType.Global;
+      }
+    }
+
+    public static BeamLoadType ToSpeckle(this Type t)
+    {
+      if (t == typeof(GsaLoadBeamPoint))
+      {
+        return BeamLoadType.Point;
+      }
+      else if (t == typeof(GsaLoadBeamLine))
+      {
+        return BeamLoadType.Linear;
+      }
+      else if (t == typeof(GsaLoadBeamPatch))
+      {
+        return BeamLoadType.Patch;
+      }
+      else if (t == typeof(GsaLoadBeamTrilin))
+      {
+        return BeamLoadType.TriLinear;
+      }
+      else
+      {
+        return BeamLoadType.Uniform;
+      }
+    }
+
+    public static BaseReferencePoint ToSpeckle(this ReferencePoint gsaReferencePoint)
+    {
+      switch (gsaReferencePoint)
+      {
+        case ReferencePoint.BottomCentre:
+          return BaseReferencePoint.BotCentre;
+        case ReferencePoint.BottomLeft:
+          return BaseReferencePoint.BotLeft;
+        default:
+          return BaseReferencePoint.Centroid;
+      }
+    }
+
+    public static ReferenceSurface ToSpeckle(this Property2dRefSurface gsaRefPt)
+    {
+      var refenceSurface = ReferenceSurface.Middle; //default
+
+      if (gsaRefPt == Property2dRefSurface.BottomCentre)
+      {
+        refenceSurface = ReferenceSurface.Bottom;
+      }
+      else if (gsaRefPt == Property2dRefSurface.TopCentre)
+      {
+        refenceSurface = ReferenceSurface.Top;
+      }
+      return refenceSurface;
+    }
+
+    public static RigidConstraint ToSpeckle(this RigidConstraintType gsaType)
+    {
+      switch (gsaType)
+      {
+        case RigidConstraintType.ALL:
+          return RigidConstraint.ALL;
+        case RigidConstraintType.XY_PLANE:
+          return RigidConstraint.XY_PLANE;
+        case RigidConstraintType.YZ_PLANE:
+          return RigidConstraint.YZ_PLANE;
+        case RigidConstraintType.ZX_PLANE:
+          return RigidConstraint.ZX_PLANE;
+        case RigidConstraintType.XY_PLATE:
+          return RigidConstraint.XY_PLATE;
+        case RigidConstraintType.YZ_PLATE:
+          return RigidConstraint.YZ_PLATE;
+        case RigidConstraintType.ZX_PLATE:
+          return RigidConstraint.ZX_PLATE;
+        case RigidConstraintType.PIN:
+          return RigidConstraint.PIN;
+        case RigidConstraintType.XY_PLANE_PIN:
+          return RigidConstraint.XY_PLANE_PIN;
+        case RigidConstraintType.YZ_PLANE_PIN:
+          return RigidConstraint.YZ_PLANE_PIN;
+        case RigidConstraintType.ZX_PLANE_PIN:
+          return RigidConstraint.ZX_PLANE_PIN;
+        case RigidConstraintType.XY_PLATE_PIN:
+          return RigidConstraint.XY_PLATE_PIN;
+        case RigidConstraintType.YZ_PLATE_PIN:
+          return RigidConstraint.YZ_PLATE_PIN;
+        case RigidConstraintType.ZX_PLATE_PIN:
+          return RigidConstraint.ZX_PLATE_PIN;
+        case RigidConstraintType.Custom:
+          return RigidConstraint.Custom;
+        default:
+          return RigidConstraint.NotSet;
+      }
+    }
+
+    public static AxisDirection6 ToSpeckle(this GwaAxisDirection6 gsa)
+    {
+      switch (gsa)
+      {
+        case GwaAxisDirection6.X:
+          return AxisDirection6.X;
+        case GwaAxisDirection6.Y:
+          return AxisDirection6.Y;
+        case GwaAxisDirection6.Z:
+          return AxisDirection6.Z;
+        case GwaAxisDirection6.XX:
+          return AxisDirection6.XX;
+        case GwaAxisDirection6.YY:
+          return AxisDirection6.YY;
+        case GwaAxisDirection6.ZZ:
+          return AxisDirection6.ZZ;
+        default:
+          return AxisDirection6.NotSet;
+      }
+    }
+
+    public static InfluenceType ToSpeckle(this InfType gsaType)
+    {
+      switch (gsaType)
+      {
+        case InfType.DISP:
+          return InfluenceType.DISPLACEMENT;
+        case InfType.FORCE:
+          return InfluenceType.FORCE;
+        default:
+          return InfluenceType.NotSet;
+      }
+    }
+
+    public static PathType ToSpeckle(this GwaPathType gsaType)
+    {
+      switch (gsaType)
+      {
+        case GwaPathType.LANE:
+          return PathType.LANE;
+        case GwaPathType.FOOTWAY:
+          return PathType.FOOTWAY;
+        case GwaPathType.TRACK:
+          return PathType.TRACK;
+        case GwaPathType.VEHICLE:
+          return PathType.VEHICLE;
+        case GwaPathType.CWAY_1WAY:
+          return PathType.CWAY_1WAY;
+        case GwaPathType.CWAY_2WAY:
+          return PathType.CWAY_2WAY;
+        default:
+          return PathType.NotSet;
+      }
+    }
+    #endregion
+
+    #region ToNative
+    #endregion
     #endregion
 
     #region Math Fns
