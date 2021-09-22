@@ -8,7 +8,7 @@ using Objects.Structural.Properties;
 
 namespace Objects.Structural.GSA.Geometry //GSA.Geometry?
 {
-    public class GSAMember1D : Element1D
+    public class Member1D : Structural.Geometry.Element1D
     {
         public int nativeId { get; set; }
         public int group { get; set; }
@@ -17,10 +17,10 @@ namespace Objects.Structural.GSA.Geometry //GSA.Geometry?
         public bool intersectsWithOthers { get; set; }
         public double targetMeshSize { get; set; }
 
-        public GSAMember1D() { }
+        public Member1D() { }
 
         [SchemaInfo("GSAMember1D (from local axis)", "Creates a Speckle structural 1D member for GSA (from local axis)", "GSA", "Geometry")]
-        public GSAMember1D(int nativeId, ICurve baseLine, Property1D property, ElementType1D type, Restraint end1Releases, Restraint end2Releases, Vector end1Offset, Vector end2Offset, Plane localAxis)
+        public Member1D(int nativeId, ICurve baseLine, Property1D property, ElementType1D type, Restraint end1Releases, Restraint end2Releases, Vector end1Offset, Vector end2Offset, Plane localAxis)
         {
             this.nativeId = nativeId;
             this.baseLine = baseLine;
@@ -34,7 +34,7 @@ namespace Objects.Structural.GSA.Geometry //GSA.Geometry?
         }
 
         [SchemaInfo("GSAMember1D (from orientation node and angle)", "Creates a Speckle structural 1D member for GSA (from orientation node and angle)", "GSA", "Geometry")]
-        public GSAMember1D(int nativeId, ICurve baseLine, Property1D property, ElementType1D type, Restraint end1Releases, Restraint end2Releases, Vector end1Offset, Vector end2Offset, Node orientationNode, double orientationAngle)
+        public Member1D(int nativeId, ICurve baseLine, Property1D property, ElementType1D type, Restraint end1Releases, Restraint end2Releases, Vector end1Offset, Vector end2Offset, Node orientationNode, double orientationAngle)
         {
             this.nativeId = nativeId;
             this.baseLine = baseLine;

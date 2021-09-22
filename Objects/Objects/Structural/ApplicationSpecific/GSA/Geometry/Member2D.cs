@@ -8,9 +8,8 @@ using Objects.Structural.Properties;
 
 namespace Objects.Structural.GSA.Geometry 
 {
-    public class GSAMember2D : Element2D
-    {
-        public List<List<Node>> voids { get; set; } = new List<List<Node>>();
+    public class Member2D : Structural.Geometry.Element2D
+    {        
         public int nativeId { get; set; }
         public int group { get; set; }
         public string colour { get; set; }
@@ -18,10 +17,10 @@ namespace Objects.Structural.GSA.Geometry
         public bool intersectsWithOthers { get; set; }
         public double targetMeshSize { get; set; }
 
-        public GSAMember2D() { }
+        public Member2D() { }
 
         [SchemaInfo("GSAMember2D (by mesh)", "Creates a Speckle structural 2D member for GSA", "GSA", "Geometry")]
-        public GSAMember2D(Mesh baseMesh, Property2D property, ElementType2D type, double offset = 0, double orientationAngle = 0)
+        public Member2D(Mesh baseMesh, Property2D property, ElementType2D type, double offset = 0, double orientationAngle = 0)
         {
             this.baseMesh = baseMesh;
             this.property = property;
@@ -31,9 +30,9 @@ namespace Objects.Structural.GSA.Geometry
         }
 
         [SchemaInfo("GSAMember2D (by perimeter)", "Creates a Speckle structural 2D member for GSA", "GSA", "Geometry")]
-        public GSAMember2D([SchemaParamInfo("An ordered list of nodes which represents the perimeter of a member (ie. order of points should based on valid polyline)")] List<Node> perimeter, 
+        public Member2D([SchemaParamInfo("An ordered list of nodes which represents the perimeter of a member (ie. order of points should based on valid polyline)")] List<Structural.Geometry.Node> perimeter, 
             Property2D property, ElementType2D type,
-            [SchemaParamInfo("A list of ordered lists of nodes representing the voids within a member (ie. order of points should be based on valid polyline)")] List<List<Node>> voids = null,
+            [SchemaParamInfo("A list of ordered lists of nodes representing the voids within a member (ie. order of points should be based on valid polyline)")] List<List<Structural.Geometry.Node>> voids = null,
             double offset = 0, double orientationAngle = 0)
         {
             this.topology = perimeter; //needs to be ordered properly (ie. matching the point order of a valid polyline)            
