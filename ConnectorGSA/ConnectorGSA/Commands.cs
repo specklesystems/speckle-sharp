@@ -151,14 +151,16 @@ namespace ConnectorGSA
       return true;
     }
 
-    public static Base ConvertToSpeckle(ISpeckleConverter converter)
+    public static List<Base> ConvertToSpeckle(ISpeckleConverter converter)
     {
       if (!Instance.GsaModel.Cache.GetNatives(out List<GsaRecord> gsaRecords))
       {
         return null;
       }
 
-      var convertedObjects = converter.ConvertToSpeckle(gsaRecords.Cast<object>().ToList());
+      return converter.ConvertToSpeckle(gsaRecords.Cast<object>().ToList());
+
+      /*
       var convertedObjectsByType = convertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
 
       var commit = new Base();
@@ -169,6 +171,7 @@ namespace ConnectorGSA
       }
 
       return commit;
+      /*
 
       /*
       //Get send native type dependencies

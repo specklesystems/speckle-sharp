@@ -499,11 +499,16 @@ namespace Speckle.ConnectorGSA.Proxy
 
     public string GenerateApplicationId(Type schemaType, int gsaIndex)
     {
-      if (!ParsersSchemaType.ContainsRight(schemaType))
+      if (!ParsersBySchemaType.ContainsKey(schemaType))
       {
         return "";
       }
-      ParsersSchemaType.FindLeft(schemaType, out GwaKeyword kw);
+      var parser = ParsersBySchemaType[schemaType];
+      if (!ParsersSchemaType.ContainsRight(parser))
+      {
+        return "";
+      }
+      ParsersSchemaType.FindLeft(parser, out GwaKeyword kw);
 
       var appId = "gsa/" + kw + "-" + gsaIndex;
       return appId;

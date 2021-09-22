@@ -9,7 +9,19 @@
     <Import_RootNamespace>ConnectorRevit</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)Assets\logo.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\docs.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\docs16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\docs32.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\forum.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\forum16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\forum32.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\help.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\help16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\help32.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\tutorials.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\tutorials16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\tutorials32.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo16.png" />
@@ -20,6 +32,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\CmdAvailabilityViews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\HelpCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\ErrorEater.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExternalEventHandler.cs" />

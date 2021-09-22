@@ -141,21 +141,24 @@ namespace Objects.Converter.Revit
     {
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
       var category = Categories.GetSchemaBuilderCategoryFromBuiltIn(cat);
-      var element = revitAc.get_Geometry(new Options());
-      var geometries = element.ToList().Select<GeometryObject, Base>(obj =>
-        {
-          return obj
-          switch
-          {
-            DB.Mesh mesh => MeshToSpeckle(mesh),
-            Solid solid => BrepToSpeckle(solid),
-            _ => null
-          };
-        });
+      //var element = revitAc.get_Geometry(new Options());
+      var displayMesh = GetElementDisplayMesh(revitAc,
+          new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      //Brep > Speckle not yet implemented! Using method above
+      //var geometries = element.ToList().Select<GeometryObject, Base>(obj =>
+      //  {
+      //    return obj
+      //    switch
+      //    {
+      //      DB.Mesh mesh => MeshToSpeckle(mesh),
+      //      Solid solid => BrepToSpeckle(solid),
+      //      _ => null
+      //    };
+      //  });
       var speckleAc = new DirectShape(
         revitAc.Name,
         category,
-        geometries.ToList()
+        new List<Base> { displayMesh }
       );
       GetAllRevitParamsAndIds(speckleAc, revitAc);
       speckleAc["type"] = revitAc.Name;

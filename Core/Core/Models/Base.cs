@@ -235,30 +235,6 @@ namespace Speckle.Core.Models
     public string applicationId { get; set; }
 
 
-    private string _units;
-    /// <summary>
-    /// The units in which any spatial values within this object are expressed. 
-    /// </summary>
-    [SchemaIgnore]
-    public string units
-    {
-      get
-      {
-        try
-        {
-          return Units.GetUnitsFromString(_units);
-        }
-        catch
-        {
-          return _units;
-        }
-      }
-      set
-      {
-        _units = Units.GetUnitsFromString(value);
-      }
-    }
-
     private string __type;
 
     /// <summary>

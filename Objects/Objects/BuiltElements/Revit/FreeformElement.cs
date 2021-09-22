@@ -20,6 +20,8 @@ namespace Objects.BuiltElements.Revit
     [DetachProperty]
     public Mesh displayMesh { get; set; }
 
+    public string units { get; set; }
+
     public FreeformElement() { }
 
     [SchemaInfo("Freeform element", "Creates a Revit Freeform element using a Brep or a Mesh.", "Revit", "Families")]

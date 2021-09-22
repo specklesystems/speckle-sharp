@@ -43,6 +43,8 @@ namespace ConnectorGSA
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.GSA);
 
+      Instance.GsaModel = new GsaModel();
+
       cliMode = args[0];
       if (cliMode == "-h")
       {
@@ -237,10 +239,43 @@ namespace ConnectorGSA
 
           Commands.LoadDataFromFile(); //Ensure all nodes
 
-          var commitObj = Commands.ConvertToSpeckle(converter);
+          var objs = Commands.ConvertToSpeckle(converter);
+          objs.Reverse();
 
-          Instance.GsaModel.Cache.GetSpeckleObjects(out var convertedObjects);
+          //The converter itself can't give anything back other than Base objects, so this is the first time it can be adorned with any
+          //info useful to the sending in streams
 
+          foreach (var obj in objs)
+          {
+            var typeName = obj.GetType().Name;
+            string name = "";
+            if (typeName.ToLower().Contains("model"))
+            {
+              try
+              {
+                name = string.Join(" ", (string)obj["layerDescription"], "Model");
+              }
+              catch
+              {
+                name = typeName;
+              }
+            }
+            else if (typeName.ToLower().Contains("result"))
+            {
+              name = "Results";
+            }
+
+            var stream = NewStream(client, name, name).Result;
+            var streamState = new StreamState(userInfo.id, RestApi) { Stream = stream };
+            streamStates.Add(streamState);
+
+            var serverTransport = new ServerTransport(account, streamState.Stream.id);
+            var sent = Commands.Send(obj, streamState, serverTransport).Result;
+          }
+
+          //Instance.GsaModel.Cache.GetSpeckleObjects(out var convertedObjects);
+
+          /*
           var stream = NewStream(client, "GSA Model", "GSA Model").Result;
           var streamState = new StreamState(userInfo.id, RestApi) { Stream = stream };
           streamStates.Add(streamState);
@@ -257,6 +292,7 @@ namespace ConnectorGSA
             var serverTransport = new ServerTransport(account, ss.Stream.id);
             var sent = Commands.Send(commitObj, ss, serverTransport).Result;
           }
+          */
 
           Console.WriteLine("Sending complete");
           return true;

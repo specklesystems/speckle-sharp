@@ -10,6 +10,8 @@ namespace Objects.BuiltElements
   {
     public List<ICurve> segments { get; set; }
 
+    public string units { get; set; }
+
     public Wire() { }
 
     [SchemaInfo("Wire", "Creates a Speckle wire from curve segments and points", "BIM", "MEP")]
