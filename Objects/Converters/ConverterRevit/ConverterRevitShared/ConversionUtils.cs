@@ -181,7 +181,7 @@ namespace Objects.Converter.Revit
         speckleElement["parameters"] = paramBase;
       speckleElement["elementId"] = revitElement.Id.ToString();
       speckleElement.applicationId = revitElement.UniqueId;
-      speckleElement.units = ModelUnits;
+      speckleElement["units"] = ModelUnits;
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -403,6 +403,16 @@ namespace Objects.Converter.Revit
       }
     }
 
+    private void TrySetParam(DB.Element elem, BuiltInParameter bip, bool value)
+    {
+      var param = elem.get_Parameter(bip);
+      if (param != null && !param.IsReadOnly)
+      {
+        param.Set(value ? 1 : 0);
+
+      }
+    }
+
     private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units = "")
     {
       var param = elem.get_Parameter(bip);
@@ -613,29 +623,15 @@ namespace Objects.Converter.Revit
     #region Project Base Point
     private class BetterBasePoint
     {
-      public double X { get; set; } = 0;
-      public double Y { get; set; } = 0;
-      public double Z { get; set; } = 0;
-      public double Angle { get; set; } = 0;
-      public Transform TotalTransform { get; set; }
+      public Transform TotalTransform { get; set; } = Transform.Identity;
     }
 
     ////////////////////////////////////////////////
     /// NOTE
     ////////////////////////////////////////////////
-    /// The BasePoint in Revit is a mess!
-    /// First of all, a BP with coordinates (0,0,0) 
-    /// doesn't always, correspond with Revit's absolute origin (0,0,0)
-    /// In a brand new file it seems they correspond, but after changing 
-    /// the BP values a few times it'll jump somewhere else, try and see yourself.
-    /// When it happens the BP symbol in a Revit site view will not be located at (0,0,0)
-    /// even if all its values are set to 0. This issue *should not* affect our code,
-    /// it just drives you crazy when you don't know it!
-    /// Secondly, there are various ways to access the BP values form the API
-    /// We are using a FilteredElementCollector .... bla bla ... (BuiltInCategory.OST_ProjectBasePoint)
-    /// because Doc.ActiveProjectLocation.GetProjectPosition() always returns an Elevation = 0
-    /// WHY?!
-    /// Rant end
+    /// The BasePoint shared properties in Revit are based off of the survey point.
+    /// The BasePoint non-shared properties are based off of the internal origin.
+    /// Also, survey point does NOT have an rotation parameter.
     ////////////////////////////////////////////////
 
     private BetterBasePoint _basePoint;
@@ -645,25 +641,18 @@ namespace Objects.Converter.Revit
       {
         if (_basePoint == null)
         {
-          var bp = new FilteredElementCollector(Doc).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_ProjectBasePoint)).FirstOrDefault() as BasePoint;
+          // try and get the project base point (is shared = false) and survey point (is shared = true)
+          BasePoint bp = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == false).FirstOrDefault();
           if (bp == null)
-          {
             _basePoint = new BetterBasePoint();
-          }
-          else
+          else 
           {
-            var x = bp.get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM).AsDouble();
-            var y = bp.get_Parameter(BuiltInParameter.BASEPOINT_NORTHSOUTH_PARAM).AsDouble();
-            var z = bp.get_Parameter(BuiltInParameter.BASEPOINT_ELEVATION_PARAM).AsDouble();
-            var angle = bp.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble();
-            _basePoint = new BetterBasePoint
-            {
-              X = x,
-              Y = y,
-              Z = z,
-              Angle = angle,
-              TotalTransform = Transform.CreateRotation(XYZ.BasisZ, angle).Multiply(Transform.CreateTranslation(new XYZ(0 - x, 0 - y, 0 - z)))
-            };
+#if REVIT2019
+            var point = bp.get_BoundingBox(null).Min;
+#else
+            var point = bp.Position;
+#endif
+            _basePoint = new BetterBasePoint { TotalTransform = Transform.CreateTranslation(point).Inverse }; // rotation already accounted for
           }
         }
         return _basePoint;
@@ -678,17 +667,6 @@ namespace Objects.Converter.Revit
     public XYZ ToExternalCoordinates(XYZ p, bool isPoint)
     {
       return (isPoint) ? BasePoint.TotalTransform.OfPoint(p) : BasePoint.TotalTransform.OfVector(p);
-
-      /*
-      p = new XYZ(p.X - BasePoint.X, p.Y - BasePoint.Y, p.Z - BasePoint.Z);
-      //rotation
-      double centX = (p.X * Math.Cos(-BasePoint.Angle)) - (p.Y * Math.Sin(-BasePoint.Angle));
-      double centY = (p.X * Math.Sin(-BasePoint.Angle)) + (p.Y * Math.Cos(-BasePoint.Angle));
-
-      XYZ newP = new XYZ(centX, centY, p.Z);
-
-      return newP;
-      */
     }
 
     /// <summary>
@@ -699,16 +677,6 @@ namespace Objects.Converter.Revit
     public XYZ ToInternalCoordinates(XYZ p, bool isPoint)
     {
       return (isPoint) ? BasePoint.TotalTransform.Inverse.OfPoint(p) : BasePoint.TotalTransform.Inverse.OfVector(p);
-
-      /*
-      //rotation
-      double centX = (p.X * Math.Cos(BasePoint.Angle)) - (p.Y * Math.Sin(BasePoint.Angle));
-      double centY = (p.X * Math.Sin(BasePoint.Angle)) + (p.Y * Math.Cos(BasePoint.Angle));
-
-      XYZ newP = new XYZ(centX + BasePoint.X, centY + BasePoint.Y, p.Z + BasePoint.Z);
-
-      return newP;
-      */
     }
     #endregion
 

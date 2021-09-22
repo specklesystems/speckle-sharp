@@ -46,6 +46,8 @@ namespace Objects.Geometry
     /// <inheritdoc />
     public double length { get; set; }
 
+    public string units { get; set; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Ellipse"/> class.
     /// This constructor is only intended for serialization/deserialization purposes.

@@ -3,7 +3,6 @@ using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using Objects.Utils;
 
 namespace Objects.BuiltElements.Revit
@@ -19,6 +18,8 @@ namespace Objects.BuiltElements.Revit
 
     [DetachProperty]
     public Mesh displayMesh { get; set; }
+
+    public string units { get; set; }
 
     public FreeformElement() { }
 

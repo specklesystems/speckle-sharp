@@ -137,6 +137,13 @@ namespace Objects.Converter.Revit
       return new ApplicationPlaceholderObject { applicationId = mesh.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
+    private Mesh SolidToSpeckleMesh(Solid solid)
+    {
+      var mesh = new Mesh();
+      (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(new List<Solid>{solid});
+      return mesh;
+    }
+    
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
     {
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
@@ -148,7 +155,7 @@ namespace Objects.Converter.Revit
           switch
           {
             DB.Mesh mesh => MeshToSpeckle(mesh),
-            Solid solid => BrepToSpeckle(solid),
+            Solid solid => SolidToSpeckleMesh(solid), // Should be replaced with 'BrepToSpeckle' when it works.
             _ => null
           };
         });

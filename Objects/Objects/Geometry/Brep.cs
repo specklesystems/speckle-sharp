@@ -16,6 +16,7 @@ namespace Objects.Geometry
     public Box bbox { get; set; }
     public double area { get; set; }
     public double volume { get; set; }
+    public string units { get; set; }
 
     [DetachProperty]
     public Mesh displayMesh { get; set; }

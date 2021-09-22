@@ -69,7 +69,7 @@ namespace ConnectorGrasshopper
 
       try
       {
-        loadedKits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+        loadedKits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
         var kitItems = new List<ToolStripItem>();
         loadedKits.ToList().ForEach(kit =>
@@ -90,7 +90,18 @@ namespace ConnectorGrasshopper
       
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
 
-      speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo);
+      // Help items
+      var helpHeader = speckleMenu.DropDown.Items.Add("Looking for help?");
+      helpHeader.Enabled = false;
+      speckleMenu.DropDown.Items.Add("Community Forum",Properties.Resources.forum16,(o, args) => Process.Start("https://speckle.community"));
+      speckleMenu.DropDown.Items.Add("Tutorials", Properties.Resources.tutorials16, (o, args) => Process.Start("https://speckle.systems/tutorials"));
+      speckleMenu.DropDown.Items.Add("Docs",Properties.Resources.docs16,(o, args) => Process.Start("https://speckle.guide"));
+      
+      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
+      
+      // Manager button
+      speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo, (o, args) => Process.Start("speckle://"));
+      
 
       try
       {

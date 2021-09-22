@@ -17,6 +17,7 @@ using Hatch = Objects.Other.Hatch;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;
+using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
@@ -151,7 +152,11 @@ public static string AutocadAppName = Applications.Autocad2022;
           return PolylineToNativeDB(o);
 
         case Polycurve o:
-          return PolycurveToNativeDB(o);
+          var splineSegments = o.segments.Where(s => s is Curve);
+          if (splineSegments.Count() > 0)
+            return PolycurveSplineToNativeDB(o);
+          else
+            return PolycurveToNativeDB(o);
 
         //case Interval o: // TODO: NOT TESTED
         //  return IntervalToNative(o);
@@ -162,9 +167,10 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Curve o:
           return CurveToNativeDB(o);
 
-          /*
-        //case Surface o: 
-        //  return SurfaceToNative(o);
+        /*
+        case Surface o: 
+          return SurfaceToNative(o);
+        */
 
         case Brep o:
           if (o.displayMesh != null)
@@ -172,9 +178,8 @@ public static string AutocadAppName = Applications.Autocad2022;
           else
             return null;
 
-        //case Mesh o: // unstable, do not use for now
-        //  return MeshToNativeDB(o);
-        */
+        case Mesh o:
+          return MeshToNativeDB(o);
 
         case BlockInstance o:
           return BlockInstanceToNativeDB(o, out BlockReference refernce);
@@ -184,6 +189,9 @@ public static string AutocadAppName = Applications.Autocad2022;
 
         // TODO: add Civil3D directive to convert to alignment instead of curve
         case Alignment o:
+          return CurveToNativeDB(o.baseCurve);
+
+        case ModelCurve o:
           return CurveToNativeDB(o.baseCurve);
 
         default:
@@ -321,6 +329,7 @@ public static string AutocadAppName = Applications.Autocad2022;
               return true;
 
 #if (CIVIL2021 || CIVIL2022)
+// NOTE: C3D pressure pipes and pressure fittings API under development
             case CivilDB.FeatureLine _:
             case CivilDB.Corridor _:
             case CivilDB.Structure _:
@@ -362,13 +371,15 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Polyline _:
         case Polycurve _:
         case Curve _:
-        //case Brep _:
-        //case Mesh _:
+        case Brep _:
+        case Mesh _:
 
         case BlockDefinition _:
         case BlockInstance _:
 
         case Alignment _:
+
+        case ModelCurve _:
           return true;
 
         default:

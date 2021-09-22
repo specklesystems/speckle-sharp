@@ -16,6 +16,8 @@ namespace Objects.Geometry
 
     public Vector ydir { get; set; }
 
+    public string units { get; set; }
+
     public Plane()
     {
 

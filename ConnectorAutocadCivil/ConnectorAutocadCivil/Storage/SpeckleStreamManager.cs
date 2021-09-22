@@ -51,6 +51,8 @@ namespace Speckle.ConnectorAutocadCivil.Storage
     public static void AddSpeckleStream(string id, string stream)
     {
       Document Doc = Application.DocumentManager.MdiActiveDocument;
+      if (Doc == null)
+        return;
       using (DocumentLock l = Doc.LockDocument())
       {
         using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
@@ -80,6 +82,8 @@ namespace Speckle.ConnectorAutocadCivil.Storage
     public static void RemoveSpeckleStream(string id)
     {
       Document Doc = Application.DocumentManager.MdiActiveDocument;
+      if (Doc == null)
+        return;
       using (DocumentLock l = Doc.LockDocument())
       {
         using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
@@ -98,6 +102,8 @@ namespace Speckle.ConnectorAutocadCivil.Storage
     public static void UpdateSpeckleStream(string id, string stream)
     {
       Document Doc = Application.DocumentManager.MdiActiveDocument;
+      if (Doc == null)
+        return;
       using (DocumentLock l = Doc.LockDocument())
       {
         using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())

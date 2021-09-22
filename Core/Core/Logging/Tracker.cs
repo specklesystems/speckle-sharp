@@ -12,7 +12,7 @@ namespace Speckle.Core.Logging
   /// </summary>
   public static class Tracker
   {
-    private static readonly string PiwikBaseUrl = "https://speckle.matomo.cloud/";
+    private static readonly string PiwikBaseUrl = "https://speckle.matomo.cloud";
     private static readonly int SiteId = 2;
 
     #region String constants helpers
@@ -66,6 +66,7 @@ namespace Speckle.Core.Logging
 
     public static void TrackPageview(params string[] segments)
     {
+#if !DEBUG
       Task.Run(() =>
       {
         try
@@ -77,9 +78,10 @@ namespace Speckle.Core.Logging
           {
             builder.Append(segment + "/");
           }
-
+          var path = string.Join("/", segments);
           PiwikTracker.SetUrl(builder.ToString());
-          PiwikTracker.DoTrackPageView(string.Join("/", segments));
+          PiwikTracker.DoTrackPageView(path);
+          PiwikTracker.DoTrackEvent(Setup.HostApplication, path);
         }
         catch (Exception e)
         {
@@ -87,6 +89,7 @@ namespace Speckle.Core.Logging
         }
 
       });
+#endif
 
     }
 

@@ -76,6 +76,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             {"regex": "ConnectorRhino/.*", "param_name": "run_connector_rhino"},
             {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"}
           ]'
+          base-branch: 'main'
   
   build-core:
     executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
@@ -174,8 +175,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run: 
           name: Build << parameters.slnname >>
           command: |
-            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.1" } else { $env:CIRCLE_TAG }
-            $semver = $tag.replace("-beta","").Split("/")[1]  
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.0" } else { $env:CIRCLE_TAG }
+            $semver = if($tag.Contains('/')) {$tag.replace("-beta","").Split("/")[1] } else { $tag }
             $version = "$($semver).$($env:CIRCLE_BUILD_NUM)"
             msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$version
             $channel = "latest"
