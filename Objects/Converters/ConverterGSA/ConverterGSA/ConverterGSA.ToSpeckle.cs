@@ -1520,44 +1520,30 @@ namespace ConverterGSA
     /// </summary>
     /// <param name="gsaNode">GsaNode object with the constraint axis definition to be converted</param>
     /// <returns></returns>
-    private Plane GetConstraintAxis(GsaNode gsaNode)
+    private Axis GetConstraintAxis(GsaNode gsaNode)
     {
-      Plane speckleAxis;
-      Point origin;
-      Vector xdir, ydir, normal;
+      Axis speckleAxis;
 
       if (gsaNode.AxisRefType == NodeAxisRefType.XElevation)
       {
-        origin = new Point(0, 0, 0);
-        xdir = new Vector(0, -1, 0);
-        ydir = new Vector(0, 0, 1);
-        normal = new Vector(-1, 0, 0);
-        speckleAxis = new Plane(origin, normal, xdir, ydir);
+        speckleAxis = XElevationAxis();
       }
       else if (gsaNode.AxisRefType == NodeAxisRefType.YElevation)
       {
-        origin = new Point(0, 0, 0);
-        xdir = new Vector(1, 0, 0);
-        ydir = new Vector(0, 0, 1);
-        normal = new Vector(0, -1, 0);
-        speckleAxis = new Plane(origin, normal, xdir, ydir);
+        speckleAxis = YElevationAxis();
       }
       else if (gsaNode.AxisRefType == NodeAxisRefType.Vertical)
       {
-        origin = new Point(0, 0, 0);
-        xdir = new Vector(0, 0, 1);
-        ydir = new Vector(1, 0, 0);
-        normal = new Vector(0, 1, 0);
-        speckleAxis = new Plane(origin, normal, xdir, ydir);
+        speckleAxis = VerticalAxis();
       }
       else if (gsaNode.AxisRefType == NodeAxisRefType.Reference && gsaNode.AxisIndex.IsIndex())
       {
-        speckleAxis = GetAxisFromIndex(gsaNode.AxisIndex.Value).definition;
+        speckleAxis = GetAxisFromIndex(gsaNode.AxisIndex.Value);
       }
       else
       {
         //Default global coordinates for case: Global or NotSet
-        speckleAxis = GlobalAxis().definition;
+        speckleAxis = GlobalAxis();
       }
 
       return speckleAxis;
@@ -1710,12 +1696,61 @@ namespace ConverterGSA
 
       var axis = new Axis()
       {
-        name = "",
+        name = "global",
         axisType = AxisType.Cartesian,
         definition = new Plane(origin, normal, xdir, ydir)
       };
 
       return axis;
+    }
+
+    private static Axis XElevationAxis()
+    {
+      return new Axis()
+      {
+        name = "xElevation",
+        axisType = AxisType.Cartesian,
+        definition = new Plane()
+        {
+          origin = new Point(0, 0, 0),
+          normal = new Vector(-1, 0, 0),
+          xdir = new Vector(0, -1, 0),
+          ydir = new Vector(0, 0, 1)
+        }
+      };
+    }
+
+    private static Axis YElevationAxis()
+    {
+      return new Axis()
+      {
+        name = "yElevation",
+        axisType = AxisType.Cartesian,
+        definition = new Plane()
+        {
+          origin = new Point(0, 0, 0),
+          normal = new Vector(0, -1, 0),
+          xdir = new Vector(1, 0, 0),
+          ydir = new Vector(0, 0, 1)
+        }
+      };
+    }
+
+    private static Axis VerticalAxis()
+    {
+      
+      return new Axis()
+      {
+        name = "Vertical",
+        axisType = AxisType.Cartesian,
+        definition = new Plane()
+        {
+          origin = new Point(0, 0, 0),
+          xdir = new Vector(0, 0, 1),
+          ydir = new Vector(1, 0, 0),
+          normal = new Vector(0, 1, 0),
+        }
+      };
     }
     #endregion
 
@@ -1829,32 +1864,15 @@ namespace ConverterGSA
     #region Grids
     private Axis GetGridPlaneAxis(GridPlaneAxisRefType gsaAxisType, int? gsaAxisIndex)
     {
-      var speckleAxis = new Axis()
-      {
-        axisType = AxisType.Cartesian
-      };
+      Axis speckleAxis;
 
       if (gsaAxisType == GridPlaneAxisRefType.XElevation)
       {
-        speckleAxis.name = "xElevation";
-        speckleAxis.definition = new Plane()
-        {
-          origin = new Point(0, 0, 0),
-          normal = new Vector(-1, 0, 0),
-          xdir = new Vector(0, -1, 0),
-          ydir = new Vector(0, 0, 1)
-        };
+        speckleAxis = XElevationAxis();
       }
       else if (gsaAxisType == GridPlaneAxisRefType.YElevation)
       {
-        speckleAxis.name = "yElevation";
-        speckleAxis.definition = new Plane()
-        {
-          origin = new Point(0, 0, 0),
-          normal = new Vector(0, -1, 0),
-          xdir = new Vector(1, 0, 0),
-          ydir = new Vector(0, 0, 1)
-        };
+        speckleAxis = YElevationAxis();
       }
       else if (gsaAxisType == GridPlaneAxisRefType.Reference && gsaAxisIndex.IsIndex())
       {
@@ -1874,10 +1892,7 @@ namespace ConverterGSA
       var speckleGridPlane = new GSAGridPlane()
       {
         name = "",
-        axis = new Axis()
-        {
-          axisType = AxisType.Cartesian
-        },
+        axis = new Axis(),
         elevation = 0,
         toleranceBelow = null,
         toleranceAbove = null,
@@ -1886,26 +1901,12 @@ namespace ConverterGSA
       if (gsaAxisType == GridPlaneAxisRefType.XElevation)
       {
         speckleGridPlane.name = "X Elevation Grid";
-        speckleGridPlane.axis.name = "x Elevation";
-        speckleGridPlane.axis.definition = new Plane()
-        {
-          origin = new Point(0, 0, 0),
-          normal = new Vector(-1, 0, 0),
-          xdir = new Vector(0, -1, 0),
-          ydir = new Vector(0, 0, 1)
-        };
+        speckleGridPlane.axis = XElevationAxis();
       }
       else if (gsaAxisType == GridPlaneAxisRefType.YElevation)
       {
         speckleGridPlane.name = "Y Elevation Grid";
-        speckleGridPlane.axis.name = "Y Elevation";
-        speckleGridPlane.axis.definition = new Plane()
-        {
-          origin = new Point(0, 0, 0),
-          normal = new Vector(0, -1, 0),
-          xdir = new Vector(1, 0, 0),
-          ydir = new Vector(0, 0, 1)
-        };
+        speckleGridPlane.axis = YElevationAxis();
       }
       else if (gsaAxisType == GridPlaneAxisRefType.Reference && gsaAxisIndex.IsIndex())
       {
@@ -1914,14 +1915,7 @@ namespace ConverterGSA
       else
       {
         speckleGridPlane.name = "Global Grid";
-        speckleGridPlane.axis.name = "Global";
-        speckleGridPlane.axis.definition = new Plane()
-        {
-          origin = new Point(0, 0, 0),
-          normal = new Vector(0, 0, 1),
-          xdir = new Vector(1, 0, 0),
-          ydir = new Vector(0, 1, 0)
-        };
+        speckleGridPlane.axis = GlobalAxis();
       }
 
       return speckleGridPlane;
@@ -1965,6 +1959,7 @@ namespace ConverterGSA
     #region Polyline
     public Polyline GetPolyline(LoadLineOption gsaType, string gsaPolygon, int? gsaPolygonIndex)
     {
+      Polyline specklePolyline;
       if (gsaType == LoadLineOption.Polygon)
       {
         specklePolyline = GetPolygonFromString(gsaPolygon);

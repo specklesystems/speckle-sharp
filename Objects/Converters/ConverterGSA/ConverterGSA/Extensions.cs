@@ -16,6 +16,8 @@ using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using AxisDirection6 = Objects.Structural.GSA.Other.AxisDirection6;
 using PathType = Objects.Structural.GSA.Other.PathType;
 using GwaPathType = Speckle.GSA.API.GwaSchema.PathType;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace ConverterGSA
 {
@@ -96,58 +98,70 @@ namespace ConverterGSA
         p.ydir.x == 0 && p.ydir.y == 1 && p.ydir.z == 0 &&
         p.normal.x == 0 && p.normal.y == 0 && p.normal.z == 1);
     }
+
+    public static bool IsXElevation(this Plane p)
+    {
+      return (p.origin.x == 0 && p.origin.y == 0 && p.origin.z == 0 &&
+        p.xdir.x == 0 && p.xdir.y == -1 && p.xdir.z == 0 &&
+        p.ydir.x == 0 && p.ydir.y == 0 && p.ydir.z == 1 &&
+        p.normal.x == -1 && p.normal.y == 0 && p.normal.z == 0);
+    }
+
+    public static bool IsYElevation(this Plane p)
+    {
+      return (p.origin.x == 0 && p.origin.y == 0 && p.origin.z == 0 &&
+        p.xdir.x == 1 && p.xdir.y == 0 && p.xdir.z == 0 &&
+        p.ydir.x == 0 && p.ydir.y == 0 && p.ydir.z == 1 &&
+        p.normal.x == 0 && p.normal.y == -1 && p.normal.z == 0);
+    }
+
+    public static bool IsVertical(this Plane p)
+    {
+      return (p.origin.x == 0 && p.origin.y == 0 && p.origin.z == 0 &&
+        p.xdir.x == 0 && p.xdir.y == 0 && p.xdir.z == 1 &&
+        p.ydir.x == 1 && p.ydir.y == 0 && p.ydir.z == 0 &&
+        p.normal.x == 0 && p.normal.y == 1 && p.normal.z == 0);
+    }
     #endregion
 
     #region Enum conversions
     #region ToSpeckle
     public static ElementType1D ToSpeckle(this ElementType gsaType)
     {
-      ElementType1D speckleType;
-
       switch (gsaType)
       {
         case ElementType.Bar:
-          speckleType = ElementType1D.Bar;
-          break;
+          return ElementType1D.Bar;
         case ElementType.Cable:
-          speckleType = ElementType1D.Cable;
-          break;
+          return ElementType1D.Cable;
         case ElementType.Damper:
-          speckleType = ElementType1D.Damper;
-          break;
+          return ElementType1D.Damper;
         case ElementType.Link:
-          speckleType = ElementType1D.Link;
-          break;
+          return ElementType1D.Link;
         case ElementType.Rod:
-          speckleType = ElementType1D.Rod;
-          break;
+          return ElementType1D.Rod;
         case ElementType.Spacer:
-          speckleType = ElementType1D.Spacer;
-          break;
+          return ElementType1D.Spacer;
         case ElementType.Spring:
-          speckleType = ElementType1D.Spring;
-          break;
+          return ElementType1D.Spring;
         case ElementType.Strut:
-          speckleType = ElementType1D.Strut;
-          break;
+          return ElementType1D.Strut;
         case ElementType.Tie:
-          speckleType = ElementType1D.Tie;
-          break;
+          return ElementType1D.Tie;
         default:
-          speckleType = ElementType1D.Beam;
-          break;
+          return ElementType1D.Beam;
       }
-
-      return speckleType;
     }
 
     public static ElementType1D ToSpeckle1d(this GwaMemberType gsaMemberType)
     {
+      //TODO
       return ElementType1D.Beam;
     }
 
     public static ElementType2D ToSpeckle2d(this GwaMemberType gsaMemberType)
     {
+      //TODO
       return ElementType2D.Quad4;
     }
 
@@ -348,17 +362,15 @@ namespace ConverterGSA
 
     public static ReferenceSurface ToSpeckle(this Property2dRefSurface gsaRefPt)
     {
-      var refenceSurface = ReferenceSurface.Middle; //default
-
-      if (gsaRefPt == Property2dRefSurface.BottomCentre)
+      switch (gsaRefPt)
       {
-        refenceSurface = ReferenceSurface.Bottom;
+        case Property2dRefSurface.BottomCentre:
+          return ReferenceSurface.Bottom;
+        case Property2dRefSurface.TopCentre:
+          return ReferenceSurface.Top;
+        default:
+          return ReferenceSurface.Middle;
       }
-      else if (gsaRefPt == Property2dRefSurface.TopCentre)
-      {
-        refenceSurface = ReferenceSurface.Top;
-      }
-      return refenceSurface;
     }
 
     public static RigidConstraint ToSpeckle(this RigidConstraintType gsaType)
@@ -457,6 +469,48 @@ namespace ConverterGSA
     #endregion
 
     #region ToNative
+    public static ElementType ToNative(this ElementType1D speckleType)
+    {
+      switch (speckleType)
+      {
+        case ElementType1D.Bar:
+          return ElementType.Bar;
+        case ElementType1D.Cable:
+          return ElementType.Cable;
+        case ElementType1D.Damper:
+          return ElementType.Damper;
+        case ElementType1D.Link:
+          return ElementType.Link;
+        case ElementType1D.Rod:
+          return ElementType.Rod;
+        case ElementType1D.Spacer:
+          return ElementType.Spacer;
+        case ElementType1D.Spring:
+          return ElementType.Spring;
+        case ElementType1D.Strut:
+          return ElementType.Strut;
+        case ElementType1D.Tie:
+          return ElementType.Tie;
+        default:
+          return ElementType.Beam;
+      }
+    }
+
+    public static ElementType ToNative(this ElementType2D speckleType)
+    {
+      switch (speckleType)
+      {
+        case ElementType2D.Triangle3:
+          return ElementType.Triangle3;
+        case ElementType2D.Triangle6:
+          return ElementType.Triangle6;
+        case ElementType2D.Quad8:
+          return ElementType.Quad8;
+        case ElementType2D.Quad4:
+        default:
+          return ElementType.Quad4;
+      }
+    }
     #endregion
     #endregion
 
@@ -526,6 +580,44 @@ namespace ConverterGSA
       return v_rot1 + v_rot2 + v_rot3;
     }
     #endregion
+
+    public static Colour ColourToNative(this string speckleColour)
+    {
+      return Enum.TryParse(speckleColour, out Colour gsaColour) ? gsaColour : Colour.NO_RGB;
+    }
+
+    public static ReleaseCode ReleaseCodeToNative(this char speckleRelease)
+    {
+      switch (speckleRelease)
+      {
+        case 'R':
+          return ReleaseCode.Released;
+        case 'F':
+          return ReleaseCode.Fixed;
+        case 'K':
+          return ReleaseCode.Stiff;
+        default:
+          return ReleaseCode.NotSet;
+      }
+    }
+
+    public static Dictionary<GwaAxisDirection6, ReleaseCode> ReleasesToNative(this string speckleCode)
+    {
+      Dictionary<GwaAxisDirection6, ReleaseCode> gsaReleases = null;
+      if (speckleCode.Length == 6)
+      {
+        gsaReleases = new Dictionary<GwaAxisDirection6, ReleaseCode>()
+        {
+          { GwaAxisDirection6.X, speckleCode[0].ReleaseCodeToNative() },
+          { GwaAxisDirection6.Y, speckleCode[1].ReleaseCodeToNative() },
+          { GwaAxisDirection6.Z, speckleCode[2].ReleaseCodeToNative() },
+          { GwaAxisDirection6.XX, speckleCode[3].ReleaseCodeToNative() },
+          { GwaAxisDirection6.YY, speckleCode[4].ReleaseCodeToNative() },
+          { GwaAxisDirection6.ZZ, speckleCode[5].ReleaseCodeToNative() }
+        };
+      }
+      return gsaReleases;
+    }
 
     public static void AddRange<T>(this ICollection<T> target, IEnumerable<T> source)
     {
