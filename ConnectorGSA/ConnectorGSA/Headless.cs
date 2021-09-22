@@ -240,6 +240,7 @@ namespace ConnectorGSA
           Commands.LoadDataFromFile(); //Ensure all nodes
 
           var objs = Commands.ConvertToSpeckle(converter);
+          objs.Reverse();
 
           //The converter itself can't give anything back other than Base objects, so this is the first time it can be adorned with any
           //info useful to the sending in streams
