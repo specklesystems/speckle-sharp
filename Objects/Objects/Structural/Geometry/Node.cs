@@ -12,7 +12,11 @@ namespace Objects.Structural.Geometry
         //public int nativeId { get; set; } //equivalent to num record in GWA keyword, can be used as a unique identifier for other software
         public string name { get; set; }
         public Point basePoint { get; set; }
+
+        [DetachProperty]
         public Axis constraintAxis { get; set; } // can be detachable? ex. a user-specified axis
+
+        [DetachProperty]
         public Restraint restraint { get; set; } // can be detachable? ex. reuse pinned support condition
 
         [DetachProperty]
@@ -26,6 +30,13 @@ namespace Objects.Structural.Geometry
         public string units { get; set; }
         public Node() { }
 
+        public Node(Point basePoint) 
+        {
+            this.basePoint = basePoint;
+        }
+
+            [SchemaParamInfo("If null, axis defaults to world xy (z axis defines the vertical direction, positive direction is up)")] Axis constraintAxis = null)
+            this.constraintAxis = constraintAxis == null ? new Axis("Global", AxisType.Cartesian, new Plane(new Point(0, 0, 0), new Vector(0, 0, 1), new Vector(1, 0, 0), new Vector(0, 1, 0))) : constraintAxis;
         [SchemaInfo("Node with properties", "Creates a Speckle structural node with spring, mass and/or damper properties", "Structural", "Geometry")]
         public Node(Point basePoint,
             string name = null,
@@ -36,7 +47,7 @@ namespace Objects.Structural.Geometry
             this.basePoint = basePoint;
             this.name = name;
             this.restraint = restraint == null ? new Restraint("RRRRRR") : restraint;
-            this.constraintAxis = constraintAxis == null ? new Axis("", AxisType.Cartesian, new Plane(new Point(0, 0, 0), new Vector(0, 0, 1), new Vector(1, 0, 0), new Vector(0, 1, 0))) : constraintAxis;
+            this.constraintAxis = constraintAxis == null ? new Axis("Global", AxisType.Cartesian, new Plane(new Point(0, 0, 0), new Vector(0, 0, 1), new Vector(1, 0, 0), new Vector(0, 1, 0))) : constraintAxis;
             this.springProperty = springProperty;
             this.massProperty = massProperty;
             this.damperProperty = damperProperty;

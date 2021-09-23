@@ -91,7 +91,7 @@ namespace Objects
       }
       catch (Exception e)
       {
-        Log.CaptureException(e);
+        Log.CaptureException(e, Sentry.SentryLevel.Error);
         return null;
       }
     }

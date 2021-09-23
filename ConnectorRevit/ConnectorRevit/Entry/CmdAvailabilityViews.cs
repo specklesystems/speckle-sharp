@@ -14,10 +14,7 @@ namespace Speckle.ConnectorRevit
     /// <returns></returns>
     public bool IsCommandAvailable(UIApplication applicationData, CategorySet selectedCategories)
     {
-      if (applicationData?.ActiveUIDocument?.Document?.IsValidObject ?? false)
-        return !applicationData.ActiveUIDocument.Document.IsFamilyDocument;
-      return false;
-
+      return applicationData?.ActiveUIDocument?.Document?.IsValidObject ?? false;
     }
   }
 }
