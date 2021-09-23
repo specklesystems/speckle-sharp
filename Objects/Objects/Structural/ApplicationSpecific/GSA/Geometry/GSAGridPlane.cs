@@ -10,6 +10,8 @@ namespace Objects.Structural.GSA.Geometry
     {
         public int nativeId { get; set; }
         public Axis axis { get; set; }
+        public double? toleranceBelow { get; set; }
+        public double? toleranceAbove { get; set; }
         public GSAGridPlane() { }
 
         [SchemaInfo("GSAGridPlane", "Creates a Speckle structural grid plane for GSA", "GSA", "Geometry")]

@@ -8,12 +8,12 @@ namespace Objects.Structural.GSA.Loading
 {
     public class GSALoadGridLine : GSALoadGrid
     {
-        public Objects.Geometry.Polyline polyline { get; set; }
+        public Polyline polyline { get; set; }
         public bool isProjected { get; set; }
         public List<double> values { get; set; }
         public GSALoadGridLine() { }
 
-        public GSALoadGridLine(int nativeId, GSAGridSurface gridSurface, Axis loadAxis, LoadDirection2D direction, Objects.Geometry.Polyline polyline, bool isProjected, List<double> values)
+        public GSALoadGridLine(int nativeId, GSAGridSurface gridSurface, Axis loadAxis, LoadDirection2D direction, Polyline polyline, bool isProjected, List<double> values)
         {
             this.nativeId = nativeId;
             this.name = name;

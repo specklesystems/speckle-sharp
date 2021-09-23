@@ -58,7 +58,7 @@ namespace ConverterGSA
       { ModelAspect.Nodes, new List<Type>() { typeof(GSANode) } },
       { ModelAspect.Elements, new List<Type>() { typeof(GSAAssembly), typeof(Axis), typeof(GSAElement1D), typeof(GSAElement2D), typeof(GSAElement3D), typeof(GSAMember1D), typeof(GSAMember2D) } },
       { ModelAspect.Loads, new List<Type>()
-        { typeof(Case), typeof(Task), typeof(GSALoadCase), typeof(GSABeamLoad), typeof(GSAFaceLoad), typeof(GSAGravityLoad), typeof(GSALoadCase), typeof(GSALoadCombination), typeof(GSANodeLoad) } },
+        { typeof(GSACase), typeof(GSATask), typeof(GSALoadCase), typeof(GSALoadBeam), typeof(GSALoadFace), typeof(GSALoadGravity), typeof(GSALoadCase), typeof(GSALoadCombination), typeof(GSALoadNode) } },
       { ModelAspect.Restraints, new List<Type>() { typeof(Objects.Structural.Geometry.Restraint) } },
       { ModelAspect.Properties, new List<Type>()
         { typeof(GSAProperty1D), typeof(GSAProperty2D), typeof(SectionProfile), typeof(PropertyMass), typeof(PropertySpring), typeof(PropertyDamper), typeof(Property3D) } },

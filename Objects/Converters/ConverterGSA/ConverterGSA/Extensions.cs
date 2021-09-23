@@ -7,17 +7,18 @@ using Objects.Geometry;
 using Objects.Structural;
 using Objects.Structural.Geometry;
 using Objects.Structural.GSA.Geometry;
-using Objects.Structural.GSA.Other;
 using Objects.Structural.Loading;
 using Speckle.GSA.API.GwaSchema;
 using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
 using GwaAxisDirection3 = Speckle.GSA.API.GwaSchema.AxisDirection3;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
-using AxisDirection6 = Objects.Structural.GSA.Other.AxisDirection6;
-using PathType = Objects.Structural.GSA.Other.PathType;
+using AxisDirection6 = Objects.Structural.GSA.Geometry.AxisDirection6;
+using PathType = Objects.Structural.GSA.Bridge.PathType;
 using GwaPathType = Speckle.GSA.API.GwaSchema.PathType;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Objects.Structural.GSA.Bridge;
+using Objects.Structural.GSA.Loading;
 
 namespace ConverterGSA
 {
@@ -373,42 +374,42 @@ namespace ConverterGSA
       }
     }
 
-    public static RigidConstraint ToSpeckle(this RigidConstraintType gsaType)
+    public static LinkageType ToSpeckle(this RigidConstraintType gsaType)
     {
       switch (gsaType)
       {
         case RigidConstraintType.ALL:
-          return RigidConstraint.ALL;
+          return LinkageType.ALL;
         case RigidConstraintType.XY_PLANE:
-          return RigidConstraint.XY_PLANE;
+          return LinkageType.XY_PLANE;
         case RigidConstraintType.YZ_PLANE:
-          return RigidConstraint.YZ_PLANE;
+          return LinkageType.YZ_PLANE;
         case RigidConstraintType.ZX_PLANE:
-          return RigidConstraint.ZX_PLANE;
+          return LinkageType.ZX_PLANE;
         case RigidConstraintType.XY_PLATE:
-          return RigidConstraint.XY_PLATE;
+          return LinkageType.XY_PLATE;
         case RigidConstraintType.YZ_PLATE:
-          return RigidConstraint.YZ_PLATE;
+          return LinkageType.YZ_PLATE;
         case RigidConstraintType.ZX_PLATE:
-          return RigidConstraint.ZX_PLATE;
+          return LinkageType.ZX_PLATE;
         case RigidConstraintType.PIN:
-          return RigidConstraint.PIN;
+          return LinkageType.PIN;
         case RigidConstraintType.XY_PLANE_PIN:
-          return RigidConstraint.XY_PLANE_PIN;
+          return LinkageType.XY_PLANE_PIN;
         case RigidConstraintType.YZ_PLANE_PIN:
-          return RigidConstraint.YZ_PLANE_PIN;
+          return LinkageType.YZ_PLANE_PIN;
         case RigidConstraintType.ZX_PLANE_PIN:
-          return RigidConstraint.ZX_PLANE_PIN;
+          return LinkageType.ZX_PLANE_PIN;
         case RigidConstraintType.XY_PLATE_PIN:
-          return RigidConstraint.XY_PLATE_PIN;
+          return LinkageType.XY_PLATE_PIN;
         case RigidConstraintType.YZ_PLATE_PIN:
-          return RigidConstraint.YZ_PLATE_PIN;
+          return LinkageType.YZ_PLATE_PIN;
         case RigidConstraintType.ZX_PLATE_PIN:
-          return RigidConstraint.ZX_PLATE_PIN;
+          return LinkageType.ZX_PLATE_PIN;
         case RigidConstraintType.Custom:
-          return RigidConstraint.Custom;
+          return LinkageType.Custom;
         default:
-          return RigidConstraint.NotSet;
+          return LinkageType.NotSet;
       }
     }
 

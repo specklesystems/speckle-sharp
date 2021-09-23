@@ -25,6 +25,8 @@ namespace Objects.Structural.Results
         [DetachProperty]
         public ResultSetNode resultsNode { get; set; } //nodal results
 
+        public ResultSetAll() { }
+
         [SchemaInfo("ResultSetAll", "Creates a Speckle result set object for 1d element, 2d element, 3d element global and nodal results", "Structural", "Results")]
         public ResultSetAll(ResultSet1D results1D, ResultSet2D results2D, ResultSet3D results3D, ResultGlobal resultsGlobal, ResultSetNode resultsNode)
         {

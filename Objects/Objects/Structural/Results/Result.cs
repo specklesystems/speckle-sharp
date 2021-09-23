@@ -27,6 +27,4 @@ namespace Objects.Structural.Results
             this.description = description;
         }
     }
-        public ResultSetAll() { }
-
 }

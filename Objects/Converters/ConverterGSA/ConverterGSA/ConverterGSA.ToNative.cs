@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using Restraint = Objects.Structural.Geometry.Restraint;
 
 namespace ConverterGSA
@@ -358,7 +359,7 @@ namespace ConverterGSA
     #endregion
 
     #region Node
-    private bool GetRestraint(Restraint speckleRestraint, out NodeRestraint gsaNodeRestraint, out List<AxisDirection6> gsaRestraint)
+    private bool GetRestraint(Restraint speckleRestraint, out NodeRestraint gsaNodeRestraint, out List<GwaAxisDirection6> gsaRestraint)
     {
       gsaRestraint = null; //default
 
@@ -375,18 +376,18 @@ namespace ConverterGSA
           break;
         default:
           gsaNodeRestraint = NodeRestraint.Custom;
-          gsaRestraint = new List<AxisDirection6>();
+          gsaRestraint = new List<GwaAxisDirection6>();
           int i = 0;
           foreach(char c in speckleRestraint.code)
           {
             if (c == 'F')
             {
-              if (i == 0) gsaRestraint.Add(AxisDirection6.X);
-              else if (i == 1) gsaRestraint.Add(AxisDirection6.Y);
-              else if (i == 2) gsaRestraint.Add(AxisDirection6.Z);
-              else if (i == 3) gsaRestraint.Add(AxisDirection6.XX);
-              else if (i == 4) gsaRestraint.Add(AxisDirection6.YY);
-              else if (i == 5) gsaRestraint.Add(AxisDirection6.ZZ);
+              if (i == 0) gsaRestraint.Add(GwaAxisDirection6.X);
+              else if (i == 1) gsaRestraint.Add(GwaAxisDirection6.Y);
+              else if (i == 2) gsaRestraint.Add(GwaAxisDirection6.Z);
+              else if (i == 3) gsaRestraint.Add(GwaAxisDirection6.XX);
+              else if (i == 4) gsaRestraint.Add(GwaAxisDirection6.YY);
+              else if (i == 5) gsaRestraint.Add(GwaAxisDirection6.ZZ);
             }
             i++;
           }
@@ -401,7 +402,7 @@ namespace ConverterGSA
     #endregion
 
     #region Element
-    private bool GetReleases(Restraint speckleRelease, out Dictionary<AxisDirection6,ReleaseCode> gsaRelease, out List<double> gsaStiffnesses, out ReleaseInclusion gsaReleaseInclusion)
+    private bool GetReleases(Restraint speckleRelease, out Dictionary<GwaAxisDirection6,ReleaseCode> gsaRelease, out List<double> gsaStiffnesses, out ReleaseInclusion gsaReleaseInclusion)
     {
       if (speckleRelease.code == "FFFFFF")
       {

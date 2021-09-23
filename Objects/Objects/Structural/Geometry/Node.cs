@@ -34,9 +34,6 @@ namespace Objects.Structural.Geometry
         {
             this.basePoint = basePoint;
         }
-
-            [SchemaParamInfo("If null, axis defaults to world xy (z axis defines the vertical direction, positive direction is up)")] Axis constraintAxis = null)
-            this.constraintAxis = constraintAxis == null ? new Axis("Global", AxisType.Cartesian, new Plane(new Point(0, 0, 0), new Vector(0, 0, 1), new Vector(1, 0, 0), new Vector(0, 1, 0))) : constraintAxis;
         [SchemaInfo("Node with properties", "Creates a Speckle structural node with spring, mass and/or damper properties", "Structural", "Geometry")]
         public Node(Point basePoint,
             string name = null,

@@ -3,33 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xunit;
-using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
-using Objects.Geometry;
-using Objects.Structural;
-using Objects.Structural.Geometry;
-using Restraint = Objects.Structural.Geometry.Restraint;
-using Objects.Structural.Loading;
-using Objects.Structural.Materials;
-using Objects.Structural.Properties;
-using Objects.Structural.Properties.Profiles;
-using Objects.Structural.GSA.Geometry;
-using Objects.Structural.GSA.Loading;
-using Objects.Structural.GSA.Properties;
-using Objects.Structural.GSA.Materials;
-using Objects.Structural.GSA.Other;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
-using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
-using MemberType = Objects.Structural.Geometry.MemberType;
-using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
-using AxisDirection6 = Objects.Structural.GSA.Other.AxisDirection6;
-using Xunit.Sdk;
-using Speckle.Core.Kits;
-using ConverterGSA;
 using Speckle.ConnectorGSA.Proxy.Merger;
-using Speckle.GSA.API.CsvSchema;
-using Objects.Structural.Results;
-using Speckle.Core.Models;
 
 namespace ConverterGSATests
 {

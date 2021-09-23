@@ -4,7 +4,6 @@ using Objects.Structural.Geometry;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.GSA.Loading;
 using Objects.Structural.GSA.Materials;
-using Objects.Structural.GSA.Other;
 using Objects.Structural.GSA.Properties;
 using Objects.Structural.Loading;
 using Objects.Structural.Properties;
@@ -18,9 +17,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Restraint = Objects.Structural.Geometry.Restraint;
-using AxisDirection6 = Objects.Structural.GSA.Other.AxisDirection6;
+using AxisDirection6 = Objects.Structural.GSA.Geometry.AxisDirection6;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using Objects.Structural.Materials;
+using Objects.Structural.GSA.Bridge;
+using Objects.Structural.GSA.Analysis;
 
 namespace ConverterGSA
 {
@@ -586,7 +587,7 @@ namespace ConverterGSA
     private ToSpeckleResult GsaFaceLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoad2dFace = (GsaLoad2dFace)nativeObject;
-      var speckleFaceLoad = new GSAFaceLoad()
+      var speckleFaceLoad = new GSALoadFace()
       {
         //-- App agnostic --
         name = gsaLoad2dFace.Name,
@@ -620,7 +621,7 @@ namespace ConverterGSA
     {
       var gsaLoadBeam = (GsaLoadBeam)nativeObject;
       var type = gsaLoadBeam.GetType();
-      var speckleBeamLoad = new GSABeamLoad()
+      var speckleBeamLoad = new GSALoadBeam()
       {
         //-- App agnostic --
         name = gsaLoadBeam.Name,
@@ -650,7 +651,7 @@ namespace ConverterGSA
     private ToSpeckleResult GsaNodeLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoadNode = (GsaLoadNode)nativeObject;
-      var speckleNodeLoad = new GSANodeLoad()
+      var speckleNodeLoad = new GSALoadNode()
       {
         //-- App agnostic --
         name = gsaLoadNode.Name,
@@ -680,7 +681,7 @@ namespace ConverterGSA
     private ToSpeckleResult GsaGravityLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoadGravity = (GsaLoadGravity)nativeObject;
-      var speckleGravityLoad = new GSAGravityLoad()
+      var speckleGravityLoad = new GSALoadGravity()
       {
         //-- App agnostic --
         name = gsaLoadGravity.Name,
@@ -722,7 +723,7 @@ namespace ConverterGSA
     private ToSpeckleResult GsaThermal2dLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoad2dThermal = (GsaLoad2dThermal)nativeObject;
-      var speckleLoad = new GSAThermal2dLoad()
+      var speckleLoad = new GSALoadThermal2d()
       {
         name = gsaLoad2dThermal.Name,
         elements = gsaLoad2dThermal.ElementIndices.Select(i => GetElement2DFromIndex(i)).ToList(),
@@ -741,7 +742,7 @@ namespace ConverterGSA
     private ToSpeckleResult GsaLoadGridAreaToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoad = (GsaLoadGridArea)nativeObject;
-      var speckleLoad = new GSAGridAreaLoad()
+      var speckleLoad = new GSALoadGridArea()
       {
         name = gsaLoad.Name,
         loadAxis = GetAxis(gsaLoad.AxisRefType, gsaLoad.AxisIndex),
@@ -763,7 +764,7 @@ namespace ConverterGSA
     private ToSpeckleResult GsaLoadGridLineToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoad = (GsaLoadGridLine)nativeObject;
-      var speckleLoad = new GSAGridLineLoad()
+      var speckleLoad = new GSALoadGridLine()
       {
         name = gsaLoad.Name,
         loadAxis = GetAxis(gsaLoad.AxisRefType, gsaLoad.AxisIndex),
@@ -785,7 +786,7 @@ namespace ConverterGSA
     private ToSpeckleResult GsaLoadGridPointToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoad = (GsaLoadGridPoint)nativeObject;
-      var speckleLoad = new GSAGridPointLoad()
+      var speckleLoad = new GSALoadGridPoint()
       {
         name = gsaLoad.Name,
         loadAxis = GetAxis(gsaLoad.AxisRefType, gsaLoad.AxisIndex),
@@ -1249,7 +1250,7 @@ namespace ConverterGSA
     private ToSpeckleResult GsaRigidToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaRigid = (GsaRigid)nativeObject;
-      var speckleRigid = new GSARigid()
+      var speckleRigid = new GSARigidConstraint()
       {
         name = gsaRigid.Name,
         constrainedNodes = gsaRigid.ConstrainedNodes.Select(i => GetNodeFromIndex(i)).ToList(),
@@ -1262,14 +1263,14 @@ namespace ConverterGSA
         speckleRigid.applicationId = Instance.GsaModel.GetApplicationId<GsaRigid>(gsaRigid.Index.Value);
       }
       if (gsaRigid.PrimaryNode.IsIndex()) speckleRigid.primaryNode = GetNodeFromIndex(gsaRigid.PrimaryNode.Value);
-      if (gsaRigid.Type == RigidConstraintType.Custom) speckleRigid.link = GetRigidConstraint(gsaRigid.Link);
+      if (gsaRigid.Type == RigidConstraintType.Custom) speckleRigid.constraintCondition = GetRigidConstraint(gsaRigid.Link);
       return new ToSpeckleResult(speckleRigid);
     }
 
     private ToSpeckleResult GsaGenRestToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaGenRest = (GsaGenRest)nativeObject;
-      var speckleGenRest = new GSAGenRest()
+      var speckleGenRest = new GSAGeneralisedRestraint()
       {
         name = gsaGenRest.Name,
         restraint = GetRestraint(gsaGenRest),
@@ -1312,7 +1313,7 @@ namespace ConverterGSA
     private ToSpeckleResult GsaInfBeamToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaInfBeam = (GsaInfBeam)nativeObject;
-      var speckleInfBeam = new GSAInfBeam()
+      var speckleInfBeam = new GSAInfluenceBeam()
       {
         name = gsaInfBeam.Name,
         direction = gsaInfBeam.Direction.ToSpeckleLoad(),
@@ -1333,7 +1334,7 @@ namespace ConverterGSA
     private ToSpeckleResult GsaInfNodeToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaInfNode = (GsaInfNode)nativeObject;
-      var speckleInfBeam = new GSAInfNode()
+      var speckleInfBeam = new GSAInfluenceNode()
       {
         name = gsaInfNode.Name,
         direction = gsaInfNode.Direction.ToSpeckleLoad(),
@@ -1354,7 +1355,7 @@ namespace ConverterGSA
     private ToSpeckleResult GsaAlignToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaAlign = (GsaAlign)nativeObject;
-      var speckleAlign = new GSAAlign()
+      var speckleAlign = new GSAAlignment()
       {
         name = gsaAlign.Name,
         chainage = gsaAlign.Chain,
@@ -2834,9 +2835,9 @@ namespace ConverterGSA
     #endregion
 
     #region Bridge
-    private GSAAlign GetAlignmentFromIndex(int index)
+    private GSAAlignment GetAlignmentFromIndex(int index)
     {
-      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaAlign, GSAAlign>(index, out var speckleObjects) && speckleObjects != null && speckleObjects.Count > 0)
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaAlign, GSAAlignment>(index, out var speckleObjects) && speckleObjects != null && speckleObjects.Count > 0)
         ? speckleObjects.First() : null;
     }
     #endregion
