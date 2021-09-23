@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Objects.Structural.Loading;
 using System;
+using Speckle.Core.Models;
 
 namespace Objects.Structural.GSA.Loading
 {
@@ -10,18 +11,9 @@ namespace Objects.Structural.GSA.Loading
         public int nativeId { get; set; }
         public GSALoadCombination() { }
 
-        public GSALoadCombination(int nativeId, string name,
-            [SchemaParamInfo("A dictionary with key/value pairs to map a load factor (value) to a load case (key)")] Dictionary<string, double> caseFactors)
-        {
-            this.nativeId = nativeId;
-            this.name = name;
-            this.caseFactors = caseFactors;
-            this.nativeId = nativeId;
-        }
-
         [SchemaInfo("GSALoadCombination", "Creates a Speckle load combination for GSA", "GSA", "Loading")]
         public GSALoadCombination(int nativeId, string name,
-            [SchemaParamInfo("A list of load cases")] List<Structural.Loading.LoadCase> loadCases,
+            [SchemaParamInfo("A list of load cases")] List<Base> loadCases,
             [SchemaParamInfo("A list of load factors (to be mapped to provided load cases)")] List<double> loadFactors)
         {
             this.nativeId = nativeId;
@@ -30,11 +22,8 @@ namespace Objects.Structural.GSA.Loading
             if (loadCases.Count != loadFactors.Count)
                 throw new ArgumentException("Number of load cases provided does not match number of load factors provided");
 
-            var caseFactorsDict = new Dictionary<string, double> { };
-            for (int i = 0; i < loadCases.Count; i++)
-                caseFactorsDict[loadCases[i].name] = loadFactors[i];
-            this.caseFactors = caseFactorsDict;
-
+            this.loadFactors = loadFactors;
+            this.loadCases = loadCases;
             this.nativeId = nativeId;
         }
     }

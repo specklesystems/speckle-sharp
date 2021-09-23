@@ -3,7 +3,7 @@
   public class GsaAnal : GsaRecord
   {
     public string Name { get => name; set { name = value; } }
-    public int? LoadCase;
+    public int? TaskIndex;
     public string Desc;
 
     public GsaAnal()

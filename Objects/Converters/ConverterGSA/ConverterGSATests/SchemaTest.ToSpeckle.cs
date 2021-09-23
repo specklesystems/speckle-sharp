@@ -759,7 +759,120 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void FaceLoadToSpeckle()
+    public void AnalysisCaseToSpeckle()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+
+      //Gen #2
+      //gsaRecords.Add(GsaTaskExamples(1, "task 1").First());
+
+      //Gen #3:
+      var gsaAnalysisCases = GsaAnalysisCaseExamples(2, "analysis case 1", "analysis case 2");
+      gsaRecords.AddRange(gsaAnalysisCases);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAAnalysisCase);
+
+      var speckleAnalysisCases = structuralObjects.FindAll(so => so is GSAAnalysisCase).Select(so => (GSAAnalysisCase)so).ToList();
+
+      //Checks - Analysis case 1
+      Assert.Equal("analysis case 1", speckleAnalysisCases[0].applicationId);
+      Assert.Equal(gsaAnalysisCases[0].Index.Value, speckleAnalysisCases[0].nativeId);
+      Assert.Equal(gsaAnalysisCases[0].Name, speckleAnalysisCases[0].name);
+      Assert.Equal(1, speckleAnalysisCases[0].loadCases.Count());
+      Assert.Equal("load case 1", speckleAnalysisCases[0].loadCases[0].applicationId);
+      Assert.Equal(1, speckleAnalysisCases[0].loadFactors.Count());
+      Assert.Equal(1, speckleAnalysisCases[0].loadFactors[0]);
+      Assert.Null(speckleAnalysisCases[0].task); //TODO: update once TASK keyword is added to interim schema
+
+      //Checks - Analysis case 2
+      Assert.Equal("analysis case 2", speckleAnalysisCases[1].applicationId);
+      Assert.Equal(gsaAnalysisCases[1].Index.Value, speckleAnalysisCases[1].nativeId);
+      Assert.Equal(gsaAnalysisCases[1].Name, speckleAnalysisCases[1].name);
+      Assert.Equal(2, speckleAnalysisCases[1].loadCases.Count());
+      Assert.Equal("load case 1", speckleAnalysisCases[1].loadCases[0].applicationId);
+      Assert.Equal("load case 2", speckleAnalysisCases[1].loadCases[1].applicationId);
+      Assert.Equal(2, speckleAnalysisCases[1].loadFactors.Count());
+      Assert.Equal(1.2, speckleAnalysisCases[1].loadFactors[0]);
+      Assert.Equal(1.5, speckleAnalysisCases[1].loadFactors[1]);
+      Assert.Null(speckleAnalysisCases[1].task); //TODO: update once TASK keyword is added to interim schema
+    }
+
+    [Fact]
+    public void LoadCombinationToSpeckle()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+
+      //Gen #2
+      gsaRecords.AddRange(GsaAnalysisCaseExamples(2, "analysis case 1", "analysis case 2"));
+
+      //Gen #3
+      var gsaCombinations = GsaCombinationExamples(2, "combo 1", "combo 2");
+      gsaRecords.AddRange(gsaCombinations);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSALoadCombination);
+
+      var speckleLoadCombination = structuralObjects.FindAll(so => so is GSALoadCombination).Select(so => (GSALoadCombination)so).ToList();
+
+      //Checks - Combination 1
+      Assert.Equal("combo 1", speckleLoadCombination[0].applicationId);
+      Assert.Equal(gsaCombinations[0].Name, speckleLoadCombination[0].name);
+      Assert.Equal(new List<double> { 1, 0.2 }, speckleLoadCombination[0].loadFactors);
+      Assert.Equal(2, speckleLoadCombination[0].loadCases.Count());
+      Assert.Equal("analysis case 1", speckleLoadCombination[0].loadCases[0].applicationId);
+      Assert.Equal("analysis case 2", speckleLoadCombination[0].loadCases[1].applicationId);
+      Assert.Equal(CombinationType.LinearAdd, speckleLoadCombination[0].combinationType);
+      Assert.Equal(gsaCombinations[0].Index.Value, speckleLoadCombination[0].nativeId);
+
+      //Checks - Combination 2
+      Assert.Equal("combo 2", speckleLoadCombination[1].applicationId);
+      Assert.Equal(gsaCombinations[1].Name, speckleLoadCombination[1].name);
+      Assert.Equal(new List<double> { 1.3, 1, 1 }, speckleLoadCombination[1].loadFactors);
+      Assert.Equal(3, speckleLoadCombination[1].loadCases.Count());
+      Assert.Equal("combo 1", speckleLoadCombination[1].loadCases[0].applicationId);
+      Assert.Equal("analysis case 1", speckleLoadCombination[1].loadCases[1].applicationId);
+      Assert.Equal("analysis case 2", speckleLoadCombination[1].loadCases[2].applicationId);
+      Assert.Equal(CombinationType.LinearAdd, speckleLoadCombination[1].combinationType);
+      Assert.Equal(gsaCombinations[1].Index.Value, speckleLoadCombination[1].nativeId);
+    }
+
+    [Fact]
+    public void LoadFaceToSpeckle()
     {
       //Define GSA objects
       //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
@@ -844,7 +957,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void BeamLoadToSpeckle()
+    public void LoadBeamToSpeckle()
     {
       //Define GSA objects
       //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
@@ -937,7 +1050,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void NodeLoadToSpeckle()
+    public void LoadNodeToSpeckle()
     {
       //Define GSA objects
       //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
@@ -997,7 +1110,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void GravityLoadToSpeckle()
+    public void LoadGravityToSpeckle()
     {
       //Define GSA objects
       //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
@@ -1056,53 +1169,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void CombinationToSpeckle()
-    {
-      //Define GSA objects
-      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
-      var gsaRecords = new List<GsaRecord>();
-
-      //Generation #1: Types with no other dependencies - the leaves of the tree
-      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
-
-      //Gen #2
-      var gsaCombinations = GsaCombinationExamples(2, "combo 1", "combo 2");
-      gsaRecords.AddRange(gsaCombinations);
-
-      Instance.GsaModel.Cache.Upsert(gsaRecords);
-
-      foreach (var record in gsaRecords)
-      {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
-
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
-      }
-
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSALoadCombination);
-
-      var speckleLoadCombination = structuralObjects.FindAll(so => so is GSALoadCombination).Select(so => (GSALoadCombination)so).ToList();
-
-      //Checks - Combination 1
-      Assert.Equal("combo 1", speckleLoadCombination[0].applicationId);
-      Assert.Equal(gsaCombinations[0].Name, speckleLoadCombination[0].name);
-      Assert.Equal(new Dictionary<string, double> { { "Dead", 1 }, { "Live", 0.2 } }, speckleLoadCombination[0].caseFactors);
-      Assert.Equal(CombinationType.LinearAdd, speckleLoadCombination[0].combinationType);
-      Assert.Equal(gsaCombinations[0].Index.Value, speckleLoadCombination[0].nativeId);
-
-      //Checks - Combination 2
-      Assert.Equal("combo 2", speckleLoadCombination[1].applicationId);
-      Assert.Equal(gsaCombinations[1].Name, speckleLoadCombination[1].name);
-      Assert.Equal(new Dictionary<string, double> { { "Combination 1", 1.3 }, { "Dead", 1 }, { "Live", 1 } }, speckleLoadCombination[1].caseFactors);
-      Assert.Equal(CombinationType.LinearAdd, speckleLoadCombination[1].combinationType);
-      Assert.Equal(gsaCombinations[1].Index.Value, speckleLoadCombination[1].nativeId);
-    }
-
-    [Fact]
-    public void GridPointLoadToSpeckle()
+    public void LoadGridPointToSpeckle()
     {
       //Define GSA objects
       //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
@@ -1174,7 +1241,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void GridLineLoadToSpeckle()
+    public void LoadGridLineToSpeckle()
     {
       //Define GSA objects
       //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
@@ -1251,7 +1318,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void GridAreaLoadToSpeckle()
+    public void LoadGridAreaToSpeckle()
     {
       //Define GSA objects
       //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
@@ -1324,7 +1391,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void Thermal2dLoadToSpeckle()
+    public void LoadThermal2dToSpeckle()
     {
       //Define GSA objects
       //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
@@ -3197,6 +3264,32 @@ namespace ConverterGSATests
         gsaLoadCases[i].ApplicationId = appIds[i];
       }
       return gsaLoadCases.GetRange(0, numberOfLoadCases);
+    }
+
+    private List<GsaAnal> GsaAnalysisCaseExamples(int num, params string[] appIds)
+    {
+      var gsaAnals = new List<GsaAnal>()
+      {
+        new GsaAnal()
+        {
+          Index = 1,
+          Name = "1",
+          TaskIndex = 1,
+          Desc = "L1",
+        },
+        new GsaAnal()
+        {
+          Index = 2,
+          Name = "2",
+          TaskIndex = 1,
+          Desc = "1.2L1 + 1.5L2",
+        },
+      };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        gsaAnals[i].ApplicationId = appIds[i];
+      }
+      return gsaAnals.GetRange(0, num);
     }
 
     private List<GsaLoad2dFace> GsaLoad2dFaceExamples(int numberOfLoads, params string[] appIds)

@@ -46,16 +46,17 @@ namespace ConverterGSA
         { typeof(GsaPolyline), GsaPolylineToSpeckle },
         //Loading
         { typeof(GsaLoadCase), GsaLoadCaseToSpeckle },
-        { typeof(GsaLoad2dFace), GsaFaceLoadToSpeckle },
-        { typeof(GsaLoadBeamPoint), GsaBeamLoadToSpeckle },
-        { typeof(GsaLoadBeamUdl), GsaBeamLoadToSpeckle },
-        { typeof(GsaLoadBeamLine), GsaBeamLoadToSpeckle },
-        { typeof(GsaLoadBeamPatch), GsaBeamLoadToSpeckle },
-        { typeof(GsaLoadBeamTrilin), GsaBeamLoadToSpeckle },
-        { typeof(GsaLoadNode), GsaNodeLoadToSpeckle },
-        { typeof(GsaLoadGravity), GsaGravityLoadToSpeckle },
+        { typeof(GsaAnal), GsaAnalysisCaseToSpeckle },
         { typeof(GsaCombination), GsaLoadCombinationToSpeckle },
-        { typeof(GsaLoad2dThermal), GsaThermal2dLoadToSpeckle },
+        { typeof(GsaLoad2dFace), GsaLoadFaceToSpeckle },
+        { typeof(GsaLoadBeamPoint), GsaLoadBeamToSpeckle },
+        { typeof(GsaLoadBeamUdl), GsaLoadBeamToSpeckle },
+        { typeof(GsaLoadBeamLine), GsaLoadBeamToSpeckle },
+        { typeof(GsaLoadBeamPatch), GsaLoadBeamToSpeckle },
+        { typeof(GsaLoadBeamTrilin), GsaLoadBeamToSpeckle },
+        { typeof(GsaLoadNode), GsaLoadNodeToSpeckle },
+        { typeof(GsaLoadGravity), GsaLoadGravityLoadToSpeckle },
+        { typeof(GsaLoad2dThermal), GsaLoadThermal2dToSpeckle },
         { typeof(GsaLoadGridArea), GsaLoadGridAreaToSpeckle },
         { typeof(GsaLoadGridLine), GsaLoadGridLineToSpeckle },
         { typeof(GsaLoadGridPoint), GsaLoadGridPointToSpeckle },
@@ -584,7 +585,51 @@ namespace ConverterGSA
       return new ToSpeckleResult(speckleLoadCase);
     }
 
-    private ToSpeckleResult GsaFaceLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
+    private ToSpeckleResult GsaAnalysisCaseToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
+    {
+      var gsaAnalysisCase = (GsaAnal)nativeObject;
+      //TO DO: update once GsaLoadCase has been updated
+      var speckleAnalysisCase = new GSAAnalysisCase()
+      {
+        name = gsaAnalysisCase.Name,
+      };
+
+      if (gsaAnalysisCase.Index.IsIndex()) speckleAnalysisCase.applicationId = Instance.GsaModel.GetApplicationId<GsaAnal>(gsaAnalysisCase.Index.Value);
+      if (gsaAnalysisCase.Index.IsIndex()) speckleAnalysisCase.nativeId = gsaAnalysisCase.Index.Value;
+      if (gsaAnalysisCase.TaskIndex.IsIndex()) speckleAnalysisCase.task = GetTaskFromIndex(gsaAnalysisCase.TaskIndex.Value);
+      if (GetAnalysisCaseFactors(gsaAnalysisCase.Desc, out var loadCases, out var loadFactors))
+      {
+        speckleAnalysisCase.loadCases = loadCases;
+        speckleAnalysisCase.loadFactors = loadFactors;
+      }
+      return new ToSpeckleResult(speckleAnalysisCase);
+    }
+
+    private ToSpeckleResult GsaLoadCombinationToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
+    {
+      var gsaCombination = (GsaCombination)nativeObject;
+      var speckleLoadCombination = new GSALoadCombination()
+      {
+        //-- App agnostic --
+        name = gsaCombination.Name,
+        combinationType = GetCombinationType(gsaCombination.Desc)
+      };
+
+      //-- App agnostic --
+      if (gsaCombination.Index.IsIndex()) speckleLoadCombination.applicationId = Instance.GsaModel.GetApplicationId<GsaCombination>(gsaCombination.Index.Value);
+      if (GetLoadCombinationFactors(gsaCombination.Desc, out var loadCases, out var loadFactors))
+      {
+        speckleLoadCombination.loadCases = loadCases;
+        speckleLoadCombination.loadFactors = loadFactors;
+      }
+
+      //-- GSA specific --
+      if (gsaCombination.Index.IsIndex()) speckleLoadCombination.nativeId = gsaCombination.Index.Value;
+
+      return new ToSpeckleResult(speckleLoadCombination);
+    }
+
+    private ToSpeckleResult GsaLoadFaceToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoad2dFace = (GsaLoad2dFace)nativeObject;
       var speckleFaceLoad = new GSALoadFace()
@@ -617,7 +662,7 @@ namespace ConverterGSA
       return new ToSpeckleResult(speckleFaceLoad);
     }
 
-    private ToSpeckleResult GsaBeamLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
+    private ToSpeckleResult GsaLoadBeamToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoadBeam = (GsaLoadBeam)nativeObject;
       var type = gsaLoadBeam.GetType();
@@ -648,7 +693,7 @@ namespace ConverterGSA
       return new ToSpeckleResult(speckleBeamLoad);
     }
 
-    private ToSpeckleResult GsaNodeLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
+    private ToSpeckleResult GsaLoadNodeToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoadNode = (GsaLoadNode)nativeObject;
       var speckleNodeLoad = new GSALoadNode()
@@ -678,7 +723,7 @@ namespace ConverterGSA
       return new ToSpeckleResult(speckleNodeLoad);
     }
 
-    private ToSpeckleResult GsaGravityLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
+    private ToSpeckleResult GsaLoadGravityLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoadGravity = (GsaLoadGravity)nativeObject;
       var speckleGravityLoad = new GSALoadGravity()
@@ -700,27 +745,7 @@ namespace ConverterGSA
       return new ToSpeckleResult(speckleGravityLoad);
     }
 
-    private ToSpeckleResult GsaLoadCombinationToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
-    {
-      var gsaCombination = (GsaCombination)nativeObject;
-      var speckleLoadCombination = new GSALoadCombination()
-      {
-        //-- App agnostic --
-        name = gsaCombination.Name,
-        caseFactors = GetLoadCombinationFactors(gsaCombination.Desc),
-        combinationType = GetCombinationType(gsaCombination.Desc)
-      };
-
-      //-- App agnostic --
-      if (gsaCombination.Index.IsIndex()) speckleLoadCombination.applicationId = Instance.GsaModel.GetApplicationId<GsaCombination>(gsaCombination.Index.Value);
-
-      //-- GSA specific --
-      if (gsaCombination.Index.IsIndex()) speckleLoadCombination.nativeId = gsaCombination.Index.Value;
-
-      return new ToSpeckleResult(speckleLoadCombination);
-    }
-
-    private ToSpeckleResult GsaThermal2dLoadToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
+    private ToSpeckleResult GsaLoadThermal2dToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaLoad2dThermal = (GsaLoad2dThermal)nativeObject;
       var speckleLoad = new GSALoadThermal2d()
@@ -1683,6 +1708,28 @@ namespace ConverterGSA
         ? speckleObjects.First() : null;
     }
 
+    private Axis GetAxis(AxisRefType gsaAxisType, int? gsaAxisIndex)
+    {
+      Axis speckleAxis;
+
+      if (gsaAxisType == AxisRefType.Local)
+      {
+        //TO DO: handle local reference axis case
+        speckleAxis = null;
+      }
+      else if (gsaAxisType == AxisRefType.Reference && gsaAxisIndex.IsIndex())
+      {
+        speckleAxis = GetAxisFromIndex(gsaAxisIndex.Value);
+      }
+      else
+      {
+        //Default global coordinates for case: Global or NotSet
+        speckleAxis = GlobalAxis();
+      }
+
+      return speckleAxis;
+    }
+
     /// <summary>
     /// Speckle global axis definition
     /// </summary>
@@ -1955,6 +2002,36 @@ namespace ConverterGSA
     {
       return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaGridSurface, GSAGridSurface>(index, out var speckleObjects)) ? speckleObjects.First() : null;
     }
+
+    private Line GetLine(GsaGridLine gsaGridLine)
+    {
+      var speckleLine = new Line();
+      if (gsaGridLine.XCoordinate.HasValue && gsaGridLine.YCoordinate.HasValue && gsaGridLine.Length.HasValue && gsaGridLine.Theta1.HasValue)
+      {
+        speckleLine.start = new Point(gsaGridLine.XCoordinate.Value, gsaGridLine.YCoordinate.Value, 0);
+        speckleLine.end = new Point(gsaGridLine.XCoordinate.Value + gsaGridLine.Length.Value * Math.Cos(gsaGridLine.Theta1.Value.Radians()),
+          gsaGridLine.YCoordinate.Value + gsaGridLine.Length.Value * Math.Sin(gsaGridLine.Theta1.Value.Radians()), 0);
+      }
+      return speckleLine;
+    }
+
+    private Arc GetArc(GsaGridLine gsaGridLine)
+    {
+      var speckleArc = new Arc();
+      if (gsaGridLine.XCoordinate.HasValue && gsaGridLine.YCoordinate.HasValue && gsaGridLine.Length.HasValue && gsaGridLine.Theta1.HasValue && gsaGridLine.Theta1.HasValue)
+      {
+        speckleArc.radius = gsaGridLine.Length.Value;
+        speckleArc.startAngle = gsaGridLine.Theta1.Value.Radians();
+        speckleArc.endAngle = gsaGridLine.Theta2.Value.Radians();
+        speckleArc.startPoint = new Point(gsaGridLine.XCoordinate.Value + gsaGridLine.Length.Value * Math.Cos(gsaGridLine.Theta1.Value.Radians()),
+          gsaGridLine.YCoordinate.Value + gsaGridLine.Length.Value * Math.Sin(gsaGridLine.Theta1.Value.Radians()), 0);
+        speckleArc.endPoint = new Point(gsaGridLine.XCoordinate.Value + gsaGridLine.Length.Value * Math.Cos(gsaGridLine.Theta2.Value.Radians()),
+          gsaGridLine.YCoordinate.Value + gsaGridLine.Length.Value * Math.Sin(gsaGridLine.Theta2.Value.Radians()), 0);
+        //speckleArc.angleRadians;
+        speckleArc.plane = GlobalAxis().definition;
+      }
+      return speckleArc;
+    }
     #endregion
 
     #region Polyline
@@ -2019,9 +2096,22 @@ namespace ConverterGSA
     #endregion
 
     #region Loading
-    private LoadCase GetLoadCaseFromIndex(int index)
+    private GSALoadCase GetLoadCaseFromIndex(int index)
     {
-      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaLoadCase, LoadCase>(index, out var speckleObjects)) ? speckleObjects.First() : null;
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaLoadCase, GSALoadCase>(index, out var speckleObjects)) ? speckleObjects.First() : null;
+    }
+
+    private GSAAnalysisCase GetAnalysisCaseFromIndex(int index)
+    {
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaAnal, GSAAnalysisCase>(index, out var speckleObjects)) ? speckleObjects.First() : null;
+    }
+
+    private GSATask GetTaskFromIndex(int index)
+    {
+      return null;
+
+      //TO DO: when TASK is included in interim schema
+      //return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaTask, GSATask>(index, out var speckleObjects)) ? speckleObjects.First() : null;
     }
 
     private bool GetLoadBeamPositions(GsaLoadBeam gsaLoadBeam, out List<double> positions)
@@ -2099,36 +2189,52 @@ namespace ConverterGSA
       return speckleGravityFactors;
     }
 
-    private Dictionary<string, double> GetLoadCombinationFactors(string desc)
+    private bool GetLoadCombinationFactors(string desc, out List<Base> loadCases, out List<double> loadFactors)
     {
-      var speckleCaseFactors = new Dictionary<string, double>();
-      int gsaIndex;
-      LoadCase speckleLoadCase;
-      LoadCombination speckleLoadCombination;
-
+      loadFactors = new List<double>();
+      loadCases = new List<Base>();
       var gsaCaseFactors = ParseLoadDescription(desc);
 
       foreach (var key in gsaCaseFactors.Keys)
       {
-        gsaIndex = Convert.ToInt32(key.Substring(1));
+        var gsaIndex = Convert.ToInt32(key.Substring(1));
         if (key[0] == 'A')
         {
-          speckleLoadCase = GetLoadCaseFromIndex(gsaIndex);
-          speckleCaseFactors.Add(speckleLoadCase.name, gsaCaseFactors[key]);
+          loadCases.Add(GetAnalysisCaseFromIndex(gsaIndex));
+          loadFactors.Add(gsaCaseFactors[key]);
         }
         else if (key[0] == 'C')
         {
-          speckleLoadCombination = GetLoadCombinationFromIndex(gsaIndex);
-          speckleCaseFactors.Add(speckleLoadCombination.name, gsaCaseFactors[key]);
+          loadCases.Add(GetLoadCombinationFromIndex(gsaIndex));
+          loadFactors.Add(gsaCaseFactors[key]);
         }
       }
 
-      return speckleCaseFactors;
+      return true;
     }
 
-    private LoadCombination GetLoadCombinationFromIndex(int index)
+    private bool GetAnalysisCaseFactors(string desc, out List<LoadCase> loadCases, out List<double> loadFactors)
     {
-      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaCombination, LoadCombination>(index, out var speckleObjects)) ? speckleObjects.First() : null;
+      loadFactors = new List<double>();
+      loadCases = new List<LoadCase>();
+      var gsaCaseFactors = ParseLoadDescription(desc);
+
+      foreach (var key in gsaCaseFactors.Keys)
+      {
+        var gsaIndex = Convert.ToInt32(key.Substring(1));
+        if (key[0] == 'L')
+        {
+          loadCases.Add(GetLoadCaseFromIndex(gsaIndex));
+          loadFactors.Add(gsaCaseFactors[key]);
+        }
+      }
+
+      return true;
+    }
+
+    private GSALoadCombination GetLoadCombinationFromIndex(int index)
+    {
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaCombination, GSALoadCombination>(index, out var speckleObjects)) ? speckleObjects.First() : null;
     }
 
     /// <summary>
@@ -2232,62 +2338,6 @@ namespace ConverterGSA
     {
       //TO DO: Use desc to deside combination type
       return CombinationType.LinearAdd;
-    }
-
-    private Axis GetAxis(AxisRefType gsaAxisType, int? gsaAxisIndex)
-    {
-      //Cartesian coordinate system is the only one supported.
-      var speckleAxis = new Axis()
-      {
-        name = "",
-        axisType = AxisType.Cartesian,
-      };
-
-      if (gsaAxisType == AxisRefType.Local)
-      {
-        //TO DO: handle local reference axis case
-      }
-      else if (gsaAxisType == AxisRefType.Reference && gsaAxisIndex.IsIndex())
-      {
-        speckleAxis = GetAxisFromIndex(gsaAxisIndex.Value);
-      }
-      else
-      {
-        //Default global coordinates for case: Global or NotSet
-        speckleAxis = GlobalAxis();
-      }
-
-      return speckleAxis;
-    }
-
-    private Line GetLine(GsaGridLine gsaGridLine)
-    {
-      var speckleLine = new Line();
-      if (gsaGridLine.XCoordinate.HasValue && gsaGridLine.YCoordinate.HasValue && gsaGridLine.Length.HasValue && gsaGridLine.Theta1.HasValue)
-      {
-        speckleLine.start = new Point(gsaGridLine.XCoordinate.Value, gsaGridLine.YCoordinate.Value, 0);
-        speckleLine.end = new Point(gsaGridLine.XCoordinate.Value + gsaGridLine.Length.Value * Math.Cos(gsaGridLine.Theta1.Value.Radians()),
-          gsaGridLine.YCoordinate.Value + gsaGridLine.Length.Value * Math.Sin(gsaGridLine.Theta1.Value.Radians()), 0);
-      }
-      return speckleLine;
-    }
-
-    private Arc GetArc(GsaGridLine gsaGridLine)
-    {
-      var speckleArc = new Arc();
-      if (gsaGridLine.XCoordinate.HasValue && gsaGridLine.YCoordinate.HasValue && gsaGridLine.Length.HasValue && gsaGridLine.Theta1.HasValue && gsaGridLine.Theta1.HasValue)
-      {
-        speckleArc.radius = gsaGridLine.Length.Value;
-        speckleArc.startAngle = gsaGridLine.Theta1.Value.Radians();
-        speckleArc.endAngle = gsaGridLine.Theta2.Value.Radians();
-        speckleArc.startPoint = new Point(gsaGridLine.XCoordinate.Value + gsaGridLine.Length.Value * Math.Cos(gsaGridLine.Theta1.Value.Radians()),
-          gsaGridLine.YCoordinate.Value + gsaGridLine.Length.Value * Math.Sin(gsaGridLine.Theta1.Value.Radians()), 0);
-        speckleArc.endPoint = new Point(gsaGridLine.XCoordinate.Value + gsaGridLine.Length.Value * Math.Cos(gsaGridLine.Theta2.Value.Radians()),
-          gsaGridLine.YCoordinate.Value + gsaGridLine.Length.Value * Math.Sin(gsaGridLine.Theta2.Value.Radians()), 0);
-        //speckleArc.angleRadians;
-        speckleArc.plane = GlobalAxis().definition;
-      }
-      return speckleArc;
     }
     #endregion
 

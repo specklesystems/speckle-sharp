@@ -20,7 +20,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //ANAL | case | name | task | desc
-      return FromGwaByFuncs(remainingItems, out var _, AddName, (v) => AddNullableIndex(v, out record.LoadCase), (v) => AddStringValue(v, out record.Desc));
+      return FromGwaByFuncs(remainingItems, out var _, AddName, (v) => AddNullableIndex(v, out record.TaskIndex), (v) => AddStringValue(v, out record.Desc));
     }
 
     public override bool Gwa(out List<string> gwa, bool includeSet = false)
@@ -32,7 +32,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
 
       //ANAL | case | name | task | desc
-      AddItems(ref items, record.Name, record.LoadCase ?? 0, record.Desc);
+      AddItems(ref items, record.Name, record.TaskIndex ?? 0, record.Desc);
 
       gwa = Join(items, out var gwaLine) ? new List<string>() { gwaLine } : new List<string>();
       return (gwa.Count() > 0);
