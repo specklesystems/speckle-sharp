@@ -308,13 +308,32 @@ namespace ConnectorGSA
 
     private static List<Base> FlattenCommitObject(object obj, Func<Base, bool> IsSingleObjectFn)
     {
+      //This is needed because with GSA models, there could be a design and analysis layer with objects appearing in both, so only include the first
+      //occurrence of each object (distinguished by the ID returned by the Base.GetId() method) in the list returned
+      var uniques = new Dictionary<Type, HashSet<string>>();
+      return FlattenCommitObject(obj, IsSingleObjectFn, uniques);
+    }
+
+
+    private static List<Base> FlattenCommitObject(object obj, Func<Base, bool> IsSingleObjectFn, Dictionary<Type, HashSet<string>> uniques)
+    {
       List<Base> objects = new List<Base>();
 
       if (obj is Base @base)
       {
         if (IsSingleObjectFn(@base))
         {
-          objects.Add(@base);
+          var t = obj.GetType();
+          var id = @base.GetId();
+          if (!uniques.ContainsKey(t))
+          {
+            uniques.Add(t, new HashSet<string>() { @base.GetId() });
+          }
+          if (!uniques[t].Contains(id))
+          {
+            objects.Add(@base);
+            uniques[t].Add(id);
+          }
 
           return objects;
         }
@@ -322,7 +341,12 @@ namespace ConnectorGSA
         {
           foreach (var prop in @base.GetDynamicMembers())
           {
-            objects.AddRange(FlattenCommitObject(@base[prop], IsSingleObjectFn));
+            objects.AddRange(FlattenCommitObject(@base[prop], IsSingleObjectFn, uniques));
+          }
+          foreach (var kvp in @base.GetMembers())
+          {
+            var prop = kvp.Key;
+            objects.AddRange(FlattenCommitObject(@base[prop], IsSingleObjectFn, uniques));
           }
           return objects;
         }
@@ -332,16 +356,23 @@ namespace ConnectorGSA
       {
         foreach (var listObj in list)
         {
-          objects.AddRange(FlattenCommitObject(listObj, IsSingleObjectFn));
+          objects.AddRange(FlattenCommitObject(listObj, IsSingleObjectFn, uniques));
         }
         return objects;
       }
-
-      if (obj is IDictionary dict)
+      else if (obj is List<Base> baseObjList)
+      {
+        foreach (var baseObj in baseObjList)
+        {
+          objects.AddRange(FlattenCommitObject(baseObj, IsSingleObjectFn, uniques));
+        }
+        return objects;
+      }
+      else if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
         {
-          objects.AddRange(FlattenCommitObject(kvp.Value, IsSingleObjectFn));
+          objects.AddRange(FlattenCommitObject(kvp.Value, IsSingleObjectFn, uniques));
         }
         return objects;
       }

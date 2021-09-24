@@ -115,6 +115,11 @@ namespace ConnectorGSATests
 
     public List<List<Type>> GetTxTypeDependencyGenerations(GSALayer layer) => new List<List<Type>>();
 
+    public void WriteModel(List<GsaRecord> gsaRecords, GSALayer layer)
+    {
+      throw new NotImplementedException();
+    }
+
     #endregion
   }
 }

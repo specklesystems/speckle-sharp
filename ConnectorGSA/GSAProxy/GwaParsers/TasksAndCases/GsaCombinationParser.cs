@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
-  [GsaType(GwaKeyword.COMBINATION, GwaSetCommandType.Set, true, GwaKeyword.LOAD_TITLE)]
+  [GsaType(GwaKeyword.COMBINATION, GwaSetCommandType.Set, true, GwaKeyword.LOAD_TITLE, GwaKeyword.ANAL)]
   public class GsaCombinationParser : GwaParser<GsaCombination>
   {
     public GsaCombinationParser(GsaCombination gsaCombination) : base(gsaCombination) { }

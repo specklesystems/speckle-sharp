@@ -371,6 +371,17 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       return true;
     }
 
+    public bool GetNatives(Type t, out List<GsaRecord> gsaRecords)
+    {
+      if (recordIndicesBySchemaType.ContainsKey(t))
+      {
+        gsaRecords = recordIndicesBySchemaType[t].Select(i => records[i].GsaRecord).ToList();
+        return true;
+      }
+      gsaRecords = null;
+      return false;
+    }
+
     public bool GetNative<T>(int index, out GsaRecord gsaRecord) => GetNative(typeof(T), index, out gsaRecord);
 
     public bool GetNative(Type t, int index, out GsaRecord gsaRecord)

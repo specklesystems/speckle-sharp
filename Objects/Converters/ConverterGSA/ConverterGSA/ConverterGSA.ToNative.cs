@@ -79,11 +79,27 @@ namespace ConverterGSA
         //NodeRestraint = GetRestraint(speckleNode.restraint);
       };
       var nodeIndex = Instance.GsaModel.Cache.ResolveIndex<GsaNode>(speckleNode.applicationId);
-      var springIndex = Instance.GsaModel.Cache.ResolveIndex<GsaPropSpr>(speckleNode.springProperty.applicationId);
-      var massIndex = Instance.GsaModel.Cache.ResolveIndex<GsaPropMass>(speckleNode.massProperty.applicationId);
-      if (nodeIndex > 0) gsaNode.Index = nodeIndex;
-      if (springIndex > 0) gsaNode.SpringPropertyIndex = springIndex;
-      if (massIndex > 0) gsaNode.MassPropertyIndex = massIndex;
+      if (nodeIndex > 0)
+      {
+        gsaNode.Index = nodeIndex;
+      }
+      if (speckleNode.springProperty != null)
+      {
+        var springIndex = Instance.GsaModel.Cache.ResolveIndex<GsaPropSpr>(speckleNode.springProperty.applicationId);
+        if (springIndex > 0)
+        {
+          gsaNode.SpringPropertyIndex = springIndex;
+        }
+      }
+      if (speckleNode.massProperty != null)
+      {
+        var massIndex = Instance.GsaModel.Cache.ResolveIndex<GsaPropMass>(speckleNode.massProperty.applicationId);
+
+        if (massIndex > 0)
+        {
+          gsaNode.MassPropertyIndex = massIndex;
+        }
+      }
       return new List<GsaRecord>() { gsaNode };
     }
 
@@ -115,9 +131,18 @@ namespace ConverterGSA
         ParentIndex = null, //int?
       };
       var elementIndex = Instance.GsaModel.Cache.ResolveIndex<GsaEl>(speckleElement.applicationId);
-      var propertyIndex = Instance.GsaModel.Cache.ResolveIndex<GsaSection>(speckleElement.property.applicationId);
-      if (elementIndex > 0) gsaElement.Index = elementIndex;
-      if (propertyIndex > 0) gsaElement.PropertyIndex = propertyIndex;
+      if (elementIndex > 0)
+      {
+        gsaElement.Index = elementIndex;
+      }
+      if (speckleElement.property != null)
+      {
+        var propertyIndex = Instance.GsaModel.Cache.ResolveIndex<GsaSection>(speckleElement.property.applicationId);
+        if (propertyIndex > 0)
+        {
+          gsaElement.PropertyIndex = propertyIndex;
+        }
+      }
       return new List<GsaRecord>() { gsaElement };
     }
 

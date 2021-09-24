@@ -255,7 +255,7 @@ namespace Speckle.ConnectorGSA.Proxy
       {
         if (GSAObject.SaveAs(filePath) == 0)
         {
-          this.FilePath = FilePath;
+          this.FilePath = filePath;
           return true;
         }
         return false;
@@ -824,8 +824,45 @@ namespace Speckle.ConnectorGSA.Proxy
 
     #region writing_gwa
 
+    public void WriteModel(List<GsaRecord> gsaRecords, GSALayer layer)
+    {
+      var parsersToUseBySchemaType = new Dictionary<Type, List<IGwaParser>>();
+      foreach (var r in gsaRecords)
+      {
+        var t = r.GetType();
+        if (!parsersToUseBySchemaType.ContainsKey(t))
+        {
+          parsersToUseBySchemaType.Add(t, new List<IGwaParser>());
+        }
+        var parser = (IGwaParser)Activator.CreateInstance(ParsersBySchemaType[t], r);
+        parsersToUseBySchemaType[t].Add(parser);
+      }
+
+      var typeGens = GetTxTypeDependencyGenerations(layer);
+      foreach (var gen in typeGens)
+      {
+        foreach (var t in gen)
+        {
+          if (parsersToUseBySchemaType.ContainsKey(t))
+          {
+            var orderedParsers = parsersToUseBySchemaType[t].OrderBy(p => p.Record.Index).ToList();
+
+            foreach (var op in orderedParsers)
+            {
+              if (op.Gwa(out var gwas, true))
+              {
+                gwas.ForEach(g => SetGwa(g));
+              }
+            }
+          }
+        }
+      }
+
+      Sync();
+    }
+
     //Assumed to be the full SET or SET_AT command
-    public void SetGwa(string gwaCommand)
+    private void SetGwa(string gwaCommand)
     {
       lock (syncLock)
       {
@@ -833,7 +870,7 @@ namespace Speckle.ConnectorGSA.Proxy
       }
     }
 
-    public void Sync()
+    private void Sync()
     {
       if (batchBlankGwa.Count() > 0)
       {
