@@ -379,6 +379,94 @@ namespace ConnectorGSATests
       }
     }
 
+    [Fact]
+    public void GsaLoadCase()
+    {
+      var loadCaseGwas = new List<string>()
+      {
+        "LOAD_TITLE.2\t1\tLoad case 1\tLC_VAR_IMP\t1\tA\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t2\tLoad case 2\tLC_VAR_IMP\t1\tB\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t3\tLoad case 3\tLC_VAR_IMP\t1\tC\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t4\tLoad case 4\tLC_VAR_IMP\t1\tD\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t5\tLoad case 5\tLC_VAR_IMP\t1\tE\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t6\tLoad case 6\tLC_VAR_IMP\t1\tF\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t7\tLoad case 7\tLC_VAR_IMP\t1\tG\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t8\tLoad case 8\tLC_VAR_IMP\t1\tH\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t9\tLoad case 9\tLC_PERM_SELF\t1\t~\tNONE\tINC_BOTH\t",
+        "LOAD_TITLE.2\t10\tLoad case 10\tLC_PERM_SOIL\t1\t~\tNONE\tINC_BOTH\t",
+        "LOAD_TITLE.2\t11\tLoad case 11\tLC_PERM_EQUIV\t1\t~\tNONE\tINC_BOTH\t",
+        "LOAD_TITLE.2\t12\tLoad case 12\tLC_PRESTRESS\t1\t~\tNONE\tINC_BOTH\t",
+        "LOAD_TITLE.2\t13\tLoad case 13\tLC_VAR_WIND\t1\t~\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t14\tLoad case 14\tLC_VAR_SNOW\t1\t~\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t15\tLoad case 15\tLC_VAR_RAIN\t1\t~\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t16\tLoad case 16\tLC_VAR_TEMP\t1\t~\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t17\tLoad case 17\tLC_VAR_EQUIV\t1\t~\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t18\tLoad case 18\tLC_ACCIDENTAL\t1\t~\tNONE\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t19\tLoad case 19\tLC_EQE_RSA\t1\t~\tX\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t20\tLoad case 20\tLC_EQE_ACC\t1\t~\tX\tINC_UNDEF\t",
+        "LOAD_TITLE.2\t21\tLoad case 21\tLC_EQE_STAT\t1\t~\tX\tINC_UNDEF\t",
+      };
+      var loadCases = new List<GsaLoadCase>();
+      int i = 1;
+      foreach (var g in loadCaseGwas)
+      {
+        var l = new GsaLoadCaseParser();
+        Assert.True(l.FromGwa(g));
+        var lc = (GsaLoadCase)l.Record;
+        loadCases.Add(lc);
+
+        //Checks
+        if (i>8) Assert.Equal(LoadCategory.NotSet, lc.Category);
+        if (i < 9 || i > 12) Assert.Equal(IncludeOption.Undefined, lc.Include);
+        else Assert.Equal(IncludeOption.Both, lc.Include);
+        if (i < 19) Assert.Equal(AxisDirection3.NotSet, lc.Direction);
+        else Assert.Equal(AxisDirection3.X, lc.Direction);
+        Assert.Equal("Load case " + i.ToString(), lc.Title);
+        Assert.Equal(i++, lc.Index.Value);
+        Assert.Equal(1, lc.Source);
+        Assert.False(lc.Bridge);
+      }
+
+      //Checks - Category
+      Assert.Equal(LoadCategory.Residential, loadCases[0].Category);
+      Assert.Equal(LoadCategory.Office, loadCases[1].Category);
+      Assert.Equal(LoadCategory.CongregationArea, loadCases[2].Category);
+      Assert.Equal(LoadCategory.Shop, loadCases[3].Category);
+      Assert.Equal(LoadCategory.Storage, loadCases[4].Category);
+      Assert.Equal(LoadCategory.LightTraffic, loadCases[5].Category);
+      Assert.Equal(LoadCategory.Traffic, loadCases[6].Category);
+      Assert.Equal(LoadCategory.Roofs, loadCases[7].Category);
+
+      //Checks - CaseType
+      Assert.Equal(StructuralLoadCaseType.Live, loadCases[0].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Live, loadCases[1].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Live, loadCases[2].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Live, loadCases[3].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Live, loadCases[4].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Live, loadCases[5].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Live, loadCases[6].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Live, loadCases[7].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Dead, loadCases[8].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Soil, loadCases[9].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Generic, loadCases[10].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Generic, loadCases[11].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Wind, loadCases[12].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Snow, loadCases[13].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Rain, loadCases[14].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Thermal, loadCases[15].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Generic, loadCases[16].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Generic, loadCases[17].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Earthquake, loadCases[18].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Earthquake, loadCases[19].CaseType);
+      Assert.Equal(StructuralLoadCaseType.Earthquake, loadCases[20].CaseType);
+
+      for (i = 0; i < loadCases.Count(); i++)
+      {
+        Assert.True(new GsaLoadCaseParser(loadCases[i]).Gwa(out var gwa));
+        if (i != 10 && i != 11 && i < 16) Assert.Equal(loadCaseGwas[i], gwa.First()); //TODO: check if cases not checked still produce valid gwa strings
+      }
+    }
+
     [Fact (Skip = "WIP")]
     public void GsaLoadGravitySimple()
     {

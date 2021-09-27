@@ -136,7 +136,11 @@ namespace ConverterGSA
       }
       else
       {
-        //TODO: handle case with different offset
+        gsaElement.OffsetY = speckleElement.end1Offset.y;
+        ConversionErrors.Add(new Exception("Element1dToNative: " 
+          + "Error converting element1d with application id (" + speckleElement.applicationId + "). "
+          + "Different y offsets were assigned at either end."
+          + "end 1 y offset of " + gsaElement.OffsetY.ToString() + " has been applied"));
       }
       if (speckleElement.end1Offset.z == speckleElement.end2Offset.z)
       {
@@ -144,7 +148,11 @@ namespace ConverterGSA
       }
       else
       {
-        //TODO: handle case with different offset
+        gsaElement.OffsetZ = speckleElement.end1Offset.z;
+        ConversionErrors.Add(new Exception("Element1dToNative: "
+          + "Error converting element1d with application id (" + speckleElement.applicationId + "). "
+          + "Different z offsets were assigned at either end."
+          + "end 1 z offset of " + gsaElement.OffsetY.ToString() + " has been applied"));
       }
       if (speckleElement.end1Offset.x != 0) gsaElement.End1OffsetX = speckleElement.end1Offset.x;
       if (speckleElement.orientationAngle != 0) gsaElement.Angle = speckleElement.orientationAngle;
